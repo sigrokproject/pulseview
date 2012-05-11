@@ -19,3 +19,19 @@ SOURCES += main.cpp\
 HEADERS  += mainwindow.h
 
 FORMS    += mainwindow.ui
+
+# libsigrok and libsigrokdecode
+# TODO: Check for the minimum versions of libsigrok/libsigrokdecode we need.
+win32 {
+	# On Windows/MinGW we need to use '--libs --static'.
+	# We also need to strip some stray '\n' characters here.
+	QMAKE_CXXFLAGS += $$system(pkg-config --cflags libsigrokdecode \
+			  libsigrok | sed s/\n//g)
+	LIBS           += $$system(pkg-config --libs --static libsigrokdecode \
+			  libsigrok | sed s/\n//g)
+} else {
+	QMAKE_CXXFLAGS += $$system(pkg-config --cflags libsigrokdecode)
+	QMAKE_CXXFLAGS += $$system(pkg-config --cflags libsigrok)
+	LIBS           += $$system(pkg-config --libs libsigrokdecode)
+	LIBS           += $$system(pkg-config --libs libsigrok)
+}

@@ -18,19 +18,50 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
+extern "C" {
+#include <sigrokdecode.h> /* First, so we avoid a _POSIX_C_SOURCE warning. */
+#include <stdint.h>
+#include <libsigrok/libsigrok.h>
+}
+
 #include <QtGui/QApplication>
+#include <QDebug>
 #include "mainwindow.h"
 
 int main(int argc, char *argv[])
 {
 	QApplication a(argc, argv);
-	MainWindow w;
-	w.show();
 
 	/* Set some application metadata. */
 	QApplication::setApplicationVersion(APP_VERSION);
 	QApplication::setApplicationName("sigrok-qt");
 	QApplication::setOrganizationDomain("http://www.sigrok.org");
 
-	return a.exec();
+	/* Initialise libsigrok */
+	if (sr_init() != SR_OK) {
+		qDebug() << "ERROR: libsigrok init failed.";
+		return 1;
+	}
+
+	/* Initialise libsigrokdecode */
+	if (srd_init(NULL) != SRD_OK) {
+		qDebug() << "ERROR: libsigrokdecode init failed.";
+		return 1;
+	}
+
+	/* Load the protocol decoders */
+	srd_decoder_load_all();
+
+	/* Initialise the main window */
+	MainWindow w;
+	w.show();
+
+	/* Run the application */
+	const int ret = a.exec();
+
+	/* Destroy libsigrokdecode and libsigrok */
+	srd_exit();
+	sr_exit();
+
+	return ret;
 }
