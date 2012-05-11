@@ -27,5 +27,10 @@ int main(int argc, char *argv[])
 	MainWindow w;
 	w.show();
 
+	/* Set some application metadata. */
+	QApplication::setApplicationVersion(APP_VERSION);
+	QApplication::setApplicationName("sigrok-qt");
+	QApplication::setOrganizationDomain("http://www.sigrok.org");
+
 	return a.exec();
 }
