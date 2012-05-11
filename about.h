@@ -18,39 +18,30 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-extern "C" {
-#include <sigrokdecode.h>
+#ifndef ABOUT_H
+#define ABOUT_H
+
+#include <QDialog>
+
+#include <memory>
+
+class QTextDocument;
+
+namespace Ui {
+class About;
 }
 
-#include "about.h"
-
-#include "mainwindow.h"
-#include "ui_mainwindow.h"
-
-extern "C" {
-/* __STDC_FORMAT_MACROS is required for PRIu64 and friends (in C++). */
-#define __STDC_FORMAT_MACROS
-#include <inttypes.h>
-#include <stdint.h>
-#include <stdarg.h>
-#include <glib.h>
-#include <libsigrok/libsigrok.h>
-}
-
-MainWindow::MainWindow(QWidget *parent) :
-	QMainWindow(parent),
-	ui(new Ui::MainWindow)
+class About : public QDialog
 {
-	ui->setupUi(this);
-}
+	Q_OBJECT
 
-MainWindow::~MainWindow()
-{
-	delete ui;
-}
+public:
+	explicit About(QWidget *parent = 0);
+	~About();
 
-void MainWindow::on_actionAbout_triggered()
-{
-	About dlg(this);
-	dlg.exec();
-}
+private:
+	Ui::About *ui;
+	std::auto_ptr<QTextDocument> supportedDoc;
+};
+
+#endif // ABOUT_H

@@ -14,11 +14,14 @@ VERSION       = 0.1.0
 DEFINES      += APP_VERSION=\\\"$$VERSION\\\"
 
 SOURCES += main.cpp\
-        mainwindow.cpp
+        mainwindow.cpp \
+    about.cpp
 
-HEADERS  += mainwindow.h
+HEADERS  += mainwindow.h \
+    about.h
 
-FORMS    += mainwindow.ui
+FORMS    += mainwindow.ui \
+    about.ui
 
 RESOURCES    += sigrok-qt2.qrc
 
