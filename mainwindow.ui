@@ -10,8 +10,8 @@
     <height>768</height>
    </rect>
   </property>
-  <property name="windowTitle" >
-   <string>MainWindow</string>
+  <property name="windowTitle">
+   <string>sigrok-qt2</string>
   </property>
   <property name="windowIcon">
    <iconset>
