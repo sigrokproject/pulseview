@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/" >
+        <file>icons/sigrok-logo-notext.png</file>
+    </qresource>
+</RCC>

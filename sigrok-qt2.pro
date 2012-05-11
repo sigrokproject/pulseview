@@ -20,6 +20,8 @@ HEADERS  += mainwindow.h
 
 FORMS    += mainwindow.ui
 
+RESOURCES    += sigrok-qt2.qrc
+
 # libsigrok and libsigrokdecode
 # TODO: Check for the minimum versions of libsigrok/libsigrokdecode we need.
 win32 {

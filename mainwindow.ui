@@ -13,6 +13,10 @@
   <property name="windowTitle" >
    <string>MainWindow</string>
   </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>:/icons/sigrok-logo-notext.png</normaloff>:/icons/sigrok-logo-notext.png</iconset>
+  </property>
   <widget class="QMenuBar" name="menuBar" />
   <widget class="QWidget" name="centralWidget" />
   <widget class="QStatusBar" name="statusBar" />
@@ -20,5 +24,8 @@
  <layoutDefault spacing="6" margin="11" />
  <pixmapfunction></pixmapfunction>
  <resources/>
+ <resources>
+  <include location="sigrok-qt2.qrc"/>
+ </resources>
  <connections/>
 </ui>
