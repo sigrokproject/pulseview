@@ -32,6 +32,13 @@
     </property>
     <addaction name="actionAbout"/>
    </widget>
+   <widget class="QMenu" name="menu_File">
+    <property name="title">
+     <string>&amp;File</string>
+    </property>
+    <addaction name="actionOpen"/>
+   </widget>
+   <addaction name="menu_File"/>
    <addaction name="menu_Help"/>
   </widget>
   <widget class="QWidget" name="centralWidget">
@@ -48,6 +55,11 @@
   <action name="actionAbout">
    <property name="text">
     <string>&amp;About...</string>
+   </property>
+  </action>
+  <action name="actionOpen">
+   <property name="text">
+    <string>&amp;Open...</string>
    </property>
   </action>
  </widget>

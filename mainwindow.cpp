@@ -22,6 +22,8 @@ extern "C" {
 #include <sigrokdecode.h>
 }
 
+#include <QFileDialog>
+
 #include "about.h"
 
 #include "mainwindow.h"
@@ -47,6 +49,14 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
 	delete ui;
+}
+
+void MainWindow::on_actionOpen_triggered()
+{
+	QString fileName = QFileDialog::getOpenFileName(
+		this, tr("Open File"), "",
+		tr("Sigrok Sessions (*.sr)"));
+	session.loadFile(fileName.toStdString());
 }
 
 void MainWindow::on_actionAbout_triggered()

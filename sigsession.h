@@ -18,34 +18,39 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#ifndef SIGSESSION_H
+#define SIGSESSION_H
 
-#include <QMainWindow>
-
-#include "sigsession.h"
-
-namespace Ui {
-class MainWindow;
+extern "C" {
+#include <libsigrok/libsigrok.h>
 }
 
-class MainWindow : public QMainWindow
-{
-	Q_OBJECT
+#include <string>
 
+class SigSession
+{
 public:
-	explicit MainWindow(QWidget *parent = 0);
-	~MainWindow();
+	SigSession();
+
+	~SigSession();
+
+	void loadFile(const std::string &name);
 
 private:
-	Ui::MainWindow *ui;
-	SigSession session;
+	void dataFeedIn(const struct sr_dev_inst *sdi,
+		struct sr_datafeed_packet *packet);
 
-private slots:
+	static void dataFeedInProc(const struct sr_dev_inst *sdi,
+		struct sr_datafeed_packet *packet);
 
-	void on_actionOpen_triggered();
+private:
+	int probeList[SR_MAX_NUM_PROBES + 1];
 
-	void on_actionAbout_triggered();
+private:
+	// TODO: This should not be necessary. Multiple concurrent
+	// sessions should should be supported and it should be
+	// possible to associate a pointer with a sr_session.
+	static SigSession *session;
 };
 
-#endif // MAINWINDOW_H
+#endif // SIGSESSION_H

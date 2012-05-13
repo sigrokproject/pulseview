@@ -17,12 +17,14 @@ set(sigrok-qt2_SOURCES
 	about.cpp
 	main.cpp
 	mainwindow.cpp
+	sigsession.cpp
 	sigview.cpp
 )
 
 set(sigrok-qt2_HEADERS
 	about.h
 	mainwindow.h
+	sigsession.h
 	sigview.h
 )
 
