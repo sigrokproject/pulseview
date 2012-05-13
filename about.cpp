@@ -54,41 +54,49 @@ About::About(QWidget *parent) :
 				 .arg(tr("GNU GPL, version 2 or later"))
 				 .arg(QApplication::organizationDomain()));
 
+	s.append("<table>");
+
 	/* Set up the supported field */
-	s.append("<b>" + tr("Supported hardware drivers:") + "</b><table>");
+	s.append("<tr><td colspan=\"2\"><b>" +
+		tr("Supported hardware drivers:") +
+		"</b></td></tr>");
 	drivers = sr_driver_list();
 	for (int i = 0; drivers[i]; ++i) {
 		s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
 			 .arg(QString(drivers[i]->name))
 			 .arg(QString(drivers[i]->longname)));
 	}
-	s.append("</table><p>");
 
-	s.append("<b>" + tr("Supported input formats:") + "</b><table>");
+	s.append("<tr><td colspan=\"2\"><b>" +
+		tr("Supported input formats:") +
+		"</b></td></tr>");
 	inputs = sr_input_list();
 	for (int i = 0; inputs[i]; ++i) {
 		s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
 			 .arg(QString(inputs[i]->id))
 			 .arg(QString(inputs[i]->description)));
 	}
-	s.append("</table><p>");
 
-	s.append("<b>" + tr("Supported output formats:") + "</b><table>");
+	s.append("<tr><td colspan=\"2\"><b>" +
+		tr("Supported output formats:") +
+		"</b></td></tr>");
 	outputs = sr_output_list();
 	for (int i = 0; outputs[i]; ++i) {
 		s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
 			.arg(QString(outputs[i]->id))
 			.arg(QString(outputs[i]->description)));
 	}
-	s.append("</table><p>");
 
-	s.append("<b>" + tr("Supported protocol decoders:") + "</b><table>");
+	s.append("<tr><td colspan=\"2\"><b>" +
+		tr("Supported protocol decoders:") +
+		"</b></td></tr>");
 	for (l = srd_decoder_list(); l; l = l->next) {
 		dec = (struct srd_decoder *)l->data;
 		s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
 			 .arg(QString(dec->id))
 			 .arg(QString(dec->longname)));
 	}
+
 	s.append("</table>");
 
 	supportedDoc.reset(new QTextDocument(this));
