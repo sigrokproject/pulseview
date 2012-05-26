@@ -21,6 +21,32 @@
 #include "sigview.h"
 
 SigView::SigView(QWidget *parent) :
-	QAbstractScrollArea(parent)
+	QGLWidget(parent)
 {
+	setMouseTracking(true);
+}
+
+void SigView::initializeGL()
+{
+	glDisable(GL_TEXTURE_2D);
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_COLOR_MATERIAL);
+	glEnable(GL_BLEND);
+	glEnable(GL_POLYGON_SMOOTH);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glClearColor(1.0, 1.0, 1.0, 0);
+}
+
+void SigView::resizeGL(int width, int height)
+{
+	glViewport(0, 0, (GLint)width, (GLint)height);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glOrtho(0, width, height, 0, -1, 1);
+	glMatrixMode(GL_MODELVIEW);
+}
+
+void SigView::paintGL()
+{
+	glClear(GL_COLOR_BUFFER_BIT);
 }

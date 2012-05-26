@@ -21,14 +21,23 @@
 #ifndef SIGVIEW_H
 #define SIGVIEW_H
 
-#include <QAbstractScrollArea>
+#include <QtOpenGL/QGLWidget>
+#include <QTimer>
 
-class SigView : public QAbstractScrollArea
+class SigView : public QGLWidget
 {
 	Q_OBJECT
 public:
 	explicit SigView(QWidget *parent = 0);
-	
+
+protected:
+
+	void initializeGL();
+
+	void resizeGL(int width, int height);
+
+	void paintGL();
+
 signals:
 	
 public slots:

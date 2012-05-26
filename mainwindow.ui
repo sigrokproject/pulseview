@@ -55,7 +55,7 @@
  <customwidgets>
   <customwidget>
    <class>SigView</class>
-   <extends>QAbstractScrollArea</extends>
+   <extends>QGLWidget</extends>
    <header>sigview.h</header>
   </customwidget>
  </customwidgets>
