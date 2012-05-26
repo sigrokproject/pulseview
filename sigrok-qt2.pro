@@ -15,10 +15,12 @@ DEFINES      += APP_VERSION=\\\"$$VERSION\\\"
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    about.cpp
+    about.cpp \
+    sigview.cpp
 
 HEADERS  += mainwindow.h \
-    about.h
+    about.h \
+    sigview.h
 
 FORMS    += mainwindow.ui \
     about.ui

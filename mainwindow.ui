@@ -34,7 +34,16 @@
    </widget>
    <addaction name="menu_Help"/>
   </widget>
-  <widget class="QWidget" name="centralWidget" />
+  <widget class="QWidget" name="centralWidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <property name="margin">
+     <number>0</number>
+    </property>
+    <item>
+     <widget class="SigView" name="sigView" native="true"/>
+    </item>
+   </layout>
+  </widget>
   <widget class="QStatusBar" name="statusBar" />
   <action name="actionAbout">
    <property name="text">
@@ -43,8 +52,13 @@
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources>
-  <include location="sigrok-qt2.qrc"/>
- </resources>
+ <customwidgets>
+  <customwidget>
+   <class>SigView</class>
+   <extends>QAbstractScrollArea</extends>
+   <header>sigview.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
  <connections/>
 </ui>
