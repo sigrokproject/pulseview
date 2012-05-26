@@ -21,14 +21,18 @@
 #ifndef SIGSESSION_H
 #define SIGSESSION_H
 
+#include <QObject>
+
 extern "C" {
 #include <libsigrok/libsigrok.h>
 }
 
 #include <string>
 
-class SigSession
+class SigSession : public QObject
 {
+	Q_OBJECT
+
 public:
 	SigSession();
 
@@ -44,7 +48,12 @@ private:
 		struct sr_datafeed_packet *packet);
 
 private:
+	int unitSize;
 	int probeList[SR_MAX_NUM_PROBES + 1];
+	GArray *sigData;
+
+signals:
+	void dataUpdated();
 
 private:
 	// TODO: This should not be necessary. Multiple concurrent

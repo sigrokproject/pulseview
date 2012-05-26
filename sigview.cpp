@@ -20,9 +20,15 @@
 
 #include "sigview.h"
 
-SigView::SigView(QWidget *parent) :
-	QGLWidget(parent)
+#include "sigsession.h"
+
+SigView::SigView(SigSession &session, QWidget *parent) :
+	QGLWidget(parent),
+        _session(session)
 {
+	connect(&_session, SIGNAL(dataUpdated()),
+		this, SLOT(dataUpdated()));
+
 	setMouseTracking(true);
 }
 
@@ -50,3 +56,9 @@ void SigView::paintGL()
 {
 	glClear(GL_COLOR_BUFFER_BIT);
 }
+
+void SigView::dataUpdated()
+{
+	printf("Data Updated\n");
+}
+

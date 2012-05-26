@@ -25,6 +25,8 @@
 
 #include "sigsession.h"
 
+class SigView;
+
 namespace Ui {
 class MainWindow;
 }
@@ -40,6 +42,7 @@ public:
 private:
 	Ui::MainWindow *ui;
 	SigSession session;
+	SigView *view;
 
 private slots:
 

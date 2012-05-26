@@ -46,9 +46,6 @@
     <property name="margin">
      <number>0</number>
     </property>
-    <item>
-     <widget class="SigView" name="sigView" native="true"/>
-    </item>
    </layout>
   </widget>
   <widget class="QStatusBar" name="statusBar" />
@@ -64,13 +61,6 @@
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <customwidgets>
-  <customwidget>
-   <class>SigView</class>
-   <extends>QGLWidget</extends>
-   <header>sigview.h</header>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>

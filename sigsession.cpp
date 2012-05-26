@@ -20,12 +20,16 @@
 
 #include "sigsession.h"
 
+#include <QDebug>
+
 #include <assert.h>
 
 // TODO: This should not be necessary
 SigSession* SigSession::session = NULL;
 
-SigSession::SigSession()
+SigSession::SigSession() :
+	unitSize(0),
+	sigData(NULL)
 {
 	// TODO: This should not be necessary
 	session = this;
@@ -33,6 +37,8 @@ SigSession::SigSession()
 
 SigSession::~SigSession()
 {
+	g_array_free(sigData, TRUE);
+
 	// TODO: This should not be necessary
 	session = NULL;
 }
@@ -68,10 +74,38 @@ void SigSession::dataFeedIn(const struct sr_dev_inst *sdi,
 					probeList[num_enabled_probes++] = probe->index;
 				}
 			}
+
+			/* How many bytes we need to store num_enabled_probes bits */
+			unitSize = (num_enabled_probes + 7) / 8;
+			sigData = g_array_new(FALSE, FALSE, unitSize);
+		}
+		break;
+
+	case SR_DF_LOGIC:
+		{
+			uint64_t filter_out_len;
+			uint8_t *filter_out;
+
+			const struct sr_datafeed_logic *const logic =
+				(sr_datafeed_logic*)packet->payload;
+
+			qDebug() << "SR_DF_LOGIC (length =" << logic->length
+				<< ", unitsize = " << logic->unitsize << ")";
+
+			if (sr_filter_probes(logic->unitsize, unitSize,
+				probeList, (uint8_t*)logic->data, logic->length,
+				&filter_out, &filter_out_len) != SR_OK)
+				return;
+
+			assert(sigData);
+			g_array_append_vals(sigData, filter_out, filter_out_len / unitSize);
+
+			g_free(filter_out);
 		}
 		break;
 
 	case SR_DF_END:
+		dataUpdated();
 		break;
 	}
 }

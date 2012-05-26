@@ -24,11 +24,13 @@
 #include <QtOpenGL/QGLWidget>
 #include <QTimer>
 
+class SigSession;
+
 class SigView : public QGLWidget
 {
 	Q_OBJECT
 public:
-	explicit SigView(QWidget *parent = 0);
+	explicit SigView(SigSession &session, QWidget *parent = 0);
 
 protected:
 
@@ -38,10 +40,11 @@ protected:
 
 	void paintGL();
 
-signals:
-	
-public slots:
-	
+private slots:
+	void dataUpdated();
+
+private:
+	SigSession &_session;
 };
 
 #endif // SIGVIEW_H

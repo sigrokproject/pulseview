@@ -28,6 +28,7 @@ extern "C" {
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "sigview.h"
 
 extern "C" {
 /* __STDC_FORMAT_MACROS is required for PRIu64 and friends (in C++). */
@@ -44,6 +45,9 @@ MainWindow::MainWindow(QWidget *parent) :
 	ui(new Ui::MainWindow)
 {
 	ui->setupUi(this);
+
+	view = new SigView(session, this);
+	ui->verticalLayout->addWidget(view);
 }
 
 MainWindow::~MainWindow()
