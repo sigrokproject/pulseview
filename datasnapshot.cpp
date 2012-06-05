@@ -20,12 +20,31 @@
 
 #include "datasnapshot.h"
 
-DataSnapshot::DataSnapshot() :
-	_sample_count(0)
+#include <assert.h>
+#include <stdlib.h>
+#include <string.h>
+
+DataSnapshot::DataSnapshot(int unit_size) :
+	_data(NULL),
+	_data_length(0),
+	_unit_size(unit_size)
 {
+	assert(_unit_size > 0);
+}
+
+DataSnapshot::~DataSnapshot()
+{
+	free(_data);
 }
 
 uint64_t DataSnapshot::get_sample_count()
 {
-	return _sample_count;
+	return _data_length / _unit_size;
+}
+
+void DataSnapshot::append_data(void *data, uint64_t length)
+{
+	_data = realloc(_data, _data_length + length);
+	memcpy((uint8_t*)_data + _data_length, data, length);
+	_data_length += length;
 }

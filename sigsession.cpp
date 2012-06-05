@@ -76,21 +76,27 @@ void SigSession::dataFeedIn(const struct sr_dev_inst *sdi,
 			if(!_logic_data)
 				break;
 
-			// Add an empty data snapshot
-			shared_ptr<LogicDataSnapshot> snapshot(
-				new LogicDataSnapshot());
-			_logic_data->push_snapshot(snapshot);
-			_cur_logic_snapshot = snapshot;
-
 			break;
 		}
 
 	case SR_DF_LOGIC:
+
 		assert(packet->payload);
-		assert(_cur_logic_snapshot);
-		if(_cur_logic_snapshot)
+		if(!_cur_logic_snapshot)
+		{
+			// Create a new data snapshot
+			_cur_logic_snapshot = shared_ptr<LogicDataSnapshot>(
+				new LogicDataSnapshot(
+				*(sr_datafeed_logic*)packet->payload));
+			_logic_data->push_snapshot(_cur_logic_snapshot);
+		}
+		else
+		{
+			// Append to the existing data snapshot
 			_cur_logic_snapshot->append_payload(
 				*(sr_datafeed_logic*)packet->payload);
+		}
+
 		break;
 
 	case SR_DF_END:

@@ -20,11 +20,24 @@
 
 #include "logicdatasnapshot.h"
 
+#include <assert.h>
+
 #include <QDebug>
+
+LogicDataSnapshot::LogicDataSnapshot(
+	const sr_datafeed_logic &logic) :
+	DataSnapshot(logic.unitsize)
+{
+	append_payload(logic);
+}
 
 void LogicDataSnapshot::append_payload(
 	const sr_datafeed_logic &logic)
 {
+	assert(_unit_size == logic.unitsize);
+
 	qDebug() << "SR_DF_LOGIC (length =" << logic.length
 		<< ", unitsize = " << logic.unitsize << ")";
+
+	append_data(logic.data, logic.length);
 }

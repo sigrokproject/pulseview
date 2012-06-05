@@ -29,6 +29,11 @@ LogicData::LogicData(const sr_datafeed_meta_logic &meta) :
 {
 }
 
+int LogicData::get_num_probes() const
+{
+	return _num_probes;
+}
+
 void LogicData::push_snapshot(
 	boost::shared_ptr<LogicDataSnapshot> &snapshot)
 {

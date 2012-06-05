@@ -25,10 +25,17 @@ extern "C" {
 class DataSnapshot
 {
 public:
-	DataSnapshot();
+	DataSnapshot(int unit_size);
+
+	virtual ~DataSnapshot();
 
 	uint64_t get_sample_count();
 
 protected:
-	uint64_t _sample_count;
+	void append_data(void *data, uint64_t length);
+
+protected:
+	void *_data;
+	uint64_t _data_length;
+	int _unit_size;
 };

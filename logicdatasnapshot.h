@@ -23,6 +23,7 @@
 class LogicDataSnapshot : public DataSnapshot
 {
 public:
+	LogicDataSnapshot(const sr_datafeed_logic &logic);
 
 	void append_payload(const sr_datafeed_logic &logic);
 };

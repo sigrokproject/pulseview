@@ -31,9 +31,11 @@ class LogicData : public SignalData
 public:
 	LogicData(const sr_datafeed_meta_logic &meta);
 
+	int get_num_probes() const;
+
 	void push_snapshot(
 		boost::shared_ptr<LogicDataSnapshot> &snapshot);
 
 private:
-	int _num_probes;
+	const int _num_probes;
 };
