@@ -49,6 +49,9 @@ private slots:
 
 private:
 	SigSession &_session;
+
+	uint64_t _scale;
+	int64_t _offset;
 };
 
 #endif // SIGVIEW_H

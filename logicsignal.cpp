@@ -28,7 +28,8 @@ LogicSignal::LogicSignal(QString name, boost::shared_ptr<SignalData> data,
 	assert(_probe_index >= 0);
 }
 
-void LogicSignal::paint(QGLWidget &widget, const QRect &rect)
+void LogicSignal::paint(QGLWidget &widget, const QRect &rect,
+	uint64_t scale, int64_t offset)
 {
 	glColor3f(1,0,0);
 	glBegin(GL_POLYGON);

@@ -30,7 +30,16 @@ public:
 	LogicSignal(QString name, boost::shared_ptr<SignalData> data,
 		int probe_index);
 
-	void paint(QGLWidget &widget, const QRect &rect);
+	/**
+	 * Paints the signal into a QGLWidget.
+	 * @param widget the QGLWidget to paint into.
+	 * @param rect the rectangular area to draw the trace into.
+	 * @param scale the scale in femtoseconds per pixel.
+	 * @param offset the time to show at the left hand edge of
+	 *   the view in femtoseconds.
+	 **/
+	void paint(QGLWidget &widget, const QRect &rect, uint64_t scale,
+		int64_t offset);
 
 private:
 	int _probe_index;

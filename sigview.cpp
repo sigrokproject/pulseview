@@ -32,7 +32,9 @@ const int SigView::SignalHeight = 50;
 
 SigView::SigView(SigSession &session, QWidget *parent) :
 	QGLWidget(parent),
-        _session(session)
+        _session(session),
+	_scale(1000000000ULL),
+	_offset(0)
 {
 	connect(&_session, SIGNAL(dataUpdated()),
 		this, SLOT(dataUpdated()));
@@ -70,7 +72,7 @@ void SigView::paintGL()
 	BOOST_FOREACH(const shared_ptr<Signal> s, sigs)
 	{
 		assert(s);
-		s->paint(*this, rect);
+		s->paint(*this, rect, _scale, _offset);
 		rect.translate(0, SignalHeight);
 	}
 }
