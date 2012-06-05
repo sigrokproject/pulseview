@@ -18,7 +18,16 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
+#define GL_GLEXT_PROTOTYPES
+#include <GL/gl.h>
+#include <GL/glext.h>
+
 #include "logicsignal.h"
+
+struct LogicVertex
+{
+	GLfloat x, y;
+};
 
 LogicSignal::LogicSignal(QString name, boost::shared_ptr<SignalData> data,
 	int probe_index) :
@@ -31,10 +40,28 @@ LogicSignal::LogicSignal(QString name, boost::shared_ptr<SignalData> data,
 void LogicSignal::paint(QGLWidget &widget, const QRect &rect,
 	uint64_t scale, int64_t offset)
 {
-	glColor3f(1,0,0);
-	glBegin(GL_POLYGON);
-	glVertex2f(rect.left(), rect.top());
-	glVertex2f(rect.right(), rect.top());
-	glVertex2f(rect.right(), rect.bottom());
-	glEnd();
+	GLuint vbo_id;
+
+	glColor3f(0,0,1);
+	LogicVertex vetices[3];
+	vetices[0].x = rect.left();
+	vetices[0].y = rect.top();
+	vetices[1].x = rect.right();
+	vetices[1].y = rect.bottom();
+	vetices[2].x = rect.right();
+	vetices[2].y = rect.top();
+
+	glGenBuffers(1, &vbo_id);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo_id);
+
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vetices), NULL, GL_STATIC_DRAW);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vetices), vetices);
+
+	glBindBuffer(GL_ARRAY_BUFFER, vbo_id);
+
+	glVertexPointer(2, GL_FLOAT, sizeof(LogicVertex), 0);
+
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glDrawArrays(GL_LINE_STRIP,  0,  2);
+	glDisableClientState(GL_VERTEX_ARRAY);
 }
