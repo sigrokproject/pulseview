@@ -29,6 +29,10 @@ class SigSession;
 class SigView : public QGLWidget
 {
 	Q_OBJECT
+
+private:
+	static const int SignalHeight;
+
 public:
 	explicit SigView(SigSession &session, QWidget *parent = 0);
 

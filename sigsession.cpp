@@ -22,12 +22,14 @@
 
 #include "logicdata.h"
 #include "logicdatasnapshot.h"
+#include "logicsignal.h"
 
 #include <QDebug>
 
 #include <assert.h>
 
 using namespace boost;
+using namespace std;
 
 // TODO: This should not be necessary
 SigSession* SigSession::session = NULL;
@@ -55,6 +57,11 @@ void SigSession::loadFile(const std::string &name)
 	}
 }
 
+vector< shared_ptr<Signal> >& SigSession::get_signals()
+{
+	return _signals;
+}
+
 void SigSession::dataFeedIn(const struct sr_dev_inst *sdi,
 	struct sr_datafeed_packet *packet)
 {
@@ -63,18 +70,37 @@ void SigSession::dataFeedIn(const struct sr_dev_inst *sdi,
 
 	switch (packet->type) {
 	case SR_DF_HEADER:
+		_signals.clear();
 		break;
 
 	case SR_DF_META_LOGIC:
 		{
 			assert(packet->payload);
 
-			_logic_data.reset(new LogicData(
-				*(sr_datafeed_meta_logic*)packet->payload));
+			const sr_datafeed_meta_logic &meta_logic =
+				*(sr_datafeed_meta_logic*)packet->payload;
 
+			// Create an empty LogiData for coming data snapshots
+			_logic_data.reset(new LogicData(meta_logic));
 			assert(_logic_data);
 			if(!_logic_data)
 				break;
+
+			// Add the signals
+			for (int i = 0; i < meta_logic.num_probes; i++)
+			{
+				const sr_probe *const probe =
+					(const sr_probe*)g_slist_nth_data(
+						sdi->probes, i);
+				if(probe->enabled)
+				{
+					boost::shared_ptr<LogicSignal> signal(
+						new LogicSignal(probe->name,
+							_logic_data,
+							probe->index));
+					_signals.push_back(signal);
+				}
+			}
 
 			break;
 		}

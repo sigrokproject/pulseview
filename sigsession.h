@@ -23,9 +23,8 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include <list>
-#include <map>
 #include <string>
+#include <vector>
 
 #include <QObject>
 
@@ -48,6 +47,9 @@ public:
 
 	void loadFile(const std::string &name);
 
+	std::vector< boost::shared_ptr<Signal> >&
+		get_signals();
+
 private:
 	void dataFeedIn(const struct sr_dev_inst *sdi,
 		struct sr_datafeed_packet *packet);
@@ -56,7 +58,7 @@ private:
 		struct sr_datafeed_packet *packet);
 
 private:
-	std::list< boost::shared_ptr<Signal> > _signals;
+	std::vector< boost::shared_ptr<Signal> > _signals;
 	boost::shared_ptr<LogicData> _logic_data;
 	boost::shared_ptr<LogicDataSnapshot> _cur_logic_snapshot;
 

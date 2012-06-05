@@ -19,7 +19,11 @@
  */
 
 #include <boost/shared_ptr.hpp>
+
+#include <QGLWidget>
+#include <QRect>
 #include <QString>
+
 #include <stdint.h>
 
 class SignalData;
@@ -31,6 +35,8 @@ protected:
 
 public:
 	QString get_name() const;
+
+	virtual void paint(QGLWidget &widget, const QRect &rect) = 0;
 
 protected:
 	QString _name;

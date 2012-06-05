@@ -21,6 +21,14 @@
 #include "sigview.h"
 
 #include "sigsession.h"
+#include "signal.h"
+
+#include <boost/foreach.hpp>
+
+using namespace boost;
+using namespace std;
+
+const int SigView::SignalHeight = 50;
 
 SigView::SigView(SigSession &session, QWidget *parent) :
 	QGLWidget(parent),
@@ -55,10 +63,20 @@ void SigView::resizeGL(int width, int height)
 void SigView::paintGL()
 {
 	glClear(GL_COLOR_BUFFER_BIT);
+
+	QRect rect(0, 0, width(), SignalHeight);
+	const vector< shared_ptr<Signal> > &sigs =
+		_session.get_signals();
+	BOOST_FOREACH(const shared_ptr<Signal> s, sigs)
+	{
+		assert(s);
+		s->paint(*this, rect);
+		rect.translate(0, SignalHeight);
+	}
 }
 
 void SigView::dataUpdated()
 {
-	printf("Data Updated\n");
+	update();
 }
 

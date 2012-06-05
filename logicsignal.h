@@ -30,6 +30,8 @@ public:
 	LogicSignal(QString name, boost::shared_ptr<SignalData> data,
 		int probe_index);
 
+	void paint(QGLWidget &widget, const QRect &rect);
+
 private:
 	int _probe_index;
 };

@@ -27,3 +27,13 @@ LogicSignal::LogicSignal(QString name, boost::shared_ptr<SignalData> data,
 {
 	assert(_probe_index >= 0);
 }
+
+void LogicSignal::paint(QGLWidget &widget, const QRect &rect)
+{
+	glColor3f(1,0,0);
+	glBegin(GL_POLYGON);
+	glVertex2f(rect.left(), rect.top());
+	glVertex2f(rect.right(), rect.top());
+	glVertex2f(rect.right(), rect.bottom());
+	glEnd();
+}
