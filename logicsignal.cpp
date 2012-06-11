@@ -22,16 +22,17 @@
 #include <GL/gl.h>
 #include <GL/glext.h>
 
+#include "logicdata.h"
+#include "logicdatasnapshot.h"
 #include "logicsignal.h"
 
-struct LogicVertex
-{
-	GLfloat x, y;
-};
+using namespace boost;
+using namespace std;
 
-LogicSignal::LogicSignal(QString name, boost::shared_ptr<SignalData> data,
+LogicSignal::LogicSignal(QString name, shared_ptr<LogicData> data,
 	int probe_index) :
-	Signal(name, data),
+	Signal(name),
+	_data(data),
 	_probe_index(probe_index)
 {
 	assert(_probe_index >= 0);
@@ -40,28 +41,93 @@ LogicSignal::LogicSignal(QString name, boost::shared_ptr<SignalData> data,
 void LogicSignal::paint(QGLWidget &widget, const QRect &rect,
 	uint64_t scale, int64_t offset)
 {
-	GLuint vbo_id;
+	Point2F *vertex;
+
+	vector< pair<int64_t, bool> > edges;
+
+	assert(_data);
+
+	const queue< shared_ptr<LogicDataSnapshot> > &snapshots =
+		_data->get_snapshots();
+	if(snapshots.empty())
+		return;
+
+	const shared_ptr<LogicDataSnapshot> &snapshot = snapshots.front();
+
+	const int64_t start = 0;
+	const int64_t end = 8000;
+	const int64_t quantization_length = 4;
+
+	snapshot->get_subsampled_edges(edges, start, end,
+		quantization_length, _probe_index);
+
+	// Paint the edges
+	const unsigned int edge_point_count = (edges.size() - 2) * 2;
+	Point2F *const edge_points = new Point2F[edge_point_count];
+	vertex = edge_points;
+
+	for(vector<LogicDataSnapshot::EdgePair>::const_iterator i = edges.begin() + 1;
+	    i != edges.end() - 1; i++)
+	{
+		const int x = edge.first / quantization_length +
+			rect.left();
+
+		vertex->x = x, vertex->y = 10 + rect.top() - 1;
+		vertex++;
+		vertex->x = x, vertex->y = 40 + rect.top();
+		vertex++;
+	}
 
 	glColor3f(0,0,1);
-	LogicVertex vetices[3];
-	vetices[0].x = rect.left();
-	vetices[0].y = rect.top();
-	vetices[1].x = rect.right();
-	vetices[1].y = rect.bottom();
-	vetices[2].x = rect.right();
-	vetices[2].y = rect.top();
+	paint_lines(edge_points, edge_point_count);
+	delete[] edge_points;
+
+	// Paint the caps
+	const unsigned int cap_point_count = (edges.size() - 1) * 2;
+	Point2F *const cap_points = new Point2F[cap_point_count];
+	vertex = cap_points;
+
+	for(vector<LogicDataSnapshot::EdgePair>::const_iterator i = edges.begin();
+	    i != (edges.end() - 1); i++)
+	{
+		const int y = ((*i).second ? 10 : 40) + rect.top();
+
+		vertex->x = (*i).first / quantization_length +
+			rect.left() - 1;
+		vertex->y = y;
+		vertex++;
+
+		vertex->x = (*(i+1)).first / quantization_length +
+			rect.left();
+		vertex->y = y;
+		vertex++;
+	}
+
+	glColor3f(0,0,1);
+	paint_lines(cap_points, cap_point_count);
+	delete[] cap_points;
+}
+
+void LogicSignal::paint_lines(Point2F *points, int count)
+{
+	GLuint vbo_id;
+
+	assert(points);
 
 	glGenBuffers(1, &vbo_id);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_id);
 
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vetices), NULL, GL_STATIC_DRAW);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vetices), vetices);
+	const unsigned int vbo_length = count * sizeof(Point2F);
+	glBufferData(GL_ARRAY_BUFFER, vbo_length, NULL, GL_STATIC_DRAW);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, vbo_length, points);
 
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_id);
 
-	glVertexPointer(2, GL_FLOAT, sizeof(LogicVertex), 0);
+	glVertexPointer(2, GL_FLOAT, sizeof(Point2F), 0);
 
 	glEnableClientState(GL_VERTEX_ARRAY);
-	glDrawArrays(GL_LINE_STRIP,  0,  2);
+	glDrawArrays(GL_LINES,  0,  count);
 	glDisableClientState(GL_VERTEX_ARRAY);
+
+	glDeleteBuffers(1, &vbo_id);
 }

@@ -26,8 +26,15 @@ class LogicData;
 
 class LogicSignal : public Signal
 {
+private:
+	struct Point2F
+	{
+		GLfloat x, y;
+	};
+
 public:
-	LogicSignal(QString name, boost::shared_ptr<SignalData> data,
+	LogicSignal(QString name,
+		boost::shared_ptr<LogicData> data,
 		int probe_index);
 
 	/**
@@ -42,5 +49,9 @@ public:
 		int64_t offset);
 
 private:
+	static void paint_lines(Point2F *points, int count);
+
+private:
 	int _probe_index;
+	boost::shared_ptr<LogicData> _data;
 };

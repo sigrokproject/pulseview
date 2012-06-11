@@ -20,10 +20,32 @@
 
 #include "datasnapshot.h"
 
+#include <utility>
+#include <vector>
+
 class LogicDataSnapshot : public DataSnapshot
 {
+public:
+	typedef std::pair<int64_t, bool> EdgePair;
+
 public:
 	LogicDataSnapshot(const sr_datafeed_logic &logic);
 
 	void append_payload(const sr_datafeed_logic &logic);
+
+	uint64_t get_sample(uint64_t index) const;
+
+	/**
+	 * Parses a logic data snapshot to generate a list of transitions
+	 * in a time interval to a given level of detail.
+	 * @param[out] edges The vector to place the edges into.
+	 * @param[in] start The start sample index.
+	 * @param[in] end The end sample index.
+	 * @param[in] quantization_length The minimum period of time that
+	 * can be resolved at this level of detail.
+	 * @param[in] sig_index The index of the signal.
+	 **/
+	void get_subsampled_edges(std::vector<EdgePair> &edges,
+		int64_t start, int64_t end,
+		int64_t quantization_length, int sig_index);
 };

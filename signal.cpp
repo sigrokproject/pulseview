@@ -22,9 +22,8 @@
 
 #include <memory.h>
 
-Signal::Signal(QString name, boost::shared_ptr<SignalData> data) :
-	_name(name),
-	_data(data)
+Signal::Signal(QString name) :
+	_name(name)
 {
 }
 

@@ -18,11 +18,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#include <boost/shared_ptr.hpp>
-#include <queue>
 #include <stdint.h>
-
-class DataSnapshot;
 
 class SignalData
 {
@@ -31,6 +27,5 @@ public:
 
 protected:
 	const uint64_t _samplerate;
-
-	std::queue< boost::shared_ptr<DataSnapshot> > _snapshots;
+	const int64_t _start_time;
 };

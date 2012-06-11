@@ -22,6 +22,7 @@
 #include "logicdatasnapshot.h"
 
 using namespace boost;
+using namespace std;
 
 LogicData::LogicData(const sr_datafeed_meta_logic &meta) :
 	SignalData(meta.samplerate),
@@ -38,4 +39,9 @@ void LogicData::push_snapshot(
 	boost::shared_ptr<LogicDataSnapshot> &snapshot)
 {
 	_snapshots.push(snapshot);
+}
+
+queue< shared_ptr<LogicDataSnapshot> >& LogicData::get_snapshots()
+{
+	return _snapshots;
 }

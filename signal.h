@@ -31,7 +31,7 @@ class SignalData;
 class Signal
 {
 protected:
-	Signal(QString name, boost::shared_ptr<SignalData> data);
+	Signal(QString name);
 
 public:
 	QString get_name() const;
@@ -49,5 +49,4 @@ public:
 
 protected:
 	QString _name;
-	boost::shared_ptr<SignalData> _data;
 };

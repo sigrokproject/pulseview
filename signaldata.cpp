@@ -20,7 +20,10 @@
 
 #include "signaldata.h"
 
+using namespace std;
+
 SignalData::SignalData(uint64_t samplerate) :
-	_samplerate(samplerate)
+	_samplerate(samplerate),
+	_start_time(0)
 {
 }
