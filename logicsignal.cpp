@@ -22,12 +22,16 @@
 #include <GL/gl.h>
 #include <GL/glext.h>
 
+#include <math.h>
+
 #include "logicdata.h"
 #include "logicdatasnapshot.h"
 #include "logicsignal.h"
 
 using namespace boost;
 using namespace std;
+
+const float Log2 = logf(2.0f);
 
 LogicSignal::LogicSignal(QString name, shared_ptr<LogicData> data,
 	int probe_index) :
@@ -54,9 +58,14 @@ void LogicSignal::paint(QGLWidget &widget, const QRect &rect,
 
 	const shared_ptr<LogicDataSnapshot> &snapshot = snapshots.front();
 
-	const int64_t start = 0;
-	const int64_t end = 8000;
-	const int64_t quantization_length = 4;
+	const uint64_t samplerate = _data->get_samplerate();
+	const int64_t start_time = _data->get_start_time();
+	const float samples_per_pixel = samplerate * scale / 1e15f;
+	const int64_t start = samplerate * (offset - start_time) /
+		1000000000000000ULL;
+	const int64_t end = start + samples_per_pixel * rect.width();
+	const int64_t quantization_length = 1LL << (int64_t)floorf(
+		max(logf(samples_per_pixel / Log2), 0.0f));
 
 	snapshot->get_subsampled_edges(edges, start, end,
 		quantization_length, _probe_index);
@@ -69,7 +78,7 @@ void LogicSignal::paint(QGLWidget &widget, const QRect &rect,
 	for(vector<LogicDataSnapshot::EdgePair>::const_iterator i = edges.begin() + 1;
 	    i != edges.end() - 1; i++)
 	{
-		const int x = edge.first / quantization_length +
+		const int x = (int)((*i).first / samples_per_pixel) +
 			rect.left();
 
 		vertex->x = x, vertex->y = 10 + rect.top() - 1;
@@ -92,12 +101,12 @@ void LogicSignal::paint(QGLWidget &widget, const QRect &rect,
 	{
 		const int y = ((*i).second ? 10 : 40) + rect.top();
 
-		vertex->x = (*i).first / quantization_length +
+		vertex->x = (int)((*i).first / samples_per_pixel) +
 			rect.left() - 1;
 		vertex->y = y;
 		vertex++;
 
-		vertex->x = (*(i+1)).first / quantization_length +
+		vertex->x = (int)((*(i+1)).first / samples_per_pixel) +
 			rect.left();
 		vertex->y = y;
 		vertex++;

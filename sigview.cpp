@@ -23,6 +23,8 @@
 #include "sigsession.h"
 #include "signal.h"
 
+#include <QMouseEvent>
+
 #include <boost/foreach.hpp>
 
 using namespace boost;
@@ -80,5 +82,33 @@ void SigView::paintGL()
 void SigView::dataUpdated()
 {
 	update();
+}
+
+void SigView::mouseMoveEvent(QMouseEvent *event)
+{
+	assert(event);
+}
+
+void SigView::mousePressEvent(QMouseEvent *event)
+{
+	assert(event);
+}
+
+void SigView::mouseReleaseEvent(QMouseEvent *event)
+{
+	assert(event);
+
+	switch(event->button())
+	{
+	case Qt::LeftButton:
+		_scale = (_scale * 2) / 3;
+		break;
+
+	case Qt::RightButton:
+		_scale = (_scale * 3) / 2;
+		break;
+	}
+
+	updateGL();
 }
 

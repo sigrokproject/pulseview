@@ -25,6 +25,10 @@ class SignalData
 public:
 	SignalData(uint64_t samplerate);
 
+public:
+	uint64_t get_samplerate() const;
+	int64_t get_start_time() const;
+
 protected:
 	const uint64_t _samplerate;
 	const int64_t _start_time;

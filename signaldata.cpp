@@ -27,3 +27,13 @@ SignalData::SignalData(uint64_t samplerate) :
 	_start_time(0)
 {
 }
+
+uint64_t SignalData::get_samplerate() const
+{
+	return _samplerate;
+}
+
+int64_t SignalData::get_start_time() const
+{
+	return _start_time;
+}
