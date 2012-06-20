@@ -35,7 +35,7 @@ const int SigView::SignalHeight = 50;
 SigView::SigView(SigSession &session, QWidget *parent) :
 	QGLWidget(parent),
         _session(session),
-	_scale(1000000000ULL),
+	_scale(1e-6),
 	_offset(0)
 {
 	connect(&_session, SIGNAL(dataUpdated()),
@@ -98,16 +98,20 @@ void SigView::mouseReleaseEvent(QMouseEvent *event)
 {
 	assert(event);
 
+	const double cursor_offset = _offset + _scale * (double)event->x();
+
 	switch(event->button())
 	{
 	case Qt::LeftButton:
-		_scale = (_scale * 2) / 3;
+		_scale *= 2.0 / 3.0;
 		break;
 
 	case Qt::RightButton:
-		_scale = (_scale * 3) / 2;
+		_scale *= 3.0 / 2.0;
 		break;
 	}
+
+	_offset = cursor_offset - _scale * (double)event->x();
 
 	updateGL();
 }

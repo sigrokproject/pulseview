@@ -43,12 +43,13 @@ LogicSignal::LogicSignal(QString name, shared_ptr<LogicData> data,
 }
 
 void LogicSignal::paint(QGLWidget &widget, const QRect &rect,
-	uint64_t scale, int64_t offset)
+	double scale, double offset)
 {
 	Point2F *vertex;
 
 	vector< pair<int64_t, bool> > edges;
 
+	assert(scale > 0);
 	assert(_data);
 
 	const queue< shared_ptr<LogicDataSnapshot> > &snapshots =
@@ -58,12 +59,15 @@ void LogicSignal::paint(QGLWidget &widget, const QRect &rect,
 
 	const shared_ptr<LogicDataSnapshot> &snapshot = snapshots.front();
 
-	const uint64_t samplerate = _data->get_samplerate();
-	const int64_t start_time = _data->get_start_time();
-	const float samples_per_pixel = samplerate * scale / 1e15f;
-	const int64_t start = samplerate * (offset - start_time) /
-		1000000000000000ULL;
-	const int64_t end = start + samples_per_pixel * rect.width();
+	const double pixels_offset = offset / scale;
+	const double samplerate = _data->get_samplerate();
+	const double start_time = _data->get_start_time();
+	const int64_t last_sample = (int64_t)snapshot->get_sample_count() - 1;
+	const double samples_per_pixel = samplerate * scale;
+	const int64_t start = min(max((int64_t)(samplerate * (offset - start_time)),
+		(int64_t)0), last_sample);
+	const int64_t end = min((int64_t)(start + samples_per_pixel * rect.width()),
+		last_sample);
 	const int64_t quantization_length = 1LL << (int64_t)floorf(
 		max(logf(samples_per_pixel / Log2), 0.0f));
 
@@ -78,7 +82,7 @@ void LogicSignal::paint(QGLWidget &widget, const QRect &rect,
 	for(vector<LogicDataSnapshot::EdgePair>::const_iterator i = edges.begin() + 1;
 	    i != edges.end() - 1; i++)
 	{
-		const int x = (int)((*i).first / samples_per_pixel) +
+		const int x = (int)((*i).first / samples_per_pixel - pixels_offset) +
 			rect.left();
 
 		vertex->x = x, vertex->y = 10 + rect.top() - 1;
@@ -101,12 +105,12 @@ void LogicSignal::paint(QGLWidget &widget, const QRect &rect,
 	{
 		const int y = ((*i).second ? 10 : 40) + rect.top();
 
-		vertex->x = (int)((*i).first / samples_per_pixel) +
+		vertex->x = (int)((*i).first / samples_per_pixel - pixels_offset) +
 			rect.left() - 1;
 		vertex->y = y;
 		vertex++;
 
-		vertex->x = (int)((*(i+1)).first / samples_per_pixel) +
+		vertex->x = (int)((*(i+1)).first / samples_per_pixel - pixels_offset) +
 			rect.left();
 		vertex->y = y;
 		vertex++;

@@ -41,12 +41,12 @@ public:
 	 * Paints the signal into a QGLWidget.
 	 * @param widget the QGLWidget to paint into.
 	 * @param rect the rectangular area to draw the trace into.
-	 * @param scale the scale in femtoseconds per pixel.
+	 * @param scale the scale in seconds per pixel.
 	 * @param offset the time to show at the left hand edge of
-	 *   the view in femtoseconds.
+	 *   the view in seconds.
 	 **/
-	void paint(QGLWidget &widget, const QRect &rect, uint64_t scale,
-		int64_t offset);
+	void paint(QGLWidget &widget, const QRect &rect, double scale,
+		double offset);
 
 private:
 	static void paint_lines(Point2F *points, int count);
