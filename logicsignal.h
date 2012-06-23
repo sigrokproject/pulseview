@@ -39,6 +39,8 @@ private:
 	static const float HighColour[3];
 	static const float LowColour[3];
 
+	static const QColor LogicSignalColours[10];
+
 public:
 	LogicSignal(QString name,
 		boost::shared_ptr<LogicData> data,
@@ -63,6 +65,17 @@ private:
 		int x_offset, int y_offset);
 
 	static void paint_lines(Point2F *points, int count);
+
+	/**
+	 * Get the colour of the logic signal
+	 */
+	QColor get_colour() const;
+
+	/**
+	 * When painting into the rectangle, calculate the y
+	 * offset of the zero point.
+	 **/
+	int get_nominal_offset(const QRect &rect) const;
 
 private:
 	int _probe_index;

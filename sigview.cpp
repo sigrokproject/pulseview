@@ -31,6 +31,7 @@ using namespace boost;
 using namespace std;
 
 const int SigView::SignalHeight = 50;
+const int SigView::LabelMarginWidth = 70;
 
 SigView::SigView(SigSession &session, QWidget *parent) :
 	QGLWidget(parent),
@@ -42,41 +43,70 @@ SigView::SigView(SigSession &session, QWidget *parent) :
 		this, SLOT(dataUpdated()));
 
 	setMouseTracking(true);
+	setAutoFillBackground(false);
 }
 
 void SigView::initializeGL()
 {
-	glDisable(GL_TEXTURE_2D);
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_COLOR_MATERIAL);
-	glEnable(GL_BLEND);
-	glEnable(GL_POLYGON_SMOOTH);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glClearColor(1.0, 1.0, 1.0, 0);
 }
 
 void SigView::resizeGL(int width, int height)
 {
-	glViewport(0, 0, (GLint)width, (GLint)height);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(0, width, height, 0, -1, 1);
-	glMatrixMode(GL_MODELVIEW);
+	setupViewport(width, height);
 }
 
-void SigView::paintGL()
+void SigView::paintEvent(QPaintEvent *event)
 {
-	glClear(GL_COLOR_BUFFER_BIT);
+	int offset;
 
-	QRect rect(0, 0, width(), SignalHeight);
 	const vector< shared_ptr<Signal> > &sigs =
 		_session.get_signals();
+
+	// Prepare for OpenGL rendering
+	makeCurrent();
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+
+	setupViewport(width(), height());
+
+	qglClearColor(Qt::white);
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	// Plot the signal
+	offset = 0;
 	BOOST_FOREACH(const shared_ptr<Signal> s, sigs)
 	{
 		assert(s);
-		s->paint(*this, rect, _scale, _offset);
-		rect.translate(0, SignalHeight);
+
+		const QRect signal_rect(LabelMarginWidth, offset,
+			width() - LabelMarginWidth, SignalHeight);
+
+		s->paint(*this, signal_rect, _scale, _offset);
+
+		offset += SignalHeight;
 	}
+
+	// Prepare for QPainter rendering
+	glMatrixMode(GL_MODELVIEW);
+	glPopMatrix();
+
+	QPainter painter(this);
+	painter.setRenderHint(QPainter::Antialiasing);
+
+	// Paint the label
+	offset = 0;
+	BOOST_FOREACH(const shared_ptr<Signal> s, sigs)
+	{
+		assert(s);
+
+		const QRect label_rect(0, offset,
+			LabelMarginWidth, SignalHeight);
+		s->paint_label(painter, label_rect);
+
+		offset += SignalHeight;
+	}
+
+	painter.end();
 }
 
 void SigView::dataUpdated()
@@ -113,6 +143,14 @@ void SigView::mouseReleaseEvent(QMouseEvent *event)
 
 	_offset = cursor_offset - _scale * (double)event->x();
 
-	updateGL();
+	update();
 }
 
+void SigView::setupViewport(int width, int height)
+{
+	glViewport(0, 0, (GLint)width, (GLint)height);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glOrtho(0, width, height, 0, -1, 1);
+	glMatrixMode(GL_MODELVIEW);
+}

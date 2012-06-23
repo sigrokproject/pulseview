@@ -24,6 +24,7 @@
 #include <QtOpenGL/QGLWidget>
 #include <QTimer>
 
+class QPaintEvent;
 class SigSession;
 
 class SigView : public QGLWidget
@@ -32,6 +33,7 @@ class SigView : public QGLWidget
 
 private:
 	static const int SignalHeight;
+	static const int LabelMarginWidth;
 
 public:
 	explicit SigView(SigSession &session, QWidget *parent = 0);
@@ -42,12 +44,15 @@ protected:
 
 	void resizeGL(int width, int height);
 
-	void paintGL();
+	void paintEvent(QPaintEvent *event);
 
 private:
 	void mouseMoveEvent(QMouseEvent *event);
 	void mousePressEvent(QMouseEvent *event);
 	void mouseReleaseEvent(QMouseEvent *event);
+
+private:
+	void setupViewport(int width, int height);
 
 private slots:
 	void dataUpdated();

@@ -21,6 +21,7 @@
 #include <boost/shared_ptr.hpp>
 
 #include <QGLWidget>
+#include <QPainter>
 #include <QRect>
 #include <QString>
 
@@ -30,6 +31,9 @@ class SignalData;
 
 class Signal
 {
+private:
+	static const QSizeF LabelPadding;
+
 protected:
 	Signal(QString name);
 
@@ -46,6 +50,26 @@ public:
 	 **/
 	virtual void paint(QGLWidget &widget, const QRect &rect,
 		double scale, double offset) = 0;
+
+	/**
+	 * Paints the signal label into a QGLWidget.
+	 * @param p the QPainter to paint into.
+	 * @param rect the rectangular area to draw the label into.
+	 */
+	virtual void paint_label(QPainter &p, const QRect &rect);
+
+protected:
+
+	/**
+	 * Get the colour of the logic signal
+	 */
+	virtual QColor get_colour() const = 0;
+
+	/**
+	 * When painting into the rectangle, calculate the y
+	 * offset of the zero point.
+	 **/
+	virtual int get_nominal_offset(const QRect &rect) const = 0;
 
 protected:
 	QString _name;

@@ -20,7 +20,9 @@
 
 #include "signal.h"
 
-#include <memory.h>
+#include "extdef.h"
+
+const QSizeF Signal::LabelPadding(4, 0);
 
 Signal::Signal(QString name) :
 	_name(name)
@@ -30,4 +32,42 @@ Signal::Signal(QString name) :
 QString Signal::get_name() const
 {
 	return _name;
+}
+
+void Signal::paint_label(QPainter &p, const QRect &rect)
+{
+	p.setBrush(get_colour());
+
+	const QString text(_name);
+	const QColor colour = get_colour();
+
+	const QSizeF text_size = p.boundingRect(
+		QRectF(0, 0, rect.width(), 0), 0, text).size();
+
+	const float nominal_offset = get_nominal_offset(rect);
+	const QSizeF label_size(
+		text_size.width() + LabelPadding.width() * 2,
+		text_size.height() + LabelPadding.height() * 2);
+	const float label_arrow_length = label_size.height() / 2;
+	const QRectF label_rect(
+		rect.right() - label_arrow_length - label_size.width(),
+		nominal_offset - label_size.height() / 2,
+		label_size.width(), label_size.height());
+
+	// Paint the label
+	const QPointF points[] = {
+		label_rect.topLeft(),
+		label_rect.topRight(),
+		QPointF(rect.right(), nominal_offset),
+		label_rect.bottomRight(),
+		label_rect.bottomLeft()
+	};
+
+	p.setPen(Qt::black);
+	p.setBrush(colour);
+	p.drawPolygon(points, countof(points));
+
+	// Paint the text
+	p.setPen((colour.lightness() > 64) ? Qt::black : Qt::white);
+	p.drawText(label_rect, Qt::AlignCenter | Qt::AlignVCenter, text);
 }

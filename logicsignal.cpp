@@ -24,6 +24,8 @@
 
 #include <math.h>
 
+#include "extdef.h"
+
 #include "logicdata.h"
 #include "logicdatasnapshot.h"
 #include "logicsignal.h"
@@ -38,6 +40,19 @@ const float LogicSignal::Margin = 10.0f;
 const float LogicSignal::EdgeColour[3] =	{0.50f, 0.50f, 0.50f};
 const float LogicSignal::HighColour[3] =	{0.00f, 0.75f, 0.00f};
 const float LogicSignal::LowColour[3] =	{0.75f, 0.00f, 0.00f};
+
+const QColor LogicSignal::LogicSignalColours[10] = {
+	QColor(0x16, 0x19, 0x1A),	// Black
+	QColor(0x8F, 0x52, 0x02),	// Brown
+	QColor(0xCC, 0x00, 0x00),	// Red
+	QColor(0xF5, 0x79, 0x00),	// Orange
+	QColor(0xED, 0xD4, 0x00),	// Yellow
+	QColor(0x73, 0xD2, 0x16),	// Green
+	QColor(0x34, 0x65, 0xA4),	// Blue
+	QColor(0x75, 0x50, 0x7B),	// Violet
+	QColor(0x88, 0x8A, 0x85),	// Grey
+	QColor(0xEE, 0xEE, 0xEC),	// White
+};
 
 LogicSignal::LogicSignal(QString name, shared_ptr<LogicData> data,
 	int probe_index) :
@@ -165,4 +180,14 @@ void LogicSignal::paint_lines(Point2F *points, int count)
 	glDisableClientState(GL_VERTEX_ARRAY);
 
 	glDeleteBuffers(1, &vbo_id);
+}
+
+QColor LogicSignal::get_colour() const
+{
+	return LogicSignalColours[_probe_index % countof(LogicSignalColours)];
+}
+
+int LogicSignal::get_nominal_offset(const QRect &rect) const
+{
+	return rect.bottom() - Margin;
 }
