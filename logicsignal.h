@@ -32,6 +32,13 @@ private:
 		GLfloat x, y;
 	};
 
+private:
+	static const float Margin;
+
+	static const float EdgeColour[3];
+	static const float HighColour[3];
+	static const float LowColour[3];
+
 public:
 	LogicSignal(QString name,
 		boost::shared_ptr<LogicData> data,
@@ -49,6 +56,12 @@ public:
 		double offset);
 
 private:
+
+	int paint_caps(Point2F *const cap_points,
+		std::vector< std::pair<int64_t, bool> > &edges,
+		bool level, double samples_per_pixel, double pixels_offset,
+		int x_offset, int y_offset);
+
 	static void paint_lines(Point2F *points, int count);
 
 private:

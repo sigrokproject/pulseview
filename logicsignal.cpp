@@ -33,6 +33,12 @@ using namespace std;
 
 const float Log2 = logf(2.0f);
 
+const float LogicSignal::Margin = 10.0f;
+
+const float LogicSignal::EdgeColour[3] =	{0.50f, 0.50f, 0.50f};
+const float LogicSignal::HighColour[3] =	{0.00f, 0.75f, 0.00f};
+const float LogicSignal::LowColour[3] =	{0.75f, 0.00f, 0.00f};
+
 LogicSignal::LogicSignal(QString name, shared_ptr<LogicData> data,
 	int probe_index) :
 	Signal(name),
@@ -51,6 +57,9 @@ void LogicSignal::paint(QGLWidget &widget, const QRect &rect,
 
 	assert(scale > 0);
 	assert(_data);
+
+	const float high_offset = rect.top() + Margin;
+	const float low_offset = rect.bottom() - Margin;
 
 	const queue< shared_ptr<LogicDataSnapshot> > &snapshots =
 		_data->get_snapshots();
@@ -85,40 +94,53 @@ void LogicSignal::paint(QGLWidget &widget, const QRect &rect,
 		const int x = (int)((*i).first / samples_per_pixel - pixels_offset) +
 			rect.left();
 
-		vertex->x = x, vertex->y = 10 + rect.top() - 1;
+		vertex->x = x, vertex->y = high_offset;
 		vertex++;
-		vertex->x = x, vertex->y = 40 + rect.top();
+		vertex->x = x, vertex->y = low_offset;
 		vertex++;
 	}
 
-	glColor3f(0,0,1);
+	glColor3fv(EdgeColour);
 	paint_lines(edge_points, edge_point_count);
 	delete[] edge_points;
 
 	// Paint the caps
-	const unsigned int cap_point_count = (edges.size() - 1) * 2;
-	Point2F *const cap_points = new Point2F[cap_point_count];
-	vertex = cap_points;
+	const unsigned int max_cap_point_count = (edges.size() - 1) * 2;
+	Point2F *const cap_points = new Point2F[max_cap_point_count];
+
+	glColor3fv(HighColour);
+	paint_caps(cap_points, edges, true, samples_per_pixel,
+		pixels_offset, rect.left(), high_offset);
+	glColor3fv(LowColour);
+	paint_caps(cap_points, edges, false, samples_per_pixel,
+		pixels_offset, rect.left(), low_offset);
+
+	delete[] cap_points;
+}
+
+int LogicSignal::paint_caps(Point2F *const cap_points,
+	vector< pair<int64_t, bool> > &edges, bool level,
+	double samples_per_pixel, double pixels_offset, int x_offset,
+	int y_offset)
+{
+	Point2F *vertex = cap_points;
 
 	for(vector<LogicDataSnapshot::EdgePair>::const_iterator i = edges.begin();
 	    i != (edges.end() - 1); i++)
-	{
-		const int y = ((*i).second ? 10 : 40) + rect.top();
+		if((*i).second == level)
+		{
+			vertex->x = (int)((*i).first / samples_per_pixel -
+				pixels_offset) + x_offset - 1;
+			vertex->y = y_offset;
+			vertex++;
 
-		vertex->x = (int)((*i).first / samples_per_pixel - pixels_offset) +
-			rect.left() - 1;
-		vertex->y = y;
-		vertex++;
+			vertex->x = (int)((*(i+1)).first / samples_per_pixel -
+				pixels_offset) + x_offset;
+			vertex->y = y_offset;
+			vertex++;
+		}
 
-		vertex->x = (int)((*(i+1)).first / samples_per_pixel - pixels_offset) +
-			rect.left();
-		vertex->y = y;
-		vertex++;
-	}
-
-	glColor3f(0,0,1);
-	paint_lines(cap_points, cap_point_count);
-	delete[] cap_points;
+	paint_lines(cap_points, vertex - cap_points);
 }
 
 void LogicSignal::paint_lines(Point2F *points, int count)
