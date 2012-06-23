@@ -63,8 +63,24 @@ void Signal::paint_label(QPainter &p, const QRect &rect)
 		label_rect.bottomLeft()
 	};
 
-	p.setPen(Qt::black);
+	const QPointF highlight_points[] = {
+		QPointF(label_rect.left() + 1, label_rect.top() + 1),
+		QPointF(label_rect.right(), label_rect.top() + 1),
+		QPointF(rect.right() - 1, nominal_offset),
+		QPointF(label_rect.right(), label_rect.bottom() - 1),
+		QPointF(label_rect.left() + 1, label_rect.bottom() - 1)
+	};
+
+	p.setPen(Qt::transparent);
 	p.setBrush(colour);
+	p.drawPolygon(points, countof(points));
+
+	p.setPen(colour.lighter());
+	p.setBrush(Qt::transparent);
+	p.drawPolygon(highlight_points, countof(highlight_points));
+
+	p.setPen(colour.darker());
+	p.setBrush(Qt::transparent);
 	p.drawPolygon(points, countof(points));
 
 	// Paint the text
