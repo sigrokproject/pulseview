@@ -23,7 +23,11 @@
 #include "sigsession.h"
 #include "signal.h"
 
+#include "extdef.h"
+
 #include <QMouseEvent>
+
+#include <math.h>
 
 #include <boost/foreach.hpp>
 
@@ -32,6 +36,9 @@ using namespace std;
 
 const int SigView::SignalHeight = 50;
 const int SigView::LabelMarginWidth = 70;
+const int SigView::RulerHeight = 30;
+
+const int SigView::ScaleUnits[3] = {1, 2, 5};
 
 SigView::SigView(SigSession &session, QWidget *parent) :
 	QGLWidget(parent),
@@ -73,7 +80,7 @@ void SigView::paintEvent(QPaintEvent *event)
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	// Plot the signal
-	offset = 0;
+	offset = RulerHeight;
 	BOOST_FOREACH(const shared_ptr<Signal> s, sigs)
 	{
 		assert(s);
@@ -93,8 +100,8 @@ void SigView::paintEvent(QPaintEvent *event)
 	QPainter painter(this);
 	painter.setRenderHint(QPainter::Antialiasing);
 
-	// Paint the label
-	offset = 0;
+	// Paint the labels
+	offset = RulerHeight;
 	BOOST_FOREACH(const shared_ptr<Signal> s, sigs)
 	{
 		assert(s);
@@ -105,6 +112,9 @@ void SigView::paintEvent(QPaintEvent *event)
 
 		offset += SignalHeight;
 	}
+
+	// Paint the ruler
+	paintRuler(painter);
 
 	painter.end();
 }
@@ -153,4 +163,40 @@ void SigView::setupViewport(int width, int height)
 	glLoadIdentity();
 	glOrtho(0, width, height, 0, -1, 1);
 	glMatrixMode(GL_MODELVIEW);
+}
+
+void SigView::paintRuler(QPainter &p)
+{
+	const double MinSpacing = 20;
+
+	double tick_period = 0.0f;
+	const double min_period = _scale * MinSpacing;
+
+	double order = 10e-15;
+	while(tick_period < min_period)
+	{
+		int unit = 0;
+		while(tick_period < min_period &&
+			unit < countof(ScaleUnits))
+			tick_period = order * ScaleUnits[unit++];
+		order *= 10;
+	}
+
+	const double tick_seperation = tick_period / _scale;
+
+	p.setPen(Qt::transparent);
+	p.setBrush(QColor(0xC0, 0xC0, 0xC0));
+	p.drawRect(LabelMarginWidth, 0,
+		width() - LabelMarginWidth, RulerHeight);
+
+	p.setPen(Qt::black);
+
+	const double offset_ticks = -_offset / tick_period;
+	double x = (offset_ticks - floor(offset_ticks)) *
+		tick_seperation + LabelMarginWidth;
+	while(x < width())
+	{
+		p.drawLine(x, 0, x, RulerHeight);
+		x += tick_seperation;
+	}
 }
