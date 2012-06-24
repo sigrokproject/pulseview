@@ -39,6 +39,9 @@ private:
 
 	static const int ScaleUnits[3];
 
+	static const QString SIPrefixes[9];
+	static const int FirstSIPrefixPower;
+
 public:
 	explicit SigView(SigSession &session, QWidget *parent = 0);
 

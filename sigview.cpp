@@ -26,6 +26,7 @@
 #include "extdef.h"
 
 #include <QMouseEvent>
+#include <QTextStream>
 
 #include <math.h>
 
@@ -39,6 +40,10 @@ const int SigView::LabelMarginWidth = 70;
 const int SigView::RulerHeight = 30;
 
 const int SigView::ScaleUnits[3] = {1, 2, 5};
+
+const QString SigView::SIPrefixes[9] =
+	{"f", "p", "n", QChar(0x03BC), "m", "", "k", "M", "G"};
+const int SigView::FirstSIPrefixPower = -15;
 
 SigView::SigView(SigSession &session, QWidget *parent) :
 	QGLWidget(parent),
@@ -167,36 +172,41 @@ void SigView::setupViewport(int width, int height)
 
 void SigView::paintRuler(QPainter &p)
 {
-	const double MinSpacing = 20;
+	const double MinSpacing = 80;
 
-	double tick_period = 0.0f;
 	const double min_period = _scale * MinSpacing;
 
-	double order = 10e-15;
-	while(tick_period < min_period)
+	const int order = (int)floorf(log10f(min_period));
+	const double order_decimal = pow(10, order);
+
+	int unit = 0;
+	double tick_period = 0.0f;
+
+	do
 	{
-		int unit = 0;
-		while(tick_period < min_period &&
-			unit < countof(ScaleUnits))
-			tick_period = order * ScaleUnits[unit++];
-		order *= 10;
-	}
+		tick_period = order_decimal * ScaleUnits[unit++];
+	} while(tick_period < min_period && unit < countof(ScaleUnits));
 
-	const double tick_seperation = tick_period / _scale;
+	const int prefix = (order - FirstSIPrefixPower) / 3;
+	assert(prefix >= 0);
+	assert(prefix < countof(SIPrefixes));
 
-	p.setPen(Qt::transparent);
-	p.setBrush(QColor(0xC0, 0xC0, 0xC0));
-	p.drawRect(LabelMarginWidth, 0,
-		width() - LabelMarginWidth, RulerHeight);
+	const int text_height = p.boundingRect(0, 0, INT_MAX, INT_MAX,
+		Qt::AlignLeft | Qt::AlignTop, "8").height();
 
+	// Draw the tick marks
 	p.setPen(Qt::black);
 
-	const double offset_ticks = -_offset / tick_period;
-	double x = (offset_ticks - floor(offset_ticks)) *
-		tick_seperation + LabelMarginWidth;
-	while(x < width())
+	double t = ceil(_offset / tick_period) * tick_period;
+	double x = 0.0;
+	while((x = (t - _offset) / _scale + LabelMarginWidth) < width())
 	{
-		p.drawLine(x, 0, x, RulerHeight);
-		x += tick_seperation;
+		QString s;
+		QTextStream ts(&s);
+		ts << (t / order_decimal) << SIPrefixes[prefix] << "s";
+		p.drawText(x, 0, 0, text_height, Qt::AlignCenter | Qt::AlignTop |
+			Qt::TextDontClip, s);
+		p.drawLine(x, text_height, x, RulerHeight);
+		t += tick_period;
 	}
 }
