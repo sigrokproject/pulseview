@@ -39,6 +39,7 @@ const int SigView::SignalHeight = 50;
 const int SigView::LabelMarginWidth = 70;
 const int SigView::RulerHeight = 30;
 
+const int SigView::MinorTickSubdivision = 4;
 const int SigView::ScaleUnits[3] = {1, 2, 5};
 
 const QString SigView::SIPrefixes[9] =
@@ -197,16 +198,37 @@ void SigView::paintRuler(QPainter &p)
 	// Draw the tick marks
 	p.setPen(Qt::black);
 
-	double t = ceil(_offset / tick_period) * tick_period;
-	double x = 0.0;
-	while((x = (t - _offset) / _scale + LabelMarginWidth) < width())
+	const double minor_tick_period = tick_period / MinorTickSubdivision;
+	const double first_major_division = floor(_offset / tick_period);
+	const double first_minor_division = ceil(_offset / minor_tick_period);
+	const double t0 = first_major_division * tick_period;
+
+	int division = (int)round(first_minor_division -
+		first_major_division * MinorTickSubdivision);
+	while(1)
 	{
-		QString s;
-		QTextStream ts(&s);
-		ts << (t / order_decimal) << SIPrefixes[prefix] << "s";
-		p.drawText(x, 0, 0, text_height, Qt::AlignCenter | Qt::AlignTop |
-			Qt::TextDontClip, s);
-		p.drawLine(x, text_height, x, RulerHeight);
-		t += tick_period;
+		const double t = t0 + division * minor_tick_period;
+		const double x = (t - _offset) / _scale + LabelMarginWidth;
+
+		if(x >= width())
+			break;
+
+		if(division % MinorTickSubdivision == 0)
+		{
+			// Draw a major tick
+			QString s;
+			QTextStream ts(&s);
+			ts << (t / order_decimal) << SIPrefixes[prefix] << "s";
+			p.drawText(x, 0, 0, text_height, Qt::AlignCenter | Qt::AlignTop |
+				Qt::TextDontClip, s);
+			p.drawLine(x, text_height, x, RulerHeight);
+		}
+		else
+		{
+			// Draw a minor tick
+			p.drawLine(x, (text_height + RulerHeight) / 2, x, RulerHeight);
+		}
+
+		division++;
 	}
 }

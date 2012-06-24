@@ -37,6 +37,7 @@ private:
 	static const int LabelMarginWidth;
 	static const int RulerHeight;
 
+	static const int MinorTickSubdivision;
 	static const int ScaleUnits[3];
 
 	static const QString SIPrefixes[9];
