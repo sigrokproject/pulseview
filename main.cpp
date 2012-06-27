@@ -52,6 +52,16 @@ int main(int argc, char *argv[])
 	/* Load the protocol decoders */
 	srd_decoder_load_all();
 
+	/* Initialize all libsigrok drivers. */
+	sr_dev_driver **const drivers = sr_driver_list();
+	for (sr_dev_driver **driver = drivers; *driver; driver++) {
+		if (sr_driver_init(*driver) != SR_OK) {
+			qDebug("Failed to initialize driver %s",
+				(*driver)->name);
+			return 1;
+		}
+	}
+
 	/* Initialise the main window */
 	MainWindow w;
 	w.show();

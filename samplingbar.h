@@ -21,6 +21,7 @@
 #ifndef SAMPLINGBAR_H
 #define SAMPLINGBAR_H
 
+#include <QComboBox>
 #include <QToolBar>
 
 class SamplingBar : public QToolBar
@@ -29,6 +30,14 @@ class SamplingBar : public QToolBar
 
 public:
 	SamplingBar(QWidget *parent);
+
+	struct sr_dev_inst* get_selected_device() const;
+
+private:
+	void update_device_selector();
+
+private:
+	QComboBox _device_selector;
 };
 
 #endif // SAMPLINGBAR_H
