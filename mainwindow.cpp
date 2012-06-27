@@ -28,6 +28,7 @@ extern "C" {
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "samplingbar.h"
 #include "sigview.h"
 
 extern "C" {
@@ -45,6 +46,9 @@ MainWindow::MainWindow(QWidget *parent) :
 	ui(new Ui::MainWindow)
 {
 	ui->setupUi(this);
+
+	_sampling_bar = new SamplingBar(this);
+	addToolBar(_sampling_bar);
 
 	view = new SigView(session, this);
 	ui->verticalLayout->addWidget(view);

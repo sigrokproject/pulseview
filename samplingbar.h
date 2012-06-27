@@ -18,41 +18,17 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#ifndef SAMPLINGBAR_H
+#define SAMPLINGBAR_H
 
-#include <QMainWindow>
+#include <QToolBar>
 
-#include "sigsession.h"
-
-class SamplingBar;
-class SigView;
-
-namespace Ui {
-class MainWindow;
-}
-
-class MainWindow : public QMainWindow
+class SamplingBar : public QToolBar
 {
 	Q_OBJECT
 
 public:
-	explicit MainWindow(QWidget *parent = 0);
-	~MainWindow();
-
-private:
-	Ui::MainWindow *ui;
-
-	SamplingBar *_sampling_bar;
-
-	SigSession session;
-	SigView *view;
-
-private slots:
-
-	void on_actionOpen_triggered();
-
-	void on_actionAbout_triggered();
+	SamplingBar(QWidget *parent);
 };
 
-#endif // MAINWINDOW_H
+#endif // SAMPLINGBAR_H

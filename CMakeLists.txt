@@ -22,6 +22,7 @@ set(sigrok-qt2_SOURCES
 	logicsignal.cpp
 	main.cpp
 	mainwindow.cpp
+	samplingbar.cpp
 	signaldata.cpp
 	sigsession.cpp
 	signal.cpp
@@ -31,6 +32,7 @@ set(sigrok-qt2_SOURCES
 set(sigrok-qt2_HEADERS
 	about.h
 	mainwindow.h
+	samplingbar.h
 	sigsession.h
 	sigview.h
 )
