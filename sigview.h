@@ -55,9 +55,10 @@ protected:
 	void paintEvent(QPaintEvent *event);
 
 private:
-	void mouseMoveEvent(QMouseEvent *event);
 	void mousePressEvent(QMouseEvent *event);
+	void mouseMoveEvent(QMouseEvent *event);
 	void mouseReleaseEvent(QMouseEvent *event);
+	void wheelEvent(QWheelEvent *event);
 
 private:
 	void setupViewport(int width, int height);
@@ -72,6 +73,9 @@ private:
 
 	double _scale;
 	double _offset;
+
+	QPoint _mouse_down_point;
+	double _mouse_down_offset;
 };
 
 #endif // SIGVIEW_H

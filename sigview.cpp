@@ -130,35 +130,38 @@ void SigView::dataUpdated()
 	update();
 }
 
-void SigView::mouseMoveEvent(QMouseEvent *event)
-{
-	assert(event);
-}
-
 void SigView::mousePressEvent(QMouseEvent *event)
 {
 	assert(event);
+
+	_mouse_down_point = event->pos();
+	_mouse_down_offset = _offset;
+}
+
+void SigView::mouseMoveEvent(QMouseEvent *event)
+{
+	assert(event);
+
+	if(event->buttons() & Qt::LeftButton)
+	{
+		_offset = _mouse_down_offset + (_mouse_down_point - event->pos()).x() * _scale;
+		update();
+	}
 }
 
 void SigView::mouseReleaseEvent(QMouseEvent *event)
 {
 	assert(event);
+}
 
-	const double cursor_offset = _offset + _scale * (double)event->x();
+void SigView::wheelEvent(QWheelEvent *event)
+{
+	assert(event);
 
-	switch(event->button())
-	{
-	case Qt::LeftButton:
-		_scale *= 2.0 / 3.0;
-		break;
-
-	case Qt::RightButton:
-		_scale *= 3.0 / 2.0;
-		break;
-	}
-
-	_offset = cursor_offset - _scale * (double)event->x();
-
+	const double x = event->x() - LabelMarginWidth;
+	const double cursor_offset = _offset + _scale * x;
+	_scale *= powf(3.0/2.0, -event->delta() / 120);
+	_offset = cursor_offset - _scale * x;
 	update();
 }
 
