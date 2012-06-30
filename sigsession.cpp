@@ -57,6 +57,42 @@ void SigSession::loadFile(const std::string &name)
 	}
 }
 
+void SigSession::start_capture(struct sr_dev_inst *sdi,
+	uint64_t sample_rate)
+{
+	sr_session_new();
+	sr_session_datafeed_callback_add(dataFeedInProc);
+
+	if (sr_session_dev_add(sdi) != SR_OK) {
+		qDebug() << "Failed to use device.";
+		sr_session_destroy();
+		return;
+	}
+
+	uint64_t limit_samples = 10000;
+	if (sr_dev_config_set(sdi, SR_HWCAP_LIMIT_SAMPLES,
+		&limit_samples) != SR_OK) {
+		qDebug() << "Failed to configure time-based sample limit.";
+		sr_session_destroy();
+		return;
+	}
+
+	if (sr_dev_config_set(sdi, SR_HWCAP_SAMPLERATE,
+		&sample_rate) != SR_OK) {
+		qDebug() << "Failed to configure samplerate.";
+		sr_session_destroy();
+		return;
+	}
+
+	if (sr_session_start() != SR_OK) {
+		qDebug() << "Failed to start session.";
+		return;
+	}
+
+	sr_session_run();
+	sr_session_destroy();
+}
+
 vector< shared_ptr<Signal> >& SigSession::get_signals()
 {
 	return _signals;

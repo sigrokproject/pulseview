@@ -40,6 +40,9 @@ public:
 	struct sr_dev_inst* get_selected_device() const;
 	uint64_t get_sample_rate() const;
 
+signals:
+	void run_stop();
+
 private:
 	void update_device_selector();
 	void update_sample_rate_selector();
@@ -54,6 +57,8 @@ private:
 	QAction *_sample_rate_list_action;
 	QDoubleSpinBox _sample_rate_value;
 	QAction *_sample_rate_value_action;
+
+	QToolButton _run_stop_button;
 };
 
 #endif // SAMPLINGBAR_H

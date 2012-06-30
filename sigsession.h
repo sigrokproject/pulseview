@@ -47,6 +47,8 @@ public:
 
 	void loadFile(const std::string &name);
 
+	void start_capture(struct sr_dev_inst* sdi, uint64_t sample_rate);
+
 	std::vector< boost::shared_ptr<Signal> >&
 		get_signals();
 

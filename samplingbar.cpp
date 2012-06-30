@@ -31,17 +31,22 @@ extern "C" {
 SamplingBar::SamplingBar(QWidget *parent) :
 	QToolBar("Sampling Bar", parent),
 	_device_selector(this),
-	_sample_rate_list(this)
+	_sample_rate_list(this),
+	_run_stop_button(this)
 {
+	connect(&_run_stop_button, SIGNAL(clicked()), this, SIGNAL(run_stop()));
 	connect(&_device_selector, SIGNAL(currentIndexChanged (int)),
 		this, SLOT(on_device_selected()));
 
 	_sample_rate_value.setDecimals(0);
 	_sample_rate_value.setSuffix("Hz");
 
+	_run_stop_button.setText("Run");
+
 	addWidget(&_device_selector);
 	_sample_rate_list_action = addWidget(&_sample_rate_list);
 	_sample_rate_value_action = addWidget(&_sample_rate_value);
+	addWidget(&_run_stop_button);
 
 	update_device_selector();
 	update_sample_rate_selector();

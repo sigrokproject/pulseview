@@ -53,6 +53,8 @@ private slots:
 	void on_actionOpen_triggered();
 
 	void on_actionAbout_triggered();
+
+	void run_stop();
 };
 
 #endif // MAINWINDOW_H

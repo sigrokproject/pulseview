@@ -48,6 +48,8 @@ MainWindow::MainWindow(QWidget *parent) :
 	ui->setupUi(this);
 
 	_sampling_bar = new SamplingBar(this);
+	connect(_sampling_bar, SIGNAL(run_stop()), this,
+		SLOT(run_stop()));
 	addToolBar(_sampling_bar);
 
 	view = new SigView(session, this);
@@ -71,4 +73,11 @@ void MainWindow::on_actionAbout_triggered()
 {
 	About dlg(this);
 	dlg.exec();
+}
+
+void MainWindow::run_stop()
+{
+	session.start_capture(
+		_sampling_bar->get_selected_device(),
+		_sampling_bar->get_sample_rate());
 }
