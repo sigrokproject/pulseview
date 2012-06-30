@@ -21,8 +21,14 @@
 #ifndef SAMPLINGBAR_H
 #define SAMPLINGBAR_H
 
+#include <stdint.h>
+
 #include <QComboBox>
+#include <QDoubleSpinBox>
 #include <QToolBar>
+#include <QToolButton>
+
+class QAction;
 
 class SamplingBar : public QToolBar
 {
@@ -32,12 +38,22 @@ public:
 	SamplingBar(QWidget *parent);
 
 	struct sr_dev_inst* get_selected_device() const;
+	uint64_t get_sample_rate() const;
 
 private:
 	void update_device_selector();
+	void update_sample_rate_selector();
+
+private slots:
+	void on_device_selected();
 
 private:
 	QComboBox _device_selector;
+
+	QComboBox _sample_rate_list;
+	QAction *_sample_rate_list_action;
+	QDoubleSpinBox _sample_rate_value;
+	QAction *_sample_rate_value_action;
 };
 
 #endif // SAMPLINGBAR_H

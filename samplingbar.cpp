@@ -18,19 +18,33 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
+#include <assert.h>
+
 extern "C" {
 #include <libsigrok/libsigrok.h>
 }
+
+#include <QAction>
 
 #include "samplingbar.h"
 
 SamplingBar::SamplingBar(QWidget *parent) :
 	QToolBar("Sampling Bar", parent),
-	_device_selector(this)
+	_device_selector(this),
+	_sample_rate_list(this)
 {
+	connect(&_device_selector, SIGNAL(currentIndexChanged (int)),
+		this, SLOT(on_device_selected()));
+
+	_sample_rate_value.setDecimals(0);
+	_sample_rate_value.setSuffix("Hz");
+
 	addWidget(&_device_selector);
+	_sample_rate_list_action = addWidget(&_sample_rate_list);
+	_sample_rate_value_action = addWidget(&_sample_rate_value);
 
 	update_device_selector();
+	update_sample_rate_selector();
 }
 
 struct sr_dev_inst* SamplingBar::get_selected_device() const
@@ -41,6 +55,25 @@ struct sr_dev_inst* SamplingBar::get_selected_device() const
 
 	return (sr_dev_inst*)_device_selector.itemData(
 		index).value<void*>();
+}
+
+uint64_t SamplingBar::get_sample_rate() const
+{
+	assert(_sample_rate_value_action);
+	assert(_sample_rate_list_action);
+
+	if(_sample_rate_value_action->isVisible())
+		return (uint64_t)_sample_rate_value.value();
+	else if(_sample_rate_list_action->isVisible())
+	{
+		const int index = _device_selector.currentIndex();
+		if(index < 0)
+			return 0;
+		
+		return _device_selector.itemData(index).value<uint64_t>();
+	}
+
+	return 0;
 }
 
 void SamplingBar::update_device_selector()
@@ -72,4 +105,44 @@ void SamplingBar::update_device_selector()
 	}
 
 	g_slist_free(devices);
+}
+
+void SamplingBar::update_sample_rate_selector()
+{
+	const sr_dev_inst *const sdi = get_selected_device();
+	const struct sr_samplerates *samplerates;
+
+	assert(_sample_rate_value_action);
+	assert(_sample_rate_list_action);
+
+	if (sr_info_get(sdi->driver, SR_DI_SAMPLERATES,
+		(const void **)&samplerates, sdi) != SR_OK)
+		return;
+
+	_sample_rate_list_action->setVisible(false);
+	_sample_rate_value_action->setVisible(false);
+
+	if (samplerates->step)
+	{
+		_sample_rate_value.setRange(
+			samplerates->low, samplerates->high);
+		_sample_rate_value.setSingleStep(samplerates->step);
+		_sample_rate_value_action->setVisible(true);
+	}
+	else
+	{
+		_sample_rate_list.clear();
+		for (const uint64_t *rate = samplerates->list;
+		     *rate; rate++)
+			_sample_rate_list.addItem(
+				sr_samplerate_string(*rate),
+				qVariantFromValue(*rate));
+		_sample_rate_list.show();
+		_sample_rate_list_action->setVisible(true);
+	}
+}
+
+void SamplingBar::on_device_selected()
+{
+	update_sample_rate_selector();
 }
