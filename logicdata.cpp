@@ -25,7 +25,7 @@ using namespace boost;
 using namespace std;
 
 LogicData::LogicData(const sr_datafeed_meta_logic &meta) :
-	SignalData(meta.samplerate),
+	SignalData(meta.samplerate > 0 ? meta.samplerate : 1),
 	_num_probes(meta.num_probes)
 {
 }
