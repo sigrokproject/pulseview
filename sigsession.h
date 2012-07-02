@@ -45,7 +45,7 @@ public:
 
 	~SigSession();
 
-	void loadFile(const std::string &name);
+	void load_file(const std::string &name);
 
 	void start_capture(struct sr_dev_inst* sdi, uint64_t sample_rate);
 
@@ -53,10 +53,10 @@ public:
 		get_signals();
 
 private:
-	void dataFeedIn(const struct sr_dev_inst *sdi,
+	void data_feed_in(const struct sr_dev_inst *sdi,
 		struct sr_datafeed_packet *packet);
 
-	static void dataFeedInProc(const struct sr_dev_inst *sdi,
+	static void data_feed_in_proc(const struct sr_dev_inst *sdi,
 		struct sr_datafeed_packet *packet);
 
 private:
@@ -65,13 +65,13 @@ private:
 	boost::shared_ptr<LogicDataSnapshot> _cur_logic_snapshot;
 
 signals:
-	void dataUpdated();
+	void data_updated();
 
 private:
 	// TODO: This should not be necessary. Multiple concurrent
 	// sessions should should be supported and it should be
 	// possible to associate a pointer with a sr_session.
-	static SigSession *session;
+	static SigSession *_session;
 };
 
 #endif // SIGSESSION_H

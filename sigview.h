@@ -61,12 +61,12 @@ private:
 	void wheelEvent(QWheelEvent *event);
 
 private:
-	void setupViewport(int width, int height);
+	void setup_viewport(int width, int height);
 
-	void paintRuler(QPainter &p);
+	void paint_ruler(QPainter &p);
 
 private slots:
-	void dataUpdated();
+	void data_updated();
 
 private:
 	SigSession &_session;

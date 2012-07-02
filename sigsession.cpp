@@ -32,25 +32,25 @@ using namespace boost;
 using namespace std;
 
 // TODO: This should not be necessary
-SigSession* SigSession::session = NULL;
+SigSession* SigSession::_session = NULL;
 
 SigSession::SigSession()
 {
 	// TODO: This should not be necessary
-	session = this;
+	_session = this;
 }
 
 SigSession::~SigSession()
 {
 	// TODO: This should not be necessary
-	session = NULL;
+	_session = NULL;
 }
 
-void SigSession::loadFile(const std::string &name)
+void SigSession::load_file(const std::string &name)
 {
 	if (sr_session_load(name.c_str()) == SR_OK) {
 		/* sigrok session file */
-		sr_session_datafeed_callback_add(dataFeedInProc);
+		sr_session_datafeed_callback_add(data_feed_in_proc);
 		sr_session_start();
 		sr_session_run();
 		sr_session_stop();
@@ -61,7 +61,7 @@ void SigSession::start_capture(struct sr_dev_inst *sdi,
 	uint64_t sample_rate)
 {
 	sr_session_new();
-	sr_session_datafeed_callback_add(dataFeedInProc);
+	sr_session_datafeed_callback_add(data_feed_in_proc);
 
 	if (sr_session_dev_add(sdi) != SR_OK) {
 		qDebug() << "Failed to use device.";
@@ -98,7 +98,7 @@ vector< shared_ptr<Signal> >& SigSession::get_signals()
 	return _signals;
 }
 
-void SigSession::dataFeedIn(const struct sr_dev_inst *sdi,
+void SigSession::data_feed_in(const struct sr_dev_inst *sdi,
 	struct sr_datafeed_packet *packet)
 {
 	assert(sdi);
@@ -163,14 +163,14 @@ void SigSession::dataFeedIn(const struct sr_dev_inst *sdi,
 
 	case SR_DF_END:
 		_cur_logic_snapshot.reset();
-		dataUpdated();
+		data_updated();
 		break;
 	}
 }
 
-void SigSession::dataFeedInProc(const struct sr_dev_inst *sdi,
+void SigSession::data_feed_in_proc(const struct sr_dev_inst *sdi,
 	struct sr_datafeed_packet *packet)
 {
-	assert(session);
-	session->dataFeedIn(sdi, packet);
+	assert(_session);
+	_session->data_feed_in(sdi, packet);
 }

@@ -41,12 +41,12 @@ public:
 	~MainWindow();
 
 private:
-	Ui::MainWindow *ui;
+	Ui::MainWindow *_ui;
 
 	SamplingBar *_sampling_bar;
 
-	SigSession session;
-	SigView *view;
+	SigSession _session;
+	SigView *_view;
 
 private slots:
 

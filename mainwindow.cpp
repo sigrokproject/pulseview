@@ -43,30 +43,30 @@ extern "C" {
 
 MainWindow::MainWindow(QWidget *parent) :
 	QMainWindow(parent),
-	ui(new Ui::MainWindow)
+	_ui(new Ui::MainWindow)
 {
-	ui->setupUi(this);
+	_ui->setupUi(this);
 
 	_sampling_bar = new SamplingBar(this);
 	connect(_sampling_bar, SIGNAL(run_stop()), this,
 		SLOT(run_stop()));
 	addToolBar(_sampling_bar);
 
-	view = new SigView(session, this);
-	ui->verticalLayout->addWidget(view);
+	_view = new SigView(_session, this);
+	_ui->verticalLayout->addWidget(_view);
 }
 
 MainWindow::~MainWindow()
 {
-	delete ui;
+	delete _ui;
 }
 
 void MainWindow::on_actionOpen_triggered()
 {
-	QString fileName = QFileDialog::getOpenFileName(
+	QString file_name = QFileDialog::getOpenFileName(
 		this, tr("Open File"), "",
 		tr("Sigrok Sessions (*.sr)"));
-	session.loadFile(fileName.toStdString());
+	_session.load_file(file_name.toStdString());
 }
 
 void MainWindow::on_actionAbout_triggered()
@@ -77,7 +77,7 @@ void MainWindow::on_actionAbout_triggered()
 
 void MainWindow::run_stop()
 {
-	session.start_capture(
+	_session.start_capture(
 		_sampling_bar->get_selected_device(),
 		_sampling_bar->get_sample_rate());
 }

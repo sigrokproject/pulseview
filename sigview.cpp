@@ -52,8 +52,8 @@ SigView::SigView(SigSession &session, QWidget *parent) :
 	_scale(1e-6),
 	_offset(0)
 {
-	connect(&_session, SIGNAL(dataUpdated()),
-		this, SLOT(dataUpdated()));
+	connect(&_session, SIGNAL(data_updated()),
+		this, SLOT(data_updated()));
 
 	setMouseTracking(true);
 	setAutoFillBackground(false);
@@ -65,7 +65,7 @@ void SigView::initializeGL()
 
 void SigView::resizeGL(int width, int height)
 {
-	setupViewport(width, height);
+	setup_viewport(width, height);
 }
 
 void SigView::paintEvent(QPaintEvent *event)
@@ -80,7 +80,7 @@ void SigView::paintEvent(QPaintEvent *event)
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 
-	setupViewport(width(), height());
+	setup_viewport(width(), height());
 
 	qglClearColor(Qt::white);
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -120,12 +120,12 @@ void SigView::paintEvent(QPaintEvent *event)
 	}
 
 	// Paint the ruler
-	paintRuler(painter);
+	paint_ruler(painter);
 
 	painter.end();
 }
 
-void SigView::dataUpdated()
+void SigView::data_updated()
 {
 	update();
 }
@@ -165,7 +165,7 @@ void SigView::wheelEvent(QWheelEvent *event)
 	update();
 }
 
-void SigView::setupViewport(int width, int height)
+void SigView::setup_viewport(int width, int height)
 {
 	glViewport(0, 0, (GLint)width, (GLint)height);
 	glMatrixMode(GL_PROJECTION);
@@ -174,7 +174,7 @@ void SigView::setupViewport(int width, int height)
 	glMatrixMode(GL_MODELVIEW);
 }
 
-void SigView::paintRuler(QPainter &p)
+void SigView::paint_ruler(QPainter &p)
 {
 	const double MinSpacing = 80;
 
