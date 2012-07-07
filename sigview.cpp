@@ -35,6 +35,9 @@
 using namespace boost;
 using namespace std;
 
+const double SigView::MaxScale = 1e9;
+const double SigView::MinScale = 1e-15;
+
 const int SigView::SignalHeight = 50;
 const int SigView::LabelMarginWidth = 70;
 const int SigView::RulerHeight = 30;
@@ -165,6 +168,7 @@ void SigView::wheelEvent(QWheelEvent *event)
 	const double x = event->x() - LabelMarginWidth;
 	const double cursor_offset = _offset + _scale * x;
 	_scale *= powf(3.0/2.0, -event->delta() / 120);
+	_scale = max(min(_scale, MaxScale), MinScale);
 	_offset = cursor_offset - _scale * x;
 	update();
 }

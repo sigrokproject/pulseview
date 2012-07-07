@@ -33,6 +33,9 @@ class SigView : public QGLWidget
 	Q_OBJECT
 
 private:
+	static const double MaxScale;
+	static const double MinScale;
+
 	static const int SignalHeight;
 	static const int LabelMarginWidth;
 	static const int RulerHeight;
