@@ -58,7 +58,7 @@ void SigSession::load_file(const std::string &name)
 }
 
 void SigSession::start_capture(struct sr_dev_inst *sdi,
-	uint64_t sample_rate)
+	uint64_t record_length, uint64_t sample_rate)
 {
 	sr_session_new();
 	sr_session_datafeed_callback_add(data_feed_in_proc);
@@ -69,9 +69,8 @@ void SigSession::start_capture(struct sr_dev_inst *sdi,
 		return;
 	}
 
-	uint64_t limit_samples = 10000;
 	if (sr_dev_config_set(sdi, SR_HWCAP_LIMIT_SAMPLES,
-		&limit_samples) != SR_OK) {
+		&record_length) != SR_OK) {
 		qDebug() << "Failed to configure time-based sample limit.";
 		sr_session_destroy();
 		return;

@@ -34,10 +34,14 @@ class SamplingBar : public QToolBar
 {
 	Q_OBJECT
 
+private:
+	static const uint64_t RecordLengths[11];
+
 public:
 	SamplingBar(QWidget *parent);
 
 	struct sr_dev_inst* get_selected_device() const;
+	uint64_t get_record_length() const;
 	uint64_t get_sample_rate() const;
 
 signals:
@@ -52,6 +56,8 @@ private slots:
 
 private:
 	QComboBox _device_selector;
+
+	QComboBox _record_length_selector;
 
 	QComboBox _sample_rate_list;
 	QAction *_sample_rate_list_action;

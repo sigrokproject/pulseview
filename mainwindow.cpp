@@ -79,5 +79,6 @@ void MainWindow::run_stop()
 {
 	_session.start_capture(
 		_sampling_bar->get_selected_device(),
+		_sampling_bar->get_record_length(),
 		_sampling_bar->get_sample_rate());
 }

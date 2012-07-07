@@ -20,6 +20,8 @@
 
 #include <assert.h>
 
+#include <boost/foreach.hpp>
+
 extern "C" {
 #include <libsigrok/libsigrok.h>
 }
@@ -28,9 +30,24 @@ extern "C" {
 
 #include "samplingbar.h"
 
+const uint64_t SamplingBar::RecordLengths[11] = {
+	1000000,
+	2000000,
+	5000000,
+	10000000,
+	25000000,
+	50000000,
+	100000000,
+	250000000,
+	500000000,
+	1000000000,
+	10000000000
+};
+
 SamplingBar::SamplingBar(QWidget *parent) :
 	QToolBar("Sampling Bar", parent),
 	_device_selector(this),
+	_record_length_selector(this),
 	_sample_rate_list(this),
 	_run_stop_button(this)
 {
@@ -41,9 +58,18 @@ SamplingBar::SamplingBar(QWidget *parent) :
 	_sample_rate_value.setDecimals(0);
 	_sample_rate_value.setSuffix("Hz");
 
+	BOOST_FOREACH(uint64_t l, RecordLengths)
+	{
+		char *const text = sr_si_string_u64(l, " samples");
+		_record_length_selector.addItem(QString(text),
+			qVariantFromValue(l));
+		g_free(text);
+	}
+
 	_run_stop_button.setText("Run");
 
 	addWidget(&_device_selector);
+	addWidget(&_record_length_selector);
 	_sample_rate_list_action = addWidget(&_sample_rate_list);
 	_sample_rate_value_action = addWidget(&_sample_rate_value);
 	addWidget(&_run_stop_button);
@@ -60,6 +86,15 @@ struct sr_dev_inst* SamplingBar::get_selected_device() const
 
 	return (sr_dev_inst*)_device_selector.itemData(
 		index).value<void*>();
+}
+
+uint64_t SamplingBar::get_record_length() const
+{
+	const int index = _record_length_selector.currentIndex();
+	if(index < 0)
+		return 0;
+
+	return _record_length_selector.itemData(index).value<uint64_t>();
 }
 
 uint64_t SamplingBar::get_sample_rate() const
