@@ -86,16 +86,16 @@ void LogicSignal::paint(QGLWidget &widget, const QRect &rect,
 	const double pixels_offset = offset / scale;
 	const double samplerate = _data->get_samplerate();
 	const double start_time = _data->get_start_time();
-	const int64_t last_sample = (int64_t)snapshot->get_sample_count() - 1;
+	const int64_t last_sample = snapshot->get_sample_count() - 1;
 	const double samples_per_pixel = samplerate * scale;
-	const int64_t start = min(max((int64_t)(samplerate * (offset - start_time)),
-		(int64_t)0), last_sample);
-	const int64_t end = min((int64_t)(start + samples_per_pixel * rect.width()),
-		last_sample);
+	const double start = samplerate * (offset - start_time);
+	const double end = start + samples_per_pixel * rect.width();
 	const int64_t quantization_length = 1LL << (int64_t)floorf(
-		max(logf(samples_per_pixel / Log2), 0.0f));
+		max(logf((float)samples_per_pixel) / Log2, 0.0f));
 
-	snapshot->get_subsampled_edges(edges, start, end,
+	snapshot->get_subsampled_edges(edges,
+		min(max((int64_t)floor(start), (int64_t)0), last_sample),
+		min(max((int64_t)ceil(end), (int64_t)0), last_sample),
 		quantization_length, _probe_index);
 
 	// Paint the edges

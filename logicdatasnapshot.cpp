@@ -65,7 +65,7 @@ void LogicDataSnapshot::get_subsampled_edges(
 	bool last_sample = get_sample(start) & sig_mask;
 	edges.push_back(pair<int64_t, bool>(start, last_sample));
 
-	for(int64_t i = start + 1; i < end - 1; i++)
+	for(int64_t i = start + 1; i < end; i++)
 	{
 		const bool sample = get_sample(i) & sig_mask;
 
@@ -89,6 +89,6 @@ void LogicDataSnapshot::get_subsampled_edges(
 	}
 
 	// Add the final state
-	edges.push_back(pair<int64_t, bool>(end - 1,
-		get_sample(end - 1) & sig_mask));
+	edges.push_back(pair<int64_t, bool>(end,
+		get_sample(end) & sig_mask));
 }
