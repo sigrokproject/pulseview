@@ -86,6 +86,8 @@ void SigView::paintEvent(QPaintEvent *event)
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	// Plot the signal
+	glEnable(GL_SCISSOR_TEST);
+	glScissor(LabelMarginWidth, 0, width(), height());
 	offset = RulerHeight;
 	BOOST_FOREACH(const shared_ptr<Signal> s, sigs)
 	{
@@ -98,6 +100,8 @@ void SigView::paintEvent(QPaintEvent *event)
 
 		offset += SignalHeight;
 	}
+
+	glDisable(GL_SCISSOR_TEST);
 
 	// Prepare for QPainter rendering
 	glMatrixMode(GL_MODELVIEW);
