@@ -39,7 +39,6 @@ set(sigrok-qt2_HEADERS
 
 set(sigrok-qt2_FORMS
 	about.ui
-	mainwindow.ui
 )
 
 set(sigrok-qt2_RESOURCES

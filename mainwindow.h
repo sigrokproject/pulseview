@@ -32,21 +32,41 @@ namespace Ui {
 class MainWindow;
 }
 
+class QAction;
+class QMenuBar;
+class QMenu;
+class QVBoxLayout;
+class QStatusBar;
+class QWidget;
+
 class MainWindow : public QMainWindow
 {
 	Q_OBJECT
 
 public:
 	explicit MainWindow(QWidget *parent = 0);
-	~MainWindow();
 
 private:
-	Ui::MainWindow *_ui;
+	void setup_ui();
 
-	SamplingBar *_sampling_bar;
+private:
+
 
 	SigSession _session;
 	SigView *_view;
+
+	QAction *_action_open;
+	QAction *_action_about;
+
+	QMenuBar *_menu_bar;
+	QMenu *_menu_file;
+	QMenu *_menu_help;
+
+	QWidget *_central_widget;
+	QVBoxLayout *_vertical_layout;
+
+	SamplingBar *_sampling_bar;
+	QStatusBar *_status_bar;
 
 private slots:
 

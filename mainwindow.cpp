@@ -22,12 +22,18 @@ extern "C" {
 #include <sigrokdecode.h>
 }
 
+#include <QAction>
+#include <QApplication>
+#include <QButtonGroup>
 #include <QFileDialog>
+#include <QMenu>
+#include <QMenuBar>
+#include <QStatusBar>
+#include <QVBoxLayout>
+#include <QWidget>
 
 #include "about.h"
-
 #include "mainwindow.h"
-#include "ui_mainwindow.h"
 #include "samplingbar.h"
 #include "sigview.h"
 
@@ -42,23 +48,70 @@ extern "C" {
 }
 
 MainWindow::MainWindow(QWidget *parent) :
-	QMainWindow(parent),
-	_ui(new Ui::MainWindow)
+	QMainWindow(parent)
 {
-	_ui->setupUi(this);
+	setup_ui();
+}
 
+void MainWindow::setup_ui()
+{
+	setObjectName(QString::fromUtf8("MainWindow"));
+
+	resize(1024, 768);
+
+	// Set the window icon
+	QIcon icon;
+	icon.addFile(QString::fromUtf8(":/icons/sigrok-logo-notext.png"),
+		QSize(), QIcon::Normal, QIcon::Off);
+	setWindowIcon(icon);
+
+	// Setup the UI actions
+	_action_about = new QAction(this);
+	_action_about->setObjectName(QString::fromUtf8("actionAbout"));
+	_action_open = new QAction(this);
+	_action_open->setObjectName(QString::fromUtf8("actionOpen"));
+
+	// Setup the menu bar
+	_menu_bar = new QMenuBar(this);
+	_menu_bar->setGeometry(QRect(0, 0, 400, 25));
+
+	_menu_file = new QMenu(_menu_bar);
+	_menu_file->addAction(_action_open);
+
+	_menu_help = new QMenu(_menu_bar);
+	_menu_help->addAction(_action_about);
+
+	_menu_bar->addAction(_menu_file->menuAction());
+	_menu_bar->addAction(_menu_help->menuAction());
+
+	setMenuBar(_menu_bar);
+	QMetaObject::connectSlotsByName(this);
+
+	// Setup the toolbars
 	_sampling_bar = new SamplingBar(this);
 	connect(_sampling_bar, SIGNAL(run_stop()), this,
 		SLOT(run_stop()));
 	addToolBar(_sampling_bar);
 
-	_view = new SigView(_session, this);
-	_ui->verticalLayout->addWidget(_view);
-}
+	// Setup the central widget
+	_central_widget = new QWidget(this);
+	_vertical_layout = new QVBoxLayout(_central_widget);
+	_vertical_layout->setSpacing(6);
+	_vertical_layout->setContentsMargins(0, 0, 0, 0);
+	setCentralWidget(_central_widget);
 
-MainWindow::~MainWindow()
-{
-	delete _ui;
+	// Setup the status bar
+	_status_bar = new QStatusBar(this);
+	setStatusBar(_status_bar);
+
+	setWindowTitle(QApplication::translate("MainWindow", "sigrok-qt2", 0, QApplication::UnicodeUTF8));
+	_action_open->setText(QApplication::translate("MainWindow", "&Open...", 0, QApplication::UnicodeUTF8));
+	_action_about->setText(QApplication::translate("MainWindow", "&About...", 0, QApplication::UnicodeUTF8));
+	_menu_file->setTitle(QApplication::translate("MainWindow", "&File", 0, QApplication::UnicodeUTF8));
+	_menu_help->setTitle(QApplication::translate("MainWindow", "&Help", 0, QApplication::UnicodeUTF8));
+
+	_view = new SigView(_session, this);
+	_vertical_layout->addWidget(_view);
 }
 
 void MainWindow::on_actionOpen_triggered()
