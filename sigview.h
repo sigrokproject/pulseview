@@ -49,6 +49,8 @@ private:
 public:
 	explicit SigView(SigSession &session, QWidget *parent = 0);
 
+	void zoom(double steps);
+
 protected:
 
 	void initializeGL();
@@ -67,6 +69,8 @@ private:
 	void setup_viewport(int width, int height);
 
 	void paint_ruler(QPainter &p);
+
+	void zoom(double steps, int offset);
 
 private slots:
 	void data_updated();

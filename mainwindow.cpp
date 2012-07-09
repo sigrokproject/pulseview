@@ -68,6 +68,15 @@ void MainWindow::setup_ui()
 	// Setup the UI actions
 	_action_about = new QAction(this);
 	_action_about->setObjectName(QString::fromUtf8("actionAbout"));
+
+	_action_view_zoom_in = new QAction(this);
+	_action_view_zoom_in->setIcon(QIcon::fromTheme("zoom-in"));
+	_action_view_zoom_in->setObjectName(QString::fromUtf8("actionViewZoomIn"));
+
+	_action_view_zoom_out = new QAction(this);
+	_action_view_zoom_out->setIcon(QIcon::fromTheme("zoom-out"));
+	_action_view_zoom_out->setObjectName(QString::fromUtf8("actionViewZoomOut"));
+
 	_action_open = new QAction(this);
 	_action_open->setIcon(QIcon::fromTheme("document-open"));
 	_action_open->setObjectName(QString::fromUtf8("actionOpen"));
@@ -79,10 +88,15 @@ void MainWindow::setup_ui()
 	_menu_file = new QMenu(_menu_bar);
 	_menu_file->addAction(_action_open);
 
+	_menu_view = new QMenu(_menu_bar);
+	_menu_view->addAction(_action_view_zoom_in);
+	_menu_view->addAction(_action_view_zoom_out);
+
 	_menu_help = new QMenu(_menu_bar);
 	_menu_help->addAction(_action_about);
 
 	_menu_bar->addAction(_menu_file->menuAction());
+	_menu_bar->addAction(_menu_view->menuAction());
 	_menu_bar->addAction(_menu_help->menuAction());
 
 	setMenuBar(_menu_bar);
@@ -91,6 +105,9 @@ void MainWindow::setup_ui()
 	// Setup the toolbars
 	_toolbar = new QToolBar(this);
 	_toolbar->addAction(_action_open);
+	_toolbar->addSeparator();
+	_toolbar->addAction(_action_view_zoom_in);
+	_toolbar->addAction(_action_view_zoom_out);
 	addToolBar(_toolbar);
 
 	_sampling_bar = new SamplingBar(this);
@@ -111,8 +128,12 @@ void MainWindow::setup_ui()
 
 	setWindowTitle(QApplication::translate("MainWindow", "sigrok-qt2", 0, QApplication::UnicodeUTF8));
 	_action_open->setText(QApplication::translate("MainWindow", "&Open...", 0, QApplication::UnicodeUTF8));
+	_action_view_zoom_in->setText(QApplication::translate("MainWindow", "Zoom &In", 0, QApplication::UnicodeUTF8));
+	_action_view_zoom_out->setText(QApplication::translate("MainWindow", "Zoom &Out", 0, QApplication::UnicodeUTF8));
 	_action_about->setText(QApplication::translate("MainWindow", "&About...", 0, QApplication::UnicodeUTF8));
+
 	_menu_file->setTitle(QApplication::translate("MainWindow", "&File", 0, QApplication::UnicodeUTF8));
+	_menu_view->setTitle(QApplication::translate("MainWindow", "&View", 0, QApplication::UnicodeUTF8));
 	_menu_help->setTitle(QApplication::translate("MainWindow", "&Help", 0, QApplication::UnicodeUTF8));
 
 	_view = new SigView(_session, this);
@@ -125,6 +146,16 @@ void MainWindow::on_actionOpen_triggered()
 		this, tr("Open File"), "",
 		tr("Sigrok Sessions (*.sr)"));
 	_session.load_file(file_name.toStdString());
+}
+
+void MainWindow::on_actionViewZoomIn_triggered()
+{
+	_view->zoom(1);
+}
+
+void MainWindow::on_actionViewZoomOut_triggered()
+{
+	_view->zoom(-1);
 }
 
 void MainWindow::on_actionAbout_triggered()

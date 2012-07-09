@@ -62,6 +62,11 @@ SigView::SigView(SigSession &session, QWidget *parent) :
 	setAutoFillBackground(false);
 }
 
+void SigView::zoom(double steps)
+{
+	zoom(steps, (width() - LabelMarginWidth) / 2);
+}
+
 void SigView::initializeGL()
 {
 }
@@ -164,13 +169,7 @@ void SigView::mouseReleaseEvent(QMouseEvent *event)
 void SigView::wheelEvent(QWheelEvent *event)
 {
 	assert(event);
-
-	const double x = event->x() - LabelMarginWidth;
-	const double cursor_offset = _offset + _scale * x;
-	_scale *= powf(3.0/2.0, -event->delta() / 120);
-	_scale = max(min(_scale, MaxScale), MinScale);
-	_offset = cursor_offset - _scale * x;
-	update();
+	zoom(event->delta() / 120, event->x() - LabelMarginWidth);
 }
 
 void SigView::setup_viewport(int width, int height)
@@ -242,4 +241,13 @@ void SigView::paint_ruler(QPainter &p)
 
 		division++;
 	}
+}
+
+void SigView::zoom(double steps, int offset)
+{
+	const double cursor_offset = _offset + _scale * offset;
+	_scale *= pow(3.0/2.0, -steps);
+	_scale = max(min(_scale, MaxScale), MinScale);
+	_offset = cursor_offset - _scale * offset;
+	update();
 }

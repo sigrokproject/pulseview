@@ -52,15 +52,17 @@ private:
 
 private:
 
-
 	SigSession _session;
 	SigView *_view;
 
 	QAction *_action_open;
+	QAction *_action_view_zoom_in;
+	QAction *_action_view_zoom_out;
 	QAction *_action_about;
 
 	QMenuBar *_menu_bar;
 	QMenu *_menu_file;
+	QMenu *_menu_view;
 	QMenu *_menu_help;
 
 	QWidget *_central_widget;
@@ -73,6 +75,10 @@ private:
 private slots:
 
 	void on_actionOpen_triggered();
+
+	void on_actionViewZoomIn_triggered();
+
+	void on_actionViewZoomOut_triggered();
 
 	void on_actionAbout_triggered();
 
