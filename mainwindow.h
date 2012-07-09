@@ -37,6 +37,7 @@ class QMenuBar;
 class QMenu;
 class QVBoxLayout;
 class QStatusBar;
+class QToolBar;
 class QWidget;
 
 class MainWindow : public QMainWindow
@@ -65,6 +66,7 @@ private:
 	QWidget *_central_widget;
 	QVBoxLayout *_vertical_layout;
 
+	QToolBar *_toolbar;
 	SamplingBar *_sampling_bar;
 	QStatusBar *_status_bar;
 

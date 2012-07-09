@@ -69,6 +69,7 @@ void MainWindow::setup_ui()
 	_action_about = new QAction(this);
 	_action_about->setObjectName(QString::fromUtf8("actionAbout"));
 	_action_open = new QAction(this);
+	_action_open->setIcon(QIcon::fromTheme("document-open"));
 	_action_open->setObjectName(QString::fromUtf8("actionOpen"));
 
 	// Setup the menu bar
@@ -88,6 +89,10 @@ void MainWindow::setup_ui()
 	QMetaObject::connectSlotsByName(this);
 
 	// Setup the toolbars
+	_toolbar = new QToolBar(this);
+	_toolbar->addAction(_action_open);
+	addToolBar(_toolbar);
+
 	_sampling_bar = new SamplingBar(this);
 	connect(_sampling_bar, SIGNAL(run_stop()), this,
 		SLOT(run_stop()));
