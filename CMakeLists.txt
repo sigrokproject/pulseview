@@ -47,6 +47,8 @@ set(sigrok-qt2_RESOURCES
 
 set(sigrok-qt2_TEST_SOURCES
 	test/test.cpp
+	datasnapshot.cpp
+	logicdatasnapshot.cpp
 )
 
 set(QT_USE_QTOPENGL TRUE)
@@ -92,6 +94,8 @@ add_executable(sigrok-qt2-test
 
 target_link_libraries(sigrok-qt2-test
 	${Boost_LIBRARIES}
+	${PKGDEPS_LIBRARIES}
+	${QT_LIBRARIES}
 )
 
 enable_testing()
