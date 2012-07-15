@@ -10,7 +10,7 @@ pkg_check_modules(PKGDEPS REQUIRED
 )
 
 find_package(Qt4 REQUIRED)
-find_package(Boost 1.46 REQUIRED)
+find_package(Boost 1.46 COMPONENTS unit_test_framework REQUIRED)
 
 set(VERSION 0.1.0)
 
@@ -43,6 +43,10 @@ set(sigrok-qt2_FORMS
 
 set(sigrok-qt2_RESOURCES
 	sigrok-qt2.qrc
+)
+
+set(sigrok-qt2_TEST_SOURCES
+	test/test.cpp
 )
 
 set(QT_USE_QTOPENGL TRUE)
@@ -79,3 +83,16 @@ target_link_libraries(sigrok-qt2
 	${PKGDEPS_LIBRARIES}
 	${QT_LIBRARIES}
 )
+
+add_definitions(-DBOOST_TEST_DYN_LINK)
+
+add_executable(sigrok-qt2-test
+	${sigrok-qt2_TEST_SOURCES}
+)
+
+target_link_libraries(sigrok-qt2-test
+	${Boost_LIBRARIES}
+)
+
+enable_testing()
+add_test(test ${CMAKE_CURRENT_BINARY_DIR}/sigrok-qt2-test)

@@ -1,10 +1,13 @@
 sigrok-qt2
+sigrok-qt2-test
 
 # CMake cruft
 CMakeCache.txt
 CMakeFiles/
 cmake_install.cmake
+CTestTestfile.cmake
 Makefile
+Testing/
 
 # qt generated code
 *.qrc.depends
