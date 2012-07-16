@@ -25,14 +25,36 @@
 
 class LogicDataSnapshot : public DataSnapshot
 {
+private:
+	struct MipMapLevel
+	{
+		uint64_t length;
+		uint64_t data_length;
+		void *data;
+	};
+
+private:
+	static const int ScaleStepCount = 10;
+	static const int MipMapScalePower;
+	static const int MipMapScaleFactor;
+	static const uint64_t MipMapDataUnit;
+
 public:
 	typedef std::pair<int64_t, bool> EdgePair;
 
 public:
 	LogicDataSnapshot(const sr_datafeed_logic &logic);
 
+	virtual ~LogicDataSnapshot();
+
 	void append_payload(const sr_datafeed_logic &logic);
 
+private:
+	void reallocate_mip_map(MipMapLevel &m);
+
+	void append_payload_to_mipmap();
+
+public:
 	uint64_t get_sample(uint64_t index) const;
 
 	/**
@@ -48,4 +70,10 @@ public:
 	void get_subsampled_edges(std::vector<EdgePair> &edges,
 		int64_t start, int64_t end,
 		int64_t quantization_length, int sig_index);
+
+private:
+	struct MipMapLevel _mip_map[ScaleStepCount];
+	uint64_t _last_append_sample;
+
+	friend class LogicDataSnapshotTest;
 };

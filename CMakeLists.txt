@@ -46,6 +46,7 @@ set(sigrok-qt2_RESOURCES
 )
 
 set(sigrok-qt2_TEST_SOURCES
+	test/logicdatasnapshot.cpp
 	test/test.cpp
 	datasnapshot.cpp
 	logicdatasnapshot.cpp

@@ -18,17 +18,35 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#include "logicdatasnapshot.h"
+#include "extdef.h"
 
 #include <assert.h>
+#include <string.h>
+#include <math.h>
+
+#include <boost/foreach.hpp>
+
+#include "logicdatasnapshot.h"
 
 using namespace std;
 
+const int LogicDataSnapshot::MipMapScalePower = 4;
+const int LogicDataSnapshot::MipMapScaleFactor = 1 << MipMapScalePower;
+const uint64_t LogicDataSnapshot::MipMapDataUnit = 64*1024;	// bytes
+
 LogicDataSnapshot::LogicDataSnapshot(
 	const sr_datafeed_logic &logic) :
-	DataSnapshot(logic.unitsize)
+	DataSnapshot(logic.unitsize),
+	_last_append_sample(0)
 {
+	memset(_mip_map, 0, sizeof(_mip_map));
 	append_payload(logic);
+}
+
+LogicDataSnapshot::~LogicDataSnapshot()
+{
+	BOOST_FOREACH(MipMapLevel &l, _mip_map)
+		free(l.data);
 }
 
 void LogicDataSnapshot::append_payload(
@@ -36,7 +54,106 @@ void LogicDataSnapshot::append_payload(
 {
 	assert(_unit_size == logic.unitsize);
 
+	const uint64_t prev_length = _data_length;
 	append_data(logic.data, logic.length);
+
+	// Generate the first mip-map from the data
+	append_payload_to_mipmap();
+}
+
+void LogicDataSnapshot::reallocate_mip_map(MipMapLevel &m)
+{
+	const uint64_t new_data_length = ((m.length + MipMapDataUnit - 1) /
+		MipMapDataUnit) * MipMapDataUnit;
+	if(new_data_length > m.data_length)
+	{
+		m.data_length = new_data_length;
+		m.data = realloc(m.data, new_data_length * _unit_size);
+	}
+}
+
+void LogicDataSnapshot::append_payload_to_mipmap()
+{
+	MipMapLevel &m0 = _mip_map[0];
+	uint64_t prev_length;
+	const uint8_t *src_ptr;
+	uint8_t *dest_ptr;
+	uint64_t accumulator;
+	unsigned int diff_counter;
+
+	// Expand the data buffer to fit the new samples
+	prev_length = m0.length;
+	m0.length = _data_length / MipMapScaleFactor;
+
+	// Break off if there are no new samples to compute
+	if(m0.length == prev_length)
+		return;
+
+	reallocate_mip_map(m0);
+
+	dest_ptr = (uint8_t*)m0.data + prev_length * _unit_size;
+
+	// Iterate through the samples to populate the first level mipmap
+	accumulator = 0;
+	diff_counter = MipMapScaleFactor;
+	const uint8_t *end_src_ptr = (uint8_t*)_data +
+		m0.length * _unit_size * MipMapScaleFactor;
+	for(src_ptr = (uint8_t*)_data +
+		prev_length * _unit_size * MipMapScaleFactor;
+		src_ptr < end_src_ptr;)
+	{
+		// Accumulate transitions which have occurred in this sample
+		accumulator = 0;
+		diff_counter = MipMapScaleFactor;
+		while(diff_counter-- > 0)
+		{
+			const uint64_t sample = *(uint64_t*)src_ptr;
+			accumulator |= _last_append_sample ^ sample;
+			_last_append_sample = sample;
+			src_ptr += _unit_size;
+		}
+
+		*(uint64_t*)dest_ptr = accumulator;
+		dest_ptr += _unit_size;
+	}
+
+	// Compute higher level mipmaps
+	for(int level = 1; level < ScaleStepCount; level++)
+	{
+		MipMapLevel &m = _mip_map[level];
+		const MipMapLevel &ml = _mip_map[level-1];
+
+		// Expand the data buffer to fit the new samples
+		prev_length = m.length;
+		m.length = ml.length / MipMapScaleFactor;
+
+		// Break off if there are no more samples to computed
+		if(m.length == prev_length)
+			break;
+
+		reallocate_mip_map(m);
+
+		// Subsample the level lower level
+		src_ptr = (uint8_t*)ml.data +
+			_unit_size * prev_length * MipMapScaleFactor;
+		const uint8_t *end_dest_ptr =
+			(uint8_t*)m.data + _unit_size * m.length;
+		for(dest_ptr = (uint8_t*)m.data +
+			_unit_size * prev_length;
+			dest_ptr < end_dest_ptr;
+			dest_ptr += _unit_size)
+		{
+			accumulator = 0;
+			diff_counter = MipMapScaleFactor;
+			while(diff_counter-- > 0)
+			{
+				accumulator |= *(uint64_t*)src_ptr;
+				src_ptr += _unit_size;
+			}
+
+			*(uint64_t*)dest_ptr = accumulator;
+		}
+	}
 }
 
 uint64_t LogicDataSnapshot::get_sample(uint64_t index) const

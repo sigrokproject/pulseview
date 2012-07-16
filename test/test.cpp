@@ -20,18 +20,3 @@
 
 #define BOOST_TEST_MAIN
 #include <boost/test/unit_test.hpp>
-
-#include "../logicdatasnapshot.h"
-
-BOOST_AUTO_TEST_CASE(LogicDataSnapshotTest)
-{
-	// Create an empty LogicDataSnapshot object
-	sr_datafeed_logic logic;
-	logic.length = 0;
-	logic.unitsize = 1;
-	logic.data = NULL;
-
-	LogicDataSnapshot s(logic);
-
-	BOOST_CHECK(s.get_sample_count() == 0);
-}
