@@ -37,6 +37,7 @@ private:
 	static const int ScaleStepCount = 10;
 	static const int MipMapScalePower;
 	static const int MipMapScaleFactor;
+	static const float LogMipMapScaleFactor;
 	static const uint64_t MipMapDataUnit;
 
 public:
@@ -63,13 +64,17 @@ public:
 	 * @param[out] edges The vector to place the edges into.
 	 * @param[in] start The start sample index.
 	 * @param[in] end The end sample index.
-	 * @param[in] quantization_length The minimum period of time that
+	 * @param[in] min_length The minimum number of samples that
 	 * can be resolved at this level of detail.
 	 * @param[in] sig_index The index of the signal.
 	 **/
 	void get_subsampled_edges(std::vector<EdgePair> &edges,
 		int64_t start, int64_t end,
-		int64_t quantization_length, int sig_index);
+		float min_length, int sig_index);
+
+private:
+
+	static inline int64_t pow2_ceil(int64_t x, int power);
 
 private:
 	struct MipMapLevel _mip_map[ScaleStepCount];

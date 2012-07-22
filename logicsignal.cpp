@@ -33,8 +33,6 @@
 using namespace boost;
 using namespace std;
 
-const float Log2 = logf(2.0f);
-
 const float LogicSignal::Margin = 10.0f;
 
 const float LogicSignal::EdgeColour[3] =	{0.50f, 0.50f, 0.50f};
@@ -90,13 +88,11 @@ void LogicSignal::paint(QGLWidget &widget, const QRect &rect,
 	const double samples_per_pixel = samplerate * scale;
 	const double start = samplerate * (offset - start_time);
 	const double end = start + samples_per_pixel * rect.width();
-	const int64_t quantization_length = 1LL << (int64_t)floorf(
-		max(logf((float)samples_per_pixel) / Log2, 0.0f));
 
 	snapshot->get_subsampled_edges(edges,
 		min(max((int64_t)floor(start), (int64_t)0), last_sample),
 		min(max((int64_t)ceil(end), (int64_t)0), last_sample),
-		quantization_length, _probe_index);
+		samples_per_pixel, _probe_index);
 
 	// Paint the edges
 	const unsigned int edge_point_count = (edges.size() - 2) * 2;

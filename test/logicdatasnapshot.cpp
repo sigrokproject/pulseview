@@ -22,6 +22,8 @@
 
 #include "../logicdatasnapshot.h"
 
+using namespace std;
+
 void push_logic(LogicDataSnapshot &s, unsigned int length, uint8_t value)
 {
 	sr_datafeed_logic logic;
@@ -42,6 +44,8 @@ BOOST_AUTO_TEST_CASE(LogicDataSnapshotTest)
 	logic.data = NULL;
 
 	LogicDataSnapshot s(logic);
+
+	//----- Test LogicDataSnapshot::push_logic -----//
 
 	BOOST_CHECK(s.get_sample_count() == 0);
 	for(int i = 0; i < LogicDataSnapshot::ScaleStepCount; i++)
@@ -101,4 +105,26 @@ BOOST_AUTO_TEST_CASE(LogicDataSnapshotTest)
 	BOOST_CHECK_EQUAL(m1.data_length, LogicDataSnapshot::MipMapDataUnit);
 	BOOST_REQUIRE(m1.data != NULL);
 	BOOST_CHECK_EQUAL(((uint8_t*)m1.data)[0], 0x11);
+
+	//----- Test LogicDataSnapshot::get_subsampled_edges -----//
+
+	// Test a full view at full zoom.
+	vector<LogicDataSnapshot::EdgePair> edges;
+	s.get_subsampled_edges(edges, 0, 255, 1, 0);
+	BOOST_REQUIRE_EQUAL(edges.size(), 4);
+
+	BOOST_CHECK_EQUAL(edges[0].first, 0);
+	BOOST_CHECK_EQUAL(edges[1].first, 8);
+	BOOST_CHECK_EQUAL(edges[2].first, 16);
+	BOOST_CHECK_EQUAL(edges[3].first, 255);
+
+	// Test a subset at high zoom
+	edges.clear();
+	s.get_subsampled_edges(edges, 6, 17, 0.05f, 0);
+	BOOST_REQUIRE_EQUAL(edges.size(), 4);
+
+	BOOST_CHECK_EQUAL(edges[0].first, 6);
+	BOOST_CHECK_EQUAL(edges[1].first, 8);
+	BOOST_CHECK_EQUAL(edges[2].first, 16);
+	BOOST_CHECK_EQUAL(edges[3].first, 17);
 }
