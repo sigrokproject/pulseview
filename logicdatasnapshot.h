@@ -23,6 +23,11 @@
 #include <utility>
 #include <vector>
 
+namespace LogicDataSnapshotTest {
+	class Basic;
+	class LargeData;
+}
+
 class LogicDataSnapshot : public DataSnapshot
 {
 private:
@@ -80,5 +85,6 @@ private:
 	struct MipMapLevel _mip_map[ScaleStepCount];
 	uint64_t _last_append_sample;
 
-	friend class LogicDataSnapshotTest;
+	friend class LogicDataSnapshotTest::Basic;
+	friend class LogicDataSnapshotTest::LargeData;
 };
