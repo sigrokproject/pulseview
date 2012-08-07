@@ -126,7 +126,9 @@ void MainWindow::setup_ui()
 	_status_bar = new QStatusBar(this);
 	setStatusBar(_status_bar);
 
-	setWindowTitle(QApplication::translate("MainWindow", "sigrok-qt2", 0, QApplication::UnicodeUTF8));
+	setWindowTitle(QApplication::translate("MainWindow", "PulseView", 0,
+		QApplication::UnicodeUTF8));
+
 	_action_open->setText(QApplication::translate("MainWindow", "&Open...", 0, QApplication::UnicodeUTF8));
 	_action_view_zoom_in->setText(QApplication::translate("MainWindow", "Zoom &In", 0, QApplication::UnicodeUTF8));
 	_action_view_zoom_out->setText(QApplication::translate("MainWindow", "Zoom &Out", 0, QApplication::UnicodeUTF8));

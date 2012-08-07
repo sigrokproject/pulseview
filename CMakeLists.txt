@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.6)
 include(FindPkgConfig)
 
-project(sigrok-qt2)
+project(pulseview)
 
 find_package(PkgConfig)
 pkg_check_modules(PKGDEPS REQUIRED
@@ -14,7 +14,7 @@ find_package(Boost 1.46 COMPONENTS unit_test_framework REQUIRED)
 
 set(VERSION 0.1.0)
 
-set(sigrok-qt2_SOURCES
+set(pulseview_SOURCES
 	about.cpp
 	datasnapshot.cpp
 	logicdata.cpp
@@ -29,7 +29,7 @@ set(sigrok-qt2_SOURCES
 	sigview.cpp
 )
 
-set(sigrok-qt2_HEADERS
+set(pulseview_HEADERS
 	about.h
 	mainwindow.h
 	samplingbar.h
@@ -37,15 +37,15 @@ set(sigrok-qt2_HEADERS
 	sigview.h
 )
 
-set(sigrok-qt2_FORMS
+set(pulseview_FORMS
 	about.ui
 )
 
-set(sigrok-qt2_RESOURCES
-	sigrok-qt2.qrc
+set(pulseview_RESOURCES
+	pulseview.qrc
 )
 
-set(sigrok-qt2_TEST_SOURCES
+set(pulseview_TEST_SOURCES
 	test/logicdatasnapshot.cpp
 	test/test.cpp
 	datasnapshot.cpp
@@ -54,9 +54,9 @@ set(sigrok-qt2_TEST_SOURCES
 
 set(QT_USE_QTOPENGL TRUE)
 
-qt4_wrap_cpp(sigrok-qt2_HEADERS_MOC ${sigrok-qt2_HEADERS})
-qt4_wrap_ui(sigrok-qt2_FORMS_HEADERS ${sigrok-qt2_FORMS})
-qt4_add_resources(sigrok-qt2_RESOURCES_RCC ${sigrok-qt2_RESOURCES})
+qt4_wrap_cpp(pulseview_HEADERS_MOC ${pulseview_HEADERS})
+qt4_wrap_ui(pulseview_FORMS_HEADERS ${pulseview_FORMS})
+qt4_add_resources(pulseview_RESOURCES_RCC ${pulseview_RESOURCES})
 
 include(${QT_USE_FILE})
 
@@ -74,14 +74,14 @@ link_directories(
 	${PKGDEPS_LIBRARY_DIRS}
 )
 
-add_executable(sigrok-qt2
-	${sigrok-qt2_SOURCES}
-	${sigrok-qt2_HEADERS_MOC}
-	${sigrok-qt2_FORMS_HEADERS}
-	${sigrok-qt2_RESOURCES_RCC}
+add_executable(pulseview
+	${pulseview_SOURCES}
+	${pulseview_HEADERS_MOC}
+	${pulseview_FORMS_HEADERS}
+	${pulseview_RESOURCES_RCC}
 )
 
-target_link_libraries(sigrok-qt2
+target_link_libraries(pulseview
 	${Boost_LIBRARIES}
 	${PKGDEPS_LIBRARIES}
 	${QT_LIBRARIES}
@@ -89,15 +89,15 @@ target_link_libraries(sigrok-qt2
 
 add_definitions(-DBOOST_TEST_DYN_LINK)
 
-add_executable(sigrok-qt2-test
-	${sigrok-qt2_TEST_SOURCES}
+add_executable(pulseview-test
+	${pulseview_TEST_SOURCES}
 )
 
-target_link_libraries(sigrok-qt2-test
+target_link_libraries(pulseview-test
 	${Boost_LIBRARIES}
 	${PKGDEPS_LIBRARIES}
 	${QT_LIBRARIES}
 )
 
 enable_testing()
-add_test(test ${CMAKE_CURRENT_BINARY_DIR}/sigrok-qt2-test)
+add_test(test ${CMAKE_CURRENT_BINARY_DIR}/pulseview-test)

@@ -1,5 +1,5 @@
-sigrok-qt2
-sigrok-qt2-test
+pulseview
+pulseview-test
 
 # CMake cruft
 CMakeCache.txt
