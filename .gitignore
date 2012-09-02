@@ -1,0 +1,13 @@
+sigrok-qt2
+
+# CMake cruft
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+
+# qt generated code
+*.qrc.depends
+moc_*.cxx
+qrc_*.cxx
+ui_*.h
