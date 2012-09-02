@@ -18,56 +18,22 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef SIGSESSION_H
-#define SIGSESSION_H
-
-#include <boost/shared_ptr.hpp>
-
-#include <list>
-#include <map>
-#include <string>
-
-#include <QObject>
+#include "signaldata.h"
 
 extern "C" {
 #include <libsigrok/libsigrok.h>
 }
 
-class LogicData;
 class LogicDataSnapshot;
-class Signal;
 
-class SigSession : public QObject
+class LogicData : public SignalData
 {
-	Q_OBJECT
-
 public:
-	SigSession();
+	LogicData(const sr_datafeed_meta_logic &meta);
 
-	~SigSession();
-
-	void loadFile(const std::string &name);
-
-private:
-	void dataFeedIn(const struct sr_dev_inst *sdi,
-		struct sr_datafeed_packet *packet);
-
-	static void dataFeedInProc(const struct sr_dev_inst *sdi,
-		struct sr_datafeed_packet *packet);
+	void push_snapshot(
+		boost::shared_ptr<LogicDataSnapshot> &snapshot);
 
 private:
-	std::list< boost::shared_ptr<Signal> > _signals;
-	boost::shared_ptr<LogicData> _logic_data;
-	boost::shared_ptr<LogicDataSnapshot> _cur_logic_snapshot;
-
-signals:
-	void dataUpdated();
-
-private:
-	// TODO: This should not be necessary. Multiple concurrent
-	// sessions should should be supported and it should be
-	// possible to associate a pointer with a sr_session.
-	static SigSession *session;
+	int _num_probes;
 };
-
-#endif // SIGSESSION_H

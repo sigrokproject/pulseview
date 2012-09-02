@@ -16,9 +16,15 @@ set(VERSION 0.1.0)
 
 set(sigrok-qt2_SOURCES
 	about.cpp
+	datasnapshot.cpp
+	logicdata.cpp
+	logicdatasnapshot.cpp
+	logicsignal.cpp
 	main.cpp
 	mainwindow.cpp
+	signaldata.cpp
 	sigsession.cpp
+	signal.cpp
 	sigview.cpp
 )
 

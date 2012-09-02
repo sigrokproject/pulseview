@@ -20,16 +20,19 @@
 
 #include "sigsession.h"
 
+#include "logicdata.h"
+#include "logicdatasnapshot.h"
+
 #include <QDebug>
 
 #include <assert.h>
 
+using namespace boost;
+
 // TODO: This should not be necessary
 SigSession* SigSession::session = NULL;
 
-SigSession::SigSession() :
-	unitSize(0),
-	sigData(NULL)
+SigSession::SigSession()
 {
 	// TODO: This should not be necessary
 	session = this;
@@ -37,8 +40,6 @@ SigSession::SigSession() :
 
 SigSession::~SigSession()
 {
-	g_array_free(sigData, TRUE);
-
 	// TODO: This should not be necessary
 	session = NULL;
 }
@@ -61,50 +62,39 @@ void SigSession::dataFeedIn(const struct sr_dev_inst *sdi,
 	assert(packet);
 
 	switch (packet->type) {
-	case SR_DF_META_LOGIC:
-		{
-			const sr_datafeed_meta_logic *meta_logic =
-				(sr_datafeed_meta_logic*)packet->payload;
-			int num_enabled_probes = 0;
-
-			for (int i = 0; i < meta_logic->num_probes; i++) {
-				const sr_probe *probe =
-					(sr_probe *)g_slist_nth_data(sdi->probes, i);
-				if (probe->enabled) {
-					probeList[num_enabled_probes++] = probe->index;
-				}
-			}
-
-			/* How many bytes we need to store num_enabled_probes bits */
-			unitSize = (num_enabled_probes + 7) / 8;
-			sigData = g_array_new(FALSE, FALSE, unitSize);
-		}
+	case SR_DF_HEADER:
 		break;
 
-	case SR_DF_LOGIC:
+	case SR_DF_META_LOGIC:
 		{
-			uint64_t filter_out_len;
-			uint8_t *filter_out;
+			assert(packet->payload);
 
-			const struct sr_datafeed_logic *const logic =
-				(sr_datafeed_logic*)packet->payload;
+			_logic_data.reset(new LogicData(
+				*(sr_datafeed_meta_logic*)packet->payload));
 
-			qDebug() << "SR_DF_LOGIC (length =" << logic->length
-				<< ", unitsize = " << logic->unitsize << ")";
+			assert(_logic_data);
+			if(!_logic_data)
+				break;
 
-			if (sr_filter_probes(logic->unitsize, unitSize,
-				probeList, (uint8_t*)logic->data, logic->length,
-				&filter_out, &filter_out_len) != SR_OK)
-				return;
+			// Add an empty data snapshot
+			shared_ptr<LogicDataSnapshot> snapshot(
+				new LogicDataSnapshot());
+			_logic_data->push_snapshot(snapshot);
+			_cur_logic_snapshot = snapshot;
 
-			assert(sigData);
-			g_array_append_vals(sigData, filter_out, filter_out_len / unitSize);
-
-			g_free(filter_out);
+			break;
 		}
+
+	case SR_DF_LOGIC:
+		assert(packet->payload);
+		assert(_cur_logic_snapshot);
+		if(_cur_logic_snapshot)
+			_cur_logic_snapshot->append_payload(
+				*(sr_datafeed_logic*)packet->payload);
 		break;
 
 	case SR_DF_END:
+		_cur_logic_snapshot.reset();
 		dataUpdated();
 		break;
 	}
