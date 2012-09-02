@@ -10,6 +10,7 @@ pkg_check_modules(PKGDEPS REQUIRED
 )
 
 find_package(Qt4 REQUIRED)
+find_package(Boost 1.46 REQUIRED)
 
 set(VERSION 0.1.0)
 
@@ -50,10 +51,12 @@ add_definitions(-DAPP_VERSION="${VERSION}")
 
 include_directories(
 	${include_directories}
+	${Boost_INCLUDE_DIRS}
 	${PKGDEPS_INCLUDE_DIRS}
 )
 
 link_directories(
+	${Boost_LIBRARY_DIRS}
 	${PKGDEPS_LIBRARY_DIRS}
 )
 
@@ -65,6 +68,7 @@ add_executable(sigrok-qt2
 )
 
 target_link_libraries(sigrok-qt2
+	${Boost_LIBRARIES}
 	${PKGDEPS_LIBRARIES}
 	${QT_LIBRARIES}
 )
