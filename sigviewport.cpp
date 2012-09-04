@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#include "sigview.h"
+#include "sigviewport.h"
 
 #include "sigsession.h"
 #include "signal.h"
@@ -35,21 +35,21 @@
 using namespace boost;
 using namespace std;
 
-const double SigView::MaxScale = 1e9;
-const double SigView::MinScale = 1e-15;
+const double SigViewport::MaxScale = 1e9;
+const double SigViewport::MinScale = 1e-15;
 
-const int SigView::SignalHeight = 50;
-const int SigView::LabelMarginWidth = 70;
-const int SigView::RulerHeight = 30;
+const int SigViewport::SignalHeight = 50;
+const int SigViewport::LabelMarginWidth = 70;
+const int SigViewport::RulerHeight = 30;
 
-const int SigView::MinorTickSubdivision = 4;
-const int SigView::ScaleUnits[3] = {1, 2, 5};
+const int SigViewport::MinorTickSubdivision = 4;
+const int SigViewport::ScaleUnits[3] = {1, 2, 5};
 
-const QString SigView::SIPrefixes[9] =
+const QString SigViewport::SIPrefixes[9] =
 	{"f", "p", "n", QChar(0x03BC), "m", "", "k", "M", "G"};
-const int SigView::FirstSIPrefixPower = -15;
+const int SigViewport::FirstSIPrefixPower = -15;
 
-SigView::SigView(SigSession &session, QWidget *parent) :
+SigViewport::SigViewport(SigSession &session, QWidget *parent) :
 	QGLWidget(parent),
         _session(session),
 	_scale(1e-6),
@@ -62,21 +62,21 @@ SigView::SigView(SigSession &session, QWidget *parent) :
 	setAutoFillBackground(false);
 }
 
-void SigView::zoom(double steps)
+void SigViewport::zoom(double steps)
 {
 	zoom(steps, (width() - LabelMarginWidth) / 2);
 }
 
-void SigView::initializeGL()
+void SigViewport::initializeGL()
 {
 }
 
-void SigView::resizeGL(int width, int height)
+void SigViewport::resizeGL(int width, int height)
 {
 	setup_viewport(width, height);
 }
 
-void SigView::paintEvent(QPaintEvent *event)
+void SigViewport::paintEvent(QPaintEvent *event)
 {
 	int offset;
 
@@ -137,12 +137,12 @@ void SigView::paintEvent(QPaintEvent *event)
 	painter.end();
 }
 
-void SigView::data_updated()
+void SigViewport::data_updated()
 {
 	update();
 }
 
-void SigView::mousePressEvent(QMouseEvent *event)
+void SigViewport::mousePressEvent(QMouseEvent *event)
 {
 	assert(event);
 
@@ -150,7 +150,7 @@ void SigView::mousePressEvent(QMouseEvent *event)
 	_mouse_down_offset = _offset;
 }
 
-void SigView::mouseMoveEvent(QMouseEvent *event)
+void SigViewport::mouseMoveEvent(QMouseEvent *event)
 {
 	assert(event);
 
@@ -161,18 +161,18 @@ void SigView::mouseMoveEvent(QMouseEvent *event)
 	}
 }
 
-void SigView::mouseReleaseEvent(QMouseEvent *event)
+void SigViewport::mouseReleaseEvent(QMouseEvent *event)
 {
 	assert(event);
 }
 
-void SigView::wheelEvent(QWheelEvent *event)
+void SigViewport::wheelEvent(QWheelEvent *event)
 {
 	assert(event);
 	zoom(event->delta() / 120, event->x() - LabelMarginWidth);
 }
 
-void SigView::setup_viewport(int width, int height)
+void SigViewport::setup_viewport(int width, int height)
 {
 	glViewport(0, 0, (GLint)width, (GLint)height);
 	glMatrixMode(GL_PROJECTION);
@@ -181,7 +181,7 @@ void SigView::setup_viewport(int width, int height)
 	glMatrixMode(GL_MODELVIEW);
 }
 
-void SigView::paint_ruler(QPainter &p)
+void SigViewport::paint_ruler(QPainter &p)
 {
 	const double MinSpacing = 80;
 
@@ -243,7 +243,7 @@ void SigView::paint_ruler(QPainter &p)
 	}
 }
 
-void SigView::zoom(double steps, int offset)
+void SigViewport::zoom(double steps, int offset)
 {
 	const double cursor_offset = _offset + _scale * offset;
 	_scale *= pow(3.0/2.0, -steps);

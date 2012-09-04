@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef SIGVIEW_H
-#define SIGVIEW_H
+#ifndef SIGVIEWPORT_H
+#define SIGVIEWPORT_H
 
 #include <QtOpenGL/QGLWidget>
 #include <QTimer>
@@ -28,7 +28,7 @@ class QPainter;
 class QPaintEvent;
 class SigSession;
 
-class SigView : public QGLWidget
+class SigViewport : public QGLWidget
 {
 	Q_OBJECT
 
@@ -47,7 +47,7 @@ private:
 	static const int FirstSIPrefixPower;
 
 public:
-	explicit SigView(SigSession &session, QWidget *parent = 0);
+	explicit SigViewport(SigSession &session, QWidget *parent = 0);
 
 	void zoom(double steps);
 
@@ -85,4 +85,4 @@ private:
 	double _mouse_down_offset;
 };
 
-#endif // SIGVIEW_H
+#endif // SIGVIEWPORT_H

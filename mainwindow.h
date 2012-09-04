@@ -26,7 +26,7 @@
 #include "sigsession.h"
 
 class SamplingBar;
-class SigView;
+class SigViewport;
 
 namespace Ui {
 class MainWindow;
@@ -53,7 +53,7 @@ private:
 private:
 
 	SigSession _session;
-	SigView *_view;
+	SigViewport *_view;
 
 	QAction *_action_open;
 	QAction *_action_view_zoom_in;
