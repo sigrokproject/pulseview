@@ -35,7 +35,7 @@ extern "C" {
 #include "about.h"
 #include "mainwindow.h"
 #include "samplingbar.h"
-#include "sigviewport.h"
+#include "sigview.h"
 
 extern "C" {
 /* __STDC_FORMAT_MACROS is required for PRIu64 and friends (in C++). */
@@ -138,7 +138,7 @@ void MainWindow::setup_ui()
 	_menu_view->setTitle(QApplication::translate("MainWindow", "&View", 0, QApplication::UnicodeUTF8));
 	_menu_help->setTitle(QApplication::translate("MainWindow", "&Help", 0, QApplication::UnicodeUTF8));
 
-	_view = new SigViewport(_session, this);
+	_view = new SigView(_session, this);
 	_vertical_layout->addWidget(_view);
 }
 

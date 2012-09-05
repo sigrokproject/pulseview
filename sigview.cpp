@@ -1,0 +1,179 @@
+/*
+ * This file is part of the sigrok project.
+ *
+ * Copyright (C) 2012 Joel Holdsworth <joel@airwebreathe.org.uk>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+ */
+
+#include <assert.h>
+#include <math.h>
+
+#include <boost/foreach.hpp>
+
+#include <QEvent>
+#include <QScrollBar>
+
+#include "sigview.h"
+
+#include "logicdata.h"
+#include "logicdatasnapshot.h"
+#include "sigsession.h"
+#include "sigviewport.h"
+
+using namespace boost;
+using namespace std;
+
+const double SigView::MaxScale = 1e9;
+const double SigView::MinScale = 1e-15;
+
+const int SigView::LabelMarginWidth = 70;
+const int SigView::RulerHeight = 30;
+
+SigView::SigView(SigSession &session, QWidget *parent) :
+	QAbstractScrollArea(parent),
+	_session(session),
+	_viewport(new SigViewport(*this)),
+	_data_length(0),
+	_scale(1e-6),
+	_offset(0),
+	_v_offset(0)
+{
+	connect(horizontalScrollBar(), SIGNAL(valueChanged(int)),
+		this, SLOT(h_scroll_value_changed(int)));
+	connect(verticalScrollBar(), SIGNAL(valueChanged(int)),
+		this, SLOT(v_scroll_value_changed(int)));
+	connect(&_session, SIGNAL(data_updated()),
+		this, SLOT(data_updated()));
+	setViewport(_viewport);
+}
+
+double SigView::scale() const
+{
+	return _scale;
+}
+
+double SigView::offset() const
+{
+	return _offset;
+}
+
+int SigView::v_offset() const
+{
+	return _v_offset;
+}
+
+void SigView::zoom(double steps)
+{
+	zoom(steps, (width() - LabelMarginWidth) / 2);
+}
+
+void SigView::set_scale_offset(double scale, double offset)
+{
+	_scale = scale;
+	_offset = offset;
+	update_scroll();
+	_viewport->update();
+}
+
+void SigView::update_scroll()
+{
+	assert(_viewport);
+
+	const QSize areaSize = _viewport->size();
+
+	// Set the horizontal scroll bar
+	double length = 0, offset = 0;
+	const shared_ptr<SignalData> sig_data = _session.get_data();
+	if(sig_data) {
+		length = _data_length /
+			(sig_data->get_samplerate() * _scale);
+		offset = _offset / _scale;
+	}
+
+	horizontalScrollBar()->setPageStep(areaSize.width());
+	horizontalScrollBar()->setRange(0,
+		max((int)(length - areaSize.width()), 0));
+	horizontalScrollBar()->setSliderPosition(offset);
+
+	// Set the vertical scrollbar
+	verticalScrollBar()->setPageStep(areaSize.height());
+	verticalScrollBar()->setRange(0,
+		_viewport->get_total_height() - areaSize.height());
+}
+
+void SigView::zoom(double steps, int offset)
+{
+	const double cursor_offset = _offset + _scale * offset;
+	_scale *= pow(3.0/2.0, -steps);
+	_scale = max(min(_scale, MaxScale), MinScale);
+	_offset = cursor_offset - _scale * offset;
+	_viewport->update();
+	update_scroll();
+}
+
+bool SigView::viewportEvent(QEvent *e)
+{
+	switch(e->type()) {
+	case QEvent::Paint:
+	case QEvent::MouseButtonPress:
+	case QEvent::MouseButtonRelease:
+	case QEvent::MouseButtonDblClick:
+	case QEvent::MouseMove:
+	case QEvent::Wheel:
+		return false;
+
+	default:
+		return QAbstractScrollArea::viewportEvent(e);
+	}
+}
+
+void SigView::resizeEvent(QResizeEvent *e)
+{
+	update_scroll();
+}
+
+void SigView::h_scroll_value_changed(int value)
+{
+	_offset = _scale * value;
+	_viewport->update();
+}
+
+void SigView::v_scroll_value_changed(int value)
+{
+	_v_offset = value;
+	_viewport->update();
+}
+
+void SigView::data_updated()
+{
+	// Get the new data length
+	_data_length = 0;
+	shared_ptr<LogicData> sig_data = _session.get_data();
+	if(sig_data) {
+		deque< shared_ptr<LogicDataSnapshot> > &snapshots =
+			sig_data->get_snapshots();
+		BOOST_FOREACH(shared_ptr<LogicDataSnapshot> s, snapshots)
+			if(s)
+				_data_length = max(_data_length,
+					s->get_sample_count());
+	}
+
+	// Update the scroll bars
+	update_scroll();
+
+	// Repaint the view
+	_viewport->update();
+}

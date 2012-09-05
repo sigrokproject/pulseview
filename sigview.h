@@ -18,58 +18,66 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef SIGVIEWPORT_H
-#define SIGVIEWPORT_H
+#ifndef SIGVIEW_H
+#define SIGVIEW_H
 
-#include <QtOpenGL/QGLWidget>
-#include <QTimer>
+#include <stdint.h>
 
-class QPainter;
-class QPaintEvent;
+#include <QAbstractScrollArea>
+
 class SigSession;
-class SigView;
+class SigViewport;
 
-class SigViewport : public QGLWidget
-{
+class SigView : public QAbstractScrollArea {
 	Q_OBJECT
 
 private:
-	static const int SignalHeight;
+	static const double MaxScale;
+	static const double MinScale;
 
-	static const int MinorTickSubdivision;
-	static const int ScaleUnits[3];
-
-	static const QString SIPrefixes[9];
-	static const int FirstSIPrefixPower;
+	static const int LabelMarginWidth;
+	static const int RulerHeight;
 
 public:
-	explicit SigViewport(SigView &parent);
+	explicit SigView(SigSession &session, QWidget *parent = 0);
 
-	int get_total_height() const;
+	double scale() const;
+	double offset() const;
+	int v_offset() const;
 
-protected:
-	void initializeGL();
+	void zoom(double steps);
 
-	void resizeGL(int width, int height);
-
-	void paintEvent(QPaintEvent *event);
-
-private:
-	void mousePressEvent(QMouseEvent *event);
-	void mouseMoveEvent(QMouseEvent *event);
-	void mouseReleaseEvent(QMouseEvent *event);
-	void wheelEvent(QWheelEvent *event);
+	void set_scale_offset(double scale, double offset);
 
 private:
-	void setup_viewport(int width, int height);
+	void update_scroll();
 
-	void paint_ruler(QPainter &p);
+	void zoom(double steps, int offset);
 
 private:
-	SigView &_view;
+	bool viewportEvent(QEvent *e);
 
-	QPoint _mouse_down_point;
-	double _mouse_down_offset;
+	void resizeEvent(QResizeEvent *e);
+
+private slots:
+	void h_scroll_value_changed(int value);
+	void v_scroll_value_changed(int value);
+
+	void data_updated();
+
+private:
+	SigSession &_session;
+
+	SigViewport *_viewport;
+
+	uint64_t _data_length;
+
+	double _scale;
+	double _offset;
+
+	int _v_offset;
+
+	friend class SigViewport;
 };
 
-#endif // SIGVIEWPORT_H
+#endif // SIGVIEW_H

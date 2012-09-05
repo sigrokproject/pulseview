@@ -97,6 +97,11 @@ vector< shared_ptr<Signal> >& SigSession::get_signals()
 	return _signals;
 }
 
+boost::shared_ptr<LogicData> SigSession::get_data()
+{
+	return _logic_data;
+}
+
 void SigSession::data_feed_in(const struct sr_dev_inst *sdi,
 	struct sr_datafeed_packet *packet)
 {

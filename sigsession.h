@@ -53,6 +53,8 @@ public:
 	std::vector< boost::shared_ptr<Signal> >&
 		get_signals();
 
+	boost::shared_ptr<LogicData> get_data();
+
 private:
 	void data_feed_in(const struct sr_dev_inst *sdi,
 		struct sr_datafeed_packet *packet);
