@@ -21,7 +21,7 @@
 #include "signaldata.h"
 
 #include <boost/shared_ptr.hpp>
-#include <queue>
+#include <deque>
 
 extern "C" {
 #include <libsigrok/libsigrok.h>
@@ -39,11 +39,11 @@ public:
 	void push_snapshot(
 		boost::shared_ptr<LogicDataSnapshot> &snapshot);
 
-	std::queue< boost::shared_ptr<LogicDataSnapshot> >&
+	std::deque< boost::shared_ptr<LogicDataSnapshot> >&
 		get_snapshots();
 
 private:
 	const int _num_probes;
-	std::queue< boost::shared_ptr<LogicDataSnapshot> >
+	std::deque< boost::shared_ptr<LogicDataSnapshot> >
 		_snapshots;
 };

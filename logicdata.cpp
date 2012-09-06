@@ -38,10 +38,10 @@ int LogicData::get_num_probes() const
 void LogicData::push_snapshot(
 	boost::shared_ptr<LogicDataSnapshot> &snapshot)
 {
-	_snapshots.push(snapshot);
+	_snapshots.push_front(snapshot);
 }
 
-queue< shared_ptr<LogicDataSnapshot> >& LogicData::get_snapshots()
+deque< shared_ptr<LogicDataSnapshot> >& LogicData::get_snapshots()
 {
 	return _snapshots;
 }

@@ -74,7 +74,7 @@ void LogicSignal::paint(QGLWidget &widget, const QRect &rect,
 	const float high_offset = rect.top() + Margin;
 	const float low_offset = rect.bottom() - Margin;
 
-	const queue< shared_ptr<LogicDataSnapshot> > &snapshots =
+	const deque< shared_ptr<LogicDataSnapshot> > &snapshots =
 		_data->get_snapshots();
 	if(snapshots.empty())
 		return;
