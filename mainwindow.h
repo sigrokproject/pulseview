@@ -33,10 +33,6 @@ class View;
 }
 }
 
-namespace Ui {
-class MainWindow;
-}
-
 class QAction;
 class QMenuBar;
 class QMenu;
