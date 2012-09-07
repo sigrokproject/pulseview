@@ -63,6 +63,11 @@ View::View(SigSession &session, QWidget *parent) :
 	setViewport(_viewport);
 }
 
+SigSession& View::session()
+{
+	return _session;
+}
+
 double View::scale() const
 {
 	return _scale;

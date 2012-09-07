@@ -60,7 +60,7 @@ int Viewport::get_total_height() const
 {
 	int height = 0;
 	BOOST_FOREACH(const shared_ptr<Signal> s,
-		_view._session.get_signals()) {
+		_view.session().get_signals()) {
 		assert(s);
 		height += SignalHeight;
 	}
@@ -82,7 +82,7 @@ void Viewport::paintEvent(QPaintEvent *event)
 	int offset;
 
 	const vector< shared_ptr<Signal> > &sigs =
-		_view._session.get_signals();
+		_view.session().get_signals();
 
 	// Prepare for OpenGL rendering
 	makeCurrent();

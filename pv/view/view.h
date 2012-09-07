@@ -45,6 +45,8 @@ private:
 public:
 	explicit View(SigSession &session, QWidget *parent = 0);
 
+	SigSession& session();
+
 	double scale() const;
 	double offset() const;
 	int v_offset() const;
