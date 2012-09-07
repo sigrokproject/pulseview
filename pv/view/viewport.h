@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef SIGVIEWPORT_H
-#define SIGVIEWPORT_H
+#ifndef PV_VIEW_VIEWPORT_H
+#define PV_VIEW_VIEWPORT_H
 
 #include <QtOpenGL/QGLWidget>
 #include <QTimer>
@@ -27,9 +27,13 @@
 class QPainter;
 class QPaintEvent;
 class SigSession;
-class SigView;
 
-class SigViewport : public QGLWidget
+namespace pv {
+namespace view {
+
+class View;
+
+class Viewport : public QGLWidget
 {
 	Q_OBJECT
 
@@ -43,7 +47,7 @@ private:
 	static const int FirstSIPrefixPower;
 
 public:
-	explicit SigViewport(SigView &parent);
+	explicit Viewport(View &parent);
 
 	int get_total_height() const;
 
@@ -66,10 +70,13 @@ private:
 	void paint_ruler(QPainter &p);
 
 private:
-	SigView &_view;
+	View &_view;
 
 	QPoint _mouse_down_point;
 	double _mouse_down_offset;
 };
 
-#endif // SIGVIEWPORT_H
+} // namespace view
+} // namespace pv
+
+#endif // PV_VIEW_VIEWPORT_H

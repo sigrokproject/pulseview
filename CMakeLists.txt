@@ -26,8 +26,8 @@ set(pulseview_SOURCES
 	signaldata.cpp
 	sigsession.cpp
 	signal.cpp
-	sigview.cpp
-	sigviewport.cpp
+	pv/view/view.cpp
+	pv/view/viewport.cpp
 )
 
 set(pulseview_HEADERS
@@ -35,8 +35,8 @@ set(pulseview_HEADERS
 	mainwindow.h
 	samplingbar.h
 	sigsession.h
-	sigview.h
-	sigviewport.h
+	pv/view/view.h
+	pv/view/viewport.h
 )
 
 set(pulseview_FORMS

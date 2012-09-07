@@ -18,13 +18,13 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#include "sigviewport.h"
+#include "view.h"
+#include "viewport.h"
 
-#include "sigsession.h"
-#include "signal.h"
-#include "sigview.h"
+#include "../../sigsession.h"
+#include "../../signal.h"
 
-#include "extdef.h"
+#include "../../extdef.h"
 
 #include <QMouseEvent>
 #include <QTextStream>
@@ -36,16 +36,19 @@
 using namespace boost;
 using namespace std;
 
-const int SigViewport::SignalHeight = 50;
+namespace pv {
+namespace view {
 
-const int SigViewport::MinorTickSubdivision = 4;
-const int SigViewport::ScaleUnits[3] = {1, 2, 5};
+const int Viewport::SignalHeight = 50;
 
-const QString SigViewport::SIPrefixes[9] =
+const int Viewport::MinorTickSubdivision = 4;
+const int Viewport::ScaleUnits[3] = {1, 2, 5};
+
+const QString Viewport::SIPrefixes[9] =
 	{"f", "p", "n", QChar(0x03BC), "m", "", "k", "M", "G"};
-const int SigViewport::FirstSIPrefixPower = -15;
+const int Viewport::FirstSIPrefixPower = -15;
 
-SigViewport::SigViewport(SigView &parent) :
+Viewport::Viewport(View &parent) :
 	QGLWidget(&parent),
         _view(parent)
 {
@@ -53,7 +56,7 @@ SigViewport::SigViewport(SigView &parent) :
 	setAutoFillBackground(false);
 }
 
-int SigViewport::get_total_height() const
+int Viewport::get_total_height() const
 {
 	int height = 0;
 	BOOST_FOREACH(const shared_ptr<Signal> s,
@@ -65,16 +68,16 @@ int SigViewport::get_total_height() const
 	return height;
 }
 
-void SigViewport::initializeGL()
+void Viewport::initializeGL()
 {
 }
 
-void SigViewport::resizeGL(int width, int height)
+void Viewport::resizeGL(int width, int height)
 {
 	setup_viewport(width, height);
 }
 
-void SigViewport::paintEvent(QPaintEvent *event)
+void Viewport::paintEvent(QPaintEvent *event)
 {
 	int offset;
 
@@ -93,14 +96,14 @@ void SigViewport::paintEvent(QPaintEvent *event)
 
 	// Plot the signal
 	glEnable(GL_SCISSOR_TEST);
-	glScissor(SigView::LabelMarginWidth, 0, width(), height());
-	offset = SigView::RulerHeight - _view.v_offset();
+	glScissor(View::LabelMarginWidth, 0, width(), height());
+	offset = View::RulerHeight - _view.v_offset();
 	BOOST_FOREACH(const shared_ptr<Signal> s, sigs)
 	{
 		assert(s);
 
-		const QRect signal_rect(SigView::LabelMarginWidth, offset,
-			width() - SigView::LabelMarginWidth, SignalHeight);
+		const QRect signal_rect(View::LabelMarginWidth, offset,
+			width() - View::LabelMarginWidth, SignalHeight);
 
 		s->paint(*this, signal_rect, _view.scale(), _view.offset());
 
@@ -117,13 +120,13 @@ void SigViewport::paintEvent(QPaintEvent *event)
 	painter.setRenderHint(QPainter::Antialiasing);
 
 	// Paint the labels
-	offset = SigView::RulerHeight - _view.v_offset();
+	offset = View::RulerHeight - _view.v_offset();
 	BOOST_FOREACH(const shared_ptr<Signal> s, sigs)
 	{
 		assert(s);
 
 		const QRect label_rect(0, offset,
-			SigView::LabelMarginWidth, SignalHeight);
+			View::LabelMarginWidth, SignalHeight);
 		s->paint_label(painter, label_rect);
 
 		offset += SignalHeight;
@@ -135,7 +138,7 @@ void SigViewport::paintEvent(QPaintEvent *event)
 	painter.end();
 }
 
-void SigViewport::mousePressEvent(QMouseEvent *event)
+void Viewport::mousePressEvent(QMouseEvent *event)
 {
 	assert(event);
 
@@ -143,7 +146,7 @@ void SigViewport::mousePressEvent(QMouseEvent *event)
 	_mouse_down_offset = _view.offset();
 }
 
-void SigViewport::mouseMoveEvent(QMouseEvent *event)
+void Viewport::mouseMoveEvent(QMouseEvent *event)
 {
 	assert(event);
 
@@ -156,19 +159,19 @@ void SigViewport::mouseMoveEvent(QMouseEvent *event)
 	}
 }
 
-void SigViewport::mouseReleaseEvent(QMouseEvent *event)
+void Viewport::mouseReleaseEvent(QMouseEvent *event)
 {
 	assert(event);
 }
 
-void SigViewport::wheelEvent(QWheelEvent *event)
+void Viewport::wheelEvent(QWheelEvent *event)
 {
 	assert(event);
 	_view.zoom(event->delta() / 120, event->x() -
-		SigView::LabelMarginWidth);
+		View::LabelMarginWidth);
 }
 
-void SigViewport::setup_viewport(int width, int height)
+void Viewport::setup_viewport(int width, int height)
 {
 	glViewport(0, 0, (GLint)width, (GLint)height);
 	glMatrixMode(GL_PROJECTION);
@@ -177,7 +180,7 @@ void SigViewport::setup_viewport(int width, int height)
 	glMatrixMode(GL_MODELVIEW);
 }
 
-void SigViewport::paint_ruler(QPainter &p)
+void Viewport::paint_ruler(QPainter &p)
 {
 	const double MinSpacing = 80;
 
@@ -217,7 +220,7 @@ void SigViewport::paint_ruler(QPainter &p)
 	{
 		const double t = t0 + division * minor_tick_period;
 		const double x = (t - _view.offset()) / _view.scale() +
-			SigView::LabelMarginWidth;
+			View::LabelMarginWidth;
 
 		if(x >= width())
 			break;
@@ -230,16 +233,19 @@ void SigViewport::paint_ruler(QPainter &p)
 			ts << (t / order_decimal) << SIPrefixes[prefix] << "s";
 			p.drawText(x, 0, 0, text_height, Qt::AlignCenter | Qt::AlignTop |
 				Qt::TextDontClip, s);
-			p.drawLine(x, text_height, x, SigView::RulerHeight);
+			p.drawLine(x, text_height, x, View::RulerHeight);
 		}
 		else
 		{
 			// Draw a minor tick
 			p.drawLine(x,
-				(text_height + SigView::RulerHeight) / 2, x,
-				SigView::RulerHeight);
+				(text_height + View::RulerHeight) / 2, x,
+				View::RulerHeight);
 		}
 
 		division++;
 	}
 }
+
+} // namespace view
+} // namespace pv

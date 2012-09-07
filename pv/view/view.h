@@ -18,17 +18,21 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef SIGVIEW_H
-#define SIGVIEW_H
+#ifndef PV_VIEW_VIEW_H
+#define PV_VIEW_VIEW_H
 
 #include <stdint.h>
 
 #include <QAbstractScrollArea>
 
 class SigSession;
-class SigViewport;
 
-class SigView : public QAbstractScrollArea {
+namespace pv {
+namespace view {
+
+class Viewport;
+
+class View : public QAbstractScrollArea {
 	Q_OBJECT
 
 private:
@@ -39,7 +43,7 @@ private:
 	static const int RulerHeight;
 
 public:
-	explicit SigView(SigSession &session, QWidget *parent = 0);
+	explicit View(SigSession &session, QWidget *parent = 0);
 
 	double scale() const;
 	double offset() const;
@@ -68,7 +72,7 @@ private slots:
 private:
 	SigSession &_session;
 
-	SigViewport *_viewport;
+	Viewport *_viewport;
 
 	uint64_t _data_length;
 
@@ -77,7 +81,10 @@ private:
 
 	int _v_offset;
 
-	friend class SigViewport;
+	friend class Viewport;
 };
 
-#endif // SIGVIEW_H
+} // namespace view
+} // namespace pv
+
+#endif // PV_VIEW_VIEW_H

@@ -26,26 +26,29 @@
 #include <QEvent>
 #include <QScrollBar>
 
-#include "sigview.h"
+#include "view.h"
+#include "viewport.h"
 
-#include "logicdata.h"
-#include "logicdatasnapshot.h"
-#include "sigsession.h"
-#include "sigviewport.h"
+#include "../../logicdata.h"
+#include "../../logicdatasnapshot.h"
+#include "../../sigsession.h"
 
 using namespace boost;
 using namespace std;
 
-const double SigView::MaxScale = 1e9;
-const double SigView::MinScale = 1e-15;
+namespace pv {
+namespace view {
 
-const int SigView::LabelMarginWidth = 70;
-const int SigView::RulerHeight = 30;
+const double View::MaxScale = 1e9;
+const double View::MinScale = 1e-15;
 
-SigView::SigView(SigSession &session, QWidget *parent) :
+const int View::LabelMarginWidth = 70;
+const int View::RulerHeight = 30;
+
+View::View(SigSession &session, QWidget *parent) :
 	QAbstractScrollArea(parent),
 	_session(session),
-	_viewport(new SigViewport(*this)),
+	_viewport(new Viewport(*this)),
 	_data_length(0),
 	_scale(1e-6),
 	_offset(0),
@@ -60,27 +63,27 @@ SigView::SigView(SigSession &session, QWidget *parent) :
 	setViewport(_viewport);
 }
 
-double SigView::scale() const
+double View::scale() const
 {
 	return _scale;
 }
 
-double SigView::offset() const
+double View::offset() const
 {
 	return _offset;
 }
 
-int SigView::v_offset() const
+int View::v_offset() const
 {
 	return _v_offset;
 }
 
-void SigView::zoom(double steps)
+void View::zoom(double steps)
 {
 	zoom(steps, (width() - LabelMarginWidth) / 2);
 }
 
-void SigView::set_scale_offset(double scale, double offset)
+void View::set_scale_offset(double scale, double offset)
 {
 	_scale = scale;
 	_offset = offset;
@@ -88,7 +91,7 @@ void SigView::set_scale_offset(double scale, double offset)
 	_viewport->update();
 }
 
-void SigView::update_scroll()
+void View::update_scroll()
 {
 	assert(_viewport);
 
@@ -114,7 +117,7 @@ void SigView::update_scroll()
 		_viewport->get_total_height() - areaSize.height());
 }
 
-void SigView::zoom(double steps, int offset)
+void View::zoom(double steps, int offset)
 {
 	const double cursor_offset = _offset + _scale * offset;
 	_scale *= pow(3.0/2.0, -steps);
@@ -124,7 +127,7 @@ void SigView::zoom(double steps, int offset)
 	update_scroll();
 }
 
-bool SigView::viewportEvent(QEvent *e)
+bool View::viewportEvent(QEvent *e)
 {
 	switch(e->type()) {
 	case QEvent::Paint:
@@ -140,24 +143,24 @@ bool SigView::viewportEvent(QEvent *e)
 	}
 }
 
-void SigView::resizeEvent(QResizeEvent *e)
+void View::resizeEvent(QResizeEvent *e)
 {
 	update_scroll();
 }
 
-void SigView::h_scroll_value_changed(int value)
+void View::h_scroll_value_changed(int value)
 {
 	_offset = _scale * value;
 	_viewport->update();
 }
 
-void SigView::v_scroll_value_changed(int value)
+void View::v_scroll_value_changed(int value)
 {
 	_v_offset = value;
 	_viewport->update();
 }
 
-void SigView::data_updated()
+void View::data_updated()
 {
 	// Get the new data length
 	_data_length = 0;
@@ -177,3 +180,6 @@ void SigView::data_updated()
 	// Repaint the view
 	_viewport->update();
 }
+
+} // namespace view
+} // namespace pv
