@@ -39,8 +39,6 @@ using namespace std;
 namespace pv {
 namespace view {
 
-const int Viewport::SignalHeight = 50;
-
 const int Viewport::MinorTickSubdivision = 4;
 const int Viewport::ScaleUnits[3] = {1, 2, 5};
 
@@ -62,7 +60,7 @@ int Viewport::get_total_height() const
 	BOOST_FOREACH(const shared_ptr<Signal> s,
 		_view.session().get_signals()) {
 		assert(s);
-		height += SignalHeight;
+		height += View::SignalHeight;
 	}
 
 	return height;
@@ -96,18 +94,18 @@ void Viewport::paintEvent(QPaintEvent *event)
 
 	// Plot the signal
 	glEnable(GL_SCISSOR_TEST);
-	glScissor(View::LabelMarginWidth, 0, width(), height());
+	glScissor(0, 0, width(), height());
 	offset = View::RulerHeight - _view.v_offset();
 	BOOST_FOREACH(const shared_ptr<Signal> s, sigs)
 	{
 		assert(s);
 
-		const QRect signal_rect(View::LabelMarginWidth, offset,
-			width() - View::LabelMarginWidth, SignalHeight);
+		const QRect signal_rect(0, offset,
+			width(), View::SignalHeight);
 
 		s->paint(*this, signal_rect, _view.scale(), _view.offset());
 
-		offset += SignalHeight;
+		offset += View::SignalHeight;
 	}
 
 	glDisable(GL_SCISSOR_TEST);
@@ -118,19 +116,6 @@ void Viewport::paintEvent(QPaintEvent *event)
 
 	QPainter painter(this);
 	painter.setRenderHint(QPainter::Antialiasing);
-
-	// Paint the labels
-	offset = View::RulerHeight - _view.v_offset();
-	BOOST_FOREACH(const shared_ptr<Signal> s, sigs)
-	{
-		assert(s);
-
-		const QRect label_rect(0, offset,
-			View::LabelMarginWidth, SignalHeight);
-		s->paint_label(painter, label_rect);
-
-		offset += SignalHeight;
-	}
 
 	// Paint the ruler
 	paint_ruler(painter);
@@ -167,8 +152,7 @@ void Viewport::mouseReleaseEvent(QMouseEvent *event)
 void Viewport::wheelEvent(QWheelEvent *event)
 {
 	assert(event);
-	_view.zoom(event->delta() / 120, event->x() -
-		View::LabelMarginWidth);
+	_view.zoom(event->delta() / 120, event->x());
 }
 
 void Viewport::setup_viewport(int width, int height)
@@ -219,8 +203,7 @@ void Viewport::paint_ruler(QPainter &p)
 	while(1)
 	{
 		const double t = t0 + division * minor_tick_period;
-		const double x = (t - _view.offset()) / _view.scale() +
-			View::LabelMarginWidth;
+		const double x = (t - _view.offset()) / _view.scale();
 
 		if(x >= width())
 			break;

@@ -30,6 +30,7 @@ class SigSession;
 namespace pv {
 namespace view {
 
+class Header;
 class Viewport;
 
 class View : public QAbstractScrollArea {
@@ -41,6 +42,9 @@ private:
 
 	static const int LabelMarginWidth;
 	static const int RulerHeight;
+
+public:
+	static const int SignalHeight;
 
 public:
 	explicit View(SigSession &session, QWidget *parent = 0);
@@ -75,6 +79,7 @@ private:
 	SigSession &_session;
 
 	Viewport *_viewport;
+	Header *_header;
 
 	uint64_t _data_length;
 

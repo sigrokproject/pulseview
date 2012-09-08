@@ -26,6 +26,7 @@
 #include <QEvent>
 #include <QScrollBar>
 
+#include "header.h"
 #include "view.h"
 #include "viewport.h"
 
@@ -45,10 +46,13 @@ const double View::MinScale = 1e-15;
 const int View::LabelMarginWidth = 70;
 const int View::RulerHeight = 30;
 
+const int View::SignalHeight = 50;
+
 View::View(SigSession &session, QWidget *parent) :
 	QAbstractScrollArea(parent),
 	_session(session),
 	_viewport(new Viewport(*this)),
+	_header(new Header(*this)),
 	_data_length(0),
 	_scale(1e-6),
 	_offset(0),
@@ -60,6 +64,8 @@ View::View(SigSession &session, QWidget *parent) :
 		this, SLOT(v_scroll_value_changed(int)));
 	connect(&_session, SIGNAL(data_updated()),
 		this, SLOT(data_updated()));
+
+	setViewportMargins(LabelMarginWidth, 0, 0, 0);
 	setViewport(_viewport);
 }
 
@@ -150,6 +156,8 @@ bool View::viewportEvent(QEvent *e)
 
 void View::resizeEvent(QResizeEvent *e)
 {
+	_header->setGeometry(0, RulerHeight,
+		_viewport->x(), _viewport->height());
 	update_scroll();
 }
 
@@ -162,6 +170,7 @@ void View::h_scroll_value_changed(int value)
 void View::v_scroll_value_changed(int value)
 {
 	_v_offset = value;
+	_header->update();
 	_viewport->update();
 }
 
