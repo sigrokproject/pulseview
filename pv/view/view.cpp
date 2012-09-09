@@ -96,6 +96,19 @@ void View::zoom(double steps)
 	zoom(steps, (width() - LabelMarginWidth) / 2);
 }
 
+void View::zoom(double steps, int offset)
+{
+	const double cursor_offset = _offset + _scale * offset;
+	_scale *= pow(3.0/2.0, -steps);
+	_scale = max(min(_scale, MaxScale), MinScale);
+	_offset = cursor_offset - _scale * offset;
+
+	_ruler->update();
+	_viewport->update();
+	update_scroll();
+}
+
+
 void View::set_scale_offset(double scale, double offset)
 {
 	_scale = scale;
@@ -130,18 +143,6 @@ void View::update_scroll()
 	verticalScrollBar()->setPageStep(areaSize.height());
 	verticalScrollBar()->setRange(0,
 		_viewport->get_total_height() - areaSize.height());
-}
-
-void View::zoom(double steps, int offset)
-{
-	const double cursor_offset = _offset + _scale * offset;
-	_scale *= pow(3.0/2.0, -steps);
-	_scale = max(min(_scale, MaxScale), MinScale);
-	_offset = cursor_offset - _scale * offset;
-
-	_ruler->update();
-	_viewport->update();
-	update_scroll();
 }
 
 bool View::viewportEvent(QEvent *e)

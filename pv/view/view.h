@@ -57,13 +57,12 @@ public:
 	int v_offset() const;
 
 	void zoom(double steps);
+	void zoom(double steps, int offset);
 
 	void set_scale_offset(double scale, double offset);
 
 private:
 	void update_scroll();
-
-	void zoom(double steps, int offset);
 
 private:
 	bool viewportEvent(QEvent *e);
