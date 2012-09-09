@@ -88,8 +88,6 @@ private:
 	double _offset;
 
 	int _v_offset;
-
-	friend class Viewport;
 };
 
 } // namespace view
