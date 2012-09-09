@@ -18,54 +18,38 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PV_VIEW_VIEWPORT_H
-#define PV_VIEW_VIEWPORT_H
+#ifndef PV_VIEW_RULER_H
+#define PV_VIEW_RULER_H
 
-#include <QtOpenGL/QGLWidget>
-#include <QTimer>
-
-class QPainter;
-class QPaintEvent;
-class SigSession;
+#include <QWidget>
 
 namespace pv {
 namespace view {
 
 class View;
 
-class Viewport : public QGLWidget
+class Ruler : public QWidget
 {
 	Q_OBJECT
 
+private:
+	static const int MinorTickSubdivision;
+	static const int ScaleUnits[3];
+
+	static const QString SIPrefixes[9];
+	static const int FirstSIPrefixPower;
+
 public:
-	explicit Viewport(View &parent);
+	Ruler(View &parent);
 
-	int get_total_height() const;
-
-protected:
-	void initializeGL();
-
-	void resizeGL(int width, int height);
-
+private:
 	void paintEvent(QPaintEvent *event);
 
 private:
-	void mousePressEvent(QMouseEvent *event);
-	void mouseMoveEvent(QMouseEvent *event);
-	void mouseReleaseEvent(QMouseEvent *event);
-	void wheelEvent(QWheelEvent *event);
-
-private:
-	void setup_viewport(int width, int height);
-
-private:
 	View &_view;
-
-	QPoint _mouse_down_point;
-	double _mouse_down_offset;
 };
 
 } // namespace view
 } // namespace pv
 
-#endif // PV_VIEW_VIEWPORT_H
+#endif // PV_VIEW_HEADER_H

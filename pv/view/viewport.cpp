@@ -24,12 +24,7 @@
 #include "../../sigsession.h"
 #include "../../signal.h"
 
-#include "../../extdef.h"
-
 #include <QMouseEvent>
-#include <QTextStream>
-
-#include <math.h>
 
 #include <boost/foreach.hpp>
 
@@ -38,13 +33,6 @@ using namespace std;
 
 namespace pv {
 namespace view {
-
-const int Viewport::MinorTickSubdivision = 4;
-const int Viewport::ScaleUnits[3] = {1, 2, 5};
-
-const QString Viewport::SIPrefixes[9] =
-	{"f", "p", "n", QChar(0x03BC), "m", "", "k", "M", "G"};
-const int Viewport::FirstSIPrefixPower = -15;
 
 Viewport::Viewport(View &parent) :
 	QGLWidget(&parent),
@@ -95,7 +83,7 @@ void Viewport::paintEvent(QPaintEvent *event)
 	// Plot the signal
 	glEnable(GL_SCISSOR_TEST);
 	glScissor(0, 0, width(), height());
-	offset = View::RulerHeight - _view.v_offset();
+	offset = -_view.v_offset();
 	BOOST_FOREACH(const shared_ptr<Signal> s, sigs)
 	{
 		assert(s);
@@ -115,11 +103,6 @@ void Viewport::paintEvent(QPaintEvent *event)
 	glPopMatrix();
 
 	QPainter painter(this);
-	painter.setRenderHint(QPainter::Antialiasing);
-
-	// Paint the ruler
-	paint_ruler(painter);
-
 	painter.end();
 }
 
@@ -162,72 +145,6 @@ void Viewport::setup_viewport(int width, int height)
 	glLoadIdentity();
 	glOrtho(0, width, height, 0, -1, 1);
 	glMatrixMode(GL_MODELVIEW);
-}
-
-void Viewport::paint_ruler(QPainter &p)
-{
-	const double MinSpacing = 80;
-
-	const double min_period = _view.scale() * MinSpacing;
-
-	const int order = (int)floorf(log10f(min_period));
-	const double order_decimal = pow(10, order);
-
-	int unit = 0;
-	double tick_period = 0.0f;
-
-	do
-	{
-		tick_period = order_decimal * ScaleUnits[unit++];
-	} while(tick_period < min_period && unit < countof(ScaleUnits));
-
-	const int prefix = (order - FirstSIPrefixPower) / 3;
-	assert(prefix >= 0);
-	assert(prefix < countof(SIPrefixes));
-
-	const int text_height = p.boundingRect(0, 0, INT_MAX, INT_MAX,
-		Qt::AlignLeft | Qt::AlignTop, "8").height();
-
-	// Draw the tick marks
-	p.setPen(Qt::black);
-
-	const double minor_tick_period = tick_period / MinorTickSubdivision;
-	const double first_major_division =
-		floor(_view.offset() / tick_period);
-	const double first_minor_division =
-		ceil(_view.offset() / minor_tick_period);
-	const double t0 = first_major_division * tick_period;
-
-	int division = (int)round(first_minor_division -
-		first_major_division * MinorTickSubdivision);
-	while(1)
-	{
-		const double t = t0 + division * minor_tick_period;
-		const double x = (t - _view.offset()) / _view.scale();
-
-		if(x >= width())
-			break;
-
-		if(division % MinorTickSubdivision == 0)
-		{
-			// Draw a major tick
-			QString s;
-			QTextStream ts(&s);
-			ts << (t / order_decimal) << SIPrefixes[prefix] << "s";
-			p.drawText(x, 0, 0, text_height, Qt::AlignCenter | Qt::AlignTop |
-				Qt::TextDontClip, s);
-			p.drawLine(x, text_height, x, View::RulerHeight);
-		}
-		else
-		{
-			// Draw a minor tick
-			p.drawLine(x,
-				(text_height + View::RulerHeight) / 2, x,
-				View::RulerHeight);
-		}
-
-		division++;
-	}
 }
 
 } // namespace view

@@ -27,6 +27,7 @@
 #include <QScrollBar>
 
 #include "header.h"
+#include "ruler.h"
 #include "view.h"
 #include "viewport.h"
 
@@ -52,6 +53,7 @@ View::View(SigSession &session, QWidget *parent) :
 	QAbstractScrollArea(parent),
 	_session(session),
 	_viewport(new Viewport(*this)),
+	_ruler(new Ruler(*this)),
 	_header(new Header(*this)),
 	_data_length(0),
 	_scale(1e-6),
@@ -65,7 +67,7 @@ View::View(SigSession &session, QWidget *parent) :
 	connect(&_session, SIGNAL(data_updated()),
 		this, SLOT(data_updated()));
 
-	setViewportMargins(LabelMarginWidth, 0, 0, 0);
+	setViewportMargins(LabelMarginWidth, RulerHeight, 0, 0);
 	setViewport(_viewport);
 }
 
@@ -98,7 +100,9 @@ void View::set_scale_offset(double scale, double offset)
 {
 	_scale = scale;
 	_offset = offset;
+
 	update_scroll();
+	_ruler->update();
 	_viewport->update();
 }
 
@@ -134,6 +138,8 @@ void View::zoom(double steps, int offset)
 	_scale *= pow(3.0/2.0, -steps);
 	_scale = max(min(_scale, MaxScale), MinScale);
 	_offset = cursor_offset - _scale * offset;
+
+	_ruler->update();
 	_viewport->update();
 	update_scroll();
 }
@@ -156,7 +162,9 @@ bool View::viewportEvent(QEvent *e)
 
 void View::resizeEvent(QResizeEvent *e)
 {
-	_header->setGeometry(0, RulerHeight,
+	_ruler->setGeometry(_viewport->x(), 0,
+		_viewport->width(), _viewport->y());
+	_header->setGeometry(0, _viewport->y(),
 		_viewport->x(), _viewport->height());
 	update_scroll();
 }
@@ -164,6 +172,7 @@ void View::resizeEvent(QResizeEvent *e)
 void View::h_scroll_value_changed(int value)
 {
 	_offset = _scale * value;
+	_ruler->update();
 	_viewport->update();
 }
 

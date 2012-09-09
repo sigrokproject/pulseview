@@ -27,6 +27,7 @@ set(pulseview_SOURCES
 	sigsession.cpp
 	signal.cpp
 	pv/view/header.cpp
+	pv/view/ruler.cpp
 	pv/view/view.cpp
 	pv/view/viewport.cpp
 )
@@ -37,6 +38,7 @@ set(pulseview_HEADERS
 	samplingbar.h
 	sigsession.h
 	pv/view/header.h
+	pv/view/ruler.h
 	pv/view/view.h
 	pv/view/viewport.h
 )

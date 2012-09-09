@@ -31,6 +31,7 @@ namespace pv {
 namespace view {
 
 class Header;
+class Ruler;
 class Viewport;
 
 class View : public QAbstractScrollArea {
@@ -79,6 +80,7 @@ private:
 	SigSession &_session;
 
 	Viewport *_viewport;
+	Ruler *_ruler;
 	Header *_header;
 
 	uint64_t _data_length;
