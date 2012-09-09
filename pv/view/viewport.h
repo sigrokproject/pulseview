@@ -21,8 +21,8 @@
 #ifndef PV_VIEW_VIEWPORT_H
 #define PV_VIEW_VIEWPORT_H
 
-#include <QtOpenGL/QGLWidget>
 #include <QTimer>
+#include <QWidget>
 
 class QPainter;
 class QPaintEvent;
@@ -33,7 +33,7 @@ namespace view {
 
 class View;
 
-class Viewport : public QGLWidget
+class Viewport : public QWidget
 {
 	Q_OBJECT
 
@@ -43,10 +43,6 @@ public:
 	int get_total_height() const;
 
 protected:
-	void initializeGL();
-
-	void resizeGL(int width, int height);
-
 	void paintEvent(QPaintEvent *event);
 
 private:
@@ -54,9 +50,6 @@ private:
 	void mouseMoveEvent(QMouseEvent *event);
 	void mouseReleaseEvent(QMouseEvent *event);
 	void wheelEvent(QWheelEvent *event);
-
-private:
-	void setup_viewport(int width, int height);
 
 private:
 	View &_view;

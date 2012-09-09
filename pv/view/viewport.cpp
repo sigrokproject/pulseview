@@ -35,11 +35,12 @@ namespace pv {
 namespace view {
 
 Viewport::Viewport(View &parent) :
-	QGLWidget(&parent),
+	QWidget(&parent),
         _view(parent)
 {
 	setMouseTracking(true);
-	setAutoFillBackground(false);
+	setAutoFillBackground(true);
+	setBackgroundRole(QPalette::Base);
 }
 
 int Viewport::get_total_height() const
@@ -54,36 +55,15 @@ int Viewport::get_total_height() const
 	return height;
 }
 
-void Viewport::initializeGL()
-{
-}
-
-void Viewport::resizeGL(int width, int height)
-{
-	setup_viewport(width, height);
-}
-
 void Viewport::paintEvent(QPaintEvent *event)
 {
-	int offset;
-
 	const vector< shared_ptr<Signal> > &sigs =
 		_view.session().get_signals();
 
-	// Prepare for OpenGL rendering
-	makeCurrent();
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-
-	setup_viewport(width(), height());
-
-	qglClearColor(Qt::white);
-	glClear(GL_COLOR_BUFFER_BIT);
+	QPainter p(this);
 
 	// Plot the signal
-	glEnable(GL_SCISSOR_TEST);
-	glScissor(0, 0, width(), height());
-	offset = -_view.v_offset();
+	int offset = -_view.v_offset();
 	BOOST_FOREACH(const shared_ptr<Signal> s, sigs)
 	{
 		assert(s);
@@ -91,19 +71,12 @@ void Viewport::paintEvent(QPaintEvent *event)
 		const QRect signal_rect(0, offset,
 			width(), View::SignalHeight);
 
-		s->paint(*this, signal_rect, _view.scale(), _view.offset());
+		s->paint(p, signal_rect, _view.scale(), _view.offset());
 
 		offset += View::SignalHeight;
 	}
 
-	glDisable(GL_SCISSOR_TEST);
-
-	// Prepare for QPainter rendering
-	glMatrixMode(GL_MODELVIEW);
-	glPopMatrix();
-
-	QPainter painter(this);
-	painter.end();
+	p.end();
 }
 
 void Viewport::mousePressEvent(QMouseEvent *event)
@@ -136,15 +109,6 @@ void Viewport::wheelEvent(QWheelEvent *event)
 {
 	assert(event);
 	_view.zoom(event->delta() / 120, event->x());
-}
-
-void Viewport::setup_viewport(int width, int height)
-{
-	glViewport(0, 0, (GLint)width, (GLint)height);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(0, width, height, 0, -1, 1);
-	glMatrixMode(GL_MODELVIEW);
 }
 
 } // namespace view

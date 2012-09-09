@@ -20,7 +20,6 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include <QGLWidget>
 #include <QPainter>
 #include <QRect>
 #include <QString>
@@ -41,15 +40,15 @@ public:
 	QString get_name() const;
 
 	/**
-	 * Paints the signal into a QGLWidget.
-	 * @param widget the QGLWidget to paint into.
+	 * Paints the signal with a QPainter
+	 * @param p the QPainter to paint into.
 	 * @param rect the rectangular area to draw the trace into.
 	 * @param scale the scale in seconds per pixel.
 	 * @param offset the time to show at the left hand edge of
 	 *   the view in seconds.
 	 **/
-	virtual void paint(QGLWidget &widget, const QRect &rect,
-		double scale, double offset) = 0;
+	virtual void paint(QPainter &p, const QRect &rect, double scale,
+		double offset) = 0;
 
 	/**
 	 * Paints the signal label into a QGLWidget.

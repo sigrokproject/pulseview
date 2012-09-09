@@ -18,10 +18,6 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#define GL_GLEXT_PROTOTYPES
-#include <GL/gl.h>
-#include <GL/glext.h>
-
 #include <math.h>
 
 #include "extdef.h"
@@ -35,9 +31,9 @@ using namespace std;
 
 const float LogicSignal::Margin = 10.0f;
 
-const float LogicSignal::EdgeColour[3] =	{0.50f, 0.50f, 0.50f};
-const float LogicSignal::HighColour[3] =	{0.00f, 0.75f, 0.00f};
-const float LogicSignal::LowColour[3] =	{0.75f, 0.00f, 0.00f};
+const QColor LogicSignal::EdgeColour(0x80, 0x80, 0x80);
+const QColor LogicSignal::HighColour(0x00, 0xC0, 0x00);
+const QColor LogicSignal::LowColour(0xC0, 0x00, 0x00);
 
 const QColor LogicSignal::LogicSignalColours[10] = {
 	QColor(0x16, 0x19, 0x1A),	// Black
@@ -61,10 +57,10 @@ LogicSignal::LogicSignal(QString name, shared_ptr<LogicData> data,
 	assert(_probe_index >= 0);
 }
 
-void LogicSignal::paint(QGLWidget &widget, const QRect &rect,
-	double scale, double offset)
+void LogicSignal::paint(QPainter &p, const QRect &rect, double scale,
+	double offset)
 {
-	Point2F *vertex;
+	QLineF *line;
 
 	vector< pair<int64_t, bool> > edges;
 
@@ -95,87 +91,54 @@ void LogicSignal::paint(QGLWidget &widget, const QRect &rect,
 		samples_per_pixel, _probe_index);
 
 	// Paint the edges
-	const unsigned int edge_point_count = (edges.size() - 2) * 2;
-	Point2F *const edge_points = new Point2F[edge_point_count];
-	vertex = edge_points;
+	const unsigned int edge_count = edges.size() - 2;
+	QLineF *const edge_lines = new QLineF[edge_count];
+	line = edge_lines;
 
-	for(vector<LogicDataSnapshot::EdgePair>::const_iterator i = edges.begin() + 1;
-	    i != edges.end() - 1; i++)
-	{
-		const int x = (int)((*i).first / samples_per_pixel - pixels_offset) +
-			rect.left();
-
-		vertex->x = x, vertex->y = high_offset;
-		vertex++;
-		vertex->x = x, vertex->y = low_offset;
-		vertex++;
+	for(vector<LogicDataSnapshot::EdgePair>::const_iterator i =
+			edges.begin() + 1;
+		i != edges.end() - 1; i++) {
+		const int x = (int)((*i).first / samples_per_pixel -
+			pixels_offset) + rect.left();
+		*line++ = QLineF(x, high_offset, x, low_offset);
 	}
 
-	glColor3fv(EdgeColour);
-	paint_lines(edge_points, edge_point_count);
-	delete[] edge_points;
+	p.setPen(EdgeColour);
+	p.drawLines(edge_lines, edge_count);
+	delete[] edge_lines;
 
 	// Paint the caps
-	const unsigned int max_cap_point_count = (edges.size() - 1) * 2;
-	Point2F *const cap_points = new Point2F[max_cap_point_count];
+	const unsigned int max_cap_line_count = (edges.size() - 1);
+	QLineF *const cap_lines = new QLineF[max_cap_line_count];
 
-	glColor3fv(HighColour);
-	paint_caps(cap_points, edges, true, samples_per_pixel,
+	p.setPen(HighColour);
+	paint_caps(p, cap_lines, edges, true, samples_per_pixel,
 		pixels_offset, rect.left(), high_offset);
-	glColor3fv(LowColour);
-	paint_caps(cap_points, edges, false, samples_per_pixel,
+	p.setPen(LowColour);
+	paint_caps(p, cap_lines, edges, false, samples_per_pixel,
 		pixels_offset, rect.left(), low_offset);
 
-	delete[] cap_points;
+	delete[] cap_lines;
 }
 
-int LogicSignal::paint_caps(Point2F *const cap_points,
+int LogicSignal::paint_caps(QPainter &p, QLineF *const lines,
 	vector< pair<int64_t, bool> > &edges, bool level,
 	double samples_per_pixel, double pixels_offset, int x_offset,
 	int y_offset)
 {
-	Point2F *vertex = cap_points;
+	QLineF *line = lines;
 
 	for(vector<LogicDataSnapshot::EdgePair>::const_iterator i = edges.begin();
 	    i != (edges.end() - 1); i++)
-		if((*i).second == level)
-		{
-			vertex->x = (int)((*i).first / samples_per_pixel -
-				pixels_offset) + x_offset - 1;
-			vertex->y = y_offset;
-			vertex++;
-
-			vertex->x = (int)((*(i+1)).first / samples_per_pixel -
-				pixels_offset) + x_offset;
-			vertex->y = y_offset;
-			vertex++;
+		if((*i).second == level) {
+			*line++ = QLineF(
+				(int)((*i).first / samples_per_pixel -
+					pixels_offset) + x_offset, y_offset,
+				(int)((*(i+1)).first / samples_per_pixel -
+					pixels_offset) + x_offset, y_offset);
 		}
 
-	paint_lines(cap_points, vertex - cap_points);
-}
-
-void LogicSignal::paint_lines(Point2F *points, int count)
-{
-	GLuint vbo_id;
-
-	assert(points);
-
-	glGenBuffers(1, &vbo_id);
-	glBindBuffer(GL_ARRAY_BUFFER, vbo_id);
-
-	const unsigned int vbo_length = count * sizeof(Point2F);
-	glBufferData(GL_ARRAY_BUFFER, vbo_length, NULL, GL_STATIC_DRAW);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, vbo_length, points);
-
-	glBindBuffer(GL_ARRAY_BUFFER, vbo_id);
-
-	glVertexPointer(2, GL_FLOAT, sizeof(Point2F), 0);
-
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glDrawArrays(GL_LINES,  0,  count);
-	glDisableClientState(GL_VERTEX_ARRAY);
-
-	glDeleteBuffers(1, &vbo_id);
+	p.drawLines(lines, line - lines);
 }
 
 QColor LogicSignal::get_colour() const

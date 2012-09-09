@@ -27,17 +27,11 @@ class LogicData;
 class LogicSignal : public Signal
 {
 private:
-	struct Point2F
-	{
-		GLfloat x, y;
-	};
-
-private:
 	static const float Margin;
 
-	static const float EdgeColour[3];
-	static const float HighColour[3];
-	static const float LowColour[3];
+	static const QColor EdgeColour;
+	static const QColor HighColour;
+	static const QColor LowColour;
 
 	static const QColor LogicSignalColours[10];
 
@@ -47,24 +41,21 @@ public:
 		int probe_index);
 
 	/**
-	 * Paints the signal into a QGLWidget.
-	 * @param widget the QGLWidget to paint into.
+	 * Paints the signal with a QPainter
+	 * @param p the QPainter to paint into.
 	 * @param rect the rectangular area to draw the trace into.
 	 * @param scale the scale in seconds per pixel.
 	 * @param offset the time to show at the left hand edge of
 	 *   the view in seconds.
 	 **/
-	void paint(QGLWidget &widget, const QRect &rect, double scale,
-		double offset);
+	void paint(QPainter &p, const QRect &rect, double scale, double offset);
 
 private:
 
-	int paint_caps(Point2F *const cap_points,
+	int paint_caps(QPainter &p, QLineF *const lines,
 		std::vector< std::pair<int64_t, bool> > &edges,
 		bool level, double samples_per_pixel, double pixels_offset,
 		int x_offset, int y_offset);
-
-	static void paint_lines(Point2F *points, int count);
 
 	/**
 	 * Get the colour of the logic signal

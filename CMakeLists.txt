@@ -58,8 +58,6 @@ set(pulseview_TEST_SOURCES
 	logicdatasnapshot.cpp
 )
 
-set(QT_USE_QTOPENGL TRUE)
-
 qt4_wrap_cpp(pulseview_HEADERS_MOC ${pulseview_HEADERS})
 qt4_wrap_ui(pulseview_FORMS_HEADERS ${pulseview_FORMS})
 qt4_add_resources(pulseview_RESOURCES_RCC ${pulseview_RESOURCES})
