@@ -323,7 +323,8 @@ void LogicDataSnapshot::get_subsampled_edges(
 		get_sample(end) & sig_mask));
 }
 
-int64_t LogicDataSnapshot::pow2_ceil(int64_t x, int power)
+int64_t LogicDataSnapshot::pow2_ceil(int64_t x, unsigned int power)
 {
-	return ((x >> power) + 1) << power;
+	const int64_t p = 1 << power;
+	return ((x < 0) ? x : (x + p - 1)) / p * p;
 }

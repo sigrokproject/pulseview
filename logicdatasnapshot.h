@@ -24,6 +24,7 @@
 #include <vector>
 
 namespace LogicDataSnapshotTest {
+	class Pow2;
 	class Basic;
 	class LargeData;
 }
@@ -79,12 +80,13 @@ public:
 
 private:
 
-	static inline int64_t pow2_ceil(int64_t x, int power);
+	static int64_t pow2_ceil(int64_t x, unsigned int power);
 
 private:
 	struct MipMapLevel _mip_map[ScaleStepCount];
 	uint64_t _last_append_sample;
 
+	friend class LogicDataSnapshotTest::Pow2;
 	friend class LogicDataSnapshotTest::Basic;
 	friend class LogicDataSnapshotTest::LargeData;
 };
