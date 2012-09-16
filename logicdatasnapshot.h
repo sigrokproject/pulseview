@@ -27,6 +27,7 @@ namespace LogicDataSnapshotTest {
 	class Pow2;
 	class Basic;
 	class LargeData;
+	class Pulses;
 }
 
 class LogicDataSnapshot : public DataSnapshot
@@ -90,4 +91,5 @@ private:
 	friend class LogicDataSnapshotTest::Pow2;
 	friend class LogicDataSnapshotTest::Basic;
 	friend class LogicDataSnapshotTest::LargeData;
+	friend class LogicDataSnapshotTest::Pulses;
 };

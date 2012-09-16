@@ -269,4 +269,63 @@ BOOST_AUTO_TEST_CASE(LargeData)
 	BOOST_CHECK_EQUAL(edges[31].first, 999999);
 }
 
+BOOST_AUTO_TEST_CASE(Pulses)
+{
+	const int Cycles = 3;
+	const int Period = 64;
+	const int Length = Cycles * Period;
+
+	vector<LogicDataSnapshot::EdgePair> edges;
+
+	//----- Create a LogicDataSnapshot -----//
+	sr_datafeed_logic logic;
+	logic.unitsize = 1;
+	logic.length = Length;
+	logic.data = (uint64_t*)new uint8_t[Length];
+	uint8_t *p = (uint8_t*)logic.data;
+
+	for(int i = 0; i < Cycles; i++) {
+		*p++ = 0xFF;
+		for(int j = 1; j < Period; j++)
+			*p++ = 0x00;
+	}
+
+	LogicDataSnapshot s(logic);
+
+	//----- Check the mip-map -----//
+	// Check mip map level 0
+	BOOST_CHECK_EQUAL(s._mip_map[0].length, 12);
+	BOOST_CHECK_EQUAL(s._mip_map[0].data_length,
+		LogicDataSnapshot::MipMapDataUnit);
+	BOOST_REQUIRE(s._mip_map[0].data != NULL);
+
+	for(int i = 0; i < s._mip_map[0].length;) {
+		BOOST_TEST_MESSAGE("Testing mip_map[0].data[" << i << "]");
+		BOOST_CHECK_EQUAL(s.get_subsample(0, i++) & 0xFF, 0xFF);
+
+		for(int j = 1;
+			i < s._mip_map[0].length &&
+			j < Period/LogicDataSnapshot::MipMapScaleFactor; j++) {
+			BOOST_TEST_MESSAGE(
+				"Testing mip_map[0].data[" << i << "]");
+			BOOST_CHECK_EQUAL(s.get_subsample(0, i++) & 0xFF, 0x00);
+		}
+	}
+
+	// Check the higher levels are all inactive
+	for(int i = 1; i < LogicDataSnapshot::ScaleStepCount; i++) {
+		const LogicDataSnapshot::MipMapLevel &m = s._mip_map[i];
+		BOOST_CHECK_EQUAL(m.length, 0);
+		BOOST_CHECK_EQUAL(m.data_length, 0);
+		BOOST_CHECK(m.data == NULL);
+	}
+
+	//----- Test get_subsampled_edges at reduced scale -----//
+	s.get_subsampled_edges(edges, 0, Length-1, 16.0f, 2);
+	BOOST_REQUIRE_EQUAL(edges.size(), Cycles + 1);
+
+	for(int i = 0; i < edges.size(); i++)
+		BOOST_CHECK_EQUAL(edges[i].second, false);
+}
+
 BOOST_AUTO_TEST_SUITE_END()
