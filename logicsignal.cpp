@@ -89,6 +89,7 @@ void LogicSignal::paint(QPainter &p, const QRect &rect, double scale,
 		min(max((int64_t)floor(start), (int64_t)0), last_sample),
 		min(max((int64_t)ceil(end), (int64_t)0), last_sample),
 		samples_per_pixel, _probe_index);
+	assert(edges.size() >= 2);
 
 	// Paint the edges
 	const unsigned int edge_count = edges.size() - 2;
