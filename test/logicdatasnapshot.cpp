@@ -257,15 +257,16 @@ BOOST_AUTO_TEST_CASE(LargeData)
 	vector<LogicDataSnapshot::EdgePair> edges;
 
 	s.get_subsampled_edges(edges, 0, Length-1, 1, 7);
-	BOOST_REQUIRE_EQUAL(edges.size(), 32);
 
-	for(int i = 0; i < 31; i++)
+	BOOST_CHECK_EQUAL(edges.size(), 32);
+
+	for(int i = 0; i < edges.size() - 1; i++)
 	{
-		BOOST_REQUIRE_EQUAL(edges[i].first, i * 32768);
-		BOOST_REQUIRE_EQUAL(edges[i].second, i & 1);
+		BOOST_CHECK_EQUAL(edges[i].first, i * 32768);
+		BOOST_CHECK_EQUAL(edges[i].second, i & 1);
 	}
 
-	BOOST_REQUIRE_EQUAL(edges[31].first, 999999);
+	BOOST_CHECK_EQUAL(edges[31].first, 999999);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
