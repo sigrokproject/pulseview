@@ -187,14 +187,14 @@ BOOST_AUTO_TEST_CASE(LargeData)
 		BOOST_TEST_MESSAGE("Testing mip_map[0].data[" << i << "]");
 
 		const uint8_t sample = (uint8_t)((i*16) >> 8);
-		BOOST_CHECK_EQUAL(*((uint8_t*)s._mip_map[0].data + i++),
+		BOOST_CHECK_EQUAL(s.get_subsample(0, i++) & 0xFF,
 			prev_sample ^ sample);
 		prev_sample = sample;
 
 		for(int j = 1; i < s._mip_map[0].length && j < 16; j++)
 		{
 			BOOST_TEST_MESSAGE("Testing mip_map[0].data[" << i << "]");
-			BOOST_CHECK_EQUAL(*((uint8_t*)s._mip_map[0].data + i++), 0);
+			BOOST_CHECK_EQUAL(s.get_subsample(0, i++) & 0xFF, 0);
 		}
 	}
 
@@ -213,8 +213,7 @@ BOOST_AUTO_TEST_CASE(LargeData)
 		const uint8_t expected = sample ^ prev_sample;
 		prev_sample = i;
 
-		BOOST_CHECK_EQUAL(*((uint8_t*)s._mip_map[1].data + i),
-			expected);
+		BOOST_CHECK_EQUAL(s.get_subsample(1, i) & 0xFF, expected);
 	}
 
 	// Check mip map level 2
@@ -232,8 +231,7 @@ BOOST_AUTO_TEST_CASE(LargeData)
 		const uint8_t expected = (sample ^ prev_sample) | 0x0F;
 		prev_sample = sample;
 
-		BOOST_CHECK_EQUAL(*((uint8_t*)s._mip_map[2].data + i),
-			expected);
+		BOOST_CHECK_EQUAL(s.get_subsample(2, i) & 0xFF, expected);
 	}
 
 	// Check mip map level 3

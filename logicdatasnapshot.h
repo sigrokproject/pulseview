@@ -79,6 +79,7 @@ public:
 		float min_length, int sig_index);
 
 private:
+	uint64_t get_subsample(int level, uint64_t offset) const;
 
 	static int64_t pow2_ceil(int64_t x, unsigned int power);
 

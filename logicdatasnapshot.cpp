@@ -233,8 +233,7 @@ void LogicDataSnapshot::get_subsampled_edges(
 			// Check if we reached the last block at this level,
 			// or if there was a change in this block
 			if(offset >= _mip_map[level].length ||
-				(*(uint64_t*)((uint8_t*)_mip_map[level].data +
-				_unit_size * offset) & sig_mask))
+				(get_subsample(level, offset) & sig_mask))
 				break;
 
 			if((offset & ~(~0 << MipMapScalePower)) == 0)
@@ -268,8 +267,7 @@ void LogicDataSnapshot::get_subsampled_edges(
 			// Check if we reached the last block at this level,
 			// or if there was a change in this block
 			if(offset >= _mip_map[level].length ||
-				(*(uint64_t*)((uint8_t*)_mip_map[level].data +
-				_unit_size * offset) & sig_mask))
+				(get_subsample(level, offset) & sig_mask))
 			{
 				// Zoom in unless we reached the minimum zoom
 				if(level == min_level)
@@ -321,6 +319,14 @@ void LogicDataSnapshot::get_subsampled_edges(
 	// Add the final state
 	edges.push_back(pair<int64_t, bool>(end,
 		get_sample(end) & sig_mask));
+}
+
+uint64_t LogicDataSnapshot::get_subsample(int level, uint64_t offset) const
+{
+	assert(level >= 0);
+	assert(_mip_map[level].data);
+	return *(uint64_t*)((uint8_t*)_mip_map[level].data +
+		_unit_size * offset);
 }
 
 int64_t LogicDataSnapshot::pow2_ceil(int64_t x, unsigned int power)
