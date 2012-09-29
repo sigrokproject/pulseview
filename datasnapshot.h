@@ -32,10 +32,10 @@ public:
 	uint64_t get_sample_count();
 
 protected:
-	void append_data(void *data, uint64_t length);
+	void append_data(void *data, uint64_t samples);
 
 protected:
 	void *_data;
-	uint64_t _data_length;
+	uint64_t _sample_count;
 	int _unit_size;
 };

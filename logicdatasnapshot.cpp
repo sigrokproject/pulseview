@@ -55,7 +55,6 @@ void LogicDataSnapshot::append_payload(
 {
 	assert(_unit_size == logic.unitsize);
 
-	const uint64_t prev_length = _data_length;
 	append_data(logic.data, logic.length);
 
 	// Generate the first mip-map from the data
@@ -84,7 +83,7 @@ void LogicDataSnapshot::append_payload_to_mipmap()
 
 	// Expand the data buffer to fit the new samples
 	prev_length = m0.length;
-	m0.length = _data_length / MipMapScaleFactor;
+	m0.length = _sample_count / MipMapScaleFactor;
 
 	// Break off if there are no new samples to compute
 	if(m0.length == prev_length)
@@ -160,7 +159,7 @@ void LogicDataSnapshot::append_payload_to_mipmap()
 uint64_t LogicDataSnapshot::get_sample(uint64_t index) const
 {
 	assert(_data);
-	assert(index >= 0 && index < _data_length);
+	assert(index >= 0 && index < _sample_count);
 
 	return *(uint64_t*)((uint8_t*)_data + index * _unit_size);
 }
