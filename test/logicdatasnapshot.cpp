@@ -355,6 +355,7 @@ BOOST_AUTO_TEST_CASE(LongPulses)
 	}
 
 	LogicDataSnapshot s(logic);
+	delete[] (uint64_t*)logic.data;
 
 	//----- Check the mip-map -----//
 	// Check mip map level 0
