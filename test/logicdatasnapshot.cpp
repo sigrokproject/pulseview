@@ -342,16 +342,16 @@ BOOST_AUTO_TEST_CASE(LongPulses)
 
 	//----- Create a LogicDataSnapshot -----//
 	sr_datafeed_logic logic;
-	logic.unitsize = 1;
+	logic.unitsize = 8;
 	logic.length = Length;
-	logic.data = (uint64_t*)new uint8_t[Length];
-	uint8_t *p = (uint8_t*)logic.data;
+	logic.data = (uint64_t*)new uint64_t[Length];
+	uint64_t *p = (uint64_t*)logic.data;
 
 	for(int i = 0; i < Cycles; i++) {
 		for(j = 0; j < PulseWidth; j++)
-			*p++ = 0xFF;
+			*p++ = ~0;
 		for(j; j < Period; j++)
-			*p++ = 0x00;
+			*p++ = 0;
 	}
 
 	LogicDataSnapshot s(logic);
@@ -368,14 +368,14 @@ BOOST_AUTO_TEST_CASE(LongPulses)
 		for(j = 0; i < s._mip_map[0].length && j < 2; j++) {
 			BOOST_TEST_MESSAGE(
 				"Testing mip_map[0].data[" << i << "]");
-			BOOST_CHECK_EQUAL(s.get_subsample(0, i++) & 0xFF, 0xFF);
+			BOOST_CHECK_EQUAL(s.get_subsample(0, i++), ~0);
 		}
 
 		for(j; i < s._mip_map[0].length &&
 			j < Period/LogicDataSnapshot::MipMapScaleFactor; j++) {
 			BOOST_TEST_MESSAGE(
 				"Testing mip_map[0].data[" << i << "]");
-			BOOST_CHECK_EQUAL(s.get_subsample(0, i++) & 0xFF, 0x00);
+			BOOST_CHECK_EQUAL(s.get_subsample(0, i++), 0);
 		}
 	}
 
