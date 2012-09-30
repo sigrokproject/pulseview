@@ -322,9 +322,10 @@ BOOST_AUTO_TEST_CASE(Pulses)
 
 	//----- Test get_subsampled_edges at reduced scale -----//
 	s.get_subsampled_edges(edges, 0, Length-1, 16.0f, 2);
-	BOOST_REQUIRE_EQUAL(edges.size(), Cycles + 1);
+	BOOST_REQUIRE_EQUAL(edges.size(), Cycles + 2);
 
-	for(int i = 0; i < edges.size(); i++)
+	BOOST_CHECK_EQUAL(0, false);
+	for(int i = 1; i < edges.size(); i++)
 		BOOST_CHECK_EQUAL(edges[i].second, false);
 }
 
@@ -402,9 +403,14 @@ BOOST_AUTO_TEST_CASE(LongPulses)
 	edges.clear();
 	s.get_subsampled_edges(edges, 0, Length-1, 17.0f, 2);
 
-	for(int i = 0; i < Cycles; i++) {
-		BOOST_CHECK_EQUAL(edges[i].first, i * Period);
-		BOOST_CHECK_EQUAL(edges[i].second, false);
+	BOOST_CHECK_EQUAL(edges[0].first, 0);
+	BOOST_CHECK_EQUAL(edges[0].second, true);
+	BOOST_CHECK_EQUAL(edges[1].first, 16);
+	BOOST_CHECK_EQUAL(edges[1].second, false);
+	
+	for(int i = 1; i < Cycles; i++) {
+		BOOST_CHECK_EQUAL(edges[i+1].first, i * Period);
+		BOOST_CHECK_EQUAL(edges[i+1].second, false);
 	}
 
 	BOOST_CHECK_EQUAL(edges.back().first, Length-1);
