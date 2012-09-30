@@ -23,6 +23,7 @@
 
 #include <boost/test/unit_test.hpp>
 
+#include "../extdef.h"
 #include "../logicdatasnapshot.h"
 
 using namespace std;
@@ -418,5 +419,53 @@ BOOST_AUTO_TEST_CASE(LongPulses)
 	BOOST_CHECK_EQUAL(edges.back().first, Length-1);
 	BOOST_CHECK_EQUAL(edges.back().second, false);
 }
+
+BOOST_AUTO_TEST_CASE(LisaMUsbHid)
+{
+	/* This test was created from the beginning of the USB_DM signal in
+	 * sigrok-dumps-usb/lisa_m_usbhid/lisa_m_usbhid.sr
+	 */
+
+	const int Edges[] = {
+		7028, 7033, 7036, 7041, 7044, 7049, 7053, 7066, 7073, 7079,
+		7086, 7095, 7103, 7108, 7111, 7116, 7119, 7124, 7136, 7141,
+		7148, 7162, 7500
+	};
+	const int Length = Edges[countof(Edges) - 1];
+
+	bool state = false;
+	int lastEdgePos = 0;
+
+	//----- Create a LogicDataSnapshot -----//
+	sr_datafeed_logic logic;
+	logic.unitsize = 1;
+	logic.length = Length;
+	logic.data = new uint8_t[Length];
+	uint8_t *data = (uint8_t*)logic.data;
+
+	for(int i = 0; i < countof(Edges); i++) {
+		const int edgePos = Edges[i];
+		memset(&data[lastEdgePos], state ? 0x02 : 0,
+			edgePos - lastEdgePos - 1);
+
+		lastEdgePos = edgePos;
+		state = !state;
+	}
+
+	LogicDataSnapshot s(logic);
+	delete[] (uint64_t*)logic.data;
+
+	vector<LogicDataSnapshot::EdgePair> edges;
+
+
+	/* The trailing edge of the pulse train is falling in the source data.
+	 * Check this is always true at different scales
+	 */
+
+	edges.clear();
+	s.get_subsampled_edges(edges, 0, Length-1, 33.333332f, 1);
+	BOOST_CHECK_EQUAL(edges[edges.size() - 2].second, false);
+}
+
 
 BOOST_AUTO_TEST_SUITE_END()
