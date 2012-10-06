@@ -255,8 +255,8 @@ BOOST_AUTO_TEST_CASE(LargeData)
 	}
 
 	//----- Test LogicDataSnapshot::get_subsampled_edges -----//
+	// Check in normal case
 	vector<LogicDataSnapshot::EdgePair> edges;
-
 	s.get_subsampled_edges(edges, 0, Length-1, 1, 7);
 
 	BOOST_CHECK_EQUAL(edges.size(), 32);
@@ -268,6 +268,12 @@ BOOST_AUTO_TEST_CASE(LargeData)
 	}
 
 	BOOST_CHECK_EQUAL(edges[31].first, 999999);
+
+	// Check in very low zoom case
+	edges.clear();
+	s.get_subsampled_edges(edges, 0, Length-1, 50e6f, 7);
+
+	BOOST_CHECK_EQUAL(edges.size(), 2);
 }
 
 BOOST_AUTO_TEST_CASE(Pulses)
