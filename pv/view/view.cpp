@@ -19,6 +19,7 @@
  */
 
 #include <assert.h>
+#include <limits.h>
 #include <math.h>
 
 #include <boost/foreach.hpp>
@@ -46,6 +47,8 @@ const double View::MinScale = 1e-15;
 
 const int View::LabelMarginWidth = 70;
 const int View::RulerHeight = 30;
+
+const int View::MaxScrollValue = INT_MAX / 2;
 
 const int View::SignalHeight = 50;
 
@@ -119,6 +122,16 @@ void View::set_scale_offset(double scale, double offset)
 	_viewport->update();
 }
 
+void View::get_scroll_layout(double &length, double &offset) const
+{
+	const shared_ptr<SignalData> sig_data = _session.get_data();
+	if(!sig_data)
+		return;
+
+	length = _data_length / (sig_data->get_samplerate() * _scale);
+	offset = _offset / _scale;
+}
+
 void View::update_scroll()
 {
 	assert(_viewport);
@@ -127,17 +140,19 @@ void View::update_scroll()
 
 	// Set the horizontal scroll bar
 	double length = 0, offset = 0;
-	const shared_ptr<SignalData> sig_data = _session.get_data();
-	if(sig_data) {
-		length = _data_length /
-			(sig_data->get_samplerate() * _scale);
-		offset = _offset / _scale;
-	}
+	get_scroll_layout(length, offset);
+	length = max(length - areaSize.width(), 0.0);
 
 	horizontalScrollBar()->setPageStep(areaSize.width());
-	horizontalScrollBar()->setRange(0,
-		max((int)(length - areaSize.width()), 0));
-	horizontalScrollBar()->setSliderPosition(offset);
+
+	if(length < MaxScrollValue) {
+		horizontalScrollBar()->setRange(0, length);
+		horizontalScrollBar()->setSliderPosition(offset);
+	} else {
+		horizontalScrollBar()->setRange(0, MaxScrollValue);
+		horizontalScrollBar()->setSliderPosition(
+			_offset * MaxScrollValue / (_scale * length));
+	}
 
 	// Set the vertical scrollbar
 	verticalScrollBar()->setPageStep(areaSize.height());
@@ -172,7 +187,15 @@ void View::resizeEvent(QResizeEvent *e)
 
 void View::h_scroll_value_changed(int value)
 {
-	_offset = _scale * value;
+	const int range = horizontalScrollBar()->maximum();
+	if(range < MaxScrollValue)
+		_offset = _scale * value;
+	else {
+		double length = 0, offset;
+		get_scroll_layout(length, offset);
+		_offset = _scale * length * value / MaxScrollValue;
+	}
+
 	_ruler->update();
 	_viewport->update();
 }

@@ -44,6 +44,8 @@ private:
 	static const int LabelMarginWidth;
 	static const int RulerHeight;
 
+	static const int MaxScrollValue;
+
 public:
 	static const int SignalHeight;
 
@@ -62,6 +64,8 @@ public:
 	void set_scale_offset(double scale, double offset);
 
 private:
+	void get_scroll_layout(double &length, double &offset) const;
+	
 	void update_scroll();
 
 private:
