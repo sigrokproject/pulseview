@@ -30,6 +30,7 @@ using namespace boost;
 using namespace std;
 
 const float LogicSignal::Margin = 10.0f;
+const float LogicSignal::Oversampling = 2.0f;
 
 const QColor LogicSignal::EdgeColour(0x80, 0x80, 0x80);
 const QColor LogicSignal::HighColour(0x00, 0xC0, 0x00);
@@ -88,7 +89,7 @@ void LogicSignal::paint(QPainter &p, const QRect &rect, double scale,
 	snapshot->get_subsampled_edges(edges,
 		min(max((int64_t)floor(start), (int64_t)0), last_sample),
 		min(max((int64_t)ceil(end), (int64_t)0), last_sample),
-		samples_per_pixel, _probe_index);
+		samples_per_pixel / Oversampling, _probe_index);
 	assert(edges.size() >= 2);
 
 	// Paint the edges
