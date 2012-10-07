@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
 
 	/* Set some application metadata. */
 	QApplication::setApplicationVersion(APP_VERSION);
-	QApplication::setApplicationName("sigrok-qt");
+	QApplication::setApplicationName("PulseView");
 	QApplication::setOrganizationDomain("http://www.sigrok.org");
 
 	/* Initialise libsigrok */
