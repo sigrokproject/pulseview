@@ -6,7 +6,7 @@ project(pulseview)
 find_package(PkgConfig)
 pkg_check_modules(PKGDEPS REQUIRED
 	libsigrokdecode>=0.1.0
-	libsigrok>=0.1.0
+	libsigrok>=0.2.0
 )
 
 find_package(Qt4 REQUIRED)
