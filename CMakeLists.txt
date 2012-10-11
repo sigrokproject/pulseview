@@ -9,6 +9,11 @@ pkg_check_modules(PKGDEPS REQUIRED
 	libsigrok>=0.2.0
 )
 
+# On Windows/MinGW we explicitly point cmake to the Boost directory.
+if(WIN32)
+set(BOOST_ROOT /usr/local)
+endif(WIN32)
+
 find_package(Qt4 REQUIRED)
 find_package(Boost 1.46 COMPONENTS unit_test_framework REQUIRED)
 
