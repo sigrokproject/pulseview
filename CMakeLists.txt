@@ -145,3 +145,5 @@ endif(WIN32)
 
 enable_testing()
 add_test(test ${CMAKE_CURRENT_BINARY_DIR}/pulseview-test)
+
+install(PROGRAMS pulseview DESTINATION bin/)
