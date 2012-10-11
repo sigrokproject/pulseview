@@ -106,11 +106,11 @@ uint64_t SamplingBar::get_sample_rate() const
 		return (uint64_t)_sample_rate_value.value();
 	else if(_sample_rate_list_action->isVisible())
 	{
-		const int index = _device_selector.currentIndex();
+		const int index = _sample_rate_list.currentIndex();
 		if(index < 0)
 			return 0;
 		
-		return _device_selector.itemData(index).value<uint64_t>();
+		return _sample_rate_list.itemData(index).value<uint64_t>();
 	}
 
 	return 0;
