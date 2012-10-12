@@ -22,6 +22,8 @@
 
 #include "extdef.h"
 
+namespace pv {
+
 const QSizeF Signal::LabelPadding(4, 0);
 
 Signal::Signal(QString name) :
@@ -87,3 +89,5 @@ void Signal::paint_label(QPainter &p, const QRect &rect)
 	p.setPen((colour.lightness() > 64) ? Qt::black : Qt::white);
 	p.drawText(label_rect, Qt::AlignCenter | Qt::AlignVCenter, text);
 }
+
+} // namespace pv

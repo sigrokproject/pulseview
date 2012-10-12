@@ -26,7 +26,7 @@ extern "C" {
 
 #include <QtGui/QApplication>
 #include <QDebug>
-#include "mainwindow.h"
+#include "pv/mainwindow.h"
 
 int main(int argc, char *argv[])
 {
@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
 	}
 
 	/* Initialise the main window */
-	MainWindow w;
+	pv::MainWindow w;
 	w.show();
 
 	/* Run the application */

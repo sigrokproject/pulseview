@@ -18,18 +18,26 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#include <stdint.h>
+#include "signaldata.h"
 
-class SignalData
+using namespace std;
+
+namespace pv {
+
+SignalData::SignalData(double samplerate) :
+	_samplerate(samplerate),
+	_start_time(0)
 {
-public:
-	SignalData(double samplerate);
+}
 
-public:
-	double get_samplerate() const;
-	double get_start_time() const;
+double SignalData::get_samplerate() const
+{
+	return _samplerate;
+}
 
-protected:
-	const double _samplerate;
-	const double _start_time;
-};
+double SignalData::get_start_time() const
+{
+	return _start_time;
+}
+
+} // namespace pv

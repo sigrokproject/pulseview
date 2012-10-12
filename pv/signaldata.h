@@ -18,30 +18,22 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef ABOUT_H
-#define ABOUT_H
+#include <stdint.h>
 
-#include <QDialog>
+namespace pv {
 
-#include <memory>
-
-class QTextDocument;
-
-namespace Ui {
-class About;
-}
-
-class About : public QDialog
+class SignalData
 {
-	Q_OBJECT
+public:
+	SignalData(double samplerate);
 
 public:
-	explicit About(QWidget *parent = 0);
-	~About();
+	double get_samplerate() const;
+	double get_start_time() const;
 
-private:
-	Ui::About *ui;
-	std::auto_ptr<QTextDocument> supportedDoc;
+protected:
+	const double _samplerate;
+	const double _start_time;
 };
 
-#endif // ABOUT_H
+} // namespace pv

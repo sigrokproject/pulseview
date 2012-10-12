@@ -21,8 +21,8 @@
 #include "header.h"
 #include "view.h"
 
-#include "../../signal.h"
-#include "../../sigsession.h"
+#include "../signal.h"
+#include "../sigsession.h"
 
 #include <assert.h>
 

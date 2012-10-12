@@ -18,22 +18,34 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#include "signaldata.h"
+#include "logicdata.h"
+#include "logicdatasnapshot.h"
 
+using namespace boost;
 using namespace std;
 
-SignalData::SignalData(double samplerate) :
-	_samplerate(samplerate),
-	_start_time(0)
+namespace pv {
+
+LogicData::LogicData(const sr_datafeed_meta_logic &meta) :
+	SignalData(meta.samplerate > 0 ? meta.samplerate : 1),
+	_num_probes(meta.num_probes)
 {
 }
 
-double SignalData::get_samplerate() const
+int LogicData::get_num_probes() const
 {
-	return _samplerate;
+	return _num_probes;
 }
 
-double SignalData::get_start_time() const
+void LogicData::push_snapshot(
+	boost::shared_ptr<LogicDataSnapshot> &snapshot)
 {
-	return _start_time;
+	_snapshots.push_front(snapshot);
 }
+
+deque< shared_ptr<LogicDataSnapshot> >& LogicData::get_snapshots()
+{
+	return _snapshots;
+}
+
+} // namespace pv

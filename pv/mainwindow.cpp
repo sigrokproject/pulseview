@@ -47,6 +47,8 @@ extern "C" {
 #include <libsigrok/libsigrok.h>
 }
 
+namespace pv {
+
 MainWindow::MainWindow(QWidget *parent) :
 	QMainWindow(parent)
 {
@@ -173,3 +175,5 @@ void MainWindow::run_stop()
 		_sampling_bar->get_record_length(),
 		_sampling_bar->get_sample_rate());
 }
+
+} // namespace pv

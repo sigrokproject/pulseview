@@ -26,6 +26,8 @@
 
 #include <stdint.h>
 
+namespace pv {
+
 class SignalData;
 
 class Signal
@@ -73,3 +75,5 @@ protected:
 protected:
 	QString _name;
 };
+
+} // namespace pv

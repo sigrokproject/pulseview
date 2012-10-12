@@ -24,9 +24,11 @@
 #include <boost/test/unit_test.hpp>
 
 #include "../extdef.h"
-#include "../logicdatasnapshot.h"
+#include "../pv/logicdatasnapshot.h"
 
 using namespace std;
+
+using pv::LogicDataSnapshot;
 
 BOOST_AUTO_TEST_SUITE(LogicDataSnapshotTest)
 

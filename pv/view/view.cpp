@@ -32,9 +32,9 @@
 #include "view.h"
 #include "viewport.h"
 
-#include "../../logicdata.h"
-#include "../../logicdatasnapshot.h"
-#include "../../sigsession.h"
+#include "../logicdata.h"
+#include "../logicdatasnapshot.h"
+#include "../sigsession.h"
 
 using namespace boost;
 using namespace std;

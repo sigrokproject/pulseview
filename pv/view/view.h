@@ -25,9 +25,10 @@
 
 #include <QAbstractScrollArea>
 
+namespace pv {
+
 class SigSession;
 
-namespace pv {
 namespace view {
 
 class Header;

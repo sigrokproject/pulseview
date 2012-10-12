@@ -30,6 +30,8 @@ extern "C" {
 
 #include "samplingbar.h"
 
+namespace pv {
+
 const uint64_t SamplingBar::RecordLengths[11] = {
 	1000000,
 	2000000,
@@ -186,3 +188,5 @@ void SamplingBar::on_device_selected()
 {
 	update_sample_rate_selector();
 }
+
+} // namespace pv

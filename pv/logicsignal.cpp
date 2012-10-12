@@ -29,6 +29,8 @@
 using namespace boost;
 using namespace std;
 
+namespace pv {
+
 const float LogicSignal::Margin = 10.0f;
 const float LogicSignal::Oversampling = 2.0f;
 
@@ -152,3 +154,5 @@ int LogicSignal::get_nominal_offset(const QRect &rect) const
 {
 	return rect.bottom() - Margin;
 }
+
+} // namespace pv

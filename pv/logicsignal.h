@@ -22,6 +22,8 @@
 
 #include <boost/shared_ptr.hpp>
 
+namespace pv {
+
 class LogicData;
 
 class LogicSignal : public Signal
@@ -73,3 +75,5 @@ private:
 	int _probe_index;
 	boost::shared_ptr<LogicData> _data;
 };
+
+} // namespace pv

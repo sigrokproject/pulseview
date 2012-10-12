@@ -18,34 +18,34 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#include "datasnapshot.h"
+#ifndef ABOUT_H
+#define ABOUT_H
 
-#include <assert.h>
-#include <stdlib.h>
-#include <string.h>
+#include <QDialog>
 
-DataSnapshot::DataSnapshot(int unit_size) :
-	_data(NULL),
-	_sample_count(0),
-	_unit_size(unit_size)
-{
-	assert(_unit_size > 0);
+#include <memory>
+
+class QTextDocument;
+
+namespace Ui {
+class About;
 }
 
-DataSnapshot::~DataSnapshot()
-{
-	free(_data);
-}
+namespace pv {
 
-uint64_t DataSnapshot::get_sample_count()
+class About : public QDialog
 {
-	return _sample_count;
-}
+	Q_OBJECT
 
-void DataSnapshot::append_data(void *data, uint64_t samples)
-{
-	_data = realloc(_data, (_sample_count + samples) * _unit_size);
-	memcpy((uint8_t*)_data + _sample_count * _unit_size,
-		data, samples * _unit_size);
-	_sample_count += samples;
-}
+public:
+	explicit About(QWidget *parent = 0);
+	~About();
+
+private:
+	Ui::About *ui;
+	std::auto_ptr<QTextDocument> supportedDoc;
+};
+
+} // namespace pv
+
+#endif // ABOUT_H

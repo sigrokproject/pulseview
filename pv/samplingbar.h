@@ -30,6 +30,8 @@
 
 class QAction;
 
+namespace pv {
+
 class SamplingBar : public QToolBar
 {
 	Q_OBJECT
@@ -66,5 +68,7 @@ private:
 
 	QToolButton _run_stop_button;
 };
+
+} // namespace pv
 
 #endif // SAMPLINGBAR_H

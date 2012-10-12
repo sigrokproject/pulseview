@@ -25,7 +25,7 @@ extern "C" {
 #include <QTextDocument>
 
 #include "about.h"
-#include "ui_about.h"
+#include <ui_about.h>
 
 extern "C" {
 /* __STDC_FORMAT_MACROS is required for PRIu64 and friends (in C++). */
@@ -33,6 +33,8 @@ extern "C" {
 #include <glib.h>
 #include <libsigrok/libsigrok.h>
 }
+
+namespace pv {
 
 About::About(QWidget *parent) :
 	QDialog(parent),
@@ -108,3 +110,5 @@ About::~About()
 {
 	delete ui;
 }
+
+} // namespace pv

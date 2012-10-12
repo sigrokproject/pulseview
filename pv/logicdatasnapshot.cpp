@@ -31,6 +31,8 @@
 
 using namespace std;
 
+namespace pv {
+
 const int LogicDataSnapshot::MipMapScalePower = 4;
 const int LogicDataSnapshot::MipMapScaleFactor = 1 << MipMapScalePower;
 const float LogicDataSnapshot::LogMipMapScaleFactor = logf(MipMapScaleFactor);
@@ -353,3 +355,5 @@ int64_t LogicDataSnapshot::pow2_ceil(int64_t x, unsigned int power)
 	const int64_t p = 1 << power;
 	return ((x < 0) ? x : (x + p - 1)) / p * p;
 }
+
+} // namespace pv

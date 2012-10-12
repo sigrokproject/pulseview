@@ -31,6 +31,8 @@ namespace LogicDataSnapshotTest {
 	class LongPulses;
 }
 
+namespace pv {
+
 class LogicDataSnapshot : public DataSnapshot
 {
 private:
@@ -95,3 +97,5 @@ private:
 	friend class LogicDataSnapshotTest::Pulses;
 	friend class LogicDataSnapshotTest::LongPulses;
 };
+
+} // namespace pv

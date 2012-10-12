@@ -32,6 +32,8 @@ extern "C" {
 #include <libsigrok/libsigrok.h>
 }
 
+namespace pv {
+
 class LogicData;
 class LogicDataSnapshot;
 class Signal;
@@ -76,5 +78,7 @@ private:
 	// possible to associate a pointer with a sr_session.
 	static SigSession *_session;
 };
+
+} // namespace pv
 
 #endif // SIGSESSION_H

@@ -39,17 +39,17 @@ find_package(Boost 1.46 COMPONENTS unit_test_framework REQUIRED)
 set(VERSION 0.1.0)
 
 set(pulseview_SOURCES
-	about.cpp
-	datasnapshot.cpp
-	logicdata.cpp
-	logicdatasnapshot.cpp
-	logicsignal.cpp
 	main.cpp
-	mainwindow.cpp
-	samplingbar.cpp
-	signaldata.cpp
-	sigsession.cpp
-	signal.cpp
+	pv/about.cpp
+	pv/datasnapshot.cpp
+	pv/logicdata.cpp
+	pv/logicdatasnapshot.cpp
+	pv/logicsignal.cpp
+	pv/mainwindow.cpp
+	pv/samplingbar.cpp
+	pv/signaldata.cpp
+	pv/sigsession.cpp
+	pv/signal.cpp
 	pv/view/header.cpp
 	pv/view/ruler.cpp
 	pv/view/view.cpp
@@ -57,10 +57,10 @@ set(pulseview_SOURCES
 )
 
 set(pulseview_HEADERS
-	about.h
-	mainwindow.h
-	samplingbar.h
-	sigsession.h
+	pv/about.h
+	pv/mainwindow.h
+	pv/samplingbar.h
+	pv/sigsession.h
 	pv/view/header.h
 	pv/view/ruler.h
 	pv/view/view.h
@@ -68,7 +68,7 @@ set(pulseview_HEADERS
 )
 
 set(pulseview_FORMS
-	about.ui
+	pv/about.ui
 )
 
 set(pulseview_RESOURCES
@@ -76,10 +76,10 @@ set(pulseview_RESOURCES
 )
 
 set(pulseview_TEST_SOURCES
+	pv/datasnapshot.cpp
+	pv/logicdatasnapshot.cpp
 	test/logicdatasnapshot.cpp
 	test/test.cpp
-	datasnapshot.cpp
-	logicdatasnapshot.cpp
 )
 
 qt4_wrap_cpp(pulseview_HEADERS_MOC ${pulseview_HEADERS})
@@ -95,12 +95,14 @@ add_definitions(-DAPP_VERSION="${VERSION}")
 if(WIN32)
 include_directories(
 	${include_directories}
+	${CMAKE_CURRENT_BINARY_DIR}
 	${Boost_INCLUDE_DIRS}
 	${PKGDEPS_STATIC_INCLUDE_DIRS}
 )
 else(WIN32)
 include_directories(
 	${include_directories}
+	${CMAKE_CURRENT_BINARY_DIR}
 	${Boost_INCLUDE_DIRS}
 	${PKGDEPS_INCLUDE_DIRS}
 )

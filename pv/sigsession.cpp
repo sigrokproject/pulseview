@@ -31,6 +31,8 @@
 using namespace boost;
 using namespace std;
 
+namespace pv {
+
 // TODO: This should not be necessary
 SigSession* SigSession::_session = NULL;
 
@@ -178,3 +180,5 @@ void SigSession::data_feed_in_proc(const struct sr_dev_inst *sdi,
 	assert(_session);
 	_session->data_feed_in(sdi, packet);
 }
+
+} // namespace pv

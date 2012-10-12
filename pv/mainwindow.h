@@ -25,14 +25,6 @@
 
 #include "sigsession.h"
 
-class SamplingBar;
-
-namespace pv {
-namespace view {
-class View;
-}
-}
-
 class QAction;
 class QMenuBar;
 class QMenu;
@@ -40,6 +32,14 @@ class QVBoxLayout;
 class QStatusBar;
 class QToolBar;
 class QWidget;
+
+namespace pv {
+
+class SamplingBar;
+
+namespace view {
+class View;
+}
 
 class MainWindow : public QMainWindow
 {
@@ -85,5 +85,7 @@ private slots:
 
 	void run_stop();
 };
+
+} // namespace pv
 
 #endif // MAINWINDOW_H

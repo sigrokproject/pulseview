@@ -27,6 +27,8 @@ extern "C" {
 #include <libsigrok/libsigrok.h>
 }
 
+namespace pv {
+
 class LogicDataSnapshot;
 
 class LogicData : public SignalData
@@ -47,3 +49,5 @@ private:
 	std::deque< boost::shared_ptr<LogicDataSnapshot> >
 		_snapshots;
 };
+
+} // namespace pv

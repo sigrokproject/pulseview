@@ -22,6 +22,8 @@ extern "C" {
 #include <libsigrok/libsigrok.h>
 }
 
+namespace pv {
+
 class DataSnapshot
 {
 public:
@@ -39,3 +41,5 @@ protected:
 	uint64_t _sample_count;
 	int _unit_size;
 };
+
+} // namespace pv
