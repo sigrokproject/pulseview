@@ -143,6 +143,8 @@ target_link_libraries(pulseview
 )
 endif(WIN32)
 
+install(PROGRAMS pulseview DESTINATION bin/)
+
 if(ENABLE_TESTS)
 
 add_definitions(-DBOOST_TEST_DYN_LINK)
@@ -168,7 +170,5 @@ endif(WIN32)
 
 enable_testing()
 add_test(test ${CMAKE_CURRENT_BINARY_DIR}/pulseview-test)
-
-install(PROGRAMS pulseview DESTINATION bin/)
 
 endif(ENABLE_TESTS)
