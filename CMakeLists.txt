@@ -54,7 +54,21 @@ endif(WIN32)
 find_package(Qt4 REQUIRED)
 find_package(Boost 1.46 COMPONENTS unit_test_framework REQUIRED)
 
-set(VERSION 0.1.0)
+#===============================================================================
+#= Config Header
+#-------------------------------------------------------------------------------
+
+set(PV_VERSION_MAJOR 0)
+set(PV_VERSION_MINOR 1)
+set(PV_VERSION_MICRO 0)
+set(PV_VERSION_STRING
+	${PV_VERSION_MAJOR}.${PV_VERSION_MINOR}.${PV_VERSION_MICRO}
+)
+
+configure_file (
+	${PROJECT_SOURCE_DIR}/config.h.in
+	${PROJECT_BINARY_DIR}/config.h
+)
 
 #===============================================================================
 #= Sources
@@ -115,7 +129,6 @@ include(${QT_USE_FILE})
 #-------------------------------------------------------------------------------
 
 add_definitions(${QT_DEFINITIONS})
-add_definitions(-DAPP_VERSION="${VERSION}")
 
 #===============================================================================
 #= Global Include Directories

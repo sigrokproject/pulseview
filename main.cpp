@@ -26,14 +26,17 @@ extern "C" {
 
 #include <QtGui/QApplication>
 #include <QDebug>
+
 #include "pv/mainwindow.h"
+
+#include "config.h"
 
 int main(int argc, char *argv[])
 {
 	QApplication a(argc, argv);
 
 	/* Set some application metadata. */
-	QApplication::setApplicationVersion(APP_VERSION);
+	QApplication::setApplicationVersion(PV_VERSION_STRING);
 	QApplication::setApplicationName("PulseView");
 	QApplication::setOrganizationDomain("http://www.sigrok.org");
 
