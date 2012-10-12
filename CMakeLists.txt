@@ -2,6 +2,7 @@
 ## This file is part of the PulseView project.
 ##
 ## Copyright (C) 2012 Joel Holdsworth <joel@airwebreathe.org.uk>
+## Copyright (C) 2012 Alexandru Gagniuc <mr.nuke.me@gmail.com>
 ##
 ## This program is free software: you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -22,6 +23,10 @@ include(FindPkgConfig)
 
 project(pulseview)
 
+#===============================================================================
+#= Dependencies
+#-------------------------------------------------------------------------------
+
 find_package(PkgConfig)
 pkg_check_modules(PKGDEPS REQUIRED
 	libsigrokdecode>=0.1.0
@@ -37,6 +42,10 @@ find_package(Qt4 REQUIRED)
 find_package(Boost 1.46 COMPONENTS unit_test_framework REQUIRED)
 
 set(VERSION 0.1.0)
+
+#===============================================================================
+#= Sources
+#-------------------------------------------------------------------------------
 
 set(pulseview_SOURCES
 	main.cpp
@@ -88,8 +97,16 @@ qt4_add_resources(pulseview_RESOURCES_RCC ${pulseview_RESOURCES})
 
 include(${QT_USE_FILE})
 
+#===============================================================================
+#= Global Definitions
+#-------------------------------------------------------------------------------
+
 add_definitions(${QT_DEFINITIONS})
 add_definitions(-DAPP_VERSION="${VERSION}")
+
+#===============================================================================
+#= Global Include Directories
+#-------------------------------------------------------------------------------
 
 # On Windows/MinGW we need PKGDEPS_STATIC_INCLUDE_DIRS.
 if(WIN32)
@@ -107,6 +124,10 @@ else(WIN32)
 		${PKGDEPS_INCLUDE_DIRS}
 	)
 endif(WIN32)
+
+#===============================================================================
+#= Linker Configuration
+#-------------------------------------------------------------------------------
 
 # On Windows/MinGW we need PKGDEPS_STATIC_LIBRARY_DIRS.
 if(WIN32)
@@ -143,7 +164,15 @@ else(WIN32)
 	)
 endif(WIN32)
 
+#===============================================================================
+#= Installation
+#-------------------------------------------------------------------------------
+
 install(PROGRAMS pulseview DESTINATION bin/)
+
+#===============================================================================
+#= Tests
+#-------------------------------------------------------------------------------
 
 if(ENABLE_TESTS)
 
