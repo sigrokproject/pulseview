@@ -28,6 +28,13 @@ project(pulseview)
 #-------------------------------------------------------------------------------
 
 option(ENABLE_TESTS "Enable unit tests" FALSE)
+option(STATIC_PKGDEPS_LIBS "Statically link to sigrok libraries" FALSE)
+
+if(WIN32)
+	# On Windows/MinGW we need to statically link to libraries
+	# This option is user configurable, but enable it by default on win32
+	set(STATIC_PKGDEPS_LIBS TRUE)
+endif()
 
 #===============================================================================
 #= Dependencies
@@ -114,39 +121,35 @@ add_definitions(-DAPP_VERSION="${VERSION}")
 #= Global Include Directories
 #-------------------------------------------------------------------------------
 
-# On Windows/MinGW we need PKGDEPS_STATIC_INCLUDE_DIRS.
-if(WIN32)
-	include_directories(
-		${include_directories}
-		${CMAKE_CURRENT_BINARY_DIR}
-		${Boost_INCLUDE_DIRS}
-		${PKGDEPS_STATIC_INCLUDE_DIRS}
-	)
-else(WIN32)
-	include_directories(
-		${include_directories}
-		${CMAKE_CURRENT_BINARY_DIR}
-		${Boost_INCLUDE_DIRS}
-		${PKGDEPS_INCLUDE_DIRS}
-	)
-endif(WIN32)
+include_directories(
+	${CMAKE_CURRENT_BINARY_DIR}
+	${Boost_INCLUDE_DIRS}
+)
+
+if(STATIC_PKGDEPS_LIBS)
+	include_directories(${PKGDEPS_STATIC_INCLUDE_DIRS})
+else()
+	include_directories(${PKGDEPS_INCLUDE_DIRS})
+endif()
 
 #===============================================================================
 #= Linker Configuration
 #-------------------------------------------------------------------------------
 
-# On Windows/MinGW we need PKGDEPS_STATIC_LIBRARY_DIRS.
-if(WIN32)
-	link_directories(
-		${Boost_LIBRARY_DIRS}
-		${PKGDEPS_STATIC_LIBRARY_DIRS}
-	)
-else(WIN32)
-	link_directories(
-		${Boost_LIBRARY_DIRS}
-		${PKGDEPS_LIBRARY_DIRS}
-	)
-endif(WIN32)
+link_directories(${Boost_LIBRARY_DIRS})
+
+set(PULSEVIEW_LINK_LIBS
+	${Boost_LIBRARIES}
+	${QT_LIBRARIES}
+)
+
+if(STATIC_PKGDEPS_LIBS)
+	link_directories(${PKGDEPS_STATIC_LIBRARY_DIRS})
+	list(APPEND PULSEVIEW_LINK_LIBS ${PKGDEPS_STATIC_LIBRARIES})
+else()
+	link_directories(${PKGDEPS_LIBRARY_DIRS})
+	list(APPEND PULSEVIEW_LINK_LIBS ${PKGDEPS_LIBRARIES})
+endif()
 
 add_executable(pulseview
 	${pulseview_SOURCES}
@@ -155,20 +158,7 @@ add_executable(pulseview
 	${pulseview_RESOURCES_RCC}
 )
 
-# On Windows/MinGW we need PKGDEPS_STATIC_LIBRARIES.
-if(WIN32)
-	target_link_libraries(pulseview
-		${Boost_LIBRARIES}
-		${PKGDEPS_STATIC_LIBRARIES}
-		${QT_LIBRARIES}
-	)
-else(WIN32)
-	target_link_libraries(pulseview
-		${Boost_LIBRARIES}
-		${PKGDEPS_LIBRARIES}
-		${QT_LIBRARIES}
-	)
-endif(WIN32)
+target_link_libraries(pulseview ${PULSEVIEW_LINK_LIBS})
 
 #===============================================================================
 #= Installation
@@ -188,20 +178,7 @@ if(ENABLE_TESTS)
 		${pulseview_TEST_SOURCES}
 	)
 
-	# On Windows/MinGW we need PKGDEPS_STATIC_LIBRARIES.
-	if(WIN32)
-		target_link_libraries(pulseview-test
-			${Boost_LIBRARIES}
-			${PKGDEPS_STATIC_LIBRARIES}
-			${QT_LIBRARIES}
-		)
-	else(WIN32)
-		target_link_libraries(pulseview-test
-			${Boost_LIBRARIES}
-			${PKGDEPS_LIBRARIES}
-			${QT_LIBRARIES}
-		)
-	endif(WIN32)
+	target_link_libraries(pulseview-test ${PULSEVIEW_LINK_LIBS})
 
 	enable_testing()
 	add_test(test ${CMAKE_CURRENT_BINARY_DIR}/pulseview-test)
