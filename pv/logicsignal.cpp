@@ -18,9 +18,9 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#include <math.h>
+#include <extdef.h>
 
-#include "extdef.h"
+#include <math.h>
 
 #include "logicdata.h"
 #include "logicdatasnapshot.h"

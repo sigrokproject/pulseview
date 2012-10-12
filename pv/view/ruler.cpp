@@ -21,7 +21,7 @@
 #include "ruler.h"
 #include "view.h"
 
-#include "../../extdef.h"
+#include <extdef.h>
 
 #include <assert.h>
 #include <math.h>
