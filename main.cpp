@@ -35,27 +35,27 @@ int main(int argc, char *argv[])
 {
 	QApplication a(argc, argv);
 
-	/* Set some application metadata. */
+	// Set some application metadata
 	QApplication::setApplicationVersion(PV_VERSION_STRING);
 	QApplication::setApplicationName("PulseView");
 	QApplication::setOrganizationDomain("http://www.sigrok.org");
 
-	/* Initialise libsigrok */
+	// Initialise libsigrok
 	if (sr_init() != SR_OK) {
 		qDebug() << "ERROR: libsigrok init failed.";
 		return 1;
 	}
 
-	/* Initialise libsigrokdecode */
+	// Initialise libsigrokdecode
 	if (srd_init(NULL) != SRD_OK) {
 		qDebug() << "ERROR: libsigrokdecode init failed.";
 		return 1;
 	}
 
-	/* Load the protocol decoders */
+	// Load the protocol decoders
 	srd_decoder_load_all();
 
-	/* Initialize all libsigrok drivers. */
+	// Initialize all libsigrok drivers
 	sr_dev_driver **const drivers = sr_driver_list();
 	for (sr_dev_driver **driver = drivers; *driver; driver++) {
 		if (sr_driver_init(*driver) != SR_OK) {
@@ -65,14 +65,14 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	/* Initialise the main window */
+	// Initialise the main window
 	pv::MainWindow w;
 	w.show();
 
-	/* Run the application */
+	// Run the application
 	const int ret = a.exec();
 
-	/* Destroy libsigrokdecode and libsigrok */
+	// Destroy libsigrokdecode and libsigrok
 	srd_exit();
 	sr_exit();
 
