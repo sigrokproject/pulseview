@@ -30,7 +30,7 @@ pkg_check_modules(PKGDEPS REQUIRED
 
 # On Windows/MinGW we explicitly point cmake to the Boost directory.
 if(WIN32)
-set(BOOST_ROOT /usr/local)
+	set(BOOST_ROOT /usr/local)
 endif(WIN32)
 
 find_package(Qt4 REQUIRED)
@@ -93,32 +93,32 @@ add_definitions(-DAPP_VERSION="${VERSION}")
 
 # On Windows/MinGW we need PKGDEPS_STATIC_INCLUDE_DIRS.
 if(WIN32)
-include_directories(
-	${include_directories}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${Boost_INCLUDE_DIRS}
-	${PKGDEPS_STATIC_INCLUDE_DIRS}
-)
+	include_directories(
+		${include_directories}
+		${CMAKE_CURRENT_BINARY_DIR}
+		${Boost_INCLUDE_DIRS}
+		${PKGDEPS_STATIC_INCLUDE_DIRS}
+	)
 else(WIN32)
-include_directories(
-	${include_directories}
-	${CMAKE_CURRENT_BINARY_DIR}
-	${Boost_INCLUDE_DIRS}
-	${PKGDEPS_INCLUDE_DIRS}
-)
+	include_directories(
+		${include_directories}
+		${CMAKE_CURRENT_BINARY_DIR}
+		${Boost_INCLUDE_DIRS}
+		${PKGDEPS_INCLUDE_DIRS}
+	)
 endif(WIN32)
 
 # On Windows/MinGW we need PKGDEPS_STATIC_LIBRARY_DIRS.
 if(WIN32)
-link_directories(
-	${Boost_LIBRARY_DIRS}
-	${PKGDEPS_STATIC_LIBRARY_DIRS}
-)
+	link_directories(
+		${Boost_LIBRARY_DIRS}
+		${PKGDEPS_STATIC_LIBRARY_DIRS}
+	)
 else(WIN32)
-link_directories(
-	${Boost_LIBRARY_DIRS}
-	${PKGDEPS_LIBRARY_DIRS}
-)
+	link_directories(
+		${Boost_LIBRARY_DIRS}
+		${PKGDEPS_LIBRARY_DIRS}
+	)
 endif(WIN32)
 
 add_executable(pulseview
@@ -130,45 +130,45 @@ add_executable(pulseview
 
 # On Windows/MinGW we need PKGDEPS_STATIC_LIBRARIES.
 if(WIN32)
-target_link_libraries(pulseview
-	${Boost_LIBRARIES}
-	${PKGDEPS_STATIC_LIBRARIES}
-	${QT_LIBRARIES}
-)
+	target_link_libraries(pulseview
+		${Boost_LIBRARIES}
+		${PKGDEPS_STATIC_LIBRARIES}
+		${QT_LIBRARIES}
+	)
 else(WIN32)
-target_link_libraries(pulseview
-	${Boost_LIBRARIES}
-	${PKGDEPS_LIBRARIES}
-	${QT_LIBRARIES}
-)
+	target_link_libraries(pulseview
+		${Boost_LIBRARIES}
+		${PKGDEPS_LIBRARIES}
+		${QT_LIBRARIES}
+	)
 endif(WIN32)
 
 install(PROGRAMS pulseview DESTINATION bin/)
 
 if(ENABLE_TESTS)
 
-add_definitions(-DBOOST_TEST_DYN_LINK)
+	add_definitions(-DBOOST_TEST_DYN_LINK)
 
-add_executable(pulseview-test
-	${pulseview_TEST_SOURCES}
-)
+	add_executable(pulseview-test
+		${pulseview_TEST_SOURCES}
+	)
 
-# On Windows/MinGW we need PKGDEPS_STATIC_LIBRARIES.
-if(WIN32)
-target_link_libraries(pulseview-test
-	${Boost_LIBRARIES}
-	${PKGDEPS_STATIC_LIBRARIES}
-	${QT_LIBRARIES}
-)
-else(WIN32)
-target_link_libraries(pulseview-test
-	${Boost_LIBRARIES}
-	${PKGDEPS_LIBRARIES}
-	${QT_LIBRARIES}
-)
-endif(WIN32)
+	# On Windows/MinGW we need PKGDEPS_STATIC_LIBRARIES.
+	if(WIN32)
+		target_link_libraries(pulseview-test
+			${Boost_LIBRARIES}
+			${PKGDEPS_STATIC_LIBRARIES}
+			${QT_LIBRARIES}
+		)
+	else(WIN32)
+		target_link_libraries(pulseview-test
+			${Boost_LIBRARIES}
+			${PKGDEPS_LIBRARIES}
+			${QT_LIBRARIES}
+		)
+	endif(WIN32)
 
-enable_testing()
-add_test(test ${CMAKE_CURRENT_BINARY_DIR}/pulseview-test)
+	enable_testing()
+	add_test(test ${CMAKE_CURRENT_BINARY_DIR}/pulseview-test)
 
 endif(ENABLE_TESTS)
