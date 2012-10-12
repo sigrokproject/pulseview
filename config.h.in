@@ -20,6 +20,9 @@
 #ifndef _PULSEVIEW_CONFIG_H
 #define _PULSEVIEW_CONFIG_H
 
+/* Application Details */
+#define PV_TITLE "@PV_TITLE@"
+
 /* Pulseview version information */
 #define PV_VERSION_MAJOR @PV_VERSION_MAJOR@
 #define PV_VERSION_MINOR @PV_VERSION_MINOR@

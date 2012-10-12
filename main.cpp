@@ -24,6 +24,8 @@ extern "C" {
 #include <libsigrok/libsigrok.h>
 }
 
+#include <getopt.h>
+
 #include <QtGui/QApplication>
 #include <QDebug>
 
@@ -39,6 +41,25 @@ int main(int argc, char *argv[])
 	QApplication::setApplicationVersion(PV_VERSION_STRING);
 	QApplication::setApplicationName("PulseView");
 	QApplication::setOrganizationDomain("http://www.sigrok.org");
+
+	// Parse arguments
+	while (1) {
+		static const struct option long_options[] = {
+			{"version", no_argument, 0,  'V'},
+			{0, 0, 0, 0}
+		};
+
+		const char c = getopt_long(argc, argv, "V", long_options, NULL);
+		if (c == -1)
+			break;
+
+		switch (c) {
+		case 'V':
+			// Print version info
+			fprintf(stderr, "%s %s\n", PV_TITLE, PV_VERSION_STRING);
+			return 0;
+		}
+	}
 
 	// Initialise libsigrok
 	if (sr_init() != SR_OK) {

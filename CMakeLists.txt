@@ -58,6 +58,8 @@ find_package(Boost 1.46 COMPONENTS unit_test_framework REQUIRED)
 #= Config Header
 #-------------------------------------------------------------------------------
 
+set(PV_TITLE PulseView)
+
 set(PV_VERSION_MAJOR 0)
 set(PV_VERSION_MINOR 1)
 set(PV_VERSION_MICRO 0)
@@ -186,7 +188,9 @@ install(PROGRAMS pulseview DESTINATION bin/)
 
 if(ENABLE_TESTS)
 
-	add_definitions(-DBOOST_TEST_DYN_LINK)
+	add_definitions(pulseview-tests
+		-DBOOST_TEST_DYN_LINK
+	)
 
 	add_executable(pulseview-test
 		${pulseview_TEST_SOURCES}
