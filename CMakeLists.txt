@@ -1,5 +1,5 @@
 ##
-## This file is part of pulseview
+## This file is part of PulseView.
 ##
 ## Copyright (C) 2012 Joel Holdsworth <joel@airwebreathe.org.uk>
 ##
