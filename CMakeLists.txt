@@ -114,13 +114,6 @@ set(pulseview_RESOURCES
 	pulseview.qrc
 )
 
-set(pulseview_TEST_SOURCES
-	pv/datasnapshot.cpp
-	pv/logicdatasnapshot.cpp
-	test/logicdatasnapshot.cpp
-	test/test.cpp
-)
-
 qt4_wrap_cpp(pulseview_HEADERS_MOC ${pulseview_HEADERS})
 qt4_wrap_ui(pulseview_FORMS_HEADERS ${pulseview_FORMS})
 qt4_add_resources(pulseview_RESOURCES_RCC ${pulseview_RESOURCES})
@@ -188,18 +181,7 @@ install(PROGRAMS ${PROJECT_NAME} DESTINATION bin/)
 #-------------------------------------------------------------------------------
 
 if(ENABLE_TESTS)
-
-	add_definitions(pulseview-tests
-		-DBOOST_TEST_DYN_LINK
-	)
-
-	add_executable(pulseview-test
-		${pulseview_TEST_SOURCES}
-	)
-
-	target_link_libraries(pulseview-test ${PULSEVIEW_LINK_LIBS})
-
+	add_subdirectory(test)
 	enable_testing()
-	add_test(test ${CMAKE_CURRENT_BINARY_DIR}/pulseview-test)
-
+	add_test(test ${CMAKE_CURRENT_BINARY_DIR}/test/pulseview-test)
 endif(ENABLE_TESTS)
