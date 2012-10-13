@@ -46,8 +46,6 @@ void push_logic(LogicDataSnapshot &s, unsigned int length, uint8_t value)
 
 BOOST_AUTO_TEST_CASE(Pow2)
 {
-	BOOST_CHECK_EQUAL(LogicDataSnapshot::pow2_ceil(-2, 0), -2);
-	BOOST_CHECK_EQUAL(LogicDataSnapshot::pow2_ceil(-1, 0), -1);
 	BOOST_CHECK_EQUAL(LogicDataSnapshot::pow2_ceil(0, 0), 0);
 	BOOST_CHECK_EQUAL(LogicDataSnapshot::pow2_ceil(1, 0), 1);
 	BOOST_CHECK_EQUAL(LogicDataSnapshot::pow2_ceil(2, 0), 2);
@@ -57,9 +55,6 @@ BOOST_AUTO_TEST_CASE(Pow2)
 	BOOST_CHECK_EQUAL(
 		LogicDataSnapshot::pow2_ceil(INT64_MAX, 0), INT64_MAX);
 
-	BOOST_CHECK_EQUAL(LogicDataSnapshot::pow2_ceil(-3, 1), -2);
-	BOOST_CHECK_EQUAL(LogicDataSnapshot::pow2_ceil(-2, 1), -2);
-	BOOST_CHECK_EQUAL(LogicDataSnapshot::pow2_ceil(-1, 1), 0);
 	BOOST_CHECK_EQUAL(LogicDataSnapshot::pow2_ceil(0, 1), 0);
 	BOOST_CHECK_EQUAL(LogicDataSnapshot::pow2_ceil(1, 1), 2);
 	BOOST_CHECK_EQUAL(LogicDataSnapshot::pow2_ceil(2, 1), 2);

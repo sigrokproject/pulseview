@@ -121,7 +121,7 @@ void LogicDataSnapshot::append_payload_to_mipmap()
 	}
 
 	// Compute higher level mipmaps
-	for(int level = 1; level < ScaleStepCount; level++)
+	for(unsigned int level = 1; level < ScaleStepCount; level++)
 	{
 		MipMapLevel &m = _mip_map[level];
 		const MipMapLevel &ml = _mip_map[level-1];
@@ -169,11 +169,11 @@ uint64_t LogicDataSnapshot::get_sample(uint64_t index) const
 
 void LogicDataSnapshot::get_subsampled_edges(
 	std::vector<EdgePair> &edges,
-	int64_t start, int64_t end,
+	uint64_t start, uint64_t end,
 	float min_length, int sig_index)
 {
-	int64_t index = start;
-	int level;
+	uint64_t index = start;
+	unsigned int level;
 	bool last_sample;
 	bool fast_forward;
 
@@ -184,8 +184,8 @@ void LogicDataSnapshot::get_subsampled_edges(
 	assert(sig_index >= 0);
 	assert(sig_index < SR_MAX_NUM_PROBES);
 
-	const int64_t block_length = (int64_t)max(min_length, 1.0f);
-	const int min_level = max((int)floorf(logf(min_length) /
+	const uint64_t block_length = (uint64_t)max(min_length, 1.0f);
+	const unsigned int min_level = max((int)floorf(logf(min_length) /
 		LogMipMapScaleFactor) - 1, 0);
 	const uint64_t sig_mask = 1ULL << sig_index;
 
@@ -350,10 +350,10 @@ uint64_t LogicDataSnapshot::get_subsample(int level, uint64_t offset) const
 		_unit_size * offset);
 }
 
-int64_t LogicDataSnapshot::pow2_ceil(int64_t x, unsigned int power)
+uint64_t LogicDataSnapshot::pow2_ceil(uint64_t x, unsigned int power)
 {
-	const int64_t p = 1 << power;
-	return ((x < 0) ? x : (x + p - 1)) / p * p;
+	const uint64_t p = 1 << power;
+	return (x + p - 1) / p * p;
 }
 
 } // namespace pv

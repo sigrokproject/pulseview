@@ -44,7 +44,7 @@ private:
 	};
 
 private:
-	static const int ScaleStepCount = 10;
+	static const unsigned int ScaleStepCount = 10;
 	static const int MipMapScalePower;
 	static const int MipMapScaleFactor;
 	static const float LogMipMapScaleFactor;
@@ -79,13 +79,13 @@ public:
 	 * @param[in] sig_index The index of the signal.
 	 **/
 	void get_subsampled_edges(std::vector<EdgePair> &edges,
-		int64_t start, int64_t end,
+		uint64_t start, uint64_t end,
 		float min_length, int sig_index);
 
 private:
 	uint64_t get_subsample(int level, uint64_t offset) const;
 
-	static int64_t pow2_ceil(int64_t x, unsigned int power);
+	static uint64_t pow2_ceil(uint64_t x, unsigned int power);
 
 private:
 	struct MipMapLevel _mip_map[ScaleStepCount];
