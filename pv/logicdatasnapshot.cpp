@@ -206,8 +206,7 @@ void LogicDataSnapshot::get_subsampled_edges(
 			const uint64_t final_index = min(end,
 				pow2_ceil(index, MipMapScalePower));
 
-			for(index;
-				index < final_index &&
+			for(; index < final_index &&
 				(index & ~(~0 << MipMapScalePower)) != 0;
 				index++)
 			{
@@ -312,7 +311,7 @@ void LogicDataSnapshot::get_subsampled_edges(
 			// do a linear search for the next transition within the
 			// block
 			if(min_length < MipMapScaleFactor) {
-				for(index; index < end; index++) {
+				for(; index < end; index++) {
 					const bool sample = (get_sample(index) &
 						sig_mask) != 0;
 					if(sample != last_sample)
