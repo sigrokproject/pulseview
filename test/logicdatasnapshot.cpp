@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_CASE(Basic)
 	//----- Test LogicDataSnapshot::push_logic -----//
 
 	BOOST_CHECK(s.get_sample_count() == 0);
-	for(int i = 0; i < LogicDataSnapshot::ScaleStepCount; i++)
+	for(unsigned int i = 0; i < LogicDataSnapshot::ScaleStepCount; i++)
 	{
 		const LogicDataSnapshot::MipMapLevel &m = s._mip_map[i];
 		BOOST_CHECK_EQUAL(m.length, 0);
@@ -88,7 +88,7 @@ BOOST_AUTO_TEST_CASE(Basic)
 	BOOST_CHECK(s.get_sample_count() == 8);
 
 	// There should not be enough samples to have a single mip map sample
-	for(int i = 0; i < LogicDataSnapshot::ScaleStepCount; i++)
+	for(unsigned int i = 0; i < LogicDataSnapshot::ScaleStepCount; i++)
 	{
 		const LogicDataSnapshot::MipMapLevel &m = s._mip_map[i];
 		BOOST_CHECK_EQUAL(m.length, 0);
@@ -108,7 +108,7 @@ BOOST_AUTO_TEST_CASE(Basic)
 	BOOST_CHECK_EQUAL(((uint8_t*)m0.data)[0], 0x11);
 
 	// The higher levels should still be empty
-	for(int i = 1; i < LogicDataSnapshot::ScaleStepCount; i++)
+	for(unsigned int i = 1; i < LogicDataSnapshot::ScaleStepCount; i++)
 	{
 		const LogicDataSnapshot::MipMapLevel &m = s._mip_map[i];
 		BOOST_CHECK_EQUAL(m.length, 0);
@@ -123,7 +123,7 @@ BOOST_AUTO_TEST_CASE(Basic)
 	BOOST_CHECK_EQUAL(m0.data_length, LogicDataSnapshot::MipMapDataUnit);
 
 	BOOST_CHECK_EQUAL(((uint8_t*)m0.data)[1], 0x11);
-	for(int i = 2; i < m0.length; i++)
+	for(unsigned int i = 2; i < m0.length; i++)
 		BOOST_CHECK_EQUAL(((uint8_t*)m0.data)[i], 0);
 
 	const LogicDataSnapshot::MipMapLevel &m1 = s._mip_map[1];
@@ -158,7 +158,7 @@ BOOST_AUTO_TEST_CASE(Basic)
 BOOST_AUTO_TEST_CASE(LargeData)
 {
 	uint8_t prev_sample;
-	const int Length = 1000000;
+	const unsigned int Length = 1000000;
 
 	sr_datafeed_logic logic;
 	logic.unitsize = 1;
@@ -166,7 +166,7 @@ BOOST_AUTO_TEST_CASE(LargeData)
 	logic.data = new uint8_t[Length];
 	uint8_t *data = (uint8_t*)logic.data;
 
-	for(int i = 0; i < Length; i++)
+	for(unsigned int i = 0; i < Length; i++)
 		*data++ = (uint8_t)(i >> 8);
 
 	LogicDataSnapshot s(logic);
@@ -181,7 +181,7 @@ BOOST_AUTO_TEST_CASE(LargeData)
 	BOOST_REQUIRE(s._mip_map[0].data != NULL);
 
 	prev_sample = 0;
-	for(int i = 0; i < s._mip_map[0].length;)
+	for(unsigned int i = 0; i < s._mip_map[0].length;)
 	{
 		BOOST_TEST_MESSAGE("Testing mip_map[0].data[" << i << "]");
 
@@ -204,7 +204,7 @@ BOOST_AUTO_TEST_CASE(LargeData)
 	BOOST_REQUIRE(s._mip_map[1].data != NULL);
 
 	prev_sample = 0;
-	for(int i = 0; i < s._mip_map[1].length; i++)
+	for(unsigned int i = 0; i < s._mip_map[1].length; i++)
 	{
 		BOOST_TEST_MESSAGE("Testing mip_map[1].data[" << i << "]");
 
@@ -222,7 +222,7 @@ BOOST_AUTO_TEST_CASE(LargeData)
 	BOOST_REQUIRE(s._mip_map[2].data != NULL);
 
 	prev_sample = 0;
-	for(int i = 0; i < s._mip_map[2].length; i++)
+	for(unsigned int i = 0; i < s._mip_map[2].length; i++)
 	{
 		BOOST_TEST_MESSAGE("Testing mip_map[2].data[" << i << "]");
 
@@ -239,12 +239,12 @@ BOOST_AUTO_TEST_CASE(LargeData)
 		LogicDataSnapshot::MipMapDataUnit);
 	BOOST_REQUIRE(s._mip_map[3].data != NULL);
 
-	for(int i = 0; i < s._mip_map[3].length; i++)
+	for(unsigned int i = 0; i < s._mip_map[3].length; i++)
 		BOOST_CHECK_EQUAL(*((uint8_t*)s._mip_map[3].data + i),
 			0xFF);
 
 	// Check the higher levels
-	for(int i = 4; i < LogicDataSnapshot::ScaleStepCount; i++)
+	for(unsigned int i = 4; i < LogicDataSnapshot::ScaleStepCount; i++)
 	{
 		const LogicDataSnapshot::MipMapLevel &m = s._mip_map[i];
 		BOOST_CHECK_EQUAL(m.length, 0);
@@ -259,7 +259,7 @@ BOOST_AUTO_TEST_CASE(LargeData)
 
 	BOOST_CHECK_EQUAL(edges.size(), 32);
 
-	for(int i = 0; i < edges.size() - 1; i++)
+	for(unsigned int i = 0; i < edges.size() - 1; i++)
 	{
 		BOOST_CHECK_EQUAL(edges[i].first, i * 32768);
 		BOOST_CHECK_EQUAL(edges[i].second, i & 1);
@@ -305,7 +305,7 @@ BOOST_AUTO_TEST_CASE(Pulses)
 		LogicDataSnapshot::MipMapDataUnit);
 	BOOST_REQUIRE(s._mip_map[0].data != NULL);
 
-	for(int i = 0; i < s._mip_map[0].length;) {
+	for(unsigned int i = 0; i < s._mip_map[0].length;) {
 		BOOST_TEST_MESSAGE("Testing mip_map[0].data[" << i << "]");
 		BOOST_CHECK_EQUAL(s.get_subsample(0, i++) & 0xFF, 0xFF);
 
@@ -319,7 +319,7 @@ BOOST_AUTO_TEST_CASE(Pulses)
 	}
 
 	// Check the higher levels are all inactive
-	for(int i = 1; i < LogicDataSnapshot::ScaleStepCount; i++) {
+	for(unsigned int i = 1; i < LogicDataSnapshot::ScaleStepCount; i++) {
 		const LogicDataSnapshot::MipMapLevel &m = s._mip_map[i];
 		BOOST_CHECK_EQUAL(m.length, 0);
 		BOOST_CHECK_EQUAL(m.data_length, 0);
@@ -331,7 +331,7 @@ BOOST_AUTO_TEST_CASE(Pulses)
 	BOOST_REQUIRE_EQUAL(edges.size(), Cycles + 2);
 
 	BOOST_CHECK_EQUAL(0, false);
-	for(int i = 1; i < edges.size(); i++)
+	for(unsigned int i = 1; i < edges.size(); i++)
 		BOOST_CHECK_EQUAL(edges[i].second, false);
 }
 
@@ -369,7 +369,7 @@ BOOST_AUTO_TEST_CASE(LongPulses)
 		LogicDataSnapshot::MipMapDataUnit);
 	BOOST_REQUIRE(s._mip_map[0].data != NULL);
 
-	for(int i = 0; i < s._mip_map[0].length;) {
+	for(unsigned int i = 0; i < s._mip_map[0].length;) {
 		for(j = 0; i < s._mip_map[0].length && j < 2; j++) {
 			BOOST_TEST_MESSAGE(
 				"Testing mip_map[0].data[" << i << "]");
@@ -385,7 +385,7 @@ BOOST_AUTO_TEST_CASE(LongPulses)
 	}
 
 	// Check the higher levels are all inactive
-	for(int i = 1; i < LogicDataSnapshot::ScaleStepCount; i++) {
+	for(unsigned int i = 1; i < LogicDataSnapshot::ScaleStepCount; i++) {
 		const LogicDataSnapshot::MipMapLevel &m = s._mip_map[i];
 		BOOST_CHECK_EQUAL(m.length, 0);
 		BOOST_CHECK_EQUAL(m.data_length, 0);
@@ -447,7 +447,7 @@ BOOST_AUTO_TEST_CASE(LisaMUsbHid)
 	logic.data = new uint8_t[Length];
 	uint8_t *data = (uint8_t*)logic.data;
 
-	for(int i = 0; i < countof(Edges); i++) {
+	for(unsigned int i = 0; i < countof(Edges); i++) {
 		const int edgePos = Edges[i];
 		memset(&data[lastEdgePos], state ? 0x02 : 0,
 			edgePos - lastEdgePos - 1);
