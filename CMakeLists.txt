@@ -28,11 +28,11 @@ project(pulseview)
 #-------------------------------------------------------------------------------
 
 option(ENABLE_TESTS "Enable unit tests" FALSE)
-option(STATIC_PKGDEPS_LIBS "Statically link to sigrok libraries" FALSE)
+option(STATIC_PKGDEPS_LIBS "Statically link to (pkgconfig) libraries" FALSE)
 
 if(WIN32)
-	# On Windows/MinGW we need to statically link to libraries
-	# This option is user configurable, but enable it by default on win32
+	# On Windows/MinGW we need to statically link to libraries.
+	# This option is user configurable, but enable it by default on win32.
 	set(STATIC_PKGDEPS_LIBS TRUE)
 endif()
 
@@ -49,7 +49,7 @@ pkg_check_modules(PKGDEPS REQUIRED
 # On Windows/MinGW we explicitly point cmake to the Boost directory.
 if(WIN32)
 	set(BOOST_ROOT /usr/local)
-endif(WIN32)
+endif()
 
 find_package(Qt4 REQUIRED)
 find_package(Boost 1.46 COMPONENTS unit_test_framework REQUIRED)

@@ -1,5 +1,5 @@
 /*
- * This file is part of pulseview.
+ * This file is part of the PulseView project.
  *
  * Copyright (C) 2012 Alexandru Gagniuc <mr.nuke.me@gmail.com>
  *
@@ -20,7 +20,7 @@
 #ifndef _PULSEVIEW_CONFIG_H
 #define _PULSEVIEW_CONFIG_H
 
-/* Application Details */
+/* Application details */
 #define PV_TITLE "@PV_TITLE@"
 #define PV_DESCRIPTION "@PV_DESCRIPTION@"
 #define PV_BIN_NAME "@PROJECT_NAME@"
