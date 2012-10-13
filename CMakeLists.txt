@@ -130,6 +130,7 @@ include(${QT_USE_FILE})
 #-------------------------------------------------------------------------------
 
 add_definitions(${QT_DEFINITIONS})
+add_definitions(-Werror -Wall)
 
 #===============================================================================
 #= Global Include Directories
