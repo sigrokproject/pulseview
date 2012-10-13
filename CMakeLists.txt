@@ -59,6 +59,7 @@ find_package(Boost 1.46 COMPONENTS unit_test_framework REQUIRED)
 #-------------------------------------------------------------------------------
 
 set(PV_TITLE PulseView)
+set(PV_DESCRIPTION "A GUI for sigrok")
 
 set(PV_VERSION_MAJOR 0)
 set(PV_VERSION_MINOR 1)

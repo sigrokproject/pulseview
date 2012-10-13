@@ -33,6 +33,18 @@ extern "C" {
 
 #include "config.h"
 
+void usage()
+{
+	fprintf(stderr,
+		"Usage:\n"
+		"  %s — %s\n"
+		"\n"
+		"Help Options:\n"
+		"  -V, --version                   Show release version\n"
+		"  -h, -?, --help                  Show help option\n"
+		"\n", PV_BIN_NAME, PV_DESCRIPTION);
+}
+
 int main(int argc, char *argv[])
 {
 	QApplication a(argc, argv);
@@ -46,10 +58,12 @@ int main(int argc, char *argv[])
 	while (1) {
 		static const struct option long_options[] = {
 			{"version", no_argument, 0,  'V'},
+			{"help", no_argument, 0,  'h'},
 			{0, 0, 0, 0}
 		};
 
-		const char c = getopt_long(argc, argv, "V", long_options, NULL);
+		const char c = getopt_long(argc, argv,
+			"Vh?", long_options, NULL);
 		if (c == -1)
 			break;
 
@@ -57,6 +71,11 @@ int main(int argc, char *argv[])
 		case 'V':
 			// Print version info
 			fprintf(stderr, "%s %s\n", PV_TITLE, PV_VERSION_STRING);
+			return 0;
+
+		case 'h':
+		case '?':
+			usage();
 			return 0;
 		}
 	}

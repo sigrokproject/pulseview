@@ -22,6 +22,8 @@
 
 /* Application Details */
 #define PV_TITLE "@PV_TITLE@"
+#define PV_DESCRIPTION "@PV_DESCRIPTION@"
+#define PV_BIN_NAME "@PROJECT_NAME@"
 
 /* Pulseview version information */
 #define PV_VERSION_MAJOR @PV_VERSION_MAJOR@
