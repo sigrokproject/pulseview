@@ -52,7 +52,12 @@ if(WIN32)
 endif()
 
 find_package(Qt4 REQUIRED)
+
+if(ENABLE_TESTS)
 find_package(Boost 1.46 COMPONENTS unit_test_framework REQUIRED)
+else()
+find_package(Boost 1.46)
+endif()
 
 #===============================================================================
 #= Config Header
