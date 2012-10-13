@@ -167,20 +167,20 @@ else()
 	list(APPEND PULSEVIEW_LINK_LIBS ${PKGDEPS_LIBRARIES})
 endif()
 
-add_executable(pulseview
+add_executable(${PROJECT_NAME}
 	${pulseview_SOURCES}
 	${pulseview_HEADERS_MOC}
 	${pulseview_FORMS_HEADERS}
 	${pulseview_RESOURCES_RCC}
 )
 
-target_link_libraries(pulseview ${PULSEVIEW_LINK_LIBS})
+target_link_libraries(${PROJECT_NAME} ${PULSEVIEW_LINK_LIBS})
 
 #===============================================================================
 #= Installation
 #-------------------------------------------------------------------------------
 
-install(PROGRAMS pulseview DESTINATION bin/)
+install(PROGRAMS ${PROJECT_NAME} DESTINATION bin/)
 
 #===============================================================================
 #= Tests
