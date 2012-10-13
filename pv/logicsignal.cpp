@@ -54,8 +54,8 @@ const QColor LogicSignal::LogicSignalColours[10] = {
 LogicSignal::LogicSignal(QString name, shared_ptr<LogicData> data,
 	int probe_index) :
 	Signal(name),
-	_data(data),
-	_probe_index(probe_index)
+	_probe_index(probe_index),
+	_data(data)
 {
 	assert(_probe_index >= 0);
 }
