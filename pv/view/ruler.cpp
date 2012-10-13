@@ -56,7 +56,7 @@ void Ruler::paintEvent(QPaintEvent *event)
 	const int order = (int)floorf(log10f(min_period));
 	const double order_decimal = pow(10, order);
 
-	int unit = 0;
+	unsigned int unit = 0;
 	double tick_period = 0.0f;
 
 	do
@@ -64,7 +64,7 @@ void Ruler::paintEvent(QPaintEvent *event)
 		tick_period = order_decimal * ScaleUnits[unit++];
 	} while(tick_period < min_period && unit < countof(ScaleUnits));
 
-	const int prefix = (order - FirstSIPrefixPower) / 3;
+	const unsigned int prefix = (order - FirstSIPrefixPower) / 3;
 	assert(prefix >= 0);
 	assert(prefix < countof(SIPrefixes));
 
