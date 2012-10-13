@@ -355,7 +355,7 @@ BOOST_AUTO_TEST_CASE(LongPulses)
 	for(int i = 0; i < Cycles; i++) {
 		for(j = 0; j < PulseWidth; j++)
 			*p++ = ~0;
-		for(j; j < Period; j++)
+		for(; j < Period; j++)
 			*p++ = 0;
 	}
 
@@ -376,7 +376,7 @@ BOOST_AUTO_TEST_CASE(LongPulses)
 			BOOST_CHECK_EQUAL(s.get_subsample(0, i++), ~0);
 		}
 
-		for(j; i < s._mip_map[0].length &&
+		for(; i < s._mip_map[0].length &&
 			j < Period/LogicDataSnapshot::MipMapScaleFactor; j++) {
 			BOOST_TEST_MESSAGE(
 				"Testing mip_map[0].data[" << i << "]");
