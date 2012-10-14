@@ -36,25 +36,29 @@ QString Signal::get_name() const
 	return _name;
 }
 
-void Signal::paint_label(QPainter &p, const QRect &rect)
+QRectF Signal::get_label_rect(QPainter &p, const QRect &rect)
 {
-	p.setBrush(get_colour());
-
-	const QString text(_name);
-	const QColor colour = get_colour();
-
 	const QSizeF text_size = p.boundingRect(
-		QRectF(0, 0, rect.width(), 0), 0, text).size();
+		QRectF(0, 0, rect.width(), 0), 0, _name).size();
 
 	const float nominal_offset = get_nominal_offset(rect);
 	const QSizeF label_size(
 		text_size.width() + LabelPadding.width() * 2,
 		text_size.height() + LabelPadding.height() * 2);
 	const float label_arrow_length = label_size.height() / 2;
-	const QRectF label_rect(
+	return QRectF(
 		rect.right() - label_arrow_length - label_size.width(),
 		nominal_offset - label_size.height() / 2,
 		label_size.width(), label_size.height());
+}
+
+void Signal::paint_label(QPainter &p, const QRect &rect)
+{
+	p.setBrush(get_colour());
+
+	const QColor colour = get_colour();
+	const float nominal_offset = get_nominal_offset(rect);
+	const QRectF label_rect = get_label_rect(p, rect);
 
 	// Paint the label
 	const QPointF points[] = {
@@ -87,7 +91,7 @@ void Signal::paint_label(QPainter &p, const QRect &rect)
 
 	// Paint the text
 	p.setPen((colour.lightness() > 64) ? Qt::black : Qt::white);
-	p.drawText(label_rect, Qt::AlignCenter | Qt::AlignVCenter, text);
+	p.drawText(label_rect, Qt::AlignCenter | Qt::AlignVCenter, _name);
 }
 
 } // namespace pv

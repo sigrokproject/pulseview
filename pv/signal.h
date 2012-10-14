@@ -53,6 +53,14 @@ public:
 		double offset) = 0;
 
 	/**
+	 * Computes the outline rectangle of a label.
+	 * @param p the QPainter to lay out text with.
+	 * @param rect The rectangle of the signal header.
+	 * @return Returns the rectangle of the signal label.
+	 */
+	virtual QRectF get_label_rect(QPainter &p, const QRect &rect);
+	
+	/**
 	 * Paints the signal label into a QGLWidget.
 	 * @param p the QPainter to paint into.
 	 * @param rect the rectangular area to draw the label into.
