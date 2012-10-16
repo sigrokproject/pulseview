@@ -1,0 +1,79 @@
+-------------------------------------------------------------------------------
+HACKING
+-------------------------------------------------------------------------------
+
+Coding style
+------------
+
+This project is programmed using the Linux kernel coding style, see
+http://lxr.linux.no/linux/Documentation/CodingStyle for details.
+
+Please use the same style for any code contributions, thanks!
+
+In some exceptional cases deviations from the above coding guidelines are
+OK (in order to meet Qt/C++ related guidelines, for example).
+
+
+Contributions
+-------------
+
+ - Patches should be sent to the development mailinglist at
+   sigrok-devel@lists.sourceforge.net (please subscribe to the list first).
+
+   https://lists.sourceforge.net/lists/listinfo/sigrok-devel
+
+ - Alternatively, you can also clone the git repository and let us know
+   from where to pull/review your changes. You can use gitorious.org,
+   github.com, or any other public git hosting site.
+
+
+Random notes
+------------
+
+ - Consistently use g_try_malloc() / g_try_malloc0(). Do not use standard
+   malloc()/calloc() if it can be avoided (sometimes other libs such
+   as libftdi can return malloc()'d memory, for example).
+
+ - Always properly match allocations with the proper *free() functions. If
+   glib's g_try_malloc()/g_try_malloc0() was used, use g_free() to free the
+   memory. Otherwise use standard free(). Never use the wrong function!
+
+ - Never use g_malloc() or g_malloc0(). These functions do not return NULL
+   if not enough memory is available but rather lead to an exit() or segfault
+   instead. This behaviour is not acceptable.
+   Use g_try_malloc()/g_try_malloc0() instead and check the return value.
+
+ - Use glib's gboolean / TRUE / FALSE for boolean types consistently.
+   Do not use <stdbool.h> and its true / false, and do not invent private
+   definitions for this either.
+
+ - Consistently use the same naming convention for #include guards in headers:
+   <PROJECTNAME>_<PATH_TO_FILE>_<FILE>
+   This ensures that all #include guards are always unique and consistent.
+   Example: PULSEVIEW_PV_VIEW_RULER_H
+
+ - Consistently use the same naming convention for functions, if appropriate:
+
+   Getter/setter function names should usually end with "_get" or "_set".
+   Functions creating new "objects" should end with "_new".
+   Functions destroying "objects" should end with "_destroy".
+   Functions adding or removing items (e.g. from lists) should end with
+   either "_add" or "_remove".
+   Functions operating on all items from a list (not on only one of them),
+   should end with "_all", e.g. "_remove_all", "_get_all", and so on.
+   Use "_remove_all" in favor of "_clear" for consistency.
+
+ - In Doxygen comments, put an empty line between the block of @param lines
+   and the final @return line. The @param lines themselves (if there is more
+   than one) are not separated by empty lines.
+
+
+Release engineering
+-------------------
+
+See
+
+ http://sigrok.org/wiki/Developers/Release_process
+
+for a list of items that need to be done when releasing a new tarball.
+
