@@ -34,6 +34,7 @@ class Signal
 {
 private:
 	static const QSizeF LabelPadding;
+	static const int LabelHitPadding;
 
 protected:
 	Signal(QString name);
@@ -52,6 +53,26 @@ public:
 	virtual void paint(QPainter &p, const QRect &rect, double scale,
 		double offset) = 0;
 
+
+	/**
+	 * Paints the signal label into a QGLWidget.
+	 * @param p the QPainter to paint into.
+	 * @param rect the rectangular area to draw the label into.
+	 * @param hover true if the label is being hovered over by the mouse.
+	 */
+	virtual void paint_label(QPainter &p, const QRect &rect,
+		bool hover);
+
+	/**
+	 * Determines if a point is in the header label rect.
+	 * @param p the QPainter to paint into.
+	 * @param rect the rectangular area to draw the label into.
+	 * @param point the point to test.
+	 */
+	bool pt_in_label_rect(QPainter &p, const QRect &rect,
+		const QPoint &point);
+
+private:
 	/**
 	 * Computes the outline rectangle of a label.
 	 * @param p the QPainter to lay out text with.
@@ -59,16 +80,8 @@ public:
 	 * @return Returns the rectangle of the signal label.
 	 */
 	virtual QRectF get_label_rect(QPainter &p, const QRect &rect);
-	
-	/**
-	 * Paints the signal label into a QGLWidget.
-	 * @param p the QPainter to paint into.
-	 * @param rect the rectangular area to draw the label into.
-	 */
-	virtual void paint_label(QPainter &p, const QRect &rect);
 
 protected:
-
 	/**
 	 * Get the colour of the logic signal
 	 */

@@ -25,6 +25,7 @@
 namespace pv {
 
 const QSizeF Signal::LabelPadding(4, 0);
+const int Signal::LabelHitPadding = 2;
 
 Signal::Signal(QString name) :
 	_name(name)
@@ -36,23 +37,7 @@ QString Signal::get_name() const
 	return _name;
 }
 
-QRectF Signal::get_label_rect(QPainter &p, const QRect &rect)
-{
-	const QSizeF text_size = p.boundingRect(
-		QRectF(0, 0, rect.width(), 0), 0, _name).size();
-
-	const float nominal_offset = get_nominal_offset(rect);
-	const QSizeF label_size(
-		text_size.width() + LabelPadding.width() * 2,
-		text_size.height() + LabelPadding.height() * 2);
-	const float label_arrow_length = label_size.height() / 2;
-	return QRectF(
-		rect.right() - label_arrow_length - label_size.width(),
-		nominal_offset - label_size.height() / 2,
-		label_size.width(), label_size.height());
-}
-
-void Signal::paint_label(QPainter &p, const QRect &rect)
+void Signal::paint_label(QPainter &p, const QRect &rect, bool hover)
 {
 	p.setBrush(get_colour());
 
@@ -78,7 +63,7 @@ void Signal::paint_label(QPainter &p, const QRect &rect)
 	};
 
 	p.setPen(Qt::transparent);
-	p.setBrush(colour);
+	p.setBrush(hover ? colour.lighter() : colour);
 	p.drawPolygon(points, countof(points));
 
 	p.setPen(colour.lighter());
@@ -92,6 +77,34 @@ void Signal::paint_label(QPainter &p, const QRect &rect)
 	// Paint the text
 	p.setPen((colour.lightness() > 64) ? Qt::black : Qt::white);
 	p.drawText(label_rect, Qt::AlignCenter | Qt::AlignVCenter, _name);
+}
+
+bool Signal::pt_in_label_rect(QPainter &p,
+	const QRect &rect, const QPoint &point)
+{
+	const QRectF label = get_label_rect(p, rect);
+	return QRectF(
+		QPointF(label.left() - LabelHitPadding,
+			label.top() - LabelHitPadding),
+		QPointF(rect.right(),
+			label.bottom() + LabelHitPadding)
+		).contains(point);
+}
+
+QRectF Signal::get_label_rect(QPainter &p, const QRect &rect)
+{
+	const QSizeF text_size = p.boundingRect(
+		QRectF(0, 0, rect.width(), 0), 0, _name).size();
+
+	const float nominal_offset = get_nominal_offset(rect);
+	const QSizeF label_size(
+		text_size.width() + LabelPadding.width() * 2,
+		text_size.height() + LabelPadding.height() * 2);
+	const float label_arrow_length = label_size.height() / 2;
+	return QRectF(
+		rect.right() - label_arrow_length - label_size.width(),
+		nominal_offset - label_size.height() / 2,
+		label_size.width(), label_size.height());
 }
 
 } // namespace pv

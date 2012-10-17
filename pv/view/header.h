@@ -39,7 +39,14 @@ private:
 	void paintEvent(QPaintEvent *event);
 
 private:
+	void mouseMoveEvent(QMouseEvent *event);
+
+	void leaveEvent(QEvent *event);
+
+private:
 	View &_view;
+
+	QPoint _mouse_point;
 };
 
 } // namespace view

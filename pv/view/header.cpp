@@ -28,6 +28,7 @@
 
 #include <boost/foreach.hpp>
 
+#include <QMouseEvent>
 #include <QPainter>
 #include <QRect>
 
@@ -41,6 +42,7 @@ Header::Header(View &parent) :
 	QWidget(&parent),
 	_view(parent)
 {
+	setMouseTracking(true);
 }
 
 void Header::paintEvent(QPaintEvent *event)
@@ -57,13 +59,30 @@ void Header::paintEvent(QPaintEvent *event)
 	{
 		assert(s);
 
-		const QRect label_rect(0, offset, w, View::SignalHeight);
-		s->paint_label(painter, label_rect);
+		const QRect signal_heading_rect(
+			0, offset, w, View::SignalHeight);
+
+		s->paint_label(painter, signal_heading_rect,
+			s->pt_in_label_rect(painter,
+				signal_heading_rect, _mouse_point));
 
 		offset += View::SignalHeight;
 	}
 
 	painter.end();
+}
+
+void Header::mouseMoveEvent(QMouseEvent *event)
+{
+	assert(event);
+	_mouse_point = event->pos();
+	update();
+}
+
+void Header::leaveEvent(QEvent *event)
+{
+	_mouse_point = QPoint(-1, -1);
+	update();
 }
 
 } // namespace view
