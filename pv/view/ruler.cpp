@@ -68,7 +68,7 @@ void Ruler::paintEvent(QPaintEvent *event)
 	assert(prefix >= 0);
 	assert(prefix < countof(SIPrefixes));
 
-	const double multiplier = pow(0.1, prefix * 3 + FirstSIPrefixPower);
+	const double multiplier = pow(10.0, - prefix * 3 - FirstSIPrefixPower);
 
 	const int text_height = p.boundingRect(0, 0, INT_MAX, INT_MAX,
 		Qt::AlignLeft | Qt::AlignTop, "8").height();
