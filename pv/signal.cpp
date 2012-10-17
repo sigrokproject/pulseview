@@ -43,7 +43,9 @@ void Signal::paint_label(QPainter &p, const QRect &rect, bool hover)
 
 	const QColor colour = get_colour();
 	const float nominal_offset = get_nominal_offset(rect);
-	const QRectF label_rect = get_label_rect(p, rect);
+
+	compute_text_size(p);
+	const QRectF label_rect = get_label_rect(rect);
 
 	// Paint the label
 	const QPointF points[] = {
@@ -79,10 +81,9 @@ void Signal::paint_label(QPainter &p, const QRect &rect, bool hover)
 	p.drawText(label_rect, Qt::AlignCenter | Qt::AlignVCenter, _name);
 }
 
-bool Signal::pt_in_label_rect(QPainter &p,
-	const QRect &rect, const QPoint &point)
+bool Signal::pt_in_label_rect(const QRect &rect, const QPoint &point)
 {
-	const QRectF label = get_label_rect(p, rect);
+	const QRectF label = get_label_rect(rect);
 	return QRectF(
 		QPointF(label.left() - LabelHitPadding,
 			label.top() - LabelHitPadding),
@@ -91,15 +92,17 @@ bool Signal::pt_in_label_rect(QPainter &p,
 		).contains(point);
 }
 
-QRectF Signal::get_label_rect(QPainter &p, const QRect &rect)
+void Signal::compute_text_size(QPainter &p)
 {
-	const QSizeF text_size = p.boundingRect(
-		QRectF(0, 0, rect.width(), 0), 0, _name).size();
+	_text_size = p.boundingRect(QRectF(), 0, _name).size();
+}
 
+QRectF Signal::get_label_rect(const QRect &rect)
+{
 	const float nominal_offset = get_nominal_offset(rect);
 	const QSizeF label_size(
-		text_size.width() + LabelPadding.width() * 2,
-		text_size.height() + LabelPadding.height() * 2);
+		_text_size.width() + LabelPadding.width() * 2,
+		_text_size.height() + LabelPadding.height() * 2);
 	const float label_arrow_length = label_size.height() / 2;
 	return QRectF(
 		rect.right() - label_arrow_length - label_size.width(),

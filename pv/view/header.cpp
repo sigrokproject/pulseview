@@ -63,8 +63,7 @@ void Header::paintEvent(QPaintEvent *event)
 			0, offset, w, View::SignalHeight);
 
 		s->paint_label(painter, signal_heading_rect,
-			s->pt_in_label_rect(painter,
-				signal_heading_rect, _mouse_point));
+			s->pt_in_label_rect(signal_heading_rect, _mouse_point));
 
 		offset += View::SignalHeight;
 	}

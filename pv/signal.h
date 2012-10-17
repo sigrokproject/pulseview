@@ -65,21 +65,25 @@ public:
 
 	/**
 	 * Determines if a point is in the header label rect.
-	 * @param p the QPainter to paint into.
 	 * @param rect the rectangular area to draw the label into.
 	 * @param point the point to test.
 	 */
-	bool pt_in_label_rect(QPainter &p, const QRect &rect,
-		const QPoint &point);
+	bool pt_in_label_rect(const QRect &rect, const QPoint &point);
 
 private:
+
+	/**
+	 * Computes an caches the size of the label text.
+	 */
+	void compute_text_size(QPainter &p);
+
 	/**
 	 * Computes the outline rectangle of a label.
 	 * @param p the QPainter to lay out text with.
 	 * @param rect The rectangle of the signal header.
 	 * @return Returns the rectangle of the signal label.
 	 */
-	virtual QRectF get_label_rect(QPainter &p, const QRect &rect);
+	QRectF get_label_rect(const QRect &rect);
 
 protected:
 	/**
@@ -95,6 +99,7 @@ protected:
 
 protected:
 	QString _name;
+	QSizeF _text_size;
 };
 
 } // namespace pv
