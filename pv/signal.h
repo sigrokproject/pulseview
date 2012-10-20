@@ -40,7 +40,15 @@ protected:
 	Signal(QString name);
 
 public:
+	/**
+	 * Gets the name of this signal.
+	 */
 	QString get_name() const;
+
+	/**
+	 * Sets the name of the signal.
+	 */
+	void set_name(QString name);
 
 	/**
 	 * Paints the signal with a QPainter

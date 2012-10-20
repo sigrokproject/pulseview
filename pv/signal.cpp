@@ -37,6 +37,11 @@ QString Signal::get_name() const
 	return _name;
 }
 
+void Signal::set_name(QString name)
+{
+	_name = name;
+}
+
 void Signal::paint_label(QPainter &p, const QRect &rect, bool hover)
 {
 	p.setBrush(get_colour());

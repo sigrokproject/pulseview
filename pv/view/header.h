@@ -21,9 +21,14 @@
 #ifndef PV_VIEW_HEADER_H
 #define PV_VIEW_HEADER_H
 
+#include <boost/shared_ptr.hpp>
+
 #include <QWidget>
 
 namespace pv {
+
+class Signal;
+
 namespace view {
 
 class View;
@@ -43,10 +48,18 @@ private:
 
 	void leaveEvent(QEvent *event);
 
+	void contextMenuEvent(QContextMenuEvent *event);
+
+private slots:
+	void on_action_set_name_triggered();
+
 private:
 	View &_view;
 
 	QPoint _mouse_point;
+
+	boost::shared_ptr<pv::Signal> _context_signal;
+	QAction *_action_set_name;
 };
 
 } // namespace view

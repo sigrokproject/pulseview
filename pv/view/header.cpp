@@ -28,6 +28,8 @@
 
 #include <boost/foreach.hpp>
 
+#include <QInputDialog>
+#include <QMenu>
 #include <QMouseEvent>
 #include <QPainter>
 #include <QRect>
@@ -40,9 +42,13 @@ namespace view {
 
 Header::Header(View &parent) :
 	QWidget(&parent),
-	_view(parent)
+	_view(parent),
+	_action_set_name(new QAction(tr("Set &Name..."), this))
 {
 	setMouseTracking(true);
+
+	connect(_action_set_name, SIGNAL(triggered()),
+		this, SLOT(on_action_set_name_triggered()));
 }
 
 void Header::paintEvent(QPaintEvent *event)
@@ -82,6 +88,48 @@ void Header::leaveEvent(QEvent *event)
 {
 	_mouse_point = QPoint(-1, -1);
 	update();
+}
+
+void Header::contextMenuEvent(QContextMenuEvent *event)
+{
+	const int w = width();
+	const vector< shared_ptr<Signal> > &sigs =
+		_view.session().get_signals();
+
+	int offset = -_view.v_offset();
+	BOOST_FOREACH(const shared_ptr<Signal> s, sigs)
+	{
+		assert(s);
+
+		const QRect signal_heading_rect(
+			0, offset, w, View::SignalHeight);
+
+		if(s->pt_in_label_rect(signal_heading_rect, _mouse_point)) {
+			QMenu menu(this);
+			menu.addAction(_action_set_name);
+
+			_context_signal = s;
+			menu.exec(event->globalPos());
+			_context_signal.reset();
+
+			break;
+		}
+
+		offset += View::SignalHeight;
+	}
+}
+
+void Header::on_action_set_name_triggered()
+{
+	boost::shared_ptr<Signal> context_signal = _context_signal;
+	if(!context_signal)
+		return;
+
+	const QString new_label = QInputDialog::getText(this, tr("Set Name"),
+		tr("Name"), QLineEdit::Normal, context_signal->get_name());
+
+	if(!new_label.isEmpty())
+		context_signal->set_name(new_label);
 }
 
 } // namespace view
