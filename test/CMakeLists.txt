@@ -18,6 +18,8 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
+find_package(Boost 1.46 COMPONENTS unit_test_framework REQUIRED)
+
 set(pulseview_TEST_SOURCES
 	${PROJECT_SOURCE_DIR}/pv/datasnapshot.cpp
 	${PROJECT_SOURCE_DIR}/pv/logicdatasnapshot.cpp
@@ -26,6 +28,14 @@ set(pulseview_TEST_SOURCES
 )
 
 add_definitions(-DBOOST_TEST_DYN_LINK)
+
+include_directories(
+	${Boost_INCLUDE_DIRS}
+)
+
+set(PULSEVIEW_LINK_LIBS
+	${Boost_LIBRARIES}
+)
 
 add_executable(pulseview-test
 	${pulseview_TEST_SOURCES}
