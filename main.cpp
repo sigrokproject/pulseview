@@ -48,6 +48,8 @@ void usage()
 int main(int argc, char *argv[])
 {
 	int ret = 0;
+	struct sr_context *sr_ctx = NULL;
+
 	QApplication a(argc, argv);
 
 	// Set some application metadata
@@ -82,7 +84,7 @@ int main(int argc, char *argv[])
 	}
 
 	// Initialise libsigrok
-	if (sr_init() != SR_OK) {
+	if (sr_init(&sr_ctx) != SR_OK) {
 		qDebug() << "ERROR: libsigrok init failed.";
 		return 1;
 	}
@@ -120,7 +122,8 @@ int main(int argc, char *argv[])
 		qDebug() << "ERROR: libsigrokdecode init failed.";
 	}
 
-	sr_exit();
+	if (sr_ctx)
+		sr_exit(sr_ctx);
 
 	return ret;
 }
