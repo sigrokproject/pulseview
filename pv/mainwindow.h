@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#ifndef PULSEVIEW_PV_MAINWINDOW_H
+#define PULSEVIEW_PV_MAINWINDOW_H
 
 #include <QMainWindow>
 
@@ -88,4 +88,4 @@ private slots:
 
 } // namespace pv
 
-#endif // MAINWINDOW_H
+#endif // PULSEVIEW_PV_MAINWINDOW_H

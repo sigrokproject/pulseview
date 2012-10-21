@@ -18,12 +18,12 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef _EXTDEF_H
-#define _EXTDEF_H
+#ifndef PULSEVIEW_EXTDEF_H
+#define PULSEVIEW_EXTDEF_H
 
 #define countof(x) (sizeof(x)/sizeof(x[0]))
 
 #define begin_element(x) (&x[0])
 #define end_element(x) (&x[countof(x)])
 
-#endif /* _EXTDEF_H */
+#endif // PULSEVIEW_EXTDEF_H

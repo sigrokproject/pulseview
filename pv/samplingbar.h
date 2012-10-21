@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef SAMPLINGBAR_H
-#define SAMPLINGBAR_H
+#ifndef PULSEVIEW_PV_SAMPLINGBAR_H
+#define PULSEVIEW_PV_SAMPLINGBAR_H
 
 #include <stdint.h>
 
@@ -71,4 +71,4 @@ private:
 
 } // namespace pv
 
-#endif // SAMPLINGBAR_H
+#endif // PULSEVIEW_PV_SAMPLINGBAR_H

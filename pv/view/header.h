@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PV_VIEW_HEADER_H
-#define PV_VIEW_HEADER_H
+#ifndef PULSEVIEW_PV_VIEW_HEADER_H
+#define PULSEVIEW_PV_VIEW_HEADER_H
 
 #include <boost/shared_ptr.hpp>
 
@@ -65,4 +65,4 @@ private:
 } // namespace view
 } // namespace pv
 
-#endif // PV_VIEW_HEADER_H
+#endif // PULSEVIEW_PV_VIEW_HEADER_H

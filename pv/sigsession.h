@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef SIGSESSION_H
-#define SIGSESSION_H
+#ifndef PULSEVIEW_PV_SIGSESSION_H
+#define PULSEVIEW_PV_SIGSESSION_H
 
 #include <boost/shared_ptr.hpp>
 
@@ -81,4 +81,4 @@ private:
 
 } // namespace pv
 
-#endif // SIGSESSION_H
+#endif // PULSEVIEW_PV_SIGSESSION_H
