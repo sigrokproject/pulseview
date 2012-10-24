@@ -61,6 +61,7 @@ void Viewport::paintEvent(QPaintEvent *event)
 		_view.session().get_signals();
 
 	QPainter p(this);
+	p.setRenderHint(QPainter::Antialiasing);
 
 	// Plot the signal
 	int offset = -_view.v_offset();

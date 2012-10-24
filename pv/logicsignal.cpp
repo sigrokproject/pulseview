@@ -70,8 +70,8 @@ void LogicSignal::paint(QPainter &p, const QRect &rect, double scale,
 	assert(scale > 0);
 	assert(_data);
 
-	const float high_offset = rect.top() + Margin;
-	const float low_offset = rect.bottom() - Margin;
+	const float high_offset = rect.top() + Margin + 0.5f;
+	const float low_offset = rect.bottom() - Margin + 0.5f;
 
 	const deque< shared_ptr<LogicDataSnapshot> > &snapshots =
 		_data->get_snapshots();
@@ -102,7 +102,7 @@ void LogicSignal::paint(QPainter &p, const QRect &rect, double scale,
 	for(vector<LogicDataSnapshot::EdgePair>::const_iterator i =
 			edges.begin() + 1;
 		i != edges.end() - 1; i++) {
-		const int x = (int)((*i).first / samples_per_pixel -
+		const float x = ((*i).first / samples_per_pixel -
 			pixels_offset) + rect.left();
 		*line++ = QLineF(x, high_offset, x, low_offset);
 	}
@@ -127,8 +127,8 @@ void LogicSignal::paint(QPainter &p, const QRect &rect, double scale,
 
 void LogicSignal::paint_caps(QPainter &p, QLineF *const lines,
 	vector< pair<int64_t, bool> > &edges, bool level,
-	double samples_per_pixel, double pixels_offset, int x_offset,
-	int y_offset)
+	double samples_per_pixel, double pixels_offset, float x_offset,
+	float y_offset)
 {
 	QLineF *line = lines;
 
@@ -136,9 +136,9 @@ void LogicSignal::paint_caps(QPainter &p, QLineF *const lines,
 	    i != (edges.end() - 1); i++)
 		if((*i).second == level) {
 			*line++ = QLineF(
-				(int)((*i).first / samples_per_pixel -
+				((*i).first / samples_per_pixel -
 					pixels_offset) + x_offset, y_offset,
-				(int)((*(i+1)).first / samples_per_pixel -
+				((*(i+1)).first / samples_per_pixel -
 					pixels_offset) + x_offset, y_offset);
 		}
 

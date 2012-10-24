@@ -61,7 +61,7 @@ private:
 	void paint_caps(QPainter &p, QLineF *const lines,
 		std::vector< std::pair<int64_t, bool> > &edges,
 		bool level, double samples_per_pixel, double pixels_offset,
-		int x_offset, int y_offset);
+		float x_offset, float y_offset);
 
 	/**
 	 * Get the colour of the logic signal

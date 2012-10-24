@@ -48,6 +48,7 @@ Ruler::Ruler(View &parent) :
 void Ruler::paintEvent(QPaintEvent *event)
 {
 	QPainter p(this);
+	p.setRenderHint(QPainter::Antialiasing);
 
 	const double MinSpacing = 80;
 
@@ -101,13 +102,14 @@ void Ruler::paintEvent(QPaintEvent *event)
 			ts << (t * multiplier) << SIPrefixes[prefix] << "s";
 			p.drawText(x, 0, 0, text_height, Qt::AlignCenter |
 				Qt::AlignTop | Qt::TextDontClip, s);
-			p.drawLine(x, text_height, x, height());
+			p.drawLine(QPointF(x, text_height),
+				QPointF(x, height()));
 		}
 		else
 		{
 			// Draw a minor tick
-			p.drawLine(x, (text_height + height()) / 2,
-				x, height());
+			p.drawLine(QPointF(x, (text_height + height()) / 2),
+				QPointF(x, height()));
 		}
 
 		division++;
