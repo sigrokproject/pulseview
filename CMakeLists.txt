@@ -199,7 +199,17 @@ target_link_libraries(${PROJECT_NAME} ${PULSEVIEW_LINK_LIBS})
 #= Installation
 #-------------------------------------------------------------------------------
 
-install(PROGRAMS ${PROJECT_NAME} DESTINATION bin/)
+install(TARGETS ${PROJECT_NAME} DESTINATION bin/)
+
+#===============================================================================
+#= Packaging (handled by CPack)
+#-------------------------------------------------------------------------------
+
+set(CPACK_PACKAGE_DESCRIPTION_FILE ${CMAKE_CURRENT_SOURCE_DIR}/README)
+set(CPACK_RESOURCE_FILE_LICENSE ${CMAKE_CURRENT_SOURCE_DIR}/COPYING)
+set(CPACK_SOURCE_IGNORE_FILES ${CMAKE_CURRENT_BINARY_DIR} ".gitignore" ".git")
+
+include(CPack)
 
 #===============================================================================
 #= Tests
