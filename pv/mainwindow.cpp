@@ -67,6 +67,16 @@ void MainWindow::setup_ui()
 		QSize(), QIcon::Normal, QIcon::Off);
 	setWindowIcon(icon);
 
+	// Setup the central widget
+	_central_widget = new QWidget(this);
+	_vertical_layout = new QVBoxLayout(_central_widget);
+	_vertical_layout->setSpacing(6);
+	_vertical_layout->setContentsMargins(0, 0, 0, 0);
+	setCentralWidget(_central_widget);
+
+	_view = new pv::view::View(_session, this);
+	_vertical_layout->addWidget(_view);
+
 	// Setup the UI actions
 	_action_about = new QAction(this);
 	_action_about->setObjectName(QString::fromUtf8("actionAbout"));
@@ -78,6 +88,11 @@ void MainWindow::setup_ui()
 	_action_view_zoom_out = new QAction(this);
 	_action_view_zoom_out->setIcon(QIcon::fromTheme("zoom-out"));
 	_action_view_zoom_out->setObjectName(QString::fromUtf8("actionViewZoomOut"));
+
+	_action_view_show_cursors = new QAction(this);
+	_action_view_show_cursors->setCheckable(true);
+	_action_view_show_cursors->setChecked(_view->cursors_shown());
+	_action_view_show_cursors->setObjectName(QString::fromUtf8("actionViewShowCursors"));
 
 	_action_open = new QAction(this);
 	_action_open->setIcon(QIcon::fromTheme("document-open"));
@@ -93,6 +108,8 @@ void MainWindow::setup_ui()
 	_menu_view = new QMenu(_menu_bar);
 	_menu_view->addAction(_action_view_zoom_in);
 	_menu_view->addAction(_action_view_zoom_out);
+	_menu_view->addSeparator();
+	_menu_view->addAction(_action_view_show_cursors);
 
 	_menu_help = new QMenu(_menu_bar);
 	_menu_help->addAction(_action_about);
@@ -117,13 +134,6 @@ void MainWindow::setup_ui()
 		SLOT(run_stop()));
 	addToolBar(_sampling_bar);
 
-	// Setup the central widget
-	_central_widget = new QWidget(this);
-	_vertical_layout = new QVBoxLayout(_central_widget);
-	_vertical_layout->setSpacing(6);
-	_vertical_layout->setContentsMargins(0, 0, 0, 0);
-	setCentralWidget(_central_widget);
-
 	// Setup the status bar
 	_status_bar = new QStatusBar(this);
 	setStatusBar(_status_bar);
@@ -134,14 +144,12 @@ void MainWindow::setup_ui()
 	_action_open->setText(QApplication::translate("MainWindow", "&Open...", 0, QApplication::UnicodeUTF8));
 	_action_view_zoom_in->setText(QApplication::translate("MainWindow", "Zoom &In", 0, QApplication::UnicodeUTF8));
 	_action_view_zoom_out->setText(QApplication::translate("MainWindow", "Zoom &Out", 0, QApplication::UnicodeUTF8));
+	_action_view_show_cursors->setText(QApplication::translate("MainWindow", "Show &Cursors", 0, QApplication::UnicodeUTF8));
 	_action_about->setText(QApplication::translate("MainWindow", "&About...", 0, QApplication::UnicodeUTF8));
 
 	_menu_file->setTitle(QApplication::translate("MainWindow", "&File", 0, QApplication::UnicodeUTF8));
 	_menu_view->setTitle(QApplication::translate("MainWindow", "&View", 0, QApplication::UnicodeUTF8));
 	_menu_help->setTitle(QApplication::translate("MainWindow", "&Help", 0, QApplication::UnicodeUTF8));
-
-	_view = new pv::view::View(_session, this);
-	_vertical_layout->addWidget(_view);
 }
 
 void MainWindow::on_actionOpen_triggered()
@@ -160,6 +168,12 @@ void MainWindow::on_actionViewZoomIn_triggered()
 void MainWindow::on_actionViewZoomOut_triggered()
 {
 	_view->zoom(-1);
+}
+
+void MainWindow::on_actionViewShowCursors_triggered()
+{
+	assert(_view);
+	_view->show_cursors(_action_view_show_cursors->isChecked());
 }
 
 void MainWindow::on_actionAbout_triggered()

@@ -59,6 +59,7 @@ private:
 	QAction *_action_open;
 	QAction *_action_view_zoom_in;
 	QAction *_action_view_zoom_out;
+	QAction *_action_view_show_cursors;
 	QAction *_action_about;
 
 	QMenuBar *_menu_bar;
@@ -80,6 +81,8 @@ private slots:
 	void on_actionViewZoomIn_triggered();
 
 	void on_actionViewZoomOut_triggered();
+
+	void on_actionViewShowCursors_triggered();
 
 	void on_actionAbout_triggered();
 
