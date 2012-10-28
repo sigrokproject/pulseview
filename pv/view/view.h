@@ -23,7 +23,11 @@
 
 #include <stdint.h>
 
+#include <utility>
+
 #include <QAbstractScrollArea>
+
+#include "cursor.h"
 
 namespace pv {
 
@@ -49,6 +53,8 @@ private:
 
 public:
 	static const int SignalHeight;
+
+	static const QColor CursorAreaColour;
 
 public:
 	explicit View(SigSession &session, QWidget *parent = 0);
@@ -76,6 +82,21 @@ public:
 	 * @param offset The view time offset in seconds.
 	 */
 	void set_scale_offset(double scale, double offset);
+
+	/**
+	 * Returns true if cursors are displayed. false otherwise.
+	 */
+	bool cursors_shown() const;
+
+	/**
+	 * Shows or hides the cursors.
+	 */
+	void show_cursors(bool show = true);
+
+	/**
+	 * Returns a reference to the pair of cursors.
+	 */
+	std::pair<Cursor, Cursor>& cursors();
 
 	const QPoint& hover_point() const;
 
@@ -117,6 +138,9 @@ private:
 	double _offset;
 
 	int _v_offset;
+
+	bool _show_cursors;
+	std::pair<Cursor, Cursor> _cursors;
 
 	QPoint _hover_point;
 };

@@ -31,6 +31,8 @@
 #include <QPainter>
 #include <QTextStream>
 
+using namespace std;
+
 namespace pv {
 namespace view {
 
@@ -123,10 +125,24 @@ void Ruler::paintEvent(QPaintEvent *event)
 		division++;
 	}
 
+	// Draw the cursors
+	draw_cursors(p);
+
 	// Draw the hover mark
 	draw_hover_mark(p);
 
 	p.end();
+}
+
+void Ruler::draw_cursors(QPainter &p)
+{
+	if(!_view.cursors_shown())
+		return;
+
+	const QRect r = rect();
+	pair<Cursor, Cursor> &cursors = _view.cursors();
+	cursors.first.paint_label(p, r);
+	cursors.second.paint_label(p, r);
 }
 
 void Ruler::draw_hover_mark(QPainter &p)

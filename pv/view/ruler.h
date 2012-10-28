@@ -48,6 +48,8 @@ private:
 	void paintEvent(QPaintEvent *event);
 
 private:
+	void draw_cursors(QPainter &p);
+
 	/**
 	 * Draw a hover arrow under the cursor position.
 	 */

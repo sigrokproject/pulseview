@@ -63,6 +63,8 @@ void Viewport::paintEvent(QPaintEvent *event)
 	QPainter p(this);
 	p.setRenderHint(QPainter::Antialiasing);
 
+	draw_cursors_background(p);
+
 	// Plot the signal
 	int offset = -_view.v_offset();
 	BOOST_FOREACH(const shared_ptr<Signal> s, sigs)
@@ -76,6 +78,8 @@ void Viewport::paintEvent(QPaintEvent *event)
 
 		offset += View::SignalHeight;
 	}
+
+	draw_cursors_foreground(p);
 
 	p.end();
 }
@@ -110,6 +114,34 @@ void Viewport::wheelEvent(QWheelEvent *event)
 {
 	assert(event);
 	_view.zoom(event->delta() / 120, event->x());
+}
+
+void Viewport::draw_cursors_background(QPainter &p)
+{
+	if(!_view.cursors_shown())
+		return;
+
+	p.setPen(Qt::NoPen);
+	p.setBrush(QBrush(View::CursorAreaColour));
+
+	const pair<Cursor, Cursor> &c = _view.cursors();
+	const float x1 = (c.first.time() - _view.offset()) / _view.scale();
+	const float x2 = (c.second.time() - _view.offset()) / _view.scale();
+	const int l = (int)max(min(x1, x2), 0.0f);
+	const int r = (int)min(max(x1, x2), (float)width());
+
+	p.drawRect(l, 0, r - l, height());
+}
+
+void Viewport::draw_cursors_foreground(QPainter &p)
+{
+	if(!_view.cursors_shown())
+		return;
+
+	const QRect r = rect();
+	pair<Cursor, Cursor> &cursors = _view.cursors();
+	cursors.first.paint(p, r);
+	cursors.second.paint(p, r);
 }
 
 } // namespace view

@@ -52,6 +52,11 @@ private:
 	void wheelEvent(QWheelEvent *event);
 
 private:
+	void draw_cursors_background(QPainter &p);
+
+	void draw_cursors_foreground(QPainter &p);
+
+private:
 	View &_view;
 
 	QPoint _mouse_down_point;

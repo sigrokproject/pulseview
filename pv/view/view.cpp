@@ -53,6 +53,8 @@ const int View::MaxScrollValue = INT_MAX / 2;
 
 const int View::SignalHeight = 50;
 
+const QColor View::CursorAreaColour(220, 231, 243);
+
 View::View(SigSession &session, QWidget *parent) :
 	QAbstractScrollArea(parent),
 	_session(session),
@@ -63,6 +65,9 @@ View::View(SigSession &session, QWidget *parent) :
 	_scale(1e-6),
 	_offset(0),
 	_v_offset(0),
+	_show_cursors(false),
+	_cursors(pair<Cursor, Cursor>(Cursor(*this, 0.0),
+		Cursor(*this, 1.0))),
 	_hover_point(-1, -1)
 {
 	connect(horizontalScrollBar(), SIGNAL(valueChanged(int)),
@@ -126,6 +131,23 @@ void View::set_scale_offset(double scale, double offset)
 	update_scroll();
 	_ruler->update();
 	_viewport->update();
+}
+
+bool View::cursors_shown() const
+{
+	return _show_cursors;
+}
+
+void View::show_cursors(bool show)
+{
+	_show_cursors = show;
+	_ruler->update();
+	_viewport->update();
+}
+
+std::pair<Cursor, Cursor>& View::cursors()
+{
+	return _cursors;
 }
 
 const QPoint& View::hover_point() const
