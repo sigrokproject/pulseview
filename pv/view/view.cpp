@@ -25,6 +25,7 @@
 #include <boost/foreach.hpp>
 
 #include <QEvent>
+#include <QMouseEvent>
 #include <QScrollBar>
 
 #include "header.h"
@@ -61,7 +62,8 @@ View::View(SigSession &session, QWidget *parent) :
 	_data_length(0),
 	_scale(1e-6),
 	_offset(0),
-	_v_offset(0)
+	_v_offset(0),
+	_hover_point(-1, -1)
 {
 	connect(horizontalScrollBar(), SIGNAL(valueChanged(int)),
 		this, SLOT(h_scroll_value_changed(int)));
@@ -72,6 +74,10 @@ View::View(SigSession &session, QWidget *parent) :
 
 	setViewportMargins(LabelMarginWidth, RulerHeight, 0, 0);
 	setViewport(_viewport);
+
+	_viewport->installEventFilter(this);
+	_ruler->installEventFilter(this);
+	_header->installEventFilter(this);
 }
 
 SigSession& View::session()
@@ -122,6 +128,11 @@ void View::set_scale_offset(double scale, double offset)
 	_viewport->update();
 }
 
+const QPoint& View::hover_point() const
+{
+	return _hover_point;
+}
+
 void View::get_scroll_layout(double &length, double &offset) const
 {
 	const shared_ptr<SignalData> sig_data = _session.get_data();
@@ -158,6 +169,31 @@ void View::update_scroll()
 	verticalScrollBar()->setPageStep(areaSize.height());
 	verticalScrollBar()->setRange(0,
 		_viewport->get_total_height() - areaSize.height());
+}
+
+bool View::eventFilter(QObject *object, QEvent *event)
+{
+	const QEvent::Type type = event->type();
+	if(type == QEvent::MouseMove) {
+
+		const QMouseEvent *const mouse_event = (QMouseEvent*)event;
+		if(object == _viewport)
+			_hover_point = mouse_event->pos();
+		else if(object == _ruler)
+			_hover_point = QPoint(mouse_event->x(), 0);
+		else if(object == _header)
+			_hover_point = QPoint(0, mouse_event->y());
+		else
+			_hover_point = QPoint(-1, -1);
+
+		hover_point_changed();
+
+	} else if(type == QEvent::Leave) {
+		_hover_point = QPoint(-1, -1);
+		hover_point_changed();
+	}
+
+	return QObject::eventFilter(object, event);
 }
 
 bool View::viewportEvent(QEvent *e)

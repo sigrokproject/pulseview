@@ -64,17 +64,25 @@ public:
 
 	void set_scale_offset(double scale, double offset);
 
+	const QPoint& hover_point() const;
+
+signals:
+	void hover_point_changed();
+
 private:
 	void get_scroll_layout(double &length, double &offset) const;
 	
 	void update_scroll();
 
 private:
+	bool eventFilter(QObject *object, QEvent *event);
+
 	bool viewportEvent(QEvent *e);
 
 	void resizeEvent(QResizeEvent *e);
 
 private slots:
+
 	void h_scroll_value_changed(int value);
 	void v_scroll_value_changed(int value);
 
@@ -93,6 +101,8 @@ private:
 	double _offset;
 
 	int _v_offset;
+
+	QPoint _hover_point;
 };
 
 } // namespace view
