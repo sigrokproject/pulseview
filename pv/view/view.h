@@ -55,13 +55,26 @@ public:
 
 	SigSession& session();
 
+	/**
+	 * Returns the view time scale in seconds per pixel.
+	 */
 	double scale() const;
+
+	/**
+	 * Returns the time offset of the left edge of the view in
+	 * seconds.
+	 */
 	double offset() const;
 	int v_offset() const;
 
 	void zoom(double steps);
 	void zoom(double steps, int offset);
 
+	/**
+	 * Sets the scale and offset.
+	 * @param scale The new view scale in seconds per pixel.
+	 * @param offset The view time offset in seconds.
+	 */
 	void set_scale_offset(double scale, double offset);
 
 	const QPoint& hover_point() const;
@@ -97,7 +110,10 @@ private:
 
 	uint64_t _data_length;
 
+	/// The view time scale in seconds per pixel.
 	double _scale;
+
+	/// The view time offset in seconds.
 	double _offset;
 
 	int _v_offset;
