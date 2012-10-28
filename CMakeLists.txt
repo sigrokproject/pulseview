@@ -92,6 +92,7 @@ set(pulseview_SOURCES
 	pv/signal.cpp
 	pv/view/header.cpp
 	pv/view/ruler.cpp
+	pv/view/timemarker.cpp
 	pv/view/view.cpp
 	pv/view/viewport.cpp
 )
