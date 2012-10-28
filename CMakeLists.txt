@@ -90,6 +90,7 @@ set(pulseview_SOURCES
 	pv/signaldata.cpp
 	pv/sigsession.cpp
 	pv/signal.cpp
+	pv/view/cursor.cpp
 	pv/view/header.cpp
 	pv/view/ruler.cpp
 	pv/view/timemarker.cpp
