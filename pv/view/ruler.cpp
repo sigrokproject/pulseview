@@ -20,12 +20,14 @@
 
 #include "ruler.h"
 #include "view.h"
+#include "viewport.h"
 
 #include <extdef.h>
 
 #include <assert.h>
 #include <math.h>
 
+#include <QMouseEvent>
 #include <QPainter>
 #include <QTextStream>
 
@@ -39,10 +41,16 @@ const QString Ruler::SIPrefixes[9] =
 	{"f", "p", "n", QChar(0x03BC), "m", "", "k", "M", "G"};
 const int Ruler::FirstSIPrefixPower = -15;
 
+const int Ruler::HoverArrowSize = 5;
+
 Ruler::Ruler(View &parent) :
 	QWidget(&parent),
 	_view(parent)
 {
+	setMouseTracking(true);
+
+	connect(&_view, SIGNAL(hover_point_changed()),
+		this, SLOT(hover_point_changed()));
 }
 
 void Ruler::paintEvent(QPaintEvent *event)
@@ -115,7 +123,33 @@ void Ruler::paintEvent(QPaintEvent *event)
 		division++;
 	}
 
+	// Draw the hover mark
+	draw_hover_mark(p);
+
 	p.end();
+}
+
+void Ruler::draw_hover_mark(QPainter &p)
+{
+	const int x = _view.hover_point().x();
+	if(x == -1)
+		return;
+
+	p.setPen(QPen(Qt::NoPen));
+	p.setBrush(QBrush(QColor(Qt::black)));
+
+	const int b = height() - 1;
+	const QPointF points[] = {
+		QPointF(x, b),
+		QPointF(x - HoverArrowSize, b - HoverArrowSize),
+		QPointF(x + HoverArrowSize, b - HoverArrowSize)
+	};
+	p.drawPolygon(points, countof(points));
+}
+
+void Ruler::hover_point_changed()
+{
+	update();
 }
 
 } // namespace view

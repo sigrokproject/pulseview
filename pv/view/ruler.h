@@ -39,11 +39,22 @@ private:
 	static const QString SIPrefixes[9];
 	static const int FirstSIPrefixPower;
 
+	static const int HoverArrowSize;
+
 public:
 	Ruler(View &parent);
 
 private:
 	void paintEvent(QPaintEvent *event);
+
+private:
+	/**
+	 * Draw a hover arrow under the cursor position.
+	 */
+	void draw_hover_mark(QPainter &p);
+
+private slots:
+	void hover_point_changed();
 
 private:
 	View &_view;
