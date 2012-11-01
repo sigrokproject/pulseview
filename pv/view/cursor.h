@@ -48,6 +48,13 @@ public:
 
 public:
 	/**
+	 * Gets the marker label rectangle.
+	 * @param rect The rectangle of the ruler client area.
+	 * @return Returns the label rectangle.
+	 */
+	QRectF get_label_rect(const QRect &rect) const;
+
+	/**
 	 * Paints the cursor's label to the ruler.
 	 * @param p The painter to draw with.
 	 * @param rect The rectangle of the ruler client area.

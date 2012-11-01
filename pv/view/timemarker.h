@@ -23,6 +23,7 @@
 
 #include <QColor>
 #include <QObject>
+#include <QRectF>
 
 class QPainter;
 class QRect;
@@ -69,11 +70,21 @@ public:
 	virtual void paint(QPainter &p, const QRect &rect);
 
 	/**
+	 * Gets the marker label rectangle.
+	 * @param rect The rectangle of the ruler client area.
+	 * @return Returns the label rectangle.
+	 */
+	virtual QRectF get_label_rect(const QRect &rect) const = 0;
+
+	/**
 	 * Paints the marker's label to the ruler.
 	 * @param p The painter to draw with.
 	 * @param rect The rectangle of the ruler client area.
 	 */
 	virtual void paint_label(QPainter &p, const QRect &rect) = 0;
+
+signals:
+	void time_changed();
 
 protected:
 	const View &_view;

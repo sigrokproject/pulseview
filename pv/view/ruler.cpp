@@ -19,6 +19,8 @@
  */
 
 #include "ruler.h"
+
+#include "cursor.h"
 #include "view.h"
 #include "viewport.h"
 
@@ -47,7 +49,8 @@ const int Ruler::HoverArrowSize = 5;
 
 Ruler::Ruler(View &parent) :
 	QWidget(&parent),
-	_view(parent)
+	_view(parent),
+	_grabbed_marker(NULL)
 {
 	setMouseTracking(true);
 
@@ -134,6 +137,38 @@ void Ruler::paintEvent(QPaintEvent *event)
 	p.end();
 }
 
+void Ruler::mouseMoveEvent(QMouseEvent *e)
+{
+	if(!_grabbed_marker)
+		return;
+
+	_grabbed_marker->set_time(_view.offset() +
+		((double)e->x() + 0.5) * _view.scale());
+}
+
+void Ruler::mousePressEvent(QMouseEvent *e)
+{
+	if(e->buttons() & Qt::LeftButton) {
+		_grabbed_marker = NULL;
+
+		if(_view.cursors_shown()) {
+			std::pair<Cursor, Cursor> &cursors =
+				_view.cursors();
+			if(cursors.first.get_label_rect(
+				rect()).contains(e->pos()))
+				_grabbed_marker = &cursors.first;
+			else if(cursors.second.get_label_rect(
+				rect()).contains(e->pos()))
+				_grabbed_marker = &cursors.second;
+		}
+	}
+}
+
+void Ruler::mouseReleaseEvent(QMouseEvent *)
+{
+	_grabbed_marker = NULL;
+}
+
 void Ruler::draw_cursors(QPainter &p)
 {
 	if(!_view.cursors_shown())
@@ -148,7 +183,7 @@ void Ruler::draw_cursors(QPainter &p)
 void Ruler::draw_hover_mark(QPainter &p)
 {
 	const int x = _view.hover_point().x();
-	if(x == -1)
+	if(x == -1 || _grabbed_marker)
 		return;
 
 	p.setPen(QPen(Qt::NoPen));

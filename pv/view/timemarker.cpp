@@ -50,6 +50,7 @@ double TimeMarker::time() const
 void TimeMarker::set_time(double time)
 {
 	_time = time;
+	time_changed();
 }
 
 void TimeMarker::paint(QPainter &p, const QRect &rect)

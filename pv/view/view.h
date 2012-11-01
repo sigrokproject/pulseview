@@ -122,6 +122,8 @@ private slots:
 
 	void data_updated();
 
+	void marker_time_changed();
+
 private:
 	SigSession &_session;
 

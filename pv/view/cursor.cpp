@@ -43,11 +43,16 @@ Cursor::Cursor(const View &view, double time) :
 {
 }
 
-void Cursor::paint_label(QPainter &p, const QRect &rect)
+QRectF Cursor::get_label_rect(const QRect &rect) const
 {
 	const float x = (_time - _view.offset()) / _view.scale();
-	const QRectF r(x - Size/2, rect.height() - Size - Offset,
+	return QRectF(x - Size/2, rect.height() - Size - Offset,
 		Size, Size);
+}
+
+void Cursor::paint_label(QPainter &p, const QRect &rect)
+{
+	const QRectF r(get_label_rect(rect));
 
 	p.setPen(LineColour);
 	p.setBrush(QBrush(FillColour));

@@ -26,6 +26,7 @@
 namespace pv {
 namespace view {
 
+class TimeMarker;
 class View;
 
 class Ruler : public QWidget
@@ -47,6 +48,10 @@ public:
 private:
 	void paintEvent(QPaintEvent *event);
 
+	void mouseMoveEvent(QMouseEvent *e);
+	void mousePressEvent(QMouseEvent *e);
+	void mouseReleaseEvent(QMouseEvent *);
+
 private:
 	void draw_cursors(QPainter &p);
 
@@ -60,6 +65,8 @@ private slots:
 
 private:
 	View &_view;
+
+	TimeMarker *_grabbed_marker;
 };
 
 } // namespace view
