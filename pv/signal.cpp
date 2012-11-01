@@ -24,7 +24,6 @@
 
 namespace pv {
 
-const QSizeF Signal::LabelPadding(4, 0);
 const int Signal::LabelHitPadding = 2;
 
 Signal::Signal(QString name) :
@@ -104,10 +103,12 @@ void Signal::compute_text_size(QPainter &p)
 
 QRectF Signal::get_label_rect(const QRect &rect)
 {
+	using pv::view::View;
+
 	const float nominal_offset = get_nominal_offset(rect);
 	const QSizeF label_size(
-		_text_size.width() + LabelPadding.width() * 2,
-		_text_size.height() + LabelPadding.height() * 2);
+		_text_size.width() + View::LabelPadding.width() * 2,
+		_text_size.height() + View::LabelPadding.height() * 2);
 	const float label_arrow_length = label_size.height() / 2;
 	return QRectF(
 		rect.right() - label_arrow_length - label_size.width(),

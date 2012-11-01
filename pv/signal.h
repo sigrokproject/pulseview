@@ -36,7 +36,6 @@ class SignalData;
 class Signal
 {
 private:
-	static const QSizeF LabelPadding;
 	static const int LabelHitPadding;
 
 protected:

@@ -26,6 +26,7 @@
 #include <utility>
 
 #include <QAbstractScrollArea>
+#include <QSizeF>
 
 #include "cursor.h"
 
@@ -55,6 +56,8 @@ public:
 	static const int SignalHeight;
 
 	static const QColor CursorAreaColour;
+
+	static const QSizeF LabelPadding;
 
 public:
 	explicit View(SigSession &session, QWidget *parent = 0);

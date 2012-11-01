@@ -55,6 +55,8 @@ const int View::SignalHeight = 50;
 
 const QColor View::CursorAreaColour(220, 231, 243);
 
+const QSizeF View::LabelPadding(4, 0);
+
 View::View(SigSession &session, QWidget *parent) :
 	QAbstractScrollArea(parent),
 	_session(session),
