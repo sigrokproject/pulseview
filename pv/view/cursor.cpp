@@ -24,8 +24,13 @@
 
 #include <QBrush>
 #include <QPainter>
+#include <QPointF>
 #include <QRect>
 #include <QRectF>
+
+#include <stdio.h>
+
+#include <extdef.h>
 
 namespace pv {
 namespace view {
@@ -38,6 +43,8 @@ const QColor Cursor::TextColour(Qt::white);
 const int Cursor::Size = 12;
 const int Cursor::Offset = 1;
 
+const int Cursor::ArrowSize = 4;
+
 Cursor::Cursor(const View &view, double time) :
 	TimeMarker(view, LineColour, time)
 {
@@ -46,21 +53,70 @@ Cursor::Cursor(const View &view, double time) :
 QRectF Cursor::get_label_rect(const QRect &rect) const
 {
 	const float x = (_time - _view.offset()) / _view.scale();
-	return QRectF(x - Size/2, rect.height() - Size - Offset,
-		Size, Size);
+
+	const QSizeF label_size(
+		_text_size.width() + View::LabelPadding.width() * 2,
+		_text_size.height() + View::LabelPadding.height() * 2);
+	return QRectF(x - label_size.width() / 2 - 0.5f,
+		rect.height() - label_size.height() - Offset - ArrowSize - 0.5f,
+		label_size.width() + 1, label_size.height() + 1);
 }
 
 void Cursor::paint_label(QPainter &p, const QRect &rect)
 {
+	compute_text_size(p);
 	const QRectF r(get_label_rect(rect));
 
-	p.setPen(LineColour);
-	p.setBrush(QBrush(FillColour));
-	p.drawEllipse(r);
+	const float h_centre = (r.left() + r.right()) / 2;
+	const QPointF points[] = {
+		r.topRight(),
+		QPointF(r.right(), r.bottom()),
+		QPointF(h_centre + ArrowSize, r.bottom()),
+		QPointF(h_centre, rect.bottom()),
+		QPointF(h_centre - ArrowSize, r.bottom()),
+		QPointF(r.left(), r.bottom()),
+		r.topLeft()
+	};
+
+	const QPointF highlight_points[] = {
+		QPointF(r.right() - 1, r.top() + 1),
+		QPointF(r.right() - 1, r.bottom() - 1),
+		QPointF(h_centre + ArrowSize - 1, r.bottom() - 1),
+		QPointF(h_centre, rect.bottom() - 1),
+		QPointF(h_centre - ArrowSize + 1, r.bottom() - 1),
+		QPointF(r.left() + 1, r.bottom() - 1),
+		QPointF(r.left() + 1, r.top() + 1),
+	};
+
+	char text[16];
+	format_text(text);
+
+	p.setPen(Qt::transparent);
+	p.setBrush(FillColour);
+	p.drawPolygon(points, countof(points));
 
 	p.setPen(HighlightColour);
-	p.setBrush(QBrush());
-	p.drawEllipse(r.adjusted(1, 1, -1, -1));
+	p.setBrush(Qt::transparent);
+	p.drawPolygon(highlight_points, countof(highlight_points));
+
+	p.setPen(LineColour);
+	p.setBrush(Qt::transparent);
+	p.drawPolygon(points, countof(points));
+
+	p.setPen(TextColour);
+	p.drawText(r, Qt::AlignCenter | Qt::AlignVCenter, text);
+}
+
+void Cursor::compute_text_size(QPainter &p)
+{
+	char text[16];
+	format_text(text);
+	_text_size = p.boundingRect(QRectF(), 0, text).size();
+}
+
+void Cursor::format_text(char *text)
+{
+	sprintf(text, "%gs", _time);
 }
 
 } // namespace view

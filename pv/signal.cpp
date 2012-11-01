@@ -21,6 +21,7 @@
 #include <extdef.h>
 
 #include "signal.h"
+#include "view/view.h"
 
 namespace pv {
 

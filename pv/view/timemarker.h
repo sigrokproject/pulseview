@@ -91,6 +91,8 @@ protected:
 	const QColor &_colour;
 
 	double _time;
+
+	QSizeF _text_size;
 };
 
 } // namespace view

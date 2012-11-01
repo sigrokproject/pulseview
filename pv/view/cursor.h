@@ -23,6 +23,10 @@
 
 #include "timemarker.h"
 
+#include <QSizeF>
+
+class QPainter;
+
 namespace pv {
 namespace view {
 
@@ -34,9 +38,12 @@ private:
 	static const QColor LineColour;
 	static const QColor FillColour;
 	static const QColor HighlightColour;
+	static const QColor TextColour;
 
 	static const int Size;
 	static const int Offset;
+
+	static const int ArrowSize;
 
 public:
 	/**
@@ -60,6 +67,14 @@ public:
 	 * @param rect The rectangle of the ruler client area.
 	 */
 	void paint_label(QPainter &p, const QRect &rect);
+
+private:
+	void compute_text_size(QPainter &p);
+
+	void format_text(char *text);
+
+private:
+	QSizeF _text_size;
 };
 
 } // namespace view
