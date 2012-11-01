@@ -106,13 +106,14 @@ QRectF Signal::get_label_rect(const QRect &rect)
 {
 	using pv::view::View;
 
-	const float nominal_offset = get_nominal_offset(rect);
+	const float nominal_offset = get_nominal_offset(rect) + 0.5;
 	const QSizeF label_size(
 		_text_size.width() + View::LabelPadding.width() * 2,
 		_text_size.height() + View::LabelPadding.height() * 2);
 	const float label_arrow_length = label_size.height() / 2;
 	return QRectF(
-		rect.right() - label_arrow_length - label_size.width(),
+		rect.right() - label_arrow_length -
+			label_size.width() - 0.5,
 		nominal_offset - label_size.height() / 2,
 		label_size.width(), label_size.height());
 }
