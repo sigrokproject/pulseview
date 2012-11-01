@@ -28,6 +28,8 @@ namespace view {
 
 class Cursor : public TimeMarker
 {
+	Q_OBJECT
+
 private:
 	static const QColor LineColour;
 	static const QColor FillColour;

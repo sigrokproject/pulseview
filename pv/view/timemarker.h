@@ -22,6 +22,7 @@
 #define PULSEVIEW_PV_VIEW_MARKER_H
 
 #include <QColor>
+#include <QObject>
 
 class QPainter;
 class QRect;
@@ -31,8 +32,10 @@ namespace view {
 
 class View;
 
-class TimeMarker
+class TimeMarker : public QObject
 {
+	Q_OBJECT
+
 protected:
 	/**
 	 * Constructor.
@@ -41,6 +44,11 @@ protected:
 	 * @param time The time to set the flag to.
 	 */
 	TimeMarker(const View &view, const QColor &colour, double time);
+
+	/**
+	 * Copy constructor
+	 */
+	TimeMarker(const TimeMarker &s);
 
 public:
 	/**

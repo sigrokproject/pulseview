@@ -35,6 +35,13 @@ TimeMarker::TimeMarker(const View &view, const QColor &colour,
 {
 }
 
+TimeMarker::TimeMarker(const TimeMarker &s) :
+	_view(s._view),
+	_colour(s._colour),
+	_time(s._time)
+{
+}
+
 double TimeMarker::time() const
 {
 	return _time;

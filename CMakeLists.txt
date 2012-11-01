@@ -103,8 +103,10 @@ set(pulseview_HEADERS
 	pv/mainwindow.h
 	pv/samplingbar.h
 	pv/sigsession.h
+	pv/view/cursor.h
 	pv/view/header.h
 	pv/view/ruler.h
+	pv/view/timemarker.h
 	pv/view/view.h
 	pv/view/viewport.h
 )
