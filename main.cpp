@@ -47,6 +47,7 @@ void usage()
 
 int main(int argc, char *argv[])
 {
+	int ret = 0;
 	QApplication a(argc, argv);
 
 	// Set some application metadata
@@ -87,33 +88,38 @@ int main(int argc, char *argv[])
 	}
 
 	// Initialise libsigrokdecode
-	if (srd_init(NULL) != SRD_OK) {
-		qDebug() << "ERROR: libsigrokdecode init failed.";
-		return 1;
-	}
+	if (srd_init(NULL) == SRD_OK) {
 
-	// Load the protocol decoders
-	srd_decoder_load_all();
+		// Load the protocol decoders
+		srd_decoder_load_all();
 
-	// Initialize all libsigrok drivers
-	sr_dev_driver **const drivers = sr_driver_list();
-	for (sr_dev_driver **driver = drivers; *driver; driver++) {
-		if (sr_driver_init(*driver) != SR_OK) {
-			qDebug("Failed to initialize driver %s",
-				(*driver)->name);
-			return 1;
+		// Initialize all libsigrok drivers
+		sr_dev_driver **const drivers = sr_driver_list();
+		for (sr_dev_driver **driver = drivers; *driver; driver++) {
+			if (sr_driver_init(*driver) != SR_OK) {
+				qDebug("Failed to initialize driver %s",
+					(*driver)->name);
+				ret = 1;
+				break;
+			}
 		}
+
+		if(ret == 0) {
+			// Initialise the main window
+			pv::MainWindow w;
+			w.show();
+
+			// Run the application
+			ret = a.exec();
+		}
+
+		// Destroy libsigrokdecode and libsigrok
+		srd_exit();
+
+	} else {
+		qDebug() << "ERROR: libsigrokdecode init failed.";
 	}
 
-	// Initialise the main window
-	pv::MainWindow w;
-	w.show();
-
-	// Run the application
-	const int ret = a.exec();
-
-	// Destroy libsigrokdecode and libsigrok
-	srd_exit();
 	sr_exit();
 
 	return ret;
