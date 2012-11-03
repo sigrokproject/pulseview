@@ -42,9 +42,19 @@ void Signal::set_name(QString name)
 	_name = name;
 }
 
+QColor Signal::get_colour() const
+{
+	return _colour;
+}
+
+void Signal::set_colour(QColor colour)
+{
+	_colour = colour;
+}
+
 void Signal::paint_label(QPainter &p, const QRect &rect, bool hover)
 {
-	p.setBrush(get_colour());
+	p.setBrush(_colour);
 
 	const QColor colour = get_colour();
 	const float nominal_offset = get_nominal_offset(rect);

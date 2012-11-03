@@ -23,6 +23,7 @@
 
 #include <boost/shared_ptr.hpp>
 
+#include <QColor>
 #include <QPainter>
 #include <QRect>
 #include <QString>
@@ -51,6 +52,16 @@ public:
 	 * Sets the name of the signal.
 	 */
 	void set_name(QString name);
+
+	/**
+	 * Get the colour of the signal.
+	 */
+	QColor get_colour() const;
+
+	/**
+	 * Set the colour of the signal.
+	 */
+	void set_colour(QColor colour);
 
 	/**
 	 * Paints the signal with a QPainter
@@ -97,11 +108,6 @@ private:
 
 protected:
 	/**
-	 * Get the colour of the logic signal
-	 */
-	virtual QColor get_colour() const = 0;
-
-	/**
 	 * When painting into the rectangle, calculate the y
 	 * offset of the zero point.
 	 **/
@@ -109,6 +115,8 @@ protected:
 
 protected:
 	QString _name;
+	QColor _colour;
+
 	QSizeF _text_size;
 };
 

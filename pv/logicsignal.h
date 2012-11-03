@@ -64,11 +64,6 @@ private:
 		float x_offset, float y_offset);
 
 	/**
-	 * Get the colour of the logic signal
-	 */
-	QColor get_colour() const;
-
-	/**
 	 * When painting into the rectangle, calculate the y
 	 * offset of the zero point.
 	 **/

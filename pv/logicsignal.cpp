@@ -58,6 +58,8 @@ LogicSignal::LogicSignal(QString name, shared_ptr<LogicData> data,
 	_data(data)
 {
 	assert(_probe_index >= 0);
+	_colour = LogicSignalColours[
+		_probe_index % countof(LogicSignalColours)];
 }
 
 void LogicSignal::paint(QPainter &p, const QRect &rect, double scale,
@@ -143,11 +145,6 @@ void LogicSignal::paint_caps(QPainter &p, QLineF *const lines,
 		}
 
 	p.drawLines(lines, line - lines);
-}
-
-QColor LogicSignal::get_colour() const
-{
-	return LogicSignalColours[_probe_index % countof(LogicSignalColours)];
 }
 
 int LogicSignal::get_nominal_offset(const QRect &rect) const

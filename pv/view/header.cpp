@@ -28,6 +28,7 @@
 
 #include <boost/foreach.hpp>
 
+#include <QColorDialog>
 #include <QInputDialog>
 #include <QMenu>
 #include <QMouseEvent>
@@ -43,12 +44,15 @@ namespace view {
 Header::Header(View &parent) :
 	QWidget(&parent),
 	_view(parent),
-	_action_set_name(new QAction(tr("Set &Name..."), this))
+	_action_set_name(new QAction(tr("Set &Name..."), this)),
+	_action_set_colour(new QAction(tr("Set &Colour..."), this))
 {
 	setMouseTracking(true);
 
 	connect(_action_set_name, SIGNAL(triggered()),
 		this, SLOT(on_action_set_name_triggered()));
+	connect(_action_set_colour, SIGNAL(triggered()),
+		this, SLOT(on_action_set_colour_triggered()));
 }
 
 void Header::paintEvent(QPaintEvent *event)
@@ -107,6 +111,7 @@ void Header::contextMenuEvent(QContextMenuEvent *event)
 		if(s->pt_in_label_rect(signal_heading_rect, _mouse_point)) {
 			QMenu menu(this);
 			menu.addAction(_action_set_name);
+			menu.addAction(_action_set_colour);
 
 			_context_signal = s;
 			menu.exec(event->globalPos());
@@ -130,6 +135,19 @@ void Header::on_action_set_name_triggered()
 
 	if(!new_label.isEmpty())
 		context_signal->set_name(new_label);
+}
+
+void Header::on_action_set_colour_triggered()
+{
+	boost::shared_ptr<Signal> context_signal = _context_signal;
+	if(!context_signal)
+		return;
+
+	const QColor new_colour = QColorDialog::getColor(
+		context_signal->get_colour(), this, tr("Set Colour"));
+
+	if(new_colour.isValid())
+		context_signal->set_colour(new_colour);
 }
 
 } // namespace view

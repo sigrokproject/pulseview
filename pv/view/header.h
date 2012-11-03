@@ -53,6 +53,8 @@ private:
 private slots:
 	void on_action_set_name_triggered();
 
+	void on_action_set_colour_triggered();
+
 private:
 	View &_view;
 
@@ -60,6 +62,7 @@ private:
 
 	boost::shared_ptr<pv::Signal> _context_signal;
 	QAction *_action_set_name;
+	QAction *_action_set_colour;
 };
 
 } // namespace view
