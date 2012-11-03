@@ -26,11 +26,9 @@
 #include <QWidget>
 
 namespace pv {
-
-class Signal;
-
 namespace view {
 
+class Signal;
 class View;
 
 class Header : public QWidget
@@ -60,7 +58,7 @@ private:
 
 	QPoint _mouse_point;
 
-	boost::shared_ptr<pv::Signal> _context_signal;
+	boost::shared_ptr<Signal> _context_signal;
 	QAction *_action_set_name;
 	QAction *_action_set_colour;
 };

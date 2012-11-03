@@ -21,7 +21,7 @@
 #include "header.h"
 #include "view.h"
 
-#include "../signal.h"
+#include "signal.h"
 #include "../sigsession.h"
 
 #include <assert.h>
@@ -126,7 +126,7 @@ void Header::contextMenuEvent(QContextMenuEvent *event)
 
 void Header::on_action_set_name_triggered()
 {
-	boost::shared_ptr<Signal> context_signal = _context_signal;
+	shared_ptr<view::Signal> context_signal = _context_signal;
 	if(!context_signal)
 		return;
 
@@ -139,7 +139,7 @@ void Header::on_action_set_name_triggered()
 
 void Header::on_action_set_colour_triggered()
 {
-	boost::shared_ptr<Signal> context_signal = _context_signal;
+	shared_ptr<view::Signal> context_signal = _context_signal;
 	if(!context_signal)
 		return;
 

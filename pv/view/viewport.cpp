@@ -21,8 +21,8 @@
 #include "view.h"
 #include "viewport.h"
 
+#include "signal.h"
 #include "../sigsession.h"
-#include "../signal.h"
 
 #include <QMouseEvent>
 

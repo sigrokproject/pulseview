@@ -29,6 +29,8 @@ namespace pv {
 
 class LogicData;
 
+namespace view {
+
 class LogicSignal : public Signal
 {
 private:
@@ -43,7 +45,7 @@ private:
 
 public:
 	LogicSignal(QString name,
-		boost::shared_ptr<LogicData> data,
+		boost::shared_ptr<pv::LogicData> data,
 		int probe_index);
 
 	/**
@@ -71,9 +73,10 @@ private:
 
 private:
 	int _probe_index;
-	boost::shared_ptr<LogicData> _data;
+	boost::shared_ptr<pv::LogicData> _data;
 };
 
+} // namespace view
 } // namespace pv
 
 #endif // PULSEVIEW_PV_LOGICSIGNAL_H

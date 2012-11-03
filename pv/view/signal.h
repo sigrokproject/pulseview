@@ -31,6 +31,7 @@
 #include <stdint.h>
 
 namespace pv {
+namespace view {
 
 class SignalData;
 
@@ -120,6 +121,7 @@ protected:
 	QSizeF _text_size;
 };
 
+} // namespace view
 } // namespace pv
 
 #endif // PULSEVIEW_PV_SIGNAL_H

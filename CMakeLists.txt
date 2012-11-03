@@ -84,15 +84,15 @@ set(pulseview_SOURCES
 	pv/datasnapshot.cpp
 	pv/logicdata.cpp
 	pv/logicdatasnapshot.cpp
-	pv/logicsignal.cpp
 	pv/mainwindow.cpp
 	pv/samplingbar.cpp
 	pv/signaldata.cpp
 	pv/sigsession.cpp
-	pv/signal.cpp
 	pv/view/cursor.cpp
 	pv/view/header.cpp
+	pv/view/logicsignal.cpp
 	pv/view/ruler.cpp
+	pv/view/signal.cpp
 	pv/view/timemarker.cpp
 	pv/view/view.cpp
 	pv/view/viewport.cpp

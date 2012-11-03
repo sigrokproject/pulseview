@@ -21,9 +21,10 @@
 #include <extdef.h>
 
 #include "signal.h"
-#include "view/view.h"
+#include "view.h"
 
 namespace pv {
+namespace view {
 
 const int Signal::LabelHitPadding = 2;
 
@@ -128,4 +129,5 @@ QRectF Signal::get_label_rect(const QRect &rect)
 		label_size.width(), label_size.height());
 }
 
+} // namespace view
 } // namespace pv

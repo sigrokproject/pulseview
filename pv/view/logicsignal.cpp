@@ -22,14 +22,15 @@
 
 #include <math.h>
 
-#include "logicdata.h"
-#include "logicdatasnapshot.h"
 #include "logicsignal.h"
+#include "../logicdata.h"
+#include "../logicdatasnapshot.h"
 
 using namespace boost;
 using namespace std;
 
 namespace pv {
+namespace view {
 
 const float LogicSignal::Margin = 10.0f;
 const float LogicSignal::Oversampling = 2.0f;
@@ -75,12 +76,13 @@ void LogicSignal::paint(QPainter &p, const QRect &rect, double scale,
 	const float high_offset = rect.top() + Margin + 0.5f;
 	const float low_offset = rect.bottom() - Margin + 0.5f;
 
-	const deque< shared_ptr<LogicDataSnapshot> > &snapshots =
+	const deque< shared_ptr<pv::LogicDataSnapshot> > &snapshots =
 		_data->get_snapshots();
 	if(snapshots.empty())
 		return;
 
-	const shared_ptr<LogicDataSnapshot> &snapshot = snapshots.front();
+	const shared_ptr<pv::LogicDataSnapshot> &snapshot =
+		snapshots.front();
 
 	const double pixels_offset = offset / scale;
 	const double samplerate = _data->get_samplerate();
@@ -101,7 +103,7 @@ void LogicSignal::paint(QPainter &p, const QRect &rect, double scale,
 	QLineF *const edge_lines = new QLineF[edge_count];
 	line = edge_lines;
 
-	for(vector<LogicDataSnapshot::EdgePair>::const_iterator i =
+	for(vector<pv::LogicDataSnapshot::EdgePair>::const_iterator i =
 			edges.begin() + 1;
 		i != edges.end() - 1; i++) {
 		const float x = ((*i).first / samples_per_pixel -
@@ -134,8 +136,8 @@ void LogicSignal::paint_caps(QPainter &p, QLineF *const lines,
 {
 	QLineF *line = lines;
 
-	for(vector<LogicDataSnapshot::EdgePair>::const_iterator i = edges.begin();
-	    i != (edges.end() - 1); i++)
+	for(vector<pv::LogicDataSnapshot::EdgePair>::const_iterator i =
+		edges.begin(); i != (edges.end() - 1); i++)
 		if((*i).second == level) {
 			*line++ = QLineF(
 				((*i).first / samples_per_pixel -
@@ -152,4 +154,5 @@ int LogicSignal::get_nominal_offset(const QRect &rect) const
 	return rect.bottom() - Margin;
 }
 
+} // namespace view
 } // namespace pv

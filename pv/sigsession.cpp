@@ -22,7 +22,7 @@
 
 #include "logicdata.h"
 #include "logicdatasnapshot.h"
-#include "logicsignal.h"
+#include "view/logicsignal.h"
 
 #include <QDebug>
 
@@ -94,7 +94,7 @@ void SigSession::start_capture(struct sr_dev_inst *sdi,
 	sr_session_destroy();
 }
 
-vector< shared_ptr<Signal> >& SigSession::get_signals()
+vector< shared_ptr<view::Signal> >& SigSession::get_signals()
 {
 	return _signals;
 }
@@ -107,6 +107,8 @@ boost::shared_ptr<LogicData> SigSession::get_data()
 void SigSession::data_feed_in(const struct sr_dev_inst *sdi,
 	struct sr_datafeed_packet *packet)
 {
+	using view::LogicSignal;
+
 	assert(sdi);
 	assert(packet);
 
@@ -136,7 +138,7 @@ void SigSession::data_feed_in(const struct sr_dev_inst *sdi,
 						sdi->probes, i);
 				if(probe->enabled)
 				{
-					boost::shared_ptr<LogicSignal> signal(
+					shared_ptr<LogicSignal> signal(
 						new LogicSignal(probe->name,
 							_logic_data,
 							probe->index));
