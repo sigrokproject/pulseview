@@ -30,6 +30,7 @@
 
 #include "header.h"
 #include "ruler.h"
+#include "signal.h"
 #include "view.h"
 #include "viewport.h"
 
@@ -200,6 +201,16 @@ void View::update_scroll()
 		_viewport->get_total_height() - areaSize.height());
 }
 
+void View::reset_signal_layout()
+{
+	int offset = 0;
+	vector< shared_ptr<Signal> > &sigs = _session.get_signals();
+	BOOST_FOREACH(shared_ptr<Signal> s, sigs) {
+		s->set_v_offset(offset);
+		offset += SignalHeight;
+	}
+}
+
 bool View::eventFilter(QObject *object, QEvent *event)
 {
 	const QEvent::Type type = event->type();
@@ -291,6 +302,9 @@ void View::data_updated()
 
 	// Repaint the view
 	_viewport->update();
+
+	/// @todo: Call this only once when the signals are first created.
+	reset_signal_layout();
 }
 
 void View::marker_time_changed()

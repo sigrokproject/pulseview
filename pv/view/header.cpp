@@ -64,18 +64,17 @@ void Header::paintEvent(QPaintEvent *event)
 	QPainter painter(this);
 	painter.setRenderHint(QPainter::Antialiasing);
 
-	int offset = -_view.v_offset();
+	const int v_offset = _view.v_offset();
 	BOOST_FOREACH(const shared_ptr<Signal> s, sigs)
 	{
 		assert(s);
 
 		const QRect signal_heading_rect(
-			0, offset, w, View::SignalHeight);
+			0, s->get_v_offset() - v_offset,
+			w, View::SignalHeight);
 
 		s->paint_label(painter, signal_heading_rect,
 			s->pt_in_label_rect(signal_heading_rect, _mouse_point));
-
-		offset += View::SignalHeight;
 	}
 
 	painter.end();
@@ -100,13 +99,14 @@ void Header::contextMenuEvent(QContextMenuEvent *event)
 	const vector< shared_ptr<Signal> > &sigs =
 		_view.session().get_signals();
 
-	int offset = -_view.v_offset();
+	const int v_offset = _view.v_offset();
 	BOOST_FOREACH(const shared_ptr<Signal> s, sigs)
 	{
 		assert(s);
 
 		const QRect signal_heading_rect(
-			0, offset, w, View::SignalHeight);
+			0, s->get_v_offset() - v_offset,
+			w, View::SignalHeight);
 
 		if(s->pt_in_label_rect(signal_heading_rect, _mouse_point)) {
 			QMenu menu(this);
@@ -119,8 +119,6 @@ void Header::contextMenuEvent(QContextMenuEvent *event)
 
 			break;
 		}
-
-		offset += View::SignalHeight;
 	}
 }
 

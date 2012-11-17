@@ -29,7 +29,8 @@ namespace view {
 const int Signal::LabelHitPadding = 2;
 
 Signal::Signal(QString name) :
-	_name(name)
+	_name(name),
+	_v_offset(0)
 {
 }
 
@@ -51,6 +52,16 @@ QColor Signal::get_colour() const
 void Signal::set_colour(QColor colour)
 {
 	_colour = colour;
+}
+
+int Signal::get_v_offset() const
+{
+	return _v_offset;
+}
+
+void Signal::set_v_offset(int v_offset)
+{
+	_v_offset = v_offset;
 }
 
 void Signal::paint_label(QPainter &p, const QRect &rect, bool hover)

@@ -66,17 +66,15 @@ void Viewport::paintEvent(QPaintEvent *event)
 	draw_cursors_background(p);
 
 	// Plot the signal
-	int offset = -_view.v_offset();
+	const int v_offset = _view.v_offset();
 	BOOST_FOREACH(const shared_ptr<Signal> s, sigs)
 	{
 		assert(s);
 
-		const QRect signal_rect(0, offset,
+		const QRect signal_rect(0, s->get_v_offset() - v_offset,
 			width(), View::SignalHeight);
 
 		s->paint(p, signal_rect, _view.scale(), _view.offset());
-
-		offset += View::SignalHeight;
 	}
 
 	draw_cursors_foreground(p);

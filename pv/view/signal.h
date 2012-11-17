@@ -66,6 +66,16 @@ public:
 	void set_colour(QColor colour);
 
 	/**
+	 * Gets the vertical layout offset of this signal.
+	 */
+	int get_v_offset() const;
+
+	/**
+	 * Sets the vertical layout offset of this signal.
+	 */
+	void set_v_offset(int v_offset);
+
+	/**
 	 * Paints the signal with a QPainter
 	 * @param p the QPainter to paint into.
 	 * @param rect the rectangular area to draw the trace into.
@@ -118,6 +128,7 @@ protected:
 protected:
 	QString _name;
 	QColor _colour;
+	int _v_offset;
 
 	QSizeF _text_size;
 };
