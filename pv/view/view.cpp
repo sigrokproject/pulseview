@@ -85,6 +85,9 @@ View::View(SigSession &session, QWidget *parent) :
 	connect(&_cursors.second, SIGNAL(time_changed()),
 		this, SLOT(marker_time_changed()));
 
+	connect(_header, SIGNAL(signals_moved()),
+		this, SLOT(signals_moved()));
+
 	setViewportMargins(LabelMarginWidth, RulerHeight, 0, 0);
 	setViewport(_viewport);
 
@@ -310,6 +313,12 @@ void View::data_updated()
 void View::marker_time_changed()
 {
 	_ruler->update();
+	_viewport->update();
+}
+
+void View::signals_moved()
+{
+	_header->update();
 	_viewport->update();
 }
 

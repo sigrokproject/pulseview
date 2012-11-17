@@ -23,6 +23,8 @@
 
 #include <boost/shared_ptr.hpp>
 
+#include <map>
+
 #include <QWidget>
 
 namespace pv {
@@ -48,6 +50,8 @@ private:
 private:
 	void mousePressEvent(QMouseEvent * event);
 
+	void mouseReleaseEvent(QMouseEvent *event);
+
 	void mouseMoveEvent(QMouseEvent *event);
 
 	void leaveEvent(QEvent *event);
@@ -59,10 +63,16 @@ private slots:
 
 	void on_action_set_colour_triggered();
 
+signals:
+	void signals_moved();
+
 private:
 	View &_view;
 
 	QPoint _mouse_point;
+	QPoint _mouse_down_point;
+
+	std::map<const Signal*, int> _mouse_down_signal_offsets;
 
 	boost::shared_ptr<Signal> _context_signal;
 	QAction *_action_set_name;

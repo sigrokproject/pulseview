@@ -124,13 +124,45 @@ void Header::mousePressEvent(QMouseEvent *event)
 	if(mouse_over_signal)
 		mouse_over_signal->select(!mouse_over_signal->selected());
 
+	if(event->button() & Qt::LeftButton) {
+		_mouse_down_point = event->pos();
+
+		// Save the current signal offsets
+		BOOST_FOREACH(const shared_ptr<Signal> s, sigs)
+			_mouse_down_signal_offsets[s.get()] =
+				s->get_v_offset();
+	}
+
 	update();
+}
+
+void Header::mouseReleaseEvent(QMouseEvent *event)
+{
+	assert(event);
+	if(event->button() == Qt::LeftButton)
+		_mouse_down_signal_offsets.clear();
 }
 
 void Header::mouseMoveEvent(QMouseEvent *event)
 {
 	assert(event);
 	_mouse_point = event->pos();
+
+	// Move the signals if we are dragging
+	if(!_mouse_down_signal_offsets.empty()) {
+		const vector< shared_ptr<Signal> > &sigs =
+			_view.session().get_signals();
+		const int delta = event->pos().y() - _mouse_down_point.y();
+
+		BOOST_FOREACH(const shared_ptr<Signal> s, sigs)
+			if(s->selected())
+				s->set_v_offset(
+					_mouse_down_signal_offsets[s.get()] +
+					delta);
+
+		signals_moved();
+	}
+
 	update();
 }
 

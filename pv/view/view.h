@@ -129,6 +129,8 @@ private slots:
 
 	void marker_time_changed();
 
+	void signals_moved();
+
 private:
 	SigSession &_session;
 
