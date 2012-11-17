@@ -155,10 +155,16 @@ void Header::mouseMoveEvent(QMouseEvent *event)
 		const int delta = event->pos().y() - _mouse_down_point.y();
 
 		BOOST_FOREACH(const shared_ptr<Signal> s, sigs)
-			if(s->selected())
-				s->set_v_offset(
+			if(s->selected()) {
+				const int y =
 					_mouse_down_signal_offsets[s.get()] +
-					delta);
+					delta;
+				const int y_snap =
+					((y + View::SignalSnapGridSize / 2) /
+						View::SignalSnapGridSize) *
+						View::SignalSnapGridSize;
+				s->set_v_offset(y_snap	);
+			}
 
 		signals_moved();
 	}

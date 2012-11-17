@@ -53,6 +53,7 @@ const int View::RulerHeight = 30;
 const int View::MaxScrollValue = INT_MAX / 2;
 
 const int View::SignalHeight = 50;
+const int View::SignalSnapGridSize = 10;
 
 const QColor View::CursorAreaColour(220, 231, 243);
 
