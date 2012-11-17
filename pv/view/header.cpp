@@ -89,6 +89,7 @@ void Header::paintEvent(QPaintEvent *event)
 	painter.setRenderHint(QPainter::Antialiasing);
 
 	const int v_offset = _view.v_offset();
+	const bool dragging = !_drag_sigs.empty();
 	BOOST_FOREACH(const shared_ptr<Signal> s, sigs)
 	{
 		assert(s);
@@ -97,8 +98,9 @@ void Header::paintEvent(QPaintEvent *event)
 			0, s->get_v_offset() - v_offset,
 			w, View::SignalHeight);
 
-		s->paint_label(painter, signal_heading_rect,
-			s->pt_in_label_rect(signal_heading_rect, _mouse_point));
+		const bool highlight = !dragging && s->pt_in_label_rect(
+			signal_heading_rect, _mouse_point);
+		s->paint_label(painter, signal_heading_rect, highlight);
 	}
 
 	painter.end();
