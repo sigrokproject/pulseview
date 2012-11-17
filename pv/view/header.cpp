@@ -28,6 +28,7 @@
 
 #include <boost/foreach.hpp>
 
+#include <QApplication>
 #include <QColorDialog>
 #include <QInputDialog>
 #include <QMenu>
@@ -55,6 +56,29 @@ Header::Header(View &parent) :
 		this, SLOT(on_action_set_colour_triggered()));
 }
 
+boost::shared_ptr<pv::view::Signal> Header::get_mouse_over_signal(
+	const QPoint &pt)
+{
+	const int w = width();
+	const vector< shared_ptr<Signal> > &sigs =
+		_view.session().get_signals();
+
+	const int v_offset = _view.v_offset();
+	BOOST_FOREACH(const shared_ptr<Signal> s, sigs)
+	{
+		assert(s);
+
+		const QRect signal_heading_rect(
+			0, s->get_v_offset() - v_offset,
+			w, View::SignalHeight);
+
+		if(s->pt_in_label_rect(signal_heading_rect, pt))
+			return s;
+	}
+
+	return shared_ptr<Signal>();
+}
+
 void Header::paintEvent(QPaintEvent *event)
 {
 	const int w = width();
@@ -80,6 +104,29 @@ void Header::paintEvent(QPaintEvent *event)
 	painter.end();
 }
 
+void Header::mousePressEvent(QMouseEvent *event)
+{
+	assert(event);
+
+	const vector< shared_ptr<Signal> > &sigs =
+		_view.session().get_signals();
+
+	if(~QApplication::keyboardModifiers() & Qt::ControlModifier) {
+		// Unselect all other signals because the Ctrl is not
+		// pressed
+		BOOST_FOREACH(const shared_ptr<Signal> s, sigs)
+			s->select(false);
+	}
+
+	// Select the signal if it has been clicked
+	const shared_ptr<Signal> mouse_over_signal =
+		get_mouse_over_signal(event->pos());
+	if(mouse_over_signal)
+		mouse_over_signal->select(!mouse_over_signal->selected());
+
+	update();
+}
+
 void Header::mouseMoveEvent(QMouseEvent *event)
 {
 	assert(event);
@@ -95,31 +142,18 @@ void Header::leaveEvent(QEvent *event)
 
 void Header::contextMenuEvent(QContextMenuEvent *event)
 {
-	const int w = width();
-	const vector< shared_ptr<Signal> > &sigs =
-		_view.session().get_signals();
+	const shared_ptr<Signal> s = get_mouse_over_signal(_mouse_point);
 
-	const int v_offset = _view.v_offset();
-	BOOST_FOREACH(const shared_ptr<Signal> s, sigs)
-	{
-		assert(s);
+	if(!s)
+		return;
 
-		const QRect signal_heading_rect(
-			0, s->get_v_offset() - v_offset,
-			w, View::SignalHeight);
+	QMenu menu(this);
+	menu.addAction(_action_set_name);
+	menu.addAction(_action_set_colour);
 
-		if(s->pt_in_label_rect(signal_heading_rect, _mouse_point)) {
-			QMenu menu(this);
-			menu.addAction(_action_set_name);
-			menu.addAction(_action_set_colour);
-
-			_context_signal = s;
-			menu.exec(event->globalPos());
-			_context_signal.reset();
-
-			break;
-		}
-	}
+	_context_signal = s;
+	menu.exec(event->globalPos());
+	_context_signal.reset();
 }
 
 void Header::on_action_set_name_triggered()

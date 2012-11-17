@@ -20,6 +20,8 @@
 
 #include <extdef.h>
 
+#include <QApplication>
+
 #include "signal.h"
 #include "view.h"
 
@@ -27,10 +29,12 @@ namespace pv {
 namespace view {
 
 const int Signal::LabelHitPadding = 2;
+const int Signal::LabelHighlightRadius = 6;
 
 Signal::Signal(QString name) :
 	_name(name),
-	_v_offset(0)
+	_v_offset(0),
+	_selected(false)
 {
 }
 
@@ -64,6 +68,16 @@ void Signal::set_v_offset(int v_offset)
 	_v_offset = v_offset;
 }
 
+bool Signal::selected() const
+{
+	return _selected;
+}
+
+void Signal::select(bool select)
+{
+	_selected = select;
+}
+
 void Signal::paint_label(QPainter &p, const QRect &rect, bool hover)
 {
 	p.setBrush(_colour);
@@ -90,6 +104,14 @@ void Signal::paint_label(QPainter &p, const QRect &rect, bool hover)
 		QPointF(label_rect.right(), label_rect.bottom() - 1),
 		QPointF(label_rect.left() + 1, label_rect.bottom() - 1)
 	};
+
+	if(_selected) {
+		p.setPen(QPen(QApplication::palette().brush(
+			QPalette::Highlight), LabelHighlightRadius,
+			Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+		p.setBrush(Qt::transparent);
+		p.drawPolygon(points, countof(points));
+	}
 
 	p.setPen(Qt::transparent);
 	p.setBrush(hover ? colour.lighter() : colour);

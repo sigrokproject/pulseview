@@ -39,9 +39,15 @@ public:
 	Header(View &parent);
 
 private:
+	boost::shared_ptr<pv::view::Signal> get_mouse_over_signal(
+		const QPoint &pt);
+
+private:
 	void paintEvent(QPaintEvent *event);
 
 private:
+	void mousePressEvent(QMouseEvent * event);
+
 	void mouseMoveEvent(QMouseEvent *event);
 
 	void leaveEvent(QEvent *event);

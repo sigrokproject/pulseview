@@ -40,6 +40,7 @@ class Signal
 {
 private:
 	static const int LabelHitPadding;
+	static const int LabelHighlightRadius;
 
 protected:
 	Signal(QString name);
@@ -74,6 +75,16 @@ public:
 	 * Sets the vertical layout offset of this signal.
 	 */
 	void set_v_offset(int v_offset);
+
+	/**
+	 * Returns true if the signal has been selected by the user.
+	 */
+	bool selected() const;
+
+	/**
+	 * Selects or deselects the signal.
+	 */
+	void select(bool select = true);
 
 	/**
 	 * Paints the signal with a QPainter
@@ -129,6 +140,8 @@ protected:
 	QString _name;
 	QColor _colour;
 	int _v_offset;
+
+	bool _selected;
 
 	QSizeF _text_size;
 };
