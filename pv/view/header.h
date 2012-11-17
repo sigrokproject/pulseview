@@ -65,6 +65,8 @@ private slots:
 
 	void on_action_set_colour_triggered();
 
+	void on_signals_moved();
+
 signals:
 	void signals_moved();
 

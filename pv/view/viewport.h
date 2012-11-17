@@ -56,6 +56,9 @@ private:
 
 	void draw_cursors_foreground(QPainter &p);
 
+private slots:
+	void on_signals_moved();
+
 private:
 	View &_view;
 

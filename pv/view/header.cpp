@@ -54,6 +54,9 @@ Header::Header(View &parent) :
 		this, SLOT(on_action_set_name_triggered()));
 	connect(_action_set_colour, SIGNAL(triggered()),
 		this, SLOT(on_action_set_colour_triggered()));
+
+	connect(&_view, SIGNAL(signals_moved()),
+		this, SLOT(on_signals_moved()));
 }
 
 boost::shared_ptr<pv::view::Signal> Header::get_mouse_over_signal(
@@ -113,14 +116,6 @@ void Header::mousePressEvent(QMouseEvent *event)
 	const vector< shared_ptr<Signal> > &sigs =
 		_view.session().get_signals();
 
-	if(~QApplication::keyboardModifiers() & Qt::ControlModifier) {
-		// Unselect all other signals because the Ctrl is not
-		// pressed
-		_drag_sigs.clear();
-		BOOST_FOREACH(const shared_ptr<Signal> s, sigs)
-			s->select(false);
-	}
-
 	if(event->button() & Qt::LeftButton) {
 		_mouse_down_point = event->pos();
 
@@ -140,11 +135,24 @@ void Header::mousePressEvent(QMouseEvent *event)
 		else {
 			mouse_over_signal->select(true);
 
+			if(~QApplication::keyboardModifiers() &
+				Qt::ControlModifier)
+				_drag_sigs.clear();
+
 			// Add the signal to the drag list
-			_drag_sigs.push_back(
-				make_pair(mouse_over_signal,
+			if(event->button() & Qt::LeftButton)
+				_drag_sigs.push_back(
+					make_pair(mouse_over_signal,
 					mouse_over_signal->get_v_offset()));
 		}
+	}
+
+	if(~QApplication::keyboardModifiers() & Qt::ControlModifier) {
+		// Unselect all other signals because the Ctrl is not
+		// pressed
+		BOOST_FOREACH(const shared_ptr<Signal> s, sigs)
+			if(s != mouse_over_signal)
+				s->select(false);
 	}
 
 	update();
@@ -237,6 +245,12 @@ void Header::on_action_set_colour_triggered()
 	if(new_colour.isValid())
 		context_signal->set_colour(new_colour);
 }
+
+void Header::on_signals_moved()
+{
+	update();
+}
+
 
 } // namespace view
 } // namespace pv

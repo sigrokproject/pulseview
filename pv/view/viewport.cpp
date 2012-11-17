@@ -41,18 +41,21 @@ Viewport::Viewport(View &parent) :
 	setMouseTracking(true);
 	setAutoFillBackground(true);
 	setBackgroundRole(QPalette::Base);
+
+	connect(&_view, SIGNAL(signals_moved()),
+		this, SLOT(on_signals_moved()));
 }
 
 int Viewport::get_total_height() const
 {
-	int height = 0;
+	int h = 0;
 	BOOST_FOREACH(const shared_ptr<Signal> s,
 		_view.session().get_signals()) {
 		assert(s);
-		height += View::SignalHeight;
+		h = max(s->get_v_offset() + View::SignalHeight, h);
 	}
 
-	return height;
+	return h;
 }
 
 void Viewport::paintEvent(QPaintEvent *event)
@@ -140,6 +143,11 @@ void Viewport::draw_cursors_foreground(QPainter &p)
 	pair<Cursor, Cursor> &cursors = _view.cursors();
 	cursors.first.paint(p, r);
 	cursors.second.paint(p, r);
+}
+
+void Viewport::on_signals_moved()
+{
+	update();
 }
 
 } // namespace view

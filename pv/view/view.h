@@ -107,6 +107,8 @@ public:
 signals:
 	void hover_point_changed();
 
+	void signals_moved();
+
 private:
 	void get_scroll_layout(double &length, double &offset) const;
 	
@@ -130,7 +132,7 @@ private slots:
 
 	void marker_time_changed();
 
-	void signals_moved();
+	void on_signals_moved();
 
 private:
 	SigSession &_session;
