@@ -31,9 +31,10 @@
 #include <stdint.h>
 
 namespace pv {
-namespace view {
 
 class SignalData;
+
+namespace view {
 
 class Signal
 {
