@@ -114,23 +114,35 @@ void Header::mousePressEvent(QMouseEvent *event)
 	if(~QApplication::keyboardModifiers() & Qt::ControlModifier) {
 		// Unselect all other signals because the Ctrl is not
 		// pressed
+		_drag_sigs.clear();
 		BOOST_FOREACH(const shared_ptr<Signal> s, sigs)
 			s->select(false);
+	}
+
+	if(event->button() & Qt::LeftButton) {
+		_mouse_down_point = event->pos();
+
+		// Save the offsets of any signals which will be dragged
+		BOOST_FOREACH(const shared_ptr<Signal> s, sigs)
+			if(s->selected())
+				_drag_sigs.push_back(
+					make_pair(s, s->get_v_offset()));
 	}
 
 	// Select the signal if it has been clicked
 	const shared_ptr<Signal> mouse_over_signal =
 		get_mouse_over_signal(event->pos());
-	if(mouse_over_signal)
-		mouse_over_signal->select(!mouse_over_signal->selected());
+	if(mouse_over_signal) {
+		if(mouse_over_signal->selected())
+			mouse_over_signal->select(false);
+		else {
+			mouse_over_signal->select(true);
 
-	if(event->button() & Qt::LeftButton) {
-		_mouse_down_point = event->pos();
-
-		// Save the current signal offsets
-		BOOST_FOREACH(const shared_ptr<Signal> s, sigs)
-			_mouse_down_signal_offsets[s.get()] =
-				s->get_v_offset();
+			// Add the signal to the drag list
+			_drag_sigs.push_back(
+				make_pair(mouse_over_signal,
+					mouse_over_signal->get_v_offset()));
+		}
 	}
 
 	update();
@@ -140,7 +152,7 @@ void Header::mouseReleaseEvent(QMouseEvent *event)
 {
 	assert(event);
 	if(event->button() == Qt::LeftButton)
-		_mouse_down_signal_offsets.clear();
+		_drag_sigs.clear();
 }
 
 void Header::mouseMoveEvent(QMouseEvent *event)
@@ -149,22 +161,26 @@ void Header::mouseMoveEvent(QMouseEvent *event)
 	_mouse_point = event->pos();
 
 	// Move the signals if we are dragging
-	if(!_mouse_down_signal_offsets.empty()) {
-		const vector< shared_ptr<Signal> > &sigs =
-			_view.session().get_signals();
+	if(!_drag_sigs.empty()) {
 		const int delta = event->pos().y() - _mouse_down_point.y();
 
-		BOOST_FOREACH(const shared_ptr<Signal> s, sigs)
-			if(s->selected()) {
-				const int y =
-					_mouse_down_signal_offsets[s.get()] +
-					delta;
+		for(std::list<std::pair<boost::weak_ptr<Signal>,
+			int> >::iterator i = _drag_sigs.begin();
+			i != _drag_sigs.end(); i++) {
+			const boost::shared_ptr<Signal> sig((*i).first);
+			if(sig) {
+				const int y = (*i).second + delta;
 				const int y_snap =
 					((y + View::SignalSnapGridSize / 2) /
 						View::SignalSnapGridSize) *
 						View::SignalSnapGridSize;
-				s->set_v_offset(y_snap	);
+				sig->set_v_offset(y_snap);
+
+				// Ensure the signal is selected
+				sig->select();
 			}
+			
+		}
 
 		signals_moved();
 	}

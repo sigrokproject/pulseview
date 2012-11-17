@@ -22,8 +22,10 @@
 #define PULSEVIEW_PV_VIEW_HEADER_H
 
 #include <boost/shared_ptr.hpp>
+#include <boost/weak_ptr.hpp>
 
-#include <map>
+#include <list>
+#include <utility>
 
 #include <QWidget>
 
@@ -72,7 +74,8 @@ private:
 	QPoint _mouse_point;
 	QPoint _mouse_down_point;
 
-	std::map<const Signal*, int> _mouse_down_signal_offsets;
+	std::list<std::pair<boost::weak_ptr<Signal>, int> >
+		_drag_sigs;
 
 	boost::shared_ptr<Signal> _context_signal;
 	QAction *_action_set_name;
