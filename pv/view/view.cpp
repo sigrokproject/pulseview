@@ -168,6 +168,22 @@ const QPoint& View::hover_point() const
 	return _hover_point;
 }
 
+void View::normalize_layout()
+{
+	vector< shared_ptr<Signal> > &sigs = _session.get_signals();
+
+	int v_min = INT_MAX;
+	BOOST_FOREACH(const shared_ptr<Signal> s, sigs)
+		v_min = min(s->get_v_offset(), v_min);
+
+	const int delta = -min(v_min, 0);
+	BOOST_FOREACH(shared_ptr<Signal> s, sigs)
+		s->set_v_offset(s->get_v_offset() + delta);
+
+	verticalScrollBar()->setSliderPosition(_v_offset + delta);
+	v_scroll_value_changed(verticalScrollBar()->sliderPosition());
+}
+
 void View::get_scroll_layout(double &length, double &offset) const
 {
 	const shared_ptr<SignalData> sig_data = _session.get_data();
@@ -203,7 +219,8 @@ void View::update_scroll()
 	// Set the vertical scrollbar
 	verticalScrollBar()->setPageStep(areaSize.height());
 	verticalScrollBar()->setRange(0,
-		_viewport->get_total_height() - areaSize.height());
+		_viewport->get_total_height() + SignalMargin -
+		areaSize.height());
 }
 
 void View::reset_signal_layout()
@@ -214,6 +231,8 @@ void View::reset_signal_layout()
 		s->set_v_offset(offset);
 		offset += SignalHeight + 2 * SignalMargin;
 	}
+
+	normalize_layout();
 }
 
 bool View::eventFilter(QObject *object, QEvent *event)

@@ -161,8 +161,10 @@ void Header::mousePressEvent(QMouseEvent *event)
 void Header::mouseReleaseEvent(QMouseEvent *event)
 {
 	assert(event);
-	if(event->button() == Qt::LeftButton)
+	if(event->button() == Qt::LeftButton) {
 		_drag_sigs.clear();
+		_view.normalize_layout();
+	}
 }
 
 void Header::mouseMoveEvent(QMouseEvent *event)

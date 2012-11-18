@@ -105,6 +105,8 @@ public:
 
 	const QPoint& hover_point() const;
 
+	void normalize_layout();
+
 signals:
 	void hover_point_changed();
 
