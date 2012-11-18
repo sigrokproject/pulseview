@@ -32,7 +32,6 @@ using namespace std;
 namespace pv {
 namespace view {
 
-const float LogicSignal::Margin = 10.0f;
 const float LogicSignal::Oversampling = 2.0f;
 
 const QColor LogicSignal::EdgeColour(0x80, 0x80, 0x80);
@@ -73,8 +72,8 @@ void LogicSignal::paint(QPainter &p, const QRect &rect, double scale,
 	assert(scale > 0);
 	assert(_data);
 
-	const float high_offset = rect.top() + Margin + 0.5f;
-	const float low_offset = rect.bottom() - Margin + 0.5f;
+	const float high_offset = rect.top() + 0.5f;
+	const float low_offset = rect.bottom() + 0.5f;
 
 	const deque< shared_ptr<pv::LogicDataSnapshot> > &snapshots =
 		_data->get_snapshots();
@@ -151,7 +150,7 @@ void LogicSignal::paint_caps(QPainter &p, QLineF *const lines,
 
 int LogicSignal::get_nominal_offset(const QRect &rect) const
 {
-	return rect.bottom() - Margin;
+	return rect.bottom();
 }
 
 } // namespace view

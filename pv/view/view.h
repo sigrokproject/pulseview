@@ -54,6 +54,7 @@ private:
 
 public:
 	static const int SignalHeight;
+	static const int SignalMargin;
 	static const int SignalSnapGridSize;
 
 	static const QColor CursorAreaColour;

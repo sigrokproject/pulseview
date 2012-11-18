@@ -34,7 +34,6 @@ namespace view {
 class LogicSignal : public Signal
 {
 private:
-	static const float Margin;
 	static const float Oversampling;
 
 	static const QColor EdgeColour;
