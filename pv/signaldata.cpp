@@ -20,8 +20,6 @@
 
 #include "signaldata.h"
 
-using namespace std;
-
 namespace pv {
 
 SignalData::SignalData(double samplerate) :
