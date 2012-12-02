@@ -44,6 +44,10 @@ SigSession::SigSession()
 
 SigSession::~SigSession()
 {
+	if(_sampling_thread.get())
+		_sampling_thread->join();
+	_sampling_thread.reset();
+
 	// TODO: This should not be necessary
 	_session = NULL;
 }
@@ -60,6 +64,28 @@ void SigSession::load_file(const std::string &name)
 }
 
 void SigSession::start_capture(struct sr_dev_inst *sdi,
+	uint64_t record_length, uint64_t sample_rate)
+{
+	// Check sampling isn't already active
+	if(_sampling_thread.get())
+		_sampling_thread->join();
+
+	_sampling_thread.reset(new boost::thread(
+		&SigSession::sample_thread_proc, this, sdi,
+		record_length, sample_rate));
+}
+
+vector< shared_ptr<view::Signal> >& SigSession::get_signals()
+{
+	return _signals;
+}
+
+boost::shared_ptr<LogicData> SigSession::get_data()
+{
+	return _logic_data;
+}
+
+void SigSession::sample_thread_proc(struct sr_dev_inst *sdi,
 	uint64_t record_length, uint64_t sample_rate)
 {
 	sr_session_new();
@@ -94,16 +120,6 @@ void SigSession::start_capture(struct sr_dev_inst *sdi,
 	sr_session_destroy();
 }
 
-vector< shared_ptr<view::Signal> >& SigSession::get_signals()
-{
-	return _signals;
-}
-
-boost::shared_ptr<LogicData> SigSession::get_data()
-{
-	return _logic_data;
-}
-
 void SigSession::data_feed_in(const struct sr_dev_inst *sdi,
 	struct sr_datafeed_packet *packet)
 {
@@ -114,43 +130,49 @@ void SigSession::data_feed_in(const struct sr_dev_inst *sdi,
 
 	switch (packet->type) {
 	case SR_DF_HEADER:
+	{
+		lock_guard<mutex> lock(_data_mutex);
 		_signals.clear();
 		break;
+	}
 
 	case SR_DF_META_LOGIC:
-		{
-			assert(packet->payload);
+	{
+		assert(packet->payload);
 
-			const sr_datafeed_meta_logic &meta_logic =
-				*(sr_datafeed_meta_logic*)packet->payload;
+		lock_guard<mutex> lock(_data_mutex);
 
-			// Create an empty LogiData for coming data snapshots
-			_logic_data.reset(new LogicData(meta_logic));
-			assert(_logic_data);
-			if(!_logic_data)
-				break;
+		const sr_datafeed_meta_logic &meta_logic =
+			*(sr_datafeed_meta_logic*)packet->payload;
 
-			// Add the signals
-			for (int i = 0; i < meta_logic.num_probes; i++)
-			{
-				const sr_probe *const probe =
-					(const sr_probe*)g_slist_nth_data(
-						sdi->probes, i);
-				if(probe->enabled)
-				{
-					shared_ptr<LogicSignal> signal(
-						new LogicSignal(probe->name,
-							_logic_data,
-							probe->index));
-					_signals.push_back(signal);
-				}
-			}
-
+		// Create an empty LogiData for coming data snapshots
+		_logic_data.reset(new LogicData(meta_logic));
+		assert(_logic_data);
+		if(!_logic_data)
 			break;
+
+		// Add the signals
+		for (int i = 0; i < meta_logic.num_probes; i++)
+		{
+			const sr_probe *const probe =
+				(const sr_probe*)g_slist_nth_data(
+					sdi->probes, i);
+			if(probe->enabled)
+			{
+				shared_ptr<LogicSignal> signal(
+					new LogicSignal(probe->name,
+						_logic_data,
+						probe->index));
+				_signals.push_back(signal);
+			}
 		}
 
-	case SR_DF_LOGIC:
+		break;
+	}
 
+	case SR_DF_LOGIC:
+	{
+		lock_guard<mutex> lock(_data_mutex);
 		assert(packet->payload);
 		if(!_cur_logic_snapshot)
 		{
@@ -168,11 +190,17 @@ void SigSession::data_feed_in(const struct sr_dev_inst *sdi,
 		}
 
 		break;
+	}
 
 	case SR_DF_END:
-		_cur_logic_snapshot.reset();
+	{
+		{
+			lock_guard<mutex> lock(_data_mutex);
+			_cur_logic_snapshot.reset();
+		}
 		data_updated();
 		break;
+	}
 	}
 }
 

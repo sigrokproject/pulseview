@@ -22,8 +22,10 @@
 #define PULSEVIEW_PV_SIGSESSION_H
 
 #include <boost/shared_ptr.hpp>
+#include <boost/thread.hpp>
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <QObject>
@@ -61,6 +63,9 @@ public:
 	boost::shared_ptr<LogicData> get_data();
 
 private:
+	void sample_thread_proc(struct sr_dev_inst *sdi,
+		uint64_t record_length, uint64_t sample_rate);
+
 	void data_feed_in(const struct sr_dev_inst *sdi,
 		struct sr_datafeed_packet *packet);
 
@@ -68,9 +73,12 @@ private:
 		struct sr_datafeed_packet *packet);
 
 private:
+	mutable boost::mutex _data_mutex;
 	std::vector< boost::shared_ptr<view::Signal> > _signals;
 	boost::shared_ptr<LogicData> _logic_data;
 	boost::shared_ptr<LogicDataSnapshot> _cur_logic_snapshot;
+
+	std::auto_ptr<boost::thread> _sampling_thread;
 
 signals:
 	void data_updated();
