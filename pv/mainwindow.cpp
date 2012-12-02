@@ -184,10 +184,18 @@ void MainWindow::on_actionAbout_triggered()
 
 void MainWindow::run_stop()
 {
-	_session.start_capture(
-		_sampling_bar->get_selected_device(),
-		_sampling_bar->get_record_length(),
-		_sampling_bar->get_sample_rate());
+	switch(_session.get_capture_state()) {
+	case SigSession::Stopped:
+		_session.start_capture(
+			_sampling_bar->get_selected_device(),
+			_sampling_bar->get_record_length(),
+			_sampling_bar->get_sample_rate());
+		break;
+
+	case SigSession::Running:
+		_session.stop_capture();
+		break;
+	}
 }
 
 } // namespace pv

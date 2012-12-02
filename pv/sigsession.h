@@ -48,14 +48,24 @@ class SigSession : public QObject
 	Q_OBJECT
 
 public:
+	enum capture_state {
+		Stopped,
+		Running
+	};
+
+public:
 	SigSession();
 
 	~SigSession();
 
 	void load_file(const std::string &name);
 
+	capture_state get_capture_state() const;
+
 	void start_capture(struct sr_dev_inst* sdi, uint64_t record_length,
 		uint64_t sample_rate);
+
+	void stop_capture();
 
 	std::vector< boost::shared_ptr<view::Signal> >
 		get_signals();
@@ -73,6 +83,9 @@ private:
 		struct sr_datafeed_packet *packet);
 
 private:
+	mutable boost::mutex _state_mutex;
+	capture_state _capture_state;
+
 	mutable boost::mutex _signals_mutex;
 	std::vector< boost::shared_ptr<view::Signal> > _signals;
 

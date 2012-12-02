@@ -36,7 +36,8 @@ namespace pv {
 // TODO: This should not be necessary
 SigSession* SigSession::_session = NULL;
 
-SigSession::SigSession()
+SigSession::SigSession() :
+	_capture_state(Stopped)
 {
 	// TODO: This should not be necessary
 	_session = this;
@@ -44,6 +45,8 @@ SigSession::SigSession()
 
 SigSession::~SigSession()
 {
+	stop_capture();
+
 	if(_sampling_thread.get())
 		_sampling_thread->join();
 	_sampling_thread.reset();
@@ -63,16 +66,36 @@ void SigSession::load_file(const std::string &name)
 	}
 }
 
+SigSession::capture_state SigSession::get_capture_state() const
+{
+	lock_guard<mutex> lock(_state_mutex);
+	return _capture_state;
+}
+
 void SigSession::start_capture(struct sr_dev_inst *sdi,
 	uint64_t record_length, uint64_t sample_rate)
 {
-	// Check sampling isn't already active
-	if(_sampling_thread.get())
-		_sampling_thread->join();
+	stop_capture();
+
 
 	_sampling_thread.reset(new boost::thread(
 		&SigSession::sample_thread_proc, this, sdi,
 		record_length, sample_rate));
+}
+
+void SigSession::stop_capture()
+{
+	if(get_capture_state() == Stopped)
+		return;
+
+	sr_session_stop();
+
+	// Check that sampling stopped
+	if(_sampling_thread.get())
+		_sampling_thread->join();
+	_sampling_thread.reset();
+
+	_capture_state = Stopped;
 }
 
 vector< shared_ptr<view::Signal> > SigSession::get_signals()
@@ -115,6 +138,11 @@ void SigSession::sample_thread_proc(struct sr_dev_inst *sdi,
 	if (sr_session_start() != SR_OK) {
 		qDebug() << "Failed to start session.";
 		return;
+	}
+
+	{
+		lock_guard<mutex> lock(_state_mutex);
+		_capture_state = Running;
 	}
 
 	sr_session_run();
