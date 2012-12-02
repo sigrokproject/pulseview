@@ -75,8 +75,9 @@ void SigSession::start_capture(struct sr_dev_inst *sdi,
 		record_length, sample_rate));
 }
 
-vector< shared_ptr<view::Signal> >& SigSession::get_signals()
+vector< shared_ptr<view::Signal> > SigSession::get_signals()
 {
+	lock_guard<mutex> lock(_signals_mutex);
 	return _signals;
 }
 
@@ -131,7 +132,7 @@ void SigSession::data_feed_in(const struct sr_dev_inst *sdi,
 	switch (packet->type) {
 	case SR_DF_HEADER:
 	{
-		lock_guard<mutex> lock(_data_mutex);
+		lock_guard<mutex> lock(_signals_mutex);
 		_signals.clear();
 		break;
 	}
@@ -139,17 +140,21 @@ void SigSession::data_feed_in(const struct sr_dev_inst *sdi,
 	case SR_DF_META_LOGIC:
 	{
 		assert(packet->payload);
-
-		lock_guard<mutex> lock(_data_mutex);
-
 		const sr_datafeed_meta_logic &meta_logic =
 			*(sr_datafeed_meta_logic*)packet->payload;
+
+	{
+		lock_guard<mutex> lock(_data_mutex);
 
 		// Create an empty LogiData for coming data snapshots
 		_logic_data.reset(new LogicData(meta_logic));
 		assert(_logic_data);
 		if(!_logic_data)
 			break;
+	}
+
+	{
+		lock_guard<mutex> lock(_signals_mutex);
 
 		// Add the signals
 		for (int i = 0; i < meta_logic.num_probes; i++)
@@ -169,6 +174,7 @@ void SigSession::data_feed_in(const struct sr_dev_inst *sdi,
 
 		signals_changed();
 		break;
+	}
 	}
 
 	case SR_DF_LOGIC:

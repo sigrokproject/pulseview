@@ -57,7 +57,7 @@ public:
 	void start_capture(struct sr_dev_inst* sdi, uint64_t record_length,
 		uint64_t sample_rate);
 
-	std::vector< boost::shared_ptr<view::Signal> >&
+	std::vector< boost::shared_ptr<view::Signal> >
 		get_signals();
 
 	boost::shared_ptr<LogicData> get_data();
@@ -73,8 +73,10 @@ private:
 		struct sr_datafeed_packet *packet);
 
 private:
-	mutable boost::mutex _data_mutex;
+	mutable boost::mutex _signals_mutex;
 	std::vector< boost::shared_ptr<view::Signal> > _signals;
+
+	mutable boost::mutex _data_mutex;
 	boost::shared_ptr<LogicData> _logic_data;
 	boost::shared_ptr<LogicDataSnapshot> _cur_logic_snapshot;
 

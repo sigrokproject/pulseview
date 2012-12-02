@@ -49,8 +49,9 @@ Viewport::Viewport(View &parent) :
 int Viewport::get_total_height() const
 {
 	int h = 0;
-	BOOST_FOREACH(const shared_ptr<Signal> s,
-		_view.session().get_signals()) {
+	const vector< shared_ptr<Signal> > sigs(
+		_view.session().get_signals());
+	BOOST_FOREACH(const shared_ptr<Signal> s, sigs) {
 		assert(s);
 		h = max(s->get_v_offset() + View::SignalHeight, h);
 	}
@@ -60,8 +61,8 @@ int Viewport::get_total_height() const
 
 void Viewport::paintEvent(QPaintEvent *event)
 {
-	const vector< shared_ptr<Signal> > &sigs =
-		_view.session().get_signals();
+	const vector< shared_ptr<Signal> > sigs(
+		_view.session().get_signals());
 
 	QPainter p(this);
 	p.setRenderHint(QPainter::Antialiasing);

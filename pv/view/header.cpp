@@ -63,8 +63,8 @@ boost::shared_ptr<pv::view::Signal> Header::get_mouse_over_signal(
 	const QPoint &pt)
 {
 	const int w = width();
-	const vector< shared_ptr<Signal> > &sigs =
-		_view.session().get_signals();
+	const vector< shared_ptr<Signal> > sigs(
+		_view.session().get_signals());
 
 	const int v_offset = _view.v_offset();
 	BOOST_FOREACH(const shared_ptr<Signal> s, sigs)
@@ -85,8 +85,8 @@ boost::shared_ptr<pv::view::Signal> Header::get_mouse_over_signal(
 void Header::paintEvent(QPaintEvent *event)
 {
 	const int w = width();
-	const vector< shared_ptr<Signal> > &sigs =
-		_view.session().get_signals();
+	const vector< shared_ptr<Signal> > sigs(
+		_view.session().get_signals());
 
 	QPainter painter(this);
 	painter.setRenderHint(QPainter::Antialiasing);
@@ -113,8 +113,8 @@ void Header::mousePressEvent(QMouseEvent *event)
 {
 	assert(event);
 
-	const vector< shared_ptr<Signal> > &sigs =
-		_view.session().get_signals();
+	const vector< shared_ptr<Signal> > sigs(
+		_view.session().get_signals());
 
 	if(event->button() & Qt::LeftButton) {
 		_mouse_down_point = event->pos();

@@ -173,7 +173,7 @@ const QPoint& View::hover_point() const
 
 void View::normalize_layout()
 {
-	vector< shared_ptr<Signal> > &sigs = _session.get_signals();
+	const vector< shared_ptr<Signal> > sigs(_session.get_signals());
 
 	int v_min = INT_MAX;
 	BOOST_FOREACH(const shared_ptr<Signal> s, sigs)
@@ -229,7 +229,7 @@ void View::update_scroll()
 void View::reset_signal_layout()
 {
 	int offset = SignalMargin;
-	vector< shared_ptr<Signal> > &sigs = _session.get_signals();
+	const vector< shared_ptr<Signal> > sigs(_session.get_signals());
 	BOOST_FOREACH(shared_ptr<Signal> s, sigs) {
 		s->set_v_offset(offset);
 		offset += SignalHeight + 2 * SignalMargin;
