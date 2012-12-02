@@ -196,6 +196,7 @@ void SigSession::data_feed_in(const struct sr_dev_inst *sdi,
 				*(sr_datafeed_logic*)packet->payload);
 		}
 
+		data_updated();
 		break;
 	}
 
