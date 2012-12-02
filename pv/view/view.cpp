@@ -79,6 +79,9 @@ View::View(SigSession &session, QWidget *parent) :
 		this, SLOT(h_scroll_value_changed(int)));
 	connect(verticalScrollBar(), SIGNAL(valueChanged(int)),
 		this, SLOT(v_scroll_value_changed(int)));
+
+	connect(&_session, SIGNAL(signals_changed()),
+		this, SLOT(signals_changed()));
 	connect(&_session, SIGNAL(data_updated()),
 		this, SLOT(data_updated()));
 
@@ -307,6 +310,11 @@ void View::v_scroll_value_changed(int value)
 	_viewport->update();
 }
 
+void View::signals_changed()
+{
+	reset_signal_layout();
+}
+
 void View::data_updated()
 {
 	// Get the new data length
@@ -326,9 +334,6 @@ void View::data_updated()
 
 	// Repaint the view
 	_viewport->update();
-
-	/// @todo: Call this only once when the signals are first created.
-	reset_signal_layout();
 }
 
 void View::marker_time_changed()

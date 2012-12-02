@@ -131,6 +131,7 @@ private slots:
 	void h_scroll_value_changed(int value);
 	void v_scroll_value_changed(int value);
 
+	void signals_changed();
 	void data_updated();
 
 	void marker_time_changed();

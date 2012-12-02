@@ -81,6 +81,8 @@ private:
 	std::auto_ptr<boost::thread> _sampling_thread;
 
 signals:
+	void signals_changed();
+
 	void data_updated();
 
 private:

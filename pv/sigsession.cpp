@@ -167,6 +167,7 @@ void SigSession::data_feed_in(const struct sr_dev_inst *sdi,
 			}
 		}
 
+		signals_changed();
 		break;
 	}
 
