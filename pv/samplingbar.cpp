@@ -68,7 +68,7 @@ SamplingBar::SamplingBar(QWidget *parent) :
 		g_free(text);
 	}
 
-	_run_stop_button.setText("Run");
+	set_sampling(false);
 
 	addWidget(&_device_selector);
 	addWidget(&_record_length_selector);
@@ -116,6 +116,11 @@ uint64_t SamplingBar::get_sample_rate() const
 	}
 
 	return 0;
+}
+
+void SamplingBar::set_sampling(bool sampling)
+{
+	_run_stop_button.setText(sampling ? "Stop" : "Run");
 }
 
 void SamplingBar::update_device_selector()

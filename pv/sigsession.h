@@ -73,6 +73,9 @@ public:
 	boost::shared_ptr<LogicData> get_data();
 
 private:
+	void set_capture_state(capture_state state);
+
+private:
 	void sample_thread_proc(struct sr_dev_inst *sdi,
 		uint64_t record_length, uint64_t sample_rate);
 
@@ -96,6 +99,8 @@ private:
 	std::auto_ptr<boost::thread> _sampling_thread;
 
 signals:
+	void capture_state_changed(int state);
+
 	void signals_changed();
 
 	void data_updated();

@@ -87,6 +87,8 @@ private slots:
 	void on_actionAbout_triggered();
 
 	void run_stop();
+
+	void capture_state_changed(int state);
 };
 
 } // namespace pv

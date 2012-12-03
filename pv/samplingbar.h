@@ -46,6 +46,8 @@ public:
 	uint64_t get_record_length() const;
 	uint64_t get_sample_rate() const;
 
+	void set_sampling(bool sampling);
+
 signals:
 	void run_stop();
 

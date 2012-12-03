@@ -150,6 +150,11 @@ void MainWindow::setup_ui()
 	_menu_file->setTitle(QApplication::translate("MainWindow", "&File", 0, QApplication::UnicodeUTF8));
 	_menu_view->setTitle(QApplication::translate("MainWindow", "&View", 0, QApplication::UnicodeUTF8));
 	_menu_help->setTitle(QApplication::translate("MainWindow", "&Help", 0, QApplication::UnicodeUTF8));
+
+	// Setup _session events
+	connect(&_session, SIGNAL(capture_state_changed(int)), this,
+		SLOT(capture_state_changed(int)));
+
 }
 
 void MainWindow::on_actionOpen_triggered()
@@ -196,6 +201,11 @@ void MainWindow::run_stop()
 		_session.stop_capture();
 		break;
 	}
+}
+
+void MainWindow::capture_state_changed(int state)
+{
+	_sampling_bar->set_sampling(state != SigSession::Stopped);
 }
 
 } // namespace pv

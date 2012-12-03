@@ -94,8 +94,6 @@ void SigSession::stop_capture()
 	if(_sampling_thread.get())
 		_sampling_thread->join();
 	_sampling_thread.reset();
-
-	_capture_state = Stopped;
 }
 
 vector< shared_ptr<view::Signal> > SigSession::get_signals()
@@ -107,6 +105,13 @@ vector< shared_ptr<view::Signal> > SigSession::get_signals()
 boost::shared_ptr<LogicData> SigSession::get_data()
 {
 	return _logic_data;
+}
+
+void SigSession::set_capture_state(capture_state state)
+{
+	lock_guard<mutex> lock(_state_mutex);
+	_capture_state = state;
+	capture_state_changed(state);
 }
 
 void SigSession::sample_thread_proc(struct sr_dev_inst *sdi,
@@ -140,13 +145,12 @@ void SigSession::sample_thread_proc(struct sr_dev_inst *sdi,
 		return;
 	}
 
-	{
-		lock_guard<mutex> lock(_state_mutex);
-		_capture_state = Running;
-	}
+	set_capture_state(Running);
 
 	sr_session_run();
 	sr_session_destroy();
+
+	set_capture_state(Stopped);
 }
 
 void SigSession::data_feed_in(const struct sr_dev_inst *sdi,
