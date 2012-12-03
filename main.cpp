@@ -98,7 +98,7 @@ int main(int argc, char *argv[])
 		// Initialize all libsigrok drivers
 		sr_dev_driver **const drivers = sr_driver_list();
 		for (sr_dev_driver **driver = drivers; *driver; driver++) {
-			if (sr_driver_init(*driver) != SR_OK) {
+			if (sr_driver_init(sr_ctx, *driver) != SR_OK) {
 				qDebug("Failed to initialize driver %s",
 					(*driver)->name);
 				ret = 1;
