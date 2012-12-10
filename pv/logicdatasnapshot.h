@@ -68,9 +68,9 @@ private:
 
 	void append_payload_to_mipmap();
 
-public:
 	uint64_t get_sample(uint64_t index) const;
 
+public:
 	/**
 	 * Parses a logic data snapshot to generate a list of transitions
 	 * in a time interval to a given level of detail.
