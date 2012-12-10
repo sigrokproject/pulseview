@@ -29,6 +29,7 @@
 
 #include "logicdatasnapshot.h"
 
+using namespace boost;
 using namespace std;
 
 namespace pv {
@@ -43,12 +44,14 @@ LogicDataSnapshot::LogicDataSnapshot(
 	DataSnapshot(logic.unitsize),
 	_last_append_sample(0)
 {
+	lock_guard<recursive_mutex> lock(_mutex);
 	memset(_mip_map, 0, sizeof(_mip_map));
 	append_payload(logic);
 }
 
 LogicDataSnapshot::~LogicDataSnapshot()
 {
+	lock_guard<recursive_mutex> lock(_mutex);
 	BOOST_FOREACH(MipMapLevel &l, _mip_map)
 		free(l.data);
 }
@@ -57,6 +60,8 @@ void LogicDataSnapshot::append_payload(
 	const sr_datafeed_logic &logic)
 {
 	assert(_unit_size == logic.unitsize);
+
+	lock_guard<recursive_mutex> lock(_mutex);
 
 	append_data(logic.data, logic.length);
 
@@ -183,6 +188,8 @@ void LogicDataSnapshot::get_subsampled_edges(
 	assert(min_length > 0);
 	assert(sig_index >= 0);
 	assert(sig_index < SR_MAX_NUM_PROBES);
+
+	lock_guard<recursive_mutex> lock(_mutex);
 
 	const uint64_t block_length = (uint64_t)max(min_length, 1.0f);
 	const unsigned int min_level = max((int)floorf(logf(min_length) /

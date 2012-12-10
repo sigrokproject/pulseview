@@ -24,6 +24,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+using namespace boost;
+
 namespace pv {
 
 DataSnapshot::DataSnapshot(int unit_size) :
@@ -31,21 +33,25 @@ DataSnapshot::DataSnapshot(int unit_size) :
 	_sample_count(0),
 	_unit_size(unit_size)
 {
+	lock_guard<recursive_mutex> lock(_mutex);
 	assert(_unit_size > 0);
 }
 
 DataSnapshot::~DataSnapshot()
 {
+	lock_guard<recursive_mutex> lock(_mutex);
 	free(_data);
 }
 
 uint64_t DataSnapshot::get_sample_count()
 {
+	lock_guard<recursive_mutex> lock(_mutex);
 	return _sample_count;
 }
 
 void DataSnapshot::append_data(void *data, uint64_t samples)
 {
+	lock_guard<recursive_mutex> lock(_mutex);
 	_data = realloc(_data, (_sample_count + samples) * _unit_size);
 	memcpy((uint8_t*)_data + _sample_count * _unit_size,
 		data, samples * _unit_size);

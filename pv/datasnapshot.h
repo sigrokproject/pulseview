@@ -25,6 +25,8 @@ extern "C" {
 #include <libsigrok/libsigrok.h>
 }
 
+#include <boost/thread.hpp>
+
 namespace pv {
 
 class DataSnapshot
@@ -40,6 +42,7 @@ protected:
 	void append_data(void *data, uint64_t samples);
 
 protected:
+	mutable boost::recursive_mutex _mutex;
 	void *_data;
 	uint64_t _sample_count;
 	int _unit_size;
