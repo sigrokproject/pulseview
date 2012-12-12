@@ -76,6 +76,8 @@ private:
 	void set_capture_state(capture_state state);
 
 private:
+	void load_thread_proc(const std::string name);
+
 	void sample_thread_proc(struct sr_dev_inst *sdi,
 		uint64_t record_length, uint64_t sample_rate);
 

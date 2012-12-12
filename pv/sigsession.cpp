@@ -55,15 +55,11 @@ SigSession::~SigSession()
 	_session = NULL;
 }
 
-void SigSession::load_file(const std::string &name)
+void SigSession::load_file(const string &name)
 {
-	if (sr_session_load(name.c_str()) == SR_OK) {
-		/* sigrok session file */
-		sr_session_datafeed_callback_add(data_feed_in_proc);
-		sr_session_start();
-		sr_session_run();
-		sr_session_stop();
-	}
+	stop_capture();
+	_sampling_thread.reset(new boost::thread(
+		&SigSession::load_thread_proc, this, name));
 }
 
 SigSession::capture_state SigSession::get_capture_state() const
@@ -112,6 +108,28 @@ void SigSession::set_capture_state(capture_state state)
 	lock_guard<mutex> lock(_state_mutex);
 	_capture_state = state;
 	capture_state_changed(state);
+}
+
+void SigSession::load_thread_proc(const string name)
+{
+	if (sr_session_load(name.c_str()) != SR_OK) {
+		qDebug() << "Failed to load file.";
+		return;
+	}
+
+	sr_session_datafeed_callback_add(data_feed_in_proc);
+
+	if (sr_session_start() != SR_OK) {
+		qDebug() << "Failed to start session.";
+		return;
+	}
+
+	set_capture_state(Running);
+
+	sr_session_run();
+	sr_session_stop();
+
+	set_capture_state(Stopped);
 }
 
 void SigSession::sample_thread_proc(struct sr_dev_inst *sdi,
