@@ -98,7 +98,7 @@ void Viewport::mouseMoveEvent(QMouseEvent *event)
 {
 	assert(event);
 
-	if(event->buttons() & Qt::LeftButton)
+	if (event->buttons() & Qt::LeftButton)
 	{
 		_view.set_scale_offset(_view.scale(),
 			_mouse_down_offset +
@@ -120,7 +120,7 @@ void Viewport::wheelEvent(QWheelEvent *event)
 
 void Viewport::draw_cursors_background(QPainter &p)
 {
-	if(!_view.cursors_shown())
+	if (!_view.cursors_shown())
 		return;
 
 	p.setPen(Qt::NoPen);
@@ -137,7 +137,7 @@ void Viewport::draw_cursors_background(QPainter &p)
 
 void Viewport::draw_cursors_foreground(QPainter &p)
 {
-	if(!_view.cursors_shown())
+	if (!_view.cursors_shown())
 		return;
 
 	const QRect r = rect();

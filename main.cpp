@@ -60,8 +60,8 @@ int main(int argc, char *argv[])
 	// Parse arguments
 	while (1) {
 		static const struct option long_options[] = {
-			{"version", no_argument, 0,  'V'},
-			{"help", no_argument, 0,  'h'},
+			{"version", no_argument, 0, 'V'},
+			{"help", no_argument, 0, 'h'},
 			{0, 0, 0, 0}
 		};
 
@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
 			}
 		}
 
-		if(ret == 0) {
+		if (ret == 0) {
 			// Initialise the main window
 			pv::MainWindow w;
 			w.show();

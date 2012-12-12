@@ -75,7 +75,7 @@ boost::shared_ptr<pv::view::Signal> Header::get_mouse_over_signal(
 			0, s->get_v_offset() - v_offset,
 			w, View::SignalHeight);
 
-		if(s->pt_in_label_rect(signal_heading_rect, pt))
+		if (s->pt_in_label_rect(signal_heading_rect, pt))
 			return s;
 	}
 
@@ -116,12 +116,12 @@ void Header::mousePressEvent(QMouseEvent *event)
 	const vector< shared_ptr<Signal> > sigs(
 		_view.session().get_signals());
 
-	if(event->button() & Qt::LeftButton) {
+	if (event->button() & Qt::LeftButton) {
 		_mouse_down_point = event->pos();
 
 		// Save the offsets of any signals which will be dragged
 		BOOST_FOREACH(const shared_ptr<Signal> s, sigs)
-			if(s->selected())
+			if (s->selected())
 				_drag_sigs.push_back(
 					make_pair(s, s->get_v_offset()));
 	}
@@ -129,29 +129,29 @@ void Header::mousePressEvent(QMouseEvent *event)
 	// Select the signal if it has been clicked
 	const shared_ptr<Signal> mouse_over_signal =
 		get_mouse_over_signal(event->pos());
-	if(mouse_over_signal) {
-		if(mouse_over_signal->selected())
+	if (mouse_over_signal) {
+		if (mouse_over_signal->selected())
 			mouse_over_signal->select(false);
 		else {
 			mouse_over_signal->select(true);
 
-			if(~QApplication::keyboardModifiers() &
+			if (~QApplication::keyboardModifiers() &
 				Qt::ControlModifier)
 				_drag_sigs.clear();
 
 			// Add the signal to the drag list
-			if(event->button() & Qt::LeftButton)
+			if (event->button() & Qt::LeftButton)
 				_drag_sigs.push_back(
 					make_pair(mouse_over_signal,
 					mouse_over_signal->get_v_offset()));
 		}
 	}
 
-	if(~QApplication::keyboardModifiers() & Qt::ControlModifier) {
+	if (~QApplication::keyboardModifiers() & Qt::ControlModifier) {
 		// Unselect all other signals because the Ctrl is not
 		// pressed
 		BOOST_FOREACH(const shared_ptr<Signal> s, sigs)
-			if(s != mouse_over_signal)
+			if (s != mouse_over_signal)
 				s->select(false);
 	}
 
@@ -161,7 +161,7 @@ void Header::mousePressEvent(QMouseEvent *event)
 void Header::mouseReleaseEvent(QMouseEvent *event)
 {
 	assert(event);
-	if(event->button() == Qt::LeftButton) {
+	if (event->button() == Qt::LeftButton) {
 		_drag_sigs.clear();
 		_view.normalize_layout();
 	}
@@ -173,14 +173,14 @@ void Header::mouseMoveEvent(QMouseEvent *event)
 	_mouse_point = event->pos();
 
 	// Move the signals if we are dragging
-	if(!_drag_sigs.empty()) {
+	if (!_drag_sigs.empty()) {
 		const int delta = event->pos().y() - _mouse_down_point.y();
 
-		for(std::list<std::pair<boost::weak_ptr<Signal>,
+		for (std::list<std::pair<boost::weak_ptr<Signal>,
 			int> >::iterator i = _drag_sigs.begin();
 			i != _drag_sigs.end(); i++) {
 			const boost::shared_ptr<Signal> sig((*i).first);
-			if(sig) {
+			if (sig) {
 				const int y = (*i).second + delta;
 				const int y_snap =
 					((y + View::SignalSnapGridSize / 2) /
@@ -210,7 +210,7 @@ void Header::contextMenuEvent(QContextMenuEvent *event)
 {
 	const shared_ptr<Signal> s = get_mouse_over_signal(_mouse_point);
 
-	if(!s)
+	if (!s)
 		return;
 
 	QMenu menu(this);
@@ -225,26 +225,26 @@ void Header::contextMenuEvent(QContextMenuEvent *event)
 void Header::on_action_set_name_triggered()
 {
 	shared_ptr<view::Signal> context_signal = _context_signal;
-	if(!context_signal)
+	if (!context_signal)
 		return;
 
 	const QString new_label = QInputDialog::getText(this, tr("Set Name"),
 		tr("Name"), QLineEdit::Normal, context_signal->get_name());
 
-	if(!new_label.isEmpty())
+	if (!new_label.isEmpty())
 		context_signal->set_name(new_label);
 }
 
 void Header::on_action_set_colour_triggered()
 {
 	shared_ptr<view::Signal> context_signal = _context_signal;
-	if(!context_signal)
+	if (!context_signal)
 		return;
 
 	const QColor new_colour = QColorDialog::getColor(
 		context_signal->get_colour(), this, tr("Set Colour"));
 
-	if(new_colour.isValid())
+	if (new_colour.isValid())
 		context_signal->set_colour(new_colour);
 }
 

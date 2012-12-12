@@ -73,7 +73,7 @@ void LogicDataSnapshot::reallocate_mip_map(MipMapLevel &m)
 {
 	const uint64_t new_data_length = ((m.length + MipMapDataUnit - 1) /
 		MipMapDataUnit) * MipMapDataUnit;
-	if(new_data_length > m.data_length)
+	if (new_data_length > m.data_length)
 	{
 		m.data_length = new_data_length;
 		m.data = realloc(m.data, new_data_length * _unit_size);
@@ -94,7 +94,7 @@ void LogicDataSnapshot::append_payload_to_mipmap()
 	m0.length = _sample_count / MipMapScaleFactor;
 
 	// Break off if there are no new samples to compute
-	if(m0.length == prev_length)
+	if (m0.length == prev_length)
 		return;
 
 	reallocate_mip_map(m0);
@@ -106,14 +106,14 @@ void LogicDataSnapshot::append_payload_to_mipmap()
 	diff_counter = MipMapScaleFactor;
 	const uint8_t *end_src_ptr = (uint8_t*)_data +
 		m0.length * _unit_size * MipMapScaleFactor;
-	for(src_ptr = (uint8_t*)_data +
+	for (src_ptr = (uint8_t*)_data +
 		prev_length * _unit_size * MipMapScaleFactor;
 		src_ptr < end_src_ptr;)
 	{
 		// Accumulate transitions which have occurred in this sample
 		accumulator = 0;
 		diff_counter = MipMapScaleFactor;
-		while(diff_counter-- > 0)
+		while (diff_counter-- > 0)
 		{
 			const uint64_t sample = *(uint64_t*)src_ptr;
 			accumulator |= _last_append_sample ^ sample;
@@ -126,7 +126,7 @@ void LogicDataSnapshot::append_payload_to_mipmap()
 	}
 
 	// Compute higher level mipmaps
-	for(unsigned int level = 1; level < ScaleStepCount; level++)
+	for (unsigned int level = 1; level < ScaleStepCount; level++)
 	{
 		MipMapLevel &m = _mip_map[level];
 		const MipMapLevel &ml = _mip_map[level-1];
@@ -136,7 +136,7 @@ void LogicDataSnapshot::append_payload_to_mipmap()
 		m.length = ml.length / MipMapScaleFactor;
 
 		// Break off if there are no more samples to computed
-		if(m.length == prev_length)
+		if (m.length == prev_length)
 			break;
 
 		reallocate_mip_map(m);
@@ -146,14 +146,14 @@ void LogicDataSnapshot::append_payload_to_mipmap()
 			_unit_size * prev_length * MipMapScaleFactor;
 		const uint8_t *end_dest_ptr =
 			(uint8_t*)m.data + _unit_size * m.length;
-		for(dest_ptr = (uint8_t*)m.data +
+		for (dest_ptr = (uint8_t*)m.data +
 			_unit_size * prev_length;
 			dest_ptr < end_dest_ptr;
 			dest_ptr += _unit_size)
 		{
 			accumulator = 0;
 			diff_counter = MipMapScaleFactor;
-			while(diff_counter-- > 0)
+			while (diff_counter-- > 0)
 			{
 				accumulator |= *(uint64_t*)src_ptr;
 				src_ptr += _unit_size;
@@ -200,20 +200,20 @@ void LogicDataSnapshot::get_subsampled_edges(
 	last_sample = (get_sample(start) & sig_mask) != 0;
 	edges.push_back(pair<int64_t, bool>(index++, last_sample));
 
-	while(index + block_length <= end)
+	while (index + block_length <= end)
 	{
 		//----- Continue to search -----//
 		level = min_level;
 		fast_forward = true;
 
-		if(min_length < MipMapScaleFactor)
+		if (min_length < MipMapScaleFactor)
 		{
 			// Search individual samples up to the beginning of
 			// the next first level mip map block
 			const uint64_t final_index = min(end,
 				pow2_ceil(index, MipMapScalePower));
 
-			for(; index < final_index &&
+			for (; index < final_index &&
 				(index & ~(~0 << MipMapScalePower)) != 0;
 				index++)
 			{
@@ -221,7 +221,7 @@ void LogicDataSnapshot::get_subsampled_edges(
 					(get_sample(index) & sig_mask) != 0;
 
 				// If there was a change we cannot fast forward
-				if(sample != last_sample) {
+				if (sample != last_sample) {
 					fast_forward = false;
 					break;
 				}
@@ -235,7 +235,7 @@ void LogicDataSnapshot::get_subsampled_edges(
 			const int min_level_scale_power =
 				(level + 1) * MipMapScalePower;
 			index = pow2_ceil(index, min_level_scale_power);
-			if(index >= end)
+			if (index >= end)
 				break;
 
 			// We can fast forward only if there was no change
@@ -244,7 +244,7 @@ void LogicDataSnapshot::get_subsampled_edges(
 			fast_forward = last_sample == sample;
 		}
 
-		if(fast_forward) {
+		if (fast_forward) {
 
 			// Fast forward: This involves zooming out to higher
 			// levels of the mip map searching for changes, then
@@ -253,7 +253,7 @@ void LogicDataSnapshot::get_subsampled_edges(
 
 			// Slide right and zoom out at the beginnings of mip-map
 			// blocks until we encounter a change
-			while(1) {
+			while (1) {
 				const int level_scale_power =
 					(level + 1) * MipMapScalePower;
 				const uint64_t offset =
@@ -262,16 +262,16 @@ void LogicDataSnapshot::get_subsampled_edges(
 
 				// Check if we reached the last block at this
 				// level, or if there was a change in this block
-				if(offset >= _mip_map[level].length ||
+				if (offset >= _mip_map[level].length ||
 					(get_subsample(level, offset) &
 						sig_mask))
 					break;
 
-				if((offset & ~(~0 << MipMapScalePower)) == 0) {
+				if ((offset & ~(~0 << MipMapScalePower)) == 0) {
 					// If we are now at the beginning of a
 					// higher level mip-map block ascend one
 					// level
-					if(level + 1 >= ScaleStepCount ||
+					if (level + 1 >= ScaleStepCount ||
 						!_mip_map[level + 1].data)
 						break;
 
@@ -286,7 +286,7 @@ void LogicDataSnapshot::get_subsampled_edges(
 
 			// Zoom in, and slide right until we encounter a change,
 			// and repeat until we reach min_level
-			while(1) {
+			while (1) {
 				assert(_mip_map[level].data);
 
 				const int level_scale_power =
@@ -297,12 +297,12 @@ void LogicDataSnapshot::get_subsampled_edges(
 
 				// Check if we reached the last block at this
 				// level, or if there was a change in this block
-				if(offset >= _mip_map[level].length ||
+				if (offset >= _mip_map[level].length ||
 					(get_subsample(level, offset) &
 						sig_mask)) {
 					// Zoom in unless we reached the minimum
 					// zoom
-					if(level == min_level)
+					if (level == min_level)
 						break;
 
 					level--;
@@ -317,11 +317,11 @@ void LogicDataSnapshot::get_subsampled_edges(
 			// If individual samples within the limit of resolution,
 			// do a linear search for the next transition within the
 			// block
-			if(min_length < MipMapScaleFactor) {
-				for(; index < end; index++) {
+			if (min_length < MipMapScaleFactor) {
+				for (; index < end; index++) {
 					const bool sample = (get_sample(index) &
 						sig_mask) != 0;
-					if(sample != last_sample)
+					if (sample != last_sample)
 						break;
 				}
 			}
@@ -331,7 +331,7 @@ void LogicDataSnapshot::get_subsampled_edges(
 
 		// Take the last sample of the quanization block
 		const int64_t final_index = index + block_length;
-		if(index + block_length > end)
+		if (index + block_length > end)
 			break;
 
 		// Store the final state

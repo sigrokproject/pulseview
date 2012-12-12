@@ -105,7 +105,7 @@ void Signal::paint_label(QPainter &p, const QRect &rect, bool hover)
 		QPointF(label_rect.left() + 1, label_rect.bottom() - 1)
 	};
 
-	if(_selected) {
+	if (_selected) {
 		p.setPen(QPen(QApplication::palette().brush(
 			QPalette::Highlight), LabelHighlightRadius,
 			Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));

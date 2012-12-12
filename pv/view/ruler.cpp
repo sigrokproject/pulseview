@@ -76,7 +76,7 @@ void Ruler::paintEvent(QPaintEvent *event)
 	do
 	{
 		tick_period = order_decimal * ScaleUnits[unit++];
-	} while(tick_period < min_period && unit < countof(ScaleUnits));
+	} while (tick_period < min_period && unit < countof(ScaleUnits));
 
 	const unsigned int prefix = (order - FirstSIPrefixPower) / 3;
 	assert(prefix >= 0);
@@ -99,15 +99,15 @@ void Ruler::paintEvent(QPaintEvent *event)
 
 	int division = (int)round(first_minor_division -
 		first_major_division * MinorTickSubdivision);
-	while(1)
+	while (1)
 	{
 		const double t = t0 + division * minor_tick_period;
 		const double x = (t - _view.offset()) / _view.scale();
 
-		if(x >= width())
+		if (x >= width())
 			break;
 
-		if(division % MinorTickSubdivision == 0)
+		if (division % MinorTickSubdivision == 0)
 		{
 			// Draw a major tick
 			QString s;
@@ -139,7 +139,7 @@ void Ruler::paintEvent(QPaintEvent *event)
 
 void Ruler::mouseMoveEvent(QMouseEvent *e)
 {
-	if(!_grabbed_marker)
+	if (!_grabbed_marker)
 		return;
 
 	_grabbed_marker->set_time(_view.offset() +
@@ -148,16 +148,16 @@ void Ruler::mouseMoveEvent(QMouseEvent *e)
 
 void Ruler::mousePressEvent(QMouseEvent *e)
 {
-	if(e->buttons() & Qt::LeftButton) {
+	if (e->buttons() & Qt::LeftButton) {
 		_grabbed_marker = NULL;
 
-		if(_view.cursors_shown()) {
+		if (_view.cursors_shown()) {
 			std::pair<Cursor, Cursor> &cursors =
 				_view.cursors();
-			if(cursors.first.get_label_rect(
+			if (cursors.first.get_label_rect(
 				rect()).contains(e->pos()))
 				_grabbed_marker = &cursors.first;
-			else if(cursors.second.get_label_rect(
+			else if (cursors.second.get_label_rect(
 				rect()).contains(e->pos()))
 				_grabbed_marker = &cursors.second;
 		}
@@ -171,7 +171,7 @@ void Ruler::mouseReleaseEvent(QMouseEvent *)
 
 void Ruler::draw_cursors(QPainter &p)
 {
-	if(!_view.cursors_shown())
+	if (!_view.cursors_shown())
 		return;
 
 	const QRect r = rect();
@@ -183,7 +183,8 @@ void Ruler::draw_cursors(QPainter &p)
 void Ruler::draw_hover_mark(QPainter &p)
 {
 	const int x = _view.hover_point().x();
-	if(x == -1 || _grabbed_marker)
+
+	if (x == -1 || _grabbed_marker)
 		return;
 
 	p.setPen(QPen(Qt::NoPen));

@@ -190,7 +190,7 @@ void View::normalize_layout()
 void View::get_scroll_layout(double &length, double &offset) const
 {
 	const shared_ptr<SignalData> sig_data = _session.get_data();
-	if(!sig_data)
+	if (!sig_data)
 		return;
 
 	length = _data_length / (sig_data->get_samplerate() * _scale);
@@ -210,7 +210,7 @@ void View::update_scroll()
 
 	horizontalScrollBar()->setPageStep(areaSize.width());
 
-	if(length < MaxScrollValue) {
+	if (length < MaxScrollValue) {
 		horizontalScrollBar()->setRange(0, length);
 		horizontalScrollBar()->setSliderPosition(offset);
 	} else {
@@ -241,21 +241,21 @@ void View::reset_signal_layout()
 bool View::eventFilter(QObject *object, QEvent *event)
 {
 	const QEvent::Type type = event->type();
-	if(type == QEvent::MouseMove) {
+	if (type == QEvent::MouseMove) {
 
 		const QMouseEvent *const mouse_event = (QMouseEvent*)event;
-		if(object == _viewport)
+		if (object == _viewport)
 			_hover_point = mouse_event->pos();
-		else if(object == _ruler)
+		else if (object == _ruler)
 			_hover_point = QPoint(mouse_event->x(), 0);
-		else if(object == _header)
+		else if (object == _header)
 			_hover_point = QPoint(0, mouse_event->y());
 		else
 			_hover_point = QPoint(-1, -1);
 
 		hover_point_changed();
 
-	} else if(type == QEvent::Leave) {
+	} else if (type == QEvent::Leave) {
 		_hover_point = QPoint(-1, -1);
 		hover_point_changed();
 	}
@@ -291,7 +291,7 @@ void View::resizeEvent(QResizeEvent *e)
 void View::h_scroll_value_changed(int value)
 {
 	const int range = horizontalScrollBar()->maximum();
-	if(range < MaxScrollValue)
+	if (range < MaxScrollValue)
 		_offset = _scale * value;
 	else {
 		double length = 0, offset;
@@ -320,11 +320,11 @@ void View::data_updated()
 	// Get the new data length
 	_data_length = 0;
 	shared_ptr<LogicData> sig_data = _session.get_data();
-	if(sig_data) {
+	if (sig_data) {
 		deque< shared_ptr<LogicDataSnapshot> > &snapshots =
 			sig_data->get_snapshots();
 		BOOST_FOREACH(shared_ptr<LogicDataSnapshot> s, snapshots)
-			if(s)
+			if (s)
 				_data_length = max(_data_length,
 					s->get_sample_count());
 	}

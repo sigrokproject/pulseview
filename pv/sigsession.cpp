@@ -47,7 +47,7 @@ SigSession::~SigSession()
 {
 	stop_capture();
 
-	if(_sampling_thread.get())
+	if (_sampling_thread.get())
 		_sampling_thread->join();
 	_sampling_thread.reset();
 
@@ -85,13 +85,13 @@ void SigSession::start_capture(struct sr_dev_inst *sdi,
 
 void SigSession::stop_capture()
 {
-	if(get_capture_state() == Stopped)
+	if (get_capture_state() == Stopped)
 		return;
 
 	sr_session_stop();
 
 	// Check that sampling stopped
-	if(_sampling_thread.get())
+	if (_sampling_thread.get())
 		_sampling_thread->join();
 	_sampling_thread.reset();
 }
@@ -181,7 +181,7 @@ void SigSession::data_feed_in(const struct sr_dev_inst *sdi,
 		// Create an empty LogiData for coming data snapshots
 		_logic_data.reset(new LogicData(meta_logic));
 		assert(_logic_data);
-		if(!_logic_data)
+		if (!_logic_data)
 			break;
 	}
 
@@ -194,7 +194,7 @@ void SigSession::data_feed_in(const struct sr_dev_inst *sdi,
 			const sr_probe *const probe =
 				(const sr_probe*)g_slist_nth_data(
 					sdi->probes, i);
-			if(probe->enabled)
+			if (probe->enabled)
 			{
 				shared_ptr<LogicSignal> signal(
 					new LogicSignal(probe->name,
@@ -213,7 +213,7 @@ void SigSession::data_feed_in(const struct sr_dev_inst *sdi,
 	{
 		lock_guard<mutex> lock(_data_mutex);
 		assert(packet->payload);
-		if(!_cur_logic_snapshot)
+		if (!_cur_logic_snapshot)
 		{
 			// Create a new data snapshot
 			_cur_logic_snapshot = shared_ptr<LogicDataSnapshot>(

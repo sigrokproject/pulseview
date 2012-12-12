@@ -83,7 +83,7 @@ SamplingBar::SamplingBar(QWidget *parent) :
 struct sr_dev_inst* SamplingBar::get_selected_device() const
 {
 	const int index = _device_selector.currentIndex();
-	if(index < 0)
+	if (index < 0)
 		return NULL;
 
 	return (sr_dev_inst*)_device_selector.itemData(
@@ -93,7 +93,7 @@ struct sr_dev_inst* SamplingBar::get_selected_device() const
 uint64_t SamplingBar::get_record_length() const
 {
 	const int index = _record_length_selector.currentIndex();
-	if(index < 0)
+	if (index < 0)
 		return 0;
 
 	return _record_length_selector.itemData(index).value<uint64_t>();
@@ -104,12 +104,12 @@ uint64_t SamplingBar::get_sample_rate() const
 	assert(_sample_rate_value_action);
 	assert(_sample_rate_list_action);
 
-	if(_sample_rate_value_action->isVisible())
+	if (_sample_rate_value_action->isVisible())
 		return (uint64_t)_sample_rate_value.value();
-	else if(_sample_rate_list_action->isVisible())
+	else if (_sample_rate_list_action->isVisible())
 	{
 		const int index = _sample_rate_list.currentIndex();
-		if(index < 0)
+		if (index < 0)
 			return 0;
 		
 		return _sample_rate_list.itemData(index).value<uint64_t>();
