@@ -53,7 +53,7 @@ if(WIN32)
 	set(BOOST_ROOT /usr/local)
 endif()
 
-find_package(Boost 1.46 COMPONENTS thread)
+find_package(Boost 1.46 COMPONENTS system thread)
 
 #===============================================================================
 #= Config Header
