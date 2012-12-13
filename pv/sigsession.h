@@ -82,10 +82,10 @@ private:
 		uint64_t record_length, uint64_t sample_rate);
 
 	void data_feed_in(const struct sr_dev_inst *sdi,
-		struct sr_datafeed_packet *packet);
+		const struct sr_datafeed_packet *packet);
 
 	static void data_feed_in_proc(const struct sr_dev_inst *sdi,
-		struct sr_datafeed_packet *packet);
+		const struct sr_datafeed_packet *packet);
 
 private:
 	mutable boost::mutex _state_mutex;

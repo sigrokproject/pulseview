@@ -172,7 +172,7 @@ void SigSession::sample_thread_proc(struct sr_dev_inst *sdi,
 }
 
 void SigSession::data_feed_in(const struct sr_dev_inst *sdi,
-	struct sr_datafeed_packet *packet)
+	const struct sr_datafeed_packet *packet)
 {
 	using view::LogicSignal;
 
@@ -263,7 +263,7 @@ void SigSession::data_feed_in(const struct sr_dev_inst *sdi,
 }
 
 void SigSession::data_feed_in_proc(const struct sr_dev_inst *sdi,
-	struct sr_datafeed_packet *packet)
+	const struct sr_datafeed_packet *packet)
 {
 	assert(_session);
 	_session->data_feed_in(sdi, packet);
