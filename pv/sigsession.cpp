@@ -206,6 +206,26 @@ void SigSession::feed_in_meta_logic(const struct sr_dev_inst *sdi,
 	}
 }
 
+void SigSession::feed_in_logic(const sr_datafeed_logic &logic)
+{
+	lock_guard<mutex> lock(_data_mutex);
+	if (!_cur_logic_snapshot)
+	{
+		// Create a new data snapshot
+		_cur_logic_snapshot = shared_ptr<LogicDataSnapshot>(
+			new LogicDataSnapshot(logic));
+		_logic_data->push_snapshot(_cur_logic_snapshot);
+	}
+	else
+	{
+		// Append to the existing data snapshot
+		_cur_logic_snapshot->append_payload(logic);
+	}
+
+	data_updated();
+}
+
+
 void SigSession::data_feed_in(const struct sr_dev_inst *sdi,
 	const struct sr_datafeed_packet *packet)
 {
@@ -227,27 +247,9 @@ void SigSession::data_feed_in(const struct sr_dev_inst *sdi,
 		break;
 
 	case SR_DF_LOGIC:
-	{
-		lock_guard<mutex> lock(_data_mutex);
 		assert(packet->payload);
-		if (!_cur_logic_snapshot)
-		{
-			// Create a new data snapshot
-			_cur_logic_snapshot = shared_ptr<LogicDataSnapshot>(
-				new LogicDataSnapshot(
-				*(sr_datafeed_logic*)packet->payload));
-			_logic_data->push_snapshot(_cur_logic_snapshot);
-		}
-		else
-		{
-			// Append to the existing data snapshot
-			_cur_logic_snapshot->append_payload(
-				*(sr_datafeed_logic*)packet->payload);
-		}
-
-		data_updated();
+		feed_in_logic(*(const sr_datafeed_logic*)packet->payload);
 		break;
-	}
 
 	case SR_DF_END:
 	{
