@@ -81,6 +81,9 @@ private:
 	void sample_thread_proc(struct sr_dev_inst *sdi,
 		uint64_t record_length, uint64_t sample_rate);
 
+	void feed_in_meta_logic(const struct sr_dev_inst *sdi,
+		const sr_datafeed_meta_logic &meta_logic);
+
 	void data_feed_in(const struct sr_dev_inst *sdi,
 		const struct sr_datafeed_packet *packet);
 

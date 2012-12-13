@@ -171,11 +171,44 @@ void SigSession::sample_thread_proc(struct sr_dev_inst *sdi,
 	set_capture_state(Stopped);
 }
 
-void SigSession::data_feed_in(const struct sr_dev_inst *sdi,
-	const struct sr_datafeed_packet *packet)
+void SigSession::feed_in_meta_logic(const struct sr_dev_inst *sdi,
+	const sr_datafeed_meta_logic &meta_logic)
 {
 	using view::LogicSignal;
 
+	{
+		lock_guard<mutex> lock(_data_mutex);
+
+		// Create an empty LogicData for coming data snapshots
+		_logic_data.reset(new LogicData(meta_logic));
+		assert(_logic_data);
+		if (!_logic_data)
+			return;
+	}
+
+	{
+		lock_guard<mutex> lock(_signals_mutex);
+
+		// Add the signals
+		for (int i = 0; i < meta_logic.num_probes; i++) {
+			const sr_probe *const probe =
+				(const sr_probe*)g_slist_nth_data(
+					sdi->probes, i);
+			if (probe->enabled) {
+				shared_ptr<LogicSignal> signal(
+					new LogicSignal(probe->name,
+						_logic_data, probe->index));
+				_signals.push_back(signal);
+			}
+		}
+
+		signals_changed();
+	}
+}
+
+void SigSession::data_feed_in(const struct sr_dev_inst *sdi,
+	const struct sr_datafeed_packet *packet)
+{
 	assert(sdi);
 	assert(packet);
 
@@ -188,44 +221,10 @@ void SigSession::data_feed_in(const struct sr_dev_inst *sdi,
 	}
 
 	case SR_DF_META_LOGIC:
-	{
 		assert(packet->payload);
-		const sr_datafeed_meta_logic &meta_logic =
-			*(sr_datafeed_meta_logic*)packet->payload;
-
-	{
-		lock_guard<mutex> lock(_data_mutex);
-
-		// Create an empty LogiData for coming data snapshots
-		_logic_data.reset(new LogicData(meta_logic));
-		assert(_logic_data);
-		if (!_logic_data)
-			break;
-	}
-
-	{
-		lock_guard<mutex> lock(_signals_mutex);
-
-		// Add the signals
-		for (int i = 0; i < meta_logic.num_probes; i++)
-		{
-			const sr_probe *const probe =
-				(const sr_probe*)g_slist_nth_data(
-					sdi->probes, i);
-			if (probe->enabled)
-			{
-				shared_ptr<LogicSignal> signal(
-					new LogicSignal(probe->name,
-						_logic_data,
-						probe->index));
-				_signals.push_back(signal);
-			}
-		}
-
-		signals_changed();
+		feed_in_meta_logic(sdi,
+			*(const sr_datafeed_meta_logic*)packet->payload);
 		break;
-	}
-	}
 
 	case SR_DF_LOGIC:
 	{
