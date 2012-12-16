@@ -115,7 +115,11 @@ void Viewport::mouseReleaseEvent(QMouseEvent *event)
 void Viewport::wheelEvent(QWheelEvent *event)
 {
 	assert(event);
-	_view.zoom(event->delta() / 120, event->x());
+
+	if (event->orientation() == Qt::Vertical) {
+		// Vertical scrolling is interpreted as zooming in/out
+		_view.zoom(event->delta() / 120, event->x());
+	}
 }
 
 void Viewport::draw_cursors_background(QPainter &p)
