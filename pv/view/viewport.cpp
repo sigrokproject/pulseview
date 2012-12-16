@@ -119,6 +119,11 @@ void Viewport::wheelEvent(QWheelEvent *event)
 	if (event->orientation() == Qt::Vertical) {
 		// Vertical scrolling is interpreted as zooming in/out
 		_view.zoom(event->delta() / 120, event->x());
+	} else if (event->orientation() == Qt::Horizontal) {
+		// Horizontal scrolling is interpreted as moving left/right
+		_view.set_scale_offset(_view.scale(),
+				       event->delta() * _view.scale()
+				       + _view.offset());
 	}
 }
 
