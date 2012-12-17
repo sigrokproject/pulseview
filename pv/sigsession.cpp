@@ -64,7 +64,7 @@ void SigSession::load_file(const string &name)
 
 SigSession::capture_state SigSession::get_capture_state() const
 {
-	lock_guard<mutex> lock(_state_mutex);
+	lock_guard<mutex> lock(_sampling_mutex);
 	return _capture_state;
 }
 
@@ -105,7 +105,7 @@ boost::shared_ptr<LogicData> SigSession::get_data()
 
 void SigSession::set_capture_state(capture_state state)
 {
-	lock_guard<mutex> lock(_state_mutex);
+	lock_guard<mutex> lock(_sampling_mutex);
 	_capture_state = state;
 	capture_state_changed(state);
 }

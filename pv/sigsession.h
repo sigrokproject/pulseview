@@ -93,7 +93,7 @@ private:
 		const struct sr_datafeed_packet *packet);
 
 private:
-	mutable boost::mutex _state_mutex;
+	mutable boost::mutex _sampling_mutex;
 	capture_state _capture_state;
 
 	mutable boost::mutex _signals_mutex;
