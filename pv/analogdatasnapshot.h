@@ -34,6 +34,8 @@ public:
 	AnalogDataSnapshot(const sr_datafeed_analog &analog);
 
 	void append_payload(const sr_datafeed_analog &analog);
+
+	const float* get_samples() const;
 };
 
 } // namespace pv

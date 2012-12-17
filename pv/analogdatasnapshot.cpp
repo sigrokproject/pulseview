@@ -46,8 +46,12 @@ void AnalogDataSnapshot::append_payload(
 	const sr_datafeed_analog &analog)
 {
 	lock_guard<recursive_mutex> lock(_mutex);
-
 	append_data(analog.data, analog.num_samples);
+}
+
+const float* AnalogDataSnapshot::get_samples() const
+{
+	return (const float*)_data;
 }
 
 } // namespace pv

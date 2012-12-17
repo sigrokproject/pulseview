@@ -42,11 +42,54 @@ AnalogSignal::AnalogSignal(QString name, shared_ptr<AnalogData> data) :
 void AnalogSignal::paint(QPainter &p, const QRect &rect, double scale,
 	double offset)
 {
+	assert(scale > 0);
+	assert(_data);
+
+	const deque< shared_ptr<pv::AnalogDataSnapshot> > &snapshots =
+		_data->get_snapshots();
+	if (snapshots.empty())
+		return;
+
+	const shared_ptr<pv::AnalogDataSnapshot> &snapshot =
+		snapshots.front();
+
+	const double pixels_offset = offset / scale;
+	const double samplerate = _data->get_samplerate();
+	const double start_time = _data->get_start_time();
+	const int64_t last_sample = snapshot->get_sample_count() - 1;
+	const double samples_per_pixel = samplerate * scale;
+	const double start = samplerate * (offset - start_time);
+	const double end = start + samples_per_pixel * rect.width();
+
+	const int64_t start_sample = min(max((int64_t)floor(start),
+		(int64_t)0), last_sample);
+	const int64_t end_sample = min(max((int64_t)ceil(end),
+		(int64_t)0), last_sample);
+
+	const int y_offset = rect.center().y();
+
+	const float* samples = snapshot->get_samples();
+	assert(samples);
+
+	QPointF *points = new QPointF[end_sample - start_sample];
+	QPointF *point = points;
+
+	for (int64_t sample = start_sample;
+		sample != end_sample; sample++) {
+		const float x = (sample / samples_per_pixel -
+			pixels_offset) + rect.left();
+		const float y = samples[sample] + y_offset;
+		*point++ = QPointF(x, y);
+	}
+
+	p.drawPoints(points, point - points);
+
+	delete[] points;
 }
 
 int AnalogSignal::get_nominal_offset(const QRect &rect) const
 {
-	return rect.bottom();
+	return rect.center().y();
 }
 
 } // namespace view
