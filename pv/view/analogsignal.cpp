@@ -18,35 +18,36 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#include "logicdata.h"
-#include "logicdatasnapshot.h"
+#include <extdef.h>
+
+#include <math.h>
+
+#include "analogsignal.h"
+#include "../analogdata.h"
+#include "../analogdatasnapshot.h"
 
 using namespace boost;
 using namespace std;
 
 namespace pv {
+namespace view {
 
-LogicData::LogicData(const sr_datafeed_meta_logic &meta,
-	uint64_t samplerate) :
-	SignalData(samplerate),
-	_num_probes(meta.num_probes)
+AnalogSignal::AnalogSignal(QString name, shared_ptr<AnalogData> data) :
+	Signal(name),
+	_data(data)
+{
+	_colour = Qt::blue;
+}
+
+void AnalogSignal::paint(QPainter &p, const QRect &rect, double scale,
+	double offset)
 {
 }
 
-int LogicData::get_num_probes() const
+int AnalogSignal::get_nominal_offset(const QRect &rect) const
 {
-	return _num_probes;
+	return rect.bottom();
 }
 
-void LogicData::push_snapshot(
-	boost::shared_ptr<LogicDataSnapshot> &snapshot)
-{
-	_snapshots.push_front(snapshot);
-}
-
-deque< shared_ptr<LogicDataSnapshot> >& LogicData::get_snapshots()
-{
-	return _snapshots;
-}
-
+} // namespace view
 } // namespace pv

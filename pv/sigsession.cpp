@@ -20,8 +20,11 @@
 
 #include "sigsession.h"
 
+#include "analogdata.h"
+#include "analogdatasnapshot.h"
 #include "logicdata.h"
 #include "logicdatasnapshot.h"
+#include "view/analogsignal.h"
 #include "view/logicsignal.h"
 
 #include <QDebug>
@@ -73,10 +76,12 @@ void SigSession::start_capture(struct sr_dev_inst *sdi,
 {
 	stop_capture();
 
+	lock_guard<mutex> lock(_sampling_mutex);
+	_sample_rate = sample_rate;
 
 	_sampling_thread.reset(new boost::thread(
 		&SigSession::sample_thread_proc, this, sdi,
-		record_length, sample_rate));
+		record_length));
 }
 
 void SigSession::stop_capture()
@@ -133,7 +138,7 @@ void SigSession::load_thread_proc(const string name)
 }
 
 void SigSession::sample_thread_proc(struct sr_dev_inst *sdi,
-	uint64_t record_length, uint64_t sample_rate)
+	uint64_t record_length)
 {
 	sr_session_new();
 	sr_session_datafeed_callback_add(data_feed_in_proc);
@@ -151,11 +156,14 @@ void SigSession::sample_thread_proc(struct sr_dev_inst *sdi,
 		return;
 	}
 
-	if (sr_dev_config_set(sdi, SR_HWCAP_SAMPLERATE,
-		&sample_rate) != SR_OK) {
-		qDebug() << "Failed to configure samplerate.";
-		sr_session_destroy();
-		return;
+	{
+		lock_guard<mutex> lock(_sampling_mutex);
+		if (sr_dev_config_set(sdi, SR_HWCAP_SAMPLERATE,
+			&_sample_rate) != SR_OK) {
+			qDebug() << "Failed to configure samplerate.";
+			sr_session_destroy();
+			return;
+		}
 	}
 
 	if (sr_session_start() != SR_OK) {
@@ -177,10 +185,11 @@ void SigSession::feed_in_meta_logic(const struct sr_dev_inst *sdi,
 	using view::LogicSignal;
 
 	{
-		lock_guard<mutex> lock(_data_mutex);
+		lock_guard<mutex> data_lock(_data_mutex);
+		lock_guard<mutex> sampling_lock(_sampling_mutex);
 
 		// Create an empty LogicData for coming data snapshots
-		_logic_data.reset(new LogicData(meta_logic));
+		_logic_data.reset(new LogicData(meta_logic, _sample_rate));
 		assert(_logic_data);
 		if (!_logic_data)
 			return;
@@ -206,6 +215,35 @@ void SigSession::feed_in_meta_logic(const struct sr_dev_inst *sdi,
 	}
 }
 
+void SigSession::feed_in_meta_analog(const struct sr_dev_inst *sdi,
+	const sr_datafeed_meta_analog &meta_analog)
+{
+	using view::AnalogSignal;
+
+	{
+		lock_guard<mutex> data_lock(_data_mutex);
+		lock_guard<mutex> sampling_lock(_sampling_mutex);
+
+		// Create an empty AnalogData for coming data snapshots
+		_analog_data.reset(new AnalogData(
+			meta_analog, _sample_rate));
+		assert(_analog_data);
+		if (!_analog_data)
+			return;
+	}
+
+	{
+		lock_guard<mutex> lock(_signals_mutex);
+
+		// Add the signals
+		shared_ptr<AnalogSignal> signal(
+			new AnalogSignal(QString("???"), _analog_data));
+		_signals.push_back(signal);
+
+		signals_changed();
+	}
+}
+
 void SigSession::feed_in_logic(const sr_datafeed_logic &logic)
 {
 	lock_guard<mutex> lock(_data_mutex);
@@ -225,6 +263,24 @@ void SigSession::feed_in_logic(const sr_datafeed_logic &logic)
 	data_updated();
 }
 
+void SigSession::feed_in_analog(const sr_datafeed_analog &analog)
+{
+	lock_guard<mutex> lock(_data_mutex);
+	if (!_cur_analog_snapshot)
+	{
+		// Create a new data snapshot
+		_cur_analog_snapshot = shared_ptr<AnalogDataSnapshot>(
+			new AnalogDataSnapshot(analog));
+		_analog_data->push_snapshot(_cur_analog_snapshot);
+	}
+	else
+	{
+		// Append to the existing data snapshot
+		_cur_analog_snapshot->append_payload(analog);
+	}
+
+	data_updated();
+}
 
 void SigSession::data_feed_in(const struct sr_dev_inst *sdi,
 	const struct sr_datafeed_packet *packet)
@@ -246,9 +302,20 @@ void SigSession::data_feed_in(const struct sr_dev_inst *sdi,
 			*(const sr_datafeed_meta_logic*)packet->payload);
 		break;
 
+	case SR_DF_META_ANALOG:
+		assert(packet->payload);
+		feed_in_meta_analog(sdi,
+			*(const sr_datafeed_meta_analog*)packet->payload);
+		break;
+
 	case SR_DF_LOGIC:
 		assert(packet->payload);
 		feed_in_logic(*(const sr_datafeed_logic*)packet->payload);
+		break;
+
+	case SR_DF_ANALOG:
+		assert(packet->payload);
+		feed_in_analog(*(const sr_datafeed_analog*)packet->payload);
 		break;
 
 	case SR_DF_END:
@@ -256,6 +323,7 @@ void SigSession::data_feed_in(const struct sr_dev_inst *sdi,
 		{
 			lock_guard<mutex> lock(_data_mutex);
 			_cur_logic_snapshot.reset();
+			_cur_analog_snapshot.reset();
 		}
 		data_updated();
 		break;

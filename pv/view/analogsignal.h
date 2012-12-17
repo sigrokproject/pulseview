@@ -18,41 +18,49 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_LOGICDATA_H
-#define PULSEVIEW_PV_LOGICDATA_H
+#ifndef PULSEVIEW_PV_ANALOGSIGNAL_H
+#define PULSEVIEW_PV_ANALOGSIGNAL_H
 
-#include "signaldata.h"
+#include "signal.h"
 
 #include <boost/shared_ptr.hpp>
-#include <deque>
-
-extern "C" {
-#include <libsigrok/libsigrok.h>
-}
 
 namespace pv {
 
-class LogicDataSnapshot;
+class AnalogData;
 
-class LogicData : public SignalData
+namespace view {
+
+class AnalogSignal : public Signal
 {
 public:
-	LogicData(const sr_datafeed_meta_logic &meta, uint64_t samplerate);
+	AnalogSignal(QString name,
+		boost::shared_ptr<pv::AnalogData> data);
 
-	int get_num_probes() const;
-
-	void push_snapshot(
-		boost::shared_ptr<LogicDataSnapshot> &snapshot);
-
-	std::deque< boost::shared_ptr<LogicDataSnapshot> >&
-		get_snapshots();
+	/**
+	 * Paints the signal with a QPainter
+	 * @param p the QPainter to paint into.
+	 * @param rect the rectangular area to draw the trace into.
+	 * @param scale the scale in seconds per pixel.
+	 * @param offset the time to show at the left hand edge of
+	 *   the view in seconds.
+	 **/
+	void paint(QPainter &p, const QRect &rect,
+		double scale, double offset);
 
 private:
-	const int _num_probes;
-	std::deque< boost::shared_ptr<LogicDataSnapshot> >
-		_snapshots;
+
+	/**
+	 * When painting into the rectangle, calculate the y
+	 * offset of the zero point.
+	 **/
+	int get_nominal_offset(const QRect &rect) const;
+
+private:
+	boost::shared_ptr<pv::AnalogData> _data;
 };
 
+} // namespace view
 } // namespace pv
 
-#endif // PULSEVIEW_PV_LOGICDATA_H
+#endif // PULSEVIEW_PV_ANALOGSIGNAL_H

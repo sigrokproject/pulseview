@@ -36,6 +36,8 @@ extern "C" {
 
 namespace pv {
 
+class AnalogData;
+class AnalogDataSnapshot;
 class LogicData;
 class LogicDataSnapshot;
 
@@ -79,12 +81,17 @@ private:
 	void load_thread_proc(const std::string name);
 
 	void sample_thread_proc(struct sr_dev_inst *sdi,
-		uint64_t record_length, uint64_t sample_rate);
+		uint64_t record_length);
 
 	void feed_in_meta_logic(const struct sr_dev_inst *sdi,
 		const sr_datafeed_meta_logic &meta_logic);
 
+	void feed_in_meta_analog(const struct sr_dev_inst *sdi,
+		const sr_datafeed_meta_analog &meta_analog);
+
 	void feed_in_logic(const sr_datafeed_logic &logic);
+
+	void feed_in_analog(const sr_datafeed_analog &analog);
 
 	void data_feed_in(const struct sr_dev_inst *sdi,
 		const struct sr_datafeed_packet *packet);
@@ -95,6 +102,7 @@ private:
 private:
 	mutable boost::mutex _sampling_mutex;
 	capture_state _capture_state;
+	uint64_t _sample_rate;
 
 	mutable boost::mutex _signals_mutex;
 	std::vector< boost::shared_ptr<view::Signal> > _signals;
@@ -102,6 +110,8 @@ private:
 	mutable boost::mutex _data_mutex;
 	boost::shared_ptr<LogicData> _logic_data;
 	boost::shared_ptr<LogicDataSnapshot> _cur_logic_snapshot;
+	boost::shared_ptr<AnalogData> _analog_data;
+	boost::shared_ptr<AnalogDataSnapshot> _cur_analog_snapshot;
 
 	std::auto_ptr<boost::thread> _sampling_thread;
 

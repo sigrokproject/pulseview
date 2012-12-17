@@ -81,6 +81,8 @@ configure_file (
 set(pulseview_SOURCES
 	main.cpp
 	pv/about.cpp
+	pv/analogdata.cpp
+	pv/analogdatasnapshot.cpp
 	pv/datasnapshot.cpp
 	pv/logicdata.cpp
 	pv/logicdatasnapshot.cpp
@@ -88,6 +90,7 @@ set(pulseview_SOURCES
 	pv/samplingbar.cpp
 	pv/signaldata.cpp
 	pv/sigsession.cpp
+	pv/view/analogsignal.cpp
 	pv/view/cursor.cpp
 	pv/view/header.cpp
 	pv/view/logicsignal.cpp

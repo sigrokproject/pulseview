@@ -18,35 +18,24 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#include "logicdata.h"
-#include "logicdatasnapshot.h"
+#ifndef PULSEVIEW_PV_ANALOGDATASNAPSHOT_H
+#define PULSEVIEW_PV_ANALOGDATASNAPSHOT_H
 
-using namespace boost;
-using namespace std;
+#include "datasnapshot.h"
+
+#include <utility>
+#include <vector>
 
 namespace pv {
 
-LogicData::LogicData(const sr_datafeed_meta_logic &meta,
-	uint64_t samplerate) :
-	SignalData(samplerate),
-	_num_probes(meta.num_probes)
+class AnalogDataSnapshot : public DataSnapshot
 {
-}
+public:
+	AnalogDataSnapshot(const sr_datafeed_analog &analog);
 
-int LogicData::get_num_probes() const
-{
-	return _num_probes;
-}
-
-void LogicData::push_snapshot(
-	boost::shared_ptr<LogicDataSnapshot> &snapshot)
-{
-	_snapshots.push_front(snapshot);
-}
-
-deque< shared_ptr<LogicDataSnapshot> >& LogicData::get_snapshots()
-{
-	return _snapshots;
-}
+	void append_payload(const sr_datafeed_analog &analog);
+};
 
 } // namespace pv
+
+#endif // PULSEVIEW_PV_ANALOGDATASNAPSHOT_H

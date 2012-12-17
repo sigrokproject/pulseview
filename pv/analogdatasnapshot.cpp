@@ -18,35 +18,36 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#include "logicdata.h"
-#include "logicdatasnapshot.h"
+#include <extdef.h>
+
+#include <assert.h>
+#include <string.h>
+#include <stdlib.h>
+#include <math.h>
+
+#include <boost/foreach.hpp>
+
+#include "analogdatasnapshot.h"
 
 using namespace boost;
 using namespace std;
 
 namespace pv {
 
-LogicData::LogicData(const sr_datafeed_meta_logic &meta,
-	uint64_t samplerate) :
-	SignalData(samplerate),
-	_num_probes(meta.num_probes)
+AnalogDataSnapshot::AnalogDataSnapshot(
+	const sr_datafeed_analog &analog) :
+	DataSnapshot(sizeof(float))
 {
+	lock_guard<recursive_mutex> lock(_mutex);
+	append_payload(analog);
 }
 
-int LogicData::get_num_probes() const
+void AnalogDataSnapshot::append_payload(
+	const sr_datafeed_analog &analog)
 {
-	return _num_probes;
-}
+	lock_guard<recursive_mutex> lock(_mutex);
 
-void LogicData::push_snapshot(
-	boost::shared_ptr<LogicDataSnapshot> &snapshot)
-{
-	_snapshots.push_front(snapshot);
-}
-
-deque< shared_ptr<LogicDataSnapshot> >& LogicData::get_snapshots()
-{
-	return _snapshots;
+	append_data(analog.data, analog.num_samples);
 }
 
 } // namespace pv
