@@ -80,7 +80,6 @@ configure_file (
 
 set(pulseview_SOURCES
 	main.cpp
-	pv/about.cpp
 	pv/analogdata.cpp
 	pv/analogdatasnapshot.cpp
 	pv/datasnapshot.cpp
@@ -90,6 +89,7 @@ set(pulseview_SOURCES
 	pv/samplingbar.cpp
 	pv/signaldata.cpp
 	pv/sigsession.cpp
+	pv/dialogs/about.cpp
 	pv/view/analogsignal.cpp
 	pv/view/cursor.cpp
 	pv/view/header.cpp
@@ -102,10 +102,10 @@ set(pulseview_SOURCES
 )
 
 set(pulseview_HEADERS
-	pv/about.h
 	pv/mainwindow.h
 	pv/samplingbar.h
 	pv/sigsession.h
+	pv/dialogs/about.h
 	pv/view/cursor.h
 	pv/view/header.h
 	pv/view/ruler.h
@@ -115,7 +115,7 @@ set(pulseview_HEADERS
 )
 
 set(pulseview_FORMS
-	pv/about.ui
+	pv/dialogs/about.ui
 )
 
 set(pulseview_RESOURCES

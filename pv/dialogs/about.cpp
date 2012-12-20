@@ -35,6 +35,7 @@ extern "C" {
 }
 
 namespace pv {
+namespace dialogs {
 
 About::About(QWidget *parent) :
 	QDialog(parent),
@@ -111,4 +112,5 @@ About::~About()
 	delete ui;
 }
 
+} // namespace dialogs
 } // namespace pv

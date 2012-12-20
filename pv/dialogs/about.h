@@ -32,6 +32,7 @@ class About;
 }
 
 namespace pv {
+namespace dialogs {
 
 class About : public QDialog
 {
@@ -46,6 +47,7 @@ private:
 	std::auto_ptr<QTextDocument> supportedDoc;
 };
 
+} // namespace dialogs
 } // namespace pv
 
 #endif // PULSEVIEW_PV_ABOUT_H

@@ -32,9 +32,9 @@ extern "C" {
 #include <QVBoxLayout>
 #include <QWidget>
 
-#include "about.h"
 #include "mainwindow.h"
 #include "samplingbar.h"
+#include "dialogs/about.h"
 #include "pv/view/view.h"
 
 extern "C" {
@@ -183,7 +183,7 @@ void MainWindow::on_actionViewShowCursors_triggered()
 
 void MainWindow::on_actionAbout_triggered()
 {
-	About dlg(this);
+	dialogs::About dlg(this);
 	dlg.exec();
 }
 
