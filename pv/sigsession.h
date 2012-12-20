@@ -36,10 +36,12 @@ extern "C" {
 
 namespace pv {
 
-class AnalogData;
-class AnalogDataSnapshot;
-class LogicData;
-class LogicDataSnapshot;
+namespace data {
+class Analog;
+class AnalogSnapshot;
+class Logic;
+class LogicSnapshot;
+}
 
 namespace view {
 class Signal;
@@ -72,7 +74,7 @@ public:
 	std::vector< boost::shared_ptr<view::Signal> >
 		get_signals();
 
-	boost::shared_ptr<LogicData> get_data();
+	boost::shared_ptr<data::Logic> get_data();
 
 private:
 	void set_capture_state(capture_state state);
@@ -108,10 +110,10 @@ private:
 	std::vector< boost::shared_ptr<view::Signal> > _signals;
 
 	mutable boost::mutex _data_mutex;
-	boost::shared_ptr<LogicData> _logic_data;
-	boost::shared_ptr<LogicDataSnapshot> _cur_logic_snapshot;
-	boost::shared_ptr<AnalogData> _analog_data;
-	boost::shared_ptr<AnalogDataSnapshot> _cur_analog_snapshot;
+	boost::shared_ptr<data::Logic> _logic_data;
+	boost::shared_ptr<data::LogicSnapshot> _cur_logic_snapshot;
+	boost::shared_ptr<data::Analog> _analog_data;
+	boost::shared_ptr<data::AnalogSnapshot> _cur_analog_snapshot;
 
 	std::auto_ptr<boost::thread> _sampling_thread;
 

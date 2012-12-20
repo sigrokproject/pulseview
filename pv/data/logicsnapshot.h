@@ -18,15 +18,15 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_LOGICDATASNAPSHOT_H
-#define PULSEVIEW_PV_LOGICDATASNAPSHOT_H
+#ifndef PULSEVIEW_PV_DATA_LOGICSNAPSHOT_H
+#define PULSEVIEW_PV_DATA_LOGICSNAPSHOT_H
 
-#include "datasnapshot.h"
+#include "snapshot.h"
 
 #include <utility>
 #include <vector>
 
-namespace LogicDataSnapshotTest {
+namespace LogicSnapshotTest {
 	class Pow2;
 	class Basic;
 	class LargeData;
@@ -35,8 +35,9 @@ namespace LogicDataSnapshotTest {
 }
 
 namespace pv {
+namespace data {
 
-class LogicDataSnapshot : public DataSnapshot
+class LogicSnapshot : public Snapshot
 {
 private:
 	struct MipMapLevel
@@ -57,9 +58,9 @@ public:
 	typedef std::pair<int64_t, bool> EdgePair;
 
 public:
-	LogicDataSnapshot(const sr_datafeed_logic &logic);
+	LogicSnapshot(const sr_datafeed_logic &logic);
 
-	virtual ~LogicDataSnapshot();
+	virtual ~LogicSnapshot();
 
 	void append_payload(const sr_datafeed_logic &logic);
 
@@ -94,13 +95,14 @@ private:
 	struct MipMapLevel _mip_map[ScaleStepCount];
 	uint64_t _last_append_sample;
 
-	friend class LogicDataSnapshotTest::Pow2;
-	friend class LogicDataSnapshotTest::Basic;
-	friend class LogicDataSnapshotTest::LargeData;
-	friend class LogicDataSnapshotTest::Pulses;
-	friend class LogicDataSnapshotTest::LongPulses;
+	friend class LogicSnapshotTest::Pow2;
+	friend class LogicSnapshotTest::Basic;
+	friend class LogicSnapshotTest::LargeData;
+	friend class LogicSnapshotTest::Pulses;
+	friend class LogicSnapshotTest::LongPulses;
 };
 
+} // namespace data
 } // namespace pv
 
-#endif // PULSEVIEW_PV_LOGICDATASNAPSHOT_H
+#endif // PULSEVIEW_PV_DATA_LOGICSNAPSHOT_H

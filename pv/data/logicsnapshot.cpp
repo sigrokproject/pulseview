@@ -27,21 +27,21 @@
 
 #include <boost/foreach.hpp>
 
-#include "logicdatasnapshot.h"
+#include "logicsnapshot.h"
 
 using namespace boost;
 using namespace std;
 
 namespace pv {
+namespace data {
 
-const int LogicDataSnapshot::MipMapScalePower = 4;
-const int LogicDataSnapshot::MipMapScaleFactor = 1 << MipMapScalePower;
-const float LogicDataSnapshot::LogMipMapScaleFactor = logf(MipMapScaleFactor);
-const uint64_t LogicDataSnapshot::MipMapDataUnit = 64*1024;	// bytes
+const int LogicSnapshot::MipMapScalePower = 4;
+const int LogicSnapshot::MipMapScaleFactor = 1 << MipMapScalePower;
+const float LogicSnapshot::LogMipMapScaleFactor = logf(MipMapScaleFactor);
+const uint64_t LogicSnapshot::MipMapDataUnit = 64*1024;	// bytes
 
-LogicDataSnapshot::LogicDataSnapshot(
-	const sr_datafeed_logic &logic) :
-	DataSnapshot(logic.unitsize),
+LogicSnapshot::LogicSnapshot(const sr_datafeed_logic &logic) :
+	Snapshot(logic.unitsize),
 	_last_append_sample(0)
 {
 	lock_guard<recursive_mutex> lock(_mutex);
@@ -49,14 +49,14 @@ LogicDataSnapshot::LogicDataSnapshot(
 	append_payload(logic);
 }
 
-LogicDataSnapshot::~LogicDataSnapshot()
+LogicSnapshot::~LogicSnapshot()
 {
 	lock_guard<recursive_mutex> lock(_mutex);
 	BOOST_FOREACH(MipMapLevel &l, _mip_map)
 		free(l.data);
 }
 
-void LogicDataSnapshot::append_payload(
+void LogicSnapshot::append_payload(
 	const sr_datafeed_logic &logic)
 {
 	assert(_unit_size == logic.unitsize);
@@ -69,7 +69,7 @@ void LogicDataSnapshot::append_payload(
 	append_payload_to_mipmap();
 }
 
-void LogicDataSnapshot::reallocate_mip_map(MipMapLevel &m)
+void LogicSnapshot::reallocate_mip_map(MipMapLevel &m)
 {
 	const uint64_t new_data_length = ((m.length + MipMapDataUnit - 1) /
 		MipMapDataUnit) * MipMapDataUnit;
@@ -80,7 +80,7 @@ void LogicDataSnapshot::reallocate_mip_map(MipMapLevel &m)
 	}
 }
 
-void LogicDataSnapshot::append_payload_to_mipmap()
+void LogicSnapshot::append_payload_to_mipmap()
 {
 	MipMapLevel &m0 = _mip_map[0];
 	uint64_t prev_length;
@@ -164,7 +164,7 @@ void LogicDataSnapshot::append_payload_to_mipmap()
 	}
 }
 
-uint64_t LogicDataSnapshot::get_sample(uint64_t index) const
+uint64_t LogicSnapshot::get_sample(uint64_t index) const
 {
 	assert(_data);
 	assert(index >= 0 && index < _sample_count);
@@ -172,7 +172,7 @@ uint64_t LogicDataSnapshot::get_sample(uint64_t index) const
 	return *(uint64_t*)((uint8_t*)_data + index * _unit_size);
 }
 
-void LogicDataSnapshot::get_subsampled_edges(
+void LogicSnapshot::get_subsampled_edges(
 	std::vector<EdgePair> &edges,
 	uint64_t start, uint64_t end,
 	float min_length, int sig_index)
@@ -348,7 +348,7 @@ void LogicDataSnapshot::get_subsampled_edges(
 		get_sample(end) & sig_mask));
 }
 
-uint64_t LogicDataSnapshot::get_subsample(int level, uint64_t offset) const
+uint64_t LogicSnapshot::get_subsample(int level, uint64_t offset) const
 {
 	assert(level >= 0);
 	assert(_mip_map[level].data);
@@ -356,10 +356,11 @@ uint64_t LogicDataSnapshot::get_subsample(int level, uint64_t offset) const
 		_unit_size * offset);
 }
 
-uint64_t LogicDataSnapshot::pow2_ceil(uint64_t x, unsigned int power)
+uint64_t LogicSnapshot::pow2_ceil(uint64_t x, unsigned int power)
 {
 	const uint64_t p = 1 << power;
 	return (x + p - 1) / p * p;
 }
 
+} // namespace data
 } // namespace pv

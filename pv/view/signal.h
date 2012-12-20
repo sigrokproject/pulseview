@@ -32,7 +32,9 @@
 
 namespace pv {
 
+namespace data {
 class SignalData;
+}
 
 namespace view {
 

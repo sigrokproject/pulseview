@@ -27,7 +27,9 @@
 
 namespace pv {
 
-class AnalogData;
+namespace data {
+class Analog;
+}
 
 namespace view {
 
@@ -35,7 +37,7 @@ class AnalogSignal : public Signal
 {
 public:
 	AnalogSignal(QString name,
-		boost::shared_ptr<pv::AnalogData> data);
+		boost::shared_ptr<pv::data::Analog> data);
 
 	/**
 	 * Paints the signal with a QPainter
@@ -57,7 +59,7 @@ private:
 	int get_nominal_offset(const QRect &rect) const;
 
 private:
-	boost::shared_ptr<pv::AnalogData> _data;
+	boost::shared_ptr<pv::data::Analog> _data;
 };
 
 } // namespace view

@@ -18,36 +18,40 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_DATASNAPSHOT_H
-#define PULSEVIEW_PV_DATASNAPSHOT_H
+#ifndef PULSEVIEW_PV_DATA_ANALOG_H
+#define PULSEVIEW_PV_DATA_ANALOG_H
+
+#include "signaldata.h"
+
+#include <boost/shared_ptr.hpp>
+#include <deque>
 
 extern "C" {
 #include <libsigrok/libsigrok.h>
 }
 
-#include <boost/thread.hpp>
-
 namespace pv {
+namespace data {
 
-class DataSnapshot
+class AnalogSnapshot;
+
+class Analog : public SignalData
 {
 public:
-	DataSnapshot(int unit_size);
+	Analog(const sr_datafeed_meta_analog &meta,
+		uint64_t samplerate);
 
-	virtual ~DataSnapshot();
+	void push_snapshot(
+		boost::shared_ptr<AnalogSnapshot> &snapshot);
 
-	uint64_t get_sample_count();
+	std::deque< boost::shared_ptr<AnalogSnapshot> >&
+		get_snapshots();
 
-protected:
-	void append_data(void *data, uint64_t samples);
-
-protected:
-	mutable boost::recursive_mutex _mutex;
-	void *_data;
-	uint64_t _sample_count;
-	int _unit_size;
+private:
+	std::deque< boost::shared_ptr<AnalogSnapshot> > _snapshots;
 };
 
+} // namespace data
 } // namespace pv
 
-#endif // PULSEVIEW_PV_DATASNAPSHOT_H
+#endif // PULSEVIEW_PV_DATA_ANALOG_H

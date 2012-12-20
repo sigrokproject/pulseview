@@ -21,6 +21,7 @@
 #include "signaldata.h"
 
 namespace pv {
+namespace data {
 
 SignalData::SignalData(double samplerate) :
 	_samplerate(samplerate),
@@ -38,4 +39,5 @@ double SignalData::get_start_time() const
 	return _start_time;
 }
 
+} // namespace data
 } // namespace pv

@@ -27,7 +27,9 @@
 
 namespace pv {
 
-class LogicData;
+namespace data {
+class Logic;
+}
 
 namespace view {
 
@@ -44,7 +46,7 @@ private:
 
 public:
 	LogicSignal(QString name,
-		boost::shared_ptr<pv::LogicData> data,
+		boost::shared_ptr<pv::data::Logic> data,
 		int probe_index);
 
 	/**
@@ -72,7 +74,7 @@ private:
 
 private:
 	int _probe_index;
-	boost::shared_ptr<pv::LogicData> _data;
+	boost::shared_ptr<pv::data::Logic> _data;
 };
 
 } // namespace view

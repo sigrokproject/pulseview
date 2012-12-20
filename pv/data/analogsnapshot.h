@@ -18,40 +18,28 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#include <extdef.h>
+#ifndef PULSEVIEW_PV_DATA_ANALOGSNAPSHOT_H
+#define PULSEVIEW_PV_DATA_ANALOGSNAPSHOT_H
 
-#include <assert.h>
-#include <string.h>
-#include <stdlib.h>
-#include <math.h>
+#include "snapshot.h"
 
-#include <boost/foreach.hpp>
-
-#include "analogdatasnapshot.h"
-
-using namespace boost;
-using namespace std;
+#include <utility>
+#include <vector>
 
 namespace pv {
+namespace data {
 
-AnalogDataSnapshot::AnalogDataSnapshot(
-	const sr_datafeed_analog &analog) :
-	DataSnapshot(sizeof(float))
+class AnalogSnapshot : public Snapshot
 {
-	lock_guard<recursive_mutex> lock(_mutex);
-	append_payload(analog);
-}
+public:
+	AnalogSnapshot(const sr_datafeed_analog &analog);
 
-void AnalogDataSnapshot::append_payload(
-	const sr_datafeed_analog &analog)
-{
-	lock_guard<recursive_mutex> lock(_mutex);
-	append_data(analog.data, analog.num_samples);
-}
+	void append_payload(const sr_datafeed_analog &analog);
 
-const float* AnalogDataSnapshot::get_samples() const
-{
-	return (const float*)_data;
-}
+	const float* get_samples() const;
+};
 
+} // namespace data
 } // namespace pv
+
+#endif // PULSEVIEW_PV_DATA_ANALOGSNAPSHOT_H

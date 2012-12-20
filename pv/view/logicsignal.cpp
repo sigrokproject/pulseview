@@ -23,8 +23,8 @@
 #include <math.h>
 
 #include "logicsignal.h"
-#include "../logicdata.h"
-#include "../logicdatasnapshot.h"
+#include "pv/data/logic.h"
+#include "pv/data/logicsnapshot.h"
 
 using namespace boost;
 using namespace std;
@@ -51,7 +51,7 @@ const QColor LogicSignal::LogicSignalColours[10] = {
 	QColor(0xEE, 0xEE, 0xEC),	// White
 };
 
-LogicSignal::LogicSignal(QString name, shared_ptr<LogicData> data,
+LogicSignal::LogicSignal(QString name, shared_ptr<data::Logic> data,
 	int probe_index) :
 	Signal(name),
 	_probe_index(probe_index),
@@ -75,12 +75,12 @@ void LogicSignal::paint(QPainter &p, const QRect &rect, double scale,
 	const float high_offset = rect.top() + 0.5f;
 	const float low_offset = rect.bottom() + 0.5f;
 
-	const deque< shared_ptr<pv::LogicDataSnapshot> > &snapshots =
+	const deque< shared_ptr<pv::data::LogicSnapshot> > &snapshots =
 		_data->get_snapshots();
 	if (snapshots.empty())
 		return;
 
-	const shared_ptr<pv::LogicDataSnapshot> &snapshot =
+	const shared_ptr<pv::data::LogicSnapshot> &snapshot =
 		snapshots.front();
 
 	const double pixels_offset = offset / scale;
@@ -102,7 +102,7 @@ void LogicSignal::paint(QPainter &p, const QRect &rect, double scale,
 	QLineF *const edge_lines = new QLineF[edge_count];
 	line = edge_lines;
 
-	for (vector<pv::LogicDataSnapshot::EdgePair>::const_iterator i =
+	for (vector<pv::data::LogicSnapshot::EdgePair>::const_iterator i =
 			edges.begin() + 1;
 		i != edges.end() - 1; i++) {
 		const float x = ((*i).first / samples_per_pixel -
@@ -135,7 +135,7 @@ void LogicSignal::paint_caps(QPainter &p, QLineF *const lines,
 {
 	QLineF *line = lines;
 
-	for (vector<pv::LogicDataSnapshot::EdgePair>::const_iterator i =
+	for (vector<pv::data::LogicSnapshot::EdgePair>::const_iterator i =
 		edges.begin(); i != (edges.end() - 1); i++)
 		if ((*i).second == level) {
 			*line++ = QLineF(

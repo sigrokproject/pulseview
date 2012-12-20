@@ -18,41 +18,29 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_LOGICDATA_H
-#define PULSEVIEW_PV_LOGICDATA_H
+#ifndef PULSEVIEW_PV_DATA_SIGNALDATA_H
+#define PULSEVIEW_PV_DATA_SIGNALDATA_H
 
-#include "signaldata.h"
-
-#include <boost/shared_ptr.hpp>
-#include <deque>
-
-extern "C" {
-#include <libsigrok/libsigrok.h>
-}
+#include <stdint.h>
 
 namespace pv {
+namespace data {
 
-class LogicDataSnapshot;
-
-class LogicData : public SignalData
+class SignalData
 {
 public:
-	LogicData(const sr_datafeed_meta_logic &meta, uint64_t samplerate);
+	SignalData(double samplerate);
 
-	int get_num_probes() const;
+public:
+	double get_samplerate() const;
+	double get_start_time() const;
 
-	void push_snapshot(
-		boost::shared_ptr<LogicDataSnapshot> &snapshot);
-
-	std::deque< boost::shared_ptr<LogicDataSnapshot> >&
-		get_snapshots();
-
-private:
-	const int _num_probes;
-	std::deque< boost::shared_ptr<LogicDataSnapshot> >
-		_snapshots;
+protected:
+	const double _samplerate;
+	const double _start_time;
 };
 
+} // namespace data
 } // namespace pv
 
-#endif // PULSEVIEW_PV_LOGICDATA_H
+#endif // PULSEVIEW_PV_DATA_SIGNALDATA_H

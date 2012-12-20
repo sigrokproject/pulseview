@@ -18,26 +18,30 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_ANALOGDATASNAPSHOT_H
-#define PULSEVIEW_PV_ANALOGDATASNAPSHOT_H
+#include "analog.h"
+#include "analogsnapshot.h"
 
-#include "datasnapshot.h"
-
-#include <utility>
-#include <vector>
+using namespace boost;
+using namespace std;
 
 namespace pv {
+namespace data {
 
-class AnalogDataSnapshot : public DataSnapshot
+Analog::Analog(const sr_datafeed_meta_analog &meta,
+	uint64_t samplerate) :
+	SignalData(samplerate)
 {
-public:
-	AnalogDataSnapshot(const sr_datafeed_analog &analog);
+}
 
-	void append_payload(const sr_datafeed_analog &analog);
+void Analog::push_snapshot(shared_ptr<AnalogSnapshot> &snapshot)
+{
+	_snapshots.push_front(snapshot);
+}
 
-	const float* get_samples() const;
-};
+deque< shared_ptr<AnalogSnapshot> >& Analog::get_snapshots()
+{
+	return _snapshots;
+}
 
+} // namespace data
 } // namespace pv
-
-#endif // PULSEVIEW_PV_ANALOGDATASNAPSHOT_H

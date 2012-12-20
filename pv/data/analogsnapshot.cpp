@@ -18,44 +18,41 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#include "datasnapshot.h"
+#include <extdef.h>
 
 #include <assert.h>
-#include <stdlib.h>
 #include <string.h>
+#include <stdlib.h>
+#include <math.h>
+
+#include <boost/foreach.hpp>
+
+#include "analogsnapshot.h"
 
 using namespace boost;
+using namespace std;
 
 namespace pv {
+namespace data {
 
-DataSnapshot::DataSnapshot(int unit_size) :
-	_data(NULL),
-	_sample_count(0),
-	_unit_size(unit_size)
+AnalogSnapshot::AnalogSnapshot(const sr_datafeed_analog &analog) :
+	Snapshot(sizeof(float))
 {
 	lock_guard<recursive_mutex> lock(_mutex);
-	assert(_unit_size > 0);
+	append_payload(analog);
 }
 
-DataSnapshot::~DataSnapshot()
+void AnalogSnapshot::append_payload(
+	const sr_datafeed_analog &analog)
 {
 	lock_guard<recursive_mutex> lock(_mutex);
-	free(_data);
+	append_data(analog.data, analog.num_samples);
 }
 
-uint64_t DataSnapshot::get_sample_count()
+const float* AnalogSnapshot::get_samples() const
 {
-	lock_guard<recursive_mutex> lock(_mutex);
-	return _sample_count;
+	return (const float*)_data;
 }
 
-void DataSnapshot::append_data(void *data, uint64_t samples)
-{
-	lock_guard<recursive_mutex> lock(_mutex);
-	_data = realloc(_data, (_sample_count + samples) * _unit_size);
-	memcpy((uint8_t*)_data + _sample_count * _unit_size,
-		data, samples * _unit_size);
-	_sample_count += samples;
-}
-
+} // namespace data
 } // namespace pv

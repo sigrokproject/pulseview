@@ -20,10 +20,10 @@
 
 #include "sigsession.h"
 
-#include "analogdata.h"
-#include "analogdatasnapshot.h"
-#include "logicdata.h"
-#include "logicdatasnapshot.h"
+#include "data/analog.h"
+#include "data/analogsnapshot.h"
+#include "data/logic.h"
+#include "data/logicsnapshot.h"
 #include "view/analogsignal.h"
 #include "view/logicsignal.h"
 
@@ -103,7 +103,7 @@ vector< shared_ptr<view::Signal> > SigSession::get_signals()
 	return _signals;
 }
 
-boost::shared_ptr<LogicData> SigSession::get_data()
+boost::shared_ptr<data::Logic> SigSession::get_data()
 {
 	return _logic_data;
 }
@@ -188,8 +188,8 @@ void SigSession::feed_in_meta_logic(const struct sr_dev_inst *sdi,
 		lock_guard<mutex> data_lock(_data_mutex);
 		lock_guard<mutex> sampling_lock(_sampling_mutex);
 
-		// Create an empty LogicData for coming data snapshots
-		_logic_data.reset(new LogicData(meta_logic, _sample_rate));
+		// Create an empty data::Logic for coming data snapshots
+		_logic_data.reset(new data::Logic(meta_logic, _sample_rate));
 		assert(_logic_data);
 		if (!_logic_data)
 			return;
@@ -224,8 +224,8 @@ void SigSession::feed_in_meta_analog(const struct sr_dev_inst *sdi,
 		lock_guard<mutex> data_lock(_data_mutex);
 		lock_guard<mutex> sampling_lock(_sampling_mutex);
 
-		// Create an empty AnalogData for coming data snapshots
-		_analog_data.reset(new AnalogData(
+		// Create an empty data::Analog for coming data snapshots
+		_analog_data.reset(new data::Analog(
 			meta_analog, _sample_rate));
 		assert(_analog_data);
 		if (!_analog_data)
@@ -250,8 +250,8 @@ void SigSession::feed_in_logic(const sr_datafeed_logic &logic)
 	if (!_cur_logic_snapshot)
 	{
 		// Create a new data snapshot
-		_cur_logic_snapshot = shared_ptr<LogicDataSnapshot>(
-			new LogicDataSnapshot(logic));
+		_cur_logic_snapshot = shared_ptr<data::LogicSnapshot>(
+			new data::LogicSnapshot(logic));
 		_logic_data->push_snapshot(_cur_logic_snapshot);
 	}
 	else
@@ -269,8 +269,8 @@ void SigSession::feed_in_analog(const sr_datafeed_analog &analog)
 	if (!_cur_analog_snapshot)
 	{
 		// Create a new data snapshot
-		_cur_analog_snapshot = shared_ptr<AnalogDataSnapshot>(
-			new AnalogDataSnapshot(analog));
+		_cur_analog_snapshot = shared_ptr<data::AnalogSnapshot>(
+			new data::AnalogSnapshot(analog));
 		_analog_data->push_snapshot(_cur_analog_snapshot);
 	}
 	else

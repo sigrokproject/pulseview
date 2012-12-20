@@ -34,9 +34,9 @@
 #include "view.h"
 #include "viewport.h"
 
-#include "../logicdata.h"
-#include "../logicdatasnapshot.h"
-#include "../sigsession.h"
+#include "pv/sigsession.h"
+#include "pv/data/logic.h"
+#include "pv/data/logicsnapshot.h"
 
 using namespace boost;
 using namespace std;
@@ -189,7 +189,7 @@ void View::normalize_layout()
 
 void View::get_scroll_layout(double &length, double &offset) const
 {
-	const shared_ptr<SignalData> sig_data = _session.get_data();
+	const shared_ptr<data::SignalData> sig_data = _session.get_data();
 	if (!sig_data)
 		return;
 
@@ -319,11 +319,11 @@ void View::data_updated()
 {
 	// Get the new data length
 	_data_length = 0;
-	shared_ptr<LogicData> sig_data = _session.get_data();
+	shared_ptr<data::Logic> sig_data = _session.get_data();
 	if (sig_data) {
-		deque< shared_ptr<LogicDataSnapshot> > &snapshots =
+		deque< shared_ptr<data::LogicSnapshot> > &snapshots =
 			sig_data->get_snapshots();
-		BOOST_FOREACH(shared_ptr<LogicDataSnapshot> s, snapshots)
+		BOOST_FOREACH(shared_ptr<data::LogicSnapshot> s, snapshots)
 			if (s)
 				_data_length = max(_data_length,
 					s->get_sample_count());

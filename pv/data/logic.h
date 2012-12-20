@@ -18,35 +18,42 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#include "logicdata.h"
-#include "logicdatasnapshot.h"
+#ifndef PULSEVIEW_PV_DATA_LOGIC_H
+#define PULSEVIEW_PV_DATA_LOGIC_H
 
-using namespace boost;
-using namespace std;
+#include "signaldata.h"
+
+#include <boost/shared_ptr.hpp>
+#include <deque>
+
+extern "C" {
+#include <libsigrok/libsigrok.h>
+}
 
 namespace pv {
+namespace data {
 
-LogicData::LogicData(const sr_datafeed_meta_logic &meta,
-	uint64_t samplerate) :
-	SignalData(samplerate),
-	_num_probes(meta.num_probes)
+class LogicSnapshot;
+
+class Logic : public SignalData
 {
-}
+public:
+	Logic(const sr_datafeed_meta_logic &meta, uint64_t samplerate);
 
-int LogicData::get_num_probes() const
-{
-	return _num_probes;
-}
+	int get_num_probes() const;
 
-void LogicData::push_snapshot(
-	boost::shared_ptr<LogicDataSnapshot> &snapshot)
-{
-	_snapshots.push_front(snapshot);
-}
+	void push_snapshot(
+		boost::shared_ptr<LogicSnapshot> &snapshot);
 
-deque< shared_ptr<LogicDataSnapshot> >& LogicData::get_snapshots()
-{
-	return _snapshots;
-}
+	std::deque< boost::shared_ptr<LogicSnapshot> >&
+		get_snapshots();
 
+private:
+	const int _num_probes;
+	std::deque< boost::shared_ptr<LogicSnapshot> > _snapshots;
+};
+
+} // namespace data
 } // namespace pv
+
+#endif // PULSEVIEW_PV_DATA_LOGIC_H

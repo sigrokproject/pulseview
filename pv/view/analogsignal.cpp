@@ -23,8 +23,8 @@
 #include <math.h>
 
 #include "analogsignal.h"
-#include "../analogdata.h"
-#include "../analogdatasnapshot.h"
+#include "pv/data/analog.h"
+#include "pv/data/analogsnapshot.h"
 
 using namespace boost;
 using namespace std;
@@ -32,7 +32,7 @@ using namespace std;
 namespace pv {
 namespace view {
 
-AnalogSignal::AnalogSignal(QString name, shared_ptr<AnalogData> data) :
+AnalogSignal::AnalogSignal(QString name, shared_ptr<data::Analog> data) :
 	Signal(name),
 	_data(data)
 {
@@ -45,12 +45,12 @@ void AnalogSignal::paint(QPainter &p, const QRect &rect, double scale,
 	assert(scale > 0);
 	assert(_data);
 
-	const deque< shared_ptr<pv::AnalogDataSnapshot> > &snapshots =
+	const deque< shared_ptr<pv::data::AnalogSnapshot> > &snapshots =
 		_data->get_snapshots();
 	if (snapshots.empty())
 		return;
 
-	const shared_ptr<pv::AnalogDataSnapshot> &snapshot =
+	const shared_ptr<pv::data::AnalogSnapshot> &snapshot =
 		snapshots.front();
 
 	const double pixels_offset = offset / scale;

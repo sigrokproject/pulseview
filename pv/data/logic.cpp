@@ -18,29 +18,37 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#include "analogdata.h"
-#include "analogdatasnapshot.h"
+#include "logic.h"
+#include "logicsnapshot.h"
 
 using namespace boost;
 using namespace std;
 
 namespace pv {
+namespace data {
 
-AnalogData::AnalogData(const sr_datafeed_meta_analog &meta,
+Logic::Logic(const sr_datafeed_meta_logic &meta,
 	uint64_t samplerate) :
-	SignalData(samplerate)
+	SignalData(samplerate),
+	_num_probes(meta.num_probes)
 {
 }
 
-void AnalogData::push_snapshot(
-	boost::shared_ptr<AnalogDataSnapshot> &snapshot)
+int Logic::get_num_probes() const
+{
+	return _num_probes;
+}
+
+void Logic::push_snapshot(
+	shared_ptr<LogicSnapshot> &snapshot)
 {
 	_snapshots.push_front(snapshot);
 }
 
-deque< shared_ptr<AnalogDataSnapshot> >& AnalogData::get_snapshots()
+deque< shared_ptr<LogicSnapshot> >& Logic::get_snapshots()
 {
 	return _snapshots;
 }
 
+} // namespace data
 } // namespace pv

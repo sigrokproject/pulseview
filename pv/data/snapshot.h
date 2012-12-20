@@ -18,27 +18,38 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_SIGNALDATA_H
-#define PULSEVIEW_PV_SIGNALDATA_H
+#ifndef PULSEVIEW_PV_DATA_SNAPSHOT_H
+#define PULSEVIEW_PV_DATA_SNAPSHOT_H
 
-#include <stdint.h>
+extern "C" {
+#include <libsigrok/libsigrok.h>
+}
+
+#include <boost/thread.hpp>
 
 namespace pv {
+namespace data {
 
-class SignalData
+class Snapshot
 {
 public:
-	SignalData(double samplerate);
+	Snapshot(int unit_size);
 
-public:
-	double get_samplerate() const;
-	double get_start_time() const;
+	virtual ~Snapshot();
+
+	uint64_t get_sample_count();
 
 protected:
-	const double _samplerate;
-	const double _start_time;
+	void append_data(void *data, uint64_t samples);
+
+protected:
+	mutable boost::recursive_mutex _mutex;
+	void *_data;
+	uint64_t _sample_count;
+	int _unit_size;
 };
 
+} // namespace data
 } // namespace pv
 
-#endif // PULSEVIEW_PV_SIGNALDATA_H
+#endif // PULSEVIEW_PV_DATA_SNAPSHOT_H

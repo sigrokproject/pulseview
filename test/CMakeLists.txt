@@ -21,9 +21,9 @@
 find_package(Boost 1.46 COMPONENTS unit_test_framework REQUIRED)
 
 set(pulseview_TEST_SOURCES
-	${PROJECT_SOURCE_DIR}/pv/datasnapshot.cpp
-	${PROJECT_SOURCE_DIR}/pv/logicdatasnapshot.cpp
-	logicdatasnapshot.cpp
+	${PROJECT_SOURCE_DIR}/pv/data/snapshot.cpp
+	${PROJECT_SOURCE_DIR}/pv/data/logicsnapshot.cpp
+	data/logicsnapshot.cpp
 	test.cpp
 )
 

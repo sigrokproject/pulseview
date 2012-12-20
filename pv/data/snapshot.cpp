@@ -18,39 +18,46 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_ANALOGDATA_H
-#define PULSEVIEW_PV_ANALOGDATA_H
+#include "snapshot.h"
 
-#include "signaldata.h"
+#include <assert.h>
+#include <stdlib.h>
+#include <string.h>
 
-#include <boost/shared_ptr.hpp>
-#include <deque>
-
-extern "C" {
-#include <libsigrok/libsigrok.h>
-}
+using namespace boost;
 
 namespace pv {
+namespace data {
 
-class AnalogDataSnapshot;
-
-class AnalogData : public SignalData
+Snapshot::Snapshot(int unit_size) :
+	_data(NULL),
+	_sample_count(0),
+	_unit_size(unit_size)
 {
-public:
-	AnalogData(const sr_datafeed_meta_analog &meta,
-		uint64_t samplerate);
+	lock_guard<recursive_mutex> lock(_mutex);
+	assert(_unit_size > 0);
+}
 
-	void push_snapshot(
-		boost::shared_ptr<AnalogDataSnapshot> &snapshot);
+Snapshot::~Snapshot()
+{
+	lock_guard<recursive_mutex> lock(_mutex);
+	free(_data);
+}
 
-	std::deque< boost::shared_ptr<AnalogDataSnapshot> >&
-		get_snapshots();
+uint64_t Snapshot::get_sample_count()
+{
+	lock_guard<recursive_mutex> lock(_mutex);
+	return _sample_count;
+}
 
-private:
-	std::deque< boost::shared_ptr<AnalogDataSnapshot> >
-		_snapshots;
-};
+void Snapshot::append_data(void *data, uint64_t samples)
+{
+	lock_guard<recursive_mutex> lock(_mutex);
+	_data = realloc(_data, (_sample_count + samples) * _unit_size);
+	memcpy((uint8_t*)_data + _sample_count * _unit_size,
+		data, samples * _unit_size);
+	_sample_count += samples;
+}
 
+} // namespace data
 } // namespace pv
-
-#endif // PULSEVIEW_PV_ANALOGDATA_H
