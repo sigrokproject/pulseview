@@ -35,7 +35,7 @@ extern "C" {
 #include "mainwindow.h"
 #include "samplingbar.h"
 #include "dialogs/about.h"
-#include "pv/view/view.h"
+#include "view/view.h"
 
 extern "C" {
 /* __STDC_FORMAT_MACROS is required for PRIu64 and friends (in C++). */
