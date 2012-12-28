@@ -35,6 +35,9 @@ class HwCap : public QDialog
 public:
 	HwCap(QWidget *parent, struct sr_dev_inst *sdi);
 
+protected:
+	void accept();
+
 private:
 	QVBoxLayout _layout;
 	QDialogButtonBox _button_box;

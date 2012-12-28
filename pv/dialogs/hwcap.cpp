@@ -41,5 +41,11 @@ HwCap::HwCap(QWidget *parent, struct sr_dev_inst *sdi) :
 	_layout.addWidget(&_button_box);
 }
 
+void HwCap::accept()
+{
+	QDialog::accept();
+	_hw_cap_binding.commit();
+}
+
 } // namespace dialogs
 } // namespace pv
