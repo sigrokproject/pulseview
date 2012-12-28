@@ -41,6 +41,8 @@ public:
 public:
 	QWidget* get_form(QWidget *parent);
 
+	void commit();
+
 protected:
 	std::vector< boost::shared_ptr<Property> > _properties;
 

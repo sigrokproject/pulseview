@@ -56,6 +56,15 @@ QWidget* Binding::get_form(QWidget *parent)
 	return _form;
 }
 
+void Binding::commit()
+{
+	BOOST_FOREACH(shared_ptr<Property> p, _properties)
+	{
+		assert(p);
+		p->commit();
+	}
+}
+
 } // binding
 } // prop
 } // pv
