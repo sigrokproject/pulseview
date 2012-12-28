@@ -30,6 +30,8 @@ extern "C" {
 
 #include "samplingbar.h"
 
+#include <pv/dialogs/hwcap.h>
+
 namespace pv {
 
 const uint64_t SamplingBar::RecordLengths[11] = {
@@ -49,13 +51,17 @@ const uint64_t SamplingBar::RecordLengths[11] = {
 SamplingBar::SamplingBar(QWidget *parent) :
 	QToolBar("Sampling Bar", parent),
 	_device_selector(this),
+	_configure_button(this),
 	_record_length_selector(this),
 	_sample_rate_list(this),
 	_run_stop_button(this)
 {
-	connect(&_run_stop_button, SIGNAL(clicked()), this, SIGNAL(run_stop()));
+	connect(&_run_stop_button, SIGNAL(clicked()),
+		this, SIGNAL(run_stop()));
 	connect(&_device_selector, SIGNAL(currentIndexChanged (int)),
 		this, SLOT(on_device_selected()));
+	connect(&_configure_button, SIGNAL(clicked()),
+		this, SLOT(configure()));
 
 	_sample_rate_value.setDecimals(0);
 	_sample_rate_value.setSuffix("Hz");
@@ -70,7 +76,10 @@ SamplingBar::SamplingBar(QWidget *parent) :
 
 	set_sampling(false);
 
+	_configure_button.setIcon(QIcon::fromTheme("configure"));
+
 	addWidget(&_device_selector);
+	addWidget(&_configure_button);
 	addWidget(&_record_length_selector);
 	_sample_rate_list_action = addWidget(&_sample_rate_list);
 	_sample_rate_value_action = addWidget(&_sample_rate_value);
@@ -192,6 +201,15 @@ void SamplingBar::update_sample_rate_selector()
 void SamplingBar::on_device_selected()
 {
 	update_sample_rate_selector();
+}
+
+void SamplingBar::configure()
+{
+	sr_dev_inst *const sdi = get_selected_device();
+	assert(sdi);
+
+	pv::dialogs::HwCap dlg(this, sdi);
+	dlg.exec();
 }
 
 } // namespace pv

@@ -57,9 +57,11 @@ private:
 
 private slots:
 	void on_device_selected();
+	void configure();
 
 private:
 	QComboBox _device_selector;
+	QToolButton _configure_button;
 
 	QComboBox _record_length_selector;
 
