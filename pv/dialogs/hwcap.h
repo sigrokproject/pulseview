@@ -22,6 +22,8 @@
 #define PULSEVIEW_PV_HWCAP_H
 
 #include <QDialog>
+#include <QDialogButtonBox>
+#include <QVBoxLayout>
 
 #include <pv/prop/binding/hwcap.h>
 
@@ -34,6 +36,9 @@ public:
 	HwCap(QWidget *parent, struct sr_dev_inst *sdi);
 
 private:
+	QVBoxLayout _layout;
+	QDialogButtonBox _button_box;
+
 	pv::prop::binding::HwCap _hw_cap_binding;
 };
 

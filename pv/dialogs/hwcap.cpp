@@ -25,8 +25,20 @@ namespace dialogs {
 
 HwCap::HwCap(QWidget *parent, struct sr_dev_inst *sdi) :
 	QDialog(parent),
+	_layout(this),
+	_button_box(QDialogButtonBox::Ok | QDialogButtonBox::Cancel,
+		Qt::Horizontal, this),
 	_hw_cap_binding(sdi)
 {
+	connect(&_button_box, SIGNAL(accepted()), this, SLOT(accept()));
+	connect(&_button_box, SIGNAL(rejected()), this, SLOT(reject()));
+
+	setLayout(&_layout);
+
+	QWidget *const form = _hw_cap_binding.get_form(this);
+	_layout.addWidget(form);
+
+	_layout.addWidget(&_button_box);
 }
 
 } // namespace dialogs
