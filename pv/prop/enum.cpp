@@ -18,6 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
+#include <assert.h>
+
 #include <QComboBox>
 
 #include "enum.h"
@@ -27,9 +29,14 @@ using namespace std;
 namespace pv {
 namespace prop {
 
-Enum::Enum(QString name, vector< pair<int, QString> > values) :
+Enum::Enum(QString name,
+	std::vector<std::pair<const void*, QString> > values,
+	boost::function<const void* ()> getter,
+	boost::function<void (const void*)> setter) :
 	Property(name),
 	_values(values),
+	_getter(getter),
+	_setter(setter),
 	_selector(NULL)
 {
 }
@@ -40,12 +47,27 @@ QWidget* Enum::get_widget(QWidget *parent)
 		return _selector;
 
 	_selector = new QComboBox(parent);
-	for(vector< pair<int, QString> >::const_iterator i = _values.begin();
+	for(vector< pair<const void*, QString> >::const_iterator i =
+			_values.begin();
 		i != _values.end(); i++)
 		_selector->addItem((*i).second,
-			qVariantFromValue((*i).first));
+			qVariantFromValue((void*)(*i).first));
 
 	return _selector;
+}
+
+void Enum::commit()
+{
+	assert(_setter);
+
+	if(!_selector)
+		return;
+
+	const int index = _selector->currentIndex();
+	if (index < 0)
+		return;
+
+	_setter(_selector->itemData(index).value<void*>());
 }
 
 } // prop

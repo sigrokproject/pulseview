@@ -21,6 +21,8 @@
 #ifndef PULSEVIEW_PV_PROP_PROPERTY_H
 #define PULSEVIEW_PV_PROP_PROPERTY_H
 
+#include <boost/function.hpp>
+
 #include <QString>
 #include <QWidget>
 
@@ -38,6 +40,8 @@ public:
 	const QString& name() const;
 
 	virtual QWidget* get_widget(QWidget *parent) = 0;
+
+	virtual void commit() = 0;
 
 private:
 	QString _name;

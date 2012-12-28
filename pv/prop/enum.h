@@ -34,12 +34,19 @@ namespace prop {
 class Enum : public Property
 {
 public:
-	Enum(QString name, std::vector<std::pair<int, QString> > values);
+	Enum(QString name,
+		std::vector<std::pair<const void*, QString> > values,
+		boost::function<const void* ()> getter,
+		boost::function<void (const void*)> setter);
 
 	QWidget* get_widget(QWidget *parent);
 
+	void commit();
+
 private:
-	const std::vector< std::pair<int, QString> > _values;
+	const std::vector< std::pair<const void*, QString> > _values;
+	boost::function<const void* ()> _getter;
+	boost::function<void (const void*)> _setter;
 
 	QComboBox *_selector;
 };
