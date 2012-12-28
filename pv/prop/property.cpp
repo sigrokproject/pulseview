@@ -18,37 +18,20 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_PROP_BINDING_BINDING_H
-#define PULSEVIEW_PV_PROP_BINDING_BINDING_H
-
-#include <vector>
-#include <boost/shared_ptr.hpp>
-
-class QWidget;
+#include "property.h"
 
 namespace pv {
 namespace prop {
 
-class Property;
-
-namespace binding {
-
-class Binding
+Property::Property(QString name) :
+	_name(name)
 {
-public:
-	Binding();
+}
 
-public:
-	QWidget* get_form(QWidget *parent);
+const QString& Property::name() const
+{
+	return _name;
+}
 
-protected:
-	std::vector< boost::shared_ptr<Property> > _properties;
-
-	QWidget *_form;
-};
-
-} // binding
 } // prop
 } // pv
-
-#endif // PULSEVIEW_PV_PROP_BINDING_BINDING_H

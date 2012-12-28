@@ -18,37 +18,44 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_PROP_BINDING_BINDING_H
-#define PULSEVIEW_PV_PROP_BINDING_BINDING_H
+#include <QFormLayout>
+#include <QWidget>
 
-#include <vector>
-#include <boost/shared_ptr.hpp>
+#include <boost/foreach.hpp>
 
-class QWidget;
+#include "binding.h"
+
+#include <pv/prop/property.h>
+
+using namespace boost;
 
 namespace pv {
 namespace prop {
-
-class Property;
-
 namespace binding {
 
-class Binding
+Binding::Binding() :
+	_form(NULL)
 {
-public:
-	Binding();
+}
 
-public:
-	QWidget* get_form(QWidget *parent);
+QWidget* Binding::get_form(QWidget *parent)
+{
+	if(_form)
+		return _form;
 
-protected:
-	std::vector< boost::shared_ptr<Property> > _properties;
+	_form = new QWidget(parent);
+	QFormLayout *const layout = new QFormLayout(_form);
+	_form->setLayout(layout);
 
-	QWidget *_form;
-};
+	BOOST_FOREACH(shared_ptr<Property> p, _properties)
+	{
+		assert(p);
+		layout->addRow(p->name(), p->get_widget(_form));
+	}
+
+	return _form;
+}
 
 } // binding
 } // prop
 } // pv
-
-#endif // PULSEVIEW_PV_PROP_BINDING_BINDING_H

@@ -91,6 +91,8 @@ set(pulseview_SOURCES
 	pv/data/snapshot.cpp
 	pv/dialogs/about.cpp
 	pv/dialogs/hwcap.cpp
+	pv/prop/property.cpp
+	pv/prop/binding/binding.cpp
 	pv/prop/binding/hwcap.cpp
 	pv/view/analogsignal.cpp
 	pv/view/cursor.cpp
