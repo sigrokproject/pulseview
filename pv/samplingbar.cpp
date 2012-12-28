@@ -76,7 +76,8 @@ SamplingBar::SamplingBar(QWidget *parent) :
 
 	set_sampling(false);
 
-	_configure_button.setIcon(QIcon::fromTheme("configure"));
+	_configure_button.setIcon(QIcon::fromTheme("configure",
+		QIcon(":/icons/configure.png")));
 
 	addWidget(&_device_selector);
 	addWidget(&_configure_button);
