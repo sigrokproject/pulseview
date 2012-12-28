@@ -82,11 +82,13 @@ void MainWindow::setup_ui()
 	_action_about->setObjectName(QString::fromUtf8("actionAbout"));
 
 	_action_view_zoom_in = new QAction(this);
-	_action_view_zoom_in->setIcon(QIcon::fromTheme("zoom-in"));
+	_action_view_zoom_in->setIcon(QIcon::fromTheme("zoom-in",
+		QIcon(":/icons/zoom-in.png")));
 	_action_view_zoom_in->setObjectName(QString::fromUtf8("actionViewZoomIn"));
 
 	_action_view_zoom_out = new QAction(this);
-	_action_view_zoom_out->setIcon(QIcon::fromTheme("zoom-out"));
+	_action_view_zoom_out->setIcon(QIcon::fromTheme("zoom-out",
+		QIcon(":/icons/zoom-out.png")));
 	_action_view_zoom_out->setObjectName(QString::fromUtf8("actionViewZoomOut"));
 
 	_action_view_show_cursors = new QAction(this);
@@ -95,7 +97,8 @@ void MainWindow::setup_ui()
 	_action_view_show_cursors->setObjectName(QString::fromUtf8("actionViewShowCursors"));
 
 	_action_open = new QAction(this);
-	_action_open->setIcon(QIcon::fromTheme("document-open"));
+	_action_open->setIcon(QIcon::fromTheme("document-open",
+		QIcon(":/icons/document-open.png")));
 	_action_open->setObjectName(QString::fromUtf8("actionOpen"));
 
 	// Setup the menu bar
