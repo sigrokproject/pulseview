@@ -21,6 +21,8 @@
 #ifndef PULSEVIEW_PV_PROP_BINDING_HWCAP_H
 #define PULSEVIEW_PV_PROP_BINDING_HWCAP_H
 
+#include <QString>
+
 extern "C" {
 #include <libsigrok/libsigrok.h>
 }
@@ -35,6 +37,18 @@ class HwCap : public Binding
 {
 public:
 	HwCap(struct sr_dev_inst *sdi);
+
+private:
+	void expose_enum(const struct sr_hwcap_option *hwo,
+		const std::vector<std::pair<const void*, QString> > &values,
+		int opt);
+
+	void bind_stropt(const struct sr_hwcap_option *hwo, int id,
+		int opt);
+
+	void bind_buffer_size(const struct sr_hwcap_option *hwo);
+	void bind_time_base(const struct sr_hwcap_option *hwo);
+	void bind_vdiv(const struct sr_hwcap_option *hwo);
 
 protected:
 	const struct sr_dev_inst *_sdi;
