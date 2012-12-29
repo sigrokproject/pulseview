@@ -33,6 +33,7 @@
 #include "mainwindow.h"
 #include "samplingbar.h"
 #include "dialogs/about.h"
+#include "dialogs/connect.h"
 #include "view/view.h"
 
 /* __STDC_FORMAT_MACROS is required for PRIu64 and friends (in C++). */
@@ -97,6 +98,15 @@ void MainWindow::setup_ui()
 		QIcon(":/icons/document-open.png")));
 	_action_open->setObjectName(QString::fromUtf8("actionOpen"));
 	_menu_file->addAction(_action_open);
+
+	_menu_file->addSeparator();
+
+	_action_connect = new QAction(this);
+	_action_connect->setText(QApplication::translate(
+		"MainWindow", "&Connect to Device...", 0,
+		QApplication::UnicodeUTF8));
+	_action_connect->setObjectName(QString::fromUtf8("actionConnect"));
+	_menu_file->addAction(_action_connect);
 
 	_menu_file->addSeparator();
 
@@ -193,6 +203,12 @@ void MainWindow::on_actionOpen_triggered()
 		this, tr("Open File"), "",
 		tr("Sigrok Sessions (*.sr)"));
 	load_file(file_name);
+}
+
+void MainWindow::on_actionConnect_triggered()
+{
+	dialogs::Connect dlg(this);
+	dlg.exec();
 }
 
 void MainWindow::on_actionQuit_triggered()

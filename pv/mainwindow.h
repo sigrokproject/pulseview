@@ -60,6 +60,7 @@ private:
 	QMenuBar *_menu_bar;
 	QMenu *_menu_file;
 	QAction *_action_open;
+	QAction *_action_connect;
 	QAction *_action_quit;
 
 	QMenu *_menu_view;
@@ -81,6 +82,8 @@ private slots:
 
 	void on_actionOpen_triggered();
 	void on_actionQuit_triggered();
+
+	void on_actionConnect_triggered();
 
 	void on_actionViewZoomIn_triggered();
 

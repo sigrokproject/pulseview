@@ -100,6 +100,7 @@ set(pulseview_SOURCES
 	pv/data/signaldata.cpp
 	pv/data/snapshot.cpp
 	pv/dialogs/about.cpp
+	pv/dialogs/connect.cpp
 	pv/dialogs/deviceoptions.cpp
 	pv/prop/double.cpp
 	pv/prop/enum.cpp
@@ -122,6 +123,7 @@ set(pulseview_HEADERS
 	pv/samplingbar.h
 	pv/sigsession.h
 	pv/dialogs/about.h
+	pv/dialogs/connect.h
 	pv/view/cursor.h
 	pv/view/header.h
 	pv/view/ruler.h
