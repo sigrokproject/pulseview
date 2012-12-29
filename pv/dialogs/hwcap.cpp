@@ -30,6 +30,8 @@ HwCap::HwCap(QWidget *parent, struct sr_dev_inst *sdi) :
 		Qt::Horizontal, this),
 	_hw_cap_binding(sdi)
 {
+	setWindowTitle(tr("Configure Device"));
+
 	connect(&_button_box, SIGNAL(accepted()), this, SLOT(accept()));
 	connect(&_button_box, SIGNAL(rejected()), this, SLOT(reject()));
 
