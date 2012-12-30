@@ -56,16 +56,17 @@ private:
 	SigSession _session;
 	pv::view::View *_view;
 
+	QMenuBar *_menu_bar;
+	QMenu *_menu_file;
 	QAction *_action_open;
+
+	QMenu *_menu_view;
 	QAction *_action_view_zoom_in;
 	QAction *_action_view_zoom_out;
 	QAction *_action_view_show_cursors;
-	QAction *_action_about;
 
-	QMenuBar *_menu_bar;
-	QMenu *_menu_file;
-	QMenu *_menu_view;
 	QMenu *_menu_help;
+	QAction *_action_about;
 
 	QWidget *_central_widget;
 	QVBoxLayout *_vertical_layout;

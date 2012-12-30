@@ -77,44 +77,67 @@ void MainWindow::setup_ui()
 	_view = new pv::view::View(_session, this);
 	_vertical_layout->addWidget(_view);
 
-	// Setup the UI actions
-	_action_about = new QAction(this);
-	_action_about->setObjectName(QString::fromUtf8("actionAbout"));
-
-	_action_view_zoom_in = new QAction(this);
-	_action_view_zoom_in->setIcon(QIcon::fromTheme("zoom-in",
-		QIcon(":/icons/zoom-in.png")));
-	_action_view_zoom_in->setObjectName(QString::fromUtf8("actionViewZoomIn"));
-
-	_action_view_zoom_out = new QAction(this);
-	_action_view_zoom_out->setIcon(QIcon::fromTheme("zoom-out",
-		QIcon(":/icons/zoom-out.png")));
-	_action_view_zoom_out->setObjectName(QString::fromUtf8("actionViewZoomOut"));
-
-	_action_view_show_cursors = new QAction(this);
-	_action_view_show_cursors->setCheckable(true);
-	_action_view_show_cursors->setChecked(_view->cursors_shown());
-	_action_view_show_cursors->setObjectName(QString::fromUtf8("actionViewShowCursors"));
-
-	_action_open = new QAction(this);
-	_action_open->setIcon(QIcon::fromTheme("document-open",
-		QIcon(":/icons/document-open.png")));
-	_action_open->setObjectName(QString::fromUtf8("actionOpen"));
-
 	// Setup the menu bar
 	_menu_bar = new QMenuBar(this);
 	_menu_bar->setGeometry(QRect(0, 0, 400, 25));
 
+	// File Menu
 	_menu_file = new QMenu(_menu_bar);
+	_menu_file->setTitle(QApplication::translate(
+		"MainWindow", "&File", 0, QApplication::UnicodeUTF8));
+
+	_action_open = new QAction(this);
+	_action_open->setText(QApplication::translate(
+		"MainWindow", "&Open...", 0, QApplication::UnicodeUTF8));
+	_action_open->setIcon(QIcon::fromTheme("document-open",
+		QIcon(":/icons/document-open.png")));
+	_action_open->setObjectName(QString::fromUtf8("actionOpen"));
+
 	_menu_file->addAction(_action_open);
 
+	// View Menu
 	_menu_view = new QMenu(_menu_bar);
+	_menu_view->setTitle(QApplication::translate(
+		"MainWindow", "&View", 0, QApplication::UnicodeUTF8));
+
+	_action_view_zoom_in = new QAction(this);
+	_action_view_zoom_in->setText(QApplication::translate(
+		"MainWindow", "Zoom &In", 0, QApplication::UnicodeUTF8));
+	_action_view_zoom_in->setIcon(QIcon::fromTheme("zoom-in",
+		QIcon(":/icons/zoom-in.png")));
+	_action_view_zoom_in->setObjectName(
+		QString::fromUtf8("actionViewZoomIn"));
 	_menu_view->addAction(_action_view_zoom_in);
+
+	_action_view_zoom_out = new QAction(this);
+	_action_view_zoom_out->setText(QApplication::translate(
+		"MainWindow", "Zoom &Out", 0, QApplication::UnicodeUTF8));
+	_action_view_zoom_out->setIcon(QIcon::fromTheme("zoom-out",
+		QIcon(":/icons/zoom-out.png")));
+	_action_view_zoom_out->setObjectName(
+		QString::fromUtf8("actionViewZoomOut"));
 	_menu_view->addAction(_action_view_zoom_out);
+
 	_menu_view->addSeparator();
+
+	_action_view_show_cursors = new QAction(this);
+	_action_view_show_cursors->setCheckable(true);
+	_action_view_show_cursors->setChecked(_view->cursors_shown());
+	_action_view_show_cursors->setObjectName(
+		QString::fromUtf8("actionViewShowCursors"));
+	_action_view_show_cursors->setText(QApplication::translate(
+		"MainWindow", "Show &Cursors", 0, QApplication::UnicodeUTF8));
 	_menu_view->addAction(_action_view_show_cursors);
 
+	// Help Menu
 	_menu_help = new QMenu(_menu_bar);
+	_menu_help->setTitle(QApplication::translate(
+		"MainWindow", "&Help", 0, QApplication::UnicodeUTF8));
+
+	_action_about = new QAction(this);
+	_action_about->setObjectName(QString::fromUtf8("actionAbout"));
+	_action_about->setText(QApplication::translate(
+		"MainWindow", "&About...", 0, QApplication::UnicodeUTF8));
 	_menu_help->addAction(_action_about);
 
 	_menu_bar->addAction(_menu_file->menuAction());
@@ -139,16 +162,6 @@ void MainWindow::setup_ui()
 
 	setWindowTitle(QApplication::translate("MainWindow", "PulseView", 0,
 		QApplication::UnicodeUTF8));
-
-	_action_open->setText(QApplication::translate("MainWindow", "&Open...", 0, QApplication::UnicodeUTF8));
-	_action_view_zoom_in->setText(QApplication::translate("MainWindow", "Zoom &In", 0, QApplication::UnicodeUTF8));
-	_action_view_zoom_out->setText(QApplication::translate("MainWindow", "Zoom &Out", 0, QApplication::UnicodeUTF8));
-	_action_view_show_cursors->setText(QApplication::translate("MainWindow", "Show &Cursors", 0, QApplication::UnicodeUTF8));
-	_action_about->setText(QApplication::translate("MainWindow", "&About...", 0, QApplication::UnicodeUTF8));
-
-	_menu_file->setTitle(QApplication::translate("MainWindow", "&File", 0, QApplication::UnicodeUTF8));
-	_menu_view->setTitle(QApplication::translate("MainWindow", "&View", 0, QApplication::UnicodeUTF8));
-	_menu_help->setTitle(QApplication::translate("MainWindow", "&Help", 0, QApplication::UnicodeUTF8));
 
 	// Setup _session events
 	connect(&_session, SIGNAL(capture_state_changed(int)), this,
