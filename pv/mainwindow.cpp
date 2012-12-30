@@ -137,10 +137,6 @@ void MainWindow::setup_ui()
 		SLOT(run_stop()));
 	addToolBar(_sampling_bar);
 
-	// Setup the status bar
-	_status_bar = new QStatusBar(this);
-	setStatusBar(_status_bar);
-
 	setWindowTitle(QApplication::translate("MainWindow", "PulseView", 0,
 		QApplication::UnicodeUTF8));
 

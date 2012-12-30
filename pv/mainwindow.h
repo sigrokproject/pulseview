@@ -72,7 +72,6 @@ private:
 
 	QToolBar *_toolbar;
 	SamplingBar *_sampling_bar;
-	QStatusBar *_status_bar;
 
 private slots:
 
