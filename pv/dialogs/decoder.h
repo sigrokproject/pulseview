@@ -49,6 +49,9 @@ public:
 	Decoder(QWidget *parent, const srd_decoder *decoder,
 		const std::vector< boost::shared_ptr<view::Signal> > &sigs);
 
+	std::map<const srd_probe*, boost::shared_ptr<view::Signal> >
+		get_probes();
+
 private:
 	QComboBox* create_probe_selector(
 		QWidget *parent, const char *name);

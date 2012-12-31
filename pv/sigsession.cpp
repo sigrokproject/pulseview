@@ -198,12 +198,14 @@ boost::shared_ptr<data::Logic> SigSession::get_data()
 	return _logic_data;
 }
 
-void SigSession::add_decoder(srd_decoder *const dec)
+void SigSession::add_decoder(srd_decoder *const dec,
+	std::map<const srd_probe*,
+		boost::shared_ptr<view::Signal> > probes)
 {
 	{
 		lock_guard<mutex> lock(_signals_mutex);
 		shared_ptr<data::Decoder> decoder(
-			new data::Decoder(dec));
+			new data::Decoder(dec, probes));
 		shared_ptr<view::DecodeSignal> d(
 			new view::DecodeSignal(*this, decoder));
 		_decode_traces.push_back(d);

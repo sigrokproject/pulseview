@@ -395,7 +395,7 @@ void MainWindow::add_decoder(QObject *action)
 	if(dlg.exec() != QDialog::Accepted)
 		return;
 
-	_session.add_decoder(dec);
+	_session.add_decoder(dec, dlg.get_probes());
 }
 
 void MainWindow::run_stop()

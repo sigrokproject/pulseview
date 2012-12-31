@@ -23,15 +23,26 @@
 
 #include "signaldata.h"
 
+#include <map>
+
+#include <boost/shared_ptr.hpp>
+
 struct srd_decoder;
+struct srd_probe;
 
 namespace pv {
+
+namespace view {
+class Signal;
+}
+
 namespace data {
 
 class Decoder : public SignalData
 {
 public:
-	Decoder(const srd_decoder *const dec);
+	Decoder(const srd_decoder *const dec, std::map<const srd_probe*,
+		boost::shared_ptr<pv::view::Signal> > probes);
 
 	const srd_decoder* get_decoder() const;
 
@@ -39,6 +50,8 @@ public:
 
 private:
 	const srd_decoder *const _decoder;
+	std::map<const srd_probe*, boost::shared_ptr<view::Signal> >
+		_probes;
 };
 
 } // namespace data

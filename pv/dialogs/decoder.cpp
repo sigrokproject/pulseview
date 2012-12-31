@@ -22,8 +22,15 @@ extern "C" {
 #include <libsigrokdecode/libsigrokdecode.h>
 }
 
+#include <utility>
+
+#include <boost/foreach.hpp>
+
+#include <QDebug>
+
 #include "decoder.h"
 
+#include <pv/view/logicsignal.h>
 #include <pv/view/signal.h>
 
 using namespace boost;
@@ -113,6 +120,29 @@ QComboBox* Decoder::create_probe_selector(
 	}
 
 	return selector;
+}
+
+map<const srd_probe*, shared_ptr<view::Signal> > Decoder::get_probes()
+{
+	map<const srd_probe*, shared_ptr<view::Signal> > probe_map;
+	for(map<const srd_probe*, QComboBox*>::const_iterator i =
+		_probe_selector_map.begin();
+		i != _probe_selector_map.end(); i++)
+	{
+		const QComboBox *const combo = (*i).second;
+		const int probe_index =
+			combo->itemData(combo->currentIndex()).value<int>();
+		if(probe_index >= 0) {
+			shared_ptr<view::Signal> sig = _sigs[probe_index];
+			if(dynamic_cast<pv::view::LogicSignal*>(sig.get()))
+				probe_map[(*i).first] = sig;
+			else
+				qDebug() << "Currently only logic signals "
+					"are supported for decoding";
+		}
+	}
+
+	return probe_map;
 }
 
 } // namespace dialogs

@@ -25,6 +25,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
 
+#include <map>
 #include <string>
 #include <utility>
 #include <vector>
@@ -35,6 +36,7 @@
 #include <libsigrok/libsigrok.h>
 
 struct srd_decoder;
+struct srd_probe;
 
 namespace pv {
 
@@ -92,7 +94,9 @@ public:
 
 	boost::shared_ptr<data::Logic> get_data();
 
-	void add_decoder(srd_decoder *const dec);
+	void add_decoder(srd_decoder *const dec,
+		std::map<const srd_probe*,
+			boost::shared_ptr<view::Signal> > probes);
 
 private:
 	void set_capture_state(capture_state state);

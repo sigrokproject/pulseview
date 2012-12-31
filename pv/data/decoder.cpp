@@ -20,11 +20,16 @@
 
 #include "decoder.h"
 
+#include <pv/view/signal.h>
+
 namespace pv {
 namespace data {
 
-Decoder::Decoder(const srd_decoder *const dec) :
-	_decoder(dec)
+Decoder::Decoder(const srd_decoder *const dec,
+	std::map<const srd_probe*,
+		boost::shared_ptr<pv::view::Signal> > probes) :
+	_decoder(dec),
+	_probes(probes)
 {
 }
 
