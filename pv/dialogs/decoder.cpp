@@ -18,27 +18,30 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#include "decoder.h"
-
 extern "C" {
-/* __STDC_FORMAT_MACROS is required for PRIu64 and friends (in C++). */
-#define __STDC_FORMAT_MACROS
-#include <glib.h>
-#include <libsigrok/libsigrok.h>
+#include <libsigrokdecode/libsigrokdecode.h>
 }
+
+#include "decoder.h"
 
 namespace pv {
 namespace dialogs {
 
-Decoder::Decoder(QWidget *parent) :
+Decoder::Decoder(QWidget *parent, const srd_decoder *decoder) :
 	QDialog(parent),
+	_decoder(decoder),
 	_layout(this),
 	_form(this),
 	_form_layout(&_form),
+	_heading(this),
 	_button_box(QDialogButtonBox::Ok | QDialogButtonBox::Cancel,
 		Qt::Horizontal, this)
 {
-	setWindowTitle(tr("Configure Decoder"));
+	setWindowTitle(tr("Configure %1").arg(decoder->name));
+
+	_heading.setText(tr("<h3>%1</h3>%2")
+		.arg(decoder->longname)
+		.arg(decoder->desc));
 
 	connect(&_button_box, SIGNAL(accepted()), this, SLOT(accept()));
 	connect(&_button_box, SIGNAL(rejected()), this, SLOT(reject()));
@@ -46,6 +49,7 @@ Decoder::Decoder(QWidget *parent) :
 	_form.setLayout(&_form_layout);
 
 	setLayout(&_layout);
+	_layout.addWidget(&_heading);
 	_layout.addWidget(&_form);
 	_layout.addWidget(&_button_box);
 }

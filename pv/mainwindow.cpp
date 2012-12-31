@@ -388,7 +388,7 @@ void MainWindow::add_decoder(QObject *action)
 		(srd_decoder*)((QAction*)action)->data().value<void*>();
 	assert(dec);
 
-	dialogs::Decoder dlg(this);
+	dialogs::Decoder dlg(this, dec);
 	dlg.exec();
 }
 

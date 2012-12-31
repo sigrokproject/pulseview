@@ -25,7 +25,10 @@
 #include <QDialog>
 #include <QDialogButtonBox>
 #include <QFormLayout>
+#include <QLabel>
 #include <QVBoxLayout>
+
+struct srd_decoder;
 
 namespace pv {
 namespace dialogs {
@@ -33,14 +36,17 @@ namespace dialogs {
 class Decoder : public QDialog
 {
 public:
-	Decoder(QWidget *parent);
+	Decoder(QWidget *parent, const srd_decoder *decoder);
 
 private:
+	const srd_decoder *const _decoder;
+
 	QVBoxLayout _layout;
 
 	QWidget _form;
 	QFormLayout _form_layout;
 
+	QLabel _heading;
 	QDialogButtonBox _button_box;
 };
 
