@@ -523,6 +523,8 @@ void SigSession::feed_in_meta(const sr_dev_inst *sdi,
 			break;
 		}
 	}
+
+	signals_changed();
 }
 
 void SigSession::feed_in_logic(const sr_datafeed_logic &logic)
