@@ -37,6 +37,11 @@ DecodeSignal::DecodeSignal(pv::SigSession &session, srd_decoder *const dec) :
 	_colour = Qt::red;
 }
 
+void DecodeSignal::init_context_bar_actions(QWidget *parent)
+{
+	(void)parent;
+}
+
 bool DecodeSignal::enabled() const
 {
 	return true;

@@ -25,7 +25,9 @@
 #include "data/analogsnapshot.h"
 #include "data/logic.h"
 #include "data/logicsnapshot.h"
+
 #include "view/analogsignal.h"
+#include "view/decodesignal.h"
 #include "view/logicsignal.h"
 
 #include <assert.h>
@@ -194,6 +196,15 @@ boost::shared_ptr<data::Logic> SigSession::get_data()
 	return _logic_data;
 }
 
+void SigSession::add_decoder(srd_decoder *const dec)
+{
+	{
+		shared_ptr<view::DecodeSignal> d(new view::DecodeSignal(*this, dec));
+		_decode_traces.push_back(d);
+	}
+	signals_changed();
+}
+
 void SigSession::set_capture_state(capture_state state)
 {
 	lock_guard<mutex> lock(_sampling_mutex);
@@ -286,6 +297,9 @@ void SigSession::update_signals(const sr_dev_inst *const sdi)
 	shared_ptr<view::Signal> signal;
 	unsigned int logic_probe_count = 0;
 	unsigned int analog_probe_count = 0;
+
+	// Clear the decode traces
+	_decode_traces.clear();
 
 	// Detect what data types we will receive
 	if(sdi) {

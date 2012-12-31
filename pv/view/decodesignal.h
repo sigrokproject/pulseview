@@ -33,6 +33,8 @@ class DecodeSignal : public Trace
 public:
 	DecodeSignal(pv::SigSession &session, srd_decoder *const dec);
 
+	void init_context_bar_actions(QWidget *parent);
+
 	bool enabled() const;
 
 	/**

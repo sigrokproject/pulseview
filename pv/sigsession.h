@@ -34,6 +34,8 @@
 
 #include <libsigrok/libsigrok.h>
 
+struct srd_decoder;
+
 namespace pv {
 
 class DeviceManager;
@@ -46,6 +48,7 @@ class LogicSnapshot;
 }
 
 namespace view {
+class DecodeSignal;
 class Signal;
 }
 
@@ -88,6 +91,8 @@ public:
 		get_signals();
 
 	boost::shared_ptr<data::Logic> get_data();
+
+	void add_decoder(srd_decoder *const dec);
 
 private:
 	void set_capture_state(capture_state state);
@@ -146,6 +151,8 @@ private:
 	 * The device instance that will be used in the next capture session.
 	 */
 	struct sr_dev_inst *_sdi;
+
+	std::vector< boost::shared_ptr<view::DecodeSignal> > _decode_traces;
 
 	mutable boost::mutex _sampling_mutex;
 	capture_state _capture_state;
