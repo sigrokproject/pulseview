@@ -107,6 +107,7 @@ set(pulseview_SOURCES
 	pv/sigsession.cpp
 	pv/data/analog.cpp
 	pv/data/analogsnapshot.cpp
+	pv/data/decoder.cpp
 	pv/data/logic.cpp
 	pv/data/logicsnapshot.cpp
 	pv/data/signaldata.cpp

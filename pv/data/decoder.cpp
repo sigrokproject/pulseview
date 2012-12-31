@@ -18,55 +18,24 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-extern "C" {
-#include <libsigrokdecode/libsigrokdecode.h>
-}
-
-#include "decodesignal.h"
-
-#include <pv/data/decoder.h>
-
-using namespace boost;
-using namespace std;
+#include "decoder.h"
 
 namespace pv {
-namespace view {
+namespace data {
 
-DecodeSignal::DecodeSignal(pv::SigSession &session,
-	boost::shared_ptr<pv::data::Decoder> decoder) :
-	Trace(session, QString(decoder->get_decoder()->name)),
-	_decoder(decoder)
+Decoder::Decoder(const srd_decoder *const dec) :
+	_decoder(dec)
 {
-	_colour = Qt::red;
 }
 
-void DecodeSignal::init_context_bar_actions(QWidget *parent)
+const srd_decoder* Decoder::get_decoder() const
 {
-	(void)parent;
+	return _decoder;
 }
 
-bool DecodeSignal::enabled() const
+void Decoder::clear_snapshots()
 {
-	return true;
 }
 
-void DecodeSignal::paint(QPainter &p, int y, int left, int right,
-	double scale, double offset)
-{
-	(void)p;
-	(void)y;
-	(void)left;
-	(void)right;
-	(void)offset;
-
-	assert(scale > 0);
-}
-
-const list<QAction*> DecodeSignal::get_context_bar_actions()
-{
-	list<QAction*> actions;
-	return actions;
-}
-
-} // namespace view
+} // namespace data
 } // namespace pv

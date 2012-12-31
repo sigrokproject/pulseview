@@ -21,8 +21,10 @@
 #include "sigsession.h"
 
 #include "devicemanager.h"
+
 #include "data/analog.h"
 #include "data/analogsnapshot.h"
+#include "data/decoder.h"
 #include "data/logic.h"
 #include "data/logicsnapshot.h"
 
@@ -199,7 +201,11 @@ boost::shared_ptr<data::Logic> SigSession::get_data()
 void SigSession::add_decoder(srd_decoder *const dec)
 {
 	{
-		shared_ptr<view::DecodeSignal> d(new view::DecodeSignal(*this, dec));
+		lock_guard<mutex> lock(_signals_mutex);
+		shared_ptr<data::Decoder> decoder(
+			new data::Decoder(dec));
+		shared_ptr<view::DecodeSignal> d(
+			new view::DecodeSignal(*this, decoder));
 		_decode_traces.push_back(d);
 	}
 	signals_changed();

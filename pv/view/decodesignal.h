@@ -26,12 +26,18 @@
 #include <boost/shared_ptr.hpp>
 
 namespace pv {
+
+namespace data {
+class Decoder;
+}
+
 namespace view {
 
 class DecodeSignal : public Trace
 {
 public:
-	DecodeSignal(pv::SigSession &session, srd_decoder *const dec);
+	DecodeSignal(pv::SigSession &session,
+		boost::shared_ptr<pv::data::Decoder> decoder);
 
 	void init_context_bar_actions(QWidget *parent);
 
@@ -61,7 +67,7 @@ private:
 	int get_nominal_offset(const QRect &rect) const;
 
 private:
-	srd_decoder *const _decoder;
+	boost::shared_ptr<pv::data::Decoder> _decoder;
 };
 
 } // namespace view

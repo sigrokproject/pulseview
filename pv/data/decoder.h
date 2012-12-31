@@ -18,55 +18,30 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-extern "C" {
-#include <libsigrokdecode/libsigrokdecode.h>
-}
+#ifndef PULSEVIEW_PV_DATA_DECODER_H
+#define PULSEVIEW_PV_DATA_DECODER_H
 
-#include "decodesignal.h"
+#include "signaldata.h"
 
-#include <pv/data/decoder.h>
-
-using namespace boost;
-using namespace std;
+struct srd_decoder;
 
 namespace pv {
-namespace view {
+namespace data {
 
-DecodeSignal::DecodeSignal(pv::SigSession &session,
-	boost::shared_ptr<pv::data::Decoder> decoder) :
-	Trace(session, QString(decoder->get_decoder()->name)),
-	_decoder(decoder)
+class Decoder : public SignalData
 {
-	_colour = Qt::red;
-}
+public:
+	Decoder(const srd_decoder *const dec);
 
-void DecodeSignal::init_context_bar_actions(QWidget *parent)
-{
-	(void)parent;
-}
+	const srd_decoder* get_decoder() const;
 
-bool DecodeSignal::enabled() const
-{
-	return true;
-}
+	void clear_snapshots();
 
-void DecodeSignal::paint(QPainter &p, int y, int left, int right,
-	double scale, double offset)
-{
-	(void)p;
-	(void)y;
-	(void)left;
-	(void)right;
-	(void)offset;
+private:
+	const srd_decoder *const _decoder;
+};
 
-	assert(scale > 0);
-}
-
-const list<QAction*> DecodeSignal::get_context_bar_actions()
-{
-	list<QAction*> actions;
-	return actions;
-}
-
-} // namespace view
+} // namespace data
 } // namespace pv
+
+#endif // PULSEVIEW_PV_DATA_DECODER_H
