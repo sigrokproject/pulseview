@@ -388,7 +388,10 @@ void MainWindow::add_decoder(QObject *action)
 		(srd_decoder*)((QAction*)action)->data().value<void*>();
 	assert(dec);
 
-	dialogs::Decoder dlg(this, dec);
+	const std::vector< boost::shared_ptr<view::Signal> > &sigs =
+		_session.get_signals();
+
+	dialogs::Decoder dlg(this, dec, sigs);
 	dlg.exec();
 }
 

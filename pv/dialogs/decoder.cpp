@@ -24,12 +24,19 @@ extern "C" {
 
 #include "decoder.h"
 
+#include <pv/view/signal.h>
+
+using namespace boost;
+using namespace std;
+
 namespace pv {
 namespace dialogs {
 
-Decoder::Decoder(QWidget *parent, const srd_decoder *decoder) :
+Decoder::Decoder(QWidget *parent, const srd_decoder *decoder,
+	const vector< shared_ptr<view::Signal> > &sigs) :
 	QDialog(parent),
 	_decoder(decoder),
+	_sigs(sigs),
 	_layout(this),
 	_form(this),
 	_form_layout(&_form),
@@ -37,9 +44,11 @@ Decoder::Decoder(QWidget *parent, const srd_decoder *decoder) :
 	_button_box(QDialogButtonBox::Ok | QDialogButtonBox::Cancel,
 		Qt::Horizontal, this)
 {
+	const GSList *probe;
+
 	setWindowTitle(tr("Configure %1").arg(decoder->name));
 
-	_heading.setText(tr("<h3>%1</h3>%2")
+	_heading.setText(tr("<h2>%1</h2>%2")
 		.arg(decoder->longname)
 		.arg(decoder->desc));
 
@@ -52,6 +61,55 @@ Decoder::Decoder(QWidget *parent, const srd_decoder *decoder) :
 	_layout.addWidget(&_heading);
 	_layout.addWidget(&_form);
 	_layout.addWidget(&_button_box);
+
+	_form_layout.addRow(new QLabel("<h3>Probes</h3>", &_form));
+
+	// Add the mandatory probes
+	for(probe = decoder->probes; probe; probe = probe->next) {
+		const struct srd_probe *const p =
+			(struct srd_probe *)probe->data;
+		QComboBox *const combo = create_probe_selector(
+			&_form, p->name);
+		_form_layout.addRow(tr("<b>%1</b> (%2) *")
+			.arg(p->name).arg(p->desc), combo);
+
+		_probe_selector_map[p] = combo;
+	}
+
+	// Add the optional probes
+	for(probe = decoder->opt_probes; probe; probe = probe->next) {
+		const struct srd_probe *const p =
+			(struct srd_probe *)probe->data;
+		QComboBox *const combo = create_probe_selector(
+			&_form, p->name);
+		_form_layout.addRow(tr("<b>%1</b> (%2)")
+			.arg(p->name).arg(p->desc), combo);
+
+		_probe_selector_map[p] = combo;
+	}
+}
+
+QComboBox* Decoder::create_probe_selector(
+	QWidget *parent, const char *name)
+{
+	QComboBox *selector = new QComboBox(parent);
+
+	selector->addItem("-", qVariantFromValue(-1));
+	selector->setCurrentIndex(0);
+
+	for(size_t i = 0; i < _sigs.size(); i++) {
+		const shared_ptr<view::Signal> s(_sigs[i]);
+		assert(s);
+
+		if (s->enabled()) {
+			selector->addItem(s->get_name(), qVariantFromValue(i));
+			if(s->get_name().toLower().contains(
+				QString(name).toLower()))
+				selector->setCurrentIndex(i + 1);
+		}
+	}
+
+	return selector;
 }
 
 } // namespace dialogs

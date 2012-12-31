@@ -21,6 +21,11 @@
 #ifndef PULSEVIEW_PV_DECODER_H
 #define PULSEVIEW_PV_DECODER_H
 
+#include <vector>
+#include <map>
+
+#include <boost/shared_ptr.hpp>
+
 #include <QComboBox>
 #include <QDialog>
 #include <QDialogButtonBox>
@@ -31,15 +36,28 @@
 struct srd_decoder;
 
 namespace pv {
+
+namespace view {
+class Signal;
+}
+
 namespace dialogs {
 
 class Decoder : public QDialog
 {
 public:
-	Decoder(QWidget *parent, const srd_decoder *decoder);
+	Decoder(QWidget *parent, const srd_decoder *decoder,
+		const std::vector< boost::shared_ptr<view::Signal> > &sigs);
+
+private:
+	QComboBox* create_probe_selector(
+		QWidget *parent, const char *name);
 
 private:
 	const srd_decoder *const _decoder;
+	const std::vector< boost::shared_ptr<view::Signal> > &_sigs;
+
+	std::map<const srd_probe*, QComboBox*> _probe_selector_map;
 
 	QVBoxLayout _layout;
 
