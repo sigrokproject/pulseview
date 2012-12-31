@@ -87,6 +87,9 @@ Decoder::Decoder(QWidget *parent, const srd_decoder *decoder,
 
 		_probe_selector_map[p] = combo;
 	}
+
+	_form_layout.addRow(new QLabel(
+		tr("<i>* Required Probes</i>"), &_form));
 }
 
 QComboBox* Decoder::create_probe_selector(
