@@ -70,6 +70,8 @@ private:
 	QDoubleSpinBox _sample_rate_value;
 	QAction *_sample_rate_value_action;
 
+	QIcon _icon_green;
+	QIcon _icon_grey;
 	QToolButton _run_stop_button;
 };
 
