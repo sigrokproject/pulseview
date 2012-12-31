@@ -39,6 +39,7 @@
 #include "devicemanager.h"
 #include "dialogs/about.h"
 #include "dialogs/connect.h"
+#include "dialogs/decoder.h"
 #include "toolbars/contextbar.h"
 #include "toolbars/samplingbar.h"
 #include "view/view.h"
@@ -382,7 +383,13 @@ void MainWindow::device_selected()
 
 void MainWindow::add_decoder(QObject *action)
 {
-	(void)action;
+	assert(action);
+	srd_decoder *const dec =
+		(srd_decoder*)((QAction*)action)->data().value<void*>();
+	assert(dec);
+
+	dialogs::Decoder dlg(this);
+	dlg.exec();
 }
 
 void MainWindow::run_stop()
