@@ -41,7 +41,6 @@ About::About(QWidget *parent) :
 	QDialog(parent),
 	ui(new Ui::About)
 {
-	GSList *l;
 	struct sr_dev_driver **drivers;
 	struct sr_input_format **inputs;
 	struct sr_output_format **outputs;
@@ -93,7 +92,7 @@ About::About(QWidget *parent) :
 	s.append("<tr><td colspan=\"2\"><b>" +
 		tr("Supported protocol decoders:") +
 		"</b></td></tr>");
-	for (l = srd_decoder_list(); l; l = l->next) {
+	for (const GSList *l = srd_decoder_list(); l; l = l->next) {
 		dec = (struct srd_decoder *)l->data;
 		s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
 			 .arg(QString(dec->id))
