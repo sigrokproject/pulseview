@@ -28,6 +28,7 @@
 #include <boost/shared_ptr.hpp>
 
 struct srd_decoder;
+struct srd_decoder_inst;
 struct srd_probe;
 
 namespace pv {
@@ -41,17 +42,23 @@ namespace data {
 class Decoder : public SignalData
 {
 public:
-	Decoder(const srd_decoder *const dec, std::map<const srd_probe*,
-		boost::shared_ptr<pv::view::Signal> > probes);
+	Decoder(const srd_decoder *const decoder,
+		std::map<const srd_probe*,
+			boost::shared_ptr<pv::view::Signal> > probes);
 
 	const srd_decoder* get_decoder() const;
 
 	void clear_snapshots();
 
 private:
+	void init_decoder();
+
+private:
 	const srd_decoder *const _decoder;
 	std::map<const srd_probe*, boost::shared_ptr<view::Signal> >
 		_probes;
+
+	srd_decoder_inst *_decoder_inst;
 };
 
 } // namespace data
