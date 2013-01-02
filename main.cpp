@@ -34,6 +34,8 @@ extern "C" {
 
 #include "config.h"
 
+// Global pointer to our QApplication
+QApplication *g_app = NULL;
 void usage()
 {
 	fprintf(stderr,
@@ -52,10 +54,11 @@ void usage()
 void sigint(int param)
 {
 	(void) param;
-	
+
 	qDebug("pv: Recieved SIGINT");
-	
-	/* TODO: Handle SIGINT */
+
+	if (g_app)
+		g_app->quit();
 }
 
 int main(int argc, char *argv[])
@@ -67,6 +70,8 @@ int main(int argc, char *argv[])
 	signal (SIGINT, sigint);
 
 	QApplication a(argc, argv);
+	// Now we have an application to populate our global pointer
+	g_app = &a;
 
 	// Set some application metadata
 	QApplication::setApplicationVersion(PV_VERSION_STRING);
