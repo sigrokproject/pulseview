@@ -20,6 +20,7 @@
 
 extern "C" {
 #include <sigrokdecode.h> /* First, so we avoid a _POSIX_C_SOURCE warning. */
+#include <signal.h>
 #include <stdint.h>
 #include <libsigrok/libsigrok.h>
 }
@@ -45,10 +46,25 @@ void usage()
 		"\n", PV_BIN_NAME, PV_DESCRIPTION);
 }
 
+/*
+ * SIGINT handler (likely recieved Ctrl-C from terminal)
+ */
+void sigint(int param)
+{
+	(void) param;
+	
+	qDebug("pv: Recieved SIGINT");
+	
+	/* TODO: Handle SIGINT */
+}
+
 int main(int argc, char *argv[])
 {
 	int ret = 0;
 	struct sr_context *sr_ctx = NULL;
+
+	// Register a SIGINT handler
+	signal (SIGINT, sigint);
 
 	QApplication a(argc, argv);
 
