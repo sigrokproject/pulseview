@@ -167,7 +167,7 @@ void LogicSnapshot::append_payload_to_mipmap()
 uint64_t LogicSnapshot::get_sample(uint64_t index) const
 {
 	assert(_data);
-	assert(index >= 0 && index < _sample_count);
+	assert(index < _sample_count);
 
 	return *(uint64_t*)((uint8_t*)_data + index * _unit_size);
 }
@@ -182,7 +182,6 @@ void LogicSnapshot::get_subsampled_edges(
 	bool last_sample;
 	bool fast_forward;
 
-	assert(start >= 0);
 	assert(end <= get_sample_count());
 	assert(start <= end);
 	assert(min_length > 0);
@@ -258,7 +257,6 @@ void LogicSnapshot::get_subsampled_edges(
 					(level + 1) * MipMapScalePower;
 				const uint64_t offset =
 					index >> level_scale_power;
-				assert(offset >= 0);
 
 				// Check if we reached the last block at this
 				// level, or if there was a change in this block
@@ -293,7 +291,6 @@ void LogicSnapshot::get_subsampled_edges(
 					(level + 1) * MipMapScalePower;
 				const uint64_t offset =
 					index >> level_scale_power;
-				assert(offset >= 0);
 
 				// Check if we reached the last block at this
 				// level, or if there was a change in this block

@@ -79,7 +79,6 @@ void Ruler::paintEvent(QPaintEvent *event)
 	} while (tick_period < min_period && unit < countof(ScaleUnits));
 
 	const unsigned int prefix = (order - FirstSIPrefixPower) / 3;
-	assert(prefix >= 0);
 	assert(prefix < countof(SIPrefixes));
 
 	const double multiplier = pow(10.0, - prefix * 3 - FirstSIPrefixPower);
