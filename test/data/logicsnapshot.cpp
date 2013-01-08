@@ -471,5 +471,42 @@ BOOST_AUTO_TEST_CASE(LisaMUsbHid)
 	BOOST_CHECK_EQUAL(edges[edges.size() - 2].second, false);
 }
 
+/*
+ * This test checks the rendering of wide data (more than 8 probes)
+ * Probe signals are either all-high, or all-low, but are interleaved such that
+ * they would toggle during every sample if treated like 8 probes.
+ * The packet contains a large number of samples, so the mipmap generation kicks
+ * in.
+ *
+ * The signals should not toggle (have exactly two edges: the start and end)
+ */
+BOOST_AUTO_TEST_CASE(WideData)
+{
+	const int Length = 512<<10;
+	uint16_t *data = new uint16_t[Length];
+
+	sr_datafeed_logic logic;
+	logic.unitsize = sizeof(data[0]);
+	logic.length = Length * sizeof(data[0]);
+	logic.data = data;
+
+	for(int i = 0; i < Length; i++)
+		data[i] = 0x0FF0;
+
+	LogicSnapshot s(logic);
+
+	vector<LogicSnapshot::EdgePair> edges;
+
+	edges.clear();
+	s.get_subsampled_edges(edges, 0, Length-1, 1, 0);
+	BOOST_CHECK_EQUAL(edges.size(), 2);
+
+	edges.clear();
+	s.get_subsampled_edges(edges, 0, Length-1, 1, 8);
+	BOOST_CHECK_EQUAL(edges.size(), 2);
+
+	// Cleanup
+	delete [] data;
+}
 
 BOOST_AUTO_TEST_SUITE_END()
