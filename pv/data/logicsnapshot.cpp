@@ -60,10 +60,11 @@ void LogicSnapshot::append_payload(
 	const sr_datafeed_logic &logic)
 {
 	assert(_unit_size == logic.unitsize);
+	assert((logic.length % _unit_size) == 0);
 
 	lock_guard<recursive_mutex> lock(_mutex);
 
-	append_data(logic.data, logic.length);
+	append_data(logic.data, logic.length / _unit_size);
 
 	// Generate the first mip-map from the data
 	append_payload_to_mipmap();
