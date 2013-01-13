@@ -348,7 +348,7 @@ BOOST_AUTO_TEST_CASE(LongPulses)
 	//----- Create a LogicSnapshot -----//
 	sr_datafeed_logic logic;
 	logic.unitsize = 8;
-	logic.length = Length;
+	logic.length = Length * 8;
 	logic.data = (uint64_t*)new uint64_t[Length];
 	uint64_t *p = (uint64_t*)logic.data;
 
