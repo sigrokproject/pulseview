@@ -509,4 +509,28 @@ BOOST_AUTO_TEST_CASE(WideData)
 	delete [] data;
 }
 
+/*
+ * This test is a replica of sixteen.sr attached to Bug #33.
+ */
+BOOST_AUTO_TEST_CASE(Sixteen)
+{
+	const int Length = 8;
+	uint16_t data[Length];
+
+	sr_datafeed_logic logic;
+	logic.unitsize = sizeof(data[0]);
+	logic.length = Length * sizeof(data[0]);
+	logic.data = data;
+
+	for(int i = 0; i < Length; i++)
+		data[i] = 0xFFFE;
+
+	LogicSnapshot s(logic);
+
+	vector<LogicSnapshot::EdgePair> edges;
+	s.get_subsampled_edges(edges, 0, 2, 0.0004, 1);
+
+	BOOST_CHECK_EQUAL(edges.size(), 2);
+}
+
 BOOST_AUTO_TEST_SUITE_END()
