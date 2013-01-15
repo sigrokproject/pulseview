@@ -92,8 +92,17 @@ void MainWindow::setup_ui()
 	_action_open->setIcon(QIcon::fromTheme("document-open",
 		QIcon(":/icons/document-open.png")));
 	_action_open->setObjectName(QString::fromUtf8("actionOpen"));
-
 	_menu_file->addAction(_action_open);
+
+	_menu_file->addSeparator();
+
+	_action_quit = new QAction(this);
+	_action_quit->setText(QApplication::translate(
+		"MainWindow", "&Quit", 0, QApplication::UnicodeUTF8));
+	_action_quit->setIcon(QIcon::fromTheme("application-exit",
+		QIcon(":/icons/application-exit.png")));
+	_action_quit->setObjectName(QString::fromUtf8("actionQuit"));
+	_menu_file->addAction(_action_quit);
 
 	// View Menu
 	_menu_view = new QMenu(_menu_bar);
@@ -175,6 +184,11 @@ void MainWindow::on_actionOpen_triggered()
 		this, tr("Open File"), "",
 		tr("Sigrok Sessions (*.sr)"));
 	_session.load_file(file_name.toStdString());
+}
+
+void MainWindow::on_actionQuit_triggered()
+{
+	close();
 }
 
 void MainWindow::on_actionViewZoomIn_triggered()
