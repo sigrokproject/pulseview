@@ -204,7 +204,10 @@ void LogicSnapshot::get_subsampled_edges(
 	{
 		//----- Continue to search -----//
 		level = min_level;
-		fast_forward = true;
+
+		// We cannot fast-forward if there is no mip-map data at
+		// at the minimum level.
+		fast_forward = (_mip_map[level].data != NULL);
 
 		if (min_length < MipMapScaleFactor)
 		{
@@ -241,7 +244,8 @@ void LogicSnapshot::get_subsampled_edges(
 			// We can fast forward only if there was no change
 			const bool sample =
 				(get_sample(index) & sig_mask) != 0;
-			fast_forward = last_sample == sample;
+			if (last_sample != sample)
+				fast_forward = false;
 		}
 
 		if (fast_forward) {
