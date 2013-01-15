@@ -2,7 +2,7 @@
 ## This file is part of the PulseView project.
 ##
 ## Copyright (C) 2012 Joel Holdsworth <joel@airwebreathe.org.uk>
-## Copyright (C) 2012 Alexandru Gagniuc <mr.nuke.me@gmail.com>
+## Copyright (C) 2012-2013 Alexandru Gagniuc <mr.nuke.me@gmail.com>
 ##
 ## This program is free software: you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -52,6 +52,10 @@ pkg_check_modules(PKGDEPS REQUIRED
 )
 
 find_package(Qt4 REQUIRED)
+
+# Find the platform's thread library (needed for boost-thread).
+# This will set ${CMAKE_THREAD_LIBS_INIT} to the correct, OS-specific value.
+find_package(Threads)
 
 if(WIN32)
 # On Windows/MinGW the we need to use 'thread_win32' instead of 'thread'.
@@ -174,6 +178,7 @@ link_directories(${Boost_LIBRARY_DIRS})
 
 set(PULSEVIEW_LINK_LIBS
 	${Boost_LIBRARIES}
+	${CMAKE_THREAD_LIBS_INIT}
 	${QT_LIBRARIES}
 )
 
