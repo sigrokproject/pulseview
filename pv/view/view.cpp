@@ -279,7 +279,7 @@ bool View::viewportEvent(QEvent *e)
 	}
 }
 
-void View::resizeEvent(QResizeEvent *e)
+void View::resizeEvent(QResizeEvent*)
 {
 	_ruler->setGeometry(_viewport->x(), 0,
 		_viewport->width(), _viewport->y());

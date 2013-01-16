@@ -59,7 +59,7 @@ int Viewport::get_total_height() const
 	return h;
 }
 
-void Viewport::paintEvent(QPaintEvent *event)
+void Viewport::paintEvent(QPaintEvent*)
 {
 	const vector< shared_ptr<Signal> > sigs(
 		_view.session().get_signals());

@@ -82,7 +82,7 @@ boost::shared_ptr<pv::view::Signal> Header::get_mouse_over_signal(
 	return shared_ptr<Signal>();
 }
 
-void Header::paintEvent(QPaintEvent *event)
+void Header::paintEvent(QPaintEvent*)
 {
 	const int w = width();
 	const vector< shared_ptr<Signal> > sigs(
@@ -200,7 +200,7 @@ void Header::mouseMoveEvent(QMouseEvent *event)
 	update();
 }
 
-void Header::leaveEvent(QEvent *event)
+void Header::leaveEvent(QEvent*)
 {
 	_mouse_point = QPoint(-1, -1);
 	update();

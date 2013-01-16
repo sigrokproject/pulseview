@@ -58,7 +58,7 @@ Ruler::Ruler(View &parent) :
 		this, SLOT(hover_point_changed()));
 }
 
-void Ruler::paintEvent(QPaintEvent *event)
+void Ruler::paintEvent(QPaintEvent*)
 {
 	QPainter p(this);
 	p.setRenderHint(QPainter::Antialiasing);

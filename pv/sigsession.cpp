@@ -215,7 +215,7 @@ void SigSession::feed_in_meta_logic(const struct sr_dev_inst *sdi,
 	}
 }
 
-void SigSession::feed_in_meta_analog(const struct sr_dev_inst *sdi,
+void SigSession::feed_in_meta_analog(const struct sr_dev_inst*,
 	const sr_datafeed_meta_analog &meta_analog)
 {
 	using view::AnalogSignal;
