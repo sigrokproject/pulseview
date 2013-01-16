@@ -27,6 +27,7 @@ project(pulseview)
 #= User Options
 #-------------------------------------------------------------------------------
 
+option(DISABLE_WERROR "Build without -Werror" FALSE)
 option(ENABLE_TESTS "Enable unit tests" FALSE)
 option(STATIC_PKGDEPS_LIBS "Statically link to (pkgconfig) libraries" FALSE)
 
@@ -138,7 +139,11 @@ include(${QT_USE_FILE})
 #-------------------------------------------------------------------------------
 
 add_definitions(${QT_DEFINITIONS})
-add_definitions(-Werror -Wall)
+add_definitions(-Wextra)
+
+if(NOT DISABLE_WERROR)
+	add_definitions(-Werror)
+endif()
 
 #===============================================================================
 #= Global Include Directories
