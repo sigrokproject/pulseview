@@ -91,30 +91,38 @@ public:
 	/**
 	 * Paints the signal with a QPainter
 	 * @param p the QPainter to paint into.
-	 * @param rect the rectangular area to draw the trace into.
+	 * @param y the y-coordinate to draw the signal at
+	 * @param left the x-coordinate of the left edge of the signal
+	 * @param right the x-coordinate of the right edge of the signal
 	 * @param scale the scale in seconds per pixel.
 	 * @param offset the time to show at the left hand edge of
 	 *   the view in seconds.
 	 **/
-	virtual void paint(QPainter &p, const QRect &rect, double scale,
-		double offset) = 0;
-
+	virtual void paint(QPainter &p, int y, int left, int right,
+		double scale, double offset) = 0;
 
 	/**
 	 * Paints the signal label into a QGLWidget.
 	 * @param p the QPainter to paint into.
-	 * @param rect the rectangular area to draw the label into.
+	 * @param y the y-coordinate of the signal.
+	 * @param right the x-coordinate of the right edge of the header
+	 * 	area.
 	 * @param hover true if the label is being hovered over by the mouse.
 	 */
-	virtual void paint_label(QPainter &p, const QRect &rect,
+	virtual void paint_label(QPainter &p, int y, int right,
 		bool hover);
 
 	/**
 	 * Determines if a point is in the header label rect.
-	 * @param rect the rectangular area to draw the label into.
+	 * @param y the y-coordinate of the signal.
+	 * @param left the x-coordinate of the left edge of the header
+	 * 	area.
+	 * @param right the x-coordinate of the right edge of the header
+	 * 	area.
 	 * @param point the point to test.
 	 */
-	bool pt_in_label_rect(const QRect &rect, const QPoint &point);
+	bool pt_in_label_rect(int y, int left, int right,
+		const QPoint &point);
 
 private:
 
@@ -126,17 +134,12 @@ private:
 	/**
 	 * Computes the outline rectangle of a label.
 	 * @param p the QPainter to lay out text with.
-	 * @param rect The rectangle of the signal header.
+	 * @param y the y-coordinate of the signal.
+	 * @param right the x-coordinate of the right edge of the header
+	 * 	area.
 	 * @return Returns the rectangle of the signal label.
 	 */
-	QRectF get_label_rect(const QRect &rect);
-
-protected:
-	/**
-	 * When painting into the rectangle, calculate the y
-	 * offset of the zero point.
-	 **/
-	virtual int get_nominal_offset(const QRect &rect) const = 0;
+	QRectF get_label_rect(int y, int right);
 
 protected:
 	QString _name;

@@ -42,21 +42,15 @@ public:
 	/**
 	 * Paints the signal with a QPainter
 	 * @param p the QPainter to paint into.
-	 * @param rect the rectangular area to draw the trace into.
+	 * @param y the y-coordinate to draw the signal at.
+	 * @param left the x-coordinate of the left edge of the signal.
+	 * @param right the x-coordinate of the right edge of the signal.
 	 * @param scale the scale in seconds per pixel.
 	 * @param offset the time to show at the left hand edge of
 	 *   the view in seconds.
 	 **/
-	void paint(QPainter &p, const QRect &rect,
-		double scale, double offset);
-
-private:
-
-	/**
-	 * When painting into the rectangle, calculate the y
-	 * offset of the zero point.
-	 **/
-	int get_nominal_offset(const QRect &rect) const;
+	void paint(QPainter &p, int y, int left, int right, double scale,
+		double offset);
 
 private:
 	boost::shared_ptr<pv::data::Analog> _data;

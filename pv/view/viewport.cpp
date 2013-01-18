@@ -74,11 +74,8 @@ void Viewport::paintEvent(QPaintEvent*)
 	BOOST_FOREACH(const shared_ptr<Signal> s, sigs)
 	{
 		assert(s);
-
-		const QRect signal_rect(0, s->get_v_offset() - v_offset,
-			width(), View::SignalHeight);
-
-		s->paint(p, signal_rect, _view.scale(), _view.offset());
+		s->paint(p, s->get_v_offset() - v_offset, 0, width(),
+			_view.scale(), _view.offset());
 	}
 
 	draw_cursors_foreground(p);

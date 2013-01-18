@@ -71,11 +71,8 @@ boost::shared_ptr<pv::view::Signal> Header::get_mouse_over_signal(
 	{
 		assert(s);
 
-		const QRect signal_heading_rect(
-			0, s->get_v_offset() - v_offset,
-			w, View::SignalHeight);
-
-		if (s->pt_in_label_rect(signal_heading_rect, pt))
+		if (s->pt_in_label_rect(s->get_v_offset() - v_offset,
+			0, w, pt))
 			return s;
 	}
 
@@ -97,13 +94,10 @@ void Header::paintEvent(QPaintEvent*)
 	{
 		assert(s);
 
-		const QRect signal_heading_rect(
-			0, s->get_v_offset() - v_offset,
-			w, View::SignalHeight);
-
+		const int y = s->get_v_offset() - v_offset;
 		const bool highlight = !dragging && s->pt_in_label_rect(
-			signal_heading_rect, _mouse_point);
-		s->paint_label(painter, signal_heading_rect, highlight);
+			y, 0, w, _mouse_point);
+		s->paint_label(painter, y, w, highlight);
 	}
 
 	painter.end();

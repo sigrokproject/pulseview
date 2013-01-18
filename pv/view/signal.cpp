@@ -78,21 +78,20 @@ void Signal::select(bool select)
 	_selected = select;
 }
 
-void Signal::paint_label(QPainter &p, const QRect &rect, bool hover)
+void Signal::paint_label(QPainter &p, int y, int right, bool hover)
 {
 	p.setBrush(_colour);
 
 	const QColor colour = get_colour();
-	const float nominal_offset = get_nominal_offset(rect);
 
 	compute_text_size(p);
-	const QRectF label_rect = get_label_rect(rect);
+	const QRectF label_rect = get_label_rect(y, right);
 
 	// Paint the label
 	const QPointF points[] = {
 		label_rect.topLeft(),
 		label_rect.topRight(),
-		QPointF(rect.right(), nominal_offset),
+		QPointF(right, y),
 		label_rect.bottomRight(),
 		label_rect.bottomLeft()
 	};
@@ -100,7 +99,7 @@ void Signal::paint_label(QPainter &p, const QRect &rect, bool hover)
 	const QPointF highlight_points[] = {
 		QPointF(label_rect.left() + 1, label_rect.top() + 1),
 		QPointF(label_rect.right(), label_rect.top() + 1),
-		QPointF(rect.right() - 1, nominal_offset),
+		QPointF(right - 1, y),
 		QPointF(label_rect.right(), label_rect.bottom() - 1),
 		QPointF(label_rect.left() + 1, label_rect.bottom() - 1)
 	};
@@ -130,15 +129,15 @@ void Signal::paint_label(QPainter &p, const QRect &rect, bool hover)
 	p.drawText(label_rect, Qt::AlignCenter | Qt::AlignVCenter, _name);
 }
 
-bool Signal::pt_in_label_rect(const QRect &rect, const QPoint &point)
+bool Signal::pt_in_label_rect(int y, int left, int right,
+	const QPoint &point)
 {
-	const QRectF label = get_label_rect(rect);
+	const QRectF label = get_label_rect(y, right);
 	return QRectF(
 		QPointF(label.left() - LabelHitPadding,
 			label.top() - LabelHitPadding),
-		QPointF(rect.right(),
-			label.bottom() + LabelHitPadding)
-		).contains(point);
+		QPointF(right, label.bottom() + LabelHitPadding)
+			).contains(point);
 }
 
 void Signal::compute_text_size(QPainter &p)
@@ -146,19 +145,17 @@ void Signal::compute_text_size(QPainter &p)
 	_text_size = p.boundingRect(QRectF(), 0, _name).size();
 }
 
-QRectF Signal::get_label_rect(const QRect &rect)
+QRectF Signal::get_label_rect(int y, int right)
 {
 	using pv::view::View;
 
-	const float nominal_offset = get_nominal_offset(rect) + 0.5;
 	const QSizeF label_size(
 		_text_size.width() + View::LabelPadding.width() * 2,
 		_text_size.height() + View::LabelPadding.height() * 2);
 	const float label_arrow_length = label_size.height() / 2;
 	return QRectF(
-		rect.right() - label_arrow_length -
-			label_size.width() - 0.5,
-		nominal_offset - label_size.height() / 2,
+		right - label_arrow_length - label_size.width() - 0.5,
+		y + 0.5f - label_size.height() / 2,
 		label_size.width(), label_size.height());
 }
 

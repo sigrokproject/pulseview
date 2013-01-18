@@ -228,7 +228,7 @@ void View::update_scroll()
 
 void View::reset_signal_layout()
 {
-	int offset = SignalMargin;
+	int offset = SignalMargin + SignalHeight;
 	const vector< shared_ptr<Signal> > sigs(_session.get_signals());
 	BOOST_FOREACH(shared_ptr<Signal> s, sigs) {
 		s->set_v_offset(offset);

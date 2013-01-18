@@ -23,6 +23,7 @@
 #include <math.h>
 
 #include "logicsignal.h"
+#include "view.h"
 #include "pv/data/logic.h"
 #include "pv/data/logicsnapshot.h"
 
@@ -62,18 +63,21 @@ LogicSignal::LogicSignal(QString name, shared_ptr<data::Logic> data,
 		_probe_index % countof(LogicSignalColours)];
 }
 
-void LogicSignal::paint(QPainter &p, const QRect &rect, double scale,
-	double offset)
+void LogicSignal::paint(QPainter &p, int y, int left, int right,
+		double scale, double offset)
 {
+	using pv::view::View;
+
 	QLineF *line;
 
 	vector< pair<int64_t, bool> > edges;
 
 	assert(scale > 0);
 	assert(_data);
+	assert(right >= left);
 
-	const float high_offset = rect.top() + 0.5f;
-	const float low_offset = rect.bottom() + 0.5f;
+	const float high_offset = y - View::SignalHeight + 0.5f;
+	const float low_offset = y + 0.5f;
 
 	const deque< shared_ptr<pv::data::LogicSnapshot> > &snapshots =
 		_data->get_snapshots();
@@ -89,7 +93,7 @@ void LogicSignal::paint(QPainter &p, const QRect &rect, double scale,
 	const int64_t last_sample = snapshot->get_sample_count() - 1;
 	const double samples_per_pixel = samplerate * scale;
 	const double start = samplerate * (offset - start_time);
-	const double end = start + samples_per_pixel * rect.width();
+	const double end = start + samples_per_pixel * (right - left);
 
 	snapshot->get_subsampled_edges(edges,
 		min(max((int64_t)floor(start), (int64_t)0), last_sample),
@@ -106,7 +110,7 @@ void LogicSignal::paint(QPainter &p, const QRect &rect, double scale,
 			edges.begin() + 1;
 		i != edges.end() - 1; i++) {
 		const float x = ((*i).first / samples_per_pixel -
-			pixels_offset) + rect.left();
+			pixels_offset) + left;
 		*line++ = QLineF(x, high_offset, x, low_offset);
 	}
 
@@ -120,10 +124,10 @@ void LogicSignal::paint(QPainter &p, const QRect &rect, double scale,
 
 	p.setPen(HighColour);
 	paint_caps(p, cap_lines, edges, true, samples_per_pixel,
-		pixels_offset, rect.left(), high_offset);
+		pixels_offset, left, high_offset);
 	p.setPen(LowColour);
 	paint_caps(p, cap_lines, edges, false, samples_per_pixel,
-		pixels_offset, rect.left(), low_offset);
+		pixels_offset, left, low_offset);
 
 	delete[] cap_lines;
 }
@@ -146,11 +150,6 @@ void LogicSignal::paint_caps(QPainter &p, QLineF *const lines,
 		}
 
 	p.drawLines(lines, line - lines);
-}
-
-int LogicSignal::get_nominal_offset(const QRect &rect) const
-{
-	return rect.bottom();
 }
 
 } // namespace view
