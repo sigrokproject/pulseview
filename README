@@ -59,14 +59,17 @@ Please see the following wiki pages for more detailed instructions:
  http://sigrok.org/wiki/Windows
  http://sigrok.org/wiki/FreeBSD
 
+
 Creating a source distribution package
 --------------------------------------
 
 In order to build a source package begin with an unconfigured source tree.
 
- $ mkdir dist/
- $ cmake ../
- $ make package_sources
+ $ mkdir dist
+ $ cd dist
+ $ cmake ..
+ $ make package_source
+
 
 Mailing lists
 -------------
