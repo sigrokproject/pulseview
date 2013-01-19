@@ -54,7 +54,13 @@ if(WIN32)
 	set(BOOST_ROOT /usr/local)
 endif()
 
+if(WIN32)
+# On Windows/MinGW the we need to use 'thread_win32' instead of 'thread'.
+# The library is named libboost_thread_win32* (not libboost_thread*).
+find_package(Boost 1.46 COMPONENTS system thread_win32)
+elseif()
 find_package(Boost 1.46 COMPONENTS system thread)
+endif()
 
 #===============================================================================
 #= Config Header
