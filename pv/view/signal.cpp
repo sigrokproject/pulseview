@@ -31,6 +31,8 @@ namespace view {
 const int Signal::LabelHitPadding = 2;
 const int Signal::LabelHighlightRadius = 6;
 
+const QPen Signal::SignalAxisPen(QColor(128, 128, 128, 64));
+
 Signal::Signal(QString name) :
 	_name(name),
 	_v_offset(0),
@@ -138,6 +140,12 @@ bool Signal::pt_in_label_rect(int y, int left, int right,
 			label.top() - LabelHitPadding),
 		QPointF(right, label.bottom() + LabelHitPadding)
 			).contains(point);
+}
+
+void Signal::paint_axis(QPainter &p, int y, int left, int right)
+{
+	p.setPen(SignalAxisPen);
+	p.drawLine(QPointF(left, y + 0.5f), QPointF(right, y + 0.5f));
 }
 
 void Signal::compute_text_size(QPainter &p)

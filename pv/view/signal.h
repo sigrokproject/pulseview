@@ -25,6 +25,7 @@
 
 #include <QColor>
 #include <QPainter>
+#include <QPen>
 #include <QRect>
 #include <QString>
 
@@ -43,6 +44,8 @@ class Signal
 private:
 	static const int LabelHitPadding;
 	static const int LabelHighlightRadius;
+
+	static const QPen SignalAxisPen;
 
 protected:
 	Signal(QString name);
@@ -123,6 +126,17 @@ public:
 	 */
 	bool pt_in_label_rect(int y, int left, int right,
 		const QPoint &point);
+
+protected:
+
+	/**
+	 * Paints a zero axis across the viewport.
+	 * @param p the QPainter to paint into.
+	 * @param y the y-offset of the axis.
+	 * @param left the x-coordinate of the left edge of the view.
+	 * @param right the x-coordinate of the right edge of the view.
+	 */
+	void paint_axis(QPainter &p, int y, int left, int right);
 
 private:
 

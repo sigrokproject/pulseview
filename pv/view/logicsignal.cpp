@@ -76,6 +76,8 @@ void LogicSignal::paint(QPainter &p, int y, int left, int right,
 	assert(_data);
 	assert(right >= left);
 
+	paint_axis(p, y, left, right);
+
 	const float high_offset = y - View::SignalHeight + 0.5f;
 	const float low_offset = y + 0.5f;
 

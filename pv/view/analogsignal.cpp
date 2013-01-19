@@ -46,6 +46,8 @@ void AnalogSignal::paint(QPainter &p, int y, int left, int right, double scale,
 	assert(_data);
 	assert(right >= left);
 
+	paint_axis(p, y, left, right);
+
 	const deque< shared_ptr<pv::data::AnalogSnapshot> > &snapshots =
 		_data->get_snapshots();
 	if (snapshots.empty())
