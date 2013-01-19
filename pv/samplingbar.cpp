@@ -45,7 +45,7 @@ const uint64_t SamplingBar::RecordLengths[11] = {
 	250000000,
 	500000000,
 	1000000000,
-	10000000000
+	10000000000ULL,
 };
 
 SamplingBar::SamplingBar(QWidget *parent) :
