@@ -35,6 +35,10 @@ if(WIN32)
 	# On Windows/MinGW we need to statically link to libraries.
 	# This option is user configurable, but enable it by default on win32.
 	set(STATIC_PKGDEPS_LIBS TRUE)
+
+	# For boost-thread we need two additional settings on win32:
+	set(Boost_USE_STATIC_LIBS on)
+	add_definitions(-DBOOST_THREAD_USE_LIB)
 endif()
 
 #===============================================================================
