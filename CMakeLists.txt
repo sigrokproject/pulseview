@@ -53,11 +53,6 @@ pkg_check_modules(PKGDEPS REQUIRED
 
 find_package(Qt4 REQUIRED)
 
-# On Windows/MinGW we explicitly point cmake to the Boost directory.
-if(WIN32)
-	set(BOOST_ROOT /usr/local)
-endif()
-
 if(WIN32)
 # On Windows/MinGW the we need to use 'thread_win32' instead of 'thread'.
 # The library is named libboost_thread_win32* (not libboost_thread*).
