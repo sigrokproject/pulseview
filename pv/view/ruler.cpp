@@ -28,6 +28,7 @@
 
 #include <assert.h>
 #include <math.h>
+#include <limits.h>
 
 #include <QMouseEvent>
 #include <QPainter>
