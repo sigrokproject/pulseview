@@ -56,9 +56,9 @@ find_package(Qt4 REQUIRED)
 if(WIN32)
 # On Windows/MinGW the we need to use 'thread_win32' instead of 'thread'.
 # The library is named libboost_thread_win32* (not libboost_thread*).
-find_package(Boost 1.45 COMPONENTS system thread_win32)
+find_package(Boost 1.42 COMPONENTS system thread_win32)
 else()
-find_package(Boost 1.45 COMPONENTS system thread)
+find_package(Boost 1.42 COMPONENTS system thread)
 endif()
 
 #===============================================================================

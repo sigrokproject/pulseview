@@ -31,7 +31,7 @@ Requirements
  - cmake >= 2.6
  - libglib >= 2.28.0
  - Qt >= 4.5
- - libboost >= 1.45 (including the following libs):
+ - libboost >= 1.42 (including the following libs):
     - libboost-system
     - libboost-thread
  - libsigrok >= 0.2.0
