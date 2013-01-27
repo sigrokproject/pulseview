@@ -27,8 +27,7 @@ using namespace std;
 namespace pv {
 namespace data {
 
-Analog::Analog(const sr_datafeed_meta_analog&,
-	uint64_t samplerate) :
+Analog::Analog(uint64_t samplerate) :
 	SignalData(samplerate)
 {
 }

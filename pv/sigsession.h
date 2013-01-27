@@ -85,11 +85,8 @@ private:
 	void sample_thread_proc(struct sr_dev_inst *sdi,
 		uint64_t record_length);
 
-	void feed_in_meta_logic(const struct sr_dev_inst *sdi,
-		const sr_datafeed_meta_logic &meta_logic);
-
-	void feed_in_meta_analog(const struct sr_dev_inst *sdi,
-		const sr_datafeed_meta_analog &meta_analog);
+	void feed_in_meta(const sr_dev_inst *sdi,
+		const sr_datafeed_meta &meta);
 
 	void feed_in_logic(const sr_datafeed_logic &logic);
 

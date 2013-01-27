@@ -26,10 +26,6 @@
 #include <boost/shared_ptr.hpp>
 #include <deque>
 
-extern "C" {
-#include <libsigrok/libsigrok.h>
-}
-
 namespace pv {
 namespace data {
 
@@ -38,7 +34,7 @@ class LogicSnapshot;
 class Logic : public SignalData
 {
 public:
-	Logic(const sr_datafeed_meta_logic &meta, uint64_t samplerate);
+	Logic(unsigned int num_probes, uint64_t samplerate);
 
 	int get_num_probes() const;
 
@@ -49,7 +45,7 @@ public:
 		get_snapshots();
 
 private:
-	const int _num_probes;
+	const unsigned int _num_probes;
 	std::deque< boost::shared_ptr<LogicSnapshot> > _snapshots;
 };
 

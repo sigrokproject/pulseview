@@ -26,10 +26,6 @@
 #include <boost/shared_ptr.hpp>
 #include <deque>
 
-extern "C" {
-#include <libsigrok/libsigrok.h>
-}
-
 namespace pv {
 namespace data {
 
@@ -38,8 +34,7 @@ class AnalogSnapshot;
 class Analog : public SignalData
 {
 public:
-	Analog(const sr_datafeed_meta_analog &meta,
-		uint64_t samplerate);
+	Analog(uint64_t samplerate);
 
 	void push_snapshot(
 		boost::shared_ptr<AnalogSnapshot> &snapshot);

@@ -27,11 +27,11 @@ using namespace std;
 namespace pv {
 namespace data {
 
-Logic::Logic(const sr_datafeed_meta_logic &meta,
-	uint64_t samplerate) :
+Logic::Logic(unsigned int num_probes, uint64_t samplerate) :
 	SignalData(samplerate),
-	_num_probes(meta.num_probes)
+	_num_probes(num_probes)
 {
+	assert(_num_probes > 0);
 }
 
 int Logic::get_num_probes() const

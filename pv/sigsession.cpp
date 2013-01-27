@@ -140,6 +140,12 @@ void SigSession::load_thread_proc(const string name)
 void SigSession::sample_thread_proc(struct sr_dev_inst *sdi,
 	uint64_t record_length)
 {
+	shared_ptr<view::Signal> signal;
+	unsigned int logic_probe_count = 0;
+	unsigned int analog_probe_count = 0;
+
+	assert(sdi);
+
 	sr_session_new();
 	sr_session_datafeed_callback_add(data_feed_in_proc);
 
@@ -149,21 +155,90 @@ void SigSession::sample_thread_proc(struct sr_dev_inst *sdi,
 		return;
 	}
 
-	if (sr_dev_config_set(sdi, SR_HWCAP_LIMIT_SAMPLES,
+	// Set the sample limit
+	if (sr_config_set(sdi, SR_CONF_LIMIT_SAMPLES,
 		&record_length) != SR_OK) {
 		qDebug() << "Failed to configure time-based sample limit.";
 		sr_session_destroy();
 		return;
 	}
 
+	// Set the samplerate
 	{
 		lock_guard<mutex> lock(_sampling_mutex);
-		if (sr_dev_config_set(sdi, SR_HWCAP_SAMPLERATE,
+		if (sr_config_set(sdi, SR_CONF_SAMPLERATE,
 			&_sample_rate) != SR_OK) {
 			qDebug() << "Failed to configure samplerate.";
 			sr_session_destroy();
 			return;
 		}
+	}
+
+	// Detect what data types we will receive
+	for (const GSList *l = sdi->probes; l; l = l->next) {
+		const sr_probe *const probe = (const sr_probe *)l->data;
+		if (!probe->enabled)
+			continue;
+
+		switch(probe->type) {
+		case SR_PROBE_LOGIC:
+			logic_probe_count++;
+			break;
+
+		case SR_PROBE_ANALOG:
+			analog_probe_count++;
+			break;
+		}
+	}
+
+	// Create data containers for the coming data snapshots
+	{
+		lock_guard<mutex> data_lock(_data_mutex);
+		lock_guard<mutex> sampling_lock(_sampling_mutex);
+
+		if (logic_probe_count != 0) {
+			_logic_data.reset(new data::Logic(
+				logic_probe_count, _sample_rate));
+			assert(_logic_data);
+		}
+
+		if (analog_probe_count != 0) {
+			_analog_data.reset(new data::Analog(_sample_rate));
+			assert(_analog_data);
+		}
+	}
+
+	// Make the logic probe list
+	{
+		lock_guard<mutex> lock(_signals_mutex);
+
+		_signals.clear();
+
+		for (const GSList *l = sdi->probes; l; l = l->next) {
+			const sr_probe *const probe =
+				(const sr_probe *)l->data;
+			assert(probe);
+			if (!probe->enabled)
+				continue;
+
+			switch(probe->type) {
+			case SR_PROBE_LOGIC:
+				signal = shared_ptr<view::Signal>(
+					new view::LogicSignal(probe->name,
+						_logic_data, probe->index));
+				break;
+
+			case SR_PROBE_ANALOG:
+				signal = shared_ptr<view::Signal>(
+					new view::AnalogSignal(probe->name,
+						_analog_data));
+				break;
+			}
+
+			_signals.push_back(signal);
+		}
+
+		signals_changed();
 	}
 
 	if (sr_session_start() != SR_OK) {
@@ -179,68 +254,20 @@ void SigSession::sample_thread_proc(struct sr_dev_inst *sdi,
 	set_capture_state(Stopped);
 }
 
-void SigSession::feed_in_meta_logic(const struct sr_dev_inst *sdi,
-	const sr_datafeed_meta_logic &meta_logic)
+void SigSession::feed_in_meta(const sr_dev_inst *sdi,
+	const sr_datafeed_meta &meta)
 {
-	using view::LogicSignal;
-
-	{
-		lock_guard<mutex> data_lock(_data_mutex);
-		lock_guard<mutex> sampling_lock(_sampling_mutex);
-
-		// Create an empty data::Logic for coming data snapshots
-		_logic_data.reset(new data::Logic(meta_logic, _sample_rate));
-		assert(_logic_data);
-		if (!_logic_data)
-			return;
-	}
-
-	{
-		lock_guard<mutex> lock(_signals_mutex);
-
-		// Add the signals
-		for (int i = 0; i < meta_logic.num_probes; i++) {
-			const sr_probe *const probe =
-				(const sr_probe*)g_slist_nth_data(
-					sdi->probes, i);
-			if (probe->enabled) {
-				shared_ptr<LogicSignal> signal(
-					new LogicSignal(probe->name,
-						_logic_data, probe->index));
-				_signals.push_back(signal);
-			}
+	for (const GSList *l = meta.config; l; l = l->next) {
+		const sr_config *const src = (const sr_config*)l->data;
+		switch (src->key) {
+		case SR_CONF_SAMPLERATE:
+			/// @todo handle samplerate changes
+			/// samplerate = (uint64_t *)src->value;
+			break;
+		default:
+			// Unknown metadata is not an error.
+			break;
 		}
-
-		signals_changed();
-	}
-}
-
-void SigSession::feed_in_meta_analog(const struct sr_dev_inst*,
-	const sr_datafeed_meta_analog &meta_analog)
-{
-	using view::AnalogSignal;
-
-	{
-		lock_guard<mutex> data_lock(_data_mutex);
-		lock_guard<mutex> sampling_lock(_sampling_mutex);
-
-		// Create an empty data::Analog for coming data snapshots
-		_analog_data.reset(new data::Analog(
-			meta_analog, _sample_rate));
-		assert(_analog_data);
-		if (!_analog_data)
-			return;
-	}
-
-	{
-		lock_guard<mutex> lock(_signals_mutex);
-
-		// Add the signals
-		shared_ptr<AnalogSignal> signal(
-			new AnalogSignal(QString("???"), _analog_data));
-		_signals.push_back(signal);
-
-		signals_changed();
 	}
 }
 
@@ -249,6 +276,8 @@ void SigSession::feed_in_logic(const sr_datafeed_logic &logic)
 	lock_guard<mutex> lock(_data_mutex);
 	if (!_cur_logic_snapshot)
 	{
+		assert(_logic_data);
+
 		// Create a new data snapshot
 		_cur_logic_snapshot = shared_ptr<data::LogicSnapshot>(
 			new data::LogicSnapshot(logic));
@@ -268,6 +297,8 @@ void SigSession::feed_in_analog(const sr_datafeed_analog &analog)
 	lock_guard<mutex> lock(_data_mutex);
 	if (!_cur_analog_snapshot)
 	{
+		assert(_analog_data);
+
 		// Create a new data snapshot
 		_cur_analog_snapshot = shared_ptr<data::AnalogSnapshot>(
 			new data::AnalogSnapshot(analog));
@@ -290,22 +321,12 @@ void SigSession::data_feed_in(const struct sr_dev_inst *sdi,
 
 	switch (packet->type) {
 	case SR_DF_HEADER:
-	{
-		lock_guard<mutex> lock(_signals_mutex);
-		_signals.clear();
-		break;
-	}
-
-	case SR_DF_META_LOGIC:
-		assert(packet->payload);
-		feed_in_meta_logic(sdi,
-			*(const sr_datafeed_meta_logic*)packet->payload);
 		break;
 
-	case SR_DF_META_ANALOG:
+	case SR_DF_META:
 		assert(packet->payload);
-		feed_in_meta_analog(sdi,
-			*(const sr_datafeed_meta_analog*)packet->payload);
+		feed_in_meta(sdi,
+			*(const sr_datafeed_meta*)packet->payload);
 		break;
 
 	case SR_DF_LOGIC:
