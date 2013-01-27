@@ -34,68 +34,66 @@ namespace binding {
 HwCap::HwCap(struct sr_dev_inst *sdi) :
 	_sdi(sdi)
 {
-	const int *hwcaps;
+	const int *options;
 
-	if ((sr_info_get(sdi->driver, SR_DI_HWCAPS, (const void **)&hwcaps,
-			sdi) != SR_OK) || !hwcaps)
+	if ((sr_config_list(sdi->driver, SR_CONF_DEVICE_OPTIONS,
+		(const void **)&options, sdi) != SR_OK) || !options)
 		/* Driver supports no device instance options. */
 		return;
 
-	for (int cap = 0; hwcaps[cap]; cap++) {
-		const struct sr_hwcap_option *const hwo =
-			sr_devopt_get(hwcaps[cap]);
+	for (int cap = 0; options[cap]; cap++) {
+		const struct sr_config_info *const info =
+			sr_config_info_get(options[cap]);
 
-		if (!hwo)
+		if (!info)
 			continue;
 
-		switch(hwo->hwcap)
+		switch(info->key)
 		{
-		case SR_HWCAP_PATTERN_MODE:
-			bind_stropt(hwo, SR_DI_PATTERNS,
-				SR_HWCAP_PATTERN_MODE);
+		case SR_CONF_PATTERN_MODE:
+			bind_stropt(info, SR_CONF_PATTERN_MODE);
 			break;
 
-		case SR_HWCAP_BUFFERSIZE:
-			bind_buffer_size(hwo);
+		case SR_CONF_BUFFERSIZE:
+			bind_buffer_size(info);
 			break;
 
-		case SR_HWCAP_TIMEBASE:
-			bind_time_base(hwo);
+		case SR_CONF_TIMEBASE:
+			bind_time_base(info);
 			break;
 
-		case SR_HWCAP_TRIGGER_SOURCE:
-			bind_stropt(hwo, SR_DI_TRIGGER_SOURCES,
-				SR_HWCAP_TRIGGER_SOURCE);
+		case SR_CONF_TRIGGER_SOURCE:
+			bind_stropt(info, SR_CONF_TRIGGER_SOURCE);
 			break;
 
-		case SR_HWCAP_FILTER:
-			bind_stropt(hwo, SR_DI_FILTERS, SR_HWCAP_FILTER);
+		case SR_CONF_FILTER:
+			bind_stropt(info, SR_CONF_FILTER);
 			break;
 
-		case SR_HWCAP_VDIV:
-			bind_vdiv(hwo);
+		case SR_CONF_VDIV:
+			bind_vdiv(info);
 			break;
 
-		case SR_HWCAP_COUPLING:
-			bind_stropt(hwo, SR_DI_COUPLING, SR_HWCAP_FILTER);
+		case SR_CONF_COUPLING:
+			bind_stropt(info, SR_CONF_FILTER);
 			break;
 		}
 	}
 }
 
-void HwCap::expose_enum(const struct sr_hwcap_option *hwo,
-	const vector< pair<const void*, QString> > &values, int opt)
+void HwCap::expose_enum(const struct sr_config_info *info,
+	const vector< pair<const void*, QString> > &values, int key)
 {
 	_properties.push_back(shared_ptr<Property>(
-		new Enum(QString(hwo->shortname), values,
+		new Enum(QString(info->name), values,
 			function<const void* ()>(),
-			bind(sr_dev_config_set, _sdi, opt, _1))));
+			bind(sr_config_set, _sdi, key, _1))));
 }
 
-void HwCap::bind_stropt(const struct sr_hwcap_option *hwo, int id, int opt)
+void HwCap::bind_stropt(const struct sr_config_info *info, int key)
 {
 	const char **stropts;
-	if (sr_info_get(_sdi->driver, id,
+	if (sr_config_list(_sdi->driver, key,
 		(const void **)&stropts, _sdi) != SR_OK)
 		return;
 
@@ -103,13 +101,13 @@ void HwCap::bind_stropt(const struct sr_hwcap_option *hwo, int id, int opt)
 	for (int i = 0; stropts[i]; i++)
 		values.push_back(make_pair(stropts[i], stropts[i]));
 
-	expose_enum(hwo, values, opt);
+	expose_enum(info, values, key);
 }
 
-void HwCap::bind_buffer_size(const struct sr_hwcap_option *hwo)
+void HwCap::bind_buffer_size(const struct sr_config_info *info)
 {
 	const uint64_t *sizes;
-	if (sr_info_get(_sdi->driver, SR_DI_BUFFERSIZES,
+	if (sr_config_list(_sdi->driver, SR_CONF_BUFFERSIZE,
 			(const void **)&sizes, _sdi) != SR_OK)
 		return;
 
@@ -118,13 +116,13 @@ void HwCap::bind_buffer_size(const struct sr_hwcap_option *hwo)
 		values.push_back(make_pair(sizes + i,
 			QString("%1").arg(sizes[i])));
 
-	expose_enum(hwo, values, SR_HWCAP_BUFFERSIZE);
+	expose_enum(info, values, SR_CONF_BUFFERSIZE);
 }
 
-void HwCap::bind_time_base(const struct sr_hwcap_option *hwo)
+void HwCap::bind_time_base(const struct sr_config_info *info)
 {
 	struct sr_rational *timebases;
-	if (sr_info_get(_sdi->driver, SR_DI_TIMEBASES,
+	if (sr_config_list(_sdi->driver, SR_CONF_TIMEBASE,
 			(const void **)&timebases, _sdi) != SR_OK)
 		return;
 
@@ -134,13 +132,13 @@ void HwCap::bind_time_base(const struct sr_hwcap_option *hwo)
 			QString(sr_period_string(
 				timebases[i].p * timebases[i].q))));
 
-	expose_enum(hwo, values, SR_HWCAP_TIMEBASE);
+	expose_enum(info, values, SR_CONF_TIMEBASE);
 }
 
-void HwCap::bind_vdiv(const struct sr_hwcap_option *hwo)
+void HwCap::bind_vdiv(const struct sr_config_info *info)
 {
 	struct sr_rational *vdivs;
-	if (sr_info_get(_sdi->driver, SR_DI_VDIVS,
+	if (sr_config_list(_sdi->driver, SR_CONF_VDIV,
 			(const void **)&vdivs, _sdi) != SR_OK)
 		return;
 
@@ -149,7 +147,7 @@ void HwCap::bind_vdiv(const struct sr_hwcap_option *hwo)
 		values.push_back(make_pair(vdivs + i,
 			QString(sr_voltage_string(vdivs + i))));
 
-	expose_enum(hwo, values, SR_HWCAP_VDIV);
+	expose_enum(info, values, SR_CONF_VDIV);
 }
 
 } // binding

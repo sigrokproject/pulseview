@@ -39,16 +39,15 @@ public:
 	HwCap(struct sr_dev_inst *sdi);
 
 private:
-	void expose_enum(const struct sr_hwcap_option *hwo,
+	void expose_enum(const struct sr_config_info *info,
 		const std::vector<std::pair<const void*, QString> > &values,
 		int opt);
 
-	void bind_stropt(const struct sr_hwcap_option *hwo, int id,
-		int opt);
+	void bind_stropt(const struct sr_config_info *info, int key);
 
-	void bind_buffer_size(const struct sr_hwcap_option *hwo);
-	void bind_time_base(const struct sr_hwcap_option *hwo);
-	void bind_vdiv(const struct sr_hwcap_option *hwo);
+	void bind_buffer_size(const struct sr_config_info *info);
+	void bind_time_base(const struct sr_config_info *info);
+	void bind_vdiv(const struct sr_config_info *info);
 
 protected:
 	const struct sr_dev_inst *_sdi;
