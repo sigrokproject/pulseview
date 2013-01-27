@@ -104,7 +104,7 @@ set(pulseview_SOURCES
 	pv/prop/enum.cpp
 	pv/prop/property.cpp
 	pv/prop/binding/binding.cpp
-	pv/prop/binding/hwcap.cpp
+	pv/prop/binding/deviceoptions.cpp
 	pv/view/analogsignal.cpp
 	pv/view/cursor.cpp
 	pv/view/header.cpp

@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_PROP_BINDING_HWCAP_H
-#define PULSEVIEW_PV_PROP_BINDING_HWCAP_H
+#ifndef PULSEVIEW_PV_PROP_BINDING_DEVICEOPTIONS_H
+#define PULSEVIEW_PV_PROP_BINDING_DEVICEOPTIONS_H
 
 #include <QString>
 
@@ -33,10 +33,10 @@ namespace pv {
 namespace prop {
 namespace binding {
 
-class HwCap : public Binding
+class DeviceOptions : public Binding
 {
 public:
-	HwCap(struct sr_dev_inst *sdi);
+	DeviceOptions(struct sr_dev_inst *sdi);
 
 private:
 	void expose_enum(const struct sr_config_info *info,
@@ -57,4 +57,4 @@ protected:
 } // prop
 } // pv
 
-#endif // PULSEVIEW_PV_PROP_BINDING_HWCAP_H
+#endif // PULSEVIEW_PV_PROP_BINDING_DEVICEOPTIONS_H

@@ -25,7 +25,7 @@
 #include <QDialogButtonBox>
 #include <QVBoxLayout>
 
-#include <pv/prop/binding/hwcap.h>
+#include <pv/prop/binding/deviceoptions.h>
 
 namespace pv {
 namespace dialogs {
@@ -42,7 +42,7 @@ private:
 	QVBoxLayout _layout;
 	QDialogButtonBox _button_box;
 
-	pv::prop::binding::HwCap _hw_cap_binding;
+	pv::prop::binding::DeviceOptions _device_options_binding;
 };
 
 } // namespace dialogs

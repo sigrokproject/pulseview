@@ -28,7 +28,7 @@ HwCap::HwCap(QWidget *parent, struct sr_dev_inst *sdi) :
 	_layout(this),
 	_button_box(QDialogButtonBox::Ok | QDialogButtonBox::Cancel,
 		Qt::Horizontal, this),
-	_hw_cap_binding(sdi)
+	_device_options_binding(sdi)
 {
 	setWindowTitle(tr("Configure Device"));
 
@@ -37,7 +37,7 @@ HwCap::HwCap(QWidget *parent, struct sr_dev_inst *sdi) :
 
 	setLayout(&_layout);
 
-	QWidget *const form = _hw_cap_binding.get_form(this);
+	QWidget *const form = _device_options_binding.get_form(this);
 	_layout.addWidget(form);
 
 	_layout.addWidget(&_button_box);
@@ -46,7 +46,7 @@ HwCap::HwCap(QWidget *parent, struct sr_dev_inst *sdi) :
 void HwCap::accept()
 {
 	QDialog::accept();
-	_hw_cap_binding.commit();
+	_device_options_binding.commit();
 }
 
 } // namespace dialogs

@@ -20,7 +20,7 @@
 
 #include <boost/bind.hpp>
 
-#include "hwcap.h"
+#include "deviceoptions.h"
 
 #include <pv/prop/enum.h>
 
@@ -31,7 +31,7 @@ namespace pv {
 namespace prop {
 namespace binding {
 
-HwCap::HwCap(struct sr_dev_inst *sdi) :
+DeviceOptions::DeviceOptions(struct sr_dev_inst *sdi) :
 	_sdi(sdi)
 {
 	const int *options;
@@ -81,7 +81,7 @@ HwCap::HwCap(struct sr_dev_inst *sdi) :
 	}
 }
 
-void HwCap::expose_enum(const struct sr_config_info *info,
+void DeviceOptions::expose_enum(const struct sr_config_info *info,
 	const vector< pair<const void*, QString> > &values, int key)
 {
 	_properties.push_back(shared_ptr<Property>(
@@ -90,7 +90,8 @@ void HwCap::expose_enum(const struct sr_config_info *info,
 			bind(sr_config_set, _sdi, key, _1))));
 }
 
-void HwCap::bind_stropt(const struct sr_config_info *info, int key)
+void DeviceOptions::bind_stropt(
+	const struct sr_config_info *info, int key)
 {
 	const char **stropts;
 	if (sr_config_list(_sdi->driver, key,
@@ -104,7 +105,7 @@ void HwCap::bind_stropt(const struct sr_config_info *info, int key)
 	expose_enum(info, values, key);
 }
 
-void HwCap::bind_buffer_size(const struct sr_config_info *info)
+void DeviceOptions::bind_buffer_size(const struct sr_config_info *info)
 {
 	const uint64_t *sizes;
 	if (sr_config_list(_sdi->driver, SR_CONF_BUFFERSIZE,
@@ -119,7 +120,7 @@ void HwCap::bind_buffer_size(const struct sr_config_info *info)
 	expose_enum(info, values, SR_CONF_BUFFERSIZE);
 }
 
-void HwCap::bind_time_base(const struct sr_config_info *info)
+void DeviceOptions::bind_time_base(const struct sr_config_info *info)
 {
 	struct sr_rational *timebases;
 	if (sr_config_list(_sdi->driver, SR_CONF_TIMEBASE,
@@ -135,7 +136,7 @@ void HwCap::bind_time_base(const struct sr_config_info *info)
 	expose_enum(info, values, SR_CONF_TIMEBASE);
 }
 
-void HwCap::bind_vdiv(const struct sr_config_info *info)
+void DeviceOptions::bind_vdiv(const struct sr_config_info *info)
 {
 	struct sr_rational *vdivs;
 	if (sr_config_list(_sdi->driver, SR_CONF_VDIV,
