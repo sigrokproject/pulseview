@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_HWCAP_H
-#define PULSEVIEW_PV_HWCAP_H
+#ifndef PULSEVIEW_PV_DEVICEOPTIONS_H
+#define PULSEVIEW_PV_DEVICEOPTIONS_H
 
 #include <QDialog>
 #include <QDialogButtonBox>
@@ -30,10 +30,10 @@
 namespace pv {
 namespace dialogs {
 
-class HwCap : public QDialog
+class DeviceOptions : public QDialog
 {
 public:
-	HwCap(QWidget *parent, struct sr_dev_inst *sdi);
+	DeviceOptions(QWidget *parent, struct sr_dev_inst *sdi);
 
 protected:
 	void accept();
@@ -48,4 +48,4 @@ private:
 } // namespace dialogs
 } // namespace pv
 
-#endif // PULSEVIEW_PV_HWCAP_H
+#endif // PULSEVIEW_PV_DEVICEOPTIONS_H

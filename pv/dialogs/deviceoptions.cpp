@@ -18,12 +18,12 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#include "hwcap.h"
+#include "deviceoptions.h"
 
 namespace pv {
 namespace dialogs {
 
-HwCap::HwCap(QWidget *parent, struct sr_dev_inst *sdi) :
+DeviceOptions::DeviceOptions(QWidget *parent, struct sr_dev_inst *sdi) :
 	QDialog(parent),
 	_layout(this),
 	_button_box(QDialogButtonBox::Ok | QDialogButtonBox::Cancel,
@@ -43,7 +43,7 @@ HwCap::HwCap(QWidget *parent, struct sr_dev_inst *sdi) :
 	_layout.addWidget(&_button_box);
 }
 
-void HwCap::accept()
+void DeviceOptions::accept()
 {
 	QDialog::accept();
 	_device_options_binding.commit();

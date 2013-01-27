@@ -30,7 +30,7 @@ extern "C" {
 
 #include "samplingbar.h"
 
-#include <pv/dialogs/hwcap.h>
+#include <pv/dialogs/deviceoptions.h>
 
 namespace pv {
 
@@ -214,7 +214,7 @@ void SamplingBar::configure()
 	sr_dev_inst *const sdi = get_selected_device();
 	assert(sdi);
 
-	pv::dialogs::HwCap dlg(this, sdi);
+	pv::dialogs::DeviceOptions dlg(this, sdi);
 	dlg.exec();
 }
 

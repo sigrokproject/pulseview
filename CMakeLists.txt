@@ -100,7 +100,7 @@ set(pulseview_SOURCES
 	pv/data/signaldata.cpp
 	pv/data/snapshot.cpp
 	pv/dialogs/about.cpp
-	pv/dialogs/hwcap.cpp
+	pv/dialogs/deviceoptions.cpp
 	pv/prop/enum.cpp
 	pv/prop/property.cpp
 	pv/prop/binding/binding.cpp
