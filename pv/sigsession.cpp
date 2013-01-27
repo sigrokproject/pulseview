@@ -140,10 +140,6 @@ void SigSession::load_thread_proc(const string name)
 void SigSession::sample_thread_proc(struct sr_dev_inst *sdi,
 	uint64_t record_length)
 {
-	shared_ptr<view::Signal> signal;
-	unsigned int logic_probe_count = 0;
-	unsigned int analog_probe_count = 0;
-
 	assert(sdi);
 
 	sr_session_new();
@@ -173,6 +169,25 @@ void SigSession::sample_thread_proc(struct sr_dev_inst *sdi,
 			return;
 		}
 	}
+
+	if (sr_session_start() != SR_OK) {
+		qDebug() << "Failed to start session.";
+		return;
+	}
+
+	set_capture_state(Running);
+
+	sr_session_run();
+	sr_session_destroy();
+
+	set_capture_state(Stopped);
+}
+
+void SigSession::feed_in_header(const sr_dev_inst *sdi)
+{
+	shared_ptr<view::Signal> signal;
+	unsigned int logic_probe_count = 0;
+	unsigned int analog_probe_count = 0;
 
 	// Detect what data types we will receive
 	for (const GSList *l = sdi->probes; l; l = l->next) {
@@ -240,18 +255,6 @@ void SigSession::sample_thread_proc(struct sr_dev_inst *sdi,
 
 		signals_changed();
 	}
-
-	if (sr_session_start() != SR_OK) {
-		qDebug() << "Failed to start session.";
-		return;
-	}
-
-	set_capture_state(Running);
-
-	sr_session_run();
-	sr_session_destroy();
-
-	set_capture_state(Stopped);
 }
 
 void SigSession::feed_in_meta(const sr_dev_inst *sdi,
@@ -321,6 +324,7 @@ void SigSession::data_feed_in(const struct sr_dev_inst *sdi,
 
 	switch (packet->type) {
 	case SR_DF_HEADER:
+		feed_in_header(sdi);
 		break;
 
 	case SR_DF_META:

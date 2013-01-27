@@ -85,6 +85,8 @@ private:
 	void sample_thread_proc(struct sr_dev_inst *sdi,
 		uint64_t record_length);
 
+	void feed_in_header(const sr_dev_inst *sdi);
+
 	void feed_in_meta(const sr_dev_inst *sdi,
 		const sr_datafeed_meta &meta);
 
