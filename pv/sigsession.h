@@ -83,7 +83,7 @@ private:
 	void load_thread_proc(const std::string name);
 
 	void sample_thread_proc(struct sr_dev_inst *sdi,
-		uint64_t record_length);
+		uint64_t record_length, uint64_t sample_rate);
 
 	void feed_in_header(const sr_dev_inst *sdi);
 
@@ -103,7 +103,6 @@ private:
 private:
 	mutable boost::mutex _sampling_mutex;
 	capture_state _capture_state;
-	uint64_t _sample_rate;
 
 	mutable boost::mutex _signals_mutex;
 	std::vector< boost::shared_ptr<view::Signal> > _signals;

@@ -76,12 +76,9 @@ void SigSession::start_capture(struct sr_dev_inst *sdi,
 {
 	stop_capture();
 
-	lock_guard<mutex> lock(_sampling_mutex);
-	_sample_rate = sample_rate;
-
 	_sampling_thread.reset(new boost::thread(
 		&SigSession::sample_thread_proc, this, sdi,
-		record_length));
+		record_length, sample_rate));
 }
 
 void SigSession::stop_capture()
@@ -138,7 +135,7 @@ void SigSession::load_thread_proc(const string name)
 }
 
 void SigSession::sample_thread_proc(struct sr_dev_inst *sdi,
-	uint64_t record_length)
+	uint64_t record_length, uint64_t sample_rate)
 {
 	assert(sdi);
 
@@ -160,14 +157,11 @@ void SigSession::sample_thread_proc(struct sr_dev_inst *sdi,
 	}
 
 	// Set the samplerate
-	{
-		lock_guard<mutex> lock(_sampling_mutex);
-		if (sr_config_set(sdi, SR_CONF_SAMPLERATE,
-			&_sample_rate) != SR_OK) {
-			qDebug() << "Failed to configure samplerate.";
-			sr_session_destroy();
-			return;
-		}
+	if (sr_config_set(sdi, SR_CONF_SAMPLERATE,
+		&sample_rate) != SR_OK) {
+		qDebug() << "Failed to configure samplerate.";
+		sr_session_destroy();
+		return;
 	}
 
 	if (sr_session_start() != SR_OK) {
@@ -186,6 +180,7 @@ void SigSession::sample_thread_proc(struct sr_dev_inst *sdi,
 void SigSession::feed_in_header(const sr_dev_inst *sdi)
 {
 	shared_ptr<view::Signal> signal;
+	uint64_t *sample_rate;
 	unsigned int logic_probe_count = 0;
 	unsigned int analog_probe_count = 0;
 
@@ -206,19 +201,23 @@ void SigSession::feed_in_header(const sr_dev_inst *sdi)
 		}
 	}
 
+	// Read out the sample rate
+	assert(sdi->driver);
+	assert(sr_config_get(sdi->driver, SR_CONF_SAMPLERATE,
+		(const void**)&sample_rate, sdi) == SR_OK);
+
 	// Create data containers for the coming data snapshots
 	{
 		lock_guard<mutex> data_lock(_data_mutex);
-		lock_guard<mutex> sampling_lock(_sampling_mutex);
 
 		if (logic_probe_count != 0) {
 			_logic_data.reset(new data::Logic(
-				logic_probe_count, _sample_rate));
+				logic_probe_count, *sample_rate));
 			assert(_logic_data);
 		}
 
 		if (analog_probe_count != 0) {
-			_analog_data.reset(new data::Analog(_sample_rate));
+			_analog_data.reset(new data::Analog(*sample_rate));
 			assert(_analog_data);
 		}
 	}
