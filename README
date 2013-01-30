@@ -20,6 +20,21 @@ There have been no official tarball releases, yet.
 Distro packagers should NOT package this, yet.
 
 
+Copyright notices
+-----------------
+
+A copyright notice indicating a range of years, must be interpreted as having
+had copyrightable material added in each of those years.
+
+Example:
+
+ Copyright (C) 2010-2013 Contributor Name
+
+is to be interpreted as
+
+ Copyright (C) 2010,2011,2012,2013 Contributor Name
+
+
 Mailing lists
 -------------
 
