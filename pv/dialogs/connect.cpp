@@ -63,11 +63,30 @@ Connect::Connect(QWidget *parent) :
 
 void Connect::populate_drivers()
 {
+	const int *hwopts;
 	struct sr_dev_driver **drivers = sr_driver_list();
-	for (int i = 0; drivers[i]; ++i)
-		_drivers.addItem(QString("%1 (%2)").arg(
-			drivers[i]->longname).arg(drivers[i]->name),
-			qVariantFromValue((void*)drivers[i]));
+	for (int i = 0; drivers[i]; ++i) {
+		/**
+		 * We currently only support devices that can deliver
+		 * samples at a fixed samplerate i.e. oscilloscopes and
+		 * logic analysers.
+		 * @todo Add support for non-monotonic devices i.e. DMMs
+		 * and sensors.
+		 */
+		bool supported_device = false;
+		if ((sr_config_list(drivers[i], SR_CONF_DEVICE_OPTIONS,
+			(const void **)&hwopts, NULL) == SR_OK) && hwopts)
+			for (int j = 0; hwopts[j]; j++)
+				if(hwopts[j] == SR_CONF_SAMPLERATE) {
+					supported_device = true;
+					break;
+				}
+
+		if(supported_device)
+			_drivers.addItem(QString("%1 (%2)").arg(
+				drivers[i]->longname).arg(drivers[i]->name),
+				qVariantFromValue((void*)drivers[i]));
+	}
 }
 
 void Connect::device_selected(int index)
