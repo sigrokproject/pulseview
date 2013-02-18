@@ -36,6 +36,7 @@ extern "C" {
 
 // Global pointer to our QApplication
 QApplication *g_app = NULL;
+
 void usage()
 {
 	fprintf(stderr,
@@ -49,13 +50,13 @@ void usage()
 }
 
 /*
- * SIGINT handler (likely recieved Ctrl-C from terminal)
+ * SIGINT handler (likely received Ctrl-C from terminal)
  */
-void sigint(int param)
+void sigint_handler(int param)
 {
-	(void) param;
+	(void)param;
 
-	qDebug("pv: Recieved SIGINT");
+	qDebug("Received SIGINT.");
 
 	if (g_app)
 		g_app->quit();
@@ -67,7 +68,7 @@ int main(int argc, char *argv[])
 	struct sr_context *sr_ctx = NULL;
 
 	// Register a SIGINT handler
-	signal (SIGINT, sigint);
+	signal(SIGINT, sigint_handler);
 
 	QApplication a(argc, argv);
 	// Now we have an application to populate our global pointer
