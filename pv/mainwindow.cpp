@@ -18,9 +18,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-extern "C" {
 #include <sigrokdecode.h>
-}
 
 #include <QAction>
 #include <QApplication>
@@ -37,7 +35,6 @@ extern "C" {
 #include "dialogs/about.h"
 #include "view/view.h"
 
-extern "C" {
 /* __STDC_FORMAT_MACROS is required for PRIu64 and friends (in C++). */
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
@@ -45,7 +42,7 @@ extern "C" {
 #include <stdarg.h>
 #include <glib.h>
 #include <libsigrok/libsigrok.h>
-}
+
 
 namespace pv {
 

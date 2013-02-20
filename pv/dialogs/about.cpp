@@ -18,21 +18,18 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-extern "C" {
 #include <sigrokdecode.h>
-}
 
 #include <QTextDocument>
 
 #include "about.h"
 #include <ui_about.h>
 
-extern "C" {
 /* __STDC_FORMAT_MACROS is required for PRIu64 and friends (in C++). */
 #define __STDC_FORMAT_MACROS
 #include <glib.h>
 #include <libsigrok/libsigrok.h>
-}
+
 
 namespace pv {
 namespace dialogs {
