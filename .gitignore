@@ -10,6 +10,8 @@ cmake_install.cmake
 CTestTestfile.cmake
 Makefile
 Testing/
+CPackConfig.cmake
+CPackSourceConfig.cmake
 
 # qt generated code
 *.qrc.depends
