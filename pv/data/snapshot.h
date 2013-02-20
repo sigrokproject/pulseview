@@ -21,9 +21,7 @@
 #ifndef PULSEVIEW_PV_DATA_SNAPSHOT_H
 #define PULSEVIEW_PV_DATA_SNAPSHOT_H
 
-extern "C" {
 #include <libsigrok/libsigrok.h>
-}
 
 #include <boost/thread.hpp>
 

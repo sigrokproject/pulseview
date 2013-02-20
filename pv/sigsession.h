@@ -30,9 +30,7 @@
 
 #include <QObject>
 
-extern "C" {
 #include <libsigrok/libsigrok.h>
-}
 
 namespace pv {
 

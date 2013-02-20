@@ -23,9 +23,7 @@
 
 #include <QString>
 
-extern "C" {
 #include <libsigrok/libsigrok.h>
-}
 
 #include "binding.h"
 

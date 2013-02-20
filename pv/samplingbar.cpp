@@ -22,9 +22,7 @@
 
 #include <boost/foreach.hpp>
 
-extern "C" {
 #include <libsigrok/libsigrok.h>
-}
 
 #include <QAction>
 
