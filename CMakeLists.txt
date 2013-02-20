@@ -148,7 +148,7 @@ include(${QT_USE_FILE})
 #-------------------------------------------------------------------------------
 
 add_definitions(${QT_DEFINITIONS})
-add_definitions(-Wextra)
+add_definitions(-Wall -Wextra)
 
 if(NOT DISABLE_WERROR)
 	add_definitions(-Werror)
