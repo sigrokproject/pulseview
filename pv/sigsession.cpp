@@ -259,6 +259,8 @@ void SigSession::feed_in_header(const sr_dev_inst *sdi)
 void SigSession::feed_in_meta(const sr_dev_inst *sdi,
 	const sr_datafeed_meta &meta)
 {
+	(void)sdi;
+
 	for (const GSList *l = meta.config; l; l = l->next) {
 		const sr_config *const src = (const sr_config*)l->data;
 		switch (src->key) {

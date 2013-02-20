@@ -134,6 +134,8 @@ void Signal::paint_label(QPainter &p, int y, int right, bool hover)
 bool Signal::pt_in_label_rect(int y, int left, int right,
 	const QPoint &point)
 {
+	(void)left;
+
 	const QRectF label = get_label_rect(y, right);
 	return QRectF(
 		QPointF(label.left() - LabelHitPadding,
