@@ -39,7 +39,7 @@ QApplication *g_app = NULL;
 
 void usage()
 {
-	fprintf(stderr,
+	fprintf(stdout,
 		"Usage:\n"
 		"  %s — %s\n"
 		"\n"
@@ -95,7 +95,7 @@ int main(int argc, char *argv[])
 		switch (c) {
 		case 'V':
 			// Print version info
-			fprintf(stderr, "%s %s\n", PV_TITLE, PV_VERSION_STRING);
+			fprintf(stdout, "%s %s\n", PV_TITLE, PV_VERSION_STRING);
 			return 0;
 
 		case 'h':
