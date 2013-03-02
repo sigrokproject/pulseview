@@ -82,6 +82,7 @@ void AnalogSignal::paint(QPainter &p, int y, int left, int right, double scale,
 		*point++ = QPointF(x, samples[sample] + y);
 	}
 
+	p.setPen(_colour);
 	p.drawPoints(points, point - points);
 
 	delete[] points;
