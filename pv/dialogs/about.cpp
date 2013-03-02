@@ -52,6 +52,7 @@ About::About(QWidget *parent) :
 				 .arg(QApplication::applicationVersion())
 				 .arg(tr("GNU GPL, version 2 or later"))
 				 .arg(QApplication::organizationDomain()));
+	ui->versionInfo->setOpenExternalLinks(true);
 
 	s.append("<table>");
 
