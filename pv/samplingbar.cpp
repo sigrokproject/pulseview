@@ -18,9 +18,9 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#include <assert.h>
+#include <extdef.h>
 
-#include <boost/foreach.hpp>
+#include <assert.h>
 
 #include <libsigrok/libsigrok.h>
 
@@ -32,7 +32,16 @@
 
 namespace pv {
 
-const uint64_t SamplingBar::RecordLengths[11] = {
+const uint64_t SamplingBar::RecordLengths[20] = {
+	1000,
+	2500,
+	5000,
+	10000,
+	25000,
+	50000,
+	100000,
+	250000,
+	500000,
 	1000000,
 	2000000,
 	5000000,
@@ -45,6 +54,8 @@ const uint64_t SamplingBar::RecordLengths[11] = {
 	1000000000,
 	10000000000ULL,
 };
+
+const uint64_t SamplingBar::DefaultRecordLength = 1000000;
 
 SamplingBar::SamplingBar(QWidget *parent) :
 	QToolBar("Sampling Bar", parent),
@@ -66,12 +77,16 @@ SamplingBar::SamplingBar(QWidget *parent) :
 	_sample_rate_value.setDecimals(0);
 	_sample_rate_value.setSuffix("Hz");
 
-	BOOST_FOREACH(uint64_t l, RecordLengths)
+	for(size_t i = 0; i < countof(RecordLengths); i++)
 	{
+		const uint64_t &l = RecordLengths[i];
 		char *const text = sr_si_string_u64(l, " samples");
 		_record_length_selector.addItem(QString(text),
 			qVariantFromValue(l));
 		g_free(text);
+
+		if(l == DefaultRecordLength)
+			_record_length_selector.setCurrentIndex(i);
 	}
 
 	set_sampling(false);
