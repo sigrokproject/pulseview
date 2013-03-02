@@ -89,8 +89,13 @@ void LogicSignal::paint(QPainter &p, int y, int left, int right,
 	const shared_ptr<pv::data::LogicSnapshot> &snapshot =
 		snapshots.front();
 
+	double samplerate = _data->get_samplerate();
+
+	// Show sample rate as 1Hz when it is unknown
+	if(samplerate == 0.0)
+		samplerate = 1.0;
+
 	const double pixels_offset = offset / scale;
-	const double samplerate = _data->get_samplerate();
 	const double start_time = _data->get_start_time();
 	const int64_t last_sample = snapshot->get_sample_count() - 1;
 	const double samples_per_pixel = samplerate * scale;
