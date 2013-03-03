@@ -88,7 +88,7 @@ void Ruler::paintEvent(QPaintEvent*)
 		Qt::AlignLeft | Qt::AlignTop, "8").height();
 
 	// Draw the tick marks
-	p.setPen(Qt::black);
+	p.setPen(palette().color(foregroundRole()));
 
 	const double minor_tick_period = tick_period / MinorTickSubdivision;
 	const double first_major_division =
