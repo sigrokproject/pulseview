@@ -101,6 +101,7 @@ set(pulseview_SOURCES
 	pv/data/snapshot.cpp
 	pv/dialogs/about.cpp
 	pv/dialogs/deviceoptions.cpp
+	pv/prop/double.cpp
 	pv/prop/enum.cpp
 	pv/prop/property.cpp
 	pv/prop/binding/binding.cpp
