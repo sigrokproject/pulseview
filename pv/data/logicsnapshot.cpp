@@ -77,7 +77,10 @@ void LogicSnapshot::reallocate_mip_map(MipMapLevel &m)
 	if (new_data_length > m.data_length)
 	{
 		m.data_length = new_data_length;
-		m.data = realloc(m.data, new_data_length * _unit_size);
+
+		// Padding is added to allow for the uint64_t write word
+		m.data = realloc(m.data, new_data_length * _unit_size +
+			sizeof(uint64_t));
 	}
 }
 
