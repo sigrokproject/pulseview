@@ -72,13 +72,13 @@ SigSession::capture_state SigSession::get_capture_state() const
 }
 
 void SigSession::start_capture(struct sr_dev_inst *sdi,
-	uint64_t record_length, uint64_t sample_rate)
+	uint64_t record_length)
 {
 	stop_capture();
 
 	_sampling_thread.reset(new boost::thread(
 		&SigSession::sample_thread_proc, this, sdi,
-		record_length, sample_rate));
+		record_length));
 }
 
 void SigSession::stop_capture()
@@ -135,7 +135,7 @@ void SigSession::load_thread_proc(const string name)
 }
 
 void SigSession::sample_thread_proc(struct sr_dev_inst *sdi,
-	uint64_t record_length, uint64_t sample_rate)
+	uint64_t record_length)
 {
 	assert(sdi);
 
@@ -152,14 +152,6 @@ void SigSession::sample_thread_proc(struct sr_dev_inst *sdi,
 	if (sr_config_set(sdi, SR_CONF_LIMIT_SAMPLES,
 		&record_length) != SR_OK) {
 		qDebug() << "Failed to configure time-based sample limit.";
-		sr_session_destroy();
-		return;
-	}
-
-	// Set the samplerate
-	if (sr_config_set(sdi, SR_CONF_SAMPLERATE,
-		&sample_rate) != SR_OK) {
-		qDebug() << "Failed to configure samplerate.";
 		sr_session_destroy();
 		return;
 	}

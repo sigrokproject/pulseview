@@ -64,8 +64,8 @@ public:
 
 	capture_state get_capture_state() const;
 
-	void start_capture(struct sr_dev_inst* sdi, uint64_t record_length,
-		uint64_t sample_rate);
+	void start_capture(struct sr_dev_inst* sdi,
+		uint64_t record_length);
 
 	void stop_capture();
 
@@ -81,7 +81,7 @@ private:
 	void load_thread_proc(const std::string name);
 
 	void sample_thread_proc(struct sr_dev_inst *sdi,
-		uint64_t record_length, uint64_t sample_rate);
+		uint64_t record_length);
 
 	void feed_in_header(const sr_dev_inst *sdi);
 
