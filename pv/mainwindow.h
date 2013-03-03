@@ -46,7 +46,8 @@ class MainWindow : public QMainWindow
 	Q_OBJECT
 
 public:
-	explicit MainWindow(QWidget *parent = 0);
+	explicit MainWindow(const char *open_file_name = NULL,
+		QWidget *parent = 0);
 
 private:
 	void setup_ui();
@@ -76,6 +77,7 @@ private:
 	SamplingBar *_sampling_bar;
 
 private slots:
+	void load_file(QString file_name);
 
 	void on_actionOpen_triggered();
 	void on_actionQuit_triggered();

@@ -46,10 +46,17 @@
 
 namespace pv {
 
-MainWindow::MainWindow(QWidget *parent) :
+MainWindow::MainWindow(const char *open_file_name,
+	QWidget *parent) :
 	QMainWindow(parent)
 {
 	setup_ui();
+	if (open_file_name) {
+		const QString s(QString::fromUtf8(open_file_name));
+		QMetaObject::invokeMethod(this, "load_file",
+			Qt::QueuedConnection,
+			Q_ARG(QString, s));
+	}
 }
 
 void MainWindow::setup_ui()
@@ -175,12 +182,17 @@ void MainWindow::setup_ui()
 
 }
 
+void MainWindow::load_file(QString file_name)
+{
+	_session.load_file(file_name.toStdString());
+}
+
 void MainWindow::on_actionOpen_triggered()
 {
-	QString file_name = QFileDialog::getOpenFileName(
+	const QString file_name = QFileDialog::getOpenFileName(
 		this, tr("Open File"), "",
 		tr("Sigrok Sessions (*.sr)"));
-	_session.load_file(file_name.toStdString());
+	load_file(file_name);
 }
 
 void MainWindow::on_actionQuit_triggered()

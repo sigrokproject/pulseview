@@ -39,7 +39,7 @@ void usage()
 {
 	fprintf(stdout,
 		"Usage:\n"
-		"  %s — %s\n"
+		"  %s [OPTION…] [FILE] — %s\n"
 		"\n"
 		"Help Options:\n"
 		"  -V, --version                   Show release version\n"
@@ -64,6 +64,7 @@ int main(int argc, char *argv[])
 {
 	int ret = 0;
 	struct sr_context *sr_ctx = NULL;
+	const char *open_file = NULL;
 
 	// Register a SIGINT handler
 	signal(SIGINT, sigint_handler);
@@ -103,6 +104,12 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	if (argc - optind > 1) {
+		fprintf(stderr, "Only one file can be openened.\n");
+		return 1;
+	} else if (argc - optind == 1)
+		open_file = argv[argc - 1];
+
 	// Initialise libsigrok
 	if (sr_init(&sr_ctx) != SR_OK) {
 		qDebug() << "ERROR: libsigrok init failed.";
@@ -128,7 +135,7 @@ int main(int argc, char *argv[])
 
 		if (ret == 0) {
 			// Initialise the main window
-			pv::MainWindow w;
+			pv::MainWindow w(open_file);
 			w.show();
 
 			// Run the application
