@@ -40,7 +40,7 @@ Binding::Binding() :
 
 QWidget* Binding::get_form(QWidget *parent)
 {
-	if(_form)
+	if (_form)
 		return _form;
 
 	_form = new QWidget(parent);

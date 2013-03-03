@@ -92,7 +92,7 @@ void LogicSignal::paint(QPainter &p, int y, int left, int right,
 	double samplerate = _data->get_samplerate();
 
 	// Show sample rate as 1Hz when it is unknown
-	if(samplerate == 0.0)
+	if (samplerate == 0.0)
 		samplerate = 1.0;
 
 	const double pixels_offset = offset / scale;

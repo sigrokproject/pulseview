@@ -490,7 +490,7 @@ BOOST_AUTO_TEST_CASE(WideData)
 	logic.length = Length * sizeof(data[0]);
 	logic.data = data;
 
-	for(int i = 0; i < Length; i++)
+	for (int i = 0; i < Length; i++)
 		data[i] = 0x0FF0;
 
 	LogicSnapshot s(logic);
@@ -522,7 +522,7 @@ BOOST_AUTO_TEST_CASE(Sixteen)
 	logic.length = Length * sizeof(data[0]);
 	logic.data = data;
 
-	for(int i = 0; i < Length; i++)
+	for (int i = 0; i < Length; i++)
 		data[i] = 0xFFFE;
 
 	LogicSnapshot s(logic);

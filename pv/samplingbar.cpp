@@ -77,7 +77,7 @@ SamplingBar::SamplingBar(QWidget *parent) :
 	_sample_rate_value.setDecimals(0);
 	_sample_rate_value.setSuffix("Hz");
 
-	for(size_t i = 0; i < countof(RecordLengths); i++)
+	for (size_t i = 0; i < countof(RecordLengths); i++)
 	{
 		const uint64_t &l = RecordLengths[i];
 		char *const text = sr_si_string_u64(l, " samples");
@@ -85,7 +85,7 @@ SamplingBar::SamplingBar(QWidget *parent) :
 			qVariantFromValue(l));
 		g_free(text);
 
-		if(l == DefaultRecordLength)
+		if (l == DefaultRecordLength)
 			_record_length_selector.setCurrentIndex(i);
 	}
 

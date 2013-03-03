@@ -43,11 +43,11 @@ Enum::Enum(QString name,
 
 QWidget* Enum::get_widget(QWidget *parent)
 {
-	if(_selector)
+	if (_selector)
 		return _selector;
 
 	_selector = new QComboBox(parent);
-	for(vector< pair<const void*, QString> >::const_iterator i =
+	for (vector< pair<const void*, QString> >::const_iterator i =
 			_values.begin();
 		i != _values.end(); i++)
 		_selector->addItem((*i).second,
@@ -60,7 +60,7 @@ void Enum::commit()
 {
 	assert(_setter);
 
-	if(!_selector)
+	if (!_selector)
 		return;
 
 	const int index = _selector->currentIndex();
