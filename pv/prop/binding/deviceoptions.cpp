@@ -21,9 +21,11 @@
 #include <boost/bind.hpp>
 
 #include <QDebug>
+#include <QObject>
 
 #include "deviceoptions.h"
 
+#include <pv/prop/double.h>
 #include <pv/prop/enum.h>
 
 using namespace boost;
@@ -52,6 +54,10 @@ DeviceOptions::DeviceOptions(struct sr_dev_inst *sdi) :
 
 		switch(info->key)
 		{
+		case SR_CONF_SAMPLERATE:
+			bind_samplerate(info);
+			break;
+
 		case SR_CONF_PATTERN_MODE:
 			bind_stropt(info, SR_CONF_PATTERN_MODE);
 			break;
@@ -88,7 +94,7 @@ void DeviceOptions::expose_enum(const struct sr_config_info *info,
 {
 	_properties.push_back(shared_ptr<Property>(
 		new Enum(QString(info->name), values,
-			bind(getter, _sdi, key),
+			bind(enum_getter, _sdi, key),
 			bind(sr_config_set, _sdi, key, _1))));
 }
 
@@ -105,6 +111,38 @@ void DeviceOptions::bind_stropt(
 		values.push_back(make_pair(stropts[i], stropts[i]));
 
 	expose_enum(info, values, key);
+}
+
+void DeviceOptions::bind_samplerate(const struct sr_config_info *info)
+{
+	const struct sr_samplerates *samplerates;
+
+	if (sr_config_list(_sdi->driver, SR_CONF_SAMPLERATE,
+		(const void **)&samplerates, _sdi) != SR_OK)
+		return;
+
+	if (samplerates->step) {
+		_properties.push_back(shared_ptr<Property>(
+			new Double(QString(info->name),
+				0, QObject::tr("Hz"),
+				make_pair((double)samplerates->low,
+					(double)samplerates->high),
+				(double)samplerates->step,
+				bind(samplerate_value_getter, _sdi),
+				bind(samplerate_value_setter, _sdi, _1))));
+	} else {
+		vector< pair<const void*, QString> > values;
+		for (const uint64_t *rate = samplerates->list;
+			*rate; rate++)
+			values.push_back(make_pair(
+				(const void*)rate,
+				QString(sr_samplerate_string(*rate))));
+
+		_properties.push_back(shared_ptr<Property>(
+			new Enum(QString(info->name), values,
+				bind(samplerate_list_getter, _sdi),
+				bind(samplerate_list_setter, _sdi, _1))));
+	}
 }
 
 void DeviceOptions::bind_buffer_size(const struct sr_config_info *info)
@@ -163,6 +201,66 @@ const void* DeviceOptions::enum_getter(
 		return NULL;
 	}
 	return data;
+}
+
+double DeviceOptions::samplerate_value_getter(
+	const struct sr_dev_inst *sdi)
+{
+	uint64_t *samplerate = NULL;
+	if(sr_config_get(sdi->driver, SR_CONF_SAMPLERATE,
+		(const void**)&samplerate, sdi) != SR_OK) {
+		qDebug() <<
+			"WARNING: Failed to get value of sample rate";
+		return 0.0;
+	}
+	return (double)*samplerate;
+}
+
+void DeviceOptions::samplerate_value_setter(
+	struct sr_dev_inst *sdi, double value)
+{
+	uint64_t samplerate = value;
+	if(sr_config_set(sdi, SR_CONF_SAMPLERATE,
+		&samplerate) != SR_OK)
+		qDebug() <<
+			"WARNING: Failed to set value of sample rate";
+}
+
+const void* DeviceOptions::samplerate_list_getter(
+	const struct sr_dev_inst *sdi)
+{
+	const struct sr_samplerates *samplerates;
+	uint64_t *samplerate = NULL;
+
+	if (sr_config_list(sdi->driver, SR_CONF_SAMPLERATE,
+		(const void **)&samplerates, sdi) != SR_OK) {
+		qDebug() <<
+			"WARNING: Failed to get enumerate sample rates";
+		return NULL;
+	}
+
+	if(sr_config_get(sdi->driver, SR_CONF_SAMPLERATE,
+		(const void**)&samplerate, sdi) != SR_OK ||
+		!samplerate) {
+		qDebug() <<
+			"WARNING: Failed to get value of sample rate";
+		return NULL;
+	}
+
+	for (const uint64_t *rate = samplerates->list; *rate; rate++)
+		if(*rate == *samplerate)
+			return (const void*)rate;
+
+	return NULL;
+}
+
+void DeviceOptions::samplerate_list_setter(
+	struct sr_dev_inst *sdi, const void *value)
+{
+	if (sr_config_set(sdi, SR_CONF_SAMPLERATE,
+		(uint64_t*)value) != SR_OK)
+		qDebug() <<
+			"WARNING: Failed to set value of sample rate";
 }
 
 } // binding

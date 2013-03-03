@@ -61,6 +61,8 @@ QWidget* Double::get_widget(QWidget *parent)
 	if(_step)
 		_spin_box->setSingleStep(*_step);
 
+	_spin_box->setValue(_getter ? _getter() : 0.0);
+
 	return _spin_box;
 }
 

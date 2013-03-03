@@ -43,6 +43,7 @@ private:
 
 	void bind_stropt(const struct sr_config_info *info, int key);
 
+	void bind_samplerate(const struct sr_config_info *info);
 	void bind_buffer_size(const struct sr_config_info *info);
 	void bind_time_base(const struct sr_config_info *info);
 	void bind_vdiv(const struct sr_config_info *info);
@@ -50,6 +51,16 @@ private:
 private:
 	static const void* enum_getter(
 		const struct sr_dev_inst *sdi, int key);
+
+	static double samplerate_value_getter(
+		const struct sr_dev_inst *sdi);
+	static void samplerate_value_setter(
+		struct sr_dev_inst *sdi, double value);
+
+	static const void* samplerate_list_getter(
+		const struct sr_dev_inst *sdi);
+	static void samplerate_list_setter(
+		struct sr_dev_inst *sdi, const void* value);
 
 protected:
 	struct sr_dev_inst *const _sdi;
