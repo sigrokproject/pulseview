@@ -20,6 +20,8 @@
 
 #include <boost/bind.hpp>
 
+#include <QDebug>
+
 #include "deviceoptions.h"
 
 #include <pv/prop/enum.h>
@@ -86,7 +88,7 @@ void DeviceOptions::expose_enum(const struct sr_config_info *info,
 {
 	_properties.push_back(shared_ptr<Property>(
 		new Enum(QString(info->name), values,
-			function<const void* ()>(),
+			bind(getter, _sdi, key),
 			bind(sr_config_set, _sdi, key, _1))));
 }
 
@@ -149,6 +151,18 @@ void DeviceOptions::bind_vdiv(const struct sr_config_info *info)
 			QString(sr_voltage_string(vdivs + i))));
 
 	expose_enum(info, values, SR_CONF_VDIV);
+}
+
+const void* DeviceOptions::enum_getter(
+	const struct sr_dev_inst *sdi, int key)
+{
+	const void *data = NULL;
+	if(sr_config_get(sdi->driver, key, &data, sdi) != SR_OK) {
+		qDebug() <<
+			"WARNING: Failed to get value of config id" << key;
+		return NULL;
+	}
+	return data;
 }
 
 } // binding

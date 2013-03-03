@@ -47,6 +47,10 @@ private:
 	void bind_time_base(const struct sr_config_info *info);
 	void bind_vdiv(const struct sr_config_info *info);
 
+private:
+	static const void* enum_getter(
+		const struct sr_dev_inst *sdi, int key);
+
 protected:
 	struct sr_dev_inst *const _sdi;
 };
