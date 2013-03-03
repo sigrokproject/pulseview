@@ -45,7 +45,6 @@ public:
 
 	struct sr_dev_inst* get_selected_device() const;
 	uint64_t get_record_length() const;
-	uint64_t get_sample_rate() const;
 
 	void set_sampling(bool sampling);
 
@@ -55,9 +54,12 @@ signals:
 private:
 	void update_device_selector();
 	void update_sample_rate_selector();
+	void update_sample_rate_selector_value();
+	void commit_sample_rate();
 
 private slots:
 	void on_device_selected();
+	void on_sample_rate_changed();
 	void configure();
 
 private:

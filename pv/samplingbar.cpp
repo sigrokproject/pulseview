@@ -25,6 +25,7 @@
 #include <libsigrok/libsigrok.h>
 
 #include <QAction>
+#include <QDebug>
 
 #include "samplingbar.h"
 
@@ -104,7 +105,12 @@ SamplingBar::SamplingBar(QWidget *parent) :
 	addWidget(&_run_stop_button);
 
 	update_device_selector();
+
 	update_sample_rate_selector();
+	connect(&_sample_rate_list, SIGNAL(currentIndexChanged(int)),
+		this, SLOT(on_sample_rate_changed()));
+	connect(&_sample_rate_value, SIGNAL(valueChanged(double)),
+		this, SLOT(on_sample_rate_changed()));
 }
 
 struct sr_dev_inst* SamplingBar::get_selected_device() const
@@ -124,25 +130,6 @@ uint64_t SamplingBar::get_record_length() const
 		return 0;
 
 	return _record_length_selector.itemData(index).value<uint64_t>();
-}
-
-uint64_t SamplingBar::get_sample_rate() const
-{
-	assert(_sample_rate_value_action);
-	assert(_sample_rate_list_action);
-
-	if (_sample_rate_value_action->isVisible())
-		return (uint64_t)_sample_rate_value.value();
-	else if (_sample_rate_list_action->isVisible())
-	{
-		const int index = _sample_rate_list.currentIndex();
-		if (index < 0)
-			return 0;
-
-		return _sample_rate_list.itemData(index).value<uint64_t>();
-	}
-
-	return 0;
 }
 
 void SamplingBar::set_sampling(bool sampling)
@@ -215,6 +202,63 @@ void SamplingBar::update_sample_rate_selector()
 		_sample_rate_list.show();
 		_sample_rate_list_action->setVisible(true);
 	}
+
+	update_sample_rate_selector_value();
+}
+
+void SamplingBar::update_sample_rate_selector_value()
+{
+	sr_dev_inst *const sdi = get_selected_device();
+	assert(sdi);
+
+        uint64_t *samplerate = NULL;
+        if(sr_config_get(sdi->driver, SR_CONF_SAMPLERATE,
+                (const void**)&samplerate, sdi) != SR_OK) {
+                qDebug() <<
+                        "WARNING: Failed to get value of sample rate";
+                return;
+        }
+
+	assert(_sample_rate_value_action);
+	assert(_sample_rate_list_action);
+
+	if (_sample_rate_value_action->isVisible())
+		_sample_rate_value.setValue(*samplerate);
+	else if (_sample_rate_list_action->isVisible())
+	{
+		for(int i = 0; i < _sample_rate_list.count(); i++)
+			if(*samplerate == _sample_rate_list.itemData(
+				i).value<uint64_t>())
+				_sample_rate_list.setCurrentIndex(i);
+	}
+}
+
+void SamplingBar::commit_sample_rate()
+{
+	uint64_t sample_rate = 0;
+
+	sr_dev_inst *const sdi = get_selected_device();
+	assert(sdi);
+
+	assert(_sample_rate_value_action);
+	assert(_sample_rate_list_action);
+
+	if (_sample_rate_value_action->isVisible())
+		sample_rate = (uint64_t)_sample_rate_value.value();
+	else if (_sample_rate_list_action->isVisible())
+	{
+		const int index = _sample_rate_list.currentIndex();
+		if (index >= 0)
+			sample_rate = _sample_rate_list.itemData(
+				index).value<uint64_t>();
+	}
+
+	// Set the samplerate
+	if (sr_config_set(sdi, SR_CONF_SAMPLERATE,
+		&sample_rate) != SR_OK) {
+		qDebug() << "Failed to configure samplerate.";
+		return;
+	}
 }
 
 void SamplingBar::on_device_selected()
@@ -222,13 +266,22 @@ void SamplingBar::on_device_selected()
 	update_sample_rate_selector();
 }
 
+void SamplingBar::on_sample_rate_changed()
+{
+	commit_sample_rate();
+}
+
 void SamplingBar::configure()
 {
+	commit_sample_rate();
+
 	sr_dev_inst *const sdi = get_selected_device();
 	assert(sdi);
 
 	pv::dialogs::DeviceOptions dlg(this, sdi);
 	dlg.exec();
+
+	update_sample_rate_selector_value();
 }
 
 } // namespace pv
