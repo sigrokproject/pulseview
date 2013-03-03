@@ -24,15 +24,16 @@
 
 #include "enum.h"
 
+using namespace boost;
 using namespace std;
 
 namespace pv {
 namespace prop {
 
 Enum::Enum(QString name,
-	std::vector<std::pair<const void*, QString> > values,
-	boost::function<const void* ()> getter,
-	boost::function<void (const void*)> setter) :
+	vector<pair<const void*, QString> > values,
+	function<const void* ()> getter,
+	function<void (const void*)> setter) :
 	Property(name),
 	_values(values),
 	_getter(getter),
