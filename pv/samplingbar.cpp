@@ -138,7 +138,7 @@ uint64_t SamplingBar::get_sample_rate() const
 		const int index = _sample_rate_list.currentIndex();
 		if (index < 0)
 			return 0;
-		
+
 		return _sample_rate_list.itemData(index).value<uint64_t>();
 	}
 
