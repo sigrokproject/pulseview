@@ -48,7 +48,7 @@ private:
 	void bind_vdiv(const struct sr_config_info *info);
 
 protected:
-	const struct sr_dev_inst *_sdi;
+	struct sr_dev_inst *const _sdi;
 };
 
 } // binding
