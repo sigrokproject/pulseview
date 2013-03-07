@@ -179,6 +179,7 @@ void MainWindow::setup_ui()
 	addToolBar(_toolbar);
 
 	_sampling_bar = new SamplingBar(this);
+	scan_devices();
 	connect(_sampling_bar, SIGNAL(run_stop()), this,
 		SLOT(run_stop()));
 	addToolBar(_sampling_bar);
@@ -190,6 +191,23 @@ void MainWindow::setup_ui()
 	connect(&_session, SIGNAL(capture_state_changed(int)), this,
 		SLOT(capture_state_changed(int)));
 
+}
+
+void MainWindow::scan_devices()
+{
+	_devices.clear();
+
+	/* Scan all drivers for all devices. */
+	struct sr_dev_driver **const drivers = sr_driver_list();
+	for (struct sr_dev_driver **driver = drivers; *driver; driver++) {
+		GSList *const devices = sr_driver_scan(*driver, NULL);
+		for (GSList *l = devices; l; l = l->next)
+			_devices.push_back((sr_dev_inst*)l->data);
+		g_slist_free(devices);
+	}
+
+	assert(_sampling_bar);
+	_sampling_bar->set_device_list(_devices);
 }
 
 void MainWindow::load_file(QString file_name)

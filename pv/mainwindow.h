@@ -21,6 +21,8 @@
 #ifndef PULSEVIEW_PV_MAINWINDOW_H
 #define PULSEVIEW_PV_MAINWINDOW_H
 
+#include <list>
+
 #include <QMainWindow>
 
 #include "sigsession.h"
@@ -51,10 +53,13 @@ public:
 
 private:
 	void setup_ui();
+	void scan_devices();
 
 private:
 
 	SigSession _session;
+	std::list<sr_dev_inst*> _devices;
+
 	pv::view::View *_view;
 
 	QMenuBar *_menu_bar;

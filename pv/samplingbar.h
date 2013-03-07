@@ -23,11 +23,14 @@
 
 #include <stdint.h>
 
+#include <list>
+
 #include <QComboBox>
 #include <QDoubleSpinBox>
 #include <QToolBar>
 #include <QToolButton>
 
+struct st_dev_inst;
 class QAction;
 
 namespace pv {
@@ -43,7 +46,10 @@ private:
 public:
 	SamplingBar(QWidget *parent);
 
+	void set_device_list(const std::list<struct sr_dev_inst*> &devices);
+
 	struct sr_dev_inst* get_selected_device() const;
+
 	uint64_t get_record_length() const;
 
 	void set_sampling(bool sampling);
@@ -52,7 +58,6 @@ signals:
 	void run_stop();
 
 private:
-	void update_device_selector();
 	void update_sample_rate_selector();
 	void update_sample_rate_selector_value();
 	void commit_sample_rate();
