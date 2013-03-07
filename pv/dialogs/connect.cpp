@@ -112,6 +112,7 @@ void Connect::unset_connection()
 	_device_list.clear();
 	_serial_device.hide();
 	_form_layout.labelForField(&_serial_device)->hide();
+	_button_box.button(QDialogButtonBox::Ok)->setDisabled(true);
 }
 
 void Connect::set_serial_connection()
@@ -167,6 +168,9 @@ void Connect::scan_pressed()
 
 	g_slist_free(devices);
 	g_slist_free_full(drvopts, (GDestroyNotify)free_drvopts);
+
+	_device_list.setCurrentRow(0);
+	_button_box.button(QDialogButtonBox::Ok)->setDisabled(false);
 }
 
 void Connect::device_selected(int index)
