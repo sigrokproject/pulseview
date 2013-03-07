@@ -211,13 +211,13 @@ void SamplingBar::update_sample_rate_selector_value()
 	sr_dev_inst *const sdi = get_selected_device();
 	assert(sdi);
 
-        uint64_t *samplerate = NULL;
-        if(sr_config_get(sdi->driver, SR_CONF_SAMPLERATE,
-                (const void**)&samplerate, sdi) != SR_OK) {
-                qDebug() <<
-                        "WARNING: Failed to get value of sample rate";
-                return;
-        }
+	uint64_t *samplerate = NULL;
+	if(sr_config_get(sdi->driver, SR_CONF_SAMPLERATE,
+		(const void**)&samplerate, sdi) != SR_OK) {
+		qDebug() <<
+				"WARNING: Failed to get value of sample rate";
+		return;
+	}
 
 	assert(_sample_rate_value_action);
 	assert(_sample_rate_list_action);
