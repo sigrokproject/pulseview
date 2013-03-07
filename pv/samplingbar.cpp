@@ -177,6 +177,9 @@ void SamplingBar::update_sample_rate_selector()
 	assert(_sample_rate_value_action);
 	assert(_sample_rate_list_action);
 
+	if (!sdi)
+		return;
+
 	if (sr_config_list(sdi->driver, SR_CONF_SAMPLERATE,
 		(const void **)&samplerates, sdi) != SR_OK)
 		return;
