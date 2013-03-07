@@ -226,7 +226,17 @@ void MainWindow::on_actionOpen_triggered()
 void MainWindow::on_actionConnect_triggered()
 {
 	dialogs::Connect dlg(this);
-	dlg.exec();
+	if(!dlg.exec())
+		return;
+
+	struct sr_dev_inst *const sdi = dlg.get_selected_device();
+	if (sdi) {
+		assert(_sampling_bar);
+
+		_devices.push_back(sdi);
+		_sampling_bar->set_device_list(_devices);
+		_sampling_bar->set_selected_device(sdi);
+	}
 }
 
 void MainWindow::on_actionQuit_triggered()

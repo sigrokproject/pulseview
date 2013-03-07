@@ -70,6 +70,15 @@ Connect::Connect(QWidget *parent) :
 	_layout.addWidget(&_button_box);
 }
 
+struct sr_dev_inst* Connect::get_selected_device() const
+{
+	const QListWidgetItem *const item = _device_list.currentItem();
+	if (!item)
+		return NULL;
+
+	return (sr_dev_inst*)item->data(Qt::UserRole).value<void*>();
+}
+
 void Connect::populate_drivers()
 {
 	const int *hwopts;
@@ -150,7 +159,10 @@ void Connect::scan_pressed()
 				g_slist_length(sdi->probes));
 		}
 
-		_device_list.addItem(text);
+		QListWidgetItem *const item = new QListWidgetItem(text,
+			&_device_list);
+		item->setData(Qt::UserRole, qVariantFromValue((void*)sdi));
+		_device_list.addItem(item);
 	}
 
 	g_slist_free(devices);

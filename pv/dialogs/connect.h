@@ -31,6 +31,7 @@
 #include <QVBoxLayout>
 
 struct sr_config;
+struct sr_dev_inst;
 
 namespace pv {
 namespace dialogs {
@@ -41,6 +42,8 @@ class Connect : public QDialog
 
 public:
 	Connect(QWidget *parent);
+
+	struct sr_dev_inst* get_selected_device() const;
 
 private:
 	void populate_drivers();
