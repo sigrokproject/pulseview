@@ -49,6 +49,7 @@ public:
 	void set_device_list(const std::list<struct sr_dev_inst*> &devices);
 
 	struct sr_dev_inst* get_selected_device() const;
+	void set_selected_device(struct sr_dev_inst *const sdi);
 
 	uint64_t get_record_length() const;
 

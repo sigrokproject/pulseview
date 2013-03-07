@@ -143,6 +143,15 @@ struct sr_dev_inst* SamplingBar::get_selected_device() const
 		index).value<void*>();
 }
 
+void SamplingBar::set_selected_device(struct sr_dev_inst *const sdi)
+{
+	for(int i = 0; i < _device_selector.count(); i++)
+		if(sdi == _device_selector.itemData(i).value<void*>()) {
+			_device_selector.setCurrentIndex(i);
+			return;
+		}
+}
+
 uint64_t SamplingBar::get_record_length() const
 {
 	const int index = _record_length_selector.currentIndex();
