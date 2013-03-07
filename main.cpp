@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
 			{0, 0, 0, 0}
 		};
 
-		const char c = getopt_long(argc, argv,
+		const int c = getopt_long(argc, argv,
 			"Vh?", long_options, NULL);
 		if (c == -1)
 			break;
