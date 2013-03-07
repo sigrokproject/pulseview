@@ -26,7 +26,11 @@
 #include <QDialogButtonBox>
 #include <QFormLayout>
 #include <QLineEdit>
+#include <QListWidget>
+#include <QPushButton>
 #include <QVBoxLayout>
+
+struct sr_config;
 
 namespace pv {
 namespace dialogs {
@@ -41,12 +45,17 @@ public:
 private:
 	void populate_drivers();
 
-private slots:
-	void device_selected(int index);
-
 	void unset_connection();
 
 	void set_serial_connection();
+
+private slots:
+	void device_selected(int index);
+
+	void scan_pressed();
+
+private:
+	static void free_drvopts(sr_config *src);
 
 private:
 	QVBoxLayout _layout;
@@ -57,6 +66,9 @@ private:
 	QComboBox _drivers;
 
 	QLineEdit _serial_device;
+
+	QPushButton _scan_button;
+	QListWidget _device_list;
 
 	QDialogButtonBox _button_box;
 };

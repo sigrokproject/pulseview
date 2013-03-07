@@ -27,6 +27,8 @@ extern "C" {
 #include <libsigrok/libsigrok.h>
 }
 
+extern sr_context *sr_ctx;
+
 namespace pv {
 namespace dialogs {
 
@@ -37,6 +39,8 @@ Connect::Connect(QWidget *parent) :
 	_form_layout(&_form),
 	_drivers(&_form),
 	_serial_device(&_form),
+	_scan_button(tr("Scan for Devices"), this),
+	_device_list(this),
 	_button_box(QDialogButtonBox::Ok | QDialogButtonBox::Cancel,
 		Qt::Horizontal, this)
 {
@@ -56,8 +60,13 @@ Connect::Connect(QWidget *parent) :
 
 	unset_connection();
 
+	connect(&_scan_button, SIGNAL(pressed()),
+		this, SLOT(scan_pressed()));
+
 	setLayout(&_layout);
 	_layout.addWidget(&_form);
+	_layout.addWidget(&_scan_button);
+	_layout.addWidget(&_device_list);
 	_layout.addWidget(&_button_box);
 }
 
@@ -89,10 +98,68 @@ void Connect::populate_drivers()
 	}
 }
 
+void Connect::unset_connection()
+{
+	_device_list.clear();
+	_serial_device.hide();
+	_form_layout.labelForField(&_serial_device)->hide();
+}
+
+void Connect::set_serial_connection()
+{
+	_serial_device.show();
+	_form_layout.labelForField(&_serial_device)->show();
+}
+
+void Connect::scan_pressed()
+{
+	_device_list.clear();
+
+	const int index = _drivers.currentIndex();
+	if(index == -1)
+		return;
+
+	sr_dev_driver *const driver = (sr_dev_driver*)_drivers.itemData(
+		index).value<void*>();
+
+	GSList *drvopts = NULL;
+
+	if (_serial_device.isVisible()) {
+		sr_config *const src = (sr_config*)g_try_malloc(sizeof(sr_config));
+		src->key = SR_CONF_CONN;
+		const QByteArray byteArray = _serial_device.text().toUtf8();
+		src->value = g_strdup((const gchar*)byteArray.constData());
+		drvopts = g_slist_append(drvopts, src);
+	}
+
+	GSList *const devices = sr_driver_scan(driver, drvopts);
+
+	for (GSList *l = devices; l; l = l->next) {
+
+		sr_dev_inst *const sdi = (sr_dev_inst*)l->data;
+
+		QString text;
+		if (sdi->vendor && sdi->vendor[0])
+			text += QString("%1 ").arg(sdi->vendor);
+		if (sdi->model && sdi->model[0])
+			text += QString("%1 ").arg(sdi->model);
+		if (sdi->version && sdi->version[0])
+			text += QString("%1 ").arg(sdi->version);
+		if (sdi->probes) {
+			text += QString("with %1 probes").arg(
+				g_slist_length(sdi->probes));
+		}
+
+		_device_list.addItem(text);
+	}
+
+	g_slist_free(devices);
+	g_slist_free_full(drvopts, (GDestroyNotify)free_drvopts);
+}
+
 void Connect::device_selected(int index)
 {
 	const int *hwopts;
-	const struct sr_hwcap_option *hwo;
 	sr_dev_driver *const driver = (sr_dev_driver*)_drivers.itemData(
 		index).value<void*>();
 
@@ -116,18 +183,11 @@ void Connect::device_selected(int index)
 	}
 }
 
-void Connect::unset_connection()
+void Connect::free_drvopts(struct sr_config *src)
 {
-	_serial_device.hide();
-	_form_layout.labelForField(&_serial_device)->hide();
+	g_free((void *)src->value);
+	g_free(src);
 }
-
-void Connect::set_serial_connection()
-{
-	_serial_device.show();
-	_form_layout.labelForField(&_serial_device)->show();
-}
-
 
 } // namespace dialogs
 } // namespace pv
