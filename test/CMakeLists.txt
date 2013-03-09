@@ -18,6 +18,10 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
+# Find the platform's thread library (needed for boost-thread).
+# This will set ${CMAKE_THREAD_LIBS_INIT} to the correct, OS-specific value.
+find_package(Threads)
+
 find_package(Boost 1.46 COMPONENTS unit_test_framework REQUIRED)
 
 set(pulseview_TEST_SOURCES
@@ -35,6 +39,7 @@ include_directories(
 
 set(PULSEVIEW_LINK_LIBS
 	${Boost_LIBRARIES}
+	${CMAKE_THREAD_LIBS_INIT}
 )
 
 add_executable(pulseview-test
