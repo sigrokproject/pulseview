@@ -104,11 +104,6 @@ void Viewport::mouseMoveEvent(QMouseEvent *event)
 	}
 }
 
-void Viewport::mouseReleaseEvent(QMouseEvent *event)
-{
-	assert(event);
-}
-
 void Viewport::wheelEvent(QWheelEvent *event)
 {
 	assert(event);
