@@ -195,8 +195,10 @@ void SigSession::feed_in_header(const sr_dev_inst *sdi)
 
 	// Read out the sample rate
 	assert(sdi->driver);
-	assert(sr_config_get(sdi->driver, SR_CONF_SAMPLERATE,
-		(const void**)&sample_rate, sdi) == SR_OK);
+
+	const int ret = sr_config_get(sdi->driver, SR_CONF_SAMPLERATE,
+		(const void**)&sample_rate, sdi);
+	assert(ret == SR_OK);
 
 	// Create data containers for the coming data snapshots
 	{
