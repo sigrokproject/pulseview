@@ -172,7 +172,7 @@ void SigSession::sample_thread_proc(struct sr_dev_inst *sdi,
 void SigSession::feed_in_header(const sr_dev_inst *sdi)
 {
 	shared_ptr<view::Signal> signal;
-	uint64_t *sample_rate;
+	uint64_t *sample_rate = NULL;
 	unsigned int logic_probe_count = 0;
 	unsigned int analog_probe_count = 0;
 
