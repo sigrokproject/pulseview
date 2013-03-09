@@ -95,12 +95,12 @@ void Connect::populate_drivers()
 		if ((sr_config_list(drivers[i], SR_CONF_DEVICE_OPTIONS,
 			(const void **)&hwopts, NULL) == SR_OK) && hwopts)
 			for (int j = 0; hwopts[j]; j++)
-				if(hwopts[j] == SR_CONF_SAMPLERATE) {
+				if (hwopts[j] == SR_CONF_SAMPLERATE) {
 					supported_device = true;
 					break;
 				}
 
-		if(supported_device)
+		if (supported_device)
 			_drivers.addItem(QString("%1 (%2)").arg(
 				drivers[i]->longname).arg(drivers[i]->name),
 				qVariantFromValue((void*)drivers[i]));
@@ -126,7 +126,7 @@ void Connect::scan_pressed()
 	_device_list.clear();
 
 	const int index = _drivers.currentIndex();
-	if(index == -1)
+	if (index == -1)
 		return;
 
 	sr_dev_driver *const driver = (sr_dev_driver*)_drivers.itemData(

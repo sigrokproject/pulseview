@@ -48,15 +48,15 @@ QWidget* Enum::get_widget(QWidget *parent)
 		return _selector;
 
 	const void *value = NULL;
-	if(_getter)
+	if (_getter)
 		value = _getter();
 
 	_selector = new QComboBox(parent);
-	for(unsigned int i = 0; i < _values.size(); i++) {
+	for (unsigned int i = 0; i < _values.size(); i++) {
 		const pair<const void*, QString> &v = _values[i];
 		_selector->addItem(v.second,
 			qVariantFromValue((void*)v.first));
-		if(v.first == value)
+		if (v.first == value)
 			_selector->setCurrentIndex(i);
 	}
 

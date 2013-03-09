@@ -50,15 +50,15 @@ Double::Double(QString name,
 
 QWidget* Double::get_widget(QWidget *parent)
 {
-	if(_spin_box)
+	if (_spin_box)
 		return _spin_box;
 
 	_spin_box = new QDoubleSpinBox(parent);
 	_spin_box->setDecimals(_decimals);
 	_spin_box->setSuffix(_suffix);
-	if(_range)
+	if (_range)
 		_spin_box->setRange(_range->first, _range->second);
-	if(_step)
+	if (_step)
 		_spin_box->setSingleStep(*_step);
 
 	_spin_box->setValue(_getter ? _getter() : 0.0);
@@ -70,7 +70,7 @@ void Double::commit()
 {
 	assert(_setter);
 
-	if(!_spin_box)
+	if (!_spin_box)
 		return;
 
 	_setter(_spin_box->value());

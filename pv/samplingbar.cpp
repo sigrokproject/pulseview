@@ -145,8 +145,8 @@ struct sr_dev_inst* SamplingBar::get_selected_device() const
 
 void SamplingBar::set_selected_device(struct sr_dev_inst *const sdi)
 {
-	for(int i = 0; i < _device_selector.count(); i++)
-		if(sdi == _device_selector.itemData(i).value<void*>()) {
+	for (int i = 0; i < _device_selector.count(); i++)
+		if (sdi == _device_selector.itemData(i).value<void*>()) {
 			_device_selector.setCurrentIndex(i);
 			return;
 		}
@@ -213,7 +213,7 @@ void SamplingBar::update_sample_rate_selector_value()
 	assert(sdi);
 
 	uint64_t *samplerate = NULL;
-	if(sr_config_get(sdi->driver, SR_CONF_SAMPLERATE,
+	if (sr_config_get(sdi->driver, SR_CONF_SAMPLERATE,
 		(const void**)&samplerate, sdi) != SR_OK) {
 		qDebug() <<
 				"WARNING: Failed to get value of sample rate";
@@ -227,8 +227,8 @@ void SamplingBar::update_sample_rate_selector_value()
 		_sample_rate_value.setValue(*samplerate);
 	else if (_sample_rate_list_action->isVisible())
 	{
-		for(int i = 0; i < _sample_rate_list.count(); i++)
-			if(*samplerate == _sample_rate_list.itemData(
+		for (int i = 0; i < _sample_rate_list.count(); i++)
+			if (*samplerate == _sample_rate_list.itemData(
 				i).value<uint64_t>())
 				_sample_rate_list.setCurrentIndex(i);
 	}

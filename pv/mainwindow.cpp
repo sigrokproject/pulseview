@@ -226,7 +226,7 @@ void MainWindow::on_actionOpen_triggered()
 void MainWindow::on_actionConnect_triggered()
 {
 	dialogs::Connect dlg(this);
-	if(!dlg.exec())
+	if (!dlg.exec())
 		return;
 
 	struct sr_dev_inst *const sdi = dlg.get_selected_device();

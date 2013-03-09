@@ -195,7 +195,7 @@ const void* DeviceOptions::enum_getter(
 	const struct sr_dev_inst *sdi, int key)
 {
 	const void *data = NULL;
-	if(sr_config_get(sdi->driver, key, &data, sdi) != SR_OK) {
+	if (sr_config_get(sdi->driver, key, &data, sdi) != SR_OK) {
 		qDebug() <<
 			"WARNING: Failed to get value of config id" << key;
 		return NULL;
@@ -207,7 +207,7 @@ double DeviceOptions::samplerate_value_getter(
 	const struct sr_dev_inst *sdi)
 {
 	uint64_t *samplerate = NULL;
-	if(sr_config_get(sdi->driver, SR_CONF_SAMPLERATE,
+	if (sr_config_get(sdi->driver, SR_CONF_SAMPLERATE,
 		(const void**)&samplerate, sdi) != SR_OK) {
 		qDebug() <<
 			"WARNING: Failed to get value of sample rate";
@@ -220,7 +220,7 @@ void DeviceOptions::samplerate_value_setter(
 	struct sr_dev_inst *sdi, double value)
 {
 	uint64_t samplerate = value;
-	if(sr_config_set(sdi, SR_CONF_SAMPLERATE,
+	if (sr_config_set(sdi, SR_CONF_SAMPLERATE,
 		&samplerate) != SR_OK)
 		qDebug() <<
 			"WARNING: Failed to set value of sample rate";
@@ -239,7 +239,7 @@ const void* DeviceOptions::samplerate_list_getter(
 		return NULL;
 	}
 
-	if(sr_config_get(sdi->driver, SR_CONF_SAMPLERATE,
+	if (sr_config_get(sdi->driver, SR_CONF_SAMPLERATE,
 		(const void**)&samplerate, sdi) != SR_OK ||
 		!samplerate) {
 		qDebug() <<
@@ -248,7 +248,7 @@ const void* DeviceOptions::samplerate_list_getter(
 	}
 
 	for (const uint64_t *rate = samplerates->list; *rate; rate++)
-		if(*rate == *samplerate)
+		if (*rate == *samplerate)
 			return (const void*)rate;
 
 	return NULL;
