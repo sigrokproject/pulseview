@@ -23,6 +23,8 @@
 
 #include <QDialog>
 #include <QDialogButtonBox>
+#include <QGroupBox>
+#include <QListWidget>
 #include <QVBoxLayout>
 
 #include <pv/prop/binding/deviceoptions.h>
@@ -39,7 +41,20 @@ protected:
 	void accept();
 
 private:
+	void setup_probes();
+
+private:
+	struct sr_dev_inst *const _sdi;
+
 	QVBoxLayout _layout;
+
+	QGroupBox _probes_box;
+	QVBoxLayout _probes_box_layout;
+	QListWidget _probes;
+
+	QGroupBox _props_box;
+	QVBoxLayout _props_box_layout;
+
 	QDialogButtonBox _button_box;
 
 	pv::prop::binding::DeviceOptions _device_options_binding;

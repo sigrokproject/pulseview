@@ -20,12 +20,18 @@
 
 #include "deviceoptions.h"
 
+#include <QListWidget>
+
 namespace pv {
 namespace dialogs {
 
 DeviceOptions::DeviceOptions(QWidget *parent, struct sr_dev_inst *sdi) :
 	QDialog(parent),
+	_sdi(sdi),
 	_layout(this),
+	_probes_box(tr("Probes"), this),
+	_probes(this),
+	_props_box(tr("Configuration"), this),
 	_button_box(QDialogButtonBox::Ok | QDialogButtonBox::Cancel,
 		Qt::Horizontal, this),
 	_device_options_binding(sdi)
@@ -37,16 +43,54 @@ DeviceOptions::DeviceOptions(QWidget *parent, struct sr_dev_inst *sdi) :
 
 	setLayout(&_layout);
 
-	QWidget *const form = _device_options_binding.get_form(this);
-	_layout.addWidget(form);
+	setup_probes();
+	_probes_box.setLayout(&_probes_box_layout);
+	_probes_box_layout.addWidget(&_probes);
+	_layout.addWidget(&_probes_box);
+
+	_props_box.setLayout(&_props_box_layout);
+	_props_box_layout.addWidget(_device_options_binding.get_form(this));
+	_layout.addWidget(&_props_box);
 
 	_layout.addWidget(&_button_box);
 }
 
 void DeviceOptions::accept()
 {
+	using namespace Qt;
+
 	QDialog::accept();
+
+	// Commit the probes
+	for (int i = 0; i < _probes.count(); i++) {
+		const QListWidgetItem *const item = _probes.item(i);
+		assert(item);
+		sr_probe *const probe = (sr_probe*)
+			item->data(UserRole).value<void*>();
+		assert(probe);
+		probe->enabled = item->checkState() == Checked;
+	}
+
+	// Commit the properties
 	_device_options_binding.commit();
+}
+
+void DeviceOptions::setup_probes()
+{
+	using namespace Qt;
+
+	for (const GSList *l = _sdi->probes; l; l = l->next) {
+		sr_probe *const probe = (sr_probe*)l->data;
+		assert(probe);
+		QListWidgetItem *const item = new QListWidgetItem(
+			probe->name, &_probes);
+		assert(item);
+		item->setCheckState(probe->enabled ?
+			Checked : Unchecked);
+		item->setData(UserRole,
+			qVariantFromValue((void*)probe));
+		_probes.addItem(item);
+	}
 }
 
 } // namespace dialogs
