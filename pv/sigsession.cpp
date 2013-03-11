@@ -77,6 +77,21 @@ void SigSession::start_capture(struct sr_dev_inst *sdi,
 {
 	stop_capture();
 
+	// Check that at least one probe is enabled
+	const GSList *l;
+	for (l = sdi->probes; l; l = l->next) {
+		sr_probe *const probe = (sr_probe*)l->data;
+		assert(probe);
+		if (probe->enabled)
+			break;
+	}
+
+	if (!l) {
+		error_handler(tr("No probes enabled."));
+		return;
+	}
+
+	// Begin the session
 	_sampling_thread.reset(new boost::thread(
 		&SigSession::sample_thread_proc, this, sdi,
 		record_length, error_handler));
