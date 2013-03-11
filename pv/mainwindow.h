@@ -57,6 +57,30 @@ private:
 
 	void session_error(const QString text, const QString info_text);
 
+private slots:
+	void load_file(QString file_name);
+
+
+	void show_session_error(
+		const QString text, const QString info_text);
+
+	void on_actionOpen_triggered();
+	void on_actionQuit_triggered();
+
+	void on_actionConnect_triggered();
+
+	void on_actionViewZoomIn_triggered();
+
+	void on_actionViewZoomOut_triggered();
+
+	void on_actionViewShowCursors_triggered();
+
+	void on_actionAbout_triggered();
+
+	void run_stop();
+
+	void capture_state_changed(int state);
+
 private:
 
 	SigSession _session;
@@ -83,30 +107,6 @@ private:
 
 	QToolBar *_toolbar;
 	SamplingBar *_sampling_bar;
-
-private slots:
-	void load_file(QString file_name);
-
-
-	void show_session_error(
-		const QString text, const QString info_text);
-
-	void on_actionOpen_triggered();
-	void on_actionQuit_triggered();
-
-	void on_actionConnect_triggered();
-
-	void on_actionViewZoomIn_triggered();
-
-	void on_actionViewZoomOut_triggered();
-
-	void on_actionViewShowCursors_triggered();
-
-	void on_actionAbout_triggered();
-
-	void run_stop();
-
-	void capture_state_changed(int state);
 };
 
 } // namespace pv
