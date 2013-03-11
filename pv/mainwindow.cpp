@@ -20,10 +20,13 @@
 
 #include <sigrokdecode.h>
 
+#include <boost/bind.hpp>
+
 #include <QAction>
 #include <QApplication>
 #include <QButtonGroup>
 #include <QFileDialog>
+#include <QMessageBox>
 #include <QMenu>
 #include <QMenuBar>
 #include <QStatusBar>
@@ -210,9 +213,33 @@ void MainWindow::scan_devices()
 	_sampling_bar->set_device_list(_devices);
 }
 
+void MainWindow::session_error(
+	const QString text, const QString info_text)
+{
+	QMetaObject::invokeMethod(this, "show_session_error",
+		Qt::QueuedConnection, Q_ARG(QString, text),
+		Q_ARG(QString, info_text));
+}
+
 void MainWindow::load_file(QString file_name)
 {
-	_session.load_file(file_name.toStdString());
+	const QString errorMessage(
+		QString("Failed to load file %1").arg(file_name));
+	const QString infoMessage;
+	_session.load_file(file_name.toStdString(),
+		boost::bind(&MainWindow::session_error, this,
+			errorMessage, infoMessage));
+}
+
+void MainWindow::show_session_error(
+	const QString text, const QString info_text)
+{
+	QMessageBox msg(this);
+	msg.setText(text);
+	msg.setInformativeText(info_text);
+	msg.setStandardButtons(QMessageBox::Ok);
+	msg.setIcon(QMessageBox::Warning);
+	msg.exec();
 }
 
 void MainWindow::on_actionOpen_triggered()
@@ -272,7 +299,9 @@ void MainWindow::run_stop()
 	case SigSession::Stopped:
 		_session.start_capture(
 			_sampling_bar->get_selected_device(),
-			_sampling_bar->get_record_length());
+			_sampling_bar->get_record_length(),
+			boost::bind(&MainWindow::session_error, this,
+				QString("Capture failed"), _1));
 		break;
 
 	case SigSession::Running:

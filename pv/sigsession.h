@@ -21,6 +21,7 @@
 #ifndef PULSEVIEW_PV_SIGSESSION_H
 #define PULSEVIEW_PV_SIGSESSION_H
 
+#include <boost/function.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
 
@@ -29,6 +30,7 @@
 #include <vector>
 
 #include <QObject>
+#include <QString>
 
 #include <libsigrok/libsigrok.h>
 
@@ -60,12 +62,14 @@ public:
 
 	~SigSession();
 
-	void load_file(const std::string &name);
+	void load_file(const std::string &name,
+		boost::function<void (const QString)> error_handler);
 
 	capture_state get_capture_state() const;
 
 	void start_capture(struct sr_dev_inst* sdi,
-		uint64_t record_length);
+		uint64_t record_length,
+		boost::function<void (const QString)> error_handler);
 
 	void stop_capture();
 
@@ -78,10 +82,12 @@ private:
 	void set_capture_state(capture_state state);
 
 private:
-	void load_thread_proc(const std::string name);
+	void load_thread_proc(const std::string name,
+		boost::function<void (const QString)> error_handler);
 
 	void sample_thread_proc(struct sr_dev_inst *sdi,
-		uint64_t record_length);
+		uint64_t record_length,
+		boost::function<void (const QString)> error_handler);
 
 	void feed_in_header(const sr_dev_inst *sdi);
 

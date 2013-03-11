@@ -55,6 +55,8 @@ private:
 	void setup_ui();
 	void scan_devices();
 
+	void session_error(const QString text, const QString info_text);
+
 private:
 
 	SigSession _session;
@@ -84,6 +86,10 @@ private:
 
 private slots:
 	void load_file(QString file_name);
+
+
+	void show_session_error(
+		const QString text, const QString info_text);
 
 	void on_actionOpen_triggered();
 	void on_actionQuit_triggered();

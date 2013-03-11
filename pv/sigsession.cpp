@@ -27,8 +27,6 @@
 #include "view/analogsignal.h"
 #include "view/logicsignal.h"
 
-#include <QDebug>
-
 #include <assert.h>
 
 using namespace boost;
@@ -58,11 +56,13 @@ SigSession::~SigSession()
 	_session = NULL;
 }
 
-void SigSession::load_file(const string &name)
+void SigSession::load_file(const string &name,
+	function<void (const QString)> error_handler)
 {
 	stop_capture();
 	_sampling_thread.reset(new boost::thread(
-		&SigSession::load_thread_proc, this, name));
+		&SigSession::load_thread_proc, this, name,
+		error_handler));
 }
 
 SigSession::capture_state SigSession::get_capture_state() const
@@ -72,13 +72,14 @@ SigSession::capture_state SigSession::get_capture_state() const
 }
 
 void SigSession::start_capture(struct sr_dev_inst *sdi,
-	uint64_t record_length)
+	uint64_t record_length,
+	function<void (const QString)> error_handler)
 {
 	stop_capture();
 
 	_sampling_thread.reset(new boost::thread(
 		&SigSession::sample_thread_proc, this, sdi,
-		record_length));
+		record_length, error_handler));
 }
 
 void SigSession::stop_capture()
@@ -112,17 +113,18 @@ void SigSession::set_capture_state(capture_state state)
 	capture_state_changed(state);
 }
 
-void SigSession::load_thread_proc(const string name)
+void SigSession::load_thread_proc(const string name,
+	function<void (const QString)> error_handler)
 {
 	if (sr_session_load(name.c_str()) != SR_OK) {
-		qDebug() << "Failed to load file.";
+		error_handler(tr("Failed to load file."));
 		return;
 	}
 
 	sr_session_datafeed_callback_add(data_feed_in_proc);
 
 	if (sr_session_start() != SR_OK) {
-		qDebug() << "Failed to start session.";
+		error_handler(tr("Failed to start session."));
 		return;
 	}
 
@@ -135,15 +137,17 @@ void SigSession::load_thread_proc(const string name)
 }
 
 void SigSession::sample_thread_proc(struct sr_dev_inst *sdi,
-	uint64_t record_length)
+	uint64_t record_length,
+	function<void (const QString)> error_handler)
 {
 	assert(sdi);
+	assert(error_handler);
 
 	sr_session_new();
 	sr_session_datafeed_callback_add(data_feed_in_proc);
 
 	if (sr_session_dev_add(sdi) != SR_OK) {
-		qDebug() << "Failed to use device.";
+		error_handler(tr("Failed to use device."));
 		sr_session_destroy();
 		return;
 	}
@@ -151,13 +155,14 @@ void SigSession::sample_thread_proc(struct sr_dev_inst *sdi,
 	// Set the sample limit
 	if (sr_config_set(sdi, SR_CONF_LIMIT_SAMPLES,
 		&record_length) != SR_OK) {
-		qDebug() << "Failed to configure time-based sample limit.";
+		error_handler(tr("Failed to configure "
+			"time-based sample limit."));
 		sr_session_destroy();
 		return;
 	}
 
 	if (sr_session_start() != SR_OK) {
-		qDebug() << "Failed to start session.";
+		error_handler(tr("Failed to start session."));
 		return;
 	}
 
