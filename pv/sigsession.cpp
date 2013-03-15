@@ -29,6 +29,8 @@
 
 #include <assert.h>
 
+#include <QDebug>
+
 using namespace boost;
 using namespace std;
 
@@ -292,10 +294,15 @@ void SigSession::feed_in_meta(const sr_dev_inst *sdi,
 void SigSession::feed_in_logic(const sr_datafeed_logic &logic)
 {
 	lock_guard<mutex> lock(_data_mutex);
+
+	if (!_logic_data)
+	{
+		qDebug() << "Unexpected logic packet";
+		return;
+	}
+
 	if (!_cur_logic_snapshot)
 	{
-		assert(_logic_data);
-
 		// Create a new data snapshot
 		_cur_logic_snapshot = shared_ptr<data::LogicSnapshot>(
 			new data::LogicSnapshot(logic));
@@ -313,10 +320,15 @@ void SigSession::feed_in_logic(const sr_datafeed_logic &logic)
 void SigSession::feed_in_analog(const sr_datafeed_analog &analog)
 {
 	lock_guard<mutex> lock(_data_mutex);
+
+	if(!_analog_data)
+	{
+		qDebug() << "Unexpected analog packet";
+		return;	// This analog packet was not expected.
+	}
+
 	if (!_cur_analog_snapshot)
 	{
-		assert(_analog_data);
-
 		// Create a new data snapshot
 		_cur_analog_snapshot = shared_ptr<data::AnalogSnapshot>(
 			new data::AnalogSnapshot(analog));
