@@ -36,7 +36,8 @@ public:
 
 	void append_payload(const sr_datafeed_analog &analog);
 
-	const float* get_samples() const;
+	const float* get_samples(int64_t start_sample,
+		int64_t end_sample) const;
 };
 
 } // namespace data

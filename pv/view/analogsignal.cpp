@@ -68,18 +68,21 @@ void AnalogSignal::paint(QPainter &p, int y, int left, int right, double scale,
 		(int64_t)0), last_sample);
 	const int64_t end_sample = min(max((int64_t)ceil(end),
 		(int64_t)0), last_sample);
+	const int64_t sample_count = end_sample - start_sample;
 
-	const float* samples = snapshot->get_samples();
+	const float* samples = snapshot->get_samples(
+		start_sample, end_sample);
 	assert(samples);
 
-	QPointF *points = new QPointF[end_sample - start_sample];
+	QPointF *points = new QPointF[sample_count];
 	QPointF *point = points;
 
 	for (int64_t sample = start_sample;
 		sample != end_sample; sample++) {
 		const float x = (sample / samples_per_pixel -
 			pixels_offset) + left;
-		*point++ = QPointF(x, samples[sample] + y);
+		*point++ = QPointF(x,
+			samples[sample - start_sample] + y);
 	}
 
 	p.setPen(_colour);

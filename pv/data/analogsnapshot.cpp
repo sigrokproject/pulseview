@@ -49,9 +49,21 @@ void AnalogSnapshot::append_payload(
 	append_data(analog.data, analog.num_samples);
 }
 
-const float* AnalogSnapshot::get_samples() const
+const float* AnalogSnapshot::get_samples(
+	int64_t start_sample, int64_t end_sample) const
 {
-	return (const float*)_data;
+	assert(start_sample >= 0);
+	assert(start_sample < (int64_t)_sample_count);
+	assert(end_sample >= 0);
+	assert(end_sample < (int64_t)_sample_count);
+	assert(start_sample <= end_sample);
+
+	lock_guard<recursive_mutex> lock(_mutex);
+
+	float *const data = new float[end_sample - start_sample];
+	memcpy(data, (float*)_data + start_sample, sizeof(float) *
+		(end_sample - start_sample));
+	return data;
 }
 
 } // namespace data
