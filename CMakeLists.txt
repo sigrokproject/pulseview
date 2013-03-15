@@ -124,6 +124,7 @@ set(pulseview_HEADERS
 	pv/sigsession.h
 	pv/dialogs/about.h
 	pv/dialogs/connect.h
+	pv/dialogs/deviceoptions.h
 	pv/view/cursor.h
 	pv/view/header.h
 	pv/view/ruler.h

@@ -31,12 +31,20 @@ DeviceOptions::DeviceOptions(QWidget *parent, struct sr_dev_inst *sdi) :
 	_layout(this),
 	_probes_box(tr("Probes"), this),
 	_probes(this),
+	_probes_bar(this),
+	_enable_all_probes(this),
+	_disable_all_probes(this),
 	_props_box(tr("Configuration"), this),
 	_button_box(QDialogButtonBox::Ok | QDialogButtonBox::Cancel,
 		Qt::Horizontal, this),
 	_device_options_binding(sdi)
 {
 	setWindowTitle(tr("Configure Device"));
+
+	connect(&_enable_all_probes, SIGNAL(clicked()),
+		this, SLOT(enable_all_probes()));
+	connect(&_disable_all_probes, SIGNAL(clicked()),
+		this, SLOT(disable_all_probes()));
 
 	connect(&_button_box, SIGNAL(accepted()), this, SLOT(accept()));
 	connect(&_button_box, SIGNAL(rejected()), this, SLOT(reject()));
@@ -46,7 +54,16 @@ DeviceOptions::DeviceOptions(QWidget *parent, struct sr_dev_inst *sdi) :
 	setup_probes();
 	_probes_box.setLayout(&_probes_box_layout);
 	_probes_box_layout.addWidget(&_probes);
+
+	_enable_all_probes.setText(tr("Enable All"));
+	_probes_bar.addWidget(&_enable_all_probes);
+
+	_disable_all_probes.setText(tr("Disable All"));
+	_probes_bar.addWidget(&_disable_all_probes);
+
+	_probes_box_layout.addWidget(&_probes_bar);
 	_layout.addWidget(&_probes_box);
+
 
 	_props_box.setLayout(&_props_box_layout);
 	_props_box_layout.addWidget(_device_options_binding.get_form(this));
@@ -91,6 +108,25 @@ void DeviceOptions::setup_probes()
 			qVariantFromValue((void*)probe));
 		_probes.addItem(item);
 	}
+}
+
+void DeviceOptions::set_all_probes(bool set)
+{
+	for (int i = 0; i < _probes.count(); i++) {
+		QListWidgetItem *const item = _probes.item(i);
+		assert(item);
+		item->setCheckState(set ? Qt::Checked : Qt::Unchecked);
+	}
+}
+
+void DeviceOptions::enable_all_probes()
+{
+	set_all_probes(true);
+}
+
+void DeviceOptions::disable_all_probes()
+{
+	set_all_probes(false);
 }
 
 } // namespace dialogs

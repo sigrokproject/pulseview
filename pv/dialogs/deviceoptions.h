@@ -25,6 +25,8 @@
 #include <QDialogButtonBox>
 #include <QGroupBox>
 #include <QListWidget>
+#include <QToolBar>
+#include <QToolButton>
 #include <QVBoxLayout>
 
 #include <pv/prop/binding/deviceoptions.h>
@@ -34,6 +36,8 @@ namespace dialogs {
 
 class DeviceOptions : public QDialog
 {
+	Q_OBJECT
+
 public:
 	DeviceOptions(QWidget *parent, struct sr_dev_inst *sdi);
 
@@ -43,6 +47,12 @@ protected:
 private:
 	void setup_probes();
 
+	void set_all_probes(bool set);
+
+private slots:
+	void enable_all_probes();
+	void disable_all_probes();
+
 private:
 	struct sr_dev_inst *const _sdi;
 
@@ -51,6 +61,9 @@ private:
 	QGroupBox _probes_box;
 	QVBoxLayout _probes_box_layout;
 	QListWidget _probes;
+	QToolBar _probes_bar;
+	QToolButton _enable_all_probes;
+	QToolButton _disable_all_probes;
 
 	QGroupBox _props_box;
 	QVBoxLayout _props_box_layout;
