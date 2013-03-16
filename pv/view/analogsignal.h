@@ -29,6 +29,7 @@ namespace pv {
 
 namespace data {
 class Analog;
+class AnalogSnapshot;
 }
 
 namespace view {
@@ -37,6 +38,8 @@ class AnalogSignal : public Signal
 {
 private:
 	static const QColor SignalColours[4];
+
+	static const float EnvelopeThreshold;
 
 public:
 	AnalogSignal(QString name,
@@ -56,6 +59,17 @@ public:
 	 **/
 	void paint(QPainter &p, int y, int left, int right, double scale,
 		double offset);
+
+private:
+	void paint_trace(QPainter &p,
+		const boost::shared_ptr<pv::data::AnalogSnapshot> &snapshot,
+		int y, int left, const int64_t start, const int64_t end,
+		const double pixels_offset, const double samples_per_pixel);
+
+	void paint_envelope(QPainter &p,
+		const boost::shared_ptr<pv::data::AnalogSnapshot> &snapshot,
+		int y, int left, const int64_t start, const int64_t end,
+		const double pixels_offset, const double samples_per_pixel);
 
 private:
 	boost::shared_ptr<pv::data::Analog> _data;

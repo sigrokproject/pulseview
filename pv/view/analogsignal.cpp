@@ -39,6 +39,8 @@ const QColor AnalogSignal::SignalColours[4] = {
 	QColor(0x4E, 0x9A, 0x06)	// Green
 };
 
+const float AnalogSignal::EnvelopeThreshold = 256.0f;
+
 AnalogSignal::AnalogSignal(QString name, shared_ptr<data::Analog> data,
 	int probe_index) :
 	Signal(name),
@@ -82,27 +84,89 @@ void AnalogSignal::paint(QPainter &p, int y, int left, int right, double scale,
 		(int64_t)0), last_sample);
 	const int64_t end_sample = min(max((int64_t)ceil(end),
 		(int64_t)0), last_sample);
-	const int64_t sample_count = end_sample - start_sample;
 
-	const float* samples = snapshot->get_samples(
-		start_sample, end_sample);
+	if (samples_per_pixel < EnvelopeThreshold)
+		paint_trace(p, snapshot, y, left,
+			start_sample, end_sample,
+			pixels_offset, samples_per_pixel);
+	else
+		paint_envelope(p, snapshot, y, left,
+			start_sample, end_sample,
+			pixels_offset, samples_per_pixel);
+}
+
+void AnalogSignal::paint_trace(QPainter &p,
+	const shared_ptr<pv::data::AnalogSnapshot> &snapshot,
+	int y, int left, const int64_t start, const int64_t end,
+	const double pixels_offset, const double samples_per_pixel)
+{
+	const int64_t sample_count = end - start;
+
+	const float *const samples = snapshot->get_samples(start, end);
 	assert(samples);
+
+	p.setPen(_colour);
 
 	QPointF *points = new QPointF[sample_count];
 	QPointF *point = points;
 
-	for (int64_t sample = start_sample;
-		sample != end_sample; sample++) {
+	for (int64_t sample = start; sample != end; sample++) {
 		const float x = (sample / samples_per_pixel -
 			pixels_offset) + left;
 		*point++ = QPointF(x,
-			y - samples[sample - start_sample] * _scale);
+			y - samples[sample - start] * _scale);
 	}
 
-	p.setPen(_colour);
 	p.drawPoints(points, point - points);
 
+	delete[] samples;
 	delete[] points;
+}
+
+void AnalogSignal::paint_envelope(QPainter &p,
+	const shared_ptr<pv::data::AnalogSnapshot> &snapshot,
+	int y, int left, const int64_t start, const int64_t end,
+	const double pixels_offset, const double samples_per_pixel)
+{
+	using namespace Qt;
+	using pv::data::AnalogSnapshot;
+
+	AnalogSnapshot::EnvelopeSection e;
+	snapshot->get_envelope_section(e, start, end, samples_per_pixel);
+
+	if (e.length < 2)
+		return;
+
+	p.setPen(QPen(NoPen));
+	p.setBrush(_colour);
+
+	QRectF *const rects = new QRectF[e.length];
+	QRectF *rect = rects;
+
+	for(uint64_t sample = 0; sample < e.length-1; sample++) {
+		const float x = ((e.scale * sample + e.start) /
+			samples_per_pixel - pixels_offset) + left;
+		const AnalogSnapshot::EnvelopeSample *const s =
+			e.samples + sample;
+
+		// We overlap this sample with the next so that vertical
+		// gaps do not appear during steep rising or falling edges
+		const float b = y - max(s->max, (s+1)->min) * _scale;
+		const float t = y - min(s->min, (s+1)->max) * _scale;
+
+		float h = b - t;
+		if(h >= 0.0f && h <= 1.0f)
+			h = 1.0f;
+		if(h <= 0.0f && h >= -1.0f)
+			h = -1.0f;
+
+		*rect++ = QRectF(x, t, 1.0f, h);
+	}
+
+	p.drawRects(rects, e.length);
+
+	delete[] rects;
+	delete[] e.samples;
 }
 
 } // namespace view
