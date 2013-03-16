@@ -25,8 +25,10 @@ find_package(Threads)
 find_package(Boost 1.46 COMPONENTS unit_test_framework REQUIRED)
 
 set(pulseview_TEST_SOURCES
+	${PROJECT_SOURCE_DIR}/pv/data/analogsnapshot.cpp
 	${PROJECT_SOURCE_DIR}/pv/data/snapshot.cpp
 	${PROJECT_SOURCE_DIR}/pv/data/logicsnapshot.cpp
+	data/analogsnapshot.cpp
 	data/logicsnapshot.cpp
 	test.cpp
 )
