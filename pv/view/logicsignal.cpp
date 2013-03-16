@@ -39,7 +39,7 @@ const QColor LogicSignal::EdgeColour(0x80, 0x80, 0x80);
 const QColor LogicSignal::HighColour(0x00, 0xC0, 0x00);
 const QColor LogicSignal::LowColour(0xC0, 0x00, 0x00);
 
-const QColor LogicSignal::LogicSignalColours[10] = {
+const QColor LogicSignal::SignalColours[10] = {
 	QColor(0x16, 0x19, 0x1A),	// Black
 	QColor(0x8F, 0x52, 0x02),	// Brown
 	QColor(0xCC, 0x00, 0x00),	// Red
@@ -59,8 +59,7 @@ LogicSignal::LogicSignal(QString name, shared_ptr<data::Logic> data,
 	_data(data)
 {
 	assert(_probe_index >= 0);
-	_colour = LogicSignalColours[
-		_probe_index % countof(LogicSignalColours)];
+	_colour = SignalColours[_probe_index % countof(SignalColours)];
 }
 
 void LogicSignal::paint(QPainter &p, int y, int left, int right,

@@ -42,7 +42,7 @@ private:
 	static const QColor HighColour;
 	static const QColor LowColour;
 
-	static const QColor LogicSignalColours[10];
+	static const QColor SignalColours[10];
 
 public:
 	LogicSignal(QString name,
