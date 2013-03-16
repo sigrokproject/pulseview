@@ -32,11 +32,19 @@ using namespace std;
 namespace pv {
 namespace view {
 
-AnalogSignal::AnalogSignal(QString name, shared_ptr<data::Analog> data) :
+const QColor AnalogSignal::SignalColours[4] = {
+	QColor(0xC4, 0xA0, 0x00),	// Yellow
+	QColor(0x87, 0x20, 0x7A),	// Magenta
+	QColor(0x20, 0x4A, 0x87),	// Blue
+	QColor(0x4E, 0x9A, 0x06)	// Green
+};
+
+AnalogSignal::AnalogSignal(QString name, shared_ptr<data::Analog> data,
+	int probe_index) :
 	Signal(name),
 	_data(data)
 {
-	_colour = Qt::blue;
+	_colour = SignalColours[probe_index % countof(SignalColours)];
 }
 
 void AnalogSignal::paint(QPainter &p, int y, int left, int right, double scale,

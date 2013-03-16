@@ -35,9 +35,12 @@ namespace view {
 
 class AnalogSignal : public Signal
 {
+private:
+	static const QColor SignalColours[4];
+
 public:
 	AnalogSignal(QString name,
-		boost::shared_ptr<pv::data::Analog> data);
+		boost::shared_ptr<pv::data::Analog> data, int probe_index);
 
 	/**
 	 * Paints the signal with a QPainter

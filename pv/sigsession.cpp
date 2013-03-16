@@ -261,7 +261,7 @@ void SigSession::feed_in_header(const sr_dev_inst *sdi)
 			case SR_PROBE_ANALOG:
 				signal = shared_ptr<view::Signal>(
 					new view::AnalogSignal(probe->name,
-						_analog_data));
+						_analog_data, probe->index));
 				break;
 			}
 
