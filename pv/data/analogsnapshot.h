@@ -35,13 +35,22 @@ namespace data {
 
 class AnalogSnapshot : public Snapshot
 {
-private:
+public:
 	struct EnvelopeSample
 	{
 		float min;
 		float max;
 	};
 
+	struct EnvelopeSection
+	{
+		uint64_t start;
+		unsigned int scale;
+		uint64_t length;
+		EnvelopeSample *samples;
+	};
+
+private:
 	struct Envelope
 	{
 		uint64_t length;
@@ -65,6 +74,9 @@ public:
 
 	const float* get_samples(int64_t start_sample,
 		int64_t end_sample) const;
+
+	void get_envelope_section(EnvelopeSection &s,
+		uint64_t start, uint64_t end, float min_length) const;
 
 private:
 	void reallocate_envelope(Envelope &l);

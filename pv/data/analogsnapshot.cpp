@@ -85,6 +85,30 @@ const float* AnalogSnapshot::get_samples(
 	return data;
 }
 
+void AnalogSnapshot::get_envelope_section(EnvelopeSection &s,
+	uint64_t start, uint64_t end, float min_length) const
+{
+	assert(end <= get_sample_count());
+	assert(start <= end);
+	assert(min_length > 0);
+
+	lock_guard<recursive_mutex> lock(_mutex);
+
+	const unsigned int min_level = max((int)floorf(logf(min_length) /
+		LogEnvelopeScaleFactor) - 1, 0);
+	const unsigned int scale_power = (min_level + 1) *
+		EnvelopeScalePower;
+	start >>= scale_power;
+	end >>= scale_power;
+
+	s.start = start << scale_power;
+	s.scale = 1 << scale_power;
+	s.length = end - start;
+	s.samples = new EnvelopeSample[s.length];
+	memcpy(s.samples, _envelope_levels[min_level].samples + start,
+		s.length * sizeof(EnvelopeSample));
+}
+
 void AnalogSnapshot::reallocate_envelope(Envelope &e)
 {
 	const uint64_t new_data_length = ((e.length + EnvelopeDataUnit - 1) /
