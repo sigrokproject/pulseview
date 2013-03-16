@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_SAMPLINGBAR_H
-#define PULSEVIEW_PV_SAMPLINGBAR_H
+#ifndef PULSEVIEW_PV_TOOLBARS_SAMPLINGBAR_H
+#define PULSEVIEW_PV_TOOLBARS_SAMPLINGBAR_H
 
 #include <stdint.h>
 
@@ -34,6 +34,7 @@ struct st_dev_inst;
 class QAction;
 
 namespace pv {
+namespace toolbars {
 
 class SamplingBar : public QToolBar
 {
@@ -84,6 +85,7 @@ private:
 	QToolButton _run_stop_button;
 };
 
+} // namespace toolbars
 } // namespace pv
 
-#endif // PULSEVIEW_PV_SAMPLINGBAR_H
+#endif // PULSEVIEW_PV_TOOLBARS_SAMPLINGBAR_H

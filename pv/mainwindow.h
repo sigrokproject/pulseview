@@ -37,7 +37,9 @@ class QWidget;
 
 namespace pv {
 
+namespace toolbars {
 class SamplingBar;
+}
 
 namespace view {
 class View;
@@ -106,7 +108,7 @@ private:
 	QVBoxLayout *_vertical_layout;
 
 	QToolBar *_toolbar;
-	SamplingBar *_sampling_bar;
+	toolbars::SamplingBar *_sampling_bar;
 };
 
 } // namespace pv

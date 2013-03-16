@@ -34,6 +34,7 @@
 #include <pv/dialogs/deviceoptions.h>
 
 namespace pv {
+namespace toolbars {
 
 const uint64_t SamplingBar::RecordLengths[20] = {
 	1000,
@@ -285,4 +286,5 @@ void SamplingBar::configure()
 	update_sample_rate_selector_value();
 }
 
+} // namespace toolbars
 } // namespace pv

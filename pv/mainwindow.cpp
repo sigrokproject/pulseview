@@ -34,9 +34,9 @@
 #include <QWidget>
 
 #include "mainwindow.h"
-#include "samplingbar.h"
 #include "dialogs/about.h"
 #include "dialogs/connect.h"
+#include "toolbars/samplingbar.h"
 #include "view/view.h"
 
 /* __STDC_FORMAT_MACROS is required for PRIu64 and friends (in C++). */
@@ -181,7 +181,7 @@ void MainWindow::setup_ui()
 	_toolbar->addAction(_action_view_zoom_out);
 	addToolBar(_toolbar);
 
-	_sampling_bar = new SamplingBar(this);
+	_sampling_bar = new toolbars::SamplingBar(this);
 	scan_devices();
 	connect(_sampling_bar, SIGNAL(run_stop()), this,
 		SLOT(run_stop()));
