@@ -44,7 +44,7 @@ Snapshot::~Snapshot()
 	free(_data);
 }
 
-uint64_t Snapshot::get_sample_count()
+uint64_t Snapshot::get_sample_count() const
 {
 	lock_guard<recursive_mutex> lock(_mutex);
 	return _sample_count;
