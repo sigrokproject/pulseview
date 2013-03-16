@@ -42,9 +42,15 @@ const QColor AnalogSignal::SignalColours[4] = {
 AnalogSignal::AnalogSignal(QString name, shared_ptr<data::Analog> data,
 	int probe_index) :
 	Signal(name),
-	_data(data)
+	_data(data),
+	_scale(1.0f)
 {
 	_colour = SignalColours[probe_index % countof(SignalColours)];
+}
+
+void AnalogSignal::set_scale(float scale)
+{
+	_scale = scale;
 }
 
 void AnalogSignal::paint(QPainter &p, int y, int left, int right, double scale,
@@ -90,7 +96,7 @@ void AnalogSignal::paint(QPainter &p, int y, int left, int right, double scale,
 		const float x = (sample / samples_per_pixel -
 			pixels_offset) + left;
 		*point++ = QPointF(x,
-			samples[sample - start_sample] + y);
+			y - samples[sample - start_sample] * _scale);
 	}
 
 	p.setPen(_colour);

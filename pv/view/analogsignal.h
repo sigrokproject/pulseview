@@ -42,6 +42,8 @@ public:
 	AnalogSignal(QString name,
 		boost::shared_ptr<pv::data::Analog> data, int probe_index);
 
+	void set_scale(float scale);
+
 	/**
 	 * Paints the signal with a QPainter
 	 * @param p the QPainter to paint into.
@@ -57,6 +59,7 @@ public:
 
 private:
 	boost::shared_ptr<pv::data::Analog> _data;
+	float _scale;
 };
 
 } // namespace view
