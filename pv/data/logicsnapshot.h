@@ -27,11 +27,11 @@
 #include <vector>
 
 namespace LogicSnapshotTest {
-	class Pow2;
-	class Basic;
-	class LargeData;
-	class Pulses;
-	class LongPulses;
+class Pow2;
+class Basic;
+class LargeData;
+class Pulses;
+class LongPulses;
 }
 
 namespace pv {
@@ -65,7 +65,7 @@ public:
 	void append_payload(const sr_datafeed_logic &logic);
 
 private:
-	void reallocate_mip_map(MipMapLevel &m);
+	void reallocate_mipmap_level(MipMapLevel &m);
 
 	void append_payload_to_mipmap();
 

@@ -70,7 +70,7 @@ void LogicSnapshot::append_payload(
 	append_payload_to_mipmap();
 }
 
-void LogicSnapshot::reallocate_mip_map(MipMapLevel &m)
+void LogicSnapshot::reallocate_mipmap_level(MipMapLevel &m)
 {
 	const uint64_t new_data_length = ((m.length + MipMapDataUnit - 1) /
 		MipMapDataUnit) * MipMapDataUnit;
@@ -101,14 +101,12 @@ void LogicSnapshot::append_payload_to_mipmap()
 	if (m0.length == prev_length)
 		return;
 
-	reallocate_mip_map(m0);
+	reallocate_mipmap_level(m0);
 
 	dest_ptr = (uint8_t*)m0.data + prev_length * _unit_size;
 
 	// Iterate through the samples to populate the first level mipmap
-	accumulator = 0;
-	diff_counter = MipMapScaleFactor;
-	const uint8_t *end_src_ptr = (uint8_t*)_data +
+	const uint8_t *const end_src_ptr = (uint8_t*)_data +
 		m0.length * _unit_size * MipMapScaleFactor;
 	for (src_ptr = (uint8_t*)_data +
 		prev_length * _unit_size * MipMapScaleFactor;
@@ -143,12 +141,12 @@ void LogicSnapshot::append_payload_to_mipmap()
 		if (m.length == prev_length)
 			break;
 
-		reallocate_mip_map(m);
+		reallocate_mipmap_level(m);
 
 		// Subsample the level lower level
 		src_ptr = (uint8_t*)ml.data +
 			_unit_size * prev_length * MipMapScaleFactor;
-		const uint8_t *end_dest_ptr =
+		const uint8_t *const end_dest_ptr =
 			(uint8_t*)m.data + _unit_size * m.length;
 		for (dest_ptr = (uint8_t*)m.data +
 			_unit_size * prev_length;
