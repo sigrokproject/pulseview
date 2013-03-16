@@ -31,15 +31,44 @@ namespace data {
 
 class AnalogSnapshot : public Snapshot
 {
+private:
+	struct EnvelopeSample
+	{
+		float min;
+		float max;
+	};
+
+	struct Envelope
+	{
+		uint64_t length;
+		uint64_t data_length;
+		EnvelopeSample *samples;
+	};
+
+private:
+	static const unsigned int ScaleStepCount = 10;
+	static const int EnvelopeScalePower;
+	static const int EnvelopeScaleFactor;
+	static const float LogEnvelopeScaleFactor;
+	static const uint64_t EnvelopeDataUnit;
+
 public:
 	AnalogSnapshot(const sr_datafeed_analog &analog);
+
+	virtual ~AnalogSnapshot();
 
 	void append_payload(const sr_datafeed_analog &analog);
 
 	const float* get_samples(int64_t start_sample,
 		int64_t end_sample) const;
-};
 
+private:
+	void reallocate_envelope(Envelope &l);
+
+	void append_payload_to_envelope_levels();
+
+private:
+	struct Envelope _envelope_levels[ScaleStepCount];
 } // namespace data
 } // namespace pv
 
