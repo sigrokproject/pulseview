@@ -1,3 +1,7 @@
+-------------------------------------------------------------------------------
+INSTALL
+-------------------------------------------------------------------------------
+
 Requirements
 ------------
 
@@ -30,12 +34,9 @@ For installing PulseView:
 
  $ make install
 
-Please see the following wiki pages for more detailed instructions:
+See the following wiki page for more (OS-specific) instructions:
 
- http://sigrok.org/wiki/Linux
- http://sigrok.org/wiki/Mac_OS_X
- http://sigrok.org/wiki/Windows
- http://sigrok.org/wiki/FreeBSD
+ http://sigrok.org/wiki/Building
 
 
 Creating a source distribution package
@@ -47,3 +48,4 @@ In order to build a source package begin with an unconfigured source tree.
  $ cd dist
  $ cmake ..
  $ make package_source
+
