@@ -118,6 +118,7 @@ void MainWindow::setup_ui()
 		"MainWindow", "&Quit", 0, QApplication::UnicodeUTF8));
 	_action_quit->setIcon(QIcon::fromTheme("application-exit",
 		QIcon(":/icons/application-exit.png")));
+	_action_quit->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q));
 	_action_quit->setObjectName(QString::fromUtf8("actionQuit"));
 	_menu_file->addAction(_action_quit);
 
