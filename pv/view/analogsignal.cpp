@@ -82,7 +82,7 @@ void AnalogSignal::paint(QPainter &p, int y, int left, int right, double scale,
 
 	const int64_t start_sample = min(max((int64_t)floor(start),
 		(int64_t)0), last_sample);
-	const int64_t end_sample = min(max((int64_t)ceil(end),
+	const int64_t end_sample = min(max((int64_t)ceil(end) + 1,
 		(int64_t)0), last_sample);
 
 	if (samples_per_pixel < EnvelopeThreshold)
@@ -117,7 +117,7 @@ void AnalogSignal::paint_trace(QPainter &p,
 			y - samples[sample - start] * _scale);
 	}
 
-	p.drawPoints(points, point - points);
+	p.drawPolyline(points, point - points);
 
 	delete[] samples;
 	delete[] points;
