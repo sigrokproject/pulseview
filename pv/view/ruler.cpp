@@ -61,6 +61,8 @@ Ruler::Ruler(View &parent) :
 
 void Ruler::paintEvent(QPaintEvent*)
 {
+	using namespace Qt;
+
 	QPainter p(this);
 	p.setRenderHint(QPainter::Antialiasing);
 
@@ -85,7 +87,7 @@ void Ruler::paintEvent(QPaintEvent*)
 	const double multiplier = pow(10.0, - prefix * 3 - FirstSIPrefixPower);
 
 	const int text_height = p.boundingRect(0, 0, INT_MAX, INT_MAX,
-		Qt::AlignLeft | Qt::AlignTop, "8").height();
+		AlignLeft | AlignTop, "8").height();
 
 	// Draw the tick marks
 	p.setPen(palette().color(foregroundRole()));
@@ -113,8 +115,8 @@ void Ruler::paintEvent(QPaintEvent*)
 			QString s;
 			QTextStream ts(&s);
 			ts << (t * multiplier) << SIPrefixes[prefix] << "s";
-			p.drawText(x, 0, 0, text_height, Qt::AlignCenter |
-				Qt::AlignTop | Qt::TextDontClip, s);
+			p.drawText(x, 0, 0, text_height, AlignCenter |
+				AlignTop | TextDontClip, s);
 			p.drawLine(QPointF(x, text_height),
 				QPointF(x, height()));
 		}
