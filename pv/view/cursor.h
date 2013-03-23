@@ -65,13 +65,13 @@ public:
 	 * Paints the cursor's label to the ruler.
 	 * @param p The painter to draw with.
 	 * @param rect The rectangle of the ruler client area.
+	 * @param prefix The index of the SI prefix to use.
 	 */
-	void paint_label(QPainter &p, const QRect &rect);
+	void paint_label(QPainter &p, const QRect &rect,
+		unsigned int prefix);
 
 private:
-	void compute_text_size(QPainter &p);
-
-	void format_text(char *text);
+	void compute_text_size(QPainter &p, unsigned int prefix);
 
 private:
 	QSizeF _text_size;

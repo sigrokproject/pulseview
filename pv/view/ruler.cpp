@@ -59,6 +59,20 @@ Ruler::Ruler(View &parent) :
 		this, SLOT(hover_point_changed()));
 }
 
+QString Ruler::format_time(double t, unsigned int prefix,
+	unsigned int precision)
+{
+	const double multiplier = pow(10.0,
+		- prefix * 3 - FirstSIPrefixPower);
+
+	QString s;
+	QTextStream ts(&s);
+	ts.setRealNumberPrecision(precision);
+	ts << fixed << forcesign << (t  * multiplier) <<
+		SIPrefixes[prefix] << "s";
+	return s;
+}
+
 void Ruler::paintEvent(QPaintEvent*)
 {
 	using namespace Qt;
@@ -73,7 +87,6 @@ void Ruler::paintEvent(QPaintEvent*)
 	double min_width = SpacingIncrement, typical_width;
 	double tick_period;
 	unsigned int prefix;
-	double multiplier;
 
 	// Find tick spacing, and number formatting that does not cause
 	// value to collide.
@@ -94,11 +107,10 @@ void Ruler::paintEvent(QPaintEvent*)
 		prefix = (order - FirstSIPrefixPower) / 3;
 		assert(prefix < countof(SIPrefixes));
 
-		multiplier = pow(10.0, - prefix * 3 - FirstSIPrefixPower);
 
 		typical_width = p.boundingRect(0, 0, INT_MAX, INT_MAX,
 			AlignLeft | AlignTop, format_time(_view.offset(),
-			multiplier, prefix)).width() + MinValueSpacing;
+			prefix)).width() + MinValueSpacing;
 
 		min_width += SpacingIncrement;
 
@@ -137,7 +149,7 @@ void Ruler::paintEvent(QPaintEvent*)
 			// Draw a major tick
 			p.drawText(x, ValueMargin, 0, text_height,
 				AlignCenter | AlignTop | TextDontClip,
-				format_time(t, multiplier, prefix));
+				format_time(t, prefix));
 			p.drawLine(QPointF(x, major_tick_y1),
 				QPointF(x, tick_y2));
 		}
@@ -152,7 +164,7 @@ void Ruler::paintEvent(QPaintEvent*)
 	}
 
 	// Draw the cursors
-	draw_cursors(p);
+	draw_cursors(p, prefix);
 
 	// Draw the hover mark
 	draw_hover_mark(p);
@@ -192,26 +204,15 @@ void Ruler::mouseReleaseEvent(QMouseEvent *)
 	_grabbed_marker = NULL;
 }
 
-QString Ruler::format_time(double t, double multiplier,
-	unsigned int prefix)
-{
-	QString s;
-	QTextStream ts(&s);
-	ts.setRealNumberPrecision(0);
-	ts << fixed << forcesign << (t  * multiplier) <<
-		SIPrefixes[prefix] << "s";
-	return s;
-}
-
-void Ruler::draw_cursors(QPainter &p)
+void Ruler::draw_cursors(QPainter &p, unsigned int prefix)
 {
 	if (!_view.cursors_shown())
 		return;
 
 	const QRect r = rect();
 	pair<Cursor, Cursor> &cursors = _view.cursors();
-	cursors.first.paint_label(p, r);
-	cursors.second.paint_label(p, r);
+	cursors.first.paint_label(p, r, prefix);
+	cursors.second.paint_label(p, r, prefix);
 }
 
 void Ruler::draw_hover_mark(QPainter &p)

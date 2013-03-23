@@ -20,6 +20,7 @@
 
 #include "cursor.h"
 
+#include "ruler.h"
 #include "view.h"
 
 #include <QBrush>
@@ -62,9 +63,10 @@ QRectF Cursor::get_label_rect(const QRect &rect) const
 		label_size.width() + 1, label_size.height() + 1);
 }
 
-void Cursor::paint_label(QPainter &p, const QRect &rect)
+void Cursor::paint_label(QPainter &p, const QRect &rect,
+	unsigned int prefix)
 {
-	compute_text_size(p);
+	compute_text_size(p, prefix);
 	const QRectF r(get_label_rect(rect));
 
 	const float h_centre = (r.left() + r.right()) / 2;
@@ -88,9 +90,6 @@ void Cursor::paint_label(QPainter &p, const QRect &rect)
 		QPointF(r.left() + 1, r.top() + 1),
 	};
 
-	char text[16];
-	format_text(text);
-
 	p.setPen(Qt::transparent);
 	p.setBrush(FillColour);
 	p.drawPolygon(points, countof(points));
@@ -104,19 +103,14 @@ void Cursor::paint_label(QPainter &p, const QRect &rect)
 	p.drawPolygon(points, countof(points));
 
 	p.setPen(TextColour);
-	p.drawText(r, Qt::AlignCenter | Qt::AlignVCenter, text);
+	p.drawText(r, Qt::AlignCenter | Qt::AlignVCenter,
+		Ruler::format_time(_time, prefix, 2));
 }
 
-void Cursor::compute_text_size(QPainter &p)
+void Cursor::compute_text_size(QPainter &p, unsigned int prefix)
 {
-	char text[16];
-	format_text(text);
-	_text_size = p.boundingRect(QRectF(), 0, text).size();
-}
-
-void Cursor::format_text(char *text)
-{
-	sprintf(text, "%gs", _time);
+	_text_size = p.boundingRect(QRectF(), 0,
+		Ruler::format_time(_time, prefix, 2)).size();
 }
 
 } // namespace view

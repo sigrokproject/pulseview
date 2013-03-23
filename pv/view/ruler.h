@@ -45,6 +45,9 @@ private:
 public:
 	Ruler(View &parent);
 
+	static QString format_time(double t, unsigned int prefix,
+		unsigned precision = 0);
+
 private:
 	void paintEvent(QPaintEvent *event);
 
@@ -53,10 +56,7 @@ private:
 	void mouseReleaseEvent(QMouseEvent *);
 
 private:
-	static QString format_time(double t, double multiplier,
-		unsigned int prefix);
-
-	void draw_cursors(QPainter &p);
+	void draw_cursors(QPainter &p, unsigned int prefix);
 
 	/**
 	 * Draw a hover arrow under the cursor position.
