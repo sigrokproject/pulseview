@@ -65,6 +65,7 @@ void Ruler::paintEvent(QPaintEvent*)
 
 	const double SpacingIncrement = 32.0f;
 	const double MinValueSpacing = 32.0f;
+	const int ValueMargin = 3;
 
 	QPainter p(this);
 	p.setRenderHint(QPainter::Antialiasing);
@@ -118,6 +119,11 @@ void Ruler::paintEvent(QPaintEvent*)
 
 	int division = (int)round(first_minor_division -
 		first_major_division * MinorTickSubdivision);
+
+	const int major_tick_y1 = text_height + ValueMargin * 2;
+	const int tick_y2 = height();
+	const int minor_tick_y1 = (major_tick_y1 + tick_y2) / 2;
+
 	while (1)
 	{
 		const double t = t0 + division * minor_tick_period;
@@ -129,17 +135,17 @@ void Ruler::paintEvent(QPaintEvent*)
 		if (division % MinorTickSubdivision == 0)
 		{
 			// Draw a major tick
-			p.drawText(x, 0, 0, text_height, AlignCenter |
-				AlignTop | TextDontClip,
+			p.drawText(x, ValueMargin, 0, text_height,
+				AlignCenter | AlignTop | TextDontClip,
 				format_time(t, multiplier, prefix));
-			p.drawLine(QPointF(x, text_height),
-				QPointF(x, height()));
+			p.drawLine(QPointF(x, major_tick_y1),
+				QPointF(x, tick_y2));
 		}
 		else
 		{
 			// Draw a minor tick
-			p.drawLine(QPointF(x, (text_height + height()) / 2),
-				QPointF(x, height()));
+			p.drawLine(QPointF(x, minor_tick_y1),
+				QPointF(x, tick_y2));
 		}
 
 		division++;
