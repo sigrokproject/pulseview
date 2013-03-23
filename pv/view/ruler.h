@@ -53,6 +53,9 @@ private:
 	void mouseReleaseEvent(QMouseEvent *);
 
 private:
+	static QString format_time(double t, double multiplier,
+		unsigned int prefix);
+
 	void draw_cursors(QPainter &p);
 
 	/**

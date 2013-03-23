@@ -63,28 +63,45 @@ void Ruler::paintEvent(QPaintEvent*)
 {
 	using namespace Qt;
 
+	const double SpacingIncrement = 32.0f;
+	const double MinValueSpacing = 32.0f;
+
 	QPainter p(this);
 	p.setRenderHint(QPainter::Antialiasing);
 
-	const double MinSpacing = 80;
+	double min_width = SpacingIncrement, typical_width;
+	double tick_period;
+	unsigned int prefix;
+	double multiplier;
 
-	const double min_period = _view.scale() * MinSpacing;
-
-	const int order = (int)floorf(log10f(min_period));
-	const double order_decimal = pow(10, order);
-
-	unsigned int unit = 0;
-	double tick_period = 0.0f;
-
+	// Find tick spacing, and number formatting that does not cause
+	// value to collide.
 	do
 	{
-		tick_period = order_decimal * ScaleUnits[unit++];
-	} while (tick_period < min_period && unit < countof(ScaleUnits));
+		const double min_period = _view.scale() * min_width;
 
-	const unsigned int prefix = (order - FirstSIPrefixPower) / 3;
-	assert(prefix < countof(SIPrefixes));
+		const int order = (int)floorf(log10f(min_period));
+		const double order_decimal = pow(10, order);
 
-	const double multiplier = pow(10.0, - prefix * 3 - FirstSIPrefixPower);
+		unsigned int unit = 0;
+
+		do
+		{
+			tick_period = order_decimal * ScaleUnits[unit++];
+		} while (tick_period < min_period && unit < countof(ScaleUnits));
+
+		prefix = (order - FirstSIPrefixPower) / 3;
+		assert(prefix < countof(SIPrefixes));
+
+		multiplier = pow(10.0, - prefix * 3 - FirstSIPrefixPower);
+
+		typical_width = p.boundingRect(0, 0, INT_MAX, INT_MAX,
+			AlignLeft | AlignTop, format_time(_view.offset(),
+			multiplier, prefix)).width() + MinValueSpacing;
+
+		min_width += SpacingIncrement;
+
+	} while(typical_width > tick_period / _view.scale());
 
 	const int text_height = p.boundingRect(0, 0, INT_MAX, INT_MAX,
 		AlignLeft | AlignTop, "8").height();
@@ -112,11 +129,9 @@ void Ruler::paintEvent(QPaintEvent*)
 		if (division % MinorTickSubdivision == 0)
 		{
 			// Draw a major tick
-			QString s;
-			QTextStream ts(&s);
-			ts << (t * multiplier) << SIPrefixes[prefix] << "s";
 			p.drawText(x, 0, 0, text_height, AlignCenter |
-				AlignTop | TextDontClip, s);
+				AlignTop | TextDontClip,
+				format_time(t, multiplier, prefix));
 			p.drawLine(QPointF(x, text_height),
 				QPointF(x, height()));
 		}
@@ -169,6 +184,17 @@ void Ruler::mousePressEvent(QMouseEvent *e)
 void Ruler::mouseReleaseEvent(QMouseEvent *)
 {
 	_grabbed_marker = NULL;
+}
+
+QString Ruler::format_time(double t, double multiplier,
+	unsigned int prefix)
+{
+	QString s;
+	QTextStream ts(&s);
+	ts.setRealNumberPrecision(0);
+	ts << fixed << forcesign << (t  * multiplier) <<
+		SIPrefixes[prefix] << "s";
+	return s;
 }
 
 void Ruler::draw_cursors(QPainter &p)
