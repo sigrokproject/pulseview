@@ -42,6 +42,7 @@ void usage()
 		"  %s [OPTION…] [FILE] — %s\n"
 		"\n"
 		"Help Options:\n"
+		"  -l, --loglevel                  Set libsigrok/libsigrokdecode loglevel\n"
 		"  -V, --version                   Show release version\n"
 		"  -h, -?, --help                  Show help option\n"
 		"\n", PV_BIN_NAME, PV_DESCRIPTION);
@@ -81,17 +82,26 @@ int main(int argc, char *argv[])
 	// Parse arguments
 	while (1) {
 		static const struct option long_options[] = {
+			{"loglevel", required_argument, 0, 'l'},
 			{"version", no_argument, 0, 'V'},
 			{"help", no_argument, 0, 'h'},
 			{0, 0, 0, 0}
 		};
 
 		const int c = getopt_long(argc, argv,
-			"Vh?", long_options, NULL);
+			"l:Vh?", long_options, NULL);
 		if (c == -1)
 			break;
 
 		switch (c) {
+		case 'l':
+		{
+			const int loglevel = atoi(optarg);
+			sr_log_loglevel_set(loglevel);
+			srd_log_loglevel_set(loglevel);
+			break;
+		}
+
 		case 'V':
 			// Print version info
 			fprintf(stdout, "%s %s\n", PV_TITLE, PV_VERSION_STRING);
