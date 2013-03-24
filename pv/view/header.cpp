@@ -218,14 +218,16 @@ void Header::contextMenuEvent(QContextMenuEvent *event)
 
 void Header::on_action_set_name_triggered()
 {
+	bool ok = false;
+
 	shared_ptr<view::Signal> context_signal = _context_signal;
 	if (!context_signal)
 		return;
 
 	const QString new_label = QInputDialog::getText(this, tr("Set Name"),
-		tr("Name"), QLineEdit::Normal, context_signal->get_name());
+		tr("Name"), QLineEdit::Normal, context_signal->get_name(), &ok);
 
-	if (!new_label.isEmpty())
+	if (ok)
 		context_signal->set_name(new_label);
 }
 
