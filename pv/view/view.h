@@ -154,6 +154,7 @@ private:
 	double _offset;
 
 	int _v_offset;
+	bool _updating_scroll;
 
 	bool _show_cursors;
 	std::pair<Cursor, Cursor> _cursors;

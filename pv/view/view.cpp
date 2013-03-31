@@ -70,6 +70,7 @@ View::View(SigSession &session, QWidget *parent) :
 	_scale(1e-6),
 	_offset(0),
 	_v_offset(0),
+	_updating_scroll(false),
 	_show_cursors(false),
 	_cursors(pair<Cursor, Cursor>(Cursor(*this, 0.0),
 		Cursor(*this, 1.0))),
@@ -210,6 +211,8 @@ void View::update_scroll()
 
 	horizontalScrollBar()->setPageStep(areaSize.width());
 
+	_updating_scroll = true;
+
 	if (length < MaxScrollValue) {
 		horizontalScrollBar()->setRange(0, length);
 		horizontalScrollBar()->setSliderPosition(offset);
@@ -218,6 +221,8 @@ void View::update_scroll()
 		horizontalScrollBar()->setSliderPosition(
 			_offset * MaxScrollValue / (_scale * length));
 	}
+
+	_updating_scroll = false;
 
 	// Set the vertical scrollbar
 	verticalScrollBar()->setPageStep(areaSize.height());
@@ -290,6 +295,9 @@ void View::resizeEvent(QResizeEvent*)
 
 void View::h_scroll_value_changed(int value)
 {
+	if (_updating_scroll)
+		return;
+
 	const int range = horizontalScrollBar()->maximum();
 	if (range < MaxScrollValue)
 		_offset = _scale * value;
