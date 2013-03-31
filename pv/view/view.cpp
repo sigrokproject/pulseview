@@ -209,7 +209,7 @@ void View::update_scroll()
 	get_scroll_layout(length, offset);
 	length = max(length - areaSize.width(), 0.0);
 
-	horizontalScrollBar()->setPageStep(areaSize.width());
+	horizontalScrollBar()->setPageStep(areaSize.width() / 2);
 
 	_updating_scroll = true;
 
