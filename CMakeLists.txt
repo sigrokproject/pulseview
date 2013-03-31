@@ -90,6 +90,7 @@ configure_file (
 
 set(pulseview_SOURCES
 	main.cpp
+	signalhandler.cpp
 	pv/mainwindow.cpp
 	pv/sigsession.cpp
 	pv/data/analog.cpp
@@ -119,6 +120,7 @@ set(pulseview_SOURCES
 )
 
 set(pulseview_HEADERS
+	signalhandler.h
 	pv/mainwindow.h
 	pv/sigsession.h
 	pv/dialogs/about.h

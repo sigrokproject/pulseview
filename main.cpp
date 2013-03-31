@@ -19,7 +19,6 @@
  */
 
 #include <sigrokdecode.h> /* First, so we avoid a _POSIX_C_SOURCE warning. */
-#include <signal.h>
 #include <stdint.h>
 #include <libsigrok/libsigrok.h>
 
@@ -28,12 +27,10 @@
 #include <QtGui/QApplication>
 #include <QDebug>
 
+#include "signalhandler.h"
 #include "pv/mainwindow.h"
 
 #include "config.h"
-
-// Global pointer to our QApplication
-QApplication *g_app = NULL;
 
 void usage()
 {
@@ -48,31 +45,13 @@ void usage()
 		"\n", PV_BIN_NAME, PV_DESCRIPTION);
 }
 
-/*
- * SIGINT handler (likely received Ctrl-C from terminal)
- */
-void sigint_handler(int param)
-{
-	(void)param;
-
-	qDebug("Received SIGINT.");
-
-	if (g_app)
-		g_app->quit();
-}
-
 int main(int argc, char *argv[])
 {
 	int ret = 0;
 	struct sr_context *sr_ctx = NULL;
 	const char *open_file = NULL;
 
-	// Register a SIGINT handler
-	signal(SIGINT, sigint_handler);
-
 	QApplication a(argc, argv);
-	// Now we have an application to populate our global pointer
-	g_app = &a;
 
 	// Set some application metadata
 	QApplication::setApplicationVersion(PV_VERSION_STRING);
@@ -147,6 +126,20 @@ int main(int argc, char *argv[])
 			// Initialise the main window
 			pv::MainWindow w(open_file);
 			w.show();
+
+			if(SignalHandler::prepareSignals()) {
+				SignalHandler *const signalHandler =
+					new SignalHandler(&w);
+				QObject::connect(signalHandler,
+					SIGNAL(sigIntReceived()),
+					&w, SLOT(close()));
+				QObject::connect(signalHandler,
+					SIGNAL(sigTermReceived()),
+					&w, SLOT(close()));
+    			} else {
+				qWarning() <<
+					"Could not prepare signal handler.";
+			}
 
 			// Run the application
 			ret = a.exec();
