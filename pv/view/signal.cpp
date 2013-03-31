@@ -152,7 +152,9 @@ void Signal::paint_axis(QPainter &p, int y, int left, int right)
 
 void Signal::compute_text_size(QPainter &p)
 {
-	_text_size = p.boundingRect(QRectF(), 0, _name).size();
+	_text_size = QSize(
+		p.boundingRect(QRectF(), 0, _name).width(),
+		p.boundingRect(QRectF(), 0, "Tg").height());
 }
 
 QRectF Signal::get_label_rect(int y, int right)
