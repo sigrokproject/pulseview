@@ -1,23 +1,22 @@
 /*
-
-Copyright 2013 Adam Reichold
-
-This file is part of qpdfview.
-
-qpdfview is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 2 of the License, or
-(at your option) any later version.
-
-qpdfview is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with qpdfview.  If not, see <http://www.gnu.org/licenses/>.
-
-*/
+ * This file is part of the PulseView project.
+ *
+ * Copyright (C) 2013 Adam Reichold
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+ */
 
 #include "signalhandler.h"
 
@@ -27,68 +26,59 @@ along with qpdfview.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QSocketNotifier>
 
-int SignalHandler::s_sockets[2];
+int SignalHandler::_sockets[2];
 
-bool SignalHandler::prepareSignals()
+bool SignalHandler::prepare_signals()
 {
-    if(socketpair(AF_UNIX, SOCK_STREAM, 0, s_sockets) != 0)
-    {
-        return false;
-    }
+	if(socketpair(AF_UNIX, SOCK_STREAM, 0, _sockets) != 0)
+		return false;
 
-    struct sigaction sigAction;
+	struct sigaction sig_action;
 
-    sigAction.sa_handler = SignalHandler::handleSignals;
-    sigemptyset(&sigAction.sa_mask);
-    sigAction.sa_flags = SA_RESTART;
+	sig_action.sa_handler = SignalHandler::handle_signals;
+	sigemptyset(&sig_action.sa_mask);
+	sig_action.sa_flags = SA_RESTART;
 
-    if(sigaction(SIGINT, &sigAction, 0) != 0)
-    {
-        close(s_sockets[0]);
-        close(s_sockets[1]);
+	if(sigaction(SIGINT, &sig_action, 0) != 0 ||
+		sigaction(SIGTERM, &sig_action, 0) != 0) {
+		close(_sockets[0]);
+		close(_sockets[1]);
+		return false;
+	}
 
-        return false;
-    }
-
-    if(sigaction(SIGTERM, &sigAction, 0) != 0)
-    {
-        close(s_sockets[0]);
-        close(s_sockets[1]);
-
-        return false;
-    }
-
-    return true;
+	return true;
 }
 
 SignalHandler::SignalHandler(QObject* parent) : QObject(parent),
-    m_socketNotifier(0)
+	_socket_notifier(0)
 {
-    m_socketNotifier = new QSocketNotifier(s_sockets[1], QSocketNotifier::Read, this);
-    connect(m_socketNotifier, SIGNAL(activated(int)), SLOT(on_socketNotifier_activated()));
+	_socket_notifier = new QSocketNotifier(_sockets[1],
+		QSocketNotifier::Read, this);
+	connect(_socket_notifier, SIGNAL(activated(int)),
+		SLOT(on_socket_notifier_activated()));
 }
 
-void SignalHandler::on_socketNotifier_activated()
+void SignalHandler::on_socket_notifier_activated()
 {
-    m_socketNotifier->setEnabled(false);
+	_socket_notifier->setEnabled(false);
 
-    int sigNumber;
-    read(s_sockets[1], &sigNumber, sizeof(int));
+	int sig_number;
+	read(_sockets[1], &sig_number, sizeof(int));
 
-    switch(sigNumber)
-    {
-    case SIGINT:
-        emit sigIntReceived();
-        break;
-    case SIGTERM:
-        emit sigTermReceived();
-        break;
-    }
+	switch(sig_number)
+	{
+	case SIGINT:
+		emit int_received();
+		break;
+	case SIGTERM:
+		emit term_received();
+		break;
+	}
 
-    m_socketNotifier->setEnabled(true);
+	_socket_notifier->setEnabled(true);
 }
 
-void SignalHandler::handleSignals(int sigNumber)
+void SignalHandler::handle_signals(int sig_number)
 {
-    write(s_sockets[0], &sigNumber, sizeof(int));
+	write(_sockets[0], &sig_number, sizeof(int));
 }

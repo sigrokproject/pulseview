@@ -1,23 +1,22 @@
 /*
-
-Copyright 2013 Adam Reichold
-
-This file is part of qpdfview.
-
-qpdfview is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 2 of the License, or
-(at your option) any later version.
-
-qpdfview is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with qpdfview.  If not, see <http://www.gnu.org/licenses/>.
-
-*/
+ * This file is part of the PulseView project.
+ *
+ * Copyright (C) 2013 Adam Reichold
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+ */
 
 #ifndef SIGNALHANDLER_H
 #define SIGNALHANDLER_H
@@ -28,27 +27,29 @@ class QSocketNotifier;
 
 class SignalHandler : public QObject
 {
-    Q_OBJECT
+	Q_OBJECT
 
 public:
-    static bool prepareSignals();
+	static bool prepare_signals();
 
-    explicit SignalHandler(QObject* parent = 0);
+public:
+	explicit SignalHandler(QObject* parent = NULL);
 
 signals:
-    void sigIntReceived();
-    void sigTermReceived();
+	void int_received();
+	void term_received();
 
 private slots:
-    void on_socketNotifier_activated();
+	void on_socket_notifier_activated();
 
 private:
-    static int s_sockets[2];
+	static void handle_signals(int sig_number);
 
-    static void handleSignals(int sigNumber);
+private:
+	QSocketNotifier* _socket_notifier;
 
-    QSocketNotifier* m_socketNotifier;
-
+private:
+	static int _sockets[2];
 };
 
 #endif // SIGNALHANDLER_H

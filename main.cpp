@@ -127,14 +127,14 @@ int main(int argc, char *argv[])
 			pv::MainWindow w(open_file);
 			w.show();
 
-			if(SignalHandler::prepareSignals()) {
-				SignalHandler *const signalHandler =
+			if(SignalHandler::prepare_signals()) {
+				SignalHandler *const handler =
 					new SignalHandler(&w);
-				QObject::connect(signalHandler,
-					SIGNAL(sigIntReceived()),
+				QObject::connect(handler,
+					SIGNAL(int_received()),
 					&w, SLOT(close()));
-				QObject::connect(signalHandler,
-					SIGNAL(sigTermReceived()),
+				QObject::connect(handler,
+					SIGNAL(term_received()),
 					&w, SLOT(close()));
     			} else {
 				qWarning() <<
