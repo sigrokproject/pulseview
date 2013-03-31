@@ -128,7 +128,7 @@ private:
 
 private slots:
 
-	void h_scroll_moved(int value);
+	void h_scroll_value_changed(int value);
 	void v_scroll_value_changed(int value);
 
 	void signals_changed();

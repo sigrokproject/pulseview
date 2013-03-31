@@ -75,8 +75,8 @@ View::View(SigSession &session, QWidget *parent) :
 		Cursor(*this, 1.0))),
 	_hover_point(-1, -1)
 {
-	connect(horizontalScrollBar(), SIGNAL(sliderMoved(int)),
-		this, SLOT(h_scroll_moved(int)));
+	connect(horizontalScrollBar(), SIGNAL(valueChanged(int)),
+		this, SLOT(h_scroll_value_changed(int)));
 	connect(verticalScrollBar(), SIGNAL(valueChanged(int)),
 		this, SLOT(v_scroll_value_changed(int)));
 
@@ -288,7 +288,7 @@ void View::resizeEvent(QResizeEvent*)
 	update_scroll();
 }
 
-void View::h_scroll_moved(int value)
+void View::h_scroll_value_changed(int value)
 {
 	const int range = horizontalScrollBar()->maximum();
 	if (range < MaxScrollValue)
