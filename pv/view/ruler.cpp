@@ -223,7 +223,7 @@ void Ruler::draw_hover_mark(QPainter &p)
 		return;
 
 	p.setPen(QPen(Qt::NoPen));
-	p.setBrush(QBrush(QColor(Qt::black)));
+	p.setBrush(QBrush(palette().color(foregroundRole())));
 
 	const int b = height() - 1;
 	const QPointF points[] = {
