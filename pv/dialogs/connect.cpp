@@ -81,8 +81,11 @@ struct sr_dev_inst* Connect::get_selected_device() const
 
 void Connect::populate_drivers()
 {
-	const int *hwopts;
+	gsize num_opts = 0;
+	const int32_t *hwopts;
 	struct sr_dev_driver **drivers = sr_driver_list();
+	GVariant *gvar_opts;
+
 	for (int i = 0; drivers[i]; ++i) {
 		/**
 		 * We currently only support devices that can deliver
@@ -93,8 +96,10 @@ void Connect::populate_drivers()
 		 */
 		bool supported_device = false;
 		if ((sr_config_list(drivers[i], SR_CONF_DEVICE_OPTIONS,
-			(const void **)&hwopts, NULL) == SR_OK) && hwopts)
-			for (int j = 0; hwopts[j]; j++)
+				&gvar_opts, NULL) == SR_OK))
+			hwopts = (const int32_t *)g_variant_get_fixed_array(gvar_opts,
+					&num_opts, sizeof(int32_t));
+			for (unsigned int j = 0; j < num_opts; j++)
 				if (hwopts[j] == SR_CONF_SAMPLERATE) {
 					supported_device = true;
 					break;
@@ -138,7 +143,7 @@ void Connect::scan_pressed()
 		sr_config *const src = (sr_config*)g_try_malloc(sizeof(sr_config));
 		src->key = SR_CONF_CONN;
 		const QByteArray byteArray = _serial_device.text().toUtf8();
-		src->value = g_strdup((const gchar*)byteArray.constData());
+		src->data = g_variant_new_string((const gchar*)byteArray.constData());
 		drvopts = g_slist_append(drvopts, src);
 	}
 
@@ -175,16 +180,20 @@ void Connect::scan_pressed()
 
 void Connect::device_selected(int index)
 {
-	const int *hwopts;
+	gsize num_opts = 0;
+	const int32_t *hwopts;
+	GVariant *gvar_list;
 	sr_dev_driver *const driver = (sr_dev_driver*)_drivers.itemData(
 		index).value<void*>();
 
 	unset_connection();
 
 	if ((sr_config_list(driver, SR_CONF_SCAN_OPTIONS,
-		(const void **)&hwopts, NULL) == SR_OK) && hwopts) {
+				&gvar_list, NULL) == SR_OK)) {
+		hwopts = (const int32_t *)g_variant_get_fixed_array(gvar_list,
+				&num_opts, sizeof(int32_t));
 
-		for (int i = 0; hwopts[i]; i++) {
+		for (unsigned int i = 0; i < num_opts; i++) {
 			switch(hwopts[i]) {
 			case SR_CONF_SERIALCOMM:
 				set_serial_connection();
@@ -196,12 +205,13 @@ void Connect::device_selected(int index)
 
 			break;
 		}
+		g_variant_unref(gvar_list);
 	}
 }
 
 void Connect::free_drvopts(struct sr_config *src)
 {
-	g_free((void *)src->value);
+	g_variant_unref(src->data);
 	g_free(src);
 }
 
