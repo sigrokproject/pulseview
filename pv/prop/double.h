@@ -39,8 +39,8 @@ public:
 	Double(QString name, int decimals, QString suffix,
 		boost::optional< std::pair<double, double> > range,
 		boost::optional<double> step,
-		boost::function<double ()> getter,
-		boost::function<void (double)> setter);
+		Getter getter,
+		Setter setter);
 
 	QWidget* get_widget(QWidget *parent);
 
@@ -51,8 +51,6 @@ private:
 	const QString _suffix;
 	const boost::optional< std::pair<double, double> > _range;
 	const boost::optional<double> _step;
-	boost::function<double ()> _getter;
-	boost::function<void (double)> _setter;
 
 	QDoubleSpinBox *_spin_box;
 };

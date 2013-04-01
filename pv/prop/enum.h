@@ -24,7 +24,6 @@
 #include <utility>
 #include <vector>
 
-#include <glib-2.0/glib.h>
 #include "property.h"
 
 class QComboBox;
@@ -35,19 +34,17 @@ namespace prop {
 class Enum : public Property
 {
 public:
-	Enum(QString name,
-		std::vector<std::pair<const void*, QString> > values,
-		boost::function<GVariant* ()> getter,
-		boost::function<void (GVariant*)> setter);
+	Enum(QString name, std::vector<std::pair<GVariant*, QString> > values,
+		Getter getter, Setter setter);
+
+	virtual ~Enum();
 
 	QWidget* get_widget(QWidget *parent);
 
 	void commit();
 
 private:
-	const std::vector< std::pair<const void*, QString> > _values;
-	boost::function<GVariant* ()> _getter;
-	boost::function<void (GVariant*)> _setter;
+	const std::vector< std::pair<GVariant*, QString> > _values;
 
 	QComboBox *_selector;
 };

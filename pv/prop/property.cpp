@@ -23,7 +23,9 @@
 namespace pv {
 namespace prop {
 
-Property::Property(QString name) :
+Property::Property(QString name, Getter getter, Setter setter) :
+	_getter(getter),
+	_setter(setter),
 	_name(name)
 {
 }

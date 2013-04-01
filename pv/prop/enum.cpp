@@ -20,7 +20,6 @@
 
 #include <assert.h>
 
-#include <glib-2.0/glib.h>
 #include <QComboBox>
 
 #include "enum.h"
@@ -32,15 +31,18 @@ namespace pv {
 namespace prop {
 
 Enum::Enum(QString name,
-	vector<pair<const void*, QString> > values,
-	function<GVariant* ()> getter,
-	function<void (GVariant*)> setter) :
-	Property(name),
+	vector<pair<GVariant*, QString> > values,
+	Getter getter, Setter setter) :
+	Property(name, getter, setter),
 	_values(values),
-	_getter(getter),
-	_setter(setter),
 	_selector(NULL)
 {
+}
+
+Enum::~Enum()
+{
+	for (unsigned int i = 0; i < _values.size(); i++)
+		g_variant_unref(_values[i].first);
 }
 
 QWidget* Enum::get_widget(QWidget *parent)
@@ -48,18 +50,18 @@ QWidget* Enum::get_widget(QWidget *parent)
 	if (_selector)
 		return _selector;
 
-	const void *value = NULL;
-	if (_getter)
-		value = _getter();
+	GVariant *const value = _getter ? _getter() : NULL;
+	assert(value);
 
 	_selector = new QComboBox(parent);
 	for (unsigned int i = 0; i < _values.size(); i++) {
-		const pair<const void*, QString> &v = _values[i];
-		_selector->addItem(v.second,
-			qVariantFromValue((void*)v.first));
-		if (v.first == value)
+		const pair<GVariant*, QString> &v = _values[i];
+		_selector->addItem(v.second, qVariantFromValue((void*)v.first));
+		if (g_variant_compare(v.first, value) == 0)
 			_selector->setCurrentIndex(i);
 	}
+
+	g_variant_unref(value);
 
 	return _selector;
 }
@@ -75,7 +77,7 @@ void Enum::commit()
 	if (index < 0)
 		return;
 
-	_setter(_selector->itemData(index).value<GVariant*>());
+	_setter((GVariant*)_selector->itemData(index).value<void*>());
 }
 
 } // prop

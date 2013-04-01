@@ -35,15 +35,13 @@ Double::Double(QString name,
 	QString suffix,
 	optional< pair<double, double> > range,
 	optional<double> step,
-	function<double ()> getter,
-	function<void (double)> setter) :
-	Property(name),
+	Getter getter,
+	Setter setter) :
+	Property(name, getter, setter),
 	_decimals(decimals),
 	_suffix(suffix),
 	_range(range),
 	_step(step),
-	_getter(getter),
-	_setter(setter),
 	_spin_box(NULL)
 {
 }
@@ -61,7 +59,12 @@ QWidget* Double::get_widget(QWidget *parent)
 	if (_step)
 		_spin_box->setSingleStep(*_step);
 
-	_spin_box->setValue(_getter ? _getter() : 0.0);
+	GVariant *const value = _getter ? _getter() : NULL;
+
+	if (value) {
+		_spin_box->setValue(g_variant_get_double(value));
+		g_variant_unref(value);
+	}
 
 	return _spin_box;
 }
@@ -73,7 +76,7 @@ void Double::commit()
 	if (!_spin_box)
 		return;
 
-	_setter(_spin_box->value());
+	_setter(g_variant_new_double(_spin_box->value()));
 }
 
 } // prop

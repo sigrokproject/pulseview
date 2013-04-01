@@ -21,6 +21,8 @@
 #ifndef PULSEVIEW_PV_PROP_PROPERTY_H
 #define PULSEVIEW_PV_PROP_PROPERTY_H
 
+#include <glib-2.0/glib.h>
+
 #include <boost/function.hpp>
 
 #include <QString>
@@ -33,8 +35,12 @@ namespace prop {
 
 class Property
 {
+public:
+	typedef boost::function<GVariant* ()> Getter;
+	typedef boost::function<void (GVariant*)> Setter;
+
 protected:
-	Property(QString name);
+	Property(QString name, Getter getter, Setter setter);
 
 public:
 	const QString& name() const;
@@ -42,6 +48,10 @@ public:
 	virtual QWidget* get_widget(QWidget *parent) = 0;
 
 	virtual void commit() = 0;
+
+protected:
+	const Getter _getter;
+	const Setter _setter;
 
 private:
 	QString _name;
