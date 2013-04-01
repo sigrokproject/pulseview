@@ -171,7 +171,7 @@ void SigSession::sample_thread_proc(struct sr_dev_inst *sdi,
 
 	// Set the sample limit
 	if (sr_config_set(sdi, SR_CONF_LIMIT_SAMPLES,
-		&record_length) != SR_OK) {
+		g_variant_new_uint64(record_length)) != SR_OK) {
 		error_handler(tr("Failed to configure "
 			"time-based sample limit."));
 		sr_session_destroy();
@@ -194,7 +194,8 @@ void SigSession::sample_thread_proc(struct sr_dev_inst *sdi,
 void SigSession::feed_in_header(const sr_dev_inst *sdi)
 {
 	shared_ptr<view::Signal> signal;
-	uint64_t *sample_rate = NULL;
+	GVariant *gvar;
+	uint64_t sample_rate = 0;
 	unsigned int logic_probe_count = 0;
 	unsigned int analog_probe_count = 0;
 
@@ -219,8 +220,10 @@ void SigSession::feed_in_header(const sr_dev_inst *sdi)
 	assert(sdi->driver);
 
 	const int ret = sr_config_get(sdi->driver, SR_CONF_SAMPLERATE,
-		(const void**)&sample_rate, sdi);
+		&gvar, sdi);
 	assert(ret == SR_OK);
+	sample_rate = g_variant_get_uint64(gvar);
+	g_variant_unref(gvar);
 
 	// Create data containers for the coming data snapshots
 	{
@@ -228,12 +231,12 @@ void SigSession::feed_in_header(const sr_dev_inst *sdi)
 
 		if (logic_probe_count != 0) {
 			_logic_data.reset(new data::Logic(
-				logic_probe_count, *sample_rate));
+				logic_probe_count, sample_rate));
 			assert(_logic_data);
 		}
 
 		if (analog_probe_count != 0) {
-			_analog_data.reset(new data::Analog(*sample_rate));
+			_analog_data.reset(new data::Analog(sample_rate));
 			assert(_analog_data);
 		}
 	}
