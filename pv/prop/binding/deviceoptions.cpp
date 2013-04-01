@@ -23,6 +23,8 @@
 #include <QDebug>
 #include <QObject>
 
+#include <stdint.h>
+
 #include "deviceoptions.h"
 
 #include <pv/prop/double.h>
@@ -38,163 +40,60 @@ namespace binding {
 DeviceOptions::DeviceOptions(struct sr_dev_inst *sdi) :
 	_sdi(sdi)
 {
-	const int *options;
+	GVariant *gvar_opts, *gvar_list;
+	gsize num_opts;
 
 	if ((sr_config_list(sdi->driver, SR_CONF_DEVICE_OPTIONS,
-		(const void **)&options, sdi) != SR_OK) || !options)
+		&gvar_opts, sdi) != SR_OK))
 		/* Driver supports no device instance options. */
 		return;
 
-	for (int cap = 0; options[cap]; cap++) {
+	const int *const options = (const int32_t *)g_variant_get_fixed_array(
+		gvar_opts, &num_opts, sizeof(int32_t));
+	for (unsigned int i = 0; i < num_opts; i++) {
 		const struct sr_config_info *const info =
-			sr_config_info_get(options[cap]);
+			sr_config_info_get(options[i]);
 
-		if (!info)
+		const int key = info->key;
+
+		if (!info || sr_config_list(_sdi->driver, key,
+			&gvar_list, _sdi) != SR_OK)
 			continue;
 
-		switch(info->key)
+		const QString name(info->name);
+
+		switch(key)
 		{
 		case SR_CONF_SAMPLERATE:
-			bind_samplerate(info);
+			bind_samplerate(name, gvar_list);
 			break;
 
 		case SR_CONF_PATTERN_MODE:
-			bind_stropt(info, SR_CONF_PATTERN_MODE);
-			break;
-
 		case SR_CONF_BUFFERSIZE:
-			bind_buffer_size(info);
+		case SR_CONF_TRIGGER_SOURCE:
+		case SR_CONF_FILTER:
+		case SR_CONF_COUPLING:
+			bind_enum(name, key, gvar_list);
 			break;
 
 		case SR_CONF_TIMEBASE:
-			bind_time_base(info);
-			break;
-
-		case SR_CONF_TRIGGER_SOURCE:
-			bind_stropt(info, SR_CONF_TRIGGER_SOURCE);
-			break;
-
-		case SR_CONF_FILTER:
-			bind_stropt(info, SR_CONF_FILTER);
+			bind_enum(name, key, gvar_list, print_timebase);
 			break;
 
 		case SR_CONF_VDIV:
-			bind_vdiv(info);
-			break;
-
-		case SR_CONF_COUPLING:
-			bind_stropt(info, SR_CONF_FILTER);
+			bind_enum(name, key, gvar_list, print_vdiv);
 			break;
 		}
+
+		g_variant_unref(gvar_list);
 	}
+	g_variant_unref(gvar_opts);
 }
 
-void DeviceOptions::expose_enum(const struct sr_config_info *info,
-	const vector< pair<const void*, QString> > &values, int key)
-{
-	_properties.push_back(shared_ptr<Property>(
-		new Enum(QString(info->name), values,
-			bind(enum_getter, _sdi, key),
-			bind(sr_config_set, _sdi, key, _1))));
-}
-
-void DeviceOptions::bind_stropt(
-	const struct sr_config_info *info, int key)
-{
-	const char **stropts;
-	if (sr_config_list(_sdi->driver, key,
-		(const void **)&stropts, _sdi) != SR_OK)
-		return;
-
-	vector< pair<const void*, QString> > values;
-	for (int i = 0; stropts[i]; i++)
-		values.push_back(make_pair(stropts[i], stropts[i]));
-
-	expose_enum(info, values, key);
-}
-
-void DeviceOptions::bind_samplerate(const struct sr_config_info *info)
-{
-	const struct sr_samplerates *samplerates;
-
-	if (sr_config_list(_sdi->driver, SR_CONF_SAMPLERATE,
-		(const void **)&samplerates, _sdi) != SR_OK)
-		return;
-
-	if (samplerates->step) {
-		_properties.push_back(shared_ptr<Property>(
-			new Double(QString(info->name),
-				0, QObject::tr("Hz"),
-				make_pair((double)samplerates->low,
-					(double)samplerates->high),
-				(double)samplerates->step,
-				bind(samplerate_value_getter, _sdi),
-				bind(samplerate_value_setter, _sdi, _1))));
-	} else {
-		vector< pair<const void*, QString> > values;
-		for (const uint64_t *rate = samplerates->list;
-			*rate; rate++)
-			values.push_back(make_pair(
-				(const void*)rate,
-				QString(sr_samplerate_string(*rate))));
-
-		_properties.push_back(shared_ptr<Property>(
-			new Enum(QString(info->name), values,
-				bind(samplerate_list_getter, _sdi),
-				bind(samplerate_list_setter, _sdi, _1))));
-	}
-}
-
-void DeviceOptions::bind_buffer_size(const struct sr_config_info *info)
-{
-	const uint64_t *sizes;
-	if (sr_config_list(_sdi->driver, SR_CONF_BUFFERSIZE,
-			(const void **)&sizes, _sdi) != SR_OK)
-		return;
-
-	vector< pair<const void*, QString> > values;
-	for (int i = 0; sizes[i]; i++)
-		values.push_back(make_pair(sizes + i,
-			QString("%1").arg(sizes[i])));
-
-	expose_enum(info, values, SR_CONF_BUFFERSIZE);
-}
-
-void DeviceOptions::bind_time_base(const struct sr_config_info *info)
-{
-	struct sr_rational *timebases;
-	if (sr_config_list(_sdi->driver, SR_CONF_TIMEBASE,
-			(const void **)&timebases, _sdi) != SR_OK)
-		return;
-
-	vector< pair<const void*, QString> > values;
-	for (int i = 0; timebases[i].p && timebases[i].q; i++)
-		values.push_back(make_pair(timebases + i,
-			QString(sr_period_string(
-				timebases[i].p * timebases[i].q))));
-
-	expose_enum(info, values, SR_CONF_TIMEBASE);
-}
-
-void DeviceOptions::bind_vdiv(const struct sr_config_info *info)
-{
-	struct sr_rational *vdivs;
-	if (sr_config_list(_sdi->driver, SR_CONF_VDIV,
-			(const void **)&vdivs, _sdi) != SR_OK)
-		return;
-
-	vector< pair<const void*, QString> > values;
-	for (int i = 0; vdivs[i].p && vdivs[i].q; i++)
-		values.push_back(make_pair(vdivs + i,
-			QString(sr_voltage_string(vdivs + i))));
-
-	expose_enum(info, values, SR_CONF_VDIV);
-}
-
-const void* DeviceOptions::enum_getter(
+GVariant* DeviceOptions::config_getter(
 	const struct sr_dev_inst *sdi, int key)
 {
-	const void *data = NULL;
+	GVariant *data = NULL;
 	if (sr_config_get(sdi->driver, key, &data, sdi) != SR_OK) {
 		qDebug() <<
 			"WARNING: Failed to get value of config id" << key;
@@ -203,64 +102,124 @@ const void* DeviceOptions::enum_getter(
 	return data;
 }
 
-double DeviceOptions::samplerate_value_getter(
+void DeviceOptions::config_setter(
+	const struct sr_dev_inst *sdi, int key, GVariant* value)
+{
+	if (sr_config_set(sdi, key, value) != SR_OK)
+		qDebug() << "WARNING: Failed to set value of sample rate";
+}
+
+void DeviceOptions::bind_enum(const QString &name, int key,
+	GVariant *const gvar_list, function<QString (GVariant*)> printer)
+{
+	GVariant *gvar;
+	GVariantIter iter;
+	vector< pair<GVariant*, QString> > values;
+
+	g_variant_iter_init (&iter, gvar_list);
+	while ((gvar = g_variant_iter_next_value (&iter)))
+		values.push_back(make_pair(gvar, printer(gvar)));
+
+	_properties.push_back(shared_ptr<Property>(
+		new Enum(name, values,
+			bind(config_getter, _sdi, key),
+			bind(config_setter, _sdi, key, _1))));
+}
+
+QString DeviceOptions::print_gvariant(GVariant *const gvar)
+{
+	QString s;
+
+	if (g_variant_is_of_type(gvar, G_VARIANT_TYPE("s")))
+		s = QString(g_variant_get_string(gvar, NULL));
+	else
+	{
+		gchar *const text = g_variant_print(gvar, FALSE);
+		s = QString(text);
+		g_free(text);
+	}
+
+	return s;
+}
+
+void DeviceOptions::bind_samplerate(const QString &name,
+	GVariant *const gvar_list)
+{
+	GVariant *gvar_list_samplerates;
+
+	if ((gvar_list_samplerates = g_variant_lookup_value(gvar_list,
+			"samplerate-steps", G_VARIANT_TYPE("at"))))
+	{
+		gsize num_elements;
+		const uint64_t *const elements =
+			(const uint64_t *)g_variant_get_fixed_array(
+				gvar_list_samplerates, &num_elements, sizeof(uint64_t));
+
+		assert(num_elements == 3);
+
+		_properties.push_back(shared_ptr<Property>(
+			new Double(name, 0, QObject::tr("Hz"),
+				make_pair((double)elements[0], (double)elements[1]),
+						(double)elements[2],
+				bind(samplerate_double_getter, _sdi),
+				bind(samplerate_double_setter, _sdi, _1))));
+
+		g_variant_unref(gvar_list_samplerates);
+	}
+	else if ((gvar_list_samplerates = g_variant_lookup_value(gvar_list,
+			"samplerates", G_VARIANT_TYPE("at"))))
+	{
+		bind_enum(name, SR_CONF_SAMPLERATE,
+			gvar_list_samplerates, print_samplerate);
+		g_variant_unref(gvar_list_samplerates);
+	}
+}
+
+QString DeviceOptions::print_samplerate(GVariant *const gvar)
+{
+	char *const s = sr_samplerate_string(
+		g_variant_get_uint64(gvar));
+	const QString qstring(s);
+	g_free(s);
+	return qstring;
+}
+
+GVariant* DeviceOptions::samplerate_double_getter(
 	const struct sr_dev_inst *sdi)
 {
-	uint64_t *samplerate = NULL;
-	if (sr_config_get(sdi->driver, SR_CONF_SAMPLERATE,
-		(const void**)&samplerate, sdi) != SR_OK) {
-		qDebug() <<
-			"WARNING: Failed to get value of sample rate";
-		return 0.0;
-	}
-	return (double)*samplerate;
-}
+	GVariant *const gvar = config_getter(sdi, SR_CONF_SAMPLERATE);
 
-void DeviceOptions::samplerate_value_setter(
-	struct sr_dev_inst *sdi, double value)
-{
-	uint64_t samplerate = value;
-	if (sr_config_set(sdi, SR_CONF_SAMPLERATE,
-		&samplerate) != SR_OK)
-		qDebug() <<
-			"WARNING: Failed to set value of sample rate";
-}
-
-const void* DeviceOptions::samplerate_list_getter(
-	const struct sr_dev_inst *sdi)
-{
-	const struct sr_samplerates *samplerates;
-	uint64_t *samplerate = NULL;
-
-	if (sr_config_list(sdi->driver, SR_CONF_SAMPLERATE,
-		(const void **)&samplerates, sdi) != SR_OK) {
-		qDebug() <<
-			"WARNING: Failed to get enumerate sample rates";
+	if(!gvar)
 		return NULL;
-	}
 
-	if (sr_config_get(sdi->driver, SR_CONF_SAMPLERATE,
-		(const void**)&samplerate, sdi) != SR_OK ||
-		!samplerate) {
-		qDebug() <<
-			"WARNING: Failed to get value of sample rate";
-		return NULL;
-	}
+	GVariant *const gvar_double = g_variant_new_double(
+		g_variant_get_uint64(gvar));
 
-	for (const uint64_t *rate = samplerates->list; *rate; rate++)
-		if (*rate == *samplerate)
-			return (const void*)rate;
+	g_variant_unref(gvar);
 
-	return NULL;
+	return gvar_double;
 }
 
-void DeviceOptions::samplerate_list_setter(
-	struct sr_dev_inst *sdi, const void *value)
+void DeviceOptions::samplerate_double_setter(
+	struct sr_dev_inst *sdi, GVariant *value)
 {
-	if (sr_config_set(sdi, SR_CONF_SAMPLERATE,
-		(uint64_t*)value) != SR_OK)
-		qDebug() <<
-			"WARNING: Failed to set value of sample rate";
+	GVariant *const gvar = g_variant_new_uint64(
+		g_variant_get_double(value));
+	config_setter(sdi, SR_CONF_SAMPLERATE, gvar);
+}
+
+QString DeviceOptions::print_timebase(GVariant *const gvar)
+{
+	uint64_t p, q;
+	g_variant_get(gvar, "(tt)", &p, &q);
+	return QString(sr_period_string(p * q));
+}
+
+QString DeviceOptions::print_vdiv(GVariant *const gvar)
+{
+	uint64_t p, q;
+	g_variant_get(gvar, "(tt)", &p, &q);
+	return QString(sr_voltage_string(p, q));
 }
 
 } // binding

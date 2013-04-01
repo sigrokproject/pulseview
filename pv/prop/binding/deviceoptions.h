@@ -21,6 +21,8 @@
 #ifndef PULSEVIEW_PV_PROP_BINDING_DEVICEOPTIONS_H
 #define PULSEVIEW_PV_PROP_BINDING_DEVICEOPTIONS_H
 
+#include <boost/function.hpp>
+
 #include <QString>
 
 #include <libsigrok/libsigrok.h>
@@ -37,30 +39,28 @@ public:
 	DeviceOptions(struct sr_dev_inst *sdi);
 
 private:
-	void expose_enum(const struct sr_config_info *info,
-		const std::vector<std::pair<const void*, QString> > &values,
-		int opt);
 
-	void bind_stropt(const struct sr_config_info *info, int key);
-
-	void bind_samplerate(const struct sr_config_info *info);
-	void bind_buffer_size(const struct sr_config_info *info);
-	void bind_time_base(const struct sr_config_info *info);
-	void bind_vdiv(const struct sr_config_info *info);
-
-private:
-	static const void* enum_getter(
+	static GVariant* config_getter(
 		const struct sr_dev_inst *sdi, int key);
+	static void config_setter(
+		const struct sr_dev_inst *sdi, int key, GVariant* value);
 
-	static double samplerate_value_getter(
-		const struct sr_dev_inst *sdi);
-	static void samplerate_value_setter(
-		struct sr_dev_inst *sdi, double value);
+	void bind_enum(const QString &name, int key,
+		GVariant *const gvar_list,
+		boost::function<QString (GVariant*)> printer = print_gvariant);
 
-	static const void* samplerate_list_getter(
+	static QString print_gvariant(GVariant *const gvar);
+
+	void bind_samplerate(const QString &name,
+		GVariant *const gvar_list);
+	static QString print_samplerate(GVariant *const gvar);
+	static GVariant* samplerate_double_getter(
 		const struct sr_dev_inst *sdi);
-	static void samplerate_list_setter(
-		struct sr_dev_inst *sdi, const void* value);
+	static void samplerate_double_setter(
+		struct sr_dev_inst *sdi, GVariant *value);
+
+	static QString print_timebase(GVariant *const gvar);
+	static QString print_vdiv(GVariant *const gvar);
 
 protected:
 	struct sr_dev_inst *const _sdi;
