@@ -20,6 +20,7 @@
 
 #include <assert.h>
 
+#include <glib-2.0/glib.h>
 #include <QComboBox>
 
 #include "enum.h"
@@ -32,8 +33,8 @@ namespace prop {
 
 Enum::Enum(QString name,
 	vector<pair<const void*, QString> > values,
-	function<const void* ()> getter,
-	function<void (const void*)> setter) :
+	function<GVariant* ()> getter,
+	function<void (GVariant*)> setter) :
 	Property(name),
 	_values(values),
 	_getter(getter),
@@ -74,7 +75,7 @@ void Enum::commit()
 	if (index < 0)
 		return;
 
-	_setter(_selector->itemData(index).value<void*>());
+	_setter(_selector->itemData(index).value<GVariant*>());
 }
 
 } // prop
