@@ -171,7 +171,9 @@ void SamplingBar::set_sampling(bool sampling)
 void SamplingBar::update_sample_rate_selector()
 {
 	const sr_dev_inst *const sdi = get_selected_device();
-	const struct sr_samplerates *samplerates;
+	GVariant *gvar_dict, *gvar_list;
+	const uint64_t *elements = NULL;
+	gsize num_elements;
 
 	assert(_sample_rate_value_action);
 	assert(_sample_rate_list_action);
@@ -180,56 +182,71 @@ void SamplingBar::update_sample_rate_selector()
 		return;
 
 	if (sr_config_list(sdi->driver, SR_CONF_SAMPLERATE,
-		(const void **)&samplerates, sdi) != SR_OK)
+			&gvar_dict, sdi) != SR_OK)
 		return;
 
 	_sample_rate_list_action->setVisible(false);
 	_sample_rate_value_action->setVisible(false);
 
-	if (samplerates->step)
-	{
-		_sample_rate_value.setRange(
-			samplerates->low, samplerates->high);
-		_sample_rate_value.setSingleStep(samplerates->step);
+	if ((gvar_list = g_variant_lookup_value(gvar_dict,
+			"samplerate-steps", G_VARIANT_TYPE("at")))) {
+		elements = (const uint64_t *)g_variant_get_fixed_array(
+				gvar_list, &num_elements, sizeof(uint64_t));
+		_sample_rate_value.setRange(elements[0], elements[1]);
+		_sample_rate_value.setSingleStep(elements[2]);
 		_sample_rate_value_action->setVisible(true);
+		g_variant_unref(gvar_list);
 	}
-	else
+	else if ((gvar_list = g_variant_lookup_value(gvar_dict,
+			"samplerates", G_VARIANT_TYPE("at"))))
 	{
+		elements = (const uint64_t *)g_variant_get_fixed_array(
+				gvar_list, &num_elements, sizeof(uint64_t));
 		_sample_rate_list.clear();
-		for (const uint64_t *rate = samplerates->list;
-		     *rate; rate++)
-			_sample_rate_list.addItem(
-				sr_samplerate_string(*rate),
-				qVariantFromValue(*rate));
+
+		for (unsigned int i = 0; i < num_elements; i++)
+		{
+			char *const s = sr_samplerate_string(elements[i]);
+			_sample_rate_list.addItem(QString(s),
+				qVariantFromValue(elements[i]));
+			g_free(s);
+		}
+
 		_sample_rate_list.show();
 		_sample_rate_list_action->setVisible(true);
+		g_variant_unref(gvar_list);
 	}
 
+	g_variant_unref(gvar_dict);
 	update_sample_rate_selector_value();
 }
 
 void SamplingBar::update_sample_rate_selector_value()
 {
 	sr_dev_inst *const sdi = get_selected_device();
+	GVariant *gvar;
+	uint64_t samplerate;
+
 	assert(sdi);
 
-	uint64_t *samplerate = NULL;
 	if (sr_config_get(sdi->driver, SR_CONF_SAMPLERATE,
-		(const void**)&samplerate, sdi) != SR_OK) {
+		&gvar, sdi) != SR_OK) {
 		qDebug() <<
 				"WARNING: Failed to get value of sample rate";
 		return;
 	}
+	samplerate = g_variant_get_uint64(gvar);
+	g_variant_unref(gvar);
 
 	assert(_sample_rate_value_action);
 	assert(_sample_rate_list_action);
 
 	if (_sample_rate_value_action->isVisible())
-		_sample_rate_value.setValue(*samplerate);
+		_sample_rate_value.setValue(samplerate);
 	else if (_sample_rate_list_action->isVisible())
 	{
 		for (int i = 0; i < _sample_rate_list.count(); i++)
-			if (*samplerate == _sample_rate_list.itemData(
+			if (samplerate == _sample_rate_list.itemData(
 				i).value<uint64_t>())
 				_sample_rate_list.setCurrentIndex(i);
 	}
@@ -257,7 +274,7 @@ void SamplingBar::commit_sample_rate()
 
 	// Set the samplerate
 	if (sr_config_set(sdi, SR_CONF_SAMPLERATE,
-		&sample_rate) != SR_OK) {
+		g_variant_new_uint64(sample_rate)) != SR_OK) {
 		qDebug() << "Failed to configure samplerate.";
 		return;
 	}
