@@ -53,7 +53,8 @@ uint64_t Snapshot::get_sample_count() const
 void Snapshot::append_data(void *data, uint64_t samples)
 {
 	lock_guard<recursive_mutex> lock(_mutex);
-	_data = realloc(_data, (_sample_count + samples) * _unit_size);
+	_data = realloc(_data, (_sample_count + samples) * _unit_size +
+		sizeof(uint64_t));
 	memcpy((uint8_t*)_data + _sample_count * _unit_size,
 		data, samples * _unit_size);
 	_sample_count += samples;
