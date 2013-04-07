@@ -30,6 +30,7 @@
 #include <pv/prop/bool.h>
 #include <pv/prop/double.h>
 #include <pv/prop/enum.h>
+#include <pv/prop/int.h>
 
 using namespace boost;
 using namespace std;
@@ -69,6 +70,10 @@ DeviceOptions::DeviceOptions(struct sr_dev_inst *sdi) :
 		{
 		case SR_CONF_SAMPLERATE:
 			bind_samplerate(name, gvar_list);
+			break;
+
+		case SR_CONF_CAPTURE_RATIO:
+			bind_int(name, key, "%", make_pair(0L, 100L));
 			break;
 
 		case SR_CONF_PATTERN_MODE:
@@ -139,6 +144,15 @@ void DeviceOptions::bind_enum(const QString &name, int key,
 
 	_properties.push_back(shared_ptr<Property>(
 		new Enum(name, values,
+			bind(config_getter, _sdi, key),
+			bind(config_setter, _sdi, key, _1))));
+}
+
+void DeviceOptions::bind_int(const QString &name, int key, QString suffix,
+	optional< std::pair<int64_t, int64_t> > range)
+{
+	_properties.push_back(shared_ptr<Property>(
+		new Int(name, suffix, range,
 			bind(config_getter, _sdi, key),
 			bind(config_setter, _sdi, key, _1))));
 }

@@ -105,6 +105,7 @@ set(pulseview_SOURCES
 	pv/prop/bool.cpp
 	pv/prop/double.cpp
 	pv/prop/enum.cpp
+	pv/prop/int.cpp
 	pv/prop/property.cpp
 	pv/prop/binding/binding.cpp
 	pv/prop/binding/deviceoptions.cpp
