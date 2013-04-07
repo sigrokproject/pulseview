@@ -45,6 +45,7 @@ private:
 	static void config_setter(
 		const struct sr_dev_inst *sdi, int key, GVariant* value);
 
+	void bind_bool(const QString &name, int key);
 	void bind_enum(const QString &name, int key,
 		GVariant *const gvar_list,
 		boost::function<QString (GVariant*)> printer = print_gvariant);

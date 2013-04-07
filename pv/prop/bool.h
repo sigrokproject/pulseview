@@ -1,7 +1,7 @@
 /*
  * This file is part of the PulseView project.
  *
- * Copyright (C) 2012 Joel Holdsworth <joel@airwebreathe.org.uk>
+ * Copyright (C) 2013 Joel Holdsworth <joel@airwebreathe.org.uk>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,47 +18,31 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_PROP_PROPERTY_H
-#define PULSEVIEW_PV_PROP_PROPERTY_H
+#ifndef PULSEVIEW_PV_PROP_BOOL_H
+#define PULSEVIEW_PV_PROP_BOOL_H
 
-#include <glib-2.0/glib.h>
+#include "property.h"
 
-#include <boost/function.hpp>
-
-#include <QString>
-#include <QWidget>
-
-class QWidget;
+class QCheckBox;
 
 namespace pv {
 namespace prop {
 
-class Property
+class Bool : public Property
 {
 public:
-	typedef boost::function<GVariant* ()> Getter;
-	typedef boost::function<void (GVariant*)> Setter;
+	Bool(QString name, Getter getter, Setter setter);
 
-protected:
-	Property(QString name, Getter getter, Setter setter);
+	QWidget* get_widget(QWidget *parent);
+	bool labeled_widget() const;
 
-public:
-	const QString& name() const;
-
-	virtual QWidget* get_widget(QWidget *parent) = 0;
-	virtual bool labeled_widget() const;
-
-	virtual void commit() = 0;
-
-protected:
-	const Getter _getter;
-	const Setter _setter;
+	void commit();
 
 private:
-	QString _name;
+	QCheckBox *_check_box;
 };
 
 } // prop
 } // pv
 
-#endif // PULSEVIEW_PV_PROP_PROPERTY_H
+#endif // PULSEVIEW_PV_PROP_BOOL_H

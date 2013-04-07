@@ -102,6 +102,7 @@ set(pulseview_SOURCES
 	pv/dialogs/about.cpp
 	pv/dialogs/connect.cpp
 	pv/dialogs/deviceoptions.cpp
+	pv/prop/bool.cpp
 	pv/prop/double.cpp
 	pv/prop/enum.cpp
 	pv/prop/property.cpp

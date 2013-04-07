@@ -27,6 +27,7 @@
 
 #include "deviceoptions.h"
 
+#include <pv/prop/bool.h>
 #include <pv/prop/double.h>
 #include <pv/prop/enum.h>
 
@@ -54,11 +55,13 @@ DeviceOptions::DeviceOptions(struct sr_dev_inst *sdi) :
 		const struct sr_config_info *const info =
 			sr_config_info_get(options[i]);
 
+		if (!info)
+			continue;
+
 		const int key = info->key;
 
-		if (!info || sr_config_list(_sdi->driver, key,
-			&gvar_list, _sdi) != SR_OK)
-			continue;
+		if(sr_config_list(_sdi->driver, key, &gvar_list, _sdi) != SR_OK)
+			gvar_list = NULL;
 
 		const QString name(info->name);
 
@@ -76,6 +79,10 @@ DeviceOptions::DeviceOptions(struct sr_dev_inst *sdi) :
 			bind_enum(name, key, gvar_list);
 			break;
 
+		case SR_CONF_RLE:
+			bind_bool(name, key);
+			break;
+
 		case SR_CONF_TIMEBASE:
 			bind_enum(name, key, gvar_list, print_timebase);
 			break;
@@ -85,7 +92,8 @@ DeviceOptions::DeviceOptions(struct sr_dev_inst *sdi) :
 			break;
 		}
 
-		g_variant_unref(gvar_list);
+		if (gvar_list)
+			g_variant_unref(gvar_list);
 	}
 	g_variant_unref(gvar_opts);
 }
@@ -109,12 +117,21 @@ void DeviceOptions::config_setter(
 		qDebug() << "WARNING: Failed to set value of sample rate";
 }
 
+void DeviceOptions::bind_bool(const QString &name, int key)
+{
+	_properties.push_back(shared_ptr<Property>(
+		new Bool(name, bind(config_getter, _sdi, key),
+			bind(config_setter, _sdi, key, _1))));
+}
+
 void DeviceOptions::bind_enum(const QString &name, int key,
 	GVariant *const gvar_list, function<QString (GVariant*)> printer)
 {
 	GVariant *gvar;
 	GVariantIter iter;
 	vector< pair<GVariant*, QString> > values;
+
+	assert(gvar_list);
 
 	g_variant_iter_init (&iter, gvar_list);
 	while ((gvar = g_variant_iter_next_value (&iter)))
@@ -146,6 +163,8 @@ void DeviceOptions::bind_samplerate(const QString &name,
 	GVariant *const gvar_list)
 {
 	GVariant *gvar_list_samplerates;
+
+	assert(gvar_list);
 
 	if ((gvar_list_samplerates = g_variant_lookup_value(gvar_list,
 			"samplerate-steps", G_VARIANT_TYPE("at"))))

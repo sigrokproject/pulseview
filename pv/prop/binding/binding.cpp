@@ -50,7 +50,8 @@ QWidget* Binding::get_form(QWidget *parent)
 	BOOST_FOREACH(shared_ptr<Property> p, _properties)
 	{
 		assert(p);
-		layout->addRow(p->name(), p->get_widget(_form));
+		const QString label = p->labeled_widget() ? QString() : p->name();
+		layout->addRow(label, p->get_widget(_form));
 	}
 
 	return _form;

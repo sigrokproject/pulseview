@@ -1,7 +1,7 @@
 /*
  * This file is part of the PulseView project.
  *
- * Copyright (C) 2012 Joel Holdsworth <joel@airwebreathe.org.uk>
+ * Copyright (C) 2013 Joel Holdsworth <joel@airwebreathe.org.uk>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,47 +18,57 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_PROP_PROPERTY_H
-#define PULSEVIEW_PV_PROP_PROPERTY_H
+#include <assert.h>
 
-#include <glib-2.0/glib.h>
+#include <QCheckBox>
 
-#include <boost/function.hpp>
+#include "bool.h"
 
-#include <QString>
-#include <QWidget>
-
-class QWidget;
+using namespace std;
+using namespace boost;
 
 namespace pv {
 namespace prop {
 
-class Property
+Bool::Bool(QString name, Getter getter, Setter setter) :
+	Property(name, getter, setter),
+	_check_box(NULL)
 {
-public:
-	typedef boost::function<GVariant* ()> Getter;
-	typedef boost::function<void (GVariant*)> Setter;
+}
 
-protected:
-	Property(QString name, Getter getter, Setter setter);
+QWidget* Bool::get_widget(QWidget *parent)
+{
+	if (_check_box)
+		return _check_box;
 
-public:
-	const QString& name() const;
+	_check_box = new QCheckBox(name(), parent);
 
-	virtual QWidget* get_widget(QWidget *parent) = 0;
-	virtual bool labeled_widget() const;
+	GVariant *const value = _getter ? _getter() : NULL;
 
-	virtual void commit() = 0;
+	if (value) {
+		_check_box->setCheckState(g_variant_get_boolean(value) ?
+			Qt::Checked : Qt::Unchecked);
+		g_variant_unref(value);
+	}
 
-protected:
-	const Getter _getter;
-	const Setter _setter;
+	return _check_box;
+}
 
-private:
-	QString _name;
-};
+bool Bool::labeled_widget() const
+{
+	return true;
+}
+
+void Bool::commit()
+{
+	assert(_setter);
+
+	if (!_check_box)
+		return;
+
+	_setter(g_variant_new_boolean(
+		_check_box->checkState() == Qt::Checked));
+}
 
 } // prop
 } // pv
-
-#endif // PULSEVIEW_PV_PROP_PROPERTY_H

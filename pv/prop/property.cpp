@@ -35,5 +35,10 @@ const QString& Property::name() const
 	return _name;
 }
 
+bool Property::labeled_widget() const
+{
+	return false;
+}
+
 } // prop
 } // pv
