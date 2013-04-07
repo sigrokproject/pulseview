@@ -51,13 +51,12 @@ QWidget* Enum::get_widget(QWidget *parent)
 		return _selector;
 
 	GVariant *const value = _getter ? _getter() : NULL;
-	assert(value);
 
 	_selector = new QComboBox(parent);
 	for (unsigned int i = 0; i < _values.size(); i++) {
 		const pair<GVariant*, QString> &v = _values[i];
 		_selector->addItem(v.second, qVariantFromValue((void*)v.first));
-		if (g_variant_compare(v.first, value) == 0)
+		if (value && g_variant_compare(v.first, value) == 0)
 			_selector->setCurrentIndex(i);
 	}
 
