@@ -22,7 +22,6 @@
 #define PULSEVIEW_PV_PROP_DOUBLE_H
 
 #include <utility>
-#include <vector>
 
 #include <boost/optional.hpp>
 
