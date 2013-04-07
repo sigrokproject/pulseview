@@ -36,12 +36,7 @@ namespace binding {
 class Binding
 {
 public:
-	Binding();
-
-public:
-	QWidget* get_form(QWidget *parent);
-
-	void commit();
+	const std::vector< boost::shared_ptr<Property> >& properties();
 
 protected:
 	std::vector< boost::shared_ptr<Property> > _properties;

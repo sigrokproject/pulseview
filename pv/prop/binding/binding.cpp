@@ -18,52 +18,15 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#include <QFormLayout>
-#include <QWidget>
-
-#include <boost/foreach.hpp>
-
 #include "binding.h"
-
-#include <pv/prop/property.h>
-
-using namespace boost;
 
 namespace pv {
 namespace prop {
 namespace binding {
 
-Binding::Binding() :
-	_form(NULL)
+const std::vector< boost::shared_ptr<Property> >& Binding::properties()
 {
-}
-
-QWidget* Binding::get_form(QWidget *parent)
-{
-	if (_form)
-		return _form;
-
-	_form = new QWidget(parent);
-	QFormLayout *const layout = new QFormLayout(_form);
-	_form->setLayout(layout);
-
-	BOOST_FOREACH(shared_ptr<Property> p, _properties)
-	{
-		assert(p);
-		const QString label = p->labeled_widget() ? QString() : p->name();
-		layout->addRow(label, p->get_widget(_form));
-	}
-
-	return _form;
-}
-
-void Binding::commit()
-{
-	BOOST_FOREACH(shared_ptr<Property> p, _properties)
-	{
-		assert(p);
-		p->commit();
-	}
+	return _properties;
 }
 
 } // binding
