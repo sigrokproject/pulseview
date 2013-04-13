@@ -130,19 +130,17 @@ void Ruler::paintEvent(QPaintEvent*)
 	const double t0 = first_major_division * tick_period;
 
 	int division = (int)round(first_minor_division -
-		first_major_division * MinorTickSubdivision);
+		first_major_division * MinorTickSubdivision) - 1;
 
 	const int major_tick_y1 = text_height + ValueMargin * 2;
 	const int tick_y2 = height();
 	const int minor_tick_y1 = (major_tick_y1 + tick_y2) / 2;
 
-	while (1)
-	{
-		const double t = t0 + division * minor_tick_period;
-		const double x = (t - _view.offset()) / _view.scale();
+	double x;
 
-		if (x >= width())
-			break;
+	do {
+		const double t = t0 + division * minor_tick_period;
+		x = (t - _view.offset()) / _view.scale();
 
 		if (division % MinorTickSubdivision == 0)
 		{
@@ -161,7 +159,8 @@ void Ruler::paintEvent(QPaintEvent*)
 		}
 
 		division++;
-	}
+
+	} while (x < width());
 
 	// Draw the cursors
 	draw_cursors(p, prefix);
