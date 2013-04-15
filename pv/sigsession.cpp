@@ -138,7 +138,7 @@ void SigSession::load_thread_proc(const string name,
 		return;
 	}
 
-	sr_session_datafeed_callback_add(data_feed_in_proc);
+	sr_session_datafeed_callback_add(data_feed_in_proc, NULL);
 
 	if (sr_session_start() != SR_OK) {
 		error_handler(tr("Failed to start session."));
@@ -161,7 +161,7 @@ void SigSession::sample_thread_proc(struct sr_dev_inst *sdi,
 	assert(error_handler);
 
 	sr_session_new();
-	sr_session_datafeed_callback_add(data_feed_in_proc);
+	sr_session_datafeed_callback_add(data_feed_in_proc, NULL);
 
 	if (sr_session_dev_add(sdi) != SR_OK) {
 		error_handler(tr("Failed to use device."));
@@ -387,8 +387,9 @@ void SigSession::data_feed_in(const struct sr_dev_inst *sdi,
 }
 
 void SigSession::data_feed_in_proc(const struct sr_dev_inst *sdi,
-	const struct sr_datafeed_packet *packet)
+	const struct sr_datafeed_packet *packet, void *cb_data)
 {
+	(void) cb_data;
 	assert(_session);
 	_session->data_feed_in(sdi, packet);
 }

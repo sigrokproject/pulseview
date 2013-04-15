@@ -102,7 +102,7 @@ private:
 		const struct sr_datafeed_packet *packet);
 
 	static void data_feed_in_proc(const struct sr_dev_inst *sdi,
-		const struct sr_datafeed_packet *packet);
+		const struct sr_datafeed_packet *packet, void *cb_data);
 
 private:
 	mutable boost::mutex _sampling_mutex;
