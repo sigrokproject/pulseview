@@ -73,7 +73,7 @@ DeviceOptions::DeviceOptions(struct sr_dev_inst *sdi) :
 			break;
 
 		case SR_CONF_CAPTURE_RATIO:
-			bind_int(name, key, "%", make_pair(0L, 100L));
+			bind_int(name, key, "%", pair<int64_t, int64_t>(0, 100));
 			break;
 
 		case SR_CONF_PATTERN_MODE:
