@@ -18,7 +18,10 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
+#ifdef ENABLE_SIGROKDECODE
 #include <sigrokdecode.h> /* First, so we avoid a _POSIX_C_SOURCE warning. */
+#endif
+
 #include <stdint.h>
 #include <libsigrok/libsigrok.h>
 
@@ -77,7 +80,11 @@ int main(int argc, char *argv[])
 		{
 			const int loglevel = atoi(optarg);
 			sr_log_loglevel_set(loglevel);
+
+#ifdef ENABLE_SIGROKDECODE
 			srd_log_loglevel_set(loglevel);
+#endif
+
 			break;
 		}
 
@@ -105,11 +112,18 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	// Initialise libsigrokdecode
-	if (srd_init(NULL) == SRD_OK) {
+	do {
+
+#ifdef ENABLE_SIGROKDECODE
+		// Initialise libsigrokdecode
+		if (srd_init(NULL) != SRD_OK) {
+			qDebug() << "ERROR: libsigrokdecode init failed.";
+			break;
+		}
 
 		// Load the protocol decoders
 		srd_decoder_load_all();
+#endif
 
 		// Initialize all libsigrok drivers
 		sr_dev_driver **const drivers = sr_driver_list();
@@ -145,13 +159,14 @@ int main(int argc, char *argv[])
 			ret = a.exec();
 		}
 
-		// Destroy libsigrokdecode and libsigrok
+#ifdef ENABLE_SIGROKDECODE
+		// Destroy libsigrokdecode
 		srd_exit();
+#endif
 
-	} else {
-		qDebug() << "ERROR: libsigrokdecode init failed.";
-	}
+	} while (0);
 
+	// Destroy libsigrok
 	if (sr_ctx)
 		sr_exit(sr_ctx);
 

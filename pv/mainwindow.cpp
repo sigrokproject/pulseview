@@ -18,7 +18,9 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
+#ifdef ENABLE_SIGROKDECODE
 #include <sigrokdecode.h>
+#endif
 
 #include <boost/bind.hpp>
 

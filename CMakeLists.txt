@@ -28,6 +28,7 @@ project(pulseview)
 #-------------------------------------------------------------------------------
 
 option(DISABLE_WERROR "Build without -Werror" FALSE)
+option(ENABLE_SIGROKDECODE "Build with libsigrokdecode" FALSE)
 option(ENABLE_TESTS "Enable unit tests" FALSE)
 option(STATIC_PKGDEPS_LIBS "Statically link to (pkgconfig) libraries" FALSE)
 
@@ -45,11 +46,16 @@ endif()
 #= Dependencies
 #-------------------------------------------------------------------------------
 
-find_package(PkgConfig)
-pkg_check_modules(PKGDEPS REQUIRED
-	libsigrokdecode>=0.1.0
+list(APPEND PKGDEPS
 	libsigrok>=0.2.0
 )
+
+if(ENABLE_SIGROKDECODE)
+	list(APPEND PKGDEPS libsigrokdecode>=0.1.0)
+endif()
+
+find_package(PkgConfig)
+pkg_check_modules(PKGDEPS REQUIRED ${PKGDEPS})
 
 find_package(Qt4 REQUIRED)
 
@@ -157,6 +163,10 @@ include(${QT_USE_FILE})
 
 add_definitions(${QT_DEFINITIONS})
 add_definitions(-Wall -Wextra)
+
+if(ENABLE_SIGROKDECODE)
+	add_definitions(-DENABLE_SIGROKDECODE)
+endif()
 
 if(NOT DISABLE_WERROR)
 	add_definitions(-Werror)
