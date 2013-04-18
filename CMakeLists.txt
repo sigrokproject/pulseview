@@ -28,6 +28,7 @@ project(pulseview)
 #-------------------------------------------------------------------------------
 
 option(DISABLE_WERROR "Build without -Werror" FALSE)
+option(ENABLE_SIGNALS "Build with UNIX signals" TRUE)
 option(ENABLE_SIGROKDECODE "Build with libsigrokdecode" FALSE)
 option(ENABLE_TESTS "Enable unit tests" FALSE)
 option(STATIC_PKGDEPS_LIBS "Statically link to (pkgconfig) libraries" FALSE)
@@ -40,6 +41,9 @@ if(WIN32)
 	# For boost-thread we need two additional settings on win32:
 	set(Boost_USE_STATIC_LIBS on)
 	add_definitions(-DBOOST_THREAD_USE_LIB)
+
+	# Windsws does not support UNIX signals
+	set(ENABLE_SIGNALS FALSE)
 endif()
 
 #===============================================================================
@@ -96,7 +100,6 @@ configure_file (
 
 set(pulseview_SOURCES
 	main.cpp
-	signalhandler.cpp
 	pv/mainwindow.cpp
 	pv/sigsession.cpp
 	pv/data/analog.cpp
@@ -128,7 +131,6 @@ set(pulseview_SOURCES
 )
 
 set(pulseview_HEADERS
-	signalhandler.h
 	pv/mainwindow.h
 	pv/sigsession.h
 	pv/dialogs/about.h
@@ -150,6 +152,11 @@ set(pulseview_FORMS
 set(pulseview_RESOURCES
 	pulseview.qrc
 )
+
+if(ENABLE_SIGNALS)
+	list(APPEND pulseview_SOURCES signalhandler.cpp)
+	list(APPEND pulseview_HEADERS signalhandler.h)
+endif()
 
 qt4_wrap_cpp(pulseview_HEADERS_MOC ${pulseview_HEADERS})
 qt4_wrap_ui(pulseview_FORMS_HEADERS ${pulseview_FORMS})

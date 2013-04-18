@@ -30,7 +30,10 @@
 #include <QtGui/QApplication>
 #include <QDebug>
 
+#ifdef ENABLE_SIGNALS
 #include "signalhandler.h"
+#endif
+
 #include "pv/mainwindow.h"
 
 #include "config.h"
@@ -141,6 +144,7 @@ int main(int argc, char *argv[])
 			pv::MainWindow w(open_file);
 			w.show();
 
+#ifdef ENABLE_SIGNALS
 			if(SignalHandler::prepare_signals()) {
 				SignalHandler *const handler =
 					new SignalHandler(&w);
@@ -154,6 +158,7 @@ int main(int argc, char *argv[])
 				qWarning() <<
 					"Could not prepare signal handler.";
 			}
+#endif
 
 			// Run the application
 			ret = a.exec();
