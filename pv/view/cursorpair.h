@@ -23,6 +23,8 @@
 
 #include "cursor.h"
 
+#include <QPainter>
+
 class QPainter;
 
 namespace pv {
@@ -56,6 +58,11 @@ public:
 	 * Returns a reference to the second cursor.
 	 */
 	const Cursor& second() const;
+
+public:
+	void draw_viewport_background(QPainter &p, const QRect &rect);
+
+	void draw_viewport_foreground(QPainter &p, const QRect &rect);
 
 private:
 	Cursor _first, _second;

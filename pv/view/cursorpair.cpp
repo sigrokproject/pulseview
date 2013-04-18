@@ -22,6 +22,10 @@
 
 #include "view.h"
 
+#include <algorithm>
+
+using namespace std;
+
 namespace pv {
 namespace view {
 
@@ -50,6 +54,27 @@ const Cursor& CursorPair::second() const
 Cursor& CursorPair::second()
 {
 	return _second;
+}
+
+void CursorPair::draw_viewport_background(QPainter &p,
+	const QRect &rect)
+{
+	p.setPen(Qt::NoPen);
+	p.setBrush(QBrush(View::CursorAreaColour));
+
+	const float x1 = (_first.time() - _view.offset()) / _view.scale();
+	const float x2 = (_second.time() - _view.offset()) / _view.scale();
+	const int l = (int)max(min(x1, x2), 0.0f);
+	const int r = (int)min(max(x1, x2), (float)rect.width());
+
+	p.drawRect(l, 0, r - l, rect.height());
+}
+
+void CursorPair::draw_viewport_foreground(QPainter &p,
+	const QRect &rect)
+{
+	_first.paint(p, rect);
+	_second.paint(p, rect);
 }
 
 } // namespace view

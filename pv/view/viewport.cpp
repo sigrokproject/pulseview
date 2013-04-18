@@ -67,7 +67,8 @@ void Viewport::paintEvent(QPaintEvent*)
 	QPainter p(this);
 	p.setRenderHint(QPainter::Antialiasing);
 
-	draw_cursors_background(p);
+	if (_view.cursors_shown())
+		_view.cursors().draw_viewport_background(p, rect());
 
 	// Plot the signal
 	const int v_offset = _view.v_offset();
@@ -78,7 +79,8 @@ void Viewport::paintEvent(QPaintEvent*)
 			_view.scale(), _view.offset());
 	}
 
-	draw_cursors_foreground(p);
+	if (_view.cursors_shown())
+		_view.cursors().draw_viewport_foreground(p, rect());
 
 	p.end();
 }
@@ -117,34 +119,6 @@ void Viewport::wheelEvent(QWheelEvent *event)
 				       event->delta() * _view.scale()
 				       + _view.offset());
 	}
-}
-
-void Viewport::draw_cursors_background(QPainter &p)
-{
-	if (!_view.cursors_shown())
-		return;
-
-	p.setPen(Qt::NoPen);
-	p.setBrush(QBrush(View::CursorAreaColour));
-
-	const CursorPair &c = _view.cursors();
-	const float x1 = (c.first().time() - _view.offset()) / _view.scale();
-	const float x2 = (c.second().time() - _view.offset()) / _view.scale();
-	const int l = (int)max(min(x1, x2), 0.0f);
-	const int r = (int)min(max(x1, x2), (float)width());
-
-	p.drawRect(l, 0, r - l, height());
-}
-
-void Viewport::draw_cursors_foreground(QPainter &p)
-{
-	if (!_view.cursors_shown())
-		return;
-
-	const QRect r = rect();
-	CursorPair &cursors = _view.cursors();
-	cursors.first().paint(p, r);
-	cursors.second().paint(p, r);
 }
 
 void Viewport::on_signals_moved()
