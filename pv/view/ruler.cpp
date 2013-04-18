@@ -163,7 +163,8 @@ void Ruler::paintEvent(QPaintEvent*)
 	} while (x < width());
 
 	// Draw the cursors
-	draw_cursors(p, prefix);
+	if (_view.cursors_shown())
+		_view.cursors().draw_markers(p, rect(), prefix);
 
 	// Draw the hover mark
 	draw_hover_mark(p);
@@ -200,17 +201,6 @@ void Ruler::mousePressEvent(QMouseEvent *e)
 void Ruler::mouseReleaseEvent(QMouseEvent *)
 {
 	_grabbed_marker = NULL;
-}
-
-void Ruler::draw_cursors(QPainter &p, unsigned int prefix)
-{
-	if (!_view.cursors_shown())
-		return;
-
-	const QRect r = rect();
-	CursorPair &cursors = _view.cursors();
-	cursors.first().paint_label(p, r, prefix);
-	cursors.second().paint_label(p, r, prefix);
 }
 
 void Ruler::draw_hover_mark(QPainter &p)

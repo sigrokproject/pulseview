@@ -60,6 +60,9 @@ public:
 	const Cursor& second() const;
 
 public:
+	void draw_markers(QPainter &p,
+		const QRect &rect, unsigned int prefix);
+
 	void draw_viewport_background(QPainter &p, const QRect &rect);
 
 	void draw_viewport_foreground(QPainter &p, const QRect &rect);

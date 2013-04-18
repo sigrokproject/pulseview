@@ -56,8 +56,6 @@ private:
 	void mouseReleaseEvent(QMouseEvent *);
 
 private:
-	void draw_cursors(QPainter &p, unsigned int prefix);
-
 	/**
 	 * Draw a hover arrow under the cursor position.
 	 */

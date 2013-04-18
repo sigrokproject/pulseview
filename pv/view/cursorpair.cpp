@@ -56,6 +56,13 @@ Cursor& CursorPair::second()
 	return _second;
 }
 
+void CursorPair::draw_markers(QPainter &p,
+	const QRect &rect, unsigned int prefix)
+{
+	_first.paint_label(p, rect, prefix);
+	_second.paint_label(p, rect, prefix);
+}
+
 void CursorPair::draw_viewport_background(QPainter &p,
 	const QRect &rect)
 {
