@@ -23,12 +23,10 @@
 
 #include <stdint.h>
 
-#include <utility>
-
 #include <QAbstractScrollArea>
 #include <QSizeF>
 
-#include "cursor.h"
+#include "cursorpair.h"
 
 namespace pv {
 
@@ -101,7 +99,7 @@ public:
 	/**
 	 * Returns a reference to the pair of cursors.
 	 */
-	std::pair<Cursor, Cursor>& cursors();
+	CursorPair& cursors();
 
 	const QPoint& hover_point() const;
 
@@ -157,7 +155,7 @@ private:
 	bool _updating_scroll;
 
 	bool _show_cursors;
-	std::pair<Cursor, Cursor> _cursors;
+	CursorPair _cursors;
 
 	QPoint _hover_point;
 };

@@ -72,8 +72,7 @@ View::View(SigSession &session, QWidget *parent) :
 	_v_offset(0),
 	_updating_scroll(false),
 	_show_cursors(false),
-	_cursors(pair<Cursor, Cursor>(Cursor(*this, 0.0),
-		Cursor(*this, 1.0))),
+	_cursors(*this),
 	_hover_point(-1, -1)
 {
 	connect(horizontalScrollBar(), SIGNAL(valueChanged(int)),
@@ -86,9 +85,9 @@ View::View(SigSession &session, QWidget *parent) :
 	connect(&_session, SIGNAL(data_updated()),
 		this, SLOT(data_updated()));
 
-	connect(&_cursors.first, SIGNAL(time_changed()),
+	connect(&_cursors.first(), SIGNAL(time_changed()),
 		this, SLOT(marker_time_changed()));
-	connect(&_cursors.second, SIGNAL(time_changed()),
+	connect(&_cursors.second(), SIGNAL(time_changed()),
 		this, SLOT(marker_time_changed()));
 
 	connect(_header, SIGNAL(signals_moved()),
@@ -162,7 +161,7 @@ void View::show_cursors(bool show)
 	_viewport->update();
 }
 
-std::pair<Cursor, Cursor>& View::cursors()
+CursorPair& View::cursors()
 {
 	return _cursors;
 }

@@ -48,7 +48,7 @@ private:
 public:
 	/**
 	 * Constructor.
-	 * @param colour A reference to the colour of this cursor.
+	 * @param view A reference to the view that owns this cursor pair.
 	 * @param time The time to set the flag to.
 	 */
 	Cursor(const View &view, double time);

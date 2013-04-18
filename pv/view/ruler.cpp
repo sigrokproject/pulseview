@@ -186,14 +186,13 @@ void Ruler::mousePressEvent(QMouseEvent *e)
 		_grabbed_marker = NULL;
 
 		if (_view.cursors_shown()) {
-			std::pair<Cursor, Cursor> &cursors =
-				_view.cursors();
-			if (cursors.first.get_label_rect(
+			CursorPair &cursors = _view.cursors();
+			if (cursors.first().get_label_rect(
 				rect()).contains(e->pos()))
-				_grabbed_marker = &cursors.first;
-			else if (cursors.second.get_label_rect(
+				_grabbed_marker = &cursors.first();
+			else if (cursors.second().get_label_rect(
 				rect()).contains(e->pos()))
-				_grabbed_marker = &cursors.second;
+				_grabbed_marker = &cursors.second();
 		}
 	}
 }
@@ -209,9 +208,9 @@ void Ruler::draw_cursors(QPainter &p, unsigned int prefix)
 		return;
 
 	const QRect r = rect();
-	pair<Cursor, Cursor> &cursors = _view.cursors();
-	cursors.first.paint_label(p, r, prefix);
-	cursors.second.paint_label(p, r, prefix);
+	CursorPair &cursors = _view.cursors();
+	cursors.first().paint_label(p, r, prefix);
+	cursors.second().paint_label(p, r, prefix);
 }
 
 void Ruler::draw_hover_mark(QPainter &p)

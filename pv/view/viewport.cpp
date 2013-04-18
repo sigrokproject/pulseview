@@ -127,9 +127,9 @@ void Viewport::draw_cursors_background(QPainter &p)
 	p.setPen(Qt::NoPen);
 	p.setBrush(QBrush(View::CursorAreaColour));
 
-	const pair<Cursor, Cursor> &c = _view.cursors();
-	const float x1 = (c.first.time() - _view.offset()) / _view.scale();
-	const float x2 = (c.second.time() - _view.offset()) / _view.scale();
+	const CursorPair &c = _view.cursors();
+	const float x1 = (c.first().time() - _view.offset()) / _view.scale();
+	const float x2 = (c.second().time() - _view.offset()) / _view.scale();
 	const int l = (int)max(min(x1, x2), 0.0f);
 	const int r = (int)min(max(x1, x2), (float)width());
 
@@ -142,9 +142,9 @@ void Viewport::draw_cursors_foreground(QPainter &p)
 		return;
 
 	const QRect r = rect();
-	pair<Cursor, Cursor> &cursors = _view.cursors();
-	cursors.first.paint(p, r);
-	cursors.second.paint(p, r);
+	CursorPair &cursors = _view.cursors();
+	cursors.first().paint(p, r);
+	cursors.second().paint(p, r);
 }
 
 void Viewport::on_signals_moved()

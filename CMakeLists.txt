@@ -121,6 +121,7 @@ set(pulseview_SOURCES
 	pv/toolbars/samplingbar.cpp
 	pv/view/analogsignal.cpp
 	pv/view/cursor.cpp
+	pv/view/cursorpair.cpp
 	pv/view/header.cpp
 	pv/view/logicsignal.cpp
 	pv/view/ruler.cpp
