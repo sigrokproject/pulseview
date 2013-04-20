@@ -49,8 +49,9 @@ public:
 	 * Constructor.
 	 * @param view A reference to the view that owns this cursor pair.
 	 * @param time The time to set the flag to.
+	 * @param other A reference to the other cursor.
 	 */
-	Cursor(const View &view, double time);
+	Cursor(const View &view, double time, Cursor &other);
 
 public:
 	/**
@@ -73,6 +74,8 @@ private:
 	void compute_text_size(QPainter &p, unsigned int prefix);
 
 private:
+	const Cursor &_other;
+
 	QSizeF _text_size;
 };
 

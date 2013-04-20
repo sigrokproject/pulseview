@@ -30,8 +30,8 @@ namespace pv {
 namespace view {
 
 CursorPair::CursorPair(const View &view) :
-	_first(view, 0.0),
-	_second(view, 1.0),
+	_first(view, 0.0, _second),
+	_second(view, 1.0, _first),
 	_view(view)
 {
 }
