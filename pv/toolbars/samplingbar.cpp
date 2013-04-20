@@ -76,7 +76,7 @@ SamplingBar::SamplingBar(QWidget *parent) :
 	connect(&_device_selector, SIGNAL(currentIndexChanged (int)),
 		this, SLOT(on_device_selected()));
 	connect(&_configure_button, SIGNAL(clicked()),
-		this, SLOT(configure()));
+		this, SLOT(on_configure()));
 
 	_sample_rate_value.setDecimals(0);
 	_sample_rate_value.setSuffix("Hz");
@@ -290,7 +290,7 @@ void SamplingBar::on_sample_rate_changed()
 	commit_sample_rate();
 }
 
-void SamplingBar::configure()
+void SamplingBar::on_configure()
 {
 	commit_sample_rate();
 

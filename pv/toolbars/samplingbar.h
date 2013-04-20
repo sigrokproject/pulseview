@@ -67,7 +67,7 @@ private:
 private slots:
 	void on_device_selected();
 	void on_sample_rate_changed();
-	void configure();
+	void on_configure();
 
 private:
 	QComboBox _device_selector;
