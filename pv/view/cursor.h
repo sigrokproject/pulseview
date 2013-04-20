@@ -34,7 +34,7 @@ class Cursor : public TimeMarker
 {
 	Q_OBJECT
 
-private:
+public:
 	static const QColor LineColour;
 	static const QColor FillColour;
 	static const QColor HighlightColour;

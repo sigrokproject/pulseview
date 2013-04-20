@@ -32,6 +32,9 @@ namespace view {
 
 class CursorPair
 {
+private:
+	static const int DeltaPadding;
+
 public:
 	/**
 	 * Constructor.
@@ -60,6 +63,8 @@ public:
 	const Cursor& second() const;
 
 public:
+	QRectF get_label_rect(const QRect &rect) const;
+
 	void draw_markers(QPainter &p,
 		const QRect &rect, unsigned int prefix);
 
@@ -67,11 +72,15 @@ public:
 
 	void draw_viewport_foreground(QPainter &p, const QRect &rect);
 
+	void compute_text_size(QPainter &p, unsigned int prefix);
+
 	std::pair<float, float> get_cursor_offsets() const;
 
 private:
 	Cursor _first, _second;
 	const View &_view;
+
+	QSizeF _text_size;
 };
 
 } // namespace view

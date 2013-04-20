@@ -20,6 +20,7 @@
 
 #include "cursorpair.h"
 
+#include "ruler.h"
 #include "view.h"
 
 #include <algorithm>
@@ -28,6 +29,8 @@ using namespace std;
 
 namespace pv {
 namespace view {
+
+const int CursorPair::DeltaPadding = 8;
 
 CursorPair::CursorPair(const View &view) :
 	_first(view, 0.0, _second),
@@ -56,9 +59,53 @@ Cursor& CursorPair::second()
 	return _second;
 }
 
+QRectF CursorPair::get_label_rect(const QRect &rect) const
+{
+	const QSizeF label_size(
+		_text_size.width() + View::LabelPadding.width() * 2,
+		_text_size.height() + View::LabelPadding.height() * 2);
+	const pair<float, float> offsets(get_cursor_offsets());
+	const pair<float, float> normal_offsets(
+		(offsets.first < offsets.second) ? offsets :
+		make_pair(offsets.second, offsets.first));
+
+	const float height = label_size.height();
+	const float left = max(normal_offsets.first + DeltaPadding, -height);
+	const float right = min(normal_offsets.second - DeltaPadding,
+		(float)rect.width() + height);
+
+	return QRectF(left, rect.height() - label_size.height() -
+		Cursor::ArrowSize - Cursor::Offset - 0.5f,
+		right - left, height);
+}
+
 void CursorPair::draw_markers(QPainter &p,
 	const QRect &rect, unsigned int prefix)
 {
+	compute_text_size(p, prefix);
+	QRectF delta_rect(get_label_rect(rect));
+
+	const int radius = delta_rect.height() / 2;
+	const QRectF text_rect(delta_rect.intersected(
+		rect).adjusted(radius, 0, -radius, 0));
+	if(text_rect.width() >= _text_size.width())
+	{
+		const int highlight_radius = delta_rect.height() / 2 - 2;
+
+		p.setBrush(Cursor::FillColour);
+		p.setPen(Cursor::LineColour);
+		p.drawRoundedRect(delta_rect, radius, radius);
+
+		delta_rect.adjust(1, 1, -1, -1);
+		p.setPen(Cursor::HighlightColour);
+		p.drawRoundedRect(delta_rect, highlight_radius, highlight_radius);
+
+		p.setPen(Cursor::TextColour);
+		p.drawText(text_rect, Qt::AlignCenter | Qt::AlignVCenter,
+			Ruler::format_time(_second.time() - _first.time(), prefix, 2));
+	}
+
+	// Paint the cursor markers
 	_first.paint_label(p, rect, prefix);
 	_second.paint_label(p, rect, prefix);
 }
@@ -83,6 +130,12 @@ void CursorPair::draw_viewport_foreground(QPainter &p,
 {
 	_first.paint(p, rect);
 	_second.paint(p, rect);
+}
+
+void CursorPair::compute_text_size(QPainter &p, unsigned int prefix)
+{
+	_text_size = p.boundingRect(QRectF(), 0, Ruler::format_time(
+		_second.time() - _first.time(), prefix, 2)).size();
 }
 
 pair<float, float> CursorPair::get_cursor_offsets() const

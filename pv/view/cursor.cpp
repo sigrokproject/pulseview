@@ -60,7 +60,7 @@ QRectF Cursor::get_label_rect(const QRect &rect) const
 		_text_size.height() + View::LabelPadding.height() * 2);
 	const float top = rect.height() - label_size.height() -
 		Cursor::Offset - Cursor::ArrowSize - 0.5f;
-	const float height = label_size.height() + 1;
+	const float height = label_size.height();
 
 	if (_time > _other.time())
 		return QRectF(x, top, label_size.width(), height);
