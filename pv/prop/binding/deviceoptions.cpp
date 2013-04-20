@@ -47,8 +47,8 @@ DeviceOptions::DeviceOptions(struct sr_dev_inst *sdi) :
 	GVariant *gvar_opts, *gvar_list;
 	gsize num_opts;
 
-	if ((sr_config_list(sdi->driver, SR_CONF_DEVICE_OPTIONS,
-		&gvar_opts, sdi) != SR_OK))
+	if ((sr_config_list(sdi->driver, sdi, NULL, SR_CONF_DEVICE_OPTIONS,
+		&gvar_opts) != SR_OK))
 		/* Driver supports no device instance options. */
 		return;
 
@@ -63,7 +63,7 @@ DeviceOptions::DeviceOptions(struct sr_dev_inst *sdi) :
 
 		const int key = info->key;
 
-		if(sr_config_list(_sdi->driver, key, &gvar_list, _sdi) != SR_OK)
+		if (sr_config_list(_sdi->driver, _sdi, NULL, key, &gvar_list) != SR_OK)
 			gvar_list = NULL;
 
 		const QString name(info->name);
@@ -113,7 +113,7 @@ GVariant* DeviceOptions::config_getter(
 	const struct sr_dev_inst *sdi, int key)
 {
 	GVariant *data = NULL;
-	if (sr_config_get(sdi->driver, key, &data, sdi) != SR_OK) {
+	if (sr_config_get(sdi->driver, sdi, NULL, key, &data) != SR_OK) {
 		qDebug() <<
 			"WARNING: Failed to get value of config id" << key;
 		return NULL;
@@ -124,7 +124,7 @@ GVariant* DeviceOptions::config_getter(
 void DeviceOptions::config_setter(
 	const struct sr_dev_inst *sdi, int key, GVariant* value)
 {
-	if (sr_config_set(sdi, key, value) != SR_OK)
+	if (sr_config_set(sdi, NULL, key, value) != SR_OK)
 		qDebug() << "WARNING: Failed to set value of sample rate";
 }
 

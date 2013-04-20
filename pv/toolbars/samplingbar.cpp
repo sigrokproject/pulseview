@@ -192,8 +192,8 @@ void SamplingBar::update_sample_rate_selector()
 	if (!sdi)
 		return;
 
-	if (sr_config_list(sdi->driver, SR_CONF_SAMPLERATE,
-			&gvar_dict, sdi) != SR_OK)
+	if (sr_config_list(sdi->driver, sdi, NULL,
+			SR_CONF_SAMPLERATE, &gvar_dict) != SR_OK)
 		return;
 
 	_sample_rate_list_action->setVisible(false);
@@ -247,8 +247,8 @@ void SamplingBar::update_sample_rate_selector_value()
 
 	assert(sdi);
 
-	if (sr_config_get(sdi->driver, SR_CONF_SAMPLERATE,
-		&gvar, sdi) != SR_OK) {
+	if (sr_config_get(sdi->driver, sdi, NULL,
+		SR_CONF_SAMPLERATE, &gvar) != SR_OK) {
 		qDebug() <<
 				"WARNING: Failed to get value of sample rate";
 		return;
@@ -294,7 +294,7 @@ void SamplingBar::commit_sample_rate()
 		return;
 
 	// Set the samplerate
-	if (sr_config_set(sdi, SR_CONF_SAMPLERATE,
+	if (sr_config_set(sdi, NULL, SR_CONF_SAMPLERATE,
 		g_variant_new_uint64(sample_rate)) != SR_OK) {
 		qDebug() << "Failed to configure samplerate.";
 		return;

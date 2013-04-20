@@ -238,8 +238,8 @@ void LogicSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
 
 	// Add the trigger actions
 	const sr_dev_inst *const sdi = _session.get_device();
-	if (sr_config_list(sdi->driver, SR_CONF_TRIGGER_TYPE,
-		&gvar, sdi) == SR_OK)
+	if (sr_config_list(sdi->driver, sdi, NULL, SR_CONF_TRIGGER_TYPE,
+		&gvar) == SR_OK)
 	{
 		const char *const trig_types =
 			g_variant_get_string(gvar, NULL);

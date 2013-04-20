@@ -102,8 +102,8 @@ void Connect::populate_drivers()
 		 * and sensors.
 		 */
 		bool supported_device = false;
-		if ((sr_config_list(drivers[i], SR_CONF_DEVICE_OPTIONS,
-				&gvar_opts, NULL) == SR_OK)) {
+		if ((sr_config_list(drivers[i], NULL, NULL,
+				SR_CONF_DEVICE_OPTIONS, &gvar_opts) == SR_OK)) {
 			hwopts = (const int32_t *)g_variant_get_fixed_array(gvar_opts,
 					&num_opts, sizeof(int32_t));
 			for (unsigned int j = 0; j < num_opts; j++)
@@ -189,8 +189,8 @@ void Connect::device_selected(int index)
 
 	unset_connection();
 
-	if ((sr_config_list(driver, SR_CONF_SCAN_OPTIONS,
-				&gvar_list, NULL) == SR_OK)) {
+	if ((sr_config_list(driver, NULL, NULL,
+				SR_CONF_SCAN_OPTIONS, &gvar_list) == SR_OK)) {
 		hwopts = (const int32_t *)g_variant_get_fixed_array(gvar_list,
 				&num_opts, sizeof(int32_t));
 

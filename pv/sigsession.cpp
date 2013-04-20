@@ -428,8 +428,8 @@ void SigSession::read_sample_rate(const sr_dev_inst *const sdi)
 	// Read out the sample rate
 	if(sdi->driver)
 	{
-		const int ret = sr_config_get(sdi->driver,
-			SR_CONF_SAMPLERATE, &gvar, sdi);
+		const int ret = sr_config_get(sdi->driver, sdi, NULL,
+			SR_CONF_SAMPLERATE, &gvar);
 		if (ret != SR_OK) {
 			qDebug("Failed to get samplerate\n");
 			return;
@@ -505,7 +505,7 @@ void SigSession::sample_thread_proc(struct sr_dev_inst *sdi,
 	}
 
 	// Set the sample limit
-	if (sr_config_set(sdi, SR_CONF_LIMIT_SAMPLES,
+	if (sr_config_set(sdi, NULL, SR_CONF_LIMIT_SAMPLES,
 		g_variant_new_uint64(record_length)) != SR_OK) {
 		error_handler(tr("Failed to configure "
 			"time-based sample limit."));
