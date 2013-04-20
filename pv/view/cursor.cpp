@@ -41,7 +41,6 @@ const QColor Cursor::FillColour(52, 101, 164);
 const QColor Cursor::HighlightColour(83, 130, 186);
 const QColor Cursor::TextColour(Qt::white);
 
-const int Cursor::Size = 12;
 const int Cursor::Offset = 1;
 
 const int Cursor::ArrowSize = 4;

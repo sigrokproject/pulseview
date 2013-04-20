@@ -40,7 +40,6 @@ private:
 	static const QColor HighlightColour;
 	static const QColor TextColour;
 
-	static const int Size;
 	static const int Offset;
 
 	static const int ArrowSize;
