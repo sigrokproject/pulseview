@@ -72,7 +72,7 @@ SamplingBar::SamplingBar(QWidget *parent) :
 	_run_stop_button(this)
 {
 	connect(&_run_stop_button, SIGNAL(clicked()),
-		this, SIGNAL(run_stop()));
+		this, SLOT(on_run_stop()));
 	connect(&_device_selector, SIGNAL(currentIndexChanged (int)),
 		this, SLOT(on_device_selected()));
 	connect(&_configure_button, SIGNAL(clicked()),
@@ -301,6 +301,12 @@ void SamplingBar::on_configure()
 	dlg.exec();
 
 	update_sample_rate_selector_value();
+}
+
+void SamplingBar::on_run_stop()
+{
+	commit_sample_rate();	
+	run_stop();
 }
 
 } // namespace toolbars
