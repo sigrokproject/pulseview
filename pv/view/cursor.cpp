@@ -58,9 +58,15 @@ QRectF Cursor::get_label_rect(const QRect &rect) const
 	const QSizeF label_size(
 		_text_size.width() + View::LabelPadding.width() * 2,
 		_text_size.height() + View::LabelPadding.height() * 2);
-	return QRectF(x - label_size.width() / 2 - 0.5f,
-		rect.height() - label_size.height() - Offset - ArrowSize - 0.5f,
-		label_size.width() + 1, label_size.height() + 1);
+	const float top = rect.height() - label_size.height() -
+		Cursor::Offset - Cursor::ArrowSize - 0.5f;
+	const float height = label_size.height() + 1;
+
+	if (_time > _other.time())
+		return QRectF(x, top, label_size.width(), height);
+	else
+		return QRectF(x - label_size.width(), top,
+			label_size.width(), height);
 }
 
 void Cursor::paint_label(QPainter &p, const QRect &rect,

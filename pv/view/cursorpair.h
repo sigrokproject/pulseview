@@ -67,6 +67,8 @@ public:
 
 	void draw_viewport_foreground(QPainter &p, const QRect &rect);
 
+	std::pair<float, float> get_cursor_offsets() const;
+
 private:
 	Cursor _first, _second;
 	const View &_view;

@@ -69,10 +69,11 @@ void CursorPair::draw_viewport_background(QPainter &p,
 	p.setPen(Qt::NoPen);
 	p.setBrush(QBrush(View::CursorAreaColour));
 
-	const float x1 = (_first.time() - _view.offset()) / _view.scale();
-	const float x2 = (_second.time() - _view.offset()) / _view.scale();
-	const int l = (int)max(min(x1, x2), 0.0f);
-	const int r = (int)min(max(x1, x2), (float)rect.width());
+	const pair<float, float> offsets(get_cursor_offsets());
+	const int l = (int)max(min(
+		offsets.first, offsets.second), 0.0f);
+	const int r = (int)min(max(
+		offsets.first, offsets.second), (float)rect.width());
 
 	p.drawRect(l, 0, r - l, rect.height());
 }
@@ -82,6 +83,13 @@ void CursorPair::draw_viewport_foreground(QPainter &p,
 {
 	_first.paint(p, rect);
 	_second.paint(p, rect);
+}
+
+pair<float, float> CursorPair::get_cursor_offsets() const
+{
+	return pair<float, float>(
+		(_first.time() - _view.offset()) / _view.scale(),
+		(_second.time() - _view.offset()) / _view.scale());
 }
 
 } // namespace view
