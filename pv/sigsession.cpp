@@ -148,7 +148,7 @@ void SigSession::load_thread_proc(const string name,
 	set_capture_state(Running);
 
 	sr_session_run();
-	sr_session_stop();
+	sr_session_destroy();
 
 	set_capture_state(Stopped);
 }
