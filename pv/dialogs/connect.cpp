@@ -96,7 +96,7 @@ void Connect::populate_drivers()
 		 */
 		bool supported_device = false;
 		if ((sr_config_list(drivers[i], SR_CONF_DEVICE_OPTIONS,
-				&gvar_opts, NULL) == SR_OK))
+				&gvar_opts, NULL) == SR_OK)) {
 			hwopts = (const int32_t *)g_variant_get_fixed_array(gvar_opts,
 					&num_opts, sizeof(int32_t));
 			for (unsigned int j = 0; j < num_opts; j++)
@@ -104,6 +104,7 @@ void Connect::populate_drivers()
 					supported_device = true;
 					break;
 				}
+		}
 
 		if (supported_device)
 			_drivers.addItem(QString("%1 (%2)").arg(
