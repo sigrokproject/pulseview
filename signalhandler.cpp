@@ -20,10 +20,13 @@
 
 #include "signalhandler.h"
 
+#include <assert.h>
 #include <signal.h>
+#include <stdlib.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
+#include <QDebug>
 #include <QSocketNotifier>
 
 int SignalHandler::_sockets[2];
@@ -63,7 +66,11 @@ void SignalHandler::on_socket_notifier_activated()
 	_socket_notifier->setEnabled(false);
 
 	int sig_number;
-	read(_sockets[1], &sig_number, sizeof(int));
+	if(read(_sockets[1], &sig_number, sizeof(int)) !=
+		sizeof(int)) {
+		qDebug() << "Failed to catch signal";
+		abort();
+	}
 
 	switch(sig_number)
 	{
@@ -80,5 +87,9 @@ void SignalHandler::on_socket_notifier_activated()
 
 void SignalHandler::handle_signals(int sig_number)
 {
-	write(_sockets[0], &sig_number, sizeof(int));
+	if(write(_sockets[0], &sig_number, sizeof(int)) !=
+		sizeof(int)) {
+		// Failed to handle signal
+		abort();
+	}
 }
