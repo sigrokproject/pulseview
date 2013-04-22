@@ -221,7 +221,11 @@ void SigSession::feed_in_header(const sr_dev_inst *sdi)
 
 	const int ret = sr_config_get(sdi->driver, SR_CONF_SAMPLERATE,
 		&gvar, sdi);
-	assert(ret == SR_OK);
+	if (ret != SR_OK) {
+		qDebug("Failed to get samplerate\n");
+		return;
+	}
+
 	sample_rate = g_variant_get_uint64(gvar);
 	g_variant_unref(gvar);
 
