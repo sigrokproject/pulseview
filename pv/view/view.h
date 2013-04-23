@@ -97,6 +97,11 @@ public:
 	void show_cursors(bool show = true);
 
 	/**
+	 * Moves the cursors to a convenient position in the view.
+	 */
+	void centre_cursors();
+
+	/**
 	 * Returns a reference to the pair of cursors.
 	 */
 	CursorPair& cursors();

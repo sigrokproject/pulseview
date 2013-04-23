@@ -287,7 +287,12 @@ void MainWindow::on_actionViewZoomOut_triggered()
 void MainWindow::on_actionViewShowCursors_triggered()
 {
 	assert(_view);
-	_view->show_cursors(_action_view_show_cursors->isChecked());
+
+	const bool show = !_view->cursors_shown();
+	if(show)
+		_view->centre_cursors();
+
+	_view->show_cursors(show);
 }
 
 void MainWindow::on_actionAbout_triggered()

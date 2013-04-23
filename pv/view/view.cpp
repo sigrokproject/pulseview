@@ -161,6 +161,15 @@ void View::show_cursors(bool show)
 	_viewport->update();
 }
 
+void View::centre_cursors()
+{
+	const double time_width = _scale * _viewport->width();
+	_cursors.first().set_time(_offset + time_width * 0.4);
+	_cursors.second().set_time(_offset + time_width * 0.6);
+	_ruler->update();
+	_viewport->update();
+}
+
 CursorPair& View::cursors()
 {
 	return _cursors;
