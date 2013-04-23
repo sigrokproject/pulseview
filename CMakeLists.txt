@@ -225,6 +225,11 @@ add_executable(${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME} ${PULSEVIEW_LINK_LIBS})
 
+if(WIN32)
+# Pass -mwindows so that no "DOS box" will open when PulseView is started.
+set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "-mwindows")
+endif()
+
 #===============================================================================
 #= Installation
 #-------------------------------------------------------------------------------
