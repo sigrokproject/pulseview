@@ -56,7 +56,7 @@ About::About(QWidget *parent) :
 	ui->versionInfo->setText(tr("%1 %2<br />%3<br /><a href=\"%4\">%4</a>")
 				 .arg(QApplication::applicationName())
 				 .arg(QApplication::applicationVersion())
-				 .arg(tr("GNU GPL, version 2 or later"))
+				 .arg(tr("GNU GPL, version 3 or later"))
 				 .arg(QApplication::organizationDomain()));
 	ui->versionInfo->setOpenExternalLinks(true);
 
