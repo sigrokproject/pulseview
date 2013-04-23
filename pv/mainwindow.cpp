@@ -152,6 +152,7 @@ void MainWindow::setup_ui()
 	_action_view_show_cursors = new QAction(this);
 	_action_view_show_cursors->setCheckable(true);
 	_action_view_show_cursors->setChecked(_view->cursors_shown());
+	_action_view_show_cursors->setShortcut(QKeySequence(Qt::Key_C));
 	_action_view_show_cursors->setObjectName(
 		QString::fromUtf8("actionViewShowCursors"));
 	_action_view_show_cursors->setText(QApplication::translate(
