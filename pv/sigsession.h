@@ -63,11 +63,6 @@ public:
 	~SigSession();
 
 	/**
-	 * Gets device instance that will be used in the next capture session.
-	 */
-	struct sr_dev_inst* get_device() const;
-
-	/**
 	 * Sets device instance that will be used in the next capture session.
 	 */
 	void set_device(struct sr_dev_inst *sdi);

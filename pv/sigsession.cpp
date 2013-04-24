@@ -59,11 +59,6 @@ SigSession::~SigSession()
 	_session = NULL;
 }
 
-struct sr_dev_inst* SigSession::get_device() const
-{
-	return _sdi;
-}
-
 void SigSession::set_device(struct sr_dev_inst *sdi)
 {
 	_sdi = sdi;

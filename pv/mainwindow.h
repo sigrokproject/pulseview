@@ -79,6 +79,8 @@ private slots:
 
 	void on_actionAbout_triggered();
 
+	void device_selected();
+
 	void run_stop();
 
 	void capture_state_changed(int state);

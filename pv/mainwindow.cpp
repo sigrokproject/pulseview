@@ -177,7 +177,7 @@ void MainWindow::setup_ui()
 	setMenuBar(_menu_bar);
 	QMetaObject::connectSlotsByName(this);
 
-	// Setup the toolbars
+	// Setup the toolbar
 	_toolbar = new QToolBar(this);
 	_toolbar->addAction(_action_open);
 	_toolbar->addSeparator();
@@ -185,12 +185,24 @@ void MainWindow::setup_ui()
 	_toolbar->addAction(_action_view_zoom_out);
 	addToolBar(_toolbar);
 
+	// Setup the sampling bar
 	_sampling_bar = new toolbars::SamplingBar(this);
+
+	// Populate the device list and select the initially selected device
 	scan_devices();
+	if(!_devices.empty()) {
+		struct sr_dev_inst *const initial_sdi = _devices.front();
+		_sampling_bar->set_selected_device(initial_sdi);
+		_session.set_device(initial_sdi);
+	}
+
+	connect(_sampling_bar, SIGNAL(device_selected()), this,
+		SLOT(device_selected()));
 	connect(_sampling_bar, SIGNAL(run_stop()), this,
 		SLOT(run_stop()));
 	addToolBar(_sampling_bar);
 
+	// Set the title
 	setWindowTitle(QApplication::translate("MainWindow", "PulseView", 0,
 		QApplication::UnicodeUTF8));
 
@@ -268,6 +280,8 @@ void MainWindow::on_actionConnect_triggered()
 		_devices.push_back(sdi);
 		_sampling_bar->set_device_list(_devices);
 		_sampling_bar->set_selected_device(sdi);
+
+		_session.set_device(sdi);
 	}
 }
 
@@ -303,11 +317,15 @@ void MainWindow::on_actionAbout_triggered()
 	dlg.exec();
 }
 
+void MainWindow::device_selected()
+{
+	_session.set_device(_sampling_bar->get_selected_device());
+}
+
 void MainWindow::run_stop()
 {
 	switch(_session.get_capture_state()) {
 	case SigSession::Stopped:
-		_session.set_device(_sampling_bar->get_selected_device());
 		_session.start_capture(_sampling_bar->get_record_length(),
 			boost::bind(&MainWindow::session_error, this,
 				QString("Capture failed"), _1));

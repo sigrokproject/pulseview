@@ -57,6 +57,8 @@ public:
 	void set_sampling(bool sampling);
 
 signals:
+	void device_selected();
+
 	void run_stop();
 
 private:

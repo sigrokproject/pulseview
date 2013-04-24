@@ -283,6 +283,7 @@ void SamplingBar::commit_sample_rate()
 void SamplingBar::on_device_selected()
 {
 	update_sample_rate_selector();
+	device_selected();
 }
 
 void SamplingBar::on_sample_rate_changed()
