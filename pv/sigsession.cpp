@@ -61,6 +61,10 @@ SigSession::~SigSession()
 
 void SigSession::set_device(struct sr_dev_inst *sdi)
 {
+	if (_sdi)
+		sr_dev_close(_sdi);
+	if (sdi)
+		sr_dev_open(sdi);
 	_sdi = sdi;
 }
 
