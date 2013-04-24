@@ -251,7 +251,8 @@ void MainWindow::on_actionOpen_triggered()
 	const QString file_name = QFileDialog::getOpenFileName(
 		this, tr("Open File"), "",
 		tr("Sigrok Sessions (*.sr)"));
-	load_file(file_name);
+	if (!file_name.isEmpty())
+		load_file(file_name);
 }
 
 void MainWindow::on_actionConnect_triggered()
