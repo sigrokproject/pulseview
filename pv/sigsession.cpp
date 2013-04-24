@@ -40,6 +40,7 @@ namespace pv {
 SigSession* SigSession::_session = NULL;
 
 SigSession::SigSession() :
+	_sdi(NULL),
 	_capture_state(Stopped)
 {
 	// TODO: This should not be necessary
@@ -58,6 +59,16 @@ SigSession::~SigSession()
 	_session = NULL;
 }
 
+struct sr_dev_inst* SigSession::get_device() const
+{
+	return _sdi;
+}
+
+void SigSession::set_device(struct sr_dev_inst *sdi)
+{
+	_sdi = sdi;
+}
+
 void SigSession::load_file(const string &name,
 	function<void (const QString)> error_handler)
 {
@@ -73,15 +84,20 @@ SigSession::capture_state SigSession::get_capture_state() const
 	return _capture_state;
 }
 
-void SigSession::start_capture(struct sr_dev_inst *sdi,
-	uint64_t record_length,
+void SigSession::start_capture(uint64_t record_length,
 	function<void (const QString)> error_handler)
 {
 	stop_capture();
 
+	// Check that a device instance has been selected.
+	if (!_sdi) {
+		qDebug() << "No device selected";
+		return;
+	}
+
 	// Check that at least one probe is enabled
 	const GSList *l;
-	for (l = sdi->probes; l; l = l->next) {
+	for (l = _sdi->probes; l; l = l->next) {
 		sr_probe *const probe = (sr_probe*)l->data;
 		assert(probe);
 		if (probe->enabled)
@@ -95,7 +111,7 @@ void SigSession::start_capture(struct sr_dev_inst *sdi,
 
 	// Begin the session
 	_sampling_thread.reset(new boost::thread(
-		&SigSession::sample_thread_proc, this, sdi,
+		&SigSession::sample_thread_proc, this, _sdi,
 		record_length, error_handler));
 }
 

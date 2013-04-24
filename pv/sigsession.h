@@ -62,13 +62,22 @@ public:
 
 	~SigSession();
 
+	/**
+	 * Gets device instance that will be used in the next capture session.
+	 */
+	struct sr_dev_inst* get_device() const;
+
+	/**
+	 * Sets device instance that will be used in the next capture session.
+	 */
+	void set_device(struct sr_dev_inst *sdi);
+
 	void load_file(const std::string &name,
 		boost::function<void (const QString)> error_handler);
 
 	capture_state get_capture_state() const;
 
-	void start_capture(struct sr_dev_inst* sdi,
-		uint64_t record_length,
+	void start_capture(uint64_t record_length,
 		boost::function<void (const QString)> error_handler);
 
 	void stop_capture();
@@ -105,6 +114,12 @@ private:
 		const struct sr_datafeed_packet *packet, void *cb_data);
 
 private:
+
+	/**
+	 * The device instance that will be used in the next capture session.
+	 */
+	struct sr_dev_inst *_sdi;
+
 	mutable boost::mutex _sampling_mutex;
 	capture_state _capture_state;
 
