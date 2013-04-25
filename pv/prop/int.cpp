@@ -42,6 +42,10 @@ Int::Int(QString name,
 {
 }
 
+Int::~Int()
+{
+}
+
 QWidget* Int::get_widget(QWidget *parent)
 {
 	if (_spin_box)

@@ -39,6 +39,8 @@ public:
 		boost::optional< std::pair<int64_t, int64_t> > range,
 		Getter getter, Setter setter);
 
+	virtual ~Int();
+
 	QWidget* get_widget(QWidget *parent);
 
 	void commit();

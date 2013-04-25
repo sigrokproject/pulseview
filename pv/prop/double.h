@@ -41,6 +41,8 @@ public:
 		Getter getter,
 		Setter setter);
 
+	virtual ~Double();
+
 	QWidget* get_widget(QWidget *parent);
 
 	void commit();

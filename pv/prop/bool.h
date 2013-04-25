@@ -33,6 +33,8 @@ class Bool : public Property
 public:
 	Bool(QString name, Getter getter, Setter setter);
 
+	virtual ~Bool();
+
 	QWidget* get_widget(QWidget *parent);
 	bool labeled_widget() const;
 

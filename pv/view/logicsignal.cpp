@@ -62,6 +62,10 @@ LogicSignal::LogicSignal(QString name, shared_ptr<data::Logic> data,
 	_colour = SignalColours[_probe_index % countof(SignalColours)];
 }
 
+LogicSignal::~LogicSignal()
+{
+}
+
 void LogicSignal::paint(QPainter &p, int y, int left, int right,
 		double scale, double offset)
 {

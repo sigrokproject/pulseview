@@ -45,6 +45,8 @@ public:
 	AnalogSignal(QString name,
 		boost::shared_ptr<pv::data::Analog> data, int probe_index);
 
+	virtual ~AnalogSignal();
+
 	void set_scale(float scale);
 
 	/**

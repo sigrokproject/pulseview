@@ -46,6 +46,10 @@ Double::Double(QString name,
 {
 }
 
+Double::~Double()
+{
+}
+
 QWidget* Double::get_widget(QWidget *parent)
 {
 	if (_spin_box)

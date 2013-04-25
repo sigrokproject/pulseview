@@ -36,6 +36,10 @@ Bool::Bool(QString name, Getter getter, Setter setter) :
 {
 }
 
+Bool::~Bool()
+{
+}
+
 QWidget* Bool::get_widget(QWidget *parent)
 {
 	if (_check_box)

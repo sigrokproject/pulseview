@@ -50,6 +50,10 @@ AnalogSignal::AnalogSignal(QString name, shared_ptr<data::Analog> data,
 	_colour = SignalColours[probe_index % countof(SignalColours)];
 }
 
+AnalogSignal::~AnalogSignal()
+{
+}
+
 void AnalogSignal::set_scale(float scale)
 {
 	_scale = scale;

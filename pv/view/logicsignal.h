@@ -49,6 +49,8 @@ public:
 		boost::shared_ptr<pv::data::Logic> data,
 		int probe_index);
 
+	virtual ~LogicSignal();
+
 	/**
 	 * Paints the signal with a QPainter
 	 * @param p the QPainter to paint into.
