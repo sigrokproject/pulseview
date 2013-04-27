@@ -188,7 +188,7 @@ void LogicSnapshot::get_subsampled_edges(
 	assert(start <= end);
 	assert(min_length > 0);
 	assert(sig_index >= 0);
-	assert(sig_index < SR_MAX_NUM_PROBES);
+	assert(sig_index < 64);
 
 	lock_guard<recursive_mutex> lock(_mutex);
 
