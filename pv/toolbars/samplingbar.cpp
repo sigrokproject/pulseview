@@ -174,6 +174,7 @@ void SamplingBar::update_sample_rate_selector()
 	GVariant *gvar_dict, *gvar_list;
 	const uint64_t *elements = NULL;
 	gsize num_elements;
+	QAction *selector_action = NULL;
 
 	assert(_sample_rate_value_action);
 	assert(_sample_rate_list_action);
@@ -194,8 +195,9 @@ void SamplingBar::update_sample_rate_selector()
 				gvar_list, &num_elements, sizeof(uint64_t));
 		_sample_rate_value.setRange(elements[0], elements[1]);
 		_sample_rate_value.setSingleStep(elements[2]);
-		_sample_rate_value_action->setVisible(true);
 		g_variant_unref(gvar_list);
+
+		selector_action = _sample_rate_value_action;
 	}
 	else if ((gvar_list = g_variant_lookup_value(gvar_dict,
 			"samplerates", G_VARIANT_TYPE("at"))))
@@ -213,12 +215,18 @@ void SamplingBar::update_sample_rate_selector()
 		}
 
 		_sample_rate_list.show();
-		_sample_rate_list_action->setVisible(true);
 		g_variant_unref(gvar_list);
+
+		selector_action = _sample_rate_list_action;
 	}
 
 	g_variant_unref(gvar_dict);
 	update_sample_rate_selector_value();
+
+	// We delay showing the action, so that value change events
+	// are ignored.
+	if (selector_action)
+		selector_action->setVisible(true);
 }
 
 void SamplingBar::update_sample_rate_selector_value()
@@ -271,6 +279,9 @@ void SamplingBar::commit_sample_rate()
 			sample_rate = _sample_rate_list.itemData(
 				index).value<uint64_t>();
 	}
+
+	if (sample_rate == 0)
+		return;
 
 	// Set the samplerate
 	if (sr_config_set(sdi, SR_CONF_SAMPLERATE,
