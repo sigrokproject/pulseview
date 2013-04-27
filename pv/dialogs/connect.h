@@ -34,6 +34,9 @@ struct sr_config;
 struct sr_dev_inst;
 
 namespace pv {
+
+class DeviceManager;
+
 namespace dialogs {
 
 class Connect : public QDialog
@@ -41,7 +44,7 @@ class Connect : public QDialog
 	Q_OBJECT
 
 public:
-	Connect(QWidget *parent);
+	Connect(QWidget *parent, pv::DeviceManager &device_manager);
 
 	struct sr_dev_inst* get_selected_device() const;
 
@@ -61,6 +64,8 @@ private:
 	static void free_drvopts(sr_config *src);
 
 private:
+	pv::DeviceManager &_device_manager;
+
 	QVBoxLayout _layout;
 
 	QWidget _form;

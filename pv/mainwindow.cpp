@@ -23,6 +23,7 @@
 #endif
 
 #include <boost/bind.hpp>
+#include <boost/foreach.hpp>
 
 #include <QAction>
 #include <QApplication>
@@ -36,6 +37,8 @@
 #include <QWidget>
 
 #include "mainwindow.h"
+
+#include "devicemanager.h"
 #include "dialogs/about.h"
 #include "dialogs/connect.h"
 #include "toolbars/samplingbar.h"
@@ -49,12 +52,15 @@
 #include <glib.h>
 #include <libsigrok/libsigrok.h>
 
+using namespace std;
 
 namespace pv {
 
-MainWindow::MainWindow(const char *open_file_name,
+MainWindow::MainWindow(DeviceManager &device_manager,
+	const char *open_file_name,
 	QWidget *parent) :
-	QMainWindow(parent)
+	QMainWindow(parent),
+	_device_manager(device_manager)
 {
 	setup_ui();
 	if (open_file_name) {
@@ -189,12 +195,7 @@ void MainWindow::setup_ui()
 	_sampling_bar = new toolbars::SamplingBar(this);
 
 	// Populate the device list and select the initially selected device
-	scan_devices();
-	if(!_devices.empty()) {
-		struct sr_dev_inst *const initial_sdi = _devices.front();
-		_sampling_bar->set_selected_device(initial_sdi);
-		_session.set_device(initial_sdi);
-	}
+	update_device_list();
 
 	connect(_sampling_bar, SIGNAL(device_selected()), this,
 		SLOT(device_selected()));
@@ -212,29 +213,36 @@ void MainWindow::setup_ui()
 
 }
 
-void MainWindow::scan_devices()
-{
-	_devices.clear();
-
-	/* Scan all drivers for all devices. */
-	struct sr_dev_driver **const drivers = sr_driver_list();
-	for (struct sr_dev_driver **driver = drivers; *driver; driver++) {
-		GSList *const devices = sr_driver_scan(*driver, NULL);
-		for (GSList *l = devices; l; l = l->next)
-			_devices.push_back((sr_dev_inst*)l->data);
-		g_slist_free(devices);
-	}
-
-	assert(_sampling_bar);
-	_sampling_bar->set_device_list(_devices);
-}
-
 void MainWindow::session_error(
 	const QString text, const QString info_text)
 {
 	QMetaObject::invokeMethod(this, "show_session_error",
 		Qt::QueuedConnection, Q_ARG(QString, text),
 		Q_ARG(QString, info_text));
+}
+
+void MainWindow::update_device_list(struct sr_dev_inst *selected_device)
+{
+	assert(_sampling_bar);
+
+	const list<sr_dev_inst*> &devices = _device_manager.devices();
+	_sampling_bar->set_device_list(devices);
+
+	if (!selected_device && !devices.empty()) {
+		// Fall back to the first device in the list.
+		selected_device = devices.front();
+
+		// Try and find the demo device and select that by default
+		BOOST_FOREACH (struct sr_dev_inst *sdi, devices)
+			if (strcmp(sdi->driver->name, "demo") == 0) {
+				selected_device = sdi;
+			}
+	}
+
+	if (selected_device) {
+		_sampling_bar->set_selected_device(selected_device);
+		_session.set_device(selected_device);
+	}
 }
 
 void MainWindow::load_file(QString file_name)
@@ -269,20 +277,12 @@ void MainWindow::on_actionOpen_triggered()
 
 void MainWindow::on_actionConnect_triggered()
 {
-	dialogs::Connect dlg(this);
+	dialogs::Connect dlg(this, _device_manager);
 	if (!dlg.exec())
 		return;
 
 	struct sr_dev_inst *const sdi = dlg.get_selected_device();
-	if (sdi) {
-		assert(_sampling_bar);
-
-		_devices.push_back(sdi);
-		_sampling_bar->set_device_list(_devices);
-		_sampling_bar->set_selected_device(sdi);
-
-		_session.set_device(sdi);
-	}
+	update_device_list(sdi);
 }
 
 void MainWindow::on_actionQuit_triggered()

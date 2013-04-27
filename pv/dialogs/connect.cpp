@@ -18,7 +18,11 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
+#include <boost/foreach.hpp>
+
 #include "connect.h"
+
+#include "pv/devicemanager.h"
 
 extern "C" {
 /* __STDC_FORMAT_MACROS is required for PRIu64 and friends (in C++). */
@@ -27,13 +31,16 @@ extern "C" {
 #include <libsigrok/libsigrok.h>
 }
 
+using namespace std;
+
 extern sr_context *sr_ctx;
 
 namespace pv {
 namespace dialogs {
 
-Connect::Connect(QWidget *parent) :
+Connect::Connect(QWidget *parent, pv::DeviceManager &device_manager) :
 	QDialog(parent),
+	_device_manager(device_manager),
 	_layout(this),
 	_form(this),
 	_form_layout(&_form),
@@ -148,11 +155,12 @@ void Connect::scan_pressed()
 		drvopts = g_slist_append(drvopts, src);
 	}
 
-	GSList *const devices = sr_driver_scan(driver, drvopts);
+	const list<sr_dev_inst*> devices = _device_manager.driver_scan(
+		driver, drvopts);
 
-	for (GSList *l = devices; l; l = l->next) {
+	g_slist_free_full(drvopts, (GDestroyNotify)free_drvopts);
 
-		sr_dev_inst *const sdi = (sr_dev_inst*)l->data;
+	BOOST_FOREACH(sr_dev_inst *const sdi, devices) {
 
 		QString text;
 		if (sdi->vendor && sdi->vendor[0])
@@ -171,9 +179,6 @@ void Connect::scan_pressed()
 		item->setData(Qt::UserRole, qVariantFromValue((void*)sdi));
 		_device_list.addItem(item);
 	}
-
-	g_slist_free(devices);
-	g_slist_free_full(drvopts, (GDestroyNotify)free_drvopts);
 
 	_device_list.setCurrentRow(0);
 	_button_box.button(QDialogButtonBox::Ok)->setDisabled(false);

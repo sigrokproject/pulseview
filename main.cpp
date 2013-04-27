@@ -34,6 +34,7 @@
 #include "signalhandler.h"
 #endif
 
+#include "pv/devicemanager.h"
 #include "pv/mainwindow.h"
 
 #include "config.h"
@@ -128,20 +129,12 @@ int main(int argc, char *argv[])
 		srd_decoder_load_all();
 #endif
 
-		// Initialize all libsigrok drivers
-		sr_dev_driver **const drivers = sr_driver_list();
-		for (sr_dev_driver **driver = drivers; *driver; driver++) {
-			if (sr_driver_init(sr_ctx, *driver) != SR_OK) {
-				qDebug("Failed to initialize driver %s",
-					(*driver)->name);
-				ret = 1;
-				break;
-			}
-		}
+		try {
+			// Create the device manager, initialise the drivers
+			pv::DeviceManager device_manager(sr_ctx);
 
-		if (ret == 0) {
 			// Initialise the main window
-			pv::MainWindow w(open_file);
+			pv::MainWindow w(device_manager, open_file);
 			w.show();
 
 #ifdef ENABLE_SIGNALS
@@ -162,6 +155,9 @@ int main(int argc, char *argv[])
 
 			// Run the application
 			ret = a.exec();
+
+		} catch(std::exception e) {
+			qDebug() << e.what();
 		}
 
 #ifdef ENABLE_SIGROKDECODE

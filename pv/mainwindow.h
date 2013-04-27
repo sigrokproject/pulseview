@@ -37,6 +37,8 @@ class QWidget;
 
 namespace pv {
 
+class DeviceManager;
+
 namespace toolbars {
 class SamplingBar;
 }
@@ -50,14 +52,23 @@ class MainWindow : public QMainWindow
 	Q_OBJECT
 
 public:
-	explicit MainWindow(const char *open_file_name = NULL,
+	explicit MainWindow(DeviceManager &device_manager,
+		const char *open_file_name = NULL,
 		QWidget *parent = 0);
 
 private:
 	void setup_ui();
-	void scan_devices();
 
 	void session_error(const QString text, const QString info_text);
+
+	/**
+	 * Updates the device list in the sampling bar, and updates the
+	 * selection.
+	 * @param selected_device The device to select, or NULL if the
+	 * first device in the device list should be selected.
+	 */
+	void update_device_list(
+		struct sr_dev_inst *selected_device = NULL);
 
 private slots:
 	void load_file(QString file_name);
@@ -86,9 +97,9 @@ private slots:
 	void capture_state_changed(int state);
 
 private:
+	DeviceManager &_device_manager;
 
 	SigSession _session;
-	std::list<sr_dev_inst*> _devices;
 
 	pv::view::View *_view;
 
