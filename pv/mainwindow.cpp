@@ -184,7 +184,7 @@ void MainWindow::setup_ui()
 	QMetaObject::connectSlotsByName(this);
 
 	// Setup the toolbar
-	_toolbar = new QToolBar(this);
+	_toolbar = new QToolBar(tr("Main Toolbar"), this);
 	_toolbar->addAction(_action_open);
 	_toolbar->addSeparator();
 	_toolbar->addAction(_action_view_zoom_in);
