@@ -166,6 +166,10 @@ void SigSession::load_thread_proc(const string name,
 	sr_session_destroy();
 
 	set_capture_state(Stopped);
+
+	// Confirm that SR_DF_END was received
+	assert(!_cur_logic_snapshot);
+	assert(!_cur_analog_snapshot);
 }
 
 void SigSession::sample_thread_proc(struct sr_dev_inst *sdi,
@@ -204,6 +208,10 @@ void SigSession::sample_thread_proc(struct sr_dev_inst *sdi,
 	sr_session_destroy();
 
 	set_capture_state(Stopped);
+
+	// Confirm that SR_DF_END was received
+	assert(!_cur_logic_snapshot);
+	assert(!_cur_analog_snapshot);
 }
 
 void SigSession::feed_in_header(const sr_dev_inst *sdi)
