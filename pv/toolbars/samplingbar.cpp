@@ -31,7 +31,10 @@
 
 #include "samplingbar.h"
 
+#include <pv/devicemanager.h>
 #include <pv/dialogs/deviceoptions.h>
+
+using namespace std;
 
 namespace pv {
 namespace toolbars {
@@ -119,16 +122,9 @@ void SamplingBar::set_device_list(
 	_device_selector.clear();
 
 	BOOST_FOREACH (sr_dev_inst *sdi, devices) {
-		QString title;
-		if (sdi->vendor && sdi->vendor[0])
-			title += sdi->vendor + QString(" ");
-		if (sdi->model && sdi->model[0])
-			title += sdi->model + QString(" ");
-		if (sdi->version && sdi->version[0])
-			title += sdi->version + QString(" ");
-
-		_device_selector.addItem(title, qVariantFromValue(
-			(void*)sdi));
+		const string title = DeviceManager::format_device_title(sdi);
+		_device_selector.addItem(title.c_str(),
+			qVariantFromValue((void*)sdi));
 	}
 
 	update_sample_rate_selector();

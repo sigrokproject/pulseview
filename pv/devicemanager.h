@@ -24,6 +24,7 @@
 #include <glib.h>
 
 #include <list>
+#include <string>
 
 struct sr_context;
 struct sr_dev_driver;
@@ -43,6 +44,8 @@ public:
 	std::list<sr_dev_inst*> driver_scan(
 		struct sr_dev_driver *const driver,
 		GSList *const drvopts = NULL);
+
+	static std::string format_device_title(const sr_dev_inst *const sdi);
 
 private:
 	void init_drivers();

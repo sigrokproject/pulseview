@@ -21,7 +21,7 @@
 #include "devicemanager.h"
 
 #include <cassert>
-#include <cstring>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 
@@ -83,6 +83,31 @@ list<sr_dev_inst*> DeviceManager::driver_scan(
 	return driver_devices;
 }
 
+string DeviceManager::format_device_title(const sr_dev_inst *const sdi)
+{
+	ostringstream s;
+
+	assert(sdi);
+
+	if (sdi->vendor && sdi->vendor[0]) {
+		s << sdi->vendor;
+		if ((sdi->model && sdi->model[0]) ||
+			(sdi->version && sdi->version[0]))
+			s << ' ';
+	}
+
+	if (sdi->model && sdi->model[0]) {
+		s << sdi->model;
+		if (sdi->version && sdi->version[0])
+			s << ' ';
+	}
+
+	if (sdi->version && sdi->version[0])
+		s << sdi->version;
+
+	return s.str();
+}
+
 void DeviceManager::init_drivers()
 {
 	// Initialise all libsigrok drivers
@@ -114,22 +139,7 @@ void DeviceManager::scan_all_drivers()
 bool DeviceManager::compare_devices(const sr_dev_inst *const a,
 	const sr_dev_inst *const b)
 {
-	assert(a);
-	assert(b);
-
-	const int vendor_cmp = strcasecmp(a->vendor, b->vendor);
-	if(vendor_cmp < 0)
-		return true;
-	else if(vendor_cmp > 0)
-		return false;
-
-	const int model_cmp = strcasecmp(a->model, b->model);
-	if(model_cmp < 0)
-		return true;
-	else if(model_cmp > 0)
-		return false;
-
-	return strcasecmp(a->version, b->version) < 0;
+	return format_device_title(a).compare(format_device_title(b)) < 0;
 }
 
 } // namespace pv

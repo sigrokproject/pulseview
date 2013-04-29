@@ -160,17 +160,12 @@ void Connect::scan_pressed()
 
 	g_slist_free_full(drvopts, (GDestroyNotify)free_drvopts);
 
-	BOOST_FOREACH(sr_dev_inst *const sdi, devices) {
-
-		QString text;
-		if (sdi->vendor && sdi->vendor[0])
-			text += QString("%1 ").arg(sdi->vendor);
-		if (sdi->model && sdi->model[0])
-			text += QString("%1 ").arg(sdi->model);
-		if (sdi->version && sdi->version[0])
-			text += QString("%1 ").arg(sdi->version);
+	BOOST_FOREACH(sr_dev_inst *const sdi, devices)
+	{
+		const string title = DeviceManager::format_device_title(sdi);
+		QString text(title.c_str());
 		if (sdi->probes) {
-			text += QString("with %1 probes").arg(
+			text += QString(" with %1 probes").arg(
 				g_slist_length(sdi->probes));
 		}
 
