@@ -20,6 +20,8 @@
 
 #include <extdef.h>
 
+#include <math.h>
+
 #include <QApplication>
 
 #include "signal.h"
@@ -163,7 +165,7 @@ QRectF Signal::get_label_rect(int y, int right)
 
 	const QSizeF label_size(
 		_text_size.width() + View::LabelPadding.width() * 2,
-		_text_size.height() + View::LabelPadding.height() * 2);
+		ceilf((_text_size.height() + View::LabelPadding.height() * 2) / 2) * 2);
 	const float label_arrow_length = label_size.height() / 2;
 	return QRectF(
 		right - label_arrow_length - label_size.width() - 0.5,
