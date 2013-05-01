@@ -278,6 +278,9 @@ void MainWindow::on_actionOpen_triggered()
 
 void MainWindow::on_actionConnect_triggered()
 {
+	// Stop any currently running capture session
+	_session.stop_capture();
+
 	dialogs::Connect dlg(this, _device_manager);
 
 	// If the user selected a device, select it in the device list. Select the
