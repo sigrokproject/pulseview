@@ -19,6 +19,7 @@
  */
 
 #include "devicemanager.h"
+#include "sigsession.h"
 
 #include <cassert>
 #include <sstream>
@@ -48,6 +49,27 @@ const std::list<sr_dev_inst*>& DeviceManager::devices() const
 	return _devices;
 }
 
+void DeviceManager::use_device(sr_dev_inst *sdi, SigSession *owner)
+{
+	assert(sdi);
+	assert(owner);
+
+	_used_devices[sdi] = owner;
+
+	sr_dev_open(sdi);
+}
+
+void DeviceManager::release_device(sr_dev_inst *sdi)
+{
+	assert(sdi);
+
+	// Notify the owner, and removed the device from the used device list
+	_used_devices[sdi]->release_device(sdi);
+	_used_devices.erase(sdi);
+
+	sr_dev_close(sdi);
+}
+
 list<sr_dev_inst*> DeviceManager::driver_scan(
 	struct sr_dev_driver *const driver, GSList *const drvopts)
 {
@@ -65,8 +87,8 @@ list<sr_dev_inst*> DeviceManager::driver_scan(
 			i++;
 	}
 
-	// Clear all the old device instances from this driver
-	sr_dev_clear(driver);
+	// Release this driver and all it's attached devices
+	release_driver(driver);
 
 	// Do the scan
 	GSList *const devices = sr_driver_scan(driver, drvopts);
@@ -123,6 +145,14 @@ void DeviceManager::init_drivers()
 
 void DeviceManager::release_devices()
 {
+	// Release all the used devices
+	for (map<sr_dev_inst*, SigSession*>::iterator i = _used_devices.begin();
+		i != _used_devices.end(); i++)
+		release_device((*i).first);
+
+	_used_devices.clear();
+
+	// Clear all the drivers
 	sr_dev_driver **const drivers = sr_driver_list();
 	for (sr_dev_driver **driver = drivers; *driver; driver++)
 		sr_dev_clear(*driver);
@@ -134,6 +164,27 @@ void DeviceManager::scan_all_drivers()
 	struct sr_dev_driver **const drivers = sr_driver_list();
 	for (struct sr_dev_driver **driver = drivers; *driver; driver++)
 		driver_scan(*driver);
+}
+
+void DeviceManager::release_driver(struct sr_dev_driver *const driver)
+{
+	assert(driver);
+	for (map<sr_dev_inst*, SigSession*>::iterator i = _used_devices.begin();
+		i != _used_devices.end(); i++)
+		if((*i).first->driver == driver)
+		{
+			// Notify the current owner of the device
+			(*i).second->release_device((*i).first);
+
+			// Remove it from the used device list
+			_used_devices.erase(i);
+
+			// Close the device instance
+			sr_dev_close((*i).first);
+		}
+
+	// Clear all the old device instances from this driver
+	sr_dev_clear(driver);
 }
 
 bool DeviceManager::compare_devices(const sr_dev_inst *const a,

@@ -20,6 +20,7 @@
 
 #include "sigsession.h"
 
+#include "devicemanager.h"
 #include "data/analog.h"
 #include "data/analogsnapshot.h"
 #include "data/logic.h"
@@ -39,7 +40,8 @@ namespace pv {
 // TODO: This should not be necessary
 SigSession* SigSession::_session = NULL;
 
-SigSession::SigSession() :
+SigSession::SigSession(DeviceManager &device_manager) :
+	_device_manager(device_manager),
 	_sdi(NULL),
 	_capture_state(Stopped)
 {
@@ -59,13 +61,26 @@ SigSession::~SigSession()
 	_session = NULL;
 }
 
+struct sr_dev_inst* SigSession::get_device() const
+{
+	return _sdi;
+}
+
 void SigSession::set_device(struct sr_dev_inst *sdi)
 {
 	if (_sdi)
-		sr_dev_close(_sdi);
+		_device_manager.release_device(_sdi);
 	if (sdi)
-		sr_dev_open(sdi);
+		_device_manager.use_device(sdi, this);
 	_sdi = sdi;
+}
+
+void SigSession::release_device(struct sr_dev_inst *sdi)
+{
+	(void)sdi;
+
+	assert(_capture_state == Stopped);
+	_sdi = NULL;
 }
 
 void SigSession::load_file(const string &name,

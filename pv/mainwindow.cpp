@@ -60,7 +60,8 @@ MainWindow::MainWindow(DeviceManager &device_manager,
 	const char *open_file_name,
 	QWidget *parent) :
 	QMainWindow(parent),
-	_device_manager(device_manager)
+	_device_manager(device_manager),
+	_session(device_manager)
 {
 	setup_ui();
 	if (open_file_name) {
@@ -278,10 +279,12 @@ void MainWindow::on_actionOpen_triggered()
 void MainWindow::on_actionConnect_triggered()
 {
 	dialogs::Connect dlg(this, _device_manager);
-	if (!dlg.exec())
-		return;
 
-	struct sr_dev_inst *const sdi = dlg.get_selected_device();
+	// If the user selected a device, select it in the device list. Select the
+	// current device otherwise.
+	struct sr_dev_inst *const sdi = dlg.exec() ?
+		dlg.get_selected_device() : _session.get_device();
+
 	update_device_list(sdi);
 }
 

@@ -24,6 +24,7 @@
 #include <glib.h>
 
 #include <list>
+#include <map>
 #include <string>
 
 struct sr_context;
@@ -31,6 +32,8 @@ struct sr_dev_driver;
 struct sr_dev_inst;
 
 namespace pv {
+
+class SigSession;
 
 class DeviceManager
 {
@@ -41,6 +44,10 @@ public:
 
 	const std::list<sr_dev_inst*>& devices() const;
 
+	void use_device(sr_dev_inst *sdi, SigSession *owner);
+
+	void release_device(sr_dev_inst *sdi);
+
 	std::list<sr_dev_inst*> driver_scan(
 		struct sr_dev_driver *const driver,
 		GSList *const drvopts = NULL);
@@ -50,9 +57,11 @@ public:
 private:
 	void init_drivers();
 
-	static void release_devices();
+	void release_devices();
 
 	void scan_all_drivers();
+
+	void release_driver(struct sr_dev_driver *const driver);
 
 	static bool compare_devices(const sr_dev_inst *const a,
 		const sr_dev_inst *const b);
@@ -60,6 +69,7 @@ private:
 private:
 	struct sr_context *const _sr_ctx;
 	std::list<sr_dev_inst*> _devices;
+	std::map<sr_dev_inst*, pv::SigSession*> _used_devices;
 };
 
 } // namespace pv

@@ -36,6 +36,8 @@
 
 namespace pv {
 
+class DeviceManager;
+
 namespace data {
 class Analog;
 class AnalogSnapshot;
@@ -58,14 +60,18 @@ public:
 	};
 
 public:
-	SigSession();
+	SigSession(DeviceManager &device_manager);
 
 	~SigSession();
+
+	struct sr_dev_inst* get_device() const;
 
 	/**
 	 * Sets device instance that will be used in the next capture session.
 	 */
 	void set_device(struct sr_dev_inst *sdi);
+
+	void release_device(struct sr_dev_inst *sdi);
 
 	void load_file(const std::string &name,
 		boost::function<void (const QString)> error_handler);
@@ -109,6 +115,7 @@ private:
 		const struct sr_datafeed_packet *packet, void *cb_data);
 
 private:
+	DeviceManager &_device_manager;
 
 	/**
 	 * The device instance that will be used in the next capture session.
