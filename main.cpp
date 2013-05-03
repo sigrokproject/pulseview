@@ -19,7 +19,7 @@
  */
 
 #ifdef ENABLE_SIGROKDECODE
-#include <sigrokdecode.h> /* First, so we avoid a _POSIX_C_SOURCE warning. */
+#include <libsigrokdecode/libsigrokdecode.h> /* First, so we avoid a _POSIX_C_SOURCE warning. */
 #endif
 
 #include <stdint.h>

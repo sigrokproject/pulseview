@@ -19,7 +19,7 @@
  */
 
 #ifdef ENABLE_SIGROKDECODE
-#include <sigrokdecode.h>
+#include <libsigrokdecode/libsigrokdecode.h>
 #endif
 
 #include <boost/bind.hpp>
