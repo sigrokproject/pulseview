@@ -55,7 +55,7 @@ list(APPEND PKGDEPS
 )
 
 if(ENABLE_SIGROKDECODE)
-	list(APPEND PKGDEPS libsigrokdecode>=0.1.0)
+	list(APPEND PKGDEPS libsigrokdecode>=0.2.0)
 endif()
 
 find_package(PkgConfig)

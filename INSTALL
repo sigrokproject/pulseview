@@ -17,7 +17,7 @@ Requirements
     - libboost-system
     - libboost-thread
  - libsigrok >= 0.2.0
- - libsigrokdecode >= 0.1.0
+ - libsigrokdecode >= 0.2.0 (optional, support disabled by default for now)
 
 
 Building and installing
