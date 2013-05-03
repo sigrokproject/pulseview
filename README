@@ -12,12 +12,10 @@ PulseView is a Qt-based LA/scope/MSO GUI for sigrok.
 Status
 ------
 
-PulseView is currently work in progress. Some basic functionality
-is there, but it should still be considered alpha/beta stage software.
+PulseView is in a usable state and has had official tarball releases.
 
-There have been no official tarball releases, yet.
-
-Distro packagers should NOT package this, yet.
+However, it is still work in progress. Some basic functionality
+is available and working, but other things are still on the TODO list.
 
 
 Copyright and license
