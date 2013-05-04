@@ -34,13 +34,15 @@ class AnalogSnapshot;
 class Analog : public SignalData
 {
 public:
-	Analog(uint64_t samplerate);
+	Analog();
 
 	void push_snapshot(
 		boost::shared_ptr<AnalogSnapshot> &snapshot);
 
 	std::deque< boost::shared_ptr<AnalogSnapshot> >&
 		get_snapshots();
+
+	void clear_snapshots();
 
 private:
 	std::deque< boost::shared_ptr<AnalogSnapshot> > _snapshots;

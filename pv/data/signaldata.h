@@ -29,15 +29,20 @@ namespace data {
 class SignalData
 {
 public:
-	SignalData(double samplerate);
+	SignalData();
 
 public:
 	double get_samplerate() const;
+	void set_samplerate(double samplerate);
+
 	double get_start_time() const;
 
+	virtual void clear_snapshots() = 0;
+
 protected:
-	const double _samplerate;
 	const double _start_time;
+
+	double _samplerate;
 };
 
 } // namespace data

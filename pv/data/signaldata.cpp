@@ -23,15 +23,21 @@
 namespace pv {
 namespace data {
 
-SignalData::SignalData(double samplerate) :
-	_samplerate(samplerate),
-	_start_time(0)
+SignalData::SignalData() :
+	_start_time(0),
+	_samplerate(0)
 {
 }
 
 double SignalData::get_samplerate() const
 {
 	return _samplerate;
+}
+
+void SignalData::set_samplerate(double samplerate)
+{
+	_samplerate = samplerate;
+	clear_snapshots();
 }
 
 double SignalData::get_start_time() const

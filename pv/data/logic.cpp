@@ -27,8 +27,8 @@ using namespace std;
 namespace pv {
 namespace data {
 
-Logic::Logic(unsigned int num_probes, uint64_t samplerate) :
-	SignalData(samplerate),
+Logic::Logic(unsigned int num_probes) :
+	SignalData(),
 	_num_probes(num_probes)
 {
 	assert(_num_probes > 0);
@@ -48,6 +48,11 @@ void Logic::push_snapshot(
 deque< shared_ptr<LogicSnapshot> >& Logic::get_snapshots()
 {
 	return _snapshots;
+}
+
+void Logic::clear_snapshots()
+{
+	_snapshots.clear();
 }
 
 } // namespace data

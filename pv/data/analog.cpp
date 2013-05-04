@@ -27,8 +27,8 @@ using namespace std;
 namespace pv {
 namespace data {
 
-Analog::Analog(uint64_t samplerate) :
-	SignalData(samplerate)
+Analog::Analog() :
+	SignalData()
 {
 }
 
@@ -40,6 +40,11 @@ void Analog::push_snapshot(shared_ptr<AnalogSnapshot> &snapshot)
 deque< shared_ptr<AnalogSnapshot> >& Analog::get_snapshots()
 {
 	return _snapshots;
+}
+
+void Analog::clear_snapshots()
+{
+	_snapshots.clear();
 }
 
 } // namespace data

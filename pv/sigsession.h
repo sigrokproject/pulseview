@@ -91,6 +91,8 @@ public:
 private:
 	void set_capture_state(capture_state state);
 
+	void update_signals();
+
 private:
 	/**
 	 * Attempts to autodetect the format. Failing that

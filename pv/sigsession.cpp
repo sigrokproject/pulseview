@@ -79,6 +79,7 @@ void SigSession::set_device(struct sr_dev_inst *sdi)
 	if (sdi)
 		_device_manager.use_device(sdi, this);
 	_sdi = sdi;
+	update_signals();
 }
 
 void SigSession::release_device(struct sr_dev_inst *sdi)
@@ -87,6 +88,7 @@ void SigSession::release_device(struct sr_dev_inst *sdi)
 
 	assert(_capture_state == Stopped);
 	_sdi = NULL;
+	update_signals();
 }
 
 void SigSession::load_file(const string &name,
@@ -242,6 +244,91 @@ sr_input* SigSession::load_input_file_format(const string &filename,
 	return in;
 }
 
+void SigSession::update_signals()
+{
+	assert(_capture_state == Stopped);
+
+	shared_ptr<view::Signal> signal;
+	unsigned int logic_probe_count = 0;
+	unsigned int analog_probe_count = 0;
+
+	// Detect what data types we will receive
+	if(_sdi) {
+		for (const GSList *l = _sdi->probes; l; l = l->next) {
+			const sr_probe *const probe = (const sr_probe *)l->data;
+			if (!probe->enabled)
+				continue;
+
+			switch(probe->type) {
+			case SR_PROBE_LOGIC:
+				logic_probe_count++;
+				break;
+
+			case SR_PROBE_ANALOG:
+				analog_probe_count++;
+				break;
+			}
+		}
+	}
+
+	// Create data containers for the data snapshots
+	{
+		lock_guard<mutex> data_lock(_data_mutex);
+
+		_logic_data.reset();
+		if (logic_probe_count != 0) {
+			_logic_data.reset(new data::Logic(
+				logic_probe_count));
+			assert(_logic_data);
+		}
+
+		_analog_data.reset();
+		if (analog_probe_count != 0) {
+			_analog_data.reset(new data::Analog());
+			assert(_analog_data);
+		}
+	}
+
+	// Make the Signals list
+	{
+		lock_guard<mutex> lock(_signals_mutex);
+
+		_signals.clear();
+
+		if(_sdi) {
+			for (const GSList *l = _sdi->probes; l; l = l->next) {
+				const sr_probe *const probe =
+					(const sr_probe *)l->data;
+				assert(probe);
+				if (!probe->enabled)
+					continue;
+
+				switch(probe->type) {
+				case SR_PROBE_LOGIC:
+					signal = shared_ptr<view::Signal>(
+						new view::LogicSignal(
+							probe->name,
+							_logic_data,
+							probe->index));
+					break;
+
+				case SR_PROBE_ANALOG:
+					signal = shared_ptr<view::Signal>(
+						new view::AnalogSignal(
+							probe->name,
+							_analog_data,
+							probe->index));
+					break;
+				}
+
+				_signals.push_back(signal);
+			}
+		}
+	}
+
+	signals_changed();
+}
+
 void SigSession::load_thread_proc(const string name,
 	function<void (const QString)> error_handler)
 {
@@ -320,28 +407,8 @@ void SigSession::sample_thread_proc(struct sr_dev_inst *sdi,
 
 void SigSession::feed_in_header(const sr_dev_inst *sdi)
 {
-	shared_ptr<view::Signal> signal;
 	GVariant *gvar;
 	uint64_t sample_rate = 0;
-	unsigned int logic_probe_count = 0;
-	unsigned int analog_probe_count = 0;
-
-	// Detect what data types we will receive
-	for (const GSList *l = sdi->probes; l; l = l->next) {
-		const sr_probe *const probe = (const sr_probe *)l->data;
-		if (!probe->enabled)
-			continue;
-
-		switch(probe->type) {
-		case SR_PROBE_LOGIC:
-			logic_probe_count++;
-			break;
-
-		case SR_PROBE_ANALOG:
-			analog_probe_count++;
-			break;
-		}
-	}
 
 	// Read out the sample rate
 	if(sdi->driver)
@@ -357,54 +424,10 @@ void SigSession::feed_in_header(const sr_dev_inst *sdi)
 		g_variant_unref(gvar);
 	}
 
-	// Create data containers for the coming data snapshots
-	{
-		lock_guard<mutex> data_lock(_data_mutex);
-
-		if (logic_probe_count != 0) {
-			_logic_data.reset(new data::Logic(
-				logic_probe_count, sample_rate));
-			assert(_logic_data);
-		}
-
-		if (analog_probe_count != 0) {
-			_analog_data.reset(new data::Analog(sample_rate));
-			assert(_analog_data);
-		}
-	}
-
-	// Make the logic probe list
-	{
-		lock_guard<mutex> lock(_signals_mutex);
-
-		_signals.clear();
-
-		for (const GSList *l = sdi->probes; l; l = l->next) {
-			const sr_probe *const probe =
-				(const sr_probe *)l->data;
-			assert(probe);
-			if (!probe->enabled)
-				continue;
-
-			switch(probe->type) {
-			case SR_PROBE_LOGIC:
-				signal = shared_ptr<view::Signal>(
-					new view::LogicSignal(probe->name,
-						_logic_data, probe->index));
-				break;
-
-			case SR_PROBE_ANALOG:
-				signal = shared_ptr<view::Signal>(
-					new view::AnalogSignal(probe->name,
-						_analog_data, probe->index));
-				break;
-			}
-
-			_signals.push_back(signal);
-		}
-
-		signals_changed();
-	}
+	if(_analog_data)
+		_analog_data->set_samplerate(sample_rate);
+	if(_logic_data)
+		_logic_data->set_samplerate(sample_rate);
 }
 
 void SigSession::feed_in_meta(const sr_dev_inst *sdi,
