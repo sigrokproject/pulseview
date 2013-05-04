@@ -1,8 +1,8 @@
-.TH PULSEVIEW 1 "May 1, 2013"
+.TH PULSEVIEW 1 "May 4, 2013"
 .SH "NAME"
 PulseView \- Qt-based LA/scope/MSO GUI for sigrok
 .SH "SYNOPSIS"
-.B pulseview \fR[\fB\-h?V\fR] [\fB\-h\fR|\fB\-?\fR|\fB\-\-help\fR] [\fB\-V\fR|\fB\-\-version\fR]
+.B pulseview \fR[\fB\-lh?V\fR] [\fB\-l\fR|\fB\-\-loglevel\fR] [\fB\-h\fR|\fB\-?\fR|\fB\-\-help\fR] [\fB\-V\fR|\fB\-\-version\fR] [\fBfile.sr\fR]
 .SH "DESCRIPTION"
 .B PulseView
 is a cross-platform Qt-based GUI for the
@@ -13,6 +13,26 @@ oscilloscopes, MSOs, and more.
 .B PulseView
 has very few command line options, as most configuration elements are
 available from the GUI itself.
+.sp
+If the optional \fBfile.sr\fR argument is supplied, PulseView tries to open
+the specified file. It has to be in the "libsigrok session" format.
+.TP
+.B "\-l, \-\-loglevel"
+Set the libsigrok and libsigrokdecode loglevel. At the moment PulseView
+doesn't support setting the two loglevels independently. The higher the
+number, the more debug output will be printed. Valid loglevels are:
+.sp
+\fB0\fP   None
+.br
+\fB1\fP   Error
+.br
+\fB2\fP   Warnings
+.br
+\fB3\fP   Informational
+.br
+\fB4\fP   Debug
+.br
+\fB5\fP   Spew
 .TP
 .B "\-h, \-?, \-\-help"
 Show a help text and exit.
