@@ -33,6 +33,8 @@
 
 #include <libsigrok/libsigrok.h>
 
+#include "selectableitem.h"
+
 namespace pv {
 
 namespace data {
@@ -41,7 +43,7 @@ class SignalData;
 
 namespace view {
 
-class Signal
+class Signal : public SelectableItem
 {
 private:
 	static const int LabelHitPadding;
