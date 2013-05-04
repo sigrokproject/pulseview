@@ -20,6 +20,7 @@
 
 cmake_minimum_required(VERSION 2.6)
 include(FindPkgConfig)
+include(GNUInstallDirs)
 
 project(pulseview)
 
@@ -235,7 +236,11 @@ endif()
 #= Installation
 #-------------------------------------------------------------------------------
 
+# Install the executable.
 install(TARGETS ${PROJECT_NAME} DESTINATION bin/)
+
+# Install the manpage.
+install(FILES doc/pulseview.1 DESTINATION ${CMAKE_INSTALL_MANDIR}/man1 COMPONENT doc)
 
 #===============================================================================
 #= Packaging (handled by CPack)
