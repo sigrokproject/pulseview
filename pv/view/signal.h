@@ -31,6 +31,8 @@
 
 #include <stdint.h>
 
+#include <libsigrok/libsigrok.h>
+
 namespace pv {
 
 namespace data {
@@ -48,7 +50,7 @@ private:
 	static const QPen SignalAxisPen;
 
 protected:
-	Signal(QString name);
+	Signal(const sr_probe *const probe);
 
 public:
 	/**
@@ -156,6 +158,8 @@ private:
 	QRectF get_label_rect(int y, int right);
 
 protected:
+	const sr_probe *const _probe;
+
 	QString _name;
 	QColor _colour;
 	int _v_offset;

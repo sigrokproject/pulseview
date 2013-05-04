@@ -41,13 +41,13 @@ const QColor AnalogSignal::SignalColours[4] = {
 
 const float AnalogSignal::EnvelopeThreshold = 256.0f;
 
-AnalogSignal::AnalogSignal(QString name, shared_ptr<data::Analog> data,
-	int probe_index) :
-	Signal(name),
+AnalogSignal::AnalogSignal(const sr_probe *const probe,
+	shared_ptr<data::Analog> data) :
+	Signal(probe),
 	_data(data),
 	_scale(1.0f)
 {
-	_colour = SignalColours[probe_index % countof(SignalColours)];
+	_colour = SignalColours[probe->index % countof(SignalColours)];
 }
 
 AnalogSignal::~AnalogSignal()
@@ -65,6 +65,9 @@ void AnalogSignal::paint(QPainter &p, int y, int left, int right, double scale,
 	assert(scale > 0);
 	assert(_data);
 	assert(right >= left);
+
+	if (!_probe->enabled)
+		return;
 
 	paint_axis(p, y, left, right);
 

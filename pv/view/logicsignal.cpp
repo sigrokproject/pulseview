@@ -52,14 +52,12 @@ const QColor LogicSignal::SignalColours[10] = {
 	QColor(0xEE, 0xEE, 0xEC),	// White
 };
 
-LogicSignal::LogicSignal(QString name, shared_ptr<data::Logic> data,
-	int probe_index) :
-	Signal(name),
-	_probe_index(probe_index),
+LogicSignal::LogicSignal(const sr_probe *const probe,
+	shared_ptr<data::Logic> data) :
+	Signal(probe),
 	_data(data)
 {
-	assert(_probe_index >= 0);
-	_colour = SignalColours[_probe_index % countof(SignalColours)];
+	_colour = SignalColours[probe->index % countof(SignalColours)];
 }
 
 LogicSignal::~LogicSignal()
@@ -75,9 +73,13 @@ void LogicSignal::paint(QPainter &p, int y, int left, int right,
 
 	vector< pair<int64_t, bool> > edges;
 
+	assert(_probe);
 	assert(scale > 0);
 	assert(_data);
 	assert(right >= left);
+
+	if (!_probe->enabled)
+		return;
 
 	paint_axis(p, y, left, right);
 
@@ -108,7 +110,7 @@ void LogicSignal::paint(QPainter &p, int y, int left, int right,
 	snapshot->get_subsampled_edges(edges,
 		min(max((int64_t)floor(start), (int64_t)0), last_sample),
 		min(max((int64_t)ceil(end), (int64_t)0), last_sample),
-		samples_per_pixel / Oversampling, _probe_index);
+		samples_per_pixel / Oversampling, _probe->index);
 	assert(edges.size() >= 2);
 
 	// Paint the edges

@@ -300,24 +300,18 @@ void SigSession::update_signals()
 				const sr_probe *const probe =
 					(const sr_probe *)l->data;
 				assert(probe);
-				if (!probe->enabled)
-					continue;
 
 				switch(probe->type) {
 				case SR_PROBE_LOGIC:
 					signal = shared_ptr<view::Signal>(
-						new view::LogicSignal(
-							probe->name,
-							_logic_data,
-							probe->index));
+						new view::LogicSignal(probe,
+							_logic_data));
 					break;
 
 				case SR_PROBE_ANALOG:
 					signal = shared_ptr<view::Signal>(
-						new view::AnalogSignal(
-							probe->name,
-							_analog_data,
-							probe->index));
+						new view::AnalogSignal(probe,
+							_analog_data));
 					break;
 				}
 

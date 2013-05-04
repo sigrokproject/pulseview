@@ -42,8 +42,8 @@ private:
 	static const float EnvelopeThreshold;
 
 public:
-	AnalogSignal(QString name,
-		boost::shared_ptr<pv::data::Analog> data, int probe_index);
+	AnalogSignal(const sr_probe *const probe,
+		boost::shared_ptr<pv::data::Analog> data);
 
 	virtual ~AnalogSignal();
 

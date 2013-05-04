@@ -45,9 +45,8 @@ private:
 	static const QColor SignalColours[10];
 
 public:
-	LogicSignal(QString name,
-		boost::shared_ptr<pv::data::Logic> data,
-		int probe_index);
+	LogicSignal(const sr_probe *const probe,
+		boost::shared_ptr<pv::data::Logic> data);
 
 	virtual ~LogicSignal();
 
@@ -72,7 +71,6 @@ private:
 		float x_offset, float y_offset);
 
 private:
-	int _probe_index;
 	boost::shared_ptr<pv::data::Logic> _data;
 };
 

@@ -20,6 +20,7 @@
 
 #include <extdef.h>
 
+#include <assert.h>
 #include <math.h>
 
 #include <QApplication>
@@ -35,11 +36,13 @@ const int Signal::LabelHighlightRadius = 6;
 
 const QPen Signal::SignalAxisPen(QColor(128, 128, 128, 64));
 
-Signal::Signal(QString name) :
-	_name(name),
+Signal::Signal(const sr_probe *const probe) :
+	_probe(probe),
+	_name(probe->name),
 	_v_offset(0),
 	_selected(false)
 {
+	assert(_probe);
 }
 
 QString Signal::get_name() const
@@ -85,6 +88,9 @@ void Signal::select(bool select)
 void Signal::paint_label(QPainter &p, int y, int right, bool hover)
 {
 	p.setBrush(_colour);
+
+	if (!_probe->enabled)
+		return;
 
 	const QColor colour = get_colour();
 
