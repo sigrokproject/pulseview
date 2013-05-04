@@ -40,6 +40,7 @@ namespace pv {
 class DeviceManager;
 
 namespace toolbars {
+class ContextBar;
 class SamplingBar;
 }
 
@@ -122,6 +123,7 @@ private:
 
 	QToolBar *_toolbar;
 	toolbars::SamplingBar *_sampling_bar;
+	toolbars::ContextBar *_context_bar;
 };
 
 } // namespace pv

@@ -120,6 +120,7 @@ set(pulseview_SOURCES
 	pv/prop/property.cpp
 	pv/prop/binding/binding.cpp
 	pv/prop/binding/deviceoptions.cpp
+	pv/toolbars/contextbar.cpp
 	pv/toolbars/samplingbar.cpp
 	pv/view/analogsignal.cpp
 	pv/view/cursor.cpp
@@ -139,6 +140,7 @@ set(pulseview_HEADERS
 	pv/dialogs/about.h
 	pv/dialogs/connect.h
 	pv/dialogs/deviceoptions.h
+	pv/toolbars/contextbar.h
 	pv/toolbars/samplingbar.h
 	pv/view/cursor.h
 	pv/view/header.h

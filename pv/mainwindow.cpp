@@ -41,6 +41,7 @@
 #include "devicemanager.h"
 #include "dialogs/about.h"
 #include "dialogs/connect.h"
+#include "toolbars/contextbar.h"
 #include "toolbars/samplingbar.h"
 #include "view/view.h"
 
@@ -203,6 +204,11 @@ void MainWindow::setup_ui()
 	connect(_sampling_bar, SIGNAL(run_stop()), this,
 		SLOT(run_stop()));
 	addToolBar(_sampling_bar);
+
+	// Setup the context bar
+	_context_bar = new toolbars::ContextBar(this);
+	addToolBar(_context_bar);
+	insertToolBarBreak(_context_bar);
 
 	// Set the title
 	setWindowTitle(QApplication::translate("MainWindow", "PulseView", 0,
