@@ -62,6 +62,7 @@ endif()
 find_package(PkgConfig)
 pkg_check_modules(PKGDEPS REQUIRED ${PKGDEPS})
 
+FIND_PROGRAM(QT_QMAKE_EXECUTABLE NAMES qmake4 qmake-qt4 qmake-mac)
 find_package(Qt4 REQUIRED)
 
 # Find the platform's thread library (needed for boost-thread).
