@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=PulseView
+GenericName=Signal acquisition GUI for sigrok
+Categories=Electronics;
+Comment=Control your Logic Analyzer, Oscilloscope, or MSO
+Exec=pulseview
+Icon=sigrok-logo-notext
+Type=Application
+
