@@ -92,6 +92,21 @@ private:
 	void set_capture_state(capture_state state);
 
 private:
+	/**
+	 * Attempts to autodetect the format. Failing that
+	 * @param filename The filename of the input file.
+	 * @return A pointer to the 'struct sr_input_format' that should be
+	 * 	used, or NULL if no input format was selected or
+	 * 	auto-detected.
+	 */
+	static sr_input_format* determine_input_file_format(
+		const std::string &filename);
+
+	static sr_input* load_input_file_format(
+		const std::string &filename,
+		boost::function<void (const QString)> error_handler,
+		sr_input_format *format = NULL);
+
 	void load_thread_proc(const std::string name,
 		boost::function<void (const QString)> error_handler);
 

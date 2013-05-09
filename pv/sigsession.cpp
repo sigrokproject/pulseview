@@ -30,6 +30,8 @@
 
 #include <assert.h>
 
+#include <sys/stat.h>
+
 #include <QDebug>
 
 using namespace boost;
@@ -160,31 +162,114 @@ void SigSession::set_capture_state(capture_state state)
 	capture_state_changed(state);
 }
 
+/**
+ * Attempts to autodetect the format. Failing that
+ * @param filename The filename of the input file.
+ * @return A pointer to the 'struct sr_input_format' that should be used,
+ *         or NULL if no input format was selected or auto-detected.
+ */
+sr_input_format* SigSession::determine_input_file_format(
+	const string &filename)
+{
+	int i;
+
+	/* If there are no input formats, return NULL right away. */
+	sr_input_format *const *const inputs = sr_input_list();
+	if (!inputs) {
+		g_critical("No supported input formats available.");
+		return NULL;
+	}
+
+	/* Otherwise, try to find an input module that can handle this file. */
+	for (i = 0; inputs[i]; i++) {
+		if (inputs[i]->format_match(filename.c_str()))
+			break;
+	}
+
+	/* Return NULL if no input module wanted to touch this. */
+	if (!inputs[i]) {
+		g_critical("Error: no matching input module found.");
+		return NULL;
+	}
+
+	return inputs[i];
+}
+
+sr_input* SigSession::load_input_file_format(const string &filename,
+	function<void (const QString)> error_handler,
+	sr_input_format *format)
+{
+	struct stat st;
+	sr_input *in;
+
+	if (!format && !(format =
+		determine_input_file_format(filename.c_str()))) {
+		/* The exact cause was already logged. */
+		return NULL;
+	}
+
+	if (stat(filename.c_str(), &st) == -1) {
+		error_handler(tr("Failed to load file"));
+		return NULL;
+	}
+
+	/* Initialize the input module. */
+	if (!(in = new sr_input)) {
+		qDebug("Failed to allocate input module.\n");
+		return NULL;
+	}
+
+	in->format = format;
+	in->param = NULL;
+	if (in->format->init &&
+		in->format->init(in, filename.c_str()) != SR_OK) {
+		qDebug("Input format init failed.\n");
+		return NULL;
+	}
+
+	sr_session_new();
+
+	if (sr_session_dev_add(in->sdi) != SR_OK) {
+		qDebug("Failed to use device.\n");
+		sr_session_destroy();
+		return NULL;
+	}
+
+	return in;
+}
+
 void SigSession::load_thread_proc(const string name,
 	function<void (const QString)> error_handler)
 {
-	if (sr_session_load(name.c_str()) != SR_OK) {
-		error_handler(tr("Failed to load file."));
-		return;
+	sr_input *in = NULL;
+
+	if (sr_session_load(name.c_str()) == SR_OK) {
+		if (sr_session_start() != SR_OK) {
+			error_handler(tr("Failed to start session."));
+			return;
+		}
 	}
+	else if(!(in = load_input_file_format(name.c_str(), error_handler)))
+		return;
 
 	sr_session_datafeed_callback_add(data_feed_in_proc, NULL);
 
-	if (sr_session_start() != SR_OK) {
-		error_handler(tr("Failed to start session."));
-		return;
-	}
-
 	set_capture_state(Running);
 
-	sr_session_run();
-	sr_session_destroy();
+	if(in) {
+		assert(in->format);
+		in->format->loadfile(in, name.c_str());
+	} else
+		sr_session_run();
 
+	sr_session_destroy();
 	set_capture_state(Stopped);
 
 	// Confirm that SR_DF_END was received
 	assert(!_cur_logic_snapshot);
 	assert(!_cur_analog_snapshot);
+
+	delete in;
 }
 
 void SigSession::sample_thread_proc(struct sr_dev_inst *sdi,
@@ -255,17 +340,18 @@ void SigSession::feed_in_header(const sr_dev_inst *sdi)
 	}
 
 	// Read out the sample rate
-	assert(sdi->driver);
+	if(sdi->driver)
+	{
+		const int ret = sr_config_get(sdi->driver,
+			SR_CONF_SAMPLERATE, &gvar, sdi);
+		if (ret != SR_OK) {
+			qDebug("Failed to get samplerate\n");
+			return;
+		}
 
-	const int ret = sr_config_get(sdi->driver, SR_CONF_SAMPLERATE,
-		&gvar, sdi);
-	if (ret != SR_OK) {
-		qDebug("Failed to get samplerate\n");
-		return;
+		sample_rate = g_variant_get_uint64(gvar);
+		g_variant_unref(gvar);
 	}
-
-	sample_rate = g_variant_get_uint64(gvar);
-	g_variant_unref(gvar);
 
 	// Create data containers for the coming data snapshots
 	{
