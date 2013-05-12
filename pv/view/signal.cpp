@@ -39,8 +39,7 @@ const QPen Signal::SignalAxisPen(QColor(128, 128, 128, 64));
 Signal::Signal(const sr_probe *const probe) :
 	_probe(probe),
 	_name(probe->name),
-	_v_offset(0),
-	_selected(false)
+	_v_offset(0)
 {
 	assert(_probe);
 }
@@ -75,16 +74,6 @@ void Signal::set_v_offset(int v_offset)
 	_v_offset = v_offset;
 }
 
-bool Signal::selected() const
-{
-	return _selected;
-}
-
-void Signal::select(bool select)
-{
-	_selected = select;
-}
-
 void Signal::paint_label(QPainter &p, int y, int right, bool hover)
 {
 	p.setBrush(_colour);
@@ -114,7 +103,7 @@ void Signal::paint_label(QPainter &p, int y, int right, bool hover)
 		QPointF(label_rect.left() + 1, label_rect.bottom() - 1)
 	};
 
-	if (_selected) {
+	if (selected()) {
 		p.setPen(QPen(QApplication::palette().brush(
 			QPalette::Highlight), LabelHighlightRadius,
 			Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));

@@ -18,41 +18,25 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_SELECTABLEITEM_H
-#define PULSEVIEW_PV_SELECTABLEITEM_H
-
-#include <list>
-
-#include <QObject>
-
-class QAction;
+#include "selectableitem.h"
 
 namespace pv {
 namespace view {
 
-class SelectableItem : public QObject
+SelectableItem::SelectableItem() :
+	_selected(false)
 {
-	Q_OBJECT
+}
 
-public:
-	SelectableItem();
+bool SelectableItem::selected() const
+{
+	return _selected;
+}
 
-public:
-	/**
-	 * Returns true if the signal has been selected by the user.
-	 */
-	bool selected() const;
-
-	/**
-	 * Selects or deselects the signal.
-	 */
-	void select(bool select = true);
-
-private:
-	bool _selected;
-};
+void SelectableItem::select(bool select)
+{
+	_selected = select;
+}
 
 } // namespace view
 } // namespace pv
-
-#endif // PULSEVIEW_PV_SELECTABLEITEM_H

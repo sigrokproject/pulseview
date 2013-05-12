@@ -128,6 +128,7 @@ set(pulseview_SOURCES
 	pv/view/header.cpp
 	pv/view/logicsignal.cpp
 	pv/view/ruler.cpp
+	pv/view/selectableitem.cpp
 	pv/view/signal.cpp
 	pv/view/timemarker.cpp
 	pv/view/view.cpp

@@ -88,16 +88,6 @@ public:
 	void set_v_offset(int v_offset);
 
 	/**
-	 * Returns true if the signal has been selected by the user.
-	 */
-	bool selected() const;
-
-	/**
-	 * Selects or deselects the signal.
-	 */
-	void select(bool select = true);
-
-	/**
 	 * Paints the signal with a QPainter
 	 * @param p the QPainter to paint into.
 	 * @param y the y-coordinate to draw the signal at
@@ -167,8 +157,6 @@ protected:
 	QString _name;
 	QColor _colour;
 	int _v_offset;
-
-	bool _selected;
 
 	QSizeF _text_size;
 };
