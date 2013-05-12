@@ -75,66 +75,60 @@ void Cursor::paint_label(QPainter &p, const QRect &rect,
 	compute_text_size(p, prefix);
 	const QRectF r(get_label_rect(rect));
 
-	if (_time > _other.time())
-	{
-		const QPointF points[] = {
-			r.topLeft(),
-			r.topRight(),
-			r.bottomRight(),
-			QPointF(r.left() + ArrowSize, r.bottom()),
-			QPointF(r.left(), rect.bottom()),
-		};
+	const QPointF left_points[] = {
+		r.topLeft(),
+		r.topRight(),
+		r.bottomRight(),
+		QPointF(r.left() + ArrowSize, r.bottom()),
+		QPointF(r.left(), rect.bottom()),
+	};
 
-		const QPointF highlight_points[] = {
-			QPointF(r.left() + 1, r.top() + 1),
-			QPointF(r.right() - 1, r.top() + 1),
-			QPointF(r.right() - 1, r.bottom() - 1),
-			QPointF(r.left() + ArrowSize - 1, r.bottom() - 1),
-			QPointF(r.left() + 1, rect.bottom() - 1),
-		};
+	const QPointF right_points[] = {
+		r.topRight(),
+		r.topLeft(),
+		r.bottomLeft(),
+		QPointF(r.right() - ArrowSize, r.bottom()),
+		QPointF(r.right(), rect.bottom()),
+	};
 
-		p.setPen(Qt::transparent);
-		p.setBrush(FillColour);
-		p.drawPolygon(points, countof(points));
+	const QPointF left_highlight_points[] = {
+		QPointF(r.left() + 1, r.top() + 1),
+		QPointF(r.right() - 1, r.top() + 1),
+		QPointF(r.right() - 1, r.bottom() - 1),
+		QPointF(r.left() + ArrowSize - 1, r.bottom() - 1),
+		QPointF(r.left() + 1, rect.bottom() - 1),
+	};
 
-		p.setPen(HighlightColour);
+	const QPointF right_highlight_points[] = {
+		QPointF(r.right() - 1, r.top() + 1),
+		QPointF(r.left() + 1, r.top() + 1),
+		QPointF(r.left() + 1, r.bottom() - 1),
+		QPointF(r.right() - ArrowSize + 1, r.bottom() - 1),
+		QPointF(r.right() - 1, rect.bottom() - 1),
+	};
+
+	const QPointF *const points = (_time > _other.time()) ?
+		left_points : right_points;
+	const QPointF *const highlight_points = (_time > _other.time()) ?
+		left_highlight_points : right_highlight_points;
+
+	if (selected()) {
+		p.setPen(highlight_pen());
 		p.setBrush(Qt::transparent);
-		p.drawPolygon(highlight_points, countof(highlight_points));
-
-		p.setPen(LineColour);
-		p.setBrush(Qt::transparent);
-		p.drawPolygon(points, countof(points));
+		p.drawPolygon(points, countof(left_points));
 	}
-	else
-	{
-		const QPointF points[] = {
-			r.topRight(),
-			r.topLeft(),
-			r.bottomLeft(),
-			QPointF(r.right() - ArrowSize, r.bottom()),
-			QPointF(r.right(), rect.bottom()),
-		};
 
-		const QPointF highlight_points[] = {
-			QPointF(r.right() - 1, r.top() + 1),
-			QPointF(r.left() + 1, r.top() + 1),
-			QPointF(r.left() + 1, r.bottom() - 1),
-			QPointF(r.right() - ArrowSize + 1, r.bottom() - 1),
-			QPointF(r.right() - 1, rect.bottom() - 1),
-		};
+	p.setPen(Qt::transparent);
+	p.setBrush(FillColour);
+	p.drawPolygon(points, countof(left_points));
 
-		p.setPen(Qt::transparent);
-		p.setBrush(FillColour);
-		p.drawPolygon(points, countof(points));
+	p.setPen(HighlightColour);
+	p.setBrush(Qt::transparent);
+	p.drawPolygon(highlight_points, countof(left_highlight_points));
 
-		p.setPen(HighlightColour);
-		p.setBrush(Qt::transparent);
-		p.drawPolygon(highlight_points, countof(highlight_points));
-
-		p.setPen(LineColour);
-		p.setBrush(Qt::transparent);
-		p.drawPolygon(points, countof(points));
-	}
+	p.setPen(LineColour);
+	p.setBrush(Qt::transparent);
+	p.drawPolygon(points, countof(left_points));
 
 	p.setPen(TextColour);
 	p.drawText(r, Qt::AlignCenter | Qt::AlignVCenter,
