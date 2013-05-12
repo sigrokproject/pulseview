@@ -64,6 +64,12 @@ LogicSignal::~LogicSignal()
 {
 }
 
+const list<QAction*> LogicSignal::get_context_bar_actions()
+{
+	list<QAction*> actions;
+	return actions;
+}
+
 void LogicSignal::paint(QPainter &p, int y, int left, int right,
 		double scale, double offset)
 {

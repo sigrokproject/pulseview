@@ -50,6 +50,8 @@ public:
 
 	virtual ~LogicSignal();
 
+	const std::list<QAction*> get_context_bar_actions();
+
 	/**
 	 * Paints the signal with a QPainter
 	 * @param p the QPainter to paint into.

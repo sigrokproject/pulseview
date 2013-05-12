@@ -24,6 +24,8 @@
 
 #include <QPainter>
 
+using namespace std;
+
 namespace pv {
 namespace view {
 
@@ -51,6 +53,12 @@ void TimeMarker::paint(QPainter &p, const QRect &rect)
 	const float x = (_time - _view.offset()) / _view.scale();
 	p.setPen(_colour);
 	p.drawLine(QPointF(x, rect.top()), QPointF(x, rect.bottom()));
+}
+
+const list<QAction*> TimeMarker::get_context_bar_actions()
+{
+	list<QAction*> actions;
+	return actions;
 }
 
 } // namespace view

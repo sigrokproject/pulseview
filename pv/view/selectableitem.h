@@ -51,6 +51,9 @@ public:
 	 */
 	void select(bool select = true);
 
+public:
+	virtual const std::list<QAction*> get_context_bar_actions() = 0;
+
 protected:
 	static QPen highlight_pen();
 
