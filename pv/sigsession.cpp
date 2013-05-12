@@ -59,6 +59,10 @@ SigSession::~SigSession()
 		_sampling_thread->join();
 	_sampling_thread.reset();
 
+	if (_sdi)
+		_device_manager.release_device(_sdi);
+	_sdi = NULL;
+
 	// TODO: This should not be necessary
 	_session = NULL;
 }
