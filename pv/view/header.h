@@ -27,7 +27,7 @@
 #include <list>
 #include <utility>
 
-#include <QWidget>
+#include "marginwidget.h"
 
 namespace pv {
 namespace view {
@@ -35,7 +35,7 @@ namespace view {
 class Signal;
 class View;
 
-class Header : public QWidget
+class Header : public MarginWidget
 {
 	Q_OBJECT
 
@@ -71,8 +71,6 @@ signals:
 	void signals_moved();
 
 private:
-	View &_view;
-
 	QPoint _mouse_point;
 	QPoint _mouse_down_point;
 

@@ -43,8 +43,7 @@ namespace pv {
 namespace view {
 
 Header::Header(View &parent) :
-	QWidget(&parent),
-	_view(parent),
+	MarginWidget(parent),
 	_action_set_name(new QAction(tr("Set &Name..."), this)),
 	_action_set_colour(new QAction(tr("Set &Colour..."), this))
 {

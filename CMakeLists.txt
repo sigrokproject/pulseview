@@ -126,6 +126,7 @@ set(pulseview_SOURCES
 	pv/view/cursor.cpp
 	pv/view/cursorpair.cpp
 	pv/view/header.cpp
+	pv/view/marginwidget.cpp
 	pv/view/logicsignal.cpp
 	pv/view/ruler.cpp
 	pv/view/selectableitem.cpp
@@ -145,6 +146,7 @@ set(pulseview_HEADERS
 	pv/toolbars/samplingbar.h
 	pv/view/cursor.h
 	pv/view/header.h
+	pv/view/marginwidget.h
 	pv/view/ruler.h
 	pv/view/selectableitem.h
 	pv/view/signal.h

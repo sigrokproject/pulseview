@@ -21,7 +21,7 @@
 #ifndef PULSEVIEW_PV_VIEW_RULER_H
 #define PULSEVIEW_PV_VIEW_RULER_H
 
-#include <QWidget>
+#include "marginwidget.h"
 
 namespace pv {
 namespace view {
@@ -29,7 +29,7 @@ namespace view {
 class TimeMarker;
 class View;
 
-class Ruler : public QWidget
+class Ruler : public MarginWidget
 {
 	Q_OBJECT
 
@@ -65,8 +65,6 @@ private slots:
 	void hover_point_changed();
 
 private:
-	View &_view;
-
 	TimeMarker *_grabbed_marker;
 };
 

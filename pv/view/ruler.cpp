@@ -49,8 +49,7 @@ const int Ruler::FirstSIPrefixPower = -15;
 const int Ruler::HoverArrowSize = 5;
 
 Ruler::Ruler(View &parent) :
-	QWidget(&parent),
-	_view(parent),
+	MarginWidget(parent),
 	_grabbed_marker(NULL)
 {
 	setMouseTracking(true);
