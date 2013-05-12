@@ -269,9 +269,13 @@ void MainWindow::show_session_error(
 
 void MainWindow::on_actionOpen_triggered()
 {
+	// Enumerate the file formats
+	QString filters(tr("Sigrok Sessions (*.sr)"));
+	filters.append(tr(";;All Files (*.*)"));
+
+	// Show the dialog
 	const QString file_name = QFileDialog::getOpenFileName(
-		this, tr("Open File"), "",
-		tr("Sigrok Sessions (*.sr)"));
+		this, tr("Open File"), "", filters);
 	if (!file_name.isEmpty())
 		load_file(file_name);
 }
