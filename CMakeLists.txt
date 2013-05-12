@@ -145,6 +145,8 @@ set(pulseview_HEADERS
 	pv/view/cursor.h
 	pv/view/header.h
 	pv/view/ruler.h
+	pv/view/selectableitem.h
+	pv/view/signal.h
 	pv/view/timemarker.h
 	pv/view/view.h
 	pv/view/viewport.h

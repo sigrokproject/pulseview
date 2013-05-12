@@ -23,13 +23,17 @@
 
 #include <list>
 
+#include <QObject>
+
 class QAction;
 
 namespace pv {
 namespace view {
 
-class SelectableItem
+class SelectableItem : public QObject
 {
+	Q_OBJECT
+
 };
 
 } // namespace view

@@ -25,6 +25,8 @@
 #include <QObject>
 #include <QRectF>
 
+#include "selectableitem.h"
+
 class QPainter;
 class QRect;
 
@@ -33,7 +35,7 @@ namespace view {
 
 class View;
 
-class TimeMarker : public QObject
+class TimeMarker : public SelectableItem
 {
 	Q_OBJECT
 

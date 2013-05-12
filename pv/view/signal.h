@@ -45,6 +45,8 @@ namespace view {
 
 class Signal : public SelectableItem
 {
+	Q_OBJECT
+
 private:
 	static const int LabelHitPadding;
 	static const int LabelHighlightRadius;
