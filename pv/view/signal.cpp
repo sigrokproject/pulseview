@@ -32,7 +32,6 @@ namespace pv {
 namespace view {
 
 const int Signal::LabelHitPadding = 2;
-const int Signal::LabelHighlightRadius = 6;
 
 const QPen Signal::SignalAxisPen(QColor(128, 128, 128, 64));
 
@@ -104,9 +103,7 @@ void Signal::paint_label(QPainter &p, int y, int right, bool hover)
 	};
 
 	if (selected()) {
-		p.setPen(QPen(QApplication::palette().brush(
-			QPalette::Highlight), LabelHighlightRadius,
-			Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+		p.setPen(highlight_pen());
 		p.setBrush(Qt::transparent);
 		p.drawPolygon(points, countof(points));
 	}

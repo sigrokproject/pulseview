@@ -49,7 +49,6 @@ class Signal : public SelectableItem
 
 private:
 	static const int LabelHitPadding;
-	static const int LabelHighlightRadius;
 
 	static const QPen SignalAxisPen;
 

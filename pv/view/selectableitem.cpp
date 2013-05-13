@@ -20,8 +20,13 @@
 
 #include "selectableitem.h"
 
+#include <QApplication>
+#include <QPalette>
+
 namespace pv {
 namespace view {
+
+const int SelectableItem::HighlightRadius = 6;
 
 SelectableItem::SelectableItem() :
 	_selected(false)
@@ -36,6 +41,13 @@ bool SelectableItem::selected() const
 void SelectableItem::select(bool select)
 {
 	_selected = select;
+}
+
+QPen SelectableItem::highlight_pen()
+{
+	return QPen(QApplication::palette().brush(
+		QPalette::Highlight), HighlightRadius,
+		Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
 }
 
 } // namespace view

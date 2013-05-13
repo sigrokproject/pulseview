@@ -23,7 +23,7 @@
 
 #include <list>
 
-#include <QObject>
+#include <QPen>
 
 class QAction;
 
@@ -33,6 +33,9 @@ namespace view {
 class SelectableItem : public QObject
 {
 	Q_OBJECT
+
+private:
+	static const int HighlightRadius;
 
 public:
 	SelectableItem();
@@ -47,6 +50,9 @@ public:
 	 * Selects or deselects the signal.
 	 */
 	void select(bool select = true);
+
+protected:
+	static QPen highlight_pen();
 
 private:
 	bool _selected;
