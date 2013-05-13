@@ -45,6 +45,8 @@ private:
 public:
 	Ruler(View &parent);
 
+	void clear_selection();
+
 	static QString format_time(double t, unsigned int prefix,
 		unsigned precision = 0);
 

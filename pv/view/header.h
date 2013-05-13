@@ -46,6 +46,8 @@ private:
 	boost::shared_ptr<pv::view::Signal> get_mouse_over_signal(
 		const QPoint &pt);
 
+	void clear_selection();
+
 private:
 	void paintEvent(QPaintEvent *event);
 

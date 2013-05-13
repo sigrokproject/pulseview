@@ -78,6 +78,18 @@ boost::shared_ptr<pv::view::Signal> Header::get_mouse_over_signal(
 	return shared_ptr<Signal>();
 }
 
+void Header::clear_selection()
+{
+	const vector< shared_ptr<Signal> > sigs(
+		_view.session().get_signals());
+	BOOST_FOREACH(const shared_ptr<Signal> s, sigs) {
+		assert(s);
+		s->select(false);
+	}
+
+	update();
+}
+
 void Header::paintEvent(QPaintEvent*)
 {
 	const int w = width();

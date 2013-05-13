@@ -58,6 +58,14 @@ Ruler::Ruler(View &parent) :
 		this, SLOT(hover_point_changed()));
 }
 
+void Ruler::clear_selection()
+{
+	CursorPair &cursors = _view.cursors();
+	cursors.first().select(false);
+	cursors.second().select(false);
+	update();
+}
+
 QString Ruler::format_time(double t, unsigned int prefix,
 	unsigned int precision)
 {

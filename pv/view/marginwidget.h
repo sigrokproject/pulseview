@@ -35,6 +35,9 @@ class MarginWidget : public QWidget
 public:
 	MarginWidget(pv::view::View &parent);
 
+public slots:
+	virtual void clear_selection() = 0;
+
 protected:
 	pv::view::View &_view;
 };
