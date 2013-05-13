@@ -193,6 +193,8 @@ void Ruler::mousePressEvent(QMouseEvent *e)
 	if (e->buttons() & Qt::LeftButton) {
 		_grabbed_marker = NULL;
 
+		clear_selection();
+
 		if (_view.cursors_shown()) {
 			CursorPair &cursors = _view.cursors();
 			if (cursors.first().get_label_rect(
@@ -202,6 +204,9 @@ void Ruler::mousePressEvent(QMouseEvent *e)
 				rect()).contains(e->pos()))
 				_grabbed_marker = &cursors.second();
 		}
+
+		if(_grabbed_marker)
+			_grabbed_marker->select();
 
 		selection_changed();
 	}
