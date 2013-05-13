@@ -160,6 +160,7 @@ void Header::mousePressEvent(QMouseEvent *event)
 				s->select(false);
 	}
 
+	selection_changed();
 	update();
 }
 

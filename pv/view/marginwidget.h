@@ -38,6 +38,9 @@ public:
 public slots:
 	virtual void clear_selection() = 0;
 
+signals:
+	void selection_changed();
+
 protected:
 	pv::view::View &_view;
 };

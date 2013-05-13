@@ -202,6 +202,8 @@ void Ruler::mousePressEvent(QMouseEvent *e)
 				rect()).contains(e->pos()))
 				_grabbed_marker = &cursors.second();
 		}
+
+		selection_changed();
 	}
 }
 
