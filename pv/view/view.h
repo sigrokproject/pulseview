@@ -23,6 +23,8 @@
 
 #include <stdint.h>
 
+#include <boost/weak_ptr.hpp>
+
 #include <QAbstractScrollArea>
 #include <QSizeF>
 
@@ -85,6 +87,8 @@ public:
 	 * @param offset The view time offset in seconds.
 	 */
 	void set_scale_offset(double scale, double offset);
+
+	std::list<boost::weak_ptr<SelectableItem> > selected_items() const;
 
 	/**
 	 * Returns true if cursors are displayed. false otherwise.

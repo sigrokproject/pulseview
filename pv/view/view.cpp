@@ -159,6 +159,27 @@ void View::set_scale_offset(double scale, double offset)
 	_viewport->update();
 }
 
+list<weak_ptr<SelectableItem> > View::selected_items() const
+{
+	list<weak_ptr<SelectableItem> > items;
+
+	// List the selected signals
+	const vector< shared_ptr<Signal> > sigs(_session.get_signals());
+	BOOST_FOREACH (shared_ptr<Signal> s, sigs) {
+		assert(s);
+		if (s->selected())
+			items.push_back(s);
+	}
+
+	// List the selected cursors
+	if (_cursors.first()->selected())
+		items.push_back(_cursors.first());
+	if (_cursors.second()->selected())
+		items.push_back(_cursors.second());
+
+	return items;
+}
+
 bool View::cursors_shown() const
 {
 	return _show_cursors;
