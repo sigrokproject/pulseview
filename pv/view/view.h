@@ -115,6 +115,8 @@ signals:
 
 	void signals_moved();
 
+	void selection_changed();
+
 private:
 	void get_scroll_layout(double &length, double &offset) const;
 	

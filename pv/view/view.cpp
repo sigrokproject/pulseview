@@ -98,6 +98,11 @@ View::View(SigSession &session, QWidget *parent) :
 	connect(_ruler, SIGNAL(selection_changed()),
 		_header, SLOT(clear_selection()));
 
+	connect(_header, SIGNAL(selection_changed()),
+		this, SIGNAL(selection_changed()));
+	connect(_ruler, SIGNAL(selection_changed()),
+		this, SIGNAL(selection_changed()));
+
 	setViewportMargins(LabelMarginWidth, RulerHeight, 0, 0);
 	setViewport(_viewport);
 
