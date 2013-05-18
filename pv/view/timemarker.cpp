@@ -29,8 +29,7 @@ using namespace std;
 namespace pv {
 namespace view {
 
-TimeMarker::TimeMarker(const View &view, const QColor &colour,
-	double time) :
+TimeMarker::TimeMarker(View &view, const QColor &colour, double time) :
 	_view(view),
 	_colour(colour),
 	_time(time)

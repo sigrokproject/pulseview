@@ -33,7 +33,7 @@ namespace view {
 
 const int CursorPair::DeltaPadding = 8;
 
-CursorPair::CursorPair(const View &view) :
+CursorPair::CursorPair(View &view) :
 	_first(new Cursor(view, 0.0)),
 	_second(new Cursor(view, 1.0)),
 	_view(view)

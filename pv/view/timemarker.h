@@ -46,7 +46,7 @@ protected:
 	 * @param colour A reference to the colour of this cursor.
 	 * @param time The time to set the flag to.
 	 */
-	TimeMarker(const View &view, const QColor &colour, double time);
+	TimeMarker(View &view, const QColor &colour, double time);
 
 public:
 	/**
@@ -92,7 +92,7 @@ signals:
 	void time_changed();
 
 protected:
-	const View &_view;
+	View &_view;
 	const QColor &_colour;
 
 	double _time;

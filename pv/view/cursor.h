@@ -52,7 +52,7 @@ public:
 	 * @param view A reference to the view that owns this cursor pair.
 	 * @param time The time to set the flag to.
 	 */
-	Cursor(const View &view, double time);
+	Cursor(View &view, double time);
 
 public:
 	/**

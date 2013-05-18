@@ -42,7 +42,7 @@ public:
 	 * Constructor.
 	 * @param view A reference to the view that owns this cursor pair.
 	 */
-	CursorPair(const View &view);
+	CursorPair(View &view);
 
 	/**
 	 * Returns a pointer to the first cursor.

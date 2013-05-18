@@ -47,7 +47,7 @@ const int Cursor::Offset = 1;
 
 const int Cursor::ArrowSize = 4;
 
-Cursor::Cursor(const View &view, double time) :
+Cursor::Cursor(View &view, double time) :
 	TimeMarker(view, LineColour, time)
 {
 }
