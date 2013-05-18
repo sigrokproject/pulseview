@@ -48,11 +48,6 @@ protected:
 	 */
 	TimeMarker(const View &view, const QColor &colour, double time);
 
-	/**
-	 * Copy constructor
-	 */
-	TimeMarker(const TimeMarker &s);
-
 public:
 	/**
 	 * Gets the time of the marker.
