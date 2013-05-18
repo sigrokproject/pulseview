@@ -34,6 +34,7 @@
 #include <QPainter>
 #include <QTextStream>
 
+using namespace boost;
 using namespace std;
 
 namespace pv {
@@ -49,8 +50,7 @@ const int Ruler::FirstSIPrefixPower = -15;
 const int Ruler::HoverArrowSize = 5;
 
 Ruler::Ruler(View &parent) :
-	MarginWidget(parent),
-	_grabbed_marker(NULL)
+	MarginWidget(parent)
 {
 	setMouseTracking(true);
 
@@ -61,8 +61,8 @@ Ruler::Ruler(View &parent) :
 void Ruler::clear_selection()
 {
 	CursorPair &cursors = _view.cursors();
-	cursors.first().select(false);
-	cursors.second().select(false);
+	cursors.first()->select(false);
+	cursors.second()->select(false);
 	update();
 }
 
@@ -181,32 +181,30 @@ void Ruler::paintEvent(QPaintEvent*)
 
 void Ruler::mouseMoveEvent(QMouseEvent *e)
 {
-	if (!_grabbed_marker)
-		return;
-
-	_grabbed_marker->set_time(_view.offset() +
-		((double)e->x() + 0.5) * _view.scale());
+	if (shared_ptr<TimeMarker> m = _grabbed_marker.lock())
+		m->set_time(_view.offset() +
+			((double)e->x() + 0.5) * _view.scale());
 }
 
 void Ruler::mousePressEvent(QMouseEvent *e)
 {
 	if (e->buttons() & Qt::LeftButton) {
-		_grabbed_marker = NULL;
+		_grabbed_marker.reset();
 
 		clear_selection();
 
 		if (_view.cursors_shown()) {
 			CursorPair &cursors = _view.cursors();
-			if (cursors.first().get_label_rect(
+			if (cursors.first()->get_label_rect(
 				rect()).contains(e->pos()))
-				_grabbed_marker = &cursors.first();
-			else if (cursors.second().get_label_rect(
+				_grabbed_marker = cursors.first();
+			else if (cursors.second()->get_label_rect(
 				rect()).contains(e->pos()))
-				_grabbed_marker = &cursors.second();
+				_grabbed_marker = cursors.second();
 		}
 
-		if(_grabbed_marker)
-			_grabbed_marker->select();
+		if (shared_ptr<TimeMarker> m = _grabbed_marker.lock())
+			m->select();
 
 		selection_changed();
 	}
@@ -214,14 +212,14 @@ void Ruler::mousePressEvent(QMouseEvent *e)
 
 void Ruler::mouseReleaseEvent(QMouseEvent *)
 {
-	_grabbed_marker = NULL;
+	_grabbed_marker.reset();
 }
 
 void Ruler::draw_hover_mark(QPainter &p)
 {
 	const int x = _view.hover_point().x();
 
-	if (x == -1 || _grabbed_marker)
+	if (x == -1 || !_grabbed_marker.expired())
 		return;
 
 	p.setPen(QPen(Qt::NoPen));

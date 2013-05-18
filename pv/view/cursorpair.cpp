@@ -25,6 +25,7 @@
 
 #include <algorithm>
 
+using namespace boost;
 using namespace std;
 
 namespace pv {
@@ -33,28 +34,18 @@ namespace view {
 const int CursorPair::DeltaPadding = 8;
 
 CursorPair::CursorPair(const View &view) :
-	_first(view, 0.0, _second),
-	_second(view, 1.0, _first),
+	_first(new Cursor(view, 0.0)),
+	_second(new Cursor(view, 1.0)),
 	_view(view)
 {
 }
 
-const Cursor& CursorPair::first() const
+shared_ptr<Cursor> CursorPair::first() const
 {
 	return _first;
 }
 
-Cursor& CursorPair::first()
-{
-	return _first;
-}
-
-const Cursor& CursorPair::second() const
-{
-	return _second;
-}
-
-Cursor& CursorPair::second()
+shared_ptr<Cursor> CursorPair::second() const
 {
 	return _second;
 }
@@ -82,6 +73,9 @@ QRectF CursorPair::get_label_rect(const QRect &rect) const
 void CursorPair::draw_markers(QPainter &p,
 	const QRect &rect, unsigned int prefix)
 {
+	assert(_first);
+	assert(_second);
+
 	compute_text_size(p, prefix);
 	QRectF delta_rect(get_label_rect(rect));
 
@@ -102,12 +96,12 @@ void CursorPair::draw_markers(QPainter &p,
 
 		p.setPen(Cursor::TextColour);
 		p.drawText(text_rect, Qt::AlignCenter | Qt::AlignVCenter,
-			Ruler::format_time(_second.time() - _first.time(), prefix, 2));
+			Ruler::format_time(_second->time() - _first->time(), prefix, 2));
 	}
 
 	// Paint the cursor markers
-	_first.paint_label(p, rect, prefix);
-	_second.paint_label(p, rect, prefix);
+	_first->paint_label(p, rect, prefix);
+	_second->paint_label(p, rect, prefix);
 }
 
 void CursorPair::draw_viewport_background(QPainter &p,
@@ -128,21 +122,30 @@ void CursorPair::draw_viewport_background(QPainter &p,
 void CursorPair::draw_viewport_foreground(QPainter &p,
 	const QRect &rect)
 {
-	_first.paint(p, rect);
-	_second.paint(p, rect);
+	assert(_first);
+	assert(_second);
+
+	_first->paint(p, rect);
+	_second->paint(p, rect);
 }
 
 void CursorPair::compute_text_size(QPainter &p, unsigned int prefix)
 {
+	assert(_first);
+	assert(_second);
+
 	_text_size = p.boundingRect(QRectF(), 0, Ruler::format_time(
-		_second.time() - _first.time(), prefix, 2)).size();
+		_second->time() - _first->time(), prefix, 2)).size();
 }
 
 pair<float, float> CursorPair::get_cursor_offsets() const
 {
+	assert(_first);
+	assert(_second);
+
 	return pair<float, float>(
-		(_first.time() - _view.offset()) / _view.scale(),
-		(_second.time() - _view.offset()) / _view.scale());
+		(_first->time() - _view.offset()) / _view.scale(),
+		(_second->time() - _view.offset()) / _view.scale());
 }
 
 } // namespace view

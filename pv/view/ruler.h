@@ -21,6 +21,8 @@
 #ifndef PULSEVIEW_PV_VIEW_RULER_H
 #define PULSEVIEW_PV_VIEW_RULER_H
 
+#include <boost/weak_ptr.hpp>
+
 #include "marginwidget.h"
 
 namespace pv {
@@ -67,7 +69,7 @@ private slots:
 	void hover_point_changed();
 
 private:
-	TimeMarker *_grabbed_marker;
+	boost::weak_ptr<TimeMarker> _grabbed_marker;
 };
 
 } // namespace view

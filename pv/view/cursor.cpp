@@ -33,6 +33,8 @@
 
 #include <extdef.h>
 
+using namespace boost;
+
 namespace pv {
 namespace view {
 
@@ -45,14 +47,16 @@ const int Cursor::Offset = 1;
 
 const int Cursor::ArrowSize = 4;
 
-Cursor::Cursor(const View &view, double time, Cursor &other) :
-	TimeMarker(view, LineColour, time),
-	_other(other)
+Cursor::Cursor(const View &view, double time) :
+	TimeMarker(view, LineColour, time)
 {
 }
 
 QRectF Cursor::get_label_rect(const QRect &rect) const
 {
+	const shared_ptr<Cursor> other(get_other_cursor());
+	assert(other);
+
 	const float x = (_time - _view.offset()) / _view.scale();
 
 	const QSizeF label_size(
@@ -62,7 +66,7 @@ QRectF Cursor::get_label_rect(const QRect &rect) const
 		Cursor::Offset - Cursor::ArrowSize - 0.5f;
 	const float height = label_size.height();
 
-	if (_time > _other.time())
+	if (_time > other->time())
 		return QRectF(x, top, label_size.width(), height);
 	else
 		return QRectF(x - label_size.width(), top,
@@ -72,6 +76,9 @@ QRectF Cursor::get_label_rect(const QRect &rect) const
 void Cursor::paint_label(QPainter &p, const QRect &rect,
 	unsigned int prefix)
 {
+	const shared_ptr<Cursor> other(get_other_cursor());
+	assert(other);
+
 	compute_text_size(p, prefix);
 	const QRectF r(get_label_rect(rect));
 
@@ -107,9 +114,9 @@ void Cursor::paint_label(QPainter &p, const QRect &rect,
 		QPointF(r.right() - 1, rect.bottom() - 1),
 	};
 
-	const QPointF *const points = (_time > _other.time()) ?
+	const QPointF *const points = (_time > other->time()) ?
 		left_points : right_points;
-	const QPointF *const highlight_points = (_time > _other.time()) ?
+	const QPointF *const highlight_points = (_time > other->time()) ?
 		left_highlight_points : right_highlight_points;
 
 	if (selected()) {
@@ -139,6 +146,13 @@ void Cursor::compute_text_size(QPainter &p, unsigned int prefix)
 {
 	_text_size = p.boundingRect(QRectF(), 0,
 		Ruler::format_time(_time, prefix, 2)).size();
+}
+
+shared_ptr<Cursor> Cursor::get_other_cursor() const
+{
+	const CursorPair &cursors = _view.cursors();
+	return (cursors.first().get() == this) ?
+		cursors.second() : cursors.first();
 }
 
 } // namespace view

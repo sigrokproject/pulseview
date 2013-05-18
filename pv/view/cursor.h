@@ -23,6 +23,8 @@
 
 #include "timemarker.h"
 
+#include <boost/shared_ptr.hpp>
+
 #include <QSizeF>
 
 class QPainter;
@@ -49,9 +51,8 @@ public:
 	 * Constructor.
 	 * @param view A reference to the view that owns this cursor pair.
 	 * @param time The time to set the flag to.
-	 * @param other A reference to the other cursor.
 	 */
-	Cursor(const View &view, double time, Cursor &other);
+	Cursor(const View &view, double time);
 
 public:
 	/**
@@ -73,9 +74,9 @@ public:
 private:
 	void compute_text_size(QPainter &p, unsigned int prefix);
 
-private:
-	const Cursor &_other;
+	boost::shared_ptr<Cursor> get_other_cursor() const;
 
+private:
 	QSizeF _text_size;
 };
 

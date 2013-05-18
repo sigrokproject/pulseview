@@ -85,9 +85,9 @@ View::View(SigSession &session, QWidget *parent) :
 	connect(&_session, SIGNAL(data_updated()),
 		this, SLOT(data_updated()));
 
-	connect(&_cursors.first(), SIGNAL(time_changed()),
+	connect(_cursors.first().get(), SIGNAL(time_changed()),
 		this, SLOT(marker_time_changed()));
-	connect(&_cursors.second(), SIGNAL(time_changed()),
+	connect(_cursors.second().get(), SIGNAL(time_changed()),
 		this, SLOT(marker_time_changed()));
 
 	connect(_header, SIGNAL(signals_moved()),
@@ -174,13 +174,18 @@ void View::show_cursors(bool show)
 void View::centre_cursors()
 {
 	const double time_width = _scale * _viewport->width();
-	_cursors.first().set_time(_offset + time_width * 0.4);
-	_cursors.second().set_time(_offset + time_width * 0.6);
+	_cursors.first()->set_time(_offset + time_width * 0.4);
+	_cursors.second()->set_time(_offset + time_width * 0.6);
 	_ruler->update();
 	_viewport->update();
 }
 
 CursorPair& View::cursors()
+{
+	return _cursors;
+}
+
+const CursorPair& View::cursors() const
 {
 	return _cursors;
 }

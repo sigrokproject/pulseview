@@ -106,6 +106,11 @@ public:
 	 */
 	CursorPair& cursors();
 
+	/**
+	 * Returns a reference to the pair of cursors.
+	 */
+	const CursorPair& cursors() const;
+
 	const QPoint& hover_point() const;
 
 	void normalize_layout();
