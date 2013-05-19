@@ -35,12 +35,42 @@ const int Signal::LabelHitPadding = 2;
 
 const QPen Signal::SignalAxisPen(QColor(128, 128, 128, 64));
 
+const char *const ProbeNames[] = {
+	"CLK",
+	"DATA",
+	"IN",
+	"OUT",
+	"RST",
+	"Tx",
+	"Rx",
+	"EN",
+	"SCLK",
+	"MOSI",
+	"MISO",
+	"/SS",
+	"SDA",
+	"SCL"
+};
+
 Signal::Signal(const sr_probe *const probe) :
 	_probe(probe),
 	_name(probe->name),
-	_v_offset(0)
+	_v_offset(0),
+	_name_action(NULL),
+	_name_widget(),
+	_updating_name_widget(false)
 {
 	assert(_probe);
+
+	_name_action.setDefaultWidget(&_name_widget);
+
+	_name_widget.setEditable(true);
+	for(unsigned int i = 0; i < countof(ProbeNames); i++)
+		_name_widget.insertItem(i, ProbeNames[i]);
+	_name_widget.setEditText(probe->name);
+
+	connect(&_name_widget, SIGNAL(editTextChanged(const QString&)),
+		this, SLOT(on_text_changed(const QString&)));
 }
 
 QString Signal::get_name() const
@@ -51,6 +81,9 @@ QString Signal::get_name() const
 void Signal::set_name(QString name)
 {
 	_name = name;
+	_updating_name_widget = true;
+	_name_widget.setEditText(name);
+	_updating_name_widget = false;
 }
 
 QColor Signal::get_colour() const
@@ -163,6 +196,12 @@ QRectF Signal::get_label_rect(int y, int right)
 		right - label_arrow_length - label_size.width() - 0.5,
 		y + 0.5f - label_size.height() / 2,
 		label_size.width(), label_size.height());
+}
+
+void Signal::on_text_changed(const QString &text)
+{
+	_name = text;
+	text_changed();
 }
 
 } // namespace view

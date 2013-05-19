@@ -54,6 +54,9 @@ Header::Header(View &parent) :
 	connect(_action_set_colour, SIGNAL(triggered()),
 		this, SLOT(on_action_set_colour_triggered()));
 
+	connect(&_view.session(), SIGNAL(signals_changed()),
+		this, SLOT(on_signals_changed()));
+
 	connect(&_view, SIGNAL(signals_moved()),
 		this, SLOT(on_signals_moved()));
 }
@@ -254,6 +257,15 @@ void Header::on_action_set_colour_triggered()
 
 	if (new_colour.isValid())
 		context_signal->set_colour(new_colour);
+}
+
+void Header::on_signals_changed()
+{
+	const vector< shared_ptr<Signal> > sigs(_view.session().get_signals());
+	BOOST_FOREACH(shared_ptr<Signal> s, sigs) {
+		assert(s);
+		connect(s.get(), SIGNAL(text_changed()), this, SLOT(update()));
+	}
 }
 
 void Header::on_signals_moved()

@@ -63,6 +63,8 @@ private:
 	void contextMenuEvent(QContextMenuEvent *event);
 
 private slots:
+	void on_signals_changed();
+
 	void on_action_set_name_triggered();
 
 	void on_action_set_colour_triggered();

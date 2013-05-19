@@ -57,6 +57,7 @@ AnalogSignal::~AnalogSignal()
 const list<QAction*> AnalogSignal::get_context_bar_actions()
 {
 	list<QAction*> actions;
+	actions.push_back(&_name_action);
 	return actions;
 }
 

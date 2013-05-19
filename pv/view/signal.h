@@ -24,10 +24,12 @@
 #include <boost/shared_ptr.hpp>
 
 #include <QColor>
+#include <QComboBox>
 #include <QPainter>
 #include <QPen>
 #include <QRect>
 #include <QString>
+#include <QWidgetAction>
 
 #include <stdint.h>
 
@@ -150,6 +152,12 @@ private:
 	 */
 	QRectF get_label_rect(int y, int right);
 
+private slots:
+	void on_text_changed(const QString &text);
+
+signals:
+	void text_changed();	
+
 protected:
 	const sr_probe *const _probe;
 
@@ -158,6 +166,10 @@ protected:
 	int _v_offset;
 
 	QSizeF _text_size;
+
+	QWidgetAction _name_action;
+	QComboBox _name_widget;
+	bool _updating_name_widget;
 };
 
 } // namespace view
