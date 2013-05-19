@@ -21,7 +21,11 @@
 #ifndef PULSEVIEW_PV_TOOLBARS_CONTEXTBAR_H
 #define PULSEVIEW_PV_TOOLBARS_CONTEXTBAR_H
 
+#include <boost/weak_ptr.hpp>
+
 #include <QToolBar>
+
+#include <pv/view/selectableitem.h>
 
 namespace pv {
 namespace toolbars {
@@ -32,6 +36,10 @@ class ContextBar : public QToolBar
 
 public:
 	ContextBar(QWidget *parent);
+
+public:
+	void set_selected_items(const std::list<
+		boost::weak_ptr<pv::view::SelectableItem> > &items);
 };
 
 } // namespace toolbars

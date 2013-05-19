@@ -18,8 +18,16 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
+#include <stdio.h>
+
+#include <boost/shared_ptr.hpp>
+#include <boost/foreach.hpp>
+
 #include "contextbar.h"
 
+#include <pv/view/selectableitem.h>
+
+using namespace boost;
 using namespace std;
 
 namespace pv {
@@ -28,6 +36,28 @@ namespace toolbars {
 ContextBar::ContextBar(QWidget *parent) :
 	QToolBar(tr("Context Bar"), parent)
 {
+}
+
+void ContextBar::set_selected_items(const list<
+	weak_ptr<pv::view::SelectableItem> > &items)
+{
+	clear();
+
+	if (items.empty())
+		return;
+
+	if (shared_ptr<pv::view::SelectableItem> item =
+		items.front().lock()) {
+
+		assert(item);
+
+		const list<QAction*> actions(
+			item->get_context_bar_actions());
+		BOOST_FOREACH(QAction *action, actions) {
+			assert(action);
+			addAction(action);
+		}
+	}
 }
 
 } // namespace toolbars

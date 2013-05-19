@@ -53,9 +53,14 @@
 #include <glib.h>
 #include <libsigrok/libsigrok.h>
 
+using namespace boost;
 using namespace std;
 
 namespace pv {
+
+namespace view {
+class SelectableItem;
+}
 
 MainWindow::MainWindow(DeviceManager &device_manager,
 	const char *open_file_name,
@@ -93,6 +98,9 @@ void MainWindow::setup_ui()
 	setCentralWidget(_central_widget);
 
 	_view = new pv::view::View(_session, this);
+	connect(_view, SIGNAL(selection_changed()), this,
+		SLOT(view_selection_changed()));
+
 	_vertical_layout->addWidget(_view);
 
 	// Setup the menu bar
@@ -356,6 +364,15 @@ void MainWindow::run_stop()
 void MainWindow::capture_state_changed(int state)
 {
 	_sampling_bar->set_sampling(state != SigSession::Stopped);
+}
+
+void MainWindow::view_selection_changed()
+{
+	assert(_context_bar);
+
+	const list<weak_ptr<pv::view::SelectableItem> > items(
+		_view->selected_items());
+	_context_bar->set_selected_items(items);
 }
 
 } // namespace pv

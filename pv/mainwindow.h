@@ -23,6 +23,8 @@
 
 #include <list>
 
+#include <boost/weak_ptr.hpp>
+
 #include <QMainWindow>
 
 #include "sigsession.h"
@@ -96,6 +98,8 @@ private slots:
 	void run_stop();
 
 	void capture_state_changed(int state);
+
+	void view_selection_changed();
 
 private:
 	DeviceManager &_device_manager;
