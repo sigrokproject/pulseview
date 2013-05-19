@@ -22,8 +22,10 @@
 #define PULSEVIEW_PV_VIEW_MARKER_H
 
 #include <QColor>
+#include <QDoubleSpinBox>
 #include <QObject>
 #include <QRectF>
+#include <QWidgetAction>
 
 #include "selectableitem.h"
 
@@ -88,6 +90,9 @@ public:
 	 */
 	const std::list<QAction*> get_context_bar_actions();
 
+private slots:
+	void on_value_changed(double value);
+
 signals:
 	void time_changed();
 
@@ -98,6 +103,10 @@ protected:
 	double _time;
 
 	QSizeF _text_size;
+
+	QWidgetAction _value_action;
+	QDoubleSpinBox _value_widget;
+	bool _updating_value_widget;
 };
 
 } // namespace view

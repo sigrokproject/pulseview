@@ -32,8 +32,20 @@ namespace view {
 TimeMarker::TimeMarker(View &view, const QColor &colour, double time) :
 	_view(view),
 	_colour(colour),
-	_time(time)
+	_time(time),
+	_value_action(&view),
+	_value_widget(&view),
+	_updating_value_widget(false)
 {
+	_value_action.setDefaultWidget(&_value_widget);
+
+	_value_widget.setValue(time);
+	_value_widget.setDecimals(6);
+	_value_widget.setSuffix("s");
+	_value_widget.setSingleStep(1e-6);
+
+	connect(&_value_widget, SIGNAL(valueChanged(double)),
+		this, SLOT(on_value_changed(double)));
 }
 
 double TimeMarker::time() const
@@ -44,6 +56,9 @@ double TimeMarker::time() const
 void TimeMarker::set_time(double time)
 {
 	_time = time;
+	_updating_value_widget = true;
+	_value_widget.setValue(time);
+	_updating_value_widget = false;
 	time_changed();
 }
 
@@ -57,7 +72,16 @@ void TimeMarker::paint(QPainter &p, const QRect &rect)
 const list<QAction*> TimeMarker::get_context_bar_actions()
 {
 	list<QAction*> actions;
+	actions.push_back(&_value_action);
 	return actions;
+}
+
+void TimeMarker::on_value_changed(double value)
+{
+	if (!_updating_value_widget) {
+		_time = value;
+		time_changed();
+	}
 }
 
 } // namespace view
