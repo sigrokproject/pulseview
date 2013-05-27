@@ -77,6 +77,8 @@ private:
 	static void add_trigger_action(const char *trig_types, char type,
 		QAction *action, std::list<QAction*> &actions);
 
+	void update_trigger_actions();
+
 	void set_trigger(char type);
 
 private slots:

@@ -81,16 +81,27 @@ LogicSignal::LogicSignal(pv::SigSession &session, const sr_probe *const probe,
 
 	_separator.setSeparator(true);
 
+	_trigger_none.setCheckable(true);
 	connect(&_trigger_none, SIGNAL(triggered()),
 		this, SLOT(on_trigger_none()));
+
+	_trigger_rising.setCheckable(true);
 	connect(&_trigger_rising, SIGNAL(triggered()),
 		this, SLOT(on_trigger_rising()));
+
+	_trigger_high.setCheckable(true);
 	connect(&_trigger_high, SIGNAL(triggered()),
 		this, SLOT(on_trigger_high()));
+
+	_trigger_falling.setCheckable(true);
 	connect(&_trigger_falling, SIGNAL(triggered()),
 		this, SLOT(on_trigger_falling()));
+
+	_trigger_low.setCheckable(true);
 	connect(&_trigger_low, SIGNAL(triggered()),
 		this, SLOT(on_trigger_low()));
+
+	_trigger_change.setCheckable(true);
 	connect(&_trigger_change, SIGNAL(triggered()),
 		this, SLOT(on_trigger_change()));
 }
@@ -128,6 +139,8 @@ const list<QAction*> LogicSignal::get_context_bar_actions()
 				&_trigger_low, actions);
 			add_trigger_action(trig_types, 'c',
 				&_trigger_change, actions);
+		
+			update_trigger_actions();
 		}
 
 		g_variant_unref(gvar);
@@ -246,6 +259,18 @@ void LogicSignal::add_trigger_action(const char *trig_types, char type,
 		}
 }
 
+void LogicSignal::update_trigger_actions()
+{
+	const char cur_trigger = _probe->trigger ?
+		_probe->trigger[0] : '\0';
+	_trigger_none.setChecked(cur_trigger == '\0');
+	_trigger_rising.setChecked(cur_trigger == 'r');
+	_trigger_high.setChecked(cur_trigger == '1');
+	_trigger_falling.setChecked(cur_trigger == 'f');
+	_trigger_low.setChecked(cur_trigger == '0');
+	_trigger_change.setChecked(cur_trigger == 'c');
+}
+
 void LogicSignal::set_trigger(char type)
 {
 	const char trigger_type_string[2] = {type, 0};
@@ -262,6 +287,8 @@ void LogicSignal::set_trigger(char type)
 		sr_dev_trigger_set(sdi, i, (i == _probe->index) ?
 			trigger_string : NULL);
 	}
+
+	update_trigger_actions();
 }
 
 void LogicSignal::on_trigger_none()
