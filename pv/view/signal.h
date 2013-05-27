@@ -39,6 +39,8 @@
 
 namespace pv {
 
+class SigSession;
+
 namespace data {
 class SignalData;
 }
@@ -55,7 +57,7 @@ private:
 	static const QPen SignalAxisPen;
 
 protected:
-	Signal(const sr_probe *const probe);
+	Signal(pv::SigSession &session, const sr_probe *const probe);
 
 public:
 	/**
@@ -159,6 +161,7 @@ signals:
 	void text_changed();	
 
 protected:
+	pv::SigSession &_session;
 	const sr_probe *const _probe;
 
 	QString _name;

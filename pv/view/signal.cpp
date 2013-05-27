@@ -52,7 +52,8 @@ const char *const ProbeNames[] = {
 	"SCL"
 };
 
-Signal::Signal(const sr_probe *const probe) :
+Signal::Signal(pv::SigSession &session, const sr_probe *const probe) :
+	_session(session),
 	_probe(probe),
 	_name(probe->name),
 	_v_offset(0),

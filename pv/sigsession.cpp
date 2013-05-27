@@ -304,13 +304,13 @@ void SigSession::update_signals()
 				switch(probe->type) {
 				case SR_PROBE_LOGIC:
 					signal = shared_ptr<view::Signal>(
-						new view::LogicSignal(probe,
+						new view::LogicSignal(*this, probe,
 							_logic_data));
 					break;
 
 				case SR_PROBE_ANALOG:
 					signal = shared_ptr<view::Signal>(
-						new view::AnalogSignal(probe,
+						new view::AnalogSignal(*this, probe,
 							_analog_data));
 					break;
 				}
