@@ -24,6 +24,8 @@
 
 #include "logicsignal.h"
 #include "view.h"
+
+#include "pv/sigsession.h"
 #include "pv/data/logic.h"
 #include "pv/data/logicsnapshot.h"
 
@@ -86,17 +88,37 @@ LogicSignal::~LogicSignal()
 
 const list<QAction*> LogicSignal::get_context_bar_actions()
 {
+	GVariant *gvar;
 	list<QAction*> actions;
+
 	actions.push_back(&_name_action);
 
-	actions.push_back(&_separator);
+	// Add the trigger actions
+	const sr_dev_inst *const sdi = _session.get_device();
+	if (sr_config_list(sdi->driver, SR_CONF_TRIGGER_TYPE,
+		&gvar, sdi) == SR_OK) {
+		const char *const trig_types =
+			g_variant_get_string(gvar, NULL);
 
-	actions.push_back(&_trigger_none);
-	actions.push_back(&_trigger_rising);
-	actions.push_back(&_trigger_high);
-	actions.push_back(&_trigger_falling);
-	actions.push_back(&_trigger_low);
-	actions.push_back(&_trigger_change);
+		if (trig_types && trig_types[0] != '\0') {
+			actions.push_back(&_separator);
+
+			actions.push_back(&_trigger_none);
+
+			add_trigger_action(trig_types, 'r',
+				&_trigger_rising, actions);
+			add_trigger_action(trig_types, '1',
+				&_trigger_high, actions);
+			add_trigger_action(trig_types, 'f',
+				&_trigger_falling, actions);
+			add_trigger_action(trig_types, '0',
+				&_trigger_low, actions);
+			add_trigger_action(trig_types, 'c',
+				&_trigger_change, actions);
+		}
+
+		g_variant_unref(gvar);
+	}
 
 	return actions;
 }
@@ -199,6 +221,16 @@ void LogicSignal::paint_caps(QPainter &p, QLineF *const lines,
 		}
 
 	p.drawLines(lines, line - lines);
+}
+
+void LogicSignal::add_trigger_action(const char *trig_types, char type,
+	QAction *action, list<QAction*> &actions)
+{
+	while(*trig_types)
+		if(*trig_types++ == type) {
+			actions.push_back(action);
+			break;
+		}
 }
 
 } // namespace view

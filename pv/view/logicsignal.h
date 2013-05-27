@@ -72,6 +72,9 @@ private:
 		bool level, double samples_per_pixel, double pixels_offset,
 		float x_offset, float y_offset);
 
+	static void add_trigger_action(const char *trig_types, char type,
+		QAction *action, std::list<QAction*> &actions);
+
 private:
 	boost::shared_ptr<pv::data::Logic> _data;
 
