@@ -147,6 +147,7 @@ set(pulseview_HEADERS
 	pv/toolbars/samplingbar.h
 	pv/view/cursor.h
 	pv/view/header.h
+	pv/view/logicsignal.h
 	pv/view/marginwidget.h
 	pv/view/ruler.h
 	pv/view/selectableitem.h

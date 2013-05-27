@@ -35,6 +35,8 @@ namespace view {
 
 class LogicSignal : public Signal
 {
+	Q_OBJECT
+
 private:
 	static const float Oversampling;
 
@@ -74,6 +76,16 @@ private:
 
 	static void add_trigger_action(const char *trig_types, char type,
 		QAction *action, std::list<QAction*> &actions);
+
+	void set_trigger(char type);
+
+private slots:
+	void on_trigger_none();
+	void on_trigger_rising();
+	void on_trigger_high();
+	void on_trigger_falling();
+	void on_trigger_low();
+	void on_trigger_change();
 
 private:
 	boost::shared_ptr<pv::data::Logic> _data;

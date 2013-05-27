@@ -80,6 +80,19 @@ LogicSignal::LogicSignal(pv::SigSession &session, const sr_probe *const probe,
 	_colour = SignalColours[probe->index % countof(SignalColours)];
 
 	_separator.setSeparator(true);
+
+	connect(&_trigger_none, SIGNAL(triggered()),
+		this, SLOT(on_trigger_none()));
+	connect(&_trigger_rising, SIGNAL(triggered()),
+		this, SLOT(on_trigger_rising()));
+	connect(&_trigger_high, SIGNAL(triggered()),
+		this, SLOT(on_trigger_high()));
+	connect(&_trigger_falling, SIGNAL(triggered()),
+		this, SLOT(on_trigger_falling()));
+	connect(&_trigger_low, SIGNAL(triggered()),
+		this, SLOT(on_trigger_low()));
+	connect(&_trigger_change, SIGNAL(triggered()),
+		this, SLOT(on_trigger_change()));
 }
 
 LogicSignal::~LogicSignal()
@@ -231,6 +244,54 @@ void LogicSignal::add_trigger_action(const char *trig_types, char type,
 			actions.push_back(action);
 			break;
 		}
+}
+
+void LogicSignal::set_trigger(char type)
+{
+	const char trigger_type_string[2] = {type, 0};
+	const char *const trigger_string =
+		(type != 0) ? trigger_type_string : NULL;
+
+	const sr_dev_inst *const sdi = _session.get_device();
+	const int probe_count = g_slist_length(sdi->probes);
+	assert(probe_count > 0);
+
+	assert(_probe && _probe->index < probe_count);
+
+	for (int i = 0; i < probe_count; i++) {
+		sr_dev_trigger_set(sdi, i, (i == _probe->index) ?
+			trigger_string : NULL);
+	}
+}
+
+void LogicSignal::on_trigger_none()
+{
+	set_trigger('\0');	
+}
+
+void LogicSignal::on_trigger_rising()
+{
+	set_trigger('r');	
+}
+
+void LogicSignal::on_trigger_high()
+{
+	set_trigger('1');	
+}
+
+void LogicSignal::on_trigger_falling()
+{
+	set_trigger('f');	
+}
+
+void LogicSignal::on_trigger_low()
+{
+	set_trigger('0');	
+}
+
+void LogicSignal::on_trigger_change()
+{
+	set_trigger('c');	
 }
 
 } // namespace view
