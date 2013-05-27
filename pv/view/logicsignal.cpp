@@ -55,9 +55,29 @@ const QColor LogicSignal::SignalColours[10] = {
 LogicSignal::LogicSignal(const sr_probe *const probe,
 	shared_ptr<data::Logic> data) :
 	Signal(probe),
-	_data(data)
+	_data(data),
+	_separator(this),
+	_icon_trigger_none(":/icons/trigger-none.svg"),
+	_trigger_none(_icon_trigger_none, tr("No trigger"), this),
+	_icon_trigger_rising(":/icons/trigger-rising.svg"),
+	_trigger_rising(_icon_trigger_rising,
+		tr("Trigger on rising edge"), this),
+	_icon_trigger_high(":/icons/trigger-high.svg"),
+	_trigger_high(_icon_trigger_high,
+		tr("Trigger on high level"), this),
+	_icon_trigger_falling(":/icons/trigger-falling.svg"),
+	_trigger_falling(_icon_trigger_falling,
+		tr("Trigger on falling edge"), this),
+	_icon_trigger_low(":/icons/trigger-low.svg"),
+	_trigger_low(_icon_trigger_low,
+		tr("Trigger on low level"), this),
+	_icon_trigger_change(":/icons/trigger-change.svg"),
+	_trigger_change(_icon_trigger_change,
+		tr("Trigger on rising or falling edge"), this)
 {
 	_colour = SignalColours[probe->index % countof(SignalColours)];
+
+	_separator.setSeparator(true);
 }
 
 LogicSignal::~LogicSignal()
@@ -68,6 +88,16 @@ const list<QAction*> LogicSignal::get_context_bar_actions()
 {
 	list<QAction*> actions;
 	actions.push_back(&_name_action);
+
+	actions.push_back(&_separator);
+
+	actions.push_back(&_trigger_none);
+	actions.push_back(&_trigger_rising);
+	actions.push_back(&_trigger_high);
+	actions.push_back(&_trigger_falling);
+	actions.push_back(&_trigger_low);
+	actions.push_back(&_trigger_change);
+
 	return actions;
 }
 

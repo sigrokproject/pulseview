@@ -7,6 +7,12 @@
 	<file>icons/status-green.svg</file>
 	<file>icons/status-grey.svg</file>
 	<file>icons/status-red.svg</file>
+	<file>icons/trigger-change.svg</file>
+	<file>icons/trigger-falling.svg</file>
+	<file>icons/trigger-high.svg</file>
+	<file>icons/trigger-low.svg</file>
+	<file>icons/trigger-none.svg</file>
+	<file>icons/trigger-rising.svg</file>
 	<file>icons/zoom-in.png</file>
 	<file>icons/zoom-out.png</file>
     </qresource>
