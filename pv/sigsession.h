@@ -56,6 +56,7 @@ class SigSession : public QObject
 public:
 	enum capture_state {
 		Stopped,
+		AwaitingTrigger,
 		Running
 	};
 
@@ -92,6 +93,8 @@ private:
 	void set_capture_state(capture_state state);
 
 	void update_signals();
+
+	bool is_trigger_enabled() const;
 
 private:
 	/**

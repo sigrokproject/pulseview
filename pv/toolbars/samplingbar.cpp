@@ -70,6 +70,7 @@ SamplingBar::SamplingBar(QWidget *parent) :
 	_configure_button(this),
 	_record_length_selector(this),
 	_sample_rate_list(this),
+	_icon_red(":/icons/status-red.svg"),
 	_icon_green(":/icons/status-green.svg"),
 	_icon_grey(":/icons/status-grey.svg"),
 	_run_stop_button(this)
@@ -96,7 +97,7 @@ SamplingBar::SamplingBar(QWidget *parent) :
 			_record_length_selector.setCurrentIndex(i);
 	}
 
-	set_sampling(false);
+	set_capture_state(pv::SigSession::Stopped);
 
 	_configure_button.setIcon(QIcon::fromTheme("configure",
 		QIcon(":/icons/configure.png")));
@@ -158,10 +159,12 @@ uint64_t SamplingBar::get_record_length() const
 	return _record_length_selector.itemData(index).value<uint64_t>();
 }
 
-void SamplingBar::set_sampling(bool sampling)
+void SamplingBar::set_capture_state(pv::SigSession::capture_state state)
 {
-	_run_stop_button.setIcon(sampling ? _icon_green : _icon_grey);
-	_run_stop_button.setText(sampling ? "Stop" : "Run");
+	const QIcon *icons[] = {&_icon_grey, &_icon_red, &_icon_green};
+	_run_stop_button.setIcon(*icons[state]);
+	_run_stop_button.setText((state == pv::SigSession::Stopped) ?
+		tr("Run") : tr("Stop"));
 }
 
 void SamplingBar::update_sample_rate_selector()

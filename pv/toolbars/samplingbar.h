@@ -30,6 +30,8 @@
 #include <QToolBar>
 #include <QToolButton>
 
+#include <pv/sigsession.h>
+
 struct st_dev_inst;
 class QAction;
 
@@ -54,7 +56,7 @@ public:
 
 	uint64_t get_record_length() const;
 
-	void set_sampling(bool sampling);
+	void set_capture_state(pv::SigSession::capture_state state);
 
 signals:
 	void device_selected();
@@ -83,6 +85,7 @@ private:
 	QDoubleSpinBox _sample_rate_value;
 	QAction *_sample_rate_value_action;
 
+	QIcon _icon_red;
 	QIcon _icon_green;
 	QIcon _icon_grey;
 	QToolButton _run_stop_button;

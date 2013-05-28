@@ -164,8 +164,10 @@ boost::shared_ptr<data::Logic> SigSession::get_data()
 void SigSession::set_capture_state(capture_state state)
 {
 	lock_guard<mutex> lock(_sampling_mutex);
+	const bool changed = _capture_state != state;
 	_capture_state = state;
-	capture_state_changed(state);
+	if(changed)
+		capture_state_changed(state);
 }
 
 /**
@@ -323,6 +325,19 @@ void SigSession::update_signals()
 	signals_changed();
 }
 
+bool SigSession::is_trigger_enabled() const
+{
+	assert(_sdi);
+	for (const GSList *l = _sdi->probes; l; l = l->next) {
+		const sr_probe *const p = (const sr_probe *)l->data;
+		assert(p);
+		if (p->trigger && p->trigger[0] != '\0')
+			return true;
+	}
+
+	return false;
+}
+
 void SigSession::load_thread_proc(const string name,
 	function<void (const QString)> error_handler)
 {
@@ -387,7 +402,7 @@ void SigSession::sample_thread_proc(struct sr_dev_inst *sdi,
 		return;
 	}
 
-	set_capture_state(Running);
+	set_capture_state(is_trigger_enabled() ? AwaitingTrigger : Running);
 
 	sr_session_run();
 	sr_session_destroy();
@@ -455,6 +470,8 @@ void SigSession::feed_in_logic(const sr_datafeed_logic &logic)
 
 	if (!_cur_logic_snapshot)
 	{
+		set_capture_state(Running);
+
 		// Create a new data snapshot
 		_cur_logic_snapshot = shared_ptr<data::LogicSnapshot>(
 			new data::LogicSnapshot(logic));
@@ -481,6 +498,8 @@ void SigSession::feed_in_analog(const sr_datafeed_analog &analog)
 
 	if (!_cur_analog_snapshot)
 	{
+		set_capture_state(Running);
+
 		// Create a new data snapshot
 		_cur_analog_snapshot = shared_ptr<data::AnalogSnapshot>(
 			new data::AnalogSnapshot(analog));

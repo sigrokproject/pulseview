@@ -355,6 +355,7 @@ void MainWindow::run_stop()
 				QString("Capture failed"), _1));
 		break;
 
+	case SigSession::AwaitingTrigger:
 	case SigSession::Running:
 		_session.stop_capture();
 		break;
@@ -363,7 +364,7 @@ void MainWindow::run_stop()
 
 void MainWindow::capture_state_changed(int state)
 {
-	_sampling_bar->set_sampling(state != SigSession::Stopped);
+	_sampling_bar->set_capture_state((pv::SigSession::capture_state)state);
 }
 
 void MainWindow::view_selection_changed()
