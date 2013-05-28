@@ -216,7 +216,6 @@ void MainWindow::setup_ui()
 	// Setup the context bar
 	_context_bar = new toolbars::ContextBar(this);
 	addToolBar(_context_bar);
-	insertToolBarBreak(_context_bar);
 
 	// Set the title
 	setWindowTitle(QApplication::translate("MainWindow", "PulseView", 0,
