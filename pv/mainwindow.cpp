@@ -65,7 +65,8 @@ MainWindow::MainWindow(DeviceManager &device_manager,
 	QWidget *parent) :
 	QMainWindow(parent),
 	_device_manager(device_manager),
-	_session(device_manager)
+	_session(device_manager),
+	_decoders_add_mapper(this)
 {
 	setup_ui();
 	if (open_file_name) {
@@ -173,6 +174,20 @@ void MainWindow::setup_ui()
 		"MainWindow", "Show &Cursors", 0, QApplication::UnicodeUTF8));
 	_menu_view->addAction(_action_view_show_cursors);
 
+	// Decoders Menu
+	_menu_decoders = new QMenu(_menu_bar);
+	_menu_decoders->setTitle(QApplication::translate(
+		"MainWindow", "&Decoders", 0, QApplication::UnicodeUTF8));
+
+	_menu_decoders_add = new QMenu(_menu_decoders);
+	_menu_decoders_add->setTitle(QApplication::translate(
+		"MainWindow", "&Add", 0, QApplication::UnicodeUTF8));
+	setup_add_decoders(_menu_decoders_add);
+
+	_menu_decoders->addMenu(_menu_decoders_add);
+	connect(&_decoders_add_mapper, SIGNAL(mapped(QObject*)),
+		this, SLOT(add_decoder(QObject*)));
+
 	// Help Menu
 	_menu_help = new QMenu(_menu_bar);
 	_menu_help->setTitle(QApplication::translate(
@@ -186,6 +201,7 @@ void MainWindow::setup_ui()
 
 	_menu_bar->addAction(_menu_file->menuAction());
 	_menu_bar->addAction(_menu_view->menuAction());
+	_menu_bar->addAction(_menu_decoders->menuAction());
 	_menu_bar->addAction(_menu_help->menuAction());
 
 	setMenuBar(_menu_bar);
@@ -278,6 +294,27 @@ void MainWindow::show_session_error(
 	msg.exec();
 }
 
+gint MainWindow::decoder_name_cmp(gconstpointer a, gconstpointer b)
+{
+	return strcmp(((const srd_decoder*)a)->name,
+		((const srd_decoder*)b)->name);
+}
+
+void MainWindow::setup_add_decoders(QMenu *parent)
+{
+	GSList *l = g_slist_sort(g_slist_copy(
+		(GSList*)srd_decoder_list()), decoder_name_cmp);
+	while ((l = l->next)) {
+		QAction *const action = parent->addAction(QString(
+			((srd_decoder*)l->data)->name));
+		action->setData(qVariantFromValue(l->data));
+		_decoders_add_mapper.setMapping(action, action);
+		connect(action, SIGNAL(triggered()),
+			&_decoders_add_mapper, SLOT(map()));
+	}
+	g_slist_free(l);
+}
+
 void MainWindow::on_actionOpen_triggered()
 {
 	// Enumerate the file formats
@@ -341,6 +378,11 @@ void MainWindow::on_actionAbout_triggered()
 void MainWindow::device_selected()
 {
 	_session.set_device(_sampling_bar->get_selected_device());
+}
+
+void MainWindow::add_decoder(QObject *action)
+{
+	(void)action;
 }
 
 void MainWindow::run_stop()

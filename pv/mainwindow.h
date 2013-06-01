@@ -26,6 +26,7 @@
 #include <boost/weak_ptr.hpp>
 
 #include <QMainWindow>
+#include <QSignalMapper>
 
 #include "sigsession.h"
 
@@ -73,6 +74,9 @@ private:
 	void update_device_list(
 		struct sr_dev_inst *selected_device = NULL);
 
+	static gint decoder_name_cmp(gconstpointer a, gconstpointer b);
+	void setup_add_decoders(QMenu *parent);
+
 private slots:
 	void load_file(QString file_name);
 
@@ -94,6 +98,8 @@ private slots:
 	void on_actionAbout_triggered();
 
 	void device_selected();
+
+	void add_decoder(QObject *action);
 
 	void run_stop();
 
@@ -118,6 +124,10 @@ private:
 	QAction *_action_view_zoom_in;
 	QAction *_action_view_zoom_out;
 	QAction *_action_view_show_cursors;
+
+	QMenu *_menu_decoders;
+	QMenu *_menu_decoders_add;
+	QSignalMapper _decoders_add_mapper;
 
 	QMenu *_menu_help;
 	QAction *_action_about;
