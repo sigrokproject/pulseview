@@ -137,6 +137,7 @@ set(pulseview_SOURCES
 	pv/view/selectableitem.cpp
 	pv/view/signal.cpp
 	pv/view/timemarker.cpp
+	pv/view/trace.cpp
 	pv/view/view.cpp
 	pv/view/viewport.cpp
 )
@@ -158,6 +159,7 @@ set(pulseview_HEADERS
 	pv/view/selectableitem.h
 	pv/view/signal.h
 	pv/view/timemarker.h
+	pv/view/trace.h
 	pv/view/view.h
 	pv/view/viewport.h
 )

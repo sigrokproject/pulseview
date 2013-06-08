@@ -31,8 +31,6 @@
 namespace pv {
 namespace view {
 
-const int Signal::LabelHitPadding = 2;
-
 const QPen Signal::SignalAxisPen(QColor(128, 128, 128, 64));
 
 const char *const ProbeNames[] = {
@@ -53,10 +51,8 @@ const char *const ProbeNames[] = {
 };
 
 Signal::Signal(pv::SigSession &session, const sr_probe *const probe) :
-	_session(session),
+	Trace(session, probe->name),
 	_probe(probe),
-	_name(probe->name),
-	_v_offset(0),
 	_name_action(NULL),
 	_name_widget(),
 	_updating_name_widget(false)
@@ -74,102 +70,17 @@ Signal::Signal(pv::SigSession &session, const sr_probe *const probe) :
 		this, SLOT(on_text_changed(const QString&)));
 }
 
-QString Signal::get_name() const
-{
-	return _name;
-}
-
 void Signal::set_name(QString name)
 {
-	_name = name;
+	Trace::set_name(name);
 	_updating_name_widget = true;
 	_name_widget.setEditText(name);
 	_updating_name_widget = false;
 }
 
-QColor Signal::get_colour() const
+bool Signal::enabled() const
 {
-	return _colour;
-}
-
-void Signal::set_colour(QColor colour)
-{
-	_colour = colour;
-}
-
-int Signal::get_v_offset() const
-{
-	return _v_offset;
-}
-
-void Signal::set_v_offset(int v_offset)
-{
-	_v_offset = v_offset;
-}
-
-void Signal::paint_label(QPainter &p, int y, int right, bool hover)
-{
-	p.setBrush(_colour);
-
-	if (!_probe->enabled)
-		return;
-
-	const QColor colour = get_colour();
-
-	compute_text_size(p);
-	const QRectF label_rect = get_label_rect(y, right);
-
-	// Paint the label
-	const QPointF points[] = {
-		label_rect.topLeft(),
-		label_rect.topRight(),
-		QPointF(right, y),
-		label_rect.bottomRight(),
-		label_rect.bottomLeft()
-	};
-
-	const QPointF highlight_points[] = {
-		QPointF(label_rect.left() + 1, label_rect.top() + 1),
-		QPointF(label_rect.right(), label_rect.top() + 1),
-		QPointF(right - 1, y),
-		QPointF(label_rect.right(), label_rect.bottom() - 1),
-		QPointF(label_rect.left() + 1, label_rect.bottom() - 1)
-	};
-
-	if (selected()) {
-		p.setPen(highlight_pen());
-		p.setBrush(Qt::transparent);
-		p.drawPolygon(points, countof(points));
-	}
-
-	p.setPen(Qt::transparent);
-	p.setBrush(hover ? colour.lighter() : colour);
-	p.drawPolygon(points, countof(points));
-
-	p.setPen(colour.lighter());
-	p.setBrush(Qt::transparent);
-	p.drawPolygon(highlight_points, countof(highlight_points));
-
-	p.setPen(colour.darker());
-	p.setBrush(Qt::transparent);
-	p.drawPolygon(points, countof(points));
-
-	// Paint the text
-	p.setPen((colour.lightness() > 64) ? Qt::black : Qt::white);
-	p.drawText(label_rect, Qt::AlignCenter | Qt::AlignVCenter, _name);
-}
-
-bool Signal::pt_in_label_rect(int y, int left, int right,
-	const QPoint &point)
-{
-	(void)left;
-
-	const QRectF label = get_label_rect(y, right);
-	return QRectF(
-		QPointF(label.left() - LabelHitPadding,
-			label.top() - LabelHitPadding),
-		QPointF(right, label.bottom() + LabelHitPadding)
-			).contains(point);
+	return _probe->enabled;
 }
 
 void Signal::paint_axis(QPainter &p, int y, int left, int right)
@@ -178,30 +89,9 @@ void Signal::paint_axis(QPainter &p, int y, int left, int right)
 	p.drawLine(QPointF(left, y + 0.5f), QPointF(right, y + 0.5f));
 }
 
-void Signal::compute_text_size(QPainter &p)
-{
-	_text_size = QSize(
-		p.boundingRect(QRectF(), 0, _name).width(),
-		p.boundingRect(QRectF(), 0, "Tg").height());
-}
-
-QRectF Signal::get_label_rect(int y, int right)
-{
-	using pv::view::View;
-
-	const QSizeF label_size(
-		_text_size.width() + View::LabelPadding.width() * 2,
-		ceilf((_text_size.height() + View::LabelPadding.height() * 2) / 2) * 2);
-	const float label_arrow_length = label_size.height() / 2;
-	return QRectF(
-		right - label_arrow_length - label_size.width() - 0.5,
-		y + 0.5f - label_size.height() / 2,
-		label_size.width(), label_size.height());
-}
-
 void Signal::on_text_changed(const QString &text)
 {
-	_name = text;
+	Trace::set_name(text);
 	text_changed();
 }
 
