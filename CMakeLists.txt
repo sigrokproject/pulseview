@@ -127,6 +127,7 @@ set(pulseview_SOURCES
 	pv/view/analogsignal.cpp
 	pv/view/cursor.cpp
 	pv/view/cursorpair.cpp
+	pv/view/decodesignal.cpp
 	pv/view/header.cpp
 	pv/view/marginwidget.cpp
 	pv/view/logicsignal.cpp
