@@ -62,6 +62,8 @@ public:
 	 */
 	bool enabled() const;
 
+	const sr_probe* probe() const;
+
 protected:
 
 	/**

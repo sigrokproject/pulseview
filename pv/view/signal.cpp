@@ -89,6 +89,11 @@ bool Signal::enabled() const
 	return _probe->enabled;
 }
 
+const sr_probe* Signal::probe() const
+{
+	return _probe;
+}
+
 void Signal::paint_axis(QPainter &p, int y, int left, int right)
 {
 	p.setPen(SignalAxisPen);
