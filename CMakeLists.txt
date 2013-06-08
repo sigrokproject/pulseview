@@ -137,6 +137,7 @@ set(pulseview_SOURCES
 	pv/view/viewport.cpp
 )
 
+# This list includes only QObject derrived class headers
 set(pulseview_HEADERS
 	pv/mainwindow.h
 	pv/sigsession.h
