@@ -23,6 +23,9 @@
 
 #include <stdint.h>
 
+#include <vector>
+
+#include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
 
 #include <QAbstractScrollArea>
@@ -38,6 +41,7 @@ namespace view {
 
 class Header;
 class Ruler;
+class Trace;
 class Viewport;
 
 class View : public QAbstractScrollArea {
@@ -65,6 +69,7 @@ public:
 	explicit View(SigSession &session, QWidget *parent = 0);
 
 	SigSession& session();
+	const SigSession& session() const;
 
 	/**
 	 * Returns the view time scale in seconds per pixel.
@@ -87,6 +92,8 @@ public:
 	 * @param offset The view time offset in seconds.
 	 */
 	void set_scale_offset(double scale, double offset);
+
+	std::vector< boost::shared_ptr<Trace> > get_traces() const;
 
 	std::list<boost::weak_ptr<SelectableItem> > selected_items() const;
 
@@ -130,6 +137,10 @@ private:
 	void get_scroll_layout(double &length, double &offset) const;
 	
 	void update_scroll();
+
+	static bool compare_trace_v_offsets(
+		const boost::shared_ptr<pv::view::Trace> &a,
+		const boost::shared_ptr<pv::view::Trace> &b);
 
 private:
 	bool eventFilter(QObject *object, QEvent *event);

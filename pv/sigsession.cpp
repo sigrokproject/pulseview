@@ -187,7 +187,7 @@ void SigSession::stop_capture()
 	_sampling_thread.reset();
 }
 
-vector< shared_ptr<view::Signal> > SigSession::get_signals()
+vector< shared_ptr<view::Signal> > SigSession::get_signals() const
 {
 	lock_guard<mutex> lock(_signals_mutex);
 	return _signals;
@@ -211,6 +211,12 @@ void SigSession::add_decoder(srd_decoder *const dec,
 		_decode_traces.push_back(d);
 	}
 	signals_changed();
+}
+
+vector< shared_ptr<view::DecodeSignal> > SigSession::get_decode_signals() const
+{
+	lock_guard<mutex> lock(_signals_mutex);
+	return _decode_traces;
 }
 
 void SigSession::set_capture_state(capture_state state)

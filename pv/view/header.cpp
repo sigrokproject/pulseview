@@ -61,33 +61,30 @@ Header::Header(View &parent) :
 		this, SLOT(on_signals_moved()));
 }
 
-boost::shared_ptr<pv::view::Signal> Header::get_mouse_over_signal(
-	const QPoint &pt)
+shared_ptr<Trace> Header::get_mouse_over_trace(const QPoint &pt)
 {
 	const int w = width();
-	const vector< shared_ptr<Signal> > sigs(
-		_view.session().get_signals());
+	const vector< shared_ptr<Trace> > traces(_view.get_traces());
 
 	const int v_offset = _view.v_offset();
-	BOOST_FOREACH(const shared_ptr<Signal> s, sigs)
+	BOOST_FOREACH(const shared_ptr<Trace> t, traces)
 	{
-		assert(s);
+		assert(t);
 
-		if (s->pt_in_label_rect(s->get_v_offset() - v_offset,
+		if (t->pt_in_label_rect(t->get_v_offset() - v_offset,
 			0, w, pt))
-			return s;
+			return t;
 	}
 
-	return shared_ptr<Signal>();
+	return shared_ptr<Trace>();
 }
 
 void Header::clear_selection()
 {
-	const vector< shared_ptr<Signal> > sigs(
-		_view.session().get_signals());
-	BOOST_FOREACH(const shared_ptr<Signal> s, sigs) {
-		assert(s);
-		s->select(false);
+	const vector< shared_ptr<Trace> > traces(_view.get_traces());
+	BOOST_FOREACH(const shared_ptr<Trace> t, traces) {
+		assert(t);
+		t->select(false);
 	}
 
 	update();
@@ -96,22 +93,21 @@ void Header::clear_selection()
 void Header::paintEvent(QPaintEvent*)
 {
 	const int w = width();
-	const vector< shared_ptr<Signal> > sigs(
-		_view.session().get_signals());
+	const vector< shared_ptr<Trace> > traces(_view.get_traces());
 
 	QPainter painter(this);
 	painter.setRenderHint(QPainter::Antialiasing);
 
 	const int v_offset = _view.v_offset();
-	const bool dragging = !_drag_sigs.empty();
-	BOOST_FOREACH(const shared_ptr<Signal> s, sigs)
+	const bool dragging = !_drag_traces.empty();
+	BOOST_FOREACH(const shared_ptr<Trace> t, traces)
 	{
-		assert(s);
+		assert(t);
 
-		const int y = s->get_v_offset() - v_offset;
-		const bool highlight = !dragging && s->pt_in_label_rect(
+		const int y = t->get_v_offset() - v_offset;
+		const bool highlight = !dragging && t->pt_in_label_rect(
 			y, 0, w, _mouse_point);
-		s->paint_label(painter, y, w, highlight);
+		t->paint_label(painter, y, w, highlight);
 	}
 
 	painter.end();
@@ -121,46 +117,45 @@ void Header::mousePressEvent(QMouseEvent *event)
 {
 	assert(event);
 
-	const vector< shared_ptr<Signal> > sigs(
-		_view.session().get_signals());
+	const vector< shared_ptr<Trace> > traces(_view.get_traces());
 
 	if (event->button() & Qt::LeftButton) {
 		_mouse_down_point = event->pos();
 
 		// Save the offsets of any signals which will be dragged
-		BOOST_FOREACH(const shared_ptr<Signal> s, sigs)
-			if (s->selected())
-				_drag_sigs.push_back(
-					make_pair(s, s->get_v_offset()));
+		BOOST_FOREACH(const shared_ptr<Trace> t, traces)
+			if (t->selected())
+				_drag_traces.push_back(
+					make_pair(t, t->get_v_offset()));
 	}
 
 	// Select the signal if it has been clicked
-	const shared_ptr<Signal> mouse_over_signal =
-		get_mouse_over_signal(event->pos());
-	if (mouse_over_signal) {
-		if (mouse_over_signal->selected())
-			mouse_over_signal->select(false);
+	const shared_ptr<Trace> mouse_over_trace =
+		get_mouse_over_trace(event->pos());
+	if (mouse_over_trace) {
+		if (mouse_over_trace->selected())
+			mouse_over_trace->select(false);
 		else {
-			mouse_over_signal->select(true);
+			mouse_over_trace->select(true);
 
 			if (~QApplication::keyboardModifiers() &
 				Qt::ControlModifier)
-				_drag_sigs.clear();
+				_drag_traces.clear();
 
 			// Add the signal to the drag list
 			if (event->button() & Qt::LeftButton)
-				_drag_sigs.push_back(
-					make_pair(mouse_over_signal,
-					mouse_over_signal->get_v_offset()));
+				_drag_traces.push_back(
+					make_pair(mouse_over_trace,
+					mouse_over_trace->get_v_offset()));
 		}
 	}
 
 	if (~QApplication::keyboardModifiers() & Qt::ControlModifier) {
 		// Unselect all other signals because the Ctrl is not
 		// pressed
-		BOOST_FOREACH(const shared_ptr<Signal> s, sigs)
-			if (s != mouse_over_signal)
-				s->select(false);
+		BOOST_FOREACH(const shared_ptr<Trace> t, traces)
+			if (t != mouse_over_trace)
+				t->select(false);
 	}
 
 	selection_changed();
@@ -171,7 +166,7 @@ void Header::mouseReleaseEvent(QMouseEvent *event)
 {
 	assert(event);
 	if (event->button() == Qt::LeftButton) {
-		_drag_sigs.clear();
+		_drag_traces.clear();
 		_view.normalize_layout();
 	}
 }
@@ -182,23 +177,23 @@ void Header::mouseMoveEvent(QMouseEvent *event)
 	_mouse_point = event->pos();
 
 	// Move the signals if we are dragging
-	if (!_drag_sigs.empty()) {
+	if (!_drag_traces.empty()) {
 		const int delta = event->pos().y() - _mouse_down_point.y();
 
-		for (std::list<std::pair<boost::weak_ptr<Signal>,
-			int> >::iterator i = _drag_sigs.begin();
-			i != _drag_sigs.end(); i++) {
-			const boost::shared_ptr<Signal> sig((*i).first);
-			if (sig) {
+		for (std::list<std::pair<boost::weak_ptr<Trace>,
+			int> >::iterator i = _drag_traces.begin();
+			i != _drag_traces.end(); i++) {
+			const boost::shared_ptr<Trace> trace((*i).first);
+			if (trace) {
 				const int y = (*i).second + delta;
 				const int y_snap =
 					((y + View::SignalSnapGridSize / 2) /
 						View::SignalSnapGridSize) *
 						View::SignalSnapGridSize;
-				sig->set_v_offset(y_snap);
+				trace->set_v_offset(y_snap);
 
-				// Ensure the signal is selected
-				sig->select();
+				// Ensure the trace is selected
+				trace->select();
 			}
 			
 		}
@@ -217,54 +212,54 @@ void Header::leaveEvent(QEvent*)
 
 void Header::contextMenuEvent(QContextMenuEvent *event)
 {
-	const shared_ptr<Signal> s = get_mouse_over_signal(_mouse_point);
+	const shared_ptr<Trace> t = get_mouse_over_trace(_mouse_point);
 
-	if (!s)
+	if (!t)
 		return;
 
 	QMenu menu(this);
 	menu.addAction(_action_set_name);
 	menu.addAction(_action_set_colour);
 
-	_context_signal = s;
+	_context_trace = t;
 	menu.exec(event->globalPos());
-	_context_signal.reset();
+	_context_trace.reset();
 }
 
 void Header::on_action_set_name_triggered()
 {
 	bool ok = false;
 
-	shared_ptr<view::Signal> context_signal = _context_signal;
-	if (!context_signal)
+	shared_ptr<view::Trace> context_trace = _context_trace;
+	if (!context_trace)
 		return;
 
 	const QString new_label = QInputDialog::getText(this, tr("Set Name"),
-		tr("Name"), QLineEdit::Normal, context_signal->get_name(), &ok);
+		tr("Name"), QLineEdit::Normal, context_trace->get_name(), &ok);
 
 	if (ok)
-		context_signal->set_name(new_label);
+		context_trace->set_name(new_label);
 }
 
 void Header::on_action_set_colour_triggered()
 {
-	shared_ptr<view::Signal> context_signal = _context_signal;
-	if (!context_signal)
+	shared_ptr<view::Trace> context_trace = _context_trace;
+	if (!context_trace)
 		return;
 
 	const QColor new_colour = QColorDialog::getColor(
-		context_signal->get_colour(), this, tr("Set Colour"));
+		context_trace->get_colour(), this, tr("Set Colour"));
 
 	if (new_colour.isValid())
-		context_signal->set_colour(new_colour);
+		context_trace->set_colour(new_colour);
 }
 
 void Header::on_signals_changed()
 {
-	const vector< shared_ptr<Signal> > sigs(_view.session().get_signals());
-	BOOST_FOREACH(shared_ptr<Signal> s, sigs) {
-		assert(s);
-		connect(s.get(), SIGNAL(text_changed()), this, SLOT(update()));
+	const vector< shared_ptr<Trace> > traces(_view.get_traces());
+	BOOST_FOREACH(shared_ptr<Trace> t, traces) {
+		assert(t);
+		connect(t.get(), SIGNAL(text_changed()), this, SLOT(update()));
 	}
 }
 

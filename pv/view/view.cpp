@@ -28,6 +28,7 @@
 #include <QMouseEvent>
 #include <QScrollBar>
 
+#include "decodesignal.h"
 #include "header.h"
 #include "ruler.h"
 #include "signal.h"
@@ -116,6 +117,11 @@ SigSession& View::session()
 	return _session;
 }
 
+const SigSession& View::session() const
+{
+	return _session;
+}
+
 double View::scale() const
 {
 	return _scale;
@@ -159,16 +165,33 @@ void View::set_scale_offset(double scale, double offset)
 	_viewport->update();
 }
 
+vector< shared_ptr<Trace> > View::get_traces() const
+{
+	const vector< shared_ptr<Signal> > sigs(
+		session().get_signals());
+	const vector< shared_ptr<DecodeSignal> > decode_sigs(
+		session().get_decode_signals());
+	vector< shared_ptr<Trace> > traces(
+		sigs.size() + decode_sigs.size());
+
+	vector< shared_ptr<Trace> >::iterator i = traces.begin();
+	i = copy(sigs.begin(), sigs.end(), i);
+	i = copy(decode_sigs.begin(), decode_sigs.end(), i);
+
+	sort(traces.begin(), traces.end(), compare_trace_v_offsets);
+	return traces;
+}
+
 list<weak_ptr<SelectableItem> > View::selected_items() const
 {
 	list<weak_ptr<SelectableItem> > items;
 
 	// List the selected signals
-	const vector< shared_ptr<Signal> > sigs(_session.get_signals());
-	BOOST_FOREACH (shared_ptr<Signal> s, sigs) {
-		assert(s);
-		if (s->selected())
-			items.push_back(s);
+	const vector< shared_ptr<Trace> > traces(get_traces());
+	BOOST_FOREACH (shared_ptr<Trace> t, traces) {
+		assert(t);
+		if (t->selected())
+			items.push_back(t);
 	}
 
 	// List the selected cursors
@@ -218,15 +241,15 @@ const QPoint& View::hover_point() const
 
 void View::normalize_layout()
 {
-	const vector< shared_ptr<Signal> > sigs(_session.get_signals());
+	const vector< shared_ptr<Trace> > traces(get_traces());
 
 	int v_min = INT_MAX;
-	BOOST_FOREACH(const shared_ptr<Signal> s, sigs)
-		v_min = min(s->get_v_offset(), v_min);
+	BOOST_FOREACH(const shared_ptr<Trace> t, traces)
+		v_min = min(t->get_v_offset(), v_min);
 
 	const int delta = -min(v_min, 0);
-	BOOST_FOREACH(shared_ptr<Signal> s, sigs)
-		s->set_v_offset(s->get_v_offset() + delta);
+	BOOST_FOREACH(shared_ptr<Trace> t, traces)
+		t->set_v_offset(t->get_v_offset() + delta);
 
 	verticalScrollBar()->setSliderPosition(_v_offset + delta);
 	v_scroll_value_changed(verticalScrollBar()->sliderPosition());
@@ -273,6 +296,14 @@ void View::update_scroll()
 	verticalScrollBar()->setRange(0,
 		_viewport->get_total_height() + SignalMargin -
 		areaSize.height());
+}
+
+bool View::compare_trace_v_offsets(const shared_ptr<Trace> &a,
+	const shared_ptr<Trace> &b)
+{
+	assert(a);
+	assert(b);
+	return a->get_v_offset() < b->get_v_offset();
 }
 
 bool View::eventFilter(QObject *object, QEvent *event)

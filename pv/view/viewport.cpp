@@ -49,11 +49,10 @@ Viewport::Viewport(View &parent) :
 int Viewport::get_total_height() const
 {
 	int h = 0;
-	const vector< shared_ptr<Signal> > sigs(
-		_view.session().get_signals());
-	BOOST_FOREACH(const shared_ptr<Signal> s, sigs) {
-		assert(s);
-		h = max(s->get_v_offset() + View::SignalHeight, h);
+	const vector< shared_ptr<Trace> > traces(_view.get_traces());
+	BOOST_FOREACH(const shared_ptr<Trace> t, traces) {
+		assert(t);
+		h = max(t->get_v_offset() + View::SignalHeight, h);
 	}
 
 	return h;
@@ -61,8 +60,7 @@ int Viewport::get_total_height() const
 
 void Viewport::paintEvent(QPaintEvent*)
 {
-	const vector< shared_ptr<Signal> > sigs(
-		_view.session().get_signals());
+	const vector< shared_ptr<Trace> > traces(_view.get_traces());
 
 	QPainter p(this);
 	p.setRenderHint(QPainter::Antialiasing);
@@ -72,10 +70,10 @@ void Viewport::paintEvent(QPaintEvent*)
 
 	// Plot the signal
 	const int v_offset = _view.v_offset();
-	BOOST_FOREACH(const shared_ptr<Signal> s, sigs)
+	BOOST_FOREACH(const shared_ptr<Trace> t, traces)
 	{
-		assert(s);
-		s->paint(p, s->get_v_offset() - v_offset, 0, width(),
+		assert(t);
+		t->paint(p, t->get_v_offset() - v_offset, 0, width(),
 			_view.scale(), _view.offset());
 	}
 

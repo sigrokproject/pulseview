@@ -32,7 +32,7 @@
 namespace pv {
 namespace view {
 
-class Signal;
+class Trace;
 class View;
 
 class Header : public MarginWidget
@@ -43,7 +43,7 @@ public:
 	Header(View &parent);
 
 private:
-	boost::shared_ptr<pv::view::Signal> get_mouse_over_signal(
+	boost::shared_ptr<pv::view::Trace> get_mouse_over_trace(
 		const QPoint &pt);
 
 	void clear_selection();
@@ -78,10 +78,10 @@ private:
 	QPoint _mouse_point;
 	QPoint _mouse_down_point;
 
-	std::list<std::pair<boost::weak_ptr<Signal>, int> >
-		_drag_sigs;
+	std::list<std::pair<boost::weak_ptr<Trace>, int> >
+		_drag_traces;
 
-	boost::shared_ptr<Signal> _context_signal;
+	boost::shared_ptr<Trace> _context_trace;
 	QAction *_action_set_name;
 	QAction *_action_set_colour;
 };

@@ -90,13 +90,16 @@ public:
 	void stop_capture();
 
 	std::vector< boost::shared_ptr<view::Signal> >
-		get_signals();
+		get_signals() const;
 
 	boost::shared_ptr<data::Logic> get_data();
 
 	void add_decoder(srd_decoder *const dec,
 		std::map<const srd_probe*,
 			boost::shared_ptr<view::Signal> > probes);
+
+	std::vector< boost::shared_ptr<view::DecodeSignal> >
+		get_decode_signals() const;
 
 private:
 	void set_capture_state(capture_state state);
