@@ -27,7 +27,6 @@
 
 #include <map>
 #include <string>
-#include <utility>
 #include <vector>
 
 #include <QObject>
@@ -173,7 +172,7 @@ private:
 	boost::shared_ptr<data::Analog> _analog_data;
 	boost::shared_ptr<data::AnalogSnapshot> _cur_analog_snapshot;
 
-	std::auto_ptr<boost::thread> _sampling_thread;
+	boost::thread _sampling_thread;
 
 signals:
 	void capture_state_changed(int state);

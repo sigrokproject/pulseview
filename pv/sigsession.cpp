@@ -59,9 +59,7 @@ SigSession::~SigSession()
 {
 	stop_capture();
 
-	if (_sampling_thread.get())
-		_sampling_thread->join();
-	_sampling_thread.reset();
+	_sampling_thread.join();
 
 	if (_sdi)
 		_device_manager.release_device(_sdi);
@@ -116,9 +114,9 @@ void SigSession::load_file(const string &name,
 		update_signals(sdi);
 		read_sample_rate(sdi);
 
-		_sampling_thread.reset(new boost::thread(
+		_sampling_thread = boost::thread(
 			&SigSession::load_session_thread_proc, this,
-			error_handler));
+			error_handler);
 
 	} else {
 		sr_input *in = NULL;
@@ -130,11 +128,10 @@ void SigSession::load_file(const string &name,
 		update_signals(in->sdi);
 		read_sample_rate(in->sdi);
 
-		_sampling_thread.reset(new boost::thread(
+		_sampling_thread = boost::thread(
 			&SigSession::load_input_thread_proc, this,
-			name, in, error_handler));
+			name, in, error_handler);
 	}
-
 }
 
 SigSession::capture_state SigSession::get_capture_state() const
@@ -169,9 +166,9 @@ void SigSession::start_capture(uint64_t record_length,
 	}
 
 	// Begin the session
-	_sampling_thread.reset(new boost::thread(
+	_sampling_thread = boost::thread(
 		&SigSession::sample_thread_proc, this, _sdi,
-		record_length, error_handler));
+		record_length, error_handler);
 }
 
 void SigSession::stop_capture()
@@ -182,9 +179,7 @@ void SigSession::stop_capture()
 	sr_session_stop();
 
 	// Check that sampling stopped
-	if (_sampling_thread.get())
-		_sampling_thread->join();
-	_sampling_thread.reset();
+	_sampling_thread.join();
 }
 
 vector< shared_ptr<view::Signal> > SigSession::get_signals() const
