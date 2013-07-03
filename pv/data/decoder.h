@@ -26,6 +26,7 @@
 #include <map>
 
 #include <boost/shared_ptr.hpp>
+#include <boost/thread.hpp>
 
 struct srd_decoder;
 struct srd_decoder_inst;
@@ -39,6 +40,8 @@ class Signal;
 
 namespace data {
 
+class Logic;
+
 class Decoder : public SignalData
 {
 public:
@@ -46,12 +49,18 @@ public:
 		std::map<const srd_probe*,
 			boost::shared_ptr<pv::view::Signal> > probes);
 
+	virtual ~Decoder();
+
 	const srd_decoder* get_decoder() const;
+
+	void begin_decode();
 
 	void clear_snapshots();
 
 private:
 	void init_decoder();
+
+	void decode_proc(boost::shared_ptr<data::Logic> data);
 
 private:
 	const srd_decoder *const _decoder;
@@ -59,6 +68,8 @@ private:
 		_probes;
 
 	srd_decoder_inst *_decoder_inst;
+
+	boost::thread _decode_thread;
 };
 
 } // namespace data

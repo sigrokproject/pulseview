@@ -40,9 +40,28 @@ Decoder::Decoder(const srd_decoder *const dec,
 	init_decoder();
 }
 
+Decoder::~Decoder()
+{
+	_decode_thread.interrupt();
+	_decode_thread.join();
+}
+
 const srd_decoder* Decoder::get_decoder() const
 {
 	return _decoder;
+}
+
+void Decoder::begin_decode()
+{
+	_decode_thread.interrupt();
+	_decode_thread.join();
+
+	_decode_thread = boost::thread(&Decoder::decode_proc, this,
+		shared_ptr<data::Logic>());
+}
+
+void Decoder::clear_snapshots()
+{
 }
 
 void Decoder::init_decoder()
@@ -67,8 +86,9 @@ void Decoder::init_decoder()
 	srd_inst_probe_set_all(_decoder_inst, probes);
 }
 
-void Decoder::clear_snapshots()
+void Decoder::decode_proc(shared_ptr<data::Logic> data)
 {
+	(void)data;
 }
 
 } // namespace data
