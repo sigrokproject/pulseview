@@ -19,8 +19,12 @@
 ##
 
 cmake_minimum_required(VERSION 2.6)
+
 include(FindPkgConfig)
 include(GNUInstallDirs)
+
+set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake")
+include(cotire)
 
 project(pulseview)
 
@@ -236,6 +240,7 @@ add_executable(${PROJECT_NAME}
 )
 
 target_link_libraries(${PROJECT_NAME} ${PULSEVIEW_LINK_LIBS})
+cotire(${PROJECT_NAME})
 
 if(WIN32)
 # Pass -mwindows so that no "DOS box" will open when PulseView is started.
