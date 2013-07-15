@@ -22,7 +22,7 @@
 # This will set ${CMAKE_THREAD_LIBS_INIT} to the correct, OS-specific value.
 find_package(Threads)
 
-find_package(Boost 1.46 COMPONENTS unit_test_framework REQUIRED)
+find_package(Boost 1.46 COMPONENTS system unit_test_framework REQUIRED)
 
 set(pulseview_TEST_SOURCES
 	${PROJECT_SOURCE_DIR}/pv/data/analogsnapshot.cpp
