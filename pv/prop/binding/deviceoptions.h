@@ -65,6 +65,7 @@ private:
 
 	static QString print_timebase(GVariant *const gvar);
 	static QString print_vdiv(GVariant *const gvar);
+	static QString print_voltage_threshold(GVariant *const gvar);
 
 protected:
 	struct sr_dev_inst *const _sdi;

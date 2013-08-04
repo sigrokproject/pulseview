@@ -95,6 +95,10 @@ DeviceOptions::DeviceOptions(struct sr_dev_inst *sdi) :
 		case SR_CONF_VDIV:
 			bind_enum(name, key, gvar_list, print_vdiv);
 			break;
+
+		case SR_CONF_VOLTAGE_THRESHOLD:
+			bind_enum(name, key, gvar_list, print_voltage_threshold);
+			break;
 		}
 
 		if (gvar_list)
@@ -253,6 +257,15 @@ QString DeviceOptions::print_vdiv(GVariant *const gvar)
 	uint64_t p, q;
 	g_variant_get(gvar, "(tt)", &p, &q);
 	return QString(sr_voltage_string(p, q));
+}
+
+QString DeviceOptions::print_voltage_threshold(GVariant *const gvar)
+{
+	gdouble lo, hi;
+	char buf[64];
+	g_variant_get(gvar, "(dd)", &lo, &hi);
+	snprintf(buf, sizeof(buf), "L<%.1fV H>%.1fV", lo, hi);
+	return QString(buf);
 }
 
 } // binding
