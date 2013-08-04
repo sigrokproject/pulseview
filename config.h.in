@@ -31,4 +31,7 @@
 #define PV_VERSION_MICRO @PV_VERSION_MICRO@
 #define PV_VERSION_STRING "@PV_VERSION_STRING@"
 
+/* Platform properties */
+#cmakedefine HAVE_UNALIGNED_LITTLE_ENDIAN_ACCESS
+
 #endif

@@ -27,6 +27,7 @@
 
 #include <boost/foreach.hpp>
 
+#include "config.h"
 #include "logicsnapshot.h"
 
 using boost::lock_guard;
@@ -64,6 +65,9 @@ LogicSnapshot::~LogicSnapshot()
 
 uint64_t LogicSnapshot::unpack_sample(const uint8_t *ptr) const
 {
+#ifdef HAVE_UNALIGNED_LITTLE_ENDIAN_ACCESS
+	return *(uint64_t*)ptr;
+#else
 	uint64_t value = 0;
 	switch(_unit_size) {
 	default:
@@ -94,10 +98,14 @@ uint64_t LogicSnapshot::unpack_sample(const uint8_t *ptr) const
 		break;
 	}
 	return value;
+#endif
 }
 
 void LogicSnapshot::pack_sample(uint8_t *ptr, uint64_t value)
 {
+#ifdef HAVE_UNALIGNED_LITTLE_ENDIAN_ACCESS
+	*(uint64_t*)ptr = value;
+#else
 	switch(_unit_size) {
 	default:
 		ptr[7] = value >> 56;
@@ -126,6 +134,7 @@ void LogicSnapshot::pack_sample(uint8_t *ptr, uint64_t value)
 	case 0:
 		break;
 	}
+#endif
 }
 
 void LogicSnapshot::append_payload(
