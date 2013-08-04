@@ -62,6 +62,72 @@ LogicSnapshot::~LogicSnapshot()
 		free(l.data);
 }
 
+uint64_t LogicSnapshot::unpack_sample(const uint8_t *ptr) const
+{
+	uint64_t value = 0;
+	switch(_unit_size) {
+	default:
+		value |= ((uint64_t)ptr[7]) << 56;
+		/* FALLTHRU */
+	case 7:
+		value |= ((uint64_t)ptr[6]) << 48;
+		/* FALLTHRU */
+	case 6:
+		value |= ((uint64_t)ptr[5]) << 40;
+		/* FALLTHRU */
+	case 5:
+		value |= ((uint64_t)ptr[4]) << 32;
+		/* FALLTHRU */
+	case 4:
+		value |= ((uint32_t)ptr[3]) << 24;
+		/* FALLTHRU */
+	case 3:
+		value |= ((uint32_t)ptr[2]) << 16;
+		/* FALLTHRU */
+	case 2:
+		value |= ptr[1] << 8;
+		/* FALLTHRU */
+	case 1:
+		value |= ptr[0];
+		/* FALLTHRU */
+	case 0:
+		break;
+	}
+	return value;
+}
+
+void LogicSnapshot::pack_sample(uint8_t *ptr, uint64_t value)
+{
+	switch(_unit_size) {
+	default:
+		ptr[7] = value >> 56;
+		/* FALLTHRU */
+	case 7:
+		ptr[6] = value >> 48;
+		/* FALLTHRU */
+	case 6:
+		ptr[5] = value >> 40;
+		/* FALLTHRU */
+	case 5:
+		ptr[4] = value >> 32;
+		/* FALLTHRU */
+	case 4:
+		ptr[3] = value >> 24;
+		/* FALLTHRU */
+	case 3:
+		ptr[2] = value >> 16;
+		/* FALLTHRU */
+	case 2:
+		ptr[1] = value >> 8;
+		/* FALLTHRU */
+	case 1:
+		ptr[0] = value;
+		/* FALLTHRU */
+	case 0:
+		break;
+	}
+}
+
 void LogicSnapshot::append_payload(
 	const sr_datafeed_logic &logic)
 {
@@ -139,13 +205,13 @@ void LogicSnapshot::append_payload_to_mipmap()
 		diff_counter = MipMapScaleFactor;
 		while (diff_counter-- > 0)
 		{
-			const uint64_t sample = *(uint64_t*)src_ptr;
+			const uint64_t sample = unpack_sample(src_ptr);
 			accumulator |= _last_append_sample ^ sample;
 			_last_append_sample = sample;
 			src_ptr += _unit_size;
 		}
 
-		*(uint64_t*)dest_ptr = accumulator;
+		pack_sample(dest_ptr, accumulator);
 		dest_ptr += _unit_size;
 	}
 
@@ -179,11 +245,11 @@ void LogicSnapshot::append_payload_to_mipmap()
 			diff_counter = MipMapScaleFactor;
 			while (diff_counter-- > 0)
 			{
-				accumulator |= *(uint64_t*)src_ptr;
+				accumulator |= unpack_sample(src_ptr);
 				src_ptr += _unit_size;
 			}
 
-			*(uint64_t*)dest_ptr = accumulator;
+			pack_sample(dest_ptr, accumulator);
 		}
 	}
 }
@@ -193,7 +259,7 @@ uint64_t LogicSnapshot::get_sample(uint64_t index) const
 	assert(_data);
 	assert(index < _sample_count);
 
-	return *(uint64_t*)((uint8_t*)_data + index * _unit_size);
+	return unpack_sample((uint8_t*)_data + index * _unit_size);
 }
 
 void LogicSnapshot::get_subsampled_edges(
@@ -379,7 +445,7 @@ uint64_t LogicSnapshot::get_subsample(int level, uint64_t offset) const
 {
 	assert(level >= 0);
 	assert(_mip_map[level].data);
-	return *(uint64_t*)((uint8_t*)_mip_map[level].data +
+	return unpack_sample((uint8_t*)_mip_map[level].data +
 		_unit_size * offset);
 }
 
