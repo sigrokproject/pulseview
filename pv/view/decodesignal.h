@@ -35,6 +35,8 @@ namespace view {
 
 class DecodeSignal : public Trace
 {
+	Q_OBJECT
+
 public:
 	DecodeSignal(pv::SigSession &session,
 		boost::shared_ptr<pv::data::Decoder> decoder);
@@ -42,6 +44,8 @@ public:
 	void init_context_bar_actions(QWidget *parent);
 
 	bool enabled() const;
+
+	void set_view(pv::view::View *view);
 
 	/**
 	 * Paints the trace with a QPainter
@@ -63,6 +67,8 @@ private:
 
 private:
 	boost::shared_ptr<pv::data::Decoder> _decoder;
+
+	uint64_t _decode_start, _decode_end;
 };
 
 } // namespace view

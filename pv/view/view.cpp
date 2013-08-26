@@ -159,6 +159,7 @@ void View::set_scale_offset(double scale, double offset)
 	update_scroll();
 	_ruler->update();
 	_viewport->update();
+	scale_offset_changed();
 }
 
 vector< shared_ptr<Trace> > View::get_traces() const

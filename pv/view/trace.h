@@ -84,7 +84,7 @@ public:
 	 */
 	virtual bool enabled() const = 0;
 
-	void set_view(pv::view::View *view);
+	virtual void set_view(pv::view::View *view);
 
 	/**
 	 * Paints the trace with a QPainter

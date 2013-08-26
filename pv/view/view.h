@@ -133,6 +133,8 @@ signals:
 
 	void selection_changed();
 
+	void scale_offset_changed();
+
 private:
 	void get_scroll_layout(double &length, double &offset) const;
 	

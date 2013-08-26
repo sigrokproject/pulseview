@@ -54,6 +54,8 @@ public:
 
 	void init_context_bar_actions(QWidget *parent);
 
+	boost::shared_ptr<pv::data::Logic> data() const;
+
 	const std::list<QAction*> get_context_bar_actions();
 
 	/**

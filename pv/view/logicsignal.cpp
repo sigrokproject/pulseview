@@ -118,6 +118,11 @@ void LogicSignal::init_context_bar_actions(QWidget *parent)
 		this, SLOT(on_trigger_change()));
 }
 
+boost::shared_ptr<pv::data::Logic> LogicSignal::data() const
+{
+	return _data;
+}
+
 const list<QAction*> LogicSignal::get_context_bar_actions()
 {
 	GVariant *gvar;

@@ -25,6 +25,7 @@ extern "C" {
 #include "decodesignal.h"
 
 #include <pv/data/decoder.h>
+#include <pv/view/view.h>
 
 using namespace boost;
 using namespace std;
@@ -37,6 +38,8 @@ DecodeSignal::DecodeSignal(pv::SigSession &session,
 	Trace(session, QString(decoder->get_decoder()->name)),
 	_decoder(decoder)
 {
+	assert(_decoder);
+
 	_colour = Qt::red;
 }
 
@@ -48,6 +51,12 @@ void DecodeSignal::init_context_bar_actions(QWidget *parent)
 bool DecodeSignal::enabled() const
 {
 	return true;
+}
+
+void DecodeSignal::set_view(pv::view::View *view)
+{
+	assert(view);
+	Trace::set_view(view);
 }
 
 void DecodeSignal::paint(QPainter &p, int left, int right)

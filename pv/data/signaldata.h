@@ -40,8 +40,7 @@ public:
 	virtual void clear_snapshots() = 0;
 
 protected:
-	const double _start_time;
-
+	double _start_time;
 	double _samplerate;
 };
 

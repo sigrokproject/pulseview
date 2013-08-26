@@ -28,6 +28,8 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
 
+#include <QObject>
+
 struct srd_decoder;
 struct srd_decoder_inst;
 struct srd_probe;
@@ -36,14 +38,26 @@ namespace pv {
 
 namespace view {
 class Signal;
+
+namespace decode {
+class Annotation;
+}
+
 }
 
 namespace data {
 
 class Logic;
 
-class Decoder : public SignalData
+class Decoder : public QObject, public SignalData
 {
+	Q_OBJECT
+
+private:
+	static const double DecodeMargin;
+	static const double DecodeThreshold;
+	static const int64_t DecodeChunkLength;
+
 public:
 	Decoder(const srd_decoder *const decoder,
 		std::map<const srd_probe*,
@@ -53,14 +67,20 @@ public:
 
 	const srd_decoder* get_decoder() const;
 
-	void begin_decode();
+	const std::vector< boost::shared_ptr<pv::view::decode::Annotation> >
+		annotations() const;
 
 	void clear_snapshots();
 
 private:
+	void begin_decode();
+
 	void init_decoder();
 
 	void decode_proc(boost::shared_ptr<data::Logic> data);
+
+	static void annotation_callback(srd_proto_data *pdata,
+		void *decoder);
 
 private:
 	const srd_decoder *const _decoder;
@@ -68,6 +88,10 @@ private:
 		_probes;
 
 	srd_decoder_inst *_decoder_inst;
+
+	mutable boost::mutex _annotations_mutex;
+	std::vector< boost::shared_ptr<pv::view::decode::Annotation> >
+		_annotations;
 
 	boost::thread _decode_thread;
 };

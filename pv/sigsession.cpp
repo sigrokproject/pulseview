@@ -199,6 +199,13 @@ void SigSession::add_decoder(srd_decoder *const dec,
 {
 	{
 		lock_guard<mutex> lock(_signals_mutex);
+
+		if (!_decode_traces.empty()) {
+			qDebug("Currently only one decode trace can be added "
+				"at once");
+			_decode_traces.clear();
+		}
+
 		shared_ptr<data::Decoder> decoder(
 			new data::Decoder(dec, probes));
 		shared_ptr<view::DecodeSignal> d(

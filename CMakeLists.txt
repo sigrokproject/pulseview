@@ -146,12 +146,14 @@ set(pulseview_SOURCES
 set(pulseview_HEADERS
 	pv/mainwindow.h
 	pv/sigsession.h
+	pv/data/decoder.h
 	pv/dialogs/about.h
 	pv/dialogs/connect.h
 	pv/dialogs/deviceoptions.h
 	pv/toolbars/contextbar.h
 	pv/toolbars/samplingbar.h
 	pv/view/cursor.h
+	pv/view/decodesignal.h
 	pv/view/header.h
 	pv/view/logicsignal.h
 	pv/view/marginwidget.h
