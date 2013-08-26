@@ -70,6 +70,22 @@ void LogicSnapshot::append_payload(
 	append_payload_to_mipmap();
 }
 
+void LogicSnapshot::get_samples(uint8_t *const data,
+	int64_t start_sample, int64_t end_sample) const
+{
+	assert(data);
+	assert(start_sample >= 0);
+	assert(start_sample < (int64_t)_sample_count);
+	assert(end_sample >= 0);
+	assert(end_sample < (int64_t)_sample_count);
+	assert(start_sample <= end_sample);
+
+	lock_guard<recursive_mutex> lock(_mutex);
+
+	const size_t size = (end_sample - start_sample) * _unit_size;
+	memcpy(data, (const uint8_t*)_data + start_sample, size);
+}
+
 void LogicSnapshot::reallocate_mipmap_level(MipMapLevel &m)
 {
 	const uint64_t new_data_length = ((m.length + MipMapDataUnit - 1) /
