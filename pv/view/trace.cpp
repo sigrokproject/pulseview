@@ -68,8 +68,17 @@ void Trace::set_v_offset(int v_offset)
 	_v_offset = v_offset;
 }
 
-void Trace::paint_label(QPainter &p, int y, int right, bool hover)
+void Trace::set_view(pv::view::View *view)
 {
+	assert(view);
+	_view = view;
+}
+
+void Trace::paint_label(QPainter &p, int right, bool hover)
+{
+	assert(_view);
+	const int y = _v_offset - _view->v_offset();
+
 	p.setBrush(_colour);
 
 	if (!enabled())
@@ -78,7 +87,7 @@ void Trace::paint_label(QPainter &p, int y, int right, bool hover)
 	const QColor colour = get_colour();
 
 	compute_text_size(p);
-	const QRectF label_rect = get_label_rect(y, right);
+	const QRectF label_rect = get_label_rect(right);
 
 	// Paint the label
 	const QPointF points[] = {
@@ -120,12 +129,11 @@ void Trace::paint_label(QPainter &p, int y, int right, bool hover)
 	p.drawText(label_rect, Qt::AlignCenter | Qt::AlignVCenter, _name);
 }
 
-bool Trace::pt_in_label_rect(int y, int left, int right,
-	const QPoint &point)
+bool Trace::pt_in_label_rect(int left, int right, const QPoint &point)
 {
 	(void)left;
 
-	const QRectF label = get_label_rect(y, right);
+	const QRectF label = get_label_rect(right);
 	return QRectF(
 		QPointF(label.left() - LabelHitPadding,
 			label.top() - LabelHitPadding),
@@ -140,9 +148,12 @@ void Trace::compute_text_size(QPainter &p)
 		p.boundingRect(QRectF(), 0, "Tg").height());
 }
 
-QRectF Trace::get_label_rect(int y, int right)
+QRectF Trace::get_label_rect(int right)
 {
 	using pv::view::View;
+
+	assert(_view);
+	const int y = _v_offset - _view->v_offset();
 
 	const QSizeF label_size(
 		_text_size.width() + View::LabelPadding.width() * 2,

@@ -50,16 +50,11 @@ bool DecodeSignal::enabled() const
 	return true;
 }
 
-void DecodeSignal::paint(QPainter &p, int y, int left, int right,
-	double scale, double offset)
+void DecodeSignal::paint(QPainter &p, int left, int right)
 {
 	(void)p;
-	(void)y;
 	(void)left;
 	(void)right;
-	(void)offset;
-
-	assert(scale > 0);
 }
 
 const list<QAction*> DecodeSignal::get_context_bar_actions()

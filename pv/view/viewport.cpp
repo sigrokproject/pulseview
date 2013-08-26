@@ -69,12 +69,10 @@ void Viewport::paintEvent(QPaintEvent*)
 		_view.cursors().draw_viewport_background(p, rect());
 
 	// Plot the signal
-	const int v_offset = _view.v_offset();
 	BOOST_FOREACH(const shared_ptr<Trace> t, traces)
 	{
 		assert(t);
-		t->paint(p, t->get_v_offset() - v_offset, 0, width(),
-			_view.scale(), _view.offset());
+		t->paint(p, 0, width());
 	}
 
 	if (_view.cursors_shown())

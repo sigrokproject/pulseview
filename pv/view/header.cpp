@@ -66,13 +66,10 @@ shared_ptr<Trace> Header::get_mouse_over_trace(const QPoint &pt)
 	const int w = width();
 	const vector< shared_ptr<Trace> > traces(_view.get_traces());
 
-	const int v_offset = _view.v_offset();
 	BOOST_FOREACH(const shared_ptr<Trace> t, traces)
 	{
 		assert(t);
-
-		if (t->pt_in_label_rect(t->get_v_offset() - v_offset,
-			0, w, pt))
+		if (t->pt_in_label_rect(0, w, pt))
 			return t;
 	}
 
@@ -98,16 +95,14 @@ void Header::paintEvent(QPaintEvent*)
 	QPainter painter(this);
 	painter.setRenderHint(QPainter::Antialiasing);
 
-	const int v_offset = _view.v_offset();
 	const bool dragging = !_drag_traces.empty();
 	BOOST_FOREACH(const shared_ptr<Trace> t, traces)
 	{
 		assert(t);
 
-		const int y = t->get_v_offset() - v_offset;
 		const bool highlight = !dragging && t->pt_in_label_rect(
-			y, 0, w, _mouse_point);
-		t->paint_label(painter, y, w, highlight);
+			0, w, _mouse_point);
+		t->paint_label(painter, w, highlight);
 	}
 
 	painter.end();

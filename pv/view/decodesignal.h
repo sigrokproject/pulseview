@@ -46,15 +46,10 @@ public:
 	/**
 	 * Paints the trace with a QPainter
 	 * @param p the QPainter to paint into.
-	 * @param y the y-coordinate to draw the signal at
 	 * @param left the x-coordinate of the left edge of the signal
 	 * @param right the x-coordinate of the right edge of the signal
-	 * @param scale the scale in seconds per pixel.
-	 * @param offset the time to show at the left hand edge of
-	 *   the view in seconds.
 	 **/
-	void paint(QPainter &p, int y, int left, int right,
-		double scale, double offset);
+	void paint(QPainter &p, int left, int right);
 
 	const std::list<QAction*> get_context_bar_actions();
 

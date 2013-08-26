@@ -384,10 +384,11 @@ void View::v_scroll_value_changed(int value)
 void View::signals_changed()
 {
 	int offset = SignalMargin + SignalHeight;
-	const vector< shared_ptr<Signal> > sigs(_session.get_signals());
-	BOOST_FOREACH(shared_ptr<Signal> s, sigs) {
-		s->init_context_bar_actions(NULL);
-		s->set_v_offset(offset);
+	const vector< shared_ptr<Trace> > traces(get_traces());
+	BOOST_FOREACH(shared_ptr<Trace> t, traces) {
+		t->set_view(this);
+		t->init_context_bar_actions(NULL);
+		t->set_v_offset(offset);
 		offset += SignalHeight + 2 * SignalMargin;
 	}
 

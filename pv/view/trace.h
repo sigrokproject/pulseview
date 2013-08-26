@@ -36,6 +36,8 @@ class SigSession;
 
 namespace view {
 
+class View;
+
 class Trace : public SelectableItem
 {
 	Q_OBJECT
@@ -82,41 +84,34 @@ public:
 	 */
 	virtual bool enabled() const = 0;
 
+	void set_view(pv::view::View *view);
+
 	/**
 	 * Paints the trace with a QPainter
 	 * @param p the QPainter to paint into.
-	 * @param y the y-coordinate to draw the signal at
 	 * @param left the x-coordinate of the left edge of the signal
 	 * @param right the x-coordinate of the right edge of the signal
-	 * @param scale the scale in seconds per pixel.
-	 * @param offset the time to show at the left hand edge of
-	 *   the view in seconds.
 	 **/
-	virtual void paint(QPainter &p, int y, int left, int right,
-		double scale, double offset) = 0;
+	virtual void paint(QPainter &p, int left, int right) = 0;
 
 	/**
 	 * Paints the signal label into a QGLWidget.
 	 * @param p the QPainter to paint into.
-	 * @param y the y-coordinate of the signal.
 	 * @param right the x-coordinate of the right edge of the header
 	 * 	area.
 	 * @param hover true if the label is being hovered over by the mouse.
 	 */
-	virtual void paint_label(QPainter &p, int y, int right,
-		bool hover);
+	virtual void paint_label(QPainter &p, int right, bool hover);
 
 	/**
 	 * Determines if a point is in the header label rect.
-	 * @param y the y-coordinate of the signal.
 	 * @param left the x-coordinate of the left edge of the header
 	 * 	area.
 	 * @param right the x-coordinate of the right edge of the header
 	 * 	area.
 	 * @param point the point to test.
 	 */
-	bool pt_in_label_rect(int y, int left, int right,
-		const QPoint &point);
+	bool pt_in_label_rect(int left, int right, const QPoint &point);
 
 private:
 
@@ -128,18 +123,18 @@ private:
 	/**
 	 * Computes the outline rectangle of a label.
 	 * @param p the QPainter to lay out text with.
-	 * @param y the y-coordinate of the signal.
 	 * @param right the x-coordinate of the right edge of the header
 	 * 	area.
 	 * @return Returns the rectangle of the signal label.
 	 */
-	QRectF get_label_rect(int y, int right);
+	QRectF get_label_rect(int right);
 
 signals:
 	void text_changed();	
 
 protected:
 	pv::SigSession &_session;
+	pv::view::View *_view;
 
 	QString _name;
 	QColor _colour;

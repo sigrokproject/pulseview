@@ -28,6 +28,7 @@
 #include "pv/sigsession.h"
 #include "pv/data/logic.h"
 #include "pv/data/logicsnapshot.h"
+#include "pv/view/view.h"
 
 using namespace boost;
 using namespace std;
@@ -156,8 +157,7 @@ const list<QAction*> LogicSignal::get_context_bar_actions()
 	return actions;
 }
 
-void LogicSignal::paint(QPainter &p, int y, int left, int right,
-		double scale, double offset)
+void LogicSignal::paint(QPainter &p, int left, int right)
 {
 	using pv::view::View;
 
@@ -166,9 +166,16 @@ void LogicSignal::paint(QPainter &p, int y, int left, int right,
 	vector< pair<int64_t, bool> > edges;
 
 	assert(_probe);
-	assert(scale > 0);
 	assert(_data);
 	assert(right >= left);
+
+	assert(_view);
+	const int y = _v_offset - _view->v_offset();
+	
+	const double scale = _view->scale();
+	assert(scale > 0);
+	
+	const double offset = _view->offset();
 
 	if (!_probe->enabled)
 		return;

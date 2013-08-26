@@ -25,6 +25,7 @@
 #include "analogsignal.h"
 #include "pv/data/analog.h"
 #include "pv/data/analogsnapshot.h"
+#include "pv/view/view.h"
 
 using namespace boost;
 using namespace std;
@@ -66,12 +67,18 @@ void AnalogSignal::set_scale(float scale)
 	_scale = scale;
 }
 
-void AnalogSignal::paint(QPainter &p, int y, int left, int right, double scale,
-	double offset)
+void AnalogSignal::paint(QPainter &p, int left, int right)
 {
-	assert(scale > 0);
 	assert(_data);
 	assert(right >= left);
+
+	assert(_view);
+	const int y = _v_offset - _view->v_offset();
+
+	const double scale = _view->scale();
+	assert(scale > 0);
+
+	const double offset = _view->offset();
 
 	if (!_probe->enabled)
 		return;
