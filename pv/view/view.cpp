@@ -145,15 +145,11 @@ void View::zoom(double steps)
 void View::zoom(double steps, int offset)
 {
 	const double cursor_offset = _offset + _scale * offset;
-	_scale *= pow(3.0/2.0, -steps);
-	_scale = max(min(_scale, MaxScale), MinScale);
-	_offset = cursor_offset - _scale * offset;
-
-	_ruler->update();
-	_viewport->update();
-	update_scroll();
+	const double new_scale = max(min(_scale * pow(3.0/2.0, -steps),
+		MaxScale), MinScale);
+	const double new_offset = cursor_offset - new_scale * offset;
+	set_scale_offset(new_scale, new_offset);
 }
-
 
 void View::set_scale_offset(double scale, double offset)
 {
