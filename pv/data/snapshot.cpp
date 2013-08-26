@@ -50,6 +50,11 @@ uint64_t Snapshot::get_sample_count() const
 	return _sample_count;
 }
 
+int Snapshot::unit_size() const
+{
+	return _unit_size;
+}
+
 void Snapshot::append_data(void *data, uint64_t samples)
 {
 	lock_guard<recursive_mutex> lock(_mutex);

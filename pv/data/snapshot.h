@@ -37,6 +37,8 @@ public:
 
 	uint64_t get_sample_count() const;
 
+	int unit_size() const;
+
 protected:
 	void append_data(void *data, uint64_t samples);
 
