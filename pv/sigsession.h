@@ -92,7 +92,7 @@ public:
 private:
 	void set_capture_state(capture_state state);
 
-	void update_signals();
+	void update_signals(const sr_dev_inst *const sdi);
 
 	bool is_trigger_enabled() const;
 

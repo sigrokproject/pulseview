@@ -79,7 +79,7 @@ void SigSession::set_device(struct sr_dev_inst *sdi)
 	if (sdi)
 		_device_manager.use_device(sdi, this);
 	_sdi = sdi;
-	update_signals();
+	update_signals(sdi);
 }
 
 void SigSession::release_device(struct sr_dev_inst *sdi)
@@ -88,7 +88,7 @@ void SigSession::release_device(struct sr_dev_inst *sdi)
 
 	assert(_capture_state == Stopped);
 	_sdi = NULL;
-	update_signals();
+	update_signals(NULL);
 }
 
 void SigSession::load_file(const string &name,
@@ -246,7 +246,7 @@ sr_input* SigSession::load_input_file_format(const string &filename,
 	return in;
 }
 
-void SigSession::update_signals()
+void SigSession::update_signals(const sr_dev_inst *const sdi)
 {
 	assert(_capture_state == Stopped);
 
@@ -255,8 +255,8 @@ void SigSession::update_signals()
 	unsigned int analog_probe_count = 0;
 
 	// Detect what data types we will receive
-	if(_sdi) {
-		for (const GSList *l = _sdi->probes; l; l = l->next) {
+	if(sdi) {
+		for (const GSList *l = sdi->probes; l; l = l->next) {
 			const sr_probe *const probe = (const sr_probe *)l->data;
 			if (!probe->enabled)
 				continue;
@@ -297,8 +297,8 @@ void SigSession::update_signals()
 
 		_signals.clear();
 
-		if(_sdi) {
-			for (const GSList *l = _sdi->probes; l; l = l->next) {
+		if(sdi) {
+			for (const GSList *l = sdi->probes; l; l = l->next) {
 				const sr_probe *const probe =
 					(const sr_probe *)l->data;
 				assert(probe);
