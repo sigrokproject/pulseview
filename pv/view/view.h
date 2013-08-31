@@ -131,8 +131,6 @@ private:
 	
 	void update_scroll();
 
-	void reset_signal_layout();
-
 private:
 	bool eventFilter(QObject *object, QEvent *event);
 

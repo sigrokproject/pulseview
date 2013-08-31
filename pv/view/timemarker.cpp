@@ -33,18 +33,24 @@ TimeMarker::TimeMarker(View &view, const QColor &colour, double time) :
 	_view(view),
 	_colour(colour),
 	_time(time),
-	_value_action(&view),
-	_value_widget(&view),
+	_value_action(NULL),
+	_value_widget(NULL),
 	_updating_value_widget(false)
 {
-	_value_action.setDefaultWidget(&_value_widget);
+}
 
-	_value_widget.setValue(time);
-	_value_widget.setDecimals(6);
-	_value_widget.setSuffix("s");
-	_value_widget.setSingleStep(1e-6);
+void TimeMarker::init_context_bar_actions(QWidget *parent)
+{
+	_value_widget = new QDoubleSpinBox(parent);
+	_value_widget->setValue(_time);
+	_value_widget->setDecimals(6);
+	_value_widget->setSuffix("s");
+	_value_widget->setSingleStep(1e-6);
 
-	connect(&_value_widget, SIGNAL(valueChanged(double)),
+	_value_action = new QWidgetAction(parent);
+	_value_action->setDefaultWidget(_value_widget);
+
+	connect(_value_widget, SIGNAL(valueChanged(double)),
 		this, SLOT(on_value_changed(double)));
 }
 
@@ -57,7 +63,7 @@ void TimeMarker::set_time(double time)
 {
 	_time = time;
 	_updating_value_widget = true;
-	_value_widget.setValue(time);
+	_value_widget->setValue(time);
 	_updating_value_widget = false;
 	time_changed();
 }
@@ -72,7 +78,7 @@ void TimeMarker::paint(QPainter &p, const QRect &rect)
 const list<QAction*> TimeMarker::get_context_bar_actions()
 {
 	list<QAction*> actions;
-	actions.push_back(&_value_action);
+	actions.push_back(_value_action);
 	return actions;
 }
 

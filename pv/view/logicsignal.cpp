@@ -58,56 +58,63 @@ LogicSignal::LogicSignal(pv::SigSession &session, const sr_probe *const probe,
 	shared_ptr<data::Logic> data) :
 	Signal(session, probe),
 	_data(data),
-	_separator(this),
-	_icon_trigger_none(":/icons/trigger-none.svg"),
-	_trigger_none(_icon_trigger_none, tr("No trigger"), this),
-	_icon_trigger_rising(":/icons/trigger-rising.svg"),
-	_trigger_rising(_icon_trigger_rising,
-		tr("Trigger on rising edge"), this),
-	_icon_trigger_high(":/icons/trigger-high.svg"),
-	_trigger_high(_icon_trigger_high,
-		tr("Trigger on high level"), this),
-	_icon_trigger_falling(":/icons/trigger-falling.svg"),
-	_trigger_falling(_icon_trigger_falling,
-		tr("Trigger on falling edge"), this),
-	_icon_trigger_low(":/icons/trigger-low.svg"),
-	_trigger_low(_icon_trigger_low,
-		tr("Trigger on low level"), this),
-	_icon_trigger_change(":/icons/trigger-change.svg"),
-	_trigger_change(_icon_trigger_change,
-		tr("Trigger on rising or falling edge"), this)
+	_separator(NULL),
+	_trigger_none(NULL),
+	_trigger_rising(NULL),
+	_trigger_high(NULL),
+	_trigger_falling(NULL),
+	_trigger_low(NULL),
+	_trigger_change(NULL)
 {
 	_colour = SignalColours[probe->index % countof(SignalColours)];
-
-	_separator.setSeparator(true);
-
-	_trigger_none.setCheckable(true);
-	connect(&_trigger_none, SIGNAL(triggered()),
-		this, SLOT(on_trigger_none()));
-
-	_trigger_rising.setCheckable(true);
-	connect(&_trigger_rising, SIGNAL(triggered()),
-		this, SLOT(on_trigger_rising()));
-
-	_trigger_high.setCheckable(true);
-	connect(&_trigger_high, SIGNAL(triggered()),
-		this, SLOT(on_trigger_high()));
-
-	_trigger_falling.setCheckable(true);
-	connect(&_trigger_falling, SIGNAL(triggered()),
-		this, SLOT(on_trigger_falling()));
-
-	_trigger_low.setCheckable(true);
-	connect(&_trigger_low, SIGNAL(triggered()),
-		this, SLOT(on_trigger_low()));
-
-	_trigger_change.setCheckable(true);
-	connect(&_trigger_change, SIGNAL(triggered()),
-		this, SLOT(on_trigger_change()));
 }
 
 LogicSignal::~LogicSignal()
 {
+}
+
+void LogicSignal::init_context_bar_actions(QWidget *parent)
+{
+	Signal::init_context_bar_actions(parent);
+
+	_separator = new QAction(parent);
+	_separator->setSeparator(true);
+
+	_trigger_none = new QAction(QIcon(":/icons/trigger-none.svg"),
+		tr("No trigger"), this);
+	_trigger_none->setCheckable(true);
+	connect(_trigger_none, SIGNAL(triggered()),
+		this, SLOT(on_trigger_none()));
+
+	_trigger_rising = new QAction(QIcon(":/icons/trigger-rising.svg"),
+		tr("Trigger on rising edge"), this);
+	_trigger_rising->setCheckable(true);
+	connect(_trigger_rising, SIGNAL(triggered()),
+		this, SLOT(on_trigger_rising()));
+
+	_trigger_high = new QAction(QIcon(":/icons/trigger-low.svg"),
+		tr("Trigger on high level"), this);
+	_trigger_high->setCheckable(true);
+	connect(_trigger_high, SIGNAL(triggered()),
+		this, SLOT(on_trigger_high()));
+
+	_trigger_falling = new QAction(QIcon(":/icons/trigger-falling.svg"),
+		tr("Trigger on falling edge"), this);
+	_trigger_falling->setCheckable(true);
+	connect(_trigger_falling, SIGNAL(triggered()),
+		this, SLOT(on_trigger_falling()));
+
+	_trigger_low = new QAction(QIcon(":/icons/trigger-low.svg"),
+		tr("Trigger on low level"), this);
+	_trigger_low->setCheckable(true);
+	connect(_trigger_low, SIGNAL(triggered()),
+		this, SLOT(on_trigger_low()));
+
+	_trigger_change = new QAction(QIcon(":/icons/trigger-change.svg"),
+		tr("Trigger on rising or falling edge"), this);
+	_trigger_change->setCheckable(true);
+	connect(_trigger_change, SIGNAL(triggered()),
+		this, SLOT(on_trigger_change()));
 }
 
 const list<QAction*> LogicSignal::get_context_bar_actions()
@@ -115,7 +122,7 @@ const list<QAction*> LogicSignal::get_context_bar_actions()
 	GVariant *gvar;
 	list<QAction*> actions;
 
-	actions.push_back(&_name_action);
+	actions.push_back(_name_action);
 
 	// Add the trigger actions
 	const sr_dev_inst *const sdi = _session.get_device();
@@ -125,20 +132,20 @@ const list<QAction*> LogicSignal::get_context_bar_actions()
 			g_variant_get_string(gvar, NULL);
 
 		if (trig_types && trig_types[0] != '\0') {
-			actions.push_back(&_separator);
+			actions.push_back(_separator);
 
-			actions.push_back(&_trigger_none);
+			actions.push_back(_trigger_none);
 
 			add_trigger_action(trig_types, 'r',
-				&_trigger_rising, actions);
+				_trigger_rising, actions);
 			add_trigger_action(trig_types, '1',
-				&_trigger_high, actions);
+				_trigger_high, actions);
 			add_trigger_action(trig_types, 'f',
-				&_trigger_falling, actions);
+				_trigger_falling, actions);
 			add_trigger_action(trig_types, '0',
-				&_trigger_low, actions);
+				_trigger_low, actions);
 			add_trigger_action(trig_types, 'c',
-				&_trigger_change, actions);
+				_trigger_change, actions);
 		
 			update_trigger_actions();
 		}
@@ -263,12 +270,12 @@ void LogicSignal::update_trigger_actions()
 {
 	const char cur_trigger = _probe->trigger ?
 		_probe->trigger[0] : '\0';
-	_trigger_none.setChecked(cur_trigger == '\0');
-	_trigger_rising.setChecked(cur_trigger == 'r');
-	_trigger_high.setChecked(cur_trigger == '1');
-	_trigger_falling.setChecked(cur_trigger == 'f');
-	_trigger_low.setChecked(cur_trigger == '0');
-	_trigger_change.setChecked(cur_trigger == 'c');
+	_trigger_none->setChecked(cur_trigger == '\0');
+	_trigger_rising->setChecked(cur_trigger == 'r');
+	_trigger_high->setChecked(cur_trigger == '1');
+	_trigger_falling->setChecked(cur_trigger == 'f');
+	_trigger_low->setChecked(cur_trigger == '0');
+	_trigger_change->setChecked(cur_trigger == 'c');
 }
 
 void LogicSignal::set_trigger(char type)

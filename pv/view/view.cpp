@@ -275,18 +275,6 @@ void View::update_scroll()
 		areaSize.height());
 }
 
-void View::reset_signal_layout()
-{
-	int offset = SignalMargin + SignalHeight;
-	const vector< shared_ptr<Signal> > sigs(_session.get_signals());
-	BOOST_FOREACH(shared_ptr<Signal> s, sigs) {
-		s->set_v_offset(offset);
-		offset += SignalHeight + 2 * SignalMargin;
-	}
-
-	normalize_layout();
-}
-
 bool View::eventFilter(QObject *object, QEvent *event)
 {
 	const QEvent::Type type = event->type();
@@ -364,7 +352,15 @@ void View::v_scroll_value_changed(int value)
 
 void View::signals_changed()
 {
-	reset_signal_layout();
+	int offset = SignalMargin + SignalHeight;
+	const vector< shared_ptr<Signal> > sigs(_session.get_signals());
+	BOOST_FOREACH(shared_ptr<Signal> s, sigs) {
+		s->init_context_bar_actions(NULL);
+		s->set_v_offset(offset);
+		offset += SignalHeight + 2 * SignalMargin;
+	}
+
+	normalize_layout();
 }
 
 void View::data_updated()

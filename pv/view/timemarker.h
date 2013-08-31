@@ -51,6 +51,8 @@ protected:
 	TimeMarker(View &view, const QColor &colour, double time);
 
 public:
+	virtual void init_context_bar_actions(QWidget *parent);
+	
 	/**
 	 * Gets the time of the marker.
 	 */
@@ -104,8 +106,8 @@ protected:
 
 	QSizeF _text_size;
 
-	QWidgetAction _value_action;
-	QDoubleSpinBox _value_widget;
+	QWidgetAction *_value_action;
+	QDoubleSpinBox *_value_widget;
 	bool _updating_value_widget;
 };
 

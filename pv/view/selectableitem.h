@@ -52,6 +52,8 @@ public:
 	void select(bool select = true);
 
 public:
+	virtual void init_context_bar_actions(QWidget *parent) = 0;
+
 	virtual const std::list<QAction*> get_context_bar_actions() = 0;
 
 protected:

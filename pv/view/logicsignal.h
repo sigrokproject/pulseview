@@ -52,6 +52,8 @@ public:
 
 	virtual ~LogicSignal();
 
+	void init_context_bar_actions(QWidget *parent);
+
 	const std::list<QAction*> get_context_bar_actions();
 
 	/**
@@ -92,20 +94,14 @@ private slots:
 private:
 	boost::shared_ptr<pv::data::Logic> _data;
 
-	QAction _separator;
+	QAction *_separator;
 
-	QIcon _icon_trigger_none;
-	QAction _trigger_none;
-	QIcon _icon_trigger_rising;
-	QAction _trigger_rising;
-	QIcon _icon_trigger_high;
-	QAction _trigger_high;
-	QIcon _icon_trigger_falling;
-	QAction _trigger_falling;
-	QIcon _icon_trigger_low;
-	QAction _trigger_low;
-	QIcon _icon_trigger_change;
-	QAction _trigger_change;
+	QAction *_trigger_none;
+	QAction *_trigger_rising;
+	QAction *_trigger_high;
+	QAction *_trigger_falling;
+	QAction *_trigger_low;
+	QAction *_trigger_change;
 };
 
 } // namespace view
