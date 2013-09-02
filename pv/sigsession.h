@@ -112,7 +112,10 @@ private:
 		boost::function<void (const QString)> error_handler,
 		sr_input_format *format = NULL);
 
-	void load_thread_proc(const std::string name,
+	void load_session_thread_proc(
+		boost::function<void (const QString)> error_handler);
+
+	void load_input_thread_proc(const std::string name, sr_input *in,
 		boost::function<void (const QString)> error_handler);
 
 	void sample_thread_proc(struct sr_dev_inst *sdi,

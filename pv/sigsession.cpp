@@ -95,9 +95,38 @@ void SigSession::load_file(const string &name,
 	function<void (const QString)> error_handler)
 {
 	stop_capture();
-	_sampling_thread.reset(new boost::thread(
-		&SigSession::load_thread_proc, this, name,
-		error_handler));
+
+	if (sr_session_load(name.c_str()) == SR_OK) {
+		GSList *devlist = NULL;
+		sr_session_dev_list(&devlist);
+
+		if (!devlist || !devlist->data ||
+			sr_session_start() != SR_OK) {
+			error_handler(tr("Failed to start session."));
+			return;
+		}
+
+		update_signals((sr_dev_inst*)devlist->data);
+		g_slist_free(devlist);
+
+		_sampling_thread.reset(new boost::thread(
+			&SigSession::load_session_thread_proc, this,
+			error_handler));
+
+	} else {
+		sr_input *in = NULL;
+
+		if (!(in = load_input_file_format(name.c_str(),
+			error_handler)))
+			return;
+
+		update_signals(in->sdi);
+
+		_sampling_thread.reset(new boost::thread(
+			&SigSession::load_input_thread_proc, this,
+			name, in, error_handler));
+	}
+
 }
 
 SigSession::capture_state SigSession::get_capture_state() const
@@ -338,29 +367,38 @@ bool SigSession::is_trigger_enabled() const
 	return false;
 }
 
-void SigSession::load_thread_proc(const string name,
+void SigSession::load_session_thread_proc(
 	function<void (const QString)> error_handler)
 {
-	sr_input *in = NULL;
-
-	if (sr_session_load(name.c_str()) == SR_OK) {
-		if (sr_session_start() != SR_OK) {
-			error_handler(tr("Failed to start session."));
-			return;
-		}
-	}
-	else if(!(in = load_input_file_format(name.c_str(), error_handler)))
-		return;
+	(void)error_handler;
 
 	sr_session_datafeed_callback_add(data_feed_in_proc, NULL);
 
 	set_capture_state(Running);
 
-	if(in) {
-		assert(in->format);
-		in->format->loadfile(in, name.c_str());
-	} else
-		sr_session_run();
+	sr_session_run();
+
+	sr_session_destroy();
+	set_capture_state(Stopped);
+
+	// Confirm that SR_DF_END was received
+	assert(!_cur_logic_snapshot);
+	assert(!_cur_analog_snapshot);
+}
+
+void SigSession::load_input_thread_proc(const string name,
+	sr_input *in, function<void (const QString)> error_handler)
+{
+	(void)error_handler;
+
+	assert(in);
+	assert(in->format);
+
+	sr_session_datafeed_callback_add(data_feed_in_proc, NULL);
+
+	set_capture_state(Running);
+
+	in->format->loadfile(in, name.c_str());
 
 	sr_session_destroy();
 	set_capture_state(Stopped);
