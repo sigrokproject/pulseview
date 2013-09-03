@@ -96,6 +96,8 @@ private:
 
 	bool is_trigger_enabled() const;
 
+	void read_sample_rate(const sr_dev_inst *const sdi);
+
 private:
 	/**
 	 * Attempts to autodetect the format. Failing that

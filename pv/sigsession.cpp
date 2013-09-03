@@ -106,8 +106,11 @@ void SigSession::load_file(const string &name,
 			return;
 		}
 
-		update_signals((sr_dev_inst*)devlist->data);
+		sr_dev_inst *const sdi = (sr_dev_inst*)devlist->data;
 		g_slist_free(devlist);
+
+		update_signals(sdi);
+		read_sample_rate(sdi);
 
 		_sampling_thread.reset(new boost::thread(
 			&SigSession::load_session_thread_proc, this,
@@ -121,6 +124,7 @@ void SigSession::load_file(const string &name,
 			return;
 
 		update_signals(in->sdi);
+		read_sample_rate(in->sdi);
 
 		_sampling_thread.reset(new boost::thread(
 			&SigSession::load_input_thread_proc, this,
@@ -367,6 +371,31 @@ bool SigSession::is_trigger_enabled() const
 	return false;
 }
 
+void SigSession::read_sample_rate(const sr_dev_inst *const sdi)
+{
+	GVariant *gvar;
+	uint64_t sample_rate = 0;
+
+	// Read out the sample rate
+	if(sdi->driver)
+	{
+		const int ret = sr_config_get(sdi->driver,
+			SR_CONF_SAMPLERATE, &gvar, sdi);
+		if (ret != SR_OK) {
+			qDebug("Failed to get samplerate\n");
+			return;
+		}
+
+		sample_rate = g_variant_get_uint64(gvar);
+		g_variant_unref(gvar);
+	}
+
+	if(_analog_data)
+		_analog_data->set_samplerate(sample_rate);
+	if(_logic_data)
+		_logic_data->set_samplerate(sample_rate);
+}
+
 void SigSession::load_session_thread_proc(
 	function<void (const QString)> error_handler)
 {
@@ -454,27 +483,7 @@ void SigSession::sample_thread_proc(struct sr_dev_inst *sdi,
 
 void SigSession::feed_in_header(const sr_dev_inst *sdi)
 {
-	GVariant *gvar;
-	uint64_t sample_rate = 0;
-
-	// Read out the sample rate
-	if(sdi->driver)
-	{
-		const int ret = sr_config_get(sdi->driver,
-			SR_CONF_SAMPLERATE, &gvar, sdi);
-		if (ret != SR_OK) {
-			qDebug("Failed to get samplerate\n");
-			return;
-		}
-
-		sample_rate = g_variant_get_uint64(gvar);
-		g_variant_unref(gvar);
-	}
-
-	if(_analog_data)
-		_analog_data->set_samplerate(sample_rate);
-	if(_logic_data)
-		_logic_data->set_samplerate(sample_rate);
+	read_sample_rate(sdi);
 }
 
 void SigSession::feed_in_meta(const sr_dev_inst *sdi,
