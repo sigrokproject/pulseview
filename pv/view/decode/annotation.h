@@ -36,6 +36,9 @@ class Annotation
 public:
 	Annotation(const srd_proto_data *const pdata);
 
+	void paint(QPainter &p, int left, int right, double samples_per_pixel,
+		double pixels_offset, int y);
+
 private:
 	uint64_t _start_sample;
 	uint64_t _end_sample;

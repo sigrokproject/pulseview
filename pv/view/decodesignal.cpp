@@ -26,6 +26,7 @@ extern "C" {
 
 #include <pv/data/decoder.h>
 #include <pv/view/view.h>
+#include <pv/view/decode/annotation.h>
 
 using namespace boost;
 using namespace std;
@@ -61,9 +62,30 @@ void DecodeSignal::set_view(pv::view::View *view)
 
 void DecodeSignal::paint(QPainter &p, int left, int right)
 {
-	(void)p;
-	(void)left;
-	(void)right;
+	using namespace pv::view::decode;
+
+	assert(_view);
+	const int y = _v_offset - _view->v_offset();
+
+	const double scale = _view->scale();
+	assert(scale > 0);
+
+	double samplerate = _decoder->get_samplerate();
+
+	// Show sample rate as 1Hz when it is unknown
+	if (samplerate == 0.0)
+		samplerate = 1.0;
+
+	const double pixels_offset = (_view->offset() -
+		_decoder->get_start_time()) / scale;
+	const double samples_per_pixel = samplerate * scale;
+
+	assert(_decoder);
+	vector< shared_ptr<Annotation> > annotations(_decoder->annotations());
+	BOOST_FOREACH(shared_ptr<Annotation> a, annotations) {
+		assert(a);
+		a->paint(p, left, right, samples_per_pixel, pixels_offset, y);
+	}
 }
 
 const list<QAction*> DecodeSignal::get_context_bar_actions()

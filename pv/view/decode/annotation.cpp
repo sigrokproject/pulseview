@@ -22,6 +22,8 @@ extern "C" {
 #include <libsigrokdecode/libsigrokdecode.h>
 }
 
+#include <QPainter>
+
 #include "annotation.h"
 
 using namespace boost;
@@ -40,6 +42,32 @@ Annotation::Annotation(const srd_proto_data *const pdata) :
 		_annotations.push_back(QString(*annotations));
 		annotations++;
 	}
+}
+
+void Annotation::paint(QPainter &p, int left, int right,
+	double samples_per_pixel, double pixels_offset, int y)
+{
+	const int AnnotationHeight = 40;
+
+	const double start = _start_sample / samples_per_pixel -
+		pixels_offset;
+	const double end = _end_sample / samples_per_pixel -
+		pixels_offset;
+
+	if (start > right)
+		return;
+	if (end < left)
+		return;
+
+	QRectF rect(start, y - AnnotationHeight/2,
+		end - start, AnnotationHeight);
+
+	p.setPen(Qt::black);
+	p.fillRect(rect, QBrush(Qt::red));
+	p.drawRect(rect);
+
+	if(!_annotations.empty())
+		p.drawText(rect, Qt::AlignCenter, _annotations.front());
 }
 
 } // namespace decode
