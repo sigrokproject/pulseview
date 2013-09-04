@@ -67,7 +67,13 @@ void AnalogSignal::set_scale(float scale)
 	_scale = scale;
 }
 
-void AnalogSignal::paint(QPainter &p, int left, int right)
+void AnalogSignal::paint_back(QPainter &p, int left, int right)
+{
+	if (_probe->enabled)
+		paint_axis(p, get_y(), left, right);
+}
+
+void AnalogSignal::paint_mid(QPainter &p, int left, int right)
 {
 	assert(_data);
 	assert(right >= left);
@@ -82,8 +88,6 @@ void AnalogSignal::paint(QPainter &p, int left, int right)
 
 	if (!_probe->enabled)
 		return;
-
-	paint_axis(p, y, left, right);
 
 	const deque< shared_ptr<pv::data::AnalogSnapshot> > &snapshots =
 		_data->get_snapshots();

@@ -22,7 +22,6 @@
 #define PULSEVIEW_PV_SIGNAL_H
 
 #include <QComboBox>
-#include <QPen>
 #include <QWidgetAction>
 
 #include <stdint.h>
@@ -43,9 +42,6 @@ class Signal : public Trace
 {
 	Q_OBJECT
 
-private:
-	static const QPen SignalAxisPen;
-
 protected:
 	Signal(pv::SigSession &session, const sr_probe *const probe);
 
@@ -63,17 +59,6 @@ public:
 	bool enabled() const;
 
 	const sr_probe* probe() const;
-
-protected:
-
-	/**
-	 * Paints a zero axis across the viewport.
-	 * @param p the QPainter to paint into.
-	 * @param y the y-offset of the axis.
-	 * @param left the x-coordinate of the left edge of the view.
-	 * @param right the x-coordinate of the right edge of the view.
-	 */
-	void paint_axis(QPainter &p, int y, int left, int right);
 
 private slots:
 	void on_text_changed(const QString &text);

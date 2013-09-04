@@ -60,12 +60,17 @@ void DecodeSignal::set_view(pv::view::View *view)
 	Trace::set_view(view);
 }
 
-void DecodeSignal::paint(QPainter &p, int left, int right)
+void DecodeSignal::paint_back(QPainter &p, int left, int right)
+{
+	paint_axis(p, get_y(), left, right);
+}
+
+void DecodeSignal::paint_mid(QPainter &p, int left, int right)
 {
 	using namespace pv::view::decode;
 
 	assert(_view);
-	const int y = _v_offset - _view->v_offset();
+	const int y = get_y();
 
 	const double scale = _view->scale();
 	assert(scale > 0);

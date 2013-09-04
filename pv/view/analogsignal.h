@@ -52,12 +52,20 @@ public:
 	void set_scale(float scale);
 
 	/**
-	 * Paints the signal with a QPainter
+	 * Paints the background layer of the signal with a QPainter
 	 * @param p the QPainter to paint into.
 	 * @param left the x-coordinate of the left edge of the signal.
 	 * @param right the x-coordinate of the right edge of the signal.
 	 **/
-	void paint(QPainter &p, int left, int right);
+	void paint_back(QPainter &p, int left, int right);
+
+	/**
+	 * Paints the mid-layer of the signal with a QPainter
+	 * @param p the QPainter to paint into.
+	 * @param left the x-coordinate of the left edge of the signal.
+	 * @param right the x-coordinate of the right edge of the signal.
+	 **/
+	void paint_mid(QPainter &p, int left, int right);
 
 private:
 	void paint_trace(QPainter &p,

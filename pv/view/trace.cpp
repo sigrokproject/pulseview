@@ -29,6 +29,7 @@
 namespace pv {
 namespace view {
 
+const QPen Trace::AxisPen(QColor(128, 128, 128, 64));
 const int Trace::LabelHitPadding = 2;
 
 Trace::Trace(pv::SigSession &session, QString name) :
@@ -72,6 +73,27 @@ void Trace::set_view(pv::view::View *view)
 {
 	assert(view);
 	_view = view;
+}
+
+void Trace::paint_back(QPainter &p, int left, int right)
+{
+	(void)p;
+	(void)left;
+	(void)right;
+}
+
+void Trace::paint_mid(QPainter &p, int left, int right)
+{
+	(void)p;
+	(void)left;
+	(void)right;
+}
+
+void Trace::paint_fore(QPainter &p, int left, int right)
+{
+	(void)p;
+	(void)left;
+	(void)right;
 }
 
 void Trace::paint_label(QPainter &p, int right, bool hover)
@@ -139,6 +161,17 @@ bool Trace::pt_in_label_rect(int left, int right, const QPoint &point)
 			label.top() - LabelHitPadding),
 		QPointF(right, label.bottom() + LabelHitPadding)
 			).contains(point);
+}
+
+int Trace::get_y() const
+{
+	return _v_offset - _view->v_offset();
+}
+
+void Trace::paint_axis(QPainter &p, int y, int left, int right)
+{
+	p.setPen(AxisPen);
+	p.drawLine(QPointF(left, y + 0.5f), QPointF(right, y + 0.5f));
 }
 
 void Trace::compute_text_size(QPainter &p)

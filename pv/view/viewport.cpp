@@ -72,8 +72,14 @@ void Viewport::paintEvent(QPaintEvent*)
 	BOOST_FOREACH(const shared_ptr<Trace> t, traces)
 	{
 		assert(t);
-		t->paint(p, 0, width());
+		t->paint_back(p, 0, width());
 	}
+
+	BOOST_FOREACH(const shared_ptr<Trace> t, traces)
+		t->paint_mid(p, 0, width());
+
+	BOOST_FOREACH(const shared_ptr<Trace> t, traces)
+		t->paint_fore(p, 0, width());
 
 	if (_view.cursors_shown())
 		_view.cursors().draw_viewport_foreground(p, rect());

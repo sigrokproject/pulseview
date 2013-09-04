@@ -23,6 +23,7 @@
 
 #include <QColor>
 #include <QPainter>
+#include <QPen>
 #include <QRect>
 #include <QString>
 
@@ -43,6 +44,7 @@ class Trace : public SelectableItem
 	Q_OBJECT
 
 private:
+	static const QPen AxisPen;
 	static const int LabelHitPadding;
 
 protected:
@@ -87,12 +89,28 @@ public:
 	virtual void set_view(pv::view::View *view);
 
 	/**
-	 * Paints the trace with a QPainter
+	 * Paints the background layer of the trace with a QPainter
 	 * @param p the QPainter to paint into.
 	 * @param left the x-coordinate of the left edge of the signal
 	 * @param right the x-coordinate of the right edge of the signal
 	 **/
-	virtual void paint(QPainter &p, int left, int right) = 0;
+	virtual void paint_back(QPainter &p, int left, int right);
+
+	/**
+	 * Paints the mid-layer of the trace with a QPainter
+	 * @param p the QPainter to paint into.
+	 * @param left the x-coordinate of the left edge of the signal
+	 * @param right the x-coordinate of the right edge of the signal
+	 **/
+	virtual void paint_mid(QPainter &p, int left, int right);
+
+	/**
+	 * Paints the foreground layer of the trace with a QPainter
+	 * @param p the QPainter to paint into.
+	 * @param left the x-coordinate of the left edge of the signal
+	 * @param right the x-coordinate of the right edge of the signal
+	 **/
+	virtual void paint_fore(QPainter &p, int left, int right);
 
 	/**
 	 * Paints the signal label into a QGLWidget.
@@ -112,6 +130,21 @@ public:
 	 * @param point the point to test.
 	 */
 	bool pt_in_label_rect(int left, int right, const QPoint &point);
+
+protected:
+	/**
+	 * Gets the y-offset of the axis.
+	 */
+	int get_y() const;
+
+	/**
+	 * Paints a zero axis across the viewport.
+	 * @param p the QPainter to paint into.
+	 * @param y the y-offset of the axis.
+	 * @param left the x-coordinate of the left edge of the view.
+	 * @param right the x-coordinate of the right edge of the view.
+	 */
+	void paint_axis(QPainter &p, int y, int left, int right);
 
 private:
 

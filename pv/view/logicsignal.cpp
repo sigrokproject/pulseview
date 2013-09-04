@@ -162,7 +162,13 @@ const list<QAction*> LogicSignal::get_context_bar_actions()
 	return actions;
 }
 
-void LogicSignal::paint(QPainter &p, int left, int right)
+void LogicSignal::paint_back(QPainter &p, int left, int right)
+{
+	if (_probe->enabled)
+		paint_axis(p, get_y(), left, right);
+}
+
+void LogicSignal::paint_mid(QPainter &p, int left, int right)
 {
 	using pv::view::View;
 
@@ -184,8 +190,6 @@ void LogicSignal::paint(QPainter &p, int left, int right)
 
 	if (!_probe->enabled)
 		return;
-
-	paint_axis(p, y, left, right);
 
 	const float high_offset = y - View::SignalHeight + 0.5f;
 	const float low_offset = y + 0.5f;

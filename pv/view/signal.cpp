@@ -31,8 +31,6 @@
 namespace pv {
 namespace view {
 
-const QPen Signal::SignalAxisPen(QColor(128, 128, 128, 64));
-
 const char *const ProbeNames[] = {
 	"CLK",
 	"DATA",
@@ -92,12 +90,6 @@ bool Signal::enabled() const
 const sr_probe* Signal::probe() const
 {
 	return _probe;
-}
-
-void Signal::paint_axis(QPainter &p, int y, int left, int right)
-{
-	p.setPen(SignalAxisPen);
-	p.drawLine(QPointF(left, y + 0.5f), QPointF(right, y + 0.5f));
 }
 
 void Signal::on_text_changed(const QString &text)
