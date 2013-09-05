@@ -22,8 +22,11 @@ extern "C" {
 #include <libsigrokdecode/libsigrokdecode.h>
 }
 
+#include <extdef.h>
+
 #include "decodesignal.h"
 
+#include <pv/sigsession.h>
 #include <pv/data/decoder.h>
 #include <pv/view/view.h>
 #include <pv/view/decode/annotation.h>
@@ -34,14 +37,21 @@ using namespace std;
 namespace pv {
 namespace view {
 
+const QColor DecodeSignal::DecodeColours[4] = {
+	QColor(0xEF, 0x29, 0x29),	// Red
+	QColor(0xFC, 0xE9, 0x4F),	// Yellow
+	QColor(0x8A, 0xE2, 0x34),	// Green
+	QColor(0x72, 0x9F, 0xCF)	// Blue
+};
+
 DecodeSignal::DecodeSignal(pv::SigSession &session,
-	boost::shared_ptr<pv::data::Decoder> decoder) :
+	boost::shared_ptr<pv::data::Decoder> decoder, int index) :
 	Trace(session, QString(decoder->get_decoder()->name)),
 	_decoder(decoder)
 {
 	assert(_decoder);
 
-	_colour = Qt::red;
+	_colour = DecodeColours[index % countof(DecodeColours)];
 }
 
 void DecodeSignal::init_context_bar_actions(QWidget *parent)

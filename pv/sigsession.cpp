@@ -209,7 +209,8 @@ void SigSession::add_decoder(srd_decoder *const dec,
 		shared_ptr<data::Decoder> decoder(
 			new data::Decoder(dec, probes));
 		shared_ptr<view::DecodeSignal> d(
-			new view::DecodeSignal(*this, decoder));
+			new view::DecodeSignal(*this, decoder,
+				_decode_traces.size()));
 		_decode_traces.push_back(d);
 	}
 	signals_changed();

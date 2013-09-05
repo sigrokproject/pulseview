@@ -37,9 +37,12 @@ class DecodeSignal : public Trace
 {
 	Q_OBJECT
 
+private:
+	static const QColor DecodeColours[4];
+
 public:
 	DecodeSignal(pv::SigSession &session,
-		boost::shared_ptr<pv::data::Decoder> decoder);
+		boost::shared_ptr<pv::data::Decoder> decoder, int index);
 
 	void init_context_bar_actions(QWidget *parent);
 
