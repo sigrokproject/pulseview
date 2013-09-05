@@ -147,7 +147,7 @@ void Trace::paint_label(QPainter &p, int right, bool hover)
 	p.drawPolygon(points, countof(points));
 
 	// Paint the text
-	p.setPen((colour.lightness() > 64) ? Qt::black : Qt::white);
+	p.setPen(get_text_colour());
 	p.drawText(label_rect, Qt::AlignCenter | Qt::AlignVCenter, _name);
 }
 
@@ -166,6 +166,11 @@ bool Trace::pt_in_label_rect(int left, int right, const QPoint &point)
 int Trace::get_y() const
 {
 	return _v_offset - _view->v_offset();
+}
+
+QColor Trace::get_text_colour() const
+{
+	return (_colour.lightness() > 64) ? Qt::black : Qt::white;
 }
 
 void Trace::paint_axis(QPainter &p, int y, int left, int right)

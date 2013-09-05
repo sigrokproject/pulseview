@@ -138,6 +138,14 @@ protected:
 	int get_y() const;
 
 	/**
+	 * Gets the text colour.
+	 * @remarks This colour is computed by comparing the lightness
+	 * of the trace colour against a threshold to determine whether
+	 * white or black would be more visible.
+	 */
+	QColor get_text_colour() const;
+
+	/**
 	 * Paints a zero axis across the viewport.
 	 * @param p the QPainter to paint into.
 	 * @param y the y-offset of the axis.
