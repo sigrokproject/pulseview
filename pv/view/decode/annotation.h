@@ -33,11 +33,15 @@ namespace decode {
 
 class Annotation
 {
+private:
+	static const double EndCapWidth;
+
 public:
 	Annotation(const srd_proto_data *const pdata);
 
-	void paint(QPainter &p, int left, int right, double samples_per_pixel,
-		double pixels_offset, int y);
+	void paint(QPainter &p, QColor fill, QColor outline,
+		QColor text_colour, int text_height, int left, int right,
+		double samples_per_pixel, double pixels_offset, int y);
 
 private:
 	uint64_t _start_sample;

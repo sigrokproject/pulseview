@@ -89,7 +89,9 @@ void DecodeSignal::paint_mid(QPainter &p, int left, int right)
 	vector< shared_ptr<Annotation> > annotations(_decoder->annotations());
 	BOOST_FOREACH(shared_ptr<Annotation> a, annotations) {
 		assert(a);
-		a->paint(p, left, right, samples_per_pixel, pixels_offset, y);
+		a->paint(p, _colour, _colour.darker(), get_text_colour(),
+			_text_size.height(), left, right, samples_per_pixel,
+			pixels_offset, y);
 	}
 }
 

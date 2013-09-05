@@ -22,6 +22,10 @@ extern "C" {
 #include <libsigrokdecode/libsigrokdecode.h>
 }
 
+#include <extdef.h>
+
+#include <algorithm>
+
 #include <QPainter>
 
 #include "annotation.h"
@@ -32,6 +36,8 @@ using namespace std;
 namespace pv {
 namespace view {
 namespace decode {
+
+const double Annotation::EndCapWidth = 5;
 
 Annotation::Annotation(const srd_proto_data *const pdata) :
 	_start_sample(pdata->start_sample),
@@ -44,30 +50,45 @@ Annotation::Annotation(const srd_proto_data *const pdata) :
 	}
 }
 
-void Annotation::paint(QPainter &p, int left, int right,
+void Annotation::paint(QPainter &p, QColor fill, QColor outline,
+	QColor text_color, int text_height, int left, int right,
 	double samples_per_pixel, double pixels_offset, int y)
 {
-	const int AnnotationHeight = 40;
+	const int h = (text_height * 3) / 2;
 
 	const double start = _start_sample / samples_per_pixel -
 		pixels_offset;
 	const double end = _end_sample / samples_per_pixel -
 		pixels_offset;
 
-	if (start > right)
-		return;
-	if (end < left)
+	if (start > right || end < left)
 		return;
 
-	QRectF rect(start, y - AnnotationHeight/2,
-		end - start, AnnotationHeight);
+	const double cap_width = min((end - start) / 2, EndCapWidth);
 
-	p.setPen(Qt::black);
-	p.fillRect(rect, QBrush(Qt::red));
-	p.drawRect(rect);
+	QPointF pts[] = {
+		QPointF(start, y + .5f),
+		QPointF(start + cap_width, y + .5f - h / 2),
+		QPointF(end - cap_width, y + .5f - h / 2),
+		QPointF(end, y + .5f),
+		QPointF(end - cap_width, y + .5f + h / 2),
+		QPointF(start + cap_width, y + .5f + h / 2)
+	};
 
-	if(!_annotations.empty())
-		p.drawText(rect, Qt::AlignCenter, _annotations.front());
+	p.setPen(outline);
+	p.setBrush(fill);
+	p.drawConvexPolygon(pts, countof(pts));
+
+	if (!_annotations.empty())
+	{
+		QRectF rect(start + cap_width, y - h / 2,
+			end - start - cap_width * 2, h);
+		p.setPen(text_color);
+		p.drawText(rect, Qt::AlignCenter,
+			p.fontMetrics().elidedText(
+				_annotations.front(), Qt::ElideRight,
+				rect.width()));
+	}
 }
 
 } // namespace decode
