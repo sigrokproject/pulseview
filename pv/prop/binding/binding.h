@@ -40,6 +40,8 @@ public:
 
 	void commit();
 
+	void add_properties_to_form(QFormLayout *layout) const;
+
 	QWidget* get_property_form(QWidget *parent) const;
 
 protected:

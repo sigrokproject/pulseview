@@ -45,19 +45,24 @@ void Binding::commit()
 	}
 }
 
-QWidget* Binding::get_property_form(QWidget *parent) const
+void Binding::add_properties_to_form(QFormLayout *layout) const
 {
-	QWidget *const form = new QWidget(parent);
-	QFormLayout *const layout = new QFormLayout(form);
-	form->setLayout(layout);
+	assert(layout);
 
 	BOOST_FOREACH(shared_ptr<pv::prop::Property> p, _properties)
 	{
 		assert(p);
 		const QString label = p->labeled_widget() ? QString() : p->name();
-		layout->addRow(label, p->get_widget(form));
+		layout->addRow(label, p->get_widget(layout->parentWidget()));
 	}
+}
 
+QWidget* Binding::get_property_form(QWidget *parent) const
+{
+	QWidget *const form = new QWidget(parent);
+	QFormLayout *const layout = new QFormLayout(form);
+	form->setLayout(layout);
+	add_properties_to_form(layout);
 	return form;
 }
 
