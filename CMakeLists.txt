@@ -121,6 +121,7 @@ set(pulseview_SOURCES
 	pv/prop/enum.cpp
 	pv/prop/int.cpp
 	pv/prop/property.cpp
+	pv/prop/string.cpp
 	pv/prop/binding/binding.cpp
 	pv/prop/binding/decoderoptions.cpp
 	pv/prop/binding/deviceoptions.cpp
