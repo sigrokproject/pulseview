@@ -74,7 +74,8 @@ DeviceOptions::DeviceOptions(QWidget *parent, struct sr_dev_inst *sdi) :
 
 
 	_props_box.setLayout(&_props_box_layout);
-	_props_box_layout.addWidget(get_property_form());
+	_props_box_layout.addWidget(
+		_device_options_binding.get_property_form(this));
 	_layout.addWidget(&_props_box);
 
 	_layout.addWidget(&_button_box);
@@ -97,30 +98,7 @@ void DeviceOptions::accept()
 	}
 
 	// Commit the properties
-	const vector< shared_ptr<pv::prop::Property> > &properties =
-		_device_options_binding.properties();
-	BOOST_FOREACH(shared_ptr<pv::prop::Property> p, properties) {
-		assert(p);
-		p->commit();
-	}
-}
-
-QWidget* DeviceOptions::get_property_form()
-{
-	QWidget *const form = new QWidget(this);
-	QFormLayout *const layout = new QFormLayout(form);
-	form->setLayout(layout);
-
-	const vector< shared_ptr<pv::prop::Property> > &properties =
-		_device_options_binding.properties();
-	BOOST_FOREACH(shared_ptr<pv::prop::Property> p, properties)
-	{
-		assert(p);
-		const QString label = p->labeled_widget() ? QString() : p->name();
-		layout->addRow(label, p->get_widget(form));
-	}
-
-	return form;
+	_device_options_binding.commit();
 }
 
 void DeviceOptions::setup_probes()

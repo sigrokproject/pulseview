@@ -38,10 +38,12 @@ class Binding
 public:
 	const std::vector< boost::shared_ptr<Property> >& properties();
 
+	void commit();
+
+	QWidget* get_property_form(QWidget *parent) const;
+
 protected:
 	std::vector< boost::shared_ptr<Property> > _properties;
-
-	QWidget *_form;
 };
 
 } // binding

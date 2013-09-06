@@ -45,9 +45,6 @@ protected:
 	void accept();
 
 private:
-
-	QWidget* get_property_form();
-
 	void setup_probes();
 
 	void set_all_probes(bool set);
