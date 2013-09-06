@@ -122,6 +122,7 @@ set(pulseview_SOURCES
 	pv/prop/int.cpp
 	pv/prop/property.cpp
 	pv/prop/binding/binding.cpp
+	pv/prop/binding/decoderoptions.cpp
 	pv/prop/binding/deviceoptions.cpp
 	pv/toolbars/contextbar.cpp
 	pv/toolbars/samplingbar.cpp
