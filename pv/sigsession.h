@@ -95,7 +95,8 @@ public:
 
 	void add_decoder(srd_decoder *const dec,
 		std::map<const srd_probe*,
-			boost::shared_ptr<view::Signal> > probes);
+			boost::shared_ptr<view::Signal> > probes,
+		GHashTable *options);
 
 	std::vector< boost::shared_ptr<view::DecodeSignal> >
 		get_decode_signals() const;

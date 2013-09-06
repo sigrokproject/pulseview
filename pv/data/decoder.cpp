@@ -41,9 +41,11 @@ const int64_t Decoder::DecodeChunkLength = 4096;
 
 Decoder::Decoder(const srd_decoder *const dec,
 	std::map<const srd_probe*,
-		boost::shared_ptr<pv::view::Signal> > probes) :
+		boost::shared_ptr<pv::view::Signal> > probes,
+	GHashTable *options) :
 	_decoder(dec),
 	_probes(probes),
+	_options(options),
 	_decoder_inst(NULL)
 {
 	init_decoder();
@@ -54,6 +56,8 @@ Decoder::~Decoder()
 {
 	_decode_thread.interrupt();
 	_decode_thread.join();
+
+	g_hash_table_destroy(_options);
 }
 
 const srd_decoder* Decoder::get_decoder() const
@@ -111,7 +115,7 @@ void Decoder::init_decoder()
 		}
 	}
 
-	_decoder_inst = srd_inst_new(_decoder->id, NULL);
+	_decoder_inst = srd_inst_new(_decoder->id, _options);
 	assert(_decoder_inst);
 
 	_decoder_inst->data_samplerate = _samplerate;

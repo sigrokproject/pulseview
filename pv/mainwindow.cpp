@@ -391,11 +391,16 @@ void MainWindow::add_decoder(QObject *action)
 	const std::vector< boost::shared_ptr<view::Signal> > &sigs =
 		_session.get_signals();
 
-	dialogs::Decoder dlg(this, dec, sigs);
-	if(dlg.exec() != QDialog::Accepted)
-		return;
+	GHashTable *const options = g_hash_table_new_full(g_str_hash,
+		g_str_equal, g_free, (GDestroyNotify)g_variant_unref);
 
-	_session.add_decoder(dec, dlg.get_probes());
+	dialogs::Decoder dlg(this, dec, sigs, options);
+	if(dlg.exec() != QDialog::Accepted) {
+		g_hash_table_destroy(options);
+		return;
+	}
+
+	_session.add_decoder(dec, dlg.get_probes(), options);
 }
 
 void MainWindow::run_stop()

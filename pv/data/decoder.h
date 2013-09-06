@@ -61,7 +61,8 @@ private:
 public:
 	Decoder(const srd_decoder *const decoder,
 		std::map<const srd_probe*,
-			boost::shared_ptr<pv::view::Signal> > probes);
+			boost::shared_ptr<pv::view::Signal> > probes,
+		GHashTable *options);
 
 	virtual ~Decoder();
 
@@ -86,6 +87,7 @@ private:
 	const srd_decoder *const _decoder;
 	std::map<const srd_probe*, boost::shared_ptr<view::Signal> >
 		_probes;
+	GHashTable *_options;
 
 	srd_decoder_inst *_decoder_inst;
 

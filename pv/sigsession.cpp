@@ -195,7 +195,8 @@ boost::shared_ptr<data::Logic> SigSession::get_data()
 
 void SigSession::add_decoder(srd_decoder *const dec,
 	std::map<const srd_probe*,
-		boost::shared_ptr<view::Signal> > probes)
+		boost::shared_ptr<view::Signal> > probes,
+	GHashTable *options)
 {
 	{
 		lock_guard<mutex> lock(_signals_mutex);
@@ -207,7 +208,7 @@ void SigSession::add_decoder(srd_decoder *const dec,
 		}
 
 		shared_ptr<data::Decoder> decoder(
-			new data::Decoder(dec, probes));
+			new data::Decoder(dec, probes, options));
 		shared_ptr<view::DecodeSignal> d(
 			new view::DecodeSignal(*this, decoder,
 				_decode_traces.size()));

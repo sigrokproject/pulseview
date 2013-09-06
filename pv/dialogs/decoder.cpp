@@ -40,10 +40,12 @@ namespace pv {
 namespace dialogs {
 
 Decoder::Decoder(QWidget *parent, const srd_decoder *decoder,
-	const vector< shared_ptr<view::Signal> > &sigs) :
+	const vector< shared_ptr<view::Signal> > &sigs, GHashTable *options) :
 	QDialog(parent),
 	_decoder(decoder),
 	_sigs(sigs),
+	_options(options),
+	_binding(decoder, options),
 	_layout(this),
 	_form(this),
 	_form_layout(&_form),
@@ -97,6 +99,19 @@ Decoder::Decoder(QWidget *parent, const srd_decoder *decoder,
 
 	_form_layout.addRow(new QLabel(
 		tr("<i>* Required Probes</i>"), &_form));
+
+	// Add the options
+	if (!_binding.properties().empty()) {
+		_form_layout.addRow(new QLabel(tr("<h3>Options</h3>"),
+			&_form));
+		_binding.add_properties_to_form(&_form_layout);
+	}
+}
+
+void Decoder::accept()
+{
+	QDialog::accept();
+	_binding.commit();
 }
 
 QComboBox* Decoder::create_probe_selector(

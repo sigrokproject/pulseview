@@ -32,10 +32,16 @@ namespace binding {
 class DecoderOptions : public Binding
 {
 public:
-	DecoderOptions(struct srd_decoder *decoder);
+	DecoderOptions(const srd_decoder *decoder, GHashTable *options);
 
-protected:
-	struct srd_decoder *const _decoder;
+private:
+	GVariant* getter(const char *id);
+
+	void setter(const char *id, GVariant *value);
+
+private:
+	const srd_decoder *const _decoder;
+	GHashTable *const _options;
 };
 
 } // binding

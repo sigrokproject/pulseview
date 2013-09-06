@@ -33,6 +33,8 @@
 #include <QLabel>
 #include <QVBoxLayout>
 
+#include <pv/prop/binding/decoderoptions.h>
+
 struct srd_decoder;
 
 namespace pv {
@@ -47,7 +49,10 @@ class Decoder : public QDialog
 {
 public:
 	Decoder(QWidget *parent, const srd_decoder *decoder,
-		const std::vector< boost::shared_ptr<view::Signal> > &sigs);
+		const std::vector< boost::shared_ptr<view::Signal> > &sigs,
+		GHashTable *options);
+
+	void accept();
 
 	std::map<const srd_probe*, boost::shared_ptr<view::Signal> >
 		get_probes();
@@ -61,6 +66,9 @@ private:
 	const std::vector< boost::shared_ptr<view::Signal> > &_sigs;
 
 	std::map<const srd_probe*, QComboBox*> _probe_selector_map;
+
+	GHashTable *const _options;
+	pv::prop::binding::DecoderOptions _binding;
 
 	QVBoxLayout _layout;
 
