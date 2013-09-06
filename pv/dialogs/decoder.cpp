@@ -69,7 +69,7 @@ Decoder::Decoder(QWidget *parent, const srd_decoder *decoder,
 	_layout.addWidget(&_form);
 	_layout.addWidget(&_button_box);
 
-	_form_layout.addRow(new QLabel("<h3>Probes</h3>", &_form));
+	_form_layout.addRow(new QLabel(tr("<h3>Probes</h3>"), &_form));
 
 	// Add the mandatory probes
 	for(probe = decoder->probes; probe; probe = probe->next) {
