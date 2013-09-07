@@ -79,16 +79,29 @@ void Annotation::paint(QPainter &p, QColor fill, QColor outline,
 	p.setBrush(fill);
 	p.drawConvexPolygon(pts, countof(pts));
 
-	if (!_annotations.empty())
-	{
-		QRectF rect(start + cap_width, y - h / 2,
-			end - start - cap_width * 2, h);
-		p.setPen(text_color);
-		p.drawText(rect, Qt::AlignCenter,
-			p.fontMetrics().elidedText(
-				_annotations.front(), Qt::ElideRight,
-				rect.width()));
+	if (_annotations.empty())
+		return;
+
+	QRectF rect(start + cap_width, y - h / 2,
+		end - start - cap_width * 2, h);
+	p.setPen(text_color);
+
+	// Try to find an annotation that will fit
+	QString best_annotation;
+	int best_width = 0;
+
+	BOOST_FOREACH(QString &a, _annotations) {
+		const int w = p.boundingRect(QRectF(), 0, a).width();
+		if (w <= rect.width() && w > best_width)
+			best_annotation = a, best_width = w;
 	}
+
+	if (best_annotation.isEmpty())
+		best_annotation = _annotations.back();
+
+	// If not ellide the last in the list
+	p.drawText(rect, Qt::AlignCenter, p.fontMetrics().elidedText(
+		best_annotation, Qt::ElideRight, rect.width()));
 }
 
 } // namespace decode
