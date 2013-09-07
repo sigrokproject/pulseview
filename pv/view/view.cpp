@@ -252,6 +252,12 @@ void View::normalize_layout()
 	v_scroll_value_changed(verticalScrollBar()->sliderPosition());
 }
 
+void View::update_viewport()
+{
+	assert(_viewport);
+	_viewport->update();
+}
+
 void View::get_scroll_layout(double &length, double &offset) const
 {
 	const shared_ptr<data::SignalData> sig_data = _session.get_data();

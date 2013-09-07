@@ -126,6 +126,8 @@ public:
 
 	void normalize_layout();
 
+	void update_viewport();
+
 signals:
 	void hover_point_changed();
 

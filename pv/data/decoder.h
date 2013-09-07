@@ -83,6 +83,9 @@ private:
 	static void annotation_callback(srd_proto_data *pdata,
 		void *decoder);
 
+signals:
+	void new_decode_data();
+
 private:
 	const srd_decoder *const _decoder;
 	std::map<const srd_probe*, boost::shared_ptr<view::Signal> >

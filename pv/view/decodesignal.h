@@ -76,6 +76,9 @@ private:
 	 **/
 	int get_nominal_offset(const QRect &rect) const;
 
+private slots:
+	void on_new_decode_data();
+
 private:
 	boost::shared_ptr<pv::data::Decoder> _decoder;
 

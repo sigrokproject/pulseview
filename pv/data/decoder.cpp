@@ -189,6 +189,8 @@ void Decoder::annotation_callback(srd_proto_data *pdata, void *decoder)
 	shared_ptr<Annotation> a(new Annotation(pdata));
 	lock_guard<mutex> lock(d->_annotations_mutex);
 	d->_annotations.push_back(a);
+
+	d->new_decode_data();
 }
 
 } // namespace data

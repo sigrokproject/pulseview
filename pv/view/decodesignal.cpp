@@ -52,6 +52,9 @@ DecodeSignal::DecodeSignal(pv::SigSession &session,
 	assert(_decoder);
 
 	_colour = DecodeColours[index % countof(DecodeColours)];
+
+	connect(_decoder.get(), SIGNAL(new_decode_data()),
+		this, SLOT(on_new_decode_data()));
 }
 
 void DecodeSignal::init_context_bar_actions(QWidget *parent)
@@ -109,6 +112,12 @@ const list<QAction*> DecodeSignal::get_context_bar_actions()
 {
 	list<QAction*> actions;
 	return actions;
+}
+
+void DecodeSignal::on_new_decode_data()
+{
+	if (_view)
+		_view->update_viewport();
 }
 
 } // namespace view
