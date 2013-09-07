@@ -55,6 +55,8 @@ QWidget* Int::get_widget(QWidget *parent)
 	_spin_box->setSuffix(_suffix);
 	if (_range)
 		_spin_box->setRange((int)_range->first, (int)_range->second);
+	else
+		_spin_box->setRange(INT_MIN, INT_MAX);
 
 	GVariant *const value = _getter ? _getter() : NULL;
 	if (value) {
