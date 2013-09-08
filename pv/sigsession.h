@@ -101,6 +101,8 @@ public:
 	std::vector< boost::shared_ptr<view::DecodeSignal> >
 		get_decode_signals() const;
 
+	void remove_decode_signal(view::DecodeSignal *signal);
+
 private:
 	void set_capture_state(capture_state state);
 

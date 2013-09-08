@@ -24,6 +24,8 @@ extern "C" {
 
 #include <extdef.h>
 
+#include <QAction>
+
 #include "decodesignal.h"
 
 #include <pv/sigsession.h>
@@ -114,10 +116,28 @@ const list<QAction*> DecodeSignal::get_context_bar_actions()
 	return actions;
 }
 
+QMenu* DecodeSignal::create_context_menu(QWidget *parent)
+{
+	QMenu *const menu = Trace::create_context_menu(parent);
+
+	menu->addSeparator();
+
+	QAction *const del = new QAction(tr("Delete"), this);
+	connect(del, SIGNAL(triggered()), this, SLOT(on_delete()));
+	menu->addAction(del);
+
+	return menu;
+}
+
 void DecodeSignal::on_new_decode_data()
 {
 	if (_view)
 		_view->update_viewport();
+}
+
+void DecodeSignal::on_delete()
+{
+	_session.remove_decode_signal(this);
 }
 
 } // namespace view

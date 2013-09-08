@@ -223,6 +223,20 @@ vector< shared_ptr<view::DecodeSignal> > SigSession::get_decode_signals() const
 	return _decode_traces;
 }
 
+void SigSession::remove_decode_signal(view::DecodeSignal *signal)
+{
+	for (vector< shared_ptr<view::DecodeSignal> >::iterator i =
+		_decode_traces.begin();
+		i != _decode_traces.end();
+		i++)
+		if ((*i).get() == signal)
+		{
+			_decode_traces.erase(i);
+			signals_changed();
+			return;
+		}
+}
+
 void SigSession::set_capture_state(capture_state state)
 {
 	lock_guard<mutex> lock(_sampling_mutex);

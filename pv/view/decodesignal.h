@@ -68,6 +68,8 @@ public:
 
 	const std::list<QAction*> get_context_bar_actions();
 
+	QMenu* create_context_menu(QWidget *parent);
+
 private:
 
 	/**
@@ -78,6 +80,8 @@ private:
 
 private slots:
 	void on_new_decode_data();
+
+	void on_delete();
 
 private:
 	boost::shared_ptr<pv::data::Decoder> _decoder;
