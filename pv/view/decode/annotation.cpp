@@ -38,6 +38,7 @@ namespace view {
 namespace decode {
 
 const double Annotation::EndCapWidth = 5;
+const int Annotation::DrawPadding = 100;
 
 Annotation::Annotation(const srd_proto_data *const pdata) :
 	_start_sample(pdata->start_sample),
@@ -55,15 +56,42 @@ void Annotation::paint(QPainter &p, QColor fill, QColor outline,
 	double samples_per_pixel, double pixels_offset, int y)
 {
 	const int h = (text_height * 3) / 2;
-
 	const double start = _start_sample / samples_per_pixel -
 		pixels_offset;
 	const double end = _end_sample / samples_per_pixel -
 		pixels_offset;
 
-	if (start > right || end < left)
+	if (start > right + DrawPadding || end < left - DrawPadding)
 		return;
 
+	if (_start_sample == _end_sample)
+		draw_instant(p, fill, outline, text_color, h,
+			start, y);
+	else
+		draw_range(p, fill, outline, text_color, h,
+			start, end, y);
+}
+
+void Annotation::draw_instant(QPainter &p, QColor fill, QColor outline,
+	QColor text_color, int h, double x, int y)
+{
+	const QString text = _annotations.empty() ?
+		QString() : _annotations.back();
+	const double w = min(p.boundingRect(QRectF(), 0, text).width(),
+		0.0) + h;
+	const QRectF rect(x - w / 2, y - h / 2, w, h);
+
+	p.setPen(outline);
+	p.setBrush(fill);
+	p.drawRoundedRect(rect, h / 2, h / 2);
+
+	p.setPen(text_color);
+	p.drawText(rect, Qt::AlignCenter | Qt::AlignVCenter, text);
+}
+
+void Annotation::draw_range(QPainter &p, QColor fill, QColor outline,
+	QColor text_color, int h, double start, double end, int y)
+{
 	const double cap_width = min((end - start) / 2, EndCapWidth);
 
 	QPointF pts[] = {

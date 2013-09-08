@@ -35,6 +35,7 @@ class Annotation
 {
 private:
 	static const double EndCapWidth;
+	static const int DrawPadding;
 
 public:
 	Annotation(const srd_proto_data *const pdata);
@@ -42,6 +43,14 @@ public:
 	void paint(QPainter &p, QColor fill, QColor outline,
 		QColor text_colour, int text_height, int left, int right,
 		double samples_per_pixel, double pixels_offset, int y);
+
+private:
+	void draw_instant(QPainter &p, QColor fill, QColor outline,
+		QColor text_color, int h, double x, int y);
+
+	void draw_range(QPainter &p, QColor fill, QColor outline,
+		QColor text_color, int h, double start,
+		double end, int y);
 
 private:
 	uint64_t _start_sample;
