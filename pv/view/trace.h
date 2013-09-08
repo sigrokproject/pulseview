@@ -131,6 +131,8 @@ public:
 	 */
 	bool pt_in_label_rect(int left, int right, const QPoint &point);
 
+	virtual QMenu* create_context_menu(QWidget *parent);
+
 protected:
 	/**
 	 * Gets the y-offset of the axis.
@@ -169,6 +171,11 @@ private:
 	 * @return Returns the rectangle of the signal label.
 	 */
 	QRectF get_label_rect(int right);
+
+private slots:
+	void on_action_set_name_triggered();
+
+	void on_action_set_colour_triggered();
 
 signals:
 	void text_changed();	

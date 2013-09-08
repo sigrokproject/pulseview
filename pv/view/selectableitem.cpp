@@ -21,6 +21,7 @@
 #include "selectableitem.h"
 
 #include <QApplication>
+#include <QMenu>
 #include <QPalette>
 
 namespace pv {
@@ -29,6 +30,7 @@ namespace view {
 const int SelectableItem::HighlightRadius = 6;
 
 SelectableItem::SelectableItem() :
+	_context_parent(NULL),
 	_selected(false)
 {
 }
@@ -41,6 +43,12 @@ bool SelectableItem::selected() const
 void SelectableItem::select(bool select)
 {
 	_selected = select;
+}
+
+QMenu* SelectableItem::create_context_menu(QWidget *parent)
+{
+	_context_parent = parent;
+	return new QMenu(parent);
 }
 
 QPen SelectableItem::highlight_pen()

@@ -29,8 +29,6 @@
 #include <boost/foreach.hpp>
 
 #include <QApplication>
-#include <QColorDialog>
-#include <QInputDialog>
 #include <QMenu>
 #include <QMouseEvent>
 #include <QPainter>
@@ -43,16 +41,9 @@ namespace pv {
 namespace view {
 
 Header::Header(View &parent) :
-	MarginWidget(parent),
-	_action_set_name(new QAction(tr("Set &Name..."), this)),
-	_action_set_colour(new QAction(tr("Set &Colour..."), this))
+	MarginWidget(parent)
 {
 	setMouseTracking(true);
-
-	connect(_action_set_name, SIGNAL(triggered()),
-		this, SLOT(on_action_set_name_triggered()));
-	connect(_action_set_colour, SIGNAL(triggered()),
-		this, SLOT(on_action_set_colour_triggered()));
 
 	connect(&_view.session(), SIGNAL(signals_changed()),
 		this, SLOT(on_signals_changed()));
@@ -209,44 +200,8 @@ void Header::contextMenuEvent(QContextMenuEvent *event)
 {
 	const shared_ptr<Trace> t = get_mouse_over_trace(_mouse_point);
 
-	if (!t)
-		return;
-
-	QMenu menu(this);
-	menu.addAction(_action_set_name);
-	menu.addAction(_action_set_colour);
-
-	_context_trace = t;
-	menu.exec(event->globalPos());
-	_context_trace.reset();
-}
-
-void Header::on_action_set_name_triggered()
-{
-	bool ok = false;
-
-	shared_ptr<view::Trace> context_trace = _context_trace;
-	if (!context_trace)
-		return;
-
-	const QString new_label = QInputDialog::getText(this, tr("Set Name"),
-		tr("Name"), QLineEdit::Normal, context_trace->get_name(), &ok);
-
-	if (ok)
-		context_trace->set_name(new_label);
-}
-
-void Header::on_action_set_colour_triggered()
-{
-	shared_ptr<view::Trace> context_trace = _context_trace;
-	if (!context_trace)
-		return;
-
-	const QColor new_colour = QColorDialog::getColor(
-		context_trace->get_colour(), this, tr("Set Colour"));
-
-	if (new_colour.isValid())
-		context_trace->set_colour(new_colour);
+	if (t)
+		t->create_context_menu(this)->exec(event->globalPos());
 }
 
 void Header::on_signals_changed()

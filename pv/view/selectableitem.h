@@ -26,6 +26,8 @@
 #include <QPen>
 
 class QAction;
+class QMenu;
+class QWidget;
 
 namespace pv {
 namespace view {
@@ -56,8 +58,13 @@ public:
 
 	virtual const std::list<QAction*> get_context_bar_actions() = 0;
 
+	virtual QMenu* create_context_menu(QWidget *parent);
+
 protected:
 	static QPen highlight_pen();
+
+protected:
+	QWidget *_context_parent;
 
 private:
 	bool _selected;

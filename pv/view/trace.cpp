@@ -23,6 +23,9 @@
 #include <assert.h>
 #include <math.h>
 
+#include <QColorDialog>
+#include <QInputDialog>
+
 #include "trace.h"
 #include "view.h"
 
@@ -163,6 +166,23 @@ bool Trace::pt_in_label_rect(int left, int right, const QPoint &point)
 			).contains(point);
 }
 
+QMenu* Trace::create_context_menu(QWidget *parent)
+{
+	QMenu *const menu = SelectableItem::create_context_menu(parent);
+
+	QAction *const set_name = new QAction(tr("Set &Name..."), this);
+	connect(set_name, SIGNAL(triggered()),
+		this, SLOT(on_action_set_name_triggered()));
+	menu->addAction(set_name);
+
+	QAction *const set_colour = new QAction(tr("Set &Colour..."), this);
+	connect(set_colour, SIGNAL(triggered()),
+		this, SLOT(on_action_set_colour_triggered()));
+	menu->addAction(set_colour);
+
+	return menu;
+}
+
 int Trace::get_y() const
 {
 	return _v_offset - _view->v_offset();
@@ -202,6 +222,28 @@ QRectF Trace::get_label_rect(int right)
 		y + 0.5f - label_size.height() / 2,
 		label_size.width(), label_size.height());
 }
+
+void Trace::on_action_set_name_triggered()
+{
+	bool ok = false;
+
+	const QString new_label = QInputDialog::getText(_context_parent,
+		tr("Set Name"), tr("Name"), QLineEdit::Normal, get_name(),
+		&ok);
+
+	if (ok)
+		set_name(new_label);
+}
+
+void Trace::on_action_set_colour_triggered()
+{
+	const QColor new_colour = QColorDialog::getColor(
+		get_colour(), _context_parent, tr("Set Colour"));
+
+	if (new_colour.isValid())
+		set_colour(new_colour);
+}
+
 
 } // namespace view
 } // namespace pv

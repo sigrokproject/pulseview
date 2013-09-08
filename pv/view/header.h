@@ -65,10 +65,6 @@ private:
 private slots:
 	void on_signals_changed();
 
-	void on_action_set_name_triggered();
-
-	void on_action_set_colour_triggered();
-
 	void on_signals_moved();
 
 signals:
@@ -80,10 +76,6 @@ private:
 
 	std::list<std::pair<boost::weak_ptr<Trace>, int> >
 		_drag_traces;
-
-	boost::shared_ptr<Trace> _context_trace;
-	QAction *_action_set_name;
-	QAction *_action_set_colour;
 };
 
 } // namespace view
