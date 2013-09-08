@@ -10,7 +10,7 @@ Requirements
  - make
  - libtool
  - pkg-config >= 0.22
- - cmake >= 2.6
+ - cmake >= 2.8.6
  - libglib >= 2.28.0
  - Qt >= 4.5
  - libboost >= 1.42 (including the following libs):
