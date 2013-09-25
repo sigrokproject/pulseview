@@ -34,6 +34,8 @@
 #include <QPainter>
 #include <QRect>
 
+#include <pv/widgets/popup.h>
+
 using namespace boost;
 using namespace std;
 
@@ -151,11 +153,28 @@ void Header::mousePressEvent(QMouseEvent *event)
 
 void Header::mouseReleaseEvent(QMouseEvent *event)
 {
+	using pv::widgets::Popup;
+
 	assert(event);
 	if (event->button() == Qt::LeftButton) {
+		if (_dragging)
+			_view.normalize_layout();
+		else
+		{
+			const shared_ptr<Trace> mouse_over_trace =
+				get_mouse_over_trace(event->pos());
+			if (mouse_over_trace) {
+				Popup *const p =
+					mouse_over_trace->create_popup(&_view);
+				p->set_position(mapToGlobal(QPoint(width(),
+					mouse_over_trace->get_y())),
+					Popup::Right);
+				p->show();
+			}
+		}
+
 		_dragging = false;
 		_drag_traces.clear();
-		_view.normalize_layout();
 	}
 }
 

@@ -29,6 +29,8 @@
 #include "trace.h"
 #include "view.h"
 
+#include <pv/widgets/popup.h>
+
 namespace pv {
 namespace view {
 
@@ -183,6 +185,16 @@ QMenu* Trace::create_context_menu(QWidget *parent)
 	return menu;
 }
 
+pv::widgets::Popup* Trace::create_popup(QWidget *parent)
+{
+	using pv::widgets::Popup;
+	Popup *const popup = new Popup(parent);
+	QFormLayout *const form = new QFormLayout(popup);
+	popup->setLayout(form);
+	populate_popup_form(popup, form);
+	return popup;
+}
+
 int Trace::get_y() const
 {
 	return _v_offset - _view->v_offset();
@@ -197,6 +209,11 @@ void Trace::paint_axis(QPainter &p, int y, int left, int right)
 {
 	p.setPen(AxisPen);
 	p.drawLine(QPointF(left, y + 0.5f), QPointF(right, y + 0.5f));
+}
+
+void Trace::populate_popup_form(QWidget *parent, QFormLayout *form)
+{
+	form->addRow("Name", new QLineEdit(parent));
 }
 
 void Trace::compute_text_size(QPainter &p)

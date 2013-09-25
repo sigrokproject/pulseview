@@ -35,6 +35,10 @@ namespace pv {
 
 class SigSession;
 
+namespace widgets {
+class Popup;
+}
+
 namespace view {
 
 class View;
@@ -133,12 +137,14 @@ public:
 
 	virtual QMenu* create_context_menu(QWidget *parent);
 
-protected:
+	pv::widgets::Popup* create_popup(QWidget *parent);
+
 	/**
 	 * Gets the y-offset of the axis.
 	 */
 	int get_y() const;
 
+protected:
 	/**
 	 * Gets the text colour.
 	 * @remarks This colour is computed by comparing the lightness
@@ -155,6 +161,8 @@ protected:
 	 * @param right the x-coordinate of the right edge of the view.
 	 */
 	void paint_axis(QPainter &p, int y, int left, int right);
+
+	virtual void populate_popup_form(QWidget *parent, QFormLayout *form);
 
 private:
 
