@@ -211,7 +211,6 @@ QRectF Trace::get_label_rect(int right)
 	using pv::view::View;
 
 	assert(_view);
-	const int y = _v_offset - _view->v_offset();
 
 	const QSizeF label_size(
 		_text_size.width() + View::LabelPadding.width() * 2,
@@ -219,7 +218,7 @@ QRectF Trace::get_label_rect(int right)
 	const float label_arrow_length = label_size.height() / 2;
 	return QRectF(
 		right - label_arrow_length - label_size.width() - 0.5,
-		y + 0.5f - label_size.height() / 2,
+		get_y() + 0.5f - label_size.height() / 2,
 		label_size.width(), label_size.height());
 }
 
