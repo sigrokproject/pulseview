@@ -142,6 +142,7 @@ set(pulseview_SOURCES
 	pv/view/view.cpp
 	pv/view/viewport.cpp
 	pv/view/decode/annotation.cpp
+	pv/widgets/popup.cpp
 )
 
 # This list includes only QObject derrived class headers
