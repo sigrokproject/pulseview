@@ -35,10 +35,6 @@ namespace pv {
 
 class SigSession;
 
-namespace widgets {
-class Popup;
-}
-
 namespace view {
 
 class View;

@@ -86,6 +86,8 @@ public:
 	virtual void paint_label(QPainter &p, const QRect &rect,
 		unsigned int prefix) = 0;
 
+	pv::widgets::Popup* create_popup(QWidget *parent);
+
 private slots:
 	void on_value_changed(double value);
 

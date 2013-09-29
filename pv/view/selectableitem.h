@@ -30,6 +30,11 @@ class QMenu;
 class QWidget;
 
 namespace pv {
+
+namespace widgets {
+class Popup;
+}
+
 namespace view {
 
 class SelectableItem : public QObject
@@ -55,6 +60,8 @@ public:
 
 public:
 	virtual QMenu* create_context_menu(QWidget *parent);
+
+	virtual pv::widgets::Popup* create_popup(QWidget *parent) = 0;
 
 protected:
 	static QPen highlight_pen();

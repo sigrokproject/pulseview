@@ -24,6 +24,8 @@
 
 #include <QPainter>
 
+#include <pv/widgets/popup.h>
+
 using namespace std;
 
 namespace pv {
@@ -67,6 +69,28 @@ void TimeMarker::paint(QPainter &p, const QRect &rect)
 	const float x = get_x();
 	p.setPen(_colour);
 	p.drawLine(QPointF(x, rect.top()), QPointF(x, rect.bottom()));
+}
+
+pv::widgets::Popup* TimeMarker::create_popup(QWidget *parent)
+{
+	using pv::widgets::Popup;
+
+	Popup *const popup = new Popup(parent);
+	QFormLayout *const form = new QFormLayout(popup);
+	popup->setLayout(form);
+
+	_value_widget = new QDoubleSpinBox(parent);
+	_value_widget->setValue(_time);
+	_value_widget->setDecimals(6);
+	_value_widget->setSuffix("s");
+	_value_widget->setSingleStep(1e-6);
+
+	connect(_value_widget, SIGNAL(valueChanged(double)),
+		this, SLOT(on_value_changed(double)));
+
+	form->addRow(tr("Time"), _value_widget);
+
+	return popup;
 }
 
 void TimeMarker::on_value_changed(double value)

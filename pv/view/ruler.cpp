@@ -34,6 +34,8 @@
 #include <QPainter>
 #include <QTextStream>
 
+#include <pv/widgets/popup.h>
+
 using namespace boost;
 using namespace std;
 
@@ -225,6 +227,16 @@ void Ruler::mousePressEvent(QMouseEvent *e)
 
 void Ruler::mouseReleaseEvent(QMouseEvent *)
 {
+	using pv::widgets::Popup;
+
+	if (!_dragging)
+		if (shared_ptr<TimeMarker> m = _grabbed_marker.lock()) {
+			Popup *const p = m->create_popup(&_view);
+			p->set_position(mapToGlobal(QPoint(m->get_x(),
+				height())), Popup::Bottom);
+			p->show();
+		}
+
 	_dragging = false;
 	_grabbed_marker.reset();
 }
