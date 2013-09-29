@@ -25,6 +25,8 @@
 
 #include <boost/shared_ptr.hpp>
 
+class QToolBar;
+
 namespace pv {
 
 namespace data {
@@ -77,6 +79,13 @@ private:
 		bool level, double samples_per_pixel, double pixels_offset,
 		float x_offset, float y_offset);
 
+	void init_trigger_actions(QWidget *parent);
+
+	void populate_popup_form(QWidget *parent, QFormLayout *form);
+	
+	void add_trigger_action(const char *trig_types, char type,
+		QAction *action);
+
 	void update_trigger_actions();
 
 	void set_trigger(char type);
@@ -92,6 +101,7 @@ private slots:
 private:
 	boost::shared_ptr<pv::data::Logic> _data;
 
+	QToolBar *_trigger_bar;
 	QAction *_trigger_none;
 	QAction *_trigger_rising;
 	QAction *_trigger_high;

@@ -188,6 +188,90 @@ void LogicSignal::paint_caps(QPainter &p, QLineF *const lines,
 	p.drawLines(lines, line - lines);
 }
 
+void LogicSignal::init_trigger_actions(QWidget *parent)
+{
+	_trigger_none = new QAction(QIcon(":/icons/trigger-none.svg"),
+		tr("No trigger"), parent);
+	_trigger_none->setCheckable(true);
+	connect(_trigger_none, SIGNAL(triggered()),
+		this, SLOT(on_trigger_none()));
+
+	_trigger_rising = new QAction(QIcon(":/icons/trigger-rising.svg"),
+		tr("Trigger on rising edge"), parent);
+	_trigger_rising->setCheckable(true);
+	connect(_trigger_rising, SIGNAL(triggered()),
+		this, SLOT(on_trigger_rising()));
+
+	_trigger_high = new QAction(QIcon(":/icons/trigger-high.svg"),
+		tr("Trigger on high level"), parent);
+	_trigger_high->setCheckable(true);
+	connect(_trigger_high, SIGNAL(triggered()),
+		this, SLOT(on_trigger_high()));
+
+	_trigger_falling = new QAction(QIcon(":/icons/trigger-falling.svg"),
+		tr("Trigger on falling edge"), parent);
+	_trigger_falling->setCheckable(true);
+	connect(_trigger_falling, SIGNAL(triggered()),
+		this, SLOT(on_trigger_falling()));
+
+	_trigger_low = new QAction(QIcon(":/icons/trigger-low.svg"),
+		tr("Trigger on low level"), parent);
+	_trigger_low->setCheckable(true);
+	connect(_trigger_low, SIGNAL(triggered()),
+		this, SLOT(on_trigger_low()));
+
+	_trigger_change = new QAction(QIcon(":/icons/trigger-change.svg"),
+		tr("Trigger on rising or falling edge"), parent);
+	_trigger_change->setCheckable(true);
+	connect(_trigger_change, SIGNAL(triggered()),
+		this, SLOT(on_trigger_change()));
+}
+
+void LogicSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
+{
+	GVariant *gvar;
+
+	Signal::populate_popup_form(parent, form);
+
+	// Add the trigger actions
+	const sr_dev_inst *const sdi = _session.get_device();
+	if (sr_config_list(sdi->driver, SR_CONF_TRIGGER_TYPE,
+		&gvar, sdi) == SR_OK)
+	{
+		const char *const trig_types =
+			g_variant_get_string(gvar, NULL);
+
+		if (trig_types && trig_types[0] != '\0')
+		{
+			_trigger_bar = new QToolBar(parent);
+
+			init_trigger_actions(_trigger_bar);
+			_trigger_bar->addAction(_trigger_none);
+			add_trigger_action(trig_types, 'r', _trigger_rising);
+			add_trigger_action(trig_types, '1', _trigger_high);
+			add_trigger_action(trig_types, 'f', _trigger_falling);
+			add_trigger_action(trig_types, '0', _trigger_low);
+			add_trigger_action(trig_types, 'c', _trigger_change);
+		
+			update_trigger_actions();
+
+			form->addRow(tr("Trigger"), _trigger_bar);
+		}
+
+		g_variant_unref(gvar);
+	}
+}
+
+void LogicSignal::add_trigger_action(const char *trig_types, char type,
+	QAction *action)
+{
+	while(*trig_types)
+		if(*trig_types++ == type) {
+			_trigger_bar->addAction(action);
+			break;
+		}
+}
+
 void LogicSignal::update_trigger_actions()
 {
 	const char cur_trigger = _probe->trigger ?
