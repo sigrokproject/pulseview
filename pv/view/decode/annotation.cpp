@@ -40,9 +40,20 @@ namespace decode {
 const double Annotation::EndCapWidth = 5;
 const int Annotation::DrawPadding = 100;
 
+const QColor Annotation::Colours[7] = {
+	QColor(0xFC, 0xE9, 0x4F),	// Light Butter
+	QColor(0xFC, 0xAF, 0x3E),	// Light Orange
+	QColor(0xE9, 0xB9, 0x6E),	// Light Chocolate
+	QColor(0x8A, 0xE2, 0x34),	// Light Green
+	QColor(0x72, 0x9F, 0xCF),	// Light Blue
+	QColor(0xAD, 0x7F, 0xA8),	// Light Plum
+	QColor(0xEF, 0x29, 0x29)	// Light Red
+};
+
 Annotation::Annotation(const srd_proto_data *const pdata) :
 	_start_sample(pdata->start_sample),
-	_end_sample(pdata->end_sample)
+	_end_sample(pdata->end_sample),
+	_format(pdata->ann_format)
 {
 	const char *const *annotations = (char**)pdata->data;
 	while(*annotations) {
@@ -51,15 +62,18 @@ Annotation::Annotation(const srd_proto_data *const pdata) :
 	}
 }
 
-void Annotation::paint(QPainter &p, QColor fill, QColor outline,
-	QColor text_color, int text_height, int left, int right,
-	double samples_per_pixel, double pixels_offset, int y)
+void Annotation::paint(QPainter &p, QColor text_color, int text_height,
+	int left, int right, double samples_per_pixel, double pixels_offset,
+	int y)
 {
 	const int h = (text_height * 3) / 2;
 	const double start = _start_sample / samples_per_pixel -
 		pixels_offset;
 	const double end = _end_sample / samples_per_pixel -
 		pixels_offset;
+	const QColor fill = Colours[(_format * (countof(Colours) / 2 + 1)) %
+		countof(Colours)];
+	const QColor outline(fill.darker());
 
 	if (start > right + DrawPadding || end < left - DrawPadding)
 		return;

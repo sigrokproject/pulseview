@@ -37,12 +37,14 @@ private:
 	static const double EndCapWidth;
 	static const int DrawPadding;
 
+	static const QColor Colours[7];
+
 public:
 	Annotation(const srd_proto_data *const pdata);
 
-	void paint(QPainter &p, QColor fill, QColor outline,
-		QColor text_colour, int text_height, int left, int right,
-		double samples_per_pixel, double pixels_offset, int y);
+	void paint(QPainter &p, QColor text_colour, int text_height, int left,
+		int right, double samples_per_pixel, double pixels_offset,
+		int y);
 
 private:
 	void draw_instant(QPainter &p, QColor fill, QColor outline,
@@ -55,6 +57,7 @@ private:
 private:
 	uint64_t _start_sample;
 	uint64_t _end_sample;
+	int _format;
 	std::vector<QString> _annotations; 
 };
 
