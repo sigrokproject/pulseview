@@ -59,7 +59,6 @@ LogicSignal::LogicSignal(pv::SigSession &session, const sr_probe *const probe,
 	shared_ptr<data::Logic> data) :
 	Signal(session, probe),
 	_data(data),
-	_separator(NULL),
 	_trigger_none(NULL),
 	_trigger_rising(NULL),
 	_trigger_high(NULL),
@@ -74,92 +73,9 @@ LogicSignal::~LogicSignal()
 {
 }
 
-void LogicSignal::init_context_bar_actions(QWidget *parent)
-{
-	Signal::init_context_bar_actions(parent);
-
-	_separator = new QAction(parent);
-	_separator->setSeparator(true);
-
-	_trigger_none = new QAction(QIcon(":/icons/trigger-none.svg"),
-		tr("No trigger"), this);
-	_trigger_none->setCheckable(true);
-	connect(_trigger_none, SIGNAL(triggered()),
-		this, SLOT(on_trigger_none()));
-
-	_trigger_rising = new QAction(QIcon(":/icons/trigger-rising.svg"),
-		tr("Trigger on rising edge"), this);
-	_trigger_rising->setCheckable(true);
-	connect(_trigger_rising, SIGNAL(triggered()),
-		this, SLOT(on_trigger_rising()));
-
-	_trigger_high = new QAction(QIcon(":/icons/trigger-low.svg"),
-		tr("Trigger on high level"), this);
-	_trigger_high->setCheckable(true);
-	connect(_trigger_high, SIGNAL(triggered()),
-		this, SLOT(on_trigger_high()));
-
-	_trigger_falling = new QAction(QIcon(":/icons/trigger-falling.svg"),
-		tr("Trigger on falling edge"), this);
-	_trigger_falling->setCheckable(true);
-	connect(_trigger_falling, SIGNAL(triggered()),
-		this, SLOT(on_trigger_falling()));
-
-	_trigger_low = new QAction(QIcon(":/icons/trigger-low.svg"),
-		tr("Trigger on low level"), this);
-	_trigger_low->setCheckable(true);
-	connect(_trigger_low, SIGNAL(triggered()),
-		this, SLOT(on_trigger_low()));
-
-	_trigger_change = new QAction(QIcon(":/icons/trigger-change.svg"),
-		tr("Trigger on rising or falling edge"), this);
-	_trigger_change->setCheckable(true);
-	connect(_trigger_change, SIGNAL(triggered()),
-		this, SLOT(on_trigger_change()));
-}
-
 boost::shared_ptr<pv::data::Logic> LogicSignal::data() const
 {
 	return _data;
-}
-
-const list<QAction*> LogicSignal::get_context_bar_actions()
-{
-	GVariant *gvar;
-	list<QAction*> actions;
-
-	actions.push_back(_name_action);
-
-	// Add the trigger actions
-	const sr_dev_inst *const sdi = _session.get_device();
-	if (sr_config_list(sdi->driver, SR_CONF_TRIGGER_TYPE,
-		&gvar, sdi) == SR_OK) {
-		const char *const trig_types =
-			g_variant_get_string(gvar, NULL);
-
-		if (trig_types && trig_types[0] != '\0') {
-			actions.push_back(_separator);
-
-			actions.push_back(_trigger_none);
-
-			add_trigger_action(trig_types, 'r',
-				_trigger_rising, actions);
-			add_trigger_action(trig_types, '1',
-				_trigger_high, actions);
-			add_trigger_action(trig_types, 'f',
-				_trigger_falling, actions);
-			add_trigger_action(trig_types, '0',
-				_trigger_low, actions);
-			add_trigger_action(trig_types, 'c',
-				_trigger_change, actions);
-		
-			update_trigger_actions();
-		}
-
-		g_variant_unref(gvar);
-	}
-
-	return actions;
 }
 
 void LogicSignal::paint_back(QPainter &p, int left, int right)
@@ -270,16 +186,6 @@ void LogicSignal::paint_caps(QPainter &p, QLineF *const lines,
 		}
 
 	p.drawLines(lines, line - lines);
-}
-
-void LogicSignal::add_trigger_action(const char *trig_types, char type,
-	QAction *action, list<QAction*> &actions)
-{
-	while(*trig_types)
-		if(*trig_types++ == type) {
-			actions.push_back(action);
-			break;
-		}
 }
 
 void LogicSignal::update_trigger_actions()

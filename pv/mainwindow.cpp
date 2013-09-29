@@ -40,7 +40,6 @@
 #include "dialogs/about.h"
 #include "dialogs/connect.h"
 #include "dialogs/decoder.h"
-#include "toolbars/contextbar.h"
 #include "toolbars/samplingbar.h"
 #include "view/view.h"
 
@@ -98,8 +97,6 @@ void MainWindow::setup_ui()
 	setCentralWidget(_central_widget);
 
 	_view = new pv::view::View(_session, this);
-	connect(_view, SIGNAL(selection_changed()), this,
-		SLOT(view_selection_changed()));
 
 	_vertical_layout->addWidget(_view);
 
@@ -227,10 +224,6 @@ void MainWindow::setup_ui()
 	connect(_sampling_bar, SIGNAL(run_stop()), this,
 		SLOT(run_stop()));
 	addToolBar(_sampling_bar);
-
-	// Setup the context bar
-	_context_bar = new toolbars::ContextBar(this);
-	addToolBar(_context_bar);
 
 	// Set the title
 	setWindowTitle(QApplication::translate("MainWindow", "PulseView", 0,
@@ -423,15 +416,6 @@ void MainWindow::run_stop()
 void MainWindow::capture_state_changed(int state)
 {
 	_sampling_bar->set_capture_state((pv::SigSession::capture_state)state);
-}
-
-void MainWindow::view_selection_changed()
-{
-	assert(_context_bar);
-
-	const list<weak_ptr<pv::view::SelectableItem> > items(
-		_view->selected_items());
-	_context_bar->set_selected_items(items);
 }
 
 } // namespace pv

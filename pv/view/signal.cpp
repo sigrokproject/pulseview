@@ -51,27 +51,10 @@ const char *const ProbeNames[] = {
 Signal::Signal(pv::SigSession &session, const sr_probe *const probe) :
 	Trace(session, probe->name),
 	_probe(probe),
-	_name_action(NULL),
 	_name_widget(NULL),
 	_updating_name_widget(false)
 {
 	assert(_probe);
-}
-
-void Signal::init_context_bar_actions(QWidget *parent)
-{
-	_name_widget = new QComboBox(parent);
-	_name_widget->setEditable(true);
-
-	_name_action = new QWidgetAction(parent);
-	_name_action->setDefaultWidget(_name_widget);
-
-	for(unsigned int i = 0; i < countof(ProbeNames); i++)
-		_name_widget->insertItem(i, ProbeNames[i]);
-	_name_widget->setEditText(_probe->name);
-
-	connect(_name_widget, SIGNAL(editTextChanged(const QString&)),
-		this, SLOT(on_text_changed(const QString&)));
 }
 
 void Signal::set_name(QString name)

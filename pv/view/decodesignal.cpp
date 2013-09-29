@@ -59,11 +59,6 @@ DecodeSignal::DecodeSignal(pv::SigSession &session,
 		this, SLOT(on_new_decode_data()));
 }
 
-void DecodeSignal::init_context_bar_actions(QWidget *parent)
-{
-	(void)parent;
-}
-
 bool DecodeSignal::enabled() const
 {
 	return true;
@@ -107,12 +102,6 @@ void DecodeSignal::paint_mid(QPainter &p, int left, int right)
 		a->paint(p, get_text_colour(), _text_size.height(),
 			left, right, samples_per_pixel, pixels_offset, y);
 	}
-}
-
-const list<QAction*> DecodeSignal::get_context_bar_actions()
-{
-	list<QAction*> actions;
-	return actions;
 }
 
 QMenu* DecodeSignal::create_context_menu(QWidget *parent)

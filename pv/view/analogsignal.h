@@ -47,8 +47,6 @@ public:
 
 	virtual ~AnalogSignal();
 
-	const std::list<QAction*> get_context_bar_actions();
-
 	void set_scale(float scale);
 
 	/**

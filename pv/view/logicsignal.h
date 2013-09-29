@@ -52,11 +52,7 @@ public:
 
 	virtual ~LogicSignal();
 
-	void init_context_bar_actions(QWidget *parent);
-
 	boost::shared_ptr<pv::data::Logic> data() const;
-
-	const std::list<QAction*> get_context_bar_actions();
 
 	/**
 	 * Paints the background layer of the signal with a QPainter
@@ -81,9 +77,6 @@ private:
 		bool level, double samples_per_pixel, double pixels_offset,
 		float x_offset, float y_offset);
 
-	static void add_trigger_action(const char *trig_types, char type,
-		QAction *action, std::list<QAction*> &actions);
-
 	void update_trigger_actions();
 
 	void set_trigger(char type);
@@ -98,8 +91,6 @@ private slots:
 
 private:
 	boost::shared_ptr<pv::data::Logic> _data;
-
-	QAction *_separator;
 
 	QAction *_trigger_none;
 	QAction *_trigger_rising;

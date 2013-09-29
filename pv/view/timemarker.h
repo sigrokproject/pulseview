@@ -51,8 +51,6 @@ protected:
 	TimeMarker(View &view, const QColor &colour, double time);
 
 public:
-	virtual void init_context_bar_actions(QWidget *parent);
-	
 	/**
 	 * Gets the time of the marker.
 	 */
@@ -85,12 +83,6 @@ public:
 	 */
 	virtual void paint_label(QPainter &p, const QRect &rect,
 		unsigned int prefix) = 0;
-
-	/**
-	 * Returns a list of context menu items to show in the context
-	 * bar.
-	 */
-	const std::list<QAction*> get_context_bar_actions();
 
 private slots:
 	void on_value_changed(double value);

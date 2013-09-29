@@ -105,8 +105,6 @@ private slots:
 
 	void capture_state_changed(int state);
 
-	void view_selection_changed();
-
 private:
 	DeviceManager &_device_manager;
 
@@ -137,7 +135,6 @@ private:
 
 	QToolBar *_toolbar;
 	toolbars::SamplingBar *_sampling_bar;
-	toolbars::ContextBar *_context_bar;
 };
 
 } // namespace pv

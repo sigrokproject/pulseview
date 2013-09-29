@@ -44,8 +44,6 @@ public:
 	DecodeSignal(pv::SigSession &session,
 		boost::shared_ptr<pv::data::Decoder> decoder, int index);
 
-	void init_context_bar_actions(QWidget *parent);
-
 	bool enabled() const;
 
 	void set_view(pv::view::View *view);
@@ -65,8 +63,6 @@ public:
 	 * @param right the x-coordinate of the right edge of the signal
 	 **/
 	void paint_mid(QPainter &p, int left, int right);
-
-	const std::list<QAction*> get_context_bar_actions();
 
 	QMenu* create_context_menu(QWidget *parent);
 

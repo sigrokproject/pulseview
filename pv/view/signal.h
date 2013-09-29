@@ -46,8 +46,6 @@ protected:
 	Signal(pv::SigSession &session, const sr_probe *const probe);
 
 public:
-	virtual void init_context_bar_actions(QWidget *parent);
-
 	/**
 	 * Sets the name of the signal.
 	 */
@@ -60,7 +58,6 @@ public:
 
 	const sr_probe* probe() const;
 
-private:
 	virtual void populate_popup_form(QWidget *parent, QFormLayout *form);
 
 private slots:
@@ -69,7 +66,6 @@ private slots:
 protected:
 	const sr_probe *const _probe;
 
-	QWidgetAction *_name_action;
 	QComboBox *_name_widget;
 	bool _updating_name_widget;
 };

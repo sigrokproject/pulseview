@@ -390,7 +390,6 @@ void View::signals_changed()
 	const vector< shared_ptr<Trace> > traces(get_traces());
 	BOOST_FOREACH(shared_ptr<Trace> t, traces) {
 		t->set_view(this);
-		t->init_context_bar_actions(NULL);
 		t->set_v_offset(offset);
 		offset += SignalHeight + 2 * SignalMargin;
 	}
