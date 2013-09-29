@@ -92,6 +92,21 @@ const sr_probe* Signal::probe() const
 	return _probe;
 }
 
+void Signal::populate_popup_form(QWidget *parent, QFormLayout *form)
+{
+	_name_widget = new QComboBox(parent);
+	_name_widget->setEditable(true);
+
+	for(unsigned int i = 0; i < countof(ProbeNames); i++)
+		_name_widget->insertItem(i, ProbeNames[i]);
+	_name_widget->setEditText(_probe->name);
+
+	connect(_name_widget, SIGNAL(editTextChanged(const QString&)),
+		this, SLOT(on_text_changed(const QString&)));
+
+	form->addRow(tr("Name"), _name_widget);
+}
+
 void Signal::on_text_changed(const QString &text)
 {
 	Trace::set_name(text);

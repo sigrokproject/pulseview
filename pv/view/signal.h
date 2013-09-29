@@ -60,6 +60,9 @@ public:
 
 	const sr_probe* probe() const;
 
+private:
+	virtual void populate_popup_form(QWidget *parent, QFormLayout *form);
+
 private slots:
 	void on_text_changed(const QString &text);
 
