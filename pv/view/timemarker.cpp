@@ -47,9 +47,13 @@ double TimeMarker::time() const
 void TimeMarker::set_time(double time)
 {
 	_time = time;
-	_updating_value_widget = true;
-	_value_widget->setValue(time);
-	_updating_value_widget = false;
+
+	if (_value_widget) {
+		_updating_value_widget = true;
+		_value_widget->setValue(time);
+		_updating_value_widget = false;
+	}
+
 	time_changed();
 }
 
