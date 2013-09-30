@@ -61,6 +61,8 @@ public:
 	 */
 	void set_time(double time);
 
+	float get_x() const;
+
 	/**
 	 * Paints the marker to the viewport.
 	 * @param p The painter to draw with.

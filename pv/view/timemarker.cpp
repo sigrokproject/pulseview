@@ -44,6 +44,11 @@ double TimeMarker::time() const
 	return _time;
 }
 
+float TimeMarker::get_x() const
+{
+	return (_time - _view.offset()) / _view.scale();
+}
+
 void TimeMarker::set_time(double time)
 {
 	_time = time;
@@ -59,7 +64,7 @@ void TimeMarker::set_time(double time)
 
 void TimeMarker::paint(QPainter &p, const QRect &rect)
 {
-	const float x = (_time - _view.offset()) / _view.scale();
+	const float x = get_x();
 	p.setPen(_colour);
 	p.drawLine(QPointF(x, rect.top()), QPointF(x, rect.bottom()));
 }
