@@ -41,7 +41,8 @@ namespace pv {
 namespace view {
 
 Header::Header(View &parent) :
-	MarginWidget(parent)
+	MarginWidget(parent),
+	_dragging(false)
 {
 	setMouseTracking(true);
 
@@ -152,6 +153,7 @@ void Header::mouseReleaseEvent(QMouseEvent *event)
 {
 	assert(event);
 	if (event->button() == Qt::LeftButton) {
+		_dragging = false;
 		_drag_traces.clear();
 		_view.normalize_layout();
 	}
@@ -162,8 +164,18 @@ void Header::mouseMoveEvent(QMouseEvent *event)
 	assert(event);
 	_mouse_point = event->pos();
 
+	if (!(event->buttons() & Qt::LeftButton))
+		return;
+
+	if ((event->pos() - _mouse_down_point).manhattanLength() <
+		QApplication::startDragDistance())
+		return;
+
 	// Move the signals if we are dragging
-	if (!_drag_traces.empty()) {
+	if (!_drag_traces.empty())
+	{
+		_dragging = true;
+
 		const int delta = event->pos().y() - _mouse_down_point.y();
 
 		for (std::list<std::pair<boost::weak_ptr<Trace>,

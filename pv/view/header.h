@@ -73,6 +73,7 @@ signals:
 private:
 	QPoint _mouse_point;
 	QPoint _mouse_down_point;
+	bool _dragging;
 
 	std::list<std::pair<boost::weak_ptr<Trace>, int> >
 		_drag_traces;
