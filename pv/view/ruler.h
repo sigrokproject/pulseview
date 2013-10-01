@@ -70,6 +70,8 @@ private slots:
 
 private:
 	boost::weak_ptr<TimeMarker> _grabbed_marker;
+	QPoint _mouse_down_point;
+	bool _dragging;
 };
 
 } // namespace view

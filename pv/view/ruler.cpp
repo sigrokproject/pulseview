@@ -50,7 +50,8 @@ const int Ruler::FirstSIPrefixPower = -15;
 const int Ruler::HoverArrowSize = 5;
 
 Ruler::Ruler(View &parent) :
-	MarginWidget(parent)
+	MarginWidget(parent),
+	_dragging(false)
 {
 	setMouseTracking(true);
 
@@ -181,6 +182,15 @@ void Ruler::paintEvent(QPaintEvent*)
 
 void Ruler::mouseMoveEvent(QMouseEvent *e)
 {
+	if (!(e->buttons() & Qt::LeftButton))
+		return;
+	
+	if ((e->pos() - _mouse_down_point).manhattanLength() <
+		QApplication::startDragDistance())
+		return;
+
+	_dragging = true;
+
 	if (shared_ptr<TimeMarker> m = _grabbed_marker.lock())
 		m->set_time(_view.offset() +
 			((double)e->x() + 0.5) * _view.scale());
@@ -188,7 +198,10 @@ void Ruler::mouseMoveEvent(QMouseEvent *e)
 
 void Ruler::mousePressEvent(QMouseEvent *e)
 {
-	if (e->buttons() & Qt::LeftButton) {
+	if (e->buttons() & Qt::LeftButton)
+	{
+		_mouse_down_point = e->pos();
+
 		_grabbed_marker.reset();
 
 		clear_selection();
@@ -212,6 +225,7 @@ void Ruler::mousePressEvent(QMouseEvent *e)
 
 void Ruler::mouseReleaseEvent(QMouseEvent *)
 {
+	_dragging = false;
 	_grabbed_marker.reset();
 }
 
@@ -219,7 +233,7 @@ void Ruler::draw_hover_mark(QPainter &p)
 {
 	const int x = _view.hover_point().x();
 
-	if (x == -1 || !_grabbed_marker.expired())
+	if (x == -1 || _dragging)
 		return;
 
 	p.setPen(QPen(Qt::NoPen));
