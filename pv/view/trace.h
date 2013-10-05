@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_TRACE_H
-#define PULSEVIEW_PV_TRACE_H
+#ifndef PULSEVIEW_PV_VIEW_TRACE_H
+#define PULSEVIEW_PV_VIEW_TRACE_H
 
 #include <QColor>
 #include <QPainter>
@@ -200,4 +200,4 @@ protected:
 } // namespace view
 } // namespace pv
 
-#endif // PULSEVIEW_PV_TRACEL_H
+#endif // PULSEVIEW_PV_VIEW_TRACE_H
