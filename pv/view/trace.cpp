@@ -23,9 +23,6 @@
 #include <assert.h>
 #include <math.h>
 
-#include <QColorDialog>
-#include <QInputDialog>
-
 #include "trace.h"
 #include "tracepalette.h"
 #include "view.h"
@@ -173,16 +170,6 @@ QMenu* Trace::create_context_menu(QWidget *parent)
 {
 	QMenu *const menu = SelectableItem::create_context_menu(parent);
 
-	QAction *const set_name = new QAction(tr("Set &Name..."), this);
-	connect(set_name, SIGNAL(triggered()),
-		this, SLOT(on_action_set_name_triggered()));
-	menu->addAction(set_name);
-
-	QAction *const set_colour = new QAction(tr("Set &Colour..."), this);
-	connect(set_colour, SIGNAL(triggered()),
-		this, SLOT(on_action_set_colour_triggered()));
-	menu->addAction(set_colour);
-
 	return menu;
 }
 
@@ -258,27 +245,6 @@ QRectF Trace::get_label_rect(int right)
 		right - label_arrow_length - label_size.width() - 0.5,
 		get_y() + 0.5f - label_size.height() / 2,
 		label_size.width(), label_size.height());
-}
-
-void Trace::on_action_set_name_triggered()
-{
-	bool ok = false;
-
-	const QString new_label = QInputDialog::getText(_context_parent,
-		tr("Set Name"), tr("Name"), QLineEdit::Normal, get_name(),
-		&ok);
-
-	if (ok)
-		set_name(new_label);
-}
-
-void Trace::on_action_set_colour_triggered()
-{
-	const QColor new_colour = QColorDialog::getColor(
-		get_colour(), _context_parent, tr("Set Colour"));
-
-	if (new_colour.isValid())
-		set_colour(new_colour);
 }
 
 void Trace::on_text_changed(const QString &text)

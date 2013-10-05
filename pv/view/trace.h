@@ -179,10 +179,6 @@ private:
 	QRectF get_label_rect(int right);
 
 private slots:
-	void on_action_set_name_triggered();
-
-	void on_action_set_colour_triggered();
-
 	void on_text_changed(const QString &text);
 
 	void on_colour_changed(const QColor &colour);
