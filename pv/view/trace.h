@@ -181,6 +181,8 @@ private slots:
 
 	void on_action_set_colour_triggered();
 
+	void on_text_changed(const QString &text);
+
 signals:
 	void text_changed();	
 

@@ -90,11 +90,5 @@ void Signal::populate_popup_form(QWidget *parent, QFormLayout *form)
 	form->addRow(tr("Name"), _name_widget);
 }
 
-void Signal::on_text_changed(const QString &text)
-{
-	Trace::set_name(text);
-	text_changed();
-}
-
 } // namespace view
 } // namespace pv

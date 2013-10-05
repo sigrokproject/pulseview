@@ -213,7 +213,11 @@ void Trace::paint_axis(QPainter &p, int y, int left, int right)
 
 void Trace::populate_popup_form(QWidget *parent, QFormLayout *form)
 {
-	form->addRow("Name", new QLineEdit(parent));
+	QLineEdit *const name_edit = new QLineEdit(parent);
+	name_edit->setText(_name);
+	connect(name_edit, SIGNAL(textChanged(const QString&)),
+		this, SLOT(on_text_changed(const QString&)));
+	form->addRow(tr("Name"), name_edit);
 }
 
 void Trace::compute_text_size(QPainter &p)
@@ -260,6 +264,11 @@ void Trace::on_action_set_colour_triggered()
 		set_colour(new_colour);
 }
 
+void Trace::on_text_changed(const QString &text)
+{
+	set_name(text);
+	text_changed();
+}
 
 } // namespace view
 } // namespace pv

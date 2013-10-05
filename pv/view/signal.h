@@ -60,9 +60,6 @@ public:
 
 	virtual void populate_popup_form(QWidget *parent, QFormLayout *form);
 
-private slots:
-	void on_text_changed(const QString &text);
-
 protected:
 	const sr_probe *const _probe;
 
