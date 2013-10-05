@@ -158,6 +158,8 @@ protected:
 	 */
 	void paint_axis(QPainter &p, int y, int left, int right);
 
+	void add_colour_option(QWidget *parent, QFormLayout *form);
+
 	virtual void populate_popup_form(QWidget *parent, QFormLayout *form);
 
 private:
@@ -183,8 +185,11 @@ private slots:
 
 	void on_text_changed(const QString &text);
 
+	void on_colour_changed(const QColor &colour);
+
 signals:
 	void text_changed();	
+	void colour_changed();
 
 protected:
 	pv::SigSession &_session;

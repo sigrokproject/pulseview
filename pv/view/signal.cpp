@@ -88,6 +88,8 @@ void Signal::populate_popup_form(QWidget *parent, QFormLayout *form)
 		this, SLOT(on_text_changed(const QString&)));
 
 	form->addRow(tr("Name"), _name_widget);
+
+	add_colour_option(parent, form);
 }
 
 } // namespace view

@@ -27,9 +27,10 @@
 #include <QInputDialog>
 
 #include "trace.h"
+#include "tracepalette.h"
 #include "view.h"
 
-#include <pv/widgets/popup.h>
+#include <pv/widgets/colourbutton.h>
 
 namespace pv {
 namespace view {
@@ -211,6 +212,20 @@ void Trace::paint_axis(QPainter &p, int y, int left, int right)
 	p.drawLine(QPointF(left, y + 0.5f), QPointF(right, y + 0.5f));
 }
 
+void Trace::add_colour_option(QWidget *parent, QFormLayout *form)
+{
+	using pv::widgets::ColourButton;
+
+	ColourButton *const colour_button = new ColourButton(
+		TracePalette::Rows, TracePalette::Cols, parent);
+	colour_button->set_palette(TracePalette::Colours);
+	colour_button->set_colour(_colour);
+	connect(colour_button, SIGNAL(selected(const QColor&)),
+		this, SLOT(on_colour_changed(const QColor&)));
+
+	form->addRow(tr("Colour"), colour_button);
+}
+
 void Trace::populate_popup_form(QWidget *parent, QFormLayout *form)
 {
 	QLineEdit *const name_edit = new QLineEdit(parent);
@@ -218,6 +233,8 @@ void Trace::populate_popup_form(QWidget *parent, QFormLayout *form)
 	connect(name_edit, SIGNAL(textChanged(const QString&)),
 		this, SLOT(on_text_changed(const QString&)));
 	form->addRow(tr("Name"), name_edit);
+
+	add_colour_option(parent, form);
 }
 
 void Trace::compute_text_size(QPainter &p)
@@ -268,6 +285,12 @@ void Trace::on_text_changed(const QString &text)
 {
 	set_name(text);
 	text_changed();
+}
+
+void Trace::on_colour_changed(const QColor &colour)
+{
+	set_colour(colour);
+	colour_changed();
 }
 
 } // namespace view

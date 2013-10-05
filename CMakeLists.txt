@@ -138,9 +138,12 @@ set(pulseview_SOURCES
 	pv/view/signal.cpp
 	pv/view/timemarker.cpp
 	pv/view/trace.cpp
+	pv/view/tracepalette.cpp
 	pv/view/view.cpp
 	pv/view/viewport.cpp
 	pv/view/decode/annotation.cpp
+	pv/widgets/colourbutton.cpp
+	pv/widgets/colourpopup.cpp
 	pv/widgets/popup.cpp
 	pv/widgets/wellarray.cpp
 )
@@ -166,6 +169,8 @@ set(pulseview_HEADERS
 	pv/view/trace.h
 	pv/view/view.h
 	pv/view/viewport.h
+	pv/widgets/colourbutton.h
+	pv/widgets/colourpopup.h
 	pv/widgets/wellarray.h
 )
 
