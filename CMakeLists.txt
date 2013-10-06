@@ -145,6 +145,7 @@ set(pulseview_SOURCES
 	pv/widgets/colourbutton.cpp
 	pv/widgets/colourpopup.cpp
 	pv/widgets/popup.cpp
+	pv/widgets/popuptoolbutton.cpp
 	pv/widgets/wellarray.cpp
 )
 
@@ -171,6 +172,7 @@ set(pulseview_HEADERS
 	pv/view/viewport.h
 	pv/widgets/colourbutton.h
 	pv/widgets/colourpopup.h
+	pv/widgets/popuptoolbutton.h
 	pv/widgets/wellarray.h
 )
 
