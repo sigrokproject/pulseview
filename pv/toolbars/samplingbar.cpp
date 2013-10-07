@@ -32,7 +32,7 @@
 #include "samplingbar.h"
 
 #include <pv/devicemanager.h>
-#include <pv/dialogs/deviceoptions.h>
+#include <pv/popups/deviceoptions.h>
 
 using namespace std;
 
@@ -68,6 +68,7 @@ SamplingBar::SamplingBar(QWidget *parent) :
 	QToolBar("Sampling Bar", parent),
 	_device_selector(this),
 	_configure_button(this),
+	_probes_button(this),
 	_record_length_selector(this),
 	_sample_rate_list(this),
 	_icon_red(":/icons/status-red.svg"),
@@ -79,8 +80,6 @@ SamplingBar::SamplingBar(QWidget *parent) :
 		this, SLOT(on_run_stop()));
 	connect(&_device_selector, SIGNAL(currentIndexChanged (int)),
 		this, SLOT(on_device_selected()));
-	connect(&_configure_button, SIGNAL(clicked()),
-		this, SLOT(on_configure()));
 
 	_sample_rate_value.setDecimals(0);
 	_sample_rate_value.setSuffix("Hz");
@@ -101,11 +100,14 @@ SamplingBar::SamplingBar(QWidget *parent) :
 
 	_configure_button.setIcon(QIcon::fromTheme("configure",
 		QIcon(":/icons/configure.png")));
+	_probes_button.setIcon(QIcon::fromTheme("probes",
+		QIcon(":/icons/probes.svg")));
 
 	_run_stop_button.setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
 
 	addWidget(&_device_selector);
 	addWidget(&_configure_button);
+	addWidget(&_probes_button);
 	addWidget(&_record_length_selector);
 	_sample_rate_list_action = addWidget(&_sample_rate_list);
 	_sample_rate_value_action = addWidget(&_sample_rate_value);
@@ -292,26 +294,21 @@ void SamplingBar::commit_sample_rate()
 
 void SamplingBar::on_device_selected()
 {
+	using namespace pv::popups;
+
 	update_sample_rate_selector();
+
+	sr_dev_inst *const sdi = get_selected_device();
+
+	_configure_button.set_popup(new DeviceOptions(sdi, this));
+	_probes_button.set_popup(new Probes(sdi, this));
+
 	device_selected();
 }
 
 void SamplingBar::on_sample_rate_changed()
 {
 	commit_sample_rate();
-}
-
-void SamplingBar::on_configure()
-{
-	commit_sample_rate();
-
-	sr_dev_inst *const sdi = get_selected_device();
-	assert(sdi);
-
-	pv::dialogs::DeviceOptions dlg(this, sdi);
-	dlg.exec();
-
-	update_sample_rate_selector_value();
 }
 
 void SamplingBar::on_run_stop()

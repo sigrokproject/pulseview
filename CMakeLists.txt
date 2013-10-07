@@ -115,7 +115,8 @@ set(pulseview_SOURCES
 	pv/dialogs/about.cpp
 	pv/dialogs/connect.cpp
 	pv/dialogs/decoder.cpp
-	pv/dialogs/deviceoptions.cpp
+	pv/popups/deviceoptions.cpp
+	pv/popups/probes.cpp
 	pv/prop/bool.cpp
 	pv/prop/double.cpp
 	pv/prop/enum.cpp
@@ -156,7 +157,8 @@ set(pulseview_HEADERS
 	pv/data/decoder.h
 	pv/dialogs/about.h
 	pv/dialogs/connect.h
-	pv/dialogs/deviceoptions.h
+	pv/popups/deviceoptions.h
+	pv/popups/probes.h
 	pv/toolbars/samplingbar.h
 	pv/view/cursor.h
 	pv/view/decodesignal.h

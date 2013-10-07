@@ -31,6 +31,8 @@
 #include <QToolButton>
 
 #include <pv/sigsession.h>
+#include <pv/popups/probes.h>
+#include <pv/widgets/popuptoolbutton.h>
 
 struct st_dev_inst;
 class QAction;
@@ -71,12 +73,13 @@ private:
 private slots:
 	void on_device_selected();
 	void on_sample_rate_changed();
-	void on_configure();
 	void on_run_stop();
 
 private:
 	QComboBox _device_selector;
-	QToolButton _configure_button;
+
+	pv::widgets::PopupToolButton _configure_button;
+	pv::widgets::PopupToolButton _probes_button;
 
 	QComboBox _record_length_selector;
 
