@@ -305,14 +305,15 @@ void MainWindow::setup_add_decoders(QMenu *parent)
 {
 	GSList *l = g_slist_sort(g_slist_copy(
 		(GSList*)srd_decoder_list()), decoder_name_cmp);
-	do {
+	for(; l; l = l->next)
+	{
 		QAction *const action = parent->addAction(QString(
 			((srd_decoder*)l->data)->name));
 		action->setData(qVariantFromValue(l->data));
 		_decoders_add_mapper.setMapping(action, action);
 		connect(action, SIGNAL(triggered()),
 			&_decoders_add_mapper, SLOT(map()));
-	} while ((l = l->next));
+	}
 	g_slist_free(l);
 }
 
