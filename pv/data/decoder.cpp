@@ -116,7 +116,10 @@ void Decoder::init_decoder()
 	}
 
 	_decoder_inst = srd_inst_new(_decoder->id, _options);
-	assert(_decoder_inst);
+	if(!_decoder_inst) {
+		qDebug() << "Failed to initialise decoder";
+		return;
+	}
 
 	_decoder_inst->data_samplerate = _samplerate;
 
