@@ -46,7 +46,7 @@ Int::~Int()
 {
 }
 
-QWidget* Int::get_widget(QWidget *parent)
+QWidget* Int::get_widget(QWidget *parent, bool auto_commit)
 {
 	if (_spin_box)
 		return _spin_box;
@@ -64,6 +64,10 @@ QWidget* Int::get_widget(QWidget *parent)
 		g_variant_unref(value);
 	}
 
+	if (auto_commit)
+		connect(_spin_box, SIGNAL(valueChanged(int)),
+			this, SLOT(on_value_changed(int)));
+
 	return _spin_box;
 }
 
@@ -75,6 +79,11 @@ void Int::commit()
 		return;
 
 	_setter(g_variant_new_int64(_spin_box->value()));
+}
+
+void Int::on_value_changed(int)
+{
+	commit();
 }
 
 } // prop

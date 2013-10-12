@@ -159,6 +159,12 @@ set(pulseview_HEADERS
 	pv/dialogs/connect.h
 	pv/popups/deviceoptions.h
 	pv/popups/probes.h
+	pv/prop/bool.h
+	pv/prop/double.h
+	pv/prop/enum.h
+	pv/prop/int.h
+	pv/prop/property.h
+	pv/prop/string.h
 	pv/toolbars/samplingbar.h
 	pv/view/cursor.h
 	pv/view/decodesignal.h

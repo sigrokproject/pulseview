@@ -50,7 +50,7 @@ Double::~Double()
 {
 }
 
-QWidget* Double::get_widget(QWidget *parent)
+QWidget* Double::get_widget(QWidget *parent, bool auto_commit)
 {
 	if (_spin_box)
 		return _spin_box;
@@ -70,6 +70,10 @@ QWidget* Double::get_widget(QWidget *parent)
 		g_variant_unref(value);
 	}
 
+	if (auto_commit)
+		connect(_spin_box, SIGNAL(valueChanged(double)),
+			this, SLOT(on_value_changed(double)));
+
 	return _spin_box;
 }
 
@@ -81,6 +85,11 @@ void Double::commit()
 		return;
 
 	_setter(g_variant_new_double(_spin_box->value()));
+}
+
+void Double::on_value_changed(double)
+{
+	commit();
 }
 
 } // prop

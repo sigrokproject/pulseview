@@ -45,7 +45,7 @@ Enum::~Enum()
 		g_variant_unref(_values[i].first);
 }
 
-QWidget* Enum::get_widget(QWidget *parent)
+QWidget* Enum::get_widget(QWidget *parent, bool auto_commit)
 {
 	if (_selector)
 		return _selector;
@@ -62,6 +62,10 @@ QWidget* Enum::get_widget(QWidget *parent)
 
 	g_variant_unref(value);
 
+	if (auto_commit)
+		connect(_selector, SIGNAL(currentIndexChanged(int)),
+			this, SLOT(on_current_item_changed(int)));
+
 	return _selector;
 }
 
@@ -77,6 +81,11 @@ void Enum::commit()
 		return;
 
 	_setter((GVariant*)_selector->itemData(index).value<void*>());
+}
+
+void Enum::on_current_item_changed(int)
+{
+	commit();
 }
 
 } // prop

@@ -40,7 +40,7 @@ Bool::~Bool()
 {
 }
 
-QWidget* Bool::get_widget(QWidget *parent)
+QWidget* Bool::get_widget(QWidget *parent, bool auto_commit)
 {
 	if (_check_box)
 		return _check_box;
@@ -54,6 +54,10 @@ QWidget* Bool::get_widget(QWidget *parent)
 			Qt::Checked : Qt::Unchecked);
 		g_variant_unref(value);
 	}
+
+	if (auto_commit)
+		connect(_check_box, SIGNAL(stateChanged(int)),
+			this, SLOT(on_state_changed(int)));
 
 	return _check_box;
 }
@@ -72,6 +76,11 @@ void Bool::commit()
 
 	_setter(g_variant_new_boolean(
 		_check_box->checkState() == Qt::Checked));
+}
+
+void Bool::on_state_changed(int)
+{
+	commit();
 }
 
 } // prop

@@ -30,12 +30,17 @@ namespace prop {
 
 class String : public Property
 {
+	Q_OBJECT;
+
 public:
 	String(QString name, Getter getter, Setter setter);
 
-	QWidget* get_widget(QWidget *parent);
+	QWidget* get_widget(QWidget *parent, bool auto_commit);
 
 	void commit();
+
+private slots:
+	void on_text_edited(const QString&);
 
 private:
 	QLineEdit *_line_edit;
