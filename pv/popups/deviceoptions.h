@@ -38,9 +38,6 @@ public:
 	DeviceOptions(sr_dev_inst *sdi, QWidget *parent);
 
 private:
-	void closeEvent(QCloseEvent*);
-
-private:
 	sr_dev_inst *const _sdi;
 
 	QVBoxLayout _layout;

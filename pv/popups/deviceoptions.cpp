@@ -41,12 +41,7 @@ DeviceOptions::DeviceOptions(sr_dev_inst *sdi, QWidget *parent) :
 {
 	setLayout(&_layout);
 
-	_layout.addWidget(_binding.get_property_form(this));
-}
-
-void DeviceOptions::closeEvent(QCloseEvent*)
-{
-	_binding.commit();
+	_layout.addWidget(_binding.get_property_form(this, true));
 }
 
 } // namespace popups
