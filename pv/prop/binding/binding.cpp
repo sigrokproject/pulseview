@@ -45,7 +45,8 @@ void Binding::commit()
 	}
 }
 
-void Binding::add_properties_to_form(QFormLayout *layout) const
+void Binding::add_properties_to_form(QFormLayout *layout,
+	bool auto_commit) const
 {
 	assert(layout);
 
@@ -53,16 +54,18 @@ void Binding::add_properties_to_form(QFormLayout *layout) const
 	{
 		assert(p);
 		const QString label = p->labeled_widget() ? QString() : p->name();
-		layout->addRow(label, p->get_widget(layout->parentWidget()));
+		layout->addRow(label, p->get_widget(layout->parentWidget(),
+			auto_commit));
 	}
 }
 
-QWidget* Binding::get_property_form(QWidget *parent) const
+QWidget* Binding::get_property_form(QWidget *parent,
+	bool auto_commit) const
 {
 	QWidget *const form = new QWidget(parent);
 	QFormLayout *const layout = new QFormLayout(form);
 	form->setLayout(layout);
-	add_properties_to_form(layout);
+	add_properties_to_form(layout, auto_commit);
 	return form;
 }
 

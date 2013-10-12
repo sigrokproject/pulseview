@@ -40,9 +40,11 @@ public:
 
 	void commit();
 
-	void add_properties_to_form(QFormLayout *layout) const;
+	void add_properties_to_form(QFormLayout *layout,
+		bool auto_commit = false) const;
 
-	QWidget* get_property_form(QWidget *parent) const;
+	QWidget* get_property_form(QWidget *parent,
+		bool auto_commit = false) const;
 
 protected:
 	std::vector< boost::shared_ptr<Property> > _properties;
