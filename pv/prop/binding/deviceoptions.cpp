@@ -42,6 +42,8 @@ namespace binding {
 DeviceOptions::DeviceOptions(struct sr_dev_inst *sdi) :
 	_sdi(sdi)
 {
+	assert(sdi);
+
 	GVariant *gvar_opts, *gvar_list;
 	gsize num_opts;
 

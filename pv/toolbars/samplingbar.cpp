@@ -68,6 +68,7 @@ SamplingBar::SamplingBar(SigSession &session, QWidget *parent) :
 	QToolBar("Sampling Bar", parent),
 	_session(session),
 	_device_selector(this),
+	_updating_device_selector(false),
 	_configure_button(this),
 	_probes_button(this),
 	_record_length_selector(this),
@@ -123,6 +124,8 @@ SamplingBar::SamplingBar(SigSession &session, QWidget *parent) :
 void SamplingBar::set_device_list(
 	const std::list<struct sr_dev_inst*> &devices)
 {
+	_updating_device_selector = true;
+
 	_device_selector.clear();
 
 	BOOST_FOREACH (sr_dev_inst *sdi, devices) {
@@ -130,6 +133,8 @@ void SamplingBar::set_device_list(
 		_device_selector.addItem(title.c_str(),
 			qVariantFromValue((void*)sdi));
 	}
+
+	_updating_device_selector = false;
 
 	update_sample_rate_selector();
 }
@@ -296,6 +301,9 @@ void SamplingBar::commit_sample_rate()
 void SamplingBar::on_device_selected()
 {
 	using namespace pv::popups;
+
+	if (_updating_device_selector)
+		return;
 
 	update_sample_rate_selector();
 

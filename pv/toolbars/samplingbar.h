@@ -80,6 +80,7 @@ private:
 	SigSession &_session;
 
 	QComboBox _device_selector;
+	bool _updating_device_selector;
 
 	pv::widgets::PopupToolButton _configure_button;
 	pv::widgets::PopupToolButton _probes_button;
