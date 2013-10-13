@@ -46,6 +46,7 @@ Decoder::Decoder(const srd_decoder *const dec,
 	_decoder(dec),
 	_probes(probes),
 	_options(options),
+	_session(NULL),
 	_decoder_inst(NULL)
 {
 	init_decoder();
@@ -115,7 +116,10 @@ void Decoder::init_decoder()
 		}
 	}
 
-	_decoder_inst = srd_inst_new(_decoder->id, _options);
+	srd_session_new(&_session);
+	assert(_session);
+
+	_decoder_inst = srd_inst_new(_session, _decoder->id, _options);
 	if(!_decoder_inst) {
 		qDebug() << "Failed to initialise decoder";
 		return;
@@ -162,9 +166,16 @@ void Decoder::decode_proc(shared_ptr<data::Logic> data)
 	if (samplerate == 0.0)
 		samplerate = 1.0;
 
-	srd_session_start(_probes.size(), snapshot->unit_size(), samplerate);
+	srd_session_config_set(_session, SRD_CONF_NUM_PROBES,
+		g_variant_new_uint64(_probes.size()));
+	srd_session_config_set(_session, SRD_CONF_UNITSIZE,
+		g_variant_new_uint64(snapshot->unit_size()));
+	srd_session_config_set(_session, SRD_CONF_SAMPLERATE,
+		g_variant_new_uint64((uint64_t)samplerate));
 
-	srd_pd_output_callback_add(SRD_OUTPUT_ANN,
+	srd_session_start(_session);
+
+	srd_pd_output_callback_add(_session, SRD_OUTPUT_ANN,
 		Decoder::annotation_callback, this);
 
 	for (int64_t i = 0;
@@ -175,7 +186,8 @@ void Decoder::decode_proc(shared_ptr<data::Logic> data)
 			i + DecodeChunkLength, sample_count);
 		snapshot->get_samples(chunk, i, chunk_end);
 
-		if (srd_session_send(i, chunk, chunk_end - i) != SRD_OK)
+		if (srd_session_send(_session, i, chunk, chunk_end - i) !=
+			SRD_OK)
 			break;
 	}
 }

@@ -33,6 +33,7 @@
 struct srd_decoder;
 struct srd_decoder_inst;
 struct srd_probe;
+struct srd_session;
 
 namespace pv {
 
@@ -92,6 +93,7 @@ private:
 		_probes;
 	GHashTable *_options;
 
+	srd_session *_session;
 	srd_decoder_inst *_decoder_inst;
 
 	mutable boost::mutex _annotations_mutex;
