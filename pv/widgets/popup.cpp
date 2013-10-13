@@ -198,11 +198,6 @@ void Popup::resizeEvent(QResizeEvent*)
 	setMask(popup_region());
 }
 
-void Popup::showEvent(QShowEvent*)
-{
-	reposition_widget();
-}
-
 void Popup::mouseReleaseEvent(QMouseEvent *e)
 {
 	assert(e);
@@ -211,6 +206,11 @@ void Popup::mouseReleaseEvent(QMouseEvent *e)
 	// the drop-shadow region as inside the widget
 	if(!bubble_rect().contains(e->pos()))
 		close();
+}
+
+void Popup::showEvent(QShowEvent*)
+{
+	reposition_widget();
 }
 
 } // namespace widgets

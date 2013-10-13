@@ -67,9 +67,10 @@ private:
 
 	void resizeEvent(QResizeEvent*);
 
-	void showEvent(QShowEvent*);
-
 	void mouseReleaseEvent(QMouseEvent *e);
+
+protected:
+	void showEvent(QShowEvent *e);
 
 private:
 	QPoint _point;

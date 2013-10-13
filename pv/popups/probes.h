@@ -44,6 +44,9 @@ public:
 private:
 	void set_all_probes(bool set);
 
+private:
+	void showEvent(QShowEvent *e);
+
 private slots:
 	void item_changed(QListWidgetItem *item);
 
@@ -56,6 +59,8 @@ private:
 	QVBoxLayout _layout;
 
 	QListWidget _probes;
+	bool _updating_probes;
+
 	QToolBar _probes_bar;
 	QToolButton _enable_all_probes;
 	QToolButton _disable_all_probes;

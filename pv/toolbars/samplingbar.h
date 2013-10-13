@@ -83,7 +83,9 @@ private:
 	bool _updating_device_selector;
 
 	pv::widgets::PopupToolButton _configure_button;
+
 	pv::widgets::PopupToolButton _probes_button;
+	pv::popups::Probes _probes_popup;
 
 	QComboBox _record_length_selector;
 

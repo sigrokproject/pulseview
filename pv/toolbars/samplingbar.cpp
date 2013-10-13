@@ -71,6 +71,7 @@ SamplingBar::SamplingBar(SigSession &session, QWidget *parent) :
 	_updating_device_selector(false),
 	_configure_button(this),
 	_probes_button(this),
+	_probes_popup(_session, this),
 	_record_length_selector(this),
 	_sample_rate_list(this),
 	_icon_red(":/icons/status-red.svg"),
@@ -102,8 +103,10 @@ SamplingBar::SamplingBar(SigSession &session, QWidget *parent) :
 
 	_configure_button.setIcon(QIcon::fromTheme("configure",
 		QIcon(":/icons/configure.png")));
+
 	_probes_button.setIcon(QIcon::fromTheme("probes",
 		QIcon(":/icons/probes.svg")));
+	_probes_button.set_popup(&_probes_popup);
 
 	_run_stop_button.setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
 
@@ -136,7 +139,7 @@ void SamplingBar::set_device_list(
 
 	_updating_device_selector = false;
 
-	update_sample_rate_selector();
+	on_device_selected();
 }
 
 struct sr_dev_inst* SamplingBar::get_selected_device() const
@@ -311,7 +314,6 @@ void SamplingBar::on_device_selected()
 	_session.set_device(sdi);
 
 	_configure_button.set_popup(new DeviceOptions(sdi, this));
-	_probes_button.set_popup(new Probes(_session, this));
 }
 
 void SamplingBar::on_sample_rate_changed()

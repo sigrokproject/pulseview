@@ -35,6 +35,7 @@ Probes::Probes(SigSession &session, QWidget *parent) :
 	_session(session),
 	_layout(this),
 	_probes(this),
+	_updating_probes(false),
 	_probes_bar(this),
 	_enable_all_probes(this),
 	_disable_all_probes(this)
@@ -56,20 +57,6 @@ Probes::Probes(SigSession &session, QWidget *parent) :
 
 	_layout.addWidget(&_probes_bar);
 
-	const vector< shared_ptr<pv::view::Signal> > sigs =
-		_session.get_signals();
-	for (unsigned int i = 0; i < sigs.size(); i++)
-	{
-		const shared_ptr<pv::view::Signal> &s = sigs[i];
-		assert(s);
-		QListWidgetItem *const item = new QListWidgetItem(
-			s->get_name(), &_probes);
-		assert(item);
-		item->setData(UserRole, qVariantFromValue(i));
-		item->setCheckState(s->enabled() ? Checked : Unchecked);
-		_probes.addItem(item);
-	}
-
 	connect(&_probes, SIGNAL(itemChanged(QListWidgetItem*)),
 		this, SLOT(item_changed(QListWidgetItem*)));
 }
@@ -77,6 +64,8 @@ Probes::Probes(SigSession &session, QWidget *parent) :
 void Probes::set_all_probes(bool set)
 {
 	using pv::view::Signal;
+
+	_updating_probes = true;
 
 	const vector< shared_ptr<pv::view::Signal> > sigs =
 		_session.get_signals();
@@ -90,11 +79,41 @@ void Probes::set_all_probes(bool set)
 		assert(item);
 		item->setCheckState(set ? Qt::Checked : Qt::Unchecked);
 	}
+
+	_updating_probes = false;
+}
+
+void Probes::showEvent(QShowEvent *e)
+{
+	pv::widgets::Popup::showEvent(e);
+
+	_updating_probes = true;
+
+	_probes.clear();
+
+	const vector< shared_ptr<pv::view::Signal> > sigs =
+		_session.get_signals();
+	for (unsigned int i = 0; i < sigs.size(); i++)
+	{
+		const shared_ptr<pv::view::Signal> &s = sigs[i];
+		assert(s);
+		QListWidgetItem *const item = new QListWidgetItem(
+			s->get_name(), &_probes);
+		assert(item);
+		item->setCheckState(s->enabled() ? Checked : Unchecked);
+		item->setData(UserRole, qVariantFromValue(i));
+		_probes.addItem(item);
+	}
+
+	_updating_probes = false;
 }
 
 void Probes::item_changed(QListWidgetItem *item)
 {
 	using pv::view::Signal;
+
+	if (_updating_probes)
+		return;
 
 	assert(item);
 	const vector< shared_ptr<pv::view::Signal> > sigs =
