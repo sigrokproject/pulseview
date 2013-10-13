@@ -62,6 +62,11 @@ public:
 
 	virtual void populate_popup_form(QWidget *parent, QFormLayout *form);
 
+	QMenu* create_context_menu(QWidget *parent);
+
+private slots:
+	void on_disable();
+
 protected:
 	sr_probe *const _probe;
 

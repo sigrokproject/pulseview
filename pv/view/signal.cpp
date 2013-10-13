@@ -98,5 +98,23 @@ void Signal::populate_popup_form(QWidget *parent, QFormLayout *form)
 	add_colour_option(parent, form);
 }
 
+QMenu* Signal::create_context_menu(QWidget *parent)
+{
+	QMenu *const menu = Trace::create_context_menu(parent);
+
+	menu->addSeparator();
+
+	QAction *const disable = new QAction(tr("Disable"), this);
+	connect(disable, SIGNAL(triggered()), this, SLOT(on_disable()));
+	menu->addAction(disable);
+
+	return menu;
+}
+
+void Signal::on_disable()
+{
+	enable(false);
+}
+
 } // namespace view
 } // namespace pv
