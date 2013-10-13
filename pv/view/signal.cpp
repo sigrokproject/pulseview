@@ -105,6 +105,7 @@ QMenu* Signal::create_context_menu(QWidget *parent)
 	menu->addSeparator();
 
 	QAction *const disable = new QAction(tr("Disable"), this);
+	disable->setShortcuts(QKeySequence::Delete);
 	connect(disable, SIGNAL(triggered()), this, SLOT(on_disable()));
 	menu->addAction(disable);
 

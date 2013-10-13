@@ -111,6 +111,7 @@ QMenu* DecodeSignal::create_context_menu(QWidget *parent)
 	menu->addSeparator();
 
 	QAction *const del = new QAction(tr("Delete"), this);
+	del->setShortcuts(QKeySequence::Delete);
 	connect(del, SIGNAL(triggered()), this, SLOT(on_delete()));
 	menu->addAction(del);
 
