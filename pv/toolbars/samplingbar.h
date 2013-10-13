@@ -38,6 +38,9 @@ struct st_dev_inst;
 class QAction;
 
 namespace pv {
+
+class SigSession;
+
 namespace toolbars {
 
 class SamplingBar : public QToolBar
@@ -49,7 +52,7 @@ private:
 	static const uint64_t DefaultRecordLength;
 
 public:
-	SamplingBar(QWidget *parent);
+	SamplingBar(SigSession &session, QWidget *parent);
 
 	void set_device_list(const std::list<struct sr_dev_inst*> &devices);
 
@@ -61,8 +64,6 @@ public:
 	void set_capture_state(pv::SigSession::capture_state state);
 
 signals:
-	void device_selected();
-
 	void run_stop();
 
 private:
@@ -76,6 +77,8 @@ private slots:
 	void on_run_stop();
 
 private:
+	SigSession &_session;
+
 	QComboBox _device_selector;
 
 	pv::widgets::PopupToolButton _configure_button;

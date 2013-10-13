@@ -55,7 +55,7 @@ const QColor LogicSignal::SignalColours[10] = {
 	QColor(0xEE, 0xEE, 0xEC),	// White
 };
 
-LogicSignal::LogicSignal(pv::SigSession &session, const sr_probe *const probe,
+LogicSignal::LogicSignal(pv::SigSession &session, sr_probe *const probe,
 	shared_ptr<data::Logic> data) :
 	Signal(session, probe),
 	_data(data),

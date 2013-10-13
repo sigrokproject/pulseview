@@ -214,13 +214,11 @@ void MainWindow::setup_ui()
 	addToolBar(_toolbar);
 
 	// Setup the sampling bar
-	_sampling_bar = new toolbars::SamplingBar(this);
+	_sampling_bar = new toolbars::SamplingBar(_session, this);
 
 	// Populate the device list and select the initially selected device
 	update_device_list();
 
-	connect(_sampling_bar, SIGNAL(device_selected()), this,
-		SLOT(device_selected()));
 	connect(_sampling_bar, SIGNAL(run_stop()), this,
 		SLOT(run_stop()));
 	addToolBar(_sampling_bar);
@@ -368,11 +366,6 @@ void MainWindow::on_actionAbout_triggered()
 {
 	dialogs::About dlg(this);
 	dlg.exec();
-}
-
-void MainWindow::device_selected()
-{
-	_session.set_device(_sampling_bar->get_selected_device());
 }
 
 void MainWindow::add_decoder(QObject *action)

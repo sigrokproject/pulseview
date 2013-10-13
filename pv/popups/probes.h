@@ -29,6 +29,9 @@
 #include <pv/widgets/popup.h>
 
 namespace pv {
+
+class SigSession;
+
 namespace popups {
 
 class Probes : public pv::widgets::Popup
@@ -36,7 +39,7 @@ class Probes : public pv::widgets::Popup
 	Q_OBJECT
 
 public:
-	Probes(sr_dev_inst *sdi, QWidget *parent);
+	Probes(SigSession &_session, QWidget *parent);
 
 private:
 	void set_all_probes(bool set);
@@ -48,7 +51,7 @@ private slots:
 	void disable_all_probes();
 
 private:
-	sr_dev_inst *_sdi;
+	pv::SigSession &_session;
 
 	QVBoxLayout _layout;
 

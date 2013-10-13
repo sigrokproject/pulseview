@@ -20,22 +20,25 @@
 
 #include "probes.h"
 
+#include <pv/sigsession.h>
+#include <pv/view/signal.h>
+
+using namespace boost;
 using namespace Qt;
+using namespace std;
 
 namespace pv {
 namespace popups {
 
-Probes::Probes(sr_dev_inst *sdi, QWidget *parent) :
+Probes::Probes(SigSession &session, QWidget *parent) :
 	Popup(parent),
-	_sdi(sdi),
+	_session(session),
 	_layout(this),
 	_probes(this),
 	_probes_bar(this),
 	_enable_all_probes(this),
 	_disable_all_probes(this)
 {
-	assert(_sdi);
-
 	setLayout(&_layout);
 
 	connect(&_enable_all_probes, SIGNAL(clicked()),
@@ -53,16 +56,17 @@ Probes::Probes(sr_dev_inst *sdi, QWidget *parent) :
 
 	_layout.addWidget(&_probes_bar);
 
-	for (const GSList *l = _sdi->probes; l; l = l->next) {
-		sr_probe *const probe = (sr_probe*)l->data;
-		assert(probe);
+	const vector< shared_ptr<pv::view::Signal> > sigs =
+		_session.get_signals();
+	for (unsigned int i = 0; i < sigs.size(); i++)
+	{
+		const shared_ptr<pv::view::Signal> &s = sigs[i];
+		assert(s);
 		QListWidgetItem *const item = new QListWidgetItem(
-			probe->name, &_probes);
+			s->get_name(), &_probes);
 		assert(item);
-		item->setData(UserRole,
-			qVariantFromValue((void*)probe));
-		item->setCheckState(probe->enabled ?
-			Checked : Unchecked);
+		item->setData(UserRole, qVariantFromValue(i));
+		item->setCheckState(s->enabled() ? Checked : Unchecked);
 		_probes.addItem(item);
 	}
 
@@ -72,25 +76,33 @@ Probes::Probes(sr_dev_inst *sdi, QWidget *parent) :
 
 void Probes::set_all_probes(bool set)
 {
-	for (int i = 0; i < _probes.count(); i++) {
+	using pv::view::Signal;
+
+	const vector< shared_ptr<pv::view::Signal> > sigs =
+		_session.get_signals();
+	for (unsigned int i = 0; i < sigs.size(); i++)
+	{
+		const shared_ptr<pv::view::Signal> &s = sigs[i];
+		assert(s);
+		s->enable(set);
+
 		QListWidgetItem *const item = _probes.item(i);
 		assert(item);
 		item->setCheckState(set ? Qt::Checked : Qt::Unchecked);
-
-		sr_probe *const probe = (sr_probe*)
-			item->data(UserRole).value<void*>();
-		assert(probe);
-		probe->enabled = item->checkState() == Checked;
 	}
 }
 
 void Probes::item_changed(QListWidgetItem *item)
 {
+	using pv::view::Signal;
+
 	assert(item);
-	sr_probe *const probe = (sr_probe*)
-		item->data(UserRole).value<void*>();
-	assert(probe);
-	probe->enabled = item->checkState() == Checked;
+	const vector< shared_ptr<pv::view::Signal> > sigs =
+		_session.get_signals();
+	const shared_ptr<pv::view::Signal> s = sigs[
+		item->data(UserRole).value<unsigned int>()];
+	assert(s);
+	s->enable(item->checkState() == Checked);
 }
 
 void Probes::enable_all_probes()

@@ -240,6 +240,8 @@ void Header::on_signals_changed()
 	const vector< shared_ptr<Trace> > traces(_view.get_traces());
 	BOOST_FOREACH(shared_ptr<Trace> t, traces) {
 		assert(t);
+		connect(t.get(), SIGNAL(visibility_changed()),
+			this, SLOT(update()));
 		connect(t.get(), SIGNAL(text_changed()),
 			this, SLOT(update()));
 		connect(t.get(), SIGNAL(colour_changed()),

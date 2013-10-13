@@ -378,8 +378,7 @@ void SigSession::update_signals(const sr_dev_inst *const sdi)
 
 		if(sdi) {
 			for (const GSList *l = sdi->probes; l; l = l->next) {
-				const sr_probe *const probe =
-					(const sr_probe *)l->data;
+				sr_probe *const probe =	(sr_probe *)l->data;
 				assert(probe);
 
 				switch(probe->type) {

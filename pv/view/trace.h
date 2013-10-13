@@ -184,6 +184,7 @@ private slots:
 	void on_colour_changed(const QColor &colour);
 
 signals:
+	void visibility_changed();
 	void text_changed();	
 	void colour_changed();
 

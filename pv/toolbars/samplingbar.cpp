@@ -64,8 +64,9 @@ const uint64_t SamplingBar::RecordLengths[20] = {
 
 const uint64_t SamplingBar::DefaultRecordLength = 1000000;
 
-SamplingBar::SamplingBar(QWidget *parent) :
+SamplingBar::SamplingBar(SigSession &session, QWidget *parent) :
 	QToolBar("Sampling Bar", parent),
+	_session(session),
 	_device_selector(this),
 	_configure_button(this),
 	_probes_button(this),
@@ -299,11 +300,10 @@ void SamplingBar::on_device_selected()
 	update_sample_rate_selector();
 
 	sr_dev_inst *const sdi = get_selected_device();
+	_session.set_device(sdi);
 
 	_configure_button.set_popup(new DeviceOptions(sdi, this));
-	_probes_button.set_popup(new Probes(sdi, this));
-
-	device_selected();
+	_probes_button.set_popup(new Probes(_session, this));
 }
 
 void SamplingBar::on_sample_rate_changed()

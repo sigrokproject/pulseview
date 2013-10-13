@@ -43,7 +43,7 @@ class Signal : public Trace
 	Q_OBJECT
 
 protected:
-	Signal(pv::SigSession &session, const sr_probe *const probe);
+	Signal(pv::SigSession &session, sr_probe *const probe);
 
 public:
 	/**
@@ -56,12 +56,14 @@ public:
 	 */
 	bool enabled() const;
 
+	void enable(bool enable = true);
+
 	const sr_probe* probe() const;
 
 	virtual void populate_popup_form(QWidget *parent, QFormLayout *form);
 
 protected:
-	const sr_probe *const _probe;
+	sr_probe *const _probe;
 
 	QComboBox *_name_widget;
 	bool _updating_name_widget;

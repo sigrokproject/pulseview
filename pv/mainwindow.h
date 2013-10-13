@@ -97,8 +97,6 @@ private slots:
 
 	void on_actionAbout_triggered();
 
-	void device_selected();
-
 	void add_decoder(QObject *action);
 
 	void run_stop();

@@ -42,6 +42,9 @@ Viewport::Viewport(View &parent) :
 	setAutoFillBackground(true);
 	setBackgroundRole(QPalette::Base);
 
+	connect(&_view.session(), SIGNAL(signals_changed()),
+		this, SLOT(on_signals_changed()));
+
 	connect(&_view, SIGNAL(signals_moved()),
 		this, SLOT(on_signals_moved()));
 }
@@ -120,6 +123,16 @@ void Viewport::wheelEvent(QWheelEvent *event)
 		_view.set_scale_offset(_view.scale(),
 				       event->delta() * _view.scale()
 				       + _view.offset());
+	}
+}
+
+void Viewport::on_signals_changed()
+{
+	const vector< shared_ptr<Trace> > traces(_view.get_traces());
+	BOOST_FOREACH(shared_ptr<Trace> t, traces) {
+		assert(t);
+		connect(t.get(), SIGNAL(visibility_changed()),
+			this, SLOT(update()));
 	}
 }
 

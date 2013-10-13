@@ -48,7 +48,7 @@ const char *const ProbeNames[] = {
 	"SCL"
 };
 
-Signal::Signal(pv::SigSession &session, const sr_probe *const probe) :
+Signal::Signal(pv::SigSession &session, sr_probe *const probe) :
 	Trace(session, probe->name),
 	_probe(probe),
 	_name_widget(NULL),
@@ -68,6 +68,12 @@ void Signal::set_name(QString name)
 bool Signal::enabled() const
 {
 	return _probe->enabled;
+}
+
+void Signal::enable(bool enable)
+{
+	_probe->enabled = enable;
+	visibility_changed();
 }
 
 const sr_probe* Signal::probe() const

@@ -51,6 +51,7 @@ private:
 	void wheelEvent(QWheelEvent *event);
 
 private slots:
+	void on_signals_changed();
 	void on_signals_moved();
 
 private:
