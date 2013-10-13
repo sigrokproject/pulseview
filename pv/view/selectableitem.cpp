@@ -51,6 +51,10 @@ QMenu* SelectableItem::create_context_menu(QWidget *parent)
 	return new QMenu(parent);
 }
 
+void SelectableItem::delete_pressed()
+{
+}
+
 QPen SelectableItem::highlight_pen()
 {
 	return QPen(QApplication::palette().brush(

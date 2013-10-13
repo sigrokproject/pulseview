@@ -46,6 +46,7 @@ Header::Header(View &parent) :
 	MarginWidget(parent),
 	_dragging(false)
 {
+	setFocusPolicy(Qt::ClickFocus);
 	setMouseTracking(true);
 
 	connect(&_view.session(), SIGNAL(signals_changed()),
@@ -233,6 +234,23 @@ void Header::contextMenuEvent(QContextMenuEvent *event)
 
 	if (t)
 		t->create_context_menu(this)->exec(event->globalPos());
+}
+
+void Header::keyPressEvent(QKeyEvent *e)
+{
+	assert(e);
+
+	switch (e->key())
+	{
+	case Qt::Key_Delete:
+	{
+		const vector< shared_ptr<Trace> > traces(_view.get_traces());
+		BOOST_FOREACH(const shared_ptr<Trace> t, traces)
+			if (t->selected())
+				t->delete_pressed();	
+		break;
+	}
+	}
 }
 
 void Header::on_signals_changed()

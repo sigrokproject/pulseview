@@ -63,6 +63,8 @@ public:
 
 	virtual pv::widgets::Popup* create_popup(QWidget *parent) = 0;
 
+	virtual void delete_pressed();
+
 protected:
 	static QPen highlight_pen();
 

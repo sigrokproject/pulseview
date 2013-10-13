@@ -111,6 +111,11 @@ QMenu* Signal::create_context_menu(QWidget *parent)
 	return menu;
 }
 
+void Signal::delete_pressed()
+{
+	on_disable();
+}
+
 void Signal::on_disable()
 {
 	enable(false);

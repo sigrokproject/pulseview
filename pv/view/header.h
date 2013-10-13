@@ -62,6 +62,8 @@ private:
 
 	void contextMenuEvent(QContextMenuEvent *event);
 
+	void keyPressEvent(QKeyEvent *e);
+
 private slots:
 	void on_signals_changed();
 

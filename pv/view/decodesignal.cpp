@@ -123,6 +123,11 @@ void DecodeSignal::on_new_decode_data()
 		_view->update_viewport();
 }
 
+void DecodeSignal::delete_pressed()
+{
+	on_delete();
+}
+
 void DecodeSignal::on_delete()
 {
 	_session.remove_decode_signal(this);

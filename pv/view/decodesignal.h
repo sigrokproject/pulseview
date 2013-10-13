@@ -66,6 +66,8 @@ public:
 
 	QMenu* create_context_menu(QWidget *parent);
 
+	void delete_pressed();
+
 private:
 
 	/**
