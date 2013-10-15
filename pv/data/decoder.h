@@ -80,7 +80,7 @@ public:
 private:
 	void begin_decode();
 
-	void init_decoder();
+	bool init_decoder();
 
 	void decode_proc(boost::shared_ptr<data::Logic> data);
 

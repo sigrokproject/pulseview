@@ -22,6 +22,8 @@
 
 #include <boost/thread/thread.hpp>
 
+#include <stdexcept>
+
 #include <QDebug>
 
 #include "decoder.h"
@@ -51,7 +53,9 @@ Decoder::Decoder(const srd_decoder *const dec,
 	_session(NULL),
 	_decoder_inst(NULL)
 {
-	init_decoder();
+	if (!init_decoder())
+		throw runtime_error("Failed to initialise decoder.");
+
 	begin_decode();
 }
 
@@ -101,7 +105,7 @@ void Decoder::clear_snapshots()
 {
 }
 
-void Decoder::init_decoder()
+bool Decoder::init_decoder()
 {
 	if (!_probes.empty())
 	{
@@ -124,7 +128,7 @@ void Decoder::init_decoder()
 	_decoder_inst = srd_inst_new(_session, _decoder->id, _options);
 	if(!_decoder_inst) {
 		qDebug() << "Failed to initialise decoder";
-		return;
+		return false;
 	}
 
 	_decoder_inst->data_samplerate = _samplerate;
@@ -144,6 +148,8 @@ void Decoder::init_decoder()
 	}
 
 	srd_inst_probe_set_all(_decoder_inst, probes);
+
+	return true;
 }
 
 void Decoder::decode_proc(shared_ptr<data::Logic> data)

@@ -34,6 +34,8 @@
 
 #include <assert.h>
 
+#include <stdexcept>
+
 #include <sys/stat.h>
 
 #include <QDebug>
@@ -193,11 +195,12 @@ boost::shared_ptr<data::Logic> SigSession::get_data()
 	return _logic_data;
 }
 
-void SigSession::add_decoder(srd_decoder *const dec,
+bool SigSession::add_decoder(srd_decoder *const dec,
 	std::map<const srd_probe*,
 		boost::shared_ptr<view::Signal> > probes,
 	GHashTable *options)
 {
+	try
 	{
 		lock_guard<mutex> lock(_signals_mutex);
 
@@ -208,7 +211,14 @@ void SigSession::add_decoder(srd_decoder *const dec,
 				_decode_traces.size()));
 		_decode_traces.push_back(d);
 	}
+	catch(std::runtime_error e)
+	{
+		return false;
+	}
+
 	signals_changed();
+
+	return true;
 }
 
 vector< shared_ptr<view::DecodeSignal> > SigSession::get_decode_signals() const
