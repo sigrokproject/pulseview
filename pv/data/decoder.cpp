@@ -65,6 +65,9 @@ Decoder::~Decoder()
 	_decode_thread.join();
 
 	g_hash_table_destroy(_options);
+
+	if (_session)
+		srd_session_destroy(_session);
 }
 
 const srd_decoder* Decoder::get_decoder() const
