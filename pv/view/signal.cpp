@@ -24,6 +24,8 @@
 #include <math.h>
 
 #include <QApplication>
+#include <QFormLayout>
+#include <QMenu>
 
 #include "signal.h"
 #include "view.h"

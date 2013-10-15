@@ -30,9 +30,12 @@
 
 #include <QObject>
 
+#include <glib.h>
+
 struct srd_decoder;
 struct srd_decoder_inst;
 struct srd_probe;
+struct srd_proto_data;
 struct srd_session;
 
 namespace pv {

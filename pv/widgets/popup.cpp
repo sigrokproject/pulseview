@@ -20,6 +20,8 @@
 
 #include <algorithm>
 
+#include <assert.h>
+
 #include <QtGui>
 
 #include "popup.h"

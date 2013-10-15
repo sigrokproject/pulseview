@@ -23,6 +23,9 @@
 #include <assert.h>
 #include <math.h>
 
+#include <QFormLayout>
+#include <QLineEdit>
+
 #include "trace.h"
 #include "tracepalette.h"
 #include "view.h"

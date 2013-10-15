@@ -20,6 +20,11 @@
 
 #include "colourbutton.h"
 
+#include <assert.h>
+
+#include <QApplication>
+#include <QPainter>
+
 namespace pv {
 namespace widgets {
 

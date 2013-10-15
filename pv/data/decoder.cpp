@@ -22,6 +22,8 @@
 
 #include <boost/thread/thread.hpp>
 
+#include <QDebug>
+
 #include "decoder.h"
 
 #include <pv/data/logic.h>

@@ -30,6 +30,7 @@
 #include <math.h>
 #include <limits.h>
 
+#include <QApplication>
 #include <QMouseEvent>
 #include <QPainter>
 #include <QTextStream>

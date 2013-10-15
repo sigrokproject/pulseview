@@ -22,6 +22,9 @@
 
 #include <math.h>
 
+#include <QFormLayout>
+#include <QToolBar>
+
 #include "logicsignal.h"
 #include "view.h"
 

@@ -21,6 +21,8 @@
 #ifndef PULSEVIEW_PV_WIDGETS_COLOURBUTTON_H
 #define PULSEVIEW_PV_WIDGETS_COLOURBUTTON_H
 
+#include <QPushButton>
+
 #include "colourpopup.h"
 
 namespace pv {

@@ -31,6 +31,8 @@
 
 #include "selectableitem.h"
 
+class QFormLayout;
+
 namespace pv {
 
 class SigSession;

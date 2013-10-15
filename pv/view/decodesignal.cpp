@@ -24,7 +24,10 @@ extern "C" {
 
 #include <extdef.h>
 
+#include <boost/foreach.hpp>
+
 #include <QAction>
+#include <QMenu>
 
 #include "decodesignal.h"
 

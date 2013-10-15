@@ -22,6 +22,7 @@
 
 #include "view.h"
 
+#include <QFormLayout>
 #include <QPainter>
 
 #include <pv/widgets/popup.h>

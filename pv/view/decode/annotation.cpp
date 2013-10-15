@@ -26,11 +26,12 @@ extern "C" {
 
 #include <algorithm>
 
+#include <boost/foreach.hpp>
+
 #include <QPainter>
 
 #include "annotation.h"
 
-using namespace boost;
 using namespace std;
 
 namespace pv {
