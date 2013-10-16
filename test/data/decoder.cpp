@@ -18,9 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#include <boost/test/unit_test.hpp>
-
 #include <libsigrokdecode/libsigrokdecode.h> /* First, so we avoid a _POSIX_C_SOURCE warning. */
+#include <boost/test/unit_test.hpp>
 
 #include <libsigrok/libsigrok.h>
 
