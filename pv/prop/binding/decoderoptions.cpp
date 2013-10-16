@@ -80,8 +80,10 @@ GVariant* DecoderOptions::getter(const char *id)
 		{
 			const srd_decoder_option *const opt =
 				(srd_decoder_option*)l->data;
-			if (strcmp(opt->id, id) == 0)
+			if (strcmp(opt->id, id) == 0) {
 				val = opt->def;
+				break;
+			}
 		}
 	}
 
@@ -94,7 +96,7 @@ GVariant* DecoderOptions::getter(const char *id)
 void DecoderOptions::setter(const char *id, GVariant *value)
 {
 	g_variant_ref(value);
-	g_hash_table_insert(_options, (void*)id, value);
+	g_hash_table_insert(_options, (void*)g_strdup(id), value);
 }
 
 } // binding
