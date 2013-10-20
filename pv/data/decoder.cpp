@@ -43,6 +43,8 @@ const double Decoder::DecodeMargin = 1.0;
 const double Decoder::DecodeThreshold = 0.2;
 const int64_t Decoder::DecodeChunkLength = 4096;
 
+mutex Decoder::_global_decode_mutex;
+
 Decoder::Decoder(const srd_decoder *const dec,
 	std::map<const srd_probe*,
 		boost::shared_ptr<pv::view::LogicSignal> > probes,
@@ -191,6 +193,8 @@ void Decoder::decode_proc(shared_ptr<data::Logic> data)
 		!this_thread::interruption_requested() && i < sample_count;
 		i += DecodeChunkLength)
 	{
+		lock_guard<mutex> decode_lock(_global_decode_mutex);
+
 		const int64_t chunk_end = min(
 			i + DecodeChunkLength, sample_count);
 		snapshot->get_samples(chunk, i, chunk_end);

@@ -96,6 +96,15 @@ signals:
 	void new_decode_data();
 
 private:
+
+	/**
+	 * This mutex prevents more than one decode operation occuring
+	 * concurrently.
+	 * @todo A proper solution should be implemented to allow multiple
+	 * decode operations.
+	 */
+	static boost::mutex _global_decode_mutex;
+
 	const srd_decoder *const _decoder;
 	std::map<const srd_probe*, boost::shared_ptr<view::LogicSignal> >
 		_probes;
