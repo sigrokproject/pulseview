@@ -67,6 +67,11 @@ bool DecodeSignal::enabled() const
 	return true;
 }
 
+const boost::shared_ptr<pv::data::Decoder>& DecodeSignal::decoder() const
+{
+	return _decoder;
+}
+
 void DecodeSignal::set_view(pv::view::View *view)
 {
 	assert(view);

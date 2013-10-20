@@ -46,6 +46,8 @@ public:
 
 	bool enabled() const;
 
+	const boost::shared_ptr<pv::data::Decoder>& decoder() const;
+
 	void set_view(pv::view::View *view);
 
 	/**

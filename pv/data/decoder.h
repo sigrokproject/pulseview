@@ -29,14 +29,17 @@
 #include <boost/thread.hpp>
 
 #include <QObject>
+#include <QString>
 
 #include <glib.h>
 
 struct srd_decoder;
-struct srd_decoder_inst;
 struct srd_probe;
 struct srd_proto_data;
-struct srd_session;
+
+namespace DecoderTest {
+class TwoDecoder;
+}
 
 namespace pv {
 
@@ -75,12 +78,14 @@ public:
 	const std::vector< boost::shared_ptr<pv::view::decode::Annotation> >
 		annotations() const;
 
+	QString error_message();
+
 	void clear_snapshots();
 
 private:
 	void begin_decode();
 
-	bool init_decoder();
+	void init_decoder();
 
 	void decode_proc(boost::shared_ptr<data::Logic> data);
 
@@ -96,14 +101,14 @@ private:
 		_probes;
 	GHashTable *_options;
 
-	srd_session *_session;
-	srd_decoder_inst *_decoder_inst;
-
-	mutable boost::mutex _annotations_mutex;
+	mutable boost::mutex _mutex;
 	std::vector< boost::shared_ptr<pv::view::decode::Annotation> >
 		_annotations;
+	QString _error_message;
 
 	boost::thread _decode_thread;
+
+	friend class DecoderTest::TwoDecoder;
 };
 
 } // namespace data

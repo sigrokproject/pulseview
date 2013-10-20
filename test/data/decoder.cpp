@@ -23,9 +23,10 @@
 
 #include <libsigrok/libsigrok.h>
 
+#include "../../pv/data/decoder.h"
 #include "../../pv/devicemanager.h"
 #include "../../pv/sigsession.h"
-#include "../../pv/view/signal.h"
+#include "../../pv/view/decodesignal.h"
 
 using namespace boost;
 using namespace std;
@@ -34,6 +35,8 @@ BOOST_AUTO_TEST_SUITE(DecoderTest)
 
 BOOST_AUTO_TEST_CASE(TwoDecoder)
 {
+	using namespace pv;
+
 	sr_context *ctx = NULL;
 
 	BOOST_REQUIRE(sr_init(&ctx) == SR_OK);
@@ -52,14 +55,32 @@ BOOST_AUTO_TEST_CASE(TwoDecoder)
 		srd_decoder *const dec = (struct srd_decoder*)l->data;
 		BOOST_REQUIRE(dec);
 
-		map<const srd_probe*, shared_ptr<pv::view::LogicSignal> > probes;
-		BOOST_CHECK (ss.add_decoder(dec, probes,
+		map<const srd_probe*, shared_ptr<view::LogicSignal> > probes;
+		ss.add_decoder(dec, probes,
 			g_hash_table_new_full(g_str_hash, g_str_equal, g_free,
-				(GDestroyNotify)g_variant_unref)));
+				(GDestroyNotify)g_variant_unref));
+		
+		ss.add_decoder(dec, probes,
+			g_hash_table_new_full(g_str_hash, g_str_equal, g_free,
+				(GDestroyNotify)g_variant_unref));
 
-		BOOST_CHECK (ss.add_decoder(dec, probes,
-			g_hash_table_new_full(g_str_hash, g_str_equal, g_free,
-				(GDestroyNotify)g_variant_unref)));
+		// Check the signals were created
+		const vector< shared_ptr<view::DecodeSignal> > sigs =
+			ss.get_decode_signals();
+
+		shared_ptr<data::Decoder> dec0 = sigs[0]->decoder();
+		BOOST_REQUIRE(dec0);
+
+		shared_ptr<data::Decoder> dec1 = sigs[0]->decoder();
+		BOOST_REQUIRE(dec1);
+
+		// Wait for the decode threads to complete
+		dec0->_decode_thread.join();
+		dec1->_decode_thread.join();
+
+		// Check there were no errors
+		BOOST_CHECK_EQUAL(dec0->error_message().isEmpty(), true);
+		BOOST_CHECK_EQUAL(dec1->error_message().isEmpty(), true);
 	}
 
 

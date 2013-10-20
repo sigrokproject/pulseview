@@ -49,12 +49,9 @@ Decoder::Decoder(const srd_decoder *const dec,
 	GHashTable *options) :
 	_decoder(dec),
 	_probes(probes),
-	_options(options),
-	_session(NULL),
-	_decoder_inst(NULL)
+	_options(options)
 {
-	if (!init_decoder())
-		throw runtime_error("Failed to initialise decoder.");
+	init_decoder();
 
 	begin_decode();
 }
@@ -65,9 +62,6 @@ Decoder::~Decoder()
 	_decode_thread.join();
 
 	g_hash_table_destroy(_options);
-
-	if (_session)
-		srd_session_destroy(_session);
 }
 
 const srd_decoder* Decoder::get_decoder() const
@@ -78,8 +72,14 @@ const srd_decoder* Decoder::get_decoder() const
 const vector< shared_ptr<view::decode::Annotation> >
 	Decoder::annotations() const
 {
-	lock_guard<mutex> lock(_annotations_mutex);
+	lock_guard<mutex> lock(_mutex);
 	return _annotations;
+}
+
+QString Decoder::error_message()
+{
+	lock_guard<mutex> lock(_mutex);
+	return _error_message;
 }
 
 void Decoder::begin_decode()
@@ -105,7 +105,7 @@ void Decoder::clear_snapshots()
 {
 }
 
-bool Decoder::init_decoder()
+void Decoder::init_decoder()
 {
 	if (!_probes.empty())
 	{
@@ -116,44 +116,18 @@ bool Decoder::init_decoder()
 			shared_ptr<pv::data::Logic> data(
 				logic_signal->data());
 			if (data) {
-				_samplerate = data->get_samplerate();
 				_start_time = data->get_start_time();
+				_samplerate = data->get_samplerate();
+				if (_samplerate == 0.0)
+					_samplerate = 1.0;
 			}
 		}
 	}
-
-	srd_session_new(&_session);
-	assert(_session);
-
-	_decoder_inst = srd_inst_new(_session, _decoder->id, _options);
-	if(!_decoder_inst) {
-		qDebug() << "Failed to initialise decoder";
-		return false;
-	}
-
-	_decoder_inst->data_samplerate = _samplerate;
-
-	GHashTable *probes = g_hash_table_new_full(g_str_hash,
-		g_str_equal, g_free, (GDestroyNotify)g_variant_unref);
-
-	for(map<const srd_probe*, shared_ptr<view::LogicSignal> >::
-		const_iterator i = _probes.begin();
-		i != _probes.end(); i++)
-	{
-		shared_ptr<view::Signal> signal((*i).second);
-		GVariant *const gvar = g_variant_new_int32(
-			signal->probe()->index);
-		g_variant_ref_sink(gvar);
-		g_hash_table_insert(probes, (*i).first->id, gvar);
-	}
-
-	srd_inst_probe_set_all(_decoder_inst, probes);
-
-	return true;
 }
 
 void Decoder::decode_proc(shared_ptr<data::Logic> data)
 {
+	srd_session *session;
 	uint8_t chunk[DecodeChunkLength];
 
 	assert(data);
@@ -168,23 +142,50 @@ void Decoder::decode_proc(shared_ptr<data::Logic> data)
 	const shared_ptr<pv::data::LogicSnapshot> &snapshot =
 		snapshots.front();
 	const int64_t sample_count = snapshot->get_sample_count() - 1;
-	double samplerate = data->get_samplerate();
 
-	// Show sample rate as 1Hz when it is unknown
-	if (samplerate == 0.0)
-		samplerate = 1.0;
+	// Create the session
+	srd_session_new(&session);
+	assert(session);
 
-	srd_session_config_set(_session, SRD_CONF_NUM_PROBES,
+	srd_session_config_set(session, SRD_CONF_NUM_PROBES,
 		g_variant_new_uint64(_probes.size()));
-	srd_session_config_set(_session, SRD_CONF_UNITSIZE,
+	srd_session_config_set(session, SRD_CONF_UNITSIZE,
 		g_variant_new_uint64(snapshot->unit_size()));
-	srd_session_config_set(_session, SRD_CONF_SAMPLERATE,
-		g_variant_new_uint64((uint64_t)samplerate));
+	srd_session_config_set(session, SRD_CONF_SAMPLERATE,
+		g_variant_new_uint64((uint64_t)_samplerate));
 
-	srd_session_start(_session);
-
-	srd_pd_output_callback_add(_session, SRD_OUTPUT_ANN,
+	srd_pd_output_callback_add(session, SRD_OUTPUT_ANN,
 		Decoder::annotation_callback, this);
+
+	// Create the decoder instance
+	srd_decoder_inst *const decoder_inst = srd_inst_new(
+		session, _decoder->id, _options);
+	if(!decoder_inst) {
+		_error_message = tr("Failed to initialise decoder");
+		return;
+	}
+
+	decoder_inst->data_samplerate = _samplerate;
+
+	// Setup the probes
+	GHashTable *const probes = g_hash_table_new_full(g_str_hash,
+		g_str_equal, g_free, (GDestroyNotify)g_variant_unref);
+
+	for(map<const srd_probe*, shared_ptr<view::LogicSignal> >::
+		const_iterator i = _probes.begin();
+		i != _probes.end(); i++)
+	{
+		shared_ptr<view::Signal> signal((*i).second);
+		GVariant *const gvar = g_variant_new_int32(
+			signal->probe()->index);
+		g_variant_ref_sink(gvar);
+		g_hash_table_insert(probes, (*i).first->id, gvar);
+	}
+
+	srd_inst_probe_set_all(decoder_inst, probes);
+
+	// Start the session
+	srd_session_start(session);
 
 	for (int64_t i = 0;
 		!this_thread::interruption_requested() && i < sample_count;
@@ -194,10 +195,15 @@ void Decoder::decode_proc(shared_ptr<data::Logic> data)
 			i + DecodeChunkLength, sample_count);
 		snapshot->get_samples(chunk, i, chunk_end);
 
-		if (srd_session_send(_session, i, chunk, chunk_end - i) !=
-			SRD_OK)
+		if (srd_session_send(session, i, chunk, chunk_end - i) !=
+			SRD_OK) {
+			_error_message = tr("Failed to initialise decoder");
 			break;
+		}
 	}
+
+	// Destroy the session
+	srd_session_destroy(session);
 }
 
 void Decoder::annotation_callback(srd_proto_data *pdata, void *decoder)
@@ -210,7 +216,7 @@ void Decoder::annotation_callback(srd_proto_data *pdata, void *decoder)
 	Decoder *const d = (Decoder*)decoder;
 
 	shared_ptr<Annotation> a(new Annotation(pdata));
-	lock_guard<mutex> lock(d->_annotations_mutex);
+	lock_guard<mutex> lock(d->_mutex);
 	d->_annotations.push_back(a);
 
 	d->new_decode_data();
