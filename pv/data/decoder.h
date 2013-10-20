@@ -41,7 +41,7 @@ struct srd_session;
 namespace pv {
 
 namespace view {
-class Signal;
+class LogicSignal;
 
 namespace decode {
 class Annotation;
@@ -65,7 +65,7 @@ private:
 public:
 	Decoder(const srd_decoder *const decoder,
 		std::map<const srd_probe*,
-			boost::shared_ptr<pv::view::Signal> > probes,
+			boost::shared_ptr<pv::view::LogicSignal> > probes,
 		GHashTable *options);
 
 	virtual ~Decoder();
@@ -92,7 +92,7 @@ signals:
 
 private:
 	const srd_decoder *const _decoder;
-	std::map<const srd_probe*, boost::shared_ptr<view::Signal> >
+	std::map<const srd_probe*, boost::shared_ptr<view::LogicSignal> >
 		_probes;
 	GHashTable *_options;
 

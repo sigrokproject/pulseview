@@ -50,6 +50,7 @@ class LogicSnapshot;
 
 namespace view {
 class DecodeSignal;
+class LogicSignal;
 class Signal;
 }
 
@@ -95,7 +96,7 @@ public:
 
 	bool add_decoder(srd_decoder *const dec,
 		std::map<const srd_probe*,
-			boost::shared_ptr<view::Signal> > probes,
+			boost::shared_ptr<view::LogicSignal> > probes,
 		GHashTable *options);
 
 	std::vector< boost::shared_ptr<view::DecodeSignal> >

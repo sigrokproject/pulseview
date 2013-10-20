@@ -40,7 +40,8 @@ namespace pv {
 namespace dialogs {
 
 Decoder::Decoder(QWidget *parent, const srd_decoder *decoder,
-	const vector< shared_ptr<view::Signal> > &sigs, GHashTable *options) :
+	const vector< shared_ptr<view::LogicSignal> > &sigs,
+	GHashTable *options) :
 	QDialog(parent),
 	_sigs(sigs),
 	_binding(decoder, options),
@@ -121,10 +122,11 @@ QComboBox* Decoder::create_probe_selector(
 	selector->setCurrentIndex(0);
 
 	for(size_t i = 0; i < _sigs.size(); i++) {
-		const shared_ptr<view::Signal> s(_sigs[i]);
+		const shared_ptr<view::LogicSignal> s(_sigs[i]);
 		assert(s);
 
-		if (s->enabled()) {
+		if (s->enabled())
+		{
 			selector->addItem(s->get_name(), qVariantFromValue(i));
 			if(s->get_name().toLower().contains(
 				QString(name).toLower()))
@@ -135,9 +137,9 @@ QComboBox* Decoder::create_probe_selector(
 	return selector;
 }
 
-map<const srd_probe*, shared_ptr<view::Signal> > Decoder::get_probes()
+map<const srd_probe*, shared_ptr<view::LogicSignal> > Decoder::get_probes()
 {
-	map<const srd_probe*, shared_ptr<view::Signal> > probe_map;
+	map<const srd_probe*, shared_ptr<view::LogicSignal> > probe_map;
 	for(map<const srd_probe*, QComboBox*>::const_iterator i =
 		_probe_selector_map.begin();
 		i != _probe_selector_map.end(); i++)
@@ -146,12 +148,8 @@ map<const srd_probe*, shared_ptr<view::Signal> > Decoder::get_probes()
 		const int probe_index =
 			combo->itemData(combo->currentIndex()).value<int>();
 		if(probe_index >= 0) {
-			shared_ptr<view::Signal> sig = _sigs[probe_index];
-			if(dynamic_cast<pv::view::LogicSignal*>(sig.get()))
-				probe_map[(*i).first] = sig;
-			else
-				qDebug() << "Currently only logic signals "
-					"are supported for decoding";
+			shared_ptr<view::LogicSignal> sig = _sigs[probe_index];
+			probe_map[(*i).first] = sig;
 		}
 	}
 

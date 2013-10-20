@@ -40,7 +40,7 @@ struct srd_decoder;
 namespace pv {
 
 namespace view {
-class Signal;
+class LogicSignal;
 }
 
 namespace dialogs {
@@ -49,12 +49,12 @@ class Decoder : public QDialog
 {
 public:
 	Decoder(QWidget *parent, const srd_decoder *decoder,
-		const std::vector< boost::shared_ptr<view::Signal> > &sigs,
+		const std::vector< boost::shared_ptr<view::LogicSignal> > &sigs,
 		GHashTable *options);
 
 	void accept();
 
-	std::map<const srd_probe*, boost::shared_ptr<view::Signal> >
+	std::map<const srd_probe*, boost::shared_ptr<view::LogicSignal> >
 		get_probes();
 
 private:
@@ -62,7 +62,7 @@ private:
 		QWidget *parent, const char *name);
 
 private:
-	const std::vector< boost::shared_ptr<view::Signal> > &_sigs;
+	const std::vector< boost::shared_ptr<view::LogicSignal> > &_sigs;
 
 	std::map<const srd_probe*, QComboBox*> _probe_selector_map;
 

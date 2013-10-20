@@ -41,6 +41,7 @@
 #include "dialogs/connect.h"
 #include "dialogs/decoder.h"
 #include "toolbars/samplingbar.h"
+#include "view/logicsignal.h"
 #include "view/view.h"
 
 /* __STDC_FORMAT_MACROS is required for PRIu64 and friends (in C++). */
@@ -375,13 +376,21 @@ void MainWindow::add_decoder(QObject *action)
 		(srd_decoder*)((QAction*)action)->data().value<void*>();
 	assert(dec);
 
-	const std::vector< boost::shared_ptr<view::Signal> > &sigs =
+	vector< shared_ptr<view::LogicSignal> > logic_sigs;
+	const vector< shared_ptr<view::Signal> > &sigs =
 		_session.get_signals();
+	BOOST_FOREACH(shared_ptr<view::Signal> s, sigs) {
+		assert(s);
+		shared_ptr<view::LogicSignal> l =
+			dynamic_pointer_cast<view::LogicSignal>(s);
+		if (l)
+			logic_sigs.push_back(l);
+	}
 
 	GHashTable *const options = g_hash_table_new_full(g_str_hash,
 		g_str_equal, g_free, (GDestroyNotify)g_variant_unref);
 
-	dialogs::Decoder dlg(this, dec, sigs, options);
+	dialogs::Decoder dlg(this, dec, logic_sigs, options);
 	if(dlg.exec() != QDialog::Accepted) {
 		g_hash_table_destroy(options);
 		return;

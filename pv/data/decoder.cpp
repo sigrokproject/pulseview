@@ -45,7 +45,7 @@ const int64_t Decoder::DecodeChunkLength = 4096;
 
 Decoder::Decoder(const srd_decoder *const dec,
 	std::map<const srd_probe*,
-		boost::shared_ptr<pv::view::Signal> > probes,
+		boost::shared_ptr<pv::view::LogicSignal> > probes,
 	GHashTable *options) :
 	_decoder(dec),
 	_probes(probes),
@@ -93,12 +93,9 @@ void Decoder::begin_decode()
 	// We get the logic data of the first probe in the list.
 	// This works because we are currently assuming all
 	// LogicSignals have the same data/snapshot
-	shared_ptr<pv::view::Signal> sig = (*_probes.begin()).second;
+	shared_ptr<pv::view::LogicSignal> sig = (*_probes.begin()).second;
 	assert(sig);
-	const pv::view::LogicSignal *const l =
-		dynamic_cast<pv::view::LogicSignal*>(sig.get());
-	assert(l);
-	shared_ptr<data::Logic> data = l->data();
+	shared_ptr<data::Logic> data = sig->data();
 
 	_decode_thread = boost::thread(&Decoder::decode_proc, this,
 		data);
@@ -139,7 +136,7 @@ bool Decoder::init_decoder()
 	GHashTable *probes = g_hash_table_new_full(g_str_hash,
 		g_str_equal, g_free, (GDestroyNotify)g_variant_unref);
 
-	for(map<const srd_probe*, shared_ptr<view::Signal> >::
+	for(map<const srd_probe*, shared_ptr<view::LogicSignal> >::
 		const_iterator i = _probes.begin();
 		i != _probes.end(); i++)
 	{

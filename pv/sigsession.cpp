@@ -197,7 +197,7 @@ boost::shared_ptr<data::Logic> SigSession::get_data()
 
 bool SigSession::add_decoder(srd_decoder *const dec,
 	std::map<const srd_probe*,
-		boost::shared_ptr<view::Signal> > probes,
+		boost::shared_ptr<view::LogicSignal> > probes,
 	GHashTable *options)
 {
 	try
