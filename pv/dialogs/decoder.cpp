@@ -42,9 +42,7 @@ namespace dialogs {
 Decoder::Decoder(QWidget *parent, const srd_decoder *decoder,
 	const vector< shared_ptr<view::Signal> > &sigs, GHashTable *options) :
 	QDialog(parent),
-	_decoder(decoder),
 	_sigs(sigs),
-	_options(options),
 	_binding(decoder, options),
 	_layout(this),
 	_form(this),

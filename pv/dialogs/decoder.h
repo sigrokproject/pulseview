@@ -62,12 +62,10 @@ private:
 		QWidget *parent, const char *name);
 
 private:
-	const srd_decoder *const _decoder;
 	const std::vector< boost::shared_ptr<view::Signal> > &_sigs;
 
 	std::map<const srd_probe*, QComboBox*> _probe_selector_map;
 
-	GHashTable *const _options;
 	pv::prop::binding::DecoderOptions _binding;
 
 	QVBoxLayout _layout;

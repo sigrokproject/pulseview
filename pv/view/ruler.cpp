@@ -74,7 +74,7 @@ QString Ruler::format_time(double t, unsigned int prefix,
 	unsigned int precision)
 {
 	const double multiplier = pow(10.0,
-		- prefix * 3 - FirstSIPrefixPower);
+		(int)- prefix * 3 - FirstSIPrefixPower);
 
 	QString s;
 	QTextStream ts(&s);
@@ -106,7 +106,7 @@ void Ruler::paintEvent(QPaintEvent*)
 		const double min_period = _view.scale() * min_width;
 
 		const int order = (int)floorf(log10f(min_period));
-		const double order_decimal = pow(10, order);
+		const double order_decimal = pow(10.0, order);
 
 		unsigned int unit = 0;
 
