@@ -70,14 +70,6 @@ public:
 
 	void delete_pressed();
 
-private:
-
-	/**
-	 * When painting into the rectangle, calculate the y
-	 * offset of the zero point.
-	 **/
-	int get_nominal_offset(const QRect &rect) const;
-
 private slots:
 	void on_new_decode_data();
 
