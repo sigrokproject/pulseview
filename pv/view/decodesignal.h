@@ -39,6 +39,7 @@ class DecodeSignal : public Trace
 
 private:
 	static const QColor DecodeColours[4];
+	static const QColor ErrorBgColour;
 
 public:
 	DecodeSignal(pv::SigSession &session,
@@ -69,6 +70,10 @@ public:
 	QMenu* create_context_menu(QWidget *parent);
 
 	void delete_pressed();
+
+private:
+	void draw_error(QPainter &p, const QString &message,
+		int left, int right);
 
 private slots:
 	void on_new_decode_data();

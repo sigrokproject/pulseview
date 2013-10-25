@@ -49,6 +49,8 @@ const QColor DecodeSignal::DecodeColours[4] = {
 	QColor(0x72, 0x9F, 0xCF)	// Blue
 };
 
+const QColor DecodeSignal::ErrorBgColour = QColor(0xEF, 0x29, 0x29);
+
 DecodeSignal::DecodeSignal(pv::SigSession &session,
 	boost::shared_ptr<pv::data::Decoder> decoder, int index) :
 	Trace(session, QString(decoder->get_decoder()->name)),
@@ -87,6 +89,13 @@ void DecodeSignal::paint_mid(QPainter &p, int left, int right)
 {
 	using namespace pv::view::decode;
 
+	assert(_decoder);
+	const QString err = _decoder->error_message();
+	if (!err.isEmpty()) {
+		draw_error(p, err, left, right);
+		return;
+	}
+
 	assert(_view);
 	const int y = get_y();
 
@@ -124,6 +133,27 @@ QMenu* DecodeSignal::create_context_menu(QWidget *parent)
 	menu->addAction(del);
 
 	return menu;
+}
+
+void DecodeSignal::draw_error(QPainter &p, const QString &message,
+	int left, int right)
+{
+	const int y = get_y();
+
+	p.setPen(ErrorBgColour.darker());
+	p.setBrush(ErrorBgColour);
+
+	const QRectF bounding_rect =
+		QRectF(left, INT_MIN / 2 + y, right - left, INT_MAX);
+	const QRectF text_rect = p.boundingRect(bounding_rect,
+		Qt::AlignCenter, message);
+	const float r = text_rect.height() / 4;
+
+	p.drawRoundedRect(text_rect.adjusted(-r, -r, r, r), r, r,
+		Qt::AbsoluteSize);
+
+	p.setPen(get_text_colour());
+	p.drawText(text_rect, message);
 }
 
 void DecodeSignal::on_new_decode_data()
