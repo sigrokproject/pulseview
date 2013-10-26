@@ -30,7 +30,7 @@
 #include <QMouseEvent>
 #include <QScrollBar>
 
-#include "decodesignal.h"
+#include "decodetrace.h"
 #include "header.h"
 #include "ruler.h"
 #include "signal.h"
@@ -168,7 +168,7 @@ vector< shared_ptr<Trace> > View::get_traces() const
 {
 	const vector< shared_ptr<Signal> > sigs(
 		session().get_signals());
-	const vector< shared_ptr<DecodeSignal> > decode_sigs(
+	const vector< shared_ptr<DecodeTrace> > decode_sigs(
 		session().get_decode_signals());
 	vector< shared_ptr<Trace> > traces(
 		sigs.size() + decode_sigs.size());

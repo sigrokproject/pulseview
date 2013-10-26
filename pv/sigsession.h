@@ -49,7 +49,7 @@ class LogicSnapshot;
 }
 
 namespace view {
-class DecodeSignal;
+class DecodeTrace;
 class LogicSignal;
 class Signal;
 }
@@ -96,10 +96,10 @@ public:
 
 	bool add_decoder(srd_decoder *const dec);
 
-	std::vector< boost::shared_ptr<view::DecodeSignal> >
+	std::vector< boost::shared_ptr<view::DecodeTrace> >
 		get_decode_signals() const;
 
-	void remove_decode_signal(view::DecodeSignal *signal);
+	void remove_decode_signal(view::DecodeTrace *signal);
 
 private:
 	void set_capture_state(capture_state state);
@@ -159,7 +159,7 @@ private:
 	 */
 	struct sr_dev_inst *_sdi;
 
-	std::vector< boost::shared_ptr<view::DecodeSignal> > _decode_traces;
+	std::vector< boost::shared_ptr<view::DecodeTrace> > _decode_traces;
 
 	mutable boost::mutex _sampling_mutex;
 	capture_state _capture_state;

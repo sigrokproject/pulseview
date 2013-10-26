@@ -26,7 +26,7 @@
 #include "../../pv/data/decoder.h"
 #include "../../pv/devicemanager.h"
 #include "../../pv/sigsession.h"
-#include "../../pv/view/decodesignal.h"
+#include "../../pv/view/decodetrace.h"
 
 using namespace boost;
 using namespace std;
@@ -59,7 +59,7 @@ BOOST_AUTO_TEST_CASE(TwoDecoder)
 		ss.add_decoder(dec);
 
 		// Check the signals were created
-		const vector< shared_ptr<view::DecodeSignal> > sigs =
+		const vector< shared_ptr<view::DecodeTrace> > sigs =
 			ss.get_decode_signals();
 
 		shared_ptr<data::Decoder> dec0 = sigs[0]->decoder();

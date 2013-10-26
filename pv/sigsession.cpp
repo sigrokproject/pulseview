@@ -31,7 +31,7 @@
 #include "data/logicsnapshot.h"
 
 #include "view/analogsignal.h"
-#include "view/decodesignal.h"
+#include "view/decodetrace.h"
 #include "view/logicsignal.h"
 
 #include <assert.h>
@@ -227,8 +227,8 @@ bool SigSession::add_decoder(srd_decoder *const dec)
 		decoder->set_probes(probes);
 
 		// Create the decode signal
-		shared_ptr<view::DecodeSignal> d(
-			new view::DecodeSignal(*this, decoder,
+		shared_ptr<view::DecodeTrace> d(
+			new view::DecodeTrace(*this, decoder,
 				_decode_traces.size()));
 		_decode_traces.push_back(d);
 	}
@@ -242,15 +242,15 @@ bool SigSession::add_decoder(srd_decoder *const dec)
 	return true;
 }
 
-vector< shared_ptr<view::DecodeSignal> > SigSession::get_decode_signals() const
+vector< shared_ptr<view::DecodeTrace> > SigSession::get_decode_signals() const
 {
 	lock_guard<mutex> lock(_signals_mutex);
 	return _decode_traces;
 }
 
-void SigSession::remove_decode_signal(view::DecodeSignal *signal)
+void SigSession::remove_decode_signal(view::DecodeTrace *signal)
 {
-	for (vector< shared_ptr<view::DecodeSignal> >::iterator i =
+	for (vector< shared_ptr<view::DecodeTrace> >::iterator i =
 		_decode_traces.begin();
 		i != _decode_traces.end();
 		i++)

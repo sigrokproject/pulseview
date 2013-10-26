@@ -54,7 +54,7 @@ set(pulseview_TEST_SOURCES
 	${PROJECT_SOURCE_DIR}/pv/view/analogsignal.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/cursor.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/cursorpair.cpp
-	${PROJECT_SOURCE_DIR}/pv/view/decodesignal.cpp
+	${PROJECT_SOURCE_DIR}/pv/view/decodetrace.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/header.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/logicsignal.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/marginwidget.cpp
@@ -85,7 +85,7 @@ set(pulseview_TEST_HEADERS
 	${PROJECT_SOURCE_DIR}/pv/prop/property.h
 	${PROJECT_SOURCE_DIR}/pv/prop/string.h
 	${PROJECT_SOURCE_DIR}/pv/view/cursor.h
-	${PROJECT_SOURCE_DIR}/pv/view/decodesignal.h
+	${PROJECT_SOURCE_DIR}/pv/view/decodetrace.h
 	${PROJECT_SOURCE_DIR}/pv/view/header.h
 	${PROJECT_SOURCE_DIR}/pv/view/logicsignal.h
 	${PROJECT_SOURCE_DIR}/pv/view/marginwidget.h

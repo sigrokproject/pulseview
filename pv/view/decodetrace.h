@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_VIEW_DECODESIGNAL_H
-#define PULSEVIEW_PV_VIEW_DECODESIGNAL_H
+#ifndef PULSEVIEW_PV_VIEW_DECODETRACE_H
+#define PULSEVIEW_PV_VIEW_DECODETRACE_H
 
 #include "trace.h"
 
@@ -41,7 +41,7 @@ class Decoder;
 
 namespace view {
 
-class DecodeSignal : public Trace
+class DecodeTrace : public Trace
 {
 	Q_OBJECT
 
@@ -50,7 +50,7 @@ private:
 	static const QColor ErrorBgColour;
 
 public:
-	DecodeSignal(pv::SigSession &session,
+	DecodeTrace(pv::SigSession &session,
 		boost::shared_ptr<pv::data::Decoder> decoder, int index);
 
 	bool enabled() const;
@@ -110,4 +110,4 @@ private:
 } // namespace view
 } // namespace pv
 
-#endif // PULSEVIEW_PV_VIEW_DECODESIGNAL_H
+#endif // PULSEVIEW_PV_VIEW_DECODETRACE_H

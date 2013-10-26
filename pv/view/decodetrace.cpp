@@ -32,7 +32,7 @@ extern "C" {
 #include <QLabel>
 #include <QMenu>
 
-#include "decodesignal.h"
+#include "decodetrace.h"
 
 #include <pv/sigsession.h>
 #include <pv/data/decoder.h>
@@ -46,16 +46,16 @@ using namespace std;
 namespace pv {
 namespace view {
 
-const QColor DecodeSignal::DecodeColours[4] = {
+const QColor DecodeTrace::DecodeColours[4] = {
 	QColor(0xEF, 0x29, 0x29),	// Red
 	QColor(0xFC, 0xE9, 0x4F),	// Yellow
 	QColor(0x8A, 0xE2, 0x34),	// Green
 	QColor(0x72, 0x9F, 0xCF)	// Blue
 };
 
-const QColor DecodeSignal::ErrorBgColour = QColor(0xEF, 0x29, 0x29);
+const QColor DecodeTrace::ErrorBgColour = QColor(0xEF, 0x29, 0x29);
 
-DecodeSignal::DecodeSignal(pv::SigSession &session,
+DecodeTrace::DecodeTrace(pv::SigSession &session,
 	boost::shared_ptr<pv::data::Decoder> decoder, int index) :
 	Trace(session, QString(decoder->decoder()->name)),
 	_decoder(decoder),
@@ -69,28 +69,28 @@ DecodeSignal::DecodeSignal(pv::SigSession &session,
 		this, SLOT(on_new_decode_data()));
 }
 
-bool DecodeSignal::enabled() const
+bool DecodeTrace::enabled() const
 {
 	return true;
 }
 
-const boost::shared_ptr<pv::data::Decoder>& DecodeSignal::decoder() const
+const boost::shared_ptr<pv::data::Decoder>& DecodeTrace::decoder() const
 {
 	return _decoder;
 }
 
-void DecodeSignal::set_view(pv::view::View *view)
+void DecodeTrace::set_view(pv::view::View *view)
 {
 	assert(view);
 	Trace::set_view(view);
 }
 
-void DecodeSignal::paint_back(QPainter &p, int left, int right)
+void DecodeTrace::paint_back(QPainter &p, int left, int right)
 {
 	paint_axis(p, get_y(), left, right);
 }
 
-void DecodeSignal::paint_mid(QPainter &p, int left, int right)
+void DecodeTrace::paint_mid(QPainter &p, int left, int right)
 {
 	using namespace pv::view::decode;
 
@@ -126,7 +126,7 @@ void DecodeSignal::paint_mid(QPainter &p, int left, int right)
 	}
 }
 
-void DecodeSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
+void DecodeTrace::populate_popup_form(QWidget *parent, QFormLayout *form)
 {
 	const GSList *probe;
 
@@ -181,7 +181,7 @@ void DecodeSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
 	}
 }
 
-QMenu* DecodeSignal::create_context_menu(QWidget *parent)
+QMenu* DecodeTrace::create_context_menu(QWidget *parent)
 {
 	QMenu *const menu = Trace::create_context_menu(parent);
 
@@ -195,7 +195,7 @@ QMenu* DecodeSignal::create_context_menu(QWidget *parent)
 	return menu;
 }
 
-void DecodeSignal::draw_error(QPainter &p, const QString &message,
+void DecodeTrace::draw_error(QPainter &p, const QString &message,
 	int left, int right)
 {
 	const int y = get_y();
@@ -216,7 +216,7 @@ void DecodeSignal::draw_error(QPainter &p, const QString &message,
 	p.drawText(text_rect, message);
 }
 
-QComboBox* DecodeSignal::create_probe_selector(
+QComboBox* DecodeTrace::create_probe_selector(
 	QWidget *parent, const srd_probe *const probe)
 {
 	const vector< shared_ptr<Signal> > sigs = _session.get_signals();
@@ -249,7 +249,7 @@ QComboBox* DecodeSignal::create_probe_selector(
 	return selector;
 }
 
-void DecodeSignal::commit_probes()
+void DecodeTrace::commit_probes()
 {
 	assert(_decoder);
 
@@ -276,23 +276,23 @@ void DecodeSignal::commit_probes()
 	_decoder->set_probes(probe_map);
 }
 
-void DecodeSignal::on_new_decode_data()
+void DecodeTrace::on_new_decode_data()
 {
 	if (_view)
 		_view->update_viewport();
 }
 
-void DecodeSignal::delete_pressed()
+void DecodeTrace::delete_pressed()
 {
 	on_delete();
 }
 
-void DecodeSignal::on_delete()
+void DecodeTrace::on_delete()
 {
 	_session.remove_decode_signal(this);
 }
 
-void DecodeSignal::on_probe_selected(int)
+void DecodeTrace::on_probe_selected(int)
 {
 	commit_probes();
 }
