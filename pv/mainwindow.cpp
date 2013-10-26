@@ -42,6 +42,7 @@
 #include "toolbars/samplingbar.h"
 #include "view/logicsignal.h"
 #include "view/view.h"
+#include "widgets/decodermenu.h"
 
 /* __STDC_FORMAT_MACROS is required for PRIu64 and friends (in C++). */
 #define __STDC_FORMAT_MACROS
@@ -65,8 +66,7 @@ MainWindow::MainWindow(DeviceManager &device_manager,
 	QWidget *parent) :
 	QMainWindow(parent),
 	_device_manager(device_manager),
-	_session(device_manager),
-	_decoders_add_mapper(this)
+	_session(device_manager)
 {
 	setup_ui();
 	if (open_file_name) {
@@ -177,14 +177,13 @@ void MainWindow::setup_ui()
 	_menu_decoders->setTitle(QApplication::translate(
 		"MainWindow", "&Decoders", 0, QApplication::UnicodeUTF8));
 
-	_menu_decoders_add = new QMenu(_menu_decoders);
+	_menu_decoders_add = new pv::widgets::DecoderMenu(_menu_decoders);
 	_menu_decoders_add->setTitle(QApplication::translate(
 		"MainWindow", "&Add", 0, QApplication::UnicodeUTF8));
-	setup_add_decoders(_menu_decoders_add);
+	connect(_menu_decoders_add, SIGNAL(decoder_selected(srd_decoder*)),
+		this, SLOT(add_decoder(srd_decoder*)));
 
 	_menu_decoders->addMenu(_menu_decoders_add);
-	connect(&_decoders_add_mapper, SIGNAL(mapped(QObject*)),
-		this, SLOT(add_decoder(QObject*)));
 
 	// Help Menu
 	_menu_help = new QMenu(_menu_bar);
@@ -286,28 +285,6 @@ void MainWindow::show_session_error(
 	msg.exec();
 }
 
-gint MainWindow::decoder_name_cmp(gconstpointer a, gconstpointer b)
-{
-	return strcmp(((const srd_decoder*)a)->name,
-		((const srd_decoder*)b)->name);
-}
-
-void MainWindow::setup_add_decoders(QMenu *parent)
-{
-	GSList *l = g_slist_sort(g_slist_copy(
-		(GSList*)srd_decoder_list()), decoder_name_cmp);
-	for(; l; l = l->next)
-	{
-		QAction *const action = parent->addAction(QString(
-			((srd_decoder*)l->data)->name));
-		action->setData(qVariantFromValue(l->data));
-		_decoders_add_mapper.setMapping(action, action);
-		connect(action, SIGNAL(triggered()),
-			&_decoders_add_mapper, SLOT(map()));
-	}
-	g_slist_free(l);
-}
-
 void MainWindow::on_actionOpen_triggered()
 {
 	// Enumerate the file formats
@@ -368,14 +345,10 @@ void MainWindow::on_actionAbout_triggered()
 	dlg.exec();
 }
 
-void MainWindow::add_decoder(QObject *action)
+void MainWindow::add_decoder(srd_decoder *decoder)
 {
-	assert(action);
-	srd_decoder *const dec =
-		(srd_decoder*)((QAction*)action)->data().value<void*>();
-	assert(dec);
-
-	_session.add_decoder(dec);
+	assert(decoder);
+	_session.add_decoder(decoder);
 }
 
 void MainWindow::run_stop()

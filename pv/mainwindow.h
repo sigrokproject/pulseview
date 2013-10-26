@@ -26,7 +26,6 @@
 #include <boost/weak_ptr.hpp>
 
 #include <QMainWindow>
-#include <QSignalMapper>
 
 #include "sigsession.h"
 
@@ -49,6 +48,10 @@ class SamplingBar;
 
 namespace view {
 class View;
+}
+
+namespace widgets {
+class DecoderMenu;
 }
 
 class MainWindow : public QMainWindow
@@ -75,7 +78,6 @@ private:
 		struct sr_dev_inst *selected_device = NULL);
 
 	static gint decoder_name_cmp(gconstpointer a, gconstpointer b);
-	void setup_add_decoders(QMenu *parent);
 
 private slots:
 	void load_file(QString file_name);
@@ -97,7 +99,7 @@ private slots:
 
 	void on_actionAbout_triggered();
 
-	void add_decoder(QObject *action);
+	void add_decoder(srd_decoder *decoder);
 
 	void run_stop();
 
@@ -122,8 +124,7 @@ private:
 	QAction *_action_view_show_cursors;
 
 	QMenu *_menu_decoders;
-	QMenu *_menu_decoders_add;
-	QSignalMapper _decoders_add_mapper;
+	pv::widgets::DecoderMenu *_menu_decoders_add;
 
 	QMenu *_menu_help;
 	QAction *_action_about;
