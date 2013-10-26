@@ -114,7 +114,6 @@ set(pulseview_SOURCES
 	pv/data/snapshot.cpp
 	pv/dialogs/about.cpp
 	pv/dialogs/connect.cpp
-	pv/dialogs/decoder.cpp
 	pv/popups/deviceoptions.cpp
 	pv/popups/probes.cpp
 	pv/prop/bool.cpp

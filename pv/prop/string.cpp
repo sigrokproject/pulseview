@@ -20,6 +20,7 @@
 
 #include <assert.h>
 
+#include <QLineEdit>
 #include <QSpinBox>
 
 #include "string.h"

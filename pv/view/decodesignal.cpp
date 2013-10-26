@@ -27,12 +27,16 @@ extern "C" {
 #include <boost/foreach.hpp>
 
 #include <QAction>
+#include <QComboBox>
+#include <QFormLayout>
+#include <QLabel>
 #include <QMenu>
 
 #include "decodesignal.h"
 
 #include <pv/sigsession.h>
 #include <pv/data/decoder.h>
+#include <pv/view/logicsignal.h>
 #include <pv/view/view.h>
 #include <pv/view/decode/annotation.h>
 
@@ -53,8 +57,9 @@ const QColor DecodeSignal::ErrorBgColour = QColor(0xEF, 0x29, 0x29);
 
 DecodeSignal::DecodeSignal(pv::SigSession &session,
 	boost::shared_ptr<pv::data::Decoder> decoder, int index) :
-	Trace(session, QString(decoder->get_decoder()->name)),
-	_decoder(decoder)
+	Trace(session, QString(decoder->decoder()->name)),
+	_decoder(decoder),
+	_binding(decoder)
 {
 	assert(_decoder);
 
@@ -121,6 +126,61 @@ void DecodeSignal::paint_mid(QPainter &p, int left, int right)
 	}
 }
 
+void DecodeSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
+{
+	const GSList *probe;
+
+	assert(form);
+	assert(parent);
+	assert(_decoder);
+
+	const srd_decoder *const decoder = _decoder->decoder();
+
+	assert(decoder);
+
+	Trace::populate_popup_form(parent, form);
+
+	form->addRow(new QLabel(tr("<h3>Probes</h3>"), parent));
+
+	_probe_selector_map.clear();
+
+	// Add the mandatory probes
+	for(probe = decoder->probes; probe; probe = probe->next) {
+		const struct srd_probe *const p =
+			(struct srd_probe *)probe->data;
+		QComboBox *const combo = create_probe_selector(parent, p);
+		connect(combo, SIGNAL(currentIndexChanged(int)),
+			this, SLOT(on_probe_selected(int)));
+		form->addRow(tr("<b>%1</b> (%2) *")
+			.arg(p->name).arg(p->desc), combo);
+
+		_probe_selector_map[p] = combo;
+	}
+
+	// Add the optional probes
+	for(probe = decoder->opt_probes; probe; probe = probe->next) {
+		const struct srd_probe *const p =
+			(struct srd_probe *)probe->data;
+		QComboBox *const combo = create_probe_selector(parent, p);
+		connect(combo, SIGNAL(currentIndexChanged(int)),
+			this, SLOT(on_probe_selected(int)));
+		form->addRow(tr("<b>%1</b> (%2)")
+			.arg(p->name).arg(p->desc), combo);
+
+		_probe_selector_map[p] = combo;
+	}
+
+	form->addRow(new QLabel(
+		tr("<i>* Required Probes</i>"), parent));
+
+	// Add the options
+	if (!_binding.properties().empty()) {
+		form->addRow(new QLabel(tr("<h3>Options</h3>"),
+			parent));
+		_binding.add_properties_to_form(form, true);
+	}
+}
+
 QMenu* DecodeSignal::create_context_menu(QWidget *parent)
 {
 	QMenu *const menu = Trace::create_context_menu(parent);
@@ -156,6 +216,66 @@ void DecodeSignal::draw_error(QPainter &p, const QString &message,
 	p.drawText(text_rect, message);
 }
 
+QComboBox* DecodeSignal::create_probe_selector(
+	QWidget *parent, const srd_probe *const probe)
+{
+	const vector< shared_ptr<Signal> > sigs = _session.get_signals();
+
+	assert(_decoder);
+	const map<const srd_probe*,
+		shared_ptr<LogicSignal> >::const_iterator probe_iter =
+		_decoder->probes().find(probe);
+
+	QComboBox *selector = new QComboBox(parent);
+
+	selector->addItem("-", qVariantFromValue((void*)NULL));
+
+	if (probe_iter == _decoder->probes().end())
+		selector->setCurrentIndex(0);
+
+	for(size_t i = 0; i < sigs.size(); i++) {
+		const shared_ptr<view::Signal> s(sigs[i]);
+		assert(s);
+
+		if (dynamic_pointer_cast<LogicSignal>(s) && s->enabled())
+		{
+			selector->addItem(s->get_name(),
+				qVariantFromValue((void*)s.get()));
+			if ((*probe_iter).second == s)
+				selector->setCurrentIndex(i + 1);
+		}
+	}
+
+	return selector;
+}
+
+void DecodeSignal::commit_probes()
+{
+	assert(_decoder);
+
+	map<const srd_probe*, shared_ptr<LogicSignal> > probe_map;
+	const vector< shared_ptr<Signal> > sigs = _session.get_signals();
+
+	for(map<const srd_probe*, QComboBox*>::const_iterator i =
+		_probe_selector_map.begin();
+		i != _probe_selector_map.end(); i++)
+	{
+		const QComboBox *const combo = (*i).second;
+		const LogicSignal *const selection =
+			(LogicSignal*)combo->itemData(combo->currentIndex()).
+			value<void*>();
+
+		BOOST_FOREACH(shared_ptr<Signal> s, sigs)
+			if(s.get() == selection) {
+				probe_map[(*i).first] =
+					dynamic_pointer_cast<LogicSignal>(s);
+				break;
+			}
+	}
+
+	_decoder->set_probes(probe_map);
+}
+
 void DecodeSignal::on_new_decode_data()
 {
 	if (_view)
@@ -170,6 +290,11 @@ void DecodeSignal::delete_pressed()
 void DecodeSignal::on_delete()
 {
 	_session.remove_decode_signal(this);
+}
+
+void DecodeSignal::on_probe_selected(int)
+{
+	commit_probes();
 }
 
 } // namespace view

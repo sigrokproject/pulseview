@@ -55,14 +55,8 @@ BOOST_AUTO_TEST_CASE(TwoDecoder)
 		srd_decoder *const dec = (struct srd_decoder*)l->data;
 		BOOST_REQUIRE(dec);
 
-		map<const srd_probe*, shared_ptr<view::LogicSignal> > probes;
-		ss.add_decoder(dec, probes,
-			g_hash_table_new_full(g_str_hash, g_str_equal, g_free,
-				(GDestroyNotify)g_variant_unref));
-		
-		ss.add_decoder(dec, probes,
-			g_hash_table_new_full(g_str_hash, g_str_equal, g_free,
-				(GDestroyNotify)g_variant_unref));
+		ss.add_decoder(dec);
+		ss.add_decoder(dec);
 
 		// Check the signals were created
 		const vector< shared_ptr<view::DecodeSignal> > sigs =

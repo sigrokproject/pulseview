@@ -94,10 +94,7 @@ public:
 
 	boost::shared_ptr<data::Logic> get_data();
 
-	bool add_decoder(srd_decoder *const dec,
-		std::map<const srd_probe*,
-			boost::shared_ptr<view::LogicSignal> > probes,
-		GHashTable *options);
+	bool add_decoder(srd_decoder *const dec);
 
 	std::vector< boost::shared_ptr<view::DecodeSignal> >
 		get_decode_signals() const;

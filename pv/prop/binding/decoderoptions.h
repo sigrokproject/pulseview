@@ -21,18 +21,23 @@
 #ifndef PULSEVIEW_PV_PROP_BINDING_DECODEROPTIONS_H
 #define PULSEVIEW_PV_PROP_BINDING_DECODEROPTIONS_H
 
-#include <libsigrokdecode/libsigrokdecode.h>
+#include <glib.h>
 
 #include "binding.h"
 
 namespace pv {
+
+namespace data {
+class Decoder;
+}
+
 namespace prop {
 namespace binding {
 
 class DecoderOptions : public Binding
 {
 public:
-	DecoderOptions(const srd_decoder *decoder, GHashTable *options);
+	DecoderOptions(boost::shared_ptr<pv::data::Decoder> decoder);
 
 private:
 	GVariant* getter(const char *id);
@@ -40,8 +45,7 @@ private:
 	void setter(const char *id, GVariant *value);
 
 private:
-	const srd_decoder *const _decoder;
-	GHashTable *const _options;
+	boost::shared_ptr<pv::data::Decoder> _decoder;
 };
 
 } // binding

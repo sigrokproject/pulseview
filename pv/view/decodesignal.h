@@ -23,7 +23,15 @@
 
 #include "trace.h"
 
+#include <map>
+
 #include <boost/shared_ptr.hpp>
+
+#include <pv/prop/binding/decoderoptions.h>
+
+struct srd_probe;
+
+class QComboBox;
 
 namespace pv {
 
@@ -67,6 +75,8 @@ public:
 	 **/
 	void paint_mid(QPainter &p, int left, int right);
 
+	void populate_popup_form(QWidget *parent, QFormLayout *form);
+
 	QMenu* create_context_menu(QWidget *parent);
 
 	void delete_pressed();
@@ -75,15 +85,26 @@ private:
 	void draw_error(QPainter &p, const QString &message,
 		int left, int right);
 
+	QComboBox* create_probe_selector(
+		QWidget *parent, const srd_probe *const probe);
+
+	void commit_probes();
+
 private slots:
 	void on_new_decode_data();
 
 	void on_delete();
 
+	void on_probe_selected(int);
+
 private:
 	boost::shared_ptr<pv::data::Decoder> _decoder;
 
 	uint64_t _decode_start, _decode_end;
+
+	pv::prop::binding::DecoderOptions _binding;
+
+	std::map<const srd_probe*, QComboBox*> _probe_selector_map;
 };
 
 } // namespace view

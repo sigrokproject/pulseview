@@ -18,11 +18,14 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
+#include <libsigrokdecode/libsigrokdecode.h>
+
 #include "decoderoptions.h"
 
 #include <boost/foreach.hpp>
 #include <boost/none_t.hpp>
 
+#include <pv/data/decoder.h>
 #include <pv/prop/int.h>
 #include <pv/prop/string.h>
 
@@ -33,15 +36,15 @@ namespace pv {
 namespace prop {
 namespace binding {
 
-DecoderOptions::DecoderOptions(const srd_decoder *decoder,
-	GHashTable *options) :
-	_decoder(decoder),
-	_options(options)
+DecoderOptions::DecoderOptions(shared_ptr<pv::data::Decoder> decoder) :
+	_decoder(decoder)
 {
-	assert(decoder);
+	assert(_decoder);
 
+	const srd_decoder *const dec = _decoder->decoder();
+	assert(dec);
 
-	for (GSList *l = decoder->options; l; l = l->next)
+	for (GSList *l = dec->options; l; l = l->next)
 	{
 		const srd_decoder_option *const opt =
 			(srd_decoder_option*)l->data;
@@ -70,13 +73,18 @@ DecoderOptions::DecoderOptions(const srd_decoder *decoder,
 
 GVariant* DecoderOptions::getter(const char *id)
 {
+	assert(_decoder);
+
 	// Get the value from the hash table if it is already present
-	GVariant *val = (GVariant*)g_hash_table_lookup(_options, id);
+	GVariant *val = (GVariant*)g_hash_table_lookup(
+		(GHashTable*)_decoder->options(), id);
 
 	if (!val)
 	{
+		assert(_decoder->decoder());
+
 		// Get the default value if not
-		for (GSList *l = _decoder->options; l; l = l->next)
+		for (GSList *l = _decoder->decoder()->options; l; l = l->next)
 		{
 			const srd_decoder_option *const opt =
 				(srd_decoder_option*)l->data;
@@ -95,8 +103,8 @@ GVariant* DecoderOptions::getter(const char *id)
 
 void DecoderOptions::setter(const char *id, GVariant *value)
 {
-	g_variant_ref(value);
-	g_hash_table_insert(_options, (void*)g_strdup(id), value);
+	assert(_decoder);
+	_decoder->set_option(id, value);
 }
 
 } // binding

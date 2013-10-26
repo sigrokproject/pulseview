@@ -66,14 +66,20 @@ private:
 	static const int64_t DecodeChunkLength;
 
 public:
-	Decoder(const srd_decoder *const decoder,
-		std::map<const srd_probe*,
-			boost::shared_ptr<pv::view::LogicSignal> > probes,
-		GHashTable *options);
+	Decoder(const srd_decoder *const decoder);
 
 	virtual ~Decoder();
 
-	const srd_decoder* get_decoder() const;
+	const srd_decoder* decoder() const;
+
+	const std::map<const srd_probe*, boost::shared_ptr<view::LogicSignal> >&
+		probes() const;
+	void set_probes(std::map<const srd_probe*,
+		boost::shared_ptr<view::LogicSignal> > probes);
+
+	const GHashTable* options() const;
+
+	void set_option(const char *id, GVariant *value);
 
 	const std::vector< boost::shared_ptr<pv::view::decode::Annotation> >
 		annotations() const;
@@ -84,8 +90,6 @@ public:
 
 private:
 	void begin_decode();
-
-	void init_decoder();
 
 	void decode_proc(boost::shared_ptr<data::Logic> data);
 

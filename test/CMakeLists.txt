@@ -46,6 +46,11 @@ set(pulseview_TEST_SOURCES
 	${PROJECT_SOURCE_DIR}/pv/data/logicsnapshot.cpp
 	${PROJECT_SOURCE_DIR}/pv/data/snapshot.cpp
 	${PROJECT_SOURCE_DIR}/pv/data/signaldata.cpp
+	${PROJECT_SOURCE_DIR}/pv/prop/int.cpp
+	${PROJECT_SOURCE_DIR}/pv/prop/property.cpp
+	${PROJECT_SOURCE_DIR}/pv/prop/string.cpp
+	${PROJECT_SOURCE_DIR}/pv/prop/binding/binding.cpp
+	${PROJECT_SOURCE_DIR}/pv/prop/binding/decoderoptions.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/analogsignal.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/cursor.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/cursorpair.cpp
@@ -76,6 +81,9 @@ set(pulseview_TEST_SOURCES
 set(pulseview_TEST_HEADERS
 	${PROJECT_SOURCE_DIR}/pv/sigsession.h
 	${PROJECT_SOURCE_DIR}/pv/data/decoder.h
+	${PROJECT_SOURCE_DIR}/pv/prop/int.h
+	${PROJECT_SOURCE_DIR}/pv/prop/property.h
+	${PROJECT_SOURCE_DIR}/pv/prop/string.h
 	${PROJECT_SOURCE_DIR}/pv/view/cursor.h
 	${PROJECT_SOURCE_DIR}/pv/view/decodesignal.h
 	${PROJECT_SOURCE_DIR}/pv/view/header.h

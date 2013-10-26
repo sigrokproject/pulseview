@@ -24,6 +24,7 @@
 #include <vector>
 #include <boost/shared_ptr.hpp>
 
+class QFormLayout;
 class QWidget;
 
 namespace pv {

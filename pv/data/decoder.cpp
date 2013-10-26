@@ -45,17 +45,11 @@ const int64_t Decoder::DecodeChunkLength = 4096;
 
 mutex Decoder::_global_decode_mutex;
 
-Decoder::Decoder(const srd_decoder *const dec,
-	std::map<const srd_probe*,
-		boost::shared_ptr<pv::view::LogicSignal> > probes,
-	GHashTable *options) :
+Decoder::Decoder(const srd_decoder *const dec) :
 	_decoder(dec),
-	_probes(probes),
-	_options(options)
+	_options(g_hash_table_new_full(g_str_hash,
+		g_str_equal, g_free, (GDestroyNotify)g_variant_unref))
 {
-	init_decoder();
-
-	begin_decode();
 }
 
 Decoder::~Decoder()
@@ -66,9 +60,34 @@ Decoder::~Decoder()
 	g_hash_table_destroy(_options);
 }
 
-const srd_decoder* Decoder::get_decoder() const
+const srd_decoder* Decoder::decoder() const
 {
 	return _decoder;
+}
+
+const map<const srd_probe*, shared_ptr<view::LogicSignal> >&
+Decoder::probes() const
+{
+	return _probes;
+}
+
+void Decoder::set_probes(std::map<const srd_probe*,
+	boost::shared_ptr<view::LogicSignal> > probes)
+{
+	_probes = probes;
+	begin_decode();
+}
+
+const GHashTable* Decoder::options() const
+{
+	return _options;
+}
+
+void Decoder::set_option(const char *id, GVariant *value)
+{
+	g_variant_ref(value);
+	g_hash_table_replace(_options, (void*)g_strdup(id), value);
+	begin_decode();
 }
 
 const vector< shared_ptr<view::decode::Annotation> >
@@ -89,8 +108,25 @@ void Decoder::begin_decode()
 	_decode_thread.interrupt();
 	_decode_thread.join();
 
+	_annotations.clear();
+
 	if (_probes.empty())
 		return;
+
+	// Get the samplerate and start time
+	shared_ptr<pv::view::LogicSignal> logic_signal =
+		dynamic_pointer_cast<pv::view::LogicSignal>(
+			(*_probes.begin()).second);
+	if (logic_signal) {
+		shared_ptr<pv::data::Logic> data(
+			logic_signal->data());
+		if (data) {
+			_start_time = data->get_start_time();
+			_samplerate = data->get_samplerate();
+			if (_samplerate == 0.0)
+				_samplerate = 1.0;
+		}
+	}
 
 	// We get the logic data of the first probe in the list.
 	// This works because we are currently assuming all
@@ -107,34 +143,12 @@ void Decoder::clear_snapshots()
 {
 }
 
-void Decoder::init_decoder()
-{
-	if (!_probes.empty())
-	{
-		shared_ptr<pv::view::LogicSignal> logic_signal =
-			dynamic_pointer_cast<pv::view::LogicSignal>(
-				(*_probes.begin()).second);
-		if (logic_signal) {
-			shared_ptr<pv::data::Logic> data(
-				logic_signal->data());
-			if (data) {
-				_start_time = data->get_start_time();
-				_samplerate = data->get_samplerate();
-				if (_samplerate == 0.0)
-					_samplerate = 1.0;
-			}
-		}
-	}
-}
-
 void Decoder::decode_proc(shared_ptr<data::Logic> data)
 {
 	srd_session *session;
 	uint8_t chunk[DecodeChunkLength];
 
 	assert(data);
-
-	_annotations.clear();
 
 	const deque< shared_ptr<pv::data::LogicSnapshot> > &snapshots =
 		data->get_snapshots();

@@ -18,6 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
+#include <libsigrokdecode/libsigrokdecode.h>
+
 #include "sigsession.h"
 
 #include "devicemanager.h"
@@ -35,6 +37,8 @@
 #include <assert.h>
 
 #include <stdexcept>
+
+#include <boost/foreach.hpp>
 
 #include <sys/stat.h>
 
@@ -195,17 +199,34 @@ boost::shared_ptr<data::Logic> SigSession::get_data()
 	return _logic_data;
 }
 
-bool SigSession::add_decoder(srd_decoder *const dec,
-	std::map<const srd_probe*,
-		boost::shared_ptr<view::LogicSignal> > probes,
-	GHashTable *options)
+bool SigSession::add_decoder(srd_decoder *const dec)
 {
+	map<const srd_probe*, shared_ptr<view::LogicSignal> > probes;
+
 	try
 	{
 		lock_guard<mutex> lock(_signals_mutex);
 
-		shared_ptr<data::Decoder> decoder(
-			new data::Decoder(dec, probes, options));
+		// Create the decoder
+		shared_ptr<data::Decoder> decoder(new data::Decoder(dec));
+
+		// Auto select the initial probes
+		for(const GSList *i = dec->probes; i; i = i->next)
+		{
+			const srd_probe *const probe = (const srd_probe*)i->data;
+			BOOST_FOREACH(shared_ptr<view::Signal> s, _signals)
+			{
+				shared_ptr<view::LogicSignal> l =
+					dynamic_pointer_cast<view::LogicSignal>(s);
+				if (l && QString(probe->name).toLower().contains(
+					l->get_name().toLower()))
+					probes[probe] = l;
+			}
+		}
+
+		decoder->set_probes(probes);
+
+		// Create the decode signal
 		shared_ptr<view::DecodeSignal> d(
 			new view::DecodeSignal(*this, decoder,
 				_decode_traces.size()));
