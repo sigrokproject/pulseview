@@ -41,7 +41,7 @@ set(pulseview_TEST_SOURCES
 	${PROJECT_SOURCE_DIR}/pv/view/cursorpair.cpp
 	${PROJECT_SOURCE_DIR}/pv/data/analog.cpp
 	${PROJECT_SOURCE_DIR}/pv/data/analogsnapshot.cpp
-	${PROJECT_SOURCE_DIR}/pv/data/decoder.cpp
+	${PROJECT_SOURCE_DIR}/pv/data/decoderstack.cpp
 	${PROJECT_SOURCE_DIR}/pv/data/logic.cpp
 	${PROJECT_SOURCE_DIR}/pv/data/logicsnapshot.cpp
 	${PROJECT_SOURCE_DIR}/pv/data/snapshot.cpp
@@ -73,7 +73,7 @@ set(pulseview_TEST_SOURCES
 	${PROJECT_SOURCE_DIR}/pv/widgets/popup.cpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/wellarray.cpp
 	data/analogsnapshot.cpp
-	data/decoder.cpp
+	data/decoderstack.cpp
 	data/logicsnapshot.cpp
 	test.cpp
 )
@@ -81,7 +81,7 @@ set(pulseview_TEST_SOURCES
 # This list includes only QObject derrived class headers
 set(pulseview_TEST_HEADERS
 	${PROJECT_SOURCE_DIR}/pv/sigsession.h
-	${PROJECT_SOURCE_DIR}/pv/data/decoder.h
+	${PROJECT_SOURCE_DIR}/pv/data/decoderstack.h
 	${PROJECT_SOURCE_DIR}/pv/prop/int.h
 	${PROJECT_SOURCE_DIR}/pv/prop/property.h
 	${PROJECT_SOURCE_DIR}/pv/prop/string.h

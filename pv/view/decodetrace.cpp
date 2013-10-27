@@ -36,7 +36,7 @@ extern "C" {
 #include "decodetrace.h"
 
 #include <pv/sigsession.h>
-#include <pv/data/decoder.h>
+#include <pv/data/decoderstack.h>
 #include <pv/view/logicsignal.h>
 #include <pv/view/view.h>
 #include <pv/view/decode/annotation.h>
@@ -58,16 +58,16 @@ const QColor DecodeTrace::DecodeColours[4] = {
 const QColor DecodeTrace::ErrorBgColour = QColor(0xEF, 0x29, 0x29);
 
 DecodeTrace::DecodeTrace(pv::SigSession &session,
-	boost::shared_ptr<pv::data::Decoder> decoder, int index) :
-	Trace(session, QString(decoder->decoder()->name)),
-	_decoder(decoder),
-	_binding(decoder)
+	boost::shared_ptr<pv::data::DecoderStack> decoder_stack, int index) :
+	Trace(session, QString(decoder_stack->decoder()->name)),
+	_decoder_stack(decoder_stack),
+	_binding(decoder_stack)
 {
-	assert(_decoder);
+	assert(_decoder_stack);
 
 	_colour = DecodeColours[index % countof(DecodeColours)];
 
-	connect(_decoder.get(), SIGNAL(new_decode_data()),
+	connect(_decoder_stack.get(), SIGNAL(new_decode_data()),
 		this, SLOT(on_new_decode_data()));
 }
 
@@ -76,9 +76,9 @@ bool DecodeTrace::enabled() const
 	return true;
 }
 
-const boost::shared_ptr<pv::data::Decoder>& DecodeTrace::decoder() const
+const boost::shared_ptr<pv::data::DecoderStack>& DecodeTrace::decoder() const
 {
-	return _decoder;
+	return _decoder_stack;
 }
 
 void DecodeTrace::set_view(pv::view::View *view)
@@ -96,8 +96,8 @@ void DecodeTrace::paint_mid(QPainter &p, int left, int right)
 {
 	using namespace pv::view::decode;
 
-	assert(_decoder);
-	const QString err = _decoder->error_message();
+	assert(_decoder_stack);
+	const QString err = _decoder_stack->error_message();
 	if (!err.isEmpty()) {
 		draw_error(p, err, left, right);
 		return;
@@ -109,18 +109,18 @@ void DecodeTrace::paint_mid(QPainter &p, int left, int right)
 	const double scale = _view->scale();
 	assert(scale > 0);
 
-	double samplerate = _decoder->get_samplerate();
+	double samplerate = _decoder_stack->get_samplerate();
 
 	// Show sample rate as 1Hz when it is unknown
 	if (samplerate == 0.0)
 		samplerate = 1.0;
 
 	const double pixels_offset = (_view->offset() -
-		_decoder->get_start_time()) / scale;
+		_decoder_stack->get_start_time()) / scale;
 	const double samples_per_pixel = samplerate * scale;
 
-	assert(_decoder);
-	vector< shared_ptr<Annotation> > annotations(_decoder->annotations());
+	assert(_decoder_stack);
+	vector< shared_ptr<Annotation> > annotations(_decoder_stack->annotations());
 	BOOST_FOREACH(shared_ptr<Annotation> a, annotations) {
 		assert(a);
 		a->paint(p, get_text_colour(), _text_size.height(),
@@ -134,9 +134,9 @@ void DecodeTrace::populate_popup_form(QWidget *parent, QFormLayout *form)
 
 	assert(form);
 	assert(parent);
-	assert(_decoder);
+	assert(_decoder_stack);
 
-	const srd_decoder *const decoder = _decoder->decoder();
+	const srd_decoder *const decoder = _decoder_stack->decoder();
 
 	assert(decoder);
 
@@ -184,7 +184,7 @@ void DecodeTrace::populate_popup_form(QWidget *parent, QFormLayout *form)
 
 	// Add stacking button
 	QPushButton *const stack_button =
-		new QPushButton(tr("Stack Decoder"), parent);
+		new QPushButton(tr("Stack DecoderStack"), parent);
 	pv::widgets::DecoderMenu *const decoder_menu =
 		new pv::widgets::DecoderMenu(parent);
 	stack_button->setMenu(decoder_menu);
@@ -234,16 +234,16 @@ QComboBox* DecodeTrace::create_probe_selector(
 {
 	const vector< shared_ptr<Signal> > sigs = _session.get_signals();
 
-	assert(_decoder);
+	assert(_decoder_stack);
 	const map<const srd_probe*,
 		shared_ptr<LogicSignal> >::const_iterator probe_iter =
-		_decoder->probes().find(probe);
+		_decoder_stack->probes().find(probe);
 
 	QComboBox *selector = new QComboBox(parent);
 
 	selector->addItem("-", qVariantFromValue((void*)NULL));
 
-	if (probe_iter == _decoder->probes().end())
+	if (probe_iter == _decoder_stack->probes().end())
 		selector->setCurrentIndex(0);
 
 	for(size_t i = 0; i < sigs.size(); i++) {
@@ -264,7 +264,7 @@ QComboBox* DecodeTrace::create_probe_selector(
 
 void DecodeTrace::commit_probes()
 {
-	assert(_decoder);
+	assert(_decoder_stack);
 
 	map<const srd_probe*, shared_ptr<LogicSignal> > probe_map;
 	const vector< shared_ptr<Signal> > sigs = _session.get_signals();
@@ -286,7 +286,7 @@ void DecodeTrace::commit_probes()
 			}
 	}
 
-	_decoder->set_probes(probe_map);
+	_decoder_stack->set_probes(probe_map);
 }
 
 void DecodeTrace::on_new_decode_data()

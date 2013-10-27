@@ -26,7 +26,7 @@
 
 #include "data/analog.h"
 #include "data/analogsnapshot.h"
-#include "data/decoder.h"
+#include "data/decoderstack.h"
 #include "data/logic.h"
 #include "data/logicsnapshot.h"
 
@@ -208,7 +208,7 @@ bool SigSession::add_decoder(srd_decoder *const dec)
 		lock_guard<mutex> lock(_signals_mutex);
 
 		// Create the decoder
-		shared_ptr<data::Decoder> decoder(new data::Decoder(dec));
+		shared_ptr<data::DecoderStack> decoder(new data::DecoderStack(dec));
 
 		// Auto select the initial probes
 		for(const GSList *i = dec->probes; i; i = i->next)

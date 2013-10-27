@@ -36,7 +36,7 @@ class QComboBox;
 namespace pv {
 
 namespace data {
-class Decoder;
+class DecoderStack;
 }
 
 namespace view {
@@ -51,11 +51,12 @@ private:
 
 public:
 	DecodeTrace(pv::SigSession &session,
-		boost::shared_ptr<pv::data::Decoder> decoder, int index);
+		boost::shared_ptr<pv::data::DecoderStack> decoder_stack,
+		int index);
 
 	bool enabled() const;
 
-	const boost::shared_ptr<pv::data::Decoder>& decoder() const;
+	const boost::shared_ptr<pv::data::DecoderStack>& decoder() const;
 
 	void set_view(pv::view::View *view);
 
@@ -98,7 +99,7 @@ private slots:
 	void on_probe_selected(int);
 
 private:
-	boost::shared_ptr<pv::data::Decoder> _decoder;
+	boost::shared_ptr<pv::data::DecoderStack> _decoder_stack;
 
 	uint64_t _decode_start, _decode_end;
 

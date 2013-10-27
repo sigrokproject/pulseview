@@ -25,7 +25,7 @@
 #include <boost/foreach.hpp>
 #include <boost/none_t.hpp>
 
-#include <pv/data/decoder.h>
+#include <pv/data/decoderstack.h>
 #include <pv/prop/int.h>
 #include <pv/prop/string.h>
 
@@ -36,7 +36,7 @@ namespace pv {
 namespace prop {
 namespace binding {
 
-DecoderOptions::DecoderOptions(shared_ptr<pv::data::Decoder> decoder) :
+DecoderOptions::DecoderOptions(shared_ptr<pv::data::DecoderStack> decoder) :
 	_decoder(decoder)
 {
 	assert(_decoder);

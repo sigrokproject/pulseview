@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_DATA_DECODER_H
-#define PULSEVIEW_PV_DATA_DECODER_H
+#ifndef PULSEVIEW_PV_DATA_DECODERSTACK_H
+#define PULSEVIEW_PV_DATA_DECODERSTACK_H
 
 #include "signaldata.h"
 
@@ -37,8 +37,8 @@ struct srd_decoder;
 struct srd_probe;
 struct srd_proto_data;
 
-namespace DecoderTest {
-class TwoDecoder;
+namespace DecoderStackTest {
+class TwoDecoderStack;
 }
 
 namespace pv {
@@ -56,7 +56,7 @@ namespace data {
 
 class Logic;
 
-class Decoder : public QObject, public SignalData
+class DecoderStack : public QObject, public SignalData
 {
 	Q_OBJECT
 
@@ -66,9 +66,9 @@ private:
 	static const int64_t DecodeChunkLength;
 
 public:
-	Decoder(const srd_decoder *const decoder);
+	DecoderStack(const srd_decoder *const decoder);
 
-	virtual ~Decoder();
+	virtual ~DecoderStack();
 
 	const srd_decoder* decoder() const;
 
@@ -121,10 +121,10 @@ private:
 
 	boost::thread _decode_thread;
 
-	friend class DecoderTest::TwoDecoder;
+	friend class DecoderStackTest::TwoDecoderStack;
 };
 
 } // namespace data
 } // namespace pv
 
-#endif // PULSEVIEW_PV_DATA_DECODER_H
+#endif // PULSEVIEW_PV_DATA_DECODERSTACK_H

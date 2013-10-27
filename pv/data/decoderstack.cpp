@@ -26,7 +26,7 @@
 
 #include <QDebug>
 
-#include "decoder.h"
+#include "decoderstack.h"
 
 #include <pv/data/logic.h>
 #include <pv/data/logicsnapshot.h>
@@ -39,20 +39,20 @@ using namespace std;
 namespace pv {
 namespace data {
 
-const double Decoder::DecodeMargin = 1.0;
-const double Decoder::DecodeThreshold = 0.2;
-const int64_t Decoder::DecodeChunkLength = 4096;
+const double DecoderStack::DecodeMargin = 1.0;
+const double DecoderStack::DecodeThreshold = 0.2;
+const int64_t DecoderStack::DecodeChunkLength = 4096;
 
-mutex Decoder::_global_decode_mutex;
+mutex DecoderStack::_global_decode_mutex;
 
-Decoder::Decoder(const srd_decoder *const dec) :
+DecoderStack::DecoderStack(const srd_decoder *const dec) :
 	_decoder(dec),
 	_options(g_hash_table_new_full(g_str_hash,
 		g_str_equal, g_free, (GDestroyNotify)g_variant_unref))
 {
 }
 
-Decoder::~Decoder()
+DecoderStack::~DecoderStack()
 {
 	_decode_thread.interrupt();
 	_decode_thread.join();
@@ -60,30 +60,30 @@ Decoder::~Decoder()
 	g_hash_table_destroy(_options);
 }
 
-const srd_decoder* Decoder::decoder() const
+const srd_decoder* DecoderStack::decoder() const
 {
 	return _decoder;
 }
 
 const map<const srd_probe*, shared_ptr<view::LogicSignal> >&
-Decoder::probes() const
+DecoderStack::probes() const
 {
 	return _probes;
 }
 
-void Decoder::set_probes(std::map<const srd_probe*,
+void DecoderStack::set_probes(std::map<const srd_probe*,
 	boost::shared_ptr<view::LogicSignal> > probes)
 {
 	_probes = probes;
 	begin_decode();
 }
 
-const GHashTable* Decoder::options() const
+const GHashTable* DecoderStack::options() const
 {
 	return _options;
 }
 
-void Decoder::set_option(const char *id, GVariant *value)
+void DecoderStack::set_option(const char *id, GVariant *value)
 {
 	g_variant_ref(value);
 	g_hash_table_replace(_options, (void*)g_strdup(id), value);
@@ -91,19 +91,19 @@ void Decoder::set_option(const char *id, GVariant *value)
 }
 
 const vector< shared_ptr<view::decode::Annotation> >
-	Decoder::annotations() const
+	DecoderStack::annotations() const
 {
 	lock_guard<mutex> lock(_mutex);
 	return _annotations;
 }
 
-QString Decoder::error_message()
+QString DecoderStack::error_message()
 {
 	lock_guard<mutex> lock(_mutex);
 	return _error_message;
 }
 
-void Decoder::begin_decode()
+void DecoderStack::begin_decode()
 {
 	_decode_thread.interrupt();
 	_decode_thread.join();
@@ -135,15 +135,15 @@ void Decoder::begin_decode()
 	assert(sig);
 	shared_ptr<data::Logic> data = sig->data();
 
-	_decode_thread = boost::thread(&Decoder::decode_proc, this,
+	_decode_thread = boost::thread(&DecoderStack::decode_proc, this,
 		data);
 }
 
-void Decoder::clear_snapshots()
+void DecoderStack::clear_snapshots()
 {
 }
 
-void Decoder::decode_proc(shared_ptr<data::Logic> data)
+void DecoderStack::decode_proc(shared_ptr<data::Logic> data)
 {
 	srd_session *session;
 	uint8_t chunk[DecodeChunkLength];
@@ -167,7 +167,7 @@ void Decoder::decode_proc(shared_ptr<data::Logic> data)
 		g_variant_new_uint64((uint64_t)_samplerate));
 
 	srd_pd_output_callback_add(session, SRD_OUTPUT_ANN,
-		Decoder::annotation_callback, this);
+		DecoderStack::annotation_callback, this);
 
 	// Create the decoder instance
 	srd_decoder_inst *const decoder_inst = srd_inst_new(
@@ -218,14 +218,14 @@ void Decoder::decode_proc(shared_ptr<data::Logic> data)
 	srd_session_destroy(session);
 }
 
-void Decoder::annotation_callback(srd_proto_data *pdata, void *decoder)
+void DecoderStack::annotation_callback(srd_proto_data *pdata, void *decoder)
 {
 	using namespace pv::view::decode;
 
 	assert(pdata);
 	assert(decoder);
 
-	Decoder *const d = (Decoder*)decoder;
+	DecoderStack *const d = (DecoderStack*)decoder;
 
 	shared_ptr<Annotation> a(new Annotation(pdata));
 	lock_guard<mutex> lock(d->_mutex);

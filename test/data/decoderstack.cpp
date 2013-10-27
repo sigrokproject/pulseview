@@ -23,7 +23,7 @@
 
 #include <libsigrok/libsigrok.h>
 
-#include "../../pv/data/decoder.h"
+#include "../../pv/data/decoderstack.h"
 #include "../../pv/devicemanager.h"
 #include "../../pv/sigsession.h"
 #include "../../pv/view/decodetrace.h"
@@ -31,9 +31,9 @@
 using namespace boost;
 using namespace std;
 
-BOOST_AUTO_TEST_SUITE(DecoderTest)
+BOOST_AUTO_TEST_SUITE(DecoderStackTest)
 
-BOOST_AUTO_TEST_CASE(TwoDecoder)
+BOOST_AUTO_TEST_CASE(TwoDecoderStack)
 {
 	using namespace pv;
 
@@ -62,10 +62,10 @@ BOOST_AUTO_TEST_CASE(TwoDecoder)
 		const vector< shared_ptr<view::DecodeTrace> > sigs =
 			ss.get_decode_signals();
 
-		shared_ptr<data::Decoder> dec0 = sigs[0]->decoder();
+		shared_ptr<data::DecoderStack> dec0 = sigs[0]->decoder();
 		BOOST_REQUIRE(dec0);
 
-		shared_ptr<data::Decoder> dec1 = sigs[0]->decoder();
+		shared_ptr<data::DecoderStack> dec1 = sigs[0]->decoder();
 		BOOST_REQUIRE(dec1);
 
 		// Wait for the decode threads to complete

@@ -1,4 +1,4 @@
-##
+
 ## This file is part of the PulseView project.
 ##
 ## Copyright (C) 2012 Joel Holdsworth <joel@airwebreathe.org.uk>
@@ -107,7 +107,7 @@ set(pulseview_SOURCES
 	pv/sigsession.cpp
 	pv/data/analog.cpp
 	pv/data/analogsnapshot.cpp
-	pv/data/decoder.cpp
+	pv/data/decoderstack.cpp
 	pv/data/logic.cpp
 	pv/data/logicsnapshot.cpp
 	pv/data/signaldata.cpp
@@ -154,7 +154,7 @@ set(pulseview_SOURCES
 set(pulseview_HEADERS
 	pv/mainwindow.h
 	pv/sigsession.h
-	pv/data/decoder.h
+	pv/data/decoderstack.h
 	pv/dialogs/about.h
 	pv/dialogs/connect.h
 	pv/popups/deviceoptions.h
