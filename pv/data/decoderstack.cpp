@@ -20,6 +20,7 @@
 
 #include <libsigrokdecode/libsigrokdecode.h>
 
+#include <boost/foreach.hpp>
 #include <boost/thread/thread.hpp>
 
 #include <stdexcept>
@@ -30,6 +31,7 @@
 
 #include <pv/data/logic.h>
 #include <pv/data/logicsnapshot.h>
+#include <pv/data/decode/decoder.h>
 #include <pv/view/logicsignal.h>
 #include <pv/view/decode/annotation.h>
 
@@ -45,49 +47,28 @@ const int64_t DecoderStack::DecodeChunkLength = 4096;
 
 mutex DecoderStack::_global_decode_mutex;
 
-DecoderStack::DecoderStack(const srd_decoder *const dec) :
-	_decoder(dec),
-	_options(g_hash_table_new_full(g_str_hash,
-		g_str_equal, g_free, (GDestroyNotify)g_variant_unref))
+DecoderStack::DecoderStack(const srd_decoder *const dec)
 {
+	_stack.push_back(shared_ptr<decode::Decoder>(
+		new decode::Decoder(dec)));
 }
 
 DecoderStack::~DecoderStack()
 {
 	_decode_thread.interrupt();
 	_decode_thread.join();
-
-	g_hash_table_destroy(_options);
 }
 
-const srd_decoder* DecoderStack::decoder() const
+const std::list< boost::shared_ptr<decode::Decoder> >&
+DecoderStack::stack() const
 {
-	return _decoder;
+	return _stack;
 }
 
-const map<const srd_probe*, shared_ptr<view::LogicSignal> >&
-DecoderStack::probes() const
+void DecoderStack::push(boost::shared_ptr<decode::Decoder> decoder)
 {
-	return _probes;
-}
-
-void DecoderStack::set_probes(std::map<const srd_probe*,
-	boost::shared_ptr<view::LogicSignal> > probes)
-{
-	_probes = probes;
-	begin_decode();
-}
-
-const GHashTable* DecoderStack::options() const
-{
-	return _options;
-}
-
-void DecoderStack::set_option(const char *id, GVariant *value)
-{
-	g_variant_ref(value);
-	g_hash_table_replace(_options, (void*)g_strdup(id), value);
-	begin_decode();
+	assert(decoder);
+	_stack.push_back(decoder);
 }
 
 const vector< shared_ptr<view::decode::Annotation> >
@@ -105,35 +86,31 @@ QString DecoderStack::error_message()
 
 void DecoderStack::begin_decode()
 {
+	shared_ptr<pv::view::LogicSignal> logic_signal;
+	shared_ptr<pv::data::Logic> data;
+
 	_decode_thread.interrupt();
 	_decode_thread.join();
 
 	_annotations.clear();
 
-	if (_probes.empty())
-		return;
-
-	// Get the samplerate and start time
-	shared_ptr<pv::view::LogicSignal> logic_signal =
-		dynamic_pointer_cast<pv::view::LogicSignal>(
-			(*_probes.begin()).second);
-	if (logic_signal) {
-		shared_ptr<pv::data::Logic> data(
-			logic_signal->data());
-		if (data) {
-			_start_time = data->get_start_time();
-			_samplerate = data->get_samplerate();
-			if (_samplerate == 0.0)
-				_samplerate = 1.0;
-		}
-	}
-
 	// We get the logic data of the first probe in the list.
 	// This works because we are currently assuming all
 	// LogicSignals have the same data/snapshot
-	shared_ptr<pv::view::LogicSignal> sig = (*_probes.begin()).second;
-	assert(sig);
-	shared_ptr<data::Logic> data = sig->data();
+	BOOST_FOREACH (const shared_ptr<decode::Decoder> &dec, _stack)
+		if (dec && !dec->probes().empty() &&
+			((logic_signal = (*dec->probes().begin()).second)) &&
+			((data = logic_signal->data())))
+			break;
+
+	if (!data)
+		return;
+
+	// Get the samplerate and start time
+	_start_time = data->get_start_time();
+	_samplerate = data->get_samplerate();
+	if (_samplerate == 0.0)
+		_samplerate = 1.0;
 
 	_decode_thread = boost::thread(&DecoderStack::decode_proc, this,
 		data);
@@ -147,6 +124,7 @@ void DecoderStack::decode_proc(shared_ptr<data::Logic> data)
 {
 	srd_session *session;
 	uint8_t chunk[DecodeChunkLength];
+	srd_decoder_inst *prev_di = NULL;
 
 	assert(data);
 
@@ -163,38 +141,32 @@ void DecoderStack::decode_proc(shared_ptr<data::Logic> data)
 	srd_session_new(&session);
 	assert(session);
 
+
+	// Create the decoders
+	BOOST_FOREACH(const shared_ptr<decode::Decoder> &dec, _stack)
+	{
+		srd_decoder_inst *const di = dec->create_decoder_inst(session);
+
+		if (!di)
+		{
+			_error_message = tr("Failed to initialise decoder");
+			srd_session_destroy(session);
+			return;
+		}
+
+		if (prev_di)
+			srd_inst_stack (session, prev_di, di);
+
+		prev_di = di;
+	}
+
+	// Start the session
 	srd_session_metadata_set(session, SRD_CONF_SAMPLERATE,
 		g_variant_new_uint64((uint64_t)_samplerate));
 
 	srd_pd_output_callback_add(session, SRD_OUTPUT_ANN,
 		DecoderStack::annotation_callback, this);
 
-	// Create the decoder instance
-	srd_decoder_inst *const decoder_inst = srd_inst_new(
-		session, _decoder->id, _options);
-	if(!decoder_inst) {
-		_error_message = tr("Failed to initialise decoder");
-		return;
-	}
-
-	// Setup the probes
-	GHashTable *const probes = g_hash_table_new_full(g_str_hash,
-		g_str_equal, g_free, (GDestroyNotify)g_variant_unref);
-
-	for(map<const srd_probe*, shared_ptr<view::LogicSignal> >::
-		const_iterator i = _probes.begin();
-		i != _probes.end(); i++)
-	{
-		shared_ptr<view::Signal> signal((*i).second);
-		GVariant *const gvar = g_variant_new_int32(
-			signal->probe()->index);
-		g_variant_ref_sink(gvar);
-		g_hash_table_insert(probes, (*i).first->id, gvar);
-	}
-
-	srd_inst_probe_set_all(decoder_inst, probes);
-
-	// Start the session
 	srd_session_start(session);
 
 	for (int64_t i = 0;

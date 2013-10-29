@@ -29,6 +29,7 @@
 #include "data/decoderstack.h"
 #include "data/logic.h"
 #include "data/logicsnapshot.h"
+#include "data/decode/decoder.h"
 
 #include "view/analogsignal.h"
 #include "view/decodetrace.h"
@@ -202,13 +203,15 @@ boost::shared_ptr<data::Logic> SigSession::get_data()
 bool SigSession::add_decoder(srd_decoder *const dec)
 {
 	map<const srd_probe*, shared_ptr<view::LogicSignal> > probes;
+	shared_ptr<data::DecoderStack> decoder_stack;
 
 	try
 	{
 		lock_guard<mutex> lock(_signals_mutex);
 
 		// Create the decoder
-		shared_ptr<data::DecoderStack> decoder(new data::DecoderStack(dec));
+		decoder_stack = shared_ptr<data::DecoderStack>(
+			new data::DecoderStack(dec));
 
 		// Auto select the initial probes
 		for(const GSList *i = dec->probes; i; i = i->next)
@@ -224,11 +227,14 @@ bool SigSession::add_decoder(srd_decoder *const dec)
 			}
 		}
 
-		decoder->set_probes(probes);
+		assert(decoder_stack);
+		assert(!decoder_stack->stack().empty());
+		assert(decoder_stack->stack().front());
+		decoder_stack->stack().front()->set_probes(probes);
 
 		// Create the decode signal
 		shared_ptr<view::DecodeTrace> d(
-			new view::DecodeTrace(*this, decoder,
+			new view::DecodeTrace(*this, decoder_stack,
 				_decode_traces.size()));
 		_decode_traces.push_back(d);
 	}
@@ -238,6 +244,9 @@ bool SigSession::add_decoder(srd_decoder *const dec)
 	}
 
 	signals_changed();
+
+	// Do an initial decode
+	decoder_stack->begin_decode();
 
 	return true;
 }

@@ -46,6 +46,7 @@ set(pulseview_TEST_SOURCES
 	${PROJECT_SOURCE_DIR}/pv/data/logicsnapshot.cpp
 	${PROJECT_SOURCE_DIR}/pv/data/snapshot.cpp
 	${PROJECT_SOURCE_DIR}/pv/data/signaldata.cpp
+	${PROJECT_SOURCE_DIR}/pv/data/decode/decoder.cpp
 	${PROJECT_SOURCE_DIR}/pv/prop/int.cpp
 	${PROJECT_SOURCE_DIR}/pv/prop/property.cpp
 	${PROJECT_SOURCE_DIR}/pv/prop/string.cpp

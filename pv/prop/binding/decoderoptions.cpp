@@ -22,10 +22,12 @@
 
 #include "decoderoptions.h"
 
+#include <boost/bind.hpp>
 #include <boost/foreach.hpp>
 #include <boost/none_t.hpp>
 
 #include <pv/data/decoderstack.h>
+#include <pv/data/decode/decoder.h>
 #include <pv/prop/int.h>
 #include <pv/prop/string.h>
 
@@ -36,7 +38,10 @@ namespace pv {
 namespace prop {
 namespace binding {
 
-DecoderOptions::DecoderOptions(shared_ptr<pv::data::DecoderStack> decoder) :
+DecoderOptions::DecoderOptions(
+	shared_ptr<pv::data::DecoderStack> decoder_stack,
+	shared_ptr<data::decode::Decoder> decoder) :
+	_decoder_stack(decoder_stack),
 	_decoder(decoder)
 {
 	assert(_decoder);
@@ -105,6 +110,9 @@ void DecoderOptions::setter(const char *id, GVariant *value)
 {
 	assert(_decoder);
 	_decoder->set_option(id, value);
+
+	assert(_decoder_stack);
+	_decoder_stack->begin_decode();
 }
 
 } // binding

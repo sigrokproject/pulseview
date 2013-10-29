@@ -37,6 +37,7 @@ extern "C" {
 
 #include <pv/sigsession.h>
 #include <pv/data/decoderstack.h>
+#include <pv/data/decode/decoder.h>
 #include <pv/view/logicsignal.h>
 #include <pv/view/view.h>
 #include <pv/view/decode/annotation.h>
@@ -59,9 +60,8 @@ const QColor DecodeTrace::ErrorBgColour = QColor(0xEF, 0x29, 0x29);
 
 DecodeTrace::DecodeTrace(pv::SigSession &session,
 	boost::shared_ptr<pv::data::DecoderStack> decoder_stack, int index) :
-	Trace(session, QString(decoder_stack->decoder()->name)),
-	_decoder_stack(decoder_stack),
-	_binding(decoder_stack)
+	Trace(session, QString(decoder_stack->stack().front()->decoder()->name)),
+	_decoder_stack(decoder_stack)
 {
 	assert(_decoder_stack);
 
@@ -130,63 +130,32 @@ void DecodeTrace::paint_mid(QPainter &p, int left, int right)
 
 void DecodeTrace::populate_popup_form(QWidget *parent, QFormLayout *form)
 {
-	const GSList *probe;
-
 	assert(form);
 	assert(parent);
 	assert(_decoder_stack);
 
-	const srd_decoder *const decoder = _decoder_stack->decoder();
-
-	assert(decoder);
-
+	// Add the standard options
 	Trace::populate_popup_form(parent, form);
 
-	form->addRow(new QLabel(tr("<h3>Probes</h3>"), parent));
+	// Add the decoder options
+	_bindings.clear();
+	_probe_selectors.clear();
 
-	_probe_selector_map.clear();
-
-	// Add the mandatory probes
-	for(probe = decoder->probes; probe; probe = probe->next) {
-		const struct srd_probe *const p =
-			(struct srd_probe *)probe->data;
-		QComboBox *const combo = create_probe_selector(parent, p);
-		connect(combo, SIGNAL(currentIndexChanged(int)),
-			this, SLOT(on_probe_selected(int)));
-		form->addRow(tr("<b>%1</b> (%2) *")
-			.arg(p->name).arg(p->desc), combo);
-
-		_probe_selector_map[p] = combo;
-	}
-
-	// Add the optional probes
-	for(probe = decoder->opt_probes; probe; probe = probe->next) {
-		const struct srd_probe *const p =
-			(struct srd_probe *)probe->data;
-		QComboBox *const combo = create_probe_selector(parent, p);
-		connect(combo, SIGNAL(currentIndexChanged(int)),
-			this, SLOT(on_probe_selected(int)));
-		form->addRow(tr("<b>%1</b> (%2)")
-			.arg(p->name).arg(p->desc), combo);
-
-		_probe_selector_map[p] = combo;
-	}
+	BOOST_FOREACH(shared_ptr<data::decode::Decoder> dec,
+		_decoder_stack->stack())
+		create_decoder_form(dec, parent, form);
 
 	form->addRow(new QLabel(
 		tr("<i>* Required Probes</i>"), parent));
 
-	// Add the options
-	if (!_binding.properties().empty()) {
-		form->addRow(new QLabel(tr("<h3>Options</h3>"),
-			parent));
-		_binding.add_properties_to_form(form, true);
-	}
-
 	// Add stacking button
-	QPushButton *const stack_button =
-		new QPushButton(tr("Stack DecoderStack"), parent);
 	pv::widgets::DecoderMenu *const decoder_menu =
 		new pv::widgets::DecoderMenu(parent);
+	connect(decoder_menu, SIGNAL(decoder_selected(srd_decoder*)),
+		this, SLOT(on_stack_decoder(srd_decoder*)));
+
+	QPushButton *const stack_button =
+		new QPushButton(tr("Stack Decoder"), parent);
 	stack_button->setMenu(decoder_menu);
 
 	QHBoxLayout *stack_button_box = new QHBoxLayout;
@@ -229,21 +198,71 @@ void DecodeTrace::draw_error(QPainter &p, const QString &message,
 	p.drawText(text_rect, message);
 }
 
-QComboBox* DecodeTrace::create_probe_selector(
-	QWidget *parent, const srd_probe *const probe)
+void DecodeTrace::create_decoder_form(shared_ptr<data::decode::Decoder> &dec,
+	QWidget *parent, QFormLayout *form)
 {
+	const GSList *probe;
+
+	assert(dec);
+	const srd_decoder *const decoder = dec->decoder();
+	assert(decoder);
+
+	form->addRow(new QLabel(tr("<h3>%1</h3>").arg(decoder->name), parent));
+
+	// Add the mandatory probes
+	for(probe = decoder->probes; probe; probe = probe->next) {
+		const struct srd_probe *const p =
+			(struct srd_probe *)probe->data;
+		QComboBox *const combo = create_probe_selector(parent, dec, p);
+		connect(combo, SIGNAL(currentIndexChanged(int)),
+			this, SLOT(on_probe_selected(int)));
+		form->addRow(tr("<b>%1</b> (%2) *")
+			.arg(p->name).arg(p->desc), combo);
+
+		const ProbeSelector s = {combo, dec, p};
+		_probe_selectors.push_back(s);
+	}
+
+	// Add the optional probes
+	for(probe = decoder->opt_probes; probe; probe = probe->next) {
+		const struct srd_probe *const p =
+			(struct srd_probe *)probe->data;
+		QComboBox *const combo = create_probe_selector(parent, dec, p);
+		connect(combo, SIGNAL(currentIndexChanged(int)),
+			this, SLOT(on_probe_selected(int)));
+		form->addRow(tr("<b>%1</b> (%2)")
+			.arg(p->name).arg(p->desc), combo);
+
+		const ProbeSelector s = {combo, dec, p};
+		_probe_selectors.push_back(s);
+	}
+
+	// Add the options
+	shared_ptr<prop::binding::DecoderOptions> binding(
+		new prop::binding::DecoderOptions(_decoder_stack, dec));
+	binding->add_properties_to_form(form, true);
+
+	_bindings.push_back(binding);
+}
+
+QComboBox* DecodeTrace::create_probe_selector(
+	QWidget *parent, const shared_ptr<data::decode::Decoder> &dec,
+	const srd_probe *const probe)
+{
+	assert(dec);
+
 	const vector< shared_ptr<Signal> > sigs = _session.get_signals();
 
 	assert(_decoder_stack);
 	const map<const srd_probe*,
 		shared_ptr<LogicSignal> >::const_iterator probe_iter =
-		_decoder_stack->probes().find(probe);
+		dec->probes().find(probe);
 
 	QComboBox *selector = new QComboBox(parent);
 
 	selector->addItem("-", qVariantFromValue((void*)NULL));
 
-	if (probe_iter == _decoder_stack->probes().end())
+	if (probe_iter == dec->probes().end())
 		selector->setCurrentIndex(0);
 
 	for(size_t i = 0; i < sigs.size(); i++) {
@@ -262,31 +281,41 @@ QComboBox* DecodeTrace::create_probe_selector(
 	return selector;
 }
 
-void DecodeTrace::commit_probes()
+void DecodeTrace::commit_decoder_probes(shared_ptr<data::decode::Decoder> &dec)
 {
-	assert(_decoder_stack);
+	assert(dec);
 
 	map<const srd_probe*, shared_ptr<LogicSignal> > probe_map;
 	const vector< shared_ptr<Signal> > sigs = _session.get_signals();
 
-	for(map<const srd_probe*, QComboBox*>::const_iterator i =
-		_probe_selector_map.begin();
-		i != _probe_selector_map.end(); i++)
+	BOOST_FOREACH(const ProbeSelector &s, _probe_selectors)
 	{
-		const QComboBox *const combo = (*i).second;
-		const LogicSignal *const selection =
-			(LogicSignal*)combo->itemData(combo->currentIndex()).
-			value<void*>();
+		if(s._decoder != dec)
+			break;
 
-		BOOST_FOREACH(shared_ptr<Signal> s, sigs)
-			if(s.get() == selection) {
-				probe_map[(*i).first] =
-					dynamic_pointer_cast<LogicSignal>(s);
+		const LogicSignal *const selection =
+			(LogicSignal*)s._combo->itemData(
+				s._combo->currentIndex()).value<void*>();
+
+		BOOST_FOREACH(shared_ptr<Signal> sig, sigs)
+			if(sig.get() == selection) {
+				probe_map[s._probe] =
+					dynamic_pointer_cast<LogicSignal>(sig);
 				break;
 			}
 	}
 
-	_decoder_stack->set_probes(probe_map);
+	dec->set_probes(probe_map);
+}
+
+void DecodeTrace::commit_probes()
+{
+	assert(_decoder_stack);
+	BOOST_FOREACH(shared_ptr<data::decode::Decoder> dec,
+		_decoder_stack->stack())
+		commit_decoder_probes(dec);
+
+	_decoder_stack->begin_decode();
 }
 
 void DecodeTrace::on_new_decode_data()
@@ -308,6 +337,15 @@ void DecodeTrace::on_delete()
 void DecodeTrace::on_probe_selected(int)
 {
 	commit_probes();
+}
+
+void DecodeTrace::on_stack_decoder(srd_decoder *decoder)
+{
+	assert(decoder);
+	assert(_decoder_stack);
+	_decoder_stack->push(shared_ptr<data::decode::Decoder>(
+		new data::decode::Decoder(decoder)));
+	_decoder_stack->begin_decode();
 }
 
 } // namespace view

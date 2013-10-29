@@ -23,6 +23,7 @@
 
 #include "trace.h"
 
+#include <list>
 #include <map>
 
 #include <boost/shared_ptr.hpp>
@@ -37,6 +38,10 @@ namespace pv {
 
 namespace data {
 class DecoderStack;
+
+namespace decode {
+class Decoder;
+}
 }
 
 namespace view {
@@ -44,6 +49,14 @@ namespace view {
 class DecodeTrace : public Trace
 {
 	Q_OBJECT
+
+private:
+	struct ProbeSelector
+	{
+		const QComboBox *_combo;
+		const boost::shared_ptr<pv::data::decode::Decoder> _decoder;
+		const srd_probe *_probe;
+	};
 
 private:
 	static const QColor DecodeColours[4];
@@ -86,8 +99,16 @@ private:
 	void draw_error(QPainter &p, const QString &message,
 		int left, int right);
 
-	QComboBox* create_probe_selector(
-		QWidget *parent, const srd_probe *const probe);
+	void create_decoder_form(
+		boost::shared_ptr<pv::data::decode::Decoder> &dec,
+		QWidget *parent, QFormLayout *form);
+
+	QComboBox* create_probe_selector(QWidget *parent,
+		const boost::shared_ptr<pv::data::decode::Decoder> &dec,
+		const srd_probe *const probe);
+
+	void commit_decoder_probes(
+		boost::shared_ptr<data::decode::Decoder> &dec);
 
 	void commit_probes();
 
@@ -98,14 +119,17 @@ private slots:
 
 	void on_probe_selected(int);
 
+	void on_stack_decoder(srd_decoder *decoder);
+
 private:
 	boost::shared_ptr<pv::data::DecoderStack> _decoder_stack;
 
 	uint64_t _decode_start, _decode_end;
 
-	pv::prop::binding::DecoderOptions _binding;
+	std::list< boost::shared_ptr<pv::prop::binding::DecoderOptions> >
+		_bindings;
 
-	std::map<const srd_probe*, QComboBox*> _probe_selector_map;
+	std::list<ProbeSelector> _probe_selectors;
 };
 
 } // namespace view

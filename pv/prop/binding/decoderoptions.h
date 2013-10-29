@@ -29,6 +29,9 @@ namespace pv {
 
 namespace data {
 class DecoderStack;
+namespace decode {
+class Decoder;
+}
 }
 
 namespace prop {
@@ -37,7 +40,8 @@ namespace binding {
 class DecoderOptions : public Binding
 {
 public:
-	DecoderOptions(boost::shared_ptr<pv::data::DecoderStack> decoder);
+	DecoderOptions(boost::shared_ptr<pv::data::DecoderStack> decoder_stack,
+		boost::shared_ptr<pv::data::decode::Decoder> decoder);
 
 private:
 	GVariant* getter(const char *id);
@@ -45,7 +49,8 @@ private:
 	void setter(const char *id, GVariant *value);
 
 private:
-	boost::shared_ptr<pv::data::DecoderStack> _decoder;
+	boost::shared_ptr<pv::data::DecoderStack> _decoder_stack;
+	boost::shared_ptr<pv::data::decode::Decoder> _decoder;
 };
 
 } // binding

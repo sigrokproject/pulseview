@@ -23,15 +23,13 @@
 
 #include "signaldata.h"
 
-#include <map>
+#include <list>
 
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
 
 #include <QObject>
 #include <QString>
-
-#include <glib.h>
 
 struct srd_decoder;
 struct srd_probe;
@@ -54,6 +52,10 @@ class Annotation;
 
 namespace data {
 
+namespace decode {
+class Decoder;
+}
+
 class Logic;
 
 class DecoderStack : public QObject, public SignalData
@@ -70,16 +72,8 @@ public:
 
 	virtual ~DecoderStack();
 
-	const srd_decoder* decoder() const;
-
-	const std::map<const srd_probe*, boost::shared_ptr<view::LogicSignal> >&
-		probes() const;
-	void set_probes(std::map<const srd_probe*,
-		boost::shared_ptr<view::LogicSignal> > probes);
-
-	const GHashTable* options() const;
-
-	void set_option(const char *id, GVariant *value);
+	const std::list< boost::shared_ptr<decode::Decoder> >& stack() const;
+	void push(boost::shared_ptr<decode::Decoder> decoder);
 
 	const std::vector< boost::shared_ptr<pv::view::decode::Annotation> >
 		annotations() const;
@@ -88,9 +82,9 @@ public:
 
 	void clear_snapshots();
 
-private:
 	void begin_decode();
 
+private:
 	void decode_proc(boost::shared_ptr<data::Logic> data);
 
 	static void annotation_callback(srd_proto_data *pdata,
@@ -109,10 +103,7 @@ private:
 	 */
 	static boost::mutex _global_decode_mutex;
 
-	const srd_decoder *const _decoder;
-	std::map<const srd_probe*, boost::shared_ptr<view::LogicSignal> >
-		_probes;
-	GHashTable *_options;
+	std::list< boost::shared_ptr<decode::Decoder> > _stack;
 
 	mutable boost::mutex _mutex;
 	std::vector< boost::shared_ptr<pv::view::decode::Annotation> >
