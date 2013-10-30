@@ -149,11 +149,7 @@ void Decoder::decode_proc(shared_ptr<data::Logic> data)
 	srd_session_new(&session);
 	assert(session);
 
-	srd_session_config_set(session, SRD_CONF_NUM_PROBES,
-		g_variant_new_uint64(_probes.size()));
-	srd_session_config_set(session, SRD_CONF_UNITSIZE,
-		g_variant_new_uint64(snapshot->unit_size()));
-	srd_session_config_set(session, SRD_CONF_SAMPLERATE,
+	srd_session_metadata_set(session, SRD_CONF_SAMPLERATE,
 		g_variant_new_uint64((uint64_t)_samplerate));
 
 	srd_pd_output_callback_add(session, SRD_OUTPUT_ANN,
@@ -166,8 +162,6 @@ void Decoder::decode_proc(shared_ptr<data::Logic> data)
 		_error_message = tr("Failed to initialise decoder");
 		return;
 	}
-
-	decoder_inst->data_samplerate = _samplerate;
 
 	// Setup the probes
 	GHashTable *const probes = g_hash_table_new_full(g_str_hash,
@@ -199,8 +193,8 @@ void Decoder::decode_proc(shared_ptr<data::Logic> data)
 			i + DecodeChunkLength, sample_count);
 		snapshot->get_samples(chunk, i, chunk_end);
 
-		if (srd_session_send(session, i, chunk, chunk_end - i) !=
-			SRD_OK) {
+		if (srd_session_send(session, i, i + sample_count,
+				chunk, chunk_end - i) != SRD_OK) {
 			_error_message = tr("Failed to initialise decoder");
 			break;
 		}
