@@ -71,7 +71,7 @@ void Annotation::paint(QPainter &p, QColor text_color, int text_height,
 	int left, int right, double samples_per_pixel, double pixels_offset,
 	int y)
 {
-	const int h = (text_height * 3) / 2;
+	const int h = (text_height * 5) / 4;
 	const double start = _start_sample / samples_per_pixel -
 		pixels_offset;
 	const double end = _end_sample / samples_per_pixel -
