@@ -31,6 +31,7 @@ extern "C" {
 #include <QFormLayout>
 #include <QLabel>
 #include <QMenu>
+#include <QPushButton>
 
 #include "decodetrace.h"
 
@@ -39,6 +40,7 @@ extern "C" {
 #include <pv/view/logicsignal.h>
 #include <pv/view/view.h>
 #include <pv/view/decode/annotation.h>
+#include <pv/widgets/decodermenu.h>
 
 using namespace boost;
 using namespace std;
@@ -179,6 +181,17 @@ void DecodeTrace::populate_popup_form(QWidget *parent, QFormLayout *form)
 			parent));
 		_binding.add_properties_to_form(form, true);
 	}
+
+	// Add stacking button
+	QPushButton *const stack_button =
+		new QPushButton(tr("Stack Decoder"), parent);
+	pv::widgets::DecoderMenu *const decoder_menu =
+		new pv::widgets::DecoderMenu(parent);
+	stack_button->setMenu(decoder_menu);
+
+	QHBoxLayout *stack_button_box = new QHBoxLayout;
+	stack_button_box->addWidget(stack_button, 0, Qt::AlignRight);
+	form->addRow(stack_button_box);
 }
 
 QMenu* DecodeTrace::create_context_menu(QWidget *parent)
