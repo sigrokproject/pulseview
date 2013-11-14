@@ -53,10 +53,14 @@ const QColor Annotation::Colours[7] = {
 
 Annotation::Annotation(const srd_proto_data *const pdata) :
 	_start_sample(pdata->start_sample),
-	_end_sample(pdata->end_sample),
-	_format(pdata->ann_format)
+	_end_sample(pdata->end_sample)
 {
-	const char *const *annotations = (char**)pdata->data;
+	assert(pdata);
+	const srd_proto_data_annotation *const pda =
+		(const srd_proto_data_annotation*)pdata->data;
+	assert(pda);
+
+	const char *const *annotations = (char**)pda->ann_text;
 	while(*annotations) {
 		_annotations.push_back(QString(*annotations));
 		annotations++;
