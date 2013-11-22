@@ -31,9 +31,9 @@ using namespace std;
 namespace pv {
 namespace widgets {
 
-const unsigned int Popup::ArrowLength = 15;
+const unsigned int Popup::ArrowLength = 10;
 const unsigned int Popup::ArrowOverlap = 3;
-const unsigned int Popup::MarginWidth = 10;
+const unsigned int Popup::MarginWidth = 6;
 
 Popup::Popup(QWidget *parent) :
 	QWidget(parent, Qt::Popup | Qt::FramelessWindowHint),
