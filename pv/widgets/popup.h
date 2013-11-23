@@ -28,6 +28,8 @@ namespace widgets {
 
 class Popup : public QWidget
 {
+	Q_OBJECT
+
 public:
 	enum Position
 	{
@@ -63,6 +65,9 @@ private:
 
 	void reposition_widget();
 
+private:
+	void closeEvent(QCloseEvent*);
+
 	void paintEvent(QPaintEvent*);
 
 	void resizeEvent(QResizeEvent*);
@@ -71,6 +76,9 @@ private:
 
 protected:
 	void showEvent(QShowEvent *e);
+
+signals:
+	void closed();
 
 private:
 	QPoint _point;

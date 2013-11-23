@@ -164,6 +164,11 @@ void Popup::reposition_widget()
 	move(_point + o);
 }
 
+void Popup::closeEvent(QCloseEvent*)
+{
+	closed();
+}
+
 void Popup::paintEvent(QPaintEvent*)
 {
 	QPainter painter(this);

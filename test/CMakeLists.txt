@@ -101,6 +101,7 @@ set(pulseview_TEST_HEADERS
 	${PROJECT_SOURCE_DIR}/pv/widgets/colourbutton.h
 	${PROJECT_SOURCE_DIR}/pv/widgets/colourpopup.h
 	${PROJECT_SOURCE_DIR}/pv/widgets/decodermenu.h
+	${PROJECT_SOURCE_DIR}/pv/widgets/popup.h
 	${PROJECT_SOURCE_DIR}/pv/widgets/wellarray.h
 )
 

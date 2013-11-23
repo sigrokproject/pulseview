@@ -182,6 +182,7 @@ set(pulseview_HEADERS
 	pv/widgets/colourbutton.h
 	pv/widgets/colourpopup.h
 	pv/widgets/decodermenu.h
+	pv/widgets/popup.h
 	pv/widgets/popuptoolbutton.h
 	pv/widgets/wellarray.h
 )
