@@ -31,6 +31,7 @@
 #include <pv/prop/binding/decoderoptions.h>
 
 struct srd_probe;
+struct srd_decoder;
 
 class QComboBox;
 
