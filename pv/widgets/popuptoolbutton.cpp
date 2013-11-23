@@ -45,7 +45,9 @@ void PopupToolButton::on_clicked(bool)
 	if(!_popup)
 		return;
 
-	_popup->set_position(mapToGlobal(rect().center()), Popup::Bottom);
+	const QRect r = rect();
+	_popup->set_position(mapToGlobal(QPoint((r.left() + r.right()) / 2,
+		((r.top() + r.bottom() * 3) / 4))), Popup::Bottom);
 	_popup->show();
 }
 
