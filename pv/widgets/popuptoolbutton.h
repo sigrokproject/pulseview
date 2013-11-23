@@ -23,6 +23,8 @@
 
 #include "popup.h"
 
+#include <QToolButton>
+
 namespace pv {
 namespace widgets {
 
