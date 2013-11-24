@@ -183,10 +183,8 @@ pv::widgets::Popup* Trace::create_popup(QWidget *parent)
 	using pv::widgets::Popup;
 
 	_popup = new Popup(parent);
-	_popup_form = new QFormLayout(_popup);
-	_popup->setLayout(_popup_form);
 
-	populate_popup_form(_popup, _popup_form);
+	create_popup_form();
 
 	connect(_popup, SIGNAL(closed()),
 		this, SLOT(on_popup_closed()));
@@ -222,6 +220,22 @@ void Trace::add_colour_option(QWidget *parent, QFormLayout *form)
 		this, SLOT(on_colour_changed(const QColor&)));
 
 	form->addRow(tr("Colour"), colour_button);
+}
+
+void Trace::create_popup_form()
+{
+	// Clear the layout
+
+	// Transfer the layout and the child widgets to a temporary widget
+	// which then goes out of scope destroying the layout and all the child
+	// widgets.
+	if (_popup_form)
+		QWidget().setLayout(_popup_form);
+
+	// Repopulate the popup
+	_popup_form = new QFormLayout(_popup);
+	_popup->setLayout(_popup_form);
+	populate_popup_form(_popup, _popup_form);
 }
 
 void Trace::populate_popup_form(QWidget *parent, QFormLayout *form)

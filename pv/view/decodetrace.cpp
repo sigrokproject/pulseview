@@ -346,6 +346,8 @@ void DecodeTrace::on_stack_decoder(srd_decoder *decoder)
 	_decoder_stack->push(shared_ptr<data::decode::Decoder>(
 		new data::decode::Decoder(decoder)));
 	_decoder_stack->begin_decode();
+
+	create_popup_form();
 }
 
 } // namespace view

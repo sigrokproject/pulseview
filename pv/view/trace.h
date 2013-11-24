@@ -162,6 +162,8 @@ protected:
 
 	void add_colour_option(QWidget *parent, QFormLayout *form);
 
+	void create_popup_form();
+
 	virtual void populate_popup_form(QWidget *parent, QFormLayout *form);
 
 private:
@@ -202,6 +204,7 @@ protected:
 
 	QSizeF _text_size;
 
+private:
 	pv::widgets::Popup *_popup;
 	QFormLayout *_popup_form;
 };
