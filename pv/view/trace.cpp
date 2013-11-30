@@ -41,7 +41,9 @@ const int Trace::LabelHitPadding = 2;
 Trace::Trace(pv::SigSession &session, QString name) :
 	_session(session),
 	_name(name),
-	_v_offset(0)
+	_v_offset(0),
+	_popup(NULL),
+	_popup_form(NULL)
 {
 }
 
@@ -179,11 +181,17 @@ QMenu* Trace::create_context_menu(QWidget *parent)
 pv::widgets::Popup* Trace::create_popup(QWidget *parent)
 {
 	using pv::widgets::Popup;
-	Popup *const popup = new Popup(parent);
-	QFormLayout *const form = new QFormLayout(popup);
-	popup->setLayout(form);
-	populate_popup_form(popup, form);
-	return popup;
+
+	_popup = new Popup(parent);
+	_popup_form = new QFormLayout(_popup);
+	_popup->setLayout(_popup_form);
+
+	populate_popup_form(_popup, _popup_form);
+
+	connect(_popup, SIGNAL(closed()),
+		this, SLOT(on_popup_closed()));
+
+	return _popup;
 }
 
 int Trace::get_y() const
@@ -248,6 +256,12 @@ QRectF Trace::get_label_rect(int right)
 		right - label_arrow_length - label_size.width() - 0.5,
 		get_y() + 0.5f - label_size.height() / 2,
 		label_size.width(), label_size.height());
+}
+
+void Trace::on_popup_closed()
+{
+	_popup = NULL;
+	_popup_form = NULL;
 }
 
 void Trace::on_text_changed(const QString &text)

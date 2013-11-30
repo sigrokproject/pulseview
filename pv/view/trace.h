@@ -185,6 +185,8 @@ private slots:
 
 	void on_colour_changed(const QColor &colour);
 
+	void on_popup_closed();
+
 signals:
 	void visibility_changed();
 	void text_changed();	
@@ -199,6 +201,9 @@ protected:
 	int _v_offset;
 
 	QSizeF _text_size;
+
+	pv::widgets::Popup *_popup;
+	QFormLayout *_popup_form;
 };
 
 } // namespace view
