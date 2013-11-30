@@ -148,14 +148,26 @@ void DecodeTrace::populate_popup_form(QWidget *parent, QFormLayout *form)
 	_probe_selectors.clear();
 
 	const list< shared_ptr<Decoder> >& stack = _decoder_stack->stack();
-	list< shared_ptr<Decoder> >::const_iterator iter = stack.begin();
-	for (int i = 0; i < (int)stack.size(); i++, iter++) {
-		shared_ptr<Decoder> dec(*iter);
-		create_decoder_form(i, dec, parent, form);
-	}
 
-	form->addRow(new QLabel(
-		tr("<i>* Required Probes</i>"), parent));
+	if (stack.empty())
+	{
+		QLabel *const l = new QLabel(
+			tr("<p><i>No decoders in the stack</i></p>"));
+		l->setAlignment(Qt::AlignCenter);
+		form->addRow(l);
+	}
+	else
+	{
+		list< shared_ptr<Decoder> >::const_iterator iter =
+			stack.begin();
+		for (int i = 0; i < (int)stack.size(); i++, iter++) {
+			shared_ptr<Decoder> dec(*iter);
+			create_decoder_form(i, dec, parent, form);
+		}
+
+		form->addRow(new QLabel(
+			tr("<i>* Required Probes</i>"), parent));
+	}
 
 	// Add stacking button
 	pv::widgets::DecoderMenu *const decoder_menu =
