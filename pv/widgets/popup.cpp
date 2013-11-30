@@ -64,6 +64,34 @@ void Popup::set_position(const QPoint point, Position pos)
 
 }
 
+bool Popup::space_for_arrow() const
+{
+	// Check if there is room for the arrow
+	switch (_pos) {
+	case Right:
+		if (_point.x() > x())
+			return false;
+		return true;
+
+	case Bottom:
+		if (_point.y() > y())
+			return false;
+		return true;		
+
+	case Left:
+		if (_point.x() < (x() + width()))
+			return false;
+		return true;
+
+	case Top:
+		if (_point.y() < (y() + height()))
+			return false;
+		return true;
+	}
+
+	return true;
+}
+
 QPolygon Popup::arrow_polygon() const
 {
 	QPolygon poly;
@@ -144,12 +172,18 @@ QRegion Popup::bubble_region() const
 
 QRegion Popup::popup_region() const
 {
-	return arrow_region().united(bubble_region());
+	if (space_for_arrow())
+		return arrow_region().united(bubble_region());
+	else
+		return bubble_region();
 }
 
 void Popup::reposition_widget()
 {
 	QPoint o;
+
+	const QRect screen_rect = QApplication::desktop()->availableGeometry(
+		QApplication::desktop()->screenNumber(_point));
 
 	if (_pos == Right || _pos == Left)
 		o.ry() = -height() / 2;
@@ -161,7 +195,11 @@ void Popup::reposition_widget()
 	else if(_pos == Top)
 		o.ry() = -height();
 
-	move(_point + o);
+	o += _point;
+	move(max(min(o.x(), screen_rect.right() - width()),
+			screen_rect.left()),
+		max(min(o.y(), screen_rect.bottom() - height()),
+			screen_rect.top()));
 }
 
 void Popup::closeEvent(QCloseEvent*)
@@ -177,6 +215,7 @@ void Popup::paintEvent(QPaintEvent*)
 	const QColor outline_color(QApplication::palette().color(
 		QPalette::Dark));
 
+	// Draw the bubble
 	const QRegion b = bubble_region();
 	const QRegion bubble_outline = QRegion(rect()).subtracted(
 		b.translated(1, 0).intersected(b.translated(0, 1).intersected(
@@ -185,6 +224,10 @@ void Popup::paintEvent(QPaintEvent*)
 	painter.setPen(Qt::NoPen);
 	painter.setBrush(QApplication::palette().brush(QPalette::Window));
 	painter.drawRect(rect());
+
+	// Draw the arrow
+	if (!space_for_arrow())
+		return;
 
 	const QPoint ArrowOffsets[] = {
 		QPoint(1, 0), QPoint(0, -1), QPoint(-1, 0), QPoint(0, 1)};

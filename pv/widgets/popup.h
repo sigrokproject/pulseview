@@ -53,6 +53,8 @@ public:
 	void set_position(const QPoint point, Position pos);
 
 private:
+	bool space_for_arrow() const;
+
 	QPolygon arrow_polygon() const;
 
 	QRegion arrow_region() const;
