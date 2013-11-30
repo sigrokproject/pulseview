@@ -41,6 +41,7 @@ extern "C" {
 #include <pv/view/logicsignal.h>
 #include <pv/view/view.h>
 #include <pv/view/decode/annotation.h>
+#include <pv/widgets/decodergroupbox.h>
 #include <pv/widgets/decodermenu.h>
 
 using namespace boost;
@@ -207,7 +208,10 @@ void DecodeTrace::create_decoder_form(shared_ptr<data::decode::Decoder> &dec,
 	const srd_decoder *const decoder = dec->decoder();
 	assert(decoder);
 
-	form->addRow(new QLabel(tr("<h3>%1</h3>").arg(decoder->name), parent));
+	pv::widgets::DecoderGroupBox *const group =
+		new pv::widgets::DecoderGroupBox(decoder->name);
+	QFormLayout *const decoder_form = new QFormLayout;
+	group->add_layout(decoder_form);
 
 	// Add the mandatory probes
 	for(probe = decoder->probes; probe; probe = probe->next) {
@@ -216,7 +220,7 @@ void DecodeTrace::create_decoder_form(shared_ptr<data::decode::Decoder> &dec,
 		QComboBox *const combo = create_probe_selector(parent, dec, p);
 		connect(combo, SIGNAL(currentIndexChanged(int)),
 			this, SLOT(on_probe_selected(int)));
-		form->addRow(tr("<b>%1</b> (%2) *")
+		decoder_form->addRow(tr("<b>%1</b> (%2) *")
 			.arg(p->name).arg(p->desc), combo);
 
 		const ProbeSelector s = {combo, dec, p};
@@ -230,7 +234,7 @@ void DecodeTrace::create_decoder_form(shared_ptr<data::decode::Decoder> &dec,
 		QComboBox *const combo = create_probe_selector(parent, dec, p);
 		connect(combo, SIGNAL(currentIndexChanged(int)),
 			this, SLOT(on_probe_selected(int)));
-		form->addRow(tr("<b>%1</b> (%2)")
+		decoder_form->addRow(tr("<b>%1</b> (%2)")
 			.arg(p->name).arg(p->desc), combo);
 
 		const ProbeSelector s = {combo, dec, p};
@@ -240,9 +244,11 @@ void DecodeTrace::create_decoder_form(shared_ptr<data::decode::Decoder> &dec,
 	// Add the options
 	shared_ptr<prop::binding::DecoderOptions> binding(
 		new prop::binding::DecoderOptions(_decoder_stack, dec));
-	binding->add_properties_to_form(form, true);
+	binding->add_properties_to_form(decoder_form, true);
 
 	_bindings.push_back(binding);
+
+	form->addRow(group);
 }
 
 QComboBox* DecodeTrace::create_probe_selector(

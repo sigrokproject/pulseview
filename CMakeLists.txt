@@ -145,6 +145,7 @@ set(pulseview_SOURCES
 	pv/view/decode/annotation.cpp
 	pv/widgets/colourbutton.cpp
 	pv/widgets/colourpopup.cpp
+	pv/widgets/decodergroupbox.cpp
 	pv/widgets/decodermenu.cpp
 	pv/widgets/popup.cpp
 	pv/widgets/popuptoolbutton.cpp
@@ -181,6 +182,7 @@ set(pulseview_HEADERS
 	pv/view/viewport.h
 	pv/widgets/colourbutton.h
 	pv/widgets/colourpopup.h
+	pv/widgets/decodergroupbox.h
 	pv/widgets/decodermenu.h
 	pv/widgets/popup.h
 	pv/widgets/popuptoolbutton.h

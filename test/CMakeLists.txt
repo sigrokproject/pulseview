@@ -70,6 +70,7 @@ set(pulseview_TEST_SOURCES
 	${PROJECT_SOURCE_DIR}/pv/view/decode/annotation.cpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/colourbutton.cpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/colourpopup.cpp
+	${PROJECT_SOURCE_DIR}/pv/widgets/decodergroupbox.cpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/decodermenu.cpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/popup.cpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/wellarray.cpp
@@ -100,6 +101,7 @@ set(pulseview_TEST_HEADERS
 	${PROJECT_SOURCE_DIR}/pv/view/viewport.h
 	${PROJECT_SOURCE_DIR}/pv/widgets/colourbutton.h
 	${PROJECT_SOURCE_DIR}/pv/widgets/colourpopup.h
+	${PROJECT_SOURCE_DIR}/pv/widgets/decodergroupbox.h
 	${PROJECT_SOURCE_DIR}/pv/widgets/decodermenu.h
 	${PROJECT_SOURCE_DIR}/pv/widgets/popup.h
 	${PROJECT_SOURCE_DIR}/pv/widgets/wellarray.h
