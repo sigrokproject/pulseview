@@ -88,6 +88,8 @@ void Trace::paint_back(QPainter &p, int left, int right)
 	(void)p;
 	(void)left;
 	(void)right;
+
+	compute_text_size(p);
 }
 
 void Trace::paint_mid(QPainter &p, int left, int right)

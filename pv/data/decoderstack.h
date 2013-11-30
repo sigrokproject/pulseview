@@ -76,6 +76,8 @@ public:
 	void push(boost::shared_ptr<decode::Decoder> decoder);
 	void remove(int index);
 
+	int64_t samples_decoded() const;
+
 	const std::vector< boost::shared_ptr<pv::view::decode::Annotation> >
 		annotations() const;
 
@@ -107,6 +109,7 @@ private:
 	std::list< boost::shared_ptr<decode::Decoder> > _stack;
 
 	mutable boost::mutex _mutex;
+	int64_t	_samples_decoded;
 	std::vector< boost::shared_ptr<pv::view::decode::Annotation> >
 		_annotations;
 	QString _error_message;

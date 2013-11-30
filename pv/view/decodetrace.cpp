@@ -38,6 +38,8 @@ extern "C" {
 #include <pv/sigsession.h>
 #include <pv/data/decoderstack.h>
 #include <pv/data/decode/decoder.h>
+#include <pv/data/logic.h>
+#include <pv/data/logicsnapshot.h>
 #include <pv/view/logicsignal.h>
 #include <pv/view/view.h>
 #include <pv/view/decode/annotation.h>
@@ -58,6 +60,7 @@ const QColor DecodeTrace::DecodeColours[4] = {
 };
 
 const QColor DecodeTrace::ErrorBgColour = QColor(0xEF, 0x29, 0x29);
+const QColor DecodeTrace::NoDecodeColour = QColor(0x88, 0x8A, 0x85);
 
 DecodeTrace::DecodeTrace(pv::SigSession &session,
 	boost::shared_ptr<pv::data::DecoderStack> decoder_stack, int index) :
@@ -93,22 +96,13 @@ void DecodeTrace::set_view(pv::view::View *view)
 
 void DecodeTrace::paint_back(QPainter &p, int left, int right)
 {
+	Trace::paint_back(p, left, right);
 	paint_axis(p, get_y(), left, right);
 }
 
 void DecodeTrace::paint_mid(QPainter &p, int left, int right)
 {
 	using namespace pv::view::decode;
-
-	assert(_decoder_stack);
-	const QString err = _decoder_stack->error_message();
-	if (!err.isEmpty()) {
-		draw_error(p, err, left, right);
-		return;
-	}
-
-	assert(_view);
-	const int y = get_y();
 
 	const double scale = _view->scale();
 	assert(scale > 0);
@@ -123,13 +117,31 @@ void DecodeTrace::paint_mid(QPainter &p, int left, int right)
 		_decoder_stack->get_start_time()) / scale;
 	const double samples_per_pixel = samplerate * scale;
 
+	const int h = (_text_size.height() * 5) / 4;
+
+	assert(_decoder_stack);
+	const QString err = _decoder_stack->error_message();
+	if (!err.isEmpty())
+	{
+		draw_error(p, err, left, right);
+		draw_unresolved_period(p, h, left, right, samples_per_pixel,
+			pixels_offset);
+		return;
+	}
+
+	assert(_view);
+	const int y = get_y();
+
 	assert(_decoder_stack);
 	vector< shared_ptr<Annotation> > annotations(_decoder_stack->annotations());
 	BOOST_FOREACH(shared_ptr<Annotation> a, annotations) {
 		assert(a);
-		a->paint(p, get_text_colour(), _text_size.height(),
-			left, right, samples_per_pixel, pixels_offset, y);
+		a->paint(p, get_text_colour(), h, left, right,
+			samples_per_pixel, pixels_offset, y);
 	}
+
+	draw_unresolved_period(p, h, left, right,
+		samples_per_pixel, pixels_offset);
 }
 
 void DecodeTrace::populate_popup_form(QWidget *parent, QFormLayout *form)
@@ -217,6 +229,58 @@ void DecodeTrace::draw_error(QPainter &p, const QString &message,
 
 	p.setPen(get_text_colour());
 	p.drawText(text_rect, message);
+}
+
+void DecodeTrace::draw_unresolved_period(QPainter &p, int h, int left,
+	int right, double samples_per_pixel, double pixels_offset) 
+{
+	using namespace pv::data;
+	using pv::data::decode::Decoder;
+
+	assert(_decoder_stack);	
+
+	shared_ptr<Logic> data;
+	shared_ptr<LogicSignal> logic_signal;
+
+	const list< shared_ptr<Decoder> > &stack = _decoder_stack->stack();
+
+	// We get the logic data of the first probe in the list.
+	// This works because we are currently assuming all
+	// LogicSignals have the same data/snapshot
+	BOOST_FOREACH (const shared_ptr<Decoder> &dec, stack)
+		if (dec && !dec->probes().empty() &&
+			((logic_signal = (*dec->probes().begin()).second)) &&
+			((data = logic_signal->data())))
+			break;
+
+	if (!data || data->get_snapshots().empty())
+		return;
+
+	const shared_ptr<LogicSnapshot> snapshot =
+		data->get_snapshots().front();
+	assert(snapshot);
+	const int64_t sample_count = (int64_t)snapshot->get_sample_count();
+	if (sample_count == 0)
+		return;
+
+	const int64_t samples_decoded = _decoder_stack->samples_decoded();
+	if (sample_count == samples_decoded)
+		return;
+
+	const int y = get_y();
+	const double start = max(samples_decoded /
+		samples_per_pixel - pixels_offset, left - 1.0);
+	const double end = min(sample_count / samples_per_pixel -
+		pixels_offset, right + 1.0);
+	const QRectF no_decode_rect(start, y - h/2 + 0.5, end - start, h);
+
+	p.setPen(QPen(Qt::NoPen));
+	p.setBrush(Qt::white);
+	p.drawRect(no_decode_rect);
+
+	p.setPen(NoDecodeColour);
+	p.setBrush(QBrush(NoDecodeColour, Qt::Dense6Pattern));
+	p.drawRect(no_decode_rect);
 }
 
 void DecodeTrace::create_decoder_form(int index,

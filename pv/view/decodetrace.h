@@ -64,6 +64,7 @@ private:
 private:
 	static const QColor DecodeColours[4];
 	static const QColor ErrorBgColour;
+	static const QColor NoDecodeColour;
 
 public:
 	DecodeTrace(pv::SigSession &session,
@@ -101,6 +102,9 @@ public:
 private:
 	void draw_error(QPainter &p, const QString &message,
 		int left, int right);
+
+	void draw_unresolved_period(QPainter &p, int h, int left,
+		int right, double samples_per_pixel, double pixels_offset);
 
 	void create_decoder_form(int index,
 		boost::shared_ptr<pv::data::decode::Decoder> &dec,

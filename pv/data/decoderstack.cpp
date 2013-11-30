@@ -47,7 +47,8 @@ const int64_t DecoderStack::DecodeChunkLength = 4096;
 
 mutex DecoderStack::_global_decode_mutex;
 
-DecoderStack::DecoderStack(const srd_decoder *const dec)
+DecoderStack::DecoderStack(const srd_decoder *const dec) :
+	_samples_decoded(0)
 {
 	_stack.push_back(shared_ptr<decode::Decoder>(
 		new decode::Decoder(dec)));
@@ -87,6 +88,12 @@ void DecoderStack::remove(int index)
 	_stack.erase(iter);
 }
 
+int64_t DecoderStack::samples_decoded() const
+{
+	lock_guard<mutex> decode_lock(_mutex);
+	return _samples_decoded;
+}
+
 const vector< shared_ptr<view::decode::Annotation> >
 	DecoderStack::annotations() const
 {
@@ -107,6 +114,8 @@ void DecoderStack::begin_decode()
 
 	_decode_thread.interrupt();
 	_decode_thread.join();
+
+	_samples_decoded = 0;
 
 	_annotations.clear();
 
@@ -199,6 +208,11 @@ void DecoderStack::decode_proc(shared_ptr<data::Logic> data)
 				chunk, chunk_end - i) != SRD_OK) {
 			_error_message = tr("Failed to initialise decoder");
 			break;
+		}
+
+		{
+			lock_guard<mutex> lock(_mutex);
+			_samples_decoded = chunk_end;
 		}
 	}
 

@@ -67,11 +67,10 @@ Annotation::Annotation(const srd_proto_data *const pdata) :
 	}
 }
 
-void Annotation::paint(QPainter &p, QColor text_color, int text_height,
+void Annotation::paint(QPainter &p, QColor text_color, int h,
 	int left, int right, double samples_per_pixel, double pixels_offset,
 	int y)
 {
-	const int h = (text_height * 5) / 4;
 	const double start = _start_sample / samples_per_pixel -
 		pixels_offset;
 	const double end = _end_sample / samples_per_pixel -
