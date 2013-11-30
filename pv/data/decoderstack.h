@@ -74,6 +74,7 @@ public:
 
 	const std::list< boost::shared_ptr<decode::Decoder> >& stack() const;
 	void push(boost::shared_ptr<decode::Decoder> decoder);
+	void remove(int index);
 
 	const std::vector< boost::shared_ptr<pv::view::decode::Annotation> >
 		annotations() const;

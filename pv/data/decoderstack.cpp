@@ -71,6 +71,22 @@ void DecoderStack::push(boost::shared_ptr<decode::Decoder> decoder)
 	_stack.push_back(decoder);
 }
 
+void DecoderStack::remove(int index)
+{
+	using pv::data::decode::Decoder;
+
+	assert(index >= 0);
+	assert(index < (int)_stack.size());
+
+	// Find the decoder in the stack
+	list< shared_ptr<Decoder> >::iterator iter = _stack.begin();
+	for(int i = 0; i < index; i++, iter++)
+		assert(iter != _stack.end());
+
+	// Delete the element
+	_stack.erase(iter);
+}
+
 const vector< shared_ptr<view::decode::Annotation> >
 	DecoderStack::annotations() const
 {

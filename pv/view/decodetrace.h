@@ -26,6 +26,8 @@
 #include <list>
 #include <map>
 
+#include <QSignalMapper>
+
 #include <boost/shared_ptr.hpp>
 
 #include <pv/prop/binding/decoderoptions.h>
@@ -100,7 +102,7 @@ private:
 	void draw_error(QPainter &p, const QString &message,
 		int left, int right);
 
-	void create_decoder_form(
+	void create_decoder_form(int index,
 		boost::shared_ptr<pv::data::decode::Decoder> &dec,
 		QWidget *parent, QFormLayout *form);
 
@@ -122,6 +124,8 @@ private slots:
 
 	void on_stack_decoder(srd_decoder *decoder);
 
+	void on_delete_decoder(int index);
+
 private:
 	boost::shared_ptr<pv::data::DecoderStack> _decoder_stack;
 
@@ -131,6 +135,8 @@ private:
 		_bindings;
 
 	std::list<ProbeSelector> _probe_selectors;
+
+	QSignalMapper _delete_mapper;
 };
 
 } // namespace view

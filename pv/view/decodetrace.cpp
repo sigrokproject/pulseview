@@ -62,7 +62,8 @@ const QColor DecodeTrace::ErrorBgColour = QColor(0xEF, 0x29, 0x29);
 DecodeTrace::DecodeTrace(pv::SigSession &session,
 	boost::shared_ptr<pv::data::DecoderStack> decoder_stack, int index) :
 	Trace(session, QString(decoder_stack->stack().front()->decoder()->name)),
-	_decoder_stack(decoder_stack)
+	_decoder_stack(decoder_stack),
+	_delete_mapper(this)
 {
 	assert(_decoder_stack);
 
@@ -70,6 +71,8 @@ DecodeTrace::DecodeTrace(pv::SigSession &session,
 
 	connect(_decoder_stack.get(), SIGNAL(new_decode_data()),
 		this, SLOT(on_new_decode_data()));
+	connect(&_delete_mapper, SIGNAL(mapped(int)),
+		this, SLOT(on_delete_decoder(int)));
 }
 
 bool DecodeTrace::enabled() const
@@ -131,6 +134,8 @@ void DecodeTrace::paint_mid(QPainter &p, int left, int right)
 
 void DecodeTrace::populate_popup_form(QWidget *parent, QFormLayout *form)
 {
+	using pv::data::decode::Decoder;
+
 	assert(form);
 	assert(parent);
 	assert(_decoder_stack);
@@ -142,9 +147,12 @@ void DecodeTrace::populate_popup_form(QWidget *parent, QFormLayout *form)
 	_bindings.clear();
 	_probe_selectors.clear();
 
-	BOOST_FOREACH(shared_ptr<data::decode::Decoder> dec,
-		_decoder_stack->stack())
-		create_decoder_form(dec, parent, form);
+	const list< shared_ptr<Decoder> >& stack = _decoder_stack->stack();
+	list< shared_ptr<Decoder> >::const_iterator iter = stack.begin();
+	for (int i = 0; i < (int)stack.size(); i++, iter++) {
+		shared_ptr<Decoder> dec(*iter);
+		create_decoder_form(i, dec, parent, form);
+	}
 
 	form->addRow(new QLabel(
 		tr("<i>* Required Probes</i>"), parent));
@@ -199,8 +207,9 @@ void DecodeTrace::draw_error(QPainter &p, const QString &message,
 	p.drawText(text_rect, message);
 }
 
-void DecodeTrace::create_decoder_form(shared_ptr<data::decode::Decoder> &dec,
-	QWidget *parent, QFormLayout *form)
+void DecodeTrace::create_decoder_form(int index,
+	shared_ptr<data::decode::Decoder> &dec, QWidget *parent,
+	QFormLayout *form)
 {
 	const GSList *probe;
 
@@ -210,6 +219,10 @@ void DecodeTrace::create_decoder_form(shared_ptr<data::decode::Decoder> &dec,
 
 	pv::widgets::DecoderGroupBox *const group =
 		new pv::widgets::DecoderGroupBox(decoder->name);
+
+	_delete_mapper.setMapping(group, index);
+	connect(group, SIGNAL(delete_decoder()), &_delete_mapper, SLOT(map()));
+
 	QFormLayout *const decoder_form = new QFormLayout;
 	group->add_layout(decoder_form);
 
@@ -354,6 +367,16 @@ void DecodeTrace::on_stack_decoder(srd_decoder *decoder)
 	_decoder_stack->begin_decode();
 
 	create_popup_form();
+}
+
+void DecodeTrace::on_delete_decoder(int index)
+{
+	_decoder_stack->remove(index);
+
+	// Update the popup
+	create_popup_form();	
+
+	_decoder_stack->begin_decode();
 }
 
 } // namespace view
