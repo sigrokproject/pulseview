@@ -110,19 +110,30 @@ void Annotation::draw_instant(QPainter &p, QColor fill, QColor outline,
 void Annotation::draw_range(QPainter &p, QColor fill, QColor outline,
 	QColor text_color, int h, double start, double end, int y)
 {
+	const double top = y + .5 - h / 2;
+	const double bottom = y + .5 + h / 2;
+
+	p.setPen(outline);
+	p.setBrush(fill);
+
+	// If the two ends are within 1 pixel, draw a vertical line
+	if (start + 1.0 > end)
+	{
+		p.drawLine(QPointF(start, top), QPointF(start, bottom));
+		return;
+	}
+
 	const double cap_width = min((end - start) / 2, EndCapWidth);
 
 	QPointF pts[] = {
 		QPointF(start, y + .5f),
-		QPointF(start + cap_width, y + .5f - h / 2),
-		QPointF(end - cap_width, y + .5f - h / 2),
+		QPointF(start + cap_width, top),
+		QPointF(end - cap_width, top),
 		QPointF(end, y + .5f),
-		QPointF(end - cap_width, y + .5f + h / 2),
-		QPointF(start + cap_width, y + .5f + h / 2)
+		QPointF(end - cap_width, bottom),
+		QPointF(start + cap_width, bottom)
 	};
 
-	p.setPen(outline);
-	p.setBrush(fill);
 	p.drawConvexPolygon(pts, countof(pts));
 
 	if (_annotations.empty())
