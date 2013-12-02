@@ -160,6 +160,16 @@ void MainWindow::setup_ui()
 		QString::fromUtf8("actionViewZoomOut"));
 	menu_view->addAction(action_view_zoom_out);
 
+	QAction *const action_view_zoom_fit = new QAction(this);
+	action_view_zoom_fit->setText(QApplication::translate(
+		"MainWindow", "Zoom to &Fit", 0, QApplication::UnicodeUTF8));
+	action_view_zoom_fit->setIcon(QIcon::fromTheme("zoom-fit",
+		QIcon(":/icons/zoom-fit.png")));
+	action_view_zoom_fit->setShortcut(QKeySequence(Qt::Key_F));
+	action_view_zoom_fit->setObjectName(
+		QString::fromUtf8("actionViewZoomFit"));
+	menu_view->addAction(action_view_zoom_fit);
+
 	menu_view->addSeparator();
 
 	QAction *action_view_show_cursors = new QAction(this);
@@ -211,6 +221,7 @@ void MainWindow::setup_ui()
 	toolbar->addSeparator();
 	toolbar->addAction(action_view_zoom_in);
 	toolbar->addAction(action_view_zoom_out);
+	toolbar->addAction(action_view_zoom_fit);
 	addToolBar(toolbar);
 
 	// Setup the sampling bar
@@ -327,6 +338,11 @@ void MainWindow::on_actionViewZoomIn_triggered()
 void MainWindow::on_actionViewZoomOut_triggered()
 {
 	_view->zoom(-1);
+}
+
+void MainWindow::on_actionViewZoomFit_triggered()
+{
+	_view->zoom_fit();
 }
 
 void MainWindow::on_actionViewShowCursors_triggered()

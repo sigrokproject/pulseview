@@ -89,6 +89,8 @@ private slots:
 
 	void on_actionViewZoomOut_triggered();
 
+	void on_actionViewZoomFit_triggered();
+
 	void on_actionViewShowCursors_triggered();
 
 	void on_actionAbout_triggered();

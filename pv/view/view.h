@@ -86,6 +86,8 @@ public:
 	void zoom(double steps);
 	void zoom(double steps, int offset);
 
+	void zoom_fit();
+
 	/**
 	 * Sets the scale and offset.
 	 * @param scale The new view scale in seconds per pixel.

@@ -24,6 +24,8 @@
 #include <limits.h>
 #include <math.h>
 
+#include <set>
+
 #include <boost/foreach.hpp>
 
 #include <QEvent>
@@ -151,6 +153,43 @@ void View::zoom(double steps, int offset)
 		MaxScale), MinScale);
 	const double new_offset = cursor_offset - new_scale * offset;
 	set_scale_offset(new_scale, new_offset);
+}
+
+void View::zoom_fit()
+{
+	using pv::data::SignalData;
+
+	const vector< shared_ptr<Signal> > sigs(
+		session().get_signals());
+
+	// Make a set of all the visible data objects
+	set< shared_ptr<SignalData> > visible_data;
+	BOOST_FOREACH(const shared_ptr<Signal> sig, sigs)
+		if (sig->enabled())
+			visible_data.insert(sig->data());
+
+	if (visible_data.empty())
+		return;
+
+	double left_time = DBL_MAX, right_time = DBL_MIN;
+	BOOST_FOREACH(const shared_ptr<SignalData> d, visible_data)
+	{
+		const double start_time = d->get_start_time();
+		left_time = min(left_time, start_time);
+		right_time = max(right_time, start_time +
+			d->get_max_sample_count() / d->get_samplerate());
+	}
+
+	assert(left_time < right_time);
+	if (right_time - left_time < 1e-12)
+		return;
+
+	assert(_viewport);
+	const int w = _viewport->width();
+	if (w <= 0)
+		return;
+
+	set_scale_offset((right_time - left_time) / w, left_time);	
 }
 
 void View::set_scale_offset(double scale, double offset)
