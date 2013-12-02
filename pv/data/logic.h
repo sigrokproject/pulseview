@@ -44,7 +44,7 @@ public:
 	std::deque< boost::shared_ptr<LogicSnapshot> >&
 		get_snapshots();
 
-	void clear_snapshots();
+	void clear();
 
 private:
 	const unsigned int _num_probes;

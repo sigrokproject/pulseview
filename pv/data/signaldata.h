@@ -37,7 +37,7 @@ public:
 
 	double get_start_time() const;
 
-	virtual void clear_snapshots() = 0;
+	virtual void clear() = 0;
 
 protected:
 	double _start_time;

@@ -141,7 +141,7 @@ void DecoderStack::begin_decode()
 		data);
 }
 
-void DecoderStack::clear_snapshots()
+void DecoderStack::clear()
 {
 }
 

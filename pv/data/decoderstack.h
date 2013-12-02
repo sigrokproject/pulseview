@@ -83,7 +83,7 @@ public:
 
 	QString error_message();
 
-	void clear_snapshots();
+	void clear();
 
 	void begin_decode();
 

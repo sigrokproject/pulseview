@@ -50,7 +50,7 @@ deque< shared_ptr<LogicSnapshot> >& Logic::get_snapshots()
 	return _snapshots;
 }
 
-void Logic::clear_snapshots()
+void Logic::clear()
 {
 	_snapshots.clear();
 }

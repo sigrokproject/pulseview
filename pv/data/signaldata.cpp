@@ -37,7 +37,7 @@ double SignalData::get_samplerate() const
 void SignalData::set_samplerate(double samplerate)
 {
 	_samplerate = samplerate;
-	clear_snapshots();
+	clear();
 }
 
 double SignalData::get_start_time() const

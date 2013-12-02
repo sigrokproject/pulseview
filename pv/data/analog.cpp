@@ -42,7 +42,7 @@ deque< shared_ptr<AnalogSnapshot> >& Analog::get_snapshots()
 	return _snapshots;
 }
 
-void Analog::clear_snapshots()
+void Analog::clear()
 {
 	_snapshots.clear();
 }
