@@ -96,7 +96,7 @@ void AnalogSignal::paint_mid(QPainter &p, int left, int right)
 		snapshots.front();
 
 	const double pixels_offset = offset / scale;
-	const double samplerate = _data->get_samplerate();
+	const double samplerate = _data->samplerate();
 	const double start_time = _data->get_start_time();
 	const int64_t last_sample = snapshot->get_sample_count() - 1;
 	const double samples_per_pixel = samplerate * scale;

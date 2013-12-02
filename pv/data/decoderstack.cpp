@@ -133,7 +133,7 @@ void DecoderStack::begin_decode()
 
 	// Get the samplerate and start time
 	_start_time = data->get_start_time();
-	_samplerate = data->get_samplerate();
+	_samplerate = data->samplerate();
 	if (_samplerate == 0.0)
 		_samplerate = 1.0;
 

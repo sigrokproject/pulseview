@@ -177,7 +177,7 @@ void View::zoom_fit()
 		const double start_time = d->get_start_time();
 		left_time = min(left_time, start_time);
 		right_time = max(right_time, start_time +
-			d->get_max_sample_count() / d->get_samplerate());
+			d->get_max_sample_count() / d->samplerate());
 	}
 
 	assert(left_time < right_time);
@@ -305,7 +305,7 @@ void View::get_scroll_layout(double &length, double &offset) const
 	if (!sig_data)
 		return;
 
-	length = _data_length / (sig_data->get_samplerate() * _scale);
+	length = _data_length / (sig_data->samplerate() * _scale);
 	offset = _offset / _scale;
 }
 

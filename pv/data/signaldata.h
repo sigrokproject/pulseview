@@ -32,7 +32,7 @@ public:
 	SignalData();
 
 public:
-	double get_samplerate() const;
+	double samplerate() const;
 	void set_samplerate(double samplerate);
 
 	double get_start_time() const;

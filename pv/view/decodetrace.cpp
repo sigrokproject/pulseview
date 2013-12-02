@@ -107,7 +107,7 @@ void DecodeTrace::paint_mid(QPainter &p, int left, int right)
 	const double scale = _view->scale();
 	assert(scale > 0);
 
-	double samplerate = _decoder_stack->get_samplerate();
+	double samplerate = _decoder_stack->samplerate();
 
 	// Show sample rate as 1Hz when it is unknown
 	if (samplerate == 0.0)
