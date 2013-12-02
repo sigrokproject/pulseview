@@ -29,13 +29,7 @@
 
 #include "sigsession.h"
 
-class QAction;
-class QMenuBar;
-class QMenu;
 class QVBoxLayout;
-class QStatusBar;
-class QToolBar;
-class QWidget;
 
 namespace pv {
 
@@ -112,27 +106,9 @@ private:
 
 	pv::view::View *_view;
 
-	QMenuBar *_menu_bar;
-	QMenu *_menu_file;
-	QAction *_action_open;
-	QAction *_action_connect;
-	QAction *_action_quit;
-
-	QMenu *_menu_view;
-	QAction *_action_view_zoom_in;
-	QAction *_action_view_zoom_out;
-	QAction *_action_view_show_cursors;
-
-	QMenu *_menu_decoders;
-	pv::widgets::DecoderMenu *_menu_decoders_add;
-
-	QMenu *_menu_help;
-	QAction *_action_about;
-
 	QWidget *_central_widget;
 	QVBoxLayout *_vertical_layout;
 
-	QToolBar *_toolbar;
 	toolbars::SamplingBar *_sampling_bar;
 };
 

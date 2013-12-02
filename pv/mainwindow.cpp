@@ -101,116 +101,117 @@ void MainWindow::setup_ui()
 	_vertical_layout->addWidget(_view);
 
 	// Setup the menu bar
-	_menu_bar = new QMenuBar(this);
-	_menu_bar->setGeometry(QRect(0, 0, 400, 25));
+	QMenuBar *const menu_bar = new QMenuBar(this);
+	menu_bar->setGeometry(QRect(0, 0, 400, 25));
 
 	// File Menu
-	_menu_file = new QMenu(_menu_bar);
-	_menu_file->setTitle(QApplication::translate(
+	QMenu *const menu_file = new QMenu;
+	menu_file->setTitle(QApplication::translate(
 		"MainWindow", "&File", 0, QApplication::UnicodeUTF8));
 
-	_action_open = new QAction(this);
-	_action_open->setText(QApplication::translate(
+	QAction *const action_open = new QAction(this);
+	action_open->setText(QApplication::translate(
 		"MainWindow", "&Open...", 0, QApplication::UnicodeUTF8));
-	_action_open->setIcon(QIcon::fromTheme("document-open",
+	action_open->setIcon(QIcon::fromTheme("document-open",
 		QIcon(":/icons/document-open.png")));
-	_action_open->setObjectName(QString::fromUtf8("actionOpen"));
-	_menu_file->addAction(_action_open);
+	action_open->setObjectName(QString::fromUtf8("actionOpen"));
+	menu_file->addAction(action_open);
 
-	_menu_file->addSeparator();
+	menu_file->addSeparator();
 
-	_action_connect = new QAction(this);
-	_action_connect->setText(QApplication::translate(
+	QAction *const action_connect = new QAction(this);
+	action_connect->setText(QApplication::translate(
 		"MainWindow", "&Connect to Device...", 0,
 		QApplication::UnicodeUTF8));
-	_action_connect->setObjectName(QString::fromUtf8("actionConnect"));
-	_menu_file->addAction(_action_connect);
+	action_connect->setObjectName(QString::fromUtf8("actionConnect"));
+	menu_file->addAction(action_connect);
 
-	_menu_file->addSeparator();
+	menu_file->addSeparator();
 
-	_action_quit = new QAction(this);
-	_action_quit->setText(QApplication::translate(
+	QAction *action_quit = new QAction(this);
+	action_quit->setText(QApplication::translate(
 		"MainWindow", "&Quit", 0, QApplication::UnicodeUTF8));
-	_action_quit->setIcon(QIcon::fromTheme("application-exit",
+	action_quit->setIcon(QIcon::fromTheme("application-exit",
 		QIcon(":/icons/application-exit.png")));
-	_action_quit->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q));
-	_action_quit->setObjectName(QString::fromUtf8("actionQuit"));
-	_menu_file->addAction(_action_quit);
+	action_quit->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q));
+	action_quit->setObjectName(QString::fromUtf8("actionQuit"));
+	menu_file->addAction(action_quit);
 
 	// View Menu
-	_menu_view = new QMenu(_menu_bar);
-	_menu_view->setTitle(QApplication::translate(
+	QMenu *menu_view = new QMenu;
+	menu_view->setTitle(QApplication::translate(
 		"MainWindow", "&View", 0, QApplication::UnicodeUTF8));
 
-	_action_view_zoom_in = new QAction(this);
-	_action_view_zoom_in->setText(QApplication::translate(
+	QAction *const action_view_zoom_in = new QAction(this);
+	action_view_zoom_in->setText(QApplication::translate(
 		"MainWindow", "Zoom &In", 0, QApplication::UnicodeUTF8));
-	_action_view_zoom_in->setIcon(QIcon::fromTheme("zoom-in",
+	action_view_zoom_in->setIcon(QIcon::fromTheme("zoom-in",
 		QIcon(":/icons/zoom-in.png")));
-	_action_view_zoom_in->setObjectName(
+	action_view_zoom_in->setObjectName(
 		QString::fromUtf8("actionViewZoomIn"));
-	_menu_view->addAction(_action_view_zoom_in);
+	menu_view->addAction(action_view_zoom_in);
 
-	_action_view_zoom_out = new QAction(this);
-	_action_view_zoom_out->setText(QApplication::translate(
+	QAction *const action_view_zoom_out = new QAction(this);
+	action_view_zoom_out->setText(QApplication::translate(
 		"MainWindow", "Zoom &Out", 0, QApplication::UnicodeUTF8));
-	_action_view_zoom_out->setIcon(QIcon::fromTheme("zoom-out",
+	action_view_zoom_out->setIcon(QIcon::fromTheme("zoom-out",
 		QIcon(":/icons/zoom-out.png")));
-	_action_view_zoom_out->setObjectName(
+	action_view_zoom_out->setObjectName(
 		QString::fromUtf8("actionViewZoomOut"));
-	_menu_view->addAction(_action_view_zoom_out);
+	menu_view->addAction(action_view_zoom_out);
 
-	_menu_view->addSeparator();
+	menu_view->addSeparator();
 
-	_action_view_show_cursors = new QAction(this);
-	_action_view_show_cursors->setCheckable(true);
-	_action_view_show_cursors->setChecked(_view->cursors_shown());
-	_action_view_show_cursors->setShortcut(QKeySequence(Qt::Key_C));
-	_action_view_show_cursors->setObjectName(
+	QAction *action_view_show_cursors = new QAction(this);
+	action_view_show_cursors->setCheckable(true);
+	action_view_show_cursors->setChecked(_view->cursors_shown());
+	action_view_show_cursors->setShortcut(QKeySequence(Qt::Key_C));
+	action_view_show_cursors->setObjectName(
 		QString::fromUtf8("actionViewShowCursors"));
-	_action_view_show_cursors->setText(QApplication::translate(
+	action_view_show_cursors->setText(QApplication::translate(
 		"MainWindow", "Show &Cursors", 0, QApplication::UnicodeUTF8));
-	_menu_view->addAction(_action_view_show_cursors);
+	menu_view->addAction(action_view_show_cursors);
 
 	// Decoders Menu
-	_menu_decoders = new QMenu(_menu_bar);
-	_menu_decoders->setTitle(QApplication::translate(
+	QMenu *const menu_decoders = new QMenu;
+	menu_decoders->setTitle(QApplication::translate(
 		"MainWindow", "&Decoders", 0, QApplication::UnicodeUTF8));
 
-	_menu_decoders_add = new pv::widgets::DecoderMenu(_menu_decoders);
-	_menu_decoders_add->setTitle(QApplication::translate(
+	pv::widgets::DecoderMenu *const menu_decoders_add =
+		new pv::widgets::DecoderMenu(menu_decoders);
+	menu_decoders_add->setTitle(QApplication::translate(
 		"MainWindow", "&Add", 0, QApplication::UnicodeUTF8));
-	connect(_menu_decoders_add, SIGNAL(decoder_selected(srd_decoder*)),
+	connect(menu_decoders_add, SIGNAL(decoder_selected(srd_decoder*)),
 		this, SLOT(add_decoder(srd_decoder*)));
 
-	_menu_decoders->addMenu(_menu_decoders_add);
+	menu_decoders->addMenu(menu_decoders_add);
 
 	// Help Menu
-	_menu_help = new QMenu(_menu_bar);
-	_menu_help->setTitle(QApplication::translate(
+	QMenu *const menu_help = new QMenu;
+	menu_help->setTitle(QApplication::translate(
 		"MainWindow", "&Help", 0, QApplication::UnicodeUTF8));
 
-	_action_about = new QAction(this);
-	_action_about->setObjectName(QString::fromUtf8("actionAbout"));
-	_action_about->setText(QApplication::translate(
+	QAction *const action_about = new QAction(this);
+	action_about->setObjectName(QString::fromUtf8("actionAbout"));
+	action_about->setText(QApplication::translate(
 		"MainWindow", "&About...", 0, QApplication::UnicodeUTF8));
-	_menu_help->addAction(_action_about);
+	menu_help->addAction(action_about);
 
-	_menu_bar->addAction(_menu_file->menuAction());
-	_menu_bar->addAction(_menu_view->menuAction());
-	_menu_bar->addAction(_menu_decoders->menuAction());
-	_menu_bar->addAction(_menu_help->menuAction());
+	menu_bar->addAction(menu_file->menuAction());
+	menu_bar->addAction(menu_view->menuAction());
+	menu_bar->addAction(menu_decoders->menuAction());
+	menu_bar->addAction(menu_help->menuAction());
 
-	setMenuBar(_menu_bar);
+	setMenuBar(menu_bar);
 	QMetaObject::connectSlotsByName(this);
 
 	// Setup the toolbar
-	_toolbar = new QToolBar(tr("Main Toolbar"), this);
-	_toolbar->addAction(_action_open);
-	_toolbar->addSeparator();
-	_toolbar->addAction(_action_view_zoom_in);
-	_toolbar->addAction(_action_view_zoom_out);
-	addToolBar(_toolbar);
+	QToolBar *const toolbar = new QToolBar(tr("Main Toolbar"), this);
+	toolbar->addAction(action_open);
+	toolbar->addSeparator();
+	toolbar->addAction(action_view_zoom_in);
+	toolbar->addAction(action_view_zoom_out);
+	addToolBar(toolbar);
 
 	// Setup the sampling bar
 	_sampling_bar = new toolbars::SamplingBar(_session, this);
