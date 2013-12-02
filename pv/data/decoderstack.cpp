@@ -125,7 +125,7 @@ void DecoderStack::begin_decode()
 	BOOST_FOREACH (const shared_ptr<decode::Decoder> &dec, _stack)
 		if (dec && !dec->probes().empty() &&
 			((logic_signal = (*dec->probes().begin()).second)) &&
-			((data = logic_signal->data())))
+			((data = logic_signal->logic_data())))
 			break;
 
 	if (!data)

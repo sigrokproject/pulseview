@@ -76,7 +76,7 @@ LogicSignal::~LogicSignal()
 {
 }
 
-boost::shared_ptr<pv::data::Logic> LogicSignal::data() const
+boost::shared_ptr<pv::data::Logic> LogicSignal::logic_data() const
 {
 	return _data;
 }

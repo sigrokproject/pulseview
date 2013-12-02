@@ -54,7 +54,7 @@ public:
 
 	virtual ~LogicSignal();
 
-	boost::shared_ptr<pv::data::Logic> data() const;
+	boost::shared_ptr<pv::data::Logic> logic_data() const;
 
 	/**
 	 * Paints the background layer of the signal with a QPainter

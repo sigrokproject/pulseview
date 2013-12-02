@@ -250,7 +250,7 @@ void DecodeTrace::draw_unresolved_period(QPainter &p, int h, int left,
 	BOOST_FOREACH (const shared_ptr<Decoder> &dec, stack)
 		if (dec && !dec->probes().empty() &&
 			((logic_signal = (*dec->probes().begin()).second)) &&
-			((data = logic_signal->data())))
+			((data = logic_signal->logic_data())))
 			break;
 
 	if (!data || data->get_snapshots().empty())
