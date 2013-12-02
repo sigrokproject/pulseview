@@ -21,6 +21,8 @@
 #ifndef PULSEVIEW_PV_VIEW_SIGNAL_H
 #define PULSEVIEW_PV_VIEW_SIGNAL_H
 
+#include <boost/shared_ptr.hpp>
+
 #include <QComboBox>
 #include <QWidgetAction>
 
@@ -50,6 +52,8 @@ public:
 	 * Sets the name of the signal.
 	 */
 	void set_name(QString name);
+
+	virtual boost::shared_ptr<pv::data::SignalData> data() const = 0;
 
 	/**
 	 * Returns true if the trace is visible and enabled.

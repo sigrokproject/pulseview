@@ -55,6 +55,11 @@ AnalogSignal::~AnalogSignal()
 {
 }
 
+boost::shared_ptr<pv::data::SignalData> AnalogSignal::data() const
+{
+	return _data;
+}
+
 void AnalogSignal::set_scale(float scale)
 {
 	_scale = scale;

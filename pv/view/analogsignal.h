@@ -47,6 +47,8 @@ public:
 
 	virtual ~AnalogSignal();
 
+	boost::shared_ptr<pv::data::SignalData> data() const;
+
 	void set_scale(float scale);
 
 	/**

@@ -54,6 +54,8 @@ public:
 
 	virtual ~LogicSignal();
 
+	boost::shared_ptr<pv::data::SignalData> data() const;
+
 	boost::shared_ptr<pv::data::Logic> logic_data() const;
 
 	/**
