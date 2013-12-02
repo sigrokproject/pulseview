@@ -39,6 +39,8 @@ public:
 
 	virtual void clear() = 0;
 
+	virtual uint64_t get_max_sample_count() const = 0;
+
 protected:
 	double _start_time;
 	double _samplerate;

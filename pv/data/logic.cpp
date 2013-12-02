@@ -18,6 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
+#include <boost/foreach.hpp>
+
 #include "logic.h"
 #include "logicsnapshot.h"
 
@@ -53,6 +55,16 @@ deque< shared_ptr<LogicSnapshot> >& Logic::get_snapshots()
 void Logic::clear()
 {
 	_snapshots.clear();
+}
+
+uint64_t Logic::get_max_sample_count() const
+{
+	uint64_t l = 0;
+	BOOST_FOREACH(boost::shared_ptr<LogicSnapshot> s, _snapshots) {
+		assert(s);
+		l = max(l, s->get_sample_count());
+	}
+	return l;
 }
 
 } // namespace data

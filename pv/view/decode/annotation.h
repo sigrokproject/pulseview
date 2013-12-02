@@ -42,6 +42,9 @@ private:
 public:
 	Annotation(const srd_proto_data *const pdata);
 
+	uint64_t start_sample() const;
+	uint64_t end_sample() const;
+
 	void paint(QPainter &p, QColor text_colour, int text_height, int left,
 		int right, double samples_per_pixel, double pixels_offset,
 		int y);

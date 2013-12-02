@@ -85,6 +85,8 @@ public:
 
 	void clear();
 
+	uint64_t get_max_sample_count() const;
+
 	void begin_decode();
 
 private:

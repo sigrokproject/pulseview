@@ -67,6 +67,16 @@ Annotation::Annotation(const srd_proto_data *const pdata) :
 	}
 }
 
+uint64_t Annotation::start_sample() const
+{
+	return _start_sample;
+}
+
+uint64_t Annotation::end_sample() const
+{
+	return _end_sample;
+}
+
 void Annotation::paint(QPainter &p, QColor text_color, int h,
 	int left, int right, double samples_per_pixel, double pixels_offset,
 	int y)

@@ -44,6 +44,8 @@ public:
 
 	void clear();
 
+	uint64_t get_max_sample_count() const;
+
 private:
 	std::deque< boost::shared_ptr<AnalogSnapshot> > _snapshots;
 };

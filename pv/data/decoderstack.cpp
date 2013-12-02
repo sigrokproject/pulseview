@@ -146,6 +146,13 @@ void DecoderStack::clear()
 	_annotations.clear();
 }
 
+uint64_t DecoderStack::get_max_sample_count() const
+{
+	if (_annotations.empty())
+		return 0;
+	return _annotations.back()->end_sample();
+}
+
 void DecoderStack::decode_proc(shared_ptr<data::Logic> data)
 {
 	srd_session *session;

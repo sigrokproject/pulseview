@@ -46,6 +46,8 @@ public:
 
 	void clear();
 
+	uint64_t get_max_sample_count() const;
+
 private:
 	const unsigned int _num_probes;
 	std::deque< boost::shared_ptr<LogicSnapshot> > _snapshots;
