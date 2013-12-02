@@ -143,6 +143,7 @@ void DecoderStack::begin_decode()
 
 void DecoderStack::clear()
 {
+	_annotations.clear();
 }
 
 void DecoderStack::decode_proc(shared_ptr<data::Logic> data)
