@@ -88,6 +88,8 @@ public:
 
 	void zoom_fit();
 
+	void zoom_one_to_one();
+
 	/**
 	 * Sets the scale and offset.
 	 * @param scale The new view scale in seconds per pixel.
@@ -142,6 +144,8 @@ signals:
 private:
 	void get_scroll_layout(double &length, double &offset) const;
 	
+	void set_zoom(double scale, int offset);
+
 	void update_scroll();
 
 	static bool compare_trace_v_offsets(

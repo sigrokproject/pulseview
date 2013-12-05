@@ -148,11 +148,9 @@ void View::zoom(double steps)
 
 void View::zoom(double steps, int offset)
 {
-	const double cursor_offset = _offset + _scale * offset;
 	const double new_scale = max(min(_scale * pow(3.0/2.0, -steps),
 		MaxScale), MinScale);
-	const double new_offset = cursor_offset - new_scale * offset;
-	set_scale_offset(new_scale, new_offset);
+	set_zoom(new_scale, offset);
 }
 
 void View::zoom_fit()
@@ -190,6 +188,39 @@ void View::zoom_fit()
 		return;
 
 	set_scale_offset((right_time - left_time) / w, left_time);	
+}
+
+void View::zoom_one_to_one()
+{
+	using pv::data::SignalData;
+
+	const vector< shared_ptr<Signal> > sigs(
+		session().get_signals());
+
+	// Make a set of all the visible data objects
+	set< shared_ptr<SignalData> > visible_data;
+	BOOST_FOREACH(const shared_ptr<Signal> sig, sigs)
+		if (sig->enabled())
+			visible_data.insert(sig->data());
+
+	if (visible_data.empty())
+		return;
+
+	double samplerate = 0.0;
+	BOOST_FOREACH(const shared_ptr<SignalData> d, visible_data) {
+		assert(d);
+		samplerate = max(samplerate, d->samplerate());
+	}
+
+	if (samplerate == 0.0)
+		return;
+
+	assert(_viewport);
+	const int w = _viewport->width();
+	if (w <= 0)
+		return;
+
+	set_zoom(1.0 / samplerate, w / 2);
 }
 
 void View::set_scale_offset(double scale, double offset)
@@ -307,6 +338,14 @@ void View::get_scroll_layout(double &length, double &offset) const
 
 	length = _data_length / (sig_data->samplerate() * _scale);
 	offset = _offset / _scale;
+}
+
+void View::set_zoom(double scale, int offset)
+{
+	const double cursor_offset = _offset + _scale * offset;
+	const double new_scale = max(min(scale, MaxScale), MinScale);
+	const double new_offset = cursor_offset - new_scale * offset;
+	set_scale_offset(new_scale, new_offset);
 }
 
 void View::update_scroll()

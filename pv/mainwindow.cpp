@@ -170,6 +170,17 @@ void MainWindow::setup_ui()
 		QString::fromUtf8("actionViewZoomFit"));
 	menu_view->addAction(action_view_zoom_fit);
 
+	QAction *const action_view_zoom_one_to_one = new QAction(this);
+	action_view_zoom_one_to_one->setText(QApplication::translate(
+		"MainWindow", "Zoom to &One-to-One", 0,
+			QApplication::UnicodeUTF8));
+	action_view_zoom_one_to_one->setIcon(QIcon::fromTheme("zoom-original",
+		QIcon(":/icons/zoom-original.png")));
+	action_view_zoom_one_to_one->setShortcut(QKeySequence(Qt::Key_O));
+	action_view_zoom_one_to_one->setObjectName(
+		QString::fromUtf8("actionViewZoomOneToOne"));
+	menu_view->addAction(action_view_zoom_one_to_one);
+
 	menu_view->addSeparator();
 
 	QAction *action_view_show_cursors = new QAction(this);
@@ -343,6 +354,11 @@ void MainWindow::on_actionViewZoomOut_triggered()
 void MainWindow::on_actionViewZoomFit_triggered()
 {
 	_view->zoom_fit();
+}
+
+void MainWindow::on_actionViewZoomOneToOne_triggered()
+{
+	_view->zoom_one_to_one();
 }
 
 void MainWindow::on_actionViewShowCursors_triggered()
