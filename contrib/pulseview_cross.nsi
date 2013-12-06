@@ -78,13 +78,11 @@ RequestExecutionLevel admin
 
 # Path where the cross-compiled sigrok tools and libraries are located.
 # Change this to where-ever you installed libsigrok.a and so on.
-# TODO: Figure out how to use $HOME (of the host that runs "makensis").
-!define CROSS "/home/uwe/sr_mingw"
+!define CROSS "$%HOME%/sr_mingw"
 
 # Path where the cross-compiled MXE tools and libraries are located.
 # Change this to where-ever you installed MXE (and the files it built).
-# TODO: Figure out how to use $HOME (of the host that runs "makensis").
-!define MXE "/home/uwe/mxe-git/usr/i686-pc-mingw32"
+!define MXE "$%HOME%/mxe-git/usr/i686-pc-mingw32"
 
 
 # --- MUI pages ---------------------------------------------------------------
