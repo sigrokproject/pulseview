@@ -143,7 +143,7 @@ int View::v_offset() const
 
 void View::zoom(double steps)
 {
-	zoom(steps, (width() - LabelMarginWidth) / 2);
+	zoom(steps, _viewport->width() / 2);
 }
 
 void View::zoom(double steps, int offset)
