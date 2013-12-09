@@ -52,8 +52,6 @@ namespace view {
 const double View::MaxScale = 1e9;
 const double View::MinScale = 1e-15;
 
-const int View::RulerHeight = 30;
-
 const int View::MaxScrollValue = INT_MAX / 2;
 
 const int View::SignalHeight = 30;
@@ -383,7 +381,8 @@ void View::update_scroll()
 
 void View::update_layout()
 {
-	setViewportMargins(_header->sizeHint().width(), RulerHeight, 0, 0);
+	setViewportMargins(_header->sizeHint().width(),
+		_ruler->sizeHint().height(), 0, 0);
 	_ruler->setGeometry(_viewport->x(), 0,
 		_viewport->width(), _viewport->y());
 	_header->setGeometry(0, _viewport->y(),
@@ -480,7 +479,7 @@ void View::signals_changed()
 		offset += SignalHeight + 2 * SignalMargin;
 	}
 
-	setViewportMargins(_header->sizeHint().width(), RulerHeight, 0, 0);
+	update_layout();
 	normalize_layout();
 }
 

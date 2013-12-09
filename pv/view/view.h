@@ -51,8 +51,6 @@ private:
 	static const double MaxScale;
 	static const double MinScale;
 
-	static const int RulerHeight;
-
 	static const int MaxScrollValue;
 
 public:

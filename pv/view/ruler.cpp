@@ -43,6 +43,7 @@ using namespace std;
 namespace pv {
 namespace view {
 
+const int Ruler::RulerHeight = 30;
 const int Ruler::MinorTickSubdivision = 4;
 const int Ruler::ScaleUnits[3] = {1, 2, 5};
 
@@ -82,6 +83,11 @@ QString Ruler::format_time(double t, unsigned int prefix,
 	ts << fixed << forcesign << (t  * multiplier) <<
 		SIPrefixes[prefix] << "s";
 	return s;
+}
+
+QSize Ruler::sizeHint() const
+{
+	return QSize(0, RulerHeight);
 }
 
 void Ruler::paintEvent(QPaintEvent*)

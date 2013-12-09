@@ -36,6 +36,7 @@ class Ruler : public MarginWidget
 	Q_OBJECT
 
 private:
+	static const int RulerHeight;
 	static const int MinorTickSubdivision;
 	static const int ScaleUnits[3];
 
@@ -51,6 +52,9 @@ public:
 
 	static QString format_time(double t, unsigned int prefix,
 		unsigned precision = 0);
+
+public:
+	QSize sizeHint() const;
 
 private:
 	void paintEvent(QPaintEvent *event);
