@@ -51,7 +51,6 @@ private:
 	static const double MaxScale;
 	static const double MinScale;
 
-	static const int LabelMarginWidth;
 	static const int RulerHeight;
 
 	static const int MaxScrollValue;
@@ -148,6 +147,8 @@ private:
 
 	void update_scroll();
 
+	void update_layout();
+
 	static bool compare_trace_v_offsets(
 		const boost::shared_ptr<pv::view::Trace> &a,
 		const boost::shared_ptr<pv::view::Trace> &b);
@@ -170,6 +171,8 @@ private slots:
 	void marker_time_changed();
 
 	void on_signals_moved();
+
+	void on_geometry_updated();
 
 private:
 	SigSession &_session;

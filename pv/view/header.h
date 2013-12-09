@@ -39,8 +39,13 @@ class Header : public MarginWidget
 {
 	Q_OBJECT
 
+private:
+	static const int Padding;
+
 public:
 	Header(View &parent);
+
+	QSize sizeHint() const;
 
 private:
 	boost::shared_ptr<pv::view::Trace> get_mouse_over_trace(
@@ -68,6 +73,8 @@ private slots:
 	void on_signals_changed();
 
 	void on_signals_moved();
+
+	void on_trace_text_changed();
 
 signals:
 	void signals_moved();

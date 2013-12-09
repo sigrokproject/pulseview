@@ -23,6 +23,7 @@
 #include <assert.h>
 #include <math.h>
 
+#include <QApplication>
 #include <QFormLayout>
 #include <QLineEdit>
 
@@ -88,8 +89,6 @@ void Trace::paint_back(QPainter &p, int left, int right)
 	(void)p;
 	(void)left;
 	(void)right;
-
-	compute_text_size(p);
 }
 
 void Trace::paint_mid(QPainter &p, int left, int right)
@@ -118,7 +117,6 @@ void Trace::paint_label(QPainter &p, int right, bool hover)
 
 	const QColor colour = get_colour();
 
-	compute_text_size(p);
 	const QRectF label_rect = get_label_rect(right);
 
 	// Paint the label
@@ -158,6 +156,7 @@ void Trace::paint_label(QPainter &p, int right, bool hover)
 
 	// Paint the text
 	p.setPen(get_text_colour());
+	p.setFont(QApplication::font());
 	p.drawText(label_rect, Qt::AlignCenter | Qt::AlignVCenter, _name);
 }
 
@@ -197,6 +196,26 @@ pv::widgets::Popup* Trace::create_popup(QWidget *parent)
 int Trace::get_y() const
 {
 	return _v_offset - _view->v_offset();
+}
+
+QRectF Trace::get_label_rect(int right)
+{
+	using pv::view::View;
+
+	assert(_view);
+
+	QFontMetrics m(QApplication::font());
+	const QSize text_size(
+		m.boundingRect(QRect(), 0, _name).width(),
+		m.boundingRect(QRect(), 0, "Tg").height());
+	const QSizeF label_size(
+		text_size.width() + View::LabelPadding.width() * 2,
+		ceilf((text_size.height() + View::LabelPadding.height() * 2) / 2) * 2);
+	const float label_arrow_length = label_size.height() / 2;
+	return QRectF(
+		right - label_arrow_length - label_size.width() - 0.5,
+		get_y() + 0.5f - label_size.height() / 2,
+		label_size.width(), label_size.height());
 }
 
 QColor Trace::get_text_colour() const
@@ -249,29 +268,6 @@ void Trace::populate_popup_form(QWidget *parent, QFormLayout *form)
 	form->addRow(tr("Name"), name_edit);
 
 	add_colour_option(parent, form);
-}
-
-void Trace::compute_text_size(QPainter &p)
-{
-	_text_size = QSize(
-		p.boundingRect(QRectF(), 0, _name).width(),
-		p.boundingRect(QRectF(), 0, "Tg").height());
-}
-
-QRectF Trace::get_label_rect(int right)
-{
-	using pv::view::View;
-
-	assert(_view);
-
-	const QSizeF label_size(
-		_text_size.width() + View::LabelPadding.width() * 2,
-		ceilf((_text_size.height() + View::LabelPadding.height() * 2) / 2) * 2);
-	const float label_arrow_length = label_size.height() / 2;
-	return QRectF(
-		right - label_arrow_length - label_size.width() - 0.5,
-		get_y() + 0.5f - label_size.height() / 2,
-		label_size.width(), label_size.height());
 }
 
 void Trace::on_popup_closed()

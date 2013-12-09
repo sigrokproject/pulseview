@@ -142,7 +142,17 @@ public:
 	 */
 	int get_y() const;
 
+	/**
+	 * Computes the outline rectangle of a label.
+	 * @param p the QPainter to lay out text with.
+	 * @param right the x-coordinate of the right edge of the header
+	 * 	area.
+	 * @return Returns the rectangle of the signal label.
+	 */
+	QRectF get_label_rect(int right);
+
 protected:
+
 	/**
 	 * Gets the text colour.
 	 * @remarks This colour is computed by comparing the lightness
@@ -166,22 +176,6 @@ protected:
 
 	virtual void populate_popup_form(QWidget *parent, QFormLayout *form);
 
-private:
-
-	/**
-	 * Computes an caches the size of the label text.
-	 */
-	void compute_text_size(QPainter &p);
-
-	/**
-	 * Computes the outline rectangle of a label.
-	 * @param p the QPainter to lay out text with.
-	 * @param right the x-coordinate of the right edge of the header
-	 * 	area.
-	 * @return Returns the rectangle of the signal label.
-	 */
-	QRectF get_label_rect(int right);
-
 private slots:
 	void on_text_changed(const QString &text);
 
@@ -201,8 +195,6 @@ protected:
 	QString _name;
 	QColor _colour;
 	int _v_offset;
-
-	QSizeF _text_size;
 
 private:
 	pv::widgets::Popup *_popup;

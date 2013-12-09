@@ -42,6 +42,8 @@ using namespace std;
 namespace pv {
 namespace view {
 
+const int Header::Padding = 12;
+
 Header::Header(View &parent) :
 	MarginWidget(parent),
 	_dragging(false)
@@ -54,6 +56,19 @@ Header::Header(View &parent) :
 
 	connect(&_view, SIGNAL(signals_moved()),
 		this, SLOT(on_signals_moved()));
+}
+
+QSize Header::sizeHint() const
+{
+	int max_width = 0;
+
+	const vector< shared_ptr<Trace> > traces(_view.get_traces());
+	BOOST_FOREACH(shared_ptr<Trace> t, traces) {
+		assert(t);
+		max_width = max(max_width, (int)t->get_label_rect(0).width());
+	}
+
+	return QSize(max_width + Padding, 0);
 }
 
 shared_ptr<Trace> Header::get_mouse_over_trace(const QPoint &pt)
@@ -261,7 +276,7 @@ void Header::on_signals_changed()
 		connect(t.get(), SIGNAL(visibility_changed()),
 			this, SLOT(update()));
 		connect(t.get(), SIGNAL(text_changed()),
-			this, SLOT(update()));
+			this, SLOT(on_trace_text_changed()));
 		connect(t.get(), SIGNAL(colour_changed()),
 			this, SLOT(update()));
 	}
@@ -272,6 +287,11 @@ void Header::on_signals_moved()
 	update();
 }
 
+void Header::on_trace_text_changed()
+{
+	update();
+	geometry_updated();
+}
 
 } // namespace view
 } // namespace pv

@@ -27,6 +27,7 @@ extern "C" {
 #include <boost/foreach.hpp>
 
 #include <QAction>
+#include <QApplication>
 #include <QComboBox>
 #include <QFormLayout>
 #include <QLabel>
@@ -117,7 +118,8 @@ void DecodeTrace::paint_mid(QPainter &p, int left, int right)
 		_decoder_stack->get_start_time()) / scale;
 	const double samples_per_pixel = samplerate * scale;
 
-	const int h = (_text_size.height() * 5) / 4;
+	QFontMetrics m(QApplication::font());
+	const int h = (m.boundingRect(QRect(), 0, "Tg").height() * 5) / 4;
 
 	assert(_decoder_stack);
 	const QString err = _decoder_stack->error_message();

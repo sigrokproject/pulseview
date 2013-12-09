@@ -52,7 +52,6 @@ namespace view {
 const double View::MaxScale = 1e9;
 const double View::MinScale = 1e-15;
 
-const int View::LabelMarginWidth = 70;
 const int View::RulerHeight = 30;
 
 const int View::MaxScrollValue = INT_MAX / 2;
@@ -95,6 +94,8 @@ View::View(SigSession &session, QWidget *parent) :
 	connect(_cursors.second().get(), SIGNAL(time_changed()),
 		this, SLOT(marker_time_changed()));
 
+	connect(_header, SIGNAL(geometry_updated()),
+		this, SLOT(on_geometry_updated()));
 	connect(_header, SIGNAL(signals_moved()),
 		this, SLOT(on_signals_moved()));
 
@@ -108,7 +109,6 @@ View::View(SigSession &session, QWidget *parent) :
 	connect(_ruler, SIGNAL(selection_changed()),
 		this, SIGNAL(selection_changed()));
 
-	setViewportMargins(LabelMarginWidth, RulerHeight, 0, 0);
 	setViewport(_viewport);
 
 	_viewport->installEventFilter(this);
@@ -381,6 +381,16 @@ void View::update_scroll()
 		areaSize.height());
 }
 
+void View::update_layout()
+{
+	setViewportMargins(_header->sizeHint().width(), RulerHeight, 0, 0);
+	_ruler->setGeometry(_viewport->x(), 0,
+		_viewport->width(), _viewport->y());
+	_header->setGeometry(0, _viewport->y(),
+		_viewport->x(), _viewport->height());
+	update_scroll();
+}
+
 bool View::compare_trace_v_offsets(const shared_ptr<Trace> &a,
 	const shared_ptr<Trace> &b)
 {
@@ -432,11 +442,7 @@ bool View::viewportEvent(QEvent *e)
 
 void View::resizeEvent(QResizeEvent*)
 {
-	_ruler->setGeometry(_viewport->x(), 0,
-		_viewport->width(), _viewport->y());
-	_header->setGeometry(0, _viewport->y(),
-		_viewport->x(), _viewport->height());
-	update_scroll();
+	update_layout();
 }
 
 void View::h_scroll_value_changed(int value)
@@ -474,6 +480,7 @@ void View::signals_changed()
 		offset += SignalHeight + 2 * SignalMargin;
 	}
 
+	setViewportMargins(_header->sizeHint().width(), RulerHeight, 0, 0);
 	normalize_layout();
 }
 
@@ -508,6 +515,11 @@ void View::on_signals_moved()
 {
 	update_scroll();
 	signals_moved();
+}
+
+void View::on_geometry_updated()
+{
+	update_layout();
 }
 
 } // namespace view
