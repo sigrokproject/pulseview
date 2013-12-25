@@ -47,15 +47,15 @@ public:
 
 	void paint(QPainter &p, QColor text_colour, int text_height, int left,
 		int right, double samples_per_pixel, double pixels_offset,
-		int y);
+		int y) const;
 
 private:
 	void draw_instant(QPainter &p, QColor fill, QColor outline,
-		QColor text_color, int h, double x, int y);
+		QColor text_color, int h, double x, int y) const;
 
 	void draw_range(QPainter &p, QColor fill, QColor outline,
 		QColor text_color, int h, double start,
-		double end, int y);
+		double end, int y) const;
 
 private:
 	uint64_t _start_sample;

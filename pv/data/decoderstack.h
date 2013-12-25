@@ -78,8 +78,7 @@ public:
 
 	int64_t samples_decoded() const;
 
-	const std::vector< boost::shared_ptr<pv::view::decode::Annotation> >
-		annotations() const;
+	const std::vector<pv::view::decode::Annotation> annotations() const;
 
 	QString error_message();
 
@@ -112,8 +111,7 @@ private:
 
 	mutable boost::mutex _mutex;
 	int64_t	_samples_decoded;
-	std::vector< boost::shared_ptr<pv::view::decode::Annotation> >
-		_annotations;
+	std::vector<pv::view::decode::Annotation> _annotations;
 	QString _error_message;
 
 	boost::thread _decode_thread;

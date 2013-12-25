@@ -81,7 +81,7 @@ uint64_t Annotation::end_sample() const
 
 void Annotation::paint(QPainter &p, QColor text_color, int h,
 	int left, int right, double samples_per_pixel, double pixels_offset,
-	int y)
+	int y) const
 {
 	const double start = _start_sample / samples_per_pixel -
 		pixels_offset;
@@ -103,7 +103,7 @@ void Annotation::paint(QPainter &p, QColor text_color, int h,
 }
 
 void Annotation::draw_instant(QPainter &p, QColor fill, QColor outline,
-	QColor text_color, int h, double x, int y)
+	QColor text_color, int h, double x, int y) const
 {
 	const QString text = _annotations.empty() ?
 		QString() : _annotations.back();
@@ -120,7 +120,7 @@ void Annotation::draw_instant(QPainter &p, QColor fill, QColor outline,
 }
 
 void Annotation::draw_range(QPainter &p, QColor fill, QColor outline,
-	QColor text_color, int h, double start, double end, int y)
+	QColor text_color, int h, double start, double end, int y) const
 {
 	const double top = y + .5 - h / 2;
 	const double bottom = y + .5 + h / 2;
@@ -159,7 +159,7 @@ void Annotation::draw_range(QPainter &p, QColor fill, QColor outline,
 	QString best_annotation;
 	int best_width = 0;
 
-	BOOST_FOREACH(QString &a, _annotations) {
+	BOOST_FOREACH(const QString &a, _annotations) {
 		const int w = p.boundingRect(QRectF(), 0, a).width();
 		if (w <= rect.width() && w > best_width)
 			best_annotation = a, best_width = w;

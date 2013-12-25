@@ -94,8 +94,7 @@ int64_t DecoderStack::samples_decoded() const
 	return _samples_decoded;
 }
 
-const vector< shared_ptr<view::decode::Annotation> >
-	DecoderStack::annotations() const
+const vector<view::decode::Annotation> DecoderStack::annotations() const
 {
 	lock_guard<mutex> lock(_mutex);
 	return _annotations;
@@ -150,7 +149,7 @@ uint64_t DecoderStack::get_max_sample_count() const
 {
 	if (_annotations.empty())
 		return 0;
-	return _annotations.back()->end_sample();
+	return _annotations.back().end_sample();
 }
 
 void DecoderStack::decode_proc(shared_ptr<data::Logic> data)
@@ -237,9 +236,8 @@ void DecoderStack::annotation_callback(srd_proto_data *pdata, void *decoder)
 
 	DecoderStack *const d = (DecoderStack*)decoder;
 
-	shared_ptr<Annotation> a(new Annotation(pdata));
 	lock_guard<mutex> lock(d->_mutex);
-	d->_annotations.push_back(a);
+	d->_annotations.push_back(Annotation(pdata));
 
 	d->new_decode_data();
 }
