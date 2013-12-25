@@ -78,13 +78,17 @@ DecoderOptions::DecoderOptions(
 
 GVariant* DecoderOptions::getter(const char *id)
 {
+	GVariant *val = NULL;
+
 	assert(_decoder);
 
 	// Get the value from the hash table if it is already present
-	GVariant *val = (GVariant*)g_hash_table_lookup(
-		(GHashTable*)_decoder->options(), id);
+	const map<string, GVariant*>& options = _decoder->options();
+	map<string, GVariant*>::const_iterator iter = options.find(id);
 
-	if (!val)
+	if (iter != options.end())
+		val = (*iter).second;
+	else
 	{
 		assert(_decoder->decoder());
 

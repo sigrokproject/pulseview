@@ -32,15 +32,15 @@ namespace data {
 namespace decode {
 
 Decoder::Decoder(const srd_decoder *const dec) :
-	_decoder(dec),
-	_options(g_hash_table_new_full(g_str_hash,
-		g_str_equal, g_free, (GDestroyNotify)g_variant_unref))
+	_decoder(dec)
 {
 }
 
 Decoder::~Decoder()
 {
-	g_hash_table_destroy(_options);
+	for (map<string, GVariant*>::const_iterator i = _options.begin();
+		i != _options.end(); i++)
+		g_variant_unref((*i).second);
 }
 
 const srd_decoder* Decoder::decoder() const
@@ -60,23 +60,37 @@ void Decoder::set_probes(std::map<const srd_probe*,
 	_probes = probes;
 }
 
-const GHashTable* Decoder::options() const
+const std::map<std::string, GVariant*>& Decoder::options() const
 {
 	return _options;
 }
 
 void Decoder::set_option(const char *id, GVariant *value)
 {
+	assert(value);
 	g_variant_ref(value);
-	g_hash_table_replace(_options, (void*)g_strdup(id), value);
+	_options[id] = value;
 }
 
 srd_decoder_inst* Decoder::create_decoder_inst(
 	srd_session *const session) const
 {
-	// Create the decoder instance
+	GHashTable *const opt_hash = g_hash_table_new_full(g_str_hash,
+		g_str_equal, g_free, (GDestroyNotify)g_variant_unref);
+
+	for (map<string, GVariant*>::const_iterator i = _options.begin();
+		i != _options.end(); i++)
+	{
+		GVariant *const value = (*i).second;
+		g_variant_ref(value);
+		g_hash_table_replace(opt_hash, (void*)g_strdup(
+			(*i).first.c_str()), value);
+	}
+
 	srd_decoder_inst *const decoder_inst = srd_inst_new(
-		session, _decoder->id, _options);
+		session, _decoder->id, opt_hash);
+	g_hash_table_destroy(opt_hash);
+
 	if(!decoder_inst)
 		return NULL;
 

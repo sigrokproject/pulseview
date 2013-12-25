@@ -55,7 +55,7 @@ public:
 	void set_probes(std::map<const srd_probe*,
 		boost::shared_ptr<view::LogicSignal> > probes);
 
-	const GHashTable* options() const;
+	const std::map<std::string, GVariant*>& options() const;
 
 	void set_option(const char *id, GVariant *value);
 
@@ -66,7 +66,7 @@ private:
 	const srd_decoder *const _decoder;
 	std::map<const srd_probe*, boost::shared_ptr<pv::view::LogicSignal> >
 		_probes;
-	GHashTable *_options;
+	std::map<std::string, GVariant*> _options;
 };
 
 } // namespace decode
