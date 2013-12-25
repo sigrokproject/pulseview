@@ -73,6 +73,7 @@ SamplingBar::SamplingBar(SigSession &session, QWidget *parent) :
 	_probes_button(this),
 	_probes_popup(_session, this),
 	_record_length_selector(this),
+	_sample_rate_action(NULL),
 	_sample_rate_list(this),
 	_icon_red(":/icons/status-red.svg"),
 	_icon_green(":/icons/status-green.svg"),
@@ -184,7 +185,6 @@ void SamplingBar::update_sample_rate_selector()
 	GVariant *gvar_dict, *gvar_list;
 	const uint64_t *elements = NULL;
 	gsize num_elements;
-	QAction *selector_action = NULL;
 
 	assert(_sample_rate_value_action);
 	assert(_sample_rate_list_action);
@@ -207,7 +207,7 @@ void SamplingBar::update_sample_rate_selector()
 		_sample_rate_value.setSingleStep(elements[2]);
 		g_variant_unref(gvar_list);
 
-		selector_action = _sample_rate_value_action;
+		_sample_rate_action = _sample_rate_value_action;
 	}
 	else if ((gvar_list = g_variant_lookup_value(gvar_dict,
 			"samplerates", G_VARIANT_TYPE("at"))))
@@ -227,7 +227,7 @@ void SamplingBar::update_sample_rate_selector()
 		_sample_rate_list.show();
 		g_variant_unref(gvar_list);
 
-		selector_action = _sample_rate_list_action;
+		_sample_rate_action = _sample_rate_list_action;
 	}
 
 	g_variant_unref(gvar_dict);
@@ -235,8 +235,8 @@ void SamplingBar::update_sample_rate_selector()
 
 	// We delay showing the action, so that value change events
 	// are ignored.
-	if (selector_action)
-		selector_action->setVisible(true);
+	if (_sample_rate_action)
+		_sample_rate_action->setVisible(true);
 }
 
 void SamplingBar::update_sample_rate_selector_value()
@@ -259,9 +259,9 @@ void SamplingBar::update_sample_rate_selector_value()
 	assert(_sample_rate_value_action);
 	assert(_sample_rate_list_action);
 
-	if (_sample_rate_value_action->isVisible())
+	if (_sample_rate_action == _sample_rate_value_action)
 		_sample_rate_value.setValue(samplerate);
-	else if (_sample_rate_list_action->isVisible())
+	else if (_sample_rate_action == _sample_rate_list_action)
 	{
 		for (int i = 0; i < _sample_rate_list.count(); i++)
 			if (samplerate == _sample_rate_list.itemData(
@@ -280,9 +280,9 @@ void SamplingBar::commit_sample_rate()
 	assert(_sample_rate_value_action);
 	assert(_sample_rate_list_action);
 
-	if (_sample_rate_value_action->isVisible())
+	if (_sample_rate_action == _sample_rate_value_action)
 		sample_rate = (uint64_t)_sample_rate_value.value();
-	else if (_sample_rate_list_action->isVisible())
+	else if (_sample_rate_action == _sample_rate_list_action)
 	{
 		const int index = _sample_rate_list.currentIndex();
 		if (index >= 0)

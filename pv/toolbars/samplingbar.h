@@ -89,6 +89,7 @@ private:
 
 	QComboBox _record_length_selector;
 
+	QAction *_sample_rate_action;
 	QComboBox _sample_rate_list;
 	QAction *_sample_rate_list_action;
 	QDoubleSpinBox _sample_rate_value;
