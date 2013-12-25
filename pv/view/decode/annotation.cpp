@@ -135,7 +135,7 @@ void Annotation::draw_range(QPainter &p, QColor fill, QColor outline,
 		return;
 	}
 
-	const double cap_width = min((end - start) / 2, EndCapWidth);
+	const double cap_width = min((end - start) / 4, EndCapWidth);
 
 	QPointF pts[] = {
 		QPointF(start, y + .5f),
