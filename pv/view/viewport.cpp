@@ -111,6 +111,16 @@ void Viewport::mouseMoveEvent(QMouseEvent *event)
 	}
 }
 
+void Viewport::mouseDoubleClickEvent(QMouseEvent *event)
+{
+	assert(event);
+
+	if (event->buttons() & Qt::LeftButton)
+		_view.zoom(2.0, event->x());
+	else if (event->buttons() & Qt::RightButton)
+		_view.zoom(-2.0, event->x());
+}
+
 void Viewport::wheelEvent(QWheelEvent *event)
 {
 	assert(event);
