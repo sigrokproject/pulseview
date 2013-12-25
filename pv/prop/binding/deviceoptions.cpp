@@ -71,7 +71,8 @@ DeviceOptions::DeviceOptions(struct sr_dev_inst *sdi) :
 		switch(key)
 		{
 		case SR_CONF_SAMPLERATE:
-			bind_samplerate(name, gvar_list);
+			// Sample rate values are not bound because they are shown
+			// in the SamplingBar
 			break;
 
 		case SR_CONF_CAPTURE_RATIO:
@@ -177,74 +178,6 @@ QString DeviceOptions::print_gvariant(GVariant *const gvar)
 	}
 
 	return s;
-}
-
-void DeviceOptions::bind_samplerate(const QString &name,
-	GVariant *const gvar_list)
-{
-	GVariant *gvar_list_samplerates;
-
-	assert(gvar_list);
-
-	if ((gvar_list_samplerates = g_variant_lookup_value(gvar_list,
-			"samplerate-steps", G_VARIANT_TYPE("at"))))
-	{
-		gsize num_elements;
-		const uint64_t *const elements =
-			(const uint64_t *)g_variant_get_fixed_array(
-				gvar_list_samplerates, &num_elements, sizeof(uint64_t));
-
-		assert(num_elements == 3);
-
-		_properties.push_back(shared_ptr<Property>(
-			new Double(name, 0, QObject::tr("Hz"),
-				make_pair((double)elements[0], (double)elements[1]),
-						(double)elements[2],
-				bind(samplerate_double_getter, _sdi),
-				bind(samplerate_double_setter, _sdi, _1))));
-
-		g_variant_unref(gvar_list_samplerates);
-	}
-	else if ((gvar_list_samplerates = g_variant_lookup_value(gvar_list,
-			"samplerates", G_VARIANT_TYPE("at"))))
-	{
-		bind_enum(name, SR_CONF_SAMPLERATE,
-			gvar_list_samplerates, print_samplerate);
-		g_variant_unref(gvar_list_samplerates);
-	}
-}
-
-QString DeviceOptions::print_samplerate(GVariant *const gvar)
-{
-	char *const s = sr_samplerate_string(
-		g_variant_get_uint64(gvar));
-	const QString qstring(s);
-	g_free(s);
-	return qstring;
-}
-
-GVariant* DeviceOptions::samplerate_double_getter(
-	const struct sr_dev_inst *sdi)
-{
-	GVariant *const gvar = config_getter(sdi, SR_CONF_SAMPLERATE);
-
-	if(!gvar)
-		return NULL;
-
-	GVariant *const gvar_double = g_variant_new_double(
-		g_variant_get_uint64(gvar));
-
-	g_variant_unref(gvar);
-
-	return gvar_double;
-}
-
-void DeviceOptions::samplerate_double_setter(
-	struct sr_dev_inst *sdi, GVariant *value)
-{
-	GVariant *const gvar = g_variant_new_uint64(
-		g_variant_get_double(value));
-	config_setter(sdi, SR_CONF_SAMPLERATE, gvar);
 }
 
 QString DeviceOptions::print_timebase(GVariant *const gvar)

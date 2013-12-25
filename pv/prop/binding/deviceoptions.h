@@ -55,14 +55,6 @@ private:
 
 	static QString print_gvariant(GVariant *const gvar);
 
-	void bind_samplerate(const QString &name,
-		GVariant *const gvar_list);
-	static QString print_samplerate(GVariant *const gvar);
-	static GVariant* samplerate_double_getter(
-		const struct sr_dev_inst *sdi);
-	static void samplerate_double_setter(
-		struct sr_dev_inst *sdi, GVariant *value);
-
 	static QString print_timebase(GVariant *const gvar);
 	static QString print_vdiv(GVariant *const gvar);
 	static QString print_voltage_threshold(GVariant *const gvar);
