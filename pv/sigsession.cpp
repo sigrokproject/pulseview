@@ -118,6 +118,7 @@ void SigSession::load_file(const string &name,
 		sr_dev_inst *const sdi = (sr_dev_inst*)devlist->data;
 		g_slist_free(devlist);
 
+		_decode_traces.clear();
 		update_signals(sdi);
 		read_sample_rate(sdi);
 
@@ -132,6 +133,7 @@ void SigSession::load_file(const string &name,
 			error_handler)))
 			return;
 
+		_decode_traces.clear();
 		update_signals(in->sdi);
 		read_sample_rate(in->sdi);
 
