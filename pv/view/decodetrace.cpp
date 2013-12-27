@@ -41,9 +41,9 @@ extern "C" {
 #include <pv/data/decode/decoder.h>
 #include <pv/data/logic.h>
 #include <pv/data/logicsnapshot.h>
+#include <pv/data/decode/annotation.h>
 #include <pv/view/logicsignal.h>
 #include <pv/view/view.h>
-#include <pv/view/decode/annotation.h>
 #include <pv/widgets/decodergroupbox.h>
 #include <pv/widgets/decodermenu.h>
 
@@ -62,6 +62,19 @@ const QColor DecodeTrace::DecodeColours[4] = {
 
 const QColor DecodeTrace::ErrorBgColour = QColor(0xEF, 0x29, 0x29);
 const QColor DecodeTrace::NoDecodeColour = QColor(0x88, 0x8A, 0x85);
+
+const double DecodeTrace::EndCapWidth = 5;
+const int DecodeTrace::DrawPadding = 100;
+
+const QColor DecodeTrace::Colours[7] = {
+	QColor(0xFC, 0xE9, 0x4F),	// Light Butter
+	QColor(0xFC, 0xAF, 0x3E),	// Light Orange
+	QColor(0xE9, 0xB9, 0x6E),	// Light Chocolate
+	QColor(0x8A, 0xE2, 0x34),	// Light Green
+	QColor(0x72, 0x9F, 0xCF),	// Light Blue
+	QColor(0xAD, 0x7F, 0xA8),	// Light Plum
+	QColor(0xEF, 0x29, 0x29)	// Light Red
+};
 
 DecodeTrace::DecodeTrace(pv::SigSession &session,
 	boost::shared_ptr<pv::data::DecoderStack> decoder_stack, int index) :
@@ -103,7 +116,7 @@ void DecodeTrace::paint_back(QPainter &p, int left, int right)
 
 void DecodeTrace::paint_mid(QPainter &p, int left, int right)
 {
-	using namespace pv::view::decode;
+	using pv::data::decode::Annotation;
 
 	const double scale = _view->scale();
 	assert(scale > 0);
@@ -137,7 +150,7 @@ void DecodeTrace::paint_mid(QPainter &p, int left, int right)
 	assert(_decoder_stack);
 	vector<Annotation> annotations(_decoder_stack->annotations());
 	BOOST_FOREACH(const Annotation &a, annotations)
-		a.paint(p, get_text_colour(), h, left, right,
+		draw_annotation(a, p, get_text_colour(), h, left, right,
 			samples_per_pixel, pixels_offset, y);
 
 	draw_unresolved_period(p, h, left, right,
@@ -208,6 +221,102 @@ QMenu* DecodeTrace::create_context_menu(QWidget *parent)
 	menu->addAction(del);
 
 	return menu;
+}
+
+void DecodeTrace::draw_annotation(const pv::data::decode::Annotation &a, QPainter &p,
+	QColor text_color, int h, int left, int right, double samples_per_pixel,
+	double pixels_offset, int y) const
+{
+	const double start = a.start_sample() / samples_per_pixel -
+		pixels_offset;
+	const double end = a.end_sample() / samples_per_pixel -
+		pixels_offset;
+	const QColor fill = Colours[(a.format() * (countof(Colours) / 2 + 1)) %
+		countof(Colours)];
+	const QColor outline(fill.darker());
+
+	if (start > right + DrawPadding || end < left - DrawPadding)
+		return;
+
+	if (a.start_sample() == a.end_sample())
+		draw_instant(a, p, fill, outline, text_color, h,
+			start, y);
+	else
+		draw_range(a, p, fill, outline, text_color, h,
+			start, end, y);
+}
+
+void DecodeTrace::draw_instant(const pv::data::decode::Annotation &a, QPainter &p,
+	QColor fill, QColor outline, QColor text_color, int h, double x, int y) const
+{
+	const QString text = a.annotations().empty() ?
+		QString() : a.annotations().back();
+	const double w = min(p.boundingRect(QRectF(), 0, text).width(),
+		0.0) + h;
+	const QRectF rect(x - w / 2, y - h / 2, w, h);
+
+	p.setPen(outline);
+	p.setBrush(fill);
+	p.drawRoundedRect(rect, h / 2, h / 2);
+
+	p.setPen(text_color);
+	p.drawText(rect, Qt::AlignCenter | Qt::AlignVCenter, text);
+}
+
+void DecodeTrace::draw_range(const pv::data::decode::Annotation &a, QPainter &p,
+	QColor fill, QColor outline, QColor text_color, int h, double start,
+	double end, int y) const
+{
+	const double top = y + .5 - h / 2;
+	const double bottom = y + .5 + h / 2;
+	const vector<QString> annotations = a.annotations();
+
+	p.setPen(outline);
+	p.setBrush(fill);
+
+	// If the two ends are within 1 pixel, draw a vertical line
+	if (start + 1.0 > end)
+	{
+		p.drawLine(QPointF(start, top), QPointF(start, bottom));
+		return;
+	}
+
+	const double cap_width = min((end - start) / 4, EndCapWidth);
+
+	QPointF pts[] = {
+		QPointF(start, y + .5f),
+		QPointF(start + cap_width, top),
+		QPointF(end - cap_width, top),
+		QPointF(end, y + .5f),
+		QPointF(end - cap_width, bottom),
+		QPointF(start + cap_width, bottom)
+	};
+
+	p.drawConvexPolygon(pts, countof(pts));
+
+	if (annotations.empty())
+		return;
+
+	QRectF rect(start + cap_width, y - h / 2,
+		end - start - cap_width * 2, h);
+	p.setPen(text_color);
+
+	// Try to find an annotation that will fit
+	QString best_annotation;
+	int best_width = 0;
+
+	BOOST_FOREACH(const QString &a, annotations) {
+		const int w = p.boundingRect(QRectF(), 0, a).width();
+		if (w <= rect.width() && w > best_width)
+			best_annotation = a, best_width = w;
+	}
+
+	if (best_annotation.isEmpty())
+		best_annotation = annotations.back();
+
+	// If not ellide the last in the list
+	p.drawText(rect, Qt::AlignCenter, p.fontMetrics().elidedText(
+		best_annotation, Qt::ElideRight, rect.width()));
 }
 
 void DecodeTrace::draw_error(QPainter &p, const QString &message,

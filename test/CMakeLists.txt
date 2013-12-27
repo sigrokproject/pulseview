@@ -47,6 +47,7 @@ set(pulseview_TEST_SOURCES
 	${PROJECT_SOURCE_DIR}/pv/data/snapshot.cpp
 	${PROJECT_SOURCE_DIR}/pv/data/signaldata.cpp
 	${PROJECT_SOURCE_DIR}/pv/data/decode/decoder.cpp
+	${PROJECT_SOURCE_DIR}/pv/data/decode/annotation.cpp
 	${PROJECT_SOURCE_DIR}/pv/prop/int.cpp
 	${PROJECT_SOURCE_DIR}/pv/prop/property.cpp
 	${PROJECT_SOURCE_DIR}/pv/prop/string.cpp
@@ -67,7 +68,6 @@ set(pulseview_TEST_SOURCES
 	${PROJECT_SOURCE_DIR}/pv/view/tracepalette.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/view.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/viewport.cpp
-	${PROJECT_SOURCE_DIR}/pv/view/decode/annotation.cpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/colourbutton.cpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/colourpopup.cpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/decodergroupbox.cpp

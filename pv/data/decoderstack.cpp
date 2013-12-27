@@ -32,8 +32,8 @@
 #include <pv/data/logic.h>
 #include <pv/data/logicsnapshot.h>
 #include <pv/data/decode/decoder.h>
+#include <pv/data/decode/annotation.h>
 #include <pv/view/logicsignal.h>
-#include <pv/view/decode/annotation.h>
 
 using namespace boost;
 using namespace std;
@@ -94,7 +94,7 @@ int64_t DecoderStack::samples_decoded() const
 	return _samples_decoded;
 }
 
-const vector<view::decode::Annotation> DecoderStack::annotations() const
+const vector<decode::Annotation> DecoderStack::annotations() const
 {
 	lock_guard<mutex> lock(_mutex);
 	return _annotations;
@@ -229,7 +229,7 @@ void DecoderStack::decode_proc(shared_ptr<data::Logic> data)
 
 void DecoderStack::annotation_callback(srd_proto_data *pdata, void *decoder)
 {
-	using namespace pv::view::decode;
+	using pv::data::decode::Annotation;
 
 	assert(pdata);
 	assert(decoder);

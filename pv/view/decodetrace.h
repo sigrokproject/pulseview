@@ -43,6 +43,7 @@ namespace data {
 class DecoderStack;
 
 namespace decode {
+class Annotation;
 class Decoder;
 }
 }
@@ -65,6 +66,11 @@ private:
 	static const QColor DecodeColours[4];
 	static const QColor ErrorBgColour;
 	static const QColor NoDecodeColour;
+
+	static const double EndCapWidth;
+	static const int DrawPadding;
+
+	static const QColor Colours[7];
 
 public:
 	DecodeTrace(pv::SigSession &session,
@@ -100,6 +106,18 @@ public:
 	void delete_pressed();
 
 private:
+	void draw_annotation(const pv::data::decode::Annotation &a, QPainter &p,
+		QColor text_colour, int text_height, int left, int right,
+		double samples_per_pixel, double pixels_offset, int y) const;
+
+	void draw_instant(const pv::data::decode::Annotation &a, QPainter &p,
+		QColor fill, QColor outline, QColor text_color, int h, double x,
+		int y) const;
+
+	void draw_range(const pv::data::decode::Annotation &a, QPainter &p,
+		QColor fill, QColor outline, QColor text_color, int h, double start,
+		double end, int y) const;
+
 	void draw_error(QPainter &p, const QString &message,
 		int left, int right);
 

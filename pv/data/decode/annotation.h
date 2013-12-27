@@ -28,34 +28,18 @@
 struct srd_proto_data;
 
 namespace pv {
-namespace view {
+namespace data {
 namespace decode {
 
 class Annotation
 {
-private:
-	static const double EndCapWidth;
-	static const int DrawPadding;
-
-	static const QColor Colours[7];
-
 public:
 	Annotation(const srd_proto_data *const pdata);
 
 	uint64_t start_sample() const;
 	uint64_t end_sample() const;
-
-	void paint(QPainter &p, QColor text_colour, int text_height, int left,
-		int right, double samples_per_pixel, double pixels_offset,
-		int y) const;
-
-private:
-	void draw_instant(QPainter &p, QColor fill, QColor outline,
-		QColor text_color, int h, double x, int y) const;
-
-	void draw_range(QPainter &p, QColor fill, QColor outline,
-		QColor text_color, int h, double start,
-		double end, int y) const;
+	int format() const;
+	const std::vector<QString>& annotations() const;
 
 private:
 	uint64_t _start_sample;
@@ -65,7 +49,7 @@ private:
 };
 
 } // namespace decode
-} // namespace view
+} // namespace data
 } // namespace pv
 
 #endif // PULSEVIEW_PV_VIEW_DECODE_ANNOTATION_H

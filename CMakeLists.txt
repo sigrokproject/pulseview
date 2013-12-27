@@ -112,6 +112,7 @@ set(pulseview_SOURCES
 	pv/data/logicsnapshot.cpp
 	pv/data/signaldata.cpp
 	pv/data/snapshot.cpp
+	pv/data/decode/annotation.cpp
 	pv/data/decode/decoder.cpp
 	pv/dialogs/about.cpp
 	pv/dialogs/connect.cpp
@@ -142,7 +143,6 @@ set(pulseview_SOURCES
 	pv/view/tracepalette.cpp
 	pv/view/view.cpp
 	pv/view/viewport.cpp
-	pv/view/decode/annotation.cpp
 	pv/widgets/colourbutton.cpp
 	pv/widgets/colourpopup.cpp
 	pv/widgets/decodergroupbox.cpp
