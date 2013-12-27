@@ -74,7 +74,12 @@ public:
 
 	int64_t samples_decoded() const;
 
-	const std::vector<pv::data::decode::Annotation> annotations() const;
+	/**
+	 * Extracts sorted annotations between two period into a vector.
+	 */
+	void get_annotation_subset(
+		std::vector<pv::data::decode::Annotation> &dest,
+		uint64_t start_sample, uint64_t end_sample) const;
 
 	QString error_message();
 
@@ -86,6 +91,20 @@ public:
 
 private:
 	void decode_proc(boost::shared_ptr<data::Logic> data);
+
+	bool index_entry_start_sample_gt(
+		const uint64_t sample, const size_t index) const;
+	bool index_entry_end_sample_lt(
+		const size_t index, const uint64_t sample) const;
+	bool index_entry_end_sample_gt(
+		const uint64_t sample, const size_t index) const;
+
+	void insert_annotation_into_start_index(
+		const pv::data::decode::Annotation &a,
+		const size_t storage_offset);
+	void insert_annotation_into_end_index(
+		const pv::data::decode::Annotation &a,
+		const size_t storage_offset);
 
 	static void annotation_callback(srd_proto_data *pdata,
 		void *decoder);
@@ -108,6 +127,14 @@ private:
 	mutable boost::mutex _mutex;
 	int64_t	_samples_decoded;
 	std::vector<pv::data::decode::Annotation> _annotations;
+
+	/**
+	 * _ann_start_index and _ann_end_index contain lists of annotions
+	 * (represented by offsets in the _annotations vector), sorted in
+	 * ascending ordered by the start_sample and end_sample respectively.
+	 */
+	std::vector<size_t> _ann_start_index, _ann_end_index;
+
 	QString _error_message;
 
 	boost::thread _decode_thread;

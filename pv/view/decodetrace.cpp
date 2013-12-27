@@ -137,6 +137,11 @@ void DecodeTrace::paint_mid(QPainter &p, int left, int right)
 		_decoder_stack->get_start_time()) / scale;
 	const double samples_per_pixel = samplerate * scale;
 
+	const uint64_t start_sample = (uint64_t)max((left + pixels_offset) *
+		samples_per_pixel, 0.0);
+	const uint64_t end_sample = (uint64_t)max((right + pixels_offset) *
+		samples_per_pixel, 0.0);
+
 	QFontMetrics m(QApplication::font());
 	const int h = (m.boundingRect(QRect(), 0, "Tg").height() * 5) / 4;
 
@@ -154,9 +159,12 @@ void DecodeTrace::paint_mid(QPainter &p, int left, int right)
 	const int y = get_y();
 
 	assert(_decoder_stack);
-	vector<Annotation> annotations(_decoder_stack->annotations());
+	vector<Annotation> annotations;
+	_decoder_stack->get_annotation_subset(annotations,
+		start_sample, end_sample);
 
-	BOOST_FOREACH(const Annotation &a, annotations) {
+	BOOST_FOREACH(const Annotation &a, annotations)
+	{
 		// Every stacked PD is 60 pixels further down.
 		int y_stack_offset = a.pd_index() * 60;
 

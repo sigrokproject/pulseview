@@ -20,6 +20,7 @@
 
 #include <libsigrokdecode/libsigrokdecode.h>
 
+#include <boost/bind.hpp>
 #include <boost/foreach.hpp>
 #include <boost/thread/thread.hpp>
 
@@ -99,10 +100,27 @@ int64_t DecoderStack::samples_decoded() const
 	return _samples_decoded;
 }
 
-const vector<decode::Annotation> DecoderStack::annotations() const
+void DecoderStack::get_annotation_subset(
+	std::vector<pv::data::decode::Annotation> &dest,
+	uint64_t start_sample, uint64_t end_sample) const
 {
 	lock_guard<mutex> lock(_mutex);
-	return _annotations;
+
+	const vector<size_t>::const_iterator start_iter =
+		lower_bound(_ann_end_index.begin(),
+			_ann_end_index.end(), start_sample,
+			bind(&DecoderStack::index_entry_end_sample_lt,
+				this, _1, _2));
+
+	const vector<size_t>::const_iterator end_iter =
+		upper_bound(_ann_start_index.begin(),
+			_ann_start_index.end(), end_sample,
+			bind(&DecoderStack::index_entry_start_sample_gt,
+				this, _1, _2));
+
+	for (vector<size_t>::const_iterator i = start_iter;
+		i != _ann_end_index.end() && *i != *end_iter; i++)
+		dest.push_back(_annotations[*i]);
 }
 
 QString DecoderStack::error_message()
@@ -121,7 +139,7 @@ void DecoderStack::begin_decode()
 
 	_samples_decoded = 0;
 
-	_annotations.clear();
+	clear();
 
 	// We get the logic data of the first probe in the list.
 	// This works because we are currently assuming all
@@ -148,6 +166,8 @@ void DecoderStack::begin_decode()
 void DecoderStack::clear()
 {
 	_annotations.clear();
+	_ann_start_index.clear();
+	_ann_end_index.clear();
 }
 
 uint64_t DecoderStack::get_max_sample_count() const
@@ -237,6 +257,57 @@ void DecoderStack::decode_proc(shared_ptr<data::Logic> data)
 	srd_session_destroy(session);
 }
 
+bool DecoderStack::index_entry_start_sample_gt(
+	const uint64_t sample, const size_t index) const
+{
+	assert(index < _annotations.size());
+	return _annotations[index].start_sample() > sample;
+}
+
+bool DecoderStack::index_entry_end_sample_lt(
+	const size_t index, const uint64_t sample) const
+{
+	assert(index < _annotations.size());
+	return _annotations[index].end_sample() < sample;
+}
+
+bool DecoderStack::index_entry_end_sample_gt(
+	const uint64_t sample, const size_t index) const
+{
+	assert(index < _annotations.size());
+	return _annotations[index].end_sample() > sample;
+}
+
+void DecoderStack::insert_annotation_into_start_index(
+	const pv::data::decode::Annotation &a, const size_t storage_offset)
+{
+	vector<size_t>::iterator i = _ann_start_index.end();
+	if (!_ann_start_index.empty() &&
+		_annotations[_ann_start_index.back()].start_sample() >
+			a.start_sample())
+		i = upper_bound(_ann_start_index.begin(),
+			_ann_start_index.end(), a.start_sample(),
+			bind(&DecoderStack::index_entry_start_sample_gt,
+				this, _1, _2));
+
+	_ann_start_index.insert(i, storage_offset);
+}
+
+void DecoderStack::insert_annotation_into_end_index(
+	const pv::data::decode::Annotation &a, const size_t storage_offset)
+{
+	vector<size_t>::iterator i = _ann_end_index.end();
+	if (!_ann_end_index.empty() &&
+		_annotations[_ann_end_index.back()].end_sample() <
+			a.end_sample())
+		i = upper_bound(_ann_end_index.begin(),
+			_ann_end_index.end(), a.end_sample(),
+			bind(&DecoderStack::index_entry_end_sample_gt,
+				this, _1, _2));
+
+	_ann_end_index.insert(i, storage_offset);
+}
+
 void DecoderStack::annotation_callback(srd_proto_data *pdata, void *decoder)
 {
 	using pv::data::decode::Annotation;
@@ -275,7 +346,11 @@ void DecoderStack::annotation_callback(srd_proto_data *pdata, void *decoder)
 		}
 	}
 
+	const size_t offset = d->_annotations.size();
 	d->_annotations.push_back(a);
+
+	d->insert_annotation_into_start_index(a, offset);
+	d->insert_annotation_into_end_index(a, offset);
 
 	d->new_decode_data();
 }
