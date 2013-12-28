@@ -94,12 +94,14 @@ public:
 
 	boost::shared_ptr<data::Logic> get_data();
 
+#ifdef ENABLE_DECODE
 	bool add_decoder(srd_decoder *const dec);
 
 	std::vector< boost::shared_ptr<view::DecodeTrace> >
 		get_decode_signals() const;
 
 	void remove_decode_signal(view::DecodeTrace *signal);
+#endif
 
 private:
 	void set_capture_state(capture_state state);

@@ -18,10 +18,13 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
-list(APPEND PKGDEPS
-	libsigrok>=0.2.0
-	libsigrokdecode>=0.2.0
-)
+option(ENABLE_DECODE "Build with libsigrokdecode" FALSE)
+
+list(APPEND PKGDEPS libsigrok>=0.2.0)
+
+if(ENABLE_DECODE)
+	list(APPEND PKGDEPS libsigrokdecode>=0.2.0)
+endif()
 
 find_package(PkgConfig)
 pkg_check_modules(PKGDEPS REQUIRED ${PKGDEPS})
@@ -41,22 +44,17 @@ set(pulseview_TEST_SOURCES
 	${PROJECT_SOURCE_DIR}/pv/view/cursorpair.cpp
 	${PROJECT_SOURCE_DIR}/pv/data/analog.cpp
 	${PROJECT_SOURCE_DIR}/pv/data/analogsnapshot.cpp
-	${PROJECT_SOURCE_DIR}/pv/data/decoderstack.cpp
 	${PROJECT_SOURCE_DIR}/pv/data/logic.cpp
 	${PROJECT_SOURCE_DIR}/pv/data/logicsnapshot.cpp
 	${PROJECT_SOURCE_DIR}/pv/data/snapshot.cpp
 	${PROJECT_SOURCE_DIR}/pv/data/signaldata.cpp
-	${PROJECT_SOURCE_DIR}/pv/data/decode/decoder.cpp
-	${PROJECT_SOURCE_DIR}/pv/data/decode/annotation.cpp
 	${PROJECT_SOURCE_DIR}/pv/prop/int.cpp
 	${PROJECT_SOURCE_DIR}/pv/prop/property.cpp
 	${PROJECT_SOURCE_DIR}/pv/prop/string.cpp
 	${PROJECT_SOURCE_DIR}/pv/prop/binding/binding.cpp
-	${PROJECT_SOURCE_DIR}/pv/prop/binding/decoderoptions.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/analogsignal.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/cursor.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/cursorpair.cpp
-	${PROJECT_SOURCE_DIR}/pv/view/decodetrace.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/header.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/logicsignal.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/marginwidget.cpp
@@ -70,12 +68,9 @@ set(pulseview_TEST_SOURCES
 	${PROJECT_SOURCE_DIR}/pv/view/viewport.cpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/colourbutton.cpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/colourpopup.cpp
-	${PROJECT_SOURCE_DIR}/pv/widgets/decodergroupbox.cpp
-	${PROJECT_SOURCE_DIR}/pv/widgets/decodermenu.cpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/popup.cpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/wellarray.cpp
 	data/analogsnapshot.cpp
-	data/decoderstack.cpp
 	data/logicsnapshot.cpp
 	test.cpp
 )
@@ -83,12 +78,10 @@ set(pulseview_TEST_SOURCES
 # This list includes only QObject derrived class headers
 set(pulseview_TEST_HEADERS
 	${PROJECT_SOURCE_DIR}/pv/sigsession.h
-	${PROJECT_SOURCE_DIR}/pv/data/decoderstack.h
 	${PROJECT_SOURCE_DIR}/pv/prop/int.h
 	${PROJECT_SOURCE_DIR}/pv/prop/property.h
 	${PROJECT_SOURCE_DIR}/pv/prop/string.h
 	${PROJECT_SOURCE_DIR}/pv/view/cursor.h
-	${PROJECT_SOURCE_DIR}/pv/view/decodetrace.h
 	${PROJECT_SOURCE_DIR}/pv/view/header.h
 	${PROJECT_SOURCE_DIR}/pv/view/logicsignal.h
 	${PROJECT_SOURCE_DIR}/pv/view/marginwidget.h
@@ -101,13 +94,35 @@ set(pulseview_TEST_HEADERS
 	${PROJECT_SOURCE_DIR}/pv/view/viewport.h
 	${PROJECT_SOURCE_DIR}/pv/widgets/colourbutton.h
 	${PROJECT_SOURCE_DIR}/pv/widgets/colourpopup.h
-	${PROJECT_SOURCE_DIR}/pv/widgets/decodergroupbox.h
-	${PROJECT_SOURCE_DIR}/pv/widgets/decodermenu.h
 	${PROJECT_SOURCE_DIR}/pv/widgets/popup.h
 	${PROJECT_SOURCE_DIR}/pv/widgets/wellarray.h
 )
 
+if(ENABLE_DECODE)
+	list(APPEND pulseview_TEST_SOURCES
+		${PROJECT_SOURCE_DIR}/pv/data/decoderstack.cpp
+		${PROJECT_SOURCE_DIR}/pv/data/decode/decoder.cpp
+		${PROJECT_SOURCE_DIR}/pv/data/decode/annotation.cpp
+		${PROJECT_SOURCE_DIR}/pv/prop/binding/decoderoptions.cpp
+		${PROJECT_SOURCE_DIR}/pv/view/decodetrace.cpp
+		${PROJECT_SOURCE_DIR}/pv/widgets/decodergroupbox.cpp
+		${PROJECT_SOURCE_DIR}/pv/widgets/decodermenu.cpp
+		data/decoderstack.cpp
+	)
+
+	list(APPEND pulseview_TEST_HEADERS
+		${PROJECT_SOURCE_DIR}/pv/data/decoderstack.h
+		${PROJECT_SOURCE_DIR}/pv/view/decodetrace.h
+		${PROJECT_SOURCE_DIR}/pv/widgets/decodergroupbox.h
+		${PROJECT_SOURCE_DIR}/pv/widgets/decodermenu.h
+	)
+endif()
+
 qt4_wrap_cpp(pulseview_TEST_HEADERS_MOC ${pulseview_TEST_HEADERS})
+
+if(ENABLE_DECODE)
+	add_definitions(-DENABLE_DECODE)
+endif()
 
 add_definitions(-DBOOST_TEST_DYN_LINK)
 add_definitions(${QT_DEFINITIONS})

@@ -34,6 +34,7 @@ project(pulseview)
 
 option(DISABLE_WERROR "Build without -Werror" FALSE)
 option(ENABLE_SIGNALS "Build with UNIX signals" TRUE)
+option(ENABLE_DECODE "Build with libsigrokdecode" FALSE)
 option(ENABLE_TESTS "Enable unit tests" FALSE)
 option(STATIC_PKGDEPS_LIBS "Statically link to (pkgconfig) libraries" FALSE)
 
@@ -56,8 +57,11 @@ endif()
 
 list(APPEND PKGDEPS
 	libsigrok>=0.2.0
-	libsigrokdecode>=0.2.0
 )
+
+if(ENABLE_DECODE)
+	list(APPEND PKGDEPS libsigrokdecode>=0.2.0)
+endif()
 
 find_package(PkgConfig)
 pkg_check_modules(PKGDEPS REQUIRED ${PKGDEPS})
@@ -107,13 +111,10 @@ set(pulseview_SOURCES
 	pv/sigsession.cpp
 	pv/data/analog.cpp
 	pv/data/analogsnapshot.cpp
-	pv/data/decoderstack.cpp
 	pv/data/logic.cpp
 	pv/data/logicsnapshot.cpp
 	pv/data/signaldata.cpp
 	pv/data/snapshot.cpp
-	pv/data/decode/annotation.cpp
-	pv/data/decode/decoder.cpp
 	pv/dialogs/about.cpp
 	pv/dialogs/connect.cpp
 	pv/popups/deviceoptions.cpp
@@ -125,13 +126,11 @@ set(pulseview_SOURCES
 	pv/prop/property.cpp
 	pv/prop/string.cpp
 	pv/prop/binding/binding.cpp
-	pv/prop/binding/decoderoptions.cpp
 	pv/prop/binding/deviceoptions.cpp
 	pv/toolbars/samplingbar.cpp
 	pv/view/analogsignal.cpp
 	pv/view/cursor.cpp
 	pv/view/cursorpair.cpp
-	pv/view/decodetrace.cpp
 	pv/view/header.cpp
 	pv/view/marginwidget.cpp
 	pv/view/logicsignal.cpp
@@ -145,8 +144,6 @@ set(pulseview_SOURCES
 	pv/view/viewport.cpp
 	pv/widgets/colourbutton.cpp
 	pv/widgets/colourpopup.cpp
-	pv/widgets/decodergroupbox.cpp
-	pv/widgets/decodermenu.cpp
 	pv/widgets/popup.cpp
 	pv/widgets/popuptoolbutton.cpp
 	pv/widgets/wellarray.cpp
@@ -156,11 +153,10 @@ set(pulseview_SOURCES
 set(pulseview_HEADERS
 	pv/mainwindow.h
 	pv/sigsession.h
-	pv/data/decoderstack.h
 	pv/dialogs/about.h
 	pv/dialogs/connect.h
-	pv/popups/deviceoptions.h
 	pv/popups/probes.h
+	pv/popups/deviceoptions.h
 	pv/prop/bool.h
 	pv/prop/double.h
 	pv/prop/enum.h
@@ -169,7 +165,6 @@ set(pulseview_HEADERS
 	pv/prop/string.h
 	pv/toolbars/samplingbar.h
 	pv/view/cursor.h
-	pv/view/decodetrace.h
 	pv/view/header.h
 	pv/view/logicsignal.h
 	pv/view/marginwidget.h
@@ -182,8 +177,6 @@ set(pulseview_HEADERS
 	pv/view/viewport.h
 	pv/widgets/colourbutton.h
 	pv/widgets/colourpopup.h
-	pv/widgets/decodergroupbox.h
-	pv/widgets/decodermenu.h
 	pv/widgets/popup.h
 	pv/widgets/popuptoolbutton.h
 	pv/widgets/wellarray.h
@@ -202,6 +195,26 @@ if(ENABLE_SIGNALS)
 	list(APPEND pulseview_HEADERS signalhandler.h)
 endif()
 
+if(ENABLE_DECODE)
+	list(APPEND pulseview_SOURCES
+		pv/data/decoderstack.cpp
+		pv/data/decode/annotation.cpp
+		pv/data/decode/decoder.cpp
+		pv/prop/binding/decoderoptions.cpp
+		pv/view/decodetrace.cpp
+		pv/widgets/decodergroupbox.cpp
+		pv/widgets/decodermenu.cpp
+		pv/widgets/wellarray.cpp
+	)
+
+	list(APPEND pulseview_HEADERS
+		pv/data/decoderstack.h
+		pv/view/decodetrace.h
+		pv/widgets/decodergroupbox.h
+		pv/widgets/decodermenu.h
+	)
+endif()
+
 qt4_wrap_cpp(pulseview_HEADERS_MOC ${pulseview_HEADERS})
 qt4_wrap_ui(pulseview_FORMS_HEADERS ${pulseview_FORMS})
 qt4_add_resources(pulseview_RESOURCES_RCC ${pulseview_RESOURCES})
@@ -214,6 +227,10 @@ include(${QT_USE_FILE})
 
 add_definitions(${QT_DEFINITIONS})
 add_definitions(-Wall -Wextra)
+
+if(ENABLE_DECODE)
+	add_definitions(-DENABLE_DECODE)
+endif()
 
 if(NOT DISABLE_WERROR)
 	add_definitions(-Werror)

@@ -18,7 +18,9 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
+#ifdef ENABLE_DECODE
 #include <libsigrokdecode/libsigrokdecode.h>
+#endif
 
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>
@@ -42,7 +44,9 @@
 #include "toolbars/samplingbar.h"
 #include "view/logicsignal.h"
 #include "view/view.h"
+#ifdef ENABLE_DECODE
 #include "widgets/decodermenu.h"
+#endif
 
 /* __STDC_FORMAT_MACROS is required for PRIu64 and friends (in C++). */
 #define __STDC_FORMAT_MACROS
@@ -194,6 +198,7 @@ void MainWindow::setup_ui()
 	menu_view->addAction(action_view_show_cursors);
 
 	// Decoders Menu
+#ifdef ENABLE_DECODE
 	QMenu *const menu_decoders = new QMenu;
 	menu_decoders->setTitle(QApplication::translate(
 		"MainWindow", "&Decoders", 0, QApplication::UnicodeUTF8));
@@ -206,6 +211,7 @@ void MainWindow::setup_ui()
 		this, SLOT(add_decoder(srd_decoder*)));
 
 	menu_decoders->addMenu(menu_decoders_add);
+#endif
 
 	// Help Menu
 	QMenu *const menu_help = new QMenu;
@@ -220,7 +226,9 @@ void MainWindow::setup_ui()
 
 	menu_bar->addAction(menu_file->menuAction());
 	menu_bar->addAction(menu_view->menuAction());
+#ifdef ENABLE_DECODE
 	menu_bar->addAction(menu_decoders->menuAction());
+#endif
 	menu_bar->addAction(menu_help->menuAction());
 
 	setMenuBar(menu_bar);
@@ -380,8 +388,12 @@ void MainWindow::on_actionAbout_triggered()
 
 void MainWindow::add_decoder(srd_decoder *decoder)
 {
+#ifdef ENABLE_DECODE
 	assert(decoder);
 	_session.add_decoder(decoder);
+#else
+	(void)decoder;
+#endif
 }
 
 void MainWindow::run_stop()

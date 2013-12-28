@@ -18,7 +18,9 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
+#ifdef ENABLE_DECODE
 #include <libsigrokdecode/libsigrokdecode.h>
+#endif
 
 #include <assert.h>
 #include <limits.h>
@@ -236,14 +238,20 @@ vector< shared_ptr<Trace> > View::get_traces() const
 {
 	const vector< shared_ptr<Signal> > sigs(
 		session().get_signals());
+#ifdef ENABLE_DECODE
 	const vector< shared_ptr<DecodeTrace> > decode_sigs(
 		session().get_decode_signals());
 	vector< shared_ptr<Trace> > traces(
 		sigs.size() + decode_sigs.size());
+#else
+	vector< shared_ptr<Trace> > traces(sigs.size());
+#endif
 
 	vector< shared_ptr<Trace> >::iterator i = traces.begin();
 	i = copy(sigs.begin(), sigs.end(), i);
+#ifdef ENABLE_DECODE
 	i = copy(decode_sigs.begin(), decode_sigs.end(), i);
+#endif
 
 	stable_sort(traces.begin(), traces.end(), compare_trace_v_offsets);
 	return traces;

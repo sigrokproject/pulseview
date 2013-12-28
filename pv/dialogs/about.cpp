@@ -18,7 +18,9 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
+#ifdef ENABLE_DECODE
 #include <libsigrokdecode/libsigrokdecode.h>
+#endif
 
 #include <QTextDocument>
 
@@ -42,7 +44,9 @@ About::About(QWidget *parent) :
 	struct sr_input_format **inputs;
 	struct sr_output_format **outputs;
 
+#ifdef ENABLE_DECODE
 	struct srd_decoder *dec;
+#endif
 
 	QString s;
 
@@ -89,6 +93,7 @@ About::About(QWidget *parent) :
 			.arg(QString::fromUtf8(outputs[i]->description)));
 	}
 
+#ifdef ENABLE_DECODE
 	s.append("<tr><td colspan=\"2\"><b>" +
 		tr("Supported protocol decoders:") +
 		"</b></td></tr>");
@@ -98,6 +103,7 @@ About::About(QWidget *parent) :
 			 .arg(QString::fromUtf8(dec->id))
 			 .arg(QString::fromUtf8(dec->longname)));
 	}
+#endif
 
 	s.append("</table>");
 

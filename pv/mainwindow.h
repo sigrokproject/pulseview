@@ -29,6 +29,8 @@
 
 #include "sigsession.h"
 
+struct srd_decoder;
+
 class QVBoxLayout;
 
 namespace pv {

@@ -18,7 +18,9 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
+#ifdef ENABLE_DECODE
 #include <libsigrokdecode/libsigrokdecode.h>
+#endif
 
 #include "sigsession.h"
 
@@ -202,6 +204,7 @@ boost::shared_ptr<data::Logic> SigSession::get_data()
 	return _logic_data;
 }
 
+#ifdef ENABLE_DECODE
 bool SigSession::add_decoder(srd_decoder *const dec)
 {
 	map<const srd_probe*, shared_ptr<view::LogicSignal> > probes;
@@ -273,6 +276,7 @@ void SigSession::remove_decode_signal(view::DecodeTrace *signal)
 			return;
 		}
 }
+#endif
 
 void SigSession::set_capture_state(capture_state state)
 {
