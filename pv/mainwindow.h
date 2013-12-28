@@ -71,8 +71,6 @@ private:
 	void update_device_list(
 		struct sr_dev_inst *selected_device = NULL);
 
-	static gint decoder_name_cmp(gconstpointer a, gconstpointer b);
-
 private slots:
 	void load_file(QString file_name);
 
