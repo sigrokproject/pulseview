@@ -33,7 +33,7 @@ DecoderMenu::DecoderMenu(QWidget *parent) :
 		(GSList*)srd_decoder_list()), decoder_name_cmp);
 	for(; l; l = l->next)
 	{
-		QAction *const action = addAction(QString(
+		QAction *const action = addAction(QString::fromUtf8(
 			((srd_decoder*)l->data)->name));
 		action->setData(qVariantFromValue(l->data));
 		_mapper.setMapping(action, action);

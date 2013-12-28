@@ -48,7 +48,7 @@ QWidget* String::get_widget(QWidget *parent, bool auto_commit)
 
 	GVariant *const value = _getter ? _getter() : NULL;
 	if (value) {
-		_line_edit->setText(QString(
+		_line_edit->setText(QString::fromUtf8(
 			g_variant_get_string(value, NULL)));
 		g_variant_unref(value);
 	}

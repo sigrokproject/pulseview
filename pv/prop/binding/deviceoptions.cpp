@@ -66,7 +66,7 @@ DeviceOptions::DeviceOptions(struct sr_dev_inst *sdi) :
 		if (sr_config_list(_sdi->driver, _sdi, NULL, key, &gvar_list) != SR_OK)
 			gvar_list = NULL;
 
-		const QString name(info->name);
+		const QString name = QString::fromUtf8(info->name);
 
 		switch(key)
 		{
@@ -169,11 +169,11 @@ QString DeviceOptions::print_gvariant(GVariant *const gvar)
 	QString s;
 
 	if (g_variant_is_of_type(gvar, G_VARIANT_TYPE("s")))
-		s = QString(g_variant_get_string(gvar, NULL));
+		s = QString::fromUtf8(g_variant_get_string(gvar, NULL));
 	else
 	{
 		gchar *const text = g_variant_print(gvar, FALSE);
-		s = QString(text);
+		s = QString::fromUtf8(text);
 		g_free(text);
 	}
 
@@ -184,14 +184,14 @@ QString DeviceOptions::print_timebase(GVariant *const gvar)
 {
 	uint64_t p, q;
 	g_variant_get(gvar, "(tt)", &p, &q);
-	return QString(sr_period_string(p * q));
+	return QString::fromUtf8(sr_period_string(p * q));
 }
 
 QString DeviceOptions::print_vdiv(GVariant *const gvar)
 {
 	uint64_t p, q;
 	g_variant_get(gvar, "(tt)", &p, &q);
-	return QString(sr_voltage_string(p, q));
+	return QString::fromUtf8(sr_voltage_string(p, q));
 }
 
 QString DeviceOptions::print_voltage_threshold(GVariant *const gvar)
@@ -200,7 +200,7 @@ QString DeviceOptions::print_voltage_threshold(GVariant *const gvar)
 	char buf[64];
 	g_variant_get(gvar, "(dd)", &lo, &hi);
 	snprintf(buf, sizeof(buf), "L<%.1fV H>%.1fV", lo, hi);
-	return QString(buf);
+	return QString::fromUtf8(buf);
 }
 
 } // binding

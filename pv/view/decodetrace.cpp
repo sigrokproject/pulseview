@@ -78,7 +78,8 @@ const QColor DecodeTrace::Colours[7] = {
 
 DecodeTrace::DecodeTrace(pv::SigSession &session,
 	boost::shared_ptr<pv::data::DecoderStack> decoder_stack, int index) :
-	Trace(session, QString(decoder_stack->stack().front()->decoder()->name)),
+	Trace(session, QString::fromUtf8(
+		decoder_stack->stack().front()->decoder()->name)),
 	_decoder_stack(decoder_stack),
 	_delete_mapper(this)
 {
@@ -403,7 +404,8 @@ void DecodeTrace::create_decoder_form(int index,
 	assert(decoder);
 
 	pv::widgets::DecoderGroupBox *const group =
-		new pv::widgets::DecoderGroupBox(decoder->name);
+		new pv::widgets::DecoderGroupBox(
+			QString::fromUtf8(decoder->name));
 
 	_delete_mapper.setMapping(group, index);
 	connect(group, SIGNAL(delete_decoder()), &_delete_mapper, SLOT(map()));

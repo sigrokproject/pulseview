@@ -223,7 +223,8 @@ bool SigSession::add_decoder(srd_decoder *const dec)
 			{
 				shared_ptr<view::LogicSignal> l =
 					dynamic_pointer_cast<view::LogicSignal>(s);
-				if (l && QString(probe->name).toLower().contains(
+				if (l && QString::fromUtf8(probe->name).
+					toLower().contains(
 					l->get_name().toLower()))
 					probes[probe] = l;
 			}

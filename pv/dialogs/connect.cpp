@@ -163,7 +163,7 @@ void Connect::scan_pressed()
 	BOOST_FOREACH(sr_dev_inst *const sdi, devices)
 	{
 		const string title = DeviceManager::format_device_title(sdi);
-		QString text(title.c_str());
+		QString text = QString::fromUtf8(title.c_str());
 		if (sdi->probes) {
 			text += QString(" with %1 probes").arg(
 				g_slist_length(sdi->probes));

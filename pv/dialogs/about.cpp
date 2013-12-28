@@ -65,8 +65,8 @@ About::About(QWidget *parent) :
 	drivers = sr_driver_list();
 	for (int i = 0; drivers[i]; ++i) {
 		s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
-			 .arg(QString(drivers[i]->name))
-			 .arg(QString(drivers[i]->longname)));
+			 .arg(QString::fromUtf8(drivers[i]->name))
+			 .arg(QString::fromUtf8(drivers[i]->longname)));
 	}
 
 	s.append("<tr><td colspan=\"2\"><b>" +
@@ -75,8 +75,8 @@ About::About(QWidget *parent) :
 	inputs = sr_input_list();
 	for (int i = 0; inputs[i]; ++i) {
 		s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
-			 .arg(QString(inputs[i]->id))
-			 .arg(QString(inputs[i]->description)));
+			 .arg(QString::fromUtf8(inputs[i]->id))
+			 .arg(QString::fromUtf8(inputs[i]->description)));
 	}
 
 	s.append("<tr><td colspan=\"2\"><b>" +
@@ -85,8 +85,8 @@ About::About(QWidget *parent) :
 	outputs = sr_output_list();
 	for (int i = 0; outputs[i]; ++i) {
 		s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
-			.arg(QString(outputs[i]->id))
-			.arg(QString(outputs[i]->description)));
+			.arg(QString::fromUtf8(outputs[i]->id))
+			.arg(QString::fromUtf8(outputs[i]->description)));
 	}
 
 	s.append("<tr><td colspan=\"2\"><b>" +
@@ -95,8 +95,8 @@ About::About(QWidget *parent) :
 	for (const GSList *l = srd_decoder_list(); l; l = l->next) {
 		dec = (struct srd_decoder *)l->data;
 		s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
-			 .arg(QString(dec->id))
-			 .arg(QString(dec->longname)));
+			 .arg(QString::fromUtf8(dec->id))
+			 .arg(QString::fromUtf8(dec->longname)));
 	}
 
 	s.append("</table>");

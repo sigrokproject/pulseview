@@ -43,7 +43,7 @@ Annotation::Annotation(const srd_proto_data *const pdata) :
 
 	const char *const *annotations = (char**)pda->ann_text;
 	while(*annotations) {
-		_annotations.push_back(QString(*annotations));
+		_annotations.push_back(QString::fromUtf8(*annotations));
 		annotations++;
 	}
 }

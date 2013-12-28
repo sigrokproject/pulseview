@@ -92,7 +92,7 @@ SamplingBar::SamplingBar(SigSession &session, QWidget *parent) :
 	{
 		const uint64_t &l = RecordLengths[i];
 		char *const text = sr_si_string_u64(l, " samples");
-		_record_length_selector.addItem(QString(text),
+		_record_length_selector.addItem(QString::fromUtf8(text),
 			qVariantFromValue(l));
 		g_free(text);
 
@@ -219,7 +219,7 @@ void SamplingBar::update_sample_rate_selector()
 		for (unsigned int i = 0; i < num_elements; i++)
 		{
 			char *const s = sr_samplerate_string(elements[i]);
-			_sample_rate_list.addItem(QString(s),
+			_sample_rate_list.addItem(QString::fromUtf8(s),
 				qVariantFromValue(elements[i]));
 			g_free(s);
 		}
