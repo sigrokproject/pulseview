@@ -22,6 +22,8 @@ extern "C" {
 #include <libsigrokdecode/libsigrokdecode.h>
 }
 
+#include <vector>
+
 #include "annotation.h"
 
 using namespace std;
