@@ -226,6 +226,7 @@ include(${QT_USE_FILE})
 #-------------------------------------------------------------------------------
 
 add_definitions(${QT_DEFINITIONS})
+add_definitions(-D__STDC_LIMIT_MACROS)
 add_definitions(-Wall -Wextra)
 
 if(ENABLE_DECODE)

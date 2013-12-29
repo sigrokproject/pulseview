@@ -18,6 +18,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
+#include <stdint.h>
 #include <assert.h>
 
 #include <QSpinBox>
@@ -38,31 +39,93 @@ Int::Int(QString name,
 	Property(name, getter, setter),
 	_suffix(suffix),
 	_range(range),
+	_value(NULL),
 	_spin_box(NULL)
 {
 }
 
 Int::~Int()
 {
+	if (_value)
+		g_variant_unref(_value);
 }
 
 QWidget* Int::get_widget(QWidget *parent, bool auto_commit)
 {
+	int64_t int_val = 0, range_min = 0, range_max = 0;
+
 	if (_spin_box)
 		return _spin_box;
 
+	if (_value)
+		g_variant_unref(_value);
+
+	_value = _getter ? _getter() : NULL;
+	assert(_value);
+	if (!_value)
+		return NULL;
+
 	_spin_box = new QSpinBox(parent);
 	_spin_box->setSuffix(_suffix);
+
+	const GVariantType *const type = g_variant_get_type(_value);
+	assert(type);
+
+	if (g_variant_type_equal(type, G_VARIANT_TYPE_BYTE))
+	{
+		int_val = g_variant_get_byte(_value);
+		range_min = 0, range_max = UINT8_MAX;
+	}
+	else if (g_variant_type_equal(type, G_VARIANT_TYPE_INT16))
+	{
+		int_val = g_variant_get_int16(_value);
+		range_min = INT16_MIN, range_max = INT16_MAX;
+	}
+	else if (g_variant_type_equal(type, G_VARIANT_TYPE_UINT16))
+	{
+		int_val = g_variant_get_uint16(_value);
+		range_min = 0, range_max = UINT16_MAX;
+	}
+	else if (g_variant_type_equal(type, G_VARIANT_TYPE_INT32))
+	{
+		int_val = g_variant_get_int32(_value);
+		range_min = INT32_MIN, range_max = INT32_MAX;
+	}
+	else if (g_variant_type_equal(type, G_VARIANT_TYPE_UINT32))
+	{
+		int_val = g_variant_get_uint32(_value);
+		range_min = 0, range_max = UINT32_MAX;
+	}
+	else if (g_variant_type_equal(type, G_VARIANT_TYPE_INT64))
+	{
+		int_val = g_variant_get_int64(_value);
+		range_min = INT64_MIN, range_max = INT64_MAX;
+	}
+	else if (g_variant_type_equal(type, G_VARIANT_TYPE_UINT64))
+	{
+		int_val = g_variant_get_uint64(_value);
+		range_min = 0, range_max = UINT64_MAX;
+	}
+	else
+	{
+		// Unexpected value type.
+		assert(0);
+	}
+
+	// @todo Sigrok supports 64-bit quantities, but Qt does not have a
+	// standard widget to allow the values to be modified over the full
+	// 64-bit range on 32-bit machines. To solve the issue we need a
+	// custom widget.
+
+	range_min = max(range_min, (int64_t)INT_MIN);
+	range_max = min(range_max, (int64_t)INT_MAX);
+
 	if (_range)
 		_spin_box->setRange((int)_range->first, (int)_range->second);
 	else
-		_spin_box->setRange(INT_MIN, INT_MAX);
+		_spin_box->setRange((int)range_min, (int)range_max);
 
-	GVariant *const value = _getter ? _getter() : NULL;
-	if (value) {
-		_spin_box->setValue((int)g_variant_get_int64(value));
-		g_variant_unref(value);
-	}
+	_spin_box->setValue((int)int_val);
 
 	if (auto_commit)
 		connect(_spin_box, SIGNAL(valueChanged(int)),
@@ -78,7 +141,39 @@ void Int::commit()
 	if (!_spin_box)
 		return;
 
-	_setter(g_variant_new_int64(_spin_box->value()));
+	assert(_value);
+
+	GVariant *new_value = NULL;
+	const GVariantType *const type = g_variant_get_type(_value);
+	assert(type);
+
+	if (g_variant_type_equal(type, G_VARIANT_TYPE_BYTE))
+		new_value = g_variant_new_byte(_spin_box->value());
+	else if (g_variant_type_equal(type, G_VARIANT_TYPE_INT16))
+		new_value = g_variant_new_int16(_spin_box->value());
+	else if (g_variant_type_equal(type, G_VARIANT_TYPE_UINT16))
+		new_value = g_variant_new_uint16(_spin_box->value());
+	else if (g_variant_type_equal(type, G_VARIANT_TYPE_INT32))
+		new_value = g_variant_new_int32(_spin_box->value());
+	else if (g_variant_type_equal(type, G_VARIANT_TYPE_UINT32))
+		new_value = g_variant_new_int32(_spin_box->value());
+	else if (g_variant_type_equal(type, G_VARIANT_TYPE_INT64))
+		new_value = g_variant_new_int64(_spin_box->value());
+	else if (g_variant_type_equal(type, G_VARIANT_TYPE_UINT64))
+		new_value = g_variant_new_uint64(_spin_box->value());
+	else
+	{
+		// Unexpected value type.
+		assert(0);
+	}
+
+	assert(new_value);
+
+	g_variant_unref(_value);
+	g_variant_ref(new_value);
+	_value = new_value;
+
+	_setter(new_value);
 }
 
 void Int::on_value_changed(int)
