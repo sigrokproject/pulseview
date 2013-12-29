@@ -85,6 +85,9 @@ struct sr_dev_inst* SigSession::get_device() const
 
 void SigSession::set_device(struct sr_dev_inst *sdi)
 {
+	// Ensure we are not capturing before setting the device
+	stop_capture();
+
 	if (_sdi)
 		_device_manager.release_device(_sdi);
 	if (sdi)
