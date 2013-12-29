@@ -81,10 +81,10 @@ pv::widgets::Popup* TimeMarker::create_popup(QWidget *parent)
 	popup->setLayout(form);
 
 	_value_widget = new QDoubleSpinBox(parent);
-	_value_widget->setValue(_time);
-	_value_widget->setDecimals(6);
+	_value_widget->setDecimals(9);
 	_value_widget->setSuffix("s");
 	_value_widget->setSingleStep(1e-6);
+	_value_widget->setValue(_time);
 
 	connect(_value_widget, SIGNAL(valueChanged(double)),
 		this, SLOT(on_value_changed(double)));
