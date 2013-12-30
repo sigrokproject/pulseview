@@ -74,8 +74,8 @@ SamplingBar::SamplingBar(SigSession &session, QWidget *parent) :
 	_configure_button_action(NULL),
 	_probes_button(this),
 	_record_length_selector(this),
-	_sample_rate_action(NULL),
-	_sample_rate_list(this),
+	_sample_rate("Hz", this),
+	_updating_sample_rate(false),
 	_icon_red(":/icons/status-red.svg"),
 	_icon_green(":/icons/status-green.svg"),
 	_icon_grey(":/icons/status-grey.svg"),
@@ -85,9 +85,8 @@ SamplingBar::SamplingBar(SigSession &session, QWidget *parent) :
 		this, SLOT(on_run_stop()));
 	connect(&_device_selector, SIGNAL(currentIndexChanged (int)),
 		this, SLOT(on_device_selected()));
-
-	_sample_rate_value.setDecimals(0);
-	_sample_rate_value.setSuffix("Hz");
+	connect(&_sample_rate, SIGNAL(value_changed()),
+		this, SLOT(on_sample_rate_changed()));
 
 	for (size_t i = 0; i < countof(RecordLengths); i++)
 	{
@@ -115,14 +114,9 @@ SamplingBar::SamplingBar(SigSession &session, QWidget *parent) :
 	_configure_button_action = addWidget(&_configure_button);
 	addWidget(&_probes_button);
 	addWidget(&_record_length_selector);
-	_sample_rate_list_action = addWidget(&_sample_rate_list);
-	_sample_rate_value_action = addWidget(&_sample_rate_value);
-	addWidget(&_run_stop_button);
+	addWidget(&_sample_rate);
 
-	connect(&_sample_rate_list, SIGNAL(currentIndexChanged(int)),
-		this, SLOT(on_sample_rate_changed()));
-	connect(&_sample_rate_value, SIGNAL(editingFinished()),
-		this, SLOT(on_sample_rate_changed()));
+	addWidget(&_run_stop_button);
 }
 
 void SamplingBar::set_device_list(
@@ -186,57 +180,40 @@ void SamplingBar::update_sample_rate_selector()
 	const uint64_t *elements = NULL;
 	gsize num_elements;
 
-	assert(_sample_rate_value_action);
-	assert(_sample_rate_list_action);
-
 	if (!sdi)
 		return;
 
+	_updating_sample_rate = true;
+
 	if (sr_config_list(sdi->driver, sdi, NULL,
 			SR_CONF_SAMPLERATE, &gvar_dict) != SR_OK)
+	{
+		_sample_rate.show_none();
+		_updating_sample_rate = false;
 		return;
-
-	_sample_rate_list_action->setVisible(false);
-	_sample_rate_value_action->setVisible(false);
+	}
 
 	if ((gvar_list = g_variant_lookup_value(gvar_dict,
-			"samplerate-steps", G_VARIANT_TYPE("at")))) {
+			"samplerate-steps", G_VARIANT_TYPE("at"))))
+	{
 		elements = (const uint64_t *)g_variant_get_fixed_array(
 				gvar_list, &num_elements, sizeof(uint64_t));
-		_sample_rate_value.setRange(elements[0], elements[1]);
-		_sample_rate_value.setSingleStep(elements[2]);
+		_sample_rate.show_min_max_step(elements[0], elements[1],
+			elements[2]);
 		g_variant_unref(gvar_list);
-
-		_sample_rate_action = _sample_rate_value_action;
 	}
 	else if ((gvar_list = g_variant_lookup_value(gvar_dict,
 			"samplerates", G_VARIANT_TYPE("at"))))
 	{
 		elements = (const uint64_t *)g_variant_get_fixed_array(
 				gvar_list, &num_elements, sizeof(uint64_t));
-		_sample_rate_list.clear();
-
-		for (unsigned int i = 0; i < num_elements; i++)
-		{
-			char *const s = sr_samplerate_string(elements[i]);
-			_sample_rate_list.addItem(QString::fromUtf8(s),
-				qVariantFromValue(elements[i]));
-			g_free(s);
-		}
-
-		_sample_rate_list.show();
+		_sample_rate.show_list(elements, num_elements);
 		g_variant_unref(gvar_list);
-
-		_sample_rate_action = _sample_rate_list_action;
 	}
+	_updating_sample_rate = false;
 
 	g_variant_unref(gvar_dict);
 	update_sample_rate_selector_value();
-
-	// We delay showing the action, so that value change events
-	// are ignored.
-	if (_sample_rate_action)
-		_sample_rate_action->setVisible(true);
 }
 
 void SamplingBar::update_sample_rate_selector_value()
@@ -256,18 +233,9 @@ void SamplingBar::update_sample_rate_selector_value()
 	samplerate = g_variant_get_uint64(gvar);
 	g_variant_unref(gvar);
 
-	assert(_sample_rate_value_action);
-	assert(_sample_rate_list_action);
-
-	if (_sample_rate_action == _sample_rate_value_action)
-		_sample_rate_value.setValue(samplerate);
-	else if (_sample_rate_action == _sample_rate_list_action)
-	{
-		for (int i = 0; i < _sample_rate_list.count(); i++)
-			if (samplerate == _sample_rate_list.itemData(
-				i).value<uint64_t>())
-				_sample_rate_list.setCurrentIndex(i);
-	}
+	_updating_sample_rate = true;
+	_sample_rate.set_value(samplerate);
+	_updating_sample_rate = false;
 }
 
 void SamplingBar::commit_sample_rate()
@@ -277,19 +245,7 @@ void SamplingBar::commit_sample_rate()
 	sr_dev_inst *const sdi = get_selected_device();
 	assert(sdi);
 
-	assert(_sample_rate_value_action);
-	assert(_sample_rate_list_action);
-
-	if (_sample_rate_action == _sample_rate_value_action)
-		sample_rate = (uint64_t)_sample_rate_value.value();
-	else if (_sample_rate_action == _sample_rate_list_action)
-	{
-		const int index = _sample_rate_list.currentIndex();
-		if (index >= 0)
-			sample_rate = _sample_rate_list.itemData(
-				index).value<uint64_t>();
-	}
-
+	sample_rate = _sample_rate.value();
 	if (sample_rate == 0)
 		return;
 
@@ -326,7 +282,8 @@ void SamplingBar::on_device_selected()
 
 void SamplingBar::on_sample_rate_changed()
 {
-	commit_sample_rate();
+	if (!_updating_sample_rate)
+		commit_sample_rate();
 }
 
 void SamplingBar::on_run_stop()
