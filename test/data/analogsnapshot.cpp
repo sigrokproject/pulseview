@@ -27,8 +27,6 @@
 
 #include "../../pv/data/analogsnapshot.h"
 
-using namespace std;
-
 using pv::data::AnalogSnapshot;
 
 BOOST_AUTO_TEST_SUITE(AnalogSnapshotTest)

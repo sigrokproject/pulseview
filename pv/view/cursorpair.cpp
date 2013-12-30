@@ -25,8 +25,11 @@
 
 #include <algorithm>
 
-using namespace boost;
-using namespace std;
+using boost::shared_ptr;
+using std::max;
+using std::make_pair;
+using std::min;
+using std::pair;
 
 namespace pv {
 namespace view {

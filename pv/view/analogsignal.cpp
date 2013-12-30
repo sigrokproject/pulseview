@@ -27,8 +27,10 @@
 #include "pv/data/analogsnapshot.h"
 #include "pv/view/view.h"
 
-using namespace boost;
-using namespace std;
+using boost::shared_ptr;
+using std::max;
+using std::min;
+using std::deque;
 
 namespace pv {
 namespace view {
@@ -151,7 +153,6 @@ void AnalogSignal::paint_envelope(QPainter &p,
 	int y, int left, const int64_t start, const int64_t end,
 	const double pixels_offset, const double samples_per_pixel)
 {
-	using namespace Qt;
 	using pv::data::AnalogSnapshot;
 
 	AnalogSnapshot::EnvelopeSection e;
@@ -160,7 +161,7 @@ void AnalogSignal::paint_envelope(QPainter &p,
 	if (e.length < 2)
 		return;
 
-	p.setPen(QPen(NoPen));
+	p.setPen(QPen(Qt::NoPen));
 	p.setBrush(_colour);
 
 	QRectF *const rects = new QRectF[e.length];

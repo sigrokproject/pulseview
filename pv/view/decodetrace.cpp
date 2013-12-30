@@ -47,8 +47,13 @@ extern "C" {
 #include <pv/widgets/decodergroupbox.h>
 #include <pv/widgets/decodermenu.h>
 
-using namespace boost;
-using namespace std;
+using boost::dynamic_pointer_cast;
+using boost::shared_ptr;
+using std::list;
+using std::max;
+using std::map;
+using std::min;
+using std::vector;
 
 namespace pv {
 namespace view {

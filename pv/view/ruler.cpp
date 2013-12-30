@@ -37,8 +37,8 @@
 
 #include <pv/widgets/popup.h>
 
-using namespace boost;
-using namespace std;
+using namespace Qt;
+using boost::shared_ptr;
 
 namespace pv {
 namespace view {
@@ -92,7 +92,6 @@ QSize Ruler::sizeHint() const
 
 void Ruler::paintEvent(QPaintEvent*)
 {
-	using namespace Qt;
 
 	const double SpacingIncrement = 32.0f;
 	const double MinValueSpacing = 32.0f;

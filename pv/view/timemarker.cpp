@@ -27,8 +27,6 @@
 
 #include <pv/widgets/popup.h>
 
-using namespace std;
-
 namespace pv {
 namespace view {
 

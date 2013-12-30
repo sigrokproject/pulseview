@@ -28,7 +28,11 @@
 
 #include <libsigrok/libsigrok.h>
 
-using namespace std;
+using std::list;
+using std::map;
+using std::ostringstream;
+using std::runtime_error;
+using std::string;
 
 namespace pv {
 

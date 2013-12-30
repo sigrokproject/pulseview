@@ -45,8 +45,14 @@
 #include "pv/data/logic.h"
 #include "pv/data/logicsnapshot.h"
 
-using namespace boost;
-using namespace std;
+using boost::shared_ptr;
+using boost::weak_ptr;
+using std::deque;
+using std::list;
+using std::max;
+using std::min;
+using std::set;
+using std::vector;
 
 namespace pv {
 namespace view {

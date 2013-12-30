@@ -35,8 +35,13 @@
 #include <pv/data/decode/annotation.h>
 #include <pv/view/logicsignal.h>
 
-using namespace boost;
-using namespace std;
+using boost::lock_guard;
+using boost::mutex;
+using boost::shared_ptr;
+using std::deque;
+using std::min;
+using std::list;
+using std::vector;
 
 namespace pv {
 namespace data {
@@ -202,7 +207,8 @@ void DecoderStack::decode_proc(shared_ptr<data::Logic> data)
 	srd_session_start(session);
 
 	for (int64_t i = 0;
-		!this_thread::interruption_requested() && i < sample_count;
+		!boost::this_thread::interruption_requested() &&
+			i < sample_count;
 		i += DecodeChunkLength)
 	{
 		lock_guard<mutex> decode_lock(_global_decode_mutex);

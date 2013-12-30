@@ -24,8 +24,8 @@
 
 #include "double.h"
 
-using namespace std;
-using namespace boost;
+using boost::optional;
+using std::pair;
 
 namespace pv {
 namespace prop {

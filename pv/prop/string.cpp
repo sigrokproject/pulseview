@@ -25,9 +25,6 @@
 
 #include "string.h"
 
-using namespace std;
-using namespace boost;
-
 namespace pv {
 namespace prop {
 

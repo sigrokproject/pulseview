@@ -31,8 +31,11 @@
 #include <pv/prop/int.h>
 #include <pv/prop/string.h>
 
-using namespace boost;
-using namespace std;
+using boost::bind;
+using boost::none;
+using boost::shared_ptr;
+using std::map;
+using std::string;
 
 namespace pv {
 namespace prop {

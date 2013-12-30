@@ -24,8 +24,8 @@
 
 #include "enum.h"
 
-using namespace boost;
-using namespace std;
+using std::pair;
+using std::vector;
 
 namespace pv {
 namespace prop {

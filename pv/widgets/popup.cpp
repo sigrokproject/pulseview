@@ -26,7 +26,8 @@
 
 #include "popup.h"
 
-using namespace std;
+using std::max;
+using std::min;
 
 namespace pv {
 namespace widgets {

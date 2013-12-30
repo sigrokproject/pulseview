@@ -29,8 +29,11 @@
 
 #include "logicsnapshot.h"
 
-using namespace boost;
-using namespace std;
+using boost::lock_guard;
+using boost::recursive_mutex;
+using std::max;
+using std::min;
+using std::pair;
 
 namespace pv {
 namespace data {

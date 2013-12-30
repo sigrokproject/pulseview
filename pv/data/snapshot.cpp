@@ -24,7 +24,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-using namespace boost;
+using boost::lock_guard;
+using boost::recursive_mutex;
 
 namespace pv {
 namespace data {

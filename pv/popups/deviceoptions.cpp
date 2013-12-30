@@ -27,9 +27,6 @@
 
 #include <pv/prop/property.h>
 
-using namespace boost;
-using namespace std;
-
 namespace pv {
 namespace popups {
 

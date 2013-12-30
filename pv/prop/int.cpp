@@ -25,8 +25,10 @@
 
 #include "int.h"
 
-using namespace std;
-using namespace boost;
+using boost::optional;
+using std::max;
+using std::min;
+using std::pair;
 
 namespace pv {
 namespace prop {

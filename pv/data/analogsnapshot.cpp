@@ -31,8 +31,12 @@
 
 #include "analogsnapshot.h"
 
-using namespace boost;
-using namespace std;
+using boost::lock_guard;
+using boost::recursive_mutex;
+using std::max;
+using std::max_element;
+using std::min;
+using std::min_element;
 
 namespace pv {
 namespace data {

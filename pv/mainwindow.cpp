@@ -56,8 +56,7 @@
 #include <glib.h>
 #include <libsigrok/libsigrok.h>
 
-using namespace boost;
-using namespace std;
+using std::list;
 
 namespace pv {
 

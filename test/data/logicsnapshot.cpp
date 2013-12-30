@@ -27,9 +27,8 @@
 
 #include "../../pv/data/logicsnapshot.h"
 
-using namespace std;
-
 using pv::data::LogicSnapshot;
+using std::vector;
 
 BOOST_AUTO_TEST_SUITE(LogicSnapshotTest)
 

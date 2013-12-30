@@ -36,8 +36,11 @@
 
 #include <pv/widgets/popup.h>
 
-using namespace boost;
-using namespace std;
+using boost::shared_ptr;
+using std::max;
+using std::make_pair;
+using std::pair;
+using std::vector;
 
 namespace pv {
 namespace view {

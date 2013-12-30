@@ -34,7 +34,7 @@
 #include <pv/devicemanager.h>
 #include <pv/popups/deviceoptions.h>
 
-using namespace std;
+using std::string;
 
 namespace pv {
 namespace toolbars {
@@ -303,7 +303,7 @@ void SamplingBar::commit_sample_rate()
 
 void SamplingBar::on_device_selected()
 {
-	using namespace pv::popups;
+	using pv::popups::DeviceOptions;
 
 	if (_updating_device_selector)
 		return;

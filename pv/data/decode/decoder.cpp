@@ -24,8 +24,9 @@
 
 #include <pv/view/logicsignal.h>
 
-using namespace boost;
-using namespace std;
+using boost::shared_ptr;
+using std::map;
+using std::string;
 
 namespace pv {
 namespace data {

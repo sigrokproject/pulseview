@@ -23,9 +23,9 @@
 #include <pv/sigsession.h>
 #include <pv/view/signal.h>
 
-using namespace boost;
 using namespace Qt;
-using namespace std;
+using boost::shared_ptr;
+using std::vector;
 
 namespace pv {
 namespace popups {

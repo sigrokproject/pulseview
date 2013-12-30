@@ -26,7 +26,7 @@
 
 #include "binding.h"
 
-using namespace boost;
+using boost::shared_ptr;
 
 namespace pv {
 namespace prop {

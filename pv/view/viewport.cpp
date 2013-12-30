@@ -28,8 +28,10 @@
 
 #include <boost/foreach.hpp>
 
-using namespace boost;
-using namespace std;
+using boost::shared_ptr;
+using std::max;
+using std::min;
+using std::vector;
 
 namespace pv {
 namespace view {

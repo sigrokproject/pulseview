@@ -32,8 +32,14 @@
 #include <pv/prop/enum.h>
 #include <pv/prop/int.h>
 
-using namespace boost;
-using namespace std;
+using boost::bind;
+using boost::function;
+using boost::optional;
+using boost::shared_ptr;
+using std::make_pair;
+using std::pair;
+using std::string;
+using std::vector;
 
 namespace pv {
 namespace prop {

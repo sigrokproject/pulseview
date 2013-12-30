@@ -31,7 +31,8 @@ extern "C" {
 #include <libsigrok/libsigrok.h>
 }
 
-using namespace std;
+using std::list;
+using std::string;
 
 extern sr_context *sr_ctx;
 

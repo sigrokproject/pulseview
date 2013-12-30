@@ -28,15 +28,16 @@
 #include "../../pv/sigsession.h"
 #include "../../pv/view/decodetrace.h"
 
-using namespace boost;
-using namespace std;
+using boost::shared_ptr;
+using pv::data::DecoderStack;
+using pv::data::decode::Decoder;
+using pv::view::DecodeTrace;
+using std::vector;
 
 BOOST_AUTO_TEST_SUITE(DecoderStackTest)
 
 BOOST_AUTO_TEST_CASE(TwoDecoderStack)
 {
-	using namespace pv;
-
 	sr_context *ctx = NULL;
 
 	BOOST_REQUIRE(sr_init(&ctx) == SR_OK);
@@ -59,13 +60,13 @@ BOOST_AUTO_TEST_CASE(TwoDecoderStack)
 		ss.add_decoder(dec);
 
 		// Check the signals were created
-		const vector< shared_ptr<view::DecodeTrace> > sigs =
+		const vector< shared_ptr<DecodeTrace> > sigs =
 			ss.get_decode_signals();
 
-		shared_ptr<data::DecoderStack> dec0 = sigs[0]->decoder();
+		shared_ptr<DecoderStack> dec0 = sigs[0]->decoder();
 		BOOST_REQUIRE(dec0);
 
-		shared_ptr<data::DecoderStack> dec1 = sigs[0]->decoder();
+		shared_ptr<DecoderStack> dec1 = sigs[0]->decoder();
 		BOOST_REQUIRE(dec1);
 
 		// Wait for the decode threads to complete

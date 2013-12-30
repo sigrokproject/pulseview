@@ -47,8 +47,14 @@
 
 #include <QDebug>
 
-using namespace boost;
-using namespace std;
+using boost::dynamic_pointer_cast;
+using boost::function;
+using boost::lock_guard;
+using boost::mutex;
+using boost::shared_ptr;
+using std::map;
+using std::string;
+using std::vector;
 
 namespace pv {
 

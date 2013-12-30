@@ -23,8 +23,9 @@
 #include "analog.h"
 #include "analogsnapshot.h"
 
-using namespace boost;
-using namespace std;
+using boost::shared_ptr;
+using std::deque;
+using std::max;
 
 namespace pv {
 namespace data {

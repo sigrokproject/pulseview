@@ -26,8 +26,6 @@ extern "C" {
 
 #include "annotation.h"
 
-using namespace std;
-
 namespace pv {
 namespace data {
 namespace decode {
