@@ -24,7 +24,6 @@ include(FindPkgConfig)
 include(GNUInstallDirs)
 
 set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake")
-include(cotire)
 
 project(pulseview)
 
@@ -35,6 +34,7 @@ project(pulseview)
 option(DISABLE_WERROR "Build without -Werror" FALSE)
 option(ENABLE_SIGNALS "Build with UNIX signals" TRUE)
 option(ENABLE_DECODE "Build with libsigrokdecode" FALSE)
+option(ENABLE_TESTS "Enable cotire" FALSE)
 option(ENABLE_TESTS "Enable unit tests" FALSE)
 option(STATIC_PKGDEPS_LIBS "Statically link to (pkgconfig) libraries" FALSE)
 
@@ -281,11 +281,15 @@ add_executable(${PROJECT_NAME}
 )
 
 target_link_libraries(${PROJECT_NAME} ${PULSEVIEW_LINK_LIBS})
-cotire(${PROJECT_NAME})
 
 if(WIN32)
 # Pass -mwindows so that no "DOS box" will open when PulseView is started.
 set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "-mwindows")
+endif()
+
+if(ENABLE_COTIRE)
+	include(cotire)
+	cotire(${PROJECT_NAME})
 endif()
 
 #===============================================================================
