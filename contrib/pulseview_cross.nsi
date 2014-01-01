@@ -1,7 +1,7 @@
 ##
 ## This file is part of the PulseView project.
 ##
-## Copyright (C) 2013 Uwe Hermann <uwe@hermann-uwe.de>
+## Copyright (C) 2013-2014 Uwe Hermann <uwe@hermann-uwe.de>
 ##
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -70,11 +70,11 @@ RequestExecutionLevel admin
 !define MUI_LICENSEPAGE_BUTTON $(^NextBtn)
 !define MUI_LICENSEPAGE_TEXT_BOTTOM "Click Next to continue."
 
-# # File name of the Python installer MSI file.
-# !define PY_INST "python-3.2.2.msi"
-# 
-# # Standard install path of the Python installer (do not change!).
-# !define PY_BIN "c:\Python32"
+# File name of the Python installer MSI file.
+!define PY_INST "python-3.2.3.msi"
+
+# Standard install path of the Python installer (do not change!).
+!define PY_BIN "c:\Python32"
 
 # Path where the cross-compiled sigrok tools and libraries are located.
 # Change this to where-ever you installed libsigrok.a and so on.
@@ -128,17 +128,17 @@ Section "PulseView (required)" Section1
 	# Install the file(s) specified below into the specified directory.
 	SetOutPath "$INSTDIR"
 
-	# License file
+	# License file.
 	File "../COPYING"
 
-	# PulseView (statically linked, includes all libs)
+	# PulseView (statically linked, includes all libs).
 	File "${CROSS}/bin/pulseview.exe"
 
 	# Install the file(s) specified below into the specified directory.
-	# SetOutPath "$INSTDIR\decoders"
+	SetOutPath "$INSTDIR\decoders"
 
-	# Protocol decoders
-	# File /r /x "__pycache__" "${CROSS}/share/libsigrokdecode/decoders/*"
+	# Protocol decoders.
+	File /r /x "__pycache__" "${CROSS}/share/libsigrokdecode/decoders/*"
 
 	# Generate the uninstaller executable.
 	WriteUninstaller "$INSTDIR\Uninstall.exe"
@@ -186,19 +186,19 @@ SectionEnd
 
 # --- Python installer section ------------------------------------------------
 
-# Section "Python" Section2
-# 
-# 	# Copy the Python installer MSI file into the temporary directory.
-# 	SetOutPath "$TEMP"
-# 	File "${CROSS}/${PY_INST}"
-# 
-# 	# Run the Python installer MSI file from within our installer.
-# 	ExecWait '"msiexec" /i "$TEMP\${PY_INST}" /QB- /passive ALLUSERS=1'
-# 
-# 	# Remove Python installer MSI file again.
-# 	Delete "$TEMP\${PY_INST}"
-# 
-# SectionEnd
+Section "Python" Section2
+
+	# Copy the Python installer MSI file into the temporary directory.
+	SetOutPath "$TEMP"
+	File "${CROSS}/${PY_INST}"
+
+	# Run the Python installer MSI file from within our installer.
+	ExecWait '"msiexec" /i "$TEMP\${PY_INST}" /QB- /passive ALLUSERS=1'
+
+	# Remove Python installer MSI file again.
+	Delete "$TEMP\${PY_INST}"
+
+SectionEnd
 
 
 # --- Uninstaller section -----------------------------------------------------
@@ -214,10 +214,10 @@ Section "Uninstall"
 
 	# Delete all decoders and everything else in decoders/.
 	# There could be *.pyc files or __pycache__ subdirs and so on.
-	# RMDir /r "$INSTDIR\decoders\*"
+	RMDir /r "$INSTDIR\decoders\*"
 
 	# Delete the install directory and its sub-directories.
-	# RMDir "$INSTDIR\decoders"
+	RMDir "$INSTDIR\decoders"
 	RMDir "$INSTDIR"
 
 	# Delete the links from the start menu.
@@ -237,10 +237,10 @@ SectionEnd
 # --- Component selection section descriptions --------------------------------
 
 LangString DESC_Section1 ${LANG_ENGLISH} "This installs the PulseView sigrok GUI."
-# LangString DESC_Section2 ${LANG_ENGLISH} "This installs Python 3.2 in its default location of c:\Python32. If you already have Python 3.2 installed, you don't need to re-install it."
+LangString DESC_Section2 ${LANG_ENGLISH} "This installs Python 3.2 in its default location of c:\Python32. If you already have Python 3.2 installed, you don't need to re-install it."
 
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
 !insertmacro MUI_DESCRIPTION_TEXT ${Section1} $(DESC_Section1)
-# !insertmacro MUI_DESCRIPTION_TEXT ${Section2} $(DESC_Section2)
+!insertmacro MUI_DESCRIPTION_TEXT ${Section2} $(DESC_Section2)
 !insertmacro MUI_FUNCTION_DESCRIPTION_END
 
