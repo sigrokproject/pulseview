@@ -223,7 +223,7 @@ Section "Uninstall"
 	RMDir /r "$INSTDIR\decoders\*"
 
 	# Delete the firmware files.
-	File /r "$INSTDIR\firmware\*"
+	RMDir /r "$INSTDIR\firmware\*"
 
 	# Delete the install directory and its sub-directories.
 	RMDir "$INSTDIR\decoders"
