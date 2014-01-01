@@ -1,4 +1,4 @@
-
+##
 ## This file is part of the PulseView project.
 ##
 ## Copyright (C) 2012 Joel Holdsworth <joel@airwebreathe.org.uk>
@@ -47,7 +47,7 @@ if(WIN32)
 	set(Boost_USE_STATIC_LIBS on)
 	add_definitions(-DBOOST_THREAD_USE_LIB)
 
-	# Windsws does not support UNIX signals
+	# Windows does not support UNIX signals.
 	set(ENABLE_SIGNALS FALSE)
 endif()
 
@@ -55,9 +55,7 @@ endif()
 #= Dependencies
 #-------------------------------------------------------------------------------
 
-list(APPEND PKGDEPS
-	libsigrok>=0.2.0
-)
+list(APPEND PKGDEPS libsigrok>=0.2.0)
 
 if(ENABLE_DECODE)
 	list(APPEND PKGDEPS libsigrokdecode>=0.2.0)
@@ -149,7 +147,7 @@ set(pulseview_SOURCES
 	pv/widgets/wellarray.cpp
 )
 
-# This list includes only QObject derrived class headers
+# This list includes only QObject derived class headers.
 set(pulseview_HEADERS
 	pv/mainwindow.h
 	pv/sigsession.h
@@ -326,4 +324,4 @@ if(ENABLE_TESTS)
 	add_subdirectory(test)
 	enable_testing()
 	add_test(test ${CMAKE_CURRENT_BINARY_DIR}/test/pulseview-test)
-endif(ENABLE_TESTS)
+endif()

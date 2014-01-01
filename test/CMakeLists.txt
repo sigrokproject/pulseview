@@ -75,7 +75,7 @@ set(pulseview_TEST_SOURCES
 	test.cpp
 )
 
-# This list includes only QObject derrived class headers
+# This list includes only QObject derived class headers.
 set(pulseview_TEST_HEADERS
 	${PROJECT_SOURCE_DIR}/pv/sigsession.h
 	${PROJECT_SOURCE_DIR}/pv/prop/int.h
