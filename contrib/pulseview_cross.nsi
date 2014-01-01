@@ -140,6 +140,12 @@ Section "PulseView (required)" Section1
 	# Protocol decoders.
 	File /r /x "__pycache__" "${CROSS}/share/libsigrokdecode/decoders/*"
 
+	# Install the file(s) specified below into the specified directory.
+	SetOutPath "$INSTDIR\firmware"
+
+	# Firmware files.
+	File /r "${CROSS}/share/sigrok-firmware/*"
+
 	# Generate the uninstaller executable.
 	WriteUninstaller "$INSTDIR\Uninstall.exe"
 
@@ -216,8 +222,12 @@ Section "Uninstall"
 	# There could be *.pyc files or __pycache__ subdirs and so on.
 	RMDir /r "$INSTDIR\decoders\*"
 
+	# Delete the firmware files.
+	File /r "$INSTDIR\firmware\*"
+
 	# Delete the install directory and its sub-directories.
 	RMDir "$INSTDIR\decoders"
+	RMDir "$INSTDIR\firmware"
 	RMDir "$INSTDIR"
 
 	# Delete the links from the start menu.
