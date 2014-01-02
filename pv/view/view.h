@@ -23,6 +23,7 @@
 
 #include <stdint.h>
 
+#include <set>
 #include <vector>
 
 #include <boost/shared_ptr.hpp>
@@ -30,6 +31,8 @@
 
 #include <QAbstractScrollArea>
 #include <QSizeF>
+
+#include <pv/data/signaldata.h>
 
 #include "cursorpair.h"
 
@@ -97,6 +100,11 @@ public:
 	std::vector< boost::shared_ptr<Trace> > get_traces() const;
 
 	std::list<boost::weak_ptr<SelectableItem> > selected_items() const;
+
+	std::set< boost::shared_ptr<pv::data::SignalData> >
+		get_visible_data() const;
+
+	std::pair<double, double> get_time_extents() const;
 
 	/**
 	 * Returns true if cursors are displayed. false otherwise.
@@ -178,8 +186,6 @@ private:
 	Viewport *_viewport;
 	Ruler *_ruler;
 	Header *_header;
-
-	uint64_t _data_length;
 
 	/// The view time scale in seconds per pixel.
 	double _scale;

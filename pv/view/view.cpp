@@ -26,8 +26,6 @@
 #include <limits.h>
 #include <math.h>
 
-#include <set>
-
 #include <boost/foreach.hpp>
 
 #include <QEvent>
@@ -47,10 +45,13 @@
 
 using boost::shared_ptr;
 using boost::weak_ptr;
+using pv::data::SignalData;
 using std::deque;
 using std::list;
 using std::max;
+using std::make_pair;
 using std::min;
+using std::pair;
 using std::set;
 using std::vector;
 
@@ -76,7 +77,6 @@ View::View(SigSession &session, QWidget *parent) :
 	_viewport(new Viewport(*this)),
 	_ruler(new Ruler(*this)),
 	_header(new Header(*this)),
-	_data_length(0),
 	_scale(1e-6),
 	_offset(0),
 	_v_offset(0),
@@ -161,31 +161,9 @@ void View::zoom(double steps, int offset)
 
 void View::zoom_fit()
 {
-	using pv::data::SignalData;
-
-	const vector< shared_ptr<Signal> > sigs(
-		session().get_signals());
-
-	// Make a set of all the visible data objects
-	set< shared_ptr<SignalData> > visible_data;
-	BOOST_FOREACH(const shared_ptr<Signal> sig, sigs)
-		if (sig->enabled())
-			visible_data.insert(sig->data());
-
-	if (visible_data.empty())
-		return;
-
-	double left_time = DBL_MAX, right_time = DBL_MIN;
-	BOOST_FOREACH(const shared_ptr<SignalData> d, visible_data)
-	{
-		const double start_time = d->get_start_time();
-		left_time = min(left_time, start_time);
-		right_time = max(right_time, start_time +
-			d->get_max_sample_count() / d->samplerate());
-	}
-
-	assert(left_time < right_time);
-	if (right_time - left_time < 1e-12)
+	const pair<double, double> extents = get_time_extents();
+	const double delta = extents.second - extents.first;
+	if (delta < 1e-12)
 		return;
 
 	assert(_viewport);
@@ -193,7 +171,7 @@ void View::zoom_fit()
 	if (w <= 0)
 		return;
 
-	set_scale_offset((right_time - left_time) / w, left_time);	
+	set_scale_offset(delta / w, extents.first);
 }
 
 void View::zoom_one_to_one()
@@ -284,6 +262,39 @@ list<weak_ptr<SelectableItem> > View::selected_items() const
 	return items;
 }
 
+set< shared_ptr<SignalData> > View::get_visible_data() const
+{
+	const vector< shared_ptr<Signal> > sigs(
+		session().get_signals());
+
+	// Make a set of all the visible data objects
+	set< shared_ptr<SignalData> > visible_data;
+	BOOST_FOREACH(const shared_ptr<Signal> sig, sigs)
+		if (sig->enabled())
+			visible_data.insert(sig->data());
+
+	return visible_data;
+}
+
+pair<double, double> View::get_time_extents() const
+{
+	const set< shared_ptr<SignalData> > visible_data = get_visible_data();
+	if (visible_data.empty())
+		return make_pair(0.0, 0.0);
+
+	double left_time = DBL_MAX, right_time = DBL_MIN;
+	BOOST_FOREACH(const shared_ptr<SignalData> d, visible_data)
+	{
+		const double start_time = d->get_start_time();
+		left_time = min(left_time, start_time);
+		right_time = max(right_time, start_time +
+			d->get_max_sample_count() / d->samplerate());
+	}
+
+	assert(left_time < right_time);
+	return make_pair(left_time, right_time);
+}
+
 bool View::cursors_shown() const
 {
 	return _show_cursors;
@@ -344,11 +355,8 @@ void View::update_viewport()
 
 void View::get_scroll_layout(double &length, double &offset) const
 {
-	const shared_ptr<data::SignalData> sig_data = _session.get_data();
-	if (!sig_data)
-		return;
-
-	length = _data_length / (sig_data->samplerate() * _scale);
+	const pair<double, double> extents = get_time_extents();
+	length = (extents.second - extents.first) / _scale;
 	offset = _offset / _scale;
 }
 
@@ -499,18 +507,6 @@ void View::signals_changed()
 
 void View::data_updated()
 {
-	// Get the new data length
-	_data_length = 0;
-	shared_ptr<data::Logic> sig_data = _session.get_data();
-	if (sig_data) {
-		deque< shared_ptr<data::LogicSnapshot> > &snapshots =
-			sig_data->get_snapshots();
-		BOOST_FOREACH(shared_ptr<data::LogicSnapshot> s, snapshots)
-			if (s)
-				_data_length = max(_data_length,
-					s->get_sample_count());
-	}
-
 	// Update the scroll bars
 	update_scroll();
 

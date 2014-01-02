@@ -1,7 +1,7 @@
 /*
  * This file is part of the PulseView project.
  *
- * Copyright (C) 2012 Joel Holdsworth <joel@airwebreathe.org.uk>
+ * Copyright (C) 2012-14 Joel Holdsworth <joel@airwebreathe.org.uk>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -206,11 +206,6 @@ vector< shared_ptr<view::Signal> > SigSession::get_signals() const
 {
 	lock_guard<mutex> lock(_signals_mutex);
 	return _signals;
-}
-
-boost::shared_ptr<data::Logic> SigSession::get_data()
-{
-	return _logic_data;
 }
 
 #ifdef ENABLE_DECODE
