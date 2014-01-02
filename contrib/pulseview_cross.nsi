@@ -246,7 +246,7 @@ SectionEnd
 
 # --- Component selection section descriptions --------------------------------
 
-LangString DESC_Section1 ${LANG_ENGLISH} "This installs the PulseView sigrok GUI."
+LangString DESC_Section1 ${LANG_ENGLISH} "This installs the PulseView sigrok GUI, some firmware files, the protocol decoders, and all required libraries."
 LangString DESC_Section2 ${LANG_ENGLISH} "This installs Python 3.2 in its default location of c:\Python32. If you already have Python 3.2 installed, you don't need to re-install it."
 
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
