@@ -177,7 +177,7 @@ void Connect::scan_pressed()
 	}
 
 	_device_list.setCurrentRow(0);
-	_button_box.button(QDialogButtonBox::Ok)->setDisabled(false);
+	_button_box.button(QDialogButtonBox::Ok)->setDisabled(_device_list.count() == 0);
 }
 
 void Connect::device_selected(int index)
