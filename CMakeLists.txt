@@ -213,6 +213,13 @@ if(ENABLE_DECODE)
 	)
 endif()
 
+if(WIN32)
+	# Use the sigrok icon for the pulseview.exe executable.
+	set(CMAKE_RC_COMPILE_OBJECT "${CMAKE_RC_COMPILER} -O coff -I${CMAKE_CURRENT_SOURCE_DIR} <SOURCE> <OBJECT>")
+	enable_language(RC)
+ 	list(APPEND pulseview_SOURCES pulseviewico.rc)
+endif()
+
 qt4_wrap_cpp(pulseview_HEADERS_MOC ${pulseview_HEADERS})
 qt4_wrap_ui(pulseview_FORMS_HEADERS ${pulseview_FORMS})
 qt4_add_resources(pulseview_RESOURCES_RCC ${pulseview_RESOURCES})
