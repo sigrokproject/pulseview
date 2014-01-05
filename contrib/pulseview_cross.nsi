@@ -134,6 +134,9 @@ Section "PulseView (required)" Section1
 	# PulseView (statically linked, includes all libs).
 	File "${CROSS}/bin/pulseview.exe"
 
+	# libusb0.dll (needed for libusb-0.1).
+	File "${CROSS}/libusb0.dll"
+
 	# Install the file(s) specified below into the specified directory.
 	SetOutPath "$INSTDIR\decoders"
 
@@ -217,6 +220,7 @@ Section "Uninstall"
 	# Delete the application, the application data, and related libs.
 	Delete "$INSTDIR\COPYING"
 	Delete "$INSTDIR\pulseview.exe"
+	Delete "$INSTDIR\libusb0.dll"
 
 	# Delete all decoders and everything else in decoders/.
 	# There could be *.pyc files or __pycache__ subdirs and so on.
