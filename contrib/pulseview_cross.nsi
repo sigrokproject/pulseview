@@ -137,6 +137,10 @@ Section "PulseView (required)" Section1
 	# libusb0.dll (needed for libusb-0.1).
 	File "${CROSS}/libusb0.dll"
 
+	# Zadig (used for installing libusb-win32 and WinUSB drivers).
+	File "${CROSS}/zadig.exe"
+	File "${CROSS}/zadig_xp.exe"
+
 	# Install the file(s) specified below into the specified directory.
 	SetOutPath "$INSTDIR\decoders"
 
@@ -221,6 +225,8 @@ Section "Uninstall"
 	Delete "$INSTDIR\COPYING"
 	Delete "$INSTDIR\pulseview.exe"
 	Delete "$INSTDIR\libusb0.dll"
+	Delete "$INSTDIR\zadig.exe"
+	Delete "$INSTDIR\zadig_xp.exe"
 
 	# Delete all decoders and everything else in decoders/.
 	# There could be *.pyc files or __pycache__ subdirs and so on.
