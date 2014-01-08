@@ -46,6 +46,7 @@ class Analog;
 class AnalogSnapshot;
 class Logic;
 class LogicSnapshot;
+class SignalData;
 }
 
 namespace view {
@@ -88,6 +89,8 @@ public:
 		boost::function<void (const QString)> error_handler);
 
 	void stop_capture();
+
+	std::set< boost::shared_ptr<data::SignalData> > get_data() const;
 
 	std::vector< boost::shared_ptr<view::Signal> >
 		get_signals() const;

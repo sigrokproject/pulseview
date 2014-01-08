@@ -53,6 +53,7 @@ using boost::lock_guard;
 using boost::mutex;
 using boost::shared_ptr;
 using std::map;
+using std::set;
 using std::string;
 using std::vector;
 
@@ -200,6 +201,18 @@ void SigSession::stop_capture()
 
 	// Check that sampling stopped
 	_sampling_thread.join();
+}
+
+set< shared_ptr<data::SignalData> > SigSession::get_data() const
+{
+	lock_guard<mutex> lock(_signals_mutex);
+	set< shared_ptr<data::SignalData> > data;
+	BOOST_FOREACH(const shared_ptr<view::Signal> sig, _signals) {
+		assert(sig);
+		data.insert(sig->data());
+	}
+
+	return data;
 }
 
 vector< shared_ptr<view::Signal> > SigSession::get_signals() const
