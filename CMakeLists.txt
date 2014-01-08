@@ -278,6 +278,15 @@ else()
 	list(APPEND PULSEVIEW_LINK_LIBS ${PKGDEPS_LIBRARIES})
 endif()
 
+if(WIN32)
+	# On Windows we need to statically link the libqsvg imageformat
+	# plugin (and the QtSvg component) for SVG graphics/icons to work.
+	add_definitions(-DQT_STATICPLUGIN)
+	link_directories("${QT_PLUGINS_DIR}/imageformats")
+	list(APPEND PULSEVIEW_LINK_LIBS ${QT_QTSVG_LIBRARY})
+	list(APPEND PULSEVIEW_LINK_LIBS "-lqsvg")
+endif()
+
 add_executable(${PROJECT_NAME}
 	${pulseview_SOURCES}
 	${pulseview_HEADERS_MOC}
