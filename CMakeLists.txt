@@ -23,7 +23,7 @@ cmake_minimum_required(VERSION 2.8.6)
 include(FindPkgConfig)
 include(GNUInstallDirs)
 
-set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake")
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake")
 
 project(pulseview)
 
@@ -36,7 +36,7 @@ option(ENABLE_SIGNALS "Build with UNIX signals" TRUE)
 option(ENABLE_DECODE "Build with libsigrokdecode" FALSE)
 option(ENABLE_COTIRE "Enable cotire" FALSE)
 option(ENABLE_TESTS "Enable unit tests" FALSE)
-option(STATIC_PKGDEPS_LIBS "Statically link to (pkgconfig) libraries" FALSE)
+option(STATIC_PKGDEPS_LIBS "Statically link to (pkg-config) libraries" FALSE)
 
 if(WIN32)
 	# On Windows/MinGW we need to statically link to libraries.
@@ -44,7 +44,7 @@ if(WIN32)
 	set(STATIC_PKGDEPS_LIBS TRUE)
 
 	# For boost-thread we need two additional settings on win32:
-	set(Boost_USE_STATIC_LIBS on)
+	set(Boost_USE_STATIC_LIBS ON)
 	add_definitions(-DBOOST_THREAD_USE_LIB)
 
 	# Windows does not support UNIX signals.
@@ -64,7 +64,7 @@ endif()
 find_package(PkgConfig)
 pkg_check_modules(PKGDEPS REQUIRED ${PKGDEPS})
 
-FIND_PROGRAM(QT_QMAKE_EXECUTABLE NAMES qmake4 qmake-qt4 qmake-mac)
+find_program(QT_QMAKE_EXECUTABLE NAMES qmake4 qmake-qt4 qmake-mac)
 find_package(Qt4 REQUIRED)
 
 # Find the platform's thread library (needed for boost-thread).
@@ -72,11 +72,11 @@ find_package(Qt4 REQUIRED)
 find_package(Threads)
 
 if(WIN32)
-# On Windows/MinGW the we need to use 'thread_win32' instead of 'thread'.
-# The library is named libboost_thread_win32* (not libboost_thread*).
-find_package(Boost 1.42 COMPONENTS system thread_win32 REQUIRED)
+	# On Windows/MinGW we need to use 'thread_win32' instead of 'thread'.
+	# The library is named libboost_thread_win32* (not libboost_thread*).
+	find_package(Boost 1.42 COMPONENTS system thread_win32 REQUIRED)
 else()
-find_package(Boost 1.42 COMPONENTS system thread REQUIRED)
+	find_package(Boost 1.42 COMPONENTS system thread REQUIRED)
 endif()
 
 #===============================================================================
@@ -217,7 +217,7 @@ if(WIN32)
 	# Use the sigrok icon for the pulseview.exe executable.
 	set(CMAKE_RC_COMPILE_OBJECT "${CMAKE_RC_COMPILER} -O coff -I${CMAKE_CURRENT_SOURCE_DIR} <SOURCE> <OBJECT>")
 	enable_language(RC)
- 	list(APPEND pulseview_SOURCES pulseviewico.rc)
+	list(APPEND pulseview_SOURCES pulseviewico.rc)
 endif()
 
 qt4_wrap_cpp(pulseview_HEADERS_MOC ${pulseview_HEADERS})
@@ -297,8 +297,8 @@ add_executable(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME} ${PULSEVIEW_LINK_LIBS})
 
 if(WIN32)
-# Pass -mwindows so that no "DOS box" will open when PulseView is started.
-set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "-mwindows")
+	# Pass -mwindows so that no "DOS box" opens when PulseView is started.
+	set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "-mwindows")
 endif()
 
 if(ENABLE_COTIRE)

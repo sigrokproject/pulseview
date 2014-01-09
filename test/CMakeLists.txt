@@ -35,7 +35,7 @@ find_package(Threads)
 
 find_package(Boost 1.42 COMPONENTS system thread unit_test_framework REQUIRED)
 
-FIND_PROGRAM(QT_QMAKE_EXECUTABLE NAMES qmake4 qmake-qt4 qmake-mac)
+find_program(QT_QMAKE_EXECUTABLE NAMES qmake4 qmake-qt4 qmake-mac)
 find_package(Qt4 REQUIRED)
 
 set(pulseview_TEST_SOURCES
