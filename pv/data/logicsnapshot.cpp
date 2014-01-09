@@ -78,9 +78,9 @@ void LogicSnapshot::get_samples(uint8_t *const data,
 {
 	assert(data);
 	assert(start_sample >= 0);
-	assert(start_sample < (int64_t)_sample_count);
+	assert(start_sample <= (int64_t)_sample_count);
 	assert(end_sample >= 0);
-	assert(end_sample < (int64_t)_sample_count);
+	assert(end_sample <= (int64_t)_sample_count);
 	assert(start_sample <= end_sample);
 
 	lock_guard<recursive_mutex> lock(_mutex);

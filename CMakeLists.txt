@@ -107,6 +107,7 @@ set(pulseview_SOURCES
 	pv/devicemanager.cpp
 	pv/mainwindow.cpp
 	pv/sigsession.cpp
+	pv/storesession.cpp
 	pv/data/analog.cpp
 	pv/data/analogsnapshot.cpp
 	pv/data/logic.cpp
@@ -115,6 +116,7 @@ set(pulseview_SOURCES
 	pv/data/snapshot.cpp
 	pv/dialogs/about.cpp
 	pv/dialogs/connect.cpp
+	pv/dialogs/storeprogress.cpp
 	pv/popups/deviceoptions.cpp
 	pv/popups/probes.cpp
 	pv/prop/bool.cpp
@@ -151,8 +153,10 @@ set(pulseview_SOURCES
 set(pulseview_HEADERS
 	pv/mainwindow.h
 	pv/sigsession.h
+	pv/storesession.h
 	pv/dialogs/about.h
 	pv/dialogs/connect.h
+	pv/dialogs/storeprogress.h
 	pv/popups/probes.h
 	pv/popups/deviceoptions.h
 	pv/prop/bool.h

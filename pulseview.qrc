@@ -4,6 +4,7 @@
 	<file>icons/configure.png</file>
 	<file>icons/decoder-delete.svg</file>
 	<file>icons/document-open.png</file>
+	<file>icons/document-save-as.png</file>
 	<file>icons/probes.svg</file>
 	<file>icons/sigrok-logo-notext.png</file>
 	<file>icons/status-green.svg</file>

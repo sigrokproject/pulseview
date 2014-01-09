@@ -81,6 +81,7 @@ private slots:
 		const QString text, const QString info_text);
 
 	void on_actionOpen_triggered();
+	void on_actionSaveAs_triggered();
 	void on_actionQuit_triggered();
 
 	void on_actionConnect_triggered();

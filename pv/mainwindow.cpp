@@ -41,6 +41,7 @@
 #include "devicemanager.h"
 #include "dialogs/about.h"
 #include "dialogs/connect.h"
+#include "dialogs/storeprogress.h"
 #include "toolbars/samplingbar.h"
 #include "view/logicsignal.h"
 #include "view/view.h"
@@ -119,6 +120,14 @@ void MainWindow::setup_ui()
 		QIcon(":/icons/document-open.png")));
 	action_open->setObjectName(QString::fromUtf8("actionOpen"));
 	menu_file->addAction(action_open);
+
+	QAction *const action_save_as = new QAction(this);
+	action_save_as->setText(QApplication::translate(
+		"MainWindow", "&Save As...", 0, QApplication::UnicodeUTF8));
+	action_save_as->setIcon(QIcon::fromTheme("document-save-as",
+		QIcon(":/icons/document-save-as.png")));
+	action_save_as->setObjectName(QString::fromUtf8("actionSaveAs"));
+	menu_file->addAction(action_save_as);
 
 	menu_file->addSeparator();
 
@@ -326,6 +335,24 @@ void MainWindow::on_actionOpen_triggered()
 		this, tr("Open File"), "", filters);
 	if (!file_name.isEmpty())
 		load_file(file_name);
+}
+
+void MainWindow::on_actionSaveAs_triggered()
+{
+	using pv::dialogs::StoreProgress;
+
+	// Stop any currently running capture session
+	_session.stop_capture();
+
+	// Show the dialog
+	const QString file_name = QFileDialog::getSaveFileName(
+		this, tr("Save File"), "", tr("Sigrok Sessions (*.sr)"));
+
+	if (file_name.isEmpty())
+		return;
+
+	StoreProgress *dlg = new StoreProgress(file_name, _session, this);
+	dlg->run();
 }
 
 void MainWindow::on_actionConnect_triggered()
