@@ -37,14 +37,16 @@ namespace binding {
 class DeviceOptions : public Binding
 {
 public:
-	DeviceOptions(const sr_dev_inst *sdi);
+	DeviceOptions(const sr_dev_inst *sdi,
+		const sr_probe_group *group = NULL);
 
 private:
 
 	static GVariant* config_getter(
-		const struct sr_dev_inst *sdi, int key);
+		const sr_dev_inst *sdi, const sr_probe_group *group, int key);
 	static void config_setter(
-		const struct sr_dev_inst *sdi, int key, GVariant* value);
+		const sr_dev_inst *sdi, const sr_probe_group *group, int key,
+		GVariant* value);
 
 	void bind_bool(const QString &name, int key);
 	void bind_enum(const QString &name, int key,
@@ -61,6 +63,7 @@ private:
 
 protected:
 	const sr_dev_inst *const _sdi;
+	const sr_probe_group *const _group;
 };
 
 } // binding
