@@ -37,6 +37,8 @@ class DeviceOptions : public pv::widgets::Popup
 public:
 	DeviceOptions(sr_dev_inst *sdi, QWidget *parent);
 
+	pv::prop::binding::DeviceOptions& binding();
+
 private:
 	sr_dev_inst *const _sdi;
 

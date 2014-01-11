@@ -41,5 +41,10 @@ DeviceOptions::DeviceOptions(sr_dev_inst *sdi, QWidget *parent) :
 	_layout.addWidget(_binding.get_property_form(this, true));
 }
 
+pv::prop::binding::DeviceOptions& DeviceOptions::binding()
+{
+	return _binding;
+}
+
 } // namespace popups
 } // namespace pv

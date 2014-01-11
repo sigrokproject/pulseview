@@ -70,6 +70,7 @@ SamplingBar::SamplingBar(SigSession &session, QWidget *parent) :
 	_device_selector(this),
 	_updating_device_selector(false),
 	_configure_button(this),
+	_configure_button_action(NULL),
 	_probes_button(this),
 	_probes_popup(_session, this),
 	_record_length_selector(this),
@@ -112,7 +113,7 @@ SamplingBar::SamplingBar(SigSession &session, QWidget *parent) :
 	_run_stop_button.setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
 
 	addWidget(&_device_selector);
-	addWidget(&_configure_button);
+	_configure_button_action = addWidget(&_configure_button);
 	addWidget(&_probes_button);
 	addWidget(&_record_length_selector);
 	_sample_rate_list_action = addWidget(&_sample_rate_list);
@@ -313,7 +314,11 @@ void SamplingBar::on_device_selected()
 	sr_dev_inst *const sdi = get_selected_device();
 	_session.set_device(sdi);
 
-	_configure_button.set_popup(new DeviceOptions(sdi, this));
+	// Update the configure popup
+	DeviceOptions *const opts = new DeviceOptions(sdi, this);
+	_configure_button_action->setVisible(
+		!opts->binding().properties().empty());
+	_configure_button.set_popup(opts);
 }
 
 void SamplingBar::on_sample_rate_changed()
