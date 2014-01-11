@@ -37,7 +37,7 @@ namespace binding {
 class DeviceOptions : public Binding
 {
 public:
-	DeviceOptions(struct sr_dev_inst *sdi);
+	DeviceOptions(const sr_dev_inst *sdi);
 
 private:
 
@@ -60,7 +60,7 @@ private:
 	static QString print_voltage_threshold(GVariant *const gvar);
 
 protected:
-	struct sr_dev_inst *const _sdi;
+	const sr_dev_inst *const _sdi;
 };
 
 } // binding

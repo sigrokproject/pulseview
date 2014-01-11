@@ -45,7 +45,7 @@ namespace pv {
 namespace prop {
 namespace binding {
 
-DeviceOptions::DeviceOptions(struct sr_dev_inst *sdi) :
+DeviceOptions::DeviceOptions(const sr_dev_inst *sdi) :
 	_sdi(sdi)
 {
 	assert(sdi);
