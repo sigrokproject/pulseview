@@ -20,10 +20,9 @@
 
 #include "decodergroupbox.h"
 
-#include <QAction>
 #include <QHBoxLayout>
 #include <QLabel>
-#include <QToolBar>
+#include <QPushButton>
 #include <QVBoxLayout>
 
 #include <assert.h>
@@ -42,15 +41,16 @@ DecoderGroupBox::DecoderGroupBox(QString title, QWidget *parent) :
 		0, 0);
 	_layout->setColumnStretch(0, 1);
 
-	QToolBar *const toolbar = new QToolBar;
-	toolbar->setIconSize(QSize(16, 16));
-	_layout->addWidget(toolbar, 0, 1);
+	QHBoxLayout *const toolbar = new QHBoxLayout;
+	_layout->addLayout(toolbar, 0, 1);
 
-	QAction *const delete_action = new QAction(
-		QIcon(":/icons/decoder-delete.svg"), tr("Delete"), this);
-	connect(delete_action, SIGNAL(triggered()),
+	QPushButton *const delete_button = new QPushButton(
+		QIcon(":/icons/decoder-delete.svg"), QString(), this);
+	delete_button->setFlat(true);
+	delete_button->setIconSize(QSize(16, 16));
+	connect(delete_button, SIGNAL(clicked()),
 		this, SIGNAL(delete_decoder()));
-	toolbar->addAction(delete_action);
+	toolbar->addWidget(delete_button);
 }
 
 void DecoderGroupBox::add_layout(QLayout *layout)
