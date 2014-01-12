@@ -44,11 +44,9 @@ namespace popups {
 Probes::Probes(SigSession &session, QWidget *parent) :
 	Popup(parent),
 	_session(session),
-	_layout(this),
 	_updating_probes(false),
-	_probes_bar(this),
-	_enable_all_probes(this),
-	_disable_all_probes(this),
+	_enable_all_probes(tr("Enable All"), this),
+	_disable_all_probes(tr("Disable All"), this),
 	_check_box_mapper(this)
 {
 	// Create the layout
@@ -111,13 +109,14 @@ Probes::Probes(SigSession &session, QWidget *parent) :
 	connect(&_disable_all_probes, SIGNAL(clicked()),
 		this, SLOT(disable_all_probes()));
 
-	_enable_all_probes.setText(tr("Enable All"));
-	_probes_bar.addWidget(&_enable_all_probes);
+	_enable_all_probes.setFlat(true);
+	_disable_all_probes.setFlat(true);
 
-	_disable_all_probes.setText(tr("Disable All"));
-	_probes_bar.addWidget(&_disable_all_probes);
+	_buttons_bar.addWidget(&_enable_all_probes);
+	_buttons_bar.addWidget(&_disable_all_probes);
+	_buttons_bar.addStretch(1);
 
-	_layout.addRow(&_probes_bar);
+	_layout.addRow(&_buttons_bar);
 
 	// Connect the check-box signal mapper
 	connect(&_check_box_mapper, SIGNAL(mapped(QWidget*)),

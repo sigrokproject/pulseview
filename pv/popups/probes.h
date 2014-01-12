@@ -24,8 +24,8 @@
 #include <vector>
 
 #include <QFormLayout>
-#include <QToolBar>
-#include <QToolButton>
+#include <QHBoxLayout>
+#include <QPushButton>
 
 #include <pv/widgets/popup.h>
 
@@ -85,9 +85,9 @@ private:
 	std::map< QCheckBox*, boost::shared_ptr<pv::view::Signal> >
 		_check_box_signal_map;
 
-	QToolBar _probes_bar;
-	QToolButton _enable_all_probes;
-	QToolButton _disable_all_probes;
+	QHBoxLayout _buttons_bar;
+	QPushButton _enable_all_probes;
+	QPushButton _disable_all_probes;
 
 	QSignalMapper _check_box_mapper;
 };
