@@ -18,14 +18,25 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
+#include <map>
+
+#include <QFormLayout>
+#include <QGridLayout>
+
 #include "probes.h"
 
+#include <pv/prop/binding/deviceoptions.h>
 #include <pv/sigsession.h>
 #include <pv/view/signal.h>
 
 using namespace Qt;
+
 using boost::shared_ptr;
+using std::map;
+using std::set;
 using std::vector;
+
+using pv::view::Signal;
 
 namespace pv {
 namespace popups {
@@ -34,20 +45,71 @@ Probes::Probes(SigSession &session, QWidget *parent) :
 	Popup(parent),
 	_session(session),
 	_layout(this),
-	_probes(this),
 	_updating_probes(false),
 	_probes_bar(this),
 	_enable_all_probes(this),
-	_disable_all_probes(this)
+	_disable_all_probes(this),
+	_check_box_mapper(this)
 {
+	// Create the layout
 	setLayout(&_layout);
 
+	sr_dev_inst *const sdi = _session.get_device();
+	assert(sdi);
+
+	// Collect a set of signals
+	map<const sr_probe*, shared_ptr<Signal> > signal_map;
+	const vector< shared_ptr<Signal> > sigs = _session.get_signals();
+	BOOST_FOREACH(const shared_ptr<Signal> &sig, sigs)
+		signal_map[sig->probe()] = sig;
+
+	// Populate probe groups
+	for (const GSList *g = sdi->probe_groups; g; g = g->next)
+	{
+		const sr_probe_group *const group =
+			(const sr_probe_group*)g->data;
+		assert(group);
+
+		// Make a set of signals, and removed this signals from the
+		// signal map.
+		vector< shared_ptr<Signal> > group_sigs;
+		for (const GSList *p = group->probes; p; p = p->next)
+		{
+			const sr_probe *const probe = (const sr_probe*)p->data;
+			assert(probe);
+
+			const map<const sr_probe*, shared_ptr<Signal> >::
+				iterator iter = signal_map.find(probe);
+			assert(iter != signal_map.end());
+
+			group_sigs.push_back((*iter).second);
+			signal_map.erase(iter);
+		}
+
+		populate_group(group, group_sigs);
+	}
+
+	// Make a vector of the remaining probes
+	vector< shared_ptr<Signal> > global_sigs;
+	for (const GSList *p = sdi->probes; p; p = p->next)
+	{
+		const sr_probe *const probe = (const sr_probe*)p->data;
+		assert(probe);
+
+		const map<const sr_probe*, shared_ptr<Signal> >::
+			const_iterator iter = signal_map.find(probe);
+		if (iter != signal_map.end())
+			global_sigs.push_back((*iter).second);
+	}
+
+	// Create a group
+	populate_group(NULL, global_sigs);
+
+	// Create the enable/disable all buttons
 	connect(&_enable_all_probes, SIGNAL(clicked()),
 		this, SLOT(enable_all_probes()));
 	connect(&_disable_all_probes, SIGNAL(clicked()),
 		this, SLOT(disable_all_probes()));
-
-	_layout.addWidget(&_probes);
 
 	_enable_all_probes.setText(tr("Enable All"));
 	_probes_bar.addWidget(&_enable_all_probes);
@@ -55,32 +117,87 @@ Probes::Probes(SigSession &session, QWidget *parent) :
 	_disable_all_probes.setText(tr("Disable All"));
 	_probes_bar.addWidget(&_disable_all_probes);
 
-	_layout.addWidget(&_probes_bar);
+	_layout.addRow(&_probes_bar);
 
-	connect(&_probes, SIGNAL(itemChanged(QListWidgetItem*)),
-		this, SLOT(item_changed(QListWidgetItem*)));
+	// Connect the check-box signal mapper
+	connect(&_check_box_mapper, SIGNAL(mapped(QWidget*)),
+		this, SLOT(on_probe_checked(QWidget*)));
 }
 
 void Probes::set_all_probes(bool set)
 {
-	using pv::view::Signal;
-
 	_updating_probes = true;
 
-	const vector< shared_ptr<pv::view::Signal> > sigs =
-		_session.get_signals();
-	for (unsigned int i = 0; i < sigs.size(); i++)
+	for (map<QCheckBox*, shared_ptr<Signal> >::const_iterator i =
+		_check_box_signal_map.begin();
+		i != _check_box_signal_map.end(); i++)
 	{
-		const shared_ptr<pv::view::Signal> &s = sigs[i];
-		assert(s);
-		s->enable(set);
+		const shared_ptr<Signal> sig = (*i).second;
+		assert(sig);
 
-		QListWidgetItem *const item = _probes.item(i);
-		assert(item);
-		item->setCheckState(set ? Qt::Checked : Qt::Unchecked);
+		sig->enable(set);
+		(*i).first->setChecked(set);
 	}
 
 	_updating_probes = false;
+}
+
+void Probes::populate_group(const sr_probe_group *group,
+	const vector< shared_ptr<pv::view::Signal> > sigs)
+{
+	using pv::prop::binding::DeviceOptions;
+
+	// Only bind options if this is a group. We don't do it for general
+	// options, because these properties are shown in the device config
+	// popup.
+	shared_ptr<DeviceOptions> binding;
+	if (group)
+		binding = shared_ptr<DeviceOptions>(new DeviceOptions(
+			_session.get_device(), group));
+
+	// Create a title if the group is going to have any content
+	if ((!sigs.empty() || (binding && !binding->properties().empty())) &&
+		group && group->name)
+		_layout.addRow(new QLabel(
+			QString("<h3>%1</h3>").arg(group->name)));
+
+	// Create the probe group grid
+	QGridLayout *const probe_grid =
+		create_probe_group_grid(sigs);
+	_layout.addRow(probe_grid);
+
+	// Create the probe group options
+	if (binding)
+	{
+		binding->add_properties_to_form(&_layout, true);
+		_group_bindings.push_back(binding);
+	}
+}
+
+QGridLayout* Probes::create_probe_group_grid(
+	const vector< shared_ptr<pv::view::Signal> > sigs)
+{
+	int row = 0, col = 0;
+	QGridLayout *const grid = new QGridLayout();
+
+	BOOST_FOREACH(const shared_ptr<pv::view::Signal>& sig, sigs)
+	{
+		assert(sig);
+
+		QCheckBox *const checkbox = new QCheckBox(sig->get_name());
+		_check_box_mapper.setMapping(checkbox, checkbox);
+		connect(checkbox, SIGNAL(toggled(bool)),
+			&_check_box_mapper, SLOT(map()));
+
+		grid->addWidget(checkbox, row, col);
+
+		_check_box_signal_map[checkbox] = sig;
+
+		if(++col >= 8)
+			col = 0, row++;
+	}
+
+	return grid;
 }
 
 void Probes::showEvent(QShowEvent *e)
@@ -89,39 +206,36 @@ void Probes::showEvent(QShowEvent *e)
 
 	_updating_probes = true;
 
-	_probes.clear();
-
-	const vector< shared_ptr<pv::view::Signal> > sigs =
-		_session.get_signals();
-	for (unsigned int i = 0; i < sigs.size(); i++)
+	for (map<QCheckBox*, shared_ptr<Signal> >::const_iterator i =
+		_check_box_signal_map.begin();
+		i != _check_box_signal_map.end(); i++)
 	{
-		const shared_ptr<pv::view::Signal> &s = sigs[i];
-		assert(s);
-		QListWidgetItem *const item = new QListWidgetItem(
-			s->get_name(), &_probes);
-		assert(item);
-		item->setCheckState(s->enabled() ? Checked : Unchecked);
-		item->setData(UserRole, qVariantFromValue(i));
-		_probes.addItem(item);
+		const shared_ptr<Signal> sig = (*i).second;
+		assert(sig);
+
+		(*i).first->setChecked(sig->enabled());
 	}
 
 	_updating_probes = false;
 }
 
-void Probes::item_changed(QListWidgetItem *item)
+void Probes::on_probe_checked(QWidget *widget)
 {
-	using pv::view::Signal;
-
 	if (_updating_probes)
 		return;
 
-	assert(item);
-	const vector< shared_ptr<pv::view::Signal> > sigs =
-		_session.get_signals();
-	const shared_ptr<pv::view::Signal> s = sigs[
-		item->data(UserRole).value<unsigned int>()];
+	QCheckBox *const check_box = (QCheckBox*)widget;
+	assert(check_box);
+
+	// Look up the signal of this check-box
+	map< QCheckBox*, shared_ptr<Signal> >::const_iterator iter =
+		_check_box_signal_map.find((QCheckBox*)check_box);
+	assert(iter != _check_box_signal_map.end());
+
+	const shared_ptr<pv::view::Signal> s = (*iter).second;
 	assert(s);
-	s->enable(item->checkState() == Checked);
+
+	s->enable(check_box->isChecked());
 }
 
 void Probes::enable_all_probes()

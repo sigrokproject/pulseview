@@ -31,7 +31,6 @@
 #include <QToolButton>
 
 #include <pv/sigsession.h>
-#include <pv/popups/probes.h>
 #include <pv/widgets/popuptoolbutton.h>
 
 struct st_dev_inst;
@@ -86,7 +85,6 @@ private:
 	QAction *_configure_button_action;
 
 	pv::widgets::PopupToolButton _probes_button;
-	pv::popups::Probes _probes_popup;
 
 	QComboBox _record_length_selector;
 

@@ -33,6 +33,7 @@
 
 #include <pv/devicemanager.h>
 #include <pv/popups/deviceoptions.h>
+#include <pv/popups/probes.h>
 
 using std::string;
 
@@ -72,7 +73,6 @@ SamplingBar::SamplingBar(SigSession &session, QWidget *parent) :
 	_configure_button(this),
 	_configure_button_action(NULL),
 	_probes_button(this),
-	_probes_popup(_session, this),
 	_record_length_selector(this),
 	_sample_rate_action(NULL),
 	_sample_rate_list(this),
@@ -108,7 +108,6 @@ SamplingBar::SamplingBar(SigSession &session, QWidget *parent) :
 
 	_probes_button.setIcon(QIcon::fromTheme("probes",
 		QIcon(":/icons/probes.svg")));
-	_probes_button.set_popup(&_probes_popup);
 
 	_run_stop_button.setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
 
@@ -304,7 +303,7 @@ void SamplingBar::commit_sample_rate()
 
 void SamplingBar::on_device_selected()
 {
-	using pv::popups::DeviceOptions;
+	using namespace pv::popups;
 
 	if (_updating_device_selector)
 		return;
@@ -319,6 +318,10 @@ void SamplingBar::on_device_selected()
 	_configure_button_action->setVisible(
 		!opts->binding().properties().empty());
 	_configure_button.set_popup(opts);
+
+	// Update the probes popup
+	Probes *const probes = new Probes(_session, this);
+	_probes_button.set_popup(probes);
 }
 
 void SamplingBar::on_sample_rate_changed()

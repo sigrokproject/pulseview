@@ -21,16 +21,30 @@
 #ifndef PULSEVIEW_PV_POPUPS_PROBES_H
 #define PULSEVIEW_PV_POPUPS_PROBES_H
 
-#include <QListWidget>
+#include <vector>
+
+#include <QFormLayout>
 #include <QToolBar>
 #include <QToolButton>
-#include <QVBoxLayout>
 
 #include <pv/widgets/popup.h>
+
+class QCheckBox;
+class QGridLayout;
 
 namespace pv {
 
 class SigSession;
+
+namespace prop {
+namespace binding {
+class DeviceOptions;
+}
+}
+
+namespace view {
+class Signal;
+}
 
 namespace popups {
 
@@ -44,11 +58,17 @@ public:
 private:
 	void set_all_probes(bool set);
 
+	void populate_group(const sr_probe_group *group,
+		const std::vector< boost::shared_ptr<pv::view::Signal> > sigs);
+
+	QGridLayout* create_probe_group_grid(
+		const std::vector< boost::shared_ptr<pv::view::Signal> > sigs);
+
 private:
 	void showEvent(QShowEvent *e);
 
 private slots:
-	void item_changed(QListWidgetItem *item);
+	void on_probe_checked(QWidget *widget);
 
 	void enable_all_probes();
 	void disable_all_probes();
@@ -56,14 +76,20 @@ private slots:
 private:
 	pv::SigSession &_session;
 
-	QVBoxLayout _layout;
+	QFormLayout _layout;
 
-	QListWidget _probes;
 	bool _updating_probes;
+
+	std::vector< boost::shared_ptr<pv::prop::binding::DeviceOptions> >
+		 _group_bindings;
+	std::map< QCheckBox*, boost::shared_ptr<pv::view::Signal> >
+		_check_box_signal_map;
 
 	QToolBar _probes_bar;
 	QToolButton _enable_all_probes;
 	QToolButton _disable_all_probes;
+
+	QSignalMapper _check_box_mapper;
 };
 
 } // popups
