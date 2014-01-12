@@ -21,13 +21,19 @@
 #ifndef PULSEVIEW_PV_POPUPS_PROBES_H
 #define PULSEVIEW_PV_POPUPS_PROBES_H
 
+#include <map>
 #include <vector>
+
+#include <boost/shared_ptr.hpp>
 
 #include <QFormLayout>
 #include <QHBoxLayout>
 #include <QPushButton>
+#include <QSignalMapper>
 
 #include <pv/widgets/popup.h>
+
+struct sr_probe_group;
 
 class QCheckBox;
 class QGridLayout;

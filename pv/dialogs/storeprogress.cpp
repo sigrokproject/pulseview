@@ -20,6 +20,8 @@
 
 #include "storeprogress.h"
 
+#include <QMessageBox>
+
 namespace pv {
 namespace dialogs {
 

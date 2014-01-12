@@ -20,8 +20,12 @@
 
 #include <map>
 
+#include <boost/foreach.hpp>
+
+#include <QCheckBox>
 #include <QFormLayout>
 #include <QGridLayout>
+#include <QLabel>
 
 #include "probes.h"
 
