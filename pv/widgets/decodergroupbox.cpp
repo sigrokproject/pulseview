@@ -38,7 +38,7 @@ DecoderGroupBox::DecoderGroupBox(QString title, QWidget *parent) :
 	_layout->setContentsMargins(0, 0, 0, 0);
 	setLayout(_layout);
 
-	_layout->addWidget(new QLabel(QString("<h2>%1</h2><hl/>").arg(title)),
+	_layout->addWidget(new QLabel(QString("<h3>%1</h3>").arg(title)),
 		0, 0);
 	_layout->setColumnStretch(0, 1);
 
