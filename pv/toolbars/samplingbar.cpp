@@ -40,29 +40,6 @@ using std::string;
 namespace pv {
 namespace toolbars {
 
-const uint64_t SamplingBar::RecordLengths[20] = {
-	1000,
-	2500,
-	5000,
-	10000,
-	25000,
-	50000,
-	100000,
-	250000,
-	500000,
-	1000000,
-	2000000,
-	5000000,
-	10000000,
-	25000000,
-	50000000,
-	100000000,
-	250000000,
-	500000000,
-	1000000000,
-	10000000000ULL,
-};
-
 const uint64_t SamplingBar::DefaultRecordLength = 1000000;
 
 SamplingBar::SamplingBar(SigSession &session, QWidget *parent) :
@@ -73,7 +50,7 @@ SamplingBar::SamplingBar(SigSession &session, QWidget *parent) :
 	_configure_button(this),
 	_configure_button_action(NULL),
 	_probes_button(this),
-	_record_length_selector(this),
+	_sample_count(" samples", this),
 	_sample_rate("Hz", this),
 	_updating_sample_rate(false),
 	_icon_red(":/icons/status-red.svg"),
@@ -85,20 +62,13 @@ SamplingBar::SamplingBar(SigSession &session, QWidget *parent) :
 		this, SLOT(on_run_stop()));
 	connect(&_device_selector, SIGNAL(currentIndexChanged (int)),
 		this, SLOT(on_device_selected()));
+	connect(&_sample_count, SIGNAL(value_changed()),
+		this, SLOT(on_sample_count_changed()));
 	connect(&_sample_rate, SIGNAL(value_changed()),
 		this, SLOT(on_sample_rate_changed()));
 
-	for (size_t i = 0; i < countof(RecordLengths); i++)
-	{
-		const uint64_t &l = RecordLengths[i];
-		char *const text = sr_si_string_u64(l, " samples");
-		_record_length_selector.addItem(QString::fromUtf8(text),
-			qVariantFromValue(l));
-		g_free(text);
-
-		if (l == DefaultRecordLength)
-			_record_length_selector.setCurrentIndex(i);
-	}
+	_sample_count.show_min_max_step(0, UINT64_MAX, 1);
+	_sample_count.set_value(DefaultRecordLength);
 
 	set_capture_state(pv::SigSession::Stopped);
 
@@ -113,7 +83,7 @@ SamplingBar::SamplingBar(SigSession &session, QWidget *parent) :
 	addWidget(&_device_selector);
 	_configure_button_action = addWidget(&_configure_button);
 	addWidget(&_probes_button);
-	addWidget(&_record_length_selector);
+	addWidget(&_sample_count);
 	addWidget(&_sample_rate);
 
 	addWidget(&_run_stop_button);
@@ -158,11 +128,7 @@ void SamplingBar::set_selected_device(struct sr_dev_inst *const sdi)
 
 uint64_t SamplingBar::get_record_length() const
 {
-	const int index = _record_length_selector.currentIndex();
-	if (index < 0)
-		return 0;
-
-	return _record_length_selector.itemData(index).value<uint64_t>();
+	return _sample_count.value();
 }
 
 void SamplingBar::set_capture_state(pv::SigSession::capture_state state)
@@ -238,6 +204,23 @@ void SamplingBar::update_sample_rate_selector_value()
 	_updating_sample_rate = false;
 }
 
+void SamplingBar::commit_sample_count()
+{
+	uint64_t sample_count = 0;
+
+	sr_dev_inst *const sdi = get_selected_device();
+	assert(sdi);
+
+	sample_count = _sample_count.value();
+
+	// Set the sample count
+	if (sr_config_set(sdi, NULL, SR_CONF_LIMIT_SAMPLES,
+		g_variant_new_uint64(sample_count)) != SR_OK) {
+		qDebug() << "Failed to configure sample count.";
+		return;
+	}
+}
+
 void SamplingBar::commit_sample_rate()
 {
 	uint64_t sample_rate = 0;
@@ -278,6 +261,11 @@ void SamplingBar::on_device_selected()
 	// Update the probes popup
 	Probes *const probes = new Probes(_session, this);
 	_probes_button.set_popup(probes);
+}
+
+void SamplingBar::on_sample_count_changed()
+{
+	commit_sample_count();
 }
 
 void SamplingBar::on_sample_rate_changed()

@@ -48,7 +48,6 @@ class SamplingBar : public QToolBar
 	Q_OBJECT
 
 private:
-	static const uint64_t RecordLengths[20];
 	static const uint64_t DefaultRecordLength;
 
 public:
@@ -70,9 +69,11 @@ private:
 	void update_sample_rate_selector();
 	void update_sample_rate_selector_value();
 	void commit_sample_rate();
+	void commit_sample_count();
 
 private slots:
 	void on_device_selected();
+	void on_sample_count_changed();
 	void on_sample_rate_changed();
 	void on_run_stop();
 
@@ -87,8 +88,7 @@ private:
 
 	pv::widgets::PopupToolButton _probes_button;
 
-	QComboBox _record_length_selector;
-
+	pv::widgets::SweepTimingWidget _sample_count;
 	pv::widgets::SweepTimingWidget _sample_rate;
 	bool _updating_sample_rate;
 
