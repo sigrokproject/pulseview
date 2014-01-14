@@ -204,28 +204,43 @@ void SamplingBar::update_sample_count_selector()
 {
 	sr_dev_inst *const sdi = get_selected_device();
 	GVariant *gvar;
-	uint64_t samplecount;
+	uint64_t samplecount = 0;
 
 	assert(sdi);
 
-	if (sr_config_get(sdi->driver, sdi, NULL,
-		SR_CONF_LIMIT_SAMPLES, &gvar) != SR_OK)
-	{
-		_sample_count_supported = false;
-		_sample_count.show_none();
-	}
-	else
-	{
-		_sample_count_supported = true;
-		_sample_count.show_min_max_step(0, UINT64_MAX, 1);
+	_sample_count_supported = false;
 
+	if (sr_config_list(sdi->driver, sdi, NULL,
+		SR_CONF_DEVICE_OPTIONS, &gvar) == SR_OK)
+	{
+		gsize num_opts;
+		const int *const options = (const int32_t *)g_variant_get_fixed_array(
+	        gvar, &num_opts, sizeof(int32_t));
+		for (unsigned int i = 0; i < num_opts; i++)
+		{
+			if (options[i] == SR_CONF_LIMIT_SAMPLES)
+			{
+				_sample_count_supported = true;
+				break;
+			}
+		}
+	}
+
+	if (_sample_count_supported)
+		_sample_count.show_min_max_step(0, UINT64_MAX, 1);
+	else
+		_sample_count.show_none();
+
+	if (sr_config_get(sdi->driver, sdi, NULL,
+		SR_CONF_LIMIT_SAMPLES, &gvar) == SR_OK)
+	{
 		samplecount = g_variant_get_uint64(gvar);
 		g_variant_unref(gvar);
-
-		_updating_sample_count = true;
-		_sample_count.set_value(samplecount);
-		_updating_sample_count = false;
 	}
+
+	_updating_sample_count = true;
+	_sample_count.set_value(samplecount);
+	_updating_sample_count = false;
 }
 
 void SamplingBar::commit_sample_count()
