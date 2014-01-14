@@ -285,8 +285,10 @@ void SamplingBar::on_device_selected()
 	update_sample_count_selector();
 	update_sample_rate_selector();
 
-	if (_sample_count.value() == 0)
+	if (_sample_count.value() == 0) {
 		_sample_count.set_value(DefaultRecordLength);
+		commit_sample_count();
+	}
 }
 
 void SamplingBar::on_sample_count_changed()
