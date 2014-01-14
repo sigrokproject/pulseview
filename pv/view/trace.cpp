@@ -32,6 +32,7 @@
 #include "view.h"
 
 #include <pv/widgets/colourbutton.h>
+#include <pv/widgets/popup.h>
 
 namespace pv {
 namespace view {
