@@ -206,7 +206,6 @@ if(ENABLE_DECODE)
 		pv/view/decodetrace.cpp
 		pv/widgets/decodergroupbox.cpp
 		pv/widgets/decodermenu.cpp
-		pv/widgets/wellarray.cpp
 	)
 
 	list(APPEND pulseview_HEADERS
