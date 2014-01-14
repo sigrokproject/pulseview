@@ -54,6 +54,7 @@ SamplingBar::SamplingBar(SigSession &session, QWidget *parent) :
 	_sample_rate("Hz", this),
 	_updating_sample_rate(false),
 	_updating_sample_count(false),
+	_sample_count_supported(false),
 	_icon_red(":/icons/status-red.svg"),
 	_icon_green(":/icons/status-green.svg"),
 	_icon_grey(":/icons/status-grey.svg"),
@@ -210,10 +211,12 @@ void SamplingBar::update_sample_count_selector()
 	if (sr_config_get(sdi->driver, sdi, NULL,
 		SR_CONF_LIMIT_SAMPLES, &gvar) != SR_OK)
 	{
+		_sample_count_supported = false;
 		_sample_count.show_none();
 	}
 	else
 	{
+		_sample_count_supported = true;
 		_sample_count.show_min_max_step(0, UINT64_MAX, 1);
 
 		samplecount = g_variant_get_uint64(gvar);
@@ -285,7 +288,7 @@ void SamplingBar::on_device_selected()
 	update_sample_count_selector();
 	update_sample_rate_selector();
 
-	if (_sample_count.value() == 0) {
+	if (_sample_count_supported && _sample_count.value() == 0) {
 		_sample_count.set_value(DefaultRecordLength);
 		commit_sample_count();
 	}

@@ -92,6 +92,8 @@ private:
 	bool _updating_sample_rate;
 	bool _updating_sample_count;
 
+	bool _sample_count_supported;
+
 	QIcon _icon_red;
 	QIcon _icon_green;
 	QIcon _icon_grey;
