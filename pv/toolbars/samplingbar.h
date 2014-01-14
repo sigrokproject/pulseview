@@ -58,8 +58,6 @@ public:
 	struct sr_dev_inst* get_selected_device() const;
 	void set_selected_device(struct sr_dev_inst *const sdi);
 
-	uint64_t get_record_length() const;
-
 	void set_capture_state(pv::SigSession::capture_state state);
 
 signals:

@@ -424,8 +424,8 @@ void MainWindow::run_stop()
 {
 	switch(_session.get_capture_state()) {
 	case SigSession::Stopped:
-		_session.start_capture(_sampling_bar->get_record_length(),
-			boost::bind(&MainWindow::session_error, this,
+		_session.start_capture(
+				boost::bind(&MainWindow::session_error, this,
 				QString("Capture failed"), _1));
 		break;
 

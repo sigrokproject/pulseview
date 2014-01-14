@@ -126,11 +126,6 @@ void SamplingBar::set_selected_device(struct sr_dev_inst *const sdi)
 		}
 }
 
-uint64_t SamplingBar::get_record_length() const
-{
-	return _sample_count.value();
-}
-
 void SamplingBar::set_capture_state(pv::SigSession::capture_state state)
 {
 	const QIcon *icons[] = {&_icon_grey, &_icon_red, &_icon_green};

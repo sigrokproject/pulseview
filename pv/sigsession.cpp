@@ -161,8 +161,7 @@ SigSession::capture_state SigSession::get_capture_state() const
 	return _capture_state;
 }
 
-void SigSession::start_capture(uint64_t record_length,
-	function<void (const QString)> error_handler)
+void SigSession::start_capture(function<void (const QString)> error_handler)
 {
 	stop_capture();
 
@@ -188,8 +187,7 @@ void SigSession::start_capture(uint64_t record_length,
 
 	// Begin the session
 	_sampling_thread = boost::thread(
-		&SigSession::sample_thread_proc, this, _sdi,
-		record_length, error_handler);
+		&SigSession::sample_thread_proc, this, _sdi, error_handler);
 }
 
 void SigSession::stop_capture()
@@ -557,7 +555,6 @@ void SigSession::load_input_thread_proc(const string name,
 }
 
 void SigSession::sample_thread_proc(struct sr_dev_inst *sdi,
-	uint64_t record_length,
 	function<void (const QString)> error_handler)
 {
 	assert(sdi);
@@ -568,15 +565,6 @@ void SigSession::sample_thread_proc(struct sr_dev_inst *sdi,
 
 	if (sr_session_dev_add(sdi) != SR_OK) {
 		error_handler(tr("Failed to use device."));
-		sr_session_destroy();
-		return;
-	}
-
-	// Set the sample limit
-	if (sr_config_set(sdi, NULL, SR_CONF_LIMIT_SAMPLES,
-		g_variant_new_uint64(record_length)) != SR_OK) {
-		error_handler(tr("Failed to configure "
-			"time-based sample limit."));
 		sr_session_destroy();
 		return;
 	}

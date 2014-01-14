@@ -86,8 +86,7 @@ public:
 
 	capture_state get_capture_state() const;
 
-	void start_capture(uint64_t record_length,
-		boost::function<void (const QString)> error_handler);
+	void start_capture(boost::function<void (const QString)> error_handler);
 
 	void stop_capture();
 
@@ -140,7 +139,6 @@ private:
 		boost::function<void (const QString)> error_handler);
 
 	void sample_thread_proc(struct sr_dev_inst *sdi,
-		uint64_t record_length,
 		boost::function<void (const QString)> error_handler);
 
 	void feed_in_header(const sr_dev_inst *sdi);
