@@ -268,12 +268,6 @@ void SamplingBar::on_device_selected()
 	if (_updating_device_selector)
 		return;
 
-	update_sample_count_selector();
-	update_sample_rate_selector();
-
-	if (_sample_count.value() == 0)
-		_sample_count.set_value(DefaultRecordLength);
-
 	sr_dev_inst *const sdi = get_selected_device();
 	_session.set_device(sdi);
 
@@ -286,6 +280,13 @@ void SamplingBar::on_device_selected()
 	// Update the probes popup
 	Probes *const probes = new Probes(_session, this);
 	_probes_button.set_popup(probes);
+
+	// Update sweep timing widgets.
+	update_sample_count_selector();
+	update_sample_rate_selector();
+
+	if (_sample_count.value() == 0)
+		_sample_count.set_value(DefaultRecordLength);
 }
 
 void SamplingBar::on_sample_count_changed()
