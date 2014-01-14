@@ -208,24 +208,6 @@ void SamplingBar::update_sample_count_selector()
 
 	assert(sdi);
 
-	_sample_count_supported = false;
-
-	if (sr_config_list(sdi->driver, sdi, NULL,
-		SR_CONF_DEVICE_OPTIONS, &gvar) == SR_OK)
-	{
-		gsize num_opts;
-		const int *const options = (const int32_t *)g_variant_get_fixed_array(
-	        gvar, &num_opts, sizeof(int32_t));
-		for (unsigned int i = 0; i < num_opts; i++)
-		{
-			if (options[i] == SR_CONF_LIMIT_SAMPLES)
-			{
-				_sample_count_supported = true;
-				break;
-			}
-		}
-	}
-
 	if (_sample_count_supported)
 		_sample_count.show_min_max_step(0, UINT64_MAX, 1);
 	else
@@ -281,6 +263,8 @@ void SamplingBar::commit_sample_rate()
 
 void SamplingBar::on_device_selected()
 {
+	GVariant *gvar;
+
 	using namespace pv::popups;
 
 	if (_updating_device_selector)
@@ -298,6 +282,29 @@ void SamplingBar::on_device_selected()
 	// Update the probes popup
 	Probes *const probes = new Probes(_session, this);
 	_probes_button.set_popup(probes);
+
+	// Update supported options.
+	_sample_count_supported = false;
+
+	if (sr_config_list(sdi->driver, sdi, NULL,
+		SR_CONF_DEVICE_OPTIONS, &gvar) == SR_OK)
+	{
+		gsize num_opts;
+		const int *const options = (const int32_t *)g_variant_get_fixed_array(
+	        gvar, &num_opts, sizeof(int32_t));
+		for (unsigned int i = 0; i < num_opts; i++)
+		{
+			switch (options[i]) {
+			case SR_CONF_LIMIT_SAMPLES:
+				_sample_count_supported = true;
+				break;
+			case SR_CONF_LIMIT_FRAMES:
+				sr_config_set(sdi, NULL, SR_CONF_LIMIT_FRAMES,
+					g_variant_new_uint64(1));
+				break;
+			}
+		}
+	}
 
 	// Update sweep timing widgets.
 	update_sample_count_selector();
