@@ -53,6 +53,7 @@ SamplingBar::SamplingBar(SigSession &session, QWidget *parent) :
 	_sample_count(" samples", this),
 	_sample_rate("Hz", this),
 	_updating_sample_rate(false),
+	_updating_sample_count(false),
 	_icon_red(":/icons/status-red.svg"),
 	_icon_green(":/icons/status-green.svg"),
 	_icon_grey(":/icons/status-grey.svg"),
@@ -68,7 +69,6 @@ SamplingBar::SamplingBar(SigSession &session, QWidget *parent) :
 		this, SLOT(on_sample_rate_changed()));
 
 	_sample_count.show_min_max_step(0, UINT64_MAX, 1);
-	_sample_count.set_value(DefaultRecordLength);
 
 	set_capture_state(pv::SigSession::Stopped);
 
@@ -204,6 +204,32 @@ void SamplingBar::update_sample_rate_selector_value()
 	_updating_sample_rate = false;
 }
 
+void SamplingBar::update_sample_count_selector()
+{
+	sr_dev_inst *const sdi = get_selected_device();
+	GVariant *gvar;
+	uint64_t samplecount;
+
+	assert(sdi);
+
+	if (sr_config_get(sdi->driver, sdi, NULL,
+		SR_CONF_LIMIT_SAMPLES, &gvar) != SR_OK)
+	{
+		_sample_count.show_none();
+	}
+	else
+	{
+		_sample_count.show_min_max_step(0, UINT64_MAX, 1);
+
+		samplecount = g_variant_get_uint64(gvar);
+		g_variant_unref(gvar);
+
+		_updating_sample_count = true;
+		_sample_count.set_value(samplecount);
+		_updating_sample_count = false;
+	}
+}
+
 void SamplingBar::commit_sample_count()
 {
 	uint64_t sample_count = 0;
@@ -247,7 +273,11 @@ void SamplingBar::on_device_selected()
 	if (_updating_device_selector)
 		return;
 
+	update_sample_count_selector();
 	update_sample_rate_selector();
+
+	if (_sample_count.value() == 0)
+		_sample_count.set_value(DefaultRecordLength);
 
 	sr_dev_inst *const sdi = get_selected_device();
 	_session.set_device(sdi);
@@ -265,7 +295,8 @@ void SamplingBar::on_device_selected()
 
 void SamplingBar::on_sample_count_changed()
 {
-	commit_sample_count();
+	if(!_updating_sample_count)
+		commit_sample_count();
 }
 
 void SamplingBar::on_sample_rate_changed()

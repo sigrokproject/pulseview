@@ -68,6 +68,7 @@ signals:
 private:
 	void update_sample_rate_selector();
 	void update_sample_rate_selector_value();
+	void update_sample_count_selector();
 	void commit_sample_rate();
 	void commit_sample_count();
 
@@ -91,6 +92,7 @@ private:
 	pv::widgets::SweepTimingWidget _sample_count;
 	pv::widgets::SweepTimingWidget _sample_rate;
 	bool _updating_sample_rate;
+	bool _updating_sample_count;
 
 	QIcon _icon_red;
 	QIcon _icon_green;
