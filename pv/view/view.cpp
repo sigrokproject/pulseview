@@ -286,9 +286,12 @@ pair<double, double> View::get_time_extents() const
 	BOOST_FOREACH(const shared_ptr<SignalData> d, visible_data)
 	{
 		const double start_time = d->get_start_time();
+		double samplerate = d->samplerate();
+		samplerate = (samplerate <= 0.0) ? 1.0 : samplerate;
+
 		left_time = min(left_time, start_time);
 		right_time = max(right_time, start_time +
-			d->get_max_sample_count() / d->samplerate());
+			d->get_max_sample_count() / samplerate);
 	}
 
 	assert(left_time < right_time);
