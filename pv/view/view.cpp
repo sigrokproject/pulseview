@@ -154,9 +154,7 @@ void View::zoom(double steps)
 
 void View::zoom(double steps, int offset)
 {
-	const double new_scale = max(min(_scale * pow(3.0/2.0, -steps),
-		MaxScale), MinScale);
-	set_zoom(new_scale, offset);
+	set_zoom(_scale * pow(3.0/2.0, -steps), offset);
 }
 
 void View::zoom_fit()
