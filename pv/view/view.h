@@ -148,7 +148,13 @@ signals:
 
 private:
 	void get_scroll_layout(double &length, double &offset) const;
-	
+
+	/**
+	 * Simultaneously sets the zoom and offset.
+	 * @param scale The scale to set the view to in seconds per pixel. This
+	 * value is clamped between MinScale and MaxScale.
+	 * @param offset The offset of the left edge of the view in seconds.
+	 */
 	void set_zoom(double scale, int offset);
 
 	void update_scroll();
