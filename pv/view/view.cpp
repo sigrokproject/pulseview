@@ -169,7 +169,8 @@ void View::zoom_fit()
 	if (w <= 0)
 		return;
 
-	set_scale_offset(delta / w, extents.first);
+	const double scale = max(min(delta / w, MaxScale), MinScale);
+	set_scale_offset(scale, extents.first);
 }
 
 void View::zoom_one_to_one()
