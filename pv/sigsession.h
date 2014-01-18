@@ -112,6 +112,9 @@ private:
 
 	bool is_trigger_enabled() const;
 
+	boost::shared_ptr<view::Signal> signal_from_probe(
+		const sr_probe *probe) const;
+
 	void read_sample_rate(const sr_dev_inst *const sdi);
 
 private:

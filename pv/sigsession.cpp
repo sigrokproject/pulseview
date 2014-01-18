@@ -481,6 +481,18 @@ bool SigSession::is_trigger_enabled() const
 	return false;
 }
 
+shared_ptr<view::Signal> SigSession::signal_from_probe(
+	const sr_probe *probe) const
+{
+	lock_guard<mutex> lock(_signals_mutex);
+	BOOST_FOREACH(shared_ptr<view::Signal> sig, _signals) {
+		assert(sig);
+		if (sig->probe() == probe)
+			return sig;
+	}
+	return shared_ptr<view::Signal>();
+}
+
 void SigSession::read_sample_rate(const sr_dev_inst *const sdi)
 {
 	GVariant *gvar;
