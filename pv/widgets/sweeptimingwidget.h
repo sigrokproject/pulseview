@@ -40,7 +40,6 @@ private:
 	enum ValueType
 	{
 		None,
-		ReadOnly,
 		MinMaxStep,
 		List
 	};
@@ -49,7 +48,6 @@ public:
 	SweepTimingWidget(const char *suffix, QWidget *parent = NULL);
 
 	void show_none();
-	void show_read_only();
 	void show_min_max_step(uint64_t min, uint64_t max, uint64_t step);
 	void show_list(const uint64_t *vals, size_t count);
 
@@ -62,7 +60,6 @@ signals:
 private:
 	QHBoxLayout _layout;
 
-	QLineEdit _read_only_value;
 	QDoubleSpinBox _value;
 	QComboBox _list;
 

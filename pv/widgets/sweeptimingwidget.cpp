@@ -29,7 +29,6 @@ SweepTimingWidget::SweepTimingWidget(const char *suffix,
 	QWidget *parent) :
 	QWidget(parent),
 	_layout(this),
-	_read_only_value(this),
 	_value(this),
 	_list(this),
 	_value_type(None)
@@ -46,7 +45,6 @@ SweepTimingWidget::SweepTimingWidget(const char *suffix,
 
 	setLayout(&_layout);
 	_layout.setMargin(0);
-	_layout.addWidget(&_read_only_value);
 	_layout.addWidget(&_list);
 	_layout.addWidget(&_value);
 
@@ -56,15 +54,6 @@ SweepTimingWidget::SweepTimingWidget(const char *suffix,
 void SweepTimingWidget::show_none()
 {
 	_value_type = None;
-	_read_only_value.hide();
-	_value.hide();
-	_list.hide();
-}
-
-void SweepTimingWidget::show_read_only()
-{
-	_value_type = ReadOnly;
-	_read_only_value.show();
 	_value.hide();
 	_list.hide();
 }
@@ -77,7 +66,6 @@ void SweepTimingWidget::show_min_max_step(uint64_t min, uint64_t max,
 	_value.setRange(min, max);
 	_value.setSingleStep(step);
 
-	_read_only_value.hide();
 	_value.show();
 	_list.hide();
 }
@@ -95,7 +83,6 @@ void SweepTimingWidget::show_list(const uint64_t *vals, size_t count)
 		g_free(s);
 	}
 
-	_read_only_value.hide();
 	_value.hide();
 	_list.show();
 }
@@ -105,7 +92,6 @@ uint64_t SweepTimingWidget::value() const
 	switch(_value_type)
 	{
 	case None:
-	case ReadOnly:
 		return 0;
 
 	case MinMaxStep:
@@ -127,8 +113,6 @@ uint64_t SweepTimingWidget::value() const
 
 void SweepTimingWidget::set_value(uint64_t value)
 {
-	_read_only_value.setText(QString("%1").arg(value));
-
 	_value.setValue(value);
 
 	for (int i = 0; i < _list.count(); i++)
