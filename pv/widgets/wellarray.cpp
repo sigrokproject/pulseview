@@ -39,8 +39,6 @@
 **
 ****************************************************************************/
 
-#define QT_NO_MENU
-
 #include <QPainter>
 #include <QPaintEvent>
 #include <QStyle>
@@ -220,11 +218,6 @@ void QWellArray::setSelected(int row, int col)
     updateCell(selRow, selCol);
     if (row >= 0)
         emit selected(row, col);
-
-#ifndef QT_NO_MENU
-    if (isVisible() && qobject_cast<QMenu*>(parentWidget()))
-        parentWidget()->close();
-#endif
 }
 
 void QWellArray::focusInEvent(QFocusEvent*)
