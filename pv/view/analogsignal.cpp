@@ -57,7 +57,12 @@ AnalogSignal::~AnalogSignal()
 {
 }
 
-boost::shared_ptr<pv::data::SignalData> AnalogSignal::data() const
+shared_ptr<pv::data::SignalData> AnalogSignal::data() const
+{
+	return _data;
+}
+
+shared_ptr<pv::data::Analog> AnalogSignal::analog_data() const
 {
 	return _data;
 }
