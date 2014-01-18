@@ -66,11 +66,12 @@ private:
 	static const uint64_t EnvelopeDataUnit;
 
 public:
-	AnalogSnapshot(const sr_datafeed_analog &analog);
+	AnalogSnapshot();
 
 	virtual ~AnalogSnapshot();
 
-	void append_payload(const sr_datafeed_analog &analog);
+	void append_interleaved_samples(const float *data,
+		size_t sample_count, size_t stride);
 
 	const float* get_samples(int64_t start_sample,
 		int64_t end_sample) const;

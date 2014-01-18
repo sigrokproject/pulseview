@@ -385,7 +385,6 @@ void SigSession::update_signals(const sr_dev_inst *const sdi)
 	assert(_capture_state == Stopped);
 
 	unsigned int logic_probe_count = 0;
-	unsigned int analog_probe_count = 0;
 
 	// Clear the decode traces
 	_decode_traces.clear();
@@ -401,15 +400,11 @@ void SigSession::update_signals(const sr_dev_inst *const sdi)
 			case SR_PROBE_LOGIC:
 				logic_probe_count++;
 				break;
-
-			case SR_PROBE_ANALOG:
-				analog_probe_count++;
-				break;
 			}
 		}
 	}
 
-	// Create data containers for the data snapshots
+	// Create data containers for the logic data snapshots
 	{
 		lock_guard<mutex> data_lock(_data_mutex);
 
@@ -418,12 +413,6 @@ void SigSession::update_signals(const sr_dev_inst *const sdi)
 			_logic_data.reset(new data::Logic(
 				logic_probe_count));
 			assert(_logic_data);
-		}
-
-		_analog_data.reset();
-		if (analog_probe_count != 0) {
-			_analog_data.reset(new data::Analog());
-			assert(_analog_data);
 		}
 	}
 
@@ -449,10 +438,14 @@ void SigSession::update_signals(const sr_dev_inst *const sdi)
 				break;
 
 			case SR_PROBE_ANALOG:
+			{
+				shared_ptr<data::Analog> data(
+					new data::Analog());
 				signal = shared_ptr<view::Signal>(
 					new view::AnalogSignal(*this, probe,
-						_analog_data));
+						data));
 				break;
+			}
 
 			default:
 				assert(0);
@@ -512,10 +505,12 @@ void SigSession::read_sample_rate(const sr_dev_inst *const sdi)
 		g_variant_unref(gvar);
 	}
 
-	if(_analog_data)
-		_analog_data->set_samplerate(sample_rate);
-	if(_logic_data)
-		_logic_data->set_samplerate(sample_rate);
+	// Set the sample rate of all data
+	const set< shared_ptr<data::SignalData> > data_set = get_data();
+	BOOST_FOREACH(shared_ptr<data::SignalData> data, data_set) {
+		assert(data);
+		data->set_samplerate(sample_rate);
+	}
 }
 
 void SigSession::load_session_thread_proc(
@@ -534,7 +529,7 @@ void SigSession::load_session_thread_proc(
 
 	// Confirm that SR_DF_END was received
 	assert(!_cur_logic_snapshot);
-	assert(!_cur_analog_snapshot);
+	assert(_cur_analog_snapshots.empty());
 }
 
 void SigSession::load_input_thread_proc(const string name,
@@ -556,7 +551,7 @@ void SigSession::load_input_thread_proc(const string name,
 
 	// Confirm that SR_DF_END was received
 	assert(!_cur_logic_snapshot);
-	assert(!_cur_analog_snapshot);
+	assert(_cur_analog_snapshots.empty());
 
 	delete in;
 }
@@ -599,8 +594,11 @@ void SigSession::sample_thread_proc(struct sr_dev_inst *sdi,
 	set_capture_state(Stopped);
 
 	// Confirm that SR_DF_END was received
-	assert(!_cur_logic_snapshot);
-	assert(!_cur_analog_snapshot);
+	if (_cur_logic_snapshot)
+	{
+		qDebug("SR_DF_END was not received.");
+		assert(0);
+	}
 }
 
 void SigSession::feed_in_header(const sr_dev_inst *sdi)
@@ -641,6 +639,7 @@ void SigSession::feed_in_logic(const sr_datafeed_logic &logic)
 
 	if (!_cur_logic_snapshot)
 	{
+		// This could be the first packet after a trigger
 		set_capture_state(Running);
 
 		// Create a new data snapshot
@@ -661,25 +660,58 @@ void SigSession::feed_in_analog(const sr_datafeed_analog &analog)
 {
 	lock_guard<mutex> lock(_data_mutex);
 
-	if(!_analog_data)
+	const unsigned int probe_count = g_slist_length(analog.probes);
+	const size_t sample_count = analog.num_samples / probe_count;
+	const float *data = analog.data;
+	bool sweep_beginning = false;
+
+	for (GSList *p = analog.probes; p; p = p->next)
 	{
-		qDebug() << "Unexpected analog packet";
-		return;	// This analog packet was not expected.
+		shared_ptr<data::AnalogSnapshot> snapshot;
+
+		sr_probe *const probe = (sr_probe*)p->data;
+		assert(probe);
+
+		// Try to get the snapshot of the probe
+		const map< const sr_probe*, shared_ptr<data::AnalogSnapshot> >::
+			iterator iter = _cur_analog_snapshots.find(probe);
+		if (iter != _cur_analog_snapshots.end())
+			snapshot = (*iter).second;
+		else
+		{
+			// If no snapshot was found, this means we havn't
+			// created one yet. i.e. this is the first packet
+			// in the sweep containing this snapshot.
+			sweep_beginning = true;
+
+			// Create a snapshot, keep it in the maps of probes
+			snapshot = shared_ptr<data::AnalogSnapshot>(
+				new data::AnalogSnapshot());
+			_cur_analog_snapshots[probe] = snapshot;
+
+			// Find the annalog data associated with the probe
+			shared_ptr<view::AnalogSignal> sig =
+				dynamic_pointer_cast<view::AnalogSignal>(
+					signal_from_probe(probe));
+			assert(sig);
+
+			shared_ptr<data::Analog> data(sig->analog_data());
+			assert(data);
+
+			// Push the snapshot into the analog data.
+			data->push_snapshot(snapshot);
+		}
+
+		assert(snapshot);
+
+		// Append the samples in the snapshot
+		snapshot->append_interleaved_samples(data++, sample_count,
+			probe_count);
 	}
 
-	if (!_cur_analog_snapshot)
-	{
+	if (sweep_beginning) {
+		// This could be the first packet after a trigger
 		set_capture_state(Running);
-
-		// Create a new data snapshot
-		_cur_analog_snapshot = shared_ptr<data::AnalogSnapshot>(
-			new data::AnalogSnapshot(analog));
-		_analog_data->push_snapshot(_cur_analog_snapshot);
-	}
-	else
-	{
-		// Append to the existing data snapshot
-		_cur_analog_snapshot->append_payload(analog);
 	}
 
 	data_updated();
@@ -717,7 +749,7 @@ void SigSession::data_feed_in(const struct sr_dev_inst *sdi,
 		{
 			lock_guard<mutex> lock(_data_mutex);
 			_cur_logic_snapshot.reset();
-			_cur_analog_snapshot.reset();
+			_cur_analog_snapshots.clear();
 		}
 		data_updated();
 		break;

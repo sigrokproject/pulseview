@@ -47,12 +47,11 @@ const float AnalogSnapshot::LogEnvelopeScaleFactor =
 	logf(EnvelopeScaleFactor);
 const uint64_t AnalogSnapshot::EnvelopeDataUnit = 64*1024;	// bytes
 
-AnalogSnapshot::AnalogSnapshot(const sr_datafeed_analog &analog) :
+AnalogSnapshot::AnalogSnapshot() :
 	Snapshot(sizeof(float))
 {
 	lock_guard<recursive_mutex> lock(_mutex);
 	memset(_envelope_levels, 0, sizeof(_envelope_levels));
-	append_payload(analog);
 }
 
 AnalogSnapshot::~AnalogSnapshot()
@@ -62,11 +61,24 @@ AnalogSnapshot::~AnalogSnapshot()
 		free(e.samples);
 }
 
-void AnalogSnapshot::append_payload(
-	const sr_datafeed_analog &analog)
+void AnalogSnapshot::append_interleaved_samples(const float *data,
+	size_t sample_count, size_t stride)
 {
+	assert(_unit_size == sizeof(float));
+
 	lock_guard<recursive_mutex> lock(_mutex);
-	append_data(analog.data, analog.num_samples);
+
+	_data = realloc(_data, (_sample_count + sample_count) * sizeof(float));
+
+	float *dst = (float*)_data + _sample_count;
+	const float *dst_end = dst + sample_count;
+	while (dst != dst_end)
+	{
+		*dst++ = *data;
+		data += stride;
+	}
+
+	_sample_count += sample_count;
 
 	// Generate the first mip-map from the data
 	append_payload_to_envelope_levels();

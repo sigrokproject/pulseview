@@ -177,8 +177,8 @@ private:
 	mutable boost::mutex _data_mutex;
 	boost::shared_ptr<data::Logic> _logic_data;
 	boost::shared_ptr<data::LogicSnapshot> _cur_logic_snapshot;
-	boost::shared_ptr<data::Analog> _analog_data;
-	boost::shared_ptr<data::AnalogSnapshot> _cur_analog_snapshot;
+	std::map< const sr_probe*, boost::shared_ptr<data::AnalogSnapshot> >
+		_cur_analog_snapshots;
 
 	boost::thread _sampling_thread;
 
