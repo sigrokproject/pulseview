@@ -384,7 +384,6 @@ void SigSession::update_signals(const sr_dev_inst *const sdi)
 {
 	assert(_capture_state == Stopped);
 
-	shared_ptr<view::Signal> signal;
 	unsigned int logic_probe_count = 0;
 	unsigned int analog_probe_count = 0;
 
@@ -429,34 +428,42 @@ void SigSession::update_signals(const sr_dev_inst *const sdi)
 	}
 
 	// Make the Signals list
-	{
+	do {
 		lock_guard<mutex> lock(_signals_mutex);
 
 		_signals.clear();
 
-		if(sdi) {
-			for (const GSList *l = sdi->probes; l; l = l->next) {
-				sr_probe *const probe =	(sr_probe *)l->data;
-				assert(probe);
+		if(!sdi)
+			break;
 
-				switch(probe->type) {
-				case SR_PROBE_LOGIC:
-					signal = shared_ptr<view::Signal>(
-						new view::LogicSignal(*this, probe,
-							_logic_data));
-					break;
+		for (const GSList *l = sdi->probes; l; l = l->next) {
+			shared_ptr<view::Signal> signal;
+			sr_probe *const probe =	(sr_probe *)l->data;
+			assert(probe);
 
-				case SR_PROBE_ANALOG:
-					signal = shared_ptr<view::Signal>(
-						new view::AnalogSignal(*this, probe,
-							_analog_data));
-					break;
-				}
+			switch(probe->type) {
+			case SR_PROBE_LOGIC:
+				signal = shared_ptr<view::Signal>(
+					new view::LogicSignal(*this, probe,
+						_logic_data));
+				break;
 
-				_signals.push_back(signal);
+			case SR_PROBE_ANALOG:
+				signal = shared_ptr<view::Signal>(
+					new view::AnalogSignal(*this, probe,
+						_analog_data));
+				break;
+
+			default:
+				assert(0);
+				break;
 			}
+
+			assert(signal);
+			_signals.push_back(signal);
 		}
-	}
+
+	} while(0);
 
 	signals_changed();
 }
