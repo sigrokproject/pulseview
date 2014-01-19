@@ -235,15 +235,21 @@ void SamplingBar::update_sample_count_selector()
 	if (_sample_count_supported)
 	{
 		uint64_t sample_count = DefaultSampleCount;
+		uint64_t min_sample_count = 0;
 		uint64_t max_sample_count = MaxSampleCount;
 
-		if (sr_config_get(sdi->driver, sdi, NULL,
-			SR_CONF_MAX_UNCOMPRESSED_SAMPLES, &gvar) == SR_OK) {
-			max_sample_count = g_variant_get_uint64(gvar);
+		if (sr_config_list(sdi->driver, sdi, NULL,
+			SR_CONF_LIMIT_SAMPLES, &gvar) == SR_OK) {
+			g_variant_get(gvar, "(tt)",
+				&min_sample_count, &max_sample_count);
 			g_variant_unref(gvar);
 		}
 
-		_sample_count.show_125_list(MinSampleCount, max_sample_count);
+		min_sample_count = min(max(min_sample_count, MinSampleCount),
+			max_sample_count);
+
+		_sample_count.show_125_list(
+			min_sample_count, max_sample_count);
 
 		if (sr_config_get(sdi->driver, sdi, NULL,
 			SR_CONF_LIMIT_SAMPLES, &gvar) == SR_OK)
