@@ -35,12 +35,16 @@
 #include <pv/popups/deviceoptions.h>
 #include <pv/popups/probes.h>
 
+using std::max;
+using std::min;
 using std::string;
 
 namespace pv {
 namespace toolbars {
 
-const uint64_t SamplingBar::DefaultRecordLength = 1000000;
+const uint64_t SamplingBar::MinSampleCount = 100ULL;
+const uint64_t SamplingBar::MaxSampleCount = 1000000000000ULL;
+const uint64_t SamplingBar::DefaultSampleCount = 1000000;
 
 SamplingBar::SamplingBar(SigSession &session, QWidget *parent) :
 	QToolBar("Sampling Bar", parent),
@@ -223,24 +227,41 @@ void SamplingBar::update_sample_count_selector()
 {
 	sr_dev_inst *const sdi = get_selected_device();
 	GVariant *gvar;
-	uint64_t samplecount = 0;
 
 	assert(sdi);
 
+	_updating_sample_count = true;
+
 	if (_sample_count_supported)
-		_sample_count.show_min_max_step(0, UINT64_MAX, 1);
+	{
+		uint64_t sample_count = DefaultSampleCount;
+		uint64_t max_sample_count = MaxSampleCount;
+
+		if (sr_config_get(sdi->driver, sdi, NULL,
+			SR_CONF_MAX_UNCOMPRESSED_SAMPLES, &gvar) == SR_OK) {
+			max_sample_count = g_variant_get_uint64(gvar);
+			g_variant_unref(gvar);
+		}
+
+		_sample_count.show_125_list(MinSampleCount, max_sample_count);
+
+		if (sr_config_get(sdi->driver, sdi, NULL,
+			SR_CONF_LIMIT_SAMPLES, &gvar) == SR_OK)
+		{
+			sample_count = g_variant_get_uint64(gvar);
+			if (sample_count == 0)
+				sample_count = DefaultSampleCount;
+			sample_count = min(max(sample_count, MinSampleCount),
+				max_sample_count);
+
+			g_variant_unref(gvar);
+		}
+
+		_sample_count.set_value(sample_count);
+	}
 	else
 		_sample_count.show_none();
 
-	if (sr_config_get(sdi->driver, sdi, NULL,
-		SR_CONF_LIMIT_SAMPLES, &gvar) == SR_OK)
-	{
-		samplecount = g_variant_get_uint64(gvar);
-		g_variant_unref(gvar);
-	}
-
-	_updating_sample_count = true;
-	_sample_count.set_value(samplecount);
 	_updating_sample_count = false;
 }
 
@@ -328,11 +349,6 @@ void SamplingBar::on_device_selected()
 	// Update sweep timing widgets.
 	update_sample_count_selector();
 	update_sample_rate_selector();
-
-	if (_sample_count_supported && _sample_count.value() == 0) {
-		_sample_count.set_value(DefaultRecordLength);
-		commit_sample_count();
-	}
 }
 
 void SamplingBar::on_sample_count_changed()
@@ -349,6 +365,7 @@ void SamplingBar::on_sample_rate_changed()
 
 void SamplingBar::on_run_stop()
 {
+	commit_sample_count();
 	commit_sample_rate();	
 	run_stop();
 }
