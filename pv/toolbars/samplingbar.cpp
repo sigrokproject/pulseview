@@ -160,9 +160,28 @@ void SamplingBar::update_sample_rate_selector()
 	{
 		elements = (const uint64_t *)g_variant_get_fixed_array(
 				gvar_list, &num_elements, sizeof(uint64_t));
-		_sample_rate.show_min_max_step(elements[0], elements[1],
-			elements[2]);
+
+		const uint64_t min = elements[0];
+		const uint64_t max = elements[1];
+		const uint64_t step = elements[2];
+
 		g_variant_unref(gvar_list);
+
+		assert(min > 0);
+		assert(max > 0);
+		assert(max > min);
+		assert(step > 0);
+
+		if (step == 1)
+			_sample_rate.show_125_list(min, max);
+		else
+		{
+			// When the step is not 1, we cam't make a 1-2-5-10
+			// list of sample rates, because we may not be able to
+			// make round numbers. Therefore in this case, show a
+			// spin box.
+			_sample_rate.show_min_max_step(min, max, step);
+		}
 	}
 	else if ((gvar_list = g_variant_lookup_value(gvar_dict,
 			"samplerates", G_VARIANT_TYPE("at"))))
