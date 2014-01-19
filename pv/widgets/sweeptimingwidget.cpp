@@ -34,6 +34,7 @@ namespace widgets {
 SweepTimingWidget::SweepTimingWidget(const char *suffix,
 	QWidget *parent) :
 	QWidget(parent),
+	_suffix(suffix),
 	_layout(this),
 	_value(this),
 	_list(this),
@@ -86,7 +87,7 @@ void SweepTimingWidget::show_list(const uint64_t *vals, size_t count)
 	_list.clear();
 	for (size_t i = 0; i < count; i++)
 	{
-		char *const s = sr_samplerate_string(vals[i]);
+		char *const s = sr_si_string_u64(vals[i], _suffix);
 		_list.addItem(QString::fromUtf8(s),
 			qVariantFromValue(vals[i]));
 		g_free(s);

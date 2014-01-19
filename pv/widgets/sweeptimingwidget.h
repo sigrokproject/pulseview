@@ -59,6 +59,8 @@ signals:
 	void value_changed();
 
 private:
+	const char *const _suffix;
+
 	QHBoxLayout _layout;
 
 	QDoubleSpinBox _value;
