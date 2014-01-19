@@ -50,6 +50,7 @@ public:
 	void show_none();
 	void show_min_max_step(uint64_t min, uint64_t max, uint64_t step);
 	void show_list(const uint64_t *vals, size_t count);
+	void show_125_list(uint64_t min, uint64_t max);
 
 	uint64_t value() const;
 	void set_value(uint64_t value);

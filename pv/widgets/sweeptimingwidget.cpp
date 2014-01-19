@@ -20,7 +20,13 @@
 
 #include "sweeptimingwidget.h"
 
+#include <vector>
+
 #include <assert.h>
+
+#include <extdef.h>
+
+using std::vector;
 
 namespace pv {
 namespace widgets {
@@ -61,6 +67,9 @@ void SweepTimingWidget::show_none()
 void SweepTimingWidget::show_min_max_step(uint64_t min, uint64_t max,
 	uint64_t step)
 {
+	assert(max > min);
+	assert(step > 0);
+
 	_value_type = MinMaxStep;
 
 	_value.setRange(min, max);
@@ -85,6 +94,46 @@ void SweepTimingWidget::show_list(const uint64_t *vals, size_t count)
 
 	_value.hide();
 	_list.show();
+}
+
+void SweepTimingWidget::show_125_list(uint64_t min, uint64_t max)
+{
+	assert(max > min);
+
+	// Create a 1-2-5-10 list of entries.
+	const unsigned int FineScales[] = {1, 2, 5};
+	uint64_t value, decade;
+	unsigned int fine;
+	vector<uint64_t> values;
+
+	// Compute the starting decade
+	for (decade = 1; decade * 10 <= min; decade *= 10);
+
+	// Compute the first entry
+	for (fine = 0; fine < countof(FineScales); fine++)
+		if (FineScales[fine] * decade >= min)
+			break;
+
+	assert(fine < countof(FineScales));
+
+	// Add the minimum entry if it's not on the 1-2-5 progression
+	if (min != FineScales[fine] * decade)
+		values.push_back(min);
+
+	while ((value = FineScales[fine] * decade) < max) {
+		values.push_back(value);
+		if (++fine >= countof(FineScales))
+			fine = 0, decade *= 10;
+	}
+
+	// Add the max value
+	values.push_back(max);
+
+	// Make a C array, and give it to the sweep timing widget
+	uint64_t *const values_array = new uint64_t[values.size()];
+	copy(values.begin(), values.end(), values_array);
+	show_list(values_array, values.size());
+	delete[] values_array;
 }
 
 uint64_t SweepTimingWidget::value() const
