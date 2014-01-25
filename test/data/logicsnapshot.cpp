@@ -140,7 +140,7 @@ BOOST_AUTO_TEST_CASE(Basic)
 	BOOST_CHECK_EQUAL(edges[0].first, 0);
 	BOOST_CHECK_EQUAL(edges[1].first, 8);
 	BOOST_CHECK_EQUAL(edges[2].first, 16);
-	BOOST_CHECK_EQUAL(edges[3].first, 255);
+	BOOST_CHECK_EQUAL(edges[3].first, 256);
 
 	// Test a subset at high zoom
 	edges.clear();
@@ -150,7 +150,7 @@ BOOST_AUTO_TEST_CASE(Basic)
 	BOOST_CHECK_EQUAL(edges[0].first, 6);
 	BOOST_CHECK_EQUAL(edges[1].first, 8);
 	BOOST_CHECK_EQUAL(edges[2].first, 16);
-	BOOST_CHECK_EQUAL(edges[3].first, 17);
+	BOOST_CHECK_EQUAL(edges[3].first, 18);
 }
 
 BOOST_AUTO_TEST_CASE(LargeData)
@@ -263,7 +263,7 @@ BOOST_AUTO_TEST_CASE(LargeData)
 		BOOST_CHECK_EQUAL(edges[i].second, i & 1);
 	}
 
-	BOOST_CHECK_EQUAL(edges[31].first, 999999);
+	BOOST_CHECK_EQUAL(edges[31].first, 1000000);
 
 	// Check in very low zoom case
 	edges.clear();
@@ -401,7 +401,7 @@ BOOST_AUTO_TEST_CASE(LongPulses)
 		BOOST_CHECK_EQUAL(edges[i*2+1].second, false);
 	}
 
-	BOOST_CHECK_EQUAL(edges.back().first, Length-1);
+	BOOST_CHECK_EQUAL(edges.back().first, Length);
 	BOOST_CHECK_EQUAL(edges.back().second, false);
 
 	//----- Test get_subsampled_edges at a simplified scale -----//
@@ -418,7 +418,7 @@ BOOST_AUTO_TEST_CASE(LongPulses)
 		BOOST_CHECK_EQUAL(edges[i+1].second, false);
 	}
 
-	BOOST_CHECK_EQUAL(edges.back().first, Length-1);
+	BOOST_CHECK_EQUAL(edges.back().first, Length);
 	BOOST_CHECK_EQUAL(edges.back().second, false);
 }
 

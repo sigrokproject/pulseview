@@ -366,8 +366,10 @@ void LogicSnapshot::get_subsampled_edges(
 	}
 
 	// Add the final state
-	edges.push_back(pair<int64_t, bool>(end,
-		get_sample(end) & sig_mask));
+	const bool end_sample = get_sample(end) & sig_mask;
+	if (last_sample != end_sample)
+		edges.push_back(pair<int64_t, bool>(end, end_sample));
+	edges.push_back(pair<int64_t, bool>(end + 1, end_sample));
 }
 
 uint64_t LogicSnapshot::get_subsample(int level, uint64_t offset) const

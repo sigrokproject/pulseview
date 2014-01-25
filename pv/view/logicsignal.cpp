@@ -167,7 +167,7 @@ void LogicSignal::paint_mid(QPainter &p, int left, int right)
 	delete[] edge_lines;
 
 	// Paint the caps
-	const unsigned int max_cap_line_count = (edges.size() - 1);
+	const unsigned int max_cap_line_count = edges.size();
 	QLineF *const cap_lines = new QLineF[max_cap_line_count];
 
 	p.setPen(HighColour);
