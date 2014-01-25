@@ -63,7 +63,6 @@ QWidget* Int::get_widget(QWidget *parent, bool auto_commit)
 		g_variant_unref(_value);
 
 	_value = _getter ? _getter() : NULL;
-	assert(_value);
 	if (!_value)
 		return NULL;
 
