@@ -172,7 +172,7 @@ void DecoderStack::decode_proc(shared_ptr<data::Logic> data)
 
 	const shared_ptr<pv::data::LogicSnapshot> &snapshot =
 		snapshots.front();
-	const int64_t sample_count = snapshot->get_sample_count() - 1;
+	const int64_t sample_count = snapshot->get_sample_count();
 	const unsigned int chunk_sample_count =
 		DecodeChunkLength / snapshot->unit_size();
 
