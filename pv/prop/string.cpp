@@ -41,14 +41,14 @@ QWidget* String::get_widget(QWidget *parent, bool auto_commit)
 	if (_line_edit)
 		return _line_edit;
 
-	_line_edit = new QLineEdit(parent);
-
 	GVariant *const value = _getter ? _getter() : NULL;
-	if (value) {
-		_line_edit->setText(QString::fromUtf8(
-			g_variant_get_string(value, NULL)));
-		g_variant_unref(value);
-	}
+	if (!value)
+		return NULL;
+
+	_line_edit = new QLineEdit(parent);
+	_line_edit->setText(QString::fromUtf8(
+		g_variant_get_string(value, NULL)));
+	g_variant_unref(value);
 
 	if (auto_commit)
 		connect(_line_edit, SIGNAL(textEdited(const QString&)),
