@@ -33,26 +33,18 @@ BOOST_AUTO_TEST_SUITE(AnalogSnapshotTest)
 void push_analog(AnalogSnapshot &s, unsigned int num_samples,
 	float value)
 {
-	sr_datafeed_analog analog;
-	analog.num_samples = num_samples;
+	float *const data = new float[num_samples];
+	for (unsigned int i = 0; i < num_samples; i++)
+		data[i] = value;
 
-	float *data = new float[num_samples];
-	analog.data = data;
-	while(num_samples-- != 0)
-		*data++ = value;
-
-	s.append_payload(analog);
-	delete[] (float*)analog.data;
+	s.append_interleaved_samples(data, num_samples, 1);
+	delete[] data;
 }
 
 BOOST_AUTO_TEST_CASE(Basic)
 {
 	// Create an empty AnalogSnapshot object
-	sr_datafeed_analog analog;
-	analog.num_samples = 0;
-	analog.data = NULL;
-
-	AnalogSnapshot s(analog);
+	AnalogSnapshot s;
 
 	//----- Test AnalogSnapshot::push_analog -----//
 
