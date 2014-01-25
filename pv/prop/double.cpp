@@ -55,6 +55,10 @@ QWidget* Double::get_widget(QWidget *parent, bool auto_commit)
 	if (_spin_box)
 		return _spin_box;
 
+	GVariant *const value = _getter ? _getter() : NULL;
+	if (!value)
+		return NULL;
+
 	_spin_box = new QDoubleSpinBox(parent);
 	_spin_box->setDecimals(_decimals);
 	_spin_box->setSuffix(_suffix);
@@ -63,12 +67,8 @@ QWidget* Double::get_widget(QWidget *parent, bool auto_commit)
 	if (_step)
 		_spin_box->setSingleStep(*_step);
 
-	GVariant *const value = _getter ? _getter() : NULL;
-
-	if (value) {
-		_spin_box->setValue(g_variant_get_double(value));
-		g_variant_unref(value);
-	}
+	_spin_box->setValue(g_variant_get_double(value));
+	g_variant_unref(value);
 
 	if (auto_commit)
 		connect(_spin_box, SIGNAL(valueChanged(double)),
