@@ -284,6 +284,10 @@ set(PULSEVIEW_LINK_LIBS
 if(STATIC_PKGDEPS_LIBS)
 	link_directories(${PKGDEPS_STATIC_LIBRARY_DIRS})
 	list(APPEND PULSEVIEW_LINK_LIBS ${PKGDEPS_STATIC_LIBRARIES})
+if(WIN32)
+	# Workaround for a MinGW linking issue.
+	list(APPEND PULSEVIEW_LINK_LIBS "-llzma -llcms2")
+endif()
 else()
 	link_directories(${PKGDEPS_LIBRARY_DIRS})
 	list(APPEND PULSEVIEW_LINK_LIBS ${PKGDEPS_LIBRARIES})

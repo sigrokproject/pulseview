@@ -150,6 +150,11 @@ set(PULSEVIEW_LINK_LIBS
 	${QT_LIBRARIES}
 )
 
+if(WIN32)
+	# Workaround for a MinGW linking issue.
+	list(APPEND PULSEVIEW_LINK_LIBS "-llzma -llcms2")
+endif()
+
 add_executable(pulseview-test
 	${pulseview_TEST_SOURCES}
 	${pulseview_TEST_HEADERS_MOC}
