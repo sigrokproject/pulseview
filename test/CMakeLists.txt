@@ -131,7 +131,11 @@ if(ENABLE_DECODE)
 	add_definitions(-DENABLE_DECODE)
 endif()
 
+# On MinGW we need to use static linking.
+if(NOT WIN32)
 add_definitions(-DBOOST_TEST_DYN_LINK)
+endif()
+
 add_definitions(${QT_DEFINITIONS})
 
 include_directories(
