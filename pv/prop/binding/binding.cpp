@@ -53,9 +53,13 @@ void Binding::add_properties_to_form(QFormLayout *layout,
 	BOOST_FOREACH(shared_ptr<pv::prop::Property> p, _properties)
 	{
 		assert(p);
-		const QString label = p->labeled_widget() ? QString() : p->name();
-		layout->addRow(label, p->get_widget(layout->parentWidget(),
-			auto_commit));
+
+		QWidget *const widget = p->get_widget(layout->parentWidget(),
+			auto_commit);
+		if (p->labeled_widget())
+			layout->addRow(widget);
+		else
+			layout->addRow(p->name(), widget);
 	}
 }
 
