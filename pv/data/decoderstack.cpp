@@ -176,6 +176,9 @@ void DecoderStack::decode_proc(shared_ptr<data::Logic> data)
 	const unsigned int chunk_sample_count =
 		DecodeChunkLength / snapshot->unit_size();
 
+	// Clear error message upon every new session run
+	_error_message = QString();
+
 	// Create the session
 	srd_session_new(&session);
 	assert(session);
