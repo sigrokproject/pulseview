@@ -155,9 +155,15 @@ void DecodeTrace::paint_mid(QPainter &p, int left, int right)
 
 	assert(_decoder_stack);
 	vector<Annotation> annotations(_decoder_stack->annotations());
-	BOOST_FOREACH(const Annotation &a, annotations)
+
+	BOOST_FOREACH(const Annotation &a, annotations) {
+		// Every annotation row is 20 pixels further down.
+		int y_ann_row_offset = a.row() * 20;
+
 		draw_annotation(a, p, get_text_colour(), h, left, right,
-			samples_per_pixel, pixels_offset, y);
+			samples_per_pixel, pixels_offset,
+			y + y_ann_row_offset);
+	}
 
 	draw_unresolved_period(p, h, left, right,
 		samples_per_pixel, pixels_offset);
