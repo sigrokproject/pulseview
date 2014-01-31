@@ -241,13 +241,35 @@ void DecoderStack::annotation_callback(srd_proto_data *pdata, void *decoder)
 {
 	using pv::data::decode::Annotation;
 
+	GSList *l, *ll;
+	int row, ann_class;
+	struct srd_decoder_annotation_row *ann_row;
+
 	assert(pdata);
 	assert(decoder);
 
 	DecoderStack *const d = (DecoderStack*)decoder;
 
 	lock_guard<mutex> lock(d->_mutex);
-	d->_annotations.push_back(Annotation(pdata));
+
+	Annotation a = Annotation(pdata);
+
+	const shared_ptr<decode::Decoder> &dec = *d->stack().begin();
+
+	for (l = dec->decoder()->annotation_rows, row = 0; l;
+			l = l->next, row++)
+	{
+		ann_row = (struct srd_decoder_annotation_row *)l->data;
+
+		for (ll = ann_row->ann_classes, ann_class = 0; ll;
+					ll = ll->next, ann_class++)
+		{
+			if (GPOINTER_TO_INT(ll->data) == a.format())
+				a.set_row(row);
+		}
+	}
+
+	d->_annotations.push_back(a);
 
 	d->new_decode_data();
 }
