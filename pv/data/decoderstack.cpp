@@ -190,7 +190,7 @@ void DecoderStack::decode_proc(shared_ptr<data::Logic> data)
 
 		if (!di)
 		{
-			_error_message = tr("Failed to initialise decoder");
+			_error_message = tr("Failed to create decoder instance");
 			srd_session_destroy(session);
 			return;
 		}
@@ -223,7 +223,7 @@ void DecoderStack::decode_proc(shared_ptr<data::Logic> data)
 
 		if (srd_session_send(session, i, i + sample_count,
 				chunk, chunk_end - i) != SRD_OK) {
-			_error_message = tr("Failed to initialise decoder");
+			_error_message = tr("Decoder reported an error");
 			break;
 		}
 
