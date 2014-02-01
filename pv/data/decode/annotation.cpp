@@ -69,6 +69,11 @@ int Annotation::row() const
 	return _row;
 }
 
+int Annotation::pd_index() const
+{
+	return _pd_index;
+}
+
 const std::vector<QString>& Annotation::annotations() const
 {
 	return _annotations;
@@ -77,6 +82,11 @@ const std::vector<QString>& Annotation::annotations() const
 void Annotation::set_row(int row)
 {
 	_row = row;
+}
+
+void Annotation::set_pd_index(int pd_index)
+{
+	_pd_index = pd_index;
 }
 
 } // namespace decode
