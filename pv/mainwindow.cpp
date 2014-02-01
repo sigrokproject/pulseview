@@ -159,6 +159,8 @@ void MainWindow::setup_ui()
 		"MainWindow", "Zoom &In", 0, QApplication::UnicodeUTF8));
 	action_view_zoom_in->setIcon(QIcon::fromTheme("zoom-in",
 		QIcon(":/icons/zoom-in.png")));
+	// simply using Qt::Key_Plus shows no + in the menu
+	action_view_zoom_in->setShortcut(QKeySequence::ZoomIn);
 	action_view_zoom_in->setObjectName(
 		QString::fromUtf8("actionViewZoomIn"));
 	menu_view->addAction(action_view_zoom_in);
@@ -168,6 +170,7 @@ void MainWindow::setup_ui()
 		"MainWindow", "Zoom &Out", 0, QApplication::UnicodeUTF8));
 	action_view_zoom_out->setIcon(QIcon::fromTheme("zoom-out",
 		QIcon(":/icons/zoom-out.png")));
+	action_view_zoom_out->setShortcut(QKeySequence::ZoomOut);
 	action_view_zoom_out->setObjectName(
 		QString::fromUtf8("actionViewZoomOut"));
 	menu_view->addAction(action_view_zoom_out);
