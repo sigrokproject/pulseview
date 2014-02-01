@@ -242,8 +242,9 @@ void DecoderStack::annotation_callback(srd_proto_data *pdata, void *decoder)
 	using pv::data::decode::Annotation;
 
 	GSList *l, *ll;
-	int row, ann_class;
+	int row, ann_class, idx = 0;
 	struct srd_decoder_annotation_row *ann_row;
+	struct srd_decoder *decc;
 
 	assert(pdata);
 	assert(decoder);
@@ -254,10 +255,15 @@ void DecoderStack::annotation_callback(srd_proto_data *pdata, void *decoder)
 
 	Annotation a = Annotation(pdata);
 
-	const shared_ptr<decode::Decoder> &dec = *d->stack().begin();
+	decc = pdata->pdo->di->decoder;
+	BOOST_FOREACH(const shared_ptr<decode::Decoder> &dec, d->stack()) {
+		if (dec->decoder() == decc)
+			break;
+		idx++;
+	}
+	a.set_pd_index(idx);
 
-	for (l = dec->decoder()->annotation_rows, row = 0; l;
-			l = l->next, row++)
+	for (l = decc->annotation_rows, row = 0; l; l = l->next, row++)
 	{
 		ann_row = (struct srd_decoder_annotation_row *)l->data;
 
