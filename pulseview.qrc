@@ -3,6 +3,8 @@
 	<file>icons/application-exit.png</file>
 	<file>icons/configure.png</file>
 	<file>icons/decoder-delete.svg</file>
+	<file>icons/decoder-hidden.svg</file>
+	<file>icons/decoder-shown.svg</file>
 	<file>icons/document-open.png</file>
 	<file>icons/document-save-as.png</file>
 	<file>icons/probes.svg</file>
