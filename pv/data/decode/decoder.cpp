@@ -33,7 +33,8 @@ namespace data {
 namespace decode {
 
 Decoder::Decoder(const srd_decoder *const dec) :
-	_decoder(dec)
+	_decoder(dec),
+	_shown(true)
 {
 }
 
@@ -47,6 +48,16 @@ Decoder::~Decoder()
 const srd_decoder* Decoder::decoder() const
 {
 	return _decoder;
+}
+
+bool Decoder::shown() const
+{
+	return _shown;
+}
+
+void Decoder::show(bool show)
+{
+	_shown = show;
 }
 
 const map<const srd_probe*, shared_ptr<view::LogicSignal> >&

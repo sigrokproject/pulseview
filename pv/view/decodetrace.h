@@ -48,6 +48,10 @@ class Decoder;
 }
 }
 
+namespace widgets {
+class DecoderGroupBox;
+}
+
 namespace view {
 
 class DecodeTrace : public Trace
@@ -149,6 +153,8 @@ private slots:
 
 	void on_delete_decoder(int index);
 
+	void on_show_hide_decoder(int index);
+
 private:
 	boost::shared_ptr<pv::data::DecoderStack> _decoder_stack;
 
@@ -158,8 +164,9 @@ private:
 		_bindings;
 
 	std::list<ProbeSelector> _probe_selectors;
+	std::vector<pv::widgets::DecoderGroupBox*> _decoder_forms;
 
-	QSignalMapper _delete_mapper;
+	QSignalMapper _delete_mapper, _show_hide_mapper;
 };
 
 } // namespace view

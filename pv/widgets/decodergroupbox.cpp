@@ -32,7 +32,8 @@ namespace widgets {
 
 DecoderGroupBox::DecoderGroupBox(QString title, QWidget *parent) :
 	QWidget(parent),
-	_layout(new QGridLayout)
+	_layout(new QGridLayout),
+	_show_hide_button(QIcon(":/icons/decoder-shown.svg"), QString(), this)
 {
 	_layout->setContentsMargins(0, 0, 0, 0);
 	setLayout(_layout);
@@ -43,6 +44,12 @@ DecoderGroupBox::DecoderGroupBox(QString title, QWidget *parent) :
 
 	QHBoxLayout *const toolbar = new QHBoxLayout;
 	_layout->addLayout(toolbar, 0, 1);
+
+	_show_hide_button.setFlat(true);
+	_show_hide_button.setIconSize(QSize(16, 16));
+	connect(&_show_hide_button, SIGNAL(clicked()),
+		this, SIGNAL(show_hide_decoder()));
+	toolbar->addWidget(&_show_hide_button);
 
 	QPushButton *const delete_button = new QPushButton(
 		QIcon(":/icons/decoder-delete.svg"), QString(), this);
@@ -57,6 +64,13 @@ void DecoderGroupBox::add_layout(QLayout *layout)
 {
 	assert(layout);
 	_layout->addLayout(layout, 1, 0, 1, 2);
+}
+
+void DecoderGroupBox::set_decoder_visible(bool visible)
+{
+	_show_hide_button.setIcon(QIcon(visible ?
+		":/icons/decoder-shown.svg" :
+		":/icons/decoder-hidden.svg"));
 }
 
 } // widgets

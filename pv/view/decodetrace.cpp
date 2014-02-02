@@ -86,7 +86,8 @@ DecodeTrace::DecodeTrace(pv::SigSession &session,
 	Trace(session, QString::fromUtf8(
 		decoder_stack->stack().front()->decoder()->name)),
 	_decoder_stack(decoder_stack),
-	_delete_mapper(this)
+	_delete_mapper(this),
+	_show_hide_mapper(this)
 {
 	assert(_decoder_stack);
 
@@ -96,6 +97,8 @@ DecodeTrace::DecodeTrace(pv::SigSession &session,
 		this, SLOT(on_new_decode_data()));
 	connect(&_delete_mapper, SIGNAL(mapped(int)),
 		this, SLOT(on_delete_decoder(int)));
+	connect(&_show_hide_mapper, SIGNAL(mapped(int)),
+		this, SLOT(on_show_hide_decoder(int)));
 }
 
 bool DecodeTrace::enabled() const
@@ -163,7 +166,7 @@ void DecodeTrace::paint_mid(QPainter &p, int left, int right)
 
 	assert(_decoder_stack);
 
-	const vector<Row> rows(_decoder_stack->get_rows());
+	const vector<Row> rows(_decoder_stack->get_visible_rows());
 	for (size_t i = 0; i < rows.size(); i++)
 	{
 		const Row &row = rows[i];
@@ -198,6 +201,7 @@ void DecodeTrace::populate_popup_form(QWidget *parent, QFormLayout *form)
 	// Add the decoder options
 	_bindings.clear();
 	_probe_selectors.clear();
+	_decoder_forms.clear();
 
 	const list< shared_ptr<Decoder> >& stack = _decoder_stack->stack();
 
@@ -432,9 +436,14 @@ void DecodeTrace::create_decoder_form(int index,
 	pv::widgets::DecoderGroupBox *const group =
 		new pv::widgets::DecoderGroupBox(
 			QString::fromUtf8(decoder->name));
+	group->set_decoder_visible(dec->shown());
 
 	_delete_mapper.setMapping(group, index);
 	connect(group, SIGNAL(delete_decoder()), &_delete_mapper, SLOT(map()));
+
+	_show_hide_mapper.setMapping(group, index);
+	connect(group, SIGNAL(show_hide_decoder()),
+		&_show_hide_mapper, SLOT(map()));
 
 	QFormLayout *const decoder_form = new QFormLayout;
 	group->add_layout(decoder_form);
@@ -475,6 +484,7 @@ void DecodeTrace::create_decoder_form(int index,
 	_bindings.push_back(binding);
 
 	form->addRow(group);
+	_decoder_forms.push_back(group);
 }
 
 QComboBox* DecodeTrace::create_probe_selector(
@@ -590,6 +600,29 @@ void DecodeTrace::on_delete_decoder(int index)
 	create_popup_form();	
 
 	_decoder_stack->begin_decode();
+}
+
+void DecodeTrace::on_show_hide_decoder(int index)
+{
+	using pv::data::decode::Decoder;
+
+	const list< shared_ptr<Decoder> > stack(_decoder_stack->stack());
+
+	// Find the decoder in the stack
+	list< shared_ptr<Decoder> >::const_iterator iter = stack.begin();
+	for(int i = 0; i < index; i++, iter++)
+		assert(iter != stack.end());
+
+	shared_ptr<Decoder> dec = *iter;
+	assert(dec);
+
+	const bool show = !dec->shown();
+	dec->show(show);
+
+	assert(index < (int)_decoder_forms.size());
+	_decoder_forms[index]->set_decoder_visible(show);
+
+	_view->update_viewport();
 }
 
 } // namespace view

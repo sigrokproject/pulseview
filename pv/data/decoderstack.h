@@ -78,7 +78,7 @@ public:
 
 	int64_t samples_decoded() const;
 
-	std::vector<decode::Row> get_rows() const;
+	std::vector<decode::Row> get_visible_rows() const;
 
 	/**
 	 * Extracts sorted annotations between two period into a vector.

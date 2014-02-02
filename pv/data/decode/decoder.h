@@ -50,6 +50,9 @@ public:
 
 	const srd_decoder* decoder() const;
 
+	bool shown() const;
+	void show(bool show = true);
+
 	const std::map<const srd_probe*,
 		boost::shared_ptr<view::LogicSignal> >& probes() const;
 	void set_probes(std::map<const srd_probe*,
@@ -64,6 +67,9 @@ public:
 
 private:
 	const srd_decoder *const _decoder;
+
+	bool _shown;
+
 	std::map<const srd_probe*, boost::shared_ptr<pv::view::LogicSignal> >
 		_probes;
 	std::map<std::string, GVariant*> _options;

@@ -21,7 +21,7 @@
 #ifndef PULSEVIEW_PV_WIDGETS_DECODERGROUPBox_H
 #define PULSEVIEW_PV_WIDGETS_DECODERGROUPBOX_H
 
-#include <QWidget>
+#include <QPushButton>
 
 class QGridLayout;
 class QToolBar;
@@ -38,11 +38,16 @@ public:
 
 	void add_layout(QLayout *layout);
 
+	void set_decoder_visible(bool visible);
+
 signals:
 	void delete_decoder();
 
+	void show_hide_decoder();
+
 private:
 	QGridLayout *const _layout;
+	QPushButton _show_hide_button;
 };
 
 } // widgets

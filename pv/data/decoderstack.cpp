@@ -103,7 +103,7 @@ int64_t DecoderStack::samples_decoded() const
 	return _samples_decoded;
 }
 
-std::vector<Row> DecoderStack::get_rows() const
+std::vector<Row> DecoderStack::get_visible_rows() const
 {
 	lock_guard<mutex> lock(_mutex);
 
@@ -112,6 +112,9 @@ std::vector<Row> DecoderStack::get_rows() const
 	BOOST_FOREACH (const shared_ptr<decode::Decoder> &dec, _stack)
 	{
 		assert(dec);
+		if (!dec->shown())
+			continue;
+
 		const srd_decoder *const decc = dec->decoder();
 		assert(dec->decoder());
 
