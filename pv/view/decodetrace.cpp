@@ -164,8 +164,9 @@ void DecodeTrace::paint_mid(QPainter &p, int left, int right)
 	assert(_decoder_stack);
 
 	const vector<Row> rows(_decoder_stack->get_rows());
-	BOOST_FOREACH (const Row &row, rows)
+	for (size_t i = 0; i < rows.size(); i++)
 	{
+		const Row &row = rows[i];
 		vector<Annotation> annotations;
 		_decoder_stack->get_annotation_subset(annotations, row,
 			start_sample, end_sample);
@@ -173,7 +174,7 @@ void DecodeTrace::paint_mid(QPainter &p, int left, int right)
 			BOOST_FOREACH(const Annotation &a, annotations)
 				draw_annotation(a, p, get_text_colour(),
 					annotation_height, left, right,
-					samples_per_pixel, pixels_offset, y);
+					samples_per_pixel, pixels_offset, y, i);
 			y += row_height;
 		}
 	}
@@ -251,14 +252,14 @@ QMenu* DecodeTrace::create_context_menu(QWidget *parent)
 
 void DecodeTrace::draw_annotation(const pv::data::decode::Annotation &a, QPainter &p,
 	QColor text_color, int h, int left, int right, double samples_per_pixel,
-	double pixels_offset, int y) const
+	double pixels_offset, int y, unsigned int row_index) const
 {
 	const double start = a.start_sample() / samples_per_pixel -
 		pixels_offset;
 	const double end = a.end_sample() / samples_per_pixel -
 		pixels_offset;
-	const QColor fill = Colours[(a.format() * (countof(Colours) / 2 + 1)) %
-		countof(Colours)];
+	const QColor fill = Colours[((row_index * 2 + a.format()) *
+		(countof(Colours) / 4 + 1)) % countof(Colours)];
 	const QColor outline(fill.darker());
 
 	if (start > right + DrawPadding || end < left - DrawPadding)

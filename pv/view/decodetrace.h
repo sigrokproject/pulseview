@@ -108,7 +108,8 @@ public:
 private:
 	void draw_annotation(const pv::data::decode::Annotation &a, QPainter &p,
 		QColor text_colour, int text_height, int left, int right,
-		double samples_per_pixel, double pixels_offset, int y) const;
+		double samples_per_pixel, double pixels_offset, int y,
+		unsigned int row_index) const;
 
 	void draw_instant(const pv::data::decode::Annotation &a, QPainter &p,
 		QColor fill, QColor outline, QColor text_color, int h, double x,
