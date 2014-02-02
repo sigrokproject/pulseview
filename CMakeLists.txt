@@ -210,6 +210,8 @@ if(ENABLE_DECODE)
 		pv/data/decoderstack.cpp
 		pv/data/decode/annotation.cpp
 		pv/data/decode/decoder.cpp
+		pv/data/decode/row.cpp
+		pv/data/decode/rowdata.cpp
 		pv/prop/binding/decoderoptions.cpp
 		pv/view/decodetrace.cpp
 		pv/widgets/decodergroupbox.cpp

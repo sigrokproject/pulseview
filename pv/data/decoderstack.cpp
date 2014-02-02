@@ -20,7 +20,6 @@
 
 #include <libsigrokdecode/libsigrokdecode.h>
 
-#include <boost/bind.hpp>
 #include <boost/foreach.hpp>
 #include <boost/thread/thread.hpp>
 
@@ -40,9 +39,15 @@ using boost::lock_guard;
 using boost::mutex;
 using boost::shared_ptr;
 using std::deque;
+using std::make_pair;
+using std::max;
 using std::min;
 using std::list;
+using std::map;
+using std::pair;
 using std::vector;
+
+using namespace pv::data::decode;
 
 namespace pv {
 namespace data {
@@ -80,8 +85,6 @@ void DecoderStack::push(boost::shared_ptr<decode::Decoder> decoder)
 
 void DecoderStack::remove(int index)
 {
-	using pv::data::decode::Decoder;
-
 	assert(index >= 0);
 	assert(index < (int)_stack.size());
 
@@ -100,33 +103,61 @@ int64_t DecoderStack::samples_decoded() const
 	return _samples_decoded;
 }
 
-void DecoderStack::get_annotation_subset(
-	std::vector<pv::data::decode::Annotation> &dest,
-	uint64_t start_sample, uint64_t end_sample) const
+std::vector<Row> DecoderStack::get_rows() const
 {
 	lock_guard<mutex> lock(_mutex);
 
-	const vector<size_t>::const_iterator start_iter =
-		lower_bound(_ann_end_index.begin(),
-			_ann_end_index.end(), start_sample,
-			bind(&DecoderStack::index_entry_end_sample_lt,
-				this, _1, _2));
+	vector<Row> rows;
 
-	const vector<size_t>::const_iterator end_iter =
-		upper_bound(_ann_start_index.begin(),
-			_ann_start_index.end(), end_sample,
-			bind(&DecoderStack::index_entry_start_sample_gt,
-				this, _1, _2));
+	BOOST_FOREACH (const shared_ptr<decode::Decoder> &dec, _stack)
+	{
+		assert(dec);
+		const srd_decoder *const decc = dec->decoder();
+		assert(dec->decoder());
 
-	for (vector<size_t>::const_iterator i = start_iter;
-		i != _ann_end_index.end() && *i != *end_iter; i++)
-		dest.push_back(_annotations[*i]);
+		// Add a row for the decoder if it doesn't have a row list
+		if (!decc->annotation_rows)
+			rows.push_back(Row(decc));
+
+		// Add the decoder rows
+		for (const GSList *l = decc->annotation_rows; l; l = l->next)
+		{
+			const srd_decoder_annotation_row *const ann_row =
+				(srd_decoder_annotation_row *)l->data;
+			assert(ann_row);
+			rows.push_back(Row(decc, ann_row));
+		}
+	}
+
+	return rows;
+}
+
+void DecoderStack::get_annotation_subset(
+	std::vector<pv::data::decode::Annotation> &dest,
+	const Row &row, uint64_t start_sample,
+	uint64_t end_sample) const
+{
+	lock_guard<mutex> lock(_mutex);
+
+	std::map<const Row, decode::RowData>::const_iterator iter =
+		_rows.find(row);
+	if (iter != _rows.end())
+		(*iter).second.get_annotation_subset(dest,
+			start_sample, end_sample);
 }
 
 QString DecoderStack::error_message()
 {
 	lock_guard<mutex> lock(_mutex);
 	return _error_message;
+}
+
+void DecoderStack::clear()
+{
+	_samples_decoded = 0;
+	_error_message = QString();
+	_rows.clear();
+	_class_rows.clear();
 }
 
 void DecoderStack::begin_decode()
@@ -137,9 +168,38 @@ void DecoderStack::begin_decode()
 	_decode_thread.interrupt();
 	_decode_thread.join();
 
-	_samples_decoded = 0;
-
 	clear();
+
+	// Add classes
+	BOOST_FOREACH (const shared_ptr<decode::Decoder> &dec, _stack)
+	{
+		assert(dec);
+		const srd_decoder *const decc = dec->decoder();
+		assert(dec->decoder());
+
+		// Add a row for the decoder if it doesn't have a row list
+		if (!decc->annotation_rows)
+			_rows[Row(decc)] = decode::RowData();
+
+		// Add the decoder rows
+		for (const GSList *l = decc->annotation_rows; l; l = l->next)
+		{
+			const srd_decoder_annotation_row *const ann_row =
+				(srd_decoder_annotation_row *)l->data;
+			assert(ann_row);
+
+			const Row row(decc, ann_row);
+
+			// Add a new empty row data object
+			_rows[row] = decode::RowData();
+
+			// Map out all the classes
+			for (const GSList *ll = ann_row->ann_classes;
+				ll; ll = ll->next)
+				_class_rows[make_pair(decc,
+					GPOINTER_TO_INT(ll->data))] = row;
+		}
+	}
 
 	// We get the logic data of the first probe in the list.
 	// This works because we are currently assuming all
@@ -163,18 +223,16 @@ void DecoderStack::begin_decode()
 		data);
 }
 
-void DecoderStack::clear()
-{
-	_annotations.clear();
-	_ann_start_index.clear();
-	_ann_end_index.clear();
-}
-
 uint64_t DecoderStack::get_max_sample_count() const
 {
-	if (_annotations.empty())
-		return 0;
-	return _annotations.back().end_sample();
+	uint64_t max_sample_count = 0;
+
+	for (map<const Row, RowData>::const_iterator i = _rows.begin();
+		i != _rows.end(); i++)
+		max_sample_count = max(max_sample_count,
+			(*i).second.get_max_sample());
+
+	return max_sample_count;
 }
 
 void DecoderStack::decode_proc(shared_ptr<data::Logic> data)
@@ -195,9 +253,6 @@ void DecoderStack::decode_proc(shared_ptr<data::Logic> data)
 	const int64_t sample_count = snapshot->get_sample_count();
 	const unsigned int chunk_sample_count =
 		DecodeChunkLength / snapshot->unit_size();
-
-	// Clear error message upon every new session run
-	_error_message = QString();
 
 	// Create the session
 	srd_session_new(&session);
@@ -257,100 +312,47 @@ void DecoderStack::decode_proc(shared_ptr<data::Logic> data)
 	srd_session_destroy(session);
 }
 
-bool DecoderStack::index_entry_start_sample_gt(
-	const uint64_t sample, const size_t index) const
-{
-	assert(index < _annotations.size());
-	return _annotations[index].start_sample() > sample;
-}
-
-bool DecoderStack::index_entry_end_sample_lt(
-	const size_t index, const uint64_t sample) const
-{
-	assert(index < _annotations.size());
-	return _annotations[index].end_sample() < sample;
-}
-
-bool DecoderStack::index_entry_end_sample_gt(
-	const uint64_t sample, const size_t index) const
-{
-	assert(index < _annotations.size());
-	return _annotations[index].end_sample() > sample;
-}
-
-void DecoderStack::insert_annotation_into_start_index(
-	const pv::data::decode::Annotation &a, const size_t storage_offset)
-{
-	vector<size_t>::iterator i = _ann_start_index.end();
-	if (!_ann_start_index.empty() &&
-		_annotations[_ann_start_index.back()].start_sample() >
-			a.start_sample())
-		i = upper_bound(_ann_start_index.begin(),
-			_ann_start_index.end(), a.start_sample(),
-			bind(&DecoderStack::index_entry_start_sample_gt,
-				this, _1, _2));
-
-	_ann_start_index.insert(i, storage_offset);
-}
-
-void DecoderStack::insert_annotation_into_end_index(
-	const pv::data::decode::Annotation &a, const size_t storage_offset)
-{
-	vector<size_t>::iterator i = _ann_end_index.end();
-	if (!_ann_end_index.empty() &&
-		_annotations[_ann_end_index.back()].end_sample() <
-			a.end_sample())
-		i = upper_bound(_ann_end_index.begin(),
-			_ann_end_index.end(), a.end_sample(),
-			bind(&DecoderStack::index_entry_end_sample_gt,
-				this, _1, _2));
-
-	_ann_end_index.insert(i, storage_offset);
-}
-
 void DecoderStack::annotation_callback(srd_proto_data *pdata, void *decoder)
 {
-	using pv::data::decode::Annotation;
-
-	GSList *l, *ll;
-	int row, ann_class, idx = 0;
-	struct srd_decoder_annotation_row *ann_row;
-	struct srd_decoder *decc;
-
 	assert(pdata);
 	assert(decoder);
 
 	DecoderStack *const d = (DecoderStack*)decoder;
+	assert(d);
 
 	lock_guard<mutex> lock(d->_mutex);
 
-	Annotation a = Annotation(pdata);
+	const Annotation a(pdata);
 
-	decc = pdata->pdo->di->decoder;
-	BOOST_FOREACH(const shared_ptr<decode::Decoder> &dec, d->stack()) {
-		if (dec->decoder() == decc)
-			break;
-		idx++;
-	}
-	a.set_pd_index(idx);
+	// Find the row
+	assert(pdata->pdo);
+	assert(pdata->pdo->di);
+	const srd_decoder *const decc = pdata->pdo->di->decoder;
+	assert(decc);
 
-	for (l = decc->annotation_rows, row = 0; l; l = l->next, row++)
+	map<const Row, decode::RowData>::iterator row_iter = d->_rows.end();
+	
+	// Try looking up the sub-row of this class
+	const map<pair<const srd_decoder*, int>, Row>::const_iterator r =
+		d->_class_rows.find(make_pair(decc, a.format()));
+	if (r != d->_class_rows.end())
+		row_iter = d->_rows.find((*r).second);
+	else
 	{
-		ann_row = (struct srd_decoder_annotation_row *)l->data;
-
-		for (ll = ann_row->ann_classes, ann_class = 0; ll;
-					ll = ll->next, ann_class++)
-		{
-			if (GPOINTER_TO_INT(ll->data) == a.format())
-				a.set_row(row);
-		}
+		// Failing that, use the decoder as a key
+		row_iter = d->_rows.find(Row(decc));	
 	}
 
-	const size_t offset = d->_annotations.size();
-	d->_annotations.push_back(a);
+	assert(row_iter != d->_rows.end());
+	if (row_iter == d->_rows.end()) {
+		qDebug() << "Unexpected annotation: decoder = " << decc <<
+			", format = " << a.format();
+		assert(0);
+		return;
+	}
 
-	d->insert_annotation_into_start_index(a, offset);
-	d->insert_annotation_into_end_index(a, offset);
+	// Add the annotation
+	(*row_iter).second.push_annotation(a);
 
 	d->new_decode_data();
 }

@@ -40,7 +40,6 @@ Annotation::Annotation(const srd_proto_data *const pdata) :
 	assert(pda);
 
 	_format = pda->ann_format;
-	_row = 0;
 
 	const char *const *annotations = (char**)pda->ann_text;
 	while(*annotations) {
@@ -64,29 +63,9 @@ int Annotation::format() const
 	return _format;
 }
 
-int Annotation::row() const
-{
-	return _row;
-}
-
-int Annotation::pd_index() const
-{
-	return _pd_index;
-}
-
 const std::vector<QString>& Annotation::annotations() const
 {
 	return _annotations;
-}
-
-void Annotation::set_row(int row)
-{
-	_row = row;
-}
-
-void Annotation::set_pd_index(int pd_index)
-{
-	_pd_index = pd_index;
 }
 
 } // namespace decode

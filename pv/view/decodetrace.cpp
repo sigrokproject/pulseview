@@ -122,7 +122,7 @@ void DecodeTrace::paint_back(QPainter &p, int left, int right)
 
 void DecodeTrace::paint_mid(QPainter &p, int left, int right)
 {
-	using pv::data::decode::Annotation;
+	using namespace pv::data::decode;
 
 	const double scale = _view->scale();
 	assert(scale > 0);
@@ -143,40 +143,43 @@ void DecodeTrace::paint_mid(QPainter &p, int left, int right)
 		samples_per_pixel, 0.0);
 
 	QFontMetrics m(QApplication::font());
-	const int h = (m.boundingRect(QRect(), 0, "Tg").height() * 5) / 4;
+	const int text_height =  m.boundingRect(QRect(), 0, "Tg").height();
+	const int annotation_height = (text_height * 5) / 4;
+	const int row_height = (text_height * 6) / 4;
 
 	assert(_decoder_stack);
 	const QString err = _decoder_stack->error_message();
 	if (!err.isEmpty())
 	{
 		draw_error(p, err, left, right);
-		draw_unresolved_period(p, h, left, right, samples_per_pixel,
-			pixels_offset);
+		draw_unresolved_period(p, annotation_height, left, right,
+			samples_per_pixel, pixels_offset);
 		return;
 	}
 
+	// Iterate through the rows
 	assert(_view);
-	const int y = get_y();
+	int y = get_y();
 
 	assert(_decoder_stack);
-	vector<Annotation> annotations;
-	_decoder_stack->get_annotation_subset(annotations,
-		start_sample, end_sample);
 
-	BOOST_FOREACH(const Annotation &a, annotations)
+	const vector<Row> rows(_decoder_stack->get_rows());
+	BOOST_FOREACH (const Row &row, rows)
 	{
-		// Every stacked PD is 60 pixels further down.
-		int y_stack_offset = a.pd_index() * 60;
-
-		// Every annotation row is 20 pixels further down.
-		int y_ann_row_offset = a.row() * 20;
-
-		draw_annotation(a, p, get_text_colour(), h, left, right,
-			samples_per_pixel, pixels_offset,
-			y + y_stack_offset + y_ann_row_offset);
+		vector<Annotation> annotations;
+		_decoder_stack->get_annotation_subset(annotations, row,
+			start_sample, end_sample);
+		if (!annotations.empty()) {
+			BOOST_FOREACH(const Annotation &a, annotations)
+				draw_annotation(a, p, get_text_colour(),
+					annotation_height, left, right,
+					samples_per_pixel, pixels_offset, y);
+			y += row_height;
+		}
 	}
 
-	draw_unresolved_period(p, h, left, right,
+	// Draw the hatching
+	draw_unresolved_period(p, annotation_height, left, right,
 		samples_per_pixel, pixels_offset);
 }
 

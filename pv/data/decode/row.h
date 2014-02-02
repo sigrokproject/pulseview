@@ -1,7 +1,7 @@
 /*
  * This file is part of the PulseView project.
  *
- * Copyright (C) 2013 Joel Holdsworth <joel@airwebreathe.org.uk>
+ * Copyright (C) 2014 Joel Holdsworth <joel@airwebreathe.org.uk>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,41 +18,40 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_VIEW_DECODE_ANNOTATION_H
-#define PULSEVIEW_PV_VIEW_DECODE_ANNOTATION_H
+#ifndef PULSEVIEW_PV_DATA_DECODE_ROW_H
+#define PULSEVIEW_PV_DATA_DECODE_ROW_H
 
-#include <stdint.h>
+#include <vector>
 
-#include <QString>
+#include "annotation.h"
 
-struct srd_proto_data;
+struct srd_decoder;
+struct srd_decoder_annotation_row;
 
 namespace pv {
 namespace data {
 namespace decode {
 
-class Annotation
+class Row
 {
 public:
-	Annotation(const srd_proto_data *const pdata);
+	Row();
 
-	uint64_t start_sample() const;
-	uint64_t end_sample() const;
-	int format() const;
-	const std::vector<QString>& annotations() const;
+	Row(const srd_decoder *decoder,
+		const srd_decoder_annotation_row *row = NULL);
 
-	void set_row(int row);
-	void set_pd_index(int pd_index);
+	const srd_decoder* decoder() const;
+	const srd_decoder_annotation_row* row() const;
+
+	bool operator<(const Row &other) const;
 
 private:
-	uint64_t _start_sample;
-	uint64_t _end_sample;
-	int _format;
-	std::vector<QString> _annotations; 
+	const srd_decoder *_decoder;
+	const srd_decoder_annotation_row *_row;
 };
 
-} // namespace decode
-} // namespace data
-} // namespace pv
+} // decode
+} // data
+} // pv
 
-#endif // PULSEVIEW_PV_VIEW_DECODE_ANNOTATION_H
+#endif // PULSEVIEW_PV_DATA_DECODE_ROW_H
