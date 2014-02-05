@@ -91,11 +91,14 @@ DeviceOptions::DeviceOptions(const sr_dev_inst *sdi,
 		case SR_CONF_PATTERN_MODE:
 		case SR_CONF_BUFFERSIZE:
 		case SR_CONF_TRIGGER_SOURCE:
+		case SR_CONF_TRIGGER_SLOPE:
 		case SR_CONF_FILTER:
 		case SR_CONF_COUPLING:
+		case SR_CONF_CLOCK_EDGE:
 			bind_enum(name, key, gvar_list);
 			break;
 
+		case SR_CONF_EXTERNAL_CLOCK:
 		case SR_CONF_RLE:
 			bind_bool(name, key);
 			break;
