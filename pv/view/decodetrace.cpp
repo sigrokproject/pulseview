@@ -182,9 +182,9 @@ void DecodeTrace::paint_mid(QPainter &p, int left, int right)
 	const QString err = _decoder_stack->error_message();
 	if (!err.isEmpty())
 	{
-		draw_error(p, err, left, right);
 		draw_unresolved_period(p, annotation_height, left, right,
 			samples_per_pixel, pixels_offset);
+		draw_error(p, err, left, right);
 		return;
 	}
 
