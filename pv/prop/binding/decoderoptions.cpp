@@ -57,7 +57,7 @@ DecoderOptions::DecoderOptions(
 		const srd_decoder_option *const opt =
 			(srd_decoder_option*)l->data;
 
-		const QString name(opt->desc);
+		const QString name = QString::fromUtf8(opt->desc);
 
 		const Property::Getter getter = bind(
 			&DecoderOptions::getter, this, opt->id);

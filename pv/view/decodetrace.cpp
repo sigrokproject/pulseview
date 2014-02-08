@@ -494,7 +494,8 @@ void DecodeTrace::create_decoder_form(int index,
 		connect(combo, SIGNAL(currentIndexChanged(int)),
 			this, SLOT(on_probe_selected(int)));
 		decoder_form->addRow(tr("<b>%1</b> (%2) *")
-			.arg(p->name).arg(p->desc), combo);
+			.arg(QString::fromUtf8(p->name))
+			.arg(QString::fromUtf8(p->desc)), combo);
 
 		const ProbeSelector s = {combo, dec, p};
 		_probe_selectors.push_back(s);
@@ -508,7 +509,8 @@ void DecodeTrace::create_decoder_form(int index,
 		connect(combo, SIGNAL(currentIndexChanged(int)),
 			this, SLOT(on_probe_selected(int)));
 		decoder_form->addRow(tr("<b>%1</b> (%2)")
-			.arg(p->name).arg(p->desc), combo);
+			.arg(QString::fromUtf8(p->name))
+			.arg(QString::fromUtf8(p->desc)), combo);
 
 		const ProbeSelector s = {combo, dec, p};
 		_probe_selectors.push_back(s);
