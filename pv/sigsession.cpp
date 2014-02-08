@@ -233,10 +233,15 @@ bool SigSession::add_decoder(srd_decoder *const dec)
 		decoder_stack = shared_ptr<data::DecoderStack>(
 			new data::DecoderStack(dec));
 
-		// Auto select the initial probes
+		// Make a list of all the probes
+		std::vector<const srd_probe*> all_probes;
 		for(const GSList *i = dec->probes; i; i = i->next)
-		{
-			const srd_probe *const probe = (const srd_probe*)i->data;
+			all_probes.push_back((const srd_probe*)i->data);
+		for(const GSList *i = dec->opt_probes; i; i = i->next)
+			all_probes.push_back((const srd_probe*)i->data);
+
+		// Auto select the initial probes
+		BOOST_FOREACH(const srd_probe *probe, all_probes)
 			BOOST_FOREACH(shared_ptr<view::Signal> s, _signals)
 			{
 				shared_ptr<view::LogicSignal> l =
@@ -246,7 +251,6 @@ bool SigSession::add_decoder(srd_decoder *const dec)
 					l->get_name().toLower()))
 					probes[probe] = l;
 			}
-		}
 
 		assert(decoder_stack);
 		assert(!decoder_stack->stack().empty());
