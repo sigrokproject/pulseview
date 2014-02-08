@@ -44,25 +44,10 @@ public:
 		std::vector<pv::data::decode::Annotation> &dest,
 		uint64_t start_sample, uint64_t end_sample) const;
 
-	void push_annotation(const Annotation& a);
-
-private:
-	bool index_entry_start_sample_gt(
-		const uint64_t sample, const size_t index) const;
-	bool index_entry_end_sample_lt(
-		const size_t index, const uint64_t sample) const;
-	bool index_entry_end_sample_gt(
-		const uint64_t sample, const size_t index) const;
+	void push_annotation(const Annotation &a);
 
 private:
 	std::vector<Annotation> _annotations;
-
-	/**
-	 * _ann_start_index and _ann_end_index contain lists of annotions
-	 * (represented by offsets in the _annotations vector), sorted in
-	 * ascending ordered by the start_sample and end_sample respectively.
-	 */
-	std::vector<size_t> _ann_start_index, _ann_end_index;
 };
 
 }
