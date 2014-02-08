@@ -71,14 +71,42 @@ const QColor DecodeTrace::NoDecodeColour = QColor(0x88, 0x8A, 0x85);
 const double DecodeTrace::EndCapWidth = 5;
 const int DecodeTrace::DrawPadding = 100;
 
-const QColor DecodeTrace::Colours[7] = {
-	QColor(0xFC, 0xE9, 0x4F),	// Light Butter
-	QColor(0xFC, 0xAF, 0x3E),	// Light Orange
-	QColor(0xE9, 0xB9, 0x6E),	// Light Chocolate
-	QColor(0x8A, 0xE2, 0x34),	// Light Green
-	QColor(0x72, 0x9F, 0xCF),	// Light Blue
-	QColor(0xAD, 0x7F, 0xA8),	// Light Plum
-	QColor(0xEF, 0x29, 0x29)	// Light Red
+const QColor DecodeTrace::Colours[16] = {
+	QColor(0xEF, 0x29, 0x29),
+	QColor(0xF6, 0x6A, 0x32),
+	QColor(0xFC, 0xAE, 0x3E),
+	QColor(0xFB, 0xCA, 0x47),
+	QColor(0xFC, 0xE9, 0x4F),
+	QColor(0xCD, 0xF0, 0x40),
+	QColor(0x8A, 0xE2, 0x34),
+	QColor(0x4E, 0xDC, 0x44),
+	QColor(0x55, 0xD7, 0x95),
+	QColor(0x64, 0xD1, 0xD2),
+	QColor(0x72, 0x9F, 0xCF),
+	QColor(0xD4, 0x76, 0xC4),
+	QColor(0x9D, 0x79, 0xB9),
+	QColor(0xAD, 0x7F, 0xA8),
+	QColor(0xC2, 0x62, 0x9B),
+	QColor(0xD7, 0x47, 0x6F)
+};
+
+const QColor DecodeTrace::OutlineColours[16] = {
+	QColor(0x77, 0x14, 0x14),
+	QColor(0x7B, 0x35, 0x19),
+	QColor(0x7E, 0x57, 0x1F),
+	QColor(0x7D, 0x65, 0x23),
+	QColor(0x7E, 0x74, 0x27),
+	QColor(0x66, 0x78, 0x20),
+	QColor(0x45, 0x71, 0x1A),
+	QColor(0x27, 0x6E, 0x22),
+	QColor(0x2A, 0x6B, 0x4A),
+	QColor(0x32, 0x68, 0x69),
+	QColor(0x39, 0x4F, 0x67),
+	QColor(0x6A, 0x3B, 0x62),
+	QColor(0x4E, 0x3C, 0x5C),
+	QColor(0x56, 0x3F, 0x54),
+	QColor(0x61, 0x31, 0x4D),
+	QColor(0x6B, 0x23, 0x37)
 };
 
 DecodeTrace::DecodeTrace(pv::SigSession &session,
@@ -170,6 +198,13 @@ void DecodeTrace::paint_mid(QPainter &p, int left, int right)
 	for (size_t i = 0; i < rows.size(); i++)
 	{
 		const Row &row = rows[i];
+
+		size_t base_colour = 0x13579BDF;
+		boost::hash_combine(base_colour, this);
+		boost::hash_combine(base_colour, row.decoder());
+		boost::hash_combine(base_colour, row.row());
+		base_colour >>= 16;
+
 		vector<Annotation> annotations;
 		_decoder_stack->get_annotation_subset(annotations, row,
 			start_sample, end_sample);
@@ -177,7 +212,8 @@ void DecodeTrace::paint_mid(QPainter &p, int left, int right)
 			BOOST_FOREACH(const Annotation &a, annotations)
 				draw_annotation(a, p, get_text_colour(),
 					annotation_height, left, right,
-					samples_per_pixel, pixels_offset, y, i);
+					samples_per_pixel, pixels_offset, y,
+					base_colour);
 			y += row_height;
 		}
 	}
@@ -254,17 +290,19 @@ QMenu* DecodeTrace::create_context_menu(QWidget *parent)
 	return menu;
 }
 
-void DecodeTrace::draw_annotation(const pv::data::decode::Annotation &a, QPainter &p,
-	QColor text_color, int h, int left, int right, double samples_per_pixel,
-	double pixels_offset, int y, unsigned int row_index) const
+void DecodeTrace::draw_annotation(const pv::data::decode::Annotation &a,
+	QPainter &p, QColor text_color, int h, int left, int right,
+	double samples_per_pixel, double pixels_offset, int y,
+	size_t base_colour) const
 {
 	const double start = a.start_sample() / samples_per_pixel -
 		pixels_offset;
 	const double end = a.end_sample() / samples_per_pixel -
 		pixels_offset;
-	const QColor fill = Colours[((row_index * 2 + a.format()) *
-		(countof(Colours) / 4 + 1)) % countof(Colours)];
-	const QColor outline(fill.darker());
+
+	const size_t colour = (base_colour + a.format()) % countof(Colours);
+	const QColor &fill = Colours[colour];
+	const QColor &outline = OutlineColours[colour];
 
 	if (start > right + DrawPadding || end < left - DrawPadding)
 		return;

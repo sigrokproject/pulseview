@@ -45,6 +45,7 @@ class DecoderStack;
 namespace decode {
 class Annotation;
 class Decoder;
+class Row;
 }
 }
 
@@ -74,7 +75,8 @@ private:
 	static const double EndCapWidth;
 	static const int DrawPadding;
 
-	static const QColor Colours[7];
+	static const QColor Colours[16];
+	static const QColor OutlineColours[16];
 
 public:
 	DecodeTrace(pv::SigSession &session,
@@ -113,7 +115,7 @@ private:
 	void draw_annotation(const pv::data::decode::Annotation &a, QPainter &p,
 		QColor text_colour, int text_height, int left, int right,
 		double samples_per_pixel, double pixels_offset, int y,
-		unsigned int row_index) const;
+		size_t base_colour) const;
 
 	void draw_instant(const pv::data::decode::Annotation &a, QPainter &p,
 		QColor fill, QColor outline, QColor text_color, int h, double x,
