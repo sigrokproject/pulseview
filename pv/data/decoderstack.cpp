@@ -246,10 +246,16 @@ void DecoderStack::decode_proc(shared_ptr<data::Logic> data)
 
 	assert(data);
 
+	// Check we have a snapshot of data
 	const deque< shared_ptr<pv::data::LogicSnapshot> > &snapshots =
 		data->get_snapshots();
 	if (snapshots.empty())
 		return;
+
+	// Check that all decoders have the required probes
+	BOOST_FOREACH(const shared_ptr<decode::Decoder> &dec, _stack)
+		if (!dec->have_required_probes())
+			return;
 
 	const shared_ptr<pv::data::LogicSnapshot> &snapshot =
 		snapshots.front();

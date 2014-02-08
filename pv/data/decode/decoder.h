@@ -62,6 +62,8 @@ public:
 
 	void set_option(const char *id, GVariant *value);
 
+	bool have_required_probes() const;
+
 	srd_decoder_inst* create_decoder_inst(
 		srd_session *const session) const;
 

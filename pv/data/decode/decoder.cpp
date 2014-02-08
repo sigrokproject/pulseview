@@ -84,6 +84,18 @@ void Decoder::set_option(const char *id, GVariant *value)
 	_options[id] = value;
 }
 
+bool Decoder::have_required_probes() const
+{
+	for (GSList *p = _decoder->probes; p; p = p->next) {
+		const srd_probe *const probe = (const srd_probe*)p->data;
+		assert(probe);
+		if (_probes.find(probe) == _probes.end())
+			return false;
+	}
+
+	return true;
+}
+
 srd_decoder_inst* Decoder::create_decoder_inst(
 	srd_session *const session) const
 {
