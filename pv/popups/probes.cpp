@@ -29,6 +29,7 @@
 
 #include "probes.h"
 
+#include <pv/devinst.h>
 #include <pv/prop/binding/deviceoptions.h>
 #include <pv/sigsession.h>
 #include <pv/view/signal.h>
@@ -56,7 +57,9 @@ Probes::Probes(SigSession &session, QWidget *parent) :
 	// Create the layout
 	setLayout(&_layout);
 
-	sr_dev_inst *const sdi = _session.get_device();
+	shared_ptr<DevInst> dev_inst = _session.get_device();
+	assert(dev_inst);
+	const sr_dev_inst *const sdi = dev_inst->dev_inst();
 	assert(sdi);
 
 	// Collect a set of signals

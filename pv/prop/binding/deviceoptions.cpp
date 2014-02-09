@@ -27,10 +27,13 @@
 
 #include "deviceoptions.h"
 
+#include <pv/devinst.h>
 #include <pv/prop/bool.h>
 #include <pv/prop/double.h>
 #include <pv/prop/enum.h>
 #include <pv/prop/int.h>
+
+#include <libsigrok/libsigrok.h>
 
 using boost::bind;
 using boost::function;
@@ -45,11 +48,13 @@ namespace pv {
 namespace prop {
 namespace binding {
 
-DeviceOptions::DeviceOptions(const sr_dev_inst *sdi,
+DeviceOptions::DeviceOptions(shared_ptr<pv::DevInst> dev_inst,
 	const sr_probe_group *group) :
-	_sdi(sdi),
+	_dev_inst(dev_inst),
 	_group(group)
 {
+	assert(dev_inst);
+	sr_dev_inst *const sdi = dev_inst->dev_inst();
 	assert(sdi);
 
 	GVariant *gvar_opts, *gvar_list;
@@ -71,7 +76,7 @@ DeviceOptions::DeviceOptions(const sr_dev_inst *sdi,
 
 		const int key = info->key;
 
-		if (sr_config_list(_sdi->driver, _sdi, group,
+		if (sr_config_list(sdi->driver, sdi, group,
 			key, &gvar_list) != SR_OK)
 			gvar_list = NULL;
 
@@ -144,9 +149,12 @@ void DeviceOptions::config_setter(
 
 void DeviceOptions::bind_bool(const QString &name, int key)
 {
+	sr_dev_inst *const sdi = _dev_inst->dev_inst();
+	assert(sdi);
+
 	_properties.push_back(shared_ptr<Property>(
-		new Bool(name, bind(config_getter, _sdi, _group, key),
-			bind(config_setter, _sdi, _group, key, _1))));
+		new Bool(name, bind(config_getter, sdi, _group, key),
+			bind(config_setter, sdi, _group, key, _1))));
 }
 
 void DeviceOptions::bind_enum(const QString &name, int key,
@@ -158,23 +166,29 @@ void DeviceOptions::bind_enum(const QString &name, int key,
 
 	assert(gvar_list);
 
+	sr_dev_inst *const sdi = _dev_inst->dev_inst();
+	assert(sdi);
+
 	g_variant_iter_init (&iter, gvar_list);
 	while ((gvar = g_variant_iter_next_value (&iter)))
 		values.push_back(make_pair(gvar, printer(gvar)));
 
 	_properties.push_back(shared_ptr<Property>(
 		new Enum(name, values,
-			bind(config_getter, _sdi, _group, key),
-			bind(config_setter, _sdi, _group, key, _1))));
+			bind(config_getter, sdi, _group, key),
+			bind(config_setter, sdi, _group, key, _1))));
 }
 
 void DeviceOptions::bind_int(const QString &name, int key, QString suffix,
 	optional< std::pair<int64_t, int64_t> > range)
 {
+	sr_dev_inst *const sdi = _dev_inst->dev_inst();
+	assert(sdi);
+
 	_properties.push_back(shared_ptr<Property>(
 		new Int(name, suffix, range,
-			bind(config_getter, _sdi, _group, key),
-			bind(config_setter, _sdi, _group, key, _1))));
+			bind(config_getter, sdi, _group, key),
+			bind(config_setter, sdi, _group, key, _1))));
 }
 
 QString DeviceOptions::print_gvariant(GVariant *const gvar)

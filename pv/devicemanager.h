@@ -27,12 +27,14 @@
 #include <map>
 #include <string>
 
+#include <boost/shared_ptr.hpp>
+
 struct sr_context;
 struct sr_dev_driver;
-struct sr_dev_inst;
 
 namespace pv {
 
+class DevInst;
 class SigSession;
 
 class DeviceManager
@@ -42,17 +44,16 @@ public:
 
 	~DeviceManager();
 
-	const std::list<sr_dev_inst*>& devices() const;
+	const std::list< boost::shared_ptr<pv::DevInst> >& devices() const;
 
-	void use_device(sr_dev_inst *sdi, SigSession *owner);
+	void use_device(boost::shared_ptr<pv::DevInst> dev_inst,
+		SigSession *owner);
 
-	void release_device(sr_dev_inst *sdi);
+	void release_device(boost::shared_ptr<pv::DevInst> dev_inst);
 
-	std::list<sr_dev_inst*> driver_scan(
+	std::list< boost::shared_ptr<DevInst> > driver_scan(
 		struct sr_dev_driver *const driver,
 		GSList *const drvopts = NULL);
-
-	static std::string format_device_title(const sr_dev_inst *const sdi);
 
 private:
 	void init_drivers();
@@ -63,13 +64,14 @@ private:
 
 	void release_driver(struct sr_dev_driver *const driver);
 
-	static bool compare_devices(const sr_dev_inst *const a,
-		const sr_dev_inst *const b);
+	static bool compare_devices(boost::shared_ptr<DevInst> a,
+		boost::shared_ptr<DevInst> b);
 
 private:
 	struct sr_context *const _sr_ctx;
-	std::list<sr_dev_inst*> _devices;
-	std::map<sr_dev_inst*, pv::SigSession*> _used_devices;
+	std::list< boost::shared_ptr<pv::DevInst> > _devices;
+	std::map< boost::shared_ptr<pv::DevInst>, pv::SigSession*>
+		_used_devices;
 };
 
 } // namespace pv

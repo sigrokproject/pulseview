@@ -32,9 +32,12 @@
 #include "samplingbar.h"
 
 #include <pv/devicemanager.h>
+#include <pv/devinst.h>
 #include <pv/popups/deviceoptions.h>
 #include <pv/popups/probes.h>
 
+using boost::shared_ptr;
+using std::map;
 using std::max;
 using std::min;
 using std::string;
@@ -95,14 +98,20 @@ SamplingBar::SamplingBar(SigSession &session, QWidget *parent) :
 }
 
 void SamplingBar::set_device_list(
-	const std::list<struct sr_dev_inst*> &devices)
+	const std::list< shared_ptr<pv::DevInst> > &devices)
 {
 	_updating_device_selector = true;
 
 	_device_selector.clear();
+	_device_selector_map.clear();
 
-	BOOST_FOREACH (sr_dev_inst *sdi, devices) {
-		const string title = DeviceManager::format_device_title(sdi);
+	BOOST_FOREACH (shared_ptr<pv::DevInst> dev_inst, devices) {
+		assert(dev_inst);
+		const string title = dev_inst->format_device_title();
+		const sr_dev_inst *sdi = dev_inst->dev_inst();
+		assert(sdi);
+
+		_device_selector_map[sdi] = dev_inst;
 		_device_selector.addItem(title.c_str(),
 			qVariantFromValue((void*)sdi));
 	}
@@ -112,20 +121,32 @@ void SamplingBar::set_device_list(
 	on_device_selected();
 }
 
-struct sr_dev_inst* SamplingBar::get_selected_device() const
+shared_ptr<pv::DevInst> SamplingBar::get_selected_device() const
 {
 	const int index = _device_selector.currentIndex();
 	if (index < 0)
-		return NULL;
+		return shared_ptr<pv::DevInst>();
 
-	return (sr_dev_inst*)_device_selector.itemData(
-		index).value<void*>();
+	const sr_dev_inst *const sdi =
+		(const sr_dev_inst*)_device_selector.itemData(
+			index).value<void*>();
+	assert(sdi);
+
+	map<const sr_dev_inst*, boost::weak_ptr<DevInst> >::
+		const_iterator iter = _device_selector_map.find(sdi);
+	if (iter == _device_selector_map.end())
+		return shared_ptr<pv::DevInst>();
+
+	return shared_ptr<pv::DevInst>((*iter).second);
 }
 
-void SamplingBar::set_selected_device(struct sr_dev_inst *const sdi)
+void SamplingBar::set_selected_device(boost::shared_ptr<pv::DevInst> dev_inst)
 {
+	assert(dev_inst);
+
 	for (int i = 0; i < _device_selector.count(); i++)
-		if (sdi == _device_selector.itemData(i).value<void*>()) {
+		if (dev_inst->dev_inst() ==
+			_device_selector.itemData(i).value<void*>()) {
 			_device_selector.setCurrentIndex(i);
 			return;
 		}
@@ -141,13 +162,16 @@ void SamplingBar::set_capture_state(pv::SigSession::capture_state state)
 
 void SamplingBar::update_sample_rate_selector()
 {
-	const sr_dev_inst *const sdi = get_selected_device();
 	GVariant *gvar_dict, *gvar_list;
 	const uint64_t *elements = NULL;
 	gsize num_elements;
 
-	if (!sdi)
+	const shared_ptr<DevInst> dev_inst = get_selected_device();
+	if (!dev_inst)
 		return;
+
+	const sr_dev_inst *const sdi = dev_inst->dev_inst();
+	assert(sdi);
 
 	_updating_sample_rate = true;
 
@@ -203,10 +227,14 @@ void SamplingBar::update_sample_rate_selector()
 
 void SamplingBar::update_sample_rate_selector_value()
 {
-	sr_dev_inst *const sdi = get_selected_device();
 	GVariant *gvar;
 	uint64_t samplerate;
 
+	const shared_ptr<DevInst> dev_inst = get_selected_device();
+	if (!dev_inst)
+		return;
+
+	const sr_dev_inst *const sdi = dev_inst->dev_inst();
 	assert(sdi);
 
 	if (sr_config_get(sdi->driver, sdi, NULL,
@@ -225,9 +253,13 @@ void SamplingBar::update_sample_rate_selector_value()
 
 void SamplingBar::update_sample_count_selector()
 {
-	sr_dev_inst *const sdi = get_selected_device();
 	GVariant *gvar;
 
+	const shared_ptr<DevInst> dev_inst = get_selected_device();
+	if (!dev_inst)
+		return;
+
+	const sr_dev_inst *const sdi = dev_inst->dev_inst();
 	assert(sdi);
 
 	_updating_sample_count = true;
@@ -275,7 +307,11 @@ void SamplingBar::commit_sample_count()
 {
 	uint64_t sample_count = 0;
 
-	sr_dev_inst *const sdi = get_selected_device();
+	const shared_ptr<DevInst> dev_inst = get_selected_device();
+	if (!dev_inst)
+		return;
+
+	const sr_dev_inst *const sdi = dev_inst->dev_inst();
 	assert(sdi);
 
 	sample_count = _sample_count.value();
@@ -292,7 +328,11 @@ void SamplingBar::commit_sample_rate()
 {
 	uint64_t sample_rate = 0;
 
-	sr_dev_inst *const sdi = get_selected_device();
+	const shared_ptr<DevInst> dev_inst = get_selected_device();
+	if (!dev_inst)
+		return;
+
+	const sr_dev_inst *const sdi = dev_inst->dev_inst();
 	assert(sdi);
 
 	sample_rate = _sample_rate.value();
@@ -316,11 +356,17 @@ void SamplingBar::on_device_selected()
 	if (_updating_device_selector)
 		return;
 
-	sr_dev_inst *const sdi = get_selected_device();
-	_session.set_device(sdi);
+	const shared_ptr<DevInst> dev_inst = get_selected_device();
+	if (!dev_inst)
+		return;
+
+	const sr_dev_inst *const sdi = dev_inst->dev_inst();
+	assert(sdi);
+
+	_session.set_device(dev_inst);
 
 	// Update the configure popup
-	DeviceOptions *const opts = new DeviceOptions(sdi, this);
+	DeviceOptions *const opts = new DeviceOptions(dev_inst, this);
 	_configure_button_action->setVisible(
 		!opts->binding().properties().empty());
 	_configure_button.set_popup(opts);

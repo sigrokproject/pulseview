@@ -39,6 +39,7 @@
 #include "mainwindow.h"
 
 #include "devicemanager.h"
+#include "devinst.h"
 #include "dialogs/about.h"
 #include "dialogs/connect.h"
 #include "dialogs/storeprogress.h"
@@ -57,6 +58,7 @@
 #include <glib.h>
 #include <libsigrok/libsigrok.h>
 
+using boost::shared_ptr;
 using std::list;
 
 namespace pv {
@@ -282,11 +284,11 @@ void MainWindow::session_error(
 		Q_ARG(QString, info_text));
 }
 
-void MainWindow::update_device_list(struct sr_dev_inst *selected_device)
+void MainWindow::update_device_list(shared_ptr<pv::DevInst> selected_device)
 {
 	assert(_sampling_bar);
 
-	const list<sr_dev_inst*> &devices = _device_manager.devices();
+	const list< shared_ptr<DevInst> > &devices = _device_manager.devices();
 	_sampling_bar->set_device_list(devices);
 
 	if (!selected_device && !devices.empty()) {
@@ -294,9 +296,10 @@ void MainWindow::update_device_list(struct sr_dev_inst *selected_device)
 		selected_device = devices.front();
 
 		// Try and find the demo device and select that by default
-		BOOST_FOREACH (struct sr_dev_inst *sdi, devices)
-			if (strcmp(sdi->driver->name, "demo") == 0) {
-				selected_device = sdi;
+		BOOST_FOREACH (shared_ptr<pv::DevInst> dev_inst, devices)
+			if (strcmp(dev_inst->dev_inst()->driver->name,
+				"demo") == 0) {
+				selected_device = dev_inst;
 			}
 	}
 
@@ -365,10 +368,10 @@ void MainWindow::on_actionConnect_triggered()
 
 	// If the user selected a device, select it in the device list. Select the
 	// current device otherwise.
-	struct sr_dev_inst *const sdi = dlg.exec() ?
+	shared_ptr<DevInst> dev_inst = dlg.exec() ?
 		dlg.get_selected_device() : _session.get_device();
 
-	update_device_list(sdi);
+	update_device_list(dev_inst);
 }
 
 void MainWindow::on_actionQuit_triggered()

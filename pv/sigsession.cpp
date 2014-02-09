@@ -25,6 +25,7 @@
 #include "sigsession.h"
 
 #include "devicemanager.h"
+#include "devinst.h"
 
 #include "data/analog.h"
 #include "data/analogsnapshot.h"
@@ -64,7 +65,6 @@ SigSession* SigSession::_session = NULL;
 
 SigSession::SigSession(DeviceManager &device_manager) :
 	_device_manager(device_manager),
-	_sdi(NULL),
 	_capture_state(Stopped)
 {
 	// TODO: This should not be necessary
@@ -77,39 +77,37 @@ SigSession::~SigSession()
 
 	_sampling_thread.join();
 
-	if (_sdi)
-		_device_manager.release_device(_sdi);
-	_sdi = NULL;
+	if (_dev_inst)
+		_device_manager.release_device(_dev_inst);
 
 	// TODO: This should not be necessary
 	_session = NULL;
 }
 
-struct sr_dev_inst* SigSession::get_device() const
+shared_ptr<DevInst> SigSession::get_device() const
 {
-	return _sdi;
+	return _dev_inst;
 }
 
-void SigSession::set_device(struct sr_dev_inst *sdi)
+void SigSession::set_device(shared_ptr<DevInst> dev_inst)
 {
 	// Ensure we are not capturing before setting the device
 	stop_capture();
 
-	if (_sdi)
-		_device_manager.release_device(_sdi);
-	if (sdi)
-		_device_manager.use_device(sdi, this);
-	_sdi = sdi;
-	update_signals(sdi);
+	if (_dev_inst)
+		_device_manager.release_device(_dev_inst);
+	if (dev_inst)
+		_device_manager.use_device(dev_inst, this);
+	_dev_inst = dev_inst;
+	update_signals(dev_inst);
 }
 
-void SigSession::release_device(struct sr_dev_inst *sdi)
+void SigSession::release_device(shared_ptr<DevInst> dev_inst)
 {
-	(void)sdi;
+	(void)dev_inst;
 
 	assert(_capture_state == Stopped);
-	_sdi = NULL;
-	update_signals(NULL);
+	_dev_inst = shared_ptr<DevInst>();
 }
 
 void SigSession::load_file(const string &name,
@@ -127,12 +125,13 @@ void SigSession::load_file(const string &name,
 			return;
 		}
 
-		sr_dev_inst *const sdi = (sr_dev_inst*)devlist->data;
+		shared_ptr<DevInst> dev_inst(
+			new DevInst((sr_dev_inst*)devlist->data));
 		g_slist_free(devlist);
 
 		_decode_traces.clear();
-		update_signals(sdi);
-		read_sample_rate(sdi);
+		update_signals(dev_inst);
+		read_sample_rate(dev_inst->dev_inst());
 
 		_sampling_thread = boost::thread(
 			&SigSession::load_session_thread_proc, this,
@@ -146,7 +145,7 @@ void SigSession::load_file(const string &name,
 			return;
 
 		_decode_traces.clear();
-		update_signals(in->sdi);
+		update_signals(shared_ptr<DevInst>(new DevInst(in->sdi)));
 		read_sample_rate(in->sdi);
 
 		_sampling_thread = boost::thread(
@@ -166,14 +165,16 @@ void SigSession::start_capture(function<void (const QString)> error_handler)
 	stop_capture();
 
 	// Check that a device instance has been selected.
-	if (!_sdi) {
+	if (!_dev_inst) {
 		qDebug() << "No device selected";
 		return;
 	}
 
+	assert(_dev_inst->dev_inst());
+
 	// Check that at least one probe is enabled
 	const GSList *l;
-	for (l = _sdi->probes; l; l = l->next) {
+	for (l = _dev_inst->dev_inst()->probes; l; l = l->next) {
 		sr_probe *const probe = (sr_probe*)l->data;
 		assert(probe);
 		if (probe->enabled)
@@ -187,7 +188,8 @@ void SigSession::start_capture(function<void (const QString)> error_handler)
 
 	// Begin the session
 	_sampling_thread = boost::thread(
-		&SigSession::sample_thread_proc, this, _sdi, error_handler);
+		&SigSession::sample_thread_proc, this, _dev_inst,
+			error_handler);
 }
 
 void SigSession::stop_capture()
@@ -382,8 +384,9 @@ sr_input* SigSession::load_input_file_format(const string &filename,
 	return in;
 }
 
-void SigSession::update_signals(const sr_dev_inst *const sdi)
+void SigSession::update_signals(shared_ptr<DevInst> dev_inst)
 {
+	assert(dev_inst);
 	assert(_capture_state == Stopped);
 
 	unsigned int logic_probe_count = 0;
@@ -392,8 +395,10 @@ void SigSession::update_signals(const sr_dev_inst *const sdi)
 	_decode_traces.clear();
 
 	// Detect what data types we will receive
-	if(sdi) {
-		for (const GSList *l = sdi->probes; l; l = l->next) {
+	if(dev_inst) {
+		assert(dev_inst->dev_inst());
+		for (const GSList *l = dev_inst->dev_inst()->probes;
+			l; l = l->next) {
 			const sr_probe *const probe = (const sr_probe *)l->data;
 			if (!probe->enabled)
 				continue;
@@ -424,10 +429,12 @@ void SigSession::update_signals(const sr_dev_inst *const sdi)
 
 		_signals.clear();
 
-		if(!sdi)
+		if(!dev_inst)
 			break;
 
-		for (const GSList *l = sdi->probes; l; l = l->next) {
+		assert(dev_inst->dev_inst());
+		for (const GSList *l = dev_inst->dev_inst()->probes;
+			l; l = l->next) {
 			shared_ptr<view::Signal> signal;
 			sr_probe *const probe =	(sr_probe *)l->data;
 			assert(probe);
@@ -465,8 +472,9 @@ void SigSession::update_signals(const sr_dev_inst *const sdi)
 
 bool SigSession::is_trigger_enabled() const
 {
-	assert(_sdi);
-	for (const GSList *l = _sdi->probes; l; l = l->next) {
+	assert(_dev_inst);
+	assert(_dev_inst->dev_inst());
+	for (const GSList *l = _dev_inst->dev_inst()->probes; l; l = l->next) {
 		const sr_probe *const p = (const sr_probe *)l->data;
 		assert(p);
 		if (p->trigger && p->trigger[0] != '\0')
@@ -558,16 +566,17 @@ void SigSession::load_input_thread_proc(const string name,
 	delete in;
 }
 
-void SigSession::sample_thread_proc(struct sr_dev_inst *sdi,
+void SigSession::sample_thread_proc(shared_ptr<DevInst> dev_inst,
 	function<void (const QString)> error_handler)
 {
-	assert(sdi);
+	assert(dev_inst);
+	assert(dev_inst->dev_inst());
 	assert(error_handler);
 
 	sr_session_new();
 	sr_session_datafeed_callback_add(data_feed_in_proc, NULL);
 
-	if (sr_session_dev_add(sdi) != SR_OK) {
+	if (sr_session_dev_add(dev_inst->dev_inst()) != SR_OK) {
 		error_handler(tr("Failed to use device."));
 		sr_session_destroy();
 		return;

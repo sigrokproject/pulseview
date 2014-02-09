@@ -20,9 +20,12 @@
 
 #include <boost/foreach.hpp>
 
+#include <libsigrok/libsigrok.h>
+
 #include "connect.h"
 
 #include "pv/devicemanager.h"
+#include "pv/devinst.h"
 
 extern "C" {
 /* __STDC_FORMAT_MACROS is required for PRIu64 and friends (in C++). */
@@ -31,6 +34,7 @@ extern "C" {
 #include <libsigrok/libsigrok.h>
 }
 
+using boost::shared_ptr;
 using std::list;
 using std::string;
 
@@ -78,13 +82,21 @@ Connect::Connect(QWidget *parent, pv::DeviceManager &device_manager) :
 	_layout.addWidget(&_button_box);
 }
 
-struct sr_dev_inst* Connect::get_selected_device() const
+shared_ptr<DevInst> Connect::get_selected_device() const
 {
 	const QListWidgetItem *const item = _device_list.currentItem();
 	if (!item)
-		return NULL;
+		return shared_ptr<DevInst>();
 
-	return (sr_dev_inst*)item->data(Qt::UserRole).value<void*>();
+	const sr_dev_inst *const sdi = (sr_dev_inst*)item->data(
+		Qt::UserRole).value<void*>();
+	assert(sdi);
+
+	std::map<const sr_dev_inst*, boost::shared_ptr<pv::DevInst> >::
+		const_iterator iter = _device_map.find(sdi);
+	assert(iter != _device_map.end());
+
+	return (*iter).second;
 }
 
 void Connect::populate_drivers()
@@ -124,6 +136,7 @@ void Connect::populate_drivers()
 void Connect::unset_connection()
 {
 	_device_list.clear();
+	_device_map.clear();
 	_serial_device.hide();
 	_form_layout.labelForField(&_serial_device)->hide();
 	_button_box.button(QDialogButtonBox::Ok)->setDisabled(true);
@@ -138,6 +151,7 @@ void Connect::set_serial_connection()
 void Connect::scan_pressed()
 {
 	_device_list.clear();
+	_device_map.clear();
 
 	const int index = _drivers.currentIndex();
 	if (index == -1)
@@ -156,15 +170,20 @@ void Connect::scan_pressed()
 		drvopts = g_slist_append(drvopts, src);
 	}
 
-	const list<sr_dev_inst*> devices = _device_manager.driver_scan(
+	const list< shared_ptr<DevInst> > devices = _device_manager.driver_scan(
 		driver, drvopts);
 
 	g_slist_free_full(drvopts, (GDestroyNotify)free_drvopts);
 
-	BOOST_FOREACH(sr_dev_inst *const sdi, devices)
+	BOOST_FOREACH(shared_ptr<DevInst> dev_inst, devices)
 	{
-		const string title = DeviceManager::format_device_title(sdi);
+		assert(dev_inst);
+		const sr_dev_inst *const sdi = dev_inst->dev_inst();
+		assert(sdi);
+
+		const string title = dev_inst->format_device_title();
 		QString text = QString::fromUtf8(title.c_str());
+
 		if (sdi->probes) {
 			text += QString(" with %1 probes").arg(
 				g_slist_length(sdi->probes));
@@ -174,6 +193,7 @@ void Connect::scan_pressed()
 			&_device_list);
 		item->setData(Qt::UserRole, qVariantFromValue((void*)sdi));
 		_device_list.addItem(item);
+		_device_map[sdi] = dev_inst;
 	}
 
 	_device_list.setCurrentRow(0);

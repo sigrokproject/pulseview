@@ -27,14 +27,16 @@
 
 #include <pv/prop/property.h>
 
+using boost::shared_ptr;
+
 namespace pv {
 namespace popups {
 
-DeviceOptions::DeviceOptions(sr_dev_inst *sdi, QWidget *parent) :
+DeviceOptions::DeviceOptions(shared_ptr<DevInst> dev_inst, QWidget *parent) :
 	Popup(parent),
-	_sdi(sdi),
+	_dev_inst(dev_inst),
 	_layout(this),
-	_binding(sdi)
+	_binding(dev_inst)
 {
 	setLayout(&_layout);
 

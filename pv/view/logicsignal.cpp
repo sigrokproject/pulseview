@@ -28,10 +28,11 @@
 #include "logicsignal.h"
 #include "view.h"
 
-#include "pv/sigsession.h"
-#include "pv/data/logic.h"
-#include "pv/data/logicsnapshot.h"
-#include "pv/view/view.h"
+#include <pv/sigsession.h>
+#include <pv/devinst.h>
+#include <pv/data/logic.h>
+#include <pv/data/logicsnapshot.h>
+#include <pv/view/view.h>
 
 using boost::shared_ptr;
 using std::deque;
@@ -246,7 +247,12 @@ void LogicSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
 	Signal::populate_popup_form(parent, form);
 
 	// Add the trigger actions
-	const sr_dev_inst *const sdi = _session.get_device();
+	boost::shared_ptr<DevInst> dev_inst = _session.get_device();
+	assert(dev_inst);
+
+	const sr_dev_inst *const sdi = dev_inst->dev_inst();
+	assert(sdi);
+
 	if (sr_config_list(sdi->driver, sdi, NULL, SR_CONF_TRIGGER_TYPE,
 		&gvar) == SR_OK)
 	{
@@ -302,7 +308,12 @@ void LogicSignal::set_trigger(char type)
 	const char *const trigger_string =
 		(type != 0) ? trigger_type_string : NULL;
 
-	const sr_dev_inst *const sdi = _session.get_device();
+	boost::shared_ptr<DevInst> dev_inst = _session.get_device();
+	assert(dev_inst);
+
+	const sr_dev_inst *const sdi = dev_inst->dev_inst();
+	assert(sdi);
+
 	const int probe_count = g_slist_length(sdi->probes);
 	assert(probe_count > 0);
 

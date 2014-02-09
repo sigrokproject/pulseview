@@ -24,6 +24,9 @@
 #include <stdint.h>
 
 #include <list>
+#include <map>
+
+#include <boost/shared_ptr.hpp>
 
 #include <QComboBox>
 #include <QDoubleSpinBox>
@@ -34,11 +37,11 @@
 #include <pv/widgets/popuptoolbutton.h>
 #include <pv/widgets/sweeptimingwidget.h>
 
-struct st_dev_inst;
 class QAction;
 
 namespace pv {
 
+class DevInst;
 class SigSession;
 
 namespace toolbars {
@@ -55,10 +58,11 @@ private:
 public:
 	SamplingBar(SigSession &session, QWidget *parent);
 
-	void set_device_list(const std::list<struct sr_dev_inst*> &devices);
+	void set_device_list(
+		const std::list< boost::shared_ptr<pv::DevInst> > &devices);
 
-	struct sr_dev_inst* get_selected_device() const;
-	void set_selected_device(struct sr_dev_inst *const sdi);
+	boost::shared_ptr<pv::DevInst> get_selected_device() const;
+	void set_selected_device(boost::shared_ptr<pv::DevInst> dev_inst);
 
 	void set_capture_state(pv::SigSession::capture_state state);
 
@@ -82,6 +86,8 @@ private:
 	SigSession &_session;
 
 	QComboBox _device_selector;
+	std::map<const sr_dev_inst*, boost::weak_ptr<DevInst> >
+		_device_selector_map;
 	bool _updating_device_selector;
 
 	pv::widgets::PopupToolButton _configure_button;

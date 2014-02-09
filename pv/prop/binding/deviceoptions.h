@@ -26,18 +26,24 @@
 
 #include <QString>
 
-#include <libsigrok/libsigrok.h>
-
 #include "binding.h"
 
+#include <glib.h>
+
+struct sr_dev_inst;
+struct sr_probe_group;
+
 namespace pv {
+
+class DevInst;
+
 namespace prop {
 namespace binding {
 
 class DeviceOptions : public Binding
 {
 public:
-	DeviceOptions(const sr_dev_inst *sdi,
+	DeviceOptions(boost::shared_ptr<pv::DevInst> dev_inst,
 		const sr_probe_group *group = NULL);
 
 private:
@@ -62,7 +68,7 @@ private:
 	static QString print_voltage_threshold(GVariant *const gvar);
 
 protected:
-	const sr_dev_inst *const _sdi;
+	boost::shared_ptr<DevInst> _dev_inst;
 	const sr_probe_group *const _group;
 };
 

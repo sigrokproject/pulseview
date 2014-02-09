@@ -41,6 +41,7 @@ struct srd_probe;
 namespace pv {
 
 class DeviceManager;
+class DevInst;
 
 namespace data {
 class Analog;
@@ -72,14 +73,14 @@ public:
 
 	~SigSession();
 
-	struct sr_dev_inst* get_device() const;
+	boost::shared_ptr<DevInst> get_device() const;
 
 	/**
 	 * Sets device instance that will be used in the next capture session.
 	 */
-	void set_device(struct sr_dev_inst *sdi);
+	void set_device(boost::shared_ptr<DevInst> dev_inst);
 
-	void release_device(struct sr_dev_inst *sdi);
+	void release_device(boost::shared_ptr<DevInst> dev_inst);
 
 	void load_file(const std::string &name,
 		boost::function<void (const QString)> error_handler);
@@ -107,7 +108,7 @@ public:
 private:
 	void set_capture_state(capture_state state);
 
-	void update_signals(const sr_dev_inst *const sdi);
+	void update_signals(boost::shared_ptr<DevInst> dev_inst);
 
 	bool is_trigger_enabled() const;
 
@@ -138,7 +139,7 @@ private:
 	void load_input_thread_proc(const std::string name, sr_input *in,
 		boost::function<void (const QString)> error_handler);
 
-	void sample_thread_proc(struct sr_dev_inst *sdi,
+	void sample_thread_proc(boost::shared_ptr<DevInst> dev_inst,
 		boost::function<void (const QString)> error_handler);
 
 	void feed_in_header(const sr_dev_inst *sdi);
@@ -162,7 +163,7 @@ private:
 	/**
 	 * The device instance that will be used in the next capture session.
 	 */
-	struct sr_dev_inst *_sdi;
+	boost::shared_ptr<DevInst> _dev_inst;
 
 	std::vector< boost::shared_ptr<view::DecodeTrace> > _decode_traces;
 

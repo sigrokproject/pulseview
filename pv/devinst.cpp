@@ -1,7 +1,7 @@
 /*
  * This file is part of the PulseView project.
  *
- * Copyright (C) 2012 Joel Holdsworth <joel@airwebreathe.org.uk>
+ * Copyright (C) 2014 Joel Holdsworth <joel@airwebreathe.org.uk>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,36 +18,52 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_POPUPS_DEVICEOPTIONS_H
-#define PULSEVIEW_PV_POPUPS_DEVICEOPTIONS_H
+#include <cassert>
+#include <sstream>
 
-#include <QGroupBox>
-#include <QVBoxLayout>
+#include <libsigrok/libsigrok.h>
 
-#include <pv/prop/binding/deviceoptions.h>
-#include <pv/widgets/popup.h>
+#include "devinst.h"
+
+using std::ostringstream;
+using std::string;
 
 namespace pv {
-namespace popups {
 
-class DeviceOptions : public pv::widgets::Popup
+DevInst::DevInst(sr_dev_inst *sdi) :
+	_sdi(sdi)
 {
-	Q_OBJECT
+	assert(_sdi);
+}
 
-public:
-	DeviceOptions(boost::shared_ptr<DevInst> dev_inst, QWidget *parent);
+sr_dev_inst* DevInst::dev_inst() const
+{
+	return _sdi;
+}
 
-	pv::prop::binding::DeviceOptions& binding();
+string DevInst::format_device_title() const
+{
+	ostringstream s;
 
-private:
-	boost::shared_ptr<DevInst> _dev_inst;
+	assert(_sdi);
 
-	QVBoxLayout _layout;
+	if (_sdi->vendor && _sdi->vendor[0]) {
+		s << _sdi->vendor;
+		if ((_sdi->model && _sdi->model[0]) ||
+			(_sdi->version && _sdi->version[0]))
+			s << ' ';
+	}
 
-	pv::prop::binding::DeviceOptions _binding;
-};
+	if (_sdi->model && _sdi->model[0]) {
+		s << _sdi->model;
+		if (_sdi->version && _sdi->version[0])
+			s << ' ';
+	}
 
-} // namespace popups
-} // namespace pv
+	if (_sdi->version && _sdi->version[0])
+		s << _sdi->version;
 
-#endif // PULSEVIEW_PV_POPUPS_DEVICEOPTIONS_H
+	return s.str();
+}
+
+} // pv

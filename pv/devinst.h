@@ -1,7 +1,7 @@
 /*
  * This file is part of the PulseView project.
  *
- * Copyright (C) 2012 Joel Holdsworth <joel@airwebreathe.org.uk>
+ * Copyright (C) 2014 Joel Holdsworth <joel@airwebreathe.org.uk>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,36 +18,30 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_POPUPS_DEVICEOPTIONS_H
-#define PULSEVIEW_PV_POPUPS_DEVICEOPTIONS_H
+#ifndef PULSEVIEW_PV_DEVINST_H
+#define PULSEVIEW_PV_DEVINST_H
 
-#include <QGroupBox>
-#include <QVBoxLayout>
+#include <string>
 
-#include <pv/prop/binding/deviceoptions.h>
-#include <pv/widgets/popup.h>
+#include <boost/shared_ptr.hpp>
+
+struct sr_dev_inst;
 
 namespace pv {
-namespace popups {
 
-class DeviceOptions : public pv::widgets::Popup
+class DevInst
 {
-	Q_OBJECT
-
 public:
-	DeviceOptions(boost::shared_ptr<DevInst> dev_inst, QWidget *parent);
+	DevInst(sr_dev_inst *sdi);
 
-	pv::prop::binding::DeviceOptions& binding();
+	sr_dev_inst* dev_inst() const;
+
+	std::string format_device_title() const;
 
 private:
-	boost::shared_ptr<DevInst> _dev_inst;
-
-	QVBoxLayout _layout;
-
-	pv::prop::binding::DeviceOptions _binding;
+	sr_dev_inst *const _sdi;
 };
 
-} // namespace popups
-} // namespace pv
+} // pv
 
-#endif // PULSEVIEW_PV_POPUPS_DEVICEOPTIONS_H
+#endif // PULSEVIEW_PV_DEVINST_H
