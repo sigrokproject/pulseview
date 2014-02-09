@@ -44,7 +44,7 @@ void RowData::get_annotation_subset(
 	for (vector<Annotation>::const_iterator i = _annotations.begin();
 		i != _annotations.end(); i++)
 		if ((*i).end_sample() > start_sample &&
-			(*i).start_sample() < end_sample)
+			(*i).start_sample() <= end_sample)
 			dest.push_back(*i);
 }
 
