@@ -82,6 +82,8 @@ private slots:
 	void on_sample_rate_changed();
 	void on_run_stop();
 
+	void on_config_changed();
+
 private:
 	SigSession &_session;
 

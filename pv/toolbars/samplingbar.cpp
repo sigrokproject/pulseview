@@ -398,6 +398,11 @@ void SamplingBar::on_device_selected()
 		}
 	}
 
+	// Add notification of reconfigure events
+	disconnect(this, SLOT(on_config_changed()));
+	connect(dev_inst.get(), SIGNAL(config_changed()),
+		this, SLOT(on_config_changed()));
+
 	// Update sweep timing widgets.
 	update_sample_count_selector();
 	update_sample_rate_selector();
@@ -418,6 +423,14 @@ void SamplingBar::on_run_stop()
 	commit_sample_count();
 	commit_sample_rate();	
 	run_stop();
+}
+
+void SamplingBar::on_config_changed()
+{
+	commit_sample_count();
+	update_sample_count_selector();	
+	commit_sample_rate();	
+	update_sample_rate_selector();
 }
 
 } // namespace toolbars
