@@ -78,7 +78,11 @@ GVariant* DevInst::get_config(const sr_probe_group *group, int key)
 
 bool DevInst::set_config(const sr_probe_group *group, int key, GVariant *data)
 {
-	return sr_config_set(_sdi, group, key, data) == SR_OK;
+	if(sr_config_set(_sdi, group, key, data) == SR_OK) {
+		config_changed();
+		return true;
+	}
+	return false;
 }
 
 GVariant* DevInst::list_config(const sr_probe_group *group, int key)

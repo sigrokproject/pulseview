@@ -25,6 +25,8 @@
 
 #include <boost/shared_ptr.hpp>
 
+#include <QObject>
+
 #include <glib.h>
 
 struct sr_dev_inst;
@@ -32,8 +34,10 @@ struct sr_probe_group;
 
 namespace pv {
 
-class DevInst
+class DevInst : public QObject
 {
+	Q_OBJECT
+
 public:
 	DevInst(sr_dev_inst *sdi);
 
@@ -46,6 +50,9 @@ public:
 	bool set_config(const sr_probe_group *group, int key, GVariant *data);
 
 	GVariant* list_config(const sr_probe_group *group, int key);
+
+signals:
+	void config_changed();
 
 private:
 	sr_dev_inst *const _sdi;
