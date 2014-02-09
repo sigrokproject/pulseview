@@ -20,9 +20,6 @@
 
 #include <boost/bind.hpp>
 
-#include <QDebug>
-#include <QObject>
-
 #include <stdint.h>
 
 #include "deviceoptions.h"
@@ -54,14 +51,11 @@ DeviceOptions::DeviceOptions(shared_ptr<pv::DevInst> dev_inst,
 	_group(group)
 {
 	assert(dev_inst);
-	sr_dev_inst *const sdi = dev_inst->dev_inst();
-	assert(sdi);
 
-	GVariant *gvar_opts, *gvar_list;
+	GVariant *gvar_opts;
 	gsize num_opts;
 
-	if ((sr_config_list(sdi->driver, sdi, group, SR_CONF_DEVICE_OPTIONS,
-		&gvar_opts) != SR_OK))
+	if (!(gvar_opts = dev_inst->list_config(group, SR_CONF_DEVICE_OPTIONS)))
 		/* Driver supports no device instance options. */
 		return;
 
@@ -75,10 +69,7 @@ DeviceOptions::DeviceOptions(shared_ptr<pv::DevInst> dev_inst,
 			continue;
 
 		const int key = info->key;
-
-		if (sr_config_list(sdi->driver, sdi, group,
-			key, &gvar_list) != SR_OK)
-			gvar_list = NULL;
+		GVariant *const gvar_list = dev_inst->list_config(group, key);
 
 		const QString name = QString::fromUtf8(info->name);
 
@@ -127,34 +118,12 @@ DeviceOptions::DeviceOptions(shared_ptr<pv::DevInst> dev_inst,
 	g_variant_unref(gvar_opts);
 }
 
-GVariant* DeviceOptions::config_getter(
-	const sr_dev_inst *sdi, const sr_probe_group *group, int key)
-{
-	GVariant *data = NULL;
-	if (sr_config_get(sdi->driver, sdi, group, key, &data) != SR_OK) {
-		qDebug() <<
-			"WARNING: Failed to get value of config id" << key;
-		return NULL;
-	}
-	return data;
-}
-
-void DeviceOptions::config_setter(
-	const struct sr_dev_inst *sdi, const sr_probe_group *group, int key,
-	GVariant* value)
-{
-	if (sr_config_set(sdi, group, key, value) != SR_OK)
-		qDebug() << "WARNING: Failed to set value of sample rate";
-}
-
 void DeviceOptions::bind_bool(const QString &name, int key)
 {
-	sr_dev_inst *const sdi = _dev_inst->dev_inst();
-	assert(sdi);
-
-	_properties.push_back(shared_ptr<Property>(
-		new Bool(name, bind(config_getter, sdi, _group, key),
-			bind(config_setter, sdi, _group, key, _1))));
+	assert(_dev_inst);
+	_properties.push_back(shared_ptr<Property>(new Bool(name,
+		bind(&DevInst::get_config, _dev_inst, _group, key),
+		bind(&DevInst::set_config, _dev_inst, _group, key, _1))));
 }
 
 void DeviceOptions::bind_enum(const QString &name, int key,
@@ -164,31 +133,26 @@ void DeviceOptions::bind_enum(const QString &name, int key,
 	GVariantIter iter;
 	vector< pair<GVariant*, QString> > values;
 
+	assert(_dev_inst);
 	assert(gvar_list);
-
-	sr_dev_inst *const sdi = _dev_inst->dev_inst();
-	assert(sdi);
 
 	g_variant_iter_init (&iter, gvar_list);
 	while ((gvar = g_variant_iter_next_value (&iter)))
 		values.push_back(make_pair(gvar, printer(gvar)));
 
-	_properties.push_back(shared_ptr<Property>(
-		new Enum(name, values,
-			bind(config_getter, sdi, _group, key),
-			bind(config_setter, sdi, _group, key, _1))));
+	_properties.push_back(shared_ptr<Property>(new Enum(name, values,
+		bind(&DevInst::get_config, _dev_inst, _group, key),
+		bind(&DevInst::set_config, _dev_inst, _group, key, _1))));
 }
 
 void DeviceOptions::bind_int(const QString &name, int key, QString suffix,
 	optional< std::pair<int64_t, int64_t> > range)
 {
-	sr_dev_inst *const sdi = _dev_inst->dev_inst();
-	assert(sdi);
+	assert(_dev_inst);
 
-	_properties.push_back(shared_ptr<Property>(
-		new Int(name, suffix, range,
-			bind(config_getter, sdi, _group, key),
-			bind(config_setter, sdi, _group, key, _1))));
+	_properties.push_back(shared_ptr<Property>(new Int(name, suffix, range,
+		bind(&DevInst::get_config, _dev_inst, _group, key),
+		bind(&DevInst::set_config, _dev_inst, _group, key, _1))));
 }
 
 QString DeviceOptions::print_gvariant(GVariant *const gvar)

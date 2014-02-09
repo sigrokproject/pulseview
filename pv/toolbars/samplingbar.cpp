@@ -24,8 +24,6 @@
 
 #include <boost/foreach.hpp>
 
-#include <libsigrok/libsigrok.h>
-
 #include <QAction>
 #include <QDebug>
 
@@ -170,13 +168,9 @@ void SamplingBar::update_sample_rate_selector()
 	if (!dev_inst)
 		return;
 
-	const sr_dev_inst *const sdi = dev_inst->dev_inst();
-	assert(sdi);
-
 	_updating_sample_rate = true;
 
-	if (sr_config_list(sdi->driver, sdi, NULL,
-			SR_CONF_SAMPLERATE, &gvar_dict) != SR_OK)
+	if (!(gvar_dict = dev_inst->list_config(NULL, SR_CONF_SAMPLERATE)))
 	{
 		_sample_rate.show_none();
 		_updating_sample_rate = false;
@@ -234,13 +228,8 @@ void SamplingBar::update_sample_rate_selector_value()
 	if (!dev_inst)
 		return;
 
-	const sr_dev_inst *const sdi = dev_inst->dev_inst();
-	assert(sdi);
-
-	if (sr_config_get(sdi->driver, sdi, NULL,
-		SR_CONF_SAMPLERATE, &gvar) != SR_OK) {
-		qDebug() <<
-				"WARNING: Failed to get value of sample rate";
+	if (!(gvar = dev_inst->get_config(NULL, SR_CONF_SAMPLERATE))) {
+		qDebug() << "WARNING: Failed to get value of sample rate";
 		return;
 	}
 	samplerate = g_variant_get_uint64(gvar);
@@ -259,9 +248,6 @@ void SamplingBar::update_sample_count_selector()
 	if (!dev_inst)
 		return;
 
-	const sr_dev_inst *const sdi = dev_inst->dev_inst();
-	assert(sdi);
-
 	_updating_sample_count = true;
 
 	if (_sample_count_supported)
@@ -270,8 +256,8 @@ void SamplingBar::update_sample_count_selector()
 		uint64_t min_sample_count = 0;
 		uint64_t max_sample_count = MaxSampleCount;
 
-		if (sr_config_list(sdi->driver, sdi, NULL,
-			SR_CONF_LIMIT_SAMPLES, &gvar) == SR_OK) {
+		if ((gvar = dev_inst->list_config(NULL, SR_CONF_LIMIT_SAMPLES)))
+		{
 			g_variant_get(gvar, "(tt)",
 				&min_sample_count, &max_sample_count);
 			g_variant_unref(gvar);
@@ -283,8 +269,7 @@ void SamplingBar::update_sample_count_selector()
 		_sample_count.show_125_list(
 			min_sample_count, max_sample_count);
 
-		if (sr_config_get(sdi->driver, sdi, NULL,
-			SR_CONF_LIMIT_SAMPLES, &gvar) == SR_OK)
+		if ((gvar = dev_inst->get_config(NULL, SR_CONF_LIMIT_SAMPLES)))
 		{
 			sample_count = g_variant_get_uint64(gvar);
 			if (sample_count == 0)
@@ -311,14 +296,11 @@ void SamplingBar::commit_sample_count()
 	if (!dev_inst)
 		return;
 
-	const sr_dev_inst *const sdi = dev_inst->dev_inst();
-	assert(sdi);
-
 	sample_count = _sample_count.value();
 
 	// Set the sample count
-	if (sr_config_set(sdi, NULL, SR_CONF_LIMIT_SAMPLES,
-		g_variant_new_uint64(sample_count)) != SR_OK) {
+	if (!dev_inst->set_config(NULL, SR_CONF_LIMIT_SAMPLES,
+		g_variant_new_uint64(sample_count))) {
 		qDebug() << "Failed to configure sample count.";
 		return;
 	}
@@ -332,16 +314,13 @@ void SamplingBar::commit_sample_rate()
 	if (!dev_inst)
 		return;
 
-	const sr_dev_inst *const sdi = dev_inst->dev_inst();
-	assert(sdi);
-
 	sample_rate = _sample_rate.value();
 	if (sample_rate == 0)
 		return;
 
 	// Set the samplerate
-	if (sr_config_set(sdi, NULL, SR_CONF_SAMPLERATE,
-		g_variant_new_uint64(sample_rate)) != SR_OK) {
+	if (!dev_inst->set_config(NULL, SR_CONF_SAMPLERATE,
+		g_variant_new_uint64(sample_rate))) {
 		qDebug() << "Failed to configure samplerate.";
 		return;
 	}
@@ -360,9 +339,6 @@ void SamplingBar::on_device_selected()
 	if (!dev_inst)
 		return;
 
-	const sr_dev_inst *const sdi = dev_inst->dev_inst();
-	assert(sdi);
-
 	_session.set_device(dev_inst);
 
 	// Update the configure popup
@@ -378,12 +354,12 @@ void SamplingBar::on_device_selected()
 	// Update supported options.
 	_sample_count_supported = false;
 
-	if (sr_config_list(sdi->driver, sdi, NULL,
-		SR_CONF_DEVICE_OPTIONS, &gvar) == SR_OK)
+	if ((gvar = dev_inst->list_config(NULL, SR_CONF_DEVICE_OPTIONS)))
 	{
 		gsize num_opts;
-		const int *const options = (const int32_t *)g_variant_get_fixed_array(
-	        gvar, &num_opts, sizeof(int32_t));
+		const int *const options =
+			(const int32_t *)g_variant_get_fixed_array(
+			        gvar, &num_opts, sizeof(int32_t));
 		for (unsigned int i = 0; i < num_opts; i++)
 		{
 			switch (options[i]) {
@@ -391,7 +367,7 @@ void SamplingBar::on_device_selected()
 				_sample_count_supported = true;
 				break;
 			case SR_CONF_LIMIT_FRAMES:
-				sr_config_set(sdi, NULL, SR_CONF_LIMIT_FRAMES,
+				dev_inst->set_config(NULL, SR_CONF_LIMIT_FRAMES,
 					g_variant_new_uint64(1));
 				break;
 			}

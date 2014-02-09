@@ -25,7 +25,10 @@
 
 #include <boost/shared_ptr.hpp>
 
+#include <glib.h>
+
 struct sr_dev_inst;
+struct sr_probe_group;
 
 namespace pv {
 
@@ -37,6 +40,12 @@ public:
 	sr_dev_inst* dev_inst() const;
 
 	std::string format_device_title() const;
+
+	GVariant* get_config(const sr_probe_group *group, int key);
+
+	bool set_config(const sr_probe_group *group, int key, GVariant *data);
+
+	GVariant* list_config(const sr_probe_group *group, int key);
 
 private:
 	sr_dev_inst *const _sdi;

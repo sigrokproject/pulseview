@@ -21,6 +21,8 @@
 #include <cassert>
 #include <sstream>
 
+#include <QDebug>
+
 #include <libsigrok/libsigrok.h>
 
 #include "devinst.h"
@@ -64,6 +66,27 @@ string DevInst::format_device_title() const
 		s << _sdi->version;
 
 	return s.str();
+}
+
+GVariant* DevInst::get_config(const sr_probe_group *group, int key)
+{
+	GVariant *data = NULL;
+	if (sr_config_get(_sdi->driver, _sdi, group, key, &data) != SR_OK)
+		return NULL;
+	return data;
+}
+
+bool DevInst::set_config(const sr_probe_group *group, int key, GVariant *data)
+{
+	return sr_config_set(_sdi, group, key, data) == SR_OK;
+}
+
+GVariant* DevInst::list_config(const sr_probe_group *group, int key)
+{
+	GVariant *data = NULL;
+	if (sr_config_list(_sdi->driver, _sdi, group, key, &data) != SR_OK)
+		return NULL;
+	return data;
 }
 
 } // pv

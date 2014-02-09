@@ -250,11 +250,7 @@ void LogicSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
 	boost::shared_ptr<DevInst> dev_inst = _session.get_device();
 	assert(dev_inst);
 
-	const sr_dev_inst *const sdi = dev_inst->dev_inst();
-	assert(sdi);
-
-	if (sr_config_list(sdi->driver, sdi, NULL, SR_CONF_TRIGGER_TYPE,
-		&gvar) == SR_OK)
+	if (!(gvar = dev_inst->list_config(NULL, SR_CONF_TRIGGER_TYPE)))
 	{
 		const char *const trig_types =
 			g_variant_get_string(gvar, NULL);

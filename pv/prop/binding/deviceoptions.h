@@ -47,13 +47,6 @@ public:
 		const sr_probe_group *group = NULL);
 
 private:
-
-	static GVariant* config_getter(
-		const sr_dev_inst *sdi, const sr_probe_group *group, int key);
-	static void config_setter(
-		const sr_dev_inst *sdi, const sr_probe_group *group, int key,
-		GVariant* value);
-
 	void bind_bool(const QString &name, int key);
 	void bind_enum(const QString &name, int key,
 		GVariant *const gvar_list,
