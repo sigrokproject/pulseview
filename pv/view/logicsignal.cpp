@@ -248,10 +248,8 @@ void LogicSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
 	Signal::populate_popup_form(parent, form);
 
 	// Add the trigger actions
-	boost::shared_ptr<DevInst> dev_inst = _session.get_device();
-	assert(dev_inst);
-
-	if (!(gvar = dev_inst->list_config(NULL, SR_CONF_TRIGGER_TYPE)))
+	assert(_dev_inst);
+	if (!(gvar = _dev_inst->list_config(NULL, SR_CONF_TRIGGER_TYPE)))
 	{
 		const char *const trig_types =
 			g_variant_get_string(gvar, NULL);
@@ -305,10 +303,8 @@ void LogicSignal::set_trigger(char type)
 	const char *const trigger_string =
 		(type != 0) ? trigger_type_string : NULL;
 
-	boost::shared_ptr<DevInst> dev_inst = _session.get_device();
-	assert(dev_inst);
-
-	const sr_dev_inst *const sdi = dev_inst->dev_inst();
+	assert(_dev_inst);
+	const sr_dev_inst *const sdi = _dev_inst->dev_inst();
 	assert(sdi);
 
 	const int probe_count = g_slist_length(sdi->probes);
