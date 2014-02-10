@@ -39,6 +39,8 @@ class QComboBox;
 
 namespace pv {
 
+class SigSession;
+
 namespace data {
 class DecoderStack;
 
@@ -158,6 +160,7 @@ private slots:
 	void on_show_hide_decoder(int index);
 
 private:
+	pv::SigSession &_session;
 	boost::shared_ptr<pv::data::DecoderStack> _decoder_stack;
 
 	uint64_t _decode_start, _decode_end;

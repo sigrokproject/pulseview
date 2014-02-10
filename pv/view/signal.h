@@ -47,8 +47,7 @@ class Signal : public Trace
 	Q_OBJECT
 
 protected:
-	Signal(pv::SigSession &session, boost::shared_ptr<pv::DevInst> dev_inst,
-		sr_probe *const probe);
+	Signal(boost::shared_ptr<pv::DevInst> dev_inst, sr_probe *const probe);
 
 public:
 	/**

@@ -40,8 +40,7 @@ namespace view {
 const QPen Trace::AxisPen(QColor(128, 128, 128, 64));
 const int Trace::LabelHitPadding = 2;
 
-Trace::Trace(pv::SigSession &session, QString name) :
-	_session(session),
+Trace::Trace(QString name) :
 	_name(name),
 	_v_offset(0),
 	_popup(NULL),

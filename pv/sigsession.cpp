@@ -442,7 +442,7 @@ void SigSession::update_signals(shared_ptr<DevInst> dev_inst)
 			switch(probe->type) {
 			case SR_PROBE_LOGIC:
 				signal = shared_ptr<view::Signal>(
-					new view::LogicSignal(*this, dev_inst,
+					new view::LogicSignal(dev_inst,
 						probe, _logic_data));
 				break;
 
@@ -451,7 +451,7 @@ void SigSession::update_signals(shared_ptr<DevInst> dev_inst)
 				shared_ptr<data::Analog> data(
 					new data::Analog());
 				signal = shared_ptr<view::Signal>(
-					new view::AnalogSignal(*this, dev_inst,
+					new view::AnalogSignal(dev_inst,
 						probe, data));
 				break;
 			}

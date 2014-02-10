@@ -54,9 +54,9 @@ const char *const ProbeNames[] = {
 	"SCL"
 };
 
-Signal::Signal(pv::SigSession &session, shared_ptr<pv::DevInst> dev_inst,
+Signal::Signal(shared_ptr<pv::DevInst> dev_inst,
 	sr_probe *const probe) :
-	Trace(session, probe->name),
+	Trace(probe->name),
 	_dev_inst(dev_inst),
 	_probe(probe),
 	_name_widget(NULL),

@@ -34,9 +34,6 @@
 class QFormLayout;
 
 namespace pv {
-
-class SigSession;
-
 namespace view {
 
 class View;
@@ -50,7 +47,7 @@ private:
 	static const int LabelHitPadding;
 
 protected:
-	Trace(SigSession &session, QString name);
+	Trace(QString name);
 
 public:
 	/**
@@ -189,7 +186,6 @@ signals:
 	void colour_changed();
 
 protected:
-	pv::SigSession &_session;
 	pv::view::View *_view;
 
 	QString _name;
