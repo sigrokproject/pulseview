@@ -28,11 +28,13 @@
 
 #include <stdint.h>
 
-#include <libsigrok/libsigrok.h>
-
 #include "trace.h"
 
+struct sr_probe;
+
 namespace pv {
+
+class DevInst;
 
 namespace data {
 class SignalData;
@@ -45,7 +47,8 @@ class Signal : public Trace
 	Q_OBJECT
 
 protected:
-	Signal(pv::SigSession &session, sr_probe *const probe);
+	Signal(pv::SigSession &session, boost::shared_ptr<pv::DevInst> dev_inst,
+		sr_probe *const probe);
 
 public:
 	/**
@@ -74,6 +77,7 @@ private slots:
 	void on_disable();
 
 protected:
+	boost::shared_ptr<pv::DevInst> _dev_inst;
 	sr_probe *const _probe;
 
 	QComboBox *_name_widget;

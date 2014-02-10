@@ -27,8 +27,12 @@
 #include <QFormLayout>
 #include <QMenu>
 
+#include <libsigrok/libsigrok.h>
+
 #include "signal.h"
 #include "view.h"
+
+using boost::shared_ptr;
 
 namespace pv {
 namespace view {
@@ -50,8 +54,10 @@ const char *const ProbeNames[] = {
 	"SCL"
 };
 
-Signal::Signal(pv::SigSession &session, sr_probe *const probe) :
+Signal::Signal(pv::SigSession &session, shared_ptr<pv::DevInst> dev_inst,
+	sr_probe *const probe) :
 	Trace(session, probe->name),
+	_dev_inst(dev_inst),
 	_probe(probe),
 	_name_widget(NULL),
 	_updating_name_widget(false)

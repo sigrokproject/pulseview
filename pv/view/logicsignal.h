@@ -49,7 +49,8 @@ private:
 	static const QColor SignalColours[10];
 
 public:
-	LogicSignal(pv::SigSession &session, sr_probe *const probe,
+	LogicSignal(pv::SigSession &session,
+		boost::shared_ptr<pv::DevInst> dev_inst, sr_probe *const probe,
 		boost::shared_ptr<pv::data::Logic> data);
 
 	virtual ~LogicSignal();
