@@ -43,7 +43,7 @@ private:
 
 public:
 	AnalogSignal(boost::shared_ptr<pv::DevInst> dev_inst,
-		sr_probe *const probe,
+		const sr_probe *const probe,
 		boost::shared_ptr<pv::data::Analog> data);
 
 	virtual ~AnalogSignal();

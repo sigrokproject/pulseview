@@ -32,6 +32,8 @@
 #include "signal.h"
 #include "view.h"
 
+#include <pv/devinst.h>
+
 using boost::shared_ptr;
 
 namespace pv {
@@ -55,7 +57,7 @@ const char *const ProbeNames[] = {
 };
 
 Signal::Signal(shared_ptr<pv::DevInst> dev_inst,
-	sr_probe *const probe) :
+	const sr_probe *const probe) :
 	Trace(probe->name),
 	_dev_inst(dev_inst),
 	_probe(probe),
@@ -80,7 +82,7 @@ bool Signal::enabled() const
 
 void Signal::enable(bool enable)
 {
-	_probe->enabled = enable;
+	_dev_inst->enable_probe(_probe, enable);
 	visibility_changed();
 }
 

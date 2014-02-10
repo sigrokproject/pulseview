@@ -30,6 +30,7 @@
 #include <glib.h>
 
 struct sr_dev_inst;
+struct sr_probe;
 struct sr_probe_group;
 
 namespace pv {
@@ -50,6 +51,8 @@ public:
 	bool set_config(const sr_probe_group *group, int key, GVariant *data);
 
 	GVariant* list_config(const sr_probe_group *group, int key);
+
+	void enable_probe(const sr_probe *probe, bool enable = true);
 
 signals:
 	void config_changed();

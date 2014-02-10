@@ -64,7 +64,7 @@ const QColor LogicSignal::SignalColours[10] = {
 };
 
 LogicSignal::LogicSignal(shared_ptr<pv::DevInst> dev_inst,
-	sr_probe *const probe, shared_ptr<data::Logic> data) :
+	const sr_probe *const probe, shared_ptr<data::Logic> data) :
 	Signal(dev_inst, probe),
 	_data(data),
 	_trigger_none(NULL),

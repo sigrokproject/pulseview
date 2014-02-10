@@ -47,7 +47,8 @@ class Signal : public Trace
 	Q_OBJECT
 
 protected:
-	Signal(boost::shared_ptr<pv::DevInst> dev_inst, sr_probe *const probe);
+	Signal(boost::shared_ptr<pv::DevInst> dev_inst,
+		const sr_probe *const probe);
 
 public:
 	/**
@@ -77,7 +78,7 @@ private slots:
 
 protected:
 	boost::shared_ptr<pv::DevInst> _dev_inst;
-	sr_probe *const _probe;
+	const sr_probe *const _probe;
 
 	QComboBox *_name_widget;
 	bool _updating_name_widget;

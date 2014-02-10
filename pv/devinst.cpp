@@ -93,4 +93,16 @@ GVariant* DevInst::list_config(const sr_probe_group *group, int key)
 	return data;
 }
 
+void DevInst::enable_probe(const sr_probe *probe, bool enable)
+{
+	for (const GSList *p = _sdi->probes; p; p = p->next)
+		if (probe == p->data) {
+			const_cast<sr_probe*>(probe)->enabled = enable;
+			return;
+		}
+
+	// Probe was not found in the device
+	assert(0);
+}
+
 } // pv
