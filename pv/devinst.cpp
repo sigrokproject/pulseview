@@ -98,6 +98,7 @@ void DevInst::enable_probe(const sr_probe *probe, bool enable)
 	for (const GSList *p = _sdi->probes; p; p = p->next)
 		if (probe == p->data) {
 			const_cast<sr_probe*>(probe)->enabled = enable;
+			config_changed();
 			return;
 		}
 
