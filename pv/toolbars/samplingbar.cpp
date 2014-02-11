@@ -164,10 +164,14 @@ void SamplingBar::update_sample_rate_selector()
 	const uint64_t *elements = NULL;
 	gsize num_elements;
 
+	if (_updating_sample_rate)
+		return;
+
 	const shared_ptr<DevInst> dev_inst = get_selected_device();
 	if (!dev_inst)
 		return;
 
+	assert(!_updating_sample_rate);
 	_updating_sample_rate = true;
 
 	if (!(gvar_dict = dev_inst->list_config(NULL, SR_CONF_SAMPLERATE)))
@@ -224,6 +228,9 @@ void SamplingBar::update_sample_rate_selector_value()
 	GVariant *gvar;
 	uint64_t samplerate;
 
+	if (_updating_sample_rate)
+		return;
+
 	const shared_ptr<DevInst> dev_inst = get_selected_device();
 	if (!dev_inst)
 		return;
@@ -235,6 +242,7 @@ void SamplingBar::update_sample_rate_selector_value()
 	samplerate = g_variant_get_uint64(gvar);
 	g_variant_unref(gvar);
 
+	assert(!_updating_sample_rate);
 	_updating_sample_rate = true;
 	_sample_rate.set_value(samplerate);
 	_updating_sample_rate = false;
@@ -244,10 +252,14 @@ void SamplingBar::update_sample_count_selector()
 {
 	GVariant *gvar;
 
+	if (_updating_sample_count)
+		return;
+
 	const shared_ptr<DevInst> dev_inst = get_selected_device();
 	if (!dev_inst)
 		return;
 
+	assert(!_updating_sample_count);
 	_updating_sample_count = true;
 
 	if (_sample_count_supported)
@@ -292,6 +304,9 @@ void SamplingBar::commit_sample_count()
 {
 	uint64_t sample_count = 0;
 
+	if (_updating_sample_count)
+		return;
+
 	const shared_ptr<DevInst> dev_inst = get_selected_device();
 	if (!dev_inst)
 		return;
@@ -299,16 +314,22 @@ void SamplingBar::commit_sample_count()
 	sample_count = _sample_count.value();
 
 	// Set the sample count
+	assert(!_updating_sample_count);
+	_updating_sample_count = true;
 	if (!dev_inst->set_config(NULL, SR_CONF_LIMIT_SAMPLES,
 		g_variant_new_uint64(sample_count))) {
 		qDebug() << "Failed to configure sample count.";
 		return;
 	}
+	_updating_sample_count = false;
 }
 
 void SamplingBar::commit_sample_rate()
 {
 	uint64_t sample_rate = 0;
+
+	if (_updating_sample_rate)
+		return;
 
 	const shared_ptr<DevInst> dev_inst = get_selected_device();
 	if (!dev_inst)
@@ -319,11 +340,14 @@ void SamplingBar::commit_sample_rate()
 		return;
 
 	// Set the samplerate
+	assert(!_updating_sample_rate);
+	_updating_sample_rate = true;
 	if (!dev_inst->set_config(NULL, SR_CONF_SAMPLERATE,
 		g_variant_new_uint64(sample_rate))) {
 		qDebug() << "Failed to configure samplerate.";
 		return;
 	}
+	_updating_sample_rate = false;
 }
 
 void SamplingBar::on_device_selected()
@@ -381,14 +405,12 @@ void SamplingBar::on_device_selected()
 
 void SamplingBar::on_sample_count_changed()
 {
-	if(!_updating_sample_count)
-		commit_sample_count();
+	commit_sample_count();
 }
 
 void SamplingBar::on_sample_rate_changed()
 {
-	if (!_updating_sample_rate)
-		commit_sample_rate();
+	commit_sample_rate();
 }
 
 void SamplingBar::on_run_stop()
