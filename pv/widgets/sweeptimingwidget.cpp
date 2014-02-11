@@ -165,9 +165,19 @@ void SweepTimingWidget::set_value(uint64_t value)
 {
 	_value.setValue(value);
 
-	for (int i = 0; i < _list.count(); i++)
-		if (value == _list.itemData(i).value<uint64_t>())
-			_list.setCurrentIndex(i);
+	int best_match = _list.count() - 1;
+	int64_t best_variance = INT64_MAX;
+
+	for (int i = 0; i < _list.count(); i++) {
+		const int64_t this_variance = abs(
+			(int64_t)value - _list.itemData(i).value<int64_t>());
+		if (this_variance < best_variance) {
+			best_variance = this_variance;
+			best_match = i;
+		}
+	}
+
+	_list.setCurrentIndex(best_match);
 }
 
 } // widgets
