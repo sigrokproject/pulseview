@@ -106,4 +106,17 @@ void DevInst::enable_probe(const sr_probe *probe, bool enable)
 	assert(0);
 }
 
+uint64_t DevInst::get_sample_limit()
+{
+	uint64_t sample_limit;
+	GVariant* gvar = get_config(NULL, SR_CONF_LIMIT_SAMPLES);
+	if (gvar != NULL) {
+		sample_limit = g_variant_get_uint64(gvar);
+		g_variant_unref(gvar);
+	} else {
+		sample_limit = 0U;
+	}
+	return sample_limit;
+}
+
 } // pv

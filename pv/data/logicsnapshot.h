@@ -58,7 +58,8 @@ public:
 	typedef std::pair<int64_t, bool> EdgePair;
 
 public:
-	LogicSnapshot(const sr_datafeed_logic &logic);
+	LogicSnapshot(const sr_datafeed_logic &logic,
+	              uint64_t expected_num_samples = 0);
 
 	virtual ~LogicSnapshot();
 

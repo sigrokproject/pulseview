@@ -43,10 +43,13 @@ const int LogicSnapshot::MipMapScaleFactor = 1 << MipMapScalePower;
 const float LogicSnapshot::LogMipMapScaleFactor = logf(MipMapScaleFactor);
 const uint64_t LogicSnapshot::MipMapDataUnit = 64*1024;	// bytes
 
-LogicSnapshot::LogicSnapshot(const sr_datafeed_logic &logic) :
+LogicSnapshot::LogicSnapshot(const sr_datafeed_logic &logic,
+                             const uint64_t expected_num_samples) :
 	Snapshot(logic.unitsize),
 	_last_append_sample(0)
 {
+	set_capacity(expected_num_samples);
+
 	lock_guard<recursive_mutex> lock(_mutex);
 	memset(_mip_map, 0, sizeof(_mip_map));
 	append_payload(logic);

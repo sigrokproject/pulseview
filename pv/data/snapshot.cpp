@@ -33,6 +33,7 @@ namespace data {
 Snapshot::Snapshot(int unit_size) :
 	_data(NULL),
 	_sample_count(0),
+	_capacity(0),
 	_unit_size(unit_size)
 {
 	lock_guard<recursive_mutex> lock(_mutex);
@@ -56,11 +57,35 @@ int Snapshot::unit_size() const
 	return _unit_size;
 }
 
+void Snapshot::set_capacity(const uint64_t new_capacity)
+{
+	lock_guard<recursive_mutex> lock(_mutex);
+
+	assert(_capacity >= _sample_count);
+	if (new_capacity > _capacity) {
+		_capacity = new_capacity;
+		_data = realloc(_data, (new_capacity * _unit_size) + sizeof(uint64_t));
+	}
+}
+
+uint64_t Snapshot::capacity() const
+{
+	lock_guard<recursive_mutex> lock(_mutex);
+	return _capacity;
+}
+
 void Snapshot::append_data(void *data, uint64_t samples)
 {
 	lock_guard<recursive_mutex> lock(_mutex);
-	_data = realloc(_data, (_sample_count + samples) * _unit_size +
-		sizeof(uint64_t));
+
+	assert(_capacity >= _sample_count);
+
+	// Ensure there's enough capacity to copy.
+	const uint64_t free_space = _capacity - _sample_count;
+	if (free_space < samples) {
+		set_capacity(_sample_count + samples);
+	}
+
 	memcpy((uint8_t*)_data + _sample_count * _unit_size,
 		data, samples * _unit_size);
 	_sample_count += samples;

@@ -47,9 +47,11 @@ const float AnalogSnapshot::LogEnvelopeScaleFactor =
 	logf(EnvelopeScaleFactor);
 const uint64_t AnalogSnapshot::EnvelopeDataUnit = 64*1024;	// bytes
 
-AnalogSnapshot::AnalogSnapshot() :
+AnalogSnapshot::AnalogSnapshot(const uint64_t expected_num_samples) :
 	Snapshot(sizeof(float))
 {
+	set_capacity(expected_num_samples);
+
 	lock_guard<recursive_mutex> lock(_mutex);
 	memset(_envelope_levels, 0, sizeof(_envelope_levels));
 }

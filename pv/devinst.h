@@ -29,6 +29,8 @@
 
 #include <glib.h>
 
+#include <stdint.h>
+
 struct sr_dev_inst;
 struct sr_probe;
 struct sr_probe_group;
@@ -53,6 +55,14 @@ public:
 	GVariant* list_config(const sr_probe_group *group, int key);
 
 	void enable_probe(const sr_probe *probe, bool enable = true);
+
+	/**
+	 * @brief Gets the sample limit from the driver.
+	 *
+	 * @return The returned sample limit from the driver, or 0 if the
+	 * 	sample limit could not be read.
+	 */
+	uint64_t get_sample_limit();
 
 signals:
 	void config_changed();
