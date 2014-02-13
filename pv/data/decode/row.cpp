@@ -20,6 +20,8 @@
 
 #include "row.h"
 
+#include <libsigrokdecode/libsigrokdecode.h>
+
 namespace pv {
 namespace data {
 namespace decode {
@@ -44,6 +46,19 @@ const srd_decoder* Row::decoder() const
 const srd_decoder_annotation_row* Row::row() const
 {
 	return _row;
+}
+
+const QString Row::title() const
+{
+	if (_decoder && _decoder->name && _row && _row->desc)
+		return QString("%1: %2")
+			.arg(QString::fromUtf8(_decoder->name))
+			.arg(QString::fromUtf8(_row->desc));
+	if (_decoder && _decoder->name)
+		return QString::fromUtf8(_decoder->name);
+	if (_row && _row->desc)
+		return QString::fromUtf8(_row->desc);
+	return QString();
 }
 
 bool Row::operator<(const Row &other) const

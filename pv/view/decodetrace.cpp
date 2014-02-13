@@ -68,6 +68,7 @@ const QColor DecodeTrace::DecodeColours[4] = {
 const QColor DecodeTrace::ErrorBgColour = QColor(0xEF, 0x29, 0x29);
 const QColor DecodeTrace::NoDecodeColour = QColor(0x88, 0x8A, 0x85);
 
+const int DecodeTrace::ArrowSize = 4;
 const double DecodeTrace::EndCapWidth = 5;
 const int DecodeTrace::DrawPadding = 100;
 
@@ -161,6 +162,8 @@ void DecodeTrace::paint_mid(QPainter &p, int left, int right)
 
 	double samplerate = _decoder_stack->samplerate();
 
+	_cur_row_headings.clear();
+
 	// Show sample rate as 1Hz when it is unknown
 	if (samplerate == 0.0)
 		samplerate = 1.0;
@@ -216,12 +219,60 @@ void DecodeTrace::paint_mid(QPainter &p, int left, int right)
 					samples_per_pixel, pixels_offset, y,
 					base_colour);
 			y += row_height;
+
+			_cur_row_headings.push_back(row.title());
 		}
 	}
 
 	// Draw the hatching
 	draw_unresolved_period(p, annotation_height, left, right,
 		samples_per_pixel, pixels_offset);
+}
+
+void DecodeTrace::paint_fore(QPainter &p, int left, int right)
+{
+	using namespace pv::data::decode;
+
+	(void)right;
+
+	QFontMetrics m(QApplication::font());
+	const int text_height =  m.boundingRect(QRect(), 0, "Tg").height();
+	const int row_height = (text_height * 6) / 4;
+
+	for (size_t i = 0; i < _cur_row_headings.size(); i++)
+	{
+		const int y = i * row_height + get_y();
+
+		p.setPen(QPen(Qt::NoPen));
+		p.setBrush(QApplication::palette().brush(QPalette::WindowText));
+
+		if (i != 0)
+		{
+			const QPointF points[] = {
+				QPointF(left, y - ArrowSize),
+				QPointF(left + ArrowSize, y),
+				QPointF(left, y + ArrowSize)
+			};
+			p.drawPolygon(points, countof(points));
+		}
+
+		const QRect r(left + ArrowSize * 2, y - row_height / 2,
+			right - left, row_height);
+		const QString h(_cur_row_headings[i]);
+		const int f = Qt::AlignLeft | Qt::AlignVCenter |
+			Qt::TextDontClip;
+
+		// Draw the outline
+		p.setPen(QApplication::palette().color(QPalette::Base));
+		for (int dx = -1; dx <= 1; dx++)
+			for (int dy = -1; dy <= 1; dy++)
+				if (dx != 0 && dy != 0)
+					p.drawText(r.translated(dx, dy), f, h);
+
+		// Draw the text
+		p.setPen(QApplication::palette().color(QPalette::WindowText));
+		p.drawText(r, f, h);
+	}
 }
 
 void DecodeTrace::populate_popup_form(QWidget *parent, QFormLayout *form)

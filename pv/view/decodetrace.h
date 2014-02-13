@@ -74,6 +74,7 @@ private:
 	static const QColor ErrorBgColour;
 	static const QColor NoDecodeColour;
 
+	static const int ArrowSize;
 	static const double EndCapWidth;
 	static const int DrawPadding;
 
@@ -106,6 +107,14 @@ public:
 	 * @param right the x-coordinate of the right edge of the signal
 	 **/
 	void paint_mid(QPainter &p, int left, int right);
+
+	/**
+	 * Paints the foreground layer of the trace with a QPainter
+	 * @param p the QPainter to paint into.
+	 * @param left the x-coordinate of the left edge of the signal
+	 * @param right the x-coordinate of the right edge of the signal
+	 **/
+	void paint_fore(QPainter &p, int left, int right);
 
 	void populate_popup_form(QWidget *parent, QFormLayout *form);
 
@@ -170,6 +179,8 @@ private:
 
 	std::list<ProbeSelector> _probe_selectors;
 	std::vector<pv::widgets::DecoderGroupBox*> _decoder_forms;
+
+	std::vector<QString> _cur_row_headings;
 
 	QSignalMapper _delete_mapper, _show_hide_mapper;
 };
