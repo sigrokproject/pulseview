@@ -181,11 +181,7 @@ void View::zoom_one_to_one()
 		session().get_signals());
 
 	// Make a set of all the visible data objects
-	set< shared_ptr<SignalData> > visible_data;
-	BOOST_FOREACH(const shared_ptr<Signal> sig, sigs)
-		if (sig->enabled())
-			visible_data.insert(sig->data());
-
+	set< shared_ptr<SignalData> > visible_data = get_visible_data();
 	if (visible_data.empty())
 		return;
 
