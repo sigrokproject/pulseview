@@ -33,6 +33,7 @@
 #include <pv/data/logicsnapshot.h>
 #include <pv/data/decode/decoder.h>
 #include <pv/data/decode/annotation.h>
+#include <pv/sigsession.h>
 #include <pv/view/logicsignal.h>
 
 using boost::lock_guard;
@@ -63,6 +64,8 @@ DecoderStack::DecoderStack(pv::SigSession &session,
 	_session(session),
 	_samples_decoded(0)
 {
+	connect(&_session, SIGNAL(frame_began()), this, SLOT(on_new_frame()));
+
 	_stack.push_back(shared_ptr<decode::Decoder>(
 		new decode::Decoder(dec)));
 }
@@ -371,6 +374,11 @@ void DecoderStack::annotation_callback(srd_proto_data *pdata, void *decoder)
 	(*row_iter).second.push_annotation(a);
 
 	d->new_decode_data();
+}
+
+void DecoderStack::on_new_frame()
+{
+	begin_decode();
 }
 
 } // namespace data

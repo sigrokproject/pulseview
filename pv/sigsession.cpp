@@ -493,6 +493,12 @@ void SigSession::feed_in_meta(const sr_dev_inst *sdi,
 	signals_changed();
 }
 
+void SigSession::feed_in_frame_begin()
+{
+	if (_cur_logic_snapshot || !_cur_analog_snapshots.empty())
+		frame_began();
+}
+
 void SigSession::feed_in_logic(const sr_datafeed_logic &logic)
 {
 	lock_guard<mutex> lock(_data_mutex);
@@ -512,6 +518,12 @@ void SigSession::feed_in_logic(const sr_datafeed_logic &logic)
 		_cur_logic_snapshot = shared_ptr<data::LogicSnapshot>(
 			new data::LogicSnapshot(logic, _dev_inst->get_sample_limit()));
 		_logic_data->push_snapshot(_cur_logic_snapshot);
+
+		// @todo Putting this here means that only listeners querying
+		// for logic will be notified. Currently the only user of
+		// frame_began is DecoderStack, but in future we need to signal
+		// this after both analog and logic sweeps have begun.
+		frame_began();
 	}
 	else
 	{
@@ -598,6 +610,10 @@ void SigSession::data_feed_in(const struct sr_dev_inst *sdi,
 		assert(packet->payload);
 		feed_in_meta(sdi,
 			*(const sr_datafeed_meta*)packet->payload);
+		break;
+
+	case SR_DF_FRAME_BEGIN:
+		feed_in_frame_begin();
 		break;
 
 	case SR_DF_LOGIC:

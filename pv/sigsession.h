@@ -145,6 +145,8 @@ private:
 	void feed_in_meta(const sr_dev_inst *sdi,
 		const sr_datafeed_meta &meta);
 
+	void feed_in_frame_begin();
+
 	void feed_in_logic(const sr_datafeed_logic &logic);
 
 	void feed_in_analog(const sr_datafeed_analog &analog);
@@ -183,6 +185,8 @@ signals:
 	void capture_state_changed(int state);
 
 	void signals_changed();
+
+	void frame_began();
 
 	void data_updated();
 
