@@ -26,6 +26,7 @@
 #include <pv/view/logicsignal.h>
 
 using boost::shared_ptr;
+using std::set;
 using std::map;
 using std::string;
 
@@ -95,6 +96,21 @@ bool Decoder::have_required_probes() const
 	}
 
 	return true;
+}
+
+set< shared_ptr<pv::data::Logic> > Decoder::get_data()
+{
+	set< shared_ptr<pv::data::Logic> > data;
+	for(map<const srd_probe*, shared_ptr<view::LogicSignal> >::
+		const_iterator i = _probes.begin();
+		i != _probes.end(); i++)
+	{
+		shared_ptr<view::LogicSignal> signal((*i).second);
+		assert(signal);
+		data.insert(signal->logic_data());
+	}
+
+	return data;
 }
 
 srd_decoder_inst* Decoder::create_decoder_inst(srd_session *session, int unit_size) const

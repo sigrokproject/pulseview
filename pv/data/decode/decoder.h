@@ -22,6 +22,7 @@
 #define PULSEVIEW_PV_DATA_DECODE_DECODER_H
 
 #include <map>
+#include <set>
 
 #include <boost/shared_ptr.hpp>
 
@@ -39,6 +40,9 @@ class LogicSignal;
 }
 
 namespace data {
+
+class Logic;
+
 namespace decode {
 
 class Decoder
@@ -66,6 +70,8 @@ public:
 
 	srd_decoder_inst* create_decoder_inst(
 		srd_session *session, int unit_size) const;
+
+	std::set< boost::shared_ptr<pv::data::Logic> > get_data();	
 
 private:
 	const srd_decoder *const _decoder;
