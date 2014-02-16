@@ -58,7 +58,9 @@ const int64_t DecoderStack::DecodeChunkLength = 4096;
 
 mutex DecoderStack::_global_decode_mutex;
 
-DecoderStack::DecoderStack(const srd_decoder *const dec) :
+DecoderStack::DecoderStack(pv::SigSession &session,
+	const srd_decoder *const dec) :
+	_session(session),
 	_samples_decoded(0)
 {
 	_stack.push_back(shared_ptr<decode::Decoder>(

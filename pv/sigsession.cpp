@@ -215,7 +215,7 @@ bool SigSession::add_decoder(srd_decoder *const dec)
 
 		// Create the decoder
 		decoder_stack = shared_ptr<data::DecoderStack>(
-			new data::DecoderStack(dec));
+			new data::DecoderStack(*this, dec));
 
 		// Make a list of all the probes
 		std::vector<const srd_probe*> all_probes;

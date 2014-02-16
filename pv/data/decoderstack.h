@@ -45,6 +45,8 @@ class TwoDecoderStack;
 
 namespace pv {
 
+class SigSession;
+
 namespace view {
 class LogicSignal;
 }
@@ -68,7 +70,8 @@ private:
 	static const int64_t DecodeChunkLength;
 
 public:
-	DecoderStack(const srd_decoder *const decoder);
+	DecoderStack(pv::SigSession &_session,
+		const srd_decoder *const decoder);
 
 	virtual ~DecoderStack();
 
@@ -106,6 +109,7 @@ signals:
 	void new_decode_data();
 
 private:
+	pv::SigSession &_session;
 
 	/**
 	 * This mutex prevents more than one decode operation occuring
