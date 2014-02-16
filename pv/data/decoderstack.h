@@ -38,6 +38,7 @@ struct srd_decoder;
 struct srd_decoder_annotation_row;
 struct srd_probe;
 struct srd_proto_data;
+struct srd_session;
 
 namespace DecoderStackTest {
 class TwoDecoderStack;
@@ -52,6 +53,8 @@ class LogicSignal;
 }
 
 namespace data {
+
+class LogicSnapshot;
 
 namespace decode {
 class Annotation;
@@ -100,6 +103,10 @@ public:
 	void begin_decode();
 
 private:
+	void decode_data(
+		const boost::shared_ptr<pv::data::LogicSnapshot> &snapshot,
+		srd_session *const session);
+
 	void decode_proc(boost::shared_ptr<data::Logic> data);
 
 	static void annotation_callback(srd_proto_data *pdata,

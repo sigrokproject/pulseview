@@ -247,10 +247,45 @@ uint64_t DecoderStack::get_max_sample_count() const
 	return max_sample_count;
 }
 
+void DecoderStack::decode_data(
+	const shared_ptr<pv::data::LogicSnapshot> &snapshot,
+	srd_session *const session)
+{
+	uint8_t chunk[DecodeChunkLength];
+
+	const int64_t sample_count = snapshot->get_sample_count();
+	const unsigned int unit_size = snapshot->unit_size();
+	const unsigned int chunk_sample_count =
+		DecodeChunkLength / snapshot->unit_size();
+
+	for (int64_t i = 0;
+		!boost::this_thread::interruption_requested() &&
+			i < sample_count;
+		i += chunk_sample_count)
+	{
+		lock_guard<mutex> decode_lock(_global_decode_mutex);
+
+		const int64_t chunk_end = min(
+			i + chunk_sample_count, sample_count);
+		snapshot->get_samples(chunk, i, chunk_end);
+
+		if (srd_session_send(session, i, i + sample_count, chunk,
+				(chunk_end - i) * unit_size) != SRD_OK) {
+			_error_message = tr("Decoder reported an error");
+			break;
+		}
+
+		{
+			lock_guard<mutex> lock(_mutex);
+			_samples_decoded = chunk_end;
+		}
+	}
+
+}
+
 void DecoderStack::decode_proc(shared_ptr<data::Logic> data)
 {
 	srd_session *session;
-	uint8_t chunk[DecodeChunkLength];
 	srd_decoder_inst *prev_di = NULL;
 
 	assert(data);
@@ -266,18 +301,14 @@ void DecoderStack::decode_proc(shared_ptr<data::Logic> data)
 		if (!dec->have_required_probes())
 			return;
 
-	const shared_ptr<pv::data::LogicSnapshot> &snapshot =
-		snapshots.front();
-	const int64_t sample_count = snapshot->get_sample_count();
-	const unsigned int unit_size = snapshot->unit_size();
-	const unsigned int chunk_sample_count =
-		DecodeChunkLength / unit_size;
-
 	// Create the session
 	srd_session_new(&session);
 	assert(session);
 
 	// Create the decoders
+	const shared_ptr<pv::data::LogicSnapshot> &snapshot = snapshots.front();
+	const unsigned int unit_size = snapshot->unit_size();
+
 	BOOST_FOREACH(const shared_ptr<decode::Decoder> &dec, _stack)
 	{
 		srd_decoder_inst *const di = dec->create_decoder_inst(session, unit_size);
@@ -304,28 +335,7 @@ void DecoderStack::decode_proc(shared_ptr<data::Logic> data)
 
 	srd_session_start(session);
 
-	for (int64_t i = 0;
-		!boost::this_thread::interruption_requested() &&
-			i < sample_count;
-		i += chunk_sample_count)
-	{
-		lock_guard<mutex> decode_lock(_global_decode_mutex);
-
-		const int64_t chunk_end = min(
-			i + chunk_sample_count, sample_count);
-		snapshot->get_samples(chunk, i, chunk_end);
-
-		if (srd_session_send(session, i, i + sample_count, chunk,
-				(chunk_end - i) * unit_size) != SRD_OK) {
-			_error_message = tr("Decoder reported an error");
-			break;
-		}
-
-		{
-			lock_guard<mutex> lock(_mutex);
-			_samples_decoded = chunk_end;
-		}
-	}
+	decode_data(snapshot, session);
 
 	// Destroy the session
 	srd_session_destroy(session);
