@@ -531,7 +531,7 @@ void SigSession::feed_in_logic(const sr_datafeed_logic &logic)
 		_cur_logic_snapshot->append_payload(logic);
 	}
 
-	data_updated();
+	data_received();
 }
 
 void SigSession::feed_in_analog(const sr_datafeed_analog &analog)
@@ -592,7 +592,7 @@ void SigSession::feed_in_analog(const sr_datafeed_analog &analog)
 		set_capture_state(Running);
 	}
 
-	data_updated();
+	data_received();
 }
 
 void SigSession::data_feed_in(const struct sr_dev_inst *sdi,
@@ -633,7 +633,7 @@ void SigSession::data_feed_in(const struct sr_dev_inst *sdi,
 			_cur_logic_snapshot.reset();
 			_cur_analog_snapshots.clear();
 		}
-		data_updated();
+		frame_ended();
 		break;
 	}
 	}

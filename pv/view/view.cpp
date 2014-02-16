@@ -92,7 +92,9 @@ View::View(SigSession &session, QWidget *parent) :
 
 	connect(&_session, SIGNAL(signals_changed()),
 		this, SLOT(signals_changed()));
-	connect(&_session, SIGNAL(data_updated()),
+	connect(&_session, SIGNAL(data_received()),
+		this, SLOT(data_updated()));
+	connect(&_session, SIGNAL(frame_ended()),
 		this, SLOT(data_updated()));
 
 	connect(_cursors.first().get(), SIGNAL(time_changed()),
