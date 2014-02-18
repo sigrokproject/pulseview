@@ -260,8 +260,9 @@ void DecoderStack::decode_proc(shared_ptr<data::Logic> data)
 	const shared_ptr<pv::data::LogicSnapshot> &snapshot =
 		snapshots.front();
 	const int64_t sample_count = snapshot->get_sample_count();
+	const unsigned int unit_size = snapshot->unit_size();
 	const unsigned int chunk_sample_count =
-		DecodeChunkLength / snapshot->unit_size();
+		DecodeChunkLength / unit_size;
 
 	// Create the session
 	srd_session_new(&session);
@@ -305,8 +306,8 @@ void DecoderStack::decode_proc(shared_ptr<data::Logic> data)
 			i + chunk_sample_count, sample_count);
 		snapshot->get_samples(chunk, i, chunk_end);
 
-		if (srd_session_send(session, i, i + sample_count,
-				chunk, chunk_end - i) != SRD_OK) {
+		if (srd_session_send(session, i, i + sample_count, chunk,
+				(chunk_end - i) * unit_size) != SRD_OK) {
 			_error_message = tr("Decoder reported an error");
 			break;
 		}

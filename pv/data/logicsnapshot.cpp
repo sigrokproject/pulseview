@@ -164,7 +164,7 @@ void LogicSnapshot::get_samples(uint8_t *const data,
 	lock_guard<recursive_mutex> lock(_mutex);
 
 	const size_t size = (end_sample - start_sample) * _unit_size;
-	memcpy(data, (const uint8_t*)_data + start_sample, size);
+	memcpy(data, (const uint8_t*)_data + start_sample * _unit_size, size);
 }
 
 void LogicSnapshot::reallocate_mipmap_level(MipMapLevel &m)
