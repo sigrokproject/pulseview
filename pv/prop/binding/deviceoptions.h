@@ -35,7 +35,9 @@ struct sr_probe_group;
 
 namespace pv {
 
+namespace device {
 class DevInst;
+}
 
 namespace prop {
 namespace binding {
@@ -43,7 +45,7 @@ namespace binding {
 class DeviceOptions : public Binding
 {
 public:
-	DeviceOptions(boost::shared_ptr<pv::DevInst> dev_inst,
+	DeviceOptions(boost::shared_ptr<pv::device::DevInst> dev_inst,
 		const sr_probe_group *group = NULL);
 
 private:
@@ -61,7 +63,7 @@ private:
 	static QString print_voltage_threshold(GVariant *const gvar);
 
 protected:
-	boost::shared_ptr<DevInst> _dev_inst;
+	boost::shared_ptr<device::DevInst> _dev_inst;
 	const sr_probe_group *const _group;
 };
 

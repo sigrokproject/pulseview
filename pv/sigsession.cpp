@@ -25,7 +25,7 @@
 #include "sigsession.h"
 
 #include "devicemanager.h"
-#include "devinst.h"
+#include "device/devinst.h"
 
 #include "data/analog.h"
 #include "data/analogsnapshot.h"
@@ -85,12 +85,12 @@ SigSession::~SigSession()
 	_session = NULL;
 }
 
-shared_ptr<DevInst> SigSession::get_device() const
+shared_ptr<device::DevInst> SigSession::get_device() const
 {
 	return _dev_inst;
 }
 
-void SigSession::set_device(shared_ptr<DevInst> dev_inst)
+void SigSession::set_device(shared_ptr<device::DevInst> dev_inst)
 {
 	// Ensure we are not capturing before setting the device
 	stop_capture();
@@ -103,12 +103,12 @@ void SigSession::set_device(shared_ptr<DevInst> dev_inst)
 	update_signals(dev_inst);
 }
 
-void SigSession::release_device(shared_ptr<DevInst> dev_inst)
+void SigSession::release_device(shared_ptr<device::DevInst> dev_inst)
 {
 	(void)dev_inst;
 
 	assert(_capture_state == Stopped);
-	_dev_inst = shared_ptr<DevInst>();
+	_dev_inst = shared_ptr<device::DevInst>();
 }
 
 void SigSession::load_file(const string &name,
@@ -126,8 +126,8 @@ void SigSession::load_file(const string &name,
 			return;
 		}
 
-		shared_ptr<DevInst> dev_inst(
-			new DevInst((sr_dev_inst*)devlist->data));
+		shared_ptr<device::DevInst> dev_inst(
+			new device::DevInst((sr_dev_inst*)devlist->data));
 		g_slist_free(devlist);
 
 		_decode_traces.clear();
@@ -146,7 +146,8 @@ void SigSession::load_file(const string &name,
 			return;
 
 		_decode_traces.clear();
-		update_signals(shared_ptr<DevInst>(new DevInst(in->sdi)));
+		update_signals(shared_ptr<device::DevInst>(
+			new device::DevInst(in->sdi)));
 		read_sample_rate(in->sdi);
 
 		_sampling_thread = boost::thread(
@@ -386,7 +387,7 @@ sr_input* SigSession::load_input_file_format(const string &filename,
 	return in;
 }
 
-void SigSession::update_signals(shared_ptr<DevInst> dev_inst)
+void SigSession::update_signals(shared_ptr<device::DevInst> dev_inst)
 {
 	assert(dev_inst);
 	assert(_capture_state == Stopped);
@@ -568,7 +569,7 @@ void SigSession::load_input_thread_proc(const string name,
 	delete in;
 }
 
-void SigSession::sample_thread_proc(shared_ptr<DevInst> dev_inst,
+void SigSession::sample_thread_proc(shared_ptr<device::DevInst> dev_inst,
 	function<void (const QString)> error_handler)
 {
 	assert(dev_inst);

@@ -118,7 +118,6 @@ configure_file (
 set(pulseview_SOURCES
 	main.cpp
 	pv/devicemanager.cpp
-	pv/devinst.cpp
 	pv/mainwindow.cpp
 	pv/sigsession.cpp
 	pv/storesession.cpp
@@ -128,6 +127,7 @@ set(pulseview_SOURCES
 	pv/data/logicsnapshot.cpp
 	pv/data/signaldata.cpp
 	pv/data/snapshot.cpp
+	pv/device/devinst.cpp
 	pv/dialogs/about.cpp
 	pv/dialogs/connect.cpp
 	pv/dialogs/storeprogress.cpp
@@ -166,10 +166,10 @@ set(pulseview_SOURCES
 
 # This list includes only QObject derived class headers.
 set(pulseview_HEADERS
-	pv/devinst.h
 	pv/mainwindow.h
 	pv/sigsession.h
 	pv/storesession.h
+	pv/device/devinst.h
 	pv/dialogs/about.h
 	pv/dialogs/connect.h
 	pv/dialogs/storeprogress.h

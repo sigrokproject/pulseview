@@ -42,7 +42,7 @@ private:
 	static const float EnvelopeThreshold;
 
 public:
-	AnalogSignal(boost::shared_ptr<pv::DevInst> dev_inst,
+	AnalogSignal(boost::shared_ptr<pv::device::DevInst> dev_inst,
 		const sr_probe *const probe,
 		boost::shared_ptr<pv::data::Analog> data);
 

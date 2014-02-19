@@ -31,6 +31,7 @@ using std::ostringstream;
 using std::string;
 
 namespace pv {
+namespace device {
 
 DevInst::DevInst(sr_dev_inst *sdi) :
 	_sdi(sdi)
@@ -119,4 +120,5 @@ uint64_t DevInst::get_sample_limit()
 	return sample_limit;
 }
 
+} // device
 } // pv

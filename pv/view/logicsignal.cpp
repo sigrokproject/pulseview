@@ -29,7 +29,7 @@
 #include "view.h"
 
 #include <pv/sigsession.h>
-#include <pv/devinst.h>
+#include <pv/device/devinst.h>
 #include <pv/data/logic.h>
 #include <pv/data/logicsnapshot.h>
 #include <pv/view/view.h>
@@ -63,7 +63,7 @@ const QColor LogicSignal::SignalColours[10] = {
 	QColor(0xEE, 0xEE, 0xEC),	// White
 };
 
-LogicSignal::LogicSignal(shared_ptr<pv::DevInst> dev_inst,
+LogicSignal::LogicSignal(shared_ptr<pv::device::DevInst> dev_inst,
 	const sr_probe *const probe, shared_ptr<data::Logic> data) :
 	Signal(dev_inst, probe),
 	_data(data),

@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_DEVINST_H
-#define PULSEVIEW_PV_DEVINST_H
+#ifndef PULSEVIEW_PV_DEVICE_DEVINST_H
+#define PULSEVIEW_PV_DEVICE_DEVINST_H
 
 #include <string>
 
@@ -36,6 +36,7 @@ struct sr_probe;
 struct sr_probe_group;
 
 namespace pv {
+namespace device {
 
 class DevInst : public QObject
 {
@@ -71,6 +72,7 @@ private:
 	sr_dev_inst *const _sdi;
 };
 
+} // device
 } // pv
 
-#endif // PULSEVIEW_PV_DEVINST_H
+#endif // PULSEVIEW_PV_DEVICE_DEVINST_H

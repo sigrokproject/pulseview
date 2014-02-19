@@ -49,7 +49,7 @@ private:
 	static const QColor SignalColours[10];
 
 public:
-	LogicSignal(boost::shared_ptr<pv::DevInst> dev_inst,
+	LogicSignal(boost::shared_ptr<pv::device::DevInst> dev_inst,
 		const sr_probe *const probe,
 		boost::shared_ptr<pv::data::Logic> data);
 

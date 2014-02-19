@@ -32,7 +32,7 @@
 #include "signal.h"
 #include "view.h"
 
-#include <pv/devinst.h>
+#include <pv/device/devinst.h>
 
 using boost::shared_ptr;
 
@@ -56,7 +56,7 @@ const char *const ProbeNames[] = {
 	"SCL"
 };
 
-Signal::Signal(shared_ptr<pv::DevInst> dev_inst,
+Signal::Signal(shared_ptr<pv::device::DevInst> dev_inst,
 	const sr_probe *const probe) :
 	Trace(probe->name),
 	_dev_inst(dev_inst),

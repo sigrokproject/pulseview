@@ -36,7 +36,10 @@ class QVBoxLayout;
 namespace pv {
 
 class DeviceManager;
+
+namespace device {
 class DevInst;
+}
 
 namespace toolbars {
 class ContextBar;
@@ -72,8 +75,8 @@ private:
 	 * first device in the device list should be selected.
 	 */
 	void update_device_list(
-		boost::shared_ptr<pv::DevInst> selected_device =
-			boost::shared_ptr<pv::DevInst>());
+		boost::shared_ptr<pv::device::DevInst> selected_device =
+			boost::shared_ptr<pv::device::DevInst>());
 
 private slots:
 	void load_file(QString file_name);

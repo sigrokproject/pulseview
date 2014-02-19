@@ -34,10 +34,12 @@ struct sr_probe;
 
 namespace pv {
 
-class DevInst;
-
 namespace data {
 class SignalData;
+}
+
+namespace device {
+class DevInst;
 }
 
 namespace view {
@@ -47,7 +49,7 @@ class Signal : public Trace
 	Q_OBJECT
 
 protected:
-	Signal(boost::shared_ptr<pv::DevInst> dev_inst,
+	Signal(boost::shared_ptr<pv::device::DevInst> dev_inst,
 		const sr_probe *const probe);
 
 public:
@@ -77,7 +79,7 @@ private slots:
 	void on_disable();
 
 protected:
-	boost::shared_ptr<pv::DevInst> _dev_inst;
+	boost::shared_ptr<pv::device::DevInst> _dev_inst;
 	const sr_probe *const _probe;
 
 	QComboBox *_name_widget;

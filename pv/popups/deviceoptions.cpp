@@ -32,7 +32,8 @@ using boost::shared_ptr;
 namespace pv {
 namespace popups {
 
-DeviceOptions::DeviceOptions(shared_ptr<DevInst> dev_inst, QWidget *parent) :
+DeviceOptions::DeviceOptions(shared_ptr<device::DevInst> dev_inst,
+	QWidget *parent) :
 	Popup(parent),
 	_dev_inst(dev_inst),
 	_layout(this),

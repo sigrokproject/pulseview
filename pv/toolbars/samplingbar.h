@@ -41,8 +41,11 @@ class QAction;
 
 namespace pv {
 
-class DevInst;
 class SigSession;
+
+namespace device {
+class DevInst;
+}
 
 namespace toolbars {
 
@@ -59,10 +62,12 @@ public:
 	SamplingBar(SigSession &session, QWidget *parent);
 
 	void set_device_list(
-		const std::list< boost::shared_ptr<pv::DevInst> > &devices);
+		const std::list< boost::shared_ptr<pv::device::DevInst> >
+			&devices);
 
-	boost::shared_ptr<pv::DevInst> get_selected_device() const;
-	void set_selected_device(boost::shared_ptr<pv::DevInst> dev_inst);
+	boost::shared_ptr<pv::device::DevInst> get_selected_device() const;
+	void set_selected_device(
+		boost::shared_ptr<pv::device::DevInst> dev_inst);
 
 	void set_capture_state(pv::SigSession::capture_state state);
 
@@ -88,7 +93,7 @@ private:
 	SigSession &_session;
 
 	QComboBox _device_selector;
-	std::map<const sr_dev_inst*, boost::weak_ptr<DevInst> >
+	std::map<const sr_dev_inst*, boost::weak_ptr<device::DevInst> >
 		_device_selector_map;
 	bool _updating_device_selector;
 

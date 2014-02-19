@@ -24,7 +24,7 @@
 
 #include "deviceoptions.h"
 
-#include <pv/devinst.h>
+#include <pv/device/devinst.h>
 #include <pv/prop/bool.h>
 #include <pv/prop/double.h>
 #include <pv/prop/enum.h>
@@ -45,7 +45,7 @@ namespace pv {
 namespace prop {
 namespace binding {
 
-DeviceOptions::DeviceOptions(shared_ptr<pv::DevInst> dev_inst,
+DeviceOptions::DeviceOptions(shared_ptr<pv::device::DevInst> dev_inst,
 	const sr_probe_group *group) :
 	_dev_inst(dev_inst),
 	_group(group)
@@ -122,8 +122,9 @@ void DeviceOptions::bind_bool(const QString &name, int key)
 {
 	assert(_dev_inst);
 	_properties.push_back(shared_ptr<Property>(new Bool(name,
-		bind(&DevInst::get_config, _dev_inst, _group, key),
-		bind(&DevInst::set_config, _dev_inst, _group, key, _1))));
+		bind(&device::DevInst::get_config, _dev_inst, _group, key),
+		bind(&device::DevInst::set_config, _dev_inst,
+			_group, key, _1))));
 }
 
 void DeviceOptions::bind_enum(const QString &name, int key,
@@ -141,8 +142,9 @@ void DeviceOptions::bind_enum(const QString &name, int key,
 		values.push_back(make_pair(gvar, printer(gvar)));
 
 	_properties.push_back(shared_ptr<Property>(new Enum(name, values,
-		bind(&DevInst::get_config, _dev_inst, _group, key),
-		bind(&DevInst::set_config, _dev_inst, _group, key, _1))));
+		bind(&device::DevInst::get_config, _dev_inst, _group, key),
+		bind(&device::DevInst::set_config, _dev_inst,
+			_group, key, _1))));
 }
 
 void DeviceOptions::bind_int(const QString &name, int key, QString suffix,
@@ -151,8 +153,8 @@ void DeviceOptions::bind_int(const QString &name, int key, QString suffix,
 	assert(_dev_inst);
 
 	_properties.push_back(shared_ptr<Property>(new Int(name, suffix, range,
-		bind(&DevInst::get_config, _dev_inst, _group, key),
-		bind(&DevInst::set_config, _dev_inst, _group, key, _1))));
+		bind(&device::DevInst::get_config, _dev_inst, _group, key),
+		bind(&device::DevInst::set_config, _dev_inst, _group, key, _1))));
 }
 
 QString DeviceOptions::print_gvariant(GVariant *const gvar)
