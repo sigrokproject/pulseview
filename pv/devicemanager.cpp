@@ -19,7 +19,7 @@
  */
 
 #include "devicemanager.h"
-#include "device/devinst.h"
+#include "device/device.h"
 #include "sigsession.h"
 
 #include <cassert>
@@ -102,7 +102,7 @@ list< shared_ptr<device::DevInst> > DeviceManager::driver_scan(
 	GSList *const devices = sr_driver_scan(driver, drvopts);
 	for (GSList *l = devices; l; l = l->next)
 		driver_devices.push_back(shared_ptr<device::DevInst>(
-			new device::DevInst((sr_dev_inst*)l->data)));
+			new device::Device((sr_dev_inst*)l->data)));
 	g_slist_free(devices);
 	driver_devices.sort(compare_devices);
 

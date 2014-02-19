@@ -127,6 +127,7 @@ set(pulseview_SOURCES
 	pv/data/logicsnapshot.cpp
 	pv/data/signaldata.cpp
 	pv/data/snapshot.cpp
+	pv/device/device.cpp
 	pv/device/devinst.cpp
 	pv/dialogs/about.cpp
 	pv/dialogs/connect.cpp

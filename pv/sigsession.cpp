@@ -25,7 +25,7 @@
 #include "sigsession.h"
 
 #include "devicemanager.h"
-#include "device/devinst.h"
+#include "device/device.h"
 
 #include "data/analog.h"
 #include "data/analogsnapshot.h"
@@ -127,7 +127,7 @@ void SigSession::load_file(const string &name,
 		}
 
 		shared_ptr<device::DevInst> dev_inst(
-			new device::DevInst((sr_dev_inst*)devlist->data));
+			new device::Device((sr_dev_inst*)devlist->data));
 		g_slist_free(devlist);
 
 		_decode_traces.clear();
@@ -147,7 +147,7 @@ void SigSession::load_file(const string &name,
 
 		_decode_traces.clear();
 		update_signals(shared_ptr<device::DevInst>(
-			new device::DevInst(in->sdi)));
+			new device::Device(in->sdi)));
 		read_sample_rate(in->sdi);
 
 		_sampling_thread = boost::thread(

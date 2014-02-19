@@ -42,12 +42,13 @@ class DevInst : public QObject
 {
 	Q_OBJECT
 
-public:
+protected:
 	DevInst(sr_dev_inst *sdi);
 
+public:
 	sr_dev_inst* dev_inst() const;
 
-	std::string format_device_title() const;
+	virtual std::string format_device_title() const = 0;
 
 	GVariant* get_config(const sr_probe_group *group, int key);
 
@@ -68,7 +69,7 @@ public:
 signals:
 	void config_changed();
 
-private:
+protected:
 	sr_dev_inst *const _sdi;
 };
 

@@ -19,16 +19,12 @@
  */
 
 #include <cassert>
-#include <sstream>
 
 #include <QDebug>
 
 #include <libsigrok/libsigrok.h>
 
 #include "devinst.h"
-
-using std::ostringstream;
-using std::string;
 
 namespace pv {
 namespace device {
@@ -42,31 +38,6 @@ DevInst::DevInst(sr_dev_inst *sdi) :
 sr_dev_inst* DevInst::dev_inst() const
 {
 	return _sdi;
-}
-
-string DevInst::format_device_title() const
-{
-	ostringstream s;
-
-	assert(_sdi);
-
-	if (_sdi->vendor && _sdi->vendor[0]) {
-		s << _sdi->vendor;
-		if ((_sdi->model && _sdi->model[0]) ||
-			(_sdi->version && _sdi->version[0]))
-			s << ' ';
-	}
-
-	if (_sdi->model && _sdi->model[0]) {
-		s << _sdi->model;
-		if (_sdi->version && _sdi->version[0])
-			s << ' ';
-	}
-
-	if (_sdi->version && _sdi->version[0])
-		s << _sdi->version;
-
-	return s.str();
 }
 
 GVariant* DevInst::get_config(const sr_probe_group *group, int key)
