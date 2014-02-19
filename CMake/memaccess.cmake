@@ -20,6 +20,7 @@
 include(CheckCSourceRuns)
 
 function (memaccess_check_unaligned_le _var)
+IF (NOT CMAKE_CROSSCOMPILING)
 CHECK_C_SOURCE_RUNS("
 #include <stdint.h>
 int main() {
@@ -33,4 +34,8 @@ int main() {
        return 1;
     return 0;
 }" ${_var})
+ENDIF (NOT CMAKE_CROSSCOMPILING)
+IF (CMAKE_CROSSCOMPILING)
+  MESSAGE(WARNING "Cross compiling - using portable code for memory access")
+ENDIF (CMAKE_CROSSCOMPILING)
 endfunction()
