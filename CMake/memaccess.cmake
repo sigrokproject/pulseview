@@ -19,8 +19,8 @@
 
 include(CheckCSourceRuns)
 
-function (memaccess_check_unaligned_le _var)
-IF (NOT CMAKE_CROSSCOMPILING)
+function(memaccess_check_unaligned_le _var)
+if(NOT CMAKE_CROSSCOMPILING)
 CHECK_C_SOURCE_RUNS("
 #include <stdint.h>
 int main() {
@@ -28,14 +28,14 @@ int main() {
     union { uint64_t u64; uint8_t u8[16]; } d;
     uint64_t v;
     for (i=0; i<16; i++)
-	d.u8[i] = i;
+        d.u8[i] = i;
     v = *(uint64_t *)(d.u8+1);
     if (v != 0x0807060504030201ULL)
        return 1;
     return 0;
 }" ${_var})
-ENDIF (NOT CMAKE_CROSSCOMPILING)
-IF (CMAKE_CROSSCOMPILING)
-  MESSAGE(WARNING "Cross compiling - using portable code for memory access")
-ENDIF (CMAKE_CROSSCOMPILING)
+endif()
+if(CMAKE_CROSSCOMPILING)
+  message(WARNING "Cross compiling - using portable code for memory access")
+endif()
 endfunction()
