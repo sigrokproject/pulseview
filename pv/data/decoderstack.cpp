@@ -271,7 +271,7 @@ void DecoderStack::decode_proc(shared_ptr<data::Logic> data)
 	// Create the decoders
 	BOOST_FOREACH(const shared_ptr<decode::Decoder> &dec, _stack)
 	{
-		srd_decoder_inst *const di = dec->create_decoder_inst(session);
+		srd_decoder_inst *const di = dec->create_decoder_inst(session, unit_size);
 
 		if (!di)
 		{

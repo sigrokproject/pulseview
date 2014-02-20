@@ -97,8 +97,7 @@ bool Decoder::have_required_probes() const
 	return true;
 }
 
-srd_decoder_inst* Decoder::create_decoder_inst(
-	srd_session *const session) const
+srd_decoder_inst* Decoder::create_decoder_inst(srd_session *session, int unit_size) const
 {
 	GHashTable *const opt_hash = g_hash_table_new_full(g_str_hash,
 		g_str_equal, g_free, (GDestroyNotify)g_variant_unref);
@@ -134,7 +133,7 @@ srd_decoder_inst* Decoder::create_decoder_inst(
 		g_hash_table_insert(probes, (*i).first->id, gvar);
 	}
 
-	srd_inst_probe_set_all(decoder_inst, probes);
+	srd_inst_probe_set_all(decoder_inst, probes, unit_size);
 
 	return decoder_inst;
 }

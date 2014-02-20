@@ -65,7 +65,7 @@ public:
 	bool have_required_probes() const;
 
 	srd_decoder_inst* create_decoder_inst(
-		srd_session *const session) const;
+		srd_session *session, int unit_size) const;
 
 private:
 	const srd_decoder *const _decoder;
