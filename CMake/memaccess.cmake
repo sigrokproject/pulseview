@@ -36,6 +36,6 @@ int main() {
 }" ${_var})
 endif()
 if(CMAKE_CROSSCOMPILING)
-  message(WARNING "Cross compiling - using portable code for memory access")
+  message(STATUS "Cross compiling - using portable code for memory access")
 endif()
 endfunction()
