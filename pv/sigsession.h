@@ -81,12 +81,13 @@ public:
 	/**
 	 * Sets device instance that will be used in the next capture session.
 	 */
-	void set_device(boost::shared_ptr<device::DevInst> dev_inst);
+	void set_device(boost::shared_ptr<device::DevInst> dev_inst)
+		throw(QString);
+
+	void set_file(const std::string &name)
+		throw(QString);
 
 	void release_device(device::DevInst *dev_inst);
-
-	void load_file(const std::string &name,
-		boost::function<void (const QString)> error_handler);
 
 	capture_state get_capture_state() const;
 
@@ -133,12 +134,6 @@ private:
 		const std::string &filename,
 		boost::function<void (const QString)> error_handler,
 		sr_input_format *format = NULL);
-
-	void load_session_thread_proc(
-		boost::function<void (const QString)> error_handler);
-
-	void load_input_thread_proc(const std::string name, sr_input *in,
-		boost::function<void (const QString)> error_handler);
 
 	void sample_thread_proc(boost::shared_ptr<device::DevInst> dev_inst,
 		boost::function<void (const QString)> error_handler);

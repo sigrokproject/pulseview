@@ -18,34 +18,58 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_DEVICE_DEVICE_H
-#define PULSEVIEW_PV_DEVICE_DEVICE_H
+#include "sessionfile.h"
 
-#include "devinst.h"
+#include <libsigrok/libsigrok.h>
 
 namespace pv {
 namespace device {
 
-class Device : public DevInst
+SessionFile::SessionFile(const std::string &path) :
+	File(path),
+	_sdi(NULL)
 {
-public:
-	Device(sr_dev_inst *dev_inst);
+}
 
-	sr_dev_inst* dev_inst() const;
+sr_dev_inst* SessionFile::dev_inst() const
+{
+	return _sdi;
+}
 
-	void use(SigSession *owner) throw(QString);
+void SessionFile::use(SigSession *owner) throw(QString)
+{
+	assert(!_sdi);
 
-	void release();
+	if (sr_session_load(_path.c_str()) != SR_OK)
+		throw tr("Failed to open file.\n");
 
-	std::string format_device_title() const;
+	GSList *devlist = NULL;
+	sr_session_dev_list(&devlist);
 
-	bool is_trigger_enabled() const;
+	if (!devlist || !devlist->data) {
+		if (devlist)
+			g_slist_free(devlist);
+		throw tr("Failed to start session.");
+	}
 
-private:
-	sr_dev_inst *const _sdi;
-};
+	_sdi = (sr_dev_inst*)devlist->data;
+	g_slist_free(devlist);
+
+	File::use(owner);
+}
+
+void SessionFile::release()
+{
+	if (!_owner)
+		return;
+
+	assert(_sdi);
+	File::release();
+	sr_dev_close(_sdi);
+	sr_dev_clear(_sdi->driver);
+	sr_session_destroy();
+	_sdi = NULL;
+}
 
 } // device
 } // pv
-
-#endif // PULSVIEW_PV_DEVICE_DEVICE_H

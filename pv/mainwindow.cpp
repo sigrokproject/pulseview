@@ -322,9 +322,15 @@ void MainWindow::load_file(QString file_name)
 	const QString errorMessage(
 		QString("Failed to load file %1").arg(file_name));
 	const QString infoMessage;
-	_session.load_file(file_name.toStdString(),
-		boost::bind(&MainWindow::session_error, this,
-			errorMessage, infoMessage));
+
+	try {
+		_session.set_file(file_name.toStdString());
+	} catch(QString e) {
+		show_session_error(tr("Failed to load ") + file_name, e);
+	}
+
+	_session.start_capture(boost::bind(&MainWindow::session_error, this,
+		errorMessage, infoMessage));
 }
 
 void MainWindow::show_session_error(

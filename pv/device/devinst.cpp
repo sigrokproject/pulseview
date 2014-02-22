@@ -36,12 +36,11 @@ DevInst::DevInst() :
 {
 }
 
-void DevInst::use(SigSession *owner)
+void DevInst::use(SigSession *owner) throw(QString)
 {
 	assert(owner);
 	assert(!_owner);
 	_owner = owner;
-	sr_dev_open(dev_inst());
 }
 
 void DevInst::release()
@@ -49,7 +48,6 @@ void DevInst::release()
 	if (_owner) {
 		_owner->release_device(this);
 		_owner = NULL;
-		sr_dev_close(dev_inst());
 	}
 }
 
@@ -61,6 +59,7 @@ SigSession* DevInst::owner() const
 GVariant* DevInst::get_config(const sr_probe_group *group, int key)
 {
 	GVariant *data = NULL;
+	assert(_owner);
 	sr_dev_inst *const sdi = dev_inst();
 	assert(sdi);
 	if (sr_config_get(sdi->driver, sdi, group, key, &data) != SR_OK)
@@ -70,6 +69,7 @@ GVariant* DevInst::get_config(const sr_probe_group *group, int key)
 
 bool DevInst::set_config(const sr_probe_group *group, int key, GVariant *data)
 {
+	assert(_owner);
 	sr_dev_inst *const sdi = dev_inst();
 	assert(sdi);
 	if(sr_config_set(sdi, group, key, data) == SR_OK) {
@@ -82,6 +82,7 @@ bool DevInst::set_config(const sr_probe_group *group, int key, GVariant *data)
 GVariant* DevInst::list_config(const sr_probe_group *group, int key)
 {
 	GVariant *data = NULL;
+	assert(_owner);
 	sr_dev_inst *const sdi = dev_inst();
 	assert(sdi);
 	if (sr_config_list(sdi->driver, sdi, group, key, &data) != SR_OK)
@@ -91,6 +92,7 @@ GVariant* DevInst::list_config(const sr_probe_group *group, int key)
 
 void DevInst::enable_probe(const sr_probe *probe, bool enable)
 {
+	assert(_owner);
 	sr_dev_inst *const sdi = dev_inst();
 	assert(sdi);
 	for (const GSList *p = sdi->probes; p; p = p->next)
@@ -120,6 +122,17 @@ uint64_t DevInst::get_sample_limit()
 bool DevInst::is_trigger_enabled() const
 {
 	return false;
+}
+
+void DevInst::start()
+{
+	if (sr_session_start() != SR_OK)
+		throw tr("Failed to start session.");
+}
+
+void DevInst::run()
+{
+	sr_session_run();
 }
 
 } // device

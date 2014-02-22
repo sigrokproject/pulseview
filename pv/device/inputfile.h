@@ -18,34 +18,51 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_DEVICE_DEVICE_H
-#define PULSEVIEW_PV_DEVICE_DEVICE_H
+#ifndef PULSEVIEW_PV_DEVICE_INPUTFILE_H
+#define PULSEVIEW_PV_DEVICE_INPUTFILE_H
 
-#include "devinst.h"
+#include "file.h"
+
+#include <string>
+
+struct sr_input;
+struct sr_input_format;
 
 namespace pv {
 namespace device {
 
-class Device : public DevInst
+class InputFile : public File
 {
 public:
-	Device(sr_dev_inst *dev_inst);
+	InputFile(const std::string &path);
 
 	sr_dev_inst* dev_inst() const;
 
-	void use(SigSession *owner) throw(QString);
+	virtual void use(SigSession *owner) throw(QString);
 
-	void release();
+	virtual void release();
 
-	std::string format_device_title() const;
+	virtual void start();
 
-	bool is_trigger_enabled() const;
+	virtual void run();
 
 private:
-	sr_dev_inst *const _sdi;
+	/**
+	 * Attempts to autodetect the format. Failing that
+	 * @param filename The filename of the input file.
+	 * @return A pointer to the 'struct sr_input_format' that should be used,
+	 *         or NULL if no input format was selected or auto-detected.
+	 */
+	static sr_input_format* determine_input_file_format(
+		const std::string &filename);
+
+	static sr_input* load_input_file_format(const std::string &filename,
+		sr_input_format *format);
+private:
+	sr_input *_input;
 };
 
 } // device
 } // pv
 
-#endif // PULSVIEW_PV_DEVICE_DEVICE_H
+#endif // PULSEVIEW_PV_DEVICE_INPUTFILE_H

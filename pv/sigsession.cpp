@@ -26,6 +26,7 @@
 
 #include "devicemanager.h"
 #include "device/device.h"
+#include "device/file.h"
 
 #include "data/analog.h"
 #include "data/analogsnapshot.h"
@@ -91,21 +92,35 @@ shared_ptr<device::DevInst> SigSession::get_device() const
 	return _dev_inst;
 }
 
-void SigSession::set_device(shared_ptr<device::DevInst> dev_inst)
+void SigSession::set_device(
+	shared_ptr<device::DevInst> dev_inst) throw(QString)
 {
 	using pv::device::Device;
 
 	// Ensure we are not capturing before setting the device
 	stop_capture();
 
-	if (_dev_inst)
+	if (_dev_inst) {
+		sr_session_datafeed_callback_remove_all();
 		_dev_inst->release();
-
-	if (dev_inst)
-		dev_inst->use(this);
+	}
 
 	_dev_inst = dev_inst;
-	update_signals(dev_inst);
+	_decode_traces.clear();
+
+	if (dev_inst) {
+		dev_inst->use(this);
+		sr_session_datafeed_callback_add(data_feed_in_proc, NULL);
+		update_signals(dev_inst);
+	}
+}
+
+void SigSession::set_file(const string &name) throw(QString)
+{
+	// Deslect the old device, because file type detection in File::create
+	// destorys the old session inside libsigrok.
+	set_device(shared_ptr<device::DevInst>());
+	set_device(shared_ptr<device::DevInst>(device::File::create(name)));
 }
 
 void SigSession::release_device(device::DevInst *dev_inst)
@@ -115,51 +130,6 @@ void SigSession::release_device(device::DevInst *dev_inst)
 
 	assert(_capture_state == Stopped);
 	_dev_inst = shared_ptr<device::DevInst>();
-}
-
-void SigSession::load_file(const string &name,
-	function<void (const QString)> error_handler)
-{
-	stop_capture();
-
-	if (sr_session_load(name.c_str()) == SR_OK) {
-		GSList *devlist = NULL;
-		sr_session_dev_list(&devlist);
-
-		if (!devlist || !devlist->data ||
-			sr_session_start() != SR_OK) {
-			error_handler(tr("Failed to start session."));
-			return;
-		}
-
-		shared_ptr<device::DevInst> dev_inst(
-			new device::Device((sr_dev_inst*)devlist->data));
-		g_slist_free(devlist);
-
-		_decode_traces.clear();
-		update_signals(dev_inst);
-		read_sample_rate(dev_inst->dev_inst());
-
-		_sampling_thread = boost::thread(
-			&SigSession::load_session_thread_proc, this,
-			error_handler);
-
-	} else {
-		sr_input *in = NULL;
-
-		if (!(in = load_input_file_format(name.c_str(),
-			error_handler)))
-			return;
-
-		_decode_traces.clear();
-		update_signals(shared_ptr<device::DevInst>(
-			new device::Device(in->sdi)));
-		read_sample_rate(in->sdi);
-
-		_sampling_thread = boost::thread(
-			&SigSession::load_input_thread_proc, this,
-			name, in, error_handler);
-	}
 }
 
 SigSession::capture_state SigSession::get_capture_state() const
@@ -317,82 +287,6 @@ void SigSession::set_capture_state(capture_state state)
 		capture_state_changed(state);
 }
 
-/**
- * Attempts to autodetect the format. Failing that
- * @param filename The filename of the input file.
- * @return A pointer to the 'struct sr_input_format' that should be used,
- *         or NULL if no input format was selected or auto-detected.
- */
-sr_input_format* SigSession::determine_input_file_format(
-	const string &filename)
-{
-	int i;
-
-	/* If there are no input formats, return NULL right away. */
-	sr_input_format *const *const inputs = sr_input_list();
-	if (!inputs) {
-		g_critical("No supported input formats available.");
-		return NULL;
-	}
-
-	/* Otherwise, try to find an input module that can handle this file. */
-	for (i = 0; inputs[i]; i++) {
-		if (inputs[i]->format_match(filename.c_str()))
-			break;
-	}
-
-	/* Return NULL if no input module wanted to touch this. */
-	if (!inputs[i]) {
-		g_critical("Error: no matching input module found.");
-		return NULL;
-	}
-
-	return inputs[i];
-}
-
-sr_input* SigSession::load_input_file_format(const string &filename,
-	function<void (const QString)> error_handler,
-	sr_input_format *format)
-{
-	struct stat st;
-	sr_input *in;
-
-	if (!format && !(format =
-		determine_input_file_format(filename.c_str()))) {
-		/* The exact cause was already logged. */
-		return NULL;
-	}
-
-	if (stat(filename.c_str(), &st) == -1) {
-		error_handler(tr("Failed to load file"));
-		return NULL;
-	}
-
-	/* Initialize the input module. */
-	if (!(in = new sr_input)) {
-		qDebug("Failed to allocate input module.\n");
-		return NULL;
-	}
-
-	in->format = format;
-	in->param = NULL;
-	if (in->format->init &&
-		in->format->init(in, filename.c_str()) != SR_OK) {
-		qDebug("Input format init failed.\n");
-		return NULL;
-	}
-
-	sr_session_new();
-
-	if (sr_session_dev_add(in->sdi) != SR_OK) {
-		qDebug("Failed to use device.\n");
-		sr_session_destroy();
-		return NULL;
-	}
-
-	return in;
-}
-
 void SigSession::update_signals(shared_ptr<device::DevInst> dev_inst)
 {
 	assert(dev_inst);
@@ -518,49 +412,6 @@ void SigSession::read_sample_rate(const sr_dev_inst *const sdi)
 	}
 }
 
-void SigSession::load_session_thread_proc(
-	function<void (const QString)> error_handler)
-{
-	(void)error_handler;
-
-	sr_session_datafeed_callback_add(data_feed_in_proc, NULL);
-
-	set_capture_state(Running);
-
-	sr_session_run();
-
-	sr_session_destroy();
-	set_capture_state(Stopped);
-
-	// Confirm that SR_DF_END was received
-	assert(!_cur_logic_snapshot);
-	assert(_cur_analog_snapshots.empty());
-}
-
-void SigSession::load_input_thread_proc(const string name,
-	sr_input *in, function<void (const QString)> error_handler)
-{
-	(void)error_handler;
-
-	assert(in);
-	assert(in->format);
-
-	sr_session_datafeed_callback_add(data_feed_in_proc, NULL);
-
-	set_capture_state(Running);
-
-	in->format->loadfile(in, name.c_str());
-
-	sr_session_destroy();
-	set_capture_state(Stopped);
-
-	// Confirm that SR_DF_END was received
-	assert(!_cur_logic_snapshot);
-	assert(_cur_analog_snapshots.empty());
-
-	delete in;
-}
-
 void SigSession::sample_thread_proc(shared_ptr<device::DevInst> dev_inst,
 	function<void (const QString)> error_handler)
 {
@@ -568,26 +419,19 @@ void SigSession::sample_thread_proc(shared_ptr<device::DevInst> dev_inst,
 	assert(dev_inst->dev_inst());
 	assert(error_handler);
 
-	sr_session_new();
-	sr_session_datafeed_callback_add(data_feed_in_proc, NULL);
+	read_sample_rate(dev_inst->dev_inst());
 
-	if (sr_session_dev_add(dev_inst->dev_inst()) != SR_OK) {
-		error_handler(tr("Failed to use device."));
-		sr_session_destroy();
-		return;
-	}
-
-	if (sr_session_start() != SR_OK) {
-		error_handler(tr("Failed to start session."));
+	try {
+		dev_inst->start();
+	} catch(const QString e) {
+		error_handler(e);
 		return;
 	}
 
 	set_capture_state(dev_inst->is_trigger_enabled() ?
 		AwaitingTrigger : Running);
 
-	sr_session_run();
-	sr_session_destroy();
-
+	dev_inst->run();
 	set_capture_state(Stopped);
 
 	// Confirm that SR_DF_END was received

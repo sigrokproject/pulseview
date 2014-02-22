@@ -128,7 +128,10 @@ set(pulseview_SOURCES
 	pv/data/signaldata.cpp
 	pv/data/snapshot.cpp
 	pv/device/device.cpp
+	pv/device/file.cpp
 	pv/device/devinst.cpp
+	pv/device/inputfile.cpp
+	pv/device/sessionfile.cpp
 	pv/dialogs/about.cpp
 	pv/dialogs/connect.cpp
 	pv/dialogs/storeprogress.cpp

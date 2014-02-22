@@ -18,34 +18,47 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_DEVICE_DEVICE_H
-#define PULSEVIEW_PV_DEVICE_DEVICE_H
+#include "file.h"
+#include "inputfile.h"
+#include "sessionfile.h"
 
-#include "devinst.h"
+#include <libsigrok/libsigrok.h>
+
+using std::string;
 
 namespace pv {
 namespace device {
 
-class Device : public DevInst
+File::File(const std::string path) :
+	_path(path)
 {
-public:
-	Device(sr_dev_inst *dev_inst);
+}
 
-	sr_dev_inst* dev_inst() const;
+std::string File::format_device_title() const
+{
+	return _path;
+}
 
-	void use(SigSession *owner) throw(QString);
+File* File::create(const string &name)
+{
+	if (sr_session_load(name.c_str()) == SR_OK) {
+		GSList *devlist = NULL;
+		sr_session_dev_list(&devlist);
+		sr_session_destroy();
 
-	void release();
+		if (devlist) {
+			sr_dev_inst *const sdi = (sr_dev_inst*)devlist->data;
+			g_slist_free(devlist);
+			if (sdi) {
+				sr_dev_close(sdi);
+				sr_dev_clear(sdi->driver);
+				return new SessionFile(name);
+			}
+		}
+	}
 
-	std::string format_device_title() const;
-
-	bool is_trigger_enabled() const;
-
-private:
-	sr_dev_inst *const _sdi;
-};
+	return new InputFile(name);
+}
 
 } // device
 } // pv
-
-#endif // PULSVIEW_PV_DEVICE_DEVICE_H

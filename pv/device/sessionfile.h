@@ -18,34 +18,30 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_DEVICE_DEVICE_H
-#define PULSEVIEW_PV_DEVICE_DEVICE_H
+#ifndef PULSEVIEW_PV_DEVICE_SESSIONFILE_H
+#define PULSEVIEW_PV_DEVICE_SESSIONFILE_H
 
-#include "devinst.h"
+#include "file.h"
 
 namespace pv {
 namespace device {
 
-class Device : public DevInst
+class SessionFile : public File
 {
 public:
-	Device(sr_dev_inst *dev_inst);
+	SessionFile(const std::string &path);
 
 	sr_dev_inst* dev_inst() const;
 
-	void use(SigSession *owner) throw(QString);
+	virtual void use(SigSession *owner) throw(QString);
 
-	void release();
-
-	std::string format_device_title() const;
-
-	bool is_trigger_enabled() const;
+	virtual void release();
 
 private:
-	sr_dev_inst *const _sdi;
+	sr_dev_inst *_sdi;
 };
 
 } // device
 } // pv
 
-#endif // PULSVIEW_PV_DEVICE_DEVICE_H
+#endif // PULSEVIEW_PV_DEVICE_SESSIONFILE_H

@@ -41,6 +41,28 @@ sr_dev_inst* Device::dev_inst() const
 	return _sdi;
 }
 
+void Device::use(SigSession *owner) throw(QString)
+{
+	DevInst::use(owner);
+
+	sr_session_new();
+
+	assert(_sdi);
+	sr_dev_open(_sdi);
+	if (sr_session_dev_add(_sdi) != SR_OK)
+		throw QString(tr("Failed to use device."));
+}
+
+void Device::release()
+{
+	if (_owner) {
+		DevInst::release();
+		sr_session_destroy();
+	}
+
+	sr_dev_close(_sdi);
+}
+
 std::string Device::format_device_title() const
 {
 	ostringstream s;

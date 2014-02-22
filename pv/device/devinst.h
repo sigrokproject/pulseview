@@ -51,9 +51,9 @@ protected:
 public:
 	virtual sr_dev_inst* dev_inst() const = 0;
 
-	void use(SigSession *owner);
+	virtual void use(SigSession *owner) throw(QString);
 
-	void release();
+	virtual void release();
 
 	SigSession* owner() const;
 
@@ -76,6 +76,11 @@ public:
 	uint64_t get_sample_limit();
 
 	virtual bool is_trigger_enabled() const;
+
+public:
+	virtual void start();
+
+	virtual void run();
 
 signals:
 	void config_changed();
