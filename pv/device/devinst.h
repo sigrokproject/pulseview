@@ -75,6 +75,8 @@ public:
 	 */
 	uint64_t get_sample_limit();
 
+	virtual bool is_trigger_enabled() const;
+
 signals:
 	void config_changed();
 

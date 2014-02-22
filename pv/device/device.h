@@ -35,6 +35,8 @@ public:
 
 	std::string format_device_title() const;
 
+	bool is_trigger_enabled() const;
+
 private:
 	sr_dev_inst *const _sdi;
 };

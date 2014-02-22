@@ -113,8 +113,6 @@ private:
 
 	void update_signals(boost::shared_ptr<device::DevInst> dev_inst);
 
-	bool is_trigger_enabled() const;
-
 	boost::shared_ptr<view::Signal> signal_from_probe(
 		const sr_probe *probe) const;
 

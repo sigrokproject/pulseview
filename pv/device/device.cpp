@@ -66,5 +66,17 @@ std::string Device::format_device_title() const
 	return s.str();
 }
 
+bool Device::is_trigger_enabled() const
+{
+	assert(_sdi);
+	for (const GSList *l = _sdi->probes; l; l = l->next) {
+		const sr_probe *const p = (const sr_probe *)l->data;
+		assert(p);
+		if (p->trigger && p->trigger[0] != '\0')
+			return true;
+	}
+	return false;
+}
+
 } // device
 } // pv

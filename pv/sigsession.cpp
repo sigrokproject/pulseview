@@ -479,20 +479,6 @@ void SigSession::update_signals(shared_ptr<device::DevInst> dev_inst)
 	signals_changed();
 }
 
-bool SigSession::is_trigger_enabled() const
-{
-	assert(_dev_inst);
-	assert(_dev_inst->dev_inst());
-	for (const GSList *l = _dev_inst->dev_inst()->probes; l; l = l->next) {
-		const sr_probe *const p = (const sr_probe *)l->data;
-		assert(p);
-		if (p->trigger && p->trigger[0] != '\0')
-			return true;
-	}
-
-	return false;
-}
-
 shared_ptr<view::Signal> SigSession::signal_from_probe(
 	const sr_probe *probe) const
 {
@@ -596,7 +582,8 @@ void SigSession::sample_thread_proc(shared_ptr<device::DevInst> dev_inst,
 		return;
 	}
 
-	set_capture_state(is_trigger_enabled() ? AwaitingTrigger : Running);
+	set_capture_state(dev_inst->is_trigger_enabled() ?
+		AwaitingTrigger : Running);
 
 	sr_session_run();
 	sr_session_destroy();

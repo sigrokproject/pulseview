@@ -117,5 +117,10 @@ uint64_t DevInst::get_sample_limit()
 	return sample_limit;
 }
 
+bool DevInst::is_trigger_enabled() const
+{
+	return false;
+}
+
 } // device
 } // pv
