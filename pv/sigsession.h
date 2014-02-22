@@ -83,7 +83,7 @@ public:
 	 */
 	void set_device(boost::shared_ptr<device::DevInst> dev_inst);
 
-	void release_device(boost::shared_ptr<device::DevInst> dev_inst);
+	void release_device(device::DevInst *dev_inst);
 
 	void load_file(const std::string &name,
 		boost::function<void (const QString)> error_handler);

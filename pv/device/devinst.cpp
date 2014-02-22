@@ -26,11 +26,14 @@
 
 #include "devinst.h"
 
+#include <pv/sigsession.h>
+
 namespace pv {
 namespace device {
 
 DevInst::DevInst(sr_dev_inst *sdi) :
-	_sdi(sdi)
+	_sdi(sdi),
+	_owner(NULL)
 {
 	assert(_sdi);
 }
@@ -38,6 +41,28 @@ DevInst::DevInst(sr_dev_inst *sdi) :
 sr_dev_inst* DevInst::dev_inst() const
 {
 	return _sdi;
+}
+
+void DevInst::use(SigSession *owner)
+{
+	assert(owner);
+	assert(!_owner);
+	_owner = owner;
+	sr_dev_open(_sdi);
+}
+
+void DevInst::release()
+{
+	if (_owner) {
+		_owner->release_device(this);
+		_owner = NULL;
+		sr_dev_close(_sdi);
+	}
+}
+
+SigSession* DevInst::owner() const
+{
+	return _owner;
 }
 
 GVariant* DevInst::get_config(const sr_probe_group *group, int key)

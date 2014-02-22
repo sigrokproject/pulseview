@@ -80,9 +80,7 @@ SigSession::~SigSession()
 	if (_sampling_thread.joinable())
 		_sampling_thread.join();
 
-	shared_ptr<Device> device(dynamic_pointer_cast<Device>(_dev_inst));
-	if (device)
-		_device_manager.release_device(device);
+	_dev_inst->release();
 
 	// TODO: This should not be necessary
 	_session = NULL;
@@ -100,21 +98,20 @@ void SigSession::set_device(shared_ptr<device::DevInst> dev_inst)
 	// Ensure we are not capturing before setting the device
 	stop_capture();
 
-	shared_ptr<Device> old_device(dynamic_pointer_cast<Device>(_dev_inst));
-	if (old_device)
-		_device_manager.release_device(old_device);
+	if (_dev_inst)
+		_dev_inst->release();
 
-	shared_ptr<Device> new_device(dynamic_pointer_cast<Device>(dev_inst));
-	if (new_device)
-		_device_manager.use_device(new_device, this);
+	if (dev_inst)
+		dev_inst->use(this);
 
 	_dev_inst = dev_inst;
 	update_signals(dev_inst);
 }
 
-void SigSession::release_device(shared_ptr<device::DevInst> dev_inst)
+void SigSession::release_device(device::DevInst *dev_inst)
 {
 	(void)dev_inst;
+	assert(_dev_inst.get() == dev_inst);
 
 	assert(_capture_state == Stopped);
 	_dev_inst = shared_ptr<device::DevInst>();

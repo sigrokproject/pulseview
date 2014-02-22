@@ -24,7 +24,6 @@
 #include <glib.h>
 
 #include <list>
-#include <map>
 #include <string>
 
 #include <boost/shared_ptr.hpp>
@@ -50,11 +49,6 @@ public:
 	const std::list< boost::shared_ptr<pv::device::Device> >&
 		devices() const;
 
-	void use_device(boost::shared_ptr<pv::device::Device> dev_inst,
-		SigSession *owner);
-
-	void release_device(boost::shared_ptr<pv::device::Device> dev_inst);
-
 	std::list< boost::shared_ptr<pv::device::Device> > driver_scan(
 		struct sr_dev_driver *const driver,
 		GSList *const drvopts = NULL);
@@ -74,8 +68,6 @@ private:
 private:
 	struct sr_context *const _sr_ctx;
 	std::list< boost::shared_ptr<pv::device::Device> > _devices;
-	std::map< boost::shared_ptr<pv::device::Device>, pv::SigSession*>
-		_used_devices;
 };
 
 } // namespace pv

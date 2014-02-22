@@ -26,6 +26,8 @@
 #include <stdexcept>
 #include <string>
 
+#include <boost/foreach.hpp>
+
 #include <libsigrok/libsigrok.h>
 
 using boost::shared_ptr;
@@ -52,30 +54,6 @@ DeviceManager::~DeviceManager()
 const list< shared_ptr<pv::device::Device> >& DeviceManager::devices() const
 {
 	return _devices;
-}
-
-void DeviceManager::use_device(shared_ptr<device::Device> dev_inst,
-	SigSession *owner)
-{
-	assert(dev_inst);
-	assert(owner);
-
-	_used_devices[dev_inst] = owner;
-
-	sr_dev_open(dev_inst->dev_inst());
-}
-
-void DeviceManager::release_device(shared_ptr<device::Device> dev_inst)
-{
-	assert(dev_inst);
-
-	// Notify the owner, and remove the device from the used device list
-	map< shared_ptr<device::Device>, pv::SigSession*>::const_iterator
-		iter = _used_devices.find(dev_inst);
-	assert(iter != _used_devices.end());
-
-	(*iter).second->release_device(dev_inst);
-	_used_devices.erase(dev_inst);
 }
 
 list< shared_ptr<device::Device> > DeviceManager::driver_scan(
@@ -130,11 +108,10 @@ void DeviceManager::init_drivers()
 void DeviceManager::release_devices()
 {
 	// Release all the used devices
-	for (map<shared_ptr<device::Device>, SigSession*>::iterator i =
-		_used_devices.begin(); i != _used_devices.end(); i++)
-		release_device((*i).first);
-
-	_used_devices.clear();
+	BOOST_FOREACH(shared_ptr<device::Device> dev, _devices) {
+		assert(dev);
+		dev->release();
+	}
 
 	// Clear all the drivers
 	sr_dev_driver **const drivers = sr_driver_list();
@@ -152,20 +129,11 @@ void DeviceManager::scan_all_drivers()
 
 void DeviceManager::release_driver(struct sr_dev_driver *const driver)
 {
-	assert(driver);
-	for (map<shared_ptr<device::Device>, SigSession*>::iterator i =
-		_used_devices.begin(); i != _used_devices.end(); i++)
-		if((*i).first->dev_inst()->driver == driver)
-		{
-			// Notify the current owner of the device
-			(*i).second->release_device((*i).first);
-
-			// Remove it from the used device list
-			_used_devices.erase(i);
-
-			// Close the device instance
-			sr_dev_close((*i).first->dev_inst());
-		}
+	BOOST_FOREACH(shared_ptr<device::Device> dev, _devices) {
+		assert(dev);
+		if(dev->dev_inst()->driver == driver)
+			dev->release();
+	}
 
 	// Clear all the old device instances from this driver
 	sr_dev_clear(driver);

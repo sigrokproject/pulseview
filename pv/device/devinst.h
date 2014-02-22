@@ -36,6 +36,9 @@ struct sr_probe;
 struct sr_probe_group;
 
 namespace pv {
+
+class SigSession;
+
 namespace device {
 
 class DevInst : public QObject
@@ -47,6 +50,12 @@ protected:
 
 public:
 	sr_dev_inst* dev_inst() const;
+
+	void use(SigSession *owner);
+
+	void release();
+
+	SigSession* owner() const;
 
 	virtual std::string format_device_title() const = 0;
 
@@ -71,6 +80,7 @@ signals:
 
 protected:
 	sr_dev_inst *const _sdi;
+	SigSession *_owner;
 };
 
 } // device
