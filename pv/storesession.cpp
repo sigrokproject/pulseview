@@ -135,7 +135,8 @@ bool StoreSession::start()
 
 void StoreSession::wait()
 {
-	_thread.join();
+	if (_thread.joinable())
+		_thread.join();
 }
 
 void StoreSession::cancel()

@@ -67,8 +67,10 @@ DecoderStack::DecoderStack(const srd_decoder *const dec) :
 
 DecoderStack::~DecoderStack()
 {
-	_decode_thread.interrupt();
-	_decode_thread.join();
+	if (_decode_thread.joinable()) {
+		_decode_thread.interrupt();
+		_decode_thread.join();
+	}
 }
 
 const std::list< boost::shared_ptr<decode::Decoder> >&
@@ -168,8 +170,10 @@ void DecoderStack::begin_decode()
 	shared_ptr<pv::view::LogicSignal> logic_signal;
 	shared_ptr<pv::data::Logic> data;
 
-	_decode_thread.interrupt();
-	_decode_thread.join();
+	if (_decode_thread.joinable()) {
+		_decode_thread.interrupt();
+		_decode_thread.join();
+	}
 
 	clear();
 

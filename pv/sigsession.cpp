@@ -75,7 +75,8 @@ SigSession::~SigSession()
 {
 	stop_capture();
 
-	_sampling_thread.join();
+	if (_sampling_thread.joinable())
+		_sampling_thread.join();
 
 	if (_dev_inst)
 		_device_manager.release_device(_dev_inst);
@@ -200,7 +201,8 @@ void SigSession::stop_capture()
 	sr_session_stop();
 
 	// Check that sampling stopped
-	_sampling_thread.join();
+	if (_sampling_thread.joinable())
+		_sampling_thread.join();
 }
 
 set< shared_ptr<data::SignalData> > SigSession::get_data() const
