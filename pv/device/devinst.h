@@ -46,10 +46,10 @@ class DevInst : public QObject
 	Q_OBJECT
 
 protected:
-	DevInst(sr_dev_inst *sdi);
+	DevInst();
 
 public:
-	sr_dev_inst* dev_inst() const;
+	virtual sr_dev_inst* dev_inst() const = 0;
 
 	void use(SigSession *owner);
 
@@ -79,7 +79,6 @@ signals:
 	void config_changed();
 
 protected:
-	sr_dev_inst *const _sdi;
 	SigSession *_owner;
 };
 

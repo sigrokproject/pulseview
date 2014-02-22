@@ -31,7 +31,12 @@ class Device : public DevInst
 public:
 	Device(sr_dev_inst *dev_inst);
 
+	sr_dev_inst* dev_inst() const;
+
 	std::string format_device_title() const;
+
+private:
+	sr_dev_inst *const _sdi;
 };
 
 } // device

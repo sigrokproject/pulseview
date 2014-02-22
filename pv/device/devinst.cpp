@@ -31,16 +31,9 @@
 namespace pv {
 namespace device {
 
-DevInst::DevInst(sr_dev_inst *sdi) :
-	_sdi(sdi),
+DevInst::DevInst() :
 	_owner(NULL)
 {
-	assert(_sdi);
-}
-
-sr_dev_inst* DevInst::dev_inst() const
-{
-	return _sdi;
 }
 
 void DevInst::use(SigSession *owner)
@@ -48,7 +41,7 @@ void DevInst::use(SigSession *owner)
 	assert(owner);
 	assert(!_owner);
 	_owner = owner;
-	sr_dev_open(_sdi);
+	sr_dev_open(dev_inst());
 }
 
 void DevInst::release()
@@ -56,7 +49,7 @@ void DevInst::release()
 	if (_owner) {
 		_owner->release_device(this);
 		_owner = NULL;
-		sr_dev_close(_sdi);
+		sr_dev_close(dev_inst());
 	}
 }
 
@@ -68,14 +61,18 @@ SigSession* DevInst::owner() const
 GVariant* DevInst::get_config(const sr_probe_group *group, int key)
 {
 	GVariant *data = NULL;
-	if (sr_config_get(_sdi->driver, _sdi, group, key, &data) != SR_OK)
+	sr_dev_inst *const sdi = dev_inst();
+	assert(sdi);
+	if (sr_config_get(sdi->driver, sdi, group, key, &data) != SR_OK)
 		return NULL;
 	return data;
 }
 
 bool DevInst::set_config(const sr_probe_group *group, int key, GVariant *data)
 {
-	if(sr_config_set(_sdi, group, key, data) == SR_OK) {
+	sr_dev_inst *const sdi = dev_inst();
+	assert(sdi);
+	if(sr_config_set(sdi, group, key, data) == SR_OK) {
 		config_changed();
 		return true;
 	}
@@ -85,14 +82,18 @@ bool DevInst::set_config(const sr_probe_group *group, int key, GVariant *data)
 GVariant* DevInst::list_config(const sr_probe_group *group, int key)
 {
 	GVariant *data = NULL;
-	if (sr_config_list(_sdi->driver, _sdi, group, key, &data) != SR_OK)
+	sr_dev_inst *const sdi = dev_inst();
+	assert(sdi);
+	if (sr_config_list(sdi->driver, sdi, group, key, &data) != SR_OK)
 		return NULL;
 	return data;
 }
 
 void DevInst::enable_probe(const sr_probe *probe, bool enable)
 {
-	for (const GSList *p = _sdi->probes; p; p = p->next)
+	sr_dev_inst *const sdi = dev_inst();
+	assert(sdi);
+	for (const GSList *p = sdi->probes; p; p = p->next)
 		if (probe == p->data) {
 			const_cast<sr_probe*>(probe)->enabled = enable;
 			config_changed();

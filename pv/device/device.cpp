@@ -31,8 +31,14 @@ namespace pv {
 namespace device {
 
 Device::Device(sr_dev_inst *sdi) :
-	DevInst(sdi)
+	_sdi(sdi)
 {
+	assert(_sdi);
+}
+
+sr_dev_inst* Device::dev_inst() const
+{
+	return _sdi;
 }
 
 std::string Device::format_device_title() const
