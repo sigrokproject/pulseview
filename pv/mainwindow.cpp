@@ -311,8 +311,9 @@ void MainWindow::update_device_list(
 	}
 
 	if (selected_device) {
+		// Setting the selected device in the sampling bar, generates
+		// an event which updates the selected device in the SigSession.
 		_sampling_bar->set_selected_device(selected_device);
-		_session.set_device(selected_device);
 	}
 }
 
