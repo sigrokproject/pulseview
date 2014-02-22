@@ -40,7 +40,7 @@ namespace pv {
 class DeviceManager;
 
 namespace device {
-class DevInst;
+class Device;
 }
 
 namespace dialogs {
@@ -52,7 +52,7 @@ class Connect : public QDialog
 public:
 	Connect(QWidget *parent, pv::DeviceManager &device_manager);
 
-	boost::shared_ptr<device::DevInst> get_selected_device() const;
+	boost::shared_ptr<device::Device> get_selected_device() const;
 
 private:
 	void populate_drivers();
@@ -83,7 +83,7 @@ private:
 
 	QPushButton _scan_button;
 	QListWidget _device_list;
-	std::map<const sr_dev_inst*, boost::shared_ptr<pv::device::DevInst> >
+	std::map<const sr_dev_inst*, boost::shared_ptr<pv::device::Device> >
 		_device_map;
 
 	QDialogButtonBox _button_box;

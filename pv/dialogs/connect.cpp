@@ -25,7 +25,7 @@
 #include "connect.h"
 
 #include "pv/devicemanager.h"
-#include "pv/device/devinst.h"
+#include "pv/device/device.h"
 
 extern "C" {
 /* __STDC_FORMAT_MACROS is required for PRIu64 and friends (in C++). */
@@ -82,17 +82,17 @@ Connect::Connect(QWidget *parent, pv::DeviceManager &device_manager) :
 	_layout.addWidget(&_button_box);
 }
 
-shared_ptr<device::DevInst> Connect::get_selected_device() const
+shared_ptr<device::Device> Connect::get_selected_device() const
 {
 	const QListWidgetItem *const item = _device_list.currentItem();
 	if (!item)
-		return shared_ptr<device::DevInst>();
+		return shared_ptr<device::Device>();
 
 	const sr_dev_inst *const sdi = (sr_dev_inst*)item->data(
 		Qt::UserRole).value<void*>();
 	assert(sdi);
 
-	std::map<const sr_dev_inst*, boost::shared_ptr<pv::device::DevInst> >::
+	std::map<const sr_dev_inst*, boost::shared_ptr<pv::device::Device> >::
 		const_iterator iter = _device_map.find(sdi);
 	assert(iter != _device_map.end());
 
@@ -170,12 +170,12 @@ void Connect::scan_pressed()
 		drvopts = g_slist_append(drvopts, src);
 	}
 
-	const list< shared_ptr<device::DevInst> > devices =
+	const list< shared_ptr<device::Device> > devices =
 		_device_manager.driver_scan(driver, drvopts);
 
 	g_slist_free_full(drvopts, (GDestroyNotify)free_drvopts);
 
-	BOOST_FOREACH(shared_ptr<device::DevInst> dev_inst, devices)
+	BOOST_FOREACH(shared_ptr<device::Device> dev_inst, devices)
 	{
 		assert(dev_inst);
 		const sr_dev_inst *const sdi = dev_inst->dev_inst();

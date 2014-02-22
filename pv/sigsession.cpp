@@ -73,13 +73,16 @@ SigSession::SigSession(DeviceManager &device_manager) :
 
 SigSession::~SigSession()
 {
+	using pv::device::Device;
+
 	stop_capture();
 
 	if (_sampling_thread.joinable())
 		_sampling_thread.join();
 
-	if (_dev_inst)
-		_device_manager.release_device(_dev_inst);
+	shared_ptr<Device> device(dynamic_pointer_cast<Device>(_dev_inst));
+	if (device)
+		_device_manager.release_device(device);
 
 	// TODO: This should not be necessary
 	_session = NULL;
@@ -92,13 +95,19 @@ shared_ptr<device::DevInst> SigSession::get_device() const
 
 void SigSession::set_device(shared_ptr<device::DevInst> dev_inst)
 {
+	using pv::device::Device;
+
 	// Ensure we are not capturing before setting the device
 	stop_capture();
 
-	if (_dev_inst)
-		_device_manager.release_device(_dev_inst);
-	if (dev_inst)
-		_device_manager.use_device(dev_inst, this);
+	shared_ptr<Device> old_device(dynamic_pointer_cast<Device>(_dev_inst));
+	if (old_device)
+		_device_manager.release_device(old_device);
+
+	shared_ptr<Device> new_device(dynamic_pointer_cast<Device>(dev_inst));
+	if (new_device)
+		_device_manager.use_device(new_device, this);
+
 	_dev_inst = dev_inst;
 	update_signals(dev_inst);
 }

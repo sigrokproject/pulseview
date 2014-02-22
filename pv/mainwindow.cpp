@@ -25,6 +25,9 @@
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>
 
+#include <algorithm>
+#include <iterator>
+
 #include <QAction>
 #include <QApplication>
 #include <QButtonGroup>
@@ -39,7 +42,7 @@
 #include "mainwindow.h"
 
 #include "devicemanager.h"
-#include "device/devinst.h"
+#include "device/device.h"
 #include "dialogs/about.h"
 #include "dialogs/connect.h"
 #include "dialogs/storeprogress.h"
@@ -289,8 +292,10 @@ void MainWindow::update_device_list(
 {
 	assert(_sampling_bar);
 
-	const list< shared_ptr<device::DevInst> > &devices =
-		_device_manager.devices();
+	list< shared_ptr<device::DevInst> > devices;
+	std::copy(_device_manager.devices().begin(),
+		_device_manager.devices().end(), std::back_inserter(devices));
+
 	_sampling_bar->set_device_list(devices);
 
 	if (!selected_device && !devices.empty()) {
