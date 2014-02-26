@@ -296,6 +296,10 @@ void MainWindow::update_device_list()
 	std::copy(_device_manager.devices().begin(),
 		_device_manager.devices().end(), std::back_inserter(devices));
 
+	if (std::find(devices.begin(), devices.end(), selected_device) ==
+		devices.end())
+		devices.push_back(selected_device);
+
 	_sampling_bar->set_device_list(devices);
 
 	if (selected_device)
@@ -313,6 +317,8 @@ void MainWindow::load_file(QString file_name)
 	} catch(QString e) {
 		show_session_error(tr("Failed to load ") + file_name, e);
 	}
+
+	update_device_list();
 
 	_session.start_capture(boost::bind(&MainWindow::session_error, this,
 		errorMessage, infoMessage));
