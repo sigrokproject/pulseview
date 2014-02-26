@@ -316,7 +316,8 @@ void SamplingBar::commit_sample_count()
 	// Set the sample count
 	assert(!_updating_sample_count);
 	_updating_sample_count = true;
-	if (!dev_inst->set_config(NULL, SR_CONF_LIMIT_SAMPLES,
+	if (_sample_count_supported &&
+		!dev_inst->set_config(NULL, SR_CONF_LIMIT_SAMPLES,
 		g_variant_new_uint64(sample_count))) {
 		qDebug() << "Failed to configure sample count.";
 		return;
