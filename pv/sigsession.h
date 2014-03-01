@@ -114,6 +114,8 @@ private:
 
 	void update_signals(boost::shared_ptr<device::DevInst> dev_inst);
 
+	void set_default_device();
+
 	boost::shared_ptr<view::Signal> signal_from_probe(
 		const sr_probe *probe) const;
 

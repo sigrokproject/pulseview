@@ -120,6 +120,8 @@ View::View(SigSession &session, QWidget *parent) :
 	_viewport->installEventFilter(this);
 	_ruler->installEventFilter(this);
 	_header->installEventFilter(this);
+
+	signals_changed();
 }
 
 SigSession& View::session()

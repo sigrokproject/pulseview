@@ -69,14 +69,9 @@ private:
 	void session_error(const QString text, const QString info_text);
 
 	/**
-	 * Updates the device list in the sampling bar, and updates the
-	 * selection.
-	 * @param selected_device The device to select, or NULL if the
-	 * first device in the device list should be selected.
+	 * Updates the device list in the sampling bar
 	 */
-	void update_device_list(
-		boost::shared_ptr<pv::device::DevInst> selected_device =
-			boost::shared_ptr<pv::device::DevInst>());
+	void update_device_list();
 
 private slots:
 	void load_file(QString file_name);
