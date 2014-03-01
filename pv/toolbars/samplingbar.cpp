@@ -264,9 +264,12 @@ void SamplingBar::update_sample_count_selector()
 
 	if (_sample_count_supported)
 	{
-		uint64_t sample_count = DefaultSampleCount;
+		uint64_t sample_count = _sample_count.value();
 		uint64_t min_sample_count = 0;
 		uint64_t max_sample_count = MaxSampleCount;
+
+		if (sample_count == 0)
+			sample_count = DefaultSampleCount;
 
 		if ((gvar = dev_inst->list_config(NULL, SR_CONF_LIMIT_SAMPLES)))
 		{
