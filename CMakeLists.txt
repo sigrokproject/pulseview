@@ -80,9 +80,9 @@ find_package(Threads)
 if(WIN32)
 	# On Windows/MinGW we need to use 'thread_win32' instead of 'thread'.
 	# The library is named libboost_thread_win32* (not libboost_thread*).
-	find_package(Boost 1.42 COMPONENTS system thread_win32 REQUIRED)
+	find_package(Boost 1.42 COMPONENTS filesystem system thread_win32 REQUIRED)
 else()
-	find_package(Boost 1.42 COMPONENTS system thread REQUIRED)
+	find_package(Boost 1.42 COMPONENTS filesystem system thread REQUIRED)
 endif()
 
 #===============================================================================

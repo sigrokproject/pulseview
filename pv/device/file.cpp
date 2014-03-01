@@ -22,6 +22,8 @@
 #include "inputfile.h"
 #include "sessionfile.h"
 
+#include <boost/filesystem.hpp>
+
 #include <libsigrok/libsigrok.h>
 
 using std::string;
@@ -36,7 +38,7 @@ File::File(const std::string path) :
 
 std::string File::format_device_title() const
 {
-	return _path;
+	return boost::filesystem::path(_path).filename().string();
 }
 
 File* File::create(const string &name)
