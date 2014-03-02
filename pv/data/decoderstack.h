@@ -25,6 +25,7 @@
 
 #include <list>
 
+#include <boost/optional.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
 
@@ -103,9 +104,10 @@ public:
 	void begin_decode();
 
 private:
-	void decode_data(
-		const boost::shared_ptr<pv::data::LogicSnapshot> &snapshot,
-		srd_session *const session);
+	boost::optional<int64_t> wait_for_data() const;
+
+	void decode_data(const int64_t sample_count,
+		const unsigned int unit_size, srd_session *const session);
 
 	void decode_proc(boost::shared_ptr<data::Logic> data);
 
@@ -114,6 +116,10 @@ private:
 
 private slots:
 	void on_new_frame();
+
+	void on_data_received();
+
+	void on_frame_ended();
 
 signals:
 	void new_decode_data();
@@ -130,6 +136,13 @@ private:
 	static boost::mutex _global_decode_mutex;
 
 	std::list< boost::shared_ptr<decode::Decoder> > _stack;
+
+	boost::shared_ptr<pv::data::LogicSnapshot> _snapshot;
+
+	mutable boost::mutex _input_mutex;
+	mutable boost::condition_variable _input_cond;
+	int64_t _sample_count;
+	bool _frame_complete;
 
 	mutable boost::mutex _output_mutex;
 	int64_t	_samples_decoded;
