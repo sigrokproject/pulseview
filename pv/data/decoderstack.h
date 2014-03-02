@@ -131,7 +131,7 @@ private:
 
 	std::list< boost::shared_ptr<decode::Decoder> > _stack;
 
-	mutable boost::mutex _mutex;
+	mutable boost::mutex _output_mutex;
 	int64_t	_samples_decoded;
 
 	std::map<const decode::Row, decode::RowData> _rows;

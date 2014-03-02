@@ -106,13 +106,13 @@ void DecoderStack::remove(int index)
 
 int64_t DecoderStack::samples_decoded() const
 {
-	lock_guard<mutex> decode_lock(_mutex);
+	lock_guard<mutex> decode_lock(_output_mutex);
 	return _samples_decoded;
 }
 
 std::vector<Row> DecoderStack::get_visible_rows() const
 {
-	lock_guard<mutex> lock(_mutex);
+	lock_guard<mutex> lock(_output_mutex);
 
 	vector<Row> rows;
 
@@ -147,7 +147,7 @@ void DecoderStack::get_annotation_subset(
 	const Row &row, uint64_t start_sample,
 	uint64_t end_sample) const
 {
-	lock_guard<mutex> lock(_mutex);
+	lock_guard<mutex> lock(_output_mutex);
 
 	std::map<const Row, decode::RowData>::const_iterator iter =
 		_rows.find(row);
@@ -158,7 +158,7 @@ void DecoderStack::get_annotation_subset(
 
 QString DecoderStack::error_message()
 {
-	lock_guard<mutex> lock(_mutex);
+	lock_guard<mutex> lock(_output_mutex);
 	return _error_message;
 }
 
@@ -276,7 +276,7 @@ void DecoderStack::decode_data(
 		}
 
 		{
-			lock_guard<mutex> lock(_mutex);
+			lock_guard<mutex> lock(_output_mutex);
 			_samples_decoded = chunk_end;
 		}
 	}
@@ -349,7 +349,7 @@ void DecoderStack::annotation_callback(srd_proto_data *pdata, void *decoder)
 	DecoderStack *const d = (DecoderStack*)decoder;
 	assert(d);
 
-	lock_guard<mutex> lock(d->_mutex);
+	lock_guard<mutex> lock(d->_output_mutex);
 
 	const Annotation a(pdata);
 
