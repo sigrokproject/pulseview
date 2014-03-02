@@ -309,6 +309,7 @@ void DecoderStack::decode_data(
 		}
 	}
 
+	new_decode_data();
 }
 
 void DecoderStack::decode_proc(shared_ptr<data::Logic> data)
@@ -413,8 +414,6 @@ void DecoderStack::annotation_callback(srd_proto_data *pdata, void *decoder)
 
 	// Add the annotation
 	(*row_iter).second.push_annotation(a);
-
-	d->new_decode_data();
 }
 
 void DecoderStack::on_new_frame()
