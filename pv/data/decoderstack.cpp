@@ -58,6 +58,7 @@ namespace data {
 const double DecoderStack::DecodeMargin = 1.0;
 const double DecoderStack::DecodeThreshold = 0.2;
 const int64_t DecoderStack::DecodeChunkLength = 4096;
+const unsigned int DecoderStack::DecodeNotifyPeriod = 65536;
 
 mutex DecoderStack::_global_decode_mutex;
 
@@ -314,6 +315,9 @@ void DecoderStack::decode_data(
 			lock_guard<mutex> lock(_output_mutex);
 			_samples_decoded = chunk_end;
 		}
+
+		if (i % DecodeNotifyPeriod == 0)
+			new_decode_data();
 	}
 
 	new_decode_data();

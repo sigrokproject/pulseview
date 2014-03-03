@@ -72,6 +72,7 @@ private:
 	static const double DecodeMargin;
 	static const double DecodeThreshold;
 	static const int64_t DecodeChunkLength;
+	static const unsigned int DecodeNotifyPeriod;
 
 public:
 	DecoderStack(pv::SigSession &_session,
