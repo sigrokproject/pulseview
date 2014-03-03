@@ -322,8 +322,11 @@ void DecoderStack::decode_proc()
 
 	// Check that all decoders have the required probes
 	BOOST_FOREACH(const shared_ptr<decode::Decoder> &dec, _stack)
-		if (!dec->have_required_probes())
+		if (!dec->have_required_probes()) {
+			_error_message = tr("One or more required probes "
+				"have not been specified");
 			return;
+		}
 
 	// Create the session
 	srd_session_new(&session);
