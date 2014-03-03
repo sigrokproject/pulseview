@@ -249,8 +249,7 @@ void DecoderStack::begin_decode()
 	if (_samplerate == 0.0)
 		_samplerate = 1.0;
 
-	_decode_thread = boost::thread(&DecoderStack::decode_proc, this,
-		data);
+	_decode_thread = boost::thread(&DecoderStack::decode_proc, this);
 }
 
 uint64_t DecoderStack::get_max_sample_count() const
@@ -312,7 +311,7 @@ void DecoderStack::decode_data(
 	new_decode_data();
 }
 
-void DecoderStack::decode_proc(shared_ptr<data::Logic> data)
+void DecoderStack::decode_proc()
 {
 	optional<int64_t> sample_count;
 	srd_session *session;

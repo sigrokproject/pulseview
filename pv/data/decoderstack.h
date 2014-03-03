@@ -109,7 +109,7 @@ private:
 	void decode_data(const int64_t sample_count,
 		const unsigned int unit_size, srd_session *const session);
 
-	void decode_proc(boost::shared_ptr<data::Logic> data);
+	void decode_proc();
 
 	static void annotation_callback(srd_proto_data *pdata,
 		void *decoder);
