@@ -427,7 +427,8 @@ void DecoderStack::on_data_received()
 {
 	{
 		unique_lock<mutex> lock(_input_mutex);
-		_sample_count = _snapshot->get_sample_count();
+		if (_snapshot)
+			_sample_count = _snapshot->get_sample_count();
 	}
 	_input_cond.notify_one();
 }
@@ -436,7 +437,8 @@ void DecoderStack::on_frame_ended()
 {
 	{
 		unique_lock<mutex> lock(_input_mutex);
-		_frame_complete = true;
+		if (_snapshot)
+			_frame_complete = true;
 	}
 	_input_cond.notify_one();
 }
