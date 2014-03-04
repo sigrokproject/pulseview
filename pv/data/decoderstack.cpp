@@ -329,7 +329,6 @@ void DecoderStack::decode_proc()
 	srd_session *session;
 	srd_decoder_inst *prev_di = NULL;
 
-	assert(data);
 	assert(_snapshot);
 
 	// Create the session
