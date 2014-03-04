@@ -220,7 +220,7 @@ void MainWindow::setup_ui()
 		"MainWindow", "&Decoders", 0, QApplication::UnicodeUTF8));
 
 	pv::widgets::DecoderMenu *const menu_decoders_add =
-		new pv::widgets::DecoderMenu(menu_decoders);
+		new pv::widgets::DecoderMenu(menu_decoders, true);
 	menu_decoders_add->setTitle(QApplication::translate(
 		"MainWindow", "&Add", 0, QApplication::UnicodeUTF8));
 	connect(menu_decoders_add, SIGNAL(decoder_selected(srd_decoder*)),

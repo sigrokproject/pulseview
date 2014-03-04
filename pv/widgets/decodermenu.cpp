@@ -25,7 +25,7 @@
 namespace pv {
 namespace widgets {
 
-DecoderMenu::DecoderMenu(QWidget *parent) :
+DecoderMenu::DecoderMenu(QWidget *parent, bool first_level_decoder) :
 	QMenu(parent),
 	_mapper(this)
 {
@@ -33,12 +33,17 @@ DecoderMenu::DecoderMenu(QWidget *parent) :
 		(GSList*)srd_decoder_list()), decoder_name_cmp);
 	for(; l; l = l->next)
 	{
-		QAction *const action = addAction(QString::fromUtf8(
-			((srd_decoder*)l->data)->name));
-		action->setData(qVariantFromValue(l->data));
-		_mapper.setMapping(action, action);
-		connect(action, SIGNAL(triggered()),
-			&_mapper, SLOT(map()));
+		const srd_decoder *const d = (srd_decoder*)l->data;
+		assert(d);
+
+		if (!first_level_decoder || d->probes || d->opt_probes) {
+			QAction *const action =
+				addAction(QString::fromUtf8(d->name));
+			action->setData(qVariantFromValue(l->data));
+			_mapper.setMapping(action, action);
+			connect(action, SIGNAL(triggered()),
+				&_mapper, SLOT(map()));
+		}
 	}
 	g_slist_free(l);
 
