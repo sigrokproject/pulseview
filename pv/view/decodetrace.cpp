@@ -25,6 +25,7 @@ extern "C" {
 #include <extdef.h>
 
 #include <boost/foreach.hpp>
+#include <boost/functional/hash.hpp>
 
 #include <QAction>
 #include <QApplication>
