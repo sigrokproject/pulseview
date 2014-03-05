@@ -41,9 +41,6 @@ public:
 	int format() const;
 	const std::vector<QString>& annotations() const;
 
-	void set_row(int row);
-	void set_pd_index(int pd_index);
-
 private:
 	uint64_t _start_sample;
 	uint64_t _end_sample;
