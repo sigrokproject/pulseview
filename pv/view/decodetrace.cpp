@@ -421,6 +421,9 @@ void DecodeTrace::draw_range(const pv::data::decode::Annotation &a, QPainter &p,
 
 	QRectF rect(start + cap_width, y - h / 2,
 		end - start - cap_width * 2, h);
+	if (rect.width() <= 4)
+		return;
+
 	p.setPen(text_color);
 
 	// Try to find an annotation that will fit
