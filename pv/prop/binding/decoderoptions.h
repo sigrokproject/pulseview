@@ -23,6 +23,10 @@
 
 #include "binding.h"
 
+#include <pv/prop/property.h>
+
+struct srd_decoder_option;
+
 namespace pv {
 
 namespace data {
@@ -42,6 +46,10 @@ public:
 		boost::shared_ptr<pv::data::decode::Decoder> decoder);
 
 private:
+	static boost::shared_ptr<Property> bind_enum(const QString &name,
+		const srd_decoder_option *option,
+		Property::Getter getter, Property::Setter setter);
+
 	GVariant* getter(const char *id);
 
 	void setter(const char *id, GVariant *value);
