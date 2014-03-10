@@ -21,8 +21,6 @@
 #ifndef PULSEVIEW_PV_PROP_BINDING_DECODEROPTIONS_H
 #define PULSEVIEW_PV_PROP_BINDING_DECODEROPTIONS_H
 
-#include <glib.h>
-
 #include "binding.h"
 
 namespace pv {

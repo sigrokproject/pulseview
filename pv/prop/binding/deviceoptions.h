@@ -56,8 +56,6 @@ private:
 	void bind_int(const QString &name, int key, QString suffix,
 		boost::optional< std::pair<int64_t, int64_t> > range);
 
-	static QString print_gvariant(GVariant *const gvar);
-
 	static QString print_timebase(GVariant *const gvar);
 	static QString print_vdiv(GVariant *const gvar);
 	static QString print_voltage_threshold(GVariant *const gvar);

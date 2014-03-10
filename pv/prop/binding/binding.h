@@ -21,8 +21,12 @@
 #ifndef PULSEVIEW_PV_PROP_BINDING_BINDING_H
 #define PULSEVIEW_PV_PROP_BINDING_BINDING_H
 
+#include <glib.h>
+
 #include <vector>
 #include <boost/shared_ptr.hpp>
+
+#include <QString>
 
 class QFormLayout;
 class QWidget;
@@ -46,6 +50,8 @@ public:
 
 	QWidget* get_property_form(QWidget *parent,
 		bool auto_commit = false) const;
+
+	static QString print_gvariant(GVariant *const gvar);
 
 protected:
 	std::vector< boost::shared_ptr<Property> > _properties;

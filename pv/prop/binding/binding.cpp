@@ -73,6 +73,22 @@ QWidget* Binding::get_property_form(QWidget *parent,
 	return form;
 }
 
+QString Binding::print_gvariant(GVariant *const gvar)
+{
+	QString s;
+
+	if (g_variant_is_of_type(gvar, G_VARIANT_TYPE("s")))
+		s = QString::fromUtf8(g_variant_get_string(gvar, NULL));
+	else
+	{
+		gchar *const text = g_variant_print(gvar, FALSE);
+		s = QString::fromUtf8(text);
+		g_free(text);
+	}
+
+	return s;
+}
+
 } // binding
 } // prop
 } // pv
