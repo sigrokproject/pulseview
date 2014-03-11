@@ -37,6 +37,9 @@ Enum::Enum(QString name,
 	_values(values),
 	_selector(NULL)
 {
+	for (vector< pair<GVariant*, QString> >::const_iterator i =
+		_values.begin(); i != _values.end(); i++)
+		g_variant_ref((*i).first);
 }
 
 Enum::~Enum()
