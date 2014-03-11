@@ -62,6 +62,7 @@ set(pulseview_TEST_SOURCES
 	${PROJECT_SOURCE_DIR}/pv/device/file.cpp
 	${PROJECT_SOURCE_DIR}/pv/device/inputfile.cpp
 	${PROJECT_SOURCE_DIR}/pv/device/sessionfile.cpp
+	${PROJECT_SOURCE_DIR}/pv/prop/double.cpp
 	${PROJECT_SOURCE_DIR}/pv/prop/enum.cpp
 	${PROJECT_SOURCE_DIR}/pv/prop/int.cpp
 	${PROJECT_SOURCE_DIR}/pv/prop/property.cpp
@@ -94,6 +95,7 @@ set(pulseview_TEST_SOURCES
 set(pulseview_TEST_HEADERS
 	${PROJECT_SOURCE_DIR}/pv/sigsession.h
 	${PROJECT_SOURCE_DIR}/pv/device/devinst.h
+	${PROJECT_SOURCE_DIR}/pv/prop/double.h
 	${PROJECT_SOURCE_DIR}/pv/prop/enum.h
 	${PROJECT_SOURCE_DIR}/pv/prop/int.h
 	${PROJECT_SOURCE_DIR}/pv/prop/property.h

@@ -28,6 +28,7 @@
 
 #include <pv/data/decoderstack.h>
 #include <pv/data/decode/decoder.h>
+#include <pv/prop/double.h>
 #include <pv/prop/enum.h>
 #include <pv/prop/int.h>
 #include <pv/prop/string.h>
@@ -72,6 +73,9 @@ DecoderOptions::DecoderOptions(
 
 		if (opt->values)
 			prop = bind_enum(name, opt, getter, setter);
+		else if (g_variant_is_of_type(opt->def, G_VARIANT_TYPE("d")))
+			prop = shared_ptr<Property>(new Double(name, 2, "",
+				none, none, getter, setter));
 		else if (g_variant_is_of_type(opt->def, G_VARIANT_TYPE("x")))
 			prop = shared_ptr<Property>(
 				new Int(name, "", none, getter, setter));
