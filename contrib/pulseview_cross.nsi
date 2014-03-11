@@ -161,6 +161,7 @@ Section "PulseView (required)" Section1
 	CreateDirectory "$SMPROGRAMS\sigrok\PulseView"
 
 	# Create a shortcut for the PulseView application.
+	SetOutPath "$INSTDIR"
 	CreateShortCut "$SMPROGRAMS\sigrok\PulseView\PulseView.lnk" \
 		"$INSTDIR\pulseview.exe" "" "$INSTDIR\pulseview.exe" \
 		0 SW_SHOWNORMAL \
