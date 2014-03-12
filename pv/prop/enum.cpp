@@ -41,8 +41,9 @@ Enum::Enum(QString name,
 
 Enum::~Enum()
 {
-	for (unsigned int i = 0; i < _values.size(); i++)
-		g_variant_unref(_values[i].first);
+	for (vector< pair<GVariant*, QString> >::const_iterator i =
+		_values.begin(); i != _values.end(); i++)
+		g_variant_unref((*i).first);
 }
 
 QWidget* Enum::get_widget(QWidget *parent, bool auto_commit)
