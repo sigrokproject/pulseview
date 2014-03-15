@@ -36,7 +36,8 @@ DecoderMenu::DecoderMenu(QWidget *parent, bool first_level_decoder) :
 		const srd_decoder *const d = (srd_decoder*)l->data;
 		assert(d);
 
-		if (!first_level_decoder || d->probes || d->opt_probes) {
+		const bool have_probes = (d->probes || d->opt_probes) != 0;
+		if (first_level_decoder == have_probes) {
 			QAction *const action =
 				addAction(QString::fromUtf8(d->name));
 			action->setData(qVariantFromValue(l->data));
