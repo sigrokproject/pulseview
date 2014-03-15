@@ -165,7 +165,7 @@ bool Trace::pt_in_label_rect(int left, int right, const QPoint &point)
 	(void)left;
 
 	const QRectF label = get_label_rect(right);
-	return QRectF(
+	return enabled() && QRectF(
 		QPointF(label.left() - LabelHitPadding,
 			label.top() - LabelHitPadding),
 		QPointF(right, label.bottom() + LabelHitPadding)
