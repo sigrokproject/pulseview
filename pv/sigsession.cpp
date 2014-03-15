@@ -126,6 +126,28 @@ void SigSession::set_file(const string &name) throw(QString)
 	set_device(shared_ptr<device::DevInst>(device::File::create(name)));
 }
 
+void SigSession::set_default_device()
+{
+	shared_ptr<pv::device::DevInst> default_device;
+	const list< shared_ptr<device::Device> > &devices =
+		_device_manager.devices();
+
+	if (!devices.empty()) {
+		// Fall back to the first device in the list.
+		default_device = devices.front();
+
+		// Try and find the demo device and select that by default
+		BOOST_FOREACH (shared_ptr<pv::device::Device> dev, devices)
+			if (strcmp(dev->dev_inst()->driver->name,
+				"demo") == 0) {
+				default_device = dev;
+				break;
+			}
+	}
+
+	set_device(default_device);
+}
+
 void SigSession::release_device(device::DevInst *dev_inst)
 {
 	(void)dev_inst;
@@ -288,28 +310,6 @@ void SigSession::set_capture_state(capture_state state)
 	_capture_state = state;
 	if(changed)
 		capture_state_changed(state);
-}
-
-void SigSession::set_default_device()
-{
-	shared_ptr<pv::device::DevInst> default_device;
-	const list< shared_ptr<device::Device> > &devices =
-		_device_manager.devices();
-
-	if (!devices.empty()) {
-		// Fall back to the first device in the list.
-		default_device = devices.front();
-
-		// Try and find the demo device and select that by default
-		BOOST_FOREACH (shared_ptr<pv::device::Device> dev, devices)
-			if (strcmp(dev->dev_inst()->driver->name,
-				"demo") == 0) {
-				default_device = dev;
-				break;
-			}
-	}
-
-	set_device(default_device);
 }
 
 void SigSession::update_signals(shared_ptr<device::DevInst> dev_inst)

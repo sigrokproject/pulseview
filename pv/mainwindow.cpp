@@ -316,6 +316,9 @@ void MainWindow::load_file(QString file_name)
 		_session.set_file(file_name.toStdString());
 	} catch(QString e) {
 		show_session_error(tr("Failed to load ") + file_name, e);
+		_session.set_default_device();
+		update_device_list();
+		return;
 	}
 
 	update_device_list();

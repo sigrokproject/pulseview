@@ -87,6 +87,8 @@ public:
 	void set_file(const std::string &name)
 		throw(QString);
 
+	void set_default_device();
+
 	void release_device(device::DevInst *dev_inst);
 
 	capture_state get_capture_state() const;
@@ -113,8 +115,6 @@ private:
 	void set_capture_state(capture_state state);
 
 	void update_signals(boost::shared_ptr<device::DevInst> dev_inst);
-
-	void set_default_device();
 
 	boost::shared_ptr<view::Signal> signal_from_probe(
 		const sr_probe *probe) const;
