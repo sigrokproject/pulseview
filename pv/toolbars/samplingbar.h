@@ -63,11 +63,10 @@ public:
 
 	void set_device_list(
 		const std::list< boost::shared_ptr<pv::device::DevInst> >
-			&devices);
+			&devices,
+		boost::shared_ptr<pv::device::DevInst> selected);
 
 	boost::shared_ptr<pv::device::DevInst> get_selected_device() const;
-	void set_selected_device(
-		boost::shared_ptr<pv::device::DevInst> dev_inst);
 
 	void set_capture_state(pv::SigSession::capture_state state);
 
@@ -78,6 +77,7 @@ private:
 	void update_sample_rate_selector();
 	void update_sample_rate_selector_value();
 	void update_sample_count_selector();
+	void update_device_config_widgets();
 	void commit_sample_rate();
 	void commit_sample_count();
 

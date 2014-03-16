@@ -96,8 +96,13 @@ SamplingBar::SamplingBar(SigSession &session, QWidget *parent) :
 }
 
 void SamplingBar::set_device_list(
-	const std::list< shared_ptr<pv::device::DevInst> > &devices)
+	const std::list< shared_ptr<pv::device::DevInst> > &devices,
+	shared_ptr<pv::device::DevInst> selected)
 {
+	int selected_index = -1;
+
+	assert(selected);
+
 	_updating_device_selector = true;
 
 	_device_selector.clear();
@@ -109,10 +114,19 @@ void SamplingBar::set_device_list(
 		const sr_dev_inst *sdi = dev_inst->dev_inst();
 		assert(sdi);
 
+		if (selected == dev_inst)
+			selected_index = _device_selector.count();
+
 		_device_selector_map[sdi] = dev_inst;
 		_device_selector.addItem(title.c_str(),
 			qVariantFromValue((void*)sdi));
 	}
+
+	// The selected device should have been in the list
+	assert(selected_index != -1);
+	_device_selector.setCurrentIndex(selected_index);
+
+	update_device_config_widgets();
 
 	_updating_device_selector = false;
 }
@@ -134,20 +148,6 @@ shared_ptr<pv::device::DevInst> SamplingBar::get_selected_device() const
 		return shared_ptr<pv::device::DevInst>();
 
 	return shared_ptr<pv::device::DevInst>((*iter).second);
-}
-
-void SamplingBar::set_selected_device(shared_ptr<pv::device::DevInst> dev_inst)
-{
-	assert(dev_inst);
-
-	for (int i = 0; i < _device_selector.count(); i++)
-		if (dev_inst->dev_inst() ==
-			_device_selector.itemData(i).value<void*>()) {
-			// Calling this leads to on_device_selected being
-			// invoked, which updates the sampling bar widgets.
-			_device_selector.setCurrentIndex(i);
-			return;
-		}
 }
 
 void SamplingBar::set_capture_state(pv::SigSession::capture_state state)
@@ -303,6 +303,59 @@ void SamplingBar::update_sample_count_selector()
 	_updating_sample_count = false;
 }
 
+void SamplingBar::update_device_config_widgets()
+{
+	GVariant *gvar;
+
+	using namespace pv::popups;
+
+	const shared_ptr<device::DevInst> dev_inst = get_selected_device();
+	if (!dev_inst)
+		return;
+
+	// Update the configure popup
+	DeviceOptions *const opts = new DeviceOptions(dev_inst, this);
+	_configure_button_action->setVisible(
+		!opts->binding().properties().empty());
+	_configure_button.set_popup(opts);
+
+	// Update the probes popup
+	Probes *const probes = new Probes(_session, this);
+	_probes_button.set_popup(probes);
+
+	// Update supported options.
+	_sample_count_supported = false;
+
+	if ((gvar = dev_inst->list_config(NULL, SR_CONF_DEVICE_OPTIONS)))
+	{
+		gsize num_opts;
+		const int *const options =
+			(const int32_t *)g_variant_get_fixed_array(
+			        gvar, &num_opts, sizeof(int32_t));
+		for (unsigned int i = 0; i < num_opts; i++)
+		{
+			switch (options[i]) {
+			case SR_CONF_LIMIT_SAMPLES:
+				_sample_count_supported = true;
+				break;
+			case SR_CONF_LIMIT_FRAMES:
+				dev_inst->set_config(NULL, SR_CONF_LIMIT_FRAMES,
+					g_variant_new_uint64(1));
+				break;
+			}
+		}
+	}
+
+	// Add notification of reconfigure events
+	disconnect(this, SLOT(on_config_changed()));
+	connect(dev_inst.get(), SIGNAL(config_changed()),
+		this, SLOT(on_config_changed()));
+
+	// Update sweep timing widgets.
+	update_sample_count_selector();
+	update_sample_rate_selector();
+}
+
 void SamplingBar::commit_sample_count()
 {
 	uint64_t sample_count = 0;
@@ -356,10 +409,6 @@ void SamplingBar::commit_sample_rate()
 
 void SamplingBar::on_device_selected()
 {
-	GVariant *gvar;
-
-	using namespace pv::popups;
-
 	if (_updating_device_selector)
 		return;
 
@@ -369,47 +418,7 @@ void SamplingBar::on_device_selected()
 
 	_session.set_device(dev_inst);
 
-	// Update the configure popup
-	DeviceOptions *const opts = new DeviceOptions(dev_inst, this);
-	_configure_button_action->setVisible(
-		!opts->binding().properties().empty());
-	_configure_button.set_popup(opts);
-
-	// Update the probes popup
-	Probes *const probes = new Probes(_session, this);
-	_probes_button.set_popup(probes);
-
-	// Update supported options.
-	_sample_count_supported = false;
-
-	if ((gvar = dev_inst->list_config(NULL, SR_CONF_DEVICE_OPTIONS)))
-	{
-		gsize num_opts;
-		const int *const options =
-			(const int32_t *)g_variant_get_fixed_array(
-			        gvar, &num_opts, sizeof(int32_t));
-		for (unsigned int i = 0; i < num_opts; i++)
-		{
-			switch (options[i]) {
-			case SR_CONF_LIMIT_SAMPLES:
-				_sample_count_supported = true;
-				break;
-			case SR_CONF_LIMIT_FRAMES:
-				dev_inst->set_config(NULL, SR_CONF_LIMIT_FRAMES,
-					g_variant_new_uint64(1));
-				break;
-			}
-		}
-	}
-
-	// Add notification of reconfigure events
-	disconnect(this, SLOT(on_config_changed()));
-	connect(dev_inst.get(), SIGNAL(config_changed()),
-		this, SLOT(on_config_changed()));
-
-	// Update sweep timing widgets.
-	update_sample_count_selector();
-	update_sample_rate_selector();
+	update_device_config_widgets();
 }
 
 void SamplingBar::on_sample_count_changed()

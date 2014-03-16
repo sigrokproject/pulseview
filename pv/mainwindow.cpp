@@ -299,11 +299,9 @@ void MainWindow::update_device_list()
 	if (std::find(devices.begin(), devices.end(), selected_device) ==
 		devices.end())
 		devices.push_back(selected_device);
+	assert(selected_device);
 
-	_sampling_bar->set_device_list(devices);
-
-	if (selected_device)
-		_sampling_bar->set_selected_device(selected_device);
+	_sampling_bar->set_device_list(devices, selected_device);
 }
 
 void MainWindow::load_file(QString file_name)
