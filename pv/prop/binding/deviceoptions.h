@@ -31,7 +31,7 @@
 #include <glib.h>
 
 struct sr_dev_inst;
-struct sr_probe_group;
+struct sr_channel_group;
 
 namespace pv {
 
@@ -46,7 +46,7 @@ class DeviceOptions : public Binding
 {
 public:
 	DeviceOptions(boost::shared_ptr<pv::device::DevInst> dev_inst,
-		const sr_probe_group *group = NULL);
+		const sr_channel_group *group = NULL);
 
 private:
 	void bind_bool(const QString &name, int key);
@@ -62,7 +62,7 @@ private:
 
 protected:
 	boost::shared_ptr<device::DevInst> _dev_inst;
-	const sr_probe_group *const _group;
+	const sr_channel_group *const _group;
 };
 
 } // binding

@@ -33,7 +33,7 @@
 
 struct sr_dev_inst;
 struct sr_probe;
-struct sr_probe_group;
+struct sr_channel_group;
 
 namespace pv {
 
@@ -59,11 +59,11 @@ public:
 
 	virtual std::string format_device_title() const = 0;
 
-	GVariant* get_config(const sr_probe_group *group, int key);
+	GVariant* get_config(const sr_channel_group *group, int key);
 
-	bool set_config(const sr_probe_group *group, int key, GVariant *data);
+	bool set_config(const sr_channel_group *group, int key, GVariant *data);
 
-	GVariant* list_config(const sr_probe_group *group, int key);
+	GVariant* list_config(const sr_channel_group *group, int key);
 
 	void enable_probe(const sr_probe *probe, bool enable = true);
 

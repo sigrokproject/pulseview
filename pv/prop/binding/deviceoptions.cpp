@@ -46,7 +46,7 @@ namespace prop {
 namespace binding {
 
 DeviceOptions::DeviceOptions(shared_ptr<pv::device::DevInst> dev_inst,
-	const sr_probe_group *group) :
+	const sr_channel_group *group) :
 	_dev_inst(dev_inst),
 	_group(group)
 {

@@ -33,7 +33,7 @@
 
 #include <pv/widgets/popup.h>
 
-struct sr_probe_group;
+struct sr_channel_group;
 
 class QCheckBox;
 class QGridLayout;
@@ -64,10 +64,10 @@ public:
 private:
 	void set_all_probes(bool set);
 
-	void populate_group(const sr_probe_group *group,
+	void populate_group(const sr_channel_group *group,
 		const std::vector< boost::shared_ptr<pv::view::Signal> > sigs);
 
-	QGridLayout* create_probe_group_grid(
+	QGridLayout* create_channel_group_grid(
 		const std::vector< boost::shared_ptr<pv::view::Signal> > sigs);
 
 private:

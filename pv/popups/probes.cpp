@@ -68,11 +68,11 @@ Probes::Probes(SigSession &session, QWidget *parent) :
 	BOOST_FOREACH(const shared_ptr<Signal> &sig, sigs)
 		signal_map[sig->probe()] = sig;
 
-	// Populate probe groups
-	for (const GSList *g = sdi->probe_groups; g; g = g->next)
+	// Populate channel groups
+	for (const GSList *g = sdi->channel_groups; g; g = g->next)
 	{
-		const sr_probe_group *const group =
-			(const sr_probe_group*)g->data;
+		const sr_channel_group *const group =
+			(const sr_channel_group*)g->data;
 		assert(group);
 
 		// Make a set of signals, and removed this signals from the
@@ -148,7 +148,7 @@ void Probes::set_all_probes(bool set)
 	_updating_probes = false;
 }
 
-void Probes::populate_group(const sr_probe_group *group,
+void Probes::populate_group(const sr_channel_group *group,
 	const vector< shared_ptr<pv::view::Signal> > sigs)
 {
 	using pv::prop::binding::DeviceOptions;
@@ -167,12 +167,12 @@ void Probes::populate_group(const sr_probe_group *group,
 		_layout.addRow(new QLabel(
 			QString("<h3>%1</h3>").arg(group->name)));
 
-	// Create the probe group grid
+	// Create the channel group grid
 	QGridLayout *const probe_grid =
-		create_probe_group_grid(sigs);
+		create_channel_group_grid(sigs);
 	_layout.addRow(probe_grid);
 
-	// Create the probe group options
+	// Create the channel group options
 	if (binding)
 	{
 		binding->add_properties_to_form(&_layout, true);
@@ -180,7 +180,7 @@ void Probes::populate_group(const sr_probe_group *group,
 	}
 }
 
-QGridLayout* Probes::create_probe_group_grid(
+QGridLayout* Probes::create_channel_group_grid(
 	const vector< shared_ptr<pv::view::Signal> > sigs)
 {
 	int row = 0, col = 0;

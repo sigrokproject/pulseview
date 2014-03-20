@@ -56,7 +56,7 @@ SigSession* DevInst::owner() const
 	return _owner;
 }
 
-GVariant* DevInst::get_config(const sr_probe_group *group, int key)
+GVariant* DevInst::get_config(const sr_channel_group *group, int key)
 {
 	GVariant *data = NULL;
 	assert(_owner);
@@ -67,7 +67,7 @@ GVariant* DevInst::get_config(const sr_probe_group *group, int key)
 	return data;
 }
 
-bool DevInst::set_config(const sr_probe_group *group, int key, GVariant *data)
+bool DevInst::set_config(const sr_channel_group *group, int key, GVariant *data)
 {
 	assert(_owner);
 	sr_dev_inst *const sdi = dev_inst();
@@ -79,7 +79,7 @@ bool DevInst::set_config(const sr_probe_group *group, int key, GVariant *data)
 	return false;
 }
 
-GVariant* DevInst::list_config(const sr_probe_group *group, int key)
+GVariant* DevInst::list_config(const sr_channel_group *group, int key)
 {
 	GVariant *data = NULL;
 	assert(_owner);
