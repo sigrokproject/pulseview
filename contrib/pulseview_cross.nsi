@@ -141,17 +141,17 @@ Section "PulseView (required)" Section1
 	File "${CROSS}/zadig.exe"
 	File "${CROSS}/zadig_xp.exe"
 
-	# Install the file(s) specified below into the specified directory.
-	SetOutPath "$INSTDIR\decoders"
-
 	# Protocol decoders.
+	SetOutPath "$INSTDIR\decoders"
 	File /r /x "__pycache__" "${CROSS}/share/libsigrokdecode/decoders/*"
 
-	# Install the file(s) specified below into the specified directory.
-	SetOutPath "$INSTDIR\firmware"
-
 	# Firmware files.
+	SetOutPath "$INSTDIR\firmware"
 	File /r "${CROSS}/share/sigrok-firmware/*"
+
+	# Example *.sr files.
+	SetOutPath "$INSTDIR\examples"
+	File /r "${CROSS}/share/sigrok-dumps/*"
 
 	# Generate the uninstaller executable.
 	WriteUninstaller "$INSTDIR\Uninstall.exe"
@@ -236,9 +236,13 @@ Section "Uninstall"
 	# Delete the firmware files.
 	RMDir /r "$INSTDIR\firmware\*"
 
+	# Delete the example *.sr files.
+	RMDir /r "$INSTDIR\examples\*"
+
 	# Delete the install directory and its sub-directories.
 	RMDir "$INSTDIR\decoders"
 	RMDir "$INSTDIR\firmware"
+	RMDir "$INSTDIR\examples"
 	RMDir "$INSTDIR"
 
 	# Delete the links from the start menu.
@@ -257,7 +261,7 @@ SectionEnd
 
 # --- Component selection section descriptions --------------------------------
 
-LangString DESC_Section1 ${LANG_ENGLISH} "This installs the PulseView sigrok GUI, some firmware files, the protocol decoders, and all required libraries."
+LangString DESC_Section1 ${LANG_ENGLISH} "This installs the PulseView sigrok GUI, some firmware files, the protocol decoders, some example files, and all required libraries."
 LangString DESC_Section2 ${LANG_ENGLISH} "This installs Python 3.2 in its default location of c:\Python32. If you already have Python 3.2 installed, you don't need to re-install it."
 
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
