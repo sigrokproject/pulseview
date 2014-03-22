@@ -123,6 +123,8 @@ View::View(SigSession &session, QWidget *parent) :
 	_ruler->installEventFilter(this);
 	_header->installEventFilter(this);
 
+	// Trigger the initial event manually. The default device has signals
+	// which were created before this object came into being
 	signals_changed();
 }
 
