@@ -22,6 +22,8 @@
 
 #include <stdint.h>
 
+#include <QDebug>
+
 #include "deviceoptions.h"
 
 #include <pv/device/devinst.h>
@@ -135,7 +137,11 @@ void DeviceOptions::bind_enum(const QString &name, int key,
 	vector< pair<GVariant*, QString> > values;
 
 	assert(_dev_inst);
-	assert(gvar_list);
+	if (!gvar_list) {
+		qDebug() << "Config key " << key << " was listed, but no "
+			"options were given";
+		return;
+	}
 
 	g_variant_iter_init (&iter, gvar_list);
 	while ((gvar = g_variant_iter_next_value (&iter)))
