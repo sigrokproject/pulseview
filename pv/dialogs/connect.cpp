@@ -184,9 +184,9 @@ void Connect::scan_pressed()
 		const string title = dev_inst->format_device_title();
 		QString text = QString::fromUtf8(title.c_str());
 
-		if (sdi->probes) {
+		if (sdi->channels) {
 			text += QString(" with %1 probes").arg(
-				g_slist_length(sdi->probes));
+				g_slist_length(sdi->channels));
 		}
 
 		QListWidgetItem *const item = new QListWidgetItem(text,

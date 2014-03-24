@@ -57,7 +57,7 @@ const char *const ProbeNames[] = {
 };
 
 Signal::Signal(shared_ptr<pv::device::DevInst> dev_inst,
-	const sr_probe *const probe) :
+	const sr_channel *const probe) :
 	Trace(probe->name),
 	_dev_inst(dev_inst),
 	_probe(probe),
@@ -86,7 +86,7 @@ void Signal::enable(bool enable)
 	visibility_changed();
 }
 
-const sr_probe* Signal::probe() const
+const sr_channel* Signal::probe() const
 {
 	return _probe;
 }

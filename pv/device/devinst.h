@@ -32,7 +32,7 @@
 #include <stdint.h>
 
 struct sr_dev_inst;
-struct sr_probe;
+struct sr_channel;
 struct sr_channel_group;
 
 namespace pv {
@@ -65,7 +65,7 @@ public:
 
 	GVariant* list_config(const sr_channel_group *group, int key);
 
-	void enable_probe(const sr_probe *probe, bool enable = true);
+	void enable_probe(const sr_channel *probe, bool enable = true);
 
 	/**
 	 * @brief Gets the sample limit from the driver.

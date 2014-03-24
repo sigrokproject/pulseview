@@ -63,7 +63,7 @@ Probes::Probes(SigSession &session, QWidget *parent) :
 	assert(sdi);
 
 	// Collect a set of signals
-	map<const sr_probe*, shared_ptr<Signal> > signal_map;
+	map<const sr_channel*, shared_ptr<Signal> > signal_map;
 	const vector< shared_ptr<Signal> > sigs = _session.get_signals();
 	BOOST_FOREACH(const shared_ptr<Signal> &sig, sigs)
 		signal_map[sig->probe()] = sig;
@@ -78,12 +78,12 @@ Probes::Probes(SigSession &session, QWidget *parent) :
 		// Make a set of signals, and removed this signals from the
 		// signal map.
 		vector< shared_ptr<Signal> > group_sigs;
-		for (const GSList *p = group->probes; p; p = p->next)
+		for (const GSList *p = group->channels; p; p = p->next)
 		{
-			const sr_probe *const probe = (const sr_probe*)p->data;
+			const sr_channel *const probe = (const sr_channel*)p->data;
 			assert(probe);
 
-			const map<const sr_probe*, shared_ptr<Signal> >::
+			const map<const sr_channel*, shared_ptr<Signal> >::
 				iterator iter = signal_map.find(probe);
 			assert(iter != signal_map.end());
 
@@ -96,12 +96,12 @@ Probes::Probes(SigSession &session, QWidget *parent) :
 
 	// Make a vector of the remaining probes
 	vector< shared_ptr<Signal> > global_sigs;
-	for (const GSList *p = sdi->probes; p; p = p->next)
+	for (const GSList *p = sdi->channels; p; p = p->next)
 	{
-		const sr_probe *const probe = (const sr_probe*)p->data;
+		const sr_channel *const probe = (const sr_channel*)p->data;
 		assert(probe);
 
-		const map<const sr_probe*, shared_ptr<Signal> >::
+		const map<const sr_channel*, shared_ptr<Signal> >::
 			const_iterator iter = signal_map.find(probe);
 		if (iter != signal_map.end())
 			global_sigs.push_back((*iter).second);

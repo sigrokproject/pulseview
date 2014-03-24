@@ -90,14 +90,14 @@ GVariant* DevInst::list_config(const sr_channel_group *group, int key)
 	return data;
 }
 
-void DevInst::enable_probe(const sr_probe *probe, bool enable)
+void DevInst::enable_probe(const sr_channel *probe, bool enable)
 {
 	assert(_owner);
 	sr_dev_inst *const sdi = dev_inst();
 	assert(sdi);
-	for (const GSList *p = sdi->probes; p; p = p->next)
+	for (const GSList *p = sdi->channels; p; p = p->next)
 		if (probe == p->data) {
-			const_cast<sr_probe*>(probe)->enabled = enable;
+			const_cast<sr_channel*>(probe)->enabled = enable;
 			config_changed();
 			return;
 		}

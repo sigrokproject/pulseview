@@ -30,7 +30,7 @@
 
 #include "trace.h"
 
-struct sr_probe;
+struct sr_channel;
 
 namespace pv {
 
@@ -50,7 +50,7 @@ class Signal : public Trace
 
 protected:
 	Signal(boost::shared_ptr<pv::device::DevInst> dev_inst,
-		const sr_probe *const probe);
+		const sr_channel *const probe);
 
 public:
 	/**
@@ -67,7 +67,7 @@ public:
 
 	void enable(bool enable = true);
 
-	const sr_probe* probe() const;
+	const sr_channel* probe() const;
 
 	virtual void populate_popup_form(QWidget *parent, QFormLayout *form);
 
@@ -80,7 +80,7 @@ private slots:
 
 protected:
 	boost::shared_ptr<pv::device::DevInst> _dev_inst;
-	const sr_probe *const _probe;
+	const sr_channel *const _probe;
 
 	QComboBox *_name_widget;
 	bool _updating_name_widget;

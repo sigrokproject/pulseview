@@ -117,7 +117,7 @@ private:
 	void update_signals(boost::shared_ptr<device::DevInst> dev_inst);
 
 	boost::shared_ptr<view::Signal> signal_from_probe(
-		const sr_probe *probe) const;
+		const sr_channel *probe) const;
 
 	void read_sample_rate(const sr_dev_inst *const sdi);
 
@@ -176,7 +176,7 @@ private:
 	mutable boost::mutex _data_mutex;
 	boost::shared_ptr<data::Logic> _logic_data;
 	boost::shared_ptr<data::LogicSnapshot> _cur_logic_snapshot;
-	std::map< const sr_probe*, boost::shared_ptr<data::AnalogSnapshot> >
+	std::map< const sr_channel*, boost::shared_ptr<data::AnalogSnapshot> >
 		_cur_analog_snapshots;
 
 	boost::thread _sampling_thread;

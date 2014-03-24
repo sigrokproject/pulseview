@@ -91,8 +91,8 @@ std::string Device::format_device_title() const
 bool Device::is_trigger_enabled() const
 {
 	assert(_sdi);
-	for (const GSList *l = _sdi->probes; l; l = l->next) {
-		const sr_probe *const p = (const sr_probe *)l->data;
+	for (const GSList *l = _sdi->channels; l; l = l->next) {
+		const sr_channel *const p = (const sr_channel *)l->data;
 		assert(p);
 		if (p->trigger && p->trigger[0] != '\0')
 			return true;

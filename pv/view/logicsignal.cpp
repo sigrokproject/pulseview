@@ -64,7 +64,7 @@ const QColor LogicSignal::SignalColours[10] = {
 };
 
 LogicSignal::LogicSignal(shared_ptr<pv::device::DevInst> dev_inst,
-	const sr_probe *const probe, shared_ptr<data::Logic> data) :
+	const sr_channel *const probe, shared_ptr<data::Logic> data) :
 	Signal(dev_inst, probe),
 	_data(data),
 	_trigger_none(NULL),
@@ -306,7 +306,7 @@ void LogicSignal::set_trigger(char type)
 	const sr_dev_inst *const sdi = _dev_inst->dev_inst();
 	assert(sdi);
 
-	const int probe_count = g_slist_length(sdi->probes);
+	const int probe_count = g_slist_length(sdi->channels);
 	assert(probe_count > 0);
 
 	assert(_probe && _probe->index < probe_count);
