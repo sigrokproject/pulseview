@@ -51,8 +51,6 @@ set(pulseview_TEST_SOURCES
 	${PROJECT_SOURCE_DIR}/pv/view/cursorpair.cpp
 	${PROJECT_SOURCE_DIR}/pv/data/analog.cpp
 	${PROJECT_SOURCE_DIR}/pv/data/analogsnapshot.cpp
-	${PROJECT_SOURCE_DIR}/pv/data/decode/row.cpp
-	${PROJECT_SOURCE_DIR}/pv/data/decode/rowdata.cpp
 	${PROJECT_SOURCE_DIR}/pv/data/logic.cpp
 	${PROJECT_SOURCE_DIR}/pv/data/logicsnapshot.cpp
 	${PROJECT_SOURCE_DIR}/pv/data/snapshot.cpp
@@ -120,8 +118,10 @@ set(pulseview_TEST_HEADERS
 if(ENABLE_DECODE)
 	list(APPEND pulseview_TEST_SOURCES
 		${PROJECT_SOURCE_DIR}/pv/data/decoderstack.cpp
-		${PROJECT_SOURCE_DIR}/pv/data/decode/decoder.cpp
 		${PROJECT_SOURCE_DIR}/pv/data/decode/annotation.cpp
+		${PROJECT_SOURCE_DIR}/pv/data/decode/decoder.cpp
+		${PROJECT_SOURCE_DIR}/pv/data/decode/row.cpp
+		${PROJECT_SOURCE_DIR}/pv/data/decode/rowdata.cpp
 		${PROJECT_SOURCE_DIR}/pv/prop/binding/decoderoptions.cpp
 		${PROJECT_SOURCE_DIR}/pv/view/decodetrace.cpp
 		${PROJECT_SOURCE_DIR}/pv/widgets/decodergroupbox.cpp
