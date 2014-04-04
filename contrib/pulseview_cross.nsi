@@ -70,12 +70,6 @@ RequestExecutionLevel admin
 !define MUI_LICENSEPAGE_BUTTON $(^NextBtn)
 !define MUI_LICENSEPAGE_TEXT_BOTTOM "Click Next to continue."
 
-# File name of the Python installer MSI file.
-!define PY_INST "python-3.2.3.msi"
-
-# Standard install path of the Python installer (do not change!).
-!define PY_BIN "c:\Python32"
-
 # Path where the cross-compiled sigrok tools and libraries are located.
 # Change this to where-ever you installed libsigrok.a and so on.
 !define CROSS "$%HOME%/sr_mingw"
@@ -141,6 +135,10 @@ Section "PulseView (required)" Section1
 	File "${CROSS}/zadig.exe"
 	File "${CROSS}/zadig_xp.exe"
 
+	# Python
+	File "${CROSS}/python32.dll"
+	File "${CROSS}/python32.zip"
+
 	# Protocol decoders.
 	SetOutPath "$INSTDIR\decoders"
 	File /r /x "__pycache__" "${CROSS}/share/libsigrokdecode/decoders/*"
@@ -198,23 +196,6 @@ Section "PulseView (required)" Section1
 SectionEnd
 
 
-# --- Python installer section ------------------------------------------------
-
-Section "Python" Section2
-
-	# Copy the Python installer MSI file into the temporary directory.
-	SetOutPath "$TEMP"
-	File "${CROSS}/${PY_INST}"
-
-	# Run the Python installer MSI file from within our installer.
-	ExecWait '"msiexec" /i "$TEMP\${PY_INST}" /QB- /passive ALLUSERS=1'
-
-	# Remove Python installer MSI file again.
-	Delete "$TEMP\${PY_INST}"
-
-SectionEnd
-
-
 # --- Uninstaller section -----------------------------------------------------
 
 Section "Uninstall"
@@ -228,6 +209,8 @@ Section "Uninstall"
 	Delete "$INSTDIR\libusb0.dll"
 	Delete "$INSTDIR\zadig.exe"
 	Delete "$INSTDIR\zadig_xp.exe"
+	Delete "$INSTDIR\python32.dll"
+	Delete "$INSTDIR\python32.zip"
 
 	# Delete all decoders and everything else in decoders/.
 	# There could be *.pyc files or __pycache__ subdirs and so on.
@@ -262,10 +245,8 @@ SectionEnd
 # --- Component selection section descriptions --------------------------------
 
 LangString DESC_Section1 ${LANG_ENGLISH} "This installs the PulseView sigrok GUI, some firmware files, the protocol decoders, some example files, and all required libraries."
-LangString DESC_Section2 ${LANG_ENGLISH} "This installs Python 3.2 in its default location of c:\Python32. If you already have Python 3.2 installed, you don't need to re-install it."
 
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
 !insertmacro MUI_DESCRIPTION_TEXT ${Section1} $(DESC_Section1)
-!insertmacro MUI_DESCRIPTION_TEXT ${Section2} $(DESC_Section2)
 !insertmacro MUI_FUNCTION_DESCRIPTION_END
 
