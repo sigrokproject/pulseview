@@ -62,13 +62,13 @@ void Decoder::show(bool show)
 	_shown = show;
 }
 
-const map<const srd_probe*, shared_ptr<view::LogicSignal> >&
-Decoder::probes() const
+const map<const srd_channel*, shared_ptr<view::LogicSignal> >&
+Decoder::channels() const
 {
 	return _probes;
 }
 
-void Decoder::set_probes(std::map<const srd_probe*,
+void Decoder::set_probes(std::map<const srd_channel*,
 	boost::shared_ptr<view::LogicSignal> > probes)
 {
 	_probes = probes;
@@ -88,10 +88,10 @@ void Decoder::set_option(const char *id, GVariant *value)
 
 bool Decoder::have_required_probes() const
 {
-	for (GSList *p = _decoder->probes; p; p = p->next) {
-		const srd_probe *const probe = (const srd_probe*)p->data;
-		assert(probe);
-		if (_probes.find(probe) == _probes.end())
+	for (GSList *l = _decoder->channels; l; l = l->next) {
+		const srd_channel *const pdch = (const srd_channel*)l->data;
+		assert(pdch);
+		if (_probes.find(pdch) == _probes.end())
 			return false;
 	}
 
@@ -101,7 +101,7 @@ bool Decoder::have_required_probes() const
 set< shared_ptr<pv::data::Logic> > Decoder::get_data()
 {
 	set< shared_ptr<pv::data::Logic> > data;
-	for(map<const srd_probe*, shared_ptr<view::LogicSignal> >::
+	for(map<const srd_channel*, shared_ptr<view::LogicSignal> >::
 		const_iterator i = _probes.begin();
 		i != _probes.end(); i++)
 	{
@@ -138,7 +138,7 @@ srd_decoder_inst* Decoder::create_decoder_inst(srd_session *session, int unit_si
 	GHashTable *const probes = g_hash_table_new_full(g_str_hash,
 		g_str_equal, g_free, (GDestroyNotify)g_variant_unref);
 
-	for(map<const srd_probe*, shared_ptr<view::LogicSignal> >::
+	for(map<const srd_channel*, shared_ptr<view::LogicSignal> >::
 		const_iterator i = _probes.begin();
 		i != _probes.end(); i++)
 	{
@@ -149,7 +149,7 @@ srd_decoder_inst* Decoder::create_decoder_inst(srd_session *session, int unit_si
 		g_hash_table_insert(probes, (*i).first->id, gvar);
 	}
 
-	srd_inst_probe_set_all(decoder_inst, probes, unit_size);
+	srd_inst_channel_set_all(decoder_inst, probes, unit_size);
 
 	return decoder_inst;
 }

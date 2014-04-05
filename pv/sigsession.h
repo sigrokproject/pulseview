@@ -36,7 +36,7 @@
 #include <libsigrok/libsigrok.h>
 
 struct srd_decoder;
-struct srd_probe;
+struct srd_channel;
 
 namespace pv {
 

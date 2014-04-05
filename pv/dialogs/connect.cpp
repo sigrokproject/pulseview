@@ -185,7 +185,7 @@ void Connect::scan_pressed()
 		QString text = QString::fromUtf8(title.c_str());
 
 		if (sdi->channels) {
-			text += QString(" with %1 probes").arg(
+			text += QString(" with %1 channels").arg(
 				g_slist_length(sdi->channels));
 		}
 

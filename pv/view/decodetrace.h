@@ -32,7 +32,7 @@
 
 #include <pv/prop/binding/decoderoptions.h>
 
-struct srd_probe;
+struct srd_channel;
 struct srd_decoder;
 
 class QComboBox;
@@ -66,7 +66,7 @@ private:
 	{
 		const QComboBox *_combo;
 		const boost::shared_ptr<pv::data::decode::Decoder> _decoder;
-		const srd_probe *_probe;
+		const srd_channel *_pdch;
 	};
 
 private:
@@ -148,7 +148,7 @@ private:
 
 	QComboBox* create_probe_selector(QWidget *parent,
 		const boost::shared_ptr<pv::data::decode::Decoder> &dec,
-		const srd_probe *const probe);
+		const srd_channel *const pdch);
 
 	void commit_decoder_probes(
 		boost::shared_ptr<data::decode::Decoder> &dec);

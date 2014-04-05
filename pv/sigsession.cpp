@@ -228,7 +228,7 @@ vector< shared_ptr<view::Signal> > SigSession::get_signals() const
 #ifdef ENABLE_DECODE
 bool SigSession::add_decoder(srd_decoder *const dec)
 {
-	map<const srd_probe*, shared_ptr<view::LogicSignal> > probes;
+	map<const srd_channel*, shared_ptr<view::LogicSignal> > probes;
 	shared_ptr<data::DecoderStack> decoder_stack;
 
 	try
@@ -240,22 +240,22 @@ bool SigSession::add_decoder(srd_decoder *const dec)
 			new data::DecoderStack(*this, dec));
 
 		// Make a list of all the probes
-		std::vector<const srd_probe*> all_probes;
-		for(const GSList *i = dec->probes; i; i = i->next)
-			all_probes.push_back((const srd_probe*)i->data);
-		for(const GSList *i = dec->opt_probes; i; i = i->next)
-			all_probes.push_back((const srd_probe*)i->data);
+		std::vector<const srd_channel*> all_probes;
+		for(const GSList *i = dec->channels; i; i = i->next)
+			all_probes.push_back((const srd_channel*)i->data);
+		for(const GSList *i = dec->opt_channels; i; i = i->next)
+			all_probes.push_back((const srd_channel*)i->data);
 
 		// Auto select the initial probes
-		BOOST_FOREACH(const srd_probe *probe, all_probes)
+		BOOST_FOREACH(const srd_channel *pdch, all_probes)
 			BOOST_FOREACH(shared_ptr<view::Signal> s, _signals)
 			{
 				shared_ptr<view::LogicSignal> l =
 					dynamic_pointer_cast<view::LogicSignal>(s);
-				if (l && QString::fromUtf8(probe->name).
+				if (l && QString::fromUtf8(pdch->name).
 					toLower().contains(
 					l->get_name().toLower()))
-					probes[probe] = l;
+					probes[pdch] = l;
 			}
 
 		assert(decoder_stack);

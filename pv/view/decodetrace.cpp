@@ -311,7 +311,7 @@ void DecodeTrace::populate_popup_form(QWidget *parent, QFormLayout *form)
 		}
 
 		form->addRow(new QLabel(
-			tr("<i>* Required Probes</i>"), parent));
+			tr("<i>* Required channels</i>"), parent));
 	}
 
 	// Add stacking button
@@ -482,8 +482,8 @@ void DecodeTrace::draw_unresolved_period(QPainter &p, int h, int left,
 	// This works because we are currently assuming all
 	// LogicSignals have the same data/snapshot
 	BOOST_FOREACH (const shared_ptr<Decoder> &dec, stack)
-		if (dec && !dec->probes().empty() &&
-			((logic_signal = (*dec->probes().begin()).second)) &&
+		if (dec && !dec->channels().empty() &&
+			((logic_signal = (*dec->channels().begin()).second)) &&
 			((data = logic_signal->logic_data())))
 			break;
 
@@ -521,7 +521,7 @@ void DecodeTrace::create_decoder_form(int index,
 	shared_ptr<data::decode::Decoder> &dec, QWidget *parent,
 	QFormLayout *form)
 {
-	const GSList *probe;
+	const GSList *l;
 
 	assert(dec);
 	const srd_decoder *const decoder = dec->decoder();
@@ -542,33 +542,33 @@ void DecodeTrace::create_decoder_form(int index,
 	QFormLayout *const decoder_form = new QFormLayout;
 	group->add_layout(decoder_form);
 
-	// Add the mandatory probes
-	for(probe = decoder->probes; probe; probe = probe->next) {
-		const struct srd_probe *const p =
-			(struct srd_probe *)probe->data;
-		QComboBox *const combo = create_probe_selector(parent, dec, p);
+	// Add the mandatory channels
+	for(l = decoder->channels; l; l = l->next) {
+		const struct srd_channel *const pdch =
+			(struct srd_channel *)l->data;
+		QComboBox *const combo = create_probe_selector(parent, dec, pdch);
 		connect(combo, SIGNAL(currentIndexChanged(int)),
 			this, SLOT(on_probe_selected(int)));
 		decoder_form->addRow(tr("<b>%1</b> (%2) *")
-			.arg(QString::fromUtf8(p->name))
-			.arg(QString::fromUtf8(p->desc)), combo);
+			.arg(QString::fromUtf8(pdch->name))
+			.arg(QString::fromUtf8(pdch->desc)), combo);
 
-		const ProbeSelector s = {combo, dec, p};
+		const ProbeSelector s = {combo, dec, pdch};
 		_probe_selectors.push_back(s);
 	}
 
-	// Add the optional probes
-	for(probe = decoder->opt_probes; probe; probe = probe->next) {
-		const struct srd_probe *const p =
-			(struct srd_probe *)probe->data;
-		QComboBox *const combo = create_probe_selector(parent, dec, p);
+	// Add the optional channels
+	for(l = decoder->opt_channels; l; l = l->next) {
+		const struct srd_channel *const pdch =
+			(struct srd_channel *)l->data;
+		QComboBox *const combo = create_probe_selector(parent, dec, pdch);
 		connect(combo, SIGNAL(currentIndexChanged(int)),
 			this, SLOT(on_probe_selected(int)));
 		decoder_form->addRow(tr("<b>%1</b> (%2)")
-			.arg(QString::fromUtf8(p->name))
-			.arg(QString::fromUtf8(p->desc)), combo);
+			.arg(QString::fromUtf8(pdch->name))
+			.arg(QString::fromUtf8(pdch->desc)), combo);
 
-		const ProbeSelector s = {combo, dec, p};
+		const ProbeSelector s = {combo, dec, pdch};
 		_probe_selectors.push_back(s);
 	}
 
@@ -585,22 +585,22 @@ void DecodeTrace::create_decoder_form(int index,
 
 QComboBox* DecodeTrace::create_probe_selector(
 	QWidget *parent, const shared_ptr<data::decode::Decoder> &dec,
-	const srd_probe *const probe)
+	const srd_channel *const pdch)
 {
 	assert(dec);
 
 	const vector< shared_ptr<Signal> > sigs = _session.get_signals();
 
 	assert(_decoder_stack);
-	const map<const srd_probe*,
+	const map<const srd_channel*,
 		shared_ptr<LogicSignal> >::const_iterator probe_iter =
-		dec->probes().find(probe);
+		dec->channels().find(pdch);
 
 	QComboBox *selector = new QComboBox(parent);
 
 	selector->addItem("-", qVariantFromValue((void*)NULL));
 
-	if (probe_iter == dec->probes().end())
+	if (probe_iter == dec->channels().end())
 		selector->setCurrentIndex(0);
 
 	for(size_t i = 0; i < sigs.size(); i++) {
@@ -623,7 +623,7 @@ void DecodeTrace::commit_decoder_probes(shared_ptr<data::decode::Decoder> &dec)
 {
 	assert(dec);
 
-	map<const srd_probe*, shared_ptr<LogicSignal> > probe_map;
+	map<const srd_channel*, shared_ptr<LogicSignal> > probe_map;
 	const vector< shared_ptr<Signal> > sigs = _session.get_signals();
 
 	BOOST_FOREACH(const ProbeSelector &s, _probe_selectors)
@@ -637,7 +637,7 @@ void DecodeTrace::commit_decoder_probes(shared_ptr<data::decode::Decoder> &dec)
 
 		BOOST_FOREACH(shared_ptr<Signal> sig, sigs)
 			if(sig.get() == selection) {
-				probe_map[s._probe] =
+				probe_map[s._pdch] =
 					dynamic_pointer_cast<LogicSignal>(sig);
 				break;
 			}

@@ -194,10 +194,10 @@ void DecoderStack::begin_decode()
 
 	clear();
 
-	// Check that all decoders have the required probes
+	// Check that all decoders have the required channels
 	BOOST_FOREACH(const shared_ptr<decode::Decoder> &dec, _stack)
 		if (!dec->have_required_probes()) {
-			_error_message = tr("One or more required probes "
+			_error_message = tr("One or more required channels "
 				"have not been specified");
 			return;
 		}
@@ -233,12 +233,12 @@ void DecoderStack::begin_decode()
 		}
 	}
 
-	// We get the logic data of the first probe in the list.
+	// We get the logic data of the first channel in the list.
 	// This works because we are currently assuming all
 	// LogicSignals have the same data/snapshot
 	BOOST_FOREACH (const shared_ptr<decode::Decoder> &dec, _stack)
-		if (dec && !dec->probes().empty() &&
-			((logic_signal = (*dec->probes().begin()).second)) &&
+		if (dec && !dec->channels().empty() &&
+			((logic_signal = (*dec->channels().begin()).second)) &&
 			((data = logic_signal->logic_data())))
 			break;
 

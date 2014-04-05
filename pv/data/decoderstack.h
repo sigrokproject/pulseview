@@ -37,7 +37,7 @@
 
 struct srd_decoder;
 struct srd_decoder_annotation_row;
-struct srd_probe;
+struct srd_channel;
 struct srd_proto_data;
 struct srd_session;
 

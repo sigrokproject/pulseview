@@ -30,7 +30,7 @@
 
 struct srd_decoder;
 struct srd_decoder_inst;
-struct srd_probe;
+struct srd_channel;
 struct srd_session;
 
 namespace pv {
@@ -57,9 +57,9 @@ public:
 	bool shown() const;
 	void show(bool show = true);
 
-	const std::map<const srd_probe*,
-		boost::shared_ptr<view::LogicSignal> >& probes() const;
-	void set_probes(std::map<const srd_probe*,
+	const std::map<const srd_channel*,
+		boost::shared_ptr<view::LogicSignal> >& channels() const;
+	void set_probes(std::map<const srd_channel*,
 		boost::shared_ptr<view::LogicSignal> > probes);
 
 	const std::map<std::string, GVariant*>& options() const;
@@ -78,7 +78,7 @@ private:
 
 	bool _shown;
 
-	std::map<const srd_probe*, boost::shared_ptr<pv::view::LogicSignal> >
+	std::map<const srd_channel*, boost::shared_ptr<pv::view::LogicSignal> >
 		_probes;
 	std::map<std::string, GVariant*> _options;
 };
