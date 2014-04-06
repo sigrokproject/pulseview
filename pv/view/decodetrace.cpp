@@ -373,7 +373,7 @@ void DecodeTrace::draw_instant(const pv::data::decode::Annotation &a, QPainter &
 {
 	const QString text = a.annotations().empty() ?
 		QString() : a.annotations().back();
-	const double w = min(p.boundingRect(QRectF(), 0, text).width(),
+	const double w = min((double)p.boundingRect(QRectF(), 0, text).width(),
 		0.0) + h;
 	const QRectF rect(x - w / 2, y - h / 2, w, h);
 
