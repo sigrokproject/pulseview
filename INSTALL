@@ -16,6 +16,7 @@ Requirements
  - libboost >= 1.42 (including the following libs):
     - libboost-system
     - libboost-thread
+    - libboost-filesystem
     - libboost-test (optional, only needed to run the unit tests)
  - libsigrok >= 0.2.0
  - libsigrokdecode >= 0.2.0
