@@ -38,7 +38,7 @@
 Name "PulseView"
 
 # Filename of the installer executable.
-OutFile "pulseview-0.1.0-installer.exe"
+OutFile "pulseview-0.2.0-installer.exe"
 
 # Where to install the application.
 InstallDir "$PROGRAMFILES\sigrok\PulseView"
@@ -183,7 +183,7 @@ Section "PulseView (required)" Section1
 	WriteRegStr HKLM "${REGSTR}" "URLUpdateInfo" \
 		"http://sigrok.org/wiki/Downloads"
 	WriteRegStr HKLM "${REGSTR}" "URLInfoAbout" "http://sigrok.org"
-	WriteRegStr HKLM "${REGSTR}" "DisplayVersion" "0.1.0"
+	WriteRegStr HKLM "${REGSTR}" "DisplayVersion" "0.2.0"
 	WriteRegStr HKLM "${REGSTR}" "Contact" \
 		"sigrok-devel@lists.sourceforge.org"
 	WriteRegStr HKLM "${REGSTR}" "Comments" \
