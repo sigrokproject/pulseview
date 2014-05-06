@@ -20,10 +20,10 @@
 
 option(ENABLE_DECODE "Build with libsigrokdecode" FALSE)
 
-list(APPEND PKGDEPS libsigrok>=0.2.0)
+list(APPEND PKGDEPS libsigrok>=0.3.0)
 
 if(ENABLE_DECODE)
-	list(APPEND PKGDEPS libsigrokdecode>=0.2.0)
+	list(APPEND PKGDEPS libsigrokdecode>=0.3.0)
 endif()
 
 find_package(PkgConfig)
