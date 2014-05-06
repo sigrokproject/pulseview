@@ -1,3 +1,99 @@
+0.2.0 (2014-05-06)
+------------------
+
+ * Add support for protocol decoding.
+   - A menu item Decoders->Add can add (only) low-level protocol decoders.
+   - Clicking on a decoder's arrow on the left-hand side allows stacking
+     (only) further, higher-level decoders (bug #333).
+   - Add support for multiple decoder rows per PD (bugs #161, #303).
+ * Add support for loading data from input files.
+ * Add support for saving logic analyzer data in *.sr files (bug #245).
+ * Show the filename of loaded *.sr files as "device name" in a drop-down.
+ * Add support for the new "channel groups" feature in libsigrok.
+ * Add a "Zoom to fit" and a "Zoom 1:1" icon/button.
+ * Add a "Channels" icon/button for enabling and configuring device channels.
+ * Add a "Device options" icon/button for configuring device specific settings
+   such as voltage thresholds.
+ * Double-clicking will zoom into the location the cursor points to.
+ * Add shortcut keys for Zoom-in (CTRL++) and Zoom-out (Ctrl+-) (bug #235).
+ * Add initial, basic support for analog data sources, such as oscilloscopes.
+   This has been tested on e.g. the Rigol DS1052E oscilloscope (bug #127).
+ * Almost all operations in PulseView work in an "auto-apply" style, i.e.
+   any changes in the GUI popups (decoder channel assignment, decoder option
+   changes, device channel changes, device option changes, and so on) have an
+   immediate effect (you don't have to click on any "OK" buttons).
+ * Open file dialog: Add 'All files' selection possibility.
+ * Added GUI support for the following libsigrok config options:
+   - SR_CONF_VOLTAGE_THRESHOLD
+   - SR_CONF_TRIGGER_SLOPE
+   - SR_CONF_EXTERNAL_CLOCK
+   - SR_CONF_CLOCK_EDGE
+ * Updated build requirements:
+   - cmake >= 2.8.6 (required)
+   - libsigrok >= 0.3.0 (required)
+   - libsigrokdecode >= 0.3.0 (required)
+     Note: libsigrokdecode is now always required (was optional before).
+   - libboost-filesystem >= 1.42 (required)
+   - libboost-test >= 1.42 (optional, only needed for running unit tests)
+ * Fix a build issue on NetBSD due to an incorrect #include.
+ * Fix a channel handling issue for devices with >= 16 channels.
+ * Fixed a few display issues related to UTF-8 strings in decoder annotations,
+   decoder options, and so on (bug #307, and other fixes without bug numbers).
+ * Don't decode if required PD channels were not supplied (bug #204).
+ * Fix some issues with partially disappearing PD annotations.
+ * Update the samplerate selector when the device config changes (since e.g.
+   en-/disabling logic analyzer channels can change available samplerates).
+ * Fix a samplerate selector and device config update issue (bug #296).
+ * Minor performance improvements via memory pre-allocation in some areas.
+ * Remove old PD annotations upon new captures (bugs #172, #302).
+ * Portability improvements by using portable sample pack/unpack code.
+ * Fix a segfault related to thread joining (bug #323).
+ * Fix a minor issue which lead to trigger config being unusable (bug #318).
+ * Fix an issue which lead to the user-selected samplerate in the drop-down
+   box not being selected and shown again after clicking "Run" (bug #324).
+ * Start a new decode session whenever a new frame begins.
+ * Fix an issue which arose when a session file load failed (bug #331).
+ * Fix a segfault if only exactly one libsigrok driver is available (bug #334).
+ * Fix an issue with channel names not being updated while typing (bug #338).
+ * Fix an issue by stopping the capture when a device is changed (bug #223).
+ * Fix an issue with the displayed cursor popup time (bug #229).
+ * Fix handling of different integer types in some properties (bug #203).
+ * Hide the 'Configure device' button when the popup would be empty (bug #232).
+ * Fix a decoding chunk buffer / unitsize issue (bugs #171, #225).
+ * Fix a zoom issue due to invalid samplerate, assume 1Hz if needed (bug #278).
+ * Fix a QWellArray related issue by dropping QT_NO_MENU code (bug #265).
+ * Fix an analog data channel interleaving issue (bug #279).
+ * Only show the sample count widget if needed (i.e., hide it for scopes).
+ * SweepTimingWidget: Show a 1-2-5 based list for samplerate and samplecount.
+ * Fixed a unit test issue with AnalogSnapshotTest (bug #286).
+ * Add an extra sample to edges to make the end sample visible (bug #280).
+ * Fix an issue with decoder errors being shown even after the error was fixed.
+ * Add support for SR_CONF_LIMIT_SAMPLES (device-specific limits) (bug #74).
+ * Windows:
+   - Use the sigrok logo as icon for pulseview.exe (bugs #110, #238).
+   - Fix SVG icons not being displayed on Windows (bug #239).
+   - Ship libusb0.dll in the NSIS based installer (bug #241).
+   - Additionally ship decoders, firmware files, example *.sr files, and
+     zadig.exe and zadig_xp.exe in the NSIS based installer.
+   - Fix a "working path" issue resulting in PDs not being usable.
+ * Device scan: Disable "OK" button if no devices were found (bug #237).
+ * Fix a segfault related to incorrect decoder option handling (bug #160).
+ * Fix an off-by-one issue resulting in one PD not being usable (bug #164).
+ * Fix a PD channel auto-select logic issue with optional channels (bug #310).
+ * Fix an issue when cancelling "Connect to Device" (bug #242).
+ * Avoid confusing annotation color changes (bug #311).
+ * Fix an issue that caused some decoded data to not be shown (bug #308).
+ * Don't allow disabled channels (channel arrows) to be selected (bug #313).
+ * The channel name field is now resized to always fit the contents (bug #167).
+ * Build fixes for systems with (among other versions) Qt5 installed.
+ * Fix a build issue related to missing libboost-filesystem (bug #133).
+ * Add Cotire (optional, disabled by default) support for build performance.
+ * Fix a build issue related to Cotire (bug #217).
+ * Fix an issue with missing channel names from loaded files (bug #126).
+ * Fix missing samplerate loading from session files (bug #123).
+ * Fix some build issues related to C++ namespaces (bug #196).
+ * Fix a file loading issue which triggered an assert (bug #320).
+
 0.1.0 (2013-05-04)
 ------------------
 
