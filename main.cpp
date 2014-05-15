@@ -27,7 +27,7 @@
 
 #include <getopt.h>
 
-#include <QtGui/QApplication>
+#include <QApplication>
 #include <QDebug>
 
 #ifdef ENABLE_SIGNALS

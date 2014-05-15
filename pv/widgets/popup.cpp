@@ -23,6 +23,8 @@
 #include <assert.h>
 
 #include <QtGui>
+#include <QApplication>
+#include <QDesktopWidget>
 
 #include "popup.h"
 
