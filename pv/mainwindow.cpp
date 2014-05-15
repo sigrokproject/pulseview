@@ -116,12 +116,10 @@ void MainWindow::setup_ui()
 
 	// File Menu
 	QMenu *const menu_file = new QMenu;
-	menu_file->setTitle(QApplication::translate(
-		"MainWindow", "&File", 0, QApplication::UnicodeUTF8));
+	menu_file->setTitle(tr("&File"));
 
 	QAction *const action_open = new QAction(this);
-	action_open->setText(QApplication::translate(
-		"MainWindow", "&Open...", 0, QApplication::UnicodeUTF8));
+	action_open->setText(tr("&Open..."));
 	action_open->setIcon(QIcon::fromTheme("document-open",
 		QIcon(":/icons/document-open.png")));
 	action_open->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_O));
@@ -129,8 +127,7 @@ void MainWindow::setup_ui()
 	menu_file->addAction(action_open);
 
 	QAction *const action_save_as = new QAction(this);
-	action_save_as->setText(QApplication::translate(
-		"MainWindow", "&Save As...", 0, QApplication::UnicodeUTF8));
+	action_save_as->setText(tr("&Save As..."));
 	action_save_as->setIcon(QIcon::fromTheme("document-save-as",
 		QIcon(":/icons/document-save-as.png")));
 	action_save_as->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_S));
@@ -140,17 +137,14 @@ void MainWindow::setup_ui()
 	menu_file->addSeparator();
 
 	QAction *const action_connect = new QAction(this);
-	action_connect->setText(QApplication::translate(
-		"MainWindow", "&Connect to Device...", 0,
-		QApplication::UnicodeUTF8));
+	action_connect->setText(tr("&Connect to Device..."));
 	action_connect->setObjectName(QString::fromUtf8("actionConnect"));
 	menu_file->addAction(action_connect);
 
 	menu_file->addSeparator();
 
 	QAction *action_quit = new QAction(this);
-	action_quit->setText(QApplication::translate(
-		"MainWindow", "&Quit", 0, QApplication::UnicodeUTF8));
+	action_quit->setText(tr("&Quit"));
 	action_quit->setIcon(QIcon::fromTheme("application-exit",
 		QIcon(":/icons/application-exit.png")));
 	action_quit->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q));
@@ -159,12 +153,10 @@ void MainWindow::setup_ui()
 
 	// View Menu
 	QMenu *menu_view = new QMenu;
-	menu_view->setTitle(QApplication::translate(
-		"MainWindow", "&View", 0, QApplication::UnicodeUTF8));
+	menu_view->setTitle(tr("&View"));
 
 	QAction *const action_view_zoom_in = new QAction(this);
-	action_view_zoom_in->setText(QApplication::translate(
-		"MainWindow", "Zoom &In", 0, QApplication::UnicodeUTF8));
+	action_view_zoom_in->setText(tr("Zoom &In"));
 	action_view_zoom_in->setIcon(QIcon::fromTheme("zoom-in",
 		QIcon(":/icons/zoom-in.png")));
 	// simply using Qt::Key_Plus shows no + in the menu
@@ -174,8 +166,7 @@ void MainWindow::setup_ui()
 	menu_view->addAction(action_view_zoom_in);
 
 	QAction *const action_view_zoom_out = new QAction(this);
-	action_view_zoom_out->setText(QApplication::translate(
-		"MainWindow", "Zoom &Out", 0, QApplication::UnicodeUTF8));
+	action_view_zoom_out->setText(tr("Zoom &Out"));
 	action_view_zoom_out->setIcon(QIcon::fromTheme("zoom-out",
 		QIcon(":/icons/zoom-out.png")));
 	action_view_zoom_out->setShortcut(QKeySequence::ZoomOut);
@@ -184,8 +175,7 @@ void MainWindow::setup_ui()
 	menu_view->addAction(action_view_zoom_out);
 
 	QAction *const action_view_zoom_fit = new QAction(this);
-	action_view_zoom_fit->setText(QApplication::translate(
-		"MainWindow", "Zoom to &Fit", 0, QApplication::UnicodeUTF8));
+	action_view_zoom_fit->setText(tr("Zoom to &Fit"));
 	action_view_zoom_fit->setIcon(QIcon::fromTheme("zoom-fit",
 		QIcon(":/icons/zoom-fit.png")));
 	action_view_zoom_fit->setShortcut(QKeySequence(Qt::Key_F));
@@ -194,9 +184,7 @@ void MainWindow::setup_ui()
 	menu_view->addAction(action_view_zoom_fit);
 
 	QAction *const action_view_zoom_one_to_one = new QAction(this);
-	action_view_zoom_one_to_one->setText(QApplication::translate(
-		"MainWindow", "Zoom to &One-to-One", 0,
-			QApplication::UnicodeUTF8));
+	action_view_zoom_one_to_one->setText(tr("Zoom to &One-to-One"));
 	action_view_zoom_one_to_one->setIcon(QIcon::fromTheme("zoom-original",
 		QIcon(":/icons/zoom-original.png")));
 	action_view_zoom_one_to_one->setShortcut(QKeySequence(Qt::Key_O));
@@ -212,20 +200,17 @@ void MainWindow::setup_ui()
 	action_view_show_cursors->setShortcut(QKeySequence(Qt::Key_C));
 	action_view_show_cursors->setObjectName(
 		QString::fromUtf8("actionViewShowCursors"));
-	action_view_show_cursors->setText(QApplication::translate(
-		"MainWindow", "Show &Cursors", 0, QApplication::UnicodeUTF8));
+	action_view_show_cursors->setText(tr("Show &Cursors"));
 	menu_view->addAction(action_view_show_cursors);
 
 	// Decoders Menu
 #ifdef ENABLE_DECODE
 	QMenu *const menu_decoders = new QMenu;
-	menu_decoders->setTitle(QApplication::translate(
-		"MainWindow", "&Decoders", 0, QApplication::UnicodeUTF8));
+	menu_decoders->setTitle(tr("&Decoders"));
 
 	pv::widgets::DecoderMenu *const menu_decoders_add =
 		new pv::widgets::DecoderMenu(menu_decoders, true);
-	menu_decoders_add->setTitle(QApplication::translate(
-		"MainWindow", "&Add", 0, QApplication::UnicodeUTF8));
+	menu_decoders_add->setTitle(tr("&Add"));
 	connect(menu_decoders_add, SIGNAL(decoder_selected(srd_decoder*)),
 		this, SLOT(add_decoder(srd_decoder*)));
 
@@ -234,13 +219,11 @@ void MainWindow::setup_ui()
 
 	// Help Menu
 	QMenu *const menu_help = new QMenu;
-	menu_help->setTitle(QApplication::translate(
-		"MainWindow", "&Help", 0, QApplication::UnicodeUTF8));
+	menu_help->setTitle(tr("&Help"));
 
 	QAction *const action_about = new QAction(this);
 	action_about->setObjectName(QString::fromUtf8("actionAbout"));
-	action_about->setText(QApplication::translate(
-		"MainWindow", "&About...", 0, QApplication::UnicodeUTF8));
+	action_about->setText(tr("&About..."));
 	menu_help->addAction(action_about);
 
 	menu_bar->addAction(menu_file->menuAction());
@@ -275,8 +258,7 @@ void MainWindow::setup_ui()
 	addToolBar(_sampling_bar);
 
 	// Set the title
-	setWindowTitle(QApplication::translate("MainWindow", "PulseView", 0,
-		QApplication::UnicodeUTF8));
+	setWindowTitle(tr("PulseView"));
 
 	// Setup _session events
 	connect(&_session, SIGNAL(capture_state_changed(int)), this,
