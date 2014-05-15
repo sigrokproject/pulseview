@@ -37,6 +37,7 @@ option(ENABLE_DECODE "Build with libsigrokdecode" TRUE)
 option(ENABLE_COTIRE "Enable cotire" FALSE)
 option(ENABLE_TESTS "Enable unit tests" FALSE)
 option(STATIC_PKGDEPS_LIBS "Statically link to (pkg-config) libraries" FALSE)
+option(FORCE_QT4 "Force use of Qt4 even if Qt5 is available" FALSE)
 
 if(WIN32)
 	# On Windows/MinGW we need to statically link to libraries.
@@ -66,8 +67,24 @@ endif()
 find_package(PkgConfig)
 pkg_check_modules(PKGDEPS REQUIRED ${PKGDEPS})
 
-find_program(QT_QMAKE_EXECUTABLE NAMES qmake4 qmake-qt4 qmake-mac)
-find_package(Qt4 REQUIRED)
+if(FORCE_QT4)
+	set(Qt5Core_FOUND FALSE)
+else()
+	find_package(Qt5Core QUIET)
+endif()
+
+if(Qt5Core_FOUND)
+	message("-- Using Qt5")
+	find_package(Qt5Widgets REQUIRED)
+	find_package(Qt5Gui REQUIRED)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS}")
+	set(QT_INCLUDE_DIRS "${Qt5Gui_INCLUDE_DIRS} ${Qt5Widgets_INCLUDE_DIRS}")
+	set(QT_LIBRARIES Qt5::Gui Qt5::Widgets)
+	add_definitions(${Qt5Gui_DEFINITIONS} ${Qt5Widgets_DEFINITIONS})
+else()
+	find_program(QT_QMAKE_EXECUTABLE NAMES qmake4 qmake-qt4 qmake-mac)
+	find_package(Qt4 REQUIRED)
+endif()
 
 find_package(Boost 1.42 COMPONENTS filesystem system REQUIRED)
 
@@ -235,11 +252,16 @@ if(WIN32)
 	list(APPEND pulseview_SOURCES pulseviewico.rc)
 endif()
 
-qt4_wrap_cpp(pulseview_HEADERS_MOC ${pulseview_HEADERS})
-qt4_wrap_ui(pulseview_FORMS_HEADERS ${pulseview_FORMS})
-qt4_add_resources(pulseview_RESOURCES_RCC ${pulseview_RESOURCES})
-
-include(${QT_USE_FILE})
+if(Qt5Core_FOUND)
+	qt5_wrap_cpp(pulseview_HEADERS_MOC ${pulseview_HEADERS})
+	qt5_wrap_ui(pulseview_FORMS_HEADERS ${pulseview_FORMS})
+	qt5_add_resources(pulseview_RESOURCES_RCC ${pulseview_RESOURCES})
+else()
+	qt4_wrap_cpp(pulseview_HEADERS_MOC ${pulseview_HEADERS})
+	qt4_wrap_ui(pulseview_FORMS_HEADERS ${pulseview_FORMS})
+	qt4_add_resources(pulseview_RESOURCES_RCC ${pulseview_RESOURCES})
+	include(${QT_USE_FILE})
+endif()
 
 #===============================================================================
 #= Global Definitions
@@ -266,6 +288,7 @@ include_directories(
 	${CMAKE_CURRENT_BINARY_DIR}
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${Boost_INCLUDE_DIRS}
+	${QT_INCLUDE_DIRS}
 )
 
 if(STATIC_PKGDEPS_LIBS)
