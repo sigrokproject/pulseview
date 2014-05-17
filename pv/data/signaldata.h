@@ -30,6 +30,7 @@ class SignalData
 {
 public:
 	SignalData();
+	virtual ~SignalData() {}
 
 public:
 	double samplerate() const;
