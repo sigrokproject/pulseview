@@ -22,12 +22,13 @@
 #define PULSEVIEW_PV_SIGSESSION_H
 
 #include <boost/function.hpp>
-#include <boost/thread.hpp>
 
 #include <map>
 #include <memory>
+#include <mutex>
 #include <set>
 #include <string>
+#include <thread>
 #include <vector>
 
 #include <QObject>
@@ -167,19 +168,19 @@ private:
 
 	std::vector< std::shared_ptr<view::DecodeTrace> > _decode_traces;
 
-	mutable boost::mutex _sampling_mutex;
+	mutable std::mutex _sampling_mutex;
 	capture_state _capture_state;
 
-	mutable boost::mutex _signals_mutex;
+	mutable std::mutex _signals_mutex;
 	std::vector< std::shared_ptr<view::Signal> > _signals;
 
-	mutable boost::mutex _data_mutex;
+	mutable std::mutex _data_mutex;
 	std::shared_ptr<data::Logic> _logic_data;
 	std::shared_ptr<data::LogicSnapshot> _cur_logic_snapshot;
 	std::map< const sr_channel*, std::shared_ptr<data::AnalogSnapshot> >
 		_cur_analog_snapshots;
 
-	boost::thread _sampling_thread;
+	std::thread _sampling_thread;
 
 signals:
 	void capture_state_changed(int state);

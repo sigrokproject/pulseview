@@ -23,9 +23,10 @@
 
 #include <stdint.h>
 
+#include <atomic>
+#include <mutex>
 #include <string>
-
-#include <boost/thread.hpp>
+#include <thread>
 
 #include <QObject>
 
@@ -70,9 +71,11 @@ private:
 	const std::string _file_name;
 	const SigSession &_session;
 
-	boost::thread _thread;
+	std::thread _thread;
 
-	mutable boost::mutex _mutex;
+	std::atomic<bool> _interrupt;
+
+	mutable std::mutex _mutex;
 	uint64_t _units_stored;
 	uint64_t _unit_count;
 	QString _error;

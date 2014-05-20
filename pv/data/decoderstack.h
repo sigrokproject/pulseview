@@ -23,11 +23,14 @@
 
 #include "signaldata.h"
 
+#include <atomic>
+#include <condition_variable>
 #include <list>
+#include <map>
 #include <memory>
+#include <thread>
 
 #include <boost/optional.hpp>
-#include <boost/thread.hpp>
 
 #include <QObject>
 #include <QString>
@@ -134,18 +137,18 @@ private:
 	 * @todo A proper solution should be implemented to allow multiple
 	 * decode operations.
 	 */
-	static boost::mutex _global_decode_mutex;
+	static std::mutex _global_decode_mutex;
 
 	std::list< std::shared_ptr<decode::Decoder> > _stack;
 
 	std::shared_ptr<pv::data::LogicSnapshot> _snapshot;
 
-	mutable boost::mutex _input_mutex;
-	mutable boost::condition_variable _input_cond;
+	mutable std::mutex _input_mutex;
+	mutable std::condition_variable _input_cond;
 	int64_t _sample_count;
 	bool _frame_complete;
 
-	mutable boost::mutex _output_mutex;
+	mutable std::mutex _output_mutex;
 	int64_t	_samples_decoded;
 
 	std::map<const decode::Row, decode::RowData> _rows;
@@ -154,7 +157,8 @@ private:
 
 	QString _error_message;
 
-	boost::thread _decode_thread;
+	std::thread _decode_thread;
+	std::atomic<bool> _interrupt;
 
 	friend class DecoderStackTest::TwoDecoderStack;
 };

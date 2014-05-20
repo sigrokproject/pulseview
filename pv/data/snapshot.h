@@ -23,7 +23,8 @@
 
 #include <libsigrok/libsigrok.h>
 
-#include <boost/thread.hpp>
+#include <thread>
+#include <mutex>
 
 namespace pv {
 namespace data {
@@ -70,7 +71,7 @@ protected:
 	void append_data(void *data, uint64_t samples);
 
 protected:
-	mutable boost::recursive_mutex _mutex;
+	mutable std::recursive_mutex _mutex;
 	void *_data;
 	uint64_t _sample_count;
 	uint64_t _capacity;

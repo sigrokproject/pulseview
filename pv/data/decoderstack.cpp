@@ -20,8 +20,6 @@
 
 #include <libsigrokdecode/libsigrokdecode.h>
 
-#include <boost/thread/thread.hpp>
-
 #include <stdexcept>
 
 #include <QDebug>
@@ -35,10 +33,10 @@
 #include <pv/sigsession.h>
 #include <pv/view/logicsignal.h>
 
-using boost::lock_guard;
-using boost::mutex;
+using std::lock_guard;
+using std::mutex;
 using boost::optional;
-using boost::unique_lock;
+using std::unique_lock;
 using std::deque;
 using std::make_pair;
 using std::max;
@@ -82,7 +80,7 @@ DecoderStack::DecoderStack(pv::SigSession &session,
 DecoderStack::~DecoderStack()
 {
 	if (_decode_thread.joinable()) {
-		_decode_thread.interrupt();
+		_interrupt = true;
 		_decode_thread.join();
 	}
 }
@@ -186,7 +184,7 @@ void DecoderStack::begin_decode()
 	shared_ptr<pv::data::Logic> data;
 
 	if (_decode_thread.joinable()) {
-		_decode_thread.interrupt();
+		_interrupt = true;
 		_decode_thread.join();
 	}
 
@@ -256,7 +254,8 @@ void DecoderStack::begin_decode()
 	if (_samplerate == 0.0)
 		_samplerate = 1.0;
 
-	_decode_thread = boost::thread(&DecoderStack::decode_proc, this);
+	_interrupt = false;
+	_decode_thread = std::thread(&DecoderStack::decode_proc, this);
 }
 
 uint64_t DecoderStack::get_max_sample_count() const
@@ -273,11 +272,10 @@ uint64_t DecoderStack::get_max_sample_count() const
 optional<int64_t> DecoderStack::wait_for_data() const
 {
 	unique_lock<mutex> input_lock(_input_mutex);
-	while(!boost::this_thread::interruption_requested() &&
-		!_frame_complete && _samples_decoded >= _sample_count)
+	while(!_interrupt && !_frame_complete &&
+		_samples_decoded >= _sample_count)
 		_input_cond.wait(input_lock);
-	return boost::make_optional(
-		!boost::this_thread::interruption_requested() &&
+	return boost::make_optional(!_interrupt &&
 		(_samples_decoded < _sample_count || !_frame_complete),
 		_sample_count);
 }
@@ -291,9 +289,7 @@ void DecoderStack::decode_data(
 	const unsigned int chunk_sample_count =
 		DecodeChunkLength / _snapshot->unit_size();
 
-	for (int64_t i = 0;
-		!boost::this_thread::interruption_requested() &&
-			i < sample_count;
+	for (int64_t i = 0; !_interrupt && i < sample_count;
 		i += chunk_sample_count)
 	{
 		lock_guard<mutex> decode_lock(_global_decode_mutex);

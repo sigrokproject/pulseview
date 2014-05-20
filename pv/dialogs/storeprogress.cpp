@@ -18,9 +18,11 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#include "storeprogress.h"
+#include <cassert>
 
 #include <QMessageBox>
+
+#include "storeprogress.h"
 
 namespace pv {
 namespace dialogs {

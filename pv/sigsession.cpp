@@ -39,8 +39,8 @@
 #include "view/decodetrace.h"
 #include "view/logicsignal.h"
 
-#include <assert.h>
-
+#include <cassert>
+#include <mutex>
 #include <stdexcept>
 
 #include <sys/stat.h>
@@ -48,9 +48,9 @@
 #include <QDebug>
 
 using boost::function;
-using boost::lock_guard;
-using boost::mutex;
 using std::dynamic_pointer_cast;
+using std::lock_guard;
+using std::mutex;
 using std::list;
 using std::map;
 using std::set;
@@ -188,7 +188,7 @@ void SigSession::start_capture(function<void (const QString)> error_handler)
 	}
 
 	// Begin the session
-	_sampling_thread = boost::thread(
+	_sampling_thread = std::thread(
 		&SigSession::sample_thread_proc, this, _dev_inst,
 			error_handler);
 }

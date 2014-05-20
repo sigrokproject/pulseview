@@ -28,8 +28,8 @@
 #include "config.h"
 #include "logicsnapshot.h"
 
-using boost::lock_guard;
-using boost::recursive_mutex;
+using std::lock_guard;
+using std::recursive_mutex;
 using std::max;
 using std::min;
 using std::pair;

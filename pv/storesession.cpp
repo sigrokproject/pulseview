@@ -25,17 +25,17 @@
 #include <pv/data/logicsnapshot.h>
 #include <pv/view/signal.h>
 
-using boost::mutex;
-using boost::thread;
-using boost::lock_guard;
 using std::deque;
 using std::dynamic_pointer_cast;
+using std::lock_guard;
 using std::make_pair;
 using std::min;
+using std::mutex;
 using std::pair;
 using std::set;
 using std::shared_ptr;
 using std::string;
+using std::thread;
 using std::vector;
 
 namespace pv {
@@ -46,6 +46,7 @@ StoreSession::StoreSession(const std::string &file_name,
 	const SigSession &session) :
 	_file_name(file_name),
 	_session(session),
+	_interrupt(false),
 	_units_stored(0),
 	_unit_count(0)
 {
@@ -129,7 +130,7 @@ bool StoreSession::start()
 		free(probes[i]);
 	delete[] probes;
 
-	_thread = boost::thread(&StoreSession::store_proc, this, snapshot);
+	_thread = std::thread(&StoreSession::store_proc, this, snapshot);
 	return true;
 }
 
@@ -141,7 +142,7 @@ void StoreSession::wait()
 
 void StoreSession::cancel()
 {
-	_thread.interrupt();
+	_interrupt = true;
 }
 
 void StoreSession::store_proc(shared_ptr<data::LogicSnapshot> snapshot)
@@ -164,8 +165,7 @@ void StoreSession::store_proc(shared_ptr<data::LogicSnapshot> snapshot)
 
 	const unsigned int samples_per_block = BlockSize / unit_size;
 
-	while (!boost::this_thread::interruption_requested() &&
-		start_sample < _unit_count)
+	while (!_interrupt && start_sample < _unit_count)
 	{
 		progress_updated();
 

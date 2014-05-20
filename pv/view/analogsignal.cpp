@@ -20,7 +20,8 @@
 
 #include <extdef.h>
 
-#include <math.h>
+#include <cassert>
+#include <cmath>
 
 #include "analogsignal.h"
 #include "pv/data/analog.h"

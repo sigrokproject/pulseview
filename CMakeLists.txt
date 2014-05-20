@@ -43,10 +43,6 @@ if(WIN32)
 	# This option is user configurable, but enable it by default on win32.
 	set(STATIC_PKGDEPS_LIBS TRUE)
 
-	# For boost-thread we need two additional settings on win32:
-	set(Boost_USE_STATIC_LIBS ON)
-	add_definitions(-DBOOST_THREAD_USE_LIB)
-
 	# Windows does not support UNIX signals.
 	set(ENABLE_SIGNALS FALSE)
 endif()
@@ -73,17 +69,7 @@ pkg_check_modules(PKGDEPS REQUIRED ${PKGDEPS})
 find_program(QT_QMAKE_EXECUTABLE NAMES qmake4 qmake-qt4 qmake-mac)
 find_package(Qt4 REQUIRED)
 
-# Find the platform's thread library (needed for boost-thread).
-# This will set ${CMAKE_THREAD_LIBS_INIT} to the correct, OS-specific value.
-find_package(Threads)
-
-if(WIN32)
-	# On Windows/MinGW we need to use 'thread_win32' instead of 'thread'.
-	# The library is named libboost_thread_win32* (not libboost_thread*).
-	find_package(Boost 1.42 COMPONENTS filesystem system thread_win32 REQUIRED)
-else()
-	find_package(Boost 1.42 COMPONENTS filesystem system thread REQUIRED)
-endif()
+find_package(Boost 1.42 COMPONENTS filesystem system REQUIRED)
 
 #===============================================================================
 #= System Introspection
@@ -294,7 +280,6 @@ link_directories(${Boost_LIBRARY_DIRS})
 
 set(PULSEVIEW_LINK_LIBS
 	${Boost_LIBRARIES}
-	${CMAKE_THREAD_LIBS_INIT}
 	${QT_LIBRARIES}
 )
 
