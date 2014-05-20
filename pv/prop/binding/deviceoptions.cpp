@@ -37,9 +37,9 @@
 using boost::bind;
 using boost::function;
 using boost::optional;
-using boost::shared_ptr;
 using std::make_pair;
 using std::pair;
+using std::shared_ptr;
 using std::string;
 using std::vector;
 

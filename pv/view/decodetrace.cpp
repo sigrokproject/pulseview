@@ -47,12 +47,12 @@ extern "C" {
 #include <pv/widgets/decodergroupbox.h>
 #include <pv/widgets/decodermenu.h>
 
-using boost::dynamic_pointer_cast;
-using boost::shared_ptr;
+using std::dynamic_pointer_cast;
 using std::list;
 using std::max;
 using std::map;
 using std::min;
+using std::shared_ptr;
 using std::vector;
 
 namespace pv {
@@ -111,7 +111,7 @@ const QColor DecodeTrace::OutlineColours[16] = {
 };
 
 DecodeTrace::DecodeTrace(pv::SigSession &session,
-	boost::shared_ptr<pv::data::DecoderStack> decoder_stack, int index) :
+	std::shared_ptr<pv::data::DecoderStack> decoder_stack, int index) :
 	Trace(QString::fromUtf8(
 		decoder_stack->stack().front()->decoder()->name)),
 	_session(session),
@@ -136,7 +136,7 @@ bool DecodeTrace::enabled() const
 	return true;
 }
 
-const boost::shared_ptr<pv::data::DecoderStack>& DecodeTrace::decoder() const
+const std::shared_ptr<pv::data::DecoderStack>& DecodeTrace::decoder() const
 {
 	return _decoder_stack;
 }

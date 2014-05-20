@@ -61,7 +61,7 @@ public:
 	void cancel();
 
 private:
-	void store_proc(boost::shared_ptr<pv::data::LogicSnapshot> snapshot);
+	void store_proc(std::shared_ptr<pv::data::LogicSnapshot> snapshot);
 
 signals:
 	void progress_updated();

@@ -38,7 +38,6 @@
 using boost::lock_guard;
 using boost::mutex;
 using boost::optional;
-using boost::shared_ptr;
 using boost::unique_lock;
 using std::deque;
 using std::make_pair;
@@ -47,6 +46,7 @@ using std::min;
 using std::list;
 using std::map;
 using std::pair;
+using std::shared_ptr;
 using std::vector;
 
 using namespace pv::data::decode;
@@ -87,13 +87,13 @@ DecoderStack::~DecoderStack()
 	}
 }
 
-const std::list< boost::shared_ptr<decode::Decoder> >&
+const std::list< std::shared_ptr<decode::Decoder> >&
 DecoderStack::stack() const
 {
 	return _stack;
 }
 
-void DecoderStack::push(boost::shared_ptr<decode::Decoder> decoder)
+void DecoderStack::push(std::shared_ptr<decode::Decoder> decoder)
 {
 	assert(decoder);
 	_stack.push_back(decoder);

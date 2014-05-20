@@ -24,9 +24,9 @@
 #include "signaldata.h"
 
 #include <list>
+#include <memory>
 
 #include <boost/optional.hpp>
-#include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
 
 #include <QObject>
@@ -80,8 +80,8 @@ public:
 
 	virtual ~DecoderStack();
 
-	const std::list< boost::shared_ptr<decode::Decoder> >& stack() const;
-	void push(boost::shared_ptr<decode::Decoder> decoder);
+	const std::list< std::shared_ptr<decode::Decoder> >& stack() const;
+	void push(std::shared_ptr<decode::Decoder> decoder);
 	void remove(int index);
 
 	int64_t samples_decoded() const;
@@ -136,9 +136,9 @@ private:
 	 */
 	static boost::mutex _global_decode_mutex;
 
-	std::list< boost::shared_ptr<decode::Decoder> > _stack;
+	std::list< std::shared_ptr<decode::Decoder> > _stack;
 
-	boost::shared_ptr<pv::data::LogicSnapshot> _snapshot;
+	std::shared_ptr<pv::data::LogicSnapshot> _snapshot;
 
 	mutable boost::mutex _input_mutex;
 	mutable boost::condition_variable _input_cond;

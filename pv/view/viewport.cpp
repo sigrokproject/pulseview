@@ -26,9 +26,9 @@
 
 #include <QMouseEvent>
 
-using boost::shared_ptr;
 using std::max;
 using std::min;
+using std::shared_ptr;
 using std::vector;
 
 namespace pv {

@@ -47,14 +47,14 @@
 
 #include <QDebug>
 
-using boost::dynamic_pointer_cast;
 using boost::function;
 using boost::lock_guard;
 using boost::mutex;
-using boost::shared_ptr;
+using std::dynamic_pointer_cast;
 using std::list;
 using std::map;
 using std::set;
+using std::shared_ptr;
 using std::string;
 using std::vector;
 

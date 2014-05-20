@@ -34,10 +34,10 @@
 
 using boost::bind;
 using boost::none;
-using boost::shared_ptr;
 using std::make_pair;
 using std::map;
 using std::pair;
+using std::shared_ptr;
 using std::string;
 using std::vector;
 

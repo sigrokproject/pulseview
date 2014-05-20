@@ -23,12 +23,13 @@
 #include "view.h"
 #include "pv/util.h"
 
+#include <cassert>
 #include <algorithm>
 
-using boost::shared_ptr;
 using std::max;
 using std::make_pair;
 using std::min;
+using std::shared_ptr;
 using std::pair;
 
 namespace pv {

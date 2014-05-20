@@ -35,7 +35,7 @@
 #include <pv/widgets/popup.h>
 
 using namespace Qt;
-using boost::shared_ptr;
+using std::shared_ptr;
 
 namespace pv {
 namespace view {

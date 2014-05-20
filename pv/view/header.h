@@ -21,10 +21,8 @@
 #ifndef PULSEVIEW_PV_VIEW_HEADER_H
 #define PULSEVIEW_PV_VIEW_HEADER_H
 
-#include <boost/shared_ptr.hpp>
-#include <boost/weak_ptr.hpp>
-
 #include <list>
+#include <memory>
 #include <utility>
 
 #include "marginwidget.h"
@@ -48,7 +46,7 @@ public:
 	QSize sizeHint() const;
 
 private:
-	boost::shared_ptr<pv::view::Trace> get_mouse_over_trace(
+	std::shared_ptr<pv::view::Trace> get_mouse_over_trace(
 		const QPoint &pt);
 
 	void clear_selection();
@@ -84,7 +82,7 @@ private:
 	QPoint _mouse_down_point;
 	bool _dragging;
 
-	std::list<std::pair<boost::weak_ptr<Trace>, int> >
+	std::list<std::pair<std::weak_ptr<Trace>, int> >
 		_drag_traces;
 };
 

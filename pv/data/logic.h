@@ -23,8 +23,8 @@
 
 #include "signaldata.h"
 
-#include <boost/shared_ptr.hpp>
 #include <deque>
+#include <memory>
 
 namespace pv {
 namespace data {
@@ -39,9 +39,9 @@ public:
 	int get_num_probes() const;
 
 	void push_snapshot(
-		boost::shared_ptr<LogicSnapshot> &snapshot);
+		std::shared_ptr<LogicSnapshot> &snapshot);
 
-	std::deque< boost::shared_ptr<LogicSnapshot> >&
+	std::deque< std::shared_ptr<LogicSnapshot> >&
 		get_snapshots();
 
 	void clear();
@@ -50,7 +50,7 @@ public:
 
 private:
 	const unsigned int _num_probes;
-	std::deque< boost::shared_ptr<LogicSnapshot> > _snapshots;
+	std::deque< std::shared_ptr<LogicSnapshot> > _snapshots;
 };
 
 } // namespace data

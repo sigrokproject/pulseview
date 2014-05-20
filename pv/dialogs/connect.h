@@ -21,7 +21,7 @@
 #ifndef PULSEVIEW_PV_CONNECT_H
 #define PULSEVIEW_PV_CONNECT_H
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include <QComboBox>
 #include <QDialog>
@@ -52,7 +52,7 @@ class Connect : public QDialog
 public:
 	Connect(QWidget *parent, pv::DeviceManager &device_manager);
 
-	boost::shared_ptr<device::Device> get_selected_device() const;
+	std::shared_ptr<device::Device> get_selected_device() const;
 
 private:
 	void populate_drivers();
@@ -83,7 +83,7 @@ private:
 
 	QPushButton _scan_button;
 	QListWidget _device_list;
-	std::map<const sr_dev_inst*, boost::shared_ptr<pv::device::Device> >
+	std::map<const sr_dev_inst*, std::shared_ptr<pv::device::Device> >
 		_device_map;
 
 	QDialogButtonBox _button_box;

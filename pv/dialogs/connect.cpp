@@ -18,6 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
+#include <cassert>
+
 #include <libsigrok/libsigrok.h>
 
 #include "connect.h"
@@ -32,8 +34,8 @@ extern "C" {
 #include <libsigrok/libsigrok.h>
 }
 
-using boost::shared_ptr;
 using std::list;
+using std::shared_ptr;
 using std::string;
 
 extern sr_context *sr_ctx;

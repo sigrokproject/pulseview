@@ -42,11 +42,11 @@ namespace binding {
 class DecoderOptions : public Binding
 {
 public:
-	DecoderOptions(boost::shared_ptr<pv::data::DecoderStack> decoder_stack,
-		boost::shared_ptr<pv::data::decode::Decoder> decoder);
+	DecoderOptions(std::shared_ptr<pv::data::DecoderStack> decoder_stack,
+		std::shared_ptr<pv::data::decode::Decoder> decoder);
 
 private:
-	static boost::shared_ptr<Property> bind_enum(const QString &name,
+	static std::shared_ptr<Property> bind_enum(const QString &name,
 		const srd_decoder_option *option,
 		Property::Getter getter, Property::Setter setter);
 
@@ -55,8 +55,8 @@ private:
 	void setter(const char *id, GVariant *value);
 
 private:
-	boost::shared_ptr<pv::data::DecoderStack> _decoder_stack;
-	boost::shared_ptr<pv::data::decode::Decoder> _decoder;
+	std::shared_ptr<pv::data::DecoderStack> _decoder_stack;
+	std::shared_ptr<pv::data::decode::Decoder> _decoder;
 };
 
 } // binding

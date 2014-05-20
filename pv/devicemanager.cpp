@@ -28,11 +28,11 @@
 
 #include <libsigrok/libsigrok.h>
 
-using boost::shared_ptr;
 using std::list;
 using std::map;
 using std::ostringstream;
 using std::runtime_error;
+using std::shared_ptr;
 using std::string;
 
 namespace pv {

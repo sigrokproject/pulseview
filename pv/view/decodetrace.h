@@ -25,10 +25,9 @@
 
 #include <list>
 #include <map>
+#include <memory>
 
 #include <QSignalMapper>
-
-#include <boost/shared_ptr.hpp>
 
 #include <pv/prop/binding/decoderoptions.h>
 
@@ -65,7 +64,7 @@ private:
 	struct ProbeSelector
 	{
 		const QComboBox *_combo;
-		const boost::shared_ptr<pv::data::decode::Decoder> _decoder;
+		const std::shared_ptr<pv::data::decode::Decoder> _decoder;
 		const srd_channel *_pdch;
 	};
 
@@ -83,12 +82,12 @@ private:
 
 public:
 	DecodeTrace(pv::SigSession &session,
-		boost::shared_ptr<pv::data::DecoderStack> decoder_stack,
+		std::shared_ptr<pv::data::DecoderStack> decoder_stack,
 		int index);
 
 	bool enabled() const;
 
-	const boost::shared_ptr<pv::data::DecoderStack>& decoder() const;
+	const std::shared_ptr<pv::data::DecoderStack>& decoder() const;
 
 	void set_view(pv::view::View *view);
 
@@ -143,15 +142,15 @@ private:
 		int right, double samples_per_pixel, double pixels_offset);
 
 	void create_decoder_form(int index,
-		boost::shared_ptr<pv::data::decode::Decoder> &dec,
+		std::shared_ptr<pv::data::decode::Decoder> &dec,
 		QWidget *parent, QFormLayout *form);
 
 	QComboBox* create_probe_selector(QWidget *parent,
-		const boost::shared_ptr<pv::data::decode::Decoder> &dec,
+		const std::shared_ptr<pv::data::decode::Decoder> &dec,
 		const srd_channel *const pdch);
 
 	void commit_decoder_probes(
-		boost::shared_ptr<data::decode::Decoder> &dec);
+		std::shared_ptr<data::decode::Decoder> &dec);
 
 	void commit_probes();
 
@@ -170,11 +169,11 @@ private slots:
 
 private:
 	pv::SigSession &_session;
-	boost::shared_ptr<pv::data::DecoderStack> _decoder_stack;
+	std::shared_ptr<pv::data::DecoderStack> _decoder_stack;
 
 	uint64_t _decode_start, _decode_end;
 
-	std::list< boost::shared_ptr<pv::prop::binding::DecoderOptions> >
+	std::list< std::shared_ptr<pv::prop::binding::DecoderOptions> >
 		_bindings;
 
 	std::list<ProbeSelector> _probe_selectors;

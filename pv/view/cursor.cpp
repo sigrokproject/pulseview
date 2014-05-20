@@ -29,11 +29,12 @@
 #include <QRect>
 #include <QRectF>
 
-#include <stdio.h>
+#include <cassert>
+#include <cstdio>
 
 #include <extdef.h>
 
-using boost::shared_ptr;
+using std::shared_ptr;
 
 namespace pv {
 namespace view {

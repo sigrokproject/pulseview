@@ -60,8 +60,8 @@
 #include <glib.h>
 #include <libsigrok/libsigrok.h>
 
-using boost::shared_ptr;
 using std::list;
+using std::shared_ptr;
 
 namespace pv {
 

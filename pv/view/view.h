@@ -23,11 +23,9 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 #include <vector>
-
-#include <boost/shared_ptr.hpp>
-#include <boost/weak_ptr.hpp>
 
 #include <QAbstractScrollArea>
 #include <QSizeF>
@@ -97,11 +95,11 @@ public:
 	 */
 	void set_scale_offset(double scale, double offset);
 
-	std::vector< boost::shared_ptr<Trace> > get_traces() const;
+	std::vector< std::shared_ptr<Trace> > get_traces() const;
 
-	std::list<boost::weak_ptr<SelectableItem> > selected_items() const;
+	std::list<std::weak_ptr<SelectableItem> > selected_items() const;
 
-	std::set< boost::shared_ptr<pv::data::SignalData> >
+	std::set< std::shared_ptr<pv::data::SignalData> >
 		get_visible_data() const;
 
 	std::pair<double, double> get_time_extents() const;
@@ -162,8 +160,8 @@ private:
 	void update_layout();
 
 	static bool compare_trace_v_offsets(
-		const boost::shared_ptr<pv::view::Trace> &a,
-		const boost::shared_ptr<pv::view::Trace> &b);
+		const std::shared_ptr<pv::view::Trace> &a,
+		const std::shared_ptr<pv::view::Trace> &b);
 
 private:
 	bool eventFilter(QObject *object, QEvent *event);

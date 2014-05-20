@@ -21,9 +21,8 @@
 #ifndef PULSEVIEW_PV_DIALOGS_SAVEPROGRESS_H
 #define PULSEVIEW_PV_DIALOGS_SAVEPROGRESS_H
 
+#include <memory>
 #include <set>
-
-#include <boost/shared_ptr.hpp>
 
 #include <QProgressDialog>
 

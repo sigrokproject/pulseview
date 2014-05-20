@@ -23,7 +23,7 @@
 
 #include "signal.h"
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 class QToolBar;
 
@@ -49,15 +49,15 @@ private:
 	static const QColor SignalColours[10];
 
 public:
-	LogicSignal(boost::shared_ptr<pv::device::DevInst> dev_inst,
+	LogicSignal(std::shared_ptr<pv::device::DevInst> dev_inst,
 		const sr_channel *const probe,
-		boost::shared_ptr<pv::data::Logic> data);
+		std::shared_ptr<pv::data::Logic> data);
 
 	virtual ~LogicSignal();
 
-	boost::shared_ptr<pv::data::SignalData> data() const;
+	std::shared_ptr<pv::data::SignalData> data() const;
 
-	boost::shared_ptr<pv::data::Logic> logic_data() const;
+	std::shared_ptr<pv::data::Logic> logic_data() const;
 
 	/**
 	 * Paints the background layer of the signal with a QPainter
@@ -102,7 +102,7 @@ private slots:
 	void on_trigger_change();
 
 private:
-	boost::shared_ptr<pv::data::Logic> _data;
+	std::shared_ptr<pv::data::Logic> _data;
 
 	QToolBar *_trigger_bar;
 	QAction *_trigger_none;

@@ -21,9 +21,9 @@
 #include "logic.h"
 #include "logicsnapshot.h"
 
-using boost::shared_ptr;
 using std::deque;
 using std::max;
+using std::shared_ptr;
 
 namespace pv {
 namespace data {
@@ -59,7 +59,7 @@ void Logic::clear()
 uint64_t Logic::get_max_sample_count() const
 {
 	uint64_t l = 0;
-	for (boost::shared_ptr<LogicSnapshot> s : _snapshots) {
+	for (std::shared_ptr<LogicSnapshot> s : _snapshots) {
 		assert(s);
 		l = max(l, s->get_sample_count());
 	}

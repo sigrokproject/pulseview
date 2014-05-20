@@ -22,9 +22,8 @@
 #define PULSEVIEW_PV_POPUPS_PROBES_H
 
 #include <map>
+#include <memory>
 #include <vector>
-
-#include <boost/shared_ptr.hpp>
 
 #include <QFormLayout>
 #include <QHBoxLayout>
@@ -65,10 +64,10 @@ private:
 	void set_all_probes(bool set);
 
 	void populate_group(const sr_channel_group *group,
-		const std::vector< boost::shared_ptr<pv::view::Signal> > sigs);
+		const std::vector< std::shared_ptr<pv::view::Signal> > sigs);
 
 	QGridLayout* create_channel_group_grid(
-		const std::vector< boost::shared_ptr<pv::view::Signal> > sigs);
+		const std::vector< std::shared_ptr<pv::view::Signal> > sigs);
 
 private:
 	void showEvent(QShowEvent *e);
@@ -86,9 +85,9 @@ private:
 
 	bool _updating_probes;
 
-	std::vector< boost::shared_ptr<pv::prop::binding::DeviceOptions> >
+	std::vector< std::shared_ptr<pv::prop::binding::DeviceOptions> >
 		 _group_bindings;
-	std::map< QCheckBox*, boost::shared_ptr<pv::view::Signal> >
+	std::map< QCheckBox*, std::shared_ptr<pv::view::Signal> >
 		_check_box_signal_map;
 
 	QHBoxLayout _buttons_bar;

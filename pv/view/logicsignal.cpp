@@ -34,11 +34,11 @@
 #include <pv/data/logicsnapshot.h>
 #include <pv/view/view.h>
 
-using boost::shared_ptr;
 using std::deque;
 using std::max;
 using std::min;
 using std::pair;
+using std::shared_ptr;
 using std::vector;
 
 namespace pv {

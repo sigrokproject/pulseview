@@ -34,9 +34,9 @@
 
 using namespace Qt;
 
-using boost::shared_ptr;
 using std::map;
 using std::set;
+using std::shared_ptr;
 using std::vector;
 
 using pv::view::Signal;

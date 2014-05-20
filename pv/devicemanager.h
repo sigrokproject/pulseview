@@ -24,9 +24,8 @@
 #include <glib.h>
 
 #include <list>
+#include <memory>
 #include <string>
-
-#include <boost/shared_ptr.hpp>
 
 struct sr_context;
 struct sr_dev_driver;
@@ -46,10 +45,10 @@ public:
 
 	~DeviceManager();
 
-	const std::list< boost::shared_ptr<pv::device::Device> >&
+	const std::list< std::shared_ptr<pv::device::Device> >&
 		devices() const;
 
-	std::list< boost::shared_ptr<pv::device::Device> > driver_scan(
+	std::list< std::shared_ptr<pv::device::Device> > driver_scan(
 		struct sr_dev_driver *const driver,
 		GSList *const drvopts = NULL);
 
@@ -62,12 +61,12 @@ private:
 
 	void release_driver(struct sr_dev_driver *const driver);
 
-	static bool compare_devices(boost::shared_ptr<device::Device> a,
-		boost::shared_ptr<device::Device> b);
+	static bool compare_devices(std::shared_ptr<device::Device> a,
+		std::shared_ptr<device::Device> b);
 
 private:
 	struct sr_context *const _sr_ctx;
-	std::list< boost::shared_ptr<pv::device::Device> > _devices;
+	std::list< std::shared_ptr<pv::device::Device> > _devices;
 };
 
 } // namespace pv

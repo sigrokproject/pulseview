@@ -25,16 +25,16 @@
 #include <pv/data/logicsnapshot.h>
 #include <pv/view/signal.h>
 
-using boost::dynamic_pointer_cast;
 using boost::mutex;
-using boost::shared_ptr;
 using boost::thread;
 using boost::lock_guard;
 using std::deque;
+using std::dynamic_pointer_cast;
 using std::make_pair;
 using std::min;
 using std::pair;
 using std::set;
+using std::shared_ptr;
 using std::string;
 using std::vector;
 

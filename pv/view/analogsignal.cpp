@@ -27,9 +27,9 @@
 #include "pv/data/analogsnapshot.h"
 #include "pv/view/view.h"
 
-using boost::shared_ptr;
 using std::max;
 using std::min;
+using std::shared_ptr;
 using std::deque;
 
 namespace pv {

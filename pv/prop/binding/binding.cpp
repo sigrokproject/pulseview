@@ -18,19 +18,21 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
+#include <cassert>
+
 #include <QFormLayout>
 
 #include <pv/prop/property.h>
 
 #include "binding.h"
 
-using boost::shared_ptr;
+using std::shared_ptr;
 
 namespace pv {
 namespace prop {
 namespace binding {
 
-const std::vector< boost::shared_ptr<Property> >& Binding::properties()
+const std::vector< std::shared_ptr<Property> >& Binding::properties()
 {
 	return _properties;
 }

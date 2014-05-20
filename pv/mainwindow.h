@@ -22,8 +22,7 @@
 #define PULSEVIEW_PV_MAINWINDOW_H
 
 #include <list>
-
-#include <boost/weak_ptr.hpp>
+#include <memory>
 
 #include <QMainWindow>
 

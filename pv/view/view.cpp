@@ -41,8 +41,6 @@
 #include "pv/data/logic.h"
 #include "pv/data/logicsnapshot.h"
 
-using boost::shared_ptr;
-using boost::weak_ptr;
 using pv::data::SignalData;
 using std::deque;
 using std::list;
@@ -51,7 +49,9 @@ using std::make_pair;
 using std::min;
 using std::pair;
 using std::set;
+using std::shared_ptr;
 using std::vector;
+using std::weak_ptr;
 
 namespace pv {
 namespace view {

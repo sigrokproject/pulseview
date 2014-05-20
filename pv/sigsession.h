@@ -22,10 +22,10 @@
 #define PULSEVIEW_PV_SIGSESSION_H
 
 #include <boost/function.hpp>
-#include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -76,12 +76,12 @@ public:
 
 	~SigSession();
 
-	boost::shared_ptr<device::DevInst> get_device() const;
+	std::shared_ptr<device::DevInst> get_device() const;
 
 	/**
 	 * Sets device instance that will be used in the next capture session.
 	 */
-	void set_device(boost::shared_ptr<device::DevInst> dev_inst)
+	void set_device(std::shared_ptr<device::DevInst> dev_inst)
 		throw(QString);
 
 	void set_file(const std::string &name)
@@ -97,15 +97,15 @@ public:
 
 	void stop_capture();
 
-	std::set< boost::shared_ptr<data::SignalData> > get_data() const;
+	std::set< std::shared_ptr<data::SignalData> > get_data() const;
 
-	std::vector< boost::shared_ptr<view::Signal> >
+	std::vector< std::shared_ptr<view::Signal> >
 		get_signals() const;
 
 #ifdef ENABLE_DECODE
 	bool add_decoder(srd_decoder *const dec);
 
-	std::vector< boost::shared_ptr<view::DecodeTrace> >
+	std::vector< std::shared_ptr<view::DecodeTrace> >
 		get_decode_signals() const;
 
 	void remove_decode_signal(view::DecodeTrace *signal);
@@ -114,9 +114,9 @@ public:
 private:
 	void set_capture_state(capture_state state);
 
-	void update_signals(boost::shared_ptr<device::DevInst> dev_inst);
+	void update_signals(std::shared_ptr<device::DevInst> dev_inst);
 
-	boost::shared_ptr<view::Signal> signal_from_probe(
+	std::shared_ptr<view::Signal> signal_from_probe(
 		const sr_channel *probe) const;
 
 	void read_sample_rate(const sr_dev_inst *const sdi);
@@ -137,7 +137,7 @@ private:
 		boost::function<void (const QString)> error_handler,
 		sr_input_format *format = NULL);
 
-	void sample_thread_proc(boost::shared_ptr<device::DevInst> dev_inst,
+	void sample_thread_proc(std::shared_ptr<device::DevInst> dev_inst,
 		boost::function<void (const QString)> error_handler);
 
 	void feed_in_header(const sr_dev_inst *sdi);
@@ -163,20 +163,20 @@ private:
 	/**
 	 * The device instance that will be used in the next capture session.
 	 */
-	boost::shared_ptr<device::DevInst> _dev_inst;
+	std::shared_ptr<device::DevInst> _dev_inst;
 
-	std::vector< boost::shared_ptr<view::DecodeTrace> > _decode_traces;
+	std::vector< std::shared_ptr<view::DecodeTrace> > _decode_traces;
 
 	mutable boost::mutex _sampling_mutex;
 	capture_state _capture_state;
 
 	mutable boost::mutex _signals_mutex;
-	std::vector< boost::shared_ptr<view::Signal> > _signals;
+	std::vector< std::shared_ptr<view::Signal> > _signals;
 
 	mutable boost::mutex _data_mutex;
-	boost::shared_ptr<data::Logic> _logic_data;
-	boost::shared_ptr<data::LogicSnapshot> _cur_logic_snapshot;
-	std::map< const sr_channel*, boost::shared_ptr<data::AnalogSnapshot> >
+	std::shared_ptr<data::Logic> _logic_data;
+	std::shared_ptr<data::LogicSnapshot> _cur_logic_snapshot;
+	std::map< const sr_channel*, std::shared_ptr<data::AnalogSnapshot> >
 		_cur_analog_snapshots;
 
 	boost::thread _sampling_thread;

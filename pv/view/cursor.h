@@ -23,7 +23,7 @@
 
 #include "timemarker.h"
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include <QSizeF>
 
@@ -74,7 +74,7 @@ public:
 private:
 	void compute_text_size(QPainter &p, unsigned int prefix);
 
-	boost::shared_ptr<Cursor> get_other_cursor() const;
+	std::shared_ptr<Cursor> get_other_cursor() const;
 
 private:
 	QSizeF _text_size;

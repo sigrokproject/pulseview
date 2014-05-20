@@ -22,9 +22,8 @@
 #define PULSEVIEW_PV_DATA_DECODE_DECODER_H
 
 #include <map>
+#include <memory>
 #include <set>
-
-#include <boost/shared_ptr.hpp>
 
 #include <glib.h>
 
@@ -58,9 +57,9 @@ public:
 	void show(bool show = true);
 
 	const std::map<const srd_channel*,
-		boost::shared_ptr<view::LogicSignal> >& channels() const;
+		std::shared_ptr<view::LogicSignal> >& channels() const;
 	void set_probes(std::map<const srd_channel*,
-		boost::shared_ptr<view::LogicSignal> > probes);
+		std::shared_ptr<view::LogicSignal> > probes);
 
 	const std::map<std::string, GVariant*>& options() const;
 
@@ -71,14 +70,14 @@ public:
 	srd_decoder_inst* create_decoder_inst(
 		srd_session *session, int unit_size) const;
 
-	std::set< boost::shared_ptr<pv::data::Logic> > get_data();	
+	std::set< std::shared_ptr<pv::data::Logic> > get_data();	
 
 private:
 	const srd_decoder *const _decoder;
 
 	bool _shown;
 
-	std::map<const srd_channel*, boost::shared_ptr<pv::view::LogicSignal> >
+	std::map<const srd_channel*, std::shared_ptr<pv::view::LogicSignal> >
 		_probes;
 	std::map<std::string, GVariant*> _options;
 };

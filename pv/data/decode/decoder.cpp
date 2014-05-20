@@ -25,9 +25,9 @@
 
 #include <pv/view/logicsignal.h>
 
-using boost::shared_ptr;
 using std::set;
 using std::map;
+using std::shared_ptr;
 using std::string;
 
 namespace pv {
@@ -68,7 +68,7 @@ Decoder::channels() const
 }
 
 void Decoder::set_probes(std::map<const srd_channel*,
-	boost::shared_ptr<view::LogicSignal> > probes)
+	std::shared_ptr<view::LogicSignal> > probes)
 {
 	_probes = probes;
 }

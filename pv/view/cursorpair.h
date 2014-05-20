@@ -23,7 +23,7 @@
 
 #include "cursor.h"
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include <QPainter>
 
@@ -47,12 +47,12 @@ public:
 	/**
 	 * Returns a pointer to the first cursor.
 	 */
-	boost::shared_ptr<Cursor> first() const;
+	std::shared_ptr<Cursor> first() const;
 
 	/**
 	 * Returns a pointer to the second cursor.
 	 */
-	boost::shared_ptr<Cursor> second() const;
+	std::shared_ptr<Cursor> second() const;
 
 public:
 	QRectF get_label_rect(const QRect &rect) const;
@@ -69,7 +69,7 @@ public:
 	std::pair<float, float> get_cursor_offsets() const;
 
 private:
-	boost::shared_ptr<Cursor> _first, _second;
+	std::shared_ptr<Cursor> _first, _second;
 	const View &_view;
 
 	QSizeF _text_size;

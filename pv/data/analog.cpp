@@ -21,9 +21,9 @@
 #include "analog.h"
 #include "analogsnapshot.h"
 
-using boost::shared_ptr;
 using std::deque;
 using std::max;
+using std::shared_ptr;
 
 namespace pv {
 namespace data {
@@ -51,7 +51,7 @@ void Analog::clear()
 uint64_t Analog::get_max_sample_count() const
 {
 	uint64_t l = 0;
-	for (const boost::shared_ptr<AnalogSnapshot> s : _snapshots) {
+	for (const std::shared_ptr<AnalogSnapshot> s : _snapshots) {
 		assert(s);
 		l = max(l, s->get_sample_count());
 	}

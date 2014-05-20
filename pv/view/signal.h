@@ -21,7 +21,7 @@
 #ifndef PULSEVIEW_PV_VIEW_SIGNAL_H
 #define PULSEVIEW_PV_VIEW_SIGNAL_H
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include <QComboBox>
 #include <QWidgetAction>
@@ -49,7 +49,7 @@ class Signal : public Trace
 	Q_OBJECT
 
 protected:
-	Signal(boost::shared_ptr<pv::device::DevInst> dev_inst,
+	Signal(std::shared_ptr<pv::device::DevInst> dev_inst,
 		const sr_channel *const probe);
 
 public:
@@ -58,7 +58,7 @@ public:
 	 */
 	void set_name(QString name);
 
-	virtual boost::shared_ptr<pv::data::SignalData> data() const = 0;
+	virtual std::shared_ptr<pv::data::SignalData> data() const = 0;
 
 	/**
 	 * Returns true if the trace is visible and enabled.
@@ -79,7 +79,7 @@ private slots:
 	void on_disable();
 
 protected:
-	boost::shared_ptr<pv::device::DevInst> _dev_inst;
+	std::shared_ptr<pv::device::DevInst> _dev_inst;
 	const sr_channel *const _probe;
 
 	QComboBox *_name_widget;

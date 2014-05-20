@@ -23,7 +23,7 @@
 
 #include "signal.h"
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 namespace pv {
 
@@ -42,15 +42,15 @@ private:
 	static const float EnvelopeThreshold;
 
 public:
-	AnalogSignal(boost::shared_ptr<pv::device::DevInst> dev_inst,
+	AnalogSignal(std::shared_ptr<pv::device::DevInst> dev_inst,
 		const sr_channel *const probe,
-		boost::shared_ptr<pv::data::Analog> data);
+		std::shared_ptr<pv::data::Analog> data);
 
 	virtual ~AnalogSignal();
 
-	boost::shared_ptr<pv::data::SignalData> data() const;
+	std::shared_ptr<pv::data::SignalData> data() const;
 
-	boost::shared_ptr<pv::data::Analog> analog_data() const;
+	std::shared_ptr<pv::data::Analog> analog_data() const;
 
 	void set_scale(float scale);
 
@@ -72,17 +72,17 @@ public:
 
 private:
 	void paint_trace(QPainter &p,
-		const boost::shared_ptr<pv::data::AnalogSnapshot> &snapshot,
+		const std::shared_ptr<pv::data::AnalogSnapshot> &snapshot,
 		int y, int left, const int64_t start, const int64_t end,
 		const double pixels_offset, const double samples_per_pixel);
 
 	void paint_envelope(QPainter &p,
-		const boost::shared_ptr<pv::data::AnalogSnapshot> &snapshot,
+		const std::shared_ptr<pv::data::AnalogSnapshot> &snapshot,
 		int y, int left, const int64_t start, const int64_t end,
 		const double pixels_offset, const double samples_per_pixel);
 
 private:
-	boost::shared_ptr<pv::data::Analog> _data;
+	std::shared_ptr<pv::data::Analog> _data;
 	float _scale;
 };
 

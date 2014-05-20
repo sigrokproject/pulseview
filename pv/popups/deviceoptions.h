@@ -35,13 +35,13 @@ class DeviceOptions : public pv::widgets::Popup
 	Q_OBJECT
 
 public:
-	DeviceOptions(boost::shared_ptr<device::DevInst> dev_inst,
+	DeviceOptions(std::shared_ptr<device::DevInst> dev_inst,
 		QWidget *parent);
 
 	pv::prop::binding::DeviceOptions& binding();
 
 private:
-	boost::shared_ptr<device::DevInst> _dev_inst;
+	std::shared_ptr<device::DevInst> _dev_inst;
 
 	QVBoxLayout _layout;
 

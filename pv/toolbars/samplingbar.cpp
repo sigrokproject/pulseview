@@ -35,10 +35,10 @@
 #include <pv/popups/probes.h>
 #include <pv/util.h>
 
-using boost::shared_ptr;
 using std::map;
 using std::max;
 using std::min;
+using std::shared_ptr;
 using std::string;
 
 namespace pv {

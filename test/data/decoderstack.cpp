@@ -28,10 +28,10 @@
 #include "../../pv/sigsession.h"
 #include "../../pv/view/decodetrace.h"
 
-using boost::shared_ptr;
 using pv::data::DecoderStack;
 using pv::data::decode::Decoder;
 using pv::view::DecodeTrace;
+using std::shared_ptr;
 using std::vector;
 
 BOOST_AUTO_TEST_SUITE(DecoderStackTest)

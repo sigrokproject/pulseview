@@ -24,7 +24,7 @@
 #include <glib.h>
 
 #include <vector>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include <QString>
 
@@ -41,7 +41,7 @@ namespace binding {
 class Binding
 {
 public:
-	const std::vector< boost::shared_ptr<Property> >& properties();
+	const std::vector< std::shared_ptr<Property> >& properties();
 
 	void commit();
 
@@ -54,7 +54,7 @@ public:
 	static QString print_gvariant(GVariant *const gvar);
 
 protected:
-	std::vector< boost::shared_ptr<Property> > _properties;
+	std::vector< std::shared_ptr<Property> > _properties;
 };
 
 } // binding

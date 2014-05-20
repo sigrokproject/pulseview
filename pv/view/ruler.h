@@ -21,7 +21,7 @@
 #ifndef PULSEVIEW_PV_VIEW_RULER_H
 #define PULSEVIEW_PV_VIEW_RULER_H
 
-#include <boost/weak_ptr.hpp>
+#include <memory>
 
 #include "marginwidget.h"
 
@@ -67,7 +67,7 @@ private slots:
 	void hover_point_changed();
 
 private:
-	boost::weak_ptr<TimeMarker> _grabbed_marker;
+	std::weak_ptr<TimeMarker> _grabbed_marker;
 	QPoint _mouse_down_point;
 	bool _dragging;
 };

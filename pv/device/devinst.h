@@ -21,9 +21,8 @@
 #ifndef PULSEVIEW_PV_DEVICE_DEVINST_H
 #define PULSEVIEW_PV_DEVICE_DEVINST_H
 
+#include <memory>
 #include <string>
-
-#include <boost/shared_ptr.hpp>
 
 #include <QObject>
 

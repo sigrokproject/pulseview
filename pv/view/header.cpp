@@ -34,10 +34,10 @@
 
 #include <pv/widgets/popup.h>
 
-using boost::shared_ptr;
 using std::max;
 using std::make_pair;
 using std::pair;
+using std::shared_ptr;
 using std::vector;
 
 namespace pv {
@@ -222,7 +222,7 @@ void Header::mouseMoveEvent(QMouseEvent *event)
 		const int delta = event->pos().y() - _mouse_down_point.y();
 
 		for (auto i = _drag_traces.begin(); i != _drag_traces.end(); i++) {
-			const boost::shared_ptr<Trace> trace((*i).first);
+			const std::shared_ptr<Trace> trace((*i).first);
 			if (trace) {
 				const int y = (*i).second + delta;
 				const int y_snap =
