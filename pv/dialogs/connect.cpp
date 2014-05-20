@@ -92,8 +92,7 @@ shared_ptr<device::Device> Connect::get_selected_device() const
 		Qt::UserRole).value<void*>();
 	assert(sdi);
 
-	std::map<const sr_dev_inst*, boost::shared_ptr<pv::device::Device> >::
-		const_iterator iter = _device_map.find(sdi);
+	const auto iter = _device_map.find(sdi);
 	assert(iter != _device_map.end());
 
 	return (*iter).second;

@@ -65,7 +65,7 @@ list< shared_ptr<device::Device> > DeviceManager::driver_scan(
 
 	// Remove any device instances from this driver from the device
 	// list. They will not be valid after the scan.
-	list< shared_ptr<device::Device> >::iterator i = _devices.begin();
+	auto i = _devices.begin();
 	while (i != _devices.end()) {
 		if ((*i)->dev_inst()->driver == driver)
 			i = _devices.erase(i);

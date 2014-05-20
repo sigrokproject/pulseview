@@ -148,8 +148,7 @@ shared_ptr<pv::device::DevInst> SamplingBar::get_selected_device() const
 			index).value<void*>();
 	assert(sdi);
 
-	map<const sr_dev_inst*, boost::weak_ptr<device::DevInst> >::
-		const_iterator iter = _device_selector_map.find(sdi);
+	const auto iter = _device_selector_map.find(sdi);
 	if (iter == _device_selector_map.end())
 		return shared_ptr<pv::device::DevInst>();
 

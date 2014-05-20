@@ -232,7 +232,7 @@ vector< shared_ptr<Trace> > View::get_traces() const
 	vector< shared_ptr<Trace> > traces(sigs.size());
 #endif
 
-	vector< shared_ptr<Trace> >::iterator i = traces.begin();
+	auto i = traces.begin();
 	i = copy(sigs.begin(), sigs.end(), i);
 #ifdef ENABLE_DECODE
 	i = copy(decode_sigs.begin(), decode_sigs.end(), i);

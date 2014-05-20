@@ -111,7 +111,7 @@ GVariant* DecoderOptions::getter(const char *id)
 
 	// Get the value from the hash table if it is already present
 	const map<string, GVariant*>& options = _decoder->options();
-	map<string, GVariant*>::const_iterator iter = options.find(id);
+	const auto iter = options.find(id);
 
 	if (iter != options.end())
 		val = (*iter).second;

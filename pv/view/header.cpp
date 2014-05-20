@@ -223,9 +223,7 @@ void Header::mouseMoveEvent(QMouseEvent *event)
 
 		const int delta = event->pos().y() - _mouse_down_point.y();
 
-		for (std::list<std::pair<boost::weak_ptr<Trace>,
-			int> >::iterator i = _drag_traces.begin();
-			i != _drag_traces.end(); i++) {
+		for (auto i = _drag_traces.begin(); i != _drag_traces.end(); i++) {
 			const boost::shared_ptr<Trace> trace((*i).first);
 			if (trace) {
 				const int y = (*i).second + delta;

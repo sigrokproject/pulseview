@@ -83,8 +83,7 @@ Probes::Probes(SigSession &session, QWidget *parent) :
 			const sr_channel *const probe = (const sr_channel*)p->data;
 			assert(probe);
 
-			const map<const sr_channel*, shared_ptr<Signal> >::
-				iterator iter = signal_map.find(probe);
+			const auto iter = signal_map.find(probe);
 			assert(iter != signal_map.end());
 
 			group_sigs.push_back((*iter).second);

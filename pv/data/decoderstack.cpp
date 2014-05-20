@@ -106,7 +106,7 @@ void DecoderStack::remove(int index)
 	assert(index < (int)_stack.size());
 
 	// Find the decoder in the stack
-	list< shared_ptr<Decoder> >::iterator iter = _stack.begin();
+	auto iter = _stack.begin();
 	for(int i = 0; i < index; i++, iter++)
 		assert(iter != _stack.end());
 
@@ -159,8 +159,7 @@ void DecoderStack::get_annotation_subset(
 {
 	lock_guard<mutex> lock(_output_mutex);
 
-	std::map<const Row, decode::RowData>::const_iterator iter =
-		_rows.find(row);
+	const auto iter = _rows.find(row);
 	if (iter != _rows.end())
 		(*iter).second.get_annotation_subset(dest,
 			start_sample, end_sample);
@@ -265,8 +264,7 @@ uint64_t DecoderStack::get_max_sample_count() const
 {
 	uint64_t max_sample_count = 0;
 
-	for (map<const Row, RowData>::const_iterator i = _rows.begin();
-		i != _rows.end(); i++)
+	for (auto i = _rows.cbegin(); i != _rows.end(); i++)
 		max_sample_count = max(max_sample_count,
 			(*i).second.get_max_sample());
 
@@ -396,11 +394,10 @@ void DecoderStack::annotation_callback(srd_proto_data *pdata, void *decoder)
 	const srd_decoder *const decc = pdata->pdo->di->decoder;
 	assert(decc);
 
-	map<const Row, decode::RowData>::iterator row_iter = d->_rows.end();
+	auto row_iter = d->_rows.end();
 	
 	// Try looking up the sub-row of this class
-	const map<pair<const srd_decoder*, int>, Row>::const_iterator r =
-		d->_class_rows.find(make_pair(decc, a.format()));
+	const auto r = d->_class_rows.find(make_pair(decc, a.format()));
 	if (r != d->_class_rows.end())
 		row_iter = d->_rows.find((*r).second);
 	else

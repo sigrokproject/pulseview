@@ -155,9 +155,7 @@ void LogicSignal::paint_mid(QPainter &p, int left, int right)
 	QLineF *const edge_lines = new QLineF[edge_count];
 	line = edge_lines;
 
-	for (vector<pv::data::LogicSnapshot::EdgePair>::const_iterator i =
-			edges.begin() + 1;
-		i != edges.end() - 1; i++) {
+	for (auto i = edges.cbegin() + 1; i != edges.cend() - 1; i++) {
 		const float x = ((*i).first / samples_per_pixel -
 			pixels_offset) + left;
 		*line++ = QLineF(x, high_offset, x, low_offset);
@@ -188,8 +186,7 @@ void LogicSignal::paint_caps(QPainter &p, QLineF *const lines,
 {
 	QLineF *line = lines;
 
-	for (vector<pv::data::LogicSnapshot::EdgePair>::const_iterator i =
-		edges.begin(); i != (edges.end() - 1); i++)
+	for (auto i = edges.begin(); i != (edges.end() - 1); i++)
 		if ((*i).second == level) {
 			*line++ = QLineF(
 				((*i).first / samples_per_pixel -

@@ -290,10 +290,7 @@ vector< shared_ptr<view::DecodeTrace> > SigSession::get_decode_signals() const
 
 void SigSession::remove_decode_signal(view::DecodeTrace *signal)
 {
-	for (vector< shared_ptr<view::DecodeTrace> >::iterator i =
-		_decode_traces.begin();
-		i != _decode_traces.end();
-		i++)
+	for (auto i = _decode_traces.begin(); i != _decode_traces.end(); i++)
 		if ((*i).get() == signal)
 		{
 			_decode_traces.erase(i);

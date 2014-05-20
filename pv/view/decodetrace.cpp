@@ -303,8 +303,7 @@ void DecodeTrace::populate_popup_form(QWidget *parent, QFormLayout *form)
 	}
 	else
 	{
-		list< shared_ptr<Decoder> >::const_iterator iter =
-			stack.begin();
+		auto iter = stack.cbegin();
 		for (int i = 0; i < (int)stack.size(); i++, iter++) {
 			shared_ptr<Decoder> dec(*iter);
 			create_decoder_form(i, dec, parent, form);
@@ -592,9 +591,7 @@ QComboBox* DecodeTrace::create_probe_selector(
 	const vector< shared_ptr<Signal> > sigs = _session.get_signals();
 
 	assert(_decoder_stack);
-	const map<const srd_channel*,
-		shared_ptr<LogicSignal> >::const_iterator probe_iter =
-		dec->channels().find(pdch);
+	const auto probe_iter = dec->channels().find(pdch);
 
 	QComboBox *selector = new QComboBox(parent);
 
@@ -705,7 +702,7 @@ void DecodeTrace::on_show_hide_decoder(int index)
 	const list< shared_ptr<Decoder> > stack(_decoder_stack->stack());
 
 	// Find the decoder in the stack
-	list< shared_ptr<Decoder> >::const_iterator iter = stack.begin();
+	auto iter = stack.cbegin();
 	for(int i = 0; i < index; i++, iter++)
 		assert(iter != stack.end());
 
