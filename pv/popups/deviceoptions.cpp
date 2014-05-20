@@ -20,8 +20,6 @@
 
 #include "deviceoptions.h"
 
-#include <boost/foreach.hpp>
-
 #include <QFormLayout>
 #include <QListWidget>
 

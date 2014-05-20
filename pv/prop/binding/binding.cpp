@@ -18,8 +18,6 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#include <boost/foreach.hpp>
-
 #include <QFormLayout>
 
 #include <pv/prop/property.h>
@@ -39,7 +37,7 @@ const std::vector< boost::shared_ptr<Property> >& Binding::properties()
 
 void Binding::commit()
 {
-	BOOST_FOREACH(shared_ptr<pv::prop::Property> p, _properties) {
+	for (shared_ptr<pv::prop::Property> p : _properties) {
 		assert(p);
 		p->commit();
 	}
@@ -50,7 +48,7 @@ void Binding::add_properties_to_form(QFormLayout *layout,
 {
 	assert(layout);
 
-	BOOST_FOREACH(shared_ptr<pv::prop::Property> p, _properties)
+	for (shared_ptr<pv::prop::Property> p : _properties)
 	{
 		assert(p);
 

@@ -27,8 +27,6 @@
 
 #include <algorithm>
 
-#include <boost/foreach.hpp>
-
 #include "analogsnapshot.h"
 
 using boost::lock_guard;
@@ -59,7 +57,7 @@ AnalogSnapshot::AnalogSnapshot(const uint64_t expected_num_samples) :
 AnalogSnapshot::~AnalogSnapshot()
 {
 	lock_guard<recursive_mutex> lock(_mutex);
-	BOOST_FOREACH(Envelope &e, _envelope_levels)
+	for (Envelope &e : _envelope_levels)
 		free(e.samples);
 }
 

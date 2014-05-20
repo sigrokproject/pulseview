@@ -43,8 +43,6 @@
 
 #include <stdexcept>
 
-#include <boost/foreach.hpp>
-
 #include <sys/stat.h>
 
 #include <QDebug>
@@ -137,7 +135,7 @@ void SigSession::set_default_device()
 		default_device = devices.front();
 
 		// Try and find the demo device and select that by default
-		BOOST_FOREACH (shared_ptr<pv::device::Device> dev, devices)
+		for (shared_ptr<pv::device::Device> dev : devices)
 			if (strcmp(dev->dev_inst()->driver->name,
 				"demo") == 0) {
 				default_device = dev;
@@ -211,7 +209,7 @@ set< shared_ptr<data::SignalData> > SigSession::get_data() const
 {
 	lock_guard<mutex> lock(_signals_mutex);
 	set< shared_ptr<data::SignalData> > data;
-	BOOST_FOREACH(const shared_ptr<view::Signal> sig, _signals) {
+	for (const shared_ptr<view::Signal> sig : _signals) {
 		assert(sig);
 		data.insert(sig->data());
 	}
@@ -247,8 +245,8 @@ bool SigSession::add_decoder(srd_decoder *const dec)
 			all_probes.push_back((const srd_channel*)i->data);
 
 		// Auto select the initial probes
-		BOOST_FOREACH(const srd_channel *pdch, all_probes)
-			BOOST_FOREACH(shared_ptr<view::Signal> s, _signals)
+		for (const srd_channel *pdch : all_probes)
+			for (shared_ptr<view::Signal> s : _signals)
 			{
 				shared_ptr<view::LogicSignal> l =
 					dynamic_pointer_cast<view::LogicSignal>(s);
@@ -399,7 +397,7 @@ shared_ptr<view::Signal> SigSession::signal_from_probe(
 	const sr_channel *probe) const
 {
 	lock_guard<mutex> lock(_signals_mutex);
-	BOOST_FOREACH(shared_ptr<view::Signal> sig, _signals) {
+	for (shared_ptr<view::Signal> sig : _signals) {
 		assert(sig);
 		if (sig->probe() == probe)
 			return sig;
@@ -428,7 +426,7 @@ void SigSession::read_sample_rate(const sr_dev_inst *const sdi)
 
 	// Set the sample rate of all data
 	const set< shared_ptr<data::SignalData> > data_set = get_data();
-	BOOST_FOREACH(shared_ptr<data::SignalData> data, data_set) {
+	for (shared_ptr<data::SignalData> data : data_set) {
 		assert(data);
 		data->set_samplerate(sample_rate);
 	}

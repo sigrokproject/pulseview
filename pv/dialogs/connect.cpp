@@ -18,8 +18,6 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#include <boost/foreach.hpp>
-
 #include <libsigrok/libsigrok.h>
 
 #include "connect.h"
@@ -174,7 +172,7 @@ void Connect::scan_pressed()
 
 	g_slist_free_full(drvopts, (GDestroyNotify)free_drvopts);
 
-	BOOST_FOREACH(shared_ptr<device::Device> dev_inst, devices)
+	for (shared_ptr<device::Device> dev_inst : devices)
 	{
 		assert(dev_inst);
 		const sr_dev_inst *const sdi = dev_inst->dev_inst();

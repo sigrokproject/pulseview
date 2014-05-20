@@ -26,8 +26,6 @@
 
 #include <assert.h>
 
-#include <boost/foreach.hpp>
-
 #include <QApplication>
 #include <QMenu>
 #include <QMouseEvent>
@@ -70,7 +68,7 @@ QSize Header::sizeHint() const
 	int max_width = 0;
 
 	const vector< shared_ptr<Trace> > traces(_view.get_traces());
-	BOOST_FOREACH(shared_ptr<Trace> t, traces) {
+	for (shared_ptr<Trace> t : traces) {
 		assert(t);
 
 		if (t->enabled()) {
@@ -86,7 +84,7 @@ shared_ptr<Trace> Header::get_mouse_over_trace(const QPoint &pt)
 	const int w = width();
 	const vector< shared_ptr<Trace> > traces(_view.get_traces());
 
-	BOOST_FOREACH(const shared_ptr<Trace> t, traces)
+	for (const shared_ptr<Trace> t : traces)
 	{
 		assert(t);
 		if (t->pt_in_label_rect(0, w, pt))
@@ -99,7 +97,7 @@ shared_ptr<Trace> Header::get_mouse_over_trace(const QPoint &pt)
 void Header::clear_selection()
 {
 	const vector< shared_ptr<Trace> > traces(_view.get_traces());
-	BOOST_FOREACH(const shared_ptr<Trace> t, traces) {
+	for (const shared_ptr<Trace> t : traces) {
 		assert(t);
 		t->select(false);
 	}
@@ -116,7 +114,7 @@ void Header::paintEvent(QPaintEvent*)
 	painter.setRenderHint(QPainter::Antialiasing);
 
 	const bool dragging = !_drag_traces.empty();
-	BOOST_FOREACH(const shared_ptr<Trace> t, traces)
+	for (const shared_ptr<Trace> t : traces)
 	{
 		assert(t);
 
@@ -138,7 +136,7 @@ void Header::mousePressEvent(QMouseEvent *event)
 		_mouse_down_point = event->pos();
 
 		// Save the offsets of any signals which will be dragged
-		BOOST_FOREACH(const shared_ptr<Trace> t, traces)
+		for (const shared_ptr<Trace> t : traces)
 			if (t->selected())
 				_drag_traces.push_back(
 					make_pair(t, t->get_v_offset()));
@@ -168,7 +166,7 @@ void Header::mousePressEvent(QMouseEvent *event)
 	if (~QApplication::keyboardModifiers() & Qt::ControlModifier) {
 		// Unselect all other signals because the Ctrl is not
 		// pressed
-		BOOST_FOREACH(const shared_ptr<Trace> t, traces)
+		for (const shared_ptr<Trace> t : traces)
 			if (t != mouse_over_trace)
 				t->select(false);
 	}
@@ -268,7 +266,7 @@ void Header::keyPressEvent(QKeyEvent *e)
 	case Qt::Key_Delete:
 	{
 		const vector< shared_ptr<Trace> > traces(_view.get_traces());
-		BOOST_FOREACH(const shared_ptr<Trace> t, traces)
+		for (const shared_ptr<Trace> t : traces)
 			if (t->selected())
 				t->delete_pressed();	
 		break;
@@ -279,7 +277,7 @@ void Header::keyPressEvent(QKeyEvent *e)
 void Header::on_signals_changed()
 {
 	const vector< shared_ptr<Trace> > traces(_view.get_traces());
-	BOOST_FOREACH(shared_ptr<Trace> t, traces) {
+	for (shared_ptr<Trace> t : traces) {
 		assert(t);
 		connect(t.get(), SIGNAL(visibility_changed()),
 			this, SLOT(on_trace_changed()));

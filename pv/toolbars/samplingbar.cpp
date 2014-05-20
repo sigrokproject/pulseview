@@ -22,8 +22,6 @@
 
 #include <assert.h>
 
-#include <boost/foreach.hpp>
-
 #include <QAction>
 #include <QDebug>
 #include <QHelpEvent>
@@ -114,7 +112,7 @@ void SamplingBar::set_device_list(
 	_device_selector.clear();
 	_device_selector_map.clear();
 
-	BOOST_FOREACH (shared_ptr<pv::device::DevInst> dev_inst, devices) {
+	for (shared_ptr<pv::device::DevInst> dev_inst : devices) {
 		assert(dev_inst);
 		const string title = dev_inst->format_device_title();
 		const sr_dev_inst *sdi = dev_inst->dev_inst();

@@ -24,7 +24,6 @@ extern "C" {
 
 #include <extdef.h>
 
-#include <boost/foreach.hpp>
 #include <boost/functional/hash.hpp>
 
 #include <QAction>
@@ -214,7 +213,7 @@ void DecodeTrace::paint_mid(QPainter &p, int left, int right)
 		_decoder_stack->get_annotation_subset(annotations, row,
 			start_sample, end_sample);
 		if (!annotations.empty()) {
-			BOOST_FOREACH(const Annotation &a, annotations)
+			for (const Annotation &a : annotations)
 				draw_annotation(a, p, get_text_colour(),
 					annotation_height, left, right,
 					samples_per_pixel, pixels_offset, y,
@@ -429,7 +428,7 @@ void DecodeTrace::draw_range(const pv::data::decode::Annotation &a, QPainter &p,
 	QString best_annotation;
 	int best_width = 0;
 
-	BOOST_FOREACH(const QString &a, annotations) {
+	for (const QString &a : annotations) {
 		const int w = p.boundingRect(QRectF(), 0, a).width();
 		if (w <= rect.width() && w > best_width)
 			best_annotation = a, best_width = w;
@@ -480,7 +479,7 @@ void DecodeTrace::draw_unresolved_period(QPainter &p, int h, int left,
 	// We get the logic data of the first probe in the list.
 	// This works because we are currently assuming all
 	// LogicSignals have the same data/snapshot
-	BOOST_FOREACH (const shared_ptr<Decoder> &dec, stack)
+	for (const shared_ptr<Decoder> &dec : stack)
 		if (dec && !dec->channels().empty() &&
 			((logic_signal = (*dec->channels().begin()).second)) &&
 			((data = logic_signal->logic_data())))
@@ -623,7 +622,7 @@ void DecodeTrace::commit_decoder_probes(shared_ptr<data::decode::Decoder> &dec)
 	map<const srd_channel*, shared_ptr<LogicSignal> > probe_map;
 	const vector< shared_ptr<Signal> > sigs = _session.get_signals();
 
-	BOOST_FOREACH(const ProbeSelector &s, _probe_selectors)
+	for (const ProbeSelector &s : _probe_selectors)
 	{
 		if(s._decoder != dec)
 			break;
@@ -632,7 +631,7 @@ void DecodeTrace::commit_decoder_probes(shared_ptr<data::decode::Decoder> &dec)
 			(LogicSignal*)s._combo->itemData(
 				s._combo->currentIndex()).value<void*>();
 
-		BOOST_FOREACH(shared_ptr<Signal> sig, sigs)
+		for (shared_ptr<Signal> sig : sigs)
 			if(sig.get() == selection) {
 				probe_map[s._pdch] =
 					dynamic_pointer_cast<LogicSignal>(sig);
@@ -646,8 +645,7 @@ void DecodeTrace::commit_decoder_probes(shared_ptr<data::decode::Decoder> &dec)
 void DecodeTrace::commit_probes()
 {
 	assert(_decoder_stack);
-	BOOST_FOREACH(shared_ptr<data::decode::Decoder> dec,
-		_decoder_stack->stack())
+	for (shared_ptr<data::decode::Decoder> dec : _decoder_stack->stack())
 		commit_decoder_probes(dec);
 
 	_decoder_stack->begin_decode();

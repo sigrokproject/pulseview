@@ -18,8 +18,6 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#include <boost/foreach.hpp>
-
 #include "analog.h"
 #include "analogsnapshot.h"
 
@@ -53,7 +51,7 @@ void Analog::clear()
 uint64_t Analog::get_max_sample_count() const
 {
 	uint64_t l = 0;
-	BOOST_FOREACH(const boost::shared_ptr<AnalogSnapshot> s, _snapshots) {
+	for (const boost::shared_ptr<AnalogSnapshot> s : _snapshots) {
 		assert(s);
 		l = max(l, s->get_sample_count());
 	}

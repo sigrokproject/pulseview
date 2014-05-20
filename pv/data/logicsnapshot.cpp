@@ -25,8 +25,6 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include <boost/foreach.hpp>
-
 #include "config.h"
 #include "logicsnapshot.h"
 
@@ -59,7 +57,7 @@ LogicSnapshot::LogicSnapshot(const sr_datafeed_logic &logic,
 LogicSnapshot::~LogicSnapshot()
 {
 	lock_guard<recursive_mutex> lock(_mutex);
-	BOOST_FOREACH(MipMapLevel &l, _mip_map)
+	for (MipMapLevel &l : _mip_map)
 		free(l.data);
 }
 

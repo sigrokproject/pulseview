@@ -20,7 +20,6 @@
 
 #include <libsigrokdecode/libsigrokdecode.h>
 
-#include <boost/foreach.hpp>
 #include <boost/thread/thread.hpp>
 
 #include <stdexcept>
@@ -126,7 +125,7 @@ std::vector<Row> DecoderStack::get_visible_rows() const
 
 	vector<Row> rows;
 
-	BOOST_FOREACH (const shared_ptr<decode::Decoder> &dec, _stack)
+	for (const shared_ptr<decode::Decoder> &dec : _stack)
 	{
 		assert(dec);
 		if (!dec->shown())
@@ -194,7 +193,7 @@ void DecoderStack::begin_decode()
 	clear();
 
 	// Check that all decoders have the required channels
-	BOOST_FOREACH(const shared_ptr<decode::Decoder> &dec, _stack)
+	for (const shared_ptr<decode::Decoder> &dec : _stack)
 		if (!dec->have_required_probes()) {
 			_error_message = tr("One or more required channels "
 				"have not been specified");
@@ -202,7 +201,7 @@ void DecoderStack::begin_decode()
 		}
 
 	// Add classes
-	BOOST_FOREACH (const shared_ptr<decode::Decoder> &dec, _stack)
+	for (const shared_ptr<decode::Decoder> &dec : _stack)
 	{
 		assert(dec);
 		const srd_decoder *const decc = dec->decoder();
@@ -235,7 +234,7 @@ void DecoderStack::begin_decode()
 	// We get the logic data of the first channel in the list.
 	// This works because we are currently assuming all
 	// LogicSignals have the same data/snapshot
-	BOOST_FOREACH (const shared_ptr<decode::Decoder> &dec, _stack)
+	for (const shared_ptr<decode::Decoder> &dec : _stack)
 		if (dec && !dec->channels().empty() &&
 			((logic_signal = (*dec->channels().begin()).second)) &&
 			((data = logic_signal->logic_data())))
@@ -336,7 +335,7 @@ void DecoderStack::decode_proc()
 	// Create the decoders
 	const unsigned int unit_size = _snapshot->unit_size();
 
-	BOOST_FOREACH(const shared_ptr<decode::Decoder> &dec, _stack)
+	for (const shared_ptr<decode::Decoder> &dec : _stack)
 	{
 		srd_decoder_inst *const di = dec->create_decoder_inst(session, unit_size);
 

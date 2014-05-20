@@ -20,8 +20,6 @@
 
 #include <map>
 
-#include <boost/foreach.hpp>
-
 #include <QCheckBox>
 #include <QFormLayout>
 #include <QGridLayout>
@@ -65,7 +63,7 @@ Probes::Probes(SigSession &session, QWidget *parent) :
 	// Collect a set of signals
 	map<const sr_channel*, shared_ptr<Signal> > signal_map;
 	const vector< shared_ptr<Signal> > sigs = _session.get_signals();
-	BOOST_FOREACH(const shared_ptr<Signal> &sig, sigs)
+	for (const shared_ptr<Signal> &sig : sigs)
 		signal_map[sig->probe()] = sig;
 
 	// Populate channel groups
@@ -185,7 +183,7 @@ QGridLayout* Probes::create_channel_group_grid(
 	int row = 0, col = 0;
 	QGridLayout *const grid = new QGridLayout();
 
-	BOOST_FOREACH(const shared_ptr<pv::view::Signal>& sig, sigs)
+	for (const shared_ptr<pv::view::Signal>& sig : sigs)
 	{
 		assert(sig);
 

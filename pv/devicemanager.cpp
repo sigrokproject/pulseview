@@ -26,8 +26,6 @@
 #include <stdexcept>
 #include <string>
 
-#include <boost/foreach.hpp>
-
 #include <libsigrok/libsigrok.h>
 
 using boost::shared_ptr;
@@ -108,7 +106,7 @@ void DeviceManager::init_drivers()
 void DeviceManager::release_devices()
 {
 	// Release all the used devices
-	BOOST_FOREACH(shared_ptr<device::Device> dev, _devices) {
+	for (shared_ptr<device::Device> dev : _devices) {
 		assert(dev);
 		dev->release();
 	}
@@ -129,7 +127,7 @@ void DeviceManager::scan_all_drivers()
 
 void DeviceManager::release_driver(struct sr_dev_driver *const driver)
 {
-	BOOST_FOREACH(shared_ptr<device::Device> dev, _devices) {
+	for (shared_ptr<device::Device> dev : _devices) {
 		assert(dev);
 		if(dev->dev_inst()->driver == driver)
 			dev->release();

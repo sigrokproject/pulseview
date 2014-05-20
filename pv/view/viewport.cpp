@@ -26,8 +26,6 @@
 
 #include <QMouseEvent>
 
-#include <boost/foreach.hpp>
-
 using boost::shared_ptr;
 using std::max;
 using std::min;
@@ -59,7 +57,7 @@ int Viewport::get_total_height() const
 {
 	int h = 0;
 	const vector< shared_ptr<Trace> > traces(_view.get_traces());
-	BOOST_FOREACH(const shared_ptr<Trace> t, traces) {
+	for (const shared_ptr<Trace> t : traces) {
 		assert(t);
 		h = max(t->get_v_offset() + View::SignalHeight, h);
 	}
@@ -78,16 +76,16 @@ void Viewport::paintEvent(QPaintEvent*)
 		_view.cursors().draw_viewport_background(p, rect());
 
 	// Plot the signal
-	BOOST_FOREACH(const shared_ptr<Trace> t, traces)
+	for (const shared_ptr<Trace> t : traces)
 	{
 		assert(t);
 		t->paint_back(p, 0, width());
 	}
 
-	BOOST_FOREACH(const shared_ptr<Trace> t, traces)
+	for (const shared_ptr<Trace> t : traces)
 		t->paint_mid(p, 0, width());
 
-	BOOST_FOREACH(const shared_ptr<Trace> t, traces)
+	for (const shared_ptr<Trace> t : traces)
 		t->paint_fore(p, 0, width());
 
 	if (_view.cursors_shown())
@@ -145,7 +143,7 @@ void Viewport::wheelEvent(QWheelEvent *event)
 void Viewport::on_signals_changed()
 {
 	const vector< shared_ptr<Trace> > traces(_view.get_traces());
-	BOOST_FOREACH(shared_ptr<Trace> t, traces) {
+	for (shared_ptr<Trace> t : traces) {
 		assert(t);
 		connect(t.get(), SIGNAL(visibility_changed()),
 			this, SLOT(update()));

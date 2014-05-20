@@ -26,8 +26,6 @@
 #include <limits.h>
 #include <math.h>
 
-#include <boost/foreach.hpp>
-
 #include <QEvent>
 #include <QMouseEvent>
 #include <QScrollBar>
@@ -192,7 +190,7 @@ void View::zoom_one_to_one()
 		return;
 
 	double samplerate = 0.0;
-	BOOST_FOREACH(const shared_ptr<SignalData> d, visible_data) {
+	for (const shared_ptr<SignalData> d : visible_data) {
 		assert(d);
 		samplerate = max(samplerate, d->samplerate());
 	}
@@ -248,7 +246,7 @@ list<weak_ptr<SelectableItem> > View::selected_items() const
 
 	// List the selected signals
 	const vector< shared_ptr<Trace> > traces(get_traces());
-	BOOST_FOREACH (shared_ptr<Trace> t, traces) {
+	for (shared_ptr<Trace> t : traces) {
 		assert(t);
 		if (t->selected())
 			items.push_back(t);
@@ -270,7 +268,7 @@ set< shared_ptr<SignalData> > View::get_visible_data() const
 
 	// Make a set of all the visible data objects
 	set< shared_ptr<SignalData> > visible_data;
-	BOOST_FOREACH(const shared_ptr<Signal> sig, sigs)
+	for (const shared_ptr<Signal> sig : sigs)
 		if (sig->enabled())
 			visible_data.insert(sig->data());
 
@@ -284,7 +282,7 @@ pair<double, double> View::get_time_extents() const
 		return make_pair(0.0, 0.0);
 
 	double left_time = DBL_MAX, right_time = DBL_MIN;
-	BOOST_FOREACH(const shared_ptr<SignalData> d, visible_data)
+	for (const shared_ptr<SignalData> d : visible_data)
 	{
 		const double start_time = d->get_start_time();
 		double samplerate = d->samplerate();
@@ -340,11 +338,11 @@ void View::normalize_layout()
 	const vector< shared_ptr<Trace> > traces(get_traces());
 
 	int v_min = INT_MAX;
-	BOOST_FOREACH(const shared_ptr<Trace> t, traces)
+	for (const shared_ptr<Trace> t : traces)
 		v_min = min(t->get_v_offset(), v_min);
 
 	const int delta = -min(v_min, 0);
-	BOOST_FOREACH(shared_ptr<Trace> t, traces)
+	for (shared_ptr<Trace> t : traces)
 		t->set_v_offset(t->get_v_offset() + delta);
 
 	verticalScrollBar()->setSliderPosition(_v_offset + delta);
@@ -499,7 +497,7 @@ void View::signals_changed()
 {
 	int offset = SignalMargin + SignalHeight;
 	const vector< shared_ptr<Trace> > traces(get_traces());
-	BOOST_FOREACH(shared_ptr<Trace> t, traces) {
+	for (shared_ptr<Trace> t : traces) {
 		t->set_view(this);
 		t->set_v_offset(offset);
 		offset += SignalHeight + 2 * SignalMargin;
