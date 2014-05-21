@@ -23,6 +23,7 @@
 #include "view.h"
 
 #include <QApplication>
+#include <QFontMetrics>
 #include <QMouseEvent>
 
 #include <pv/widgets/popup.h>
@@ -32,18 +33,26 @@ using std::shared_ptr;
 namespace pv {
 namespace view {
 
-const int CursorHeader::CursorHeaderHeight = 26;
+const int CursorHeader::Padding = 20;
+
+int CursorHeader::calculateTextHeight()
+{
+	QFontMetrics fm(font());
+	return fm.boundingRect(0, 0, INT_MAX, INT_MAX,
+		Qt::AlignLeft | Qt::AlignTop, "8").height();
+}
 
 CursorHeader::CursorHeader(View &parent) :
 	MarginWidget(parent),
-	_dragging(false)
+	_dragging(false),
+	_textHeight(calculateTextHeight())
 {
 	setMouseTracking(true);
 }
 
 QSize CursorHeader::sizeHint() const
 {
-	return QSize(0, CursorHeaderHeight);
+	return QSize(0, _textHeight + Padding);
 }
 
 void CursorHeader::clear_selection()

@@ -37,6 +37,8 @@ class CursorHeader : public MarginWidget
 {
 	Q_OBJECT
 
+	static const int Padding;
+
 public:
 	CursorHeader(View &parent);
 
@@ -51,11 +53,12 @@ private:
 	void mousePressEvent(QMouseEvent *e);
 	void mouseReleaseEvent(QMouseEvent *);
 
-	static const int CursorHeaderHeight;
+	int calculateTextHeight();
 
 	std::weak_ptr<TimeMarker> _grabbed_marker;
 	QPoint _mouse_down_point;
 	bool _dragging;
+	const int _textHeight;
 };
 
 } // namespace view
