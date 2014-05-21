@@ -42,6 +42,18 @@ private:
 public:
 	Ruler(View &parent);
 
+	/**
+	 * Find a tick spacing and number formatting that does not cause
+	 * the values to collide.
+	 * @param p A QPainter used to determine the needed space for the values.
+	 * @param scale A pv::view::View's scale.
+	 * @param offset A pv::view::View's offset.
+	 *
+	 * @return The tick period to use in 'first' and the prefix in 'second'.
+	 */
+	static std::pair<double, unsigned int> calculate_tick_spacing(
+		QPainter& p, double scale, double offset);
+
 public:
 	QSize sizeHint() const;
 

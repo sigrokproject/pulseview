@@ -20,6 +20,7 @@
 
 #include "cursorheader.h"
 
+#include "ruler.h"
 #include "view.h"
 
 #include <QApplication>
@@ -68,9 +69,12 @@ void CursorHeader::paintEvent(QPaintEvent*)
 	QPainter p(this);
 	p.setRenderHint(QPainter::Antialiasing);
 
+	unsigned int prefix = pv::view::Ruler::calculate_tick_spacing(
+		p, _view.scale(), _view.offset()).second;
+
 	// Draw the cursors
 	if (_view.cursors_shown()) {
-		_view.cursors().draw_markers(p, rect(), 0); //prefix);
+		_view.cursors().draw_markers(p, rect(), prefix);
 	}
 }
 
