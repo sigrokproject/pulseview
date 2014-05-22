@@ -255,10 +255,12 @@ void MainWindow::setup_ui()
 	// Setup the toolbar
 	QToolBar *const toolbar = new QToolBar(tr("Main Toolbar"), this);
 	toolbar->addAction(action_open);
+	toolbar->addAction(action_save_as);
 	toolbar->addSeparator();
 	toolbar->addAction(action_view_zoom_in);
 	toolbar->addAction(action_view_zoom_out);
 	toolbar->addAction(action_view_zoom_fit);
+	toolbar->addAction(action_view_zoom_one_to_one);
 	addToolBar(toolbar);
 
 	// Setup the sampling bar
