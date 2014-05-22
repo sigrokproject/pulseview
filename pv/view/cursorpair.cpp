@@ -20,8 +20,8 @@
 
 #include "cursorpair.h"
 
-#include "ruler.h"
 #include "view.h"
+#include "pv/util.h"
 
 #include <algorithm>
 
@@ -99,7 +99,7 @@ void CursorPair::draw_markers(QPainter &p,
 
 		p.setPen(Cursor::TextColour);
 		p.drawText(text_rect, Qt::AlignCenter | Qt::AlignVCenter,
-			Ruler::format_time(_second->time() - _first->time(), prefix, 2));
+			pv::util::format_time(_second->time() - _first->time(), prefix, 2));
 	}
 
 	// Paint the cursor markers
@@ -137,7 +137,7 @@ void CursorPair::compute_text_size(QPainter &p, unsigned int prefix)
 	assert(_first);
 	assert(_second);
 
-	_text_size = p.boundingRect(QRectF(), 0, Ruler::format_time(
+	_text_size = p.boundingRect(QRectF(), 0, pv::util::format_time(
 		_second->time() - _first->time(), prefix, 2)).size();
 }
 

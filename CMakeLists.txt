@@ -121,6 +121,7 @@ set(pulseview_SOURCES
 	pv/mainwindow.cpp
 	pv/sigsession.cpp
 	pv/storesession.cpp
+	pv/util.cpp
 	pv/data/analog.cpp
 	pv/data/analogsnapshot.cpp
 	pv/data/logic.cpp

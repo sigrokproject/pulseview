@@ -20,8 +20,8 @@
 
 #include "cursor.h"
 
-#include "ruler.h"
 #include "view.h"
+#include "pv/util.h"
 
 #include <QBrush>
 #include <QPainter>
@@ -139,13 +139,13 @@ void Cursor::paint_label(QPainter &p, const QRect &rect,
 
 	p.setPen(TextColour);
 	p.drawText(r, Qt::AlignCenter | Qt::AlignVCenter,
-		Ruler::format_time(_time, prefix, 2));
+		pv::util::format_time(_time, prefix, 2));
 }
 
 void Cursor::compute_text_size(QPainter &p, unsigned int prefix)
 {
 	_text_size = p.boundingRect(QRectF(), 0,
-		Ruler::format_time(_time, prefix, 2)).size();
+		pv::util::format_time(_time, prefix, 2)).size();
 }
 
 shared_ptr<Cursor> Cursor::get_other_cursor() const

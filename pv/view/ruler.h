@@ -40,18 +40,12 @@ private:
 	static const int MinorTickSubdivision;
 	static const int ScaleUnits[3];
 
-	static const QString SIPrefixes[9];
-	static const int FirstSIPrefixPower;
-
 	static const int HoverArrowSize;
 
 public:
 	Ruler(View &parent);
 
 	void clear_selection();
-
-	static QString format_time(double t, unsigned int prefix,
-		unsigned precision = 0);
 
 public:
 	QSize sizeHint() const;

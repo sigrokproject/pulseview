@@ -23,12 +23,9 @@
 #include "cursor.h"
 #include "view.h"
 #include "viewport.h"
+#include "pv/util.h"
 
 #include <extdef.h>
-
-#include <assert.h>
-#include <math.h>
-#include <limits.h>
 
 #include <QApplication>
 #include <QMouseEvent>
@@ -46,10 +43,6 @@ namespace view {
 const int Ruler::RulerHeight = 30;
 const int Ruler::MinorTickSubdivision = 4;
 const int Ruler::ScaleUnits[3] = {1, 2, 5};
-
-const QString Ruler::SIPrefixes[9] =
-	{"f", "p", "n", QChar(0x03BC), "m", "", "k", "M", "G"};
-const int Ruler::FirstSIPrefixPower = -15;
 
 const int Ruler::HoverArrowSize = 5;
 
@@ -71,19 +64,6 @@ void Ruler::clear_selection()
 	update();
 }
 
-QString Ruler::format_time(double t, unsigned int prefix,
-	unsigned int precision)
-{
-	const double multiplier = pow(10.0,
-		(int)- prefix * 3 - FirstSIPrefixPower);
-
-	QString s;
-	QTextStream ts(&s);
-	ts.setRealNumberPrecision(precision);
-	ts << fixed << forcesign << (t  * multiplier) <<
-		SIPrefixes[prefix] << "s";
-	return s;
-}
 
 QSize Ruler::sizeHint() const
 {
@@ -120,12 +100,10 @@ void Ruler::paintEvent(QPaintEvent*)
 			tick_period = order_decimal * ScaleUnits[unit++];
 		} while (tick_period < min_period && unit < countof(ScaleUnits));
 
-		prefix = (order - FirstSIPrefixPower) / 3;
-		assert(prefix < countof(SIPrefixes));
-
+		prefix = (order - pv::util::FirstSIPrefixPower) / 3;
 
 		typical_width = p.boundingRect(0, 0, INT_MAX, INT_MAX,
-			AlignLeft | AlignTop, format_time(_view.offset(),
+			AlignLeft | AlignTop, pv::util::format_time(_view.offset(),
 			prefix)).width() + MinValueSpacing;
 
 		min_width += SpacingIncrement;
@@ -163,7 +141,7 @@ void Ruler::paintEvent(QPaintEvent*)
 			// Draw a major tick
 			p.drawText(x, ValueMargin, 0, text_height,
 				AlignCenter | AlignTop | TextDontClip,
-				format_time(t, prefix));
+				pv::util::format_time(t, prefix));
 			p.drawLine(QPointF(x, major_tick_y1),
 				QPointF(x, tick_y2));
 		}
