@@ -120,8 +120,8 @@ void SigSession::set_device(
 
 void SigSession::set_file(const string &name) throw(QString)
 {
-	// Deslect the old device, because file type detection in File::create
-	// destorys the old session inside libsigrok.
+	// Deselect the old device, because file type detection in File::create
+	// destroys the old session inside libsigrok.
 	set_device(shared_ptr<device::DevInst>());
 	set_device(shared_ptr<device::DevInst>(device::File::create(name)));
 }
