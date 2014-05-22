@@ -26,6 +26,8 @@
 
 #include <QAction>
 #include <QDebug>
+#include <QHelpEvent>
+#include <QToolTip>
 
 #include "samplingbar.h"
 
@@ -93,6 +95,9 @@ SamplingBar::SamplingBar(SigSession &session, QWidget *parent) :
 	addWidget(&_sample_rate);
 
 	addWidget(&_run_stop_button);
+
+	_sample_count.installEventFilter(this);
+	_sample_rate.installEventFilter(this);
 }
 
 void SamplingBar::set_device_list(
@@ -444,6 +449,29 @@ void SamplingBar::on_config_changed()
 	update_sample_count_selector();	
 	commit_sample_rate();	
 	update_sample_rate_selector();
+}
+
+bool SamplingBar::eventFilter(QObject *watched, QEvent *event)
+{
+	if ((watched == &_sample_count || watched == &_sample_rate) &&
+		(event->type() == QEvent::ToolTip)) {
+		double sec = (double)_sample_count.value() / _sample_rate.value();
+
+		QString str;
+		QTextStream(&str)
+			<< tr("Total sampling time: ")
+			<< fixed
+			<< qSetRealNumberPrecision(1)
+			<< sec
+			<< "s";
+
+		QHelpEvent *help_event = static_cast<QHelpEvent*>(event);
+		QToolTip::showText(help_event->globalPos(), str);
+
+		return true;
+	}
+
+	return false;
 }
 
 } // namespace toolbars

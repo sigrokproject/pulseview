@@ -89,6 +89,9 @@ private slots:
 
 	void on_config_changed();
 
+protected:
+	bool eventFilter(QObject *watched, QEvent *event);
+
 private:
 	SigSession &_session;
 
