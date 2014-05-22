@@ -74,7 +74,7 @@ private slots:
 
 	void on_signals_moved();
 
-	void on_trace_text_changed();
+	void on_trace_changed();
 
 signals:
 	void signals_moved();

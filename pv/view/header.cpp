@@ -72,7 +72,10 @@ QSize Header::sizeHint() const
 	const vector< shared_ptr<Trace> > traces(_view.get_traces());
 	BOOST_FOREACH(shared_ptr<Trace> t, traces) {
 		assert(t);
-		max_width = max(max_width, (int)t->get_label_rect(0).width());
+
+		if (t->enabled()) {
+			max_width = max(max_width, (int)t->get_label_rect(0).width());
+		}
 	}
 
 	return QSize(max_width + Padding, 0);
@@ -281,9 +284,9 @@ void Header::on_signals_changed()
 	BOOST_FOREACH(shared_ptr<Trace> t, traces) {
 		assert(t);
 		connect(t.get(), SIGNAL(visibility_changed()),
-			this, SLOT(update()));
+			this, SLOT(on_trace_changed()));
 		connect(t.get(), SIGNAL(text_changed()),
-			this, SLOT(on_trace_text_changed()));
+			this, SLOT(on_trace_changed()));
 		connect(t.get(), SIGNAL(colour_changed()),
 			this, SLOT(update()));
 	}
@@ -294,7 +297,7 @@ void Header::on_signals_moved()
 	update();
 }
 
-void Header::on_trace_text_changed()
+void Header::on_trace_changed()
 {
 	update();
 	geometry_updated();
