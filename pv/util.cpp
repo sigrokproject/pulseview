@@ -55,5 +55,18 @@ QString format_time(double t, unsigned int prefix,
 	return s;
 }
 
+QString format_second(double second)
+{
+	unsigned int i = 0;
+	int exp = - FirstSIPrefixPower;
+
+	while ((second * pow(10.0, exp)) > 999.0 && i < countof(SIPrefixes) - 1) {
+		i++;
+		exp -= 3;
+	}
+
+	return format_time(second, i, 0, false);
+}
+
 } // namespace util
 } // namespace pv

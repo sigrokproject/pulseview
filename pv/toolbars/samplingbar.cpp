@@ -35,6 +35,7 @@
 #include <pv/device/devinst.h>
 #include <pv/popups/deviceoptions.h>
 #include <pv/popups/probes.h>
+#include <pv/util.h>
 
 using boost::shared_ptr;
 using std::map;
@@ -456,16 +457,9 @@ bool SamplingBar::eventFilter(QObject *watched, QEvent *event)
 	if ((watched == &_sample_count || watched == &_sample_rate) &&
 		(event->type() == QEvent::ToolTip)) {
 		double sec = (double)_sample_count.value() / _sample_rate.value();
-
-		QString str;
-		QTextStream(&str)
-			<< tr("Total sampling time: ")
-			<< fixed
-			<< qSetRealNumberPrecision(1)
-			<< sec
-			<< "s";
-
 		QHelpEvent *help_event = static_cast<QHelpEvent*>(event);
+
+		QString str = tr("Total sampling time: %1").arg(pv::util::format_second(sec));
 		QToolTip::showText(help_event->globalPos(), str);
 
 		return true;
