@@ -123,6 +123,7 @@ void MainWindow::setup_ui()
 		"MainWindow", "&Open...", 0, QApplication::UnicodeUTF8));
 	action_open->setIcon(QIcon::fromTheme("document-open",
 		QIcon(":/icons/document-open.png")));
+	action_open->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_O));
 	action_open->setObjectName(QString::fromUtf8("actionOpen"));
 	menu_file->addAction(action_open);
 
@@ -131,6 +132,7 @@ void MainWindow::setup_ui()
 		"MainWindow", "&Save As...", 0, QApplication::UnicodeUTF8));
 	action_save_as->setIcon(QIcon::fromTheme("document-save-as",
 		QIcon(":/icons/document-save-as.png")));
+	action_save_as->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_S));
 	action_save_as->setObjectName(QString::fromUtf8("actionSaveAs"));
 	menu_file->addAction(action_save_as);
 
