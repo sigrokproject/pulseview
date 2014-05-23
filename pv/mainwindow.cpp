@@ -32,6 +32,7 @@
 #include <QMessageBox>
 #include <QMenu>
 #include <QMenuBar>
+#include <QSettings>
 #include <QStatusBar>
 #include <QVBoxLayout>
 #include <QWidget>
@@ -66,6 +67,9 @@ namespace pv {
 namespace view {
 class SelectableItem;
 }
+
+const char *MainWindow::SettingOpenDirectory = "MainWindow/OpenDirectory";
+const char *MainWindow::SettingSaveDirectory = "MainWindow/SaveDirectory";
 
 MainWindow::MainWindow(DeviceManager &device_manager,
 	const char *open_file_name,
@@ -339,13 +343,21 @@ void MainWindow::show_session_error(
 
 void MainWindow::on_actionOpen_triggered()
 {
+	QSettings settings;
+	const QString dir = settings.value(SettingOpenDirectory).toString();
+
 	// Show the dialog
 	const QString file_name = QFileDialog::getOpenFileName(
-		this, tr("Open File"), "", tr(
+		this, tr("Open File"), dir, tr(
 			"Sigrok Sessions (*.sr);;"
 			"All Files (*.*)"));
-	if (!file_name.isEmpty())
+
+	if (!file_name.isEmpty()) {
 		load_file(file_name);
+
+		const QString abs_path = QFileInfo(file_name).absolutePath();
+		settings.setValue(SettingOpenDirectory, abs_path);
+	}
 }
 
 void MainWindow::on_actionSaveAs_triggered()
@@ -355,12 +367,18 @@ void MainWindow::on_actionSaveAs_triggered()
 	// Stop any currently running capture session
 	_session.stop_capture();
 
+	QSettings settings;
+	const QString dir = settings.value(SettingSaveDirectory).toString();
+
 	// Show the dialog
 	const QString file_name = QFileDialog::getSaveFileName(
-		this, tr("Save File"), "", tr("Sigrok Sessions (*.sr)"));
+		this, tr("Save File"), dir, tr("Sigrok Sessions (*.sr)"));
 
 	if (file_name.isEmpty())
 		return;
+
+	const QString abs_path = QFileInfo(file_name).absolutePath();
+	settings.setValue(SettingSaveDirectory, abs_path);
 
 	StoreProgress *dlg = new StoreProgress(file_name, _session, this);
 	dlg->run();

@@ -104,6 +104,18 @@ private slots:
 	void capture_state_changed(int state);
 
 private:
+	/**
+	 * Name of the setting used to remember the directory
+	 * containing the last file that was opened.
+	 */
+	static const char *SettingOpenDirectory;
+
+	/**
+	 * Name of the setting used to remember the directory
+	 * containing the last file that was saved.
+	 */
+	static const char *SettingSaveDirectory;
+
 	DeviceManager &_device_manager;
 
 	SigSession _session;
