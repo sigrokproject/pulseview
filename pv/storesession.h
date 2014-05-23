@@ -75,9 +75,9 @@ private:
 
 	std::atomic<bool> _interrupt;
 
+	std::atomic<uint64_t> _units_stored, _unit_count;
+
 	mutable std::mutex _mutex;
-	uint64_t _units_stored;
-	uint64_t _unit_count;
 	QString _error;
 };
 

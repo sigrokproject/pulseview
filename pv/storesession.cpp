@@ -59,8 +59,7 @@ StoreSession::~StoreSession()
 
 pair<uint64_t, uint64_t> StoreSession::progress() const
 {
-	lock_guard<mutex> lock(_mutex);
-	return make_pair(_units_stored, _unit_count);
+	return make_pair(_units_stored.load(), _unit_count.load());
 }
 
 const QString& StoreSession::error() const
@@ -158,10 +157,7 @@ void StoreSession::store_proc(shared_ptr<data::LogicSnapshot> snapshot)
 	const int unit_size = snapshot->unit_size();
 	assert(unit_size != 0);
 
-	{
-		lock_guard<mutex> lock(_mutex);
-		_unit_count = snapshot->get_sample_count();
-	}
+	_unit_count = snapshot->get_sample_count();
 
 	const unsigned int samples_per_block = BlockSize / unit_size;
 
@@ -170,7 +166,7 @@ void StoreSession::store_proc(shared_ptr<data::LogicSnapshot> snapshot)
 		progress_updated();
 
 		const uint64_t end_sample = min(
-			start_sample + samples_per_block, _unit_count);
+			start_sample + samples_per_block, _unit_count.load());
 		snapshot->get_samples(data, start_sample, end_sample);
 
 		if(sr_session_append(_file_name.c_str(), data, unit_size,
@@ -181,13 +177,10 @@ void StoreSession::store_proc(shared_ptr<data::LogicSnapshot> snapshot)
 		}
 
 		start_sample = end_sample;
-
-		{
-			lock_guard<mutex> lock(_mutex);
-			_units_stored = start_sample;
-		}
+		_units_stored = start_sample;
 	}
 
+	_unit_count = 0;
 	progress_updated();
 
 	delete[] data;

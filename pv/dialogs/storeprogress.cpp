@@ -69,17 +69,15 @@ void StoreProgress::on_progress_updated()
 	const std::pair<uint64_t, uint64_t> p = _session.progress();
 	assert(p.first <= p.second);
 
-	setValue(p.first);
-	setMaximum(p.second);
-
-	const QString err = _session.error();
-	if (!err.isEmpty()) {
-		show_error();
+	if (p.second) {
+		setValue(p.first);
+		setMaximum(p.second);
+	} else {
+		const QString err = _session.error();
+		if (!err.isEmpty())
+			show_error();
 		close();
 	}
-
-	if (p.first == p.second)
-		close();
 }
 
 } // dialogs
