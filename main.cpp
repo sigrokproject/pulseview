@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
 	// Set some application metadata
 	QApplication::setApplicationVersion(PV_VERSION_STRING);
 	QApplication::setApplicationName("PulseView");
-	QApplication::setOrganizationDomain("http://www.sigrok.org");
+	QApplication::setOrganizationDomain("sigrok.org");
 
 	// Parse arguments
 	while (1) {
