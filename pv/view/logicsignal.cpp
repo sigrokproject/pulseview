@@ -20,7 +20,8 @@
 
 #include <extdef.h>
 
-#include <math.h>
+#include <cassert>
+#include <cmath>
 
 #include <QFormLayout>
 #include <QToolBar>

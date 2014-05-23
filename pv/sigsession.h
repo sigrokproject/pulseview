@@ -21,8 +21,6 @@
 #ifndef PULSEVIEW_PV_SIGSESSION_H
 #define PULSEVIEW_PV_SIGSESSION_H
 
-#include <boost/function.hpp>
-
 #include <map>
 #include <memory>
 #include <mutex>
@@ -94,7 +92,7 @@ public:
 
 	capture_state get_capture_state() const;
 
-	void start_capture(boost::function<void (const QString)> error_handler);
+	void start_capture(std::function<void (const QString)> error_handler);
 
 	void stop_capture();
 
@@ -135,11 +133,11 @@ private:
 
 	static sr_input* load_input_file_format(
 		const std::string &filename,
-		boost::function<void (const QString)> error_handler,
+		std::function<void (const QString)> error_handler,
 		sr_input_format *format = NULL);
 
 	void sample_thread_proc(std::shared_ptr<device::DevInst> dev_inst,
-		boost::function<void (const QString)> error_handler);
+		std::function<void (const QString)> error_handler);
 
 	void feed_in_header(const sr_dev_inst *sdi);
 

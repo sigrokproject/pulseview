@@ -47,8 +47,8 @@
 
 #include <QDebug>
 
-using boost::function;
 using std::dynamic_pointer_cast;
+using std::function;
 using std::lock_guard;
 using std::mutex;
 using std::list;

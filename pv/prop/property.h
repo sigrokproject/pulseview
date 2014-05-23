@@ -23,8 +23,6 @@
 
 #include <glib.h>
 
-#include <boost/function.hpp>
-
 #include <QString>
 #include <QWidget>
 
@@ -38,8 +36,8 @@ class Property : public QObject
 	Q_OBJECT;
 
 public:
-	typedef boost::function<GVariant* ()> Getter;
-	typedef boost::function<void (GVariant*)> Setter;
+	typedef std::function<GVariant* ()> Getter;
+	typedef std::function<void (GVariant*)> Setter;
 
 protected:
 	Property(QString name, Getter getter, Setter setter);

@@ -35,7 +35,7 @@
 #include <libsigrok/libsigrok.h>
 
 using boost::bind;
-using boost::function;
+using std::function;
 using boost::optional;
 using std::make_pair;
 using std::pair;

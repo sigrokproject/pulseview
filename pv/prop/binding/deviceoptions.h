@@ -21,7 +21,6 @@
 #ifndef PULSEVIEW_PV_PROP_BINDING_DEVICEOPTIONS_H
 #define PULSEVIEW_PV_PROP_BINDING_DEVICEOPTIONS_H
 
-#include <boost/function.hpp>
 #include <boost/optional.hpp>
 
 #include <QString>
@@ -52,7 +51,7 @@ private:
 	void bind_bool(const QString &name, int key);
 	void bind_enum(const QString &name, int key,
 		GVariant *const gvar_list,
-		boost::function<QString (GVariant*)> printer = print_gvariant);
+		std::function<QString (GVariant*)> printer = print_gvariant);
 	void bind_int(const QString &name, int key, QString suffix,
 		boost::optional< std::pair<int64_t, int64_t> > range);
 
