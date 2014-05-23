@@ -36,7 +36,7 @@ public:
 	MarginWidget(pv::view::View &parent);
 
 public slots:
-	virtual void clear_selection() = 0;
+	virtual void clear_selection();
 
 signals:
 	void selection_changed();

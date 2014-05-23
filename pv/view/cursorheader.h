@@ -1,7 +1,7 @@
 /*
  * This file is part of the PulseView project.
  *
- * Copyright (C) 2013 Joel Holdsworth <joel@airwebreathe.org.uk>
+ * Copyright (C) 2012 Joel Holdsworth <joel@airwebreathe.org.uk>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,22 +18,47 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#include "view.h"
+#ifndef PULSEVIEW_PV_VIEW_CURSORHEADER_H
+#define PULSEVIEW_PV_VIEW_CURSORHEADER_H
+
+#include <memory>
 
 #include "marginwidget.h"
 
 namespace pv {
 namespace view {
 
-MarginWidget::MarginWidget(View &parent) :
-	QWidget(&parent),
-	_view(parent)
-{
-}
+class TimeMarker;
 
-void MarginWidget::clear_selection()
+/**
+ * Widget to hold the labels over the cursors.
+ */
+class CursorHeader : public MarginWidget
 {
-}
+	Q_OBJECT
+
+public:
+	CursorHeader(View &parent);
+
+	QSize sizeHint() const;
+
+	void clear_selection();
+
+private:
+	void paintEvent(QPaintEvent *event);
+
+	void mouseMoveEvent(QMouseEvent *e);
+	void mousePressEvent(QMouseEvent *e);
+	void mouseReleaseEvent(QMouseEvent *);
+
+	static const int CursorHeaderHeight;
+
+	std::weak_ptr<TimeMarker> _grabbed_marker;
+	QPoint _mouse_down_point;
+	bool _dragging;
+};
 
 } // namespace view
 } // namespace pv
+
+#endif // PULSEVIEW_PV_VIEW_CURSORHEADER_H

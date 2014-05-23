@@ -40,6 +40,7 @@ class SigSession;
 
 namespace view {
 
+class CursorHeader;
 class Header;
 class Ruler;
 class Trace;
@@ -189,6 +190,7 @@ private:
 
 	Viewport *_viewport;
 	Ruler *_ruler;
+	CursorHeader *_cursorheader;
 	Header *_header;
 
 	/// The view time scale in seconds per pixel.

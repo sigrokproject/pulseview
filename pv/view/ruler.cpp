@@ -20,22 +20,12 @@
 
 #include "ruler.h"
 
-#include "cursor.h"
 #include "view.h"
-#include "viewport.h"
 #include "pv/util.h"
 
 #include <extdef.h>
 
-#include <QApplication>
-#include <QMouseEvent>
-#include <QPainter>
-#include <QTextStream>
-
-#include <pv/widgets/popup.h>
-
 using namespace Qt;
-using std::shared_ptr;
 
 namespace pv {
 namespace view {
@@ -47,23 +37,13 @@ const int Ruler::ScaleUnits[3] = {1, 2, 5};
 const int Ruler::HoverArrowSize = 5;
 
 Ruler::Ruler(View &parent) :
-	MarginWidget(parent),
-	_dragging(false)
+	MarginWidget(parent)
 {
 	setMouseTracking(true);
 
 	connect(&_view, SIGNAL(hover_point_changed()),
 		this, SLOT(hover_point_changed()));
 }
-
-void Ruler::clear_selection()
-{
-	CursorPair &cursors = _view.cursors();
-	cursors.first()->select(false);
-	cursors.second()->select(false);
-	update();
-}
-
 
 QSize Ruler::sizeHint() const
 {
@@ -72,7 +52,6 @@ QSize Ruler::sizeHint() const
 
 void Ruler::paintEvent(QPaintEvent*)
 {
-
 	const double SpacingIncrement = 32.0f;
 	const double MinValueSpacing = 32.0f;
 	const int ValueMargin = 3;
@@ -156,80 +135,15 @@ void Ruler::paintEvent(QPaintEvent*)
 
 	} while (x < width());
 
-	// Draw the cursors
-	if (_view.cursors_shown())
-		_view.cursors().draw_markers(p, rect(), prefix);
-
 	// Draw the hover mark
 	draw_hover_mark(p);
-
-	p.end();
-}
-
-void Ruler::mouseMoveEvent(QMouseEvent *e)
-{
-	if (!(e->buttons() & Qt::LeftButton))
-		return;
-	
-	if ((e->pos() - _mouse_down_point).manhattanLength() <
-		QApplication::startDragDistance())
-		return;
-
-	_dragging = true;
-
-	if (shared_ptr<TimeMarker> m = _grabbed_marker.lock())
-		m->set_time(_view.offset() +
-			((double)e->x() + 0.5) * _view.scale());
-}
-
-void Ruler::mousePressEvent(QMouseEvent *e)
-{
-	if (e->buttons() & Qt::LeftButton)
-	{
-		_mouse_down_point = e->pos();
-
-		_grabbed_marker.reset();
-
-		clear_selection();
-
-		if (_view.cursors_shown()) {
-			CursorPair &cursors = _view.cursors();
-			if (cursors.first()->get_label_rect(
-				rect()).contains(e->pos()))
-				_grabbed_marker = cursors.first();
-			else if (cursors.second()->get_label_rect(
-				rect()).contains(e->pos()))
-				_grabbed_marker = cursors.second();
-		}
-
-		if (shared_ptr<TimeMarker> m = _grabbed_marker.lock())
-			m->select();
-
-		selection_changed();
-	}
-}
-
-void Ruler::mouseReleaseEvent(QMouseEvent *)
-{
-	using pv::widgets::Popup;
-
-	if (!_dragging)
-		if (shared_ptr<TimeMarker> m = _grabbed_marker.lock()) {
-			Popup *const p = m->create_popup(&_view);
-			p->set_position(mapToGlobal(QPoint(m->get_x(),
-				height())), Popup::Bottom);
-			p->show();
-		}
-
-	_dragging = false;
-	_grabbed_marker.reset();
 }
 
 void Ruler::draw_hover_mark(QPainter &p)
 {
 	const int x = _view.hover_point().x();
 
-	if (x == -1 || _dragging)
+	if (x == -1)
 		return;
 
 	p.setPen(QPen(Qt::NoPen));

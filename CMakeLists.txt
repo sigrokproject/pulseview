@@ -135,6 +135,7 @@ set(pulseview_SOURCES
 	pv/toolbars/samplingbar.cpp
 	pv/view/analogsignal.cpp
 	pv/view/cursor.cpp
+	pv/view/cursorheader.cpp
 	pv/view/cursorpair.cpp
 	pv/view/header.cpp
 	pv/view/marginwidget.cpp
@@ -174,6 +175,7 @@ set(pulseview_HEADERS
 	pv/prop/string.h
 	pv/toolbars/samplingbar.h
 	pv/view/cursor.h
+	pv/view/cursorheader.h
 	pv/view/header.h
 	pv/view/logicsignal.h
 	pv/view/marginwidget.h

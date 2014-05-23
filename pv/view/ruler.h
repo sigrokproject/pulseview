@@ -28,9 +28,6 @@
 namespace pv {
 namespace view {
 
-class TimeMarker;
-class View;
-
 class Ruler : public MarginWidget
 {
 	Q_OBJECT
@@ -45,17 +42,11 @@ private:
 public:
 	Ruler(View &parent);
 
-	void clear_selection();
-
 public:
 	QSize sizeHint() const;
 
 private:
 	void paintEvent(QPaintEvent *event);
-
-	void mouseMoveEvent(QMouseEvent *e);
-	void mousePressEvent(QMouseEvent *e);
-	void mouseReleaseEvent(QMouseEvent *);
 
 private:
 	/**
@@ -65,11 +56,6 @@ private:
 
 private slots:
 	void hover_point_changed();
-
-private:
-	std::weak_ptr<TimeMarker> _grabbed_marker;
-	QPoint _mouse_down_point;
-	bool _dragging;
 };
 
 } // namespace view
