@@ -35,6 +35,7 @@ namespace pv {
 namespace view {
 
 const int CursorHeader::Padding = 20;
+const int CursorHeader::BaselineOffset = 5;
 
 int CursorHeader::calculateTextHeight()
 {
@@ -53,7 +54,7 @@ CursorHeader::CursorHeader(View &parent) :
 
 QSize CursorHeader::sizeHint() const
 {
-	return QSize(0, _textHeight + Padding);
+	return QSize(0, _textHeight + Padding + BaselineOffset);
 }
 
 void CursorHeader::clear_selection()
@@ -74,7 +75,11 @@ void CursorHeader::paintEvent(QPaintEvent*)
 
 	// Draw the cursors
 	if (_view.cursors_shown()) {
-		_view.cursors().draw_markers(p, rect(), prefix);
+		// The cursor labels are not drawn with the arrows exactly on the
+		// bottom line of the widget, because then the selection shadow
+		// would be clipped away.
+		const QRect r = rect().adjusted(0, 0, 0, -BaselineOffset);
+		_view.cursors().draw_markers(p, r, prefix);
 	}
 }
 
@@ -127,8 +132,8 @@ void CursorHeader::mouseReleaseEvent(QMouseEvent *)
 	if (!_dragging)
 		if (shared_ptr<TimeMarker> m = _grabbed_marker.lock()) {
 			Popup *const p = m->create_popup(&_view);
-			p->set_position(mapToGlobal(QPoint(m->get_x(),
-				height())), Popup::Bottom);
+			const QPoint arrpos(m->get_x(), height() - BaselineOffset);
+			p->set_position(mapToGlobal(arrpos), Popup::Bottom);
 			p->show();
 		}
 

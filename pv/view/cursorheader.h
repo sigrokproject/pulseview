@@ -39,6 +39,12 @@ class CursorHeader : public MarginWidget
 
 	static const int Padding;
 
+	/**
+	 * The vertical offset, relative to the bottom line of the widget,
+	 * where the arrows of the cursor labels end.
+	 */
+	static const int BaselineOffset;
+
 public:
 	CursorHeader(View &parent);
 
