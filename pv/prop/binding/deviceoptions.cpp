@@ -183,10 +183,8 @@ QString DeviceOptions::print_vdiv(GVariant *const gvar)
 QString DeviceOptions::print_voltage_threshold(GVariant *const gvar)
 {
 	gdouble lo, hi;
-	char buf[64];
 	g_variant_get(gvar, "(dd)", &lo, &hi);
-	snprintf(buf, sizeof(buf), "L<%.1fV H>%.1fV", lo, hi);
-	return QString::fromUtf8(buf);
+	return QString("L<%1V H>%2V").arg(lo, 0, 'f', 1).arg(hi, 0, 'f', 1);
 }
 
 } // binding
