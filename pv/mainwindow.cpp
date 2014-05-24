@@ -22,8 +22,6 @@
 #include <libsigrokdecode/libsigrokdecode.h>
 #endif
 
-#include <boost/bind.hpp>
-
 #include <algorithm>
 #include <iterator>
 
@@ -324,8 +322,8 @@ void MainWindow::load_file(QString file_name)
 
 	update_device_list();
 
-	_session.start_capture(boost::bind(&MainWindow::session_error, this,
-		errorMessage, infoMessage));
+	_session.start_capture([&, errorMessage, infoMessage](QString) {
+		session_error(errorMessage, infoMessage); });
 }
 
 void MainWindow::show_session_error(
@@ -439,9 +437,8 @@ void MainWindow::run_stop()
 {
 	switch(_session.get_capture_state()) {
 	case SigSession::Stopped:
-		_session.start_capture(
-				boost::bind(&MainWindow::session_error, this,
-				QString("Capture failed"), _1));
+		_session.start_capture([&](QString message) {
+			session_error("Capture failed", message); });
 		break;
 
 	case SigSession::AwaitingTrigger:

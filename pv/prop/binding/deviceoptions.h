@@ -25,9 +25,11 @@
 
 #include <QString>
 
+#include <glib.h>
+
 #include "binding.h"
 
-#include <glib.h>
+#include <pv/prop/property.h>
 
 struct sr_dev_inst;
 struct sr_channel_group;
@@ -48,12 +50,15 @@ public:
 		const sr_channel_group *group = NULL);
 
 private:
-	void bind_bool(const QString &name, int key);
+	void bind_bool(const QString &name,
+		Property::Getter getter, Property::Setter setter);
 	void bind_enum(const QString &name, int key,
 		GVariant *const gvar_list,
+		Property::Getter getter, Property::Setter setter,
 		std::function<QString (GVariant*)> printer = print_gvariant);
-	void bind_int(const QString &name, int key, QString suffix,
-		boost::optional< std::pair<int64_t, int64_t> > range);
+	void bind_int(const QString &name, QString suffix,
+		boost::optional< std::pair<int64_t, int64_t> > range,
+		Property::Getter getter, Property::Setter setter);
 
 	static QString print_timebase(GVariant *const gvar);
 	static QString print_vdiv(GVariant *const gvar);

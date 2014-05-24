@@ -18,8 +18,6 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#include <boost/bind.hpp>
-
 #include <stdint.h>
 
 #include <QDebug>
@@ -34,9 +32,8 @@
 
 #include <libsigrok/libsigrok.h>
 
-using boost::bind;
-using std::function;
 using boost::optional;
+using std::function;
 using std::make_pair;
 using std::pair;
 using std::shared_ptr;
@@ -75,6 +72,11 @@ DeviceOptions::DeviceOptions(shared_ptr<pv::device::DevInst> dev_inst,
 
 		const QString name = QString::fromUtf8(info->name);
 
+		const Property::Getter get = [&, key]() {
+			return _dev_inst->get_config(_group, key); };
+		const Property::Setter set = [&, key](GVariant *value) {
+			_dev_inst->set_config(_group, key, value); };
+
 		switch(key)
 		{
 		case SR_CONF_SAMPLERATE:
@@ -83,7 +85,8 @@ DeviceOptions::DeviceOptions(shared_ptr<pv::device::DevInst> dev_inst,
 			break;
 
 		case SR_CONF_CAPTURE_RATIO:
-			bind_int(name, key, "%", pair<int64_t, int64_t>(0, 100));
+			bind_int(name, "%", pair<int64_t, int64_t>(0, 100),
+				get, set);
 			break;
 
 		case SR_CONF_PATTERN_MODE:
@@ -93,24 +96,26 @@ DeviceOptions::DeviceOptions(shared_ptr<pv::device::DevInst> dev_inst,
 		case SR_CONF_FILTER:
 		case SR_CONF_COUPLING:
 		case SR_CONF_CLOCK_EDGE:
-			bind_enum(name, key, gvar_list);
+			bind_enum(name, key, gvar_list, get, set);
 			break;
 
 		case SR_CONF_EXTERNAL_CLOCK:
 		case SR_CONF_RLE:
-			bind_bool(name, key);
+			bind_bool(name, get, set);
 			break;
 
 		case SR_CONF_TIMEBASE:
-			bind_enum(name, key, gvar_list, print_timebase);
+			bind_enum(name, key, gvar_list,
+				get, set, print_timebase);
 			break;
 
 		case SR_CONF_VDIV:
-			bind_enum(name, key, gvar_list, print_vdiv);
+			bind_enum(name, key, gvar_list, get, set, print_vdiv);
 			break;
 
 		case SR_CONF_VOLTAGE_THRESHOLD:
-			bind_enum(name, key, gvar_list, print_voltage_threshold);
+			bind_enum(name, key, gvar_list,
+				get, set, print_voltage_threshold);
 			break;
 		}
 
@@ -120,17 +125,17 @@ DeviceOptions::DeviceOptions(shared_ptr<pv::device::DevInst> dev_inst,
 	g_variant_unref(gvar_opts);
 }
 
-void DeviceOptions::bind_bool(const QString &name, int key)
+void DeviceOptions::bind_bool(const QString &name,
+	Property::Getter getter, Property::Setter setter)
 {
 	assert(_dev_inst);
-	_properties.push_back(shared_ptr<Property>(new Bool(name,
-		bind(&device::DevInst::get_config, _dev_inst, _group, key),
-		bind(&device::DevInst::set_config, _dev_inst,
-			_group, key, _1))));
+	_properties.push_back(shared_ptr<Property>(new Bool(
+		name, getter, setter)));
 }
 
 void DeviceOptions::bind_enum(const QString &name, int key,
-	GVariant *const gvar_list, function<QString (GVariant*)> printer)
+	GVariant *const gvar_list, Property::Getter getter,
+	Property::Setter setter, function<QString (GVariant*)> printer)
 {
 	GVariant *gvar;
 	GVariantIter iter;
@@ -148,19 +153,17 @@ void DeviceOptions::bind_enum(const QString &name, int key,
 		values.push_back(make_pair(gvar, printer(gvar)));
 
 	_properties.push_back(shared_ptr<Property>(new Enum(name, values,
-		bind(&device::DevInst::get_config, _dev_inst, _group, key),
-		bind(&device::DevInst::set_config, _dev_inst,
-			_group, key, _1))));
+		getter, setter)));
 }
 
-void DeviceOptions::bind_int(const QString &name, int key, QString suffix,
-	optional< std::pair<int64_t, int64_t> > range)
+void DeviceOptions::bind_int(const QString &name, QString suffix,
+	optional< std::pair<int64_t, int64_t> > range,
+	Property::Getter getter, Property::Setter setter)
 {
 	assert(_dev_inst);
 
 	_properties.push_back(shared_ptr<Property>(new Int(name, suffix, range,
-		bind(&device::DevInst::get_config, _dev_inst, _group, key),
-		bind(&device::DevInst::set_config, _dev_inst, _group, key, _1))));
+		getter, setter)));
 }
 
 QString DeviceOptions::print_timebase(GVariant *const gvar)

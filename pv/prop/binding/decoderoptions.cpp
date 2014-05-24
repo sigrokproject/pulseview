@@ -22,7 +22,6 @@
 
 #include "decoderoptions.h"
 
-#include <boost/bind.hpp>
 #include <boost/none_t.hpp>
 
 #include <pv/data/decoderstack.h>
@@ -32,7 +31,6 @@
 #include <pv/prop/int.h>
 #include <pv/prop/string.h>
 
-using boost::bind;
 using boost::none;
 using std::make_pair;
 using std::map;
@@ -63,24 +61,24 @@ DecoderOptions::DecoderOptions(
 
 		const QString name = QString::fromUtf8(opt->desc);
 
-		const Property::Getter getter = bind(
-			&DecoderOptions::getter, this, opt->id);
-		const Property::Setter setter = bind(
-			&DecoderOptions::setter, this, opt->id, _1);
+		const Property::Getter get = [&, opt]() {
+			return getter(opt->id); };
+		const Property::Setter set = [&, opt](GVariant *value) {
+			setter(opt->id, value); };
 
 		shared_ptr<Property> prop;
 
 		if (opt->values)
-			prop = bind_enum(name, opt, getter, setter);
+			prop = bind_enum(name, opt, get, set);
 		else if (g_variant_is_of_type(opt->def, G_VARIANT_TYPE("d")))
 			prop = shared_ptr<Property>(new Double(name, 2, "",
-				none, none, getter, setter));
+				none, none, get, set));
 		else if (g_variant_is_of_type(opt->def, G_VARIANT_TYPE("x")))
 			prop = shared_ptr<Property>(
-				new Int(name, "", none, getter, setter));
+				new Int(name, "", none, get, set));
 		else if (g_variant_is_of_type(opt->def, G_VARIANT_TYPE("s")))
 			prop = shared_ptr<Property>(
-				new String(name, getter, setter));
+				new String(name, get, set));
 		else
 			continue;
 
