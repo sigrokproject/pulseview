@@ -45,6 +45,12 @@ public:
 
 	QSize sizeHint() const;
 
+	/**
+	 * The horizontal offset, relative to the left edge of the widget,
+	 * where the arrows of the trace labels end.
+	 */
+	static const int BaselineOffset;
+
 private:
 	std::shared_ptr<pv::view::Trace> get_mouse_over_trace(
 		const QPoint &pt);

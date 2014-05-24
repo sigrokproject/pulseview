@@ -44,6 +44,7 @@ namespace pv {
 namespace view {
 
 const int Header::Padding = 12;
+const int Header::BaselineOffset = 5;
 
 Header::Header(View &parent) :
 	MarginWidget(parent),
@@ -76,7 +77,7 @@ QSize Header::sizeHint() const
 		}
 	}
 
-	return QSize(max_width + Padding, 0);
+	return QSize(max_width + Padding + BaselineOffset, 0);
 }
 
 shared_ptr<Trace> Header::get_mouse_over_trace(const QPoint &pt)
@@ -107,7 +108,10 @@ void Header::clear_selection()
 
 void Header::paintEvent(QPaintEvent*)
 {
-	const int w = width();
+	// The trace labels are not drawn with the arrows exactly on the
+	// left edge of the widget, because then the selection shadow
+	// would be clipped away.
+	const int w = width() - BaselineOffset;
 	const vector< shared_ptr<Trace> > traces(_view.get_traces());
 
 	QPainter painter(this);
@@ -188,9 +192,10 @@ void Header::mouseReleaseEvent(QMouseEvent *event)
 			const shared_ptr<Trace> mouse_over_trace =
 				get_mouse_over_trace(event->pos());
 			if (mouse_over_trace) {
+				const int w = width() - BaselineOffset;
 				Popup *const p =
 					mouse_over_trace->create_popup(&_view);
-				p->set_position(mapToGlobal(QPoint(width(),
+				p->set_position(mapToGlobal(QPoint(w,
 					mouse_over_trace->get_y())),
 					Popup::Right);
 				p->show();

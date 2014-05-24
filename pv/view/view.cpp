@@ -128,8 +128,9 @@ View::View(SigSession &session, QWidget *parent) :
 	// which were created before this object came into being
 	signals_changed();
 
-	// make sure the cursorheader is over the ruler
+	// make sure the transparent widgets are on the top
 	_cursorheader->raise();
+	_header->raise();
 }
 
 SigSession& View::session()
@@ -412,7 +413,8 @@ void View::update_scroll()
 
 void View::update_layout()
 {
-	setViewportMargins(_header->sizeHint().width(),
+	setViewportMargins(
+		_header->sizeHint().width() - pv::view::Header::BaselineOffset,
 		_ruler->sizeHint().height(), 0, 0);
 	_ruler->setGeometry(_viewport->x(), 0,
 		_viewport->width(), _viewport->y());
@@ -421,7 +423,7 @@ void View::update_layout()
 		_ruler->sizeHint().height() - _cursorheader->sizeHint().height() / 2,
 		_viewport->width(), _cursorheader->sizeHint().height());
 	_header->setGeometry(0, _viewport->y(),
-		_viewport->x(), _viewport->height());
+		_header->sizeHint().width(), _viewport->height());
 	update_scroll();
 }
 
