@@ -77,10 +77,8 @@ SigSession::~SigSession()
 {
 	using pv::device::Device;
 
+	// Stop and join to the thread
 	stop_capture();
-
-	if (_sampling_thread.joinable())
-		_sampling_thread.join();
 
 	_dev_inst->release();
 
@@ -195,10 +193,8 @@ void SigSession::start_capture(function<void (const QString)> error_handler)
 
 void SigSession::stop_capture()
 {
-	if (get_capture_state() == Stopped)
-		return;
-
-	sr_session_stop();
+	if (get_capture_state() != Stopped)
+		sr_session_stop();
 
 	// Check that sampling stopped
 	if (_sampling_thread.joinable())
