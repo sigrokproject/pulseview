@@ -75,7 +75,26 @@ LogicSignal::LogicSignal(shared_ptr<pv::device::DevInst> dev_inst,
 	_trigger_low(NULL),
 	_trigger_change(NULL)
 {
+	struct sr_trigger *trigger;
+	struct sr_trigger_stage *stage;
+	struct sr_trigger_match *match;
+	const GSList *l, *m;
+
 	_colour = SignalColours[probe->index % countof(SignalColours)];
+
+	/* Populate this channel's trigger setting with whatever we
+	 * find in the current session trigger, if anything. */
+	_trigger_match = 0;
+	if ((trigger = sr_session_trigger_get())) {
+		for (l = trigger->stages; l && !_trigger_match; l = l->next) {
+			stage = (struct sr_trigger_stage *)l->data;
+			for (m = stage->matches; m && !_trigger_match; m = m->next) {
+				match = (struct sr_trigger_match *)m->data;
+				if (match->channel == _probe)
+					_trigger_match = match->match;
+			}
+		}
+	}
 }
 
 LogicSignal::~LogicSignal()
@@ -204,147 +223,118 @@ void LogicSignal::init_trigger_actions(QWidget *parent)
 	_trigger_none = new QAction(QIcon(":/icons/trigger-none.svg"),
 		tr("No trigger"), parent);
 	_trigger_none->setCheckable(true);
-	connect(_trigger_none, SIGNAL(triggered()),
-		this, SLOT(on_trigger_none()));
+	connect(_trigger_none, SIGNAL(triggered()), this, SLOT(on_trigger()));
 
 	_trigger_rising = new QAction(QIcon(":/icons/trigger-rising.svg"),
 		tr("Trigger on rising edge"), parent);
 	_trigger_rising->setCheckable(true);
-	connect(_trigger_rising, SIGNAL(triggered()),
-		this, SLOT(on_trigger_rising()));
+	connect(_trigger_rising, SIGNAL(triggered()), this, SLOT(on_trigger()));
 
 	_trigger_high = new QAction(QIcon(":/icons/trigger-high.svg"),
 		tr("Trigger on high level"), parent);
 	_trigger_high->setCheckable(true);
-	connect(_trigger_high, SIGNAL(triggered()),
-		this, SLOT(on_trigger_high()));
+	connect(_trigger_high, SIGNAL(triggered()), this, SLOT(on_trigger()));
 
 	_trigger_falling = new QAction(QIcon(":/icons/trigger-falling.svg"),
 		tr("Trigger on falling edge"), parent);
 	_trigger_falling->setCheckable(true);
-	connect(_trigger_falling, SIGNAL(triggered()),
-		this, SLOT(on_trigger_falling()));
+	connect(_trigger_falling, SIGNAL(triggered()), this, SLOT(on_trigger()));
 
 	_trigger_low = new QAction(QIcon(":/icons/trigger-low.svg"),
 		tr("Trigger on low level"), parent);
 	_trigger_low->setCheckable(true);
-	connect(_trigger_low, SIGNAL(triggered()),
-		this, SLOT(on_trigger_low()));
+	connect(_trigger_low, SIGNAL(triggered()), this, SLOT(on_trigger()));
 
 	_trigger_change = new QAction(QIcon(":/icons/trigger-change.svg"),
 		tr("Trigger on rising or falling edge"), parent);
 	_trigger_change->setCheckable(true);
-	connect(_trigger_change, SIGNAL(triggered()),
-		this, SLOT(on_trigger_change()));
+	connect(_trigger_change, SIGNAL(triggered()), this, SLOT(on_trigger()));
+}
+
+QAction* LogicSignal::match_action(int match)
+{
+	QAction *action;
+
+	action = _trigger_none;
+	switch (match) {
+	case SR_TRIGGER_ZERO:
+		action = _trigger_low;
+		break;
+	case SR_TRIGGER_ONE:
+		action = _trigger_high;
+		break;
+	case SR_TRIGGER_RISING:
+		action = _trigger_rising;
+		break;
+	case SR_TRIGGER_FALLING:
+		action = _trigger_falling;
+		break;
+	case SR_TRIGGER_EDGE:
+		action = _trigger_change;
+		break;
+	}
+
+	return action;
+}
+
+int LogicSignal::action_match(QAction *action)
+{
+	int match;
+
+	if (action == _trigger_low)
+		match = SR_TRIGGER_ZERO;
+	else if (action == _trigger_high)
+		match = SR_TRIGGER_ONE;
+	else if (action == _trigger_rising)
+		match = SR_TRIGGER_RISING;
+	else if (action == _trigger_falling)
+		match = SR_TRIGGER_FALLING;
+	else if (action == _trigger_change)
+		match = SR_TRIGGER_EDGE;
+	else
+		match = 0;
+
+	return match;
 }
 
 void LogicSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
 {
 	GVariant *gvar;
+	gsize num_opts;
+	const int32_t *trig_matches;
+	unsigned int i;
+	bool is_checked;
 
 	Signal::populate_popup_form(parent, form);
 
-	// Add the trigger actions
-	assert(_dev_inst);
-	if ((gvar = _dev_inst->list_config(NULL, SR_CONF_TRIGGER_TYPE)))
-	{
-		const char *const trig_types =
-			g_variant_get_string(gvar, NULL);
+	if (!(gvar = _dev_inst->list_config(NULL, SR_CONF_TRIGGER_MATCH)))
+		return;
 
-		if (trig_types && trig_types[0] != '\0')
-		{
-			_trigger_bar = new QToolBar(parent);
-
-			init_trigger_actions(_trigger_bar);
-			_trigger_bar->addAction(_trigger_none);
-			add_trigger_action(trig_types, 'r', _trigger_rising);
-			add_trigger_action(trig_types, '1', _trigger_high);
-			add_trigger_action(trig_types, 'f', _trigger_falling);
-			add_trigger_action(trig_types, '0', _trigger_low);
-			add_trigger_action(trig_types, 'c', _trigger_change);
-		
-			update_trigger_actions();
-
-			form->addRow(tr("Trigger"), _trigger_bar);
-		}
-
-		g_variant_unref(gvar);
+	_trigger_bar = new QToolBar(parent);
+	init_trigger_actions(_trigger_bar);
+	_trigger_bar->addAction(_trigger_none);
+	trig_matches = (const int32_t *)g_variant_get_fixed_array(gvar,
+			&num_opts, sizeof(int32_t));
+	for (i = 0; i < num_opts; i++) {
+		_trigger_bar->addAction(match_action(trig_matches[i]));
+		is_checked = _trigger_match == trig_matches[i];
+		match_action(trig_matches[i])->setChecked(is_checked);
 	}
+	form->addRow(tr("Trigger"), _trigger_bar);
+	g_variant_unref(gvar);
+
 }
 
-void LogicSignal::add_trigger_action(const char *trig_types, char type,
-	QAction *action)
+void LogicSignal::on_trigger()
 {
-	while(*trig_types)
-		if(*trig_types++ == type) {
-			_trigger_bar->addAction(action);
-			break;
-		}
-}
+	QAction *action;
 
-void LogicSignal::update_trigger_actions()
-{
-	const char cur_trigger = _probe->trigger ?
-		_probe->trigger[0] : '\0';
-	_trigger_none->setChecked(cur_trigger == '\0');
-	_trigger_rising->setChecked(cur_trigger == 'r');
-	_trigger_high->setChecked(cur_trigger == '1');
-	_trigger_falling->setChecked(cur_trigger == 'f');
-	_trigger_low->setChecked(cur_trigger == '0');
-	_trigger_change->setChecked(cur_trigger == 'c');
-}
+	match_action(_trigger_match)->setChecked(FALSE);
 
-void LogicSignal::set_trigger(char type)
-{
-	const char trigger_type_string[2] = {type, 0};
-	const char *const trigger_string =
-		(type != 0) ? trigger_type_string : NULL;
+	action = (QAction *)sender();
+	action->setChecked(TRUE);
+	_trigger_match = action_match(action);
 
-	assert(_dev_inst);
-	const sr_dev_inst *const sdi = _dev_inst->dev_inst();
-	assert(sdi);
-
-	const int probe_count = g_slist_length(sdi->channels);
-	assert(probe_count > 0);
-
-	assert(_probe && _probe->index < probe_count);
-
-	for (int i = 0; i < probe_count; i++) {
-		sr_dev_trigger_set(sdi, i, (i == _probe->index) ?
-			trigger_string : NULL);
-	}
-
-	update_trigger_actions();
-}
-
-void LogicSignal::on_trigger_none()
-{
-	set_trigger('\0');	
-}
-
-void LogicSignal::on_trigger_rising()
-{
-	set_trigger('r');	
-}
-
-void LogicSignal::on_trigger_high()
-{
-	set_trigger('1');	
-}
-
-void LogicSignal::on_trigger_falling()
-{
-	set_trigger('f');	
-}
-
-void LogicSignal::on_trigger_low()
-{
-	set_trigger('0');	
-}
-
-void LogicSignal::on_trigger_change()
-{
-	set_trigger('c');	
 }
 
 } // namespace view

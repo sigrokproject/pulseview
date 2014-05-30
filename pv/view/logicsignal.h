@@ -76,7 +76,6 @@ public:
 	void paint_mid(QPainter &p, int left, int right);
 
 private:
-
 	void paint_caps(QPainter &p, QLineF *const lines,
 		std::vector< std::pair<int64_t, bool> > &edges,
 		bool level, double samples_per_pixel, double pixels_offset,
@@ -84,26 +83,17 @@ private:
 
 	void init_trigger_actions(QWidget *parent);
 
+	QAction* match_action(int match);
+	int action_match(QAction *action);
 	void populate_popup_form(QWidget *parent, QFormLayout *form);
-	
-	void add_trigger_action(const char *trig_types, char type,
-		QAction *action);
-
-	void update_trigger_actions();
-
-	void set_trigger(char type);
 
 private slots:
-	void on_trigger_none();
-	void on_trigger_rising();
-	void on_trigger_high();
-	void on_trigger_falling();
-	void on_trigger_low();
-	void on_trigger_change();
+	void on_trigger();
 
 private:
 	std::shared_ptr<pv::data::Logic> _data;
 
+	int _trigger_match;
 	QToolBar *_trigger_bar;
 	QAction *_trigger_none;
 	QAction *_trigger_rising;

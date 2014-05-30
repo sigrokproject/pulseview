@@ -448,7 +448,7 @@ void SigSession::sample_thread_proc(shared_ptr<device::DevInst> dev_inst,
 		return;
 	}
 
-	set_capture_state(dev_inst->is_trigger_enabled() ?
+	set_capture_state(sr_session_trigger_get() ?
 		AwaitingTrigger : Running);
 
 	dev_inst->run();
