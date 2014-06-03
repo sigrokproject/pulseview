@@ -23,6 +23,7 @@
 
 #include <glib.h>
 
+#include <functional>
 #include <QString>
 #include <QWidget>
 
