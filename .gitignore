@@ -20,5 +20,6 @@ Testing/
 moc_*.cxx
 qrc_*.cxx
 ui_*.h
+*.cxx_parameters
 
 config.h
