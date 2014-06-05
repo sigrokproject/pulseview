@@ -81,6 +81,7 @@ DecoderStack::~DecoderStack()
 {
 	if (_decode_thread.joinable()) {
 		_interrupt = true;
+		_input_cond.notify_one();
 		_decode_thread.join();
 	}
 }
@@ -185,6 +186,7 @@ void DecoderStack::begin_decode()
 
 	if (_decode_thread.joinable()) {
 		_interrupt = true;
+		_input_cond.notify_one();
 		_decode_thread.join();
 	}
 
