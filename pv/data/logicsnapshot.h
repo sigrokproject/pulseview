@@ -27,11 +27,11 @@
 #include <vector>
 
 namespace LogicSnapshotTest {
-class Pow2;
-class Basic;
-class LargeData;
-class Pulses;
-class LongPulses;
+struct Pow2;
+struct Basic;
+struct LargeData;
+struct Pulses;
+struct LongPulses;
 }
 
 namespace pv {
@@ -102,11 +102,11 @@ private:
 	struct MipMapLevel _mip_map[ScaleStepCount];
 	uint64_t _last_append_sample;
 
-	friend class LogicSnapshotTest::Pow2;
-	friend class LogicSnapshotTest::Basic;
-	friend class LogicSnapshotTest::LargeData;
-	friend class LogicSnapshotTest::Pulses;
-	friend class LogicSnapshotTest::LongPulses;
+	friend struct LogicSnapshotTest::Pow2;
+	friend struct LogicSnapshotTest::Basic;
+	friend struct LogicSnapshotTest::LargeData;
+	friend struct LogicSnapshotTest::Pulses;
+	friend struct LogicSnapshotTest::LongPulses;
 };
 
 } // namespace data

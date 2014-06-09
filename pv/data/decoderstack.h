@@ -45,7 +45,7 @@ struct srd_proto_data;
 struct srd_session;
 
 namespace DecoderStackTest {
-class TwoDecoderStack;
+struct TwoDecoderStack;
 }
 
 namespace pv {
@@ -160,7 +160,7 @@ private:
 	std::thread _decode_thread;
 	std::atomic<bool> _interrupt;
 
-	friend class DecoderStackTest::TwoDecoderStack;
+	friend struct DecoderStackTest::TwoDecoderStack;
 };
 
 } // namespace data

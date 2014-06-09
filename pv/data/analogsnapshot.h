@@ -27,7 +27,7 @@
 #include <vector>
 
 namespace AnalogSnapshotTest {
-class Basic;
+struct Basic;
 }
 
 namespace pv {
@@ -87,7 +87,7 @@ private:
 private:
 	struct Envelope _envelope_levels[ScaleStepCount];
 
-	friend class AnalogSnapshotTest::Basic;
+	friend struct AnalogSnapshotTest::Basic;
 };
 
 } // namespace data
