@@ -6,7 +6,9 @@ Requirements
 ------------
 
  - git
- - g++
+ - A C++ compiler with C++11 support (-std=c++11 option), e.g.
+   - g++ (>= 4.7)
+   - clang++ (>= 3.1)
  - make
  - libtool
  - pkg-config >= 0.22
