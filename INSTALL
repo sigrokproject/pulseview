@@ -17,7 +17,6 @@ Requirements
  - Qt >= 4.5
  - libboost >= 1.42 (including the following libs):
     - libboost-system
-    - libboost-thread
     - libboost-filesystem
     - libboost-test (optional, only needed to run the unit tests)
  - libsigrok >= 0.3.0
