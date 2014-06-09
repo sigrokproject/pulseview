@@ -37,6 +37,7 @@ find_package(Qt4 REQUIRED)
 set(pulseview_TEST_SOURCES
 	${PROJECT_SOURCE_DIR}/pv/devicemanager.cpp
 	${PROJECT_SOURCE_DIR}/pv/sigsession.cpp
+	${PROJECT_SOURCE_DIR}/pv/util.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/cursorpair.cpp
 	${PROJECT_SOURCE_DIR}/pv/data/analog.cpp
 	${PROJECT_SOURCE_DIR}/pv/data/analogsnapshot.cpp
@@ -57,6 +58,7 @@ set(pulseview_TEST_SOURCES
 	${PROJECT_SOURCE_DIR}/pv/prop/binding/binding.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/analogsignal.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/cursor.cpp
+	${PROJECT_SOURCE_DIR}/pv/view/cursorheader.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/cursorpair.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/header.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/logicsignal.cpp
@@ -88,6 +90,7 @@ set(pulseview_TEST_HEADERS
 	${PROJECT_SOURCE_DIR}/pv/prop/property.h
 	${PROJECT_SOURCE_DIR}/pv/prop/string.h
 	${PROJECT_SOURCE_DIR}/pv/view/cursor.h
+	${PROJECT_SOURCE_DIR}/pv/view/cursorheader.h
 	${PROJECT_SOURCE_DIR}/pv/view/header.h
 	${PROJECT_SOURCE_DIR}/pv/view/logicsignal.h
 	${PROJECT_SOURCE_DIR}/pv/view/marginwidget.h
