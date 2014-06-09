@@ -29,18 +29,7 @@ endif()
 find_package(PkgConfig)
 pkg_check_modules(PKGDEPS REQUIRED ${PKGDEPS})
 
-# Find the platform's thread library (needed for boost-thread).
-# This will set ${CMAKE_THREAD_LIBS_INIT} to the correct, OS-specific value.
-find_package(Threads)
-
-if(WIN32)
-	# On Windows/MinGW we need to use 'thread_win32' instead of 'thread'.
-	# The library is named libboost_thread_win32* (not libboost_thread*).
-	find_package(Boost 1.42 COMPONENTS filesystem system thread_win32 unit_test_framework REQUIRED)
-else()
-	find_package(Boost 1.42 COMPONENTS filesystem system thread unit_test_framework REQUIRED)
-endif()
-
+find_package(Boost 1.42 COMPONENTS filesystem system unit_test_framework REQUIRED)
 
 find_program(QT_QMAKE_EXECUTABLE NAMES qmake4 qmake-qt4 qmake-mac)
 find_package(Qt4 REQUIRED)
@@ -157,7 +146,6 @@ include_directories(
 
 set(PULSEVIEW_LINK_LIBS
 	${Boost_LIBRARIES}
-	${CMAKE_THREAD_LIBS_INIT}
 	${PKGDEPS_LIBRARIES}
 	${QT_LIBRARIES}
 )
