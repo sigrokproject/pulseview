@@ -280,6 +280,10 @@ if(NOT DISABLE_WERROR)
 	add_definitions(-Werror)
 endif()
 
+if(ENABLE_SIGNALS)
+	add_definitions(-DENABLE_SIGNALS)
+endif()
+
 #===============================================================================
 #= Global Include Directories
 #-------------------------------------------------------------------------------
