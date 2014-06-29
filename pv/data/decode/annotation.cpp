@@ -22,6 +22,7 @@ extern "C" {
 #include <libsigrokdecode/libsigrokdecode.h>
 }
 
+#include <cassert>
 #include <vector>
 
 #include "annotation.h"
