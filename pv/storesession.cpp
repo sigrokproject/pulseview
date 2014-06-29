@@ -59,7 +59,7 @@ StoreSession::~StoreSession()
 	wait();
 }
 
-pair<uint64_t, uint64_t> StoreSession::progress() const
+pair<int, int> StoreSession::progress() const
 {
 	return make_pair(_units_stored.load(), _unit_count.load());
 }
@@ -150,7 +150,8 @@ void StoreSession::store_proc(shared_ptr<data::LogicSnapshot> snapshot)
 {
 	assert(snapshot);
 
-	uint64_t start_sample = 0;
+	uint64_t start_sample = 0, sample_count;
+	unsigned progress_scale = 0;
 
 	/// TODO: Wrap this in a std::unique_ptr when we transition to C++11
 	uint8_t *const data = new uint8_t[BlockSize];
@@ -159,16 +160,23 @@ void StoreSession::store_proc(shared_ptr<data::LogicSnapshot> snapshot)
 	const int unit_size = snapshot->unit_size();
 	assert(unit_size != 0);
 
-	_unit_count = snapshot->get_sample_count();
+	sample_count = snapshot->get_sample_count();
+
+	// Qt needs the progress values to fit inside an int.  If they would
+	// not, scale the current and max values down until they do.
+	while ((sample_count >> progress_scale) > INT_MAX)
+		progress_scale ++;
+
+	_unit_count = sample_count >> progress_scale;
 
 	const unsigned int samples_per_block = BlockSize / unit_size;
 
-	while (!_interrupt && start_sample < _unit_count)
+	while (!_interrupt && start_sample < sample_count)
 	{
 		progress_updated();
 
 		const uint64_t end_sample = min(
-			start_sample + samples_per_block, _unit_count.load());
+			start_sample + samples_per_block, sample_count);
 		snapshot->get_samples(data, start_sample, end_sample);
 
 		if(sr_session_append(_file_name.c_str(), data, unit_size,
@@ -179,7 +187,7 @@ void StoreSession::store_proc(shared_ptr<data::LogicSnapshot> snapshot)
 		}
 
 		start_sample = end_sample;
-		_units_stored = start_sample;
+		_units_stored = start_sample >> progress_scale;
 	}
 
 	_unit_count = 0;

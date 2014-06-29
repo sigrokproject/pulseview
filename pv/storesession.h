@@ -51,7 +51,7 @@ public:
 
 	~StoreSession();
 
-	std::pair<uint64_t, uint64_t> progress() const;
+	std::pair<int, int> progress() const;
 
 	const QString& error() const;
 
@@ -75,7 +75,7 @@ private:
 
 	std::atomic<bool> _interrupt;
 
-	std::atomic<uint64_t> _units_stored, _unit_count;
+	std::atomic<int> _units_stored, _unit_count;
 
 	mutable std::mutex _mutex;
 	QString _error;

@@ -66,7 +66,7 @@ void StoreProgress::closeEvent(QCloseEvent*)
 
 void StoreProgress::on_progress_updated()
 {
-	const std::pair<uint64_t, uint64_t> p = _session.progress();
+	const std::pair<int, int> p = _session.progress();
 	assert(p.first <= p.second);
 
 	if (p.second) {
