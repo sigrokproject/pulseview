@@ -29,6 +29,7 @@ MarginWidget::MarginWidget(View &parent) :
 	QWidget(&parent),
 	_view(parent)
 {
+	setAttribute(Qt::WA_NoSystemBackground, true);
 }
 
 void MarginWidget::clear_selection()
