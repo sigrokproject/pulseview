@@ -333,12 +333,21 @@ if(WIN32)
 	list(APPEND PULSEVIEW_LINK_LIBS "-lqsvg")
 endif()
 
+if(ANDROID)
+add_library(${PROJECT_NAME} SHARED
+	${pulseview_SOURCES}
+	${pulseview_HEADERS_MOC}
+	${pulseview_FORMS_HEADERS}
+	${pulseview_RESOURCES_RCC}
+)
+else()
 add_executable(${PROJECT_NAME}
 	${pulseview_SOURCES}
 	${pulseview_HEADERS_MOC}
 	${pulseview_FORMS_HEADERS}
 	${pulseview_RESOURCES_RCC}
 )
+endif()
 
 target_link_libraries(${PROJECT_NAME} ${PULSEVIEW_LINK_LIBS})
 
