@@ -243,6 +243,12 @@ if(ENABLE_DECODE)
 		pv/widgets/decodergroupbox.h
 		pv/widgets/decodermenu.h
 	)
+
+	if(ANDROID)
+		list(APPEND pulseview_SOURCES
+			    android/envsetup.cpp
+		)
+	endif()
 endif()
 
 if(WIN32)
