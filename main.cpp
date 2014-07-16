@@ -36,6 +36,9 @@
 
 #include "pv/devicemanager.h"
 #include "pv/mainwindow.h"
+#ifdef ANDROID
+#include "android/loghandler.h"
+#endif
 
 #include "config.h"
 
@@ -70,6 +73,10 @@ int main(int argc, char *argv[])
 	QApplication::setApplicationVersion(PV_VERSION_STRING);
 	QApplication::setApplicationName("PulseView");
 	QApplication::setOrganizationDomain("sigrok.org");
+
+#ifdef ANDROID
+	pv::AndroidLogHandler::install_callbacks();
+#endif
 
 	// Parse arguments
 	while (1) {

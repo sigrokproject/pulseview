@@ -258,6 +258,10 @@ if(WIN32)
 	list(APPEND pulseview_SOURCES pulseviewico.rc)
 endif()
 
+if(ANDROID)
+	list(APPEND pulseview_SOURCES android/loghandler.cpp)
+endif()
+
 if(Qt5Core_FOUND)
 	qt5_wrap_cpp(pulseview_HEADERS_MOC ${pulseview_HEADERS})
 	qt5_wrap_ui(pulseview_FORMS_HEADERS ${pulseview_FORMS})
@@ -337,6 +341,10 @@ if(WIN32)
 	link_directories("${QT_PLUGINS_DIR}/imageformats")
 	list(APPEND PULSEVIEW_LINK_LIBS ${QT_QTSVG_LIBRARY})
 	list(APPEND PULSEVIEW_LINK_LIBS "-lqsvg")
+endif()
+
+if(ANDROID)
+	list(APPEND PULSEVIEW_LINK_LIBS "-llog")
 endif()
 
 if(ANDROID)
