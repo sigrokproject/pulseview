@@ -64,6 +64,10 @@ if(ENABLE_DECODE)
 	list(APPEND PKGDEPS libsigrokdecode>=0.3.0)
 endif()
 
+if(ANDROID)
+	list(APPEND PKGDEPS libsigrokandroidutils>=0.1.0)
+endif()
+
 find_package(PkgConfig)
 pkg_check_modules(PKGDEPS REQUIRED ${PKGDEPS})
 
@@ -243,12 +247,6 @@ if(ENABLE_DECODE)
 		pv/widgets/decodergroupbox.h
 		pv/widgets/decodermenu.h
 	)
-
-	if(ANDROID)
-		list(APPEND pulseview_SOURCES
-			    android/envsetup.cpp
-		)
-	endif()
 endif()
 
 if(WIN32)

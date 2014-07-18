@@ -37,6 +37,7 @@
 #include "pv/devicemanager.h"
 #include "pv/mainwindow.h"
 #ifdef ANDROID
+#include <libsigrokandroidutils/libsigrokandroidutils.h>
 #include "android/loghandler.h"
 #endif
 
@@ -75,6 +76,7 @@ int main(int argc, char *argv[])
 	QApplication::setOrganizationDomain("sigrok.org");
 
 #ifdef ANDROID
+	srau_init_environment();
 	pv::AndroidLogHandler::install_callbacks();
 #endif
 
