@@ -49,12 +49,12 @@ public:
 private:
 	void paintEvent(QPaintEvent *e);
 
-private slots:
+private Q_SLOTS:
 	void on_clicked(bool);
 
 	void on_selected(int row, int col);
 
-signals:
+Q_SIGNALS:
 	void selected(const QColor &colour);
 
 private:

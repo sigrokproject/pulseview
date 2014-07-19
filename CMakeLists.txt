@@ -275,7 +275,7 @@ endif()
 #= Global Definitions
 #-------------------------------------------------------------------------------
 
-add_definitions(${QT_DEFINITIONS})
+add_definitions(${QT_DEFINITIONS} -DQT_NO_KEYWORDS)
 add_definitions(-D__STDC_LIMIT_MACROS)
 add_definitions(-Wall -Wextra)
 add_definitions(-std=c++11)

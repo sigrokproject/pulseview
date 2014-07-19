@@ -40,7 +40,7 @@ public:
 
 	void set_decoder_visible(bool visible);
 
-signals:
+Q_SIGNALS:
 	void delete_decoder();
 
 	void show_hide_decoder();

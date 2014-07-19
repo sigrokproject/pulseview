@@ -40,10 +40,10 @@ private:
 	static int decoder_name_cmp(const void *a, const void *b);
 
 
-private slots:
+private Q_SLOTS:
 	void on_action(QObject *action);
 
-signals:
+Q_SIGNALS:
 	void decoder_selected(srd_decoder *decoder);
 
 private:

@@ -104,7 +104,7 @@ public:
 
     inline void updateCell(int row, int column) { update(cellGeometry(row, column)); }
 
-signals:
+Q_SIGNALS:
     void selected(int row, int col);
 
 protected:

@@ -35,11 +35,11 @@ public:
 public:
 	explicit SignalHandler(QObject* parent = NULL);
 
-signals:
+Q_SIGNALS:
 	void int_received();
 	void term_received();
 
-private slots:
+private Q_SLOTS:
 	void on_socket_notifier_activated();
 
 private:

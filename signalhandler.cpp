@@ -75,10 +75,10 @@ void SignalHandler::on_socket_notifier_activated()
 	switch(sig_number)
 	{
 	case SIGINT:
-		emit int_received();
+		Q_EMIT int_received();
 		break;
 	case SIGTERM:
-		emit term_received();
+		Q_EMIT term_received();
 		break;
 	}
 

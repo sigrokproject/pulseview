@@ -66,7 +66,7 @@ private:
 	 */
 	void draw_hover_mark(QPainter &p);
 
-private slots:
+private Q_SLOTS:
 	void hover_point_changed();
 };
 

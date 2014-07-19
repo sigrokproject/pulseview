@@ -154,7 +154,7 @@ private:
 
 	void commit_probes();
 
-private slots:
+private Q_SLOTS:
 	void on_new_decode_data();
 
 	void on_delete();

@@ -39,7 +39,7 @@ public:
 
 	void set_popup(Popup *popup);
 
-private slots:
+private Q_SLOTS:
 	void on_clicked(bool);
 
 private:

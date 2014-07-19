@@ -72,7 +72,7 @@ private:
 	 */
 	void update_device_list();
 
-private slots:
+private Q_SLOTS:
 	void load_file(QString file_name);
 
 

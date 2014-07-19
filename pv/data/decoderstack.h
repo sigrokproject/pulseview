@@ -118,14 +118,14 @@ private:
 	static void annotation_callback(srd_proto_data *pdata,
 		void *decoder);
 
-private slots:
+private Q_SLOTS:
 	void on_new_frame();
 
 	void on_data_received();
 
 	void on_frame_ended();
 
-signals:
+Q_SIGNALS:
 	void new_decode_data();
 
 private:

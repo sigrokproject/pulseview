@@ -88,10 +88,10 @@ public:
 
 	pv::widgets::Popup* create_popup(QWidget *parent);
 
-private slots:
+private Q_SLOTS:
 	void on_value_changed(double value);
 
-signals:
+Q_SIGNALS:
 	void time_changed();
 
 protected:

@@ -81,7 +81,7 @@ public:
 
 	virtual void run();
 
-signals:
+Q_SIGNALS:
 	void config_changed();
 
 protected:

@@ -136,7 +136,7 @@ public:
 
 	void update_viewport();
 
-signals:
+Q_SIGNALS:
 	void hover_point_changed();
 
 	void signals_moved();
@@ -171,7 +171,7 @@ private:
 
 	void resizeEvent(QResizeEvent *e);
 
-private slots:
+private Q_SLOTS:
 
 	void h_scroll_value_changed(int value);
 	void v_scroll_value_changed(int value);

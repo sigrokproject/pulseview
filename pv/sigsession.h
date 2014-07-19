@@ -180,7 +180,7 @@ private:
 
 	std::thread _sampling_thread;
 
-signals:
+Q_SIGNALS:
 	void capture_state_changed(int state);
 
 	void signals_changed();

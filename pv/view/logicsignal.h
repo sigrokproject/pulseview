@@ -87,7 +87,7 @@ private:
 	int action_match(QAction *action);
 	void populate_popup_form(QWidget *parent, QFormLayout *form);
 
-private slots:
+private Q_SLOTS:
 	void on_trigger();
 
 private:

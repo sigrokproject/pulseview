@@ -38,10 +38,10 @@ public:
 
 	QWellArray& well_array();
 
-signals:
+Q_SIGNALS:
 	void selected(int row, int col);
 
-private slots:
+private Q_SLOTS:
 	void colour_selected(int, int);
 
 private:

@@ -45,7 +45,7 @@ public:
 
 	void commit();
 
-private slots:
+private Q_SLOTS:
 	void on_current_item_changed(int);
 
 private:

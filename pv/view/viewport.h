@@ -55,7 +55,7 @@ private:
 	void wheelEvent(QWheelEvent *event);
 	bool touchEvent(QTouchEvent *e);
 
-private slots:
+private Q_SLOTS:
 	void on_signals_changed();
 	void on_signals_moved();
 

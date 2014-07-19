@@ -55,7 +55,7 @@ public:
 	uint64_t value() const;
 	void set_value(uint64_t value);
 
-signals:
+Q_SIGNALS:
 	void value_changed();
 
 private:

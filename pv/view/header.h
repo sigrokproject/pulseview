@@ -73,14 +73,14 @@ private:
 
 	void keyPressEvent(QKeyEvent *e);
 
-private slots:
+private Q_SLOTS:
 	void on_signals_changed();
 
 	void on_signals_moved();
 
 	void on_trace_changed();
 
-signals:
+Q_SIGNALS:
 	void signals_moved();
 
 private:

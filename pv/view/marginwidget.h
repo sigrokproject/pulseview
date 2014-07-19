@@ -35,10 +35,10 @@ class MarginWidget : public QWidget
 public:
 	MarginWidget(pv::view::View &parent);
 
-public slots:
+public Q_SLOTS:
 	virtual void clear_selection();
 
-signals:
+Q_SIGNALS:
 	void selection_changed();
 
 	void geometry_updated();

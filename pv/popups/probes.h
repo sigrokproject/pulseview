@@ -72,7 +72,7 @@ private:
 private:
 	void showEvent(QShowEvent *e);
 
-private slots:
+private Q_SLOTS:
 	void on_probe_checked(QWidget *widget);
 
 	void enable_all_probes();

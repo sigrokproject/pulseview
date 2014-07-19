@@ -61,7 +61,7 @@ private:
 
 	void set_serial_connection();
 
-private slots:
+private Q_SLOTS:
 	void device_selected(int index);
 
 	void scan_pressed();

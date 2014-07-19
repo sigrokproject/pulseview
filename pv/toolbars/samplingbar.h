@@ -69,7 +69,7 @@ public:
 
 	void set_capture_state(pv::SigSession::capture_state state);
 
-signals:
+Q_SIGNALS:
 	void run_stop();
 
 private:
@@ -80,7 +80,7 @@ private:
 	void commit_sample_rate();
 	void commit_sample_count();
 
-private slots:
+private Q_SLOTS:
 	void on_device_selected();
 	void on_sample_count_changed();
 	void on_sample_rate_changed();

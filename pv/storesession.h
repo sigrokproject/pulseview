@@ -64,7 +64,7 @@ public:
 private:
 	void store_proc(std::shared_ptr<pv::data::LogicSnapshot> snapshot);
 
-signals:
+Q_SIGNALS:
 	void progress_updated();
 
 private:

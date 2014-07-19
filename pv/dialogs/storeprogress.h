@@ -51,7 +51,7 @@ private:
 
 	void closeEvent(QCloseEvent*);
 
-private slots:
+private Q_SLOTS:
 	void on_progress_updated();
 
 private:

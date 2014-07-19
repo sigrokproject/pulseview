@@ -77,7 +77,7 @@ public:
 
 	bool eventFilter(QObject *obj, QEvent *evt);
 
-private slots:
+private Q_SLOTS:
 	void on_disable();
 
 protected:

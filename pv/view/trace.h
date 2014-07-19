@@ -175,14 +175,14 @@ protected:
 
 	void close_popup();
 
-private slots:
+private Q_SLOTS:
 	void on_text_changed(const QString &text);
 
 	void on_colour_changed(const QColor &colour);
 
 	void on_popup_closed();
 
-signals:
+Q_SIGNALS:
 	void visibility_changed();
 	void text_changed();	
 	void colour_changed();

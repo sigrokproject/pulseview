@@ -42,7 +42,7 @@ public:
 
 	void commit();
 
-private slots:
+private Q_SLOTS:
 	void on_state_changed(int);
 
 private:
