@@ -469,6 +469,9 @@ bool View::viewportEvent(QEvent *e)
 	case QEvent::MouseButtonDblClick:
 	case QEvent::MouseMove:
 	case QEvent::Wheel:
+	case QEvent::TouchBegin:
+	case QEvent::TouchUpdate:
+	case QEvent::TouchEnd:
 		return false;
 
 	default:

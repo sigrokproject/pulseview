@@ -23,6 +23,7 @@
 
 #include <QTimer>
 #include <QWidget>
+#include <QTouchEvent>
 
 class QPainter;
 class QPaintEvent;
@@ -46,10 +47,13 @@ protected:
 	void paintEvent(QPaintEvent *event);
 
 private:
+	bool event(QEvent *event);
 	void mousePressEvent(QMouseEvent *event);
+	void mouseReleaseEvent(QMouseEvent *event);
 	void mouseMoveEvent(QMouseEvent *event);
 	void mouseDoubleClickEvent(QMouseEvent * event);
 	void wheelEvent(QWheelEvent *event);
+	bool touchEvent(QTouchEvent *e);
 
 private slots:
 	void on_signals_changed();
@@ -60,6 +64,11 @@ private:
 
 	QPoint _mouse_down_point;
 	double _mouse_down_offset;
+	bool _mouse_down_valid;
+
+	double _pinch_offset0;
+	double _pinch_offset1;
+	bool _pinch_zoom_active;
 };
 
 } // namespace view
