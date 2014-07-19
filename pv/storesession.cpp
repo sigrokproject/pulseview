@@ -120,7 +120,7 @@ bool StoreSession::start()
 	probes[sigs.size()] = NULL;
 
 	// Begin storing
-	if (sr_session_save_init(_file_name.c_str(),
+	if (sr_session_save_init(SigSession::_sr_session, _file_name.c_str(),
 		data->samplerate(), probes) != SR_OK) {
 		_error = tr("Error while saving.");
 		return false;
@@ -179,8 +179,8 @@ void StoreSession::store_proc(shared_ptr<data::LogicSnapshot> snapshot)
 			start_sample + samples_per_block, sample_count);
 		snapshot->get_samples(data, start_sample, end_sample);
 
-		if(sr_session_append(_file_name.c_str(), data, unit_size,
-			end_sample - start_sample) != SR_OK)
+		if(sr_session_append(SigSession::_sr_session, _file_name.c_str(), data,
+			unit_size, end_sample - start_sample) != SR_OK)
 		{
 			_error = tr("Error while saving.");
 			break;

@@ -34,9 +34,9 @@ struct sr_dev_inst;
 struct sr_channel;
 struct sr_channel_group;
 
-namespace pv {
+#include <pv/sigsession.h>
 
-class SigSession;
+namespace pv {
 
 namespace device {
 

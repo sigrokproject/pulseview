@@ -85,7 +85,7 @@ LogicSignal::LogicSignal(shared_ptr<pv::device::DevInst> dev_inst,
 	/* Populate this channel's trigger setting with whatever we
 	 * find in the current session trigger, if anything. */
 	_trigger_match = 0;
-	if ((trigger = sr_session_trigger_get())) {
+	if ((trigger = sr_session_trigger_get(SigSession::_sr_session))) {
 		for (l = trigger->stages; l && !_trigger_match; l = l->next) {
 			stage = (struct sr_trigger_stage *)l->data;
 			for (m = stage->matches; m && !_trigger_match; m = m->next) {

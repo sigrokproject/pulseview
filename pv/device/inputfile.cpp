@@ -52,9 +52,9 @@ void InputFile::use(SigSession *owner) throw(QString)
 	_input = load_input_file_format(_path, NULL);
 	File::use(owner);
 
-	sr_session_new();
+	sr_session_new(&SigSession::_sr_session);
 
-	if (sr_session_dev_add(_input->sdi) != SR_OK)
+	if (sr_session_dev_add(SigSession::_sr_session, _input->sdi) != SR_OK)
 		throw tr("Failed to add session device.");
 }
 
@@ -66,7 +66,7 @@ void InputFile::release()
 	assert(_input);
 	File::release();
 	sr_dev_close(_input->sdi);
-	sr_session_destroy();
+	sr_session_destroy(SigSession::_sr_session);
 	_input = NULL;
 }
 

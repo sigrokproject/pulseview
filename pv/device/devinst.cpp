@@ -126,13 +126,13 @@ bool DevInst::is_trigger_enabled() const
 
 void DevInst::start()
 {
-	if (sr_session_start() != SR_OK)
+	if (sr_session_start(SigSession::_sr_session) != SR_OK)
 		throw tr("Failed to start session.");
 }
 
 void DevInst::run()
 {
-	sr_session_run();
+	sr_session_run(SigSession::_sr_session);
 }
 
 } // device

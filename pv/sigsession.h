@@ -196,6 +196,16 @@ private:
 	// sessions should should be supported and it should be
 	// possible to associate a pointer with a sr_session.
 	static SigSession *_session;
+
+public:
+	// TODO: Even more of a hack. The libsigrok API now allows for
+	// multiple sessions. However sr_session_* calls are scattered
+	// around the PV architecture and a single SigSession object is
+	// being used across multiple sequential sessions, which are
+	// created and destroyed in other classes in pv::device. This
+	// is a mess. For now just keep a single sr_session pointer here
+	// which we can use for all those scattered calls.
+	static struct sr_session *_sr_session;
 };
 
 } // namespace pv

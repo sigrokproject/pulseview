@@ -63,6 +63,9 @@ namespace pv {
 // TODO: This should not be necessary
 SigSession* SigSession::_session = NULL;
 
+// TODO: This should not be necessary
+struct sr_session *SigSession::_sr_session = NULL;
+
 SigSession::SigSession(DeviceManager &device_manager) :
 	_device_manager(device_manager),
 	_capture_state(Stopped)
@@ -100,7 +103,7 @@ void SigSession::set_device(
 	stop_capture();
 
 	if (_dev_inst) {
-		sr_session_datafeed_callback_remove_all();
+		sr_session_datafeed_callback_remove_all(_sr_session);
 		_dev_inst->release();
 	}
 
@@ -109,7 +112,7 @@ void SigSession::set_device(
 
 	if (dev_inst) {
 		dev_inst->use(this);
-		sr_session_datafeed_callback_add(data_feed_in_proc, NULL);
+		sr_session_datafeed_callback_add(_sr_session, data_feed_in_proc, NULL);
 		update_signals(dev_inst);
 	}
 }
@@ -194,7 +197,7 @@ void SigSession::start_capture(function<void (const QString)> error_handler)
 void SigSession::stop_capture()
 {
 	if (get_capture_state() != Stopped)
-		sr_session_stop();
+		sr_session_stop(_sr_session);
 
 	// Check that sampling stopped
 	if (_sampling_thread.joinable())
@@ -444,7 +447,7 @@ void SigSession::sample_thread_proc(shared_ptr<device::DevInst> dev_inst,
 		return;
 	}
 
-	set_capture_state(sr_session_trigger_get() ?
+	set_capture_state(sr_session_trigger_get(_sr_session) ?
 		AwaitingTrigger : Running);
 
 	dev_inst->run();

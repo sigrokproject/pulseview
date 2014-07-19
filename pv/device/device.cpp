@@ -46,11 +46,11 @@ void Device::use(SigSession *owner) throw(QString)
 {
 	DevInst::use(owner);
 
-	sr_session_new();
+	sr_session_new(&SigSession::_sr_session);
 
 	assert(_sdi);
 	sr_dev_open(_sdi);
-	if (sr_session_dev_add(_sdi) != SR_OK)
+	if (sr_session_dev_add(SigSession::_sr_session, _sdi) != SR_OK)
 		throw QString(tr("Failed to use device."));
 }
 
@@ -58,7 +58,7 @@ void Device::release()
 {
 	if (_owner) {
 		DevInst::release();
-		sr_session_destroy();
+		sr_session_destroy(SigSession::_sr_session);
 	}
 
 	sr_dev_close(_sdi);

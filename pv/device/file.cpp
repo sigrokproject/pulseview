@@ -43,10 +43,10 @@ std::string File::format_device_title() const
 
 File* File::create(const string &name)
 {
-	if (sr_session_load(name.c_str()) == SR_OK) {
+	if (sr_session_load(name.c_str(), &SigSession::_sr_session) == SR_OK) {
 		GSList *devlist = NULL;
-		sr_session_dev_list(&devlist);
-		sr_session_destroy();
+		sr_session_dev_list(SigSession::_sr_session, &devlist);
+		sr_session_destroy(SigSession::_sr_session);
 
 		if (devlist) {
 			sr_dev_inst *const sdi = (sr_dev_inst*)devlist->data;

@@ -42,11 +42,11 @@ void SessionFile::use(SigSession *owner) throw(QString)
 {
 	assert(!_sdi);
 
-	if (sr_session_load(_path.c_str()) != SR_OK)
+	if (sr_session_load(_path.c_str(), &SigSession::_sr_session) != SR_OK)
 		throw tr("Failed to open file.\n");
 
 	GSList *devlist = NULL;
-	sr_session_dev_list(&devlist);
+	sr_session_dev_list(SigSession::_sr_session, &devlist);
 
 	if (!devlist || !devlist->data) {
 		if (devlist)
@@ -69,7 +69,7 @@ void SessionFile::release()
 	File::release();
 	sr_dev_close(_sdi);
 	sr_dev_clear(_sdi->driver);
-	sr_session_destroy();
+	sr_session_destroy(SigSession::_sr_session);
 	_sdi = NULL;
 }
 
