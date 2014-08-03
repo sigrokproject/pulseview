@@ -63,6 +63,7 @@ Probes::Probes(SigSession &session, QWidget *parent) :
 	// Collect a set of signals
 	map<const sr_channel*, shared_ptr<Signal> > signal_map;
 	const vector< shared_ptr<Signal> > sigs = _session.get_signals();
+
 	for (const shared_ptr<Signal> &sig : sigs)
 		signal_map[sig->probe()] = sig;
 
@@ -73,7 +74,7 @@ Probes::Probes(SigSession &session, QWidget *parent) :
 			(const sr_channel_group*)g->data;
 		assert(group);
 
-		// Make a set of signals, and removed this signals from the
+		// Make a set of signals and remove these signals from the
 		// signal map.
 		vector< shared_ptr<Signal> > group_sigs;
 		for (const GSList *p = group->channels; p; p = p->next)
