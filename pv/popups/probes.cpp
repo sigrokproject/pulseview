@@ -82,7 +82,9 @@ Probes::Probes(SigSession &session, QWidget *parent) :
 			assert(probe);
 
 			const auto iter = signal_map.find(probe);
-			assert(iter != signal_map.end());
+
+			if (iter == signal_map.end())
+				break;
 
 			group_sigs.push_back((*iter).second);
 			signal_map.erase(iter);

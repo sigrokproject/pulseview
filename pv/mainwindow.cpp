@@ -282,6 +282,10 @@ void MainWindow::update_device_list()
 
 	shared_ptr<pv::device::DevInst> selected_device = _session.get_device();
 	list< shared_ptr<device::DevInst> > devices;
+
+	if (_device_manager.devices().size() == 0)
+		return;
+
 	std::copy(_device_manager.devices().begin(),
 		_device_manager.devices().end(), std::back_inserter(devices));
 
