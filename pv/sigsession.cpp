@@ -83,7 +83,8 @@ SigSession::~SigSession()
 	// Stop and join to the thread
 	stop_capture();
 
-	_dev_inst->release();
+	if (_dev_inst)
+		_dev_inst->release();
 
 	// TODO: This should not be necessary
 	_session = NULL;
