@@ -42,9 +42,7 @@ const QPen Trace::AxisPen(QColor(128, 128, 128, 64));
 const int Trace::LabelHitPadding = 2;
 
 Trace::Trace(QString name) :
-	_view(NULL),
 	_name(name),
-	_v_offset(0),
 	_popup(NULL),
 	_popup_form(NULL)
 {
@@ -68,43 +66,6 @@ QColor Trace::get_colour() const
 void Trace::set_colour(QColor colour)
 {
 	_colour = colour;
-}
-
-int Trace::get_v_offset() const
-{
-	return _v_offset;
-}
-
-void Trace::set_v_offset(int v_offset)
-{
-	_v_offset = v_offset;
-}
-
-void Trace::set_view(pv::view::View *view)
-{
-	assert(view);
-	_view = view;
-}
-
-void Trace::paint_back(QPainter &p, int left, int right)
-{
-	(void)p;
-	(void)left;
-	(void)right;
-}
-
-void Trace::paint_mid(QPainter &p, int left, int right)
-{
-	(void)p;
-	(void)left;
-	(void)right;
-}
-
-void Trace::paint_fore(QPainter &p, int left, int right)
-{
-	(void)p;
-	(void)left;
-	(void)right;
 }
 
 void Trace::paint_label(QPainter &p, int right, bool hover)
@@ -184,12 +145,6 @@ pv::widgets::Popup* Trace::create_popup(QWidget *parent)
 	return _popup;
 }
 
-int Trace::get_y() const
-{
-	assert(_view);
-	return _v_offset - _view->v_offset();
-}
-
 QRectF Trace::label_rect(int right)
 {
 	using pv::view::View;
@@ -207,10 +162,6 @@ QRectF Trace::label_rect(int right)
 		get_y() + 0.5f - half_height,
 		label_size.width() + half_height,
 		label_size.height());
-}
-
-void Trace::hover_point_changed()
-{
 }
 
 QColor Trace::get_text_colour() const

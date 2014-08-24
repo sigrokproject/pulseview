@@ -29,16 +29,19 @@
 
 #include <stdint.h>
 
-#include "selectableitem.h"
+#include "rowitem.h"
 
 class QFormLayout;
 
 namespace pv {
+
+namespace widgets {
+class Popup;
+}
+
 namespace view {
 
-class View;
-
-class Trace : public SelectableItem
+class Trace : public RowItem
 {
 	Q_OBJECT
 
@@ -71,47 +74,6 @@ public:
 	void set_colour(QColor colour);
 
 	/**
-	 * Gets the vertical layout offset of this signal.
-	 */
-	int get_v_offset() const;
-
-	/**
-	 * Sets the vertical layout offset of this signal.
-	 */
-	void set_v_offset(int v_offset);
-
-	/**
-	 * Returns true if the trace is visible and enabled.
-	 */
-	virtual bool enabled() const = 0;
-
-	void set_view(pv::view::View *view);
-
-	/**
-	 * Paints the background layer of the trace with a QPainter
-	 * @param p the QPainter to paint into.
-	 * @param left the x-coordinate of the left edge of the signal
-	 * @param right the x-coordinate of the right edge of the signal
-	 **/
-	virtual void paint_back(QPainter &p, int left, int right);
-
-	/**
-	 * Paints the mid-layer of the trace with a QPainter
-	 * @param p the QPainter to paint into.
-	 * @param left the x-coordinate of the left edge of the signal
-	 * @param right the x-coordinate of the right edge of the signal
-	 **/
-	virtual void paint_mid(QPainter &p, int left, int right);
-
-	/**
-	 * Paints the foreground layer of the trace with a QPainter
-	 * @param p the QPainter to paint into.
-	 * @param left the x-coordinate of the left edge of the signal
-	 * @param right the x-coordinate of the right edge of the signal
-	 **/
-	virtual void paint_fore(QPainter &p, int left, int right);
-
-	/**
 	 * Paints the signal label.
 	 * @param p the QPainter to paint into.
 	 * @param right the x-coordinate of the right edge of the header
@@ -125,20 +87,12 @@ public:
 	pv::widgets::Popup* create_popup(QWidget *parent);
 
 	/**
-	 * Gets the y-offset of the axis.
-	 */
-	int get_y() const;
-
-	/**
 	 * Computes the outline rectangle of a label.
 	 * @param right the x-coordinate of the right edge of the header
 	 * 	area.
 	 * @return Returns the rectangle of the signal label.
 	 */
 	QRectF label_rect(int right);
-
-public:
-	virtual void hover_point_changed();
 
 protected:
 
@@ -178,11 +132,8 @@ Q_SIGNALS:
 	void colour_changed();
 
 protected:
-	pv::view::View *_view;
-
 	QString _name;
 	QColor _colour;
-	int _v_offset;
 
 private:
 	pv::widgets::Popup *_popup;

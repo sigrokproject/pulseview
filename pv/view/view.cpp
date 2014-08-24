@@ -171,7 +171,7 @@ double View::offset() const
 
 int View::v_offset() const
 {
-	return _v_offset;
+	return -_v_offset;
 }
 
 void View::zoom(double steps)
