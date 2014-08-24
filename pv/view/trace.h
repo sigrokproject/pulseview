@@ -112,7 +112,7 @@ public:
 	virtual void paint_fore(QPainter &p, int left, int right);
 
 	/**
-	 * Paints the signal label into a QGLWidget.
+	 * Paints the signal label.
 	 * @param p the QPainter to paint into.
 	 * @param right the x-coordinate of the right edge of the header
 	 * 	area.
