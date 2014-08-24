@@ -138,9 +138,8 @@ void LogicSignal::paint_mid(QPainter &p, int left, int right)
 	assert(_data);
 	assert(right >= left);
 
-	assert(_view);
-	const int y = _v_offset - _view->v_offset();
-
+	const int y = get_y();
+	
 	const double scale = _view->scale();
 	assert(scale > 0);
 

@@ -109,8 +109,7 @@ void Trace::paint_fore(QPainter &p, int left, int right)
 
 void Trace::paint_label(QPainter &p, int right, bool hover)
 {
-	assert(_view);
-	const int y = _v_offset - _view->v_offset();
+	const int y = get_y();
 
 	p.setBrush(_colour);
 
@@ -187,14 +186,13 @@ pv::widgets::Popup* Trace::create_popup(QWidget *parent)
 
 int Trace::get_y() const
 {
+	assert(_view);
 	return _v_offset - _view->v_offset();
 }
 
 QRectF Trace::label_rect(int right)
 {
 	using pv::view::View;
-
-	assert(_view);
 
 	QFontMetrics m(QApplication::font());
 	const QSize text_size(

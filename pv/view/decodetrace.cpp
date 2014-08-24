@@ -181,7 +181,6 @@ void DecodeTrace::paint_mid(QPainter &p, int left, int right)
 	}
 
 	// Iterate through the rows
-	assert(_view);
 	int y = get_y();
 	pair<uint64_t, uint64_t> sample_range = get_sample_range(left, right);
 
