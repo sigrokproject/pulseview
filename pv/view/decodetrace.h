@@ -90,8 +90,6 @@ public:
 
 	const std::shared_ptr<pv::data::DecoderStack>& decoder() const;
 
-	void set_view(pv::view::View *view);
-
 	/**
 	 * Paints the background layer of the trace with a QPainter
 	 * @param p the QPainter to paint into.

@@ -150,12 +150,6 @@ const std::shared_ptr<pv::data::DecoderStack>& DecodeTrace::decoder() const
 	return _decoder_stack;
 }
 
-void DecodeTrace::set_view(pv::view::View *view)
-{
-	assert(view);
-	Trace::set_view(view);
-}
-
 void DecodeTrace::paint_back(QPainter &p, int left, int right)
 {
 	Trace::paint_back(p, left, right);
