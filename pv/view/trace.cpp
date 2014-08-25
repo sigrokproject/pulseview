@@ -119,23 +119,23 @@ void Trace::paint_label(QPainter &p, int right, bool hover)
 
 	const QColor colour = get_colour();
 
-	const QRectF label_rect = get_label_rect(right);
+	const QRectF r = label_rect(right);
 
 	// Paint the label
 	const QPointF points[] = {
-		label_rect.topLeft(),
-		label_rect.topRight(),
+		r.topLeft(),
+		r.topRight(),
 		QPointF(right, y),
-		label_rect.bottomRight(),
-		label_rect.bottomLeft()
+		r.bottomRight(),
+		r.bottomLeft()
 	};
 
 	const QPointF highlight_points[] = {
-		QPointF(label_rect.left() + 1, label_rect.top() + 1),
-		QPointF(label_rect.right(), label_rect.top() + 1),
+		QPointF(r.left() + 1, r.top() + 1),
+		QPointF(r.right(), r.top() + 1),
 		QPointF(right - 1, y),
-		QPointF(label_rect.right(), label_rect.bottom() - 1),
-		QPointF(label_rect.left() + 1, label_rect.bottom() - 1)
+		QPointF(r.right(), r.bottom() - 1),
+		QPointF(r.left() + 1, r.bottom() - 1)
 	};
 
 	if (selected()) {
@@ -159,14 +159,14 @@ void Trace::paint_label(QPainter &p, int right, bool hover)
 	// Paint the text
 	p.setPen(get_text_colour());
 	p.setFont(QApplication::font());
-	p.drawText(label_rect, Qt::AlignCenter | Qt::AlignVCenter, _name);
+	p.drawText(r, Qt::AlignCenter | Qt::AlignVCenter, _name);
 }
 
 bool Trace::pt_in_label_rect(int left, int right, const QPoint &point)
 {
 	(void)left;
 
-	const QRectF label = get_label_rect(right);
+	const QRectF label = label_rect(right);
 	return enabled() && QRectF(
 		QPointF(label.left() - LabelHitPadding,
 			label.top() - LabelHitPadding),
@@ -200,7 +200,7 @@ int Trace::get_y() const
 	return _v_offset - _view->v_offset();
 }
 
-QRectF Trace::get_label_rect(int right)
+QRectF Trace::label_rect(int right)
 {
 	using pv::view::View;
 

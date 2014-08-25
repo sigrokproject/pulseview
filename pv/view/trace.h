@@ -145,7 +145,7 @@ public:
 	 * 	area.
 	 * @return Returns the rectangle of the signal label.
 	 */
-	QRectF get_label_rect(int right);
+	QRectF label_rect(int right);
 
 public:
 	virtual void hover_point_changed();

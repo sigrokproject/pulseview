@@ -73,7 +73,7 @@ QSize Header::sizeHint() const
 		assert(t);
 
 		if (t->enabled()) {
-			max_width = max(max_width, (int)t->get_label_rect(0).width());
+			max_width = max(max_width, (int)t->label_rect(0).width());
 		}
 	}
 
