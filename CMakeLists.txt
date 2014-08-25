@@ -169,6 +169,7 @@ set(pulseview_SOURCES
 	pv/view/signal.cpp
 	pv/view/timemarker.cpp
 	pv/view/trace.cpp
+	pv/view/tracegroup.cpp
 	pv/view/tracepalette.cpp
 	pv/view/view.cpp
 	pv/view/viewport.cpp
@@ -208,6 +209,7 @@ set(pulseview_HEADERS
 	pv/view/signal.h
 	pv/view/timemarker.h
 	pv/view/trace.h
+	pv/view/tracegroup.h
 	pv/view/view.h
 	pv/view/viewport.h
 	pv/widgets/colourbutton.h
