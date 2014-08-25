@@ -121,21 +121,6 @@ private:
 	void read_sample_rate(const sr_dev_inst *const sdi);
 
 private:
-	/**
-	 * Attempts to autodetect the format. Failing that
-	 * @param filename The filename of the input file.
-	 * @return A pointer to the 'struct sr_input_format' that should be
-	 * 	used, or NULL if no input format was selected or
-	 * 	auto-detected.
-	 */
-	static sr_input_format* determine_input_file_format(
-		const std::string &filename);
-
-	static sr_input* load_input_file_format(
-		const std::string &filename,
-		std::function<void (const QString)> error_handler,
-		sr_input_format *format = NULL);
-
 	void sample_thread_proc(std::shared_ptr<device::DevInst> dev_inst,
 		std::function<void (const QString)> error_handler);
 

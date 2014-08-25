@@ -19,7 +19,6 @@
  */
 
 #include "file.h"
-#include "inputfile.h"
 #include "sessionfile.h"
 
 #include <boost/filesystem.hpp>
@@ -59,7 +58,7 @@ File* File::create(const string &name)
 		}
 	}
 
-	return new InputFile(name);
+	return NULL;
 }
 
 } // device

@@ -41,7 +41,6 @@ About::About(QWidget *parent) :
 	ui(new Ui::About)
 {
 	struct sr_dev_driver **drivers;
-	struct sr_input_format **inputs;
 
 #ifdef ENABLE_DECODE
 	struct srd_decoder *dec;
@@ -70,16 +69,6 @@ About::About(QWidget *parent) :
 		s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
 			 .arg(QString::fromUtf8(drivers[i]->name))
 			 .arg(QString::fromUtf8(drivers[i]->longname)));
-	}
-
-	s.append("<tr><td colspan=\"2\"><b>" +
-		tr("Supported input formats:") +
-		"</b></td></tr>");
-	inputs = sr_input_list();
-	for (int i = 0; inputs[i]; ++i) {
-		s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
-			 .arg(QString::fromUtf8(inputs[i]->id))
-			 .arg(QString::fromUtf8(inputs[i]->description)));
 	}
 
 #ifdef ENABLE_DECODE

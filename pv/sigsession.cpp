@@ -100,6 +100,9 @@ void SigSession::set_device(
 {
 	using pv::device::Device;
 
+	if (!dev_inst)
+		return;
+
 	// Ensure we are not capturing before setting the device
 	stop_capture();
 
