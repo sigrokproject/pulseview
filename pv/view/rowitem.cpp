@@ -33,7 +33,7 @@ RowItem::RowItem() :
 {
 }
 
-int RowItem::get_v_offset() const
+int RowItem::v_offset() const
 {
 	return _v_offset;
 }

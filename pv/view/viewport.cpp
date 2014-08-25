@@ -67,7 +67,7 @@ int Viewport::get_total_height() const
 	const vector< shared_ptr<Trace> > traces(_view.get_traces());
 	for (const shared_ptr<Trace> t : traces) {
 		assert(t);
-		h = max(t->get_v_offset() + View::SignalHeight, h);
+		h = max(t->v_offset() + View::SignalHeight, h);
 	}
 
 	return h;

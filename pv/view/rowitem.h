@@ -44,7 +44,7 @@ public:
 	/**
 	 * Gets the vertical layout offset of this signal.
 	 */
-	int get_v_offset() const;
+	int v_offset() const;
 
 	/**
 	 * Sets the vertical layout offset of this signal.

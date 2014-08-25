@@ -143,7 +143,7 @@ void Header::mousePressEvent(QMouseEvent *event)
 		for (const shared_ptr<Trace> t : traces)
 			if (t->selected())
 				_drag_traces.push_back(
-					make_pair(t, t->get_v_offset()));
+					make_pair(t, t->v_offset()));
 	}
 
 	// Select the signal if it has been clicked
@@ -163,7 +163,7 @@ void Header::mousePressEvent(QMouseEvent *event)
 			if (event->button() & Qt::LeftButton)
 				_drag_traces.push_back(
 					make_pair(mouse_over_trace,
-					mouse_over_trace->get_v_offset()));
+					mouse_over_trace->v_offset()));
 		}
 	}
 

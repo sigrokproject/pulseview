@@ -257,7 +257,7 @@ vector< shared_ptr<Trace> > View::get_traces() const
 
 	stable_sort(traces.begin(), traces.end(),
 		[](const shared_ptr<Trace> &a, const shared_ptr<Trace> &b) {
-			return a->get_v_offset() < b->get_v_offset(); });
+			return a->v_offset() < b->v_offset(); });
 
 	return traces;
 }
@@ -361,11 +361,11 @@ void View::normalize_layout()
 
 	int v_min = INT_MAX;
 	for (const shared_ptr<Trace> t : traces)
-		v_min = min(t->get_v_offset(), v_min);
+		v_min = min(t->v_offset(), v_min);
 
 	const int delta = -min(v_min, 0);
 	for (shared_ptr<Trace> t : traces)
-		t->set_v_offset(t->get_v_offset() + delta);
+		t->set_v_offset(t->v_offset() + delta);
 
 	verticalScrollBar()->setSliderPosition(_v_offset + delta);
 	v_scroll_value_changed(verticalScrollBar()->sliderPosition());
