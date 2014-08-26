@@ -272,6 +272,11 @@ void Trace::populate_popup_form(QWidget *parent, QFormLayout *form)
 	add_colour_option(parent, form);
 }
 
+void Trace::close_popup()
+{
+	_popup->close();
+}
+
 void Trace::on_popup_closed()
 {
 	_popup = NULL;

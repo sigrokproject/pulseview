@@ -173,6 +173,8 @@ protected:
 
 	virtual void populate_popup_form(QWidget *parent, QFormLayout *form);
 
+	void close_popup();
+
 private slots:
 	void on_text_changed(const QString &text);
 

@@ -25,6 +25,7 @@
 
 #include <QApplication>
 #include <QFormLayout>
+#include <QKeyEvent>
 #include <QLineEdit>
 #include <QMenu>
 
@@ -94,17 +95,31 @@ const sr_channel* Signal::probe() const
 
 void Signal::populate_popup_form(QWidget *parent, QFormLayout *form)
 {
+	int index;
+
 	_name_widget = new QComboBox(parent);
 	_name_widget->setEditable(true);
 
 	for(unsigned int i = 0; i < countof(ProbeNames); i++)
 		_name_widget->insertItem(i, ProbeNames[i]);
-	_name_widget->setEditText(_name);
+
+	index = _name_widget->findText(_name, Qt::MatchExactly);
+
+	if (index == -1) {
+		_name_widget->insertItem(0, _name);
+		_name_widget->setCurrentIndex(0);
+	} else {
+		_name_widget->setCurrentIndex(index);
+	}
+
 	_name_widget->lineEdit()->selectAll();
 	_name_widget->setFocus();
 
 	connect(_name_widget, SIGNAL(editTextChanged(const QString&)),
 		this, SLOT(on_text_changed(const QString&)));
+
+	// We want to close the popup when the Enter key was pressed.
+	_name_widget->installEventFilter(this);
 
 	form->addRow(tr("Name"), _name_widget);
 
@@ -123,6 +138,24 @@ QMenu* Signal::create_context_menu(QWidget *parent)
 	menu->addAction(disable);
 
 	return menu;
+}
+
+bool Signal::eventFilter(QObject *obj, QEvent *evt)
+{
+	QKeyEvent *keyEvent;
+
+	(void)obj;
+
+	if (evt->type() == QEvent::KeyPress) {
+		keyEvent = static_cast<QKeyEvent*>(evt);
+		if (keyEvent->key() == Qt::Key_Enter ||
+		    keyEvent->key() == Qt::Key_Return) {
+			close_popup();
+			return true;
+		}
+	}
+
+	return false;
 }
 
 void Signal::delete_pressed()
