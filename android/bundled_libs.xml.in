@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <array name="bundled_libs">
-@bundled_libs@
-    </array>
+	<array name="bundled_libs">
+		@bundled_libs@
+	</array>
 </resources>

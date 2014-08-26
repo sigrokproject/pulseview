@@ -1,22 +1,19 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <array name="qt_sources">
-        <item>https://download.qt-project.org/ministro/android/qt5/qt-5.3</item>
-    </array>
-
-     <array name="qt_libs">
-         <!-- %%INSERT_QT_LIBS%% -->
-         <item>Qt5Core</item>
-         <item>Qt5Gui</item>
-         <item>Qt5Widgets</item>
-         <item>Qt5Svg</item>
-     </array>
-
-    <array name="bundled_in_lib">
-        <!-- %%INSERT_BUNDLED_IN_LIB%% -->
-    </array>
-    <array name="bundled_in_assets">
-        <!-- %%INSERT_BUNDLED_IN_ASSETS%% -->
-    </array>
-
+	<array name="qt_sources">
+		<item>https://download.qt-project.org/ministro/android/qt5/qt-5.3</item>
+	</array>
+	<array name="qt_libs">
+		<!-- %%INSERT_QT_LIBS%% -->
+		<item>Qt5Core</item>
+		<item>Qt5Gui</item>
+		<item>Qt5Widgets</item>
+		<item>Qt5Svg</item>
+	</array>
+	<array name="bundled_in_lib">
+		<!-- %%INSERT_BUNDLED_IN_LIB%% -->
+	</array>
+	<array name="bundled_in_assets">
+		<!-- %%INSERT_BUNDLED_IN_ASSETS%% -->
+	</array>
 </resources>

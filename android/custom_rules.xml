@@ -1,81 +1,80 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-    This file is part of the PulseView project.
+   This file is part of the PulseView project.
 
-    Copyright (C) 2014 Marcus Comstedt <marcus@mc.pp.se>
+   Copyright (C) 2014 Marcus Comstedt <marcus@mc.pp.se>
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 -->
 <project>
+	<property name="pulseview-source-path" value="${basedir}/.."/>
+	<property name="pulseview-build-path" value="${pulseview-source-path}"/>
+	<property name="cmake-cache" value="${pulseview-build-path}/CMakeCache.txt"/>
 
-  <property name="pulseview-source-path" value="${basedir}/.."/>
-  <property name="pulseview-build-path" value="${pulseview-source-path}"/>
-  <property name="cmake-cache" value="${pulseview-build-path}/CMakeCache.txt"/>
+	<target name="-get-prefix">
+		<loadproperties srcFile="${cmake-cache}" prefix="cmake">
+			<filterchain>
+				<replaceregex pattern=":[A-Z]*=" replace="="/>
+			</filterchain>
+		</loadproperties>
+		<property name="prefix" value="${cmake.CMAKE_INSTALL_PREFIX}"/>
+	</target>
 
-  <target name="-get-prefix">
-    <loadproperties srcFile="${cmake-cache}" prefix="cmake">
-      <filterchain>
-	<replaceregex pattern=":[A-Z]*=" replace="=" />
-      </filterchain>
-    </loadproperties>
-    <property name="prefix" value="${cmake.CMAKE_INSTALL_PREFIX}"/>
-  </target>
+	<target name="-declare-anttasks" depends="-get-prefix">
+		<taskdef resource="anttasks.properties"
+			classpath="${prefix}/jar/sigrok-androidutils-anttasks.jar"/>
+	</target>
 
-  <target name="-declare-anttasks" depends="-get-prefix">
-    <taskdef resource="anttasks.properties"
-	classpath="${prefix}/jar/sigrok-androidutils-anttasks.jar"/>
-  </target>
-
-  <target name="-pre-build" depends="-get-prefix, -declare-anttasks">
-    <copylibs todir="${native.libs.absolute.dir}" property="bundled_libs">
-      <fileset dir="${pulseview-build-path}/libs" />
-      <include name="libgnustl_shared.so"/>
-      <exclude name="lib*.so"/>
-    </copylibs>
-    <copy file="${prefix}/jar/sigrok-androidutils.jar"
-          tofile="${jar.libs.absolute.dir}/sigrok-androidutils.jar"/>
-    <copy file="${prefix}/share/sigrok-androidutils/device_filter.xml"
-          tofile="${resource.absolute.dir}/xml/device_filter.xml"/>
-    <copy file="bundled_libs.xml.in"
-          tofile="${resource.absolute.dir}/values/bundled_libs.xml">
-      <filterset>
-        <filter token="bundled_libs" value="${bundled_libs}"/>
-      </filterset>
-    </copy>
-    <copy file="${pulseview-source-path}/icons/sigrok-logo-notext.png"
-          tofile="${resource.absolute.dir}/drawable/logo.png" />
-    <copy todir="${source.absolute.dir}">
-      <fileset dir="${prefix}/src/android/java/src">
-	<include name="org/qtproject/qt5/android/bindings/**"/>
-	<include name="org/kde/necessitas/ministro/**"/>
-      </fileset>
-    </copy>
-    <copy todir="${resource.absolute.dir}">
-      <fileset dir="${prefix}/src/android/java/res">
-	<include name="**/strings.xml"/>
-      </fileset>
-    </copy>
-    <copy todir="${asset.absolute.dir}/libsigrokdecode">
-      <fileset dir="${prefix}/share/libsigrokdecode" />
-    </copy>
-    <copy todir="${asset.absolute.dir}/python3.3">
-      <fileset dir="${prefix}/lib/python3.3">
-	<include name="**/*.py"/>
-	<exclude name="**/test/**"/>
-      </fileset>
-    </copy>
-  </target>
+	<target name="-pre-build" depends="-get-prefix, -declare-anttasks">
+		<copylibs todir="${native.libs.absolute.dir}" property="bundled_libs">
+			<fileset dir="${pulseview-build-path}/libs"/>
+			<include name="libgnustl_shared.so"/>
+			<exclude name="lib*.so"/>
+		</copylibs>
+		<copy file="${prefix}/jar/sigrok-androidutils.jar"
+			tofile="${jar.libs.absolute.dir}/sigrok-androidutils.jar"/>
+		<copy file="${prefix}/share/sigrok-androidutils/device_filter.xml"
+			tofile="${resource.absolute.dir}/xml/device_filter.xml"/>
+		<copy file="bundled_libs.xml.in"
+			tofile="${resource.absolute.dir}/values/bundled_libs.xml">
+			<filterset>
+				<filter token="bundled_libs" value="${bundled_libs}"/>
+			</filterset>
+		</copy>
+		<copy file="${pulseview-source-path}/icons/sigrok-logo-notext.png"
+			tofile="${resource.absolute.dir}/drawable/logo.png"/>
+		<copy todir="${source.absolute.dir}">
+			<fileset dir="${prefix}/src/android/java/src">
+				<include name="org/qtproject/qt5/android/bindings/**"/>
+				<include name="org/kde/necessitas/ministro/**"/>
+			</fileset>
+		</copy>
+		<copy todir="${resource.absolute.dir}">
+			<fileset dir="${prefix}/src/android/java/res">
+				<include name="**/strings.xml"/>
+			</fileset>
+		</copy>
+		<copy todir="${asset.absolute.dir}/libsigrokdecode">
+			<fileset dir="${prefix}/share/libsigrokdecode"/>
+		</copy>
+		<copy todir="${asset.absolute.dir}/python3.3">
+			<fileset dir="${prefix}/lib/python3.3">
+				<include name="**/*.py"/>
+				<exclude name="**/test/**"/>
+			</fileset>
+		</copy>
+	</target>
 </project>

@@ -26,26 +26,26 @@ import android.os.Bundle;
 
 public class PulseViewActivity extends QtActivity
 {
-    private UsbSupplicant supplicant;
+	private UsbSupplicant supplicant;
 
-    @Override
-    public void onCreate(Bundle savedInstanceState)
-    {
-	super.onCreate(savedInstanceState);
-	supplicant = new UsbSupplicant(getApplicationContext(), R.xml.device_filter);
-    }
+	@Override
+	public void onCreate(Bundle savedInstanceState)
+	{
+		super.onCreate(savedInstanceState);
+		supplicant = new UsbSupplicant(getApplicationContext(), R.xml.device_filter);
+	}
 
-    @Override
-    protected void onStart()
-    {
-        super.onStart();
-	supplicant.start();
-    }
+	@Override
+	protected void onStart()
+	{
+		super.onStart();
+		supplicant.start();
+	}
 
-    @Override
-    protected void onStop()
-    {
-	supplicant.stop();
-        super.onStop();
-    }
+	@Override
+	protected void onStop()
+	{
+		supplicant.stop();
+		super.onStop();
+	}
 }

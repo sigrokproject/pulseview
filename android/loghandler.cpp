@@ -47,12 +47,12 @@ int AndroidLogHandler::sr_callback(void *cb_data, int loglevel, const char *form
 
 	/* Only output messages of at least the selected loglevel(s). */
 	if (loglevel > sr_log_loglevel_get())
-		return SR_OK; /* TODO? */
+		return SR_OK;
 
 	if (loglevel < SR_LOG_NONE)
-	  loglevel = SR_LOG_NONE;
+		loglevel = SR_LOG_NONE;
 	else if (loglevel > SR_LOG_SPEW)
-	  loglevel = SR_LOG_SPEW;
+		loglevel = SR_LOG_SPEW;
 
 	ret = __android_log_vprint(prio[loglevel], "sr", format, args);
 
@@ -77,12 +77,12 @@ int AndroidLogHandler::srd_callback(void *cb_data, int loglevel, const char *for
 
 	/* Only output messages of at least the selected loglevel(s). */
 	if (loglevel > srd_log_loglevel_get())
-		return SRD_OK; /* TODO? */
+		return SRD_OK;
 
 	if (loglevel < SRD_LOG_NONE)
-	  loglevel = SRD_LOG_NONE;
+		loglevel = SRD_LOG_NONE;
 	else if (loglevel > SRD_LOG_SPEW)
-	  loglevel = SRD_LOG_SPEW;
+		loglevel = SRD_LOG_SPEW;
 
 	ret = __android_log_vprint(prio[loglevel], "srd", format, args);
 
