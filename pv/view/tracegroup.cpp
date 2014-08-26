@@ -29,6 +29,9 @@ using std::shared_ptr;
 namespace pv {
 namespace view {
 
+const int TraceGroup::Padding = 8;
+const int TraceGroup::Width = 12;
+
 TraceGroup::~TraceGroup()
 {
 	_owner = nullptr;
@@ -74,8 +77,13 @@ void TraceGroup::paint_label(QPainter &p, int right, bool hover)
 
 QRectF TraceGroup::label_rect(int right) const
 {
-	(void)right;
-	return QRectF();
+	QRectF rect;
+	for (const shared_ptr<RowItem> r : child_items())
+		if (r)
+			rect = rect.united(r->label_rect(right));
+
+	return QRectF(rect.x() - Width - Padding, rect.y(),
+		Width, rect.height());
 }
 
 bool TraceGroup::pt_in_label_rect(int left, int right, const QPoint &point)

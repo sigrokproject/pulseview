@@ -64,13 +64,11 @@ Header::Header(View &parent) :
 
 QSize Header::sizeHint() const
 {
-	int max_width = 0;
-
+	QRectF max_rect(-Padding, 0, Padding, 0);
 	for (auto &i : _view)
 		if (i->enabled())
-			max_width = max(max_width, (int)i->label_rect(0).width());
-
-	return QSize(max_width + Padding + BaselineOffset, 0);
+			max_rect = max_rect.united(i->label_rect(0));
+	return QSize(max_rect.width() + Padding + BaselineOffset, 0);
 }
 
 shared_ptr<RowItem> Header::get_mouse_over_row_item(const QPoint &pt)

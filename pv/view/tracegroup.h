@@ -31,6 +31,10 @@ class TraceGroup : public RowItem, public RowItemOwner
 {
 	Q_OBJECT
 
+private:
+	static const int Padding;
+	static const int Width;
+
 public:
 	/**
 	 * Virtual destructor
