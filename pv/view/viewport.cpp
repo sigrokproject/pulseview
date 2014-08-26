@@ -38,7 +38,7 @@ namespace view {
 
 Viewport::Viewport(View &parent) :
 	QWidget(&parent),
-        _view(parent),
+	_view(parent),
 	_mouse_down_valid(false),
 	_pinch_zoom_active(false)
 {
@@ -102,7 +102,7 @@ void Viewport::paintEvent(QPaintEvent*)
 
 bool Viewport::event(QEvent *event)
 {
-	switch(event->type()) {
+	switch (event->type()) {
 	case QEvent::TouchBegin:
 	case QEvent::TouchUpdate:
 	case QEvent::TouchEnd:
@@ -121,8 +121,7 @@ void Viewport::mousePressEvent(QMouseEvent *event)
 {
 	assert(event);
 
-	if (event->button() == Qt::LeftButton)
-	{
+	if (event->button() == Qt::LeftButton) {
 		_mouse_down_point = event->pos();
 		_mouse_down_offset = _view.offset();
 		_mouse_down_valid = true;
@@ -134,18 +133,15 @@ void Viewport::mouseReleaseEvent(QMouseEvent *event)
 	assert(event);
 
 	if (event->button() == Qt::LeftButton)
-	{
 		_mouse_down_valid = false;
-	}
 }
 
 void Viewport::mouseMoveEvent(QMouseEvent *event)
 {
 	assert(event);
 
-	if (event->buttons() & Qt::LeftButton)
-	{
-		if (! _mouse_down_valid) {
+	if (event->buttons() & Qt::LeftButton) {
+		if (!_mouse_down_valid) {
 			_mouse_down_point = event->pos();
 			_mouse_down_offset = _view.offset();
 			_mouse_down_valid = true;
