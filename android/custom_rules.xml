@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-
    This file is part of the PulseView project.
 
    Copyright (C) 2014 Marcus Comstedt <marcus@mc.pp.se>
@@ -17,7 +16,6 @@
 
    You should have received a copy of the GNU General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 -->
 <project>
 	<property name="pulseview-source-path" value="${basedir}/.."/>
