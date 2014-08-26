@@ -99,7 +99,7 @@ void Signal::populate_popup_form(QWidget *parent, QFormLayout *form)
 
 	for(unsigned int i = 0; i < countof(ProbeNames); i++)
 		_name_widget->insertItem(i, ProbeNames[i]);
-	_name_widget->setEditText(_probe->name);
+	_name_widget->setEditText(_name);
 	_name_widget->lineEdit()->selectAll();
 	_name_widget->setFocus();
 
