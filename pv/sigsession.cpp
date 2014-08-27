@@ -634,6 +634,8 @@ void SigSession::data_feed_in(const struct sr_dev_inst *sdi,
 		frame_ended();
 		break;
 	}
+	default:
+		break;
 	}
 }
 
