@@ -263,7 +263,6 @@ void LogicSnapshot::append_payload_to_mipmap()
 
 uint64_t LogicSnapshot::get_sample(uint64_t index) const
 {
-	assert(_data);
 	assert(index < _sample_count);
 
 	return unpack_sample((uint8_t*)_data.data() + index * _unit_size);
