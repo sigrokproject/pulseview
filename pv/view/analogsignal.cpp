@@ -46,12 +46,12 @@ const QColor AnalogSignal::SignalColours[4] = {
 const float AnalogSignal::EnvelopeThreshold = 256.0f;
 
 AnalogSignal::AnalogSignal(shared_ptr<pv::device::DevInst> dev_inst,
-	const sr_channel *const probe, shared_ptr<data::Analog> data) :
-	Signal(dev_inst, probe),
+	const sr_channel *const channel, shared_ptr<data::Analog> data) :
+	Signal(dev_inst, channel),
 	_data(data),
 	_scale(1.0f)
 {
-	_colour = SignalColours[probe->index % countof(SignalColours)];
+	_colour = SignalColours[channel->index % countof(SignalColours)];
 }
 
 AnalogSignal::~AnalogSignal()
@@ -75,7 +75,7 @@ void AnalogSignal::set_scale(float scale)
 
 void AnalogSignal::paint_back(QPainter &p, int left, int right)
 {
-	if (_probe->enabled)
+	if (_channel->enabled)
 		paint_axis(p, get_y(), left, right);
 }
 
@@ -92,7 +92,7 @@ void AnalogSignal::paint_mid(QPainter &p, int left, int right)
 
 	const double offset = _view->offset();
 
-	if (!_probe->enabled)
+	if (!_channel->enabled)
 		return;
 
 	const deque< shared_ptr<pv::data::AnalogSnapshot> > &snapshots =

@@ -102,7 +102,7 @@ private:
 	pv::widgets::PopupToolButton _configure_button;
 	QAction *_configure_button_action;
 
-	pv::widgets::PopupToolButton _probes_button;
+	pv::widgets::PopupToolButton _channels_button;
 
 	pv::widgets::SweepTimingWidget _sample_count;
 	pv::widgets::SweepTimingWidget _sample_rate;

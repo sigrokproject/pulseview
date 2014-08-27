@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_POPUPS_PROBES_H
-#define PULSEVIEW_PV_POPUPS_PROBES_H
+#ifndef PULSEVIEW_PV_POPUPS_CHANNELS_H
+#define PULSEVIEW_PV_POPUPS_CHANNELS_H
 
 #include <map>
 #include <memory>
@@ -53,15 +53,15 @@ class Signal;
 
 namespace popups {
 
-class Probes : public pv::widgets::Popup
+class Channels : public pv::widgets::Popup
 {
 	Q_OBJECT
 
 public:
-	Probes(SigSession &_session, QWidget *parent);
+	Channels(SigSession &_session, QWidget *parent);
 
 private:
-	void set_all_probes(bool set);
+	void set_all_channels(bool set);
 
 	void populate_group(const sr_channel_group *group,
 		const std::vector< std::shared_ptr<pv::view::Signal> > sigs);
@@ -73,17 +73,17 @@ private:
 	void showEvent(QShowEvent *e);
 
 private Q_SLOTS:
-	void on_probe_checked(QWidget *widget);
+	void on_channel_checked(QWidget *widget);
 
-	void enable_all_probes();
-	void disable_all_probes();
+	void enable_all_channels();
+	void disable_all_channels();
 
 private:
 	pv::SigSession &_session;
 
 	QFormLayout _layout;
 
-	bool _updating_probes;
+	bool _updating_channels;
 
 	std::vector< std::shared_ptr<pv::prop::binding::DeviceOptions> >
 		 _group_bindings;
@@ -91,8 +91,8 @@ private:
 		_check_box_signal_map;
 
 	QHBoxLayout _buttons_bar;
-	QPushButton _enable_all_probes;
-	QPushButton _disable_all_probes;
+	QPushButton _enable_all_channels;
+	QPushButton _disable_all_channels;
 
 	QSignalMapper _check_box_mapper;
 };
@@ -100,4 +100,4 @@ private:
 } // popups
 } // pv
 
-#endif // PULSEVIEW_PV_POPUPS_PROBES_H
+#endif // PULSEVIEW_PV_POPUPS_CHANNELS_H

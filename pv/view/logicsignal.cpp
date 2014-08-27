@@ -65,8 +65,8 @@ const QColor LogicSignal::SignalColours[10] = {
 };
 
 LogicSignal::LogicSignal(shared_ptr<pv::device::DevInst> dev_inst,
-	const sr_channel *const probe, shared_ptr<data::Logic> data) :
-	Signal(dev_inst, probe),
+	const sr_channel *const channel, shared_ptr<data::Logic> data) :
+	Signal(dev_inst, channel),
 	_data(data),
 	_trigger_none(NULL),
 	_trigger_rising(NULL),
@@ -80,7 +80,7 @@ LogicSignal::LogicSignal(shared_ptr<pv::device::DevInst> dev_inst,
 	struct sr_trigger_match *match;
 	const GSList *l, *m;
 
-	_colour = SignalColours[probe->index % countof(SignalColours)];
+	_colour = SignalColours[channel->index % countof(SignalColours)];
 
 	/* Populate this channel's trigger setting with whatever we
 	 * find in the current session trigger, if anything. */
@@ -90,7 +90,7 @@ LogicSignal::LogicSignal(shared_ptr<pv::device::DevInst> dev_inst,
 			stage = (struct sr_trigger_stage *)l->data;
 			for (m = stage->matches; m && !_trigger_match; m = m->next) {
 				match = (struct sr_trigger_match *)m->data;
-				if (match->channel == _probe)
+				if (match->channel == _channel)
 					_trigger_match = match->match;
 			}
 		}
@@ -113,7 +113,7 @@ shared_ptr<pv::data::Logic> LogicSignal::logic_data() const
 
 void LogicSignal::paint_back(QPainter &p, int left, int right)
 {
-	if (_probe->enabled)
+	if (_channel->enabled)
 		paint_axis(p, get_y(), left, right);
 }
 
@@ -125,7 +125,7 @@ void LogicSignal::paint_mid(QPainter &p, int left, int right)
 
 	vector< pair<int64_t, bool> > edges;
 
-	assert(_probe);
+	assert(_channel);
 	assert(_data);
 	assert(right >= left);
 
@@ -137,7 +137,7 @@ void LogicSignal::paint_mid(QPainter &p, int left, int right)
 	
 	const double offset = _view->offset();
 
-	if (!_probe->enabled)
+	if (!_channel->enabled)
 		return;
 
 	const float high_offset = y - View::SignalHeight + 0.5f;
@@ -167,7 +167,7 @@ void LogicSignal::paint_mid(QPainter &p, int left, int right)
 	snapshot->get_subsampled_edges(edges,
 		min(max((int64_t)floor(start), (int64_t)0), last_sample),
 		min(max((int64_t)ceil(end), (int64_t)0), last_sample),
-		samples_per_pixel / Oversampling, _probe->index);
+		samples_per_pixel / Oversampling, _channel->index);
 	assert(edges.size() >= 2);
 
 	// Paint the edges

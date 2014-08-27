@@ -470,9 +470,9 @@ BOOST_AUTO_TEST_CASE(LisaMUsbHid)
 }
 
 /*
- * This test checks the rendering of wide data (more than 8 probes)
+ * This test checks the rendering of wide data (more than 8 channels)
  * Probe signals are either all-high, or all-low, but are interleaved such that
- * they would toggle during every sample if treated like 8 probes.
+ * they would toggle during every sample if treated like 8 channels.
  * The packet contains a large number of samples, so the mipmap generation kicks
  * in.
  *

@@ -61,7 +61,7 @@ class DecodeTrace : public Trace
 	Q_OBJECT
 
 private:
-	struct ProbeSelector
+	struct ChannelSelector
 	{
 		const QComboBox *_combo;
 		const std::shared_ptr<pv::data::decode::Decoder> _decoder;
@@ -145,21 +145,21 @@ private:
 		std::shared_ptr<pv::data::decode::Decoder> &dec,
 		QWidget *parent, QFormLayout *form);
 
-	QComboBox* create_probe_selector(QWidget *parent,
+	QComboBox* create_channel_selector(QWidget *parent,
 		const std::shared_ptr<pv::data::decode::Decoder> &dec,
 		const srd_channel *const pdch);
 
-	void commit_decoder_probes(
+	void commit_decoder_channels(
 		std::shared_ptr<data::decode::Decoder> &dec);
 
-	void commit_probes();
+	void commit_channels();
 
 private Q_SLOTS:
 	void on_new_decode_data();
 
 	void on_delete();
 
-	void on_probe_selected(int);
+	void on_channel_selected(int);
 
 	void on_stack_decoder(srd_decoder *decoder);
 
@@ -176,7 +176,7 @@ private:
 	std::list< std::shared_ptr<pv::prop::binding::DecoderOptions> >
 		_bindings;
 
-	std::list<ProbeSelector> _probe_selectors;
+	std::list<ChannelSelector> _channel_selectors;
 	std::vector<pv::widgets::DecoderGroupBox*> _decoder_forms;
 
 	std::vector<QString> _cur_row_headings;

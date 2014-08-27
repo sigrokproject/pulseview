@@ -110,26 +110,26 @@ bool StoreSession::start()
 	const shared_ptr<data::LogicSnapshot> snapshot(snapshots.front());
 	assert(snapshot);
 
-	// Make a list of probes
-	char **const probes = new char*[sigs.size() + 1];
+	// Make a list of channels
+	char **const channels = new char*[sigs.size() + 1];
 	for (size_t i = 0; i < sigs.size(); i++) {
 		shared_ptr<view::Signal> sig(sigs[i]);
 		assert(sig);
-		probes[i] = strdup(sig->get_name().toUtf8().constData());
+		channels[i] = strdup(sig->get_name().toUtf8().constData());
 	}
-	probes[sigs.size()] = NULL;
+	channels[sigs.size()] = NULL;
 
 	// Begin storing
 	if (sr_session_save_init(SigSession::_sr_session, _file_name.c_str(),
-		data->samplerate(), probes) != SR_OK) {
+		data->samplerate(), channels) != SR_OK) {
 		_error = tr("Error while saving.");
 		return false;
 	}
 
-	// Delete the probes array
+	// Delete the channels array
 	for (size_t i = 0; i <= sigs.size(); i++)
-		free(probes[i]);
-	delete[] probes;
+		free(channels[i]);
+	delete[] channels;
 
 	_thread = std::thread(&StoreSession::store_proc, this, snapshot);
 	return true;

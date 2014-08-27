@@ -288,7 +288,7 @@ void DecodeTrace::populate_popup_form(QWidget *parent, QFormLayout *form)
 
 	// Add the decoder options
 	_bindings.clear();
-	_probe_selectors.clear();
+	_channel_selectors.clear();
 	_decoder_forms.clear();
 
 	const list< shared_ptr<Decoder> >& stack = _decoder_stack->stack();
@@ -476,7 +476,7 @@ void DecodeTrace::draw_unresolved_period(QPainter &p, int h, int left,
 
 	const list< shared_ptr<Decoder> > &stack = _decoder_stack->stack();
 
-	// We get the logic data of the first probe in the list.
+	// We get the logic data of the first channel in the list.
 	// This works because we are currently assuming all
 	// LogicSignals have the same data/snapshot
 	for (const shared_ptr<Decoder> &dec : stack)
@@ -544,30 +544,30 @@ void DecodeTrace::create_decoder_form(int index,
 	for(l = decoder->channels; l; l = l->next) {
 		const struct srd_channel *const pdch =
 			(struct srd_channel *)l->data;
-		QComboBox *const combo = create_probe_selector(parent, dec, pdch);
+		QComboBox *const combo = create_channel_selector(parent, dec, pdch);
 		connect(combo, SIGNAL(currentIndexChanged(int)),
-			this, SLOT(on_probe_selected(int)));
+			this, SLOT(on_channel_selected(int)));
 		decoder_form->addRow(tr("<b>%1</b> (%2) *")
 			.arg(QString::fromUtf8(pdch->name))
 			.arg(QString::fromUtf8(pdch->desc)), combo);
 
-		const ProbeSelector s = {combo, dec, pdch};
-		_probe_selectors.push_back(s);
+		const ChannelSelector s = {combo, dec, pdch};
+		_channel_selectors.push_back(s);
 	}
 
 	// Add the optional channels
 	for(l = decoder->opt_channels; l; l = l->next) {
 		const struct srd_channel *const pdch =
 			(struct srd_channel *)l->data;
-		QComboBox *const combo = create_probe_selector(parent, dec, pdch);
+		QComboBox *const combo = create_channel_selector(parent, dec, pdch);
 		connect(combo, SIGNAL(currentIndexChanged(int)),
-			this, SLOT(on_probe_selected(int)));
+			this, SLOT(on_channel_selected(int)));
 		decoder_form->addRow(tr("<b>%1</b> (%2)")
 			.arg(QString::fromUtf8(pdch->name))
 			.arg(QString::fromUtf8(pdch->desc)), combo);
 
-		const ProbeSelector s = {combo, dec, pdch};
-		_probe_selectors.push_back(s);
+		const ChannelSelector s = {combo, dec, pdch};
+		_channel_selectors.push_back(s);
 	}
 
 	// Add the options
@@ -581,7 +581,7 @@ void DecodeTrace::create_decoder_form(int index,
 	_decoder_forms.push_back(group);
 }
 
-QComboBox* DecodeTrace::create_probe_selector(
+QComboBox* DecodeTrace::create_channel_selector(
 	QWidget *parent, const shared_ptr<data::decode::Decoder> &dec,
 	const srd_channel *const pdch)
 {
@@ -590,13 +590,13 @@ QComboBox* DecodeTrace::create_probe_selector(
 	const vector< shared_ptr<Signal> > sigs = _session.get_signals();
 
 	assert(_decoder_stack);
-	const auto probe_iter = dec->channels().find(pdch);
+	const auto channel_iter = dec->channels().find(pdch);
 
 	QComboBox *selector = new QComboBox(parent);
 
 	selector->addItem("-", qVariantFromValue((void*)NULL));
 
-	if (probe_iter == dec->channels().end())
+	if (channel_iter == dec->channels().end())
 		selector->setCurrentIndex(0);
 
 	for(size_t i = 0; i < sigs.size(); i++) {
@@ -607,7 +607,7 @@ QComboBox* DecodeTrace::create_probe_selector(
 		{
 			selector->addItem(s->get_name(),
 				qVariantFromValue((void*)s.get()));
-			if ((*probe_iter).second == s)
+			if ((*channel_iter).second == s)
 				selector->setCurrentIndex(i + 1);
 		}
 	}
@@ -615,14 +615,14 @@ QComboBox* DecodeTrace::create_probe_selector(
 	return selector;
 }
 
-void DecodeTrace::commit_decoder_probes(shared_ptr<data::decode::Decoder> &dec)
+void DecodeTrace::commit_decoder_channels(shared_ptr<data::decode::Decoder> &dec)
 {
 	assert(dec);
 
-	map<const srd_channel*, shared_ptr<LogicSignal> > probe_map;
+	map<const srd_channel*, shared_ptr<LogicSignal> > channel_map;
 	const vector< shared_ptr<Signal> > sigs = _session.get_signals();
 
-	for (const ProbeSelector &s : _probe_selectors)
+	for (const ChannelSelector &s : _channel_selectors)
 	{
 		if(s._decoder != dec)
 			break;
@@ -633,20 +633,20 @@ void DecodeTrace::commit_decoder_probes(shared_ptr<data::decode::Decoder> &dec)
 
 		for (shared_ptr<Signal> sig : sigs)
 			if(sig.get() == selection) {
-				probe_map[s._pdch] =
+				channel_map[s._pdch] =
 					dynamic_pointer_cast<LogicSignal>(sig);
 				break;
 			}
 	}
 
-	dec->set_probes(probe_map);
+	dec->set_channels(channel_map);
 }
 
-void DecodeTrace::commit_probes()
+void DecodeTrace::commit_channels()
 {
 	assert(_decoder_stack);
 	for (shared_ptr<data::decode::Decoder> dec : _decoder_stack->stack())
-		commit_decoder_probes(dec);
+		commit_decoder_channels(dec);
 
 	_decoder_stack->begin_decode();
 }
@@ -667,9 +667,9 @@ void DecodeTrace::on_delete()
 	_session.remove_decode_signal(this);
 }
 
-void DecodeTrace::on_probe_selected(int)
+void DecodeTrace::on_channel_selected(int)
 {
-	commit_probes();
+	commit_channels();
 }
 
 void DecodeTrace::on_stack_decoder(srd_decoder *decoder)

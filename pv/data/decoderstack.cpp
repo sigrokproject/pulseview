@@ -194,7 +194,7 @@ void DecoderStack::begin_decode()
 
 	// Check that all decoders have the required channels
 	for (const shared_ptr<decode::Decoder> &dec : _stack)
-		if (!dec->have_required_probes()) {
+		if (!dec->have_required_channels()) {
 			_error_message = tr("One or more required channels "
 				"have not been specified");
 			return;

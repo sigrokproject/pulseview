@@ -25,7 +25,7 @@
 #include <QGridLayout>
 #include <QLabel>
 
-#include "probes.h"
+#include "channels.h"
 
 #include <pv/device/devinst.h>
 #include <pv/prop/binding/deviceoptions.h>
@@ -44,12 +44,12 @@ using pv::view::Signal;
 namespace pv {
 namespace popups {
 
-Probes::Probes(SigSession &session, QWidget *parent) :
+Channels::Channels(SigSession &session, QWidget *parent) :
 	Popup(parent),
 	_session(session),
-	_updating_probes(false),
-	_enable_all_probes(tr("Enable All"), this),
-	_disable_all_probes(tr("Disable All"), this),
+	_updating_channels(false),
+	_enable_all_channels(tr("Enable All"), this),
+	_disable_all_channels(tr("Disable All"), this),
 	_check_box_mapper(this)
 {
 	// Create the layout
@@ -65,7 +65,7 @@ Probes::Probes(SigSession &session, QWidget *parent) :
 	const vector< shared_ptr<Signal> > sigs = _session.get_signals();
 
 	for (const shared_ptr<Signal> &sig : sigs)
-		signal_map[sig->probe()] = sig;
+		signal_map[sig->channel()] = sig;
 
 	// Populate channel groups
 	for (const GSList *g = sdi->channel_groups; g; g = g->next)
@@ -79,10 +79,10 @@ Probes::Probes(SigSession &session, QWidget *parent) :
 		vector< shared_ptr<Signal> > group_sigs;
 		for (const GSList *p = group->channels; p; p = p->next)
 		{
-			const sr_channel *const probe = (const sr_channel*)p->data;
-			assert(probe);
+			const sr_channel *const channel = (const sr_channel*)p->data;
+			assert(channel);
 
-			const auto iter = signal_map.find(probe);
+			const auto iter = signal_map.find(channel);
 
 			if (iter == signal_map.end())
 				break;
@@ -94,15 +94,15 @@ Probes::Probes(SigSession &session, QWidget *parent) :
 		populate_group(group, group_sigs);
 	}
 
-	// Make a vector of the remaining probes
+	// Make a vector of the remaining channels
 	vector< shared_ptr<Signal> > global_sigs;
 	for (const GSList *p = sdi->channels; p; p = p->next)
 	{
-		const sr_channel *const probe = (const sr_channel*)p->data;
-		assert(probe);
+		const sr_channel *const channel = (const sr_channel*)p->data;
+		assert(channel);
 
 		const map<const sr_channel*, shared_ptr<Signal> >::
-			const_iterator iter = signal_map.find(probe);
+			const_iterator iter = signal_map.find(channel);
 		if (iter != signal_map.end())
 			global_sigs.push_back((*iter).second);
 	}
@@ -111,28 +111,28 @@ Probes::Probes(SigSession &session, QWidget *parent) :
 	populate_group(NULL, global_sigs);
 
 	// Create the enable/disable all buttons
-	connect(&_enable_all_probes, SIGNAL(clicked()),
-		this, SLOT(enable_all_probes()));
-	connect(&_disable_all_probes, SIGNAL(clicked()),
-		this, SLOT(disable_all_probes()));
+	connect(&_enable_all_channels, SIGNAL(clicked()),
+		this, SLOT(enable_all_channels()));
+	connect(&_disable_all_channels, SIGNAL(clicked()),
+		this, SLOT(disable_all_channels()));
 
-	_enable_all_probes.setFlat(true);
-	_disable_all_probes.setFlat(true);
+	_enable_all_channels.setFlat(true);
+	_disable_all_channels.setFlat(true);
 
-	_buttons_bar.addWidget(&_enable_all_probes);
-	_buttons_bar.addWidget(&_disable_all_probes);
+	_buttons_bar.addWidget(&_enable_all_channels);
+	_buttons_bar.addWidget(&_disable_all_channels);
 	_buttons_bar.addStretch(1);
 
 	_layout.addRow(&_buttons_bar);
 
 	// Connect the check-box signal mapper
 	connect(&_check_box_mapper, SIGNAL(mapped(QWidget*)),
-		this, SLOT(on_probe_checked(QWidget*)));
+		this, SLOT(on_channel_checked(QWidget*)));
 }
 
-void Probes::set_all_probes(bool set)
+void Channels::set_all_channels(bool set)
 {
-	_updating_probes = true;
+	_updating_channels = true;
 
 	for (map<QCheckBox*, shared_ptr<Signal> >::const_iterator i =
 		_check_box_signal_map.begin();
@@ -145,10 +145,10 @@ void Probes::set_all_probes(bool set)
 		(*i).first->setChecked(set);
 	}
 
-	_updating_probes = false;
+	_updating_channels = false;
 }
 
-void Probes::populate_group(const sr_channel_group *group,
+void Channels::populate_group(const sr_channel_group *group,
 	const vector< shared_ptr<pv::view::Signal> > sigs)
 {
 	using pv::prop::binding::DeviceOptions;
@@ -168,9 +168,9 @@ void Probes::populate_group(const sr_channel_group *group,
 			QString("<h3>%1</h3>").arg(group->name)));
 
 	// Create the channel group grid
-	QGridLayout *const probe_grid =
+	QGridLayout *const channel_grid =
 		create_channel_group_grid(sigs);
-	_layout.addRow(probe_grid);
+	_layout.addRow(channel_grid);
 
 	// Create the channel group options
 	if (binding)
@@ -180,7 +180,7 @@ void Probes::populate_group(const sr_channel_group *group,
 	}
 }
 
-QGridLayout* Probes::create_channel_group_grid(
+QGridLayout* Channels::create_channel_group_grid(
 	const vector< shared_ptr<pv::view::Signal> > sigs)
 {
 	int row = 0, col = 0;
@@ -206,11 +206,11 @@ QGridLayout* Probes::create_channel_group_grid(
 	return grid;
 }
 
-void Probes::showEvent(QShowEvent *e)
+void Channels::showEvent(QShowEvent *e)
 {
 	pv::widgets::Popup::showEvent(e);
 
-	_updating_probes = true;
+	_updating_channels = true;
 
 	for (map<QCheckBox*, shared_ptr<Signal> >::const_iterator i =
 		_check_box_signal_map.begin();
@@ -222,12 +222,12 @@ void Probes::showEvent(QShowEvent *e)
 		(*i).first->setChecked(sig->enabled());
 	}
 
-	_updating_probes = false;
+	_updating_channels = false;
 }
 
-void Probes::on_probe_checked(QWidget *widget)
+void Channels::on_channel_checked(QWidget *widget)
 {
-	if (_updating_probes)
+	if (_updating_channels)
 		return;
 
 	QCheckBox *const check_box = (QCheckBox*)widget;
@@ -244,14 +244,14 @@ void Probes::on_probe_checked(QWidget *widget)
 	s->enable(check_box->isChecked());
 }
 
-void Probes::enable_all_probes()
+void Channels::enable_all_channels()
 {
-	set_all_probes(true);
+	set_all_channels(true);
 }
 
-void Probes::disable_all_probes()
+void Channels::disable_all_channels()
 {
-	set_all_probes(false);
+	set_all_channels(false);
 }
 
 } // popups

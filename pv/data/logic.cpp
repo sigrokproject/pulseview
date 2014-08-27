@@ -30,16 +30,16 @@ using std::shared_ptr;
 namespace pv {
 namespace data {
 
-Logic::Logic(unsigned int num_probes) :
+Logic::Logic(unsigned int num_channels) :
 	SignalData(),
-	_num_probes(num_probes)
+	_num_channels(num_channels)
 {
-	assert(_num_probes > 0);
+	assert(_num_channels > 0);
 }
 
-int Logic::get_num_probes() const
+int Logic::get_num_channels() const
 {
-	return _num_probes;
+	return _num_channels;
 }
 
 void Logic::push_snapshot(

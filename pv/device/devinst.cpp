@@ -90,19 +90,19 @@ GVariant* DevInst::list_config(const sr_channel_group *group, int key)
 	return data;
 }
 
-void DevInst::enable_probe(const sr_channel *probe, bool enable)
+void DevInst::enable_channel(const sr_channel *channel, bool enable)
 {
 	assert(_owner);
 	sr_dev_inst *const sdi = dev_inst();
 	assert(sdi);
 	for (const GSList *p = sdi->channels; p; p = p->next)
-		if (probe == p->data) {
-			const_cast<sr_channel*>(probe)->enabled = enable;
+		if (channel == p->data) {
+			const_cast<sr_channel*>(channel)->enabled = enable;
 			config_changed();
 			return;
 		}
 
-	// Probe was not found in the device
+	// Channel was not found in the device
 	assert(0);
 }
 

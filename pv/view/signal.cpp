@@ -41,7 +41,7 @@ using std::shared_ptr;
 namespace pv {
 namespace view {
 
-const char *const ProbeNames[] = {
+const char *const ChannelNames[] = {
 	"CLK",
 	"DATA",
 	"IN",
@@ -59,14 +59,14 @@ const char *const ProbeNames[] = {
 };
 
 Signal::Signal(shared_ptr<pv::device::DevInst> dev_inst,
-	const sr_channel *const probe) :
-	Trace(probe->name),
+	const sr_channel *const channel) :
+	Trace(channel->name),
 	_dev_inst(dev_inst),
-	_probe(probe),
+	_channel(channel),
 	_name_widget(NULL),
 	_updating_name_widget(false)
 {
-	assert(_probe);
+	assert(_channel);
 }
 
 void Signal::set_name(QString name)
@@ -79,18 +79,18 @@ void Signal::set_name(QString name)
 
 bool Signal::enabled() const
 {
-	return _probe->enabled;
+	return _channel->enabled;
 }
 
 void Signal::enable(bool enable)
 {
-	_dev_inst->enable_probe(_probe, enable);
+	_dev_inst->enable_channel(_channel, enable);
 	visibility_changed();
 }
 
-const sr_channel* Signal::probe() const
+const sr_channel* Signal::channel() const
 {
-	return _probe;
+	return _channel;
 }
 
 void Signal::populate_popup_form(QWidget *parent, QFormLayout *form)
@@ -100,8 +100,8 @@ void Signal::populate_popup_form(QWidget *parent, QFormLayout *form)
 	_name_widget = new QComboBox(parent);
 	_name_widget->setEditable(true);
 
-	for(unsigned int i = 0; i < countof(ProbeNames); i++)
-		_name_widget->insertItem(i, ProbeNames[i]);
+	for(unsigned int i = 0; i < countof(ChannelNames); i++)
+		_name_widget->insertItem(i, ChannelNames[i]);
 
 	index = _name_widget->findText(_name, Qt::MatchExactly);
 

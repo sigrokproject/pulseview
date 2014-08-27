@@ -50,7 +50,7 @@ class Signal : public Trace
 
 protected:
 	Signal(std::shared_ptr<pv::device::DevInst> dev_inst,
-		const sr_channel *const probe);
+		const sr_channel *const channel);
 
 public:
 	/**
@@ -67,7 +67,7 @@ public:
 
 	void enable(bool enable = true);
 
-	const sr_channel* probe() const;
+	const sr_channel* channel() const;
 
 	virtual void populate_popup_form(QWidget *parent, QFormLayout *form);
 
@@ -82,7 +82,7 @@ private Q_SLOTS:
 
 protected:
 	std::shared_ptr<pv::device::DevInst> _dev_inst;
-	const sr_channel *const _probe;
+	const sr_channel *const _channel;
 
 	QComboBox *_name_widget;
 	bool _updating_name_widget;

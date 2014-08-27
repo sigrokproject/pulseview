@@ -32,7 +32,7 @@
 #include <pv/devicemanager.h>
 #include <pv/device/devinst.h>
 #include <pv/popups/deviceoptions.h>
-#include <pv/popups/probes.h>
+#include <pv/popups/channels.h>
 #include <pv/util.h>
 
 using std::map;
@@ -55,7 +55,7 @@ SamplingBar::SamplingBar(SigSession &session, QWidget *parent) :
 	_updating_device_selector(false),
 	_configure_button(this),
 	_configure_button_action(NULL),
-	_probes_button(this),
+	_channels_button(this),
 	_sample_count(" samples", this),
 	_sample_rate("Hz", this),
 	_updating_sample_rate(false),
@@ -82,14 +82,14 @@ SamplingBar::SamplingBar(SigSession &session, QWidget *parent) :
 	_configure_button.setIcon(QIcon::fromTheme("configure",
 		QIcon(":/icons/configure.png")));
 
-	_probes_button.setIcon(QIcon::fromTheme("probes",
-		QIcon(":/icons/probes.svg")));
+	_channels_button.setIcon(QIcon::fromTheme("channels",
+		QIcon(":/icons/channels.svg")));
 
 	_run_stop_button.setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
 
 	addWidget(&_device_selector);
 	_configure_button_action = addWidget(&_configure_button);
-	addWidget(&_probes_button);
+	addWidget(&_channels_button);
 	addWidget(&_sample_count);
 	addWidget(&_sample_rate);
 
@@ -322,9 +322,9 @@ void SamplingBar::update_device_config_widgets()
 		!opts->binding().properties().empty());
 	_configure_button.set_popup(opts);
 
-	// Update the probes popup
-	Probes *const probes = new Probes(_session, this);
-	_probes_button.set_popup(probes);
+	// Update the channels popup
+	Channels *const channels = new Channels(_session, this);
+	_channels_button.set_popup(channels);
 
 	// Update supported options.
 	_sample_count_supported = false;

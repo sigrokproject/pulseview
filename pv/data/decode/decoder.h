@@ -58,14 +58,14 @@ public:
 
 	const std::map<const srd_channel*,
 		std::shared_ptr<view::LogicSignal> >& channels() const;
-	void set_probes(std::map<const srd_channel*,
-		std::shared_ptr<view::LogicSignal> > probes);
+	void set_channels(std::map<const srd_channel*,
+		std::shared_ptr<view::LogicSignal> > channels);
 
 	const std::map<std::string, GVariant*>& options() const;
 
 	void set_option(const char *id, GVariant *value);
 
-	bool have_required_probes() const;
+	bool have_required_channels() const;
 
 	srd_decoder_inst* create_decoder_inst(
 		srd_session *session, int unit_size) const;
@@ -78,7 +78,7 @@ private:
 	bool _shown;
 
 	std::map<const srd_channel*, std::shared_ptr<pv::view::LogicSignal> >
-		_probes;
+		_channels;
 	std::map<std::string, GVariant*> _options;
 };
 

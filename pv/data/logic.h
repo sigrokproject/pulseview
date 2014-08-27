@@ -34,9 +34,9 @@ class LogicSnapshot;
 class Logic : public SignalData
 {
 public:
-	Logic(unsigned int num_probes);
+	Logic(unsigned int num_channels);
 
-	int get_num_probes() const;
+	int get_num_channels() const;
 
 	void push_snapshot(
 		std::shared_ptr<LogicSnapshot> &snapshot);
@@ -49,7 +49,7 @@ public:
 	uint64_t get_max_sample_count() const;
 
 private:
-	const unsigned int _num_probes;
+	const unsigned int _num_channels;
 	std::deque< std::shared_ptr<LogicSnapshot> > _snapshots;
 };
 

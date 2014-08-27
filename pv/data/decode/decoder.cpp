@@ -66,13 +66,13 @@ void Decoder::show(bool show)
 const map<const srd_channel*, shared_ptr<view::LogicSignal> >&
 Decoder::channels() const
 {
-	return _probes;
+	return _channels;
 }
 
-void Decoder::set_probes(std::map<const srd_channel*,
-	std::shared_ptr<view::LogicSignal> > probes)
+void Decoder::set_channels(std::map<const srd_channel*,
+	std::shared_ptr<view::LogicSignal> > channels)
 {
-	_probes = probes;
+	_channels = channels;
 }
 
 const std::map<std::string, GVariant*>& Decoder::options() const
@@ -87,12 +87,12 @@ void Decoder::set_option(const char *id, GVariant *value)
 	_options[id] = value;
 }
 
-bool Decoder::have_required_probes() const
+bool Decoder::have_required_channels() const
 {
 	for (GSList *l = _decoder->channels; l; l = l->next) {
 		const srd_channel *const pdch = (const srd_channel*)l->data;
 		assert(pdch);
-		if (_probes.find(pdch) == _probes.end())
+		if (_channels.find(pdch) == _channels.end())
 			return false;
 	}
 
@@ -102,7 +102,7 @@ bool Decoder::have_required_probes() const
 set< shared_ptr<pv::data::Logic> > Decoder::get_data()
 {
 	set< shared_ptr<pv::data::Logic> > data;
-	for(auto i = _probes.cbegin(); i != _probes.cend(); i++) {
+	for(auto i = _channels.cbegin(); i != _channels.cend(); i++) {
 		shared_ptr<view::LogicSignal> signal((*i).second);
 		assert(signal);
 		data.insert(signal->logic_data());
@@ -131,20 +131,20 @@ srd_decoder_inst* Decoder::create_decoder_inst(srd_session *session, int unit_si
 	if(!decoder_inst)
 		return NULL;
 
-	// Setup the probes
-	GHashTable *const probes = g_hash_table_new_full(g_str_hash,
+	// Setup the channels
+	GHashTable *const channels = g_hash_table_new_full(g_str_hash,
 		g_str_equal, g_free, (GDestroyNotify)g_variant_unref);
 
-	for(auto i = _probes.cbegin(); i != _probes.cend(); i++)
+	for(auto i = _channels.cbegin(); i != _channels.cend(); i++)
 	{
 		shared_ptr<view::LogicSignal> signal((*i).second);
 		GVariant *const gvar = g_variant_new_int32(
-			signal->probe()->index);
+			signal->channel()->index);
 		g_variant_ref_sink(gvar);
-		g_hash_table_insert(probes, (*i).first->id, gvar);
+		g_hash_table_insert(channels, (*i).first->id, gvar);
 	}
 
-	srd_inst_channel_set_all(decoder_inst, probes, unit_size);
+	srd_inst_channel_set_all(decoder_inst, channels, unit_size);
 
 	return decoder_inst;
 }

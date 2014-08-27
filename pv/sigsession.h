@@ -115,8 +115,8 @@ private:
 
 	void update_signals(std::shared_ptr<device::DevInst> dev_inst);
 
-	std::shared_ptr<view::Signal> signal_from_probe(
-		const sr_channel *probe) const;
+	std::shared_ptr<view::Signal> signal_from_channel(
+		const sr_channel *channel) const;
 
 	void read_sample_rate(const sr_dev_inst *const sdi);
 
