@@ -28,6 +28,7 @@
 
 #include <QMouseEvent>
 
+using std::abs;
 using std::max;
 using std::min;
 using std::shared_ptr;

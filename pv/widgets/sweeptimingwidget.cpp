@@ -26,6 +26,7 @@
 
 #include <extdef.h>
 
+using std::abs;
 using std::vector;
 
 namespace pv {
