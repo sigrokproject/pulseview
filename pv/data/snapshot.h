@@ -33,13 +33,13 @@ namespace data {
 class Snapshot
 {
 public:
-	Snapshot(int unit_size);
+	Snapshot(unsigned int unit_size);
 
 	virtual ~Snapshot();
 
 	uint64_t get_sample_count() const;
 
-	int unit_size() const;
+	unsigned int unit_size() const;
 
 	/**
 	 * @brief Increase the capacity of the snapshot.
@@ -76,7 +76,7 @@ protected:
 	std::vector<uint8_t> _data;
 	uint64_t _sample_count;
 	uint64_t _capacity;
-	int _unit_size;
+	unsigned int _unit_size;
 };
 
 } // namespace data
