@@ -27,3 +27,20 @@ ui_*.h
 *.cpp_parameters
 
 config.h
+
+android/libs/
+android/assets/
+android/res/drawable/
+android/res/values/bundled_libs.xml
+android/res/*/strings.xml
+android/res/xml/device_filter.xml
+android/build.xml
+android/project.properties
+android/local.properties
+android/proguard-project.txt
+android/bin/
+android/gen/
+android/ant/build/
+android/ant/tasks.jar
+android/src/org/qtproject/
+android/src/org/kde/
