@@ -68,9 +68,9 @@ void AnalogSnapshot::append_interleaved_samples(const float *data,
 
 	lock_guard<recursive_mutex> lock(_mutex);
 
-	_data = realloc(_data, (_sample_count + sample_count) * sizeof(float));
+	_data.resize((_sample_count + sample_count) * sizeof(float));
 
-	float *dst = (float*)_data + _sample_count;
+	float *dst = (float*)_data.data() + _sample_count;
 	const float *dst_end = dst + sample_count;
 	while (dst != dst_end)
 	{
@@ -96,7 +96,7 @@ const float* AnalogSnapshot::get_samples(
 	lock_guard<recursive_mutex> lock(_mutex);
 
 	float *const data = new float[end_sample - start_sample];
-	memcpy(data, (float*)_data + start_sample, sizeof(float) *
+	memcpy(data, (float*)_data.data() + start_sample, sizeof(float) *
 		(end_sample - start_sample));
 	return data;
 }
@@ -156,9 +156,9 @@ void AnalogSnapshot::append_payload_to_envelope_levels()
 	dest_ptr = e0.samples + prev_length;
 
 	// Iterate through the samples to populate the first level mipmap
-	const float *const end_src_ptr = (float*)_data +
+	const float *const end_src_ptr = (float*)_data.data() +
 		e0.length * EnvelopeScaleFactor;
-	for (const float *src_ptr = (float*)_data +
+	for (const float *src_ptr = (float*)_data.data() +
 		prev_length * EnvelopeScaleFactor;
 		src_ptr < end_src_ptr; src_ptr += EnvelopeScaleFactor)
 	{

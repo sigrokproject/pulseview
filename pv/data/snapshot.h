@@ -25,6 +25,7 @@
 
 #include <thread>
 #include <mutex>
+#include <vector>
 
 namespace pv {
 namespace data {
@@ -72,7 +73,7 @@ protected:
 
 protected:
 	mutable std::recursive_mutex _mutex;
-	void *_data;
+	std::vector<uint8_t> _data;
 	uint64_t _sample_count;
 	uint64_t _capacity;
 	int _unit_size;

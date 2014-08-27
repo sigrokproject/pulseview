@@ -31,7 +31,6 @@ namespace pv {
 namespace data {
 
 Snapshot::Snapshot(int unit_size) :
-	_data(NULL),
 	_sample_count(0),
 	_capacity(0),
 	_unit_size(unit_size)
@@ -43,7 +42,6 @@ Snapshot::Snapshot(int unit_size) :
 Snapshot::~Snapshot()
 {
 	lock_guard<recursive_mutex> lock(_mutex);
-	free(_data);
 }
 
 uint64_t Snapshot::get_sample_count() const
@@ -64,14 +62,14 @@ void Snapshot::set_capacity(const uint64_t new_capacity)
 	assert(_capacity >= _sample_count);
 	if (new_capacity > _capacity) {
 		_capacity = new_capacity;
-		_data = realloc(_data, (new_capacity * _unit_size) + sizeof(uint64_t));
+		_data.resize((new_capacity * _unit_size) + sizeof(uint64_t));
 	}
 }
 
 uint64_t Snapshot::capacity() const
 {
 	lock_guard<recursive_mutex> lock(_mutex);
-	return _capacity;
+	return _data.size();
 }
 
 void Snapshot::append_data(void *data, uint64_t samples)
@@ -86,7 +84,7 @@ void Snapshot::append_data(void *data, uint64_t samples)
 		set_capacity(_sample_count + samples);
 	}
 
-	memcpy((uint8_t*)_data + _sample_count * _unit_size,
+	memcpy((uint8_t*)_data.data() + _sample_count * _unit_size,
 		data, samples * _unit_size);
 	_sample_count += samples;
 }
