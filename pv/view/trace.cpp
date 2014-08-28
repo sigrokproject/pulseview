@@ -122,19 +122,19 @@ void Trace::paint_label(QPainter &p, int right, bool hover)
 	const QRectF r = label_rect(right);
 
 	// Paint the label
+	const float label_arrow_length = r.height() / 2;
 	const QPointF points[] = {
 		r.topLeft(),
-		r.topRight(),
-		QPointF(right, y),
-		r.bottomRight(),
+		QPointF(r.right() - label_arrow_length, r.top()),
+		QPointF(r.right(), y),
+		QPointF(r.right() - label_arrow_length, r.bottom()),
 		r.bottomLeft()
 	};
-
 	const QPointF highlight_points[] = {
 		QPointF(r.left() + 1, r.top() + 1),
-		QPointF(r.right(), r.top() + 1),
-		QPointF(right - 1, y),
-		QPointF(r.right(), r.bottom() - 1),
+		QPointF(r.right() - label_arrow_length, r.top() + 1),
+		QPointF(r.right() - 1, y),
+		QPointF(r.right() - label_arrow_length, r.bottom() - 1),
 		QPointF(r.left() + 1, r.bottom() - 1)
 	};
 
@@ -159,19 +159,15 @@ void Trace::paint_label(QPainter &p, int right, bool hover)
 	// Paint the text
 	p.setPen(get_text_colour());
 	p.setFont(QApplication::font());
-	p.drawText(r, Qt::AlignCenter | Qt::AlignVCenter, _name);
+	p.drawText(QRectF(r.x(), r.y(),
+		r.width() - label_arrow_length, r.height()),
+		Qt::AlignCenter | Qt::AlignVCenter, _name);
 }
 
 bool Trace::pt_in_label_rect(int left, int right, const QPoint &point)
 {
 	(void)left;
-
-	const QRectF label = label_rect(right);
-	return enabled() && QRectF(
-		QPointF(label.left() - LabelHitPadding,
-			label.top() - LabelHitPadding),
-		QPointF(right, label.bottom() + LabelHitPadding)
-			).contains(point);
+	return enabled() && label_rect(right).contains(point);
 }
 
 QMenu* Trace::create_context_menu(QWidget *parent)
@@ -213,11 +209,12 @@ QRectF Trace::label_rect(int right)
 	const QSizeF label_size(
 		text_size.width() + View::LabelPadding.width() * 2,
 		ceilf((text_size.height() + View::LabelPadding.height() * 2) / 2) * 2);
-	const float label_arrow_length = label_size.height() / 2;
+	const float half_height = label_size.height() / 2;
 	return QRectF(
-		right - label_arrow_length - label_size.width() - 0.5,
-		get_y() + 0.5f - label_size.height() / 2,
-		label_size.width(), label_size.height());
+		right - half_height - label_size.width() - 0.5,
+		get_y() + 0.5f - half_height,
+		label_size.width() + half_height,
+		label_size.height());
 }
 
 void Trace::hover_point_changed()
