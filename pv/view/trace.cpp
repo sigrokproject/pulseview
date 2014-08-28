@@ -164,12 +164,6 @@ void Trace::paint_label(QPainter &p, int right, bool hover)
 		Qt::AlignCenter | Qt::AlignVCenter, _name);
 }
 
-bool Trace::pt_in_label_rect(int left, int right, const QPoint &point)
-{
-	(void)left;
-	return enabled() && label_rect(right).contains(point);
-}
-
 QMenu* Trace::create_context_menu(QWidget *parent)
 {
 	QMenu *const menu = SelectableItem::create_context_menu(parent);

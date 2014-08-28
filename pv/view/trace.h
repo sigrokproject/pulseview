@@ -120,16 +120,6 @@ public:
 	 */
 	virtual void paint_label(QPainter &p, int right, bool hover);
 
-	/**
-	 * Determines if a point is in the header label rect.
-	 * @param left the x-coordinate of the left edge of the header
-	 * 	area.
-	 * @param right the x-coordinate of the right edge of the header
-	 * 	area.
-	 * @param point the point to test.
-	 */
-	bool pt_in_label_rect(int left, int right, const QPoint &point);
-
 	virtual QMenu* create_context_menu(QWidget *parent);
 
 	pv::widgets::Popup* create_popup(QWidget *parent);

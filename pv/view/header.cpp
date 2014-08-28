@@ -88,7 +88,7 @@ shared_ptr<Trace> Header::get_mouse_over_trace(const QPoint &pt)
 	for (const shared_ptr<Trace> t : traces)
 	{
 		assert(t);
-		if (t->pt_in_label_rect(0, w, pt))
+		if (t->enabled() && t->label_rect(w).contains(pt))
 			return t;
 	}
 
@@ -122,8 +122,8 @@ void Header::paintEvent(QPaintEvent*)
 	{
 		assert(t);
 
-		const bool highlight = !dragging && t->pt_in_label_rect(
-			0, w, _mouse_point);
+		const bool highlight = !dragging &&
+			t->label_rect(w).contains(_mouse_point);
 		t->paint_label(painter, w, highlight);
 	}
 
