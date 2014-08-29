@@ -29,6 +29,7 @@
 			</filterchain>
 		</loadproperties>
 		<property name="prefix" value="${cmake.CMAKE_INSTALL_PREFIX}"/>
+		<property name="android.abi" value="${cmake.ANDROID_ABI}"/>
 	</target>
 
 	<target name="-declare-anttasks" depends="-get-prefix">
@@ -42,6 +43,40 @@
 			<include name="libgnustl_shared.so"/>
 			<exclude name="lib*.so"/>
 		</copylibs>
+		<copy todir="${native.libs.absolute.dir}">
+			<fileset dir="${prefix}/jar">
+				<include name="QtAndroid-bundled.jar" />
+				<include name="QtAndroidAccessibility-bundled.jar" />
+			</fileset>
+		</copy>
+		<copy todir="${native.libs.absolute.dir}/${android.abi}">
+			<fileset dir="${prefix}/lib">
+				<include name="libQt5Core.so" />
+				<include name="libQt5Gui.so" />
+				<include name="libQt5Widgets.so" />
+				<include name="libQt5Svg.so" />
+			</fileset>
+		</copy>
+		<copy todir="${native.libs.absolute.dir}/${android.abi}">
+			<fileset dir="${prefix}/plugins">
+				<include name="platforms/android/libqtforandroid.so"/>
+				<include name="platforms/libqeglfs.so"/>
+				<include name="platforms/libqminimal.so"/>
+				<include name="platforms/libqminimalegl.so"/>
+				<include name="platforms/libqoffscreen.so"/>
+				<include name="generic/libqevdevkeyboardplugin.so"/>
+				<include name="generic/libqevdevmouseplugin.so"/>
+				<include name="generic/libqevdevtabletplugin.so"/>
+				<include name="generic/libqevdevtouchplugin.so"/>
+				<include name="imageformats/libqsvg.so"/>
+				<include name="iconengines/libqsvgicon.so"/>
+				<include name="accessible/libqtaccessiblewidgets.so"/>
+			</fileset>
+			<filtermapper>
+				<replacestring from="/" to="_" />
+				<prefixlines prefix="libplugins_" />
+			</filtermapper>
+		</copy>
 		<copy file="${prefix}/jar/sigrok-androidutils.jar"
 			tofile="${jar.libs.absolute.dir}/sigrok-androidutils.jar"/>
 		<copy file="${prefix}/share/sigrok-androidutils/device_filter.xml"

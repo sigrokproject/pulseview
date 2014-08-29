@@ -23,6 +23,7 @@
 	</array>
 	<array name="qt_libs">
 		<!-- %%INSERT_QT_LIBS%% -->
+		<item>gnustl_shared</item>
 		<item>Qt5Core</item>
 		<item>Qt5Gui</item>
 		<item>Qt5Widgets</item>
@@ -30,7 +31,20 @@
 	</array>
 	<array name="bundled_in_lib">
 		<!-- %%INSERT_BUNDLED_IN_LIB%% -->
+		<item>libplugins_platforms_android_libqtforandroid.so:plugins/platforms/android/libqtforandroid.so</item>
+		<item>libplugins_platforms_libqeglfs.so:plugins/platforms/libqeglfs.so</item>
+		<item>libplugins_platforms_libqminimal.so:plugins/platforms/libqminimal.so</item>
+		<item>libplugins_platforms_libqminimalegl.so:plugins/platforms/libqminimalegl.so</item>
+		<item>libplugins_platforms_libqoffscreen.so:plugins/platforms/libqoffscreen.so</item>
+		<item>libplugins_generic_libqevdevkeyboardplugin.so:plugins/generic/libqevdevkeyboardplugin.so</item>
+		<item>libplugins_generic_libqevdevmouseplugin.so:plugins/generic/libqevdevmouseplugin.so</item>
+		<item>libplugins_generic_libqevdevtabletplugin.so:plugins/generic/libqevdevtabletplugin.so</item>
+		<item>libplugins_generic_libqevdevtouchplugin.so:plugins/generic/libqevdevtouchplugin.so</item>
+		<item>libplugins_imageformats_libqsvg.so:plugins/imageformats/libqsvg.so</item>
+		<item>libplugins_iconengines_libqsvgicon.so:plugins/iconengines/libqsvgicon.so</item>
+		<item>libplugins_accessible_libqtaccessiblewidgets.so:plugins/accessible/libqtaccessiblewidgets.so</item>
 	</array>
+
 	<array name="bundled_in_assets">
 		<!-- %%INSERT_BUNDLED_IN_ASSETS%% -->
 	</array>
