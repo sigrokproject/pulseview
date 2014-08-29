@@ -164,10 +164,6 @@ private:
 
 	void update_layout();
 
-	static bool compare_trace_v_offsets(
-		const std::shared_ptr<pv::view::Trace> &a,
-		const std::shared_ptr<pv::view::Trace> &b);
-
 private:
 	bool eventFilter(QObject *object, QEvent *event);
 
