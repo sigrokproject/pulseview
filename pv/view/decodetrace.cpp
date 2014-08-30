@@ -505,14 +505,17 @@ void DecodeTrace::draw_unresolved_period(QPainter &p, int h, int left,
 
 pair<double, double> DecodeTrace::get_pixels_offset_samples_per_pixel() const
 {
-	assert(_view);
+	assert(_owner);
 	assert(_decoder_stack);
 
-	const double scale = _view->scale();
+	const View *view = _owner->view();
+	assert(view);
+
+	const double scale = view->scale();
 	assert(scale > 0);
 
 	const double pixels_offset =
-		(_view->offset() - _decoder_stack->get_start_time()) / scale;
+		(view->offset() - _decoder_stack->get_start_time()) / scale;
 
 	double samplerate = _decoder_stack->samplerate();
 
@@ -580,10 +583,15 @@ void DecodeTrace::hide_hover_annotation()
 
 void DecodeTrace::hover_point_changed()
 {
-	QPoint hp = _view->hover_point();
+	assert(_owner);
+
+	const View *const view = _owner->view();
+	assert(view);
+
+	QPoint hp = view->hover_point();
 	QString ann = get_annotation_at_point(hp);
 
-	assert(_view);
+	assert(view);
 	assert(_row_height);
 
 	if (ann.isEmpty()) {
@@ -609,7 +617,7 @@ void DecodeTrace::hover_point_changed()
 	hp.setY(get_y() - (_row_height / 2) + (hover_row * _row_height)
 		- _row_height - text_size.height());
 
-	QToolTip::showText(_view->viewport()->mapToGlobal(hp), ann);
+	QToolTip::showText(view->viewport()->mapToGlobal(hp), ann);
 }
 
 void DecodeTrace::create_decoder_form(int index,
@@ -750,8 +758,8 @@ void DecodeTrace::commit_channels()
 
 void DecodeTrace::on_new_decode_data()
 {
-	if (_view)
-		_view->update_viewport();
+	if (_owner)
+		_owner->update_viewport();
 }
 
 void DecodeTrace::delete_pressed()
@@ -810,7 +818,7 @@ void DecodeTrace::on_show_hide_decoder(int index)
 	assert(index < (int)_decoder_forms.size());
 	_decoder_forms[index]->set_decoder_visible(show);
 
-	_view->update_viewport();
+	_owner->update_viewport();
 }
 
 } // namespace view

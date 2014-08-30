@@ -64,10 +64,10 @@ Viewport::Viewport(View &parent) :
 int Viewport::get_total_height() const
 {
 	int h = 0;
-	const vector< shared_ptr<Trace> > traces(_view.get_traces());
-	for (const shared_ptr<Trace> t : traces) {
-		assert(t);
-		h = max(t->v_offset() + View::SignalHeight, h);
+	const vector< shared_ptr<RowItem> > row_items(_view.child_items());
+	for (const shared_ptr<RowItem> r : row_items) {
+		assert(r);
+		h = max(r->v_offset() + View::SignalHeight, h);
 	}
 
 	return h;
@@ -75,7 +75,7 @@ int Viewport::get_total_height() const
 
 void Viewport::paintEvent(QPaintEvent*)
 {
-	const vector< shared_ptr<Trace> > traces(_view.get_traces());
+	const vector< shared_ptr<RowItem> > row_items(_view.child_items());
 
 	QPainter p(this);
 	p.setRenderHint(QPainter::Antialiasing);
@@ -84,17 +84,17 @@ void Viewport::paintEvent(QPaintEvent*)
 		_view.cursors().draw_viewport_background(p, rect());
 
 	// Plot the signal
-	for (const shared_ptr<Trace> t : traces)
+	for (const shared_ptr<RowItem> r : row_items)
 	{
-		assert(t);
-		t->paint_back(p, 0, width());
+		assert(r);
+		r->paint_back(p, 0, width());
 	}
 
-	for (const shared_ptr<Trace> t : traces)
-		t->paint_mid(p, 0, width());
+	for (const shared_ptr<RowItem> r : row_items)
+		r->paint_mid(p, 0, width());
 
-	for (const shared_ptr<Trace> t : traces)
-		t->paint_fore(p, 0, width());
+	for (const shared_ptr<RowItem> r : row_items)
+		r->paint_fore(p, 0, width());
 
 	if (_view.cursors_shown())
 		_view.cursors().draw_viewport_foreground(p, rect());
@@ -230,10 +230,10 @@ bool Viewport::touchEvent(QTouchEvent *event)
 
 void Viewport::on_signals_changed()
 {
-	const vector< shared_ptr<Trace> > traces(_view.get_traces());
-	for (shared_ptr<Trace> t : traces) {
-		assert(t);
-		connect(t.get(), SIGNAL(visibility_changed()),
+	const vector< shared_ptr<RowItem> > row_items(_view.child_items());
+	for (shared_ptr<RowItem> r : row_items) {
+		assert(r);
+		connect(r.get(), SIGNAL(visibility_changed()),
 			this, SLOT(update()));
 	}
 }

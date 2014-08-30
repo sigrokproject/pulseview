@@ -149,6 +149,16 @@ const SigSession& View::session() const
 	return _session;
 }
 
+View* View::view()
+{
+	return this;
+}
+
+const View* View::view() const
+{
+	return this;
+}
+
 Viewport* View::viewport()
 {
 	return _viewport;
@@ -169,7 +179,7 @@ double View::offset() const
 	return _offset;
 }
 
-int View::v_offset() const
+int View::owner_v_offset() const
 {
 	return -_v_offset;
 }
@@ -241,25 +251,25 @@ void View::set_scale_offset(double scale, double offset)
 	scale_offset_changed();
 }
 
-vector< shared_ptr<Trace> > View::get_traces() const
+vector< shared_ptr<RowItem> > View::child_items() const
 {
-	vector< shared_ptr<Trace> > traces;
+	vector< shared_ptr<RowItem> > row_items;
 
 	const vector< shared_ptr<Signal> > sigs(
 		session().get_signals());
-	copy(sigs.begin(), sigs.end(), back_inserter(traces));
+	copy(sigs.begin(), sigs.end(), back_inserter(row_items));
 
 #ifdef ENABLE_DECODE
 	const vector< shared_ptr<DecodeTrace> > decode_sigs(
 		session().get_decode_signals());
-	copy(decode_sigs.begin(), decode_sigs.end(), back_inserter(traces));
+	copy(decode_sigs.begin(), decode_sigs.end(), back_inserter(row_items));
 #endif
 
-	stable_sort(traces.begin(), traces.end(),
-		[](const shared_ptr<Trace> &a, const shared_ptr<Trace> &b) {
+	stable_sort(row_items.begin(), row_items.end(),
+		[](const shared_ptr<RowItem> &a, const shared_ptr<RowItem> &b) {
 			return a->v_offset() < b->v_offset(); });
 
-	return traces;
+	return row_items;
 }
 
 list<weak_ptr<SelectableItem> > View::selected_items() const
@@ -267,11 +277,11 @@ list<weak_ptr<SelectableItem> > View::selected_items() const
 	list<weak_ptr<SelectableItem> > items;
 
 	// List the selected signals
-	const vector< shared_ptr<Trace> > traces(get_traces());
-	for (shared_ptr<Trace> t : traces) {
-		assert(t);
-		if (t->selected())
-			items.push_back(t);
+	const vector< shared_ptr<RowItem> > row_items(child_items());
+	for (shared_ptr<RowItem> r : row_items) {
+		assert(r);
+		if (r->selected())
+			items.push_back(r);
 	}
 
 	// List the selected cursors
@@ -357,15 +367,15 @@ const QPoint& View::hover_point() const
 
 void View::normalize_layout()
 {
-	const vector< shared_ptr<Trace> > traces(get_traces());
+	const vector< shared_ptr<RowItem> > row_items(child_items());
 
 	int v_min = INT_MAX;
-	for (const shared_ptr<Trace> t : traces)
-		v_min = min(t->v_offset(), v_min);
+	for (const shared_ptr<RowItem> r : row_items)
+		v_min = min(r->v_offset(), v_min);
 
 	const int delta = -min(v_min, 0);
-	for (shared_ptr<Trace> t : traces)
-		t->set_v_offset(t->v_offset() + delta);
+	for (shared_ptr<RowItem> r : row_items)
+		r->set_v_offset(r->v_offset() + delta);
 
 	verticalScrollBar()->setSliderPosition(_v_offset + delta);
 	v_scroll_value_changed(verticalScrollBar()->sliderPosition());
@@ -439,6 +449,19 @@ void View::update_layout()
 	_header->setGeometry(0, _viewport->y(),
 		_header->sizeHint().width(), _viewport->height());
 	update_scroll();
+}
+
+void View::paint_label(QPainter &p, int right, bool hover)
+{
+	(void)p;
+	(void)right;
+	(void)hover;
+}
+
+QRectF View::label_rect(int right)
+{
+	(void)right;
+	return QRectF();
 }
 
 bool View::eventFilter(QObject *object, QEvent *event)
@@ -519,10 +542,10 @@ void View::v_scroll_value_changed(int value)
 void View::signals_changed()
 {
 	int offset = SignalMargin + SignalHeight;
-	const vector< shared_ptr<Trace> > traces(get_traces());
-	for (shared_ptr<Trace> t : traces) {
-		t->set_view(this);
-		t->set_v_offset(offset);
+	const vector< shared_ptr<RowItem> > row_items(child_items());
+	for (shared_ptr<RowItem> r : row_items) {
+		r->set_owner(this);
+		r->set_v_offset(offset);
 		offset += SignalHeight + 2 * SignalMargin;
 	}
 
@@ -558,9 +581,9 @@ void View::on_geometry_updated()
 
 void View::on_hover_point_changed()
 {
-	const vector< shared_ptr<Trace> > traces(get_traces());
-	for (shared_ptr<Trace> t : traces)
-		t->hover_point_changed();
+	const vector< shared_ptr<RowItem> > row_items(child_items());
+	for (shared_ptr<RowItem> r : row_items)
+		r->hover_point_changed();
 }
 
 } // namespace view

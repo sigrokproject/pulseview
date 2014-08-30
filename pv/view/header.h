@@ -30,7 +30,7 @@
 namespace pv {
 namespace view {
 
-class Trace;
+class RowItem;
 class View;
 
 class Header : public MarginWidget
@@ -52,7 +52,7 @@ public:
 	static const int BaselineOffset;
 
 private:
-	std::shared_ptr<pv::view::Trace> get_mouse_over_trace(
+	std::shared_ptr<pv::view::RowItem> get_mouse_over_row_item(
 		const QPoint &pt);
 
 	void clear_selection();
@@ -88,8 +88,8 @@ private:
 	QPoint _mouse_down_point;
 	bool _dragging;
 
-	std::list<std::pair<std::weak_ptr<Trace>, int> >
-		_drag_traces;
+	std::list<std::pair<std::weak_ptr<RowItem>, int> >
+		_drag_row_items;
 };
 
 } // namespace view

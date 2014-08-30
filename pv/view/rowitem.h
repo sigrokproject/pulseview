@@ -26,7 +26,7 @@
 namespace pv {
 namespace view {
 
-class View;
+class RowItemOwner;
 
 class RowItem : public SelectableItem
 {
@@ -52,10 +52,10 @@ public:
 	void set_v_offset(int v_offset);
 
 	/**
-	 * Sets the view that owns this trace in the view trace hierachy.
+	 * Sets the owner this trace in the view trace hierachy.
 	 * @param The new owner of the trace.
 	 */
-	void set_view(pv::view::View *view);
+	void set_owner(pv::view::RowItemOwner *owner);
 
 	/**
 	 * Gets the y-offset of the axis.
@@ -107,7 +107,7 @@ public:
 	virtual void hover_point_changed();
 
 protected:
-	pv::view::View *_view;
+	pv::view::RowItemOwner *_owner;
 
 	int _v_offset;
 };

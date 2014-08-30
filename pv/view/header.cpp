@@ -68,39 +68,39 @@ QSize Header::sizeHint() const
 {
 	int max_width = 0;
 
-	const vector< shared_ptr<Trace> > traces(_view.get_traces());
-	for (shared_ptr<Trace> t : traces) {
-		assert(t);
+	const vector< shared_ptr<RowItem> > row_items(_view.child_items());
+	for (shared_ptr<RowItem> r : row_items) {
+		assert(r);
 
-		if (t->enabled()) {
-			max_width = max(max_width, (int)t->label_rect(0).width());
+		if (r->enabled()) {
+			max_width = max(max_width, (int)r->label_rect(0).width());
 		}
 	}
 
 	return QSize(max_width + Padding + BaselineOffset, 0);
 }
 
-shared_ptr<Trace> Header::get_mouse_over_trace(const QPoint &pt)
+shared_ptr<RowItem> Header::get_mouse_over_row_item(const QPoint &pt)
 {
 	const int w = width() - BaselineOffset;
-	const vector< shared_ptr<Trace> > traces(_view.get_traces());
+	const vector< shared_ptr<RowItem> > row_items(_view.child_items());
 
-	for (const shared_ptr<Trace> t : traces)
+	for (const shared_ptr<RowItem> r : row_items)
 	{
-		assert(t);
-		if (t->enabled() && t->label_rect(w).contains(pt))
-			return t;
+		assert(r);
+		if (r->enabled() && r->label_rect(w).contains(pt))
+			return r;
 	}
 
-	return shared_ptr<Trace>();
+	return shared_ptr<RowItem>();
 }
 
 void Header::clear_selection()
 {
-	const vector< shared_ptr<Trace> > traces(_view.get_traces());
-	for (const shared_ptr<Trace> t : traces) {
-		assert(t);
-		t->select(false);
+	const vector< shared_ptr<RowItem> > row_items(_view.child_items());
+	for (const shared_ptr<RowItem> r : row_items) {
+		assert(r);
+		r->select(false);
 	}
 
 	update();
@@ -112,19 +112,19 @@ void Header::paintEvent(QPaintEvent*)
 	// left edge of the widget, because then the selection shadow
 	// would be clipped away.
 	const int w = width() - BaselineOffset;
-	const vector< shared_ptr<Trace> > traces(_view.get_traces());
+	const vector< shared_ptr<RowItem> > row_items(_view.child_items());
 
 	QPainter painter(this);
 	painter.setRenderHint(QPainter::Antialiasing);
 
-	const bool dragging = !_drag_traces.empty();
-	for (const shared_ptr<Trace> t : traces)
+	const bool dragging = !_drag_row_items.empty();
+	for (const shared_ptr<RowItem> r : row_items)
 	{
-		assert(t);
+		assert(r);
 
 		const bool highlight = !dragging &&
-			t->label_rect(w).contains(_mouse_point);
-		t->paint_label(painter, w, highlight);
+			r->label_rect(w).contains(_mouse_point);
+		r->paint_label(painter, w, highlight);
 	}
 
 	painter.end();
@@ -134,45 +134,45 @@ void Header::mousePressEvent(QMouseEvent *event)
 {
 	assert(event);
 
-	const vector< shared_ptr<Trace> > traces(_view.get_traces());
+	const vector< shared_ptr<RowItem> > row_items(_view.child_items());
 
 	if (event->button() & Qt::LeftButton) {
 		_mouse_down_point = event->pos();
 
 		// Save the offsets of any signals which will be dragged
-		for (const shared_ptr<Trace> t : traces)
-			if (t->selected())
-				_drag_traces.push_back(
-					make_pair(t, t->v_offset()));
+		for (const shared_ptr<RowItem> r : row_items)
+			if (r->selected())
+				_drag_row_items.push_back(
+					make_pair(r, r->v_offset()));
 	}
 
 	// Select the signal if it has been clicked
-	const shared_ptr<Trace> mouse_over_trace =
-		get_mouse_over_trace(event->pos());
-	if (mouse_over_trace) {
-		if (mouse_over_trace->selected())
-			mouse_over_trace->select(false);
+	const shared_ptr<RowItem> mouse_over_row_item =
+		get_mouse_over_row_item(event->pos());
+	if (mouse_over_row_item) {
+		if (mouse_over_row_item->selected())
+			mouse_over_row_item->select(false);
 		else {
-			mouse_over_trace->select(true);
+			mouse_over_row_item->select(true);
 
 			if (~QApplication::keyboardModifiers() &
 				Qt::ControlModifier)
-				_drag_traces.clear();
+				_drag_row_items.clear();
 
 			// Add the signal to the drag list
 			if (event->button() & Qt::LeftButton)
-				_drag_traces.push_back(
-					make_pair(mouse_over_trace,
-					mouse_over_trace->v_offset()));
+				_drag_row_items.push_back(
+					make_pair(mouse_over_row_item,
+					mouse_over_row_item->v_offset()));
 		}
 	}
 
 	if (~QApplication::keyboardModifiers() & Qt::ControlModifier) {
 		// Unselect all other signals because the Ctrl is not
 		// pressed
-		for (const shared_ptr<Trace> t : traces)
-			if (t != mouse_over_trace)
-				t->select(false);
+		for (const shared_ptr<RowItem> r : row_items)
+			if (r != mouse_over_row_item)
+				r->select(false);
 	}
 
 	selection_changed();
@@ -189,21 +189,21 @@ void Header::mouseReleaseEvent(QMouseEvent *event)
 			_view.normalize_layout();
 		else
 		{
-			const shared_ptr<Trace> mouse_over_trace =
-				get_mouse_over_trace(event->pos());
-			if (mouse_over_trace) {
+			const shared_ptr<RowItem> mouse_over_row_item =
+				get_mouse_over_row_item(event->pos());
+			if (mouse_over_row_item) {
 				const int w = width() - BaselineOffset;
 				Popup *const p =
-					mouse_over_trace->create_popup(&_view);
+					mouse_over_row_item->create_popup(&_view);
 				p->set_position(mapToGlobal(QPoint(w,
-					mouse_over_trace->get_y())),
+					mouse_over_row_item->get_y())),
 					Popup::Right);
 				p->show();
 			}
 		}
 
 		_dragging = false;
-		_drag_traces.clear();
+		_drag_row_items.clear();
 	}
 }
 
@@ -220,24 +220,25 @@ void Header::mouseMoveEvent(QMouseEvent *event)
 		return;
 
 	// Move the signals if we are dragging
-	if (!_drag_traces.empty())
+	if (!_drag_row_items.empty())
 	{
 		_dragging = true;
 
 		const int delta = event->pos().y() - _mouse_down_point.y();
 
-		for (auto i = _drag_traces.begin(); i != _drag_traces.end(); i++) {
-			const std::shared_ptr<Trace> trace((*i).first);
-			if (trace) {
+		for (auto i = _drag_row_items.begin();
+			i != _drag_row_items.end(); i++) {
+			const std::shared_ptr<RowItem> row_item((*i).first);
+			if (row_item) {
 				const int y = (*i).second + delta;
 				const int y_snap =
 					((y + View::SignalSnapGridSize / 2) /
 						View::SignalSnapGridSize) *
 						View::SignalSnapGridSize;
-				trace->set_v_offset(y_snap);
+				row_item->set_v_offset(y_snap);
 
 				// Ensure the trace is selected
-				trace->select();
+				row_item->select();
 			}
 			
 		}
@@ -256,10 +257,10 @@ void Header::leaveEvent(QEvent*)
 
 void Header::contextMenuEvent(QContextMenuEvent *event)
 {
-	const shared_ptr<Trace> t = get_mouse_over_trace(_mouse_point);
+	const shared_ptr<RowItem> r = get_mouse_over_row_item(_mouse_point);
 
-	if (t)
-		t->create_context_menu(this)->exec(event->globalPos());
+	if (r)
+		r->create_context_menu(this)->exec(event->globalPos());
 }
 
 void Header::keyPressEvent(QKeyEvent *e)
@@ -270,10 +271,10 @@ void Header::keyPressEvent(QKeyEvent *e)
 	{
 	case Qt::Key_Delete:
 	{
-		const vector< shared_ptr<Trace> > traces(_view.get_traces());
-		for (const shared_ptr<Trace> t : traces)
-			if (t->selected())
-				t->delete_pressed();	
+		const vector< shared_ptr<RowItem> > row_items(_view.child_items());
+		for (const shared_ptr<RowItem> r : row_items)
+			if (r->selected())
+				r->delete_pressed();
 		break;
 	}
 	}
@@ -281,14 +282,14 @@ void Header::keyPressEvent(QKeyEvent *e)
 
 void Header::on_signals_changed()
 {
-	const vector< shared_ptr<Trace> > traces(_view.get_traces());
-	for (shared_ptr<Trace> t : traces) {
-		assert(t);
-		connect(t.get(), SIGNAL(visibility_changed()),
+	const vector< shared_ptr<RowItem> > row_items(_view.child_items());
+	for (shared_ptr<RowItem> r : row_items) {
+		assert(r);
+		connect(r.get(), SIGNAL(visibility_changed()),
 			this, SLOT(on_trace_changed()));
-		connect(t.get(), SIGNAL(text_changed()),
+		connect(r.get(), SIGNAL(text_changed()),
 			this, SLOT(on_trace_changed()));
-		connect(t.get(), SIGNAL(colour_changed()),
+		connect(r.get(), SIGNAL(colour_changed()),
 			this, SLOT(update()));
 	}
 }

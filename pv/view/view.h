@@ -33,6 +33,7 @@
 #include <pv/data/signaldata.h>
 
 #include "cursorpair.h"
+#include "rowitemowner.h"
 
 namespace pv {
 
@@ -43,10 +44,9 @@ namespace view {
 class CursorHeader;
 class Header;
 class Ruler;
-class Trace;
 class Viewport;
 
-class View : public QAbstractScrollArea {
+class View : public QAbstractScrollArea, public RowItemOwner {
 	Q_OBJECT
 
 private:
@@ -70,6 +70,16 @@ public:
 	SigSession& session();
 	const SigSession& session() const;
 
+	/**
+	 * Returns the view of the owner.
+	 */
+	virtual pv::view::View* view();
+
+	/**
+	 * Returns the view of the owner.
+	 */
+	virtual const pv::view::View* view() const;
+
 	Viewport* viewport();
 
 	const Viewport* viewport() const;
@@ -84,7 +94,7 @@ public:
 	 * seconds.
 	 */
 	double offset() const;
-	int v_offset() const;
+	int owner_v_offset() const;
 
 	void zoom(double steps);
 	void zoom(double steps, int offset);
@@ -100,7 +110,10 @@ public:
 	 */
 	void set_scale_offset(double scale, double offset);
 
-	std::vector< std::shared_ptr<Trace> > get_traces() const;
+	/**
+	 * Returns a list of traces owned by this object.
+	 */
+	std::vector< std::shared_ptr<RowItem> > child_items() const;
 
 	std::list<std::weak_ptr<SelectableItem> > selected_items() const;
 
@@ -163,6 +176,23 @@ private:
 	void update_scroll();
 
 	void update_layout();
+
+	/**
+	 * Satisifies RowItem functionality.
+	 * @param p the QPainter to paint into.
+	 * @param right the x-coordinate of the right edge of the header
+	 * 	area.
+	 * @param hover true if the label is being hovered over by the mouse.
+	 */
+	void paint_label(QPainter &p, int right, bool hover);
+
+	/**
+	 * Computes the outline rectangle of a label.
+	 * @param right the x-coordinate of the right edge of the header
+	 * 	area.
+	 * @return Returns the rectangle of the signal label.
+	 */
+	QRectF label_rect(int right);
 
 private:
 	bool eventFilter(QObject *object, QEvent *event);

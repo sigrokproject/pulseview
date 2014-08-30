@@ -63,7 +63,6 @@ public:
 	 */
 	virtual std::vector< std::shared_ptr<RowItem> > child_items() const = 0;
 
-protected:
 	virtual void update_viewport() = 0;
 };
 

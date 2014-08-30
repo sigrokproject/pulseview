@@ -28,7 +28,7 @@ namespace pv {
 namespace view {
 
 RowItem::RowItem() :
-	_view(NULL),
+	_owner(NULL),
 	_v_offset(0)
 {
 }
@@ -43,24 +43,16 @@ void RowItem::set_v_offset(int v_offset)
 	_v_offset = v_offset;
 }
 
-void RowItem::set_view(View *view)
+void RowItem::set_owner(RowItemOwner *owner)
 {
-	assert(view);
-
-	if (_view)
-		disconnect(_view, SIGNAL(hover_point_changed()),
-			this, SLOT(on_hover_point_changed()));
-
-	_view = view;
-
-	connect(view, SIGNAL(hover_point_changed()),
-		this, SLOT(on_hover_point_changed()));
+	assert((_owner && !owner) || (!_owner && owner));
+	_owner = owner;
 }
 
 int RowItem::get_y() const
 {
-	assert(_view);
-	return _v_offset + _view->v_offset();
+	assert(_owner);
+	return _v_offset + _owner->owner_v_offset();
 }
 
 void RowItem::paint_back(QPainter &p, int left, int right)
