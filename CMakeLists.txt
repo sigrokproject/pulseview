@@ -163,6 +163,7 @@ set(pulseview_SOURCES
 	pv/view/marginwidget.cpp
 	pv/view/logicsignal.cpp
 	pv/view/rowitem.cpp
+	pv/view/rowitemowner.cpp
 	pv/view/ruler.cpp
 	pv/view/selectableitem.cpp
 	pv/view/signal.cpp
