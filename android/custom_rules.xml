@@ -21,7 +21,6 @@
 	<property name="pulseview-source-path" value="${basedir}/.."/>
 	<property name="pulseview-build-path" value="${pulseview-source-path}"/>
 	<property name="cmake-cache" value="${pulseview-build-path}/CMakeCache.txt"/>
-
 	<target name="-get-prefix">
 		<loadproperties srcFile="${cmake-cache}" prefix="cmake">
 			<filterchain>
@@ -31,12 +30,10 @@
 		<property name="prefix" value="${cmake.CMAKE_INSTALL_PREFIX}"/>
 		<property name="android.abi" value="${cmake.ANDROID_ABI}"/>
 	</target>
-
 	<target name="-declare-anttasks" depends="-get-prefix">
 		<taskdef resource="anttasks.properties"
 			classpath="${prefix}/jar/sigrok-androidutils-anttasks.jar"/>
 	</target>
-
 	<target name="-pre-build" depends="-get-prefix, -declare-anttasks">
 		<copylibs todir="${native.libs.absolute.dir}" property="bundled_libs">
 			<fileset dir="${pulseview-build-path}/libs"/>

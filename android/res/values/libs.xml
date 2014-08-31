@@ -44,7 +44,6 @@
 		<item>libplugins_iconengines_libqsvgicon.so:plugins/iconengines/libqsvgicon.so</item>
 		<item>libplugins_accessible_libqtaccessiblewidgets.so:plugins/accessible/libqtaccessiblewidgets.so</item>
 	</array>
-
 	<array name="bundled_in_assets">
 		<!-- %%INSERT_BUNDLED_IN_ASSETS%% -->
 	</array>
