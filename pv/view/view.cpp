@@ -43,6 +43,7 @@
 #include "pv/data/logicsnapshot.h"
 
 using pv::data::SignalData;
+using std::back_inserter;
 using std::deque;
 using std::list;
 using std::max;
@@ -242,21 +243,16 @@ void View::set_scale_offset(double scale, double offset)
 
 vector< shared_ptr<Trace> > View::get_traces() const
 {
+	vector< shared_ptr<Trace> > traces;
+
 	const vector< shared_ptr<Signal> > sigs(
 		session().get_signals());
+	copy(sigs.begin(), sigs.end(), back_inserter(traces));
+
 #ifdef ENABLE_DECODE
 	const vector< shared_ptr<DecodeTrace> > decode_sigs(
 		session().get_decode_signals());
-	vector< shared_ptr<Trace> > traces(
-		sigs.size() + decode_sigs.size());
-#else
-	vector< shared_ptr<Trace> > traces(sigs.size());
-#endif
-
-	auto i = traces.begin();
-	i = copy(sigs.begin(), sigs.end(), i);
-#ifdef ENABLE_DECODE
-	i = copy(decode_sigs.begin(), decode_sigs.end(), i);
+	copy(decode_sigs.begin(), decode_sigs.end(), back_inserter(traces));
 #endif
 
 	stable_sort(traces.begin(), traces.end(),
