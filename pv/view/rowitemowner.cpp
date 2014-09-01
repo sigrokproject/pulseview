@@ -18,4 +18,46 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
+#include <cassert>
+
+#include "rowitem.h"
 #include "rowitemowner.h"
+
+using std::shared_ptr;
+using std::vector;
+
+namespace pv {
+namespace view {
+
+const vector< shared_ptr<RowItem> >& RowItemOwner::child_items() const
+{
+	return _items;
+}
+
+void RowItemOwner::clear_child_items()
+{
+	for (auto &i : _items) {
+		assert(i->owner() == this);
+		i->set_owner(nullptr);
+	}
+	_items.clear();
+}
+
+void RowItemOwner::add_child_item(std::shared_ptr<RowItem> item)
+{
+	assert(!item->owner());
+	item->set_owner(this);
+	_items.push_back(item);
+}
+
+void RowItemOwner::remove_child_item(std::shared_ptr<RowItem> item)
+{
+	assert(item->owner() == this);
+	item->set_owner(nullptr);
+	auto iter = std::find(_items.begin(), _items.end(), item);
+	assert(iter != _items.end());
+	_items.erase(iter);
+}
+
+} // view
+} // pv

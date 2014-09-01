@@ -20,6 +20,7 @@
 
 #include <cassert>
 #include <cmath>
+#include <algorithm>
 
 #include "view.h"
 #include "viewport.h"
@@ -33,6 +34,7 @@ using std::abs;
 using std::max;
 using std::min;
 using std::shared_ptr;
+using std::stable_sort;
 using std::vector;
 
 namespace pv {
@@ -75,7 +77,10 @@ int Viewport::get_total_height() const
 
 void Viewport::paintEvent(QPaintEvent*)
 {
-	const vector< shared_ptr<RowItem> > row_items(_view.child_items());
+	vector< shared_ptr<RowItem> > row_items(_view.child_items());
+	stable_sort(row_items.begin(), row_items.end(),
+		[](const shared_ptr<RowItem> &a, const shared_ptr<RowItem> &b) {
+			return a->v_offset() < b->v_offset(); });
 
 	QPainter p(this);
 	p.setRenderHint(QPainter::Antialiasing);

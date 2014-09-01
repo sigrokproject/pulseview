@@ -251,27 +251,6 @@ void View::set_scale_offset(double scale, double offset)
 	scale_offset_changed();
 }
 
-vector< shared_ptr<RowItem> > View::child_items() const
-{
-	vector< shared_ptr<RowItem> > row_items;
-
-	const vector< shared_ptr<Signal> > sigs(
-		session().get_signals());
-	copy(sigs.begin(), sigs.end(), back_inserter(row_items));
-
-#ifdef ENABLE_DECODE
-	const vector< shared_ptr<DecodeTrace> > decode_sigs(
-		session().get_decode_signals());
-	copy(decode_sigs.begin(), decode_sigs.end(), back_inserter(row_items));
-#endif
-
-	stable_sort(row_items.begin(), row_items.end(),
-		[](const shared_ptr<RowItem> &a, const shared_ptr<RowItem> &b) {
-			return a->v_offset() < b->v_offset(); });
-
-	return row_items;
-}
-
 list<weak_ptr<SelectableItem> > View::selected_items() const
 {
 	list<weak_ptr<SelectableItem> > items;
@@ -279,8 +258,7 @@ list<weak_ptr<SelectableItem> > View::selected_items() const
 	// List the selected signals
 	const vector< shared_ptr<RowItem> > row_items(child_items());
 	for (shared_ptr<RowItem> r : row_items) {
-		assert(r);
-		if (r->selected())
+		if (r && r->selected())
 			items.push_back(r);
 	}
 
@@ -541,10 +519,24 @@ void View::v_scroll_value_changed(int value)
 
 void View::signals_changed()
 {
+	// Populate the traces
+	clear_child_items();
+
+	const vector< shared_ptr<Signal> > sigs(
+		session().get_signals());
+	for (auto s : sigs)
+		add_child_item(s);
+
+#ifdef ENABLE_DECODE
+	const vector< shared_ptr<DecodeTrace> > decode_sigs(
+		session().get_decode_signals());
+	for (auto s : decode_sigs)
+		add_child_item(s);
+#endif
+
+	// Create the initial layout
 	int offset = SignalMargin + SignalHeight;
-	const vector< shared_ptr<RowItem> > row_items(child_items());
-	for (shared_ptr<RowItem> r : row_items) {
-		r->set_owner(this);
+	for (shared_ptr<RowItem> r : child_items()) {
 		r->set_v_offset(offset);
 		offset += SignalHeight + 2 * SignalMargin;
 	}

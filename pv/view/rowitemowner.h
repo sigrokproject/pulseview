@@ -61,9 +61,28 @@ public:
 	/**
 	 * Returns a list of row items owned by this object.
 	 */
-	virtual std::vector< std::shared_ptr<RowItem> > child_items() const = 0;
+	virtual const std::vector< std::shared_ptr<RowItem> >&
+		child_items() const;
+
+	/**
+	 * Clears the list of child items.
+	 */
+	void clear_child_items();
+
+	/**
+	 * Adds a child item to this object.
+	 */
+	void add_child_item(std::shared_ptr<RowItem> item);
+
+	/**
+	 * Removes a child item from this object.
+	 */
+	void remove_child_item(std::shared_ptr<RowItem> item);
 
 	virtual void update_viewport() = 0;
+
+private:
+	std::vector< std::shared_ptr<RowItem> > _items;
 };
 
 } // view

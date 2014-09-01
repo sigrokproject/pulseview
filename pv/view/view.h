@@ -110,11 +110,6 @@ public:
 	 */
 	void set_scale_offset(double scale, double offset);
 
-	/**
-	 * Returns a list of traces owned by this object.
-	 */
-	std::vector< std::shared_ptr<RowItem> > child_items() const;
-
 	std::list<std::weak_ptr<SelectableItem> > selected_items() const;
 
 	std::set< std::shared_ptr<pv::data::SignalData> >

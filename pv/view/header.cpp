@@ -24,7 +24,8 @@
 #include "signal.h"
 #include "../sigsession.h"
 
-#include <assert.h>
+#include <cassert>
+#include <algorithm>
 
 #include <QApplication>
 #include <QMenu>
@@ -38,6 +39,7 @@ using std::max;
 using std::make_pair;
 using std::pair;
 using std::shared_ptr;
+using std::stable_sort;
 using std::vector;
 
 namespace pv {
@@ -112,7 +114,11 @@ void Header::paintEvent(QPaintEvent*)
 	// left edge of the widget, because then the selection shadow
 	// would be clipped away.
 	const int w = width() - BaselineOffset;
-	const vector< shared_ptr<RowItem> > row_items(_view.child_items());
+
+	vector< shared_ptr<RowItem> > row_items(_view.child_items());
+	stable_sort(row_items.begin(), row_items.end(),
+		[](const shared_ptr<RowItem> &a, const shared_ptr<RowItem> &b) {
+			return a->v_offset() < b->v_offset(); });
 
 	QPainter painter(this);
 	painter.setRenderHint(QPainter::Antialiasing);
