@@ -25,6 +25,7 @@
 
 #include <QApplication>
 #include <QFormLayout>
+#include <QKeyEvent>
 #include <QLineEdit>
 
 #include "trace.h"
@@ -218,6 +219,24 @@ QRectF Trace::get_label_rect(int right)
 		label_size.width(), label_size.height());
 }
 
+bool Trace::eventFilter(QObject *obj, QEvent *evt)
+{
+	QKeyEvent *keyEvent;
+
+	(void)obj;
+
+	if (evt->type() == QEvent::KeyPress) {
+		keyEvent = static_cast<QKeyEvent*>(evt);
+		if (keyEvent->key() == Qt::Key_Enter ||
+		    keyEvent->key() == Qt::Key_Return) {
+			close_popup();
+			return true;
+		}
+	}
+
+	return false;
+}
+
 QColor Trace::get_text_colour() const
 {
 	return (_colour.lightness() > 64) ? Qt::black : Qt::white;
@@ -268,6 +287,9 @@ void Trace::populate_popup_form(QWidget *parent, QFormLayout *form)
 	connect(name_edit, SIGNAL(textChanged(const QString&)),
 		this, SLOT(on_text_changed(const QString&)));
 	form->addRow(tr("Name"), name_edit);
+
+	// We want to close the popup when the Enter key was pressed.
+	name_edit->installEventFilter(this);
 
 	add_colour_option(parent, form);
 }

@@ -148,6 +148,8 @@ public:
 	 */
 	QRectF get_label_rect(int right);
 
+	bool eventFilter(QObject *obj, QEvent *evt);
+
 protected:
 
 	/**
