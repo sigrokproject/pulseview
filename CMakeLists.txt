@@ -124,6 +124,7 @@ configure_file (
 
 set(pulseview_SOURCES
 	main.cpp
+	pv/application.cpp
 	pv/devicemanager.cpp
 	pv/mainwindow.cpp
 	pv/sigsession.cpp

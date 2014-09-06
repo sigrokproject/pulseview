@@ -27,13 +27,13 @@
 
 #include <getopt.h>
 
-#include <QApplication>
 #include <QDebug>
 
 #ifdef ENABLE_SIGNALS
 #include "signalhandler.h"
 #endif
 
+#include "pv/application.h"
 #include "pv/devicemanager.h"
 #include "pv/mainwindow.h"
 #ifdef ANDROID
@@ -68,12 +68,7 @@ int main(int argc, char *argv[])
 	struct sr_context *sr_ctx = NULL;
 	const char *open_file = NULL;
 
-	QApplication a(argc, argv);
-
-	// Set some application metadata
-	QApplication::setApplicationVersion(PV_VERSION_STRING);
-	QApplication::setApplicationName("PulseView");
-	QApplication::setOrganizationDomain("sigrok.org");
+	Application a(argc, argv);
 
 #ifdef ANDROID
 	srau_init_environment();
