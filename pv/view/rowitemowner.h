@@ -24,6 +24,8 @@
 #include <memory>
 #include <vector>
 
+#include "rowitemiterator.h"
+
 namespace pv {
 
 class SigSession;
@@ -35,6 +37,11 @@ class View;
 
 class RowItemOwner
 {
+public:
+	typedef std::vector< std::shared_ptr<RowItem> > item_list;
+	typedef RowItemIterator<RowItemOwner, RowItem> iterator;
+	typedef RowItemIterator<const RowItemOwner, RowItem> const_iterator;
+
 public:
 	/**
 	 * Returns the session of the onwer.
@@ -61,8 +68,12 @@ public:
 	/**
 	 * Returns a list of row items owned by this object.
 	 */
-	virtual const std::vector< std::shared_ptr<RowItem> >&
-		child_items() const;
+	virtual item_list& child_items();
+
+	/**
+	 * Returns a list of row items owned by this object.
+	 */
+	virtual const item_list& child_items() const;
 
 	/**
 	 * Clears the list of child items.
@@ -79,10 +90,33 @@ public:
 	 */
 	void remove_child_item(std::shared_ptr<RowItem> item);
 
+	/**
+	 * Returns a depth-first iterator at the beginning of the child RowItem
+	 * tree.
+	 */
+	iterator begin();
+
+	/**
+	 * Returns a depth-first iterator at the end of the child RowItem tree.
+	 */
+	iterator end();
+
+	/**
+	 * Returns a constant depth-first iterator at the beginning of the
+	 * child RowItem tree.
+	 */
+	const_iterator begin() const;
+
+	/**
+	 * Returns a constant depth-first iterator at the end of the child
+	 * RowItem tree.
+	 */
+	const_iterator end() const;
+
 	virtual void update_viewport() = 0;
 
 private:
-	std::vector< std::shared_ptr<RowItem> > _items;
+	item_list _items;
 };
 
 } // view

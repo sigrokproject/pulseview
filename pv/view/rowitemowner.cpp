@@ -29,6 +29,11 @@ using std::vector;
 namespace pv {
 namespace view {
 
+vector< shared_ptr<RowItem> >& RowItemOwner::child_items()
+{
+	return _items;
+}
+
 const vector< shared_ptr<RowItem> >& RowItemOwner::child_items() const
 {
 	return _items;
@@ -57,6 +62,26 @@ void RowItemOwner::remove_child_item(std::shared_ptr<RowItem> item)
 	auto iter = std::find(_items.begin(), _items.end(), item);
 	assert(iter != _items.end());
 	_items.erase(iter);
+}
+
+RowItemOwner::iterator RowItemOwner::begin()
+{
+	return iterator(this, _items.begin());
+}
+
+RowItemOwner::iterator RowItemOwner::end()
+{
+	return iterator(this);
+}
+
+RowItemOwner::const_iterator RowItemOwner::begin() const
+{
+	return const_iterator(this, _items.cbegin());
+}
+
+RowItemOwner::const_iterator RowItemOwner::end() const
+{
+	return const_iterator(this);
 }
 
 } // view
