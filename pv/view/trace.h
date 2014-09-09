@@ -148,8 +148,6 @@ public:
 	 */
 	QRectF get_label_rect(int right);
 
-	bool eventFilter(QObject *obj, QEvent *evt);
-
 protected:
 
 	/**
@@ -174,8 +172,6 @@ protected:
 	void create_popup_form();
 
 	virtual void populate_popup_form(QWidget *parent, QFormLayout *form);
-
-	void close_popup();
 
 private Q_SLOTS:
 	void on_text_changed(const QString &text);

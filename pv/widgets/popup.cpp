@@ -25,6 +25,7 @@
 #include <QtGui>
 #include <QApplication>
 #include <QDesktopWidget>
+#include <QLineEdit>
 
 #include "popup.h"
 
@@ -65,6 +66,45 @@ void Popup::set_position(const QPoint point, Position pos)
 		MarginWidth + ((pos == Left) ? ArrowLength : 0),
 		MarginWidth + ((pos == Top) ? ArrowLength : 0));
 
+}
+
+bool Popup::eventFilter(QObject *obj, QEvent *evt)
+{
+	QKeyEvent *keyEvent;
+
+	(void)obj;
+
+	if (evt->type() == QEvent::KeyPress) {
+		keyEvent = static_cast<QKeyEvent*>(evt);
+		if (keyEvent->key() == Qt::Key_Enter ||
+		    keyEvent->key() == Qt::Key_Return) {
+			this->close();
+			return true;
+		}
+	}
+
+	return false;
+}
+
+void Popup::show()
+{
+	QLineEdit* le;
+
+	QWidget::show();
+
+	// We want to close the popup when the Enter key was
+	// pressed and the first editable widget had focus.
+	if ((le = this->findChild<QLineEdit*>())) {
+
+		// For combo boxes we need to hook into the parent of
+		// the line edit (i.e. the QComboBox). For edit boxes
+		// we hook into the widget directly.
+		if (le->parent()->metaObject()->className() ==
+				this->metaObject()->className())
+			le->installEventFilter(this);
+		else
+			le->parent()->installEventFilter(this);
+	}
 }
 
 bool Popup::space_for_arrow() const

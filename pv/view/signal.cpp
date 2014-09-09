@@ -118,9 +118,6 @@ void Signal::populate_popup_form(QWidget *parent, QFormLayout *form)
 	connect(_name_widget, SIGNAL(editTextChanged(const QString&)),
 		this, SLOT(on_text_changed(const QString&)));
 
-	// We want to close the popup when the Enter key was pressed.
-	_name_widget->installEventFilter(this);
-
 	form->addRow(tr("Name"), _name_widget);
 
 	add_colour_option(parent, form);
@@ -138,24 +135,6 @@ QMenu* Signal::create_context_menu(QWidget *parent)
 	menu->addAction(disable);
 
 	return menu;
-}
-
-bool Signal::eventFilter(QObject *obj, QEvent *evt)
-{
-	QKeyEvent *keyEvent;
-
-	(void)obj;
-
-	if (evt->type() == QEvent::KeyPress) {
-		keyEvent = static_cast<QKeyEvent*>(evt);
-		if (keyEvent->key() == Qt::Key_Enter ||
-		    keyEvent->key() == Qt::Key_Return) {
-			close_popup();
-			return true;
-		}
-	}
-
-	return false;
 }
 
 void Signal::delete_pressed()

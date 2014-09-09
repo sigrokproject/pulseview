@@ -52,6 +52,10 @@ public:
 
 	void set_position(const QPoint point, Position pos);
 
+	bool eventFilter(QObject *obj, QEvent *evt);
+
+	void show();
+
 private:
 	bool space_for_arrow() const;
 

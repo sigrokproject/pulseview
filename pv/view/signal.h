@@ -75,8 +75,6 @@ public:
 
 	void delete_pressed();
 
-	bool eventFilter(QObject *obj, QEvent *evt);
-
 private Q_SLOTS:
 	void on_disable();
 
