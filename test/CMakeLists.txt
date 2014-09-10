@@ -48,7 +48,6 @@ set(pulseview_TEST_SOURCES
 	${PROJECT_SOURCE_DIR}/pv/device/device.cpp
 	${PROJECT_SOURCE_DIR}/pv/device/devinst.cpp
 	${PROJECT_SOURCE_DIR}/pv/device/file.cpp
-	${PROJECT_SOURCE_DIR}/pv/device/inputfile.cpp
 	${PROJECT_SOURCE_DIR}/pv/device/sessionfile.cpp
 	${PROJECT_SOURCE_DIR}/pv/prop/double.cpp
 	${PROJECT_SOURCE_DIR}/pv/prop/enum.cpp
