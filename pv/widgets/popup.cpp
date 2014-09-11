@@ -78,7 +78,7 @@ bool Popup::eventFilter(QObject *obj, QEvent *evt)
 		keyEvent = static_cast<QKeyEvent*>(evt);
 		if (keyEvent->key() == Qt::Key_Enter ||
 		    keyEvent->key() == Qt::Key_Return) {
-			this->close();
+			close();
 			return true;
 		}
 	}
@@ -104,6 +104,9 @@ void Popup::show()
 			le->installEventFilter(this);
 		else
 			le->parent()->installEventFilter(this);
+
+		le->selectAll();
+		le->setFocus();
 	}
 }
 

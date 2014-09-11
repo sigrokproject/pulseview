@@ -112,9 +112,6 @@ void Signal::populate_popup_form(QWidget *parent, QFormLayout *form)
 		_name_widget->setCurrentIndex(index);
 	}
 
-	_name_widget->lineEdit()->selectAll();
-	_name_widget->setFocus();
-
 	connect(_name_widget, SIGNAL(editTextChanged(const QString&)),
 		this, SLOT(on_text_changed(const QString&)));
 
