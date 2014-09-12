@@ -30,6 +30,7 @@
 #include <QAction>
 #include <QApplication>
 #include <QButtonGroup>
+#include <QCloseEvent>
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QMenu>
@@ -81,6 +82,7 @@ MainWindow::MainWindow(DeviceManager &device_manager,
 	_session(device_manager)
 {
 	setup_ui();
+	restore_ui_settings();
 	if (open_file_name) {
 		const QString s(QString::fromUtf8(open_file_name));
 		QMetaObject::invokeMethod(this, "load_file",
@@ -92,8 +94,6 @@ MainWindow::MainWindow(DeviceManager &device_manager,
 void MainWindow::setup_ui()
 {
 	setObjectName(QString::fromUtf8("MainWindow"));
-
-	resize(1024, 768);
 
 	// Set the window icon
 	QIcon icon;
@@ -268,6 +268,31 @@ void MainWindow::setup_ui()
 
 }
 
+void MainWindow::save_ui_settings()
+{
+	QSettings settings("sigrok", "PulseView");
+
+	settings.beginGroup("MainWindow");
+	settings.setValue("state", saveState());
+	settings.setValue("geometry", saveGeometry());
+	settings.endGroup();
+}
+
+void MainWindow::restore_ui_settings()
+{
+	QSettings settings("sigrok", "PulseView");
+
+	settings.beginGroup("MainWindow");
+
+	if (settings.contains("geometry")) {
+		restoreGeometry(settings.value("geometry").toByteArray());
+		restoreState(settings.value("state").toByteArray());
+	} else
+		resize(1000, 720);
+
+	settings.endGroup();
+}
+
 void MainWindow::session_error(
 	const QString text, const QString info_text)
 {
@@ -295,6 +320,12 @@ void MainWindow::update_device_list()
 	assert(selected_device);
 
 	_sampling_bar->set_device_list(devices, selected_device);
+}
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+	save_ui_settings();
+	event->accept();
 }
 
 void MainWindow::load_file(QString file_name)

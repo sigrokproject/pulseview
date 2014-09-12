@@ -65,6 +65,10 @@ public:
 private:
 	void setup_ui();
 
+	void save_ui_settings();
+
+	void restore_ui_settings();
+
 	void session_error(const QString text, const QString info_text);
 
 	/**
@@ -72,9 +76,10 @@ private:
 	 */
 	void update_device_list();
 
+	void closeEvent(QCloseEvent *event);
+
 private Q_SLOTS:
 	void load_file(QString file_name);
-
 
 	void show_session_error(
 		const QString text, const QString info_text);
