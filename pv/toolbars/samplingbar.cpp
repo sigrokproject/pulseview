@@ -66,6 +66,8 @@ SamplingBar::SamplingBar(SigSession &session, QWidget *parent) :
 	_icon_grey(":/icons/status-grey.svg"),
 	_run_stop_button(this)
 {
+	setObjectName(QString::fromUtf8("SamplingBar"));
+
 	connect(&_run_stop_button, SIGNAL(clicked()),
 		this, SLOT(on_run_stop()));
 	connect(&_device_selector, SIGNAL(currentIndexChanged (int)),

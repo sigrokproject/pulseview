@@ -240,6 +240,7 @@ void MainWindow::setup_ui()
 
 	// Setup the toolbar
 	QToolBar *const toolbar = new QToolBar(tr("Main Toolbar"), this);
+	toolbar->setObjectName(QString::fromUtf8("MainToolbar"));
 	toolbar->addAction(action_open);
 	toolbar->addAction(action_save_as);
 	toolbar->addSeparator();
