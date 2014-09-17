@@ -119,7 +119,7 @@ void Connect::populate_drivers()
 			hwopts = (const int32_t *)g_variant_get_fixed_array(gvar_opts,
 					&num_opts, sizeof(int32_t));
 			for (unsigned int j = 0; j < num_opts; j++)
-				if (hwopts[j] == SR_CONF_SAMPLERATE) {
+				if ((hwopts[j] & SR_CONF_MASK) == SR_CONF_SAMPLERATE) {
 					supported_device = true;
 					break;
 				}

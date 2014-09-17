@@ -339,13 +339,15 @@ void SamplingBar::update_device_config_widgets()
 			        gvar, &num_opts, sizeof(int32_t));
 		for (unsigned int i = 0; i < num_opts; i++)
 		{
-			switch (options[i]) {
+			switch (options[i] & SR_CONF_MASK) {
 			case SR_CONF_LIMIT_SAMPLES:
-				_sample_count_supported = true;
+				if (options[i] & SR_CONF_SET)
+					_sample_count_supported = true;
 				break;
 			case SR_CONF_LIMIT_FRAMES:
-				dev_inst->set_config(NULL, SR_CONF_LIMIT_FRAMES,
-					g_variant_new_uint64(1));
+				if (options[i] & SR_CONF_SET)
+					dev_inst->set_config(NULL, SR_CONF_LIMIT_FRAMES,
+						g_variant_new_uint64(1));
 				break;
 			}
 		}

@@ -62,7 +62,7 @@ DeviceOptions::DeviceOptions(shared_ptr<pv::device::DevInst> dev_inst,
 		gvar_opts, &num_opts, sizeof(int32_t));
 	for (unsigned int i = 0; i < num_opts; i++) {
 		const struct sr_config_info *const info =
-			sr_config_info_get(options[i]);
+			sr_config_info_get(options[i] & SR_CONF_MASK);
 
 		if (!info)
 			continue;
