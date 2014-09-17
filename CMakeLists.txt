@@ -92,6 +92,8 @@ endif()
 
 find_package(Boost 1.42 COMPONENTS filesystem system REQUIRED)
 
+find_package(Threads REQUIRED)
+
 #===============================================================================
 #= System Introspection
 #-------------------------------------------------------------------------------
@@ -318,6 +320,7 @@ link_directories(${Boost_LIBRARY_DIRS})
 set(PULSEVIEW_LINK_LIBS
 	${Boost_LIBRARIES}
 	${QT_LIBRARIES}
+	${CMAKE_THREAD_LIBS_INIT}
 )
 
 if(STATIC_PKGDEPS_LIBS)
