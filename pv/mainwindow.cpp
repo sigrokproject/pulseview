@@ -271,7 +271,7 @@ void MainWindow::setup_ui()
 
 void MainWindow::save_ui_settings()
 {
-	QSettings settings("sigrok", "PulseView");
+	QSettings settings;
 
 	settings.beginGroup("MainWindow");
 	settings.setValue("state", saveState());
@@ -281,7 +281,7 @@ void MainWindow::save_ui_settings()
 
 void MainWindow::restore_ui_settings()
 {
-	QSettings settings("sigrok", "PulseView");
+	QSettings settings;
 
 	settings.beginGroup("MainWindow");
 

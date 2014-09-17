@@ -28,6 +28,7 @@ Application::Application(int &argc, char* argv[]) :
 {
 	setApplicationVersion(PV_VERSION_STRING);
 	setApplicationName("PulseView");
+	setOrganizationName("sigrok");
 	setOrganizationDomain("sigrok.org");
 }
 
