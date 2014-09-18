@@ -31,6 +31,10 @@ pkg_check_modules(PKGDEPS REQUIRED ${PKGDEPS})
 
 find_package(Boost 1.42 COMPONENTS filesystem system unit_test_framework REQUIRED)
 
+# Find the platform's thread library (needed for C++11 threads).
+# This will set ${CMAKE_THREAD_LIBS_INIT} to the correct, OS-specific value.
+find_package(Threads REQUIRED)
+
 find_program(QT_QMAKE_EXECUTABLE NAMES qmake4 qmake-qt4 qmake-mac)
 find_package(Qt4 REQUIRED)
 
@@ -136,7 +140,7 @@ endif()
 
 # On MinGW we need to use static linking.
 if(NOT WIN32)
-add_definitions(-DBOOST_TEST_DYN_LINK)
+	add_definitions(-DBOOST_TEST_DYN_LINK)
 endif()
 
 add_definitions(${QT_DEFINITIONS})
@@ -150,6 +154,7 @@ set(PULSEVIEW_LINK_LIBS
 	${Boost_LIBRARIES}
 	${PKGDEPS_LIBRARIES}
 	${QT_LIBRARIES}
+	${CMAKE_THREAD_LIBS_INIT}
 )
 
 if(WIN32)
