@@ -21,6 +21,9 @@
 #ifndef PULSEVIEW_PV_DEVICE_DEVICE_H
 #define PULSEVIEW_PV_DEVICE_DEVICE_H
 
+#include <map>
+#include <string>
+
 #include "devinst.h"
 
 namespace pv {
@@ -38,6 +41,8 @@ public:
 	void release();
 
 	std::string format_device_title() const;
+
+	std::map<std::string, std::string> get_device_info() const;
 
 private:
 	sr_dev_inst *const _sdi;

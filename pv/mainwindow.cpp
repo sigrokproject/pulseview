@@ -63,7 +63,9 @@
 #include <libsigrok/libsigrok.h>
 
 using std::list;
+using std::map;
 using std::shared_ptr;
+using std::string;
 
 namespace pv {
 
@@ -266,22 +268,52 @@ void MainWindow::setup_ui()
 	// Setup _session events
 	connect(&_session, SIGNAL(capture_state_changed(int)), this,
 		SLOT(capture_state_changed(int)));
-
 }
 
 void MainWindow::save_ui_settings()
 {
 	QSettings settings;
 
+	map<string, string> dev_info;
+	list<string> key_list;
+
 	settings.beginGroup("MainWindow");
 	settings.setValue("state", saveState());
 	settings.setValue("geometry", saveGeometry());
 	settings.endGroup();
+
+	if (_session.get_device()) {
+		settings.beginGroup("Device");
+		key_list.push_back("vendor");
+		key_list.push_back("model");
+		key_list.push_back("version");
+		key_list.push_back("serial_num");
+		key_list.push_back("connection_id");
+
+		dev_info = _session.get_device()->get_device_info();
+
+		for (string key : key_list) {
+
+			if (dev_info.count(key))
+				settings.setValue(QString::fromUtf8(key.c_str()),
+						QString::fromUtf8(dev_info.at(key).c_str()));
+			else
+				settings.remove(QString::fromUtf8(key.c_str()));
+		}
+
+		settings.endGroup();
+	}
 }
 
 void MainWindow::restore_ui_settings()
 {
 	QSettings settings;
+
+	shared_ptr<pv::device::DevInst> device;
+
+	map<string, string> dev_info;
+	list<string> key_list;
+	string value;
 
 	settings.beginGroup("MainWindow");
 
@@ -290,6 +322,33 @@ void MainWindow::restore_ui_settings()
 		restoreState(settings.value("state").toByteArray());
 	} else
 		resize(1000, 720);
+
+	settings.endGroup();
+
+	// Re-select last used device if possible.
+	settings.beginGroup("Device");
+	key_list.push_back("vendor");
+	key_list.push_back("model");
+	key_list.push_back("version");
+	key_list.push_back("serial_num");
+	key_list.push_back("connection_id");
+
+	for (string key : key_list) {
+		if (!settings.contains(QString::fromUtf8(key.c_str())))
+			continue;
+
+		value = settings.value(QString::fromUtf8(key.c_str())).toString().toStdString();
+
+		if (value.size() > 0)
+			dev_info.insert(std::make_pair(key, value));
+	}
+
+	device = _device_manager.find_device_from_info(dev_info);
+
+	if (device) {
+		_session.set_device(device);
+		update_device_list();
+	}
 
 	settings.endGroup();
 }

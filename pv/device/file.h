@@ -39,6 +39,8 @@ public:
 public:
 	std::string format_device_title() const;
 
+	std::map<std::string, std::string> get_device_info() const;
+
 protected:
 	const std::string _path;
 };

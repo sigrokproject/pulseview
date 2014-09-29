@@ -25,6 +25,9 @@
 
 #include "device.h"
 
+using std::list;
+using std::make_pair;
+using std::map;
 using std::ostringstream;
 using std::string;
 
@@ -70,23 +73,50 @@ std::string Device::format_device_title() const
 
 	assert(_sdi);
 
-	if (_sdi->vendor && _sdi->vendor[0]) {
-		s << _sdi->vendor;
-		if ((_sdi->model && _sdi->model[0]) ||
-			(_sdi->version && _sdi->version[0]))
-			s << ' ';
-	}
+	if (_sdi->vendor && _sdi->vendor[0])
+		s << _sdi->vendor << " ";
 
-	if (_sdi->model && _sdi->model[0]) {
-		s << _sdi->model;
-		if (_sdi->version && _sdi->version[0])
-			s << ' ';
-	}
+	if (_sdi->model && _sdi->model[0])
+		s << _sdi->model << " ";
 
 	if (_sdi->version && _sdi->version[0])
-		s << _sdi->version;
+		s << _sdi->version << " ";
+
+	// Show connection string only if no serial number is present.
+	if (_sdi->serial_num && _sdi->serial_num[0])
+		s << "(" << _sdi->serial_num << ") ";
+	else if (_sdi->connection_id && _sdi->connection_id[0])
+		s << "[" << _sdi->connection_id << "] ";
+
+	// Remove trailing space.
+	s.seekp(-1, std::ios_base::end);
+	s << std::ends;
 
 	return s.str();
+}
+
+map<string, string> Device::get_device_info() const
+{
+	map<string, string> result;
+
+	assert(_sdi);
+
+	if (_sdi->vendor && _sdi->vendor[0])
+		result.insert(make_pair("vendor", _sdi->vendor));
+
+	if (_sdi->model && _sdi->model[0])
+		result.insert(make_pair("model", _sdi->model));
+
+	if (_sdi->version && _sdi->version[0])
+		result.insert(make_pair("version", _sdi->version));
+
+	if (_sdi->serial_num && _sdi->serial_num[0])
+		result.insert(make_pair("serial_num", _sdi->serial_num));
+
+	if (_sdi->connection_id && _sdi->connection_id[0])
+		result.insert(make_pair("connection_id", _sdi->connection_id));
+
+	return result;
 }
 
 } // device

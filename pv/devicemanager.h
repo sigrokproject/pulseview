@@ -24,6 +24,7 @@
 #include <glib.h>
 
 #include <list>
+#include <map>
 #include <memory>
 #include <string>
 
@@ -51,6 +52,9 @@ public:
 	std::list< std::shared_ptr<pv::device::Device> > driver_scan(
 		struct sr_dev_driver *const driver,
 		GSList *const drvopts = NULL);
+
+	const std::shared_ptr<device::Device> find_device_from_info(
+		const std::map<std::string, std::string> search_info);
 
 private:
 	void init_drivers();

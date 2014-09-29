@@ -21,6 +21,7 @@
 #ifndef PULSEVIEW_PV_DEVICE_DEVINST_H
 #define PULSEVIEW_PV_DEVICE_DEVINST_H
 
+#include <map>
 #include <memory>
 #include <string>
 
@@ -57,6 +58,8 @@ public:
 	SigSession* owner() const;
 
 	virtual std::string format_device_title() const = 0;
+
+	virtual std::map<std::string, std::string> get_device_info() const = 0;
 
 	GVariant* get_config(const sr_channel_group *group, int key);
 

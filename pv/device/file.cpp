@@ -25,6 +25,8 @@
 
 #include <libsigrok/libsigrok.h>
 
+using std::make_pair;
+using std::map;
 using std::string;
 
 namespace pv {
@@ -38,6 +40,18 @@ File::File(const std::string path) :
 std::string File::format_device_title() const
 {
 	return boost::filesystem::path(_path).filename().string();
+}
+
+map<string, string> File::get_device_info() const
+{
+	map<string, string> result;
+
+	result.insert(make_pair("vendor", "sigrok"));
+	result.insert(make_pair("model", "file"));
+	result.insert(make_pair("connection_id",
+			boost::filesystem::path(_path).filename().string()));
+
+	return result;
 }
 
 File* File::create(const string &name)
