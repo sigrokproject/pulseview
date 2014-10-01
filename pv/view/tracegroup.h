@@ -77,7 +77,7 @@ public:
 	 * 	area.
 	 * @return Returns the rectangle of the signal label.
 	 */
-	QRectF label_rect(int right);
+	QRectF label_rect(int right) const;
 
 	/**
 	 * Determines if a point is in the header label rect.

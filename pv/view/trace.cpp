@@ -143,7 +143,7 @@ pv::widgets::Popup* Trace::create_popup(QWidget *parent)
 	return _popup;
 }
 
-QRectF Trace::label_rect(int right)
+QRectF Trace::label_rect(int right) const
 {
 	using pv::view::View;
 

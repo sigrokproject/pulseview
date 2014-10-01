@@ -72,7 +72,7 @@ void TraceGroup::paint_label(QPainter &p, int right, bool hover)
 	(void)hover;
 }
 
-QRectF TraceGroup::label_rect(int right)
+QRectF TraceGroup::label_rect(int right) const
 {
 	(void)right;
 	return QRectF();
