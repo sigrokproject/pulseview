@@ -110,8 +110,6 @@ public:
 	 */
 	void set_scale_offset(double scale, double offset);
 
-	std::list<std::weak_ptr<SelectableItem> > selected_items() const;
-
 	std::set< std::shared_ptr<pv::data::SignalData> >
 		get_visible_data() const;
 

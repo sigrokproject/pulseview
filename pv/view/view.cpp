@@ -252,26 +252,6 @@ void View::set_scale_offset(double scale, double offset)
 	scale_offset_changed();
 }
 
-list<weak_ptr<SelectableItem> > View::selected_items() const
-{
-	list<weak_ptr<SelectableItem> > items;
-
-	// List the selected signals
-	const vector< shared_ptr<RowItem> > row_items(child_items());
-	for (shared_ptr<RowItem> r : row_items) {
-		if (r && r->selected())
-			items.push_back(r);
-	}
-
-	// List the selected cursors
-	if (_cursors.first()->selected())
-		items.push_back(_cursors.first());
-	if (_cursors.second()->selected())
-		items.push_back(_cursors.second());
-
-	return items;
-}
-
 set< shared_ptr<SignalData> > View::get_visible_data() const
 {
 	shared_lock<shared_mutex> lock(session().signals_mutex());
