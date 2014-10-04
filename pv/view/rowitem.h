@@ -52,6 +52,11 @@ public:
 	void set_v_offset(int v_offset);
 
 	/**
+	 * Gets the owner this trace in the view trace hierachy.
+	 */
+	pv::view::RowItemOwner* owner() const;
+
+	/**
 	 * Sets the owner this trace in the view trace hierachy.
 	 * @param The new owner of the trace.
 	 */

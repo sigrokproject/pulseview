@@ -43,6 +43,11 @@ void RowItem::set_v_offset(int v_offset)
 	_v_offset = v_offset;
 }
 
+RowItemOwner* RowItem::owner() const
+{
+	return _owner;
+}
+
 void RowItem::set_owner(RowItemOwner *owner)
 {
 	assert((_owner && !owner) || (!_owner && owner));
