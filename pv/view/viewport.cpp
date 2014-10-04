@@ -66,18 +66,14 @@ Viewport::Viewport(View &parent) :
 int Viewport::get_total_height() const
 {
 	int h = 0;
-	const vector< shared_ptr<RowItem> > row_items(_view.child_items());
-	for (const shared_ptr<RowItem> r : row_items) {
-		assert(r);
-		h = max(r->v_offset() + View::SignalHeight, h);
-	}
-
+	for (auto &i : _view)
+		h = max(i->v_offset() + View::SignalHeight, h);
 	return h;
 }
 
 void Viewport::paintEvent(QPaintEvent*)
 {
-	vector< shared_ptr<RowItem> > row_items(_view.child_items());
+	vector< shared_ptr<RowItem> > row_items(_view.begin(), _view.end());
 	stable_sort(row_items.begin(), row_items.end(),
 		[](const shared_ptr<RowItem> &a, const shared_ptr<RowItem> &b) {
 			return a->v_offset() < b->v_offset(); });
@@ -235,8 +231,7 @@ bool Viewport::touchEvent(QTouchEvent *event)
 
 void Viewport::on_signals_changed()
 {
-	const vector< shared_ptr<RowItem> > row_items(_view.child_items());
-	for (shared_ptr<RowItem> r : row_items) {
+	for (shared_ptr<RowItem> r : _view) {
 		assert(r);
 		connect(r.get(), SIGNAL(visibility_changed()),
 			this, SLOT(update()));

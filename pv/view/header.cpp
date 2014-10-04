@@ -70,14 +70,9 @@ QSize Header::sizeHint() const
 {
 	int max_width = 0;
 
-	const vector< shared_ptr<RowItem> > row_items(_view.child_items());
-	for (shared_ptr<RowItem> r : row_items) {
-		assert(r);
-
-		if (r->enabled()) {
-			max_width = max(max_width, (int)r->label_rect(0).width());
-		}
-	}
+	for (auto &i : _view)
+		if (i->enabled())
+			max_width = max(max_width, (int)i->label_rect(0).width());
 
 	return QSize(max_width + Padding + BaselineOffset, 0);
 }
@@ -85,26 +80,16 @@ QSize Header::sizeHint() const
 shared_ptr<RowItem> Header::get_mouse_over_row_item(const QPoint &pt)
 {
 	const int w = width() - BaselineOffset;
-	const vector< shared_ptr<RowItem> > row_items(_view.child_items());
-
-	for (const shared_ptr<RowItem> r : row_items)
-	{
-		assert(r);
-		if (r->enabled() && r->label_rect(w).contains(pt))
-			return r;
-	}
-
+	for (auto &i : _view)
+		if (i->enabled() && i->label_rect(w).contains(pt))
+			return i;
 	return shared_ptr<RowItem>();
 }
 
 void Header::clear_selection()
 {
-	const vector< shared_ptr<RowItem> > row_items(_view.child_items());
-	for (const shared_ptr<RowItem> r : row_items) {
-		assert(r);
-		r->select(false);
-	}
-
+	for (auto &i : _view)
+		i->select(false);
 	update();
 }
 
@@ -128,7 +113,9 @@ void Header::paintEvent(QPaintEvent*)
 	// would be clipped away.
 	const int w = width() - BaselineOffset;
 
-	vector< shared_ptr<RowItem> > row_items(_view.child_items());
+	vector< shared_ptr<RowItem> > row_items(
+		_view.begin(), _view.end());
+
 	stable_sort(row_items.begin(), row_items.end(),
 		[](const shared_ptr<RowItem> &a, const shared_ptr<RowItem> &b) {
 			return a->v_offset() < b->v_offset(); });
@@ -153,13 +140,11 @@ void Header::mousePressEvent(QMouseEvent *event)
 {
 	assert(event);
 
-	const vector< shared_ptr<RowItem> > row_items(_view.child_items());
-
 	if (event->button() & Qt::LeftButton) {
 		_mouse_down_point = event->pos();
 
 		// Save the offsets of any signals which will be dragged
-		for (const shared_ptr<RowItem> r : row_items)
+		for (const shared_ptr<RowItem> r : _view)
 			if (r->selected())
 				_drag_row_items.push_back(
 					make_pair(r, r->v_offset()));
@@ -189,7 +174,7 @@ void Header::mousePressEvent(QMouseEvent *event)
 	if (~QApplication::keyboardModifiers() & Qt::ControlModifier) {
 		// Unselect all other signals because the Ctrl is not
 		// pressed
-		for (const shared_ptr<RowItem> r : row_items)
+		for (const shared_ptr<RowItem> r : _view)
 			if (r != mouse_over_row_item)
 				r->select(false);
 	}
@@ -286,8 +271,7 @@ void Header::keyPressEvent(QKeyEvent *e)
 	{
 	case Qt::Key_Delete:
 	{
-		const vector< shared_ptr<RowItem> > row_items(_view.child_items());
-		for (const shared_ptr<RowItem> r : row_items)
+		for (const shared_ptr<RowItem> r : _view)
 			if (r->selected())
 				r->delete_pressed();
 		break;
@@ -297,8 +281,7 @@ void Header::keyPressEvent(QKeyEvent *e)
 
 void Header::on_signals_changed()
 {
-	const vector< shared_ptr<RowItem> > row_items(_view.child_items());
-	for (shared_ptr<RowItem> r : row_items) {
+	for (shared_ptr<RowItem> r : _view) {
 		assert(r);
 		connect(r.get(), SIGNAL(visibility_changed()),
 			this, SLOT(on_trace_changed()));

@@ -326,14 +326,12 @@ const QPoint& View::hover_point() const
 
 void View::normalize_layout()
 {
-	const vector< shared_ptr<RowItem> > row_items(child_items());
-
 	int v_min = INT_MAX;
-	for (const shared_ptr<RowItem> r : row_items)
+	for (const shared_ptr<RowItem> r : *this)
 		v_min = min(r->v_offset(), v_min);
 
 	const int delta = -min(v_min, 0);
-	for (shared_ptr<RowItem> r : row_items)
+	for (shared_ptr<RowItem> r : *this)
 		r->set_v_offset(r->v_offset() + delta);
 
 	verticalScrollBar()->setSliderPosition(_v_offset + delta);
@@ -517,7 +515,7 @@ void View::signals_changed()
 
 	// Create the initial layout
 	int offset = SignalMargin + SignalHeight;
-	for (shared_ptr<RowItem> r : child_items()) {
+	for (shared_ptr<RowItem> r : *this) {
 		r->set_v_offset(offset);
 		offset += SignalHeight + 2 * SignalMargin;
 	}
@@ -554,8 +552,7 @@ void View::on_geometry_updated()
 
 void View::on_hover_point_changed()
 {
-	const vector< shared_ptr<RowItem> > row_items(child_items());
-	for (shared_ptr<RowItem> r : row_items)
+	for (shared_ptr<RowItem> r : *this)
 		r->hover_point_changed();
 }
 
