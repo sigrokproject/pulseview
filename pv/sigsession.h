@@ -104,8 +104,9 @@ public:
 
 	std::set< std::shared_ptr<data::SignalData> > get_data() const;
 
-	std::vector< std::shared_ptr<view::Signal> >
-		get_signals() const;
+	std::mutex& signals_mutex() const;
+
+	const std::vector< std::shared_ptr<view::Signal> >& signals() const;
 
 #ifdef ENABLE_DECODE
 	bool add_decoder(srd_decoder *const dec);

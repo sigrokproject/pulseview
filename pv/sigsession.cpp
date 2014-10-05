@@ -239,9 +239,13 @@ set< shared_ptr<data::SignalData> > SigSession::get_data() const
 	return data;
 }
 
-vector< shared_ptr<view::Signal> > SigSession::get_signals() const
+mutex& SigSession::signals_mutex() const
 {
-	lock_guard<mutex> lock(_signals_mutex);
+	return _signals_mutex;
+}
+
+const vector< shared_ptr<view::Signal> >& SigSession::signals() const
+{
 	return _signals;
 }
 

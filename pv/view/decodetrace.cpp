@@ -22,6 +22,8 @@ extern "C" {
 #include <libsigrokdecode/libsigrokdecode.h>
 }
 
+#include <mutex>
+
 #include <extdef.h>
 
 #include <tuple>
@@ -53,10 +55,12 @@ extern "C" {
 
 using std::dynamic_pointer_cast;
 using std::list;
+using std::lock_guard;
 using std::make_pair;
 using std::max;
 using std::map;
 using std::min;
+using std::mutex;
 using std::pair;
 using std::shared_ptr;
 using std::tie;
@@ -692,7 +696,8 @@ QComboBox* DecodeTrace::create_channel_selector(
 {
 	assert(dec);
 
-	const vector< shared_ptr<Signal> > sigs = _session.get_signals();
+	lock_guard<mutex> lock(_session.signals_mutex());
+	const vector< shared_ptr<Signal> > &sigs(_session.signals());
 
 	assert(_decoder_stack);
 	const auto channel_iter = dec->channels().find(pdch);
@@ -725,7 +730,9 @@ void DecodeTrace::commit_decoder_channels(shared_ptr<data::decode::Decoder> &dec
 	assert(dec);
 
 	map<const srd_channel*, shared_ptr<LogicSignal> > channel_map;
-	const vector< shared_ptr<Signal> > sigs = _session.get_signals();
+
+	lock_guard<mutex> lock(_session.signals_mutex());
+	const vector< shared_ptr<Signal> > &sigs(_session.signals());
 
 	for (const ChannelSelector &s : _channel_selectors)
 	{

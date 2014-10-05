@@ -22,9 +22,10 @@
 #include <libsigrokdecode/libsigrokdecode.h>
 #endif
 
-#include <assert.h>
-#include <limits.h>
-#include <math.h>
+#include <cassert>
+#include <climits>
+#include <cmath>
+#include <mutex>
 
 #include <QEvent>
 #include <QMouseEvent>
@@ -46,9 +47,11 @@ using pv::data::SignalData;
 using std::back_inserter;
 using std::deque;
 using std::list;
+using std::lock_guard;
 using std::max;
 using std::make_pair;
 using std::min;
+using std::mutex;
 using std::pair;
 using std::set;
 using std::shared_ptr;
@@ -214,9 +217,6 @@ void View::zoom_one_to_one()
 {
 	using pv::data::SignalData;
 
-	const vector< shared_ptr<Signal> > sigs(
-		session().get_signals());
-
 	// Make a set of all the visible data objects
 	set< shared_ptr<SignalData> > visible_data = get_visible_data();
 	if (visible_data.empty())
@@ -273,8 +273,8 @@ list<weak_ptr<SelectableItem> > View::selected_items() const
 
 set< shared_ptr<SignalData> > View::get_visible_data() const
 {
-	const vector< shared_ptr<Signal> > sigs(
-		session().get_signals());
+	lock_guard<mutex> lock(session().signals_mutex());
+	const vector< shared_ptr<Signal> > &sigs(session().signals());
 
 	// Make a set of all the visible data objects
 	set< shared_ptr<SignalData> > visible_data;
@@ -522,8 +522,8 @@ void View::signals_changed()
 	// Populate the traces
 	clear_child_items();
 
-	const vector< shared_ptr<Signal> > sigs(
-		session().get_signals());
+	lock_guard<mutex> lock(session().signals_mutex());
+	const vector< shared_ptr<Signal> > &sigs(session().signals());
 	for (auto s : sigs)
 		add_child_item(s);
 

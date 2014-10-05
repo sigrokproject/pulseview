@@ -79,8 +79,9 @@ bool StoreSession::start()
 {
 	set< shared_ptr<data::SignalData> > data_set =
 		_session.get_data();
-	const vector< shared_ptr<view::Signal> > sigs =
-		_session.get_signals();
+
+	lock_guard<mutex> lock(_session.signals_mutex());
+	const vector< shared_ptr<view::Signal> > &sigs(_session.signals());
 
 	// Check we have logic data
 	if (data_set.empty() || sigs.empty()) {
