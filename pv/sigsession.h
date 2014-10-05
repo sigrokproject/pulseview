@@ -29,6 +29,8 @@
 #include <thread>
 #include <vector>
 
+#include <boost/thread.hpp>
+
 #include <QObject>
 #include <QString>
 
@@ -104,7 +106,7 @@ public:
 
 	std::set< std::shared_ptr<data::SignalData> > get_data() const;
 
-	std::mutex& signals_mutex() const;
+	boost::shared_mutex& signals_mutex() const;
 
 	const std::vector< std::shared_ptr<view::Signal> >& signals() const;
 
@@ -159,7 +161,7 @@ private:
 	mutable std::mutex _sampling_mutex;
 	capture_state _capture_state;
 
-	mutable std::mutex _signals_mutex;
+	mutable boost::shared_mutex _signals_mutex;
 	std::vector< std::shared_ptr<view::Signal> > _signals;
 
 	mutable std::mutex _data_mutex;

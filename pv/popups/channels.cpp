@@ -35,6 +35,8 @@
 
 using namespace Qt;
 
+using boost::shared_lock;
+using boost::shared_mutex;
 using std::lock_guard;
 using std::map;
 using std::mutex;
@@ -68,7 +70,7 @@ Channels::Channels(SigSession &session, QWidget *parent) :
 	// Collect a set of signals
 	map<shared_ptr<Channel>, shared_ptr<Signal> > signal_map;
 
-	lock_guard<mutex> lock(_session.signals_mutex());
+	shared_lock<shared_mutex> lock(_session.signals_mutex());
 	const vector< shared_ptr<Signal> > &sigs(_session.signals());
 
 	for (const shared_ptr<Signal> &sig : sigs)

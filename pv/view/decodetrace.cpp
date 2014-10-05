@@ -53,6 +53,8 @@ extern "C" {
 #include <pv/widgets/decodergroupbox.h>
 #include <pv/widgets/decodermenu.h>
 
+using boost::shared_lock;
+using boost::shared_mutex;
 using std::dynamic_pointer_cast;
 using std::list;
 using std::lock_guard;
@@ -60,7 +62,6 @@ using std::make_pair;
 using std::max;
 using std::map;
 using std::min;
-using std::mutex;
 using std::pair;
 using std::shared_ptr;
 using std::tie;
@@ -696,7 +697,7 @@ QComboBox* DecodeTrace::create_channel_selector(
 {
 	assert(dec);
 
-	lock_guard<mutex> lock(_session.signals_mutex());
+	shared_lock<shared_mutex> lock(_session.signals_mutex());
 	const vector< shared_ptr<Signal> > &sigs(_session.signals());
 
 	assert(_decoder_stack);
@@ -731,7 +732,7 @@ void DecodeTrace::commit_decoder_channels(shared_ptr<data::decode::Decoder> &dec
 
 	map<const srd_channel*, shared_ptr<LogicSignal> > channel_map;
 
-	lock_guard<mutex> lock(_session.signals_mutex());
+	shared_lock<shared_mutex> lock(_session.signals_mutex());
 	const vector< shared_ptr<Signal> > &sigs(_session.signals());
 
 	for (const ChannelSelector &s : _channel_selectors)

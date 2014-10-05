@@ -91,7 +91,7 @@ else()
 	find_package(Qt4 REQUIRED QtCore QtGui QtSvg)
 endif()
 
-find_package(Boost 1.42 COMPONENTS filesystem system REQUIRED)
+find_package(Boost 1.42 COMPONENTS filesystem system thread REQUIRED)
 
 # Find the platform's thread library (needed for C++11 threads).
 # This will set ${CMAKE_THREAD_LIBS_INIT} to the correct, OS-specific value.

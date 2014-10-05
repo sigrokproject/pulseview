@@ -29,6 +29,9 @@
 
 #include <libsigrok/libsigrok.hpp>
 
+using boost::shared_lock;
+using boost::shared_mutex;
+
 using std::deque;
 using std::dynamic_pointer_cast;
 using std::lock_guard;
@@ -80,7 +83,7 @@ bool StoreSession::start()
 	set< shared_ptr<data::SignalData> > data_set =
 		_session.get_data();
 
-	lock_guard<mutex> lock(_session.signals_mutex());
+	shared_lock<shared_mutex> lock(_session.signals_mutex());
 	const vector< shared_ptr<view::Signal> > &sigs(_session.signals());
 
 	// Check we have logic data

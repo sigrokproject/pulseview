@@ -47,12 +47,16 @@
 
 #include <libsigrok/libsigrok.hpp>
 
+using boost::shared_lock;
+using boost::shared_mutex;
+using boost::unique_lock;
+
 using std::dynamic_pointer_cast;
 using std::function;
 using std::lock_guard;
-using std::mutex;
 using std::list;
 using std::map;
+using std::mutex;
 using std::set;
 using std::shared_ptr;
 using std::string;
@@ -229,7 +233,7 @@ void SigSession::stop_capture()
 
 set< shared_ptr<data::SignalData> > SigSession::get_data() const
 {
-	lock_guard<mutex> lock(_signals_mutex);
+	shared_lock<shared_mutex> lock(_signals_mutex);
 	set< shared_ptr<data::SignalData> > data;
 	for (const shared_ptr<view::Signal> sig : _signals) {
 		assert(sig);
@@ -239,7 +243,7 @@ set< shared_ptr<data::SignalData> > SigSession::get_data() const
 	return data;
 }
 
-mutex& SigSession::signals_mutex() const
+boost::shared_mutex& SigSession::signals_mutex() const
 {
 	return _signals_mutex;
 }
@@ -257,7 +261,7 @@ bool SigSession::add_decoder(srd_decoder *const dec)
 
 	try
 	{
-		lock_guard<mutex> lock(_signals_mutex);
+		lock_guard<boost::shared_mutex> lock(_signals_mutex);
 
 		// Create the decoder
 		decoder_stack = shared_ptr<data::DecoderStack>(
@@ -308,7 +312,7 @@ bool SigSession::add_decoder(srd_decoder *const dec)
 
 vector< shared_ptr<view::DecodeTrace> > SigSession::get_decode_signals() const
 {
-	lock_guard<mutex> lock(_signals_mutex);
+	shared_lock<shared_mutex> lock(_signals_mutex);
 	return _decode_traces;
 }
 
@@ -362,7 +366,7 @@ void SigSession::update_signals(shared_ptr<Device> device)
 
 	// Make the Signals list
 	{
-		lock_guard<mutex> lock(_signals_mutex);
+		unique_lock<shared_mutex> lock(_signals_mutex);
 
 		_signals.clear();
 
@@ -403,7 +407,7 @@ void SigSession::update_signals(shared_ptr<Device> device)
 shared_ptr<view::Signal> SigSession::signal_from_channel(
 	shared_ptr<Channel> channel) const
 {
-	lock_guard<mutex> lock(_signals_mutex);
+	lock_guard<boost::shared_mutex> lock(_signals_mutex);
 	for (shared_ptr<view::Signal> sig : _signals) {
 		assert(sig);
 		if (sig->channel() == channel)

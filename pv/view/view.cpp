@@ -43,6 +43,8 @@
 #include "pv/data/logic.h"
 #include "pv/data/logicsnapshot.h"
 
+using boost::shared_lock;
+using boost::shared_mutex;
 using pv::data::SignalData;
 using std::back_inserter;
 using std::deque;
@@ -51,7 +53,6 @@ using std::lock_guard;
 using std::max;
 using std::make_pair;
 using std::min;
-using std::mutex;
 using std::pair;
 using std::set;
 using std::shared_ptr;
@@ -273,7 +274,7 @@ list<weak_ptr<SelectableItem> > View::selected_items() const
 
 set< shared_ptr<SignalData> > View::get_visible_data() const
 {
-	lock_guard<mutex> lock(session().signals_mutex());
+	shared_lock<shared_mutex> lock(session().signals_mutex());
 	const vector< shared_ptr<Signal> > &sigs(session().signals());
 
 	// Make a set of all the visible data objects
@@ -522,7 +523,7 @@ void View::signals_changed()
 	// Populate the traces
 	clear_child_items();
 
-	lock_guard<mutex> lock(session().signals_mutex());
+	shared_lock<shared_mutex> lock(session().signals_mutex());
 	const vector< shared_ptr<Signal> > &sigs(session().signals());
 	for (auto s : sigs)
 		add_child_item(s);
