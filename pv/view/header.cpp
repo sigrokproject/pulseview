@@ -60,10 +60,6 @@ Header::Header(View &parent) :
 
 	connect(&_view, SIGNAL(signals_moved()),
 		this, SLOT(on_signals_moved()));
-
-	// Trigger the initial event manually. The default device has signals
-	// which were created before this object came into being
-	on_signals_changed();
 }
 
 QSize Header::sizeHint() const
