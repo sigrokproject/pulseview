@@ -126,11 +126,6 @@ private Q_SLOTS:
 
 	void on_popup_closed();
 
-Q_SIGNALS:
-	void visibility_changed();
-	void text_changed();	
-	void colour_changed();
-
 protected:
 	QString _name;
 	QColor _colour;

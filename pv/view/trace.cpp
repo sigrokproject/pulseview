@@ -223,13 +223,13 @@ void Trace::on_popup_closed()
 void Trace::on_text_changed(const QString &text)
 {
 	set_name(text);
-	text_changed();
+	appearance_changed();
 }
 
 void Trace::on_colour_changed(const QColor &colour)
 {
 	set_colour(colour);
-	colour_changed();
+	appearance_changed();
 }
 
 } // namespace view

@@ -229,7 +229,7 @@ void Viewport::on_signals_changed()
 {
 	for (shared_ptr<RowItem> r : _view) {
 		assert(r);
-		connect(r.get(), SIGNAL(visibility_changed()),
+		connect(r.get(), SIGNAL(appearance_changed()),
 			this, SLOT(update()));
 	}
 }

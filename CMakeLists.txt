@@ -204,6 +204,7 @@ set(pulseview_HEADERS
 	pv/view/header.h
 	pv/view/logicsignal.h
 	pv/view/marginwidget.h
+	pv/view/rowitem.h
 	pv/view/ruler.h
 	pv/view/selectableitem.h
 	pv/view/signal.h
