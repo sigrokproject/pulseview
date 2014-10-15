@@ -27,6 +27,8 @@
 #include <pv/data/logicsnapshot.h>
 #include <pv/view/signal.h>
 
+#include <libsigrok/libsigrok.hpp>
+
 using std::deque;
 using std::dynamic_pointer_cast;
 using std::lock_guard;
@@ -39,6 +41,8 @@ using std::shared_ptr;
 using std::string;
 using std::thread;
 using std::vector;
+
+using sigrok::Error;
 
 namespace pv {
 
@@ -120,8 +124,9 @@ bool StoreSession::start()
 	channels[sigs.size()] = NULL;
 
 	// Begin storing
-	if (sr_session_save_init(SigSession::_sr_session, _file_name.c_str(),
-		data->samplerate(), channels) != SR_OK) {
+	try {
+		SigSession::_sr_session->begin_save(_file_name);
+	} catch (Error error) {
 		_error = tr("Error while saving.");
 		return false;
 	}
@@ -179,9 +184,11 @@ void StoreSession::store_proc(shared_ptr<data::LogicSnapshot> snapshot)
 			start_sample + samples_per_block, sample_count);
 		snapshot->get_samples(data, start_sample, end_sample);
 
-		if(sr_session_append(SigSession::_sr_session, _file_name.c_str(), data,
-			unit_size, end_sample - start_sample) != SR_OK)
-		{
+		size_t length = end_sample - start_sample;
+
+		try {
+			SigSession::_sr_session->append(data, length, unit_size);
+		} catch (Error error) {
 			_error = tr("Error while saving.");
 			break;
 		}

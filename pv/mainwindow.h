@@ -36,10 +36,6 @@ namespace pv {
 
 class DeviceManager;
 
-namespace device {
-class DevInst;
-}
-
 namespace toolbars {
 class ContextBar;
 class SamplingBar;

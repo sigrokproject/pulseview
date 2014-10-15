@@ -42,8 +42,7 @@ private:
 	static const float EnvelopeThreshold;
 
 public:
-	AnalogSignal(std::shared_ptr<pv::device::DevInst> dev_inst,
-		const sr_channel *const channel,
+	AnalogSignal(std::shared_ptr<sigrok::Channel> channel,
 		std::shared_ptr<pv::data::Analog> data);
 
 	virtual ~AnalogSignal();

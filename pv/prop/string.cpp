@@ -25,6 +25,10 @@
 
 #include "string.h"
 
+using std::string;
+
+using Glib::ustring;
+
 namespace pv {
 namespace prop {
 
@@ -41,14 +45,18 @@ QWidget* String::get_widget(QWidget *parent, bool auto_commit)
 	if (_line_edit)
 		return _line_edit;
 
-	GVariant *const value = _getter ? _getter() : NULL;
-	if (!value)
+	if (!_getter)
 		return NULL;
 
+	Glib::VariantBase variant = _getter();
+	if (!variant.gobj())
+		return NULL;
+
+	string value = Glib::VariantBase::cast_dynamic<Glib::Variant<ustring>>(
+		variant).get();
+
 	_line_edit = new QLineEdit(parent);
-	_line_edit->setText(QString::fromUtf8(
-		g_variant_get_string(value, NULL)));
-	g_variant_unref(value);
+	_line_edit->setText(QString::fromStdString(value));
 
 	if (auto_commit)
 		connect(_line_edit, SIGNAL(textEdited(const QString&)),
@@ -65,7 +73,7 @@ void String::commit()
 		return;
 
 	QByteArray ba = _line_edit->text().toLocal8Bit();
-	_setter(g_variant_new_string(ba.data()));
+	_setter(Glib::Variant<ustring>::create(ba.data()));
 }
 
 void String::on_text_edited(const QString&)

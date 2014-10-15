@@ -23,50 +23,48 @@
 
 #include <boost/optional.hpp>
 
+#include <QObject>
 #include <QString>
-
-#include <glib.h>
 
 #include "binding.h"
 
 #include <pv/prop/property.h>
 
-struct sr_dev_inst;
-struct sr_channel_group;
+namespace sigrok {
+	class Configurable;
+}
 
 namespace pv {
-
-namespace device {
-class DevInst;
-}
 
 namespace prop {
 namespace binding {
 
-class DeviceOptions : public Binding
+class DeviceOptions : public QObject, public Binding
 {
+	Q_OBJECT
+
 public:
-	DeviceOptions(std::shared_ptr<pv::device::DevInst> dev_inst,
-		const sr_channel_group *group = NULL);
+	DeviceOptions(std::shared_ptr<sigrok::Configurable> configurable);
+
+Q_SIGNALS:
+	void config_changed();
 
 private:
 	void bind_bool(const QString &name,
 		Property::Getter getter, Property::Setter setter);
-	void bind_enum(const QString &name, int key,
-		GVariant *const gvar_list,
+	void bind_enum(const QString &name, Glib::VariantContainerBase gvar_list,
 		Property::Getter getter, Property::Setter setter,
-		std::function<QString (GVariant*)> printer = print_gvariant);
+		std::function<QString (Glib::VariantBase)> printer = print_gvariant);
 	void bind_int(const QString &name, QString suffix,
 		boost::optional< std::pair<int64_t, int64_t> > range,
 		Property::Getter getter, Property::Setter setter);
 
-	static QString print_timebase(GVariant *const gvar);
-	static QString print_vdiv(GVariant *const gvar);
-	static QString print_voltage_threshold(GVariant *const gvar);
+	static QString print_timebase(Glib::VariantBase gvar);
+	static QString print_vdiv(Glib::VariantBase gvar);
+	static QString print_voltage_threshold(Glib::VariantBase gvar);
 
 protected:
-	std::shared_ptr<device::DevInst> _dev_inst;
-	const sr_channel_group *const _group;
+	std::shared_ptr<sigrok::Configurable> _configurable;
 };
 
 } // binding

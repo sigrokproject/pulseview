@@ -29,14 +29,14 @@
 #include <QLineEdit>
 #include <QMenu>
 
-#include <libsigrok/libsigrok.h>
+#include <libsigrok/libsigrok.hpp>
 
 #include "signal.h"
 #include "view.h"
 
-#include <pv/device/devinst.h>
-
 using std::shared_ptr;
+
+using sigrok::Channel;
 
 namespace pv {
 namespace view {
@@ -58,10 +58,8 @@ const char *const ChannelNames[] = {
 	"SCL"
 };
 
-Signal::Signal(shared_ptr<pv::device::DevInst> dev_inst,
-	const sr_channel *const channel) :
-	Trace(channel->name),
-	_dev_inst(dev_inst),
+Signal::Signal(shared_ptr<Channel> channel) :
+	Trace(channel->name().c_str()),
 	_channel(channel),
 	_name_widget(NULL),
 	_updating_name_widget(false)
@@ -79,16 +77,16 @@ void Signal::set_name(QString name)
 
 bool Signal::enabled() const
 {
-	return _channel->enabled;
+	return _channel->enabled();
 }
 
 void Signal::enable(bool enable)
 {
-	_dev_inst->enable_channel(_channel, enable);
+	_channel->set_enabled(enable);
 	visibility_changed();
 }
 
-const sr_channel* Signal::channel() const
+shared_ptr<Channel> Signal::channel() const
 {
 	return _channel;
 }

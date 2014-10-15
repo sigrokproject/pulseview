@@ -21,8 +21,6 @@
 #ifndef PULSEVIEW_PV_DATA_SNAPSHOT_H
 #define PULSEVIEW_PV_DATA_SNAPSHOT_H
 
-#include <libsigrok/libsigrok.h>
-
 #include <thread>
 #include <mutex>
 #include <vector>

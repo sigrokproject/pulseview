@@ -41,15 +41,12 @@ Int::Int(QString name,
 	Property(name, getter, setter),
 	_suffix(suffix),
 	_range(range),
-	_value(NULL),
 	_spin_box(NULL)
 {
 }
 
 Int::~Int()
 {
-	if (_value)
-		g_variant_unref(_value);
 }
 
 QWidget* Int::get_widget(QWidget *parent, bool auto_commit)
@@ -59,52 +56,54 @@ QWidget* Int::get_widget(QWidget *parent, bool auto_commit)
 	if (_spin_box)
 		return _spin_box;
 
-	if (_value)
-		g_variant_unref(_value);
+	if (!_getter)
+		return NULL;
 
-	_value = _getter ? _getter() : NULL;
-	if (!_value)
+	_value = _getter();
+
+	GVariant *value = _value.gobj();
+	if (!value)
 		return NULL;
 
 	_spin_box = new QSpinBox(parent);
 	_spin_box->setSuffix(_suffix);
 
-	const GVariantType *const type = g_variant_get_type(_value);
+	const GVariantType *const type = g_variant_get_type(value);
 	assert(type);
 
 	if (g_variant_type_equal(type, G_VARIANT_TYPE_BYTE))
 	{
-		int_val = g_variant_get_byte(_value);
+		int_val = g_variant_get_byte(value);
 		range_min = 0, range_max = UINT8_MAX;
 	}
 	else if (g_variant_type_equal(type, G_VARIANT_TYPE_INT16))
 	{
-		int_val = g_variant_get_int16(_value);
+		int_val = g_variant_get_int16(value);
 		range_min = INT16_MIN, range_max = INT16_MAX;
 	}
 	else if (g_variant_type_equal(type, G_VARIANT_TYPE_UINT16))
 	{
-		int_val = g_variant_get_uint16(_value);
+		int_val = g_variant_get_uint16(value);
 		range_min = 0, range_max = UINT16_MAX;
 	}
 	else if (g_variant_type_equal(type, G_VARIANT_TYPE_INT32))
 	{
-		int_val = g_variant_get_int32(_value);
+		int_val = g_variant_get_int32(value);
 		range_min = INT32_MIN, range_max = INT32_MAX;
 	}
 	else if (g_variant_type_equal(type, G_VARIANT_TYPE_UINT32))
 	{
-		int_val = g_variant_get_uint32(_value);
+		int_val = g_variant_get_uint32(value);
 		range_min = 0, range_max = UINT32_MAX;
 	}
 	else if (g_variant_type_equal(type, G_VARIANT_TYPE_INT64))
 	{
-		int_val = g_variant_get_int64(_value);
+		int_val = g_variant_get_int64(value);
 		range_min = INT64_MIN, range_max = INT64_MAX;
 	}
 	else if (g_variant_type_equal(type, G_VARIANT_TYPE_UINT64))
 	{
-		int_val = g_variant_get_uint64(_value);
+		int_val = g_variant_get_uint64(value);
 		range_min = 0, range_max = UINT64_MAX;
 	}
 	else
@@ -142,10 +141,8 @@ void Int::commit()
 	if (!_spin_box)
 		return;
 
-	assert(_value);
-
 	GVariant *new_value = NULL;
-	const GVariantType *const type = g_variant_get_type(_value);
+	const GVariantType *const type = g_variant_get_type(_value.gobj());
 	assert(type);
 
 	if (g_variant_type_equal(type, G_VARIANT_TYPE_BYTE))
@@ -170,11 +167,9 @@ void Int::commit()
 
 	assert(new_value);
 
-	g_variant_unref(_value);
-	g_variant_ref(new_value);
-	_value = new_value;
+	_value = Glib::VariantBase(new_value);
 
-	_setter(new_value);
+	_setter(_value);
 }
 
 void Int::on_value_changed(int)

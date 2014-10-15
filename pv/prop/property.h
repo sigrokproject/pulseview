@@ -21,7 +21,7 @@
 #ifndef PULSEVIEW_PV_PROP_PROPERTY_H
 #define PULSEVIEW_PV_PROP_PROPERTY_H
 
-#include <glib.h>
+#include <glibmm-2.4/glibmm.h>
 
 #include <functional>
 #include <QString>
@@ -37,8 +37,8 @@ class Property : public QObject
 	Q_OBJECT;
 
 public:
-	typedef std::function<GVariant* ()> Getter;
-	typedef std::function<void (GVariant*)> Setter;
+	typedef std::function<Glib::VariantBase ()> Getter;
+	typedef std::function<void (Glib::VariantBase)> Setter;
 
 protected:
 	Property(QString name, Getter getter, Setter setter);

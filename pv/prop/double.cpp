@@ -55,9 +55,15 @@ QWidget* Double::get_widget(QWidget *parent, bool auto_commit)
 	if (_spin_box)
 		return _spin_box;
 
-	GVariant *const value = _getter ? _getter() : NULL;
-	if (!value)
+	if (!_getter)
 		return NULL;
+
+	Glib::VariantBase variant = _getter();
+	if (!variant.gobj())
+		return NULL;
+
+	double value = Glib::VariantBase::cast_dynamic<Glib::Variant<double>>(
+		variant).get();
 
 	_spin_box = new QDoubleSpinBox(parent);
 	_spin_box->setDecimals(_decimals);
@@ -67,8 +73,7 @@ QWidget* Double::get_widget(QWidget *parent, bool auto_commit)
 	if (_step)
 		_spin_box->setSingleStep(*_step);
 
-	_spin_box->setValue(g_variant_get_double(value));
-	g_variant_unref(value);
+	_spin_box->setValue(value);
 
 	if (auto_commit)
 		connect(_spin_box, SIGNAL(valueChanged(double)),
@@ -84,7 +89,7 @@ void Double::commit()
 	if (!_spin_box)
 		return;
 
-	_setter(g_variant_new_double(_spin_box->value()));
+	_setter(Glib::Variant<double>::create(_spin_box->value()));
 }
 
 void Double::on_value_changed(double)

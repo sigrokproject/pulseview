@@ -26,6 +26,10 @@
 #include <utility>
 #include <vector>
 
+namespace sigrok {
+	class Logic;
+}
+
 namespace LogicSnapshotTest {
 struct Pow2;
 struct Basic;
@@ -58,12 +62,12 @@ public:
 	typedef std::pair<int64_t, bool> EdgePair;
 
 public:
-	LogicSnapshot(const sr_datafeed_logic &logic,
+	LogicSnapshot(std::shared_ptr<sigrok::Logic> logic,
 	              uint64_t expected_num_samples = 0);
 
 	virtual ~LogicSnapshot();
 
-	void append_payload(const sr_datafeed_logic &logic);
+	void append_payload(std::shared_ptr<sigrok::Logic> logic);
 
 	void get_samples(uint8_t *const data,
 		int64_t start_sample, int64_t end_sample) const;

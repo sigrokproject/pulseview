@@ -30,10 +30,11 @@
 #include "view.h"
 
 #include <pv/sigsession.h>
-#include <pv/device/devinst.h>
 #include <pv/data/logic.h>
 #include <pv/data/logicsnapshot.h>
 #include <pv/view/view.h>
+
+#include <libsigrok/libsigrok.hpp>
 
 using std::deque;
 using std::max;
@@ -41,6 +42,13 @@ using std::min;
 using std::pair;
 using std::shared_ptr;
 using std::vector;
+
+using sigrok::Channel;
+using sigrok::ConfigKey;
+using sigrok::Device;
+using sigrok::Error;
+using sigrok::Trigger;
+using sigrok::TriggerMatchType;
 
 namespace pv {
 namespace view {
@@ -64,9 +72,11 @@ const QColor LogicSignal::SignalColours[10] = {
 	QColor(0xEE, 0xEE, 0xEC),	// White
 };
 
-LogicSignal::LogicSignal(shared_ptr<pv::device::DevInst> dev_inst,
-	const sr_channel *const channel, shared_ptr<data::Logic> data) :
-	Signal(dev_inst, channel),
+LogicSignal::LogicSignal(shared_ptr<Device> device,
+		shared_ptr<Channel> channel,
+		shared_ptr<data::Logic> data) :
+	Signal(channel),
+	_device(device),
 	_data(data),
 	_trigger_none(NULL),
 	_trigger_rising(NULL),
@@ -75,26 +85,18 @@ LogicSignal::LogicSignal(shared_ptr<pv::device::DevInst> dev_inst,
 	_trigger_low(NULL),
 	_trigger_change(NULL)
 {
-	struct sr_trigger *trigger;
-	struct sr_trigger_stage *stage;
-	struct sr_trigger_match *match;
-	const GSList *l, *m;
+	shared_ptr<Trigger> trigger;
 
-	_colour = SignalColours[channel->index % countof(SignalColours)];
+	_colour = SignalColours[channel->index() % countof(SignalColours)];
 
 	/* Populate this channel's trigger setting with whatever we
 	 * find in the current session trigger, if anything. */
-	_trigger_match = 0;
-	if ((trigger = sr_session_trigger_get(SigSession::_sr_session))) {
-		for (l = trigger->stages; l && !_trigger_match; l = l->next) {
-			stage = (struct sr_trigger_stage *)l->data;
-			for (m = stage->matches; m && !_trigger_match; m = m->next) {
-				match = (struct sr_trigger_match *)m->data;
-				if (match->channel == _channel)
-					_trigger_match = match->match;
-			}
-		}
-	}
+	_trigger_match = nullptr;
+	if ((trigger = SigSession::_sr_session->trigger()))
+		for (auto stage : trigger->stages())
+			for (auto match : stage->matches())
+				if (match->channel() == _channel)
+					_trigger_match = match->type();
 }
 
 LogicSignal::~LogicSignal()
@@ -113,7 +115,7 @@ shared_ptr<pv::data::Logic> LogicSignal::logic_data() const
 
 void LogicSignal::paint_back(QPainter &p, int left, int right)
 {
-	if (_channel->enabled)
+	if (_channel->enabled())
 		paint_axis(p, get_y(), left, right);
 }
 
@@ -137,7 +139,7 @@ void LogicSignal::paint_mid(QPainter &p, int left, int right)
 	
 	const double offset = _view->offset();
 
-	if (!_channel->enabled)
+	if (!_channel->enabled())
 		return;
 
 	const float high_offset = y - View::SignalHeight + 0.5f;
@@ -167,7 +169,7 @@ void LogicSignal::paint_mid(QPainter &p, int left, int right)
 	snapshot->get_subsampled_edges(edges,
 		min(max((int64_t)floor(start), (int64_t)0), last_sample),
 		min(max((int64_t)ceil(end), (int64_t)0), last_sample),
-		samples_per_pixel / Oversampling, _channel->index);
+		samples_per_pixel / Oversampling, _channel->index());
 	assert(edges.size() >= 2);
 
 	// Paint the edges
@@ -251,12 +253,12 @@ void LogicSignal::init_trigger_actions(QWidget *parent)
 	connect(_trigger_change, SIGNAL(triggered()), this, SLOT(on_trigger()));
 }
 
-QAction* LogicSignal::match_action(int match)
+QAction* LogicSignal::match_action(const TriggerMatchType *type)
 {
 	QAction *action;
 
 	action = _trigger_none;
-	switch (match) {
+	switch (type->id()) {
 	case SR_TRIGGER_ZERO:
 		action = _trigger_low;
 		break;
@@ -272,56 +274,56 @@ QAction* LogicSignal::match_action(int match)
 	case SR_TRIGGER_EDGE:
 		action = _trigger_change;
 		break;
+	default:
+		assert(0);
 	}
 
 	return action;
 }
 
-int LogicSignal::action_match(QAction *action)
+const TriggerMatchType *LogicSignal::action_match(QAction *action)
 {
-	int match;
-
 	if (action == _trigger_low)
-		match = SR_TRIGGER_ZERO;
+		return TriggerMatchType::ZERO;
 	else if (action == _trigger_high)
-		match = SR_TRIGGER_ONE;
+		return TriggerMatchType::ONE;
 	else if (action == _trigger_rising)
-		match = SR_TRIGGER_RISING;
+		return TriggerMatchType::RISING;
 	else if (action == _trigger_falling)
-		match = SR_TRIGGER_FALLING;
+		return TriggerMatchType::FALLING;
 	else if (action == _trigger_change)
-		match = SR_TRIGGER_EDGE;
+		return TriggerMatchType::EDGE;
 	else
-		match = 0;
-
-	return match;
+		return nullptr;
 }
 
 void LogicSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
 {
-	GVariant *gvar;
-	gsize num_opts;
-	const int32_t *trig_matches;
-	unsigned int i;
+	Glib::VariantContainerBase gvar;
+	vector<int32_t> trig_types;
 	bool is_checked;
 
 	Signal::populate_popup_form(parent, form);
 
-	if (!(gvar = _dev_inst->list_config(NULL, SR_CONF_TRIGGER_MATCH)))
+	try {
+		gvar = _device->config_list(ConfigKey::TRIGGER_MATCH);
+	} catch (Error e) {
 		return;
+	}
 
 	_trigger_bar = new QToolBar(parent);
 	init_trigger_actions(_trigger_bar);
 	_trigger_bar->addAction(_trigger_none);
-	trig_matches = (const int32_t *)g_variant_get_fixed_array(gvar,
-			&num_opts, sizeof(int32_t));
-	for (i = 0; i < num_opts; i++) {
-		_trigger_bar->addAction(match_action(trig_matches[i]));
-		is_checked = _trigger_match == trig_matches[i];
-		match_action(trig_matches[i])->setChecked(is_checked);
+	trig_types =
+		Glib::VariantBase::cast_dynamic<Glib::Variant<vector<int32_t>>>(
+			gvar).get();
+	for (auto type_id : trig_types) {
+		auto type = TriggerMatchType::get(type_id);
+		_trigger_bar->addAction(match_action(type));
+		is_checked = _trigger_match == type;
+		match_action(type)->setChecked(is_checked);
 	}
 	form->addRow(tr("Trigger"), _trigger_bar);
-	g_variant_unref(gvar);
 
 }
 

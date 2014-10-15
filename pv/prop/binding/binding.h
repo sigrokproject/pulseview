@@ -21,7 +21,7 @@
 #ifndef PULSEVIEW_PV_PROP_BINDING_BINDING_H
 #define PULSEVIEW_PV_PROP_BINDING_BINDING_H
 
-#include <glib.h>
+#include <glibmm-2.4/glibmm.h>
 
 #include <vector>
 #include <memory>
@@ -51,7 +51,7 @@ public:
 	QWidget* get_property_form(QWidget *parent,
 		bool auto_commit = false) const;
 
-	static QString print_gvariant(GVariant *const gvar);
+	static QString print_gvariant(Glib::VariantBase gvar);
 
 protected:
 	std::vector< std::shared_ptr<Property> > _properties;

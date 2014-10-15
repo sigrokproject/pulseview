@@ -43,7 +43,6 @@
 #include "mainwindow.h"
 
 #include "devicemanager.h"
-#include "device/device.h"
 #include "dialogs/about.h"
 #include "dialogs/connect.h"
 #include "dialogs/storeprogress.h"
@@ -54,18 +53,20 @@
 #include "widgets/decodermenu.h"
 #endif
 
-/* __STDC_FORMAT_MACROS is required for PRIu64 and friends (in C++). */
-#define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 #include <stdint.h>
 #include <stdarg.h>
 #include <glib.h>
-#include <libsigrok/libsigrok.h>
+#include <libsigrok/libsigrok.hpp>
 
 using std::list;
 using std::map;
 using std::shared_ptr;
 using std::string;
+
+using sigrok::Device;
+using sigrok::Error;
+using sigrok::HardwareDevice;
 
 namespace pv {
 
@@ -290,7 +291,8 @@ void MainWindow::save_ui_settings()
 		key_list.push_back("serial_num");
 		key_list.push_back("connection_id");
 
-		dev_info = _session.get_device()->get_device_info();
+		dev_info = _device_manager.get_device_info(
+			_session.get_device());
 
 		for (string key : key_list) {
 
@@ -309,7 +311,7 @@ void MainWindow::restore_ui_settings()
 {
 	QSettings settings;
 
-	shared_ptr<pv::device::DevInst> device;
+	shared_ptr<HardwareDevice> device;
 
 	map<string, string> dev_info;
 	list<string> key_list;
@@ -365,8 +367,8 @@ void MainWindow::update_device_list()
 {
 	assert(_sampling_bar);
 
-	shared_ptr<pv::device::DevInst> selected_device = _session.get_device();
-	list< shared_ptr<device::DevInst> > devices;
+	shared_ptr<Device> selected_device = _session.get_device();
+	list< shared_ptr<Device> > devices;
 
 	if (_device_manager.devices().size() == 0)
 		return;
@@ -379,7 +381,12 @@ void MainWindow::update_device_list()
 		devices.push_back(selected_device);
 	assert(selected_device);
 
-	_sampling_bar->set_device_list(devices, selected_device);
+	map<shared_ptr<Device>, string> device_names;
+
+	for (auto device : devices)
+		device_names[device] = _device_manager.device_description(device);
+
+	_sampling_bar->set_device_list(device_names, selected_device);
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -396,8 +403,8 @@ void MainWindow::load_file(QString file_name)
 
 	try {
 		_session.set_file(file_name.toStdString());
-	} catch(QString e) {
-		show_session_error(tr("Failed to load ") + file_name, e);
+	} catch(Error e) {
+		show_session_error(tr("Failed to load ") + file_name, e.what());
 		_session.set_default_device();
 		update_device_list();
 		return;
@@ -516,7 +523,7 @@ void MainWindow::on_actionViewShowCursors_triggered()
 
 void MainWindow::on_actionAbout_triggered()
 {
-	dialogs::About dlg(this);
+	dialogs::About dlg(_device_manager.context(), this);
 	dlg.exec();
 }
 

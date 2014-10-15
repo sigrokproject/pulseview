@@ -50,9 +50,9 @@ private:
 		const srd_decoder_option *option,
 		Property::Getter getter, Property::Setter setter);
 
-	GVariant* getter(const char *id);
+	Glib::VariantBase getter(const char *id);
 
-	void setter(const char *id, GVariant *value);
+	void setter(const char *id, Glib::VariantBase value);
 
 private:
 	std::shared_ptr<pv::data::DecoderStack> _decoder_stack;

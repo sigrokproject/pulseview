@@ -27,6 +27,11 @@
 
 class QToolBar;
 
+namespace sigrok {
+	class Device;
+	class TriggerMatchType;
+}
+
 namespace pv {
 
 namespace data {
@@ -49,8 +54,8 @@ private:
 	static const QColor SignalColours[10];
 
 public:
-	LogicSignal(std::shared_ptr<pv::device::DevInst> dev_inst,
-		const sr_channel *const channel,
+	LogicSignal(std::shared_ptr<sigrok::Device> device,
+		std::shared_ptr<sigrok::Channel> channel,
 		std::shared_ptr<pv::data::Logic> data);
 
 	virtual ~LogicSignal();
@@ -83,17 +88,18 @@ private:
 
 	void init_trigger_actions(QWidget *parent);
 
-	QAction* match_action(int match);
-	int action_match(QAction *action);
+	QAction* match_action(const sigrok::TriggerMatchType *match);
+	const sigrok::TriggerMatchType *action_match(QAction *action);
 	void populate_popup_form(QWidget *parent, QFormLayout *form);
 
 private Q_SLOTS:
 	void on_trigger();
 
 private:
+	std::shared_ptr<sigrok::Device> _device;
 	std::shared_ptr<pv::data::Logic> _data;
 
-	int _trigger_match;
+	const sigrok::TriggerMatchType *_trigger_match;
 	QToolBar *_trigger_bar;
 	QAction *_trigger_none;
 	QAction *_trigger_rising;

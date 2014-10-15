@@ -31,22 +31,16 @@ namespace pv {
 namespace prop {
 
 Enum::Enum(QString name,
-	vector<pair<GVariant*, QString> > values,
+	vector<pair<Glib::VariantBase, QString> > values,
 	Getter getter, Setter setter) :
 	Property(name, getter, setter),
 	_values(values),
 	_selector(NULL)
 {
-	for (vector< pair<GVariant*, QString> >::const_iterator i =
-		_values.begin(); i != _values.end(); i++)
-		g_variant_ref((*i).first);
 }
 
 Enum::~Enum()
 {
-	for (vector< pair<GVariant*, QString> >::const_iterator i =
-		_values.begin(); i != _values.end(); i++)
-		g_variant_unref((*i).first);
 }
 
 QWidget* Enum::get_widget(QWidget *parent, bool auto_commit)
@@ -54,19 +48,20 @@ QWidget* Enum::get_widget(QWidget *parent, bool auto_commit)
 	if (_selector)
 		return _selector;
 
-	GVariant *const value = _getter ? _getter() : NULL;
-	if (!value)
+	if (!_getter)
+		return NULL;
+
+	Glib::VariantBase variant = _getter();
+	if (!variant.gobj())
 		return NULL;
 
 	_selector = new QComboBox(parent);
 	for (unsigned int i = 0; i < _values.size(); i++) {
-		const pair<GVariant*, QString> &v = _values[i];
-		_selector->addItem(v.second, qVariantFromValue((void*)v.first));
-		if (value && g_variant_equal(v.first, value))
+		const pair<Glib::VariantBase, QString> &v = _values[i];
+		_selector->addItem(v.second, qVariantFromValue(v.first));
+		if (v.first.equal(variant))
 			_selector->setCurrentIndex(i);
 	}
-
-	g_variant_unref(value);
 
 	if (auto_commit)
 		connect(_selector, SIGNAL(currentIndexChanged(int)),
@@ -86,7 +81,7 @@ void Enum::commit()
 	if (index < 0)
 		return;
 
-	_setter((GVariant*)_selector->itemData(index).value<void*>());
+	_setter(_selector->itemData(index).value<Glib::VariantBase>());
 }
 
 void Enum::on_current_item_changed(int)

@@ -32,10 +32,18 @@
 #include <QObject>
 #include <QString>
 
-#include <libsigrok/libsigrok.h>
-
 struct srd_decoder;
 struct srd_channel;
+
+namespace sigrok {
+	class Analog;
+	class Channel;
+	class Device;
+	class Logic;
+	class Meta;
+	class Packet;
+	class Session;
+}
 
 namespace pv {
 
@@ -47,10 +55,6 @@ class AnalogSnapshot;
 class Logic;
 class LogicSnapshot;
 class SignalData;
-}
-
-namespace device {
-class DevInst;
 }
 
 namespace view {
@@ -75,20 +79,16 @@ public:
 
 	~SigSession();
 
-	std::shared_ptr<device::DevInst> get_device() const;
+	std::shared_ptr<sigrok::Device> get_device() const;
 
 	/**
 	 * Sets device instance that will be used in the next capture session.
 	 */
-	void set_device(std::shared_ptr<device::DevInst> dev_inst)
-		throw(QString);
+	void set_device(std::shared_ptr<sigrok::Device> device);
 
-	void set_file(const std::string &name)
-		throw(QString);
+	void set_file(const std::string &name);
 
 	void set_default_device();
-
-	void release_device(device::DevInst *dev_inst);
 
 	capture_state get_capture_state() const;
 
@@ -113,33 +113,30 @@ public:
 private:
 	void set_capture_state(capture_state state);
 
-	void update_signals(std::shared_ptr<device::DevInst> dev_inst);
+	void update_signals(std::shared_ptr<sigrok::Device> device);
 
 	std::shared_ptr<view::Signal> signal_from_channel(
-		const sr_channel *channel) const;
+		std::shared_ptr<sigrok::Channel> channel) const;
 
-	void read_sample_rate(const sr_dev_inst *const sdi);
+	void read_sample_rate(std::shared_ptr<sigrok::Device>);
 
 private:
-	void sample_thread_proc(std::shared_ptr<device::DevInst> dev_inst,
+	void sample_thread_proc(std::shared_ptr<sigrok::Device> device,
 		std::function<void (const QString)> error_handler);
 
-	void feed_in_header(const sr_dev_inst *sdi);
+	void feed_in_header(std::shared_ptr<sigrok::Device> device);
 
-	void feed_in_meta(const sr_dev_inst *sdi,
-		const sr_datafeed_meta &meta);
+	void feed_in_meta(std::shared_ptr<sigrok::Device> device,
+		std::shared_ptr<sigrok::Meta> meta);
 
 	void feed_in_frame_begin();
 
-	void feed_in_logic(const sr_datafeed_logic &logic);
+	void feed_in_logic(std::shared_ptr<sigrok::Logic> logic);
 
-	void feed_in_analog(const sr_datafeed_analog &analog);
+	void feed_in_analog(std::shared_ptr<sigrok::Analog> analog);
 
-	void data_feed_in(const struct sr_dev_inst *sdi,
-		const struct sr_datafeed_packet *packet);
-
-	static void data_feed_in_proc(const struct sr_dev_inst *sdi,
-		const struct sr_datafeed_packet *packet, void *cb_data);
+	void data_feed_in(std::shared_ptr<sigrok::Device> device,
+		std::shared_ptr<sigrok::Packet> packet);
 
 private:
 	DeviceManager &_device_manager;
@@ -147,7 +144,7 @@ private:
 	/**
 	 * The device instance that will be used in the next capture session.
 	 */
-	std::shared_ptr<device::DevInst> _dev_inst;
+	std::shared_ptr<sigrok::Device> _device;
 
 	std::vector< std::shared_ptr<view::DecodeTrace> > _decode_traces;
 
@@ -160,7 +157,7 @@ private:
 	mutable std::mutex _data_mutex;
 	std::shared_ptr<data::Logic> _logic_data;
 	std::shared_ptr<data::LogicSnapshot> _cur_logic_snapshot;
-	std::map< const sr_channel*, std::shared_ptr<data::AnalogSnapshot> >
+	std::map< std::shared_ptr<sigrok::Channel>, std::shared_ptr<data::AnalogSnapshot> >
 		_cur_analog_snapshots;
 
 	std::thread _sampling_thread;
@@ -176,21 +173,13 @@ Q_SIGNALS:
 
 	void frame_ended();
 
-private:
-	// TODO: This should not be necessary. Multiple concurrent
-	// sessions should should be supported and it should be
-	// possible to associate a pointer with a sr_session.
-	static SigSession *_session;
-
 public:
-	// TODO: Even more of a hack. The libsigrok API now allows for
-	// multiple sessions. However sr_session_* calls are scattered
-	// around the PV architecture and a single SigSession object is
-	// being used across multiple sequential sessions, which are
-	// created and destroyed in other classes in pv::device. This
-	// is a mess. For now just keep a single sr_session pointer here
-	// which we can use for all those scattered calls.
-	static struct sr_session *_sr_session;
+	// Hack. The libsigrok API now allows for multiple sessions. However,
+	// sigrok::Session calls are scattered around the PV architecture and a
+	// single SigSession object is being used across multiple sequential
+	// sessions. This is a mess. For now just keep a single sigrok::Session
+	// pointer here which we can use for all those scattered calls.
+	static std::shared_ptr<sigrok::Session> _sr_session;
 };
 
 } // namespace pv

@@ -25,8 +25,6 @@
 #include "sigsession.h"
 
 #include "devicemanager.h"
-#include "device/device.h"
-#include "device/file.h"
 
 #include "data/analog.h"
 #include "data/analogsnapshot.h"
@@ -47,6 +45,8 @@
 
 #include <QDebug>
 
+#include <libsigrok/libsigrok.hpp>
+
 using std::dynamic_pointer_cast;
 using std::function;
 using std::lock_guard;
@@ -58,81 +58,106 @@ using std::shared_ptr;
 using std::string;
 using std::vector;
 
+using sigrok::Analog;
+using sigrok::Channel;
+using sigrok::ChannelType;
+using sigrok::ConfigKey;
+using sigrok::DatafeedCallbackFunction;
+using sigrok::Device;
+using sigrok::Error;
+using sigrok::HardwareDevice;
+using sigrok::Header;
+using sigrok::Logic;
+using sigrok::Meta;
+using sigrok::Packet;
+using sigrok::PacketPayload;
+using sigrok::Session;
+using sigrok::SessionDevice;
+
+using Glib::VariantBase;
+using Glib::Variant;
+
 namespace pv {
 
 // TODO: This should not be necessary
-SigSession* SigSession::_session = NULL;
-
-// TODO: This should not be necessary
-struct sr_session *SigSession::_sr_session = NULL;
+shared_ptr<Session> SigSession::_sr_session = nullptr;
 
 SigSession::SigSession(DeviceManager &device_manager) :
 	_device_manager(device_manager),
 	_capture_state(Stopped)
 {
 	// TODO: This should not be necessary
-	_session = this;
+	_sr_session = device_manager.context()->create_session();
 
 	set_default_device();
 }
 
 SigSession::~SigSession()
 {
-	using pv::device::Device;
-
 	// Stop and join to the thread
 	stop_capture();
-
-	if (_dev_inst)
-		_dev_inst->release();
-
-	// TODO: This should not be necessary
-	_session = NULL;
 }
 
-shared_ptr<device::DevInst> SigSession::get_device() const
+shared_ptr<Device> SigSession::get_device() const
 {
-	return _dev_inst;
+	return _device;
 }
 
-void SigSession::set_device(
-	shared_ptr<device::DevInst> dev_inst) throw(QString)
+void SigSession::set_device(shared_ptr<Device> device)
 {
-	using pv::device::Device;
-
-	if (!dev_inst)
-		return;
-
 	// Ensure we are not capturing before setting the device
 	stop_capture();
 
-	if (_dev_inst) {
-		sr_session_datafeed_callback_remove_all(_sr_session);
-		_dev_inst->release();
+	// Are we setting a session device?
+	auto session_device = dynamic_pointer_cast<SessionDevice>(device);
+	// Did we have a session device selected previously?
+	auto prev_session_device = dynamic_pointer_cast<SessionDevice>(_device);
+
+	if (_device) {
+		_sr_session->remove_datafeed_callbacks();
+		if (!prev_session_device) {
+			_device->close();
+			_sr_session->remove_devices();
+		}
 	}
 
-	_dev_inst = dev_inst;
+	if (session_device)
+		_sr_session = session_device->parent();
+
+	_device = device;
 	_decode_traces.clear();
 
-	if (dev_inst) {
-		dev_inst->use(this);
-		sr_session_datafeed_callback_add(_sr_session, data_feed_in_proc, NULL);
-		update_signals(dev_inst);
+	if (device) {
+		if (!session_device)
+		{
+			_sr_session = _device_manager.context()->create_session();
+			device->open();
+			_sr_session->add_device(device);
+		}
+		_sr_session->add_datafeed_callback([=]
+			(shared_ptr<Device> device, shared_ptr<Packet> packet) {
+				data_feed_in(device, packet);
+			});
+		update_signals(device);
 	}
 }
 
-void SigSession::set_file(const string &name) throw(QString)
+void SigSession::set_file(const string &name)
 {
-	// Deselect the old device, because file type detection in File::create
-	// destroys the old session inside libsigrok.
-	set_device(shared_ptr<device::DevInst>());
-	set_device(shared_ptr<device::DevInst>(device::File::create(name)));
+	_sr_session = _device_manager.context()->load_session(name);
+	_device = _sr_session->devices()[0];
+	_decode_traces.clear();
+	_sr_session->add_datafeed_callback([=]
+		(shared_ptr<Device> device, shared_ptr<Packet> packet) {
+			data_feed_in(device, packet);
+		});
+	update_signals(_device);
 }
 
 void SigSession::set_default_device()
 {
-	shared_ptr<pv::device::DevInst> default_device;
-	const list< shared_ptr<device::Device> > &devices =
+	shared_ptr<HardwareDevice> default_device;
+	const list< shared_ptr<HardwareDevice> > &devices =
 		_device_manager.devices();
 
 	if (!devices.empty()) {
@@ -140,24 +165,14 @@ void SigSession::set_default_device()
 		default_device = devices.front();
 
 		// Try and find the demo device and select that by default
-		for (shared_ptr<pv::device::Device> dev : devices)
-			if (strcmp(dev->dev_inst()->driver->name,
-				"demo") == 0) {
+		for (shared_ptr<HardwareDevice> dev : devices)
+			if (dev->driver()->name().compare("demo") == 0) {
 				default_device = dev;
 				break;
 			}
+
+		set_device(default_device);
 	}
-
-	set_device(default_device);
-}
-
-void SigSession::release_device(device::DevInst *dev_inst)
-{
-	(void)dev_inst;
-	assert(_dev_inst.get() == dev_inst);
-
-	assert(_capture_state == Stopped);
-	_dev_inst = shared_ptr<device::DevInst>();
 }
 
 SigSession::capture_state SigSession::get_capture_state() const
@@ -171,37 +186,31 @@ void SigSession::start_capture(function<void (const QString)> error_handler)
 	stop_capture();
 
 	// Check that a device instance has been selected.
-	if (!_dev_inst) {
+	if (!_device) {
 		qDebug() << "No device selected";
 		return;
 	}
 
-	assert(_dev_inst->dev_inst());
-
 	// Check that at least one channel is enabled
-	const GSList *l;
-	for (l = _dev_inst->dev_inst()->channels; l; l = l->next) {
-		sr_channel *const channel = (sr_channel*)l->data;
-		assert(channel);
-		if (channel->enabled)
-			break;
-	}
+	auto channels = _device->channels();
+	bool enabled = std::any_of(channels.begin(), channels.end(),
+		[](shared_ptr<Channel> channel) { return channel->enabled(); });
 
-	if (!l) {
+	if (!enabled) {
 		error_handler(tr("No channels enabled."));
 		return;
 	}
 
 	// Begin the session
 	_sampling_thread = std::thread(
-		&SigSession::sample_thread_proc, this, _dev_inst,
+		&SigSession::sample_thread_proc, this, _device,
 			error_handler);
 }
 
 void SigSession::stop_capture()
 {
 	if (get_capture_state() != Stopped)
-		sr_session_stop(_sr_session);
+		_sr_session->stop();
 
 	// Check that sampling stopped
 	if (_sampling_thread.joinable())
@@ -310,32 +319,20 @@ void SigSession::set_capture_state(capture_state state)
 		capture_state_changed(state);
 }
 
-void SigSession::update_signals(shared_ptr<device::DevInst> dev_inst)
+void SigSession::update_signals(shared_ptr<Device> device)
 {
-	assert(dev_inst);
+	assert(device);
 	assert(_capture_state == Stopped);
-
-	unsigned int logic_channel_count = 0;
 
 	// Clear the decode traces
 	_decode_traces.clear();
 
 	// Detect what data types we will receive
-	if(dev_inst) {
-		assert(dev_inst->dev_inst());
-		for (const GSList *l = dev_inst->dev_inst()->channels;
-			l; l = l->next) {
-			const sr_channel *const channel = (const sr_channel *)l->data;
-			if (!channel->enabled)
-				continue;
-
-			switch(channel->type) {
-			case SR_CHANNEL_LOGIC:
-				logic_channel_count++;
-				break;
-			}
-		}
-	}
+	auto channels = device->channels();
+	unsigned int logic_channel_count = std::count_if(
+		channels.begin(), channels.end(),
+		[] (shared_ptr<Channel> channel) {
+			return channel->type() == ChannelType::LOGIC; });
 
 	// Create data containers for the logic data snapshots
 	{
@@ -355,21 +352,13 @@ void SigSession::update_signals(shared_ptr<device::DevInst> dev_inst)
 
 		_signals.clear();
 
-		if(!dev_inst)
-			break;
-
-		assert(dev_inst->dev_inst());
-		for (const GSList *l = dev_inst->dev_inst()->channels;
-			l; l = l->next) {
+		for (auto channel : device->channels()) {
 			shared_ptr<view::Signal> signal;
-			sr_channel *const channel = (sr_channel *)l->data;
-			assert(channel);
 
-			switch(channel->type) {
+			switch(channel->type()->id()) {
 			case SR_CHANNEL_LOGIC:
 				signal = shared_ptr<view::Signal>(
-					new view::LogicSignal(dev_inst,
-						channel, _logic_data));
+					new view::LogicSignal(device, channel, _logic_data));
 				break;
 
 			case SR_CHANNEL_ANALOG:
@@ -377,8 +366,7 @@ void SigSession::update_signals(shared_ptr<device::DevInst> dev_inst)
 				shared_ptr<data::Analog> data(
 					new data::Analog());
 				signal = shared_ptr<view::Signal>(
-					new view::AnalogSignal(dev_inst,
-						channel, data));
+					new view::AnalogSignal(channel, data));
 				break;
 			}
 
@@ -397,7 +385,7 @@ void SigSession::update_signals(shared_ptr<device::DevInst> dev_inst)
 }
 
 shared_ptr<view::Signal> SigSession::signal_from_channel(
-	const sr_channel *channel) const
+	shared_ptr<Channel> channel) const
 {
 	lock_guard<mutex> lock(_signals_mutex);
 	for (shared_ptr<view::Signal> sig : _signals) {
@@ -408,24 +396,10 @@ shared_ptr<view::Signal> SigSession::signal_from_channel(
 	return shared_ptr<view::Signal>();
 }
 
-void SigSession::read_sample_rate(const sr_dev_inst *const sdi)
+void SigSession::read_sample_rate(shared_ptr<Device> device)
 {
-	GVariant *gvar;
-	uint64_t sample_rate = 0;
-
-	// Read out the sample rate
-	if(sdi->driver)
-	{
-		const int ret = sr_config_get(sdi->driver, sdi, NULL,
-			SR_CONF_SAMPLERATE, &gvar);
-		if (ret != SR_OK) {
-			qDebug("Failed to get samplerate\n");
-			return;
-		}
-
-		sample_rate = g_variant_get_uint64(gvar);
-		g_variant_unref(gvar);
-	}
+	uint64_t sample_rate = VariantBase::cast_dynamic<Variant<guint64>>(
+		device->config_get(ConfigKey::SAMPLERATE)).get();
 
 	// Set the sample rate of all data
 	const set< shared_ptr<data::SignalData> > data_set = get_data();
@@ -435,26 +409,25 @@ void SigSession::read_sample_rate(const sr_dev_inst *const sdi)
 	}
 }
 
-void SigSession::sample_thread_proc(shared_ptr<device::DevInst> dev_inst,
+void SigSession::sample_thread_proc(shared_ptr<Device> device,
 	function<void (const QString)> error_handler)
 {
-	assert(dev_inst);
-	assert(dev_inst->dev_inst());
+	assert(device);
 	assert(error_handler);
 
-	read_sample_rate(dev_inst->dev_inst());
+	read_sample_rate(device);
 
 	try {
-		dev_inst->start();
-	} catch(const QString e) {
-		error_handler(e);
+		_sr_session->start();
+	} catch(Error e) {
+		error_handler(e.what());
 		return;
 	}
 
-	set_capture_state(sr_session_trigger_get(_sr_session) ?
+	set_capture_state(_sr_session->trigger() ?
 		AwaitingTrigger : Running);
 
-	dev_inst->run();
+	_sr_session->run();
 	set_capture_state(Stopped);
 
 	// Confirm that SR_DF_END was received
@@ -465,22 +438,20 @@ void SigSession::sample_thread_proc(shared_ptr<device::DevInst> dev_inst,
 	}
 }
 
-void SigSession::feed_in_header(const sr_dev_inst *sdi)
+void SigSession::feed_in_header(shared_ptr<Device> device)
 {
-	read_sample_rate(sdi);
+	read_sample_rate(device);
 }
 
-void SigSession::feed_in_meta(const sr_dev_inst *sdi,
-	const sr_datafeed_meta &meta)
+void SigSession::feed_in_meta(shared_ptr<Device> device,
+	shared_ptr<Meta> meta)
 {
-	(void)sdi;
+	(void)device;
 
-	for (const GSList *l = meta.config; l; l = l->next) {
-		const sr_config *const src = (const sr_config*)l->data;
-		switch (src->key) {
+	for (auto entry : meta->config()) {
+		switch (entry.first->id()) {
 		case SR_CONF_SAMPLERATE:
 			/// @todo handle samplerate changes
-			/// samplerate = (uint64_t *)src->value;
 			break;
 		default:
 			// Unknown metadata is not an error.
@@ -497,7 +468,7 @@ void SigSession::feed_in_frame_begin()
 		frame_began();
 }
 
-void SigSession::feed_in_logic(const sr_datafeed_logic &logic)
+void SigSession::feed_in_logic(shared_ptr<Logic> logic)
 {
 	lock_guard<mutex> lock(_data_mutex);
 
@@ -512,9 +483,18 @@ void SigSession::feed_in_logic(const sr_datafeed_logic &logic)
 		// This could be the first packet after a trigger
 		set_capture_state(Running);
 
+		// Get sample limit.
+		uint64_t sample_limit;
+		try {
+			sample_limit = VariantBase::cast_dynamic<Variant<guint64>>(
+				_device->config_get(ConfigKey::LIMIT_SAMPLES)).get();
+		} catch (Error) {
+			sample_limit = 0;
+		}
+
 		// Create a new data snapshot
 		_cur_logic_snapshot = shared_ptr<data::LogicSnapshot>(
-			new data::LogicSnapshot(logic, _dev_inst->get_sample_limit()));
+			new data::LogicSnapshot(logic, sample_limit));
 		_logic_data->push_snapshot(_cur_logic_snapshot);
 
 		// @todo Putting this here means that only listeners querying
@@ -532,24 +512,22 @@ void SigSession::feed_in_logic(const sr_datafeed_logic &logic)
 	data_received();
 }
 
-void SigSession::feed_in_analog(const sr_datafeed_analog &analog)
+void SigSession::feed_in_analog(shared_ptr<Analog> analog)
 {
 	lock_guard<mutex> lock(_data_mutex);
 
-	const unsigned int channel_count = g_slist_length(analog.channels);
-	const size_t sample_count = analog.num_samples / channel_count;
-	const float *data = analog.data;
+	const vector<shared_ptr<Channel>> channels = analog->channels();
+	const unsigned int channel_count = channels.size();
+	const size_t sample_count = analog->num_samples() / channel_count;
+	const float *data = analog->data_pointer();
 	bool sweep_beginning = false;
 
-	for (GSList *p = analog.channels; p; p = p->next)
+	for (auto channel : channels)
 	{
 		shared_ptr<data::AnalogSnapshot> snapshot;
 
-		sr_channel *const channel = (sr_channel*)p->data;
-		assert(channel);
-
 		// Try to get the snapshot of the channel
-		const map< const sr_channel*, shared_ptr<data::AnalogSnapshot> >::
+		const map< shared_ptr<Channel>, shared_ptr<data::AnalogSnapshot> >::
 			iterator iter = _cur_analog_snapshots.find(channel);
 		if (iter != _cur_analog_snapshots.end())
 			snapshot = (*iter).second;
@@ -560,9 +538,18 @@ void SigSession::feed_in_analog(const sr_datafeed_analog &analog)
 			// in the sweep containing this snapshot.
 			sweep_beginning = true;
 
+			// Get sample limit.
+			uint64_t sample_limit;
+			try {
+				sample_limit = VariantBase::cast_dynamic<Variant<guint64>>(
+					_device->config_get(ConfigKey::LIMIT_SAMPLES)).get();
+			} catch (Error) {
+				sample_limit = 0;
+			}
+
 			// Create a snapshot, keep it in the maps of channels
 			snapshot = shared_ptr<data::AnalogSnapshot>(
-				new data::AnalogSnapshot(_dev_inst->get_sample_limit()));
+				new data::AnalogSnapshot(sample_limit));
 			_cur_analog_snapshots[channel] = snapshot;
 
 			// Find the annalog data associated with the channel
@@ -593,21 +580,18 @@ void SigSession::feed_in_analog(const sr_datafeed_analog &analog)
 	data_received();
 }
 
-void SigSession::data_feed_in(const struct sr_dev_inst *sdi,
-	const struct sr_datafeed_packet *packet)
+void SigSession::data_feed_in(shared_ptr<Device> device, shared_ptr<Packet> packet)
 {
-	assert(sdi);
+	assert(device);
 	assert(packet);
 
-	switch (packet->type) {
+	switch (packet->type()->id()) {
 	case SR_DF_HEADER:
-		feed_in_header(sdi);
+		feed_in_header(device);
 		break;
 
 	case SR_DF_META:
-		assert(packet->payload);
-		feed_in_meta(sdi,
-			*(const sr_datafeed_meta*)packet->payload);
+		feed_in_meta(device, dynamic_pointer_cast<Meta>(packet->payload()));
 		break;
 
 	case SR_DF_FRAME_BEGIN:
@@ -615,13 +599,11 @@ void SigSession::data_feed_in(const struct sr_dev_inst *sdi,
 		break;
 
 	case SR_DF_LOGIC:
-		assert(packet->payload);
-		feed_in_logic(*(const sr_datafeed_logic*)packet->payload);
+		feed_in_logic(dynamic_pointer_cast<Logic>(packet->payload()));
 		break;
 
 	case SR_DF_ANALOG:
-		assert(packet->payload);
-		feed_in_analog(*(const sr_datafeed_analog*)packet->payload);
+		feed_in_analog(dynamic_pointer_cast<Analog>(packet->payload()));
 		break;
 
 	case SR_DF_END:
@@ -637,14 +619,6 @@ void SigSession::data_feed_in(const struct sr_dev_inst *sdi,
 	default:
 		break;
 	}
-}
-
-void SigSession::data_feed_in_proc(const struct sr_dev_inst *sdi,
-	const struct sr_datafeed_packet *packet, void *cb_data)
-{
-	(void) cb_data;
-	assert(_session);
-	_session->data_feed_in(sdi, packet);
 }
 
 } // namespace pv

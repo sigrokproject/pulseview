@@ -27,21 +27,18 @@
 #include "about.h"
 #include <ui_about.h>
 
-/* __STDC_FORMAT_MACROS is required for PRIu64 and friends (in C++). */
-#define __STDC_FORMAT_MACROS
-#include <glib.h>
-#include <libsigrok/libsigrok.h>
+#include <libsigrok/libsigrok.hpp>
 
+using std::shared_ptr;
+using sigrok::Context;
 
 namespace pv {
 namespace dialogs {
 
-About::About(QWidget *parent) :
+About::About(shared_ptr<Context> context, QWidget *parent) :
 	QDialog(parent),
 	ui(new Ui::About)
 {
-	struct sr_dev_driver **drivers;
-
 #ifdef ENABLE_DECODE
 	struct srd_decoder *dec;
 #endif
@@ -64,11 +61,19 @@ About::About(QWidget *parent) :
 	s.append("<tr><td colspan=\"2\"><b>" +
 		tr("Supported hardware drivers:") +
 		"</b></td></tr>");
-	drivers = sr_driver_list();
-	for (int i = 0; drivers[i]; ++i) {
+	for (auto entry : context->drivers()) {
 		s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
-			 .arg(QString::fromUtf8(drivers[i]->name))
-			 .arg(QString::fromUtf8(drivers[i]->longname)));
+			 .arg(QString::fromUtf8(entry.first.c_str()))
+			 .arg(QString::fromUtf8(entry.second->long_name().c_str())));
+	}
+
+	s.append("<tr><td colspan=\"2\"><b>" +
+		tr("Supported input formats:") +
+		"</b></td></tr>");
+	for (auto entry : context->input_formats()) {
+		s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
+			 .arg(QString::fromUtf8(entry.first.c_str()))
+			 .arg(QString::fromUtf8(entry.second->description().c_str())));
 	}
 
 #ifdef ENABLE_DECODE

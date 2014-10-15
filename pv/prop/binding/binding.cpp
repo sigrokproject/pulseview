@@ -73,18 +73,18 @@ QWidget* Binding::get_property_form(QWidget *parent,
 	return form;
 }
 
-QString Binding::print_gvariant(GVariant *const gvar)
+QString Binding::print_gvariant(Glib::VariantBase gvar)
 {
 	QString s;
 
-	if (g_variant_is_of_type(gvar, G_VARIANT_TYPE("s")))
-		s = QString::fromUtf8(g_variant_get_string(gvar, NULL));
+	if (!gvar.gobj())
+		s = QString::fromStdString("(null)");
+	else if (gvar.is_of_type(Glib::VariantType("s")))
+		s = QString::fromStdString(
+			Glib::VariantBase::cast_dynamic<Glib::Variant<std::string>>(
+				gvar).get());
 	else
-	{
-		gchar *const text = g_variant_print(gvar, FALSE);
-		s = QString::fromUtf8(text);
-		g_free(text);
-	}
+		s = QString::fromStdString(gvar.print());
 
 	return s;
 }

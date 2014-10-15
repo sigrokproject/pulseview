@@ -32,16 +32,17 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 
-struct sr_config;
-struct sr_dev_inst;
+namespace sigrok {
+	class Driver;
+	class HardwareDevice;
+}
+
+Q_DECLARE_METATYPE(std::shared_ptr<sigrok::Driver>);
+Q_DECLARE_METATYPE(std::shared_ptr<sigrok::HardwareDevice>);
 
 namespace pv {
 
 class DeviceManager;
-
-namespace device {
-class Device;
-}
 
 namespace dialogs {
 
@@ -52,7 +53,7 @@ class Connect : public QDialog
 public:
 	Connect(QWidget *parent, pv::DeviceManager &device_manager);
 
-	std::shared_ptr<device::Device> get_selected_device() const;
+	std::shared_ptr<sigrok::HardwareDevice> get_selected_device() const;
 
 private:
 	void populate_drivers();
@@ -65,9 +66,6 @@ private Q_SLOTS:
 	void device_selected(int index);
 
 	void scan_pressed();
-
-private:
-	static void free_drvopts(sr_config *src);
 
 private:
 	pv::DeviceManager &_device_manager;
@@ -83,8 +81,6 @@ private:
 
 	QPushButton _scan_button;
 	QListWidget _device_list;
-	std::map<const sr_dev_inst*, std::shared_ptr<pv::device::Device> >
-		_device_map;
 
 	QDialogButtonBox _button_box;
 };

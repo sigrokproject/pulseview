@@ -26,6 +26,10 @@
 
 #include "property.h"
 
+#include <QMetaType>
+
+Q_DECLARE_METATYPE(Glib::VariantBase);
+
 class QComboBox;
 
 namespace pv {
@@ -36,7 +40,7 @@ class Enum : public Property
 	Q_OBJECT;
 
 public:
-	Enum(QString name, std::vector<std::pair<GVariant*, QString> > values,
+	Enum(QString name, std::vector<std::pair<Glib::VariantBase, QString> > values,
 		Getter getter, Setter setter);
 
 	virtual ~Enum();
@@ -49,7 +53,7 @@ private Q_SLOTS:
 	void on_current_item_changed(int);
 
 private:
-	const std::vector< std::pair<GVariant*, QString> > _values;
+	const std::vector< std::pair<Glib::VariantBase, QString> > _values;
 
 	QComboBox *_selector;
 };

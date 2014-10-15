@@ -58,7 +58,7 @@ endif()
 #= Dependencies
 #-------------------------------------------------------------------------------
 
-list(APPEND PKGDEPS libsigrok>=0.3.0)
+list(APPEND PKGDEPS libsigrokxx>=0.3.0)
 
 if(ENABLE_DECODE)
 	list(APPEND PKGDEPS libsigrokdecode>=0.3.0)
@@ -140,10 +140,6 @@ set(pulseview_SOURCES
 	pv/data/logicsnapshot.cpp
 	pv/data/signaldata.cpp
 	pv/data/snapshot.cpp
-	pv/device/device.cpp
-	pv/device/file.cpp
-	pv/device/devinst.cpp
-	pv/device/sessionfile.cpp
 	pv/dialogs/about.cpp
 	pv/dialogs/connect.cpp
 	pv/dialogs/storeprogress.cpp
@@ -186,7 +182,6 @@ set(pulseview_HEADERS
 	pv/mainwindow.h
 	pv/sigsession.h
 	pv/storesession.h
-	pv/device/devinst.h
 	pv/dialogs/about.h
 	pv/dialogs/connect.h
 	pv/dialogs/storeprogress.h
@@ -198,6 +193,7 @@ set(pulseview_HEADERS
 	pv/prop/int.h
 	pv/prop/property.h
 	pv/prop/string.h
+	pv/prop/binding/deviceoptions.h
 	pv/toolbars/samplingbar.h
 	pv/view/cursor.h
 	pv/view/cursorheader.h

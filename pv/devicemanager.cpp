@@ -19,66 +19,76 @@
  */
 
 #include "devicemanager.h"
-#include "device/device.h"
 #include "sigsession.h"
 
 #include <cassert>
 #include <stdexcept>
+#include <sstream>
 #include <string>
+#include <vector>
 
-#include <libsigrok/libsigrok.h>
+#include <libsigrok/libsigrok.hpp>
 
+#include <boost/filesystem.hpp>
+
+using std::dynamic_pointer_cast;
 using std::list;
 using std::map;
+using std::ostringstream;
+using std::remove_if;
 using std::runtime_error;
 using std::shared_ptr;
 using std::string;
+using std::vector;
+
+using Glib::VariantBase;
+
+using sigrok::ConfigKey;
+using sigrok::Context;
+using sigrok::Driver;
+using sigrok::Device;
+using sigrok::HardwareDevice;
+using sigrok::SessionDevice;
 
 namespace pv {
 
-DeviceManager::DeviceManager(struct sr_context *sr_ctx) :
-	_sr_ctx(sr_ctx)
+DeviceManager::DeviceManager(shared_ptr<Context> context) :
+	_context(context)
 {
-	init_drivers();
-	scan_all_drivers();
+	for (auto entry : context->drivers())
+		driver_scan(entry.second, map<const ConfigKey *, VariantBase>());
 }
 
 DeviceManager::~DeviceManager()
 {
-	release_devices();
 }
 
-const list< shared_ptr<pv::device::Device> >& DeviceManager::devices() const
+shared_ptr<Context> DeviceManager::context()
+{
+	return _context;
+}
+
+const list< shared_ptr<HardwareDevice> >& DeviceManager::devices() const
 {
 	return _devices;
 }
 
-list< shared_ptr<device::Device> > DeviceManager::driver_scan(
-	struct sr_dev_driver *const driver, GSList *const drvopts)
+list< shared_ptr<HardwareDevice> > DeviceManager::driver_scan(
+	shared_ptr<Driver> driver, map<const ConfigKey *, VariantBase> drvopts)
 {
-	list< shared_ptr<device::Device> > driver_devices;
+	list< shared_ptr<HardwareDevice> > driver_devices;
 
 	assert(driver);
 
 	// Remove any device instances from this driver from the device
 	// list. They will not be valid after the scan.
-	auto i = _devices.begin();
-	while (i != _devices.end()) {
-		if ((*i)->dev_inst()->driver == driver)
-			i = _devices.erase(i);
-		else
-			i++;
-	}
-
-	// Release this driver and all it's attached devices
-	release_driver(driver);
+	remove_if(_devices.begin(), _devices.end(),
+		[&](shared_ptr<HardwareDevice> device) {
+			return device->driver() == driver; });
 
 	// Do the scan
-	GSList *const devices = sr_driver_scan(driver, drvopts);
-	for (GSList *l = devices; l; l = l->next)
-		driver_devices.push_back(shared_ptr<device::Device>(
-			new device::Device((sr_dev_inst*)l->data)));
-	g_slist_free(devices);
+	auto devices = driver->scan(drvopts);
+	driver_devices.insert(driver_devices.end(), devices.begin(), devices.end());
 	driver_devices.sort(compare_devices);
 
 	// Add the scanned devices to the main list
@@ -89,17 +99,38 @@ list< shared_ptr<device::Device> > DeviceManager::driver_scan(
 	return driver_devices;
 }
 
-const shared_ptr<device::Device> DeviceManager::find_device_from_info(
+const map<string, string> DeviceManager::get_device_info(
+	shared_ptr<Device> device)
+{
+	map<string, string> result;
+
+	assert(device);
+
+	if (device->vendor().length() > 0)
+		result["vendor"] = device->vendor();
+	if (device->model().length() > 0)
+		result["model"] = device->model();
+	if (device->version().length() > 0)
+		result["version"] = device->version();
+	if (device->serial_number().length() > 0)
+		result["serial_num"] = device->serial_number();
+	if (device->connection_id().length() > 0)
+		result["connection_id"] = device->connection_id();
+
+	return result;
+}
+
+const shared_ptr<HardwareDevice> DeviceManager::find_device_from_info(
 	const map<string, string> search_info)
 {
-	shared_ptr<device::Device> last_resort_dev;
+	shared_ptr<HardwareDevice> last_resort_dev;
 	map<string, string> dev_info;
 
 	last_resort_dev = NULL;
 
-	for (shared_ptr<device::Device> dev : _devices) {
+	for (shared_ptr<HardwareDevice> dev : _devices) {
 		assert(dev);
-		dev_info = dev->get_device_info();
+		dev_info = get_device_info(dev);
 
 		// If present, vendor and model always have to match.
 		if (dev_info.count("vendor") > 0 && search_info.count("vendor") > 0)
@@ -140,59 +171,43 @@ const shared_ptr<device::Device> DeviceManager::find_device_from_info(
 	return last_resort_dev;
 }
 
-void DeviceManager::init_drivers()
+string DeviceManager::device_description(shared_ptr<Device> device)
 {
-	// Initialise all libsigrok drivers
-	sr_dev_driver **const drivers = sr_driver_list();
-	for (sr_dev_driver **driver = drivers; *driver; driver++) {
-		if (sr_driver_init(_sr_ctx, *driver) != SR_OK) {
-			throw runtime_error(
-				string("Failed to initialize driver ") +
-				string((*driver)->name));
+	auto session_device = dynamic_pointer_cast<SessionDevice>(device);
+
+	if (session_device)
+		return boost::filesystem::path(
+			session_device->parent()->filename()).filename().string();
+
+	ostringstream s;
+
+	vector<string> parts = {device->vendor(), device->model(),
+		device->version(), device->serial_number()};
+
+	for (size_t i = 0; i < parts.size(); i++)
+	{
+		if (parts[i].length() > 0)
+		{
+			if (i != 0)
+				s << " ";
+			s << parts[i];
 		}
 	}
+
+	if (device->serial_number().length() == 0 &&
+			device->connection_id().length() > 0)
+		s << " " << device->connection_id();
+
+	return s.str();
 }
 
-void DeviceManager::release_devices()
-{
-	// Release all the used devices
-	for (shared_ptr<device::Device> dev : _devices) {
-		assert(dev);
-		dev->release();
-	}
-
-	// Clear all the drivers
-	sr_dev_driver **const drivers = sr_driver_list();
-	for (sr_dev_driver **driver = drivers; *driver; driver++)
-		sr_dev_clear(*driver);
-}
-
-void DeviceManager::scan_all_drivers()
-{
-	// Scan all drivers for all devices.
-	struct sr_dev_driver **const drivers = sr_driver_list();
-	for (struct sr_dev_driver **driver = drivers; *driver; driver++)
-		driver_scan(*driver);
-}
-
-void DeviceManager::release_driver(struct sr_dev_driver *const driver)
-{
-	for (shared_ptr<device::Device> dev : _devices) {
-		assert(dev);
-		if(dev->dev_inst()->driver == driver)
-			dev->release();
-	}
-
-	// Clear all the old device instances from this driver
-	sr_dev_clear(driver);
-}
-
-bool DeviceManager::compare_devices(shared_ptr<device::Device> a,
-	shared_ptr<device::Device> b)
+bool DeviceManager::compare_devices(shared_ptr<HardwareDevice> a,
+	shared_ptr<HardwareDevice> b)
 {
 	assert(a);
 	assert(b);
-	return a->format_device_title().compare(b->format_device_title()) < 0;
+
+	return device_description(a).compare(device_description(b)) < 0;
 }
 
 } // namespace pv

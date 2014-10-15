@@ -28,11 +28,16 @@
 #include "config.h"
 #include "logicsnapshot.h"
 
+#include <libsigrok/libsigrok.hpp>
+
 using std::lock_guard;
 using std::recursive_mutex;
 using std::max;
 using std::min;
 using std::pair;
+using std::shared_ptr;
+
+using sigrok::Logic;
 
 namespace pv {
 namespace data {
@@ -42,9 +47,9 @@ const int LogicSnapshot::MipMapScaleFactor = 1 << MipMapScalePower;
 const float LogicSnapshot::LogMipMapScaleFactor = logf(MipMapScaleFactor);
 const uint64_t LogicSnapshot::MipMapDataUnit = 64*1024;	// bytes
 
-LogicSnapshot::LogicSnapshot(const sr_datafeed_logic &logic,
+LogicSnapshot::LogicSnapshot(shared_ptr<Logic> logic,
                              const uint64_t expected_num_samples) :
-	Snapshot(logic.unitsize),
+	Snapshot(logic->unit_size()),
 	_last_append_sample(0)
 {
 	set_capacity(expected_num_samples);
@@ -135,15 +140,15 @@ void LogicSnapshot::pack_sample(uint8_t *ptr, uint64_t value)
 #endif
 }
 
-void LogicSnapshot::append_payload(
-	const sr_datafeed_logic &logic)
+void LogicSnapshot::append_payload(shared_ptr<Logic> logic)
 {
-	assert(_unit_size == logic.unitsize);
-	assert((logic.length % _unit_size) == 0);
+	assert(_unit_size == logic->unit_size());
+	assert((logic->data_length() % _unit_size) == 0);
 
 	lock_guard<recursive_mutex> lock(_mutex);
 
-	append_data(logic.data, logic.length / _unit_size);
+	append_data(logic->data_pointer(),
+		logic->data_length() / _unit_size);
 
 	// Generate the first mip-map from the data
 	append_payload_to_mipmap();

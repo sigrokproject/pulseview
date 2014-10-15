@@ -27,6 +27,10 @@
 #include <pv/prop/binding/deviceoptions.h>
 #include <pv/widgets/popup.h>
 
+namespace sigrok {
+	class Device;
+}
+
 namespace pv {
 namespace popups {
 
@@ -35,13 +39,13 @@ class DeviceOptions : public pv::widgets::Popup
 	Q_OBJECT
 
 public:
-	DeviceOptions(std::shared_ptr<device::DevInst> dev_inst,
+	DeviceOptions(std::shared_ptr<sigrok::Device> device,
 		QWidget *parent);
 
 	pv::prop::binding::DeviceOptions& binding();
 
 private:
-	std::shared_ptr<device::DevInst> _dev_inst;
+	std::shared_ptr<sigrok::Device> _device;
 
 	QVBoxLayout _layout;
 

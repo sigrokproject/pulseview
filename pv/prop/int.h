@@ -54,7 +54,7 @@ private:
 	const QString _suffix;
 	const boost::optional< std::pair<int64_t, int64_t> > _range;
 
-	GVariant *_value;
+	Glib::VariantBase _value;
 	QSpinBox *_spin_box;
 };
 
