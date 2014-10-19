@@ -49,10 +49,6 @@ set(pulseview_TEST_SOURCES
 	${PROJECT_SOURCE_DIR}/pv/data/logicsnapshot.cpp
 	${PROJECT_SOURCE_DIR}/pv/data/snapshot.cpp
 	${PROJECT_SOURCE_DIR}/pv/data/signaldata.cpp
-	${PROJECT_SOURCE_DIR}/pv/device/device.cpp
-	${PROJECT_SOURCE_DIR}/pv/device/devinst.cpp
-	${PROJECT_SOURCE_DIR}/pv/device/file.cpp
-	${PROJECT_SOURCE_DIR}/pv/device/sessionfile.cpp
 	${PROJECT_SOURCE_DIR}/pv/prop/double.cpp
 	${PROJECT_SOURCE_DIR}/pv/prop/enum.cpp
 	${PROJECT_SOURCE_DIR}/pv/prop/int.cpp
@@ -86,12 +82,12 @@ set(pulseview_TEST_SOURCES
 # This list includes only QObject derived class headers.
 set(pulseview_TEST_HEADERS
 	${PROJECT_SOURCE_DIR}/pv/sigsession.h
-	${PROJECT_SOURCE_DIR}/pv/device/devinst.h
 	${PROJECT_SOURCE_DIR}/pv/prop/double.h
 	${PROJECT_SOURCE_DIR}/pv/prop/enum.h
 	${PROJECT_SOURCE_DIR}/pv/prop/int.h
 	${PROJECT_SOURCE_DIR}/pv/prop/property.h
 	${PROJECT_SOURCE_DIR}/pv/prop/string.h
+	${PROJECT_SOURCE_DIR}/pv/prop/binding/deviceoptions.h
 	${PROJECT_SOURCE_DIR}/pv/view/cursor.h
 	${PROJECT_SOURCE_DIR}/pv/view/cursorheader.h
 	${PROJECT_SOURCE_DIR}/pv/view/header.h
