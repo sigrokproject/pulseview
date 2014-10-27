@@ -55,9 +55,6 @@ Header::Header(View &parent) :
 	setFocusPolicy(Qt::ClickFocus);
 	setMouseTracking(true);
 
-	connect(&_view.session(), SIGNAL(signals_changed()),
-		this, SLOT(on_signals_changed()));
-
 	connect(&_view, SIGNAL(signals_moved()),
 		this, SLOT(on_signals_moved()));
 }
@@ -85,6 +82,15 @@ void Header::clear_selection()
 	for (auto &i : _view)
 		i->select(false);
 	update();
+}
+
+void Header::signals_updated()
+{
+	for (shared_ptr<RowItem> r : _view) {
+		assert(r);
+		connect(r.get(), SIGNAL(appearance_changed()),
+			this, SLOT(on_trace_changed()));
+	}
 }
 
 void Header::show_popup(const shared_ptr<RowItem> &item)
@@ -270,19 +276,6 @@ void Header::keyPressEvent(QKeyEvent *e)
 				r->delete_pressed();
 		break;
 	}
-	}
-}
-
-void Header::on_signals_changed()
-{
-	for (shared_ptr<RowItem> r : _view) {
-		assert(r);
-		connect(r.get(), SIGNAL(visibility_changed()),
-			this, SLOT(on_trace_changed()));
-		connect(r.get(), SIGNAL(text_changed()),
-			this, SLOT(on_trace_changed()));
-		connect(r.get(), SIGNAL(colour_changed()),
-			this, SLOT(update()));
 	}
 }
 

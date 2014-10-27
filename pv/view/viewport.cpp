@@ -52,9 +52,6 @@ Viewport::Viewport(View &parent) :
 	setAutoFillBackground(true);
 	setBackgroundRole(QPalette::Base);
 
-	connect(&_view.session(), SIGNAL(signals_changed()),
-		this, SLOT(on_signals_changed()));
-
 	connect(&_view, SIGNAL(signals_moved()),
 		this, SLOT(on_signals_moved()));
 }
@@ -65,6 +62,15 @@ int Viewport::get_total_height() const
 	for (auto &i : _view)
 		h = max(i->v_offset() + View::SignalHeight, h);
 	return h;
+}
+
+void Viewport::signals_updated()
+{
+	for (shared_ptr<RowItem> r : _view) {
+		assert(r);
+		connect(r.get(), SIGNAL(appearance_changed()),
+			this, SLOT(update()));
+	}
 }
 
 void Viewport::paintEvent(QPaintEvent*)
@@ -223,15 +229,6 @@ bool Viewport::touchEvent(QTouchEvent *event)
 	}
 
 	return true;
-}
-
-void Viewport::on_signals_changed()
-{
-	for (shared_ptr<RowItem> r : _view) {
-		assert(r);
-		connect(r.get(), SIGNAL(appearance_changed()),
-			this, SLOT(update()));
-	}
 }
 
 void Viewport::on_signals_moved()

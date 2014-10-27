@@ -522,6 +522,10 @@ void View::signals_changed()
 
 	update_layout();
 	normalize_layout();
+
+	// Update the child widgets
+	_header->signals_updated();
+	_viewport->signals_updated();
 }
 
 void View::data_updated()

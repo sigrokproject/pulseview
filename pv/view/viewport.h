@@ -43,6 +43,8 @@ public:
 
 	int get_total_height() const;
 
+	void signals_updated();
+
 protected:
 	void paintEvent(QPaintEvent *event);
 
@@ -56,7 +58,6 @@ private:
 	bool touchEvent(QTouchEvent *e);
 
 private Q_SLOTS:
-	void on_signals_changed();
 	void on_signals_moved();
 
 private:
