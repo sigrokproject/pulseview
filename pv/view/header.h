@@ -57,6 +57,8 @@ private:
 
 	void clear_selection();
 
+	void show_popup(const std::shared_ptr<RowItem> &item);
+
 private:
 	void paintEvent(QPaintEvent *event);
 

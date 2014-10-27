@@ -108,6 +108,19 @@ void Header::clear_selection()
 	update();
 }
 
+void Header::show_popup(const shared_ptr<RowItem> &item)
+{
+	using pv::widgets::Popup;
+
+	Popup *const p = item->create_popup(&_view);
+	if (!p)
+		return;
+
+	const QPoint pt(width() - BaselineOffset, item->get_y());
+	p->set_position(mapToGlobal(pt), Popup::Right);
+	p->show();
+}
+
 void Header::paintEvent(QPaintEvent*)
 {
 	// The trace labels are not drawn with the arrows exactly on the
@@ -187,8 +200,6 @@ void Header::mousePressEvent(QMouseEvent *event)
 
 void Header::mouseReleaseEvent(QMouseEvent *event)
 {
-	using pv::widgets::Popup;
-
 	assert(event);
 	if (event->button() == Qt::LeftButton) {
 		if (_dragging)
@@ -197,15 +208,8 @@ void Header::mouseReleaseEvent(QMouseEvent *event)
 		{
 			const shared_ptr<RowItem> mouse_over_row_item =
 				get_mouse_over_row_item(event->pos());
-			if (mouse_over_row_item) {
-				const int w = width() - BaselineOffset;
-				Popup *const p =
-					mouse_over_row_item->create_popup(&_view);
-				p->set_position(mapToGlobal(QPoint(w,
-					mouse_over_row_item->get_y())),
-					Popup::Right);
-				p->show();
-			}
+			if (mouse_over_row_item)
+				show_popup(mouse_over_row_item);
 		}
 
 		_dragging = false;
