@@ -226,11 +226,7 @@ void Header::mouseMoveEvent(QMouseEvent *event)
 			const std::shared_ptr<RowItem> row_item((*i).first);
 			if (row_item) {
 				const int y = (*i).second + delta;
-				const int y_snap =
-					((y + View::SignalSnapGridSize / 2) /
-						View::SignalSnapGridSize) *
-						View::SignalSnapGridSize;
-				row_item->set_v_offset(y_snap);
+				row_item->set_v_offset(y);
 
 				// Ensure the trace is selected
 				row_item->select();

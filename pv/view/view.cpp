@@ -69,7 +69,6 @@ const int View::MaxScrollValue = INT_MAX / 2;
 
 const int View::SignalHeight = 30;
 const int View::SignalMargin = 10;
-const int View::SignalSnapGridSize = 10;
 
 const QColor View::CursorAreaColour(220, 231, 243);
 
