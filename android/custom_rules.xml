@@ -105,6 +105,11 @@
 			<fileset dir="${prefix}/lib/python3.3">
 				<include name="**/*.py"/>
 				<exclude name="**/test/**"/>
+				<exclude name="**/tests/**"/>
+				<exclude name="**/tkinter/**"/>
+				<exclude name="**/turtledemo/**"/>
+				<exclude name="**/turtle.py"/>
+				<exclude name="**/idlelib/**"/>
 			</fileset>
 		</copy>
 	</target>
