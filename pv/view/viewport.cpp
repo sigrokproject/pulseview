@@ -19,6 +19,7 @@
  */
 
 #include <cassert>
+#include <cmath>
 
 #include "view.h"
 #include "viewport.h"

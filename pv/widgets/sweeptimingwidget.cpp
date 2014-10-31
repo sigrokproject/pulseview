@@ -20,6 +20,8 @@
 
 #include "sweeptimingwidget.h"
 
+#include <cmath>
+
 #include <vector>
 
 #include <assert.h>
