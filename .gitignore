@@ -1,5 +1,6 @@
 *~
 *.swp
+.*.swo
 
 pulseview
 pulseview-test
