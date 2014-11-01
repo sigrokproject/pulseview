@@ -214,28 +214,39 @@ void Header::mouseMoveEvent(QMouseEvent *event)
 		QApplication::startDragDistance())
 		return;
 
-	// Move the signals if we are dragging
-	if (!_drag_row_items.empty())
-	{
-		_dragging = true;
+	// Check the list of dragging items is not empty
+	if (_drag_row_items.empty())
+		return;
 
-		const int delta = event->pos().y() - _mouse_down_point.y();
+	// Check all the drag items share a common owner
+	const shared_ptr<RowItem> first_row_item(
+		_drag_row_items.front().first);
+	for (const auto &r : _drag_row_items) {
+		const shared_ptr<RowItem> row_item(r.first);
+		assert(row_item);
 
-		for (auto i = _drag_row_items.begin();
-			i != _drag_row_items.end(); i++) {
-			const std::shared_ptr<RowItem> row_item((*i).first);
-			if (row_item) {
-				const int y = (*i).second + delta;
-				row_item->set_v_offset(y);
-
-				// Ensure the trace is selected
-				row_item->select();
-			}
-			
-		}
-
-		signals_moved();
+		if (row_item->owner() != first_row_item->owner())
+			return;
 	}
+
+	// Do the drag
+	_dragging = true;
+
+	const int delta = event->pos().y() - _mouse_down_point.y();
+
+	for (auto i = _drag_row_items.begin();
+		i != _drag_row_items.end(); i++) {
+		const std::shared_ptr<RowItem> row_item((*i).first);
+		if (row_item) {
+			const int y = (*i).second + delta;
+			row_item->set_v_offset(y);
+
+			// Ensure the trace is selected
+			row_item->select();
+		}
+	}
+
+	signals_moved();
 
 	update();
 }
