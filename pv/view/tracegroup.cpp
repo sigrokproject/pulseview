@@ -22,10 +22,13 @@
 
 #include <algorithm>
 
+#include <QMenu>
+
 #include "tracegroup.h"
 
 using std::pair;
 using std::shared_ptr;
+using std::vector;
 
 namespace pv {
 namespace view {
@@ -103,9 +106,14 @@ bool TraceGroup::pt_in_label_rect(int left, int right, const QPoint &point)
 
 QMenu* TraceGroup::create_context_menu(QWidget *parent)
 {
-	(void)parent;
+	QMenu *const menu = new QMenu(parent);
 
-	return NULL;
+	QAction *const ungroup = new QAction(tr("Ungroup"), this);
+	ungroup->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_U));
+	connect(ungroup, SIGNAL(triggered()), this, SLOT(on_ungroup()));
+	menu->addAction(ungroup);
+
+	return menu;
 }
 
 pv::widgets::Popup* TraceGroup::create_popup(QWidget *parent)
@@ -123,6 +131,21 @@ void TraceGroup::update_viewport()
 {
 	if (_owner)
 		_owner->update_viewport();
+}
+
+void TraceGroup::on_ungroup()
+{
+	const vector< shared_ptr<RowItem> > items(
+		child_items().begin(), child_items().end());
+	clear_child_items();
+
+	for (shared_ptr<RowItem> r : items) {
+		_owner->add_child_item(r);
+		r->set_v_offset(r->v_offset() + v_offset());
+	}
+
+	_owner->remove_child_item(shared_from_this());
+	appearance_changed();
 }
 
 } // namespace view

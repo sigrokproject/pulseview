@@ -109,6 +109,9 @@ public:
 	int owner_v_offset() const;
 
 	void update_viewport();
+
+private Q_SLOTS:
+	void on_ungroup();
 };
 
 } // view
