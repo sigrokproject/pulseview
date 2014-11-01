@@ -268,9 +268,14 @@ void Header::leaveEvent(QEvent*)
 void Header::contextMenuEvent(QContextMenuEvent *event)
 {
 	const shared_ptr<RowItem> r = get_mouse_over_row_item(_mouse_point);
+	if (!r)
+		return;
 
-	if (r)
-		r->create_context_menu(this)->exec(event->globalPos());
+	QMenu *const menu = r->create_context_menu(this);
+	if (!menu)
+		return;
+
+	menu->exec(event->globalPos());
 }
 
 void Header::keyPressEvent(QKeyEvent *e)
