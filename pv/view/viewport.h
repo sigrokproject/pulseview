@@ -41,8 +41,6 @@ class Viewport : public QWidget
 public:
 	explicit Viewport(View &parent);
 
-	int get_total_height() const;
-
 	void signals_updated();
 
 protected:

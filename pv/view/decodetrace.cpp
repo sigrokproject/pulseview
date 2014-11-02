@@ -60,6 +60,7 @@ using std::list;
 using std::lock_guard;
 using std::make_pair;
 using std::max;
+using std::make_pair;
 using std::map;
 using std::min;
 using std::pair;
@@ -153,6 +154,16 @@ bool DecodeTrace::enabled() const
 const std::shared_ptr<pv::data::DecoderStack>& DecodeTrace::decoder() const
 {
 	return _decoder_stack;
+}
+
+pair<int, int> DecodeTrace::v_extents() const
+{
+	/// @todo Replace this with an implementation that knows the true
+	/// height of the trace
+	QFontMetrics m(QApplication::font());
+	const int text_height =  m.boundingRect(QRect(), 0, "Tg").height();
+	const int row_height = (text_height * 6) / 4;
+	return make_pair(-row_height / 2, row_height * 7 / 2);
 }
 
 void DecodeTrace::paint_back(QPainter &p, int left, int right)

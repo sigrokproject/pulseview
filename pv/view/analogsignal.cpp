@@ -31,6 +31,7 @@
 #include <libsigrok/libsigrok.hpp>
 
 using std::max;
+using std::make_pair;
 using std::min;
 using std::shared_ptr;
 using std::deque;
@@ -39,6 +40,8 @@ using sigrok::Channel;
 
 namespace pv {
 namespace view {
+
+const int AnalogSignal::NominalHeight = 80;
 
 const QColor AnalogSignal::SignalColours[4] = {
 	QColor(0xC4, 0xA0, 0x00),	// Yellow
@@ -77,6 +80,11 @@ shared_ptr<pv::data::Analog> AnalogSignal::analog_data() const
 void AnalogSignal::set_scale(float scale)
 {
 	_scale = scale;
+}
+
+std::pair<int, int> AnalogSignal::v_extents() const
+{
+	return make_pair(-NominalHeight / 2, NominalHeight / 2);
 }
 
 void AnalogSignal::paint_back(QPainter &p, int left, int right)

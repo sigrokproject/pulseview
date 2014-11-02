@@ -113,6 +113,12 @@ public:
 	 */
 	const_iterator end() const;
 
+	/**
+	 * Computes the vertical extents of the contents of this row item owner.
+	 * @return A pair containing the minimum and maximum y-values.
+	 */
+	std::pair<int, int> v_extents() const;
+
 	virtual void update_viewport() = 0;
 
 private:

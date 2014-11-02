@@ -91,6 +91,12 @@ public:
 	const std::shared_ptr<pv::data::DecoderStack>& decoder() const;
 
 	/**
+	 * Computes the vertical extents of the contents of this row item.
+	 * @return A pair containing the minimum and maximum y-values.
+	 */
+	std::pair<int, int> v_extents() const;
+
+	/**
 	 * Paints the background layer of the trace with a QPainter
 	 * @param p the QPainter to paint into.
 	 * @param left the x-coordinate of the left edge of the signal.

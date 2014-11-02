@@ -41,6 +41,7 @@
 
 using std::deque;
 using std::max;
+using std::make_pair;
 using std::min;
 using std::pair;
 using std::shared_ptr;
@@ -57,6 +58,9 @@ using sigrok::TriggerMatchType;
 
 namespace pv {
 namespace view {
+
+const int LogicSignal::SignalHeight = 30;
+const int LogicSignal::SignalMargin = 10;
 
 const float LogicSignal::Oversampling = 2.0f;
 
@@ -120,6 +124,11 @@ shared_ptr<pv::data::Logic> LogicSignal::logic_data() const
 	return _data;
 }
 
+std::pair<int, int> LogicSignal::v_extents() const
+{
+	return make_pair(-SignalHeight - SignalMargin, SignalMargin);
+}
+
 void LogicSignal::paint_back(QPainter &p, int left, int right)
 {
 	if (_channel->enabled())
@@ -152,7 +161,7 @@ void LogicSignal::paint_mid(QPainter &p, int left, int right)
 	if (!_channel->enabled())
 		return;
 
-	const float high_offset = y - View::SignalHeight + 0.5f;
+	const float high_offset = y - SignalHeight + 0.5f;
 	const float low_offset = y + 0.5f;
 
 	const deque< shared_ptr<pv::data::LogicSnapshot> > &snapshots =

@@ -24,6 +24,7 @@
 
 #include "tracegroup.h"
 
+using std::pair;
 using std::shared_ptr;
 
 namespace pv {
@@ -66,6 +67,11 @@ const pv::view::View* TraceGroup::view() const
 {
 	assert(_owner);
 	return _owner->view();
+}
+
+pair<int, int> TraceGroup::v_extents() const
+{
+	return RowItemOwner::v_extents();
 }
 
 void TraceGroup::paint_label(QPainter &p, int right, bool hover)

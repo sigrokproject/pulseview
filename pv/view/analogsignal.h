@@ -37,6 +37,7 @@ namespace view {
 class AnalogSignal : public Signal
 {
 private:
+	static const int NominalHeight;
 	static const QColor SignalColours[4];
 
 	static const float EnvelopeThreshold;
@@ -53,6 +54,12 @@ public:
 	std::shared_ptr<pv::data::Analog> analog_data() const;
 
 	void set_scale(float scale);
+
+	/**
+	 * Computes the vertical extents of the contents of this row item.
+	 * @return A pair containing the minimum and maximum y-values.
+	 */
+	std::pair<int, int> v_extents() const;
 
 	/**
 	 * Paints the background layer of the signal with a QPainter

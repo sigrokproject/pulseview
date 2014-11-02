@@ -67,6 +67,12 @@ public:
 	virtual const pv::view::View* view() const;
 
 	/**
+	 * Computes the vertical extents of the contents of this row item.
+	 * @return A pair containing the minimum and maximum y-values.
+	 */
+	std::pair<int, int> v_extents() const;
+
+	/**
 	 * Paints the signal label.
 	 * @param p the QPainter to paint into.
 	 * @param right the x-coordinate of the right edge of the header

@@ -56,14 +56,6 @@ Viewport::Viewport(View &parent) :
 		this, SLOT(on_signals_moved()));
 }
 
-int Viewport::get_total_height() const
-{
-	int h = 0;
-	for (auto &i : _view)
-		h = max(i->v_offset() + View::SignalHeight, h);
-	return h;
-}
-
 void Viewport::signals_updated()
 {
 	for (shared_ptr<RowItem> r : _view) {

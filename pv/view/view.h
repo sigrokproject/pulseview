@@ -56,9 +56,6 @@ private:
 	static const int MaxScrollValue;
 
 public:
-	static const int SignalHeight;
-	static const int SignalMargin;
-
 	static const QColor CursorAreaColour;
 
 	static const QSizeF LabelPadding;

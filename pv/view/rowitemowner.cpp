@@ -23,6 +23,10 @@
 #include "rowitem.h"
 #include "rowitemowner.h"
 
+using std::max;
+using std::make_pair;
+using std::min;
+using std::pair;
 using std::shared_ptr;
 using std::vector;
 
@@ -82,6 +86,25 @@ RowItemOwner::const_iterator RowItemOwner::begin() const
 RowItemOwner::const_iterator RowItemOwner::end() const
 {
 	return const_iterator(this);
+}
+
+pair<int, int> RowItemOwner::v_extents() const
+{
+	pair<int, int> extents(0, 0);
+	for (const shared_ptr<RowItem> r : child_items()) {
+		assert(r);
+		if (!r->enabled())
+			continue;
+
+		const int child_offset = r->v_offset();
+		const pair<int, int> child_extents = r->v_extents();
+		extents.first = min(child_extents.first + child_offset,
+			extents.first);
+		extents.second = max(child_extents.second + child_offset,
+			extents.second);
+	}
+
+	return extents;
 }
 
 } // view

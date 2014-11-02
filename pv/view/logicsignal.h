@@ -45,6 +45,9 @@ class LogicSignal : public Signal
 	Q_OBJECT
 
 private:
+	static const int SignalHeight;
+	static const int SignalMargin;
+
 	static const float Oversampling;
 
 	static const QColor EdgeColour;
@@ -64,6 +67,12 @@ public:
 	std::shared_ptr<pv::data::SignalData> data() const;
 
 	std::shared_ptr<pv::data::Logic> logic_data() const;
+
+	/**
+	 * Computes the vertical extents of the contents of this row item.
+	 * @return A pair containing the minimum and maximum y-values.
+	 */
+	std::pair<int, int> v_extents() const;
 
 	/**
 	 * Paints the background layer of the signal with a QPainter

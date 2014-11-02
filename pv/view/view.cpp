@@ -67,9 +67,6 @@ const double View::MinScale = 1e-15;
 
 const int View::MaxScrollValue = INT_MAX / 2;
 
-const int View::SignalHeight = 30;
-const int View::SignalMargin = 10;
-
 const QColor View::CursorAreaColour(220, 231, 243);
 
 const QSizeF View::LabelPadding(4, 0);
@@ -386,9 +383,11 @@ void View::update_scroll()
 
 	// Set the vertical scrollbar
 	verticalScrollBar()->setPageStep(areaSize.height());
-	verticalScrollBar()->setRange(0,
-		_viewport->get_total_height() + SignalMargin -
-		areaSize.height());
+
+	const pair<int, int> extents = v_extents();
+	const int extra_scroll_height = (extents.second - extents.first) / 4;
+	verticalScrollBar()->setRange(extents.first - extra_scroll_height,
+		extents.first + extra_scroll_height);
 }
 
 void View::update_layout()
@@ -513,10 +512,14 @@ void View::signals_changed()
 #endif
 
 	// Create the initial layout
-	int offset = SignalMargin + SignalHeight;
+	int offset = 0;
 	for (shared_ptr<RowItem> r : *this) {
+		const pair<int, int> extents = r->v_extents();
+		if (r->enabled())
+			offset += -extents.first;
 		r->set_v_offset(offset);
-		offset += SignalHeight + 2 * SignalMargin;
+		if (r->enabled())
+			offset += extents.second;
 	}
 
 	update_layout();
