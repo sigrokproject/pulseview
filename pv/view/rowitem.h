@@ -21,6 +21,8 @@
 #ifndef PULSEVIEW_PV_VIEW_HEADERITEM_H
 #define PULSEVIEW_PV_VIEW_HEADERITEM_H
 
+#include <memory>
+
 #include "selectableitem.h"
 
 namespace pv {
@@ -28,7 +30,8 @@ namespace view {
 
 class RowItemOwner;
 
-class RowItem : public SelectableItem
+class RowItem : public SelectableItem,
+	public std::enable_shared_from_this<pv::view::RowItem>
 {
 	Q_OBJECT
 
