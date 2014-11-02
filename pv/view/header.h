@@ -90,6 +90,7 @@ Q_SIGNALS:
 private:
 	QPoint _mouse_point;
 	QPoint _mouse_down_point;
+	std::shared_ptr<RowItem> _mouse_down_item;
 	bool _dragging;
 };
 
