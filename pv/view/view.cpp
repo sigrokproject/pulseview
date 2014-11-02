@@ -26,6 +26,7 @@
 #include <climits>
 #include <cmath>
 #include <mutex>
+#include <unordered_set>
 
 #include <QEvent>
 #include <QMouseEvent>
@@ -56,6 +57,7 @@ using std::min;
 using std::pair;
 using std::set;
 using std::shared_ptr;
+using std::unordered_set;
 using std::vector;
 using std::weak_ptr;
 
@@ -181,7 +183,7 @@ double View::offset() const
 	return _offset;
 }
 
-int View::owner_v_offset() const
+int View::owner_visual_v_offset() const
 {
 	return -_v_offset;
 }
@@ -331,6 +333,29 @@ void View::update_viewport()
 {
 	assert(_viewport);
 	_viewport->update();
+	_header->update();
+}
+
+void View::restack_all_row_items()
+{
+	// Make a set of owners
+	unordered_set< RowItemOwner* > owners;
+	for (const auto &r : *this)
+		owners.insert(r->owner());
+
+	// Make a list that is sorted from deepest first
+	vector< RowItemOwner* > sorted_owners(owners.begin(), owners.end());
+	sort(sorted_owners.begin(), sorted_owners.end(),
+		[](const RowItemOwner* a, const RowItemOwner *b) {
+			return a->depth() > b->depth(); });
+
+	// Restack the items recursively
+	for (auto &o : sorted_owners)
+		o->restack_items();
+
+	// Animate the items to their destination
+	for (const auto &r : *this)
+		r->animate_to_layout_v_offset();
 }
 
 void View::get_scroll_layout(double &length, double &offset) const
@@ -559,10 +584,8 @@ void View::process_sticky_events()
 {
 	if (_sticky_events & SelectableItemHExtentsChanged)
 		update_layout();
-	if (_sticky_events & SelectableItemVExtentsChanged) {
-		_viewport->update();
-		_header->update();
-	}
+	if (_sticky_events & SelectableItemVExtentsChanged)
+		restack_all_row_items();
 
 	// Clear the sticky events
 	_sticky_events = 0;

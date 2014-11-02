@@ -111,5 +111,9 @@ pair<int, int> RowItemOwner::v_extents() const
 	return extents;
 }
 
+void RowItemOwner::restack_items()
+{
+}
+
 } // view
 } // pv

@@ -181,7 +181,9 @@ void Header::mouseLeftReleaseEvent(QMouseEvent *event)
 	for (auto &r : _view)
 		r->drag_release();
 
-	if (!_dragging)
+	if (_dragging)
+		_view.restack_all_row_items();
+	else
 	{
 		if (!ctrl_pressed) {
 			for (shared_ptr<RowItem> r : _view)
@@ -243,6 +245,9 @@ void Header::mouseMoveEvent(QMouseEvent *event)
 			r->select();
 		}
 
+	item_owner->restack_items();
+	for (const auto &r : *item_owner)
+		r->animate_to_layout_v_offset();
 	signals_moved();
 
 	update();

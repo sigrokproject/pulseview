@@ -108,7 +108,9 @@ public:
 	/**
 	 * Returns the total vertical offset of this trace and all it's owners
 	 */
-	int owner_v_offset() const;
+	int owner_visual_v_offset() const;
+
+	void restack_items();
 
 	/**
 	 * Returns the number of nested parents that this row item owner has.

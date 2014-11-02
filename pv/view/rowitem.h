@@ -23,6 +23,8 @@
 
 #include <memory>
 
+#include <QPropertyAnimation>
+
 #include "selectableitem.h"
 
 namespace pv {
@@ -34,6 +36,9 @@ class RowItem : public SelectableItem,
 	public std::enable_shared_from_this<pv::view::RowItem>
 {
 	Q_OBJECT
+	Q_PROPERTY(int visual_v_offset
+		READ visual_v_offset
+		WRITE set_visual_v_offset)
 
 public:
 	/**
@@ -70,6 +75,12 @@ public:
 	 * Sets the visual and layout offset of this signal.
 	 */
 	void force_to_v_offset(int v_offset);
+
+	/**
+	 * Begins an animation that will animate the visual offset toward
+	 * the layout offset.
+	 */
+	void animate_to_layout_v_offset();
 
 	/**
 	 * Gets the owner this trace in the view trace hierachy.
@@ -147,6 +158,9 @@ protected:
 
 	int _layout_v_offset;
 	int _visual_v_offset;
+
+private:
+	QPropertyAnimation _v_offset_animation;
 };
 
 } // namespace view

@@ -116,7 +116,7 @@ QRectF TraceGroup::label_rect(int right) const
 {
 	QRectF rect;
 	for (const shared_ptr<RowItem> r : child_items())
-		if (r)
+		if (r && r->enabled())
 			rect = rect.united(r->label_rect(right));
 
 	return QRectF(rect.x() - Width - Padding, rect.y(),
@@ -150,9 +150,44 @@ pv::widgets::Popup* TraceGroup::create_popup(QWidget *parent)
 	return NULL;
 }
 
-int TraceGroup::owner_v_offset() const
+int TraceGroup::owner_visual_v_offset() const
 {
-	return _owner ? layout_v_offset() + _owner->owner_v_offset() : 0;
+	return _owner ? visual_v_offset() + _owner->owner_visual_v_offset() : 0;
+}
+
+void TraceGroup::restack_items()
+{
+	vector< shared_ptr<RowItem> > items(
+		child_items().begin(), child_items().end());
+
+	// Sort by the centre line of the extents
+	stable_sort(items.begin(), items.end(),
+		[](const shared_ptr<RowItem> &a, const shared_ptr<RowItem> &b) {
+			const auto aext = a->v_extents();
+			const auto bext = b->v_extents();
+                        return a->layout_v_offset() +
+					(aext.first + aext.second) / 2 <
+				b->layout_v_offset() +
+					(bext.first + bext.second) / 2;
+		});
+
+	int total_offset = 0;
+	for (shared_ptr<RowItem> r : items) {
+		const pair<int, int> extents = r->v_extents();
+		if (extents.first == 0 && extents.second == 0)
+			continue;
+
+		// We position disabled traces, so that they are close to the
+		// animation target positon should they be re-enabled
+		if (r->enabled())
+			total_offset += -extents.first;
+
+		if (!r->dragging())
+			r->set_layout_v_offset(total_offset);
+
+		if (r->enabled())
+			total_offset += extents.second;
+	}
 }
 
 unsigned int TraceGroup::depth() const

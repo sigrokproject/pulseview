@@ -97,7 +97,7 @@ public:
 	 * seconds.
 	 */
 	double offset() const;
-	int owner_v_offset() const;
+	int owner_visual_v_offset() const;
 
 	/**
 	 * Returns the number of nested parents that this row item owner has.
@@ -151,6 +151,8 @@ public:
 	const QPoint& hover_point() const;
 
 	void update_viewport();
+
+	void restack_all_row_items();
 
 Q_SIGNALS:
 	void hover_point_changed();

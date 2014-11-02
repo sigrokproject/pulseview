@@ -63,7 +63,7 @@ public:
 	 */
 	virtual const pv::view::View* view() const = 0;
 
-	virtual int owner_v_offset() const = 0;
+	virtual int owner_visual_v_offset() const = 0;
 
 	/**
 	 * Returns the number of nested parents that this row item owner has.
@@ -123,6 +123,8 @@ public:
 	 * @return A pair containing the minimum and maximum y-values.
 	 */
 	std::pair<int, int> v_extents() const;
+
+	virtual void restack_items();
 
 public:
 	virtual void appearance_changed(bool label, bool content) = 0;
