@@ -65,8 +65,10 @@ private:
 	void paintEvent(QPaintEvent *event);
 
 private:
+	void mouseLeftPressEvent(QMouseEvent *event);
 	void mousePressEvent(QMouseEvent * event);
 
+	void mouseLeftReleaseEvent(QMouseEvent *event);
 	void mouseReleaseEvent(QMouseEvent *event);
 
 	void mouseMoveEvent(QMouseEvent *event);
