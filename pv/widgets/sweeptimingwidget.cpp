@@ -20,7 +20,7 @@
 
 #include "sweeptimingwidget.h"
 
-#include <cmath>
+#include <cstdlib>
 
 #include <vector>
 
