@@ -34,6 +34,8 @@ class TraceGroup : public RowItem, public RowItemOwner
 private:
 	static const int Padding;
 	static const int Width;
+	static const int LineThickness;
+	static const QColor LineColour;
 
 public:
 	/**

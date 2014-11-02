@@ -18,11 +18,13 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
+#include <extdef.h>
 #include <assert.h>
 
 #include <algorithm>
 
 #include <QMenu>
+#include <QPainter>
 
 #include "tracegroup.h"
 
@@ -35,6 +37,8 @@ namespace view {
 
 const int TraceGroup::Padding = 8;
 const int TraceGroup::Width = 12;
+const int TraceGroup::LineThickness = 5;
+const QColor TraceGroup::LineColour(QColor(0x55, 0x57, 0x53));
 
 TraceGroup::~TraceGroup()
 {
@@ -79,9 +83,33 @@ pair<int, int> TraceGroup::v_extents() const
 
 void TraceGroup::paint_label(QPainter &p, int right, bool hover)
 {
-	(void)p;
-	(void)right;
-	(void)hover;
+	const QRectF r = label_rect(right).adjusted(
+		LineThickness / 2, LineThickness / 2,
+		-LineThickness / 2, -LineThickness / 2);
+
+	// Paint the label
+	const QPointF points[] = {
+		r.topRight(),
+		r.topLeft(),
+		r.bottomLeft(),
+		r.bottomRight()
+	};
+
+	if (selected()) {
+		const QPen pen(highlight_pen());
+		p.setPen(QPen(pen.brush(), pen.width() + LineThickness,
+			Qt::SolidLine, Qt::SquareCap, Qt::RoundJoin));
+		p.setBrush(Qt::transparent);
+		p.drawPolyline(points, countof(points));
+	}
+
+	p.setPen(QPen(QBrush(LineColour.darker()), LineThickness,
+		Qt::SolidLine, Qt::SquareCap, Qt::RoundJoin));
+	p.drawPolyline(points, countof(points));
+	p.setPen(QPen(QBrush(hover ? LineColour.lighter() : LineColour),
+		LineThickness - 2, Qt::SolidLine, Qt::SquareCap,
+		Qt::RoundJoin));
+	p.drawPolyline(points, countof(points));
 }
 
 QRectF TraceGroup::label_rect(int right) const
