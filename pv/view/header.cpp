@@ -22,10 +22,13 @@
 #include "view.h"
 
 #include "signal.h"
+#include "tracegroup.h"
 #include "../sigsession.h"
 
 #include <cassert>
 #include <algorithm>
+
+#include <boost/iterator/filter_iterator.hpp>
 
 #include <QApplication>
 #include <QMenu>
@@ -35,8 +38,10 @@
 
 #include <pv/widgets/popup.h>
 
+using boost::make_filter_iterator;
 using std::max;
 using std::make_pair;
+using std::min;
 using std::pair;
 using std::shared_ptr;
 using std::stable_sort;
@@ -47,6 +52,11 @@ namespace view {
 
 const int Header::Padding = 12;
 const int Header::BaselineOffset = 5;
+
+static bool item_selected(shared_ptr<RowItem> r)
+{
+	return r->selected();
+}
 
 Header::Header(View &parent) :
 	MarginWidget(parent),
@@ -265,9 +275,21 @@ void Header::contextMenuEvent(QContextMenuEvent *event)
 	if (!r)
 		return;
 
-	QMenu *const menu = r->create_context_menu(this);
+	QMenu *menu = r->create_context_menu(this);
 	if (!menu)
-		return;
+		menu = new QMenu(this);
+
+	if (std::count_if(_view.begin(), _view.end(), item_selected) > 1)
+	{
+		menu->addSeparator();
+
+		QAction *const group = new QAction(tr("Group"), this);
+		QList<QKeySequence> shortcuts;
+		shortcuts.append(QKeySequence(Qt::ControlModifier | Qt::Key_G));
+		group->setShortcuts(shortcuts);
+		connect(group, SIGNAL(triggered()), this, SLOT(on_group()));
+		menu->addAction(group);
+	}
 
 	menu->exec(event->globalPos());
 }
@@ -291,6 +313,39 @@ void Header::keyPressEvent(QKeyEvent *e)
 void Header::on_signals_moved()
 {
 	update();
+}
+
+void Header::on_group()
+{
+	vector< shared_ptr<RowItem> > selected_items(
+		make_filter_iterator(item_selected, _view.begin(), _view.end()),
+		make_filter_iterator(item_selected, _view.end(), _view.end()));
+	stable_sort(selected_items.begin(), selected_items.end(),
+		[](const shared_ptr<RowItem> &a, const shared_ptr<RowItem> &b) {
+			return a->visual_v_offset() < b->visual_v_offset(); });
+
+	shared_ptr<TraceGroup> group(new TraceGroup());
+	shared_ptr<RowItem> focus_item(
+		_mouse_down_item ? _mouse_down_item : selected_items.front());
+
+	assert(focus_item);
+	assert(focus_item->owner());
+	focus_item->owner()->add_child_item(group);
+
+	// Set the group v_offset here before reparenting
+	group->force_to_v_offset(focus_item->layout_v_offset() +
+		focus_item->v_extents().first);
+
+	for (size_t i = 0; i < selected_items.size(); i++) {
+		const shared_ptr<RowItem> &r = selected_items[i];
+		assert(r->owner());
+		r->owner()->remove_child_item(r);
+		group->add_child_item(r);
+
+		// Put the items at 1-pixel offsets, so that restack will
+		// stack them in the right order
+		r->set_layout_v_offset(i);
+	}
 }
 
 } // namespace view

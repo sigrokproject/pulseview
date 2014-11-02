@@ -80,6 +80,8 @@ private:
 private Q_SLOTS:
 	void on_signals_moved();
 
+	void on_group();
+
 Q_SIGNALS:
 	void signals_moved();
 
