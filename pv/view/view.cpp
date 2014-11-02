@@ -32,11 +32,15 @@
 #include <QMouseEvent>
 #include <QScrollBar>
 
+#include <libsigrok/libsigrok.hpp>
+
 #include "cursorheader.h"
 #include "decodetrace.h"
 #include "header.h"
+#include "logicsignal.h"
 #include "ruler.h"
 #include "signal.h"
+#include "tracegroup.h"
 #include "view.h"
 #include "viewport.h"
 
@@ -49,6 +53,7 @@ using boost::shared_mutex;
 using pv::data::SignalData;
 using std::back_inserter;
 using std::deque;
+using std::dynamic_pointer_cast;
 using std::list;
 using std::lock_guard;
 using std::max;
@@ -57,6 +62,7 @@ using std::min;
 using std::pair;
 using std::set;
 using std::shared_ptr;
+using std::unordered_map;
 using std::unordered_set;
 using std::vector;
 using std::weak_ptr;
@@ -437,6 +443,45 @@ QRectF View::label_rect(int right)
 	return QRectF();
 }
 
+bool View::add_channels_to_owner(
+	const vector< shared_ptr<sigrok::Channel> > &channels,
+	RowItemOwner *owner, int &offset,
+	unordered_map<shared_ptr<sigrok::Channel>, shared_ptr<Signal> >
+		&signal_map,
+	std::function<bool (shared_ptr<RowItem>)> filter_func)
+{
+	bool any_added = false;
+
+	assert(owner);
+
+	for (const auto &channel : channels)
+	{
+		const auto iter = signal_map.find(channel);
+		if (iter == signal_map.end() ||
+			(filter_func && !filter_func((*iter).second)))
+			continue;
+
+		shared_ptr<RowItem> row_item = (*iter).second;
+		owner->add_child_item(row_item);
+		apply_offset(row_item, offset);
+		signal_map.erase(iter);
+
+		any_added = true;
+	}
+
+	return any_added;
+}
+
+void View::apply_offset(shared_ptr<RowItem> row_item, int &offset) {
+	assert(row_item);
+	const pair<int, int> extents = row_item->v_extents();
+	if (row_item->enabled())
+		offset += -extents.first;
+	row_item->force_to_v_offset(offset);
+	if (row_item->enabled())
+		offset += extents.second;
+}
+
 bool View::eventFilter(QObject *object, QEvent *event)
 {
 	const QEvent::Type type = event->type();
@@ -530,31 +575,70 @@ void View::v_scroll_value_changed(int value)
 
 void View::signals_changed()
 {
+	int offset = 0;
+
 	// Populate the traces
 	clear_child_items();
 
-	shared_lock<shared_mutex> lock(session().signals_mutex());
-	const vector< shared_ptr<Signal> > &sigs(session().signals());
-	for (auto s : sigs)
-		add_child_item(s);
+	shared_ptr<sigrok::Device> device = _session.device();
+	assert(device);
 
+	// Collect a set of signals
+	unordered_map<shared_ptr<sigrok::Channel>, shared_ptr<Signal> >
+		signal_map;
+
+	shared_lock<shared_mutex> lock(_session.signals_mutex());
+	const vector< shared_ptr<Signal> > &sigs(_session.signals());
+
+	for (const shared_ptr<Signal> &sig : sigs)
+		signal_map[sig->channel()] = sig;
+
+	// Populate channel groups
+	for (auto entry : device->channel_groups())
+	{
+		const shared_ptr<sigrok::ChannelGroup> &group = entry.second;
+
+		if (group->channels().size() <= 1)
+			continue;
+
+		shared_ptr<TraceGroup> trace_group(new TraceGroup());
+		int child_offset = 0;
+		if (add_channels_to_owner(group->channels(),
+			trace_group.get(), child_offset, signal_map))
+		{
+			add_child_item(trace_group);
+			apply_offset(trace_group, offset);
+		}
+	}
+
+	// Add the remaining logic channels
+	shared_ptr<TraceGroup> logic_trace_group(new TraceGroup());
+	int child_offset = 0;
+
+	if (add_channels_to_owner(device->channels(),
+		logic_trace_group.get(), child_offset, signal_map,
+		[](shared_ptr<RowItem> r) -> bool {
+			return dynamic_pointer_cast<LogicSignal>(r) != nullptr;
+			}))
+
+	{
+		add_child_item(logic_trace_group);
+		apply_offset(logic_trace_group, offset);
+	}
+
+	// Add the remaining channels
+	add_channels_to_owner(device->channels(), this, offset, signal_map);
+	assert(signal_map.empty());
+
+	// Add decode signals
 #ifdef ENABLE_DECODE
 	const vector< shared_ptr<DecodeTrace> > decode_sigs(
 		session().get_decode_signals());
-	for (auto s : decode_sigs)
+	for (auto s : decode_sigs) {
 		add_child_item(s);
-#endif
-
-	// Create the initial layout
-	int offset = 0;
-	for (shared_ptr<RowItem> r : *this) {
-		const pair<int, int> extents = r->v_extents();
-		if (r->enabled())
-			offset += -extents.first;
-		r->force_to_v_offset(offset);
-		if (r->enabled())
-			offset += extents.second;
+		apply_offset(s, offset);
 	}
+#endif
 
 	update_layout();
 }

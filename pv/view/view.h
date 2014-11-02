@@ -25,6 +25,7 @@
 
 #include <memory>
 #include <set>
+#include <unordered_map>
 #include <vector>
 
 #include <QAbstractScrollArea>
@@ -194,6 +195,17 @@ private:
 	 * @return Returns the rectangle of the signal label.
 	 */
 	QRectF label_rect(int right);
+
+	static bool add_channels_to_owner(
+		const std::vector< std::shared_ptr<sigrok::Channel> > &channels,
+		RowItemOwner *owner, int &offset,
+		std::unordered_map<std::shared_ptr<sigrok::Channel>,
+			std::shared_ptr<Signal> > &signal_map,
+		std::function<bool (std::shared_ptr<RowItem>)> filter_func =
+			std::function<bool (std::shared_ptr<RowItem>)>());
+
+	static void apply_offset(
+		std::shared_ptr<RowItem> row_item, int &offset);
 
 private:
 	bool eventFilter(QObject *object, QEvent *event);
