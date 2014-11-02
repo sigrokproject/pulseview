@@ -138,8 +138,6 @@ public:
 
 	const QPoint& hover_point() const;
 
-	void normalize_layout();
-
 	void update_viewport();
 
 Q_SIGNALS:

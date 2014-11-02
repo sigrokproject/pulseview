@@ -320,20 +320,6 @@ const QPoint& View::hover_point() const
 	return _hover_point;
 }
 
-void View::normalize_layout()
-{
-	int v_min = INT_MAX;
-	for (const shared_ptr<RowItem> r : *this)
-		v_min = min(r->v_offset(), v_min);
-
-	const int delta = -min(v_min, 0);
-	for (shared_ptr<RowItem> r : *this)
-		r->set_v_offset(r->v_offset() + delta);
-
-	verticalScrollBar()->setSliderPosition(_v_offset + delta);
-	v_scroll_value_changed(verticalScrollBar()->sliderPosition());
-}
-
 void View::update_viewport()
 {
 	assert(_viewport);
@@ -523,7 +509,6 @@ void View::signals_changed()
 	}
 
 	update_layout();
-	normalize_layout();
 
 	// Update the child widgets
 	_header->signals_updated();

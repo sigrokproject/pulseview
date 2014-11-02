@@ -190,9 +190,7 @@ void Header::mouseLeftReleaseEvent(QMouseEvent *event)
 	for (auto &r : _view)
 		r->drag_release();
 
-	if (_dragging)
-		_view.normalize_layout();
-	else
+	if (!_dragging)
 	{
 		if (!ctrl_pressed) {
 			for (shared_ptr<RowItem> r : _view)
