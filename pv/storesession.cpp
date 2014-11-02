@@ -95,7 +95,6 @@ bool StoreSession::start()
 	}
 
 	// Get the logic data
-	//shared_ptr<data::SignalData
 	shared_ptr<data::Logic> data;
 	if (!(data = dynamic_pointer_cast<data::Logic>(*data_set.begin()))) {
 		_error = tr("PulseView currently only has support for "
