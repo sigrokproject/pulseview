@@ -45,6 +45,9 @@ void RowItem::set_layout_v_offset(int v_offset)
 		return;
 
 	_layout_v_offset = v_offset;
+
+	if (_owner)
+		_owner->extents_changed(false, true);
 }
 
 int RowItem::visual_v_offset() const
@@ -55,6 +58,9 @@ int RowItem::visual_v_offset() const
 void RowItem::set_visual_v_offset(int v_offset)
 {
 	_visual_v_offset = v_offset;
+
+	if (_owner)
+		_owner->appearance_changed(true, true);
 }
 
 void RowItem::force_to_v_offset(int v_offset)

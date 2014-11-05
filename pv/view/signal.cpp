@@ -85,7 +85,9 @@ bool Signal::enabled() const
 void Signal::enable(bool enable)
 {
 	_channel->set_enabled(enable);
-	appearance_changed();
+
+	if (_owner)
+		_owner->extents_changed(true, true);
 }
 
 shared_ptr<Channel> Signal::channel() const

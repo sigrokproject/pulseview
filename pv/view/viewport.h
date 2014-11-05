@@ -41,8 +41,6 @@ class Viewport : public QWidget
 public:
 	explicit Viewport(View &parent);
 
-	void signals_updated();
-
 protected:
 	void paintEvent(QPaintEvent *event);
 

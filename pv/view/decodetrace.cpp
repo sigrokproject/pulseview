@@ -780,7 +780,7 @@ void DecodeTrace::commit_channels()
 void DecodeTrace::on_new_decode_data()
 {
 	if (_owner)
-		_owner->update_viewport();
+		_owner->appearance_changed(false, true);
 }
 
 void DecodeTrace::delete_pressed()
@@ -839,7 +839,8 @@ void DecodeTrace::on_show_hide_decoder(int index)
 	assert(index < (int)_decoder_forms.size());
 	_decoder_forms[index]->set_decoder_visible(show);
 
-	_owner->update_viewport();
+	if (_owner)
+		_owner->appearance_changed(false, true);
 }
 
 } // namespace view

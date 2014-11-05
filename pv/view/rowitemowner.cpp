@@ -57,6 +57,8 @@ void RowItemOwner::add_child_item(std::shared_ptr<RowItem> item)
 	assert(!item->owner());
 	item->set_owner(this);
 	_items.push_back(item);
+
+	extents_changed(true, true);
 }
 
 void RowItemOwner::remove_child_item(std::shared_ptr<RowItem> item)
@@ -66,6 +68,8 @@ void RowItemOwner::remove_child_item(std::shared_ptr<RowItem> item)
 	auto iter = std::find(_items.begin(), _items.end(), item);
 	assert(iter != _items.end());
 	_items.erase(iter);
+
+	extents_changed(true, true);
 }
 
 RowItemOwner::iterator RowItemOwner::begin()

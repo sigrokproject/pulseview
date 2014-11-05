@@ -119,7 +119,10 @@ public:
 	 */
 	std::pair<int, int> v_extents() const;
 
-	virtual void update_viewport() = 0;
+public:
+	virtual void appearance_changed(bool label, bool content) = 0;
+
+	virtual void extents_changed(bool horz, bool vert) = 0;
 
 private:
 	item_list _items;

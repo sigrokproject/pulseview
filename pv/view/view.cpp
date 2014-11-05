@@ -105,8 +105,6 @@ View::View(SigSession &session, QWidget *parent) :
 	connect(_cursors.second().get(), SIGNAL(time_changed()),
 		this, SLOT(marker_time_changed()));
 
-	connect(_header, SIGNAL(geometry_updated()),
-		this, SLOT(on_geometry_updated()));
 	connect(_header, SIGNAL(signals_moved()),
 		this, SLOT(on_signals_moved()));
 
@@ -122,6 +120,10 @@ View::View(SigSession &session, QWidget *parent) :
 
 	connect(this, SIGNAL(hover_point_changed()),
 		this, SLOT(on_hover_point_changed()));
+
+	connect(&_lazy_event_handler, SIGNAL(timeout()),
+		this, SLOT(process_sticky_events()));
+	_lazy_event_handler.setSingleShot(true);
 
 	setViewport(_viewport);
 
@@ -454,6 +456,22 @@ void View::resizeEvent(QResizeEvent*)
 	update_layout();
 }
 
+void View::appearance_changed(bool label, bool content)
+{
+	if (label)
+		_header->update();
+	if (content)
+		_viewport->update();
+}
+
+void View::extents_changed(bool horz, bool vert)
+{
+	_sticky_events |=
+		(horz ? SelectableItemHExtentsChanged : 0) |
+		(vert ? SelectableItemVExtentsChanged : 0);
+	_lazy_event_handler.start();
+}
+
 void View::h_scroll_value_changed(int value)
 {
 	if (_updating_scroll)
@@ -509,10 +527,6 @@ void View::signals_changed()
 	}
 
 	update_layout();
-
-	// Update the child widgets
-	_header->signals_updated();
-	_viewport->signals_updated();
 }
 
 void View::data_updated()
@@ -536,9 +550,17 @@ void View::on_signals_moved()
 	signals_moved();
 }
 
-void View::on_geometry_updated()
+void View::process_sticky_events()
 {
-	update_layout();
+	if (_sticky_events & SelectableItemHExtentsChanged)
+		update_layout();
+	if (_sticky_events & SelectableItemVExtentsChanged) {
+		_viewport->update();
+		_header->update();
+	}
+
+	// Clear the sticky events
+	_sticky_events = 0;
 }
 
 void View::on_hover_point_changed()

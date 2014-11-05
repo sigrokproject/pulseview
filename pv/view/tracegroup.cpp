@@ -155,12 +155,6 @@ int TraceGroup::owner_v_offset() const
 	return _owner ? layout_v_offset() + _owner->owner_v_offset() : 0;
 }
 
-void TraceGroup::update_viewport()
-{
-	if (_owner)
-		_owner->update_viewport();
-}
-
 void TraceGroup::on_ungroup()
 {
 	const vector< shared_ptr<RowItem> > items(
@@ -171,7 +165,18 @@ void TraceGroup::on_ungroup()
 		_owner->add_child_item(r);
 
 	_owner->remove_child_item(shared_from_this());
-	appearance_changed();
+}
+
+void TraceGroup::appearance_changed(bool label, bool content)
+{
+	if (_owner)
+		_owner->appearance_changed(label, content);
+}
+
+void TraceGroup::extents_changed(bool horz, bool vert)
+{
+	if (_owner)
+		_owner->extents_changed(horz, vert);
 }
 
 } // namespace view

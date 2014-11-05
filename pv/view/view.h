@@ -29,6 +29,7 @@
 
 #include <QAbstractScrollArea>
 #include <QSizeF>
+#include <QTimer>
 
 #include <pv/data/signaldata.h>
 
@@ -48,6 +49,12 @@ class Viewport;
 
 class View : public QAbstractScrollArea, public RowItemOwner {
 	Q_OBJECT
+
+private:
+	enum StickyEvents {
+		SelectableItemHExtentsChanged = 1,
+		SelectableItemVExtentsChanged = 2
+	};
 
 private:
 	static const double MaxScale;
@@ -188,6 +195,11 @@ private:
 
 	void resizeEvent(QResizeEvent *e);
 
+public:
+	void appearance_changed(bool label, bool content);
+
+	void extents_changed(bool horz, bool vert);
+
 private Q_SLOTS:
 
 	void h_scroll_value_changed(int value);
@@ -200,7 +212,7 @@ private Q_SLOTS:
 
 	void on_signals_moved();
 
-	void on_geometry_updated();
+	void process_sticky_events();
 
 	void on_hover_point_changed();
 
@@ -225,6 +237,9 @@ private:
 	CursorPair _cursors;
 
 	QPoint _hover_point;
+
+	unsigned int _sticky_events;
+	QTimer _lazy_event_handler;
 };
 
 } // namespace view

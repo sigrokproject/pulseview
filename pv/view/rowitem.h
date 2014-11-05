@@ -142,9 +142,6 @@ public:
 public:
 	virtual void hover_point_changed();
 
-Q_SIGNALS:
-	void appearance_changed();
-
 protected:
 	pv::view::RowItemOwner *_owner;
 

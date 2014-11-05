@@ -51,8 +51,6 @@ public:
 	 */
 	static const int BaselineOffset;
 
-	void signals_updated();
-
 private:
 	std::shared_ptr<pv::view::RowItem> get_mouse_over_row_item(
 		const QPoint &pt);
@@ -81,8 +79,6 @@ private:
 
 private Q_SLOTS:
 	void on_signals_moved();
-
-	void on_trace_changed();
 
 Q_SIGNALS:
 	void signals_moved();

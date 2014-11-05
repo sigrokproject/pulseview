@@ -84,15 +84,6 @@ void Header::clear_selection()
 	update();
 }
 
-void Header::signals_updated()
-{
-	for (shared_ptr<RowItem> r : _view) {
-		assert(r);
-		connect(r.get(), SIGNAL(appearance_changed()),
-			this, SLOT(on_trace_changed()));
-	}
-}
-
 void Header::show_popup(const shared_ptr<RowItem> &item)
 {
 	using pv::widgets::Popup;
@@ -295,12 +286,6 @@ void Header::keyPressEvent(QKeyEvent *e)
 void Header::on_signals_moved()
 {
 	update();
-}
-
-void Header::on_trace_changed()
-{
-	update();
-	geometry_updated();
 }
 
 } // namespace view

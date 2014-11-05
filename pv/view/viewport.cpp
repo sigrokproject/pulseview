@@ -56,15 +56,6 @@ Viewport::Viewport(View &parent) :
 		this, SLOT(on_signals_moved()));
 }
 
-void Viewport::signals_updated()
-{
-	for (shared_ptr<RowItem> r : _view) {
-		assert(r);
-		connect(r.get(), SIGNAL(appearance_changed()),
-			this, SLOT(update()));
-	}
-}
-
 void Viewport::paintEvent(QPaintEvent*)
 {
 	vector< shared_ptr<RowItem> > row_items(_view.begin(), _view.end());
