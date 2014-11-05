@@ -60,6 +60,11 @@ int RowItem::get_y() const
 	return _v_offset + _owner->owner_v_offset();
 }
 
+QPoint RowItem::point() const
+{
+	return QPoint(0, v_offset());
+}
+
 void RowItem::paint_back(QPainter &p, int left, int right)
 {
 	(void)p;

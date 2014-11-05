@@ -91,9 +91,6 @@ private:
 	QPoint _mouse_point;
 	QPoint _mouse_down_point;
 	bool _dragging;
-
-	std::list<std::pair<std::weak_ptr<RowItem>, int> >
-		_drag_row_items;
 };
 
 } // namespace view

@@ -50,6 +50,11 @@ float TimeMarker::get_x() const
 	return (_time - _view.offset()) / _view.scale();
 }
 
+QPoint TimeMarker::point() const
+{
+	return QPoint(get_x(), 0);
+}
+
 void TimeMarker::set_time(double time)
 {
 	_time = time;

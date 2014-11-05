@@ -20,6 +20,8 @@
 
 #include "selectableitem.h"
 
+#include <climits>
+
 #include <QApplication>
 #include <QMenu>
 #include <QPalette>
@@ -31,7 +33,8 @@ const int SelectableItem::HighlightRadius = 6;
 
 SelectableItem::SelectableItem() :
 	_context_parent(NULL),
-	_selected(false)
+	_selected(false),
+	_drag_point(INT_MIN, INT_MIN)
 {
 }
 
@@ -43,6 +46,26 @@ bool SelectableItem::selected() const
 void SelectableItem::select(bool select)
 {
 	_selected = select;
+}
+
+bool SelectableItem::dragging() const
+{
+	return _drag_point.x() != INT_MIN && _drag_point.y() != INT_MIN;
+}
+
+QPoint SelectableItem::drag_point() const
+{
+	return _drag_point;
+}
+
+void SelectableItem::drag()
+{
+	_drag_point = point();
+}
+
+void SelectableItem::drag_release()
+{
+	_drag_point = QPoint(INT_MIN, INT_MIN);
 }
 
 QMenu* SelectableItem::create_context_menu(QWidget *parent)

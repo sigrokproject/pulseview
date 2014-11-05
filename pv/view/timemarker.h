@@ -64,6 +64,11 @@ public:
 	float get_x() const;
 
 	/**
+	 * Gets the drag point of the row item.
+	 */
+	QPoint point() const;
+
+	/**
 	 * Paints the marker to the viewport.
 	 * @param p The painter to draw with.
 	 * @param rect The rectangle of the viewport client area.

@@ -58,6 +58,31 @@ public:
 	 */
 	void select(bool select = true);
 
+	/**
+	 * Returns true if the item is being dragged.
+	 */
+	bool dragging() const;
+
+	/**
+	 * Retunrns the current drag point.
+	 */
+	QPoint drag_point() const;
+
+	/**
+	 * Sets this item into the dragged state.
+	 */
+	void drag();
+
+	/**
+	 * Sets this item into the un-dragged state.
+	 */
+	void drag_release();
+
+	/**
+	 * Get the drag point.
+	 */
+	virtual QPoint point() const = 0;
+
 public:
 	virtual QMenu* create_context_menu(QWidget *parent);
 
@@ -73,6 +98,7 @@ protected:
 
 private:
 	bool _selected;
+	QPoint _drag_point;
 };
 
 } // namespace view

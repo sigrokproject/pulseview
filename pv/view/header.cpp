@@ -123,12 +123,11 @@ void Header::paintEvent(QPaintEvent*)
 	QPainter painter(this);
 	painter.setRenderHint(QPainter::Antialiasing);
 
-	const bool dragging = !_drag_row_items.empty();
 	for (const shared_ptr<RowItem> r : row_items)
 	{
 		assert(r);
 
-		const bool highlight = !dragging &&
+		const bool highlight = !_dragging &&
 			r->label_rect(w).contains(_mouse_point);
 		r->paint_label(painter, w, highlight);
 	}
@@ -160,8 +159,7 @@ void Header::mouseLeftPressEvent(QMouseEvent *event)
 	_mouse_down_point = event->pos();
 	for (const shared_ptr<RowItem> r : _view)
 		if (r->selected())
-			_drag_row_items.push_back(
-				make_pair(r, r->v_offset()));
+			r->drag();
 
 	selection_changed();
 	update();
@@ -185,6 +183,9 @@ void Header::mouseLeftReleaseEvent(QMouseEvent *event)
 	const shared_ptr<RowItem> mouse_over =
 		get_mouse_over_row_item(event->pos());
 
+	for (auto &r : _view)
+		r->drag_release();
+
 	if (_dragging)
 		_view.normalize_layout();
 	else
@@ -200,7 +201,6 @@ void Header::mouseLeftReleaseEvent(QMouseEvent *event)
 	}
 
 	_dragging = false;
-	_drag_row_items.clear();
 }
 
 void Header::mouseReleaseEvent(QMouseEvent *event)
@@ -222,37 +222,31 @@ void Header::mouseMoveEvent(QMouseEvent *event)
 		QApplication::startDragDistance())
 		return;
 
-	// Check the list of dragging items is not empty
-	if (_drag_row_items.empty())
-		return;
-
 	// Check all the drag items share a common owner
-	const shared_ptr<RowItem> first_row_item(
-		_drag_row_items.front().first);
-	for (const auto &r : _drag_row_items) {
-		const shared_ptr<RowItem> row_item(r.first);
-		assert(row_item);
+	RowItemOwner *item_owner = nullptr;
+	for (shared_ptr<RowItem> r : _view)
+		if (r->dragging()) {
+			if (!item_owner)
+				item_owner = r->owner();
+			else if(item_owner != r->owner())
+				return;
+		}
 
-		if (row_item->owner() != first_row_item->owner())
-			return;
-	}
+	if (!item_owner)
+		return;
 
 	// Do the drag
 	_dragging = true;
 
 	const int delta = event->pos().y() - _mouse_down_point.y();
 
-	for (auto i = _drag_row_items.begin();
-		i != _drag_row_items.end(); i++) {
-		const std::shared_ptr<RowItem> row_item((*i).first);
-		if (row_item) {
-			const int y = (*i).second + delta;
-			row_item->set_v_offset(y);
+	for (std::shared_ptr<RowItem> r : _view)
+		if (r->dragging()) {
+			r->set_v_offset(r->drag_point().y() + delta);
 
 			// Ensure the trace is selected
-			row_item->select();
+			r->select();
 		}
-	}
 
 	signals_moved();
 

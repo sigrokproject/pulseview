@@ -70,6 +70,11 @@ public:
 	int get_y() const;
 
 	/**
+	 * Gets the drag point of the row item.
+	 */
+	QPoint point() const;
+
+	/**
 	 * Paints the background layer of the trace with a QPainter
 	 * @param p the QPainter to paint into.
 	 * @param left the x-coordinate of the left edge of the signal
