@@ -41,8 +41,6 @@ public Q_SLOTS:
 Q_SIGNALS:
 	void selection_changed();
 
-	void geometry_updated();
-
 protected:
 	pv::view::View &_view;
 };
