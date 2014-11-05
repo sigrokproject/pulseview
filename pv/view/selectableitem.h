@@ -49,7 +49,7 @@ public:
 
 public:
 	/**
-	 * Returns true if the signal has been selected by the user.
+	 * Returns true if the item has been selected by the user.
 	 */
 	bool selected() const;
 
