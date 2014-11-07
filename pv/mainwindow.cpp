@@ -61,6 +61,7 @@
 
 using std::list;
 using std::map;
+using std::pair;
 using std::shared_ptr;
 using std::string;
 
@@ -381,12 +382,13 @@ void MainWindow::update_device_list()
 		devices.push_back(selected_device);
 	assert(selected_device);
 
-	map<shared_ptr<Device>, string> device_names;
+	list< pair< shared_ptr<Device>, string> > device_list;
 
 	for (auto device : devices)
-		device_names[device] = _device_manager.get_display_name(device);
+		device_list.push_back(make_pair(
+			device, _device_manager.get_display_name(device)));
 
-	_sampling_bar->set_device_list(device_names, selected_device);
+	_sampling_bar->set_device_list(device_list, selected_device);
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)

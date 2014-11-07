@@ -109,7 +109,7 @@ SamplingBar::SamplingBar(SigSession &session, QWidget *parent) :
 }
 
 void SamplingBar::set_device_list(
-	const std::map< shared_ptr<Device>, string > &device_names,
+	const std::list< std::pair<std::shared_ptr<sigrok::Device>, std::string> > &devices,
 	shared_ptr<Device> selected)
 {
 	int selected_index = -1;
@@ -120,16 +120,16 @@ void SamplingBar::set_device_list(
 
 	_device_selector.clear();
 
-	for (auto entry : device_names) {
+	for (auto entry : devices) {
 		auto device = entry.first;
-		auto description = entry.second;
+		auto display_name = entry.second;
 
 		assert(device);
 
 		if (selected == device)
 			selected_index = _device_selector.count();
 
-		_device_selector.addItem(description.c_str(),
+		_device_selector.addItem(display_name.c_str(),
 			qVariantFromValue(device));
 	}
 

@@ -23,7 +23,7 @@
 
 #include <stdint.h>
 
-#include <map>
+#include <list>
 #include <memory>
 
 #include <QComboBox>
@@ -62,8 +62,7 @@ public:
 	SamplingBar(SigSession &session, QWidget *parent);
 
 	void set_device_list(
-		const std::map< std::shared_ptr<sigrok::Device>, std::string >
-			&device_names,
+		const std::list< std::pair<std::shared_ptr<sigrok::Device>, std::string> > &devices,
 		std::shared_ptr<sigrok::Device> selected);
 
 	std::shared_ptr<sigrok::Device> get_selected_device() const;
