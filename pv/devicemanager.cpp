@@ -82,9 +82,8 @@ list< shared_ptr<HardwareDevice> > DeviceManager::driver_scan(
 
 	// Remove any device instances from this driver from the device
 	// list. They will not be valid after the scan.
-	remove_if(_devices.begin(), _devices.end(),
-		[&](shared_ptr<HardwareDevice> device) {
-			return device->driver() == driver; });
+	_devices.remove_if([&](shared_ptr<HardwareDevice> device) {
+		return device->driver() == driver; });
 
 	// Do the scan
 	auto devices = driver->scan(drvopts);
