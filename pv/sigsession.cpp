@@ -151,6 +151,7 @@ void SigSession::set_file(const string &name)
 		(shared_ptr<Device> device, shared_ptr<Packet> packet) {
 			data_feed_in(device, packet);
 		});
+	_device_manager.update_display_name(_device);
 	update_signals(_device);
 }
 

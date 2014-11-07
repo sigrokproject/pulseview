@@ -154,7 +154,7 @@ void Connect::scan_pressed()
 		assert(device);
 
 		QString text = QString::fromStdString(
-			_device_manager.device_description(device));
+			_device_manager.get_display_name(device));
 		text += QString(" with %1 channels").arg(device->channels().size());
 
 		QListWidgetItem *const item = new QListWidgetItem(text,

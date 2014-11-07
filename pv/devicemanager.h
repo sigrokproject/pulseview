@@ -64,15 +64,20 @@ public:
 	const std::shared_ptr<sigrok::HardwareDevice> find_device_from_info(
 		const std::map<std::string, std::string> search_info);
 
-	static std::string device_description(std::shared_ptr<sigrok::Device> device);
+	const std::string build_display_name(std::shared_ptr<sigrok::Device> device);
+
+	const std::string get_display_name(std::shared_ptr<sigrok::Device> dev);
+
+	void update_display_name(std::shared_ptr<sigrok::Device> dev);
 
 private:
-	static bool compare_devices(std::shared_ptr<sigrok::HardwareDevice> a,
-		std::shared_ptr<sigrok::HardwareDevice> b);
+	bool compare_devices(std::shared_ptr<sigrok::Device> a,
+		std::shared_ptr<sigrok::Device> b);
 
 protected:
 	std::shared_ptr<sigrok::Context> _context;
 	std::list< std::shared_ptr<sigrok::HardwareDevice> > _devices;
+	std::map< std::shared_ptr<sigrok::Device>, std::string > _display_names;
 };
 
 } // namespace pv

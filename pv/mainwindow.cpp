@@ -384,7 +384,7 @@ void MainWindow::update_device_list()
 	map<shared_ptr<Device>, string> device_names;
 
 	for (auto device : devices)
-		device_names[device] = _device_manager.device_description(device);
+		device_names[device] = _device_manager.get_display_name(device);
 
 	_sampling_bar->set_device_list(device_names, selected_device);
 }

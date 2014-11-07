@@ -88,12 +88,26 @@ list< shared_ptr<HardwareDevice> > DeviceManager::driver_scan(
 	// Do the scan
 	auto devices = driver->scan(drvopts);
 	driver_devices.insert(driver_devices.end(), devices.begin(), devices.end());
-	driver_devices.sort(compare_devices);
 
-	// Add the scanned devices to the main list
+	// Add the scanned devices to the main list, set display names and sort.
 	_devices.insert(_devices.end(), driver_devices.begin(),
 		driver_devices.end());
-	_devices.sort(compare_devices);
+
+	for (shared_ptr<Device> device : _devices)
+		_display_names[device] = build_display_name(device);
+
+	_devices.sort([&](shared_ptr<Device> a, shared_ptr<Device> b)
+		{ return compare_devices(a, b); });
+
+	// As the display names depend on the complete _devices list,
+	// we need to recompute them. However, there is no need to
+	// recomute all names of the _devices list since only the
+	// devices that use the given driver can be affected.
+	for (shared_ptr<Device> device : driver_devices)
+		_display_names[device] = build_display_name(device);
+
+	driver_devices.sort([&](shared_ptr<Device> a, shared_ptr<Device> b)
+		{ return compare_devices(a, b); });
 
 	return driver_devices;
 }
@@ -170,9 +184,10 @@ const shared_ptr<HardwareDevice> DeviceManager::find_device_from_info(
 	return last_resort_dev;
 }
 
-string DeviceManager::device_description(shared_ptr<Device> device)
+const string DeviceManager::build_display_name(shared_ptr<Device> device)
 {
 	auto session_device = dynamic_pointer_cast<SessionDevice>(device);
+	auto hardware_device = dynamic_pointer_cast<HardwareDevice>(device);
 
 	if (session_device)
 		return boost::filesystem::path(
@@ -180,8 +195,28 @@ string DeviceManager::device_description(shared_ptr<Device> device)
 
 	ostringstream s;
 
-	vector<string> parts = {device->vendor(), device->model(),
-		device->version(), device->serial_number()};
+	bool multiple_dev = false;
+
+	// If we can find another device with the same model/vendor then
+	// we have at least two such devices and need to distinguish them.
+	if (hardware_device)
+		multiple_dev = any_of(_devices.begin(), _devices.end(),
+			[&](shared_ptr<HardwareDevice> dev) {
+			return (dev->vendor() == hardware_device->vendor() &&
+			dev->model() == hardware_device->model()) &&
+			dev != hardware_device;
+			} );
+
+	vector<string> parts = {device->vendor(), device->model()};
+
+	if (multiple_dev) {
+		parts.push_back(device->version());
+		parts.push_back(device->serial_number());
+
+		if ((device->serial_number().length() == 0) &&
+			(device->connection_id().length() > 0))
+			parts.push_back("("+device->connection_id()+")");
+	}
 
 	for (size_t i = 0; i < parts.size(); i++)
 	{
@@ -193,20 +228,26 @@ string DeviceManager::device_description(shared_ptr<Device> device)
 		}
 	}
 
-	if (device->serial_number().length() == 0 &&
-			device->connection_id().length() > 0)
-		s << " " << device->connection_id();
-
 	return s.str();
 }
 
-bool DeviceManager::compare_devices(shared_ptr<HardwareDevice> a,
-	shared_ptr<HardwareDevice> b)
+const std::string DeviceManager::get_display_name(std::shared_ptr<sigrok::Device> dev)
+{
+	return _display_names[dev];
+}
+
+void DeviceManager::update_display_name(std::shared_ptr<sigrok::Device> dev)
+{
+	_display_names[dev] = build_display_name(dev);
+}
+
+bool DeviceManager::compare_devices(shared_ptr<Device> a,
+	shared_ptr<Device> b)
 {
 	assert(a);
 	assert(b);
 
-	return device_description(a).compare(device_description(b)) < 0;
+	return _display_names[a].compare(_display_names[b]) < 0;
 }
 
 } // namespace pv
