@@ -23,9 +23,9 @@ cmake_minimum_required(VERSION 2.8.6)
 include(FindPkgConfig)
 include(GNUInstallDirs)
 
-set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake")
-
 project(pulseview)
+
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake")
 
 #===============================================================================
 #= User Options
