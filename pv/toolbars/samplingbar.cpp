@@ -237,7 +237,7 @@ void SamplingBar::update_sample_rate_selector_value()
 	try {
 		auto gvar = device->config_get(ConfigKey::SAMPLERATE);
 		uint64_t samplerate =
-			Glib::VariantBase::cast_dynamic<Glib::Variant<uint64_t>>(gvar).get();
+			Glib::VariantBase::cast_dynamic<Glib::Variant<guint64>>(gvar).get();
 		assert(!_updating_sample_rate);
 		_updating_sample_rate = true;
 		_sample_rate.set_value(samplerate);
@@ -333,7 +333,7 @@ void SamplingBar::update_device_config_widgets()
 				if (capabilities.count(Capability::SET))
 				{
 					device->config_set(ConfigKey::LIMIT_FRAMES,
-						Glib::Variant<uint64_t>::create(1));
+						Glib::Variant<guint64>::create(1));
 					on_config_changed();
 				}
 				break;
@@ -373,7 +373,7 @@ void SamplingBar::commit_sample_count()
 	{
 		try {
 			device->config_set(ConfigKey::LIMIT_SAMPLES,
-				Glib::Variant<uint64_t>::create(sample_count));
+				Glib::Variant<guint64>::create(sample_count));
 			on_config_changed();
 		} catch (Error error) {
 			qDebug() << "Failed to configure sample count.";
@@ -403,7 +403,7 @@ void SamplingBar::commit_sample_rate()
 	_updating_sample_rate = true;
 	try {
 		device->config_set(ConfigKey::SAMPLERATE,
-			Glib::Variant<uint64_t>::create(sample_rate));
+			Glib::Variant<guint64>::create(sample_rate));
 		on_config_changed();
 	} catch (Error error) {
 		qDebug() << "Failed to configure samplerate.";
