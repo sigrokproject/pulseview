@@ -117,6 +117,8 @@ public:
 	 */
 	unsigned int depth() const;
 
+	void ungroup();
+
 public:
 	void appearance_changed(bool label, bool content);
 

@@ -195,7 +195,7 @@ unsigned int TraceGroup::depth() const
 	return _owner ? _owner->depth() + 1 : 0;
 }
 
-void TraceGroup::on_ungroup()
+void TraceGroup::ungroup()
 {
 	const vector< shared_ptr<RowItem> > items(
 		child_items().begin(), child_items().end());
@@ -205,6 +205,11 @@ void TraceGroup::on_ungroup()
 		_owner->add_child_item(r);
 
 	_owner->remove_child_item(shared_from_this());
+}
+
+void TraceGroup::on_ungroup()
+{
+	ungroup();
 }
 
 void TraceGroup::appearance_changed(bool label, bool content)
