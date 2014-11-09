@@ -141,7 +141,6 @@ public:
 
 	/**
 	 * Computes the outline rectangle of a label.
-	 * @param p the QPainter to lay out text with.
 	 * @param right the x-coordinate of the right edge of the header
 	 * 	area.
 	 * @return Returns the rectangle of the signal label.
