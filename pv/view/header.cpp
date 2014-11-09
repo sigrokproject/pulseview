@@ -82,7 +82,7 @@ QSize Header::sizeHint() const
 
 shared_ptr<Trace> Header::get_mouse_over_trace(const QPoint &pt)
 {
-	const int w = width();
+	const int w = width() - BaselineOffset;
 	const vector< shared_ptr<Trace> > traces(_view.get_traces());
 
 	for (const shared_ptr<Trace> t : traces)
