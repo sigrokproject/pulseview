@@ -39,6 +39,7 @@
 #include <pv/widgets/popup.h>
 
 using boost::make_filter_iterator;
+using std::dynamic_pointer_cast;
 using std::max;
 using std::make_pair;
 using std::min;
@@ -346,6 +347,23 @@ void Header::on_group()
 		// stack them in the right order
 		r->set_layout_v_offset(i);
 	}
+}
+
+void Header::on_ungroup()
+{
+	bool restart;
+	do {
+		restart = false;
+		for (const shared_ptr<RowItem> r : _view) {
+			const shared_ptr<TraceGroup> tg =
+				dynamic_pointer_cast<TraceGroup>(r);
+			if (tg && tg->selected()) {
+				tg->ungroup();
+				restart = true;
+				break;
+			}
+		}
+	} while(restart);
 }
 
 } // namespace view
