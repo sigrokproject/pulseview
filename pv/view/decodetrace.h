@@ -123,8 +123,7 @@ public:
 
 private:
 	void draw_annotation(const pv::data::decode::Annotation &a, QPainter &p,
-		QColor text_colour, int text_height, int left, int right,
-		double samples_per_pixel, double pixels_offset, int y,
+		QColor text_colour, int text_height, int left, int right, int y,
 		size_t base_colour) const;
 
 	void draw_instant(const pv::data::decode::Annotation &a, QPainter &p,
@@ -139,7 +138,20 @@ private:
 		int left, int right);
 
 	void draw_unresolved_period(QPainter &p, int h, int left,
-		int right, double samples_per_pixel, double pixels_offset);
+		int right) const;
+
+	double get_pixels_offset() const;
+
+	double get_samples_per_pixel() const;
+
+	/**
+	 * Determines the start and end sample for a given pixel range.
+	 * @param x_start the X coordinate of the start sample in the view
+	 * @param x_end the X coordinate of the end sample in the view
+	 * @return Returns a pair containing the start sample and the end
+	 * 	sample that correspond to the start and end coordinates.
+	 */
+	std::pair<uint64_t, uint64_t> get_sample_range(int x_start, int x_end) const;
 
 	void create_decoder_form(int index,
 		std::shared_ptr<pv::data::decode::Decoder> &dec,

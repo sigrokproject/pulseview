@@ -49,9 +49,11 @@ extern "C" {
 
 using std::dynamic_pointer_cast;
 using std::list;
+using std::make_pair;
 using std::max;
 using std::map;
 using std::min;
+using std::pair;
 using std::shared_ptr;
 using std::vector;
 
@@ -159,26 +161,6 @@ void DecodeTrace::paint_mid(QPainter &p, int left, int right)
 {
 	using namespace pv::data::decode;
 
-	const double scale = _view->scale();
-	assert(scale > 0);
-
-	double samplerate = _decoder_stack->samplerate();
-
-	_cur_row_headings.clear();
-
-	// Show sample rate as 1Hz when it is unknown
-	if (samplerate == 0.0)
-		samplerate = 1.0;
-
-	const double pixels_offset = (_view->offset() -
-		_decoder_stack->get_start_time()) / scale;
-	const double samples_per_pixel = samplerate * scale;
-
-	const uint64_t start_sample = (uint64_t)max((left + pixels_offset) *
-		samples_per_pixel, 0.0);
-	const uint64_t end_sample = (uint64_t)max((right + pixels_offset) *
-		samples_per_pixel, 0.0);
-
 	QFontMetrics m(QApplication::font());
 	_text_height = m.boundingRect(QRect(), 0, "Tg").height();
 	_row_height = (_text_height * 6) / 4;
@@ -188,8 +170,7 @@ void DecodeTrace::paint_mid(QPainter &p, int left, int right)
 	const QString err = _decoder_stack->error_message();
 	if (!err.isEmpty())
 	{
-		draw_unresolved_period(p, annotation_height, left, right,
-			samples_per_pixel, pixels_offset);
+		draw_unresolved_period(p, annotation_height, left, right);
 		draw_error(p, err, left, right);
 		return;
 	}
@@ -197,10 +178,12 @@ void DecodeTrace::paint_mid(QPainter &p, int left, int right)
 	// Iterate through the rows
 	assert(_view);
 	int y = get_y();
+	pair<uint64_t, uint64_t> sample_range = get_sample_range(left, right);
 
 	assert(_decoder_stack);
-
 	const vector<Row> rows(_decoder_stack->get_visible_rows());
+
+	_cur_row_headings.clear();
 	for (size_t i = 0; i < rows.size(); i++)
 	{
 		const Row &row = rows[i];
@@ -213,12 +196,11 @@ void DecodeTrace::paint_mid(QPainter &p, int left, int right)
 
 		vector<Annotation> annotations;
 		_decoder_stack->get_annotation_subset(annotations, row,
-			start_sample, end_sample);
+			sample_range.first, sample_range.second);
 		if (!annotations.empty()) {
 			for (const Annotation &a : annotations)
 				draw_annotation(a, p, get_text_colour(),
-					annotation_height, left, right,
-					samples_per_pixel, pixels_offset, y,
+					annotation_height, left, right, y,
 					base_colour);
 			y += _row_height;
 
@@ -227,8 +209,7 @@ void DecodeTrace::paint_mid(QPainter &p, int left, int right)
 	}
 
 	// Draw the hatching
-	draw_unresolved_period(p, annotation_height, left, right,
-		samples_per_pixel, pixels_offset);
+	draw_unresolved_period(p, annotation_height, left, right);
 }
 
 void DecodeTrace::paint_fore(QPainter &p, int left, int right)
@@ -342,10 +323,12 @@ QMenu* DecodeTrace::create_context_menu(QWidget *parent)
 }
 
 void DecodeTrace::draw_annotation(const pv::data::decode::Annotation &a,
-	QPainter &p, QColor text_color, int h, int left, int right,
-	double samples_per_pixel, double pixels_offset, int y,
+	QPainter &p, QColor text_color, int h, int left, int right, int y,
 	size_t base_colour) const
 {
+	const double samples_per_pixel = get_samples_per_pixel();
+	const double pixels_offset = get_pixels_offset();
+
 	const double start = a.start_sample() / samples_per_pixel -
 		pixels_offset;
 	const double end = a.end_sample() / samples_per_pixel -
@@ -464,7 +447,7 @@ void DecodeTrace::draw_error(QPainter &p, const QString &message,
 }
 
 void DecodeTrace::draw_unresolved_period(QPainter &p, int h, int left,
-	int right, double samples_per_pixel, double pixels_offset) 
+	int right) const
 {
 	using namespace pv::data;
 	using pv::data::decode::Decoder;
@@ -500,6 +483,10 @@ void DecodeTrace::draw_unresolved_period(QPainter &p, int h, int left,
 		return;
 
 	const int y = get_y();
+
+	const double samples_per_pixel = get_samples_per_pixel();
+	const double pixels_offset = get_pixels_offset();
+
 	const double start = max(samples_decoded /
 		samples_per_pixel - pixels_offset, left - 1.0);
 	const double end = min(sample_count / samples_per_pixel -
@@ -513,6 +500,50 @@ void DecodeTrace::draw_unresolved_period(QPainter &p, int h, int left,
 	p.setPen(NoDecodeColour);
 	p.setBrush(QBrush(NoDecodeColour, Qt::Dense6Pattern));
 	p.drawRect(no_decode_rect);
+}
+
+double DecodeTrace::get_pixels_offset() const
+{
+	assert(_view);
+	assert(_decoder_stack);
+
+	const double scale = _view->scale();
+	assert(scale > 0);
+
+	return (_view->offset() - _decoder_stack->get_start_time()) / scale;
+}
+
+double DecodeTrace::get_samples_per_pixel() const
+{
+	assert(_view);
+	assert(_decoder_stack);
+
+	const double scale = _view->scale();
+	assert(scale > 0);
+
+	double samplerate = _decoder_stack->samplerate();
+
+	// Show sample rate as 1Hz when it is unknown
+	if (samplerate == 0.0)
+		samplerate = 1.0;
+
+	return samplerate * scale;
+}
+
+pair<uint64_t, uint64_t> DecodeTrace::get_sample_range(int x_start, int x_end) const
+{
+	assert(_view);
+	assert(_decoder_stack);
+
+	const double samples_per_pixel = get_samples_per_pixel();
+	const double pixels_offset = get_pixels_offset();
+
+	uint64_t start, end;
+
+	start = (uint64_t)max((x_start + pixels_offset) * samples_per_pixel, 0.0);
+	end = (uint64_t)max((x_end + pixels_offset) * samples_per_pixel, 0.0);
+
+	return make_pair(start, end);
 }
 
 void DecodeTrace::create_decoder_form(int index,
