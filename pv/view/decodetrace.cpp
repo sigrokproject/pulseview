@@ -116,6 +116,8 @@ DecodeTrace::DecodeTrace(pv::SigSession &session,
 		decoder_stack->stack().front()->decoder()->name)),
 	_session(session),
 	_decoder_stack(decoder_stack),
+	_text_height(0),
+	_row_height(0),
 	_delete_mapper(this),
 	_show_hide_mapper(this)
 {
@@ -178,9 +180,9 @@ void DecodeTrace::paint_mid(QPainter &p, int left, int right)
 		samples_per_pixel, 0.0);
 
 	QFontMetrics m(QApplication::font());
-	const int text_height =  m.boundingRect(QRect(), 0, "Tg").height();
-	const int annotation_height = (text_height * 5) / 4;
-	const int row_height = (text_height * 6) / 4;
+	_text_height = m.boundingRect(QRect(), 0, "Tg").height();
+	_row_height = (_text_height * 6) / 4;
+	const int annotation_height = (_text_height * 5) / 4;
 
 	assert(_decoder_stack);
 	const QString err = _decoder_stack->error_message();
@@ -218,7 +220,7 @@ void DecodeTrace::paint_mid(QPainter &p, int left, int right)
 					annotation_height, left, right,
 					samples_per_pixel, pixels_offset, y,
 					base_colour);
-			y += row_height;
+			y += _row_height;
 
 			_cur_row_headings.push_back(row.title());
 		}
@@ -235,13 +237,11 @@ void DecodeTrace::paint_fore(QPainter &p, int left, int right)
 
 	(void)right;
 
-	QFontMetrics m(QApplication::font());
-	const int text_height =  m.boundingRect(QRect(), 0, "Tg").height();
-	const int row_height = (text_height * 6) / 4;
+	assert(_row_height);
 
 	for (size_t i = 0; i < _cur_row_headings.size(); i++)
 	{
-		const int y = i * row_height + get_y();
+		const int y = i * _row_height + get_y();
 
 		p.setPen(QPen(Qt::NoPen));
 		p.setBrush(QApplication::palette().brush(QPalette::WindowText));
@@ -256,8 +256,8 @@ void DecodeTrace::paint_fore(QPainter &p, int left, int right)
 			p.drawPolygon(points, countof(points));
 		}
 
-		const QRect r(left + ArrowSize * 2, y - row_height / 2,
-			right - left, row_height);
+		const QRect r(left + ArrowSize * 2, y - _row_height / 2,
+			right - left, _row_height);
 		const QString h(_cur_row_headings[i]);
 		const int f = Qt::AlignLeft | Qt::AlignVCenter |
 			Qt::TextDontClip;

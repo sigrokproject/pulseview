@@ -180,6 +180,7 @@ private:
 	std::vector<pv::widgets::DecoderGroupBox*> _decoder_forms;
 
 	std::vector<QString> _cur_row_headings;
+	int _text_height, _row_height;
 
 	QSignalMapper _delete_mapper, _show_hide_mapper;
 };
