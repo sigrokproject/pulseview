@@ -30,6 +30,10 @@
 
 #include <QObject>
 
+namespace sigrok {
+class Output;
+}
+
 namespace pv {
 
 class SigSession;
@@ -70,6 +74,8 @@ Q_SIGNALS:
 private:
 	const std::string _file_name;
 	const SigSession &_session;
+
+	std::shared_ptr<sigrok::Output> _output;
 
 	std::thread _thread;
 

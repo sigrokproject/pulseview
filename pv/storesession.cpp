@@ -42,6 +42,7 @@ using std::string;
 using std::thread;
 using std::vector;
 
+using sigrok::ConfigKey;
 using sigrok::Error;
 
 namespace pv {
@@ -114,27 +115,22 @@ bool StoreSession::start()
 	const shared_ptr<data::LogicSnapshot> snapshot(snapshots.front());
 	assert(snapshot);
 
-	// Make a list of channels
-	char **const channels = new char*[sigs.size() + 1];
-	for (size_t i = 0; i < sigs.size(); i++) {
-		shared_ptr<view::Signal> sig(sigs[i]);
-		assert(sig);
-		channels[i] = strdup(sig->get_name().toUtf8().constData());
-	}
-	channels[sigs.size()] = NULL;
-
 	// Begin storing
 	try {
-		SigSession::_sr_session->begin_save(_file_name);
+		auto context = _session._sr_session->context();
+		auto output_format = context->output_formats()["srzip"];
+		auto device = _session.get_device();
+		_output = output_format->create_output(device,
+			{{"filename",
+				Glib::Variant<Glib::ustring>::create(_file_name)}});
+		auto meta = context->create_meta_packet(
+			{{ConfigKey::SAMPLERATE,
+				Glib::Variant<guint64>::create(data->samplerate())}});
+		_output->receive(meta);
 	} catch (Error error) {
 		_error = tr("Error while saving.");
 		return false;
 	}
-
-	// Delete the channels array
-	for (size_t i = 0; i <= sigs.size(); i++)
-		free(channels[i]);
-	delete[] channels;
 
 	_thread = std::thread(&StoreSession::store_proc, this, snapshot);
 	return true;
@@ -187,7 +183,9 @@ void StoreSession::store_proc(shared_ptr<data::LogicSnapshot> snapshot)
 		size_t length = end_sample - start_sample;
 
 		try {
-			SigSession::_sr_session->append(data, length, unit_size);
+			auto context = _session._sr_session->context();
+			auto logic = context->create_logic_packet(data, length, unit_size);
+			_output->receive(logic);
 		} catch (Error error) {
 			_error = tr("Error while saving.");
 			break;
@@ -197,8 +195,9 @@ void StoreSession::store_proc(shared_ptr<data::LogicSnapshot> snapshot)
 		_units_stored = start_sample >> progress_scale;
 	}
 
-	_unit_count = 0;
 	progress_updated();
+
+	_output.reset();
 
 	delete[] data;
 }
