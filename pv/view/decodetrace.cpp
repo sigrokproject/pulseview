@@ -33,6 +33,7 @@ extern "C" {
 #include <QLabel>
 #include <QMenu>
 #include <QPushButton>
+#include <QToolTip>
 
 #include "decodetrace.h"
 
@@ -546,8 +547,96 @@ pair<uint64_t, uint64_t> DecodeTrace::get_sample_range(int x_start, int x_end) c
 	return make_pair(start, end);
 }
 
+bool DecodeTrace::hover_point_is_over_trace()
+{
+	assert(_view);
+	assert(_row_height);
+
+	// Note: if _row_height is valid then _cur_row_headings is valid, too,
+	// as both are set in paint_mid().
+
+	// Note: hp.x will be 0 if the cursor is above the header area,
+	// so we set trace.left to 1 to exclude this.
+
+	QRect trace(1, get_y() - (_row_height/2),
+		_view->width(), _row_height * _cur_row_headings.size());
+
+	// Note: We don't need to check for _row_height being 0 here but
+	// we do it anyway to be more robust.
+
+	return _row_height && enabled() && trace.contains(_view->hover_point());
+}
+
+int DecodeTrace::get_row_at_hover_point()
+{
+	assert(_view);
+	assert(_row_height);
+	assert(_decoder_stack);
+
+	QPoint hp = _view->hover_point();
+	int hover_row = (hp.y() - get_y() + (_row_height/2)) / _row_height;
+
+	const vector<pv::data::decode::Row> rows(_decoder_stack->get_visible_rows());
+
+	return min(hover_row, (int)rows.size() - 1);
+}
+
+const QString DecodeTrace::get_annotation_at_hover_point()
+{
+	using namespace pv::data::decode;
+
+	assert(_view);
+	QPoint hp = _view->hover_point();
+
+	pair<uint64_t, uint64_t> sample_range = get_sample_range(hp.x(), hp.x() + 1);
+
+	assert(_decoder_stack);
+	const vector<pv::data::decode::Row> rows(_decoder_stack->get_visible_rows());
+
+	const int hover_row = get_row_at_hover_point();
+
+	vector<pv::data::decode::Annotation> annotations;
+
+	_decoder_stack->get_annotation_subset(annotations, rows[hover_row],
+		sample_range.first, sample_range.second);
+
+	return (annotations.empty()) ?
+		QString() : annotations[0].annotations().front();
+}
+
+void DecodeTrace::show_hover_annotation()
+{
+	QString ann = get_annotation_at_hover_point();
+
+	assert(_view);
+	assert(_row_height);
+	assert(_text_height);
+
+	if (!ann.isEmpty()) {
+		const int hover_row = get_row_at_hover_point();
+
+		// Make sure the tool tip doesn't overlap with the mouse cursor.
+		// If it did, the tool tip would constantly hide and re-appear.
+		QPoint hp = _view->hover_point();
+		hp.setY(get_y() - (_row_height/2) +
+			(hover_row * _row_height) - _text_height);
+
+		QToolTip::showText(_view->mapToGlobal(hp), ann);
+	} else
+		hide_hover_annotation();
+}
+
+void DecodeTrace::hide_hover_annotation()
+{
+	QToolTip::hideText();
+}
+
 void DecodeTrace::hover_point_changed()
 {
+	if (hover_point_is_over_trace())
+		show_hover_annotation();
+	else
+		hide_hover_annotation();
 }
 
 void DecodeTrace::create_decoder_form(int index,
