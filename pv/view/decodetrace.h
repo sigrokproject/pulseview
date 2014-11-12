@@ -153,6 +153,8 @@ private:
 	 */
 	std::pair<uint64_t, uint64_t> get_sample_range(int x_start, int x_end) const;
 
+	void hover_point_changed();
+
 	void create_decoder_form(int index,
 		std::shared_ptr<pv::data::decode::Decoder> &dec,
 		QWidget *parent, QFormLayout *form);

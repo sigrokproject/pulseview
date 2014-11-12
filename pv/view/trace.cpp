@@ -42,6 +42,7 @@ const QPen Trace::AxisPen(QColor(128, 128, 128, 64));
 const int Trace::LabelHitPadding = 2;
 
 Trace::Trace(QString name) :
+	_view(NULL),
 	_name(name),
 	_v_offset(0),
 	_popup(NULL),
@@ -82,7 +83,15 @@ void Trace::set_v_offset(int v_offset)
 void Trace::set_view(pv::view::View *view)
 {
 	assert(view);
+
+	if (_view)
+		disconnect(_view, SIGNAL(hover_point_changed()),
+			this, SLOT(on_hover_point_changed()));
+
 	_view = view;
+
+	connect(view, SIGNAL(hover_point_changed()),
+		this, SLOT(on_hover_point_changed()));
 }
 
 void Trace::paint_back(QPainter &p, int left, int right)
@@ -271,6 +280,10 @@ void Trace::populate_popup_form(QWidget *parent, QFormLayout *form)
 	add_colour_option(parent, form);
 }
 
+void Trace::hover_point_changed()
+{
+}
+
 void Trace::on_popup_closed()
 {
 	_popup = NULL;
@@ -287,6 +300,11 @@ void Trace::on_colour_changed(const QColor &colour)
 {
 	set_colour(colour);
 	colour_changed();
+}
+
+void Trace::on_hover_point_changed()
+{
+	hover_point_changed();
 }
 
 } // namespace view

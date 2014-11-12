@@ -546,6 +546,10 @@ pair<uint64_t, uint64_t> DecodeTrace::get_sample_range(int x_start, int x_end) c
 	return make_pair(start, end);
 }
 
+void DecodeTrace::hover_point_changed()
+{
+}
+
 void DecodeTrace::create_decoder_form(int index,
 	shared_ptr<data::decode::Decoder> &dec, QWidget *parent,
 	QFormLayout *form)
