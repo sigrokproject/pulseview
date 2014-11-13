@@ -301,7 +301,6 @@ void LogicSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
 {
 	Glib::VariantContainerBase gvar;
 	vector<int32_t> trig_types;
-	bool is_checked;
 
 	Signal::populate_popup_form(parent, form);
 
@@ -320,8 +319,7 @@ void LogicSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
 	for (auto type_id : trig_types) {
 		auto type = TriggerMatchType::get(type_id);
 		_trigger_bar->addAction(match_action(type));
-		is_checked = _trigger_match == type;
-		match_action(type)->setChecked(is_checked);
+		match_action(type)->setChecked(_trigger_match == type);
 	}
 	form->addRow(tr("Trigger"), _trigger_bar);
 
