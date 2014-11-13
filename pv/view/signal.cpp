@@ -58,8 +58,10 @@ const char *const ChannelNames[] = {
 	"SCL"
 };
 
-Signal::Signal(shared_ptr<Channel> channel) :
+Signal::Signal(pv::SigSession &session,
+	std::shared_ptr<sigrok::Channel> channel) :
 	Trace(channel->name().c_str()),
+	_session(session),
 	_channel(channel),
 	_name_widget(NULL),
 	_updating_name_widget(false)

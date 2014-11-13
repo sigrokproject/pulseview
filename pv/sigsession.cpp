@@ -359,7 +359,8 @@ void SigSession::update_signals(shared_ptr<Device> device)
 			switch(channel->type()->id()) {
 			case SR_CHANNEL_LOGIC:
 				signal = shared_ptr<view::Signal>(
-					new view::LogicSignal(device, channel, _logic_data));
+					new view::LogicSignal(*this, device,
+						channel, _logic_data));
 				break;
 
 			case SR_CHANNEL_ANALOG:
@@ -367,7 +368,8 @@ void SigSession::update_signals(shared_ptr<Device> device)
 				shared_ptr<data::Analog> data(
 					new data::Analog());
 				signal = shared_ptr<view::Signal>(
-					new view::AnalogSignal(channel, data));
+					new view::AnalogSignal(
+						*this, channel, data));
 				break;
 			}
 

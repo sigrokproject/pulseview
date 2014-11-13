@@ -72,10 +72,12 @@ const QColor LogicSignal::SignalColours[10] = {
 	QColor(0xEE, 0xEE, 0xEC),	// White
 };
 
-LogicSignal::LogicSignal(shared_ptr<Device> device,
-		shared_ptr<Channel> channel,
-		shared_ptr<data::Logic> data) :
-	Signal(channel),
+LogicSignal::LogicSignal(
+	pv::SigSession &session,
+	shared_ptr<Device> device,
+	shared_ptr<Channel> channel,
+	shared_ptr<data::Logic> data) :
+	Signal(session, channel),
 	_device(device),
 	_data(data),
 	_trigger_none(NULL),

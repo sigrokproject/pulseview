@@ -49,9 +49,11 @@ const QColor AnalogSignal::SignalColours[4] = {
 
 const float AnalogSignal::EnvelopeThreshold = 256.0f;
 
-AnalogSignal::AnalogSignal(shared_ptr<Channel> channel,
+AnalogSignal::AnalogSignal(
+	pv::SigSession &session,
+	shared_ptr<Channel> channel,
 	shared_ptr<data::Analog> data) :
-	Signal(channel),
+	Signal(session, channel),
 	_data(data),
 	_scale(1.0f)
 {
