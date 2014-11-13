@@ -78,17 +78,11 @@ using Glib::VariantBase;
 using Glib::Variant;
 
 namespace pv {
-
-// TODO: This should not be necessary
-shared_ptr<Session> SigSession::_sr_session = nullptr;
-
 SigSession::SigSession(DeviceManager &device_manager) :
 	_device_manager(device_manager),
+	_session(device_manager.context()->create_session()),
 	_capture_state(Stopped)
 {
-	// TODO: This should not be necessary
-	_sr_session = device_manager.context()->create_session();
-
 	set_default_device();
 }
 
@@ -96,6 +90,11 @@ SigSession::~SigSession()
 {
 	// Stop and join to the thread
 	stop_capture();
+}
+
+const shared_ptr<sigrok::Session>& SigSession::session() const
+{
+	return _session;
 }
 
 shared_ptr<Device> SigSession::device() const
@@ -114,15 +113,15 @@ void SigSession::set_device(shared_ptr<Device> device)
 	auto prev_session_device = dynamic_pointer_cast<SessionDevice>(_device);
 
 	if (_device) {
-		_sr_session->remove_datafeed_callbacks();
+		_session->remove_datafeed_callbacks();
 		if (!prev_session_device) {
 			_device->close();
-			_sr_session->remove_devices();
+			_session->remove_devices();
 		}
 	}
 
 	if (session_device)
-		_sr_session = session_device->parent();
+		_session = session_device->parent();
 
 	_device = device;
 	_decode_traces.clear();
@@ -130,11 +129,11 @@ void SigSession::set_device(shared_ptr<Device> device)
 	if (device) {
 		if (!session_device)
 		{
-			_sr_session = _device_manager.context()->create_session();
+			_session = _device_manager.context()->create_session();
 			device->open();
-			_sr_session->add_device(device);
+			_session->add_device(device);
 		}
-		_sr_session->add_datafeed_callback([=]
+		_session->add_datafeed_callback([=]
 			(shared_ptr<Device> device, shared_ptr<Packet> packet) {
 				data_feed_in(device, packet);
 			});
@@ -144,10 +143,10 @@ void SigSession::set_device(shared_ptr<Device> device)
 
 void SigSession::set_file(const string &name)
 {
-	_sr_session = _device_manager.context()->load_session(name);
-	_device = _sr_session->devices()[0];
+	_session = _device_manager.context()->load_session(name);
+	_device = _session->devices()[0];
 	_decode_traces.clear();
-	_sr_session->add_datafeed_callback([=]
+	_session->add_datafeed_callback([=]
 		(shared_ptr<Device> device, shared_ptr<Packet> packet) {
 			data_feed_in(device, packet);
 		});
@@ -211,7 +210,7 @@ void SigSession::start_capture(function<void (const QString)> error_handler)
 void SigSession::stop_capture()
 {
 	if (get_capture_state() != Stopped)
-		_sr_session->stop();
+		_session->stop();
 
 	// Check that sampling stopped
 	if (_sampling_thread.joinable())
@@ -421,16 +420,16 @@ void SigSession::sample_thread_proc(shared_ptr<Device> device,
 	read_sample_rate(device);
 
 	try {
-		_sr_session->start();
+		_session->start();
 	} catch(Error e) {
 		error_handler(e.what());
 		return;
 	}
 
-	set_capture_state(_sr_session->trigger() ?
+	set_capture_state(_session->trigger() ?
 		AwaitingTrigger : Running);
 
-	_sr_session->run();
+	_session->run();
 	set_capture_state(Stopped);
 
 	// Confirm that SR_DF_END was received

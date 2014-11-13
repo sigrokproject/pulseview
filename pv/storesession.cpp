@@ -116,9 +116,9 @@ bool StoreSession::start()
 
 	// Begin storing
 	try {
-		auto context = _session._sr_session->context();
+		auto context = _session.session()->context();
 		auto output_format = context->output_formats()["srzip"];
-		auto device = _session.get_device();
+		auto device = _session.device();
 		_output = output_format->create_output(device,
 			{{"filename",
 				Glib::Variant<Glib::ustring>::create(_file_name)}});
@@ -182,7 +182,7 @@ void StoreSession::store_proc(shared_ptr<data::LogicSnapshot> snapshot)
 		size_t length = end_sample - start_sample;
 
 		try {
-			auto context = _session._sr_session->context();
+			auto context = _session.session()->context();
 			auto logic = context->create_logic_packet(data, length, unit_size);
 			_output->receive(logic);
 		} catch (Error error) {

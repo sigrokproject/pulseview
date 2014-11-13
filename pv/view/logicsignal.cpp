@@ -94,7 +94,7 @@ LogicSignal::LogicSignal(
 	/* Populate this channel's trigger setting with whatever we
 	 * find in the current session trigger, if anything. */
 	_trigger_match = nullptr;
-	if ((trigger = SigSession::_sr_session->trigger()))
+	if ((trigger = _session.session()->trigger()))
 		for (auto stage : trigger->stages())
 			for (auto match : stage->matches())
 				if (match->channel() == _channel)

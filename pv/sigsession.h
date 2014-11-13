@@ -79,6 +79,8 @@ public:
 
 	~SigSession();
 
+	const std::shared_ptr<sigrok::Session>& session() const;
+
 	std::shared_ptr<sigrok::Device> device() const;
 
 	/**
@@ -140,6 +142,7 @@ private:
 
 private:
 	DeviceManager &_device_manager;
+	std::shared_ptr<sigrok::Session> _session;
 
 	/**
 	 * The device instance that will be used in the next capture session.
@@ -172,14 +175,6 @@ Q_SIGNALS:
 	void data_received();
 
 	void frame_ended();
-
-public:
-	// Hack. The libsigrok API now allows for multiple sessions. However,
-	// sigrok::Session calls are scattered around the PV architecture and a
-	// single SigSession object is being used across multiple sequential
-	// sessions. This is a mess. For now just keep a single sigrok::Session
-	// pointer here which we can use for all those scattered calls.
-	static std::shared_ptr<sigrok::Session> _sr_session;
 };
 
 } // namespace pv
