@@ -284,7 +284,7 @@ void MainWindow::save_ui_settings()
 	settings.setValue("geometry", saveGeometry());
 	settings.endGroup();
 
-	if (_session.get_device()) {
+	if (_session.device()) {
 		settings.beginGroup("Device");
 		key_list.push_back("vendor");
 		key_list.push_back("model");
@@ -293,7 +293,7 @@ void MainWindow::save_ui_settings()
 		key_list.push_back("connection_id");
 
 		dev_info = _device_manager.get_device_info(
-			_session.get_device());
+			_session.device());
 
 		for (string key : key_list) {
 
@@ -368,7 +368,7 @@ void MainWindow::update_device_list()
 {
 	assert(_sampling_bar);
 
-	shared_ptr<Device> selected_device = _session.get_device();
+	shared_ptr<Device> selected_device = _session.device();
 	list< shared_ptr<Device> > devices;
 
 	if (_device_manager.devices().size() == 0)

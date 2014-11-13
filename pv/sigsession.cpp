@@ -98,7 +98,7 @@ SigSession::~SigSession()
 	stop_capture();
 }
 
-shared_ptr<Device> SigSession::get_device() const
+shared_ptr<Device> SigSession::device() const
 {
 	return _device;
 }

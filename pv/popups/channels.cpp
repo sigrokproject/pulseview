@@ -60,7 +60,7 @@ Channels::Channels(SigSession &session, QWidget *parent) :
 	// Create the layout
 	setLayout(&_layout);
 
-	shared_ptr<sigrok::Device> device = _session.get_device();
+	shared_ptr<sigrok::Device> device = _session.device();
 	assert(device);
 
 	// Collect a set of signals

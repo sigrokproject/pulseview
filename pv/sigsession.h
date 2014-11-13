@@ -79,7 +79,7 @@ public:
 
 	~SigSession();
 
-	std::shared_ptr<sigrok::Device> get_device() const;
+	std::shared_ptr<sigrok::Device> device() const;
 
 	/**
 	 * Sets device instance that will be used in the next capture session.
