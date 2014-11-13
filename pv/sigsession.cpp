@@ -348,7 +348,7 @@ void SigSession::update_signals(shared_ptr<Device> device)
 	}
 
 	// Make the Signals list
-	do {
+	{
 		lock_guard<mutex> lock(_signals_mutex);
 
 		_signals.clear();
@@ -380,7 +380,7 @@ void SigSession::update_signals(shared_ptr<Device> device)
 			_signals.push_back(signal);
 		}
 
-	} while(0);
+	}
 
 	signals_changed();
 }
