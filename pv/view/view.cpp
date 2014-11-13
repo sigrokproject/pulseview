@@ -92,6 +92,8 @@ View::View(SigSession &session, QWidget *parent) :
 
 	connect(&_session, SIGNAL(signals_changed()),
 		this, SLOT(signals_changed()));
+	connect(&_session, SIGNAL(capture_state_changed(int)),
+		this, SLOT(data_updated()));
 	connect(&_session, SIGNAL(data_received()),
 		this, SLOT(data_updated()));
 	connect(&_session, SIGNAL(frame_ended()),
