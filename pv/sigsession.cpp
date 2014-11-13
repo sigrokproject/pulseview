@@ -92,6 +92,16 @@ SigSession::~SigSession()
 	stop_capture();
 }
 
+DeviceManager& SigSession::device_manager()
+{
+	return _device_manager;
+}
+
+const DeviceManager& SigSession::device_manager() const
+{
+	return _device_manager;
+}
+
 const shared_ptr<sigrok::Session>& SigSession::session() const
 {
 	return _session;

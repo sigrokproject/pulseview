@@ -79,6 +79,10 @@ public:
 
 	~SigSession();
 
+	DeviceManager& device_manager();
+
+	const DeviceManager& device_manager() const;
+
 	const std::shared_ptr<sigrok::Session>& session() const;
 
 	std::shared_ptr<sigrok::Device> device() const;
