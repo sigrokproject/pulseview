@@ -92,6 +92,7 @@ private:
 	QAction* match_action(const sigrok::TriggerMatchType *match);
 	const sigrok::TriggerMatchType *action_match(QAction *action);
 	void populate_popup_form(QWidget *parent, QFormLayout *form);
+	void modify_trigger();
 
 private Q_SLOTS:
 	void on_trigger();

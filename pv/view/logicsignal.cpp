@@ -23,6 +23,8 @@
 #include <cassert>
 #include <cmath>
 
+#include <algorithm>
+
 #include <QFormLayout>
 #include <QToolBar>
 
@@ -30,6 +32,7 @@
 #include "view.h"
 
 #include <pv/sigsession.h>
+#include <pv/devicemanager.h>
 #include <pv/data/logic.h>
 #include <pv/data/logicsnapshot.h>
 #include <pv/view/view.h>
@@ -48,6 +51,8 @@ using sigrok::ConfigKey;
 using sigrok::Device;
 using sigrok::Error;
 using sigrok::Trigger;
+using sigrok::TriggerStage;
+using sigrok::TriggerMatch;
 using sigrok::TriggerMatchType;
 
 namespace pv {
@@ -260,24 +265,26 @@ QAction* LogicSignal::match_action(const TriggerMatchType *type)
 	QAction *action;
 
 	action = _trigger_none;
-	switch (type->id()) {
-	case SR_TRIGGER_ZERO:
-		action = _trigger_low;
-		break;
-	case SR_TRIGGER_ONE:
-		action = _trigger_high;
-		break;
-	case SR_TRIGGER_RISING:
-		action = _trigger_rising;
-		break;
-	case SR_TRIGGER_FALLING:
-		action = _trigger_falling;
-		break;
-	case SR_TRIGGER_EDGE:
-		action = _trigger_change;
-		break;
-	default:
-		assert(0);
+	if (type) {
+		switch (type->id()) {
+		case SR_TRIGGER_ZERO:
+			action = _trigger_low;
+			break;
+		case SR_TRIGGER_ONE:
+			action = _trigger_high;
+			break;
+		case SR_TRIGGER_RISING:
+			action = _trigger_rising;
+			break;
+		case SR_TRIGGER_FALLING:
+			action = _trigger_falling;
+			break;
+		case SR_TRIGGER_EDGE:
+			action = _trigger_change;
+			break;
+		default:
+			assert(0);
+		}
 	}
 
 	return action;
@@ -315,6 +322,7 @@ void LogicSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
 	_trigger_bar = new QToolBar(parent);
 	init_trigger_actions(_trigger_bar);
 	_trigger_bar->addAction(_trigger_none);
+	_trigger_none->setChecked(!_trigger_match);
 	trig_types =
 		Glib::VariantBase::cast_dynamic<Glib::Variant<vector<int32_t>>>(
 			gvar).get();
@@ -327,6 +335,35 @@ void LogicSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
 
 }
 
+void LogicSignal::modify_trigger()
+{
+	auto trigger = _session.session()->trigger();
+	auto new_trigger = _session.device_manager().context()->create_trigger("pulseview");
+
+	if (trigger) {
+		for (auto stage : trigger->stages()) {
+			const auto &matches = stage->matches();
+			if (std::none_of(begin(matches), end(matches),
+			    [&](shared_ptr<TriggerMatch> match) {
+					return match->channel() != _channel; }))
+				continue;
+
+			auto new_stage = new_trigger->add_stage();
+			for (auto match : stage->matches()) {
+				if (match->channel() == _channel)
+					continue;
+				new_stage->add_match(match->channel(), match->type());
+			}
+		}
+	}
+
+	if (_trigger_match)
+		new_trigger->add_stage()->add_match(_channel, _trigger_match);
+
+	_session.session()->set_trigger(
+		new_trigger->stages().empty() ? nullptr : new_trigger);
+}
+
 void LogicSignal::on_trigger()
 {
 	QAction *action;
@@ -337,6 +374,7 @@ void LogicSignal::on_trigger()
 	action->setChecked(true);
 	_trigger_match = action_match(action);
 
+	modify_trigger();
 }
 
 } // namespace view
