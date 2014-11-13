@@ -157,6 +157,7 @@ void SamplingBar::set_capture_state(pv::SigSession::capture_state state)
 	_run_stop_button.setIcon(*icons[state]);
 	_run_stop_button.setText((state == pv::SigSession::Stopped) ?
 		tr("Run") : tr("Stop"));
+	_run_stop_button.setShortcut(QKeySequence(Qt::Key_Space));
 }
 
 void SamplingBar::update_sample_rate_selector()
