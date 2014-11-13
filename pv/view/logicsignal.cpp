@@ -329,10 +329,10 @@ void LogicSignal::on_trigger()
 {
 	QAction *action;
 
-	match_action(_trigger_match)->setChecked(FALSE);
+	match_action(_trigger_match)->setChecked(false);
 
 	action = (QAction *)sender();
-	action->setChecked(TRUE);
+	action->setChecked(true);
 	_trigger_match = action_match(action);
 
 }
