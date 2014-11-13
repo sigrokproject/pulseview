@@ -133,10 +133,10 @@ void LogicSignal::paint_mid(QPainter &p, int left, int right)
 
 	assert(_view);
 	const int y = _v_offset - _view->v_offset();
-	
+
 	const double scale = _view->scale();
 	assert(scale > 0);
-	
+
 	const double offset = _view->offset();
 
 	if (!_channel->enabled())
