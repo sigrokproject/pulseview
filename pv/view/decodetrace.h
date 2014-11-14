@@ -30,6 +30,7 @@
 #include <QSignalMapper>
 
 #include <pv/prop/binding/decoderoptions.h>
+#include <pv/data/decode/row.h>
 
 struct srd_channel;
 struct srd_decoder;
@@ -203,7 +204,7 @@ private:
 	std::list<ChannelSelector> _channel_selectors;
 	std::vector<pv::widgets::DecoderGroupBox*> _decoder_forms;
 
-	std::vector<QString> _cur_row_headings;
+	std::vector<data::decode::Row> _visible_rows;
 	int _text_height, _row_height;
 
 	QSignalMapper _delete_mapper, _show_hide_mapper;

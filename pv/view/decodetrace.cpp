@@ -184,7 +184,7 @@ void DecodeTrace::paint_mid(QPainter &p, int left, int right)
 	assert(_decoder_stack);
 	const vector<Row> rows(_decoder_stack->get_visible_rows());
 
-	_cur_row_headings.clear();
+	_visible_rows.clear();
 	for (size_t i = 0; i < rows.size(); i++)
 	{
 		const Row &row = rows[i];
@@ -205,7 +205,7 @@ void DecodeTrace::paint_mid(QPainter &p, int left, int right)
 					base_colour);
 			y += _row_height;
 
-			_cur_row_headings.push_back(row.title());
+			_visible_rows.push_back(rows[i]);
 		}
 	}
 
@@ -221,7 +221,7 @@ void DecodeTrace::paint_fore(QPainter &p, int left, int right)
 
 	assert(_row_height);
 
-	for (size_t i = 0; i < _cur_row_headings.size(); i++)
+	for (size_t i = 0; i < _visible_rows.size(); i++)
 	{
 		const int y = i * _row_height + get_y();
 
@@ -240,7 +240,7 @@ void DecodeTrace::paint_fore(QPainter &p, int left, int right)
 
 		const QRect r(left + ArrowSize * 2, y - _row_height / 2,
 			right - left, _row_height);
-		const QString h(_cur_row_headings[i]);
+		const QString h(_visible_rows[i].title());
 		const int f = Qt::AlignLeft | Qt::AlignVCenter |
 			Qt::TextDontClip;
 
@@ -559,7 +559,7 @@ bool DecodeTrace::hover_point_is_over_trace()
 	// so we set trace.left to 1 to exclude this.
 
 	QRect trace(1, get_y() - (_row_height/2),
-		_view->width(), _row_height * _cur_row_headings.size());
+		_view->width(), _row_height * _visible_rows.size());
 
 	// Note: We don't need to check for _row_height being 0 here but
 	// we do it anyway to be more robust.
@@ -576,9 +576,7 @@ int DecodeTrace::get_row_at_hover_point()
 	QPoint hp = _view->hover_point();
 	int hover_row = (hp.y() - get_y() + (_row_height/2)) / _row_height;
 
-	const vector<pv::data::decode::Row> rows(_decoder_stack->get_visible_rows());
-
-	return min(hover_row, (int)rows.size() - 1);
+	return min(hover_row, (int)_visible_rows.size() - 1);
 }
 
 const QString DecodeTrace::get_annotation_at_hover_point()
@@ -590,14 +588,12 @@ const QString DecodeTrace::get_annotation_at_hover_point()
 
 	pair<uint64_t, uint64_t> sample_range = get_sample_range(hp.x(), hp.x() + 1);
 
-	assert(_decoder_stack);
-	const vector<pv::data::decode::Row> rows(_decoder_stack->get_visible_rows());
-
 	const int hover_row = get_row_at_hover_point();
 
 	vector<pv::data::decode::Annotation> annotations;
 
-	_decoder_stack->get_annotation_subset(annotations, rows[hover_row],
+	assert(_decoder_stack);
+	_decoder_stack->get_annotation_subset(annotations, _visible_rows[hover_row],
 		sample_range.first, sample_range.second);
 
 	return (annotations.empty()) ?
