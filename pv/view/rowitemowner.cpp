@@ -96,7 +96,7 @@ pair<int, int> RowItemOwner::v_extents() const
 		if (!r->enabled())
 			continue;
 
-		const int child_offset = r->v_offset();
+		const int child_offset = r->layout_v_offset();
 		const pair<int, int> child_extents = r->v_extents();
 		extents.first = min(child_extents.first + child_offset,
 			extents.first);

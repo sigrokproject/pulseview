@@ -90,7 +90,7 @@ std::pair<int, int> AnalogSignal::v_extents() const
 void AnalogSignal::paint_back(QPainter &p, int left, int right)
 {
 	if (_channel->enabled())
-		paint_axis(p, get_y(), left, right);
+		paint_axis(p, get_visual_y(), left, right);
 }
 
 void AnalogSignal::paint_mid(QPainter &p, int left, int right)
@@ -99,7 +99,7 @@ void AnalogSignal::paint_mid(QPainter &p, int left, int right)
 	assert(right >= left);
 	assert(_owner);
 
-	const int y = get_y();
+	const int y = get_visual_y();
 
 	const View *const view = _owner->view();
 	assert(view);

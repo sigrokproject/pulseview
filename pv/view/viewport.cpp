@@ -70,7 +70,7 @@ void Viewport::paintEvent(QPaintEvent*)
 	vector< shared_ptr<RowItem> > row_items(_view.begin(), _view.end());
 	stable_sort(row_items.begin(), row_items.end(),
 		[](const shared_ptr<RowItem> &a, const shared_ptr<RowItem> &b) {
-			return a->v_offset() < b->v_offset(); });
+			return a->visual_v_offset() < b->visual_v_offset(); });
 
 	QPainter p(this);
 	p.setRenderHint(QPainter::Antialiasing);

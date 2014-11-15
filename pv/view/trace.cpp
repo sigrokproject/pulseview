@@ -70,7 +70,7 @@ void Trace::set_colour(QColor colour)
 
 void Trace::paint_label(QPainter &p, int right, bool hover)
 {
-	const int y = get_y();
+	const int y = get_visual_y();
 
 	p.setBrush(_colour);
 
@@ -157,7 +157,7 @@ QRectF Trace::label_rect(int right) const
 	const float half_height = label_size.height() / 2;
 	return QRectF(
 		right - half_height - label_size.width() - 0.5,
-		get_y() + 0.5f - half_height,
+		get_visual_y() + 0.5f - half_height,
 		label_size.width() + half_height,
 		label_size.height());
 }

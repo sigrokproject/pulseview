@@ -29,18 +29,37 @@ namespace view {
 
 RowItem::RowItem() :
 	_owner(NULL),
-	_v_offset(0)
+	_layout_v_offset(0),
+	_visual_v_offset(0)
 {
 }
 
-int RowItem::v_offset() const
+int RowItem::layout_v_offset() const
 {
-	return _v_offset;
+	return _layout_v_offset;
 }
 
-void RowItem::set_v_offset(int v_offset)
+void RowItem::set_layout_v_offset(int v_offset)
 {
-	_v_offset = v_offset;
+	if (_layout_v_offset == v_offset)
+		return;
+
+	_layout_v_offset = v_offset;
+}
+
+int RowItem::visual_v_offset() const
+{
+	return _visual_v_offset;
+}
+
+void RowItem::set_visual_v_offset(int v_offset)
+{
+	_visual_v_offset = v_offset;
+}
+
+void RowItem::force_to_v_offset(int v_offset)
+{
+	_layout_v_offset = _visual_v_offset = v_offset;
 }
 
 RowItemOwner* RowItem::owner() const
@@ -50,19 +69,24 @@ RowItemOwner* RowItem::owner() const
 
 void RowItem::set_owner(RowItemOwner *owner)
 {
-	assert((_owner && !owner) || (!_owner && owner));
+	assert(_owner || owner);
+
+	if (_owner)
+		_visual_v_offset += _owner->owner_v_offset();
 	_owner = owner;
+	if (_owner)
+		_visual_v_offset -= _owner->owner_v_offset();
 }
 
-int RowItem::get_y() const
+int RowItem::get_visual_y() const
 {
 	assert(_owner);
-	return _v_offset + _owner->owner_v_offset();
+	return _visual_v_offset + _owner->owner_v_offset();
 }
 
 QPoint RowItem::point() const
 {
-	return QPoint(0, v_offset());
+	return QPoint(0, visual_v_offset());
 }
 
 void RowItem::paint_back(QPainter &p, int left, int right)

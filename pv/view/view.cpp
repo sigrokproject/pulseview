@@ -503,7 +503,7 @@ void View::signals_changed()
 		const pair<int, int> extents = r->v_extents();
 		if (r->enabled())
 			offset += -extents.first;
-		r->set_v_offset(offset);
+		r->force_to_v_offset(offset);
 		if (r->enabled())
 			offset += extents.second;
 	}

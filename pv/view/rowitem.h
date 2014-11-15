@@ -49,12 +49,27 @@ public:
 	/**
 	 * Gets the vertical layout offset of this signal.
 	 */
-	int v_offset() const;
+	int layout_v_offset() const;
 
 	/**
 	 * Sets the vertical layout offset of this signal.
 	 */
-	void set_v_offset(int v_offset);
+	void set_layout_v_offset(int v_offset);
+
+	/**
+	 * Gets the vertical visual offset of this signal.
+	 */
+	int visual_v_offset() const;
+
+	/**
+	 * Sets the vertical visual offset of this signal.
+	 */
+	void set_visual_v_offset(int v_offset);
+
+	/**
+	 * Sets the visual and layout offset of this signal.
+	 */
+	void force_to_v_offset(int v_offset);
 
 	/**
 	 * Gets the owner this trace in the view trace hierachy.
@@ -68,9 +83,9 @@ public:
 	void set_owner(pv::view::RowItemOwner *owner);
 
 	/**
-	 * Gets the y-offset of the axis.
+	 * Gets the visual y-offset of the axis.
 	 */
-	int get_y() const;
+	int get_visual_y() const;
 
 	/**
 	 * Gets the drag point of the row item.
@@ -133,7 +148,8 @@ Q_SIGNALS:
 protected:
 	pv::view::RowItemOwner *_owner;
 
-	int _v_offset;
+	int _layout_v_offset;
+	int _visual_v_offset;
 };
 
 } // namespace view

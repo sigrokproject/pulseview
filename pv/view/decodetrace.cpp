@@ -169,7 +169,7 @@ pair<int, int> DecodeTrace::v_extents() const
 void DecodeTrace::paint_back(QPainter &p, int left, int right)
 {
 	Trace::paint_back(p, left, right);
-	paint_axis(p, get_y(), left, right);
+	paint_axis(p, get_visual_y(), left, right);
 }
 
 void DecodeTrace::paint_mid(QPainter &p, int left, int right)
@@ -191,7 +191,7 @@ void DecodeTrace::paint_mid(QPainter &p, int left, int right)
 	}
 
 	// Iterate through the rows
-	int y = get_y();
+	int y = get_visual_y();
 	pair<uint64_t, uint64_t> sample_range = get_sample_range(left, right);
 
 	assert(_decoder_stack);
@@ -236,7 +236,7 @@ void DecodeTrace::paint_fore(QPainter &p, int left, int right)
 
 	for (size_t i = 0; i < _visible_rows.size(); i++)
 	{
-		const int y = i * _row_height + get_y();
+		const int y = i * _row_height + get_visual_y();
 
 		p.setPen(QPen(Qt::NoPen));
 		p.setBrush(QApplication::palette().brush(QPalette::WindowText));
@@ -443,7 +443,7 @@ void DecodeTrace::draw_range(const pv::data::decode::Annotation &a, QPainter &p,
 void DecodeTrace::draw_error(QPainter &p, const QString &message,
 	int left, int right)
 {
-	const int y = get_y();
+	const int y = get_visual_y();
 
 	p.setPen(ErrorBgColour.darker());
 	p.setBrush(ErrorBgColour);
@@ -499,7 +499,7 @@ void DecodeTrace::draw_unresolved_period(QPainter &p, int h, int left,
 	if (sample_count == samples_decoded)
 		return;
 
-	const int y = get_y();
+	const int y = get_visual_y();
 
 	tie(pixels_offset, samples_per_pixel) =
 		get_pixels_offset_samples_per_pixel();
@@ -562,7 +562,8 @@ int DecodeTrace::get_row_at_point(const QPoint &point)
 	if (!_row_height)
 		return -1;
 
-	const int row = (point.y() - get_y() + _row_height / 2) / _row_height;
+	const int row = (point.y() - get_visual_y() + _row_height / 2) /
+		_row_height;
 	if (row < 0 || row >= (int)_visible_rows.size())
 		return -1;
 
@@ -630,8 +631,9 @@ void DecodeTrace::hover_point_changed()
 	// decode trace, not below.
 	hp.setX(hp.x() - (text_size.width() / 2) - padding);
 
-	hp.setY(get_y() - (_row_height / 2) + (hover_row * _row_height)
-		- _row_height - text_size.height());
+	hp.setY(get_visual_y() - (_row_height / 2) +
+		(hover_row * _row_height) -
+		_row_height - text_size.height());
 
 	QToolTip::showText(view->viewport()->mapToGlobal(hp), ann);
 }

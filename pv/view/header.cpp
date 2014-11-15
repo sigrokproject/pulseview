@@ -101,7 +101,7 @@ void Header::show_popup(const shared_ptr<RowItem> &item)
 	if (!p)
 		return;
 
-	const QPoint pt(width() - BaselineOffset, item->get_y());
+	const QPoint pt(width() - BaselineOffset, item->get_visual_y());
 	p->set_position(mapToGlobal(pt), Popup::Right);
 	p->show();
 }
@@ -118,7 +118,7 @@ void Header::paintEvent(QPaintEvent*)
 
 	stable_sort(row_items.begin(), row_items.end(),
 		[](const shared_ptr<RowItem> &a, const shared_ptr<RowItem> &b) {
-			return a->v_offset() < b->v_offset(); });
+			return a->visual_v_offset() < b->visual_v_offset(); });
 
 	QPainter painter(this);
 	painter.setRenderHint(QPainter::Antialiasing);
@@ -246,7 +246,7 @@ void Header::mouseMoveEvent(QMouseEvent *event)
 
 	for (std::shared_ptr<RowItem> r : _view)
 		if (r->dragging()) {
-			r->set_v_offset(r->drag_point().y() + delta);
+			r->force_to_v_offset(r->drag_point().y() + delta);
 
 			// Ensure the trace is selected
 			r->select();

@@ -152,7 +152,7 @@ pv::widgets::Popup* TraceGroup::create_popup(QWidget *parent)
 
 int TraceGroup::owner_v_offset() const
 {
-	return v_offset() + _owner->owner_v_offset();
+	return _owner ? layout_v_offset() + _owner->owner_v_offset() : 0;
 }
 
 void TraceGroup::update_viewport()
@@ -167,10 +167,8 @@ void TraceGroup::on_ungroup()
 		child_items().begin(), child_items().end());
 	clear_child_items();
 
-	for (shared_ptr<RowItem> r : items) {
+	for (shared_ptr<RowItem> r : items)
 		_owner->add_child_item(r);
-		r->set_v_offset(r->v_offset() + v_offset());
-	}
 
 	_owner->remove_child_item(shared_from_this());
 	appearance_changed();
