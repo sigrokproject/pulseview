@@ -66,6 +66,11 @@ public:
 	virtual int owner_v_offset() const = 0;
 
 	/**
+	 * Returns the number of nested parents that this row item owner has.
+	 */
+	virtual unsigned int depth() const = 0;
+
+	/**
 	 * Returns a list of row items owned by this object.
 	 */
 	virtual item_list& child_items();

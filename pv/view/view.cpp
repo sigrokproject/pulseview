@@ -186,6 +186,11 @@ int View::owner_v_offset() const
 	return -_v_offset;
 }
 
+unsigned int View::depth() const
+{
+	return 0;
+}
+
 void View::zoom(double steps)
 {
 	zoom(steps, _viewport->width() / 2);

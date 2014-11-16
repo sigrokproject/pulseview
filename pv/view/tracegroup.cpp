@@ -155,6 +155,11 @@ int TraceGroup::owner_v_offset() const
 	return _owner ? layout_v_offset() + _owner->owner_v_offset() : 0;
 }
 
+unsigned int TraceGroup::depth() const
+{
+	return _owner ? _owner->depth() + 1 : 0;
+}
+
 void TraceGroup::on_ungroup()
 {
 	const vector< shared_ptr<RowItem> > items(

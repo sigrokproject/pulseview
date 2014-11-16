@@ -110,6 +110,11 @@ public:
 	 */
 	int owner_v_offset() const;
 
+	/**
+	 * Returns the number of nested parents that this row item owner has.
+	 */
+	unsigned int depth() const;
+
 public:
 	void appearance_changed(bool label, bool content);
 

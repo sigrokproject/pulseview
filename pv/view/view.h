@@ -99,6 +99,11 @@ public:
 	double offset() const;
 	int owner_v_offset() const;
 
+	/**
+	 * Returns the number of nested parents that this row item owner has.
+	 */
+	unsigned int depth() const;
+
 	void zoom(double steps);
 	void zoom(double steps, int offset);
 
