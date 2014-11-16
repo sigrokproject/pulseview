@@ -702,7 +702,7 @@ QComboBox* DecodeTrace::create_channel_selector(
 
 		if (dynamic_pointer_cast<LogicSignal>(s) && s->enabled())
 		{
-			selector->addItem(s->get_name(),
+			selector->addItem(s->name(),
 				qVariantFromValue((void*)s.get()));
 			if ((*channel_iter).second == s)
 				selector->setCurrentIndex(i + 1);

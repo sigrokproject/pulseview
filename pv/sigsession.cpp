@@ -274,7 +274,7 @@ bool SigSession::add_decoder(srd_decoder *const dec)
 					dynamic_pointer_cast<view::LogicSignal>(s);
 				if (l && QString::fromUtf8(pdch->name).
 					toLower().contains(
-					l->get_name().toLower()))
+					l->name().toLower()))
 					channels[pdch] = l;
 			}
 

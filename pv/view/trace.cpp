@@ -48,7 +48,7 @@ Trace::Trace(QString name) :
 {
 }
 
-QString Trace::get_name() const
+QString Trace::name() const
 {
 	return _name;
 }

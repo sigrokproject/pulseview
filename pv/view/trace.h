@@ -56,7 +56,7 @@ public:
 	/**
 	 * Gets the name of this signal.
 	 */
-	QString get_name() const;
+	QString name() const;
 
 	/**
 	 * Sets the name of the signal.

@@ -183,7 +183,7 @@ QGridLayout* Channels::create_channel_group_grid(
 	{
 		assert(sig);
 
-		QCheckBox *const checkbox = new QCheckBox(sig->get_name());
+		QCheckBox *const checkbox = new QCheckBox(sig->name());
 		_check_box_mapper.setMapping(checkbox, checkbox);
 		connect(checkbox, SIGNAL(toggled(bool)),
 			&_check_box_mapper, SLOT(map()));
