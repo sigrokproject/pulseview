@@ -58,7 +58,7 @@ void Trace::set_name(QString name)
 	_name = name;
 }
 
-QColor Trace::get_colour() const
+QColor Trace::colour() const
 {
 	return _colour;
 }
@@ -76,8 +76,6 @@ void Trace::paint_label(QPainter &p, int right, bool hover)
 
 	if (!enabled())
 		return;
-
-	const QColor colour = get_colour();
 
 	const QRectF r = label_rect(right);
 
@@ -105,14 +103,14 @@ void Trace::paint_label(QPainter &p, int right, bool hover)
 	}
 
 	p.setPen(Qt::transparent);
-	p.setBrush(hover ? colour.lighter() : colour);
+	p.setBrush(hover ? _colour.lighter() : _colour);
 	p.drawPolygon(points, countof(points));
 
-	p.setPen(colour.lighter());
+	p.setPen(_colour.lighter());
 	p.setBrush(Qt::transparent);
 	p.drawPolygon(highlight_points, countof(highlight_points));
 
-	p.setPen(colour.darker());
+	p.setPen(_colour.darker());
 	p.setBrush(Qt::transparent);
 	p.drawPolygon(points, countof(points));
 

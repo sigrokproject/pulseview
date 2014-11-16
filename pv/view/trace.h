@@ -66,7 +66,7 @@ public:
 	/**
 	 * Get the colour of the signal.
 	 */
-	QColor get_colour() const;
+	QColor colour() const;
 
 	/**
 	 * Set the colour of the signal.
