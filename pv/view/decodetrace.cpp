@@ -24,6 +24,8 @@ extern "C" {
 
 #include <extdef.h>
 
+#include <tuple>
+
 #include <boost/functional/hash.hpp>
 
 #include <QAction>
@@ -57,6 +59,7 @@ using std::map;
 using std::min;
 using std::pair;
 using std::shared_ptr;
+using std::tie;
 using std::vector;
 
 namespace pv {
@@ -328,8 +331,9 @@ void DecodeTrace::draw_annotation(const pv::data::decode::Annotation &a,
 	QPainter &p, QColor text_color, int h, int left, int right, int y,
 	size_t base_colour) const
 {
-	const double samples_per_pixel = get_samples_per_pixel();
-	const double pixels_offset = get_pixels_offset();
+	double samples_per_pixel, pixels_offset;
+	tie(pixels_offset, samples_per_pixel) =
+		get_pixels_offset_samples_per_pixel();
 
 	const double start = a.start_sample() / samples_per_pixel -
 		pixels_offset;
@@ -454,6 +458,8 @@ void DecodeTrace::draw_unresolved_period(QPainter &p, int h, int left,
 	using namespace pv::data;
 	using pv::data::decode::Decoder;
 
+	double samples_per_pixel, pixels_offset;
+
 	assert(_decoder_stack);	
 
 	shared_ptr<Logic> data;
@@ -486,8 +492,8 @@ void DecodeTrace::draw_unresolved_period(QPainter &p, int h, int left,
 
 	const int y = get_y();
 
-	const double samples_per_pixel = get_samples_per_pixel();
-	const double pixels_offset = get_pixels_offset();
+	tie(pixels_offset, samples_per_pixel) =
+		get_pixels_offset_samples_per_pixel();
 
 	const double start = max(samples_decoded /
 		samples_per_pixel - pixels_offset, left - 1.0);
@@ -504,7 +510,7 @@ void DecodeTrace::draw_unresolved_period(QPainter &p, int h, int left,
 	p.drawRect(no_decode_rect);
 }
 
-double DecodeTrace::get_pixels_offset() const
+pair<double, double> DecodeTrace::get_pixels_offset_samples_per_pixel() const
 {
 	assert(_view);
 	assert(_decoder_stack);
@@ -512,16 +518,8 @@ double DecodeTrace::get_pixels_offset() const
 	const double scale = _view->scale();
 	assert(scale > 0);
 
-	return (_view->offset() - _decoder_stack->get_start_time()) / scale;
-}
-
-double DecodeTrace::get_samples_per_pixel() const
-{
-	assert(_view);
-	assert(_decoder_stack);
-
-	const double scale = _view->scale();
-	assert(scale > 0);
+	const double pixels_offset =
+		(_view->offset() - _decoder_stack->get_start_time()) / scale;
 
 	double samplerate = _decoder_stack->samplerate();
 
@@ -529,14 +527,15 @@ double DecodeTrace::get_samples_per_pixel() const
 	if (samplerate == 0.0)
 		samplerate = 1.0;
 
-	return samplerate * scale;
+	return make_pair(pixels_offset, samplerate * scale);
 }
 
 pair<uint64_t, uint64_t> DecodeTrace::get_sample_range(
 	int x_start, int x_end) const
 {
-	const double samples_per_pixel = get_samples_per_pixel();
-	const double pixels_offset = get_pixels_offset();
+	double samples_per_pixel, pixels_offset;
+	tie(pixels_offset, samples_per_pixel) =
+		get_pixels_offset_samples_per_pixel();
 
 	const uint64_t start = (uint64_t)max(
 		(x_start + pixels_offset) * samples_per_pixel, 0.0);

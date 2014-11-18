@@ -141,9 +141,7 @@ private:
 	void draw_unresolved_period(QPainter &p, int h, int left,
 		int right) const;
 
-	double get_pixels_offset() const;
-
-	double get_samples_per_pixel() const;
+	std::pair<double, double> get_pixels_offset_samples_per_pixel() const;
 
 	/**
 	 * Determines the start and end sample for a given pixel range.
