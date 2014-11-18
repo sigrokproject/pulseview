@@ -532,18 +532,16 @@ double DecodeTrace::get_samples_per_pixel() const
 	return samplerate * scale;
 }
 
-pair<uint64_t, uint64_t> DecodeTrace::get_sample_range(int x_start, int x_end) const
+pair<uint64_t, uint64_t> DecodeTrace::get_sample_range(
+	int x_start, int x_end) const
 {
-	assert(_view);
-	assert(_decoder_stack);
-
 	const double samples_per_pixel = get_samples_per_pixel();
 	const double pixels_offset = get_pixels_offset();
 
-	uint64_t start, end;
-
-	start = (uint64_t)max((x_start + pixels_offset) * samples_per_pixel, 0.0);
-	end = (uint64_t)max((x_end + pixels_offset) * samples_per_pixel, 0.0);
+	const uint64_t start = (uint64_t)max(
+		(x_start + pixels_offset) * samples_per_pixel, 0.0);
+	const uint64_t end = (uint64_t)max(
+		(x_end + pixels_offset) * samples_per_pixel, 0.0);
 
 	return make_pair(start, end);
 }
