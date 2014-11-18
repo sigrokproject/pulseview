@@ -154,13 +154,9 @@ private:
 	 */
 	std::pair<uint64_t, uint64_t> get_sample_range(int x_start, int x_end) const;
 
-	bool hover_point_is_over_trace();
+	int get_row_at_point(const QPoint &point);
 
-	int get_row_at_hover_point();
-
-	const QString get_annotation_at_hover_point();
-
-	void show_hover_annotation();
+	const QString get_annotation_at_point(const QPoint &point);
 
 	void hide_hover_annotation();
 

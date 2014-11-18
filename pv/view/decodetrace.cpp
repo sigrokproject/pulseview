@@ -548,90 +548,39 @@ pair<uint64_t, uint64_t> DecodeTrace::get_sample_range(int x_start, int x_end) c
 	return make_pair(start, end);
 }
 
-bool DecodeTrace::hover_point_is_over_trace()
+int DecodeTrace::get_row_at_point(const QPoint &point)
 {
-	assert(_view);
-	assert(_row_height);
+	if (!_row_height)
+		return -1;
 
-	// Note: if _row_height is valid then _cur_row_headings is valid, too,
-	// as both are set in paint_mid().
+	const int row = (point.y() - get_y() + _row_height / 2) / _row_height;
+	if (row < 0 || row >= (int)_visible_rows.size())
+		return -1;
 
-	// Note: hp.x will be 0 if the cursor is above the header area,
-	// so we set trace.left to 1 to exclude this.
-
-	QRect trace(1, get_y() - (_row_height/2),
-		_view->width(), _row_height * _visible_rows.size());
-
-	// Note: We don't need to check for _row_height being 0 here but
-	// we do it anyway to be more robust.
-
-	return _row_height && enabled() && trace.contains(_view->hover_point());
+	return row;
 }
 
-int DecodeTrace::get_row_at_hover_point()
-{
-	assert(_view);
-	assert(_row_height);
-	assert(_decoder_stack);
-
-	QPoint hp = _view->hover_point();
-	int hover_row = (hp.y() - get_y() + (_row_height/2)) / _row_height;
-
-	return min(hover_row, (int)_visible_rows.size() - 1);
-}
-
-const QString DecodeTrace::get_annotation_at_hover_point()
+const QString DecodeTrace::get_annotation_at_point(const QPoint &point)
 {
 	using namespace pv::data::decode;
 
-	assert(_view);
-	QPoint hp = _view->hover_point();
+	if (!enabled())
+		return QString();
 
-	pair<uint64_t, uint64_t> sample_range = get_sample_range(hp.x(), hp.x() + 1);
-
-	const int hover_row = get_row_at_hover_point();
+	const pair<uint64_t, uint64_t> sample_range =
+		get_sample_range(point.x(), point.x() + 1);
+	const int row = get_row_at_point(point);
+	if (row < 0)
+		return QString();
 
 	vector<pv::data::decode::Annotation> annotations;
 
 	assert(_decoder_stack);
-	_decoder_stack->get_annotation_subset(annotations, _visible_rows[hover_row],
+	_decoder_stack->get_annotation_subset(annotations, _visible_rows[row],
 		sample_range.first, sample_range.second);
 
 	return (annotations.empty()) ?
 		QString() : annotations[0].annotations().front();
-}
-
-void DecodeTrace::show_hover_annotation()
-{
-	QString ann = get_annotation_at_hover_point();
-
-	assert(_view);
-	assert(_row_height);
-
-	if (!ann.isEmpty()) {
-		const int hover_row = get_row_at_hover_point();
-
-		QFontMetrics m(QToolTip::font());
-		const QRect text_size = m.boundingRect(QRect(), 0, ann);
-
-		// This is OS-specific and unfortunately we can't query it, so
-		// use an approximation to at least try to minimize the error.
-		const int padding = 8;
-
-		// Make sure the tool tip doesn't overlap with the mouse cursor.
-		// If it did, the tool tip would constantly hide and re-appear.
-		// We also push it up by one row so that it appears above the
-		// decode trace, not below.
-		QPoint hp = _view->hover_point();
-
-		hp.setX(hp.x() - (text_size.width() / 2) - padding);
-
-		hp.setY(get_y() - (_row_height / 2) + (hover_row * _row_height)
-			- _row_height - text_size.height());
-
-		QToolTip::showText(_view->viewport()->mapToGlobal(hp), ann);
-	} else
-		hide_hover_annotation();
 }
 
 void DecodeTrace::hide_hover_annotation()
@@ -641,10 +590,36 @@ void DecodeTrace::hide_hover_annotation()
 
 void DecodeTrace::hover_point_changed()
 {
-	if (hover_point_is_over_trace())
-		show_hover_annotation();
-	else
+	QPoint hp = _view->hover_point();
+	QString ann = get_annotation_at_point(hp);
+
+	assert(_view);
+	assert(_row_height);
+
+	if (ann.isEmpty()) {
 		hide_hover_annotation();
+		return;
+	}
+
+	const int hover_row = get_row_at_point(hp);
+
+	QFontMetrics m(QToolTip::font());
+	const QRect text_size = m.boundingRect(QRect(), 0, ann);
+
+	// This is OS-specific and unfortunately we can't query it, so
+	// use an approximation to at least try to minimize the error.
+	const int padding = 8;
+
+	// Make sure the tool tip doesn't overlap with the mouse cursor.
+	// If it did, the tool tip would constantly hide and re-appear.
+	// We also push it up by one row so that it appears above the
+	// decode trace, not below.
+	hp.setX(hp.x() - (text_size.width() / 2) - padding);
+
+	hp.setY(get_y() - (_row_height / 2) + (hover_row * _row_height)
+		- _row_height - text_size.height());
+
+	QToolTip::showText(_view->viewport()->mapToGlobal(hp), ann);
 }
 
 void DecodeTrace::create_decoder_form(int index,
