@@ -119,6 +119,9 @@ View::View(SigSession &session, QWidget *parent) :
 	connect(_cursorheader, SIGNAL(selection_changed()),
 		this, SIGNAL(selection_changed()));
 
+	connect(this, SIGNAL(hover_point_changed()),
+		this, SLOT(on_hover_point_changed()));
+
 	setViewport(_viewport);
 
 	_viewport->installEventFilter(this);
@@ -560,6 +563,13 @@ void View::on_signals_moved()
 void View::on_geometry_updated()
 {
 	update_layout();
+}
+
+void View::on_hover_point_changed()
+{
+	const vector< shared_ptr<Trace> > traces(get_traces());
+	for (shared_ptr<Trace> t : traces)
+		t->hover_point_changed();
 }
 
 } // namespace view

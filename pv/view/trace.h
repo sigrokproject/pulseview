@@ -147,6 +147,9 @@ public:
 	 */
 	QRectF get_label_rect(int right);
 
+public:
+	virtual void hover_point_changed();
+
 protected:
 
 	/**
@@ -172,16 +175,12 @@ protected:
 
 	virtual void populate_popup_form(QWidget *parent, QFormLayout *form);
 
-	virtual void hover_point_changed();
-
 private Q_SLOTS:
 	void on_text_changed(const QString &text);
 
 	void on_colour_changed(const QColor &colour);
 
 	void on_popup_closed();
-
-	void on_hover_point_changed();
 
 Q_SIGNALS:
 	void visibility_changed();

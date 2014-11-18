@@ -83,15 +83,7 @@ void Trace::set_v_offset(int v_offset)
 void Trace::set_view(pv::view::View *view)
 {
 	assert(view);
-
-	if (_view)
-		disconnect(_view, SIGNAL(hover_point_changed()),
-			this, SLOT(on_hover_point_changed()));
-
 	_view = view;
-
-	connect(view, SIGNAL(hover_point_changed()),
-		this, SLOT(on_hover_point_changed()));
 }
 
 void Trace::paint_back(QPainter &p, int left, int right)
@@ -228,6 +220,10 @@ QRectF Trace::get_label_rect(int right)
 		label_size.width(), label_size.height());
 }
 
+void Trace::hover_point_changed()
+{
+}
+
 QColor Trace::get_text_colour() const
 {
 	return (_colour.lightness() > 64) ? Qt::black : Qt::white;
@@ -280,10 +276,6 @@ void Trace::populate_popup_form(QWidget *parent, QFormLayout *form)
 	add_colour_option(parent, form);
 }
 
-void Trace::hover_point_changed()
-{
-}
-
 void Trace::on_popup_closed()
 {
 	_popup = NULL;
@@ -300,11 +292,6 @@ void Trace::on_colour_changed(const QColor &colour)
 {
 	set_colour(colour);
 	colour_changed();
-}
-
-void Trace::on_hover_point_changed()
-{
-	hover_point_changed();
 }
 
 } // namespace view

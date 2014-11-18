@@ -160,8 +160,6 @@ private:
 
 	void hide_hover_annotation();
 
-	void hover_point_changed();
-
 	void create_decoder_form(int index,
 		std::shared_ptr<pv::data::decode::Decoder> &dec,
 		QWidget *parent, QFormLayout *form);
@@ -174,6 +172,9 @@ private:
 		std::shared_ptr<data::decode::Decoder> &dec);
 
 	void commit_channels();
+
+public:
+	void hover_point_changed();
 
 private Q_SLOTS:
 	void on_new_decode_data();

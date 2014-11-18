@@ -189,6 +189,8 @@ private Q_SLOTS:
 
 	void on_geometry_updated();
 
+	void on_hover_point_changed();
+
 private:
 	SigSession &_session;
 
