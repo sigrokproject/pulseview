@@ -45,6 +45,7 @@ extern "C" {
 #include <pv/data/decode/annotation.h>
 #include <pv/view/logicsignal.h>
 #include <pv/view/view.h>
+#include <pv/view/viewport.h>
 #include <pv/widgets/decodergroupbox.h>
 #include <pv/widgets/decodermenu.h>
 
@@ -606,18 +607,29 @@ void DecodeTrace::show_hover_annotation()
 
 	assert(_view);
 	assert(_row_height);
-	assert(_text_height);
 
 	if (!ann.isEmpty()) {
 		const int hover_row = get_row_at_hover_point();
 
+		QFontMetrics m(QToolTip::font());
+		const QRect text_size = m.boundingRect(QRect(), 0, ann);
+
+		// This is OS-specific and unfortunately we can't query it, so
+		// use an approximation to at least try to minimize the error.
+		const int padding = 8;
+
 		// Make sure the tool tip doesn't overlap with the mouse cursor.
 		// If it did, the tool tip would constantly hide and re-appear.
+		// We also push it up by one row so that it appears above the
+		// decode trace, not below.
 		QPoint hp = _view->hover_point();
-		hp.setY(get_y() - (_row_height/2) +
-			(hover_row * _row_height) - _text_height);
 
-		QToolTip::showText(_view->mapToGlobal(hp), ann);
+		hp.setX(hp.x() - (text_size.width() / 2) - padding);
+
+		hp.setY(get_y() - (_row_height / 2) + (hover_row * _row_height)
+			- _row_height - text_size.height());
+
+		QToolTip::showText(_view->viewport()->mapToGlobal(hp), ann);
 	} else
 		hide_hover_annotation();
 }
