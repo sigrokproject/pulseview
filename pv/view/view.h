@@ -70,6 +70,10 @@ public:
 	SigSession& session();
 	const SigSession& session() const;
 
+	Viewport* viewport();
+
+	const Viewport* viewport() const;
+
 	/**
 	 * Returns the view time scale in seconds per pixel.
 	 */

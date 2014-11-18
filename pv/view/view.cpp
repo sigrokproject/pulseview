@@ -145,6 +145,16 @@ const SigSession& View::session() const
 	return _session;
 }
 
+Viewport* View::viewport()
+{
+	return _viewport;
+}
+
+const Viewport* View::viewport() const
+{
+	return _viewport;
+}
+
 double View::scale() const
 {
 	return _scale;
