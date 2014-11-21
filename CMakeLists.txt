@@ -44,6 +44,10 @@ if(WIN32)
 	# This option is user configurable, but enable it by default on win32.
 	set(STATIC_PKGDEPS_LIBS TRUE)
 
+	# For boost-thread we need two additional settings on win32:
+	set(Boost_USE_STATIC_LIBS ON)
+	add_definitions(-DBOOST_THREAD_USE_LIB)
+
 	# Windows does not support UNIX signals.
 	set(ENABLE_SIGNALS FALSE)
 endif()
@@ -91,7 +95,13 @@ else()
 	find_package(Qt4 REQUIRED QtCore QtGui QtSvg)
 endif()
 
-find_package(Boost 1.42 COMPONENTS filesystem system thread REQUIRED)
+if(WIN32)
+	# On Windows/MinGW we need to use 'thread_win32' instead of 'thread'.
+	# The library is named libboost_thread_win32* (not libboost_thread*).
+	find_package(Boost 1.42 COMPONENTS filesystem system thread_win32 REQUIRED)
+else()
+	find_package(Boost 1.42 COMPONENTS filesystem system thread REQUIRED)
+endif()
 
 # Find the platform's thread library (needed for C++11 threads).
 # This will set ${CMAKE_THREAD_LIBS_INIT} to the correct, OS-specific value.

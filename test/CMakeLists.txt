@@ -29,7 +29,13 @@ endif()
 find_package(PkgConfig)
 pkg_check_modules(PKGDEPS REQUIRED ${PKGDEPS})
 
-find_package(Boost 1.42 COMPONENTS filesystem system unit_test_framework REQUIRED)
+if(WIN32)
+	# On Windows/MinGW we need to use 'thread_win32' instead of 'thread'.
+	# The library is named libboost_thread_win32* (not libboost_thread*).
+	find_package(Boost 1.42 COMPONENTS filesystem system thread_win32 unit_test_framework REQUIRED)
+else()
+	find_package(Boost 1.42 COMPONENTS filesystem system thread unit_test_framework REQUIRED)
+endif()
 
 # Find the platform's thread library (needed for C++11 threads).
 # This will set ${CMAKE_THREAD_LIBS_INIT} to the correct, OS-specific value.
