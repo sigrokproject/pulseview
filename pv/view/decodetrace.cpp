@@ -609,9 +609,8 @@ void DecodeTrace::hover_point_changed()
 	QString ann = get_annotation_at_point(hp);
 
 	assert(view);
-	assert(row_height_);
 
-	if (ann.isEmpty()) {
+	if (!row_height_ || ann.isEmpty()) {
 		hide_hover_annotation();
 		return;
 	}
