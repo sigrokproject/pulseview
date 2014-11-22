@@ -61,63 +61,63 @@ const char *const ChannelNames[] = {
 Signal::Signal(pv::SigSession &session,
 	std::shared_ptr<sigrok::Channel> channel) :
 	Trace(channel->name().c_str()),
-	_session(session),
-	_channel(channel),
-	_name_widget(NULL),
-	_updating_name_widget(false)
+	session_(session),
+	channel_(channel),
+	name_widget_(NULL),
+	updating_name_widget_(false)
 {
-	assert(_channel);
+	assert(channel_);
 }
 
 void Signal::set_name(QString name)
 {
 	Trace::set_name(name);
-	_updating_name_widget = true;
-	_name_widget->setEditText(name);
-	_updating_name_widget = false;
+	updating_name_widget_ = true;
+	name_widget_->setEditText(name);
+	updating_name_widget_ = false;
 }
 
 bool Signal::enabled() const
 {
-	return _channel->enabled();
+	return channel_->enabled();
 }
 
 void Signal::enable(bool enable)
 {
-	_channel->set_enabled(enable);
+	channel_->set_enabled(enable);
 
-	if (_owner)
-		_owner->extents_changed(true, true);
+	if (owner_)
+		owner_->extents_changed(true, true);
 }
 
 shared_ptr<Channel> Signal::channel() const
 {
-	return _channel;
+	return channel_;
 }
 
 void Signal::populate_popup_form(QWidget *parent, QFormLayout *form)
 {
 	int index;
 
-	_name_widget = new QComboBox(parent);
-	_name_widget->setEditable(true);
+	name_widget_ = new QComboBox(parent);
+	name_widget_->setEditable(true);
 
 	for(unsigned int i = 0; i < countof(ChannelNames); i++)
-		_name_widget->insertItem(i, ChannelNames[i]);
+		name_widget_->insertItem(i, ChannelNames[i]);
 
-	index = _name_widget->findText(_name, Qt::MatchExactly);
+	index = name_widget_->findText(name_, Qt::MatchExactly);
 
 	if (index == -1) {
-		_name_widget->insertItem(0, _name);
-		_name_widget->setCurrentIndex(0);
+		name_widget_->insertItem(0, name_);
+		name_widget_->setCurrentIndex(0);
 	} else {
-		_name_widget->setCurrentIndex(index);
+		name_widget_->setCurrentIndex(index);
 	}
 
-	connect(_name_widget, SIGNAL(editTextChanged(const QString&)),
+	connect(name_widget_, SIGNAL(editTextChanged(const QString&)),
 		this, SLOT(on_text_changed(const QString&)));
 
-	form->addRow(tr("Name"), _name_widget);
+	form->addRow(tr("Name"), name_widget_);
 
 	add_colour_option(parent, form);
 }

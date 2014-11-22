@@ -46,10 +46,10 @@ private:
 	static void handle_signals(int sig_number);
 
 private:
-	QSocketNotifier* _socket_notifier;
+	QSocketNotifier* socket_notifier_;
 
 private:
-	static int _sockets[2];
+	static int sockets_[2];
 };
 
 #endif // SIGNALHANDLER_H

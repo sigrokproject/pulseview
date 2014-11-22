@@ -36,18 +36,18 @@ namespace popups {
 
 DeviceOptions::DeviceOptions(shared_ptr<Device> device, QWidget *parent) :
 	Popup(parent),
-	_device(device),
-	_layout(this),
-	_binding(device)
+	device_(device),
+	layout_(this),
+	binding_(device)
 {
-	setLayout(&_layout);
+	setLayout(&layout_);
 
-	_layout.addWidget(_binding.get_property_form(this, true));
+	layout_.addWidget(binding_.get_property_form(this, true));
 }
 
 pv::prop::binding::DeviceOptions& DeviceOptions::binding()
 {
-	return _binding;
+	return binding_;
 }
 
 } // namespace popups

@@ -45,11 +45,11 @@ public:
 	pv::prop::binding::DeviceOptions& binding();
 
 private:
-	std::shared_ptr<sigrok::Device> _device;
+	std::shared_ptr<sigrok::Device> device_;
 
-	QVBoxLayout _layout;
+	QVBoxLayout layout_;
 
-	pv::prop::binding::DeviceOptions _binding;
+	pv::prop::binding::DeviceOptions binding_;
 };
 
 } // namespace popups

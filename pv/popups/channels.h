@@ -60,7 +60,7 @@ class Channels : public pv::widgets::Popup
 	Q_OBJECT
 
 public:
-	Channels(SigSession &_session, QWidget *parent);
+	Channels(SigSession &session_, QWidget *parent);
 
 private:
 	void set_all_channels(bool set);
@@ -81,22 +81,22 @@ private Q_SLOTS:
 	void disable_all_channels();
 
 private:
-	pv::SigSession &_session;
+	pv::SigSession &session_;
 
-	QFormLayout _layout;
+	QFormLayout layout_;
 
-	bool _updating_channels;
+	bool updating_channels_;
 
 	std::vector< std::shared_ptr<pv::prop::binding::DeviceOptions> >
-		 _group_bindings;
+		 group_bindings_;
 	std::map< QCheckBox*, std::shared_ptr<pv::view::Signal> >
-		_check_box_signal_map;
+		check_box_signal_map_;
 
-	QHBoxLayout _buttons_bar;
-	QPushButton _enable_all_channels;
-	QPushButton _disable_all_channels;
+	QHBoxLayout buttons_bar_;
+	QPushButton enable_all_channels_;
+	QPushButton disable_all_channels_;
 
-	QSignalMapper _check_box_mapper;
+	QSignalMapper check_box_mapper_;
 };
 
 } // popups

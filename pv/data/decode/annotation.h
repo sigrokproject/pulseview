@@ -42,10 +42,10 @@ public:
 	const std::vector<QString>& annotations() const;
 
 private:
-	uint64_t _start_sample;
-	uint64_t _end_sample;
-	int _format;
-	std::vector<QString> _annotations; 
+	uint64_t start_sample_;
+	uint64_t end_sample_;
+	int format_;
+	std::vector<QString> annotations_;
 };
 
 } // namespace decode

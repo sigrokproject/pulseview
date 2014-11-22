@@ -88,10 +88,10 @@ Q_SIGNALS:
 	void signals_moved();
 
 private:
-	QPoint _mouse_point;
-	QPoint _mouse_down_point;
-	std::shared_ptr<RowItem> _mouse_down_item;
-	bool _dragging;
+	QPoint mouse_point_;
+	QPoint mouse_down_point_;
+	std::shared_ptr<RowItem> mouse_down_item_;
+	bool dragging_;
 };
 
 } // namespace view

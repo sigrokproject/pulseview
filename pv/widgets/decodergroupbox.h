@@ -46,8 +46,8 @@ Q_SIGNALS:
 	void show_hide_decoder();
 
 private:
-	QGridLayout *const _layout;
-	QPushButton _show_hide_button;
+	QGridLayout *const layout_;
+	QPushButton show_hide_button_;
 };
 
 } // widgets

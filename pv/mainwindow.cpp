@@ -82,8 +82,8 @@ MainWindow::MainWindow(DeviceManager &device_manager,
 	const char *open_file_name,
 	QWidget *parent) :
 	QMainWindow(parent),
-	_device_manager(device_manager),
-	_session(device_manager)
+	device_manager_(device_manager),
+	session_(device_manager)
 {
 	setup_ui();
 	restore_ui_settings();
@@ -106,15 +106,15 @@ void MainWindow::setup_ui()
 	setWindowIcon(icon);
 
 	// Setup the central widget
-	_central_widget = new QWidget(this);
-	_vertical_layout = new QVBoxLayout(_central_widget);
-	_vertical_layout->setSpacing(6);
-	_vertical_layout->setContentsMargins(0, 0, 0, 0);
-	setCentralWidget(_central_widget);
+	central_widget_ = new QWidget(this);
+	vertical_layout_ = new QVBoxLayout(central_widget_);
+	vertical_layout_->setSpacing(6);
+	vertical_layout_->setContentsMargins(0, 0, 0, 0);
+	setCentralWidget(central_widget_);
 
-	_view = new pv::view::View(_session, this);
+	view_ = new pv::view::View(session_, this);
 
-	_vertical_layout->addWidget(_view);
+	vertical_layout_->addWidget(view_);
 
 	// Setup the menu bar
 	QMenuBar *const menu_bar = new QMenuBar(this);
@@ -202,7 +202,7 @@ void MainWindow::setup_ui()
 
 	QAction *action_view_show_cursors = new QAction(this);
 	action_view_show_cursors->setCheckable(true);
-	action_view_show_cursors->setChecked(_view->cursors_shown());
+	action_view_show_cursors->setChecked(view_->cursors_shown());
 	action_view_show_cursors->setShortcut(QKeySequence(Qt::Key_C));
 	action_view_show_cursors->setObjectName(
 		QString::fromUtf8("actionViewShowCursors"));
@@ -255,20 +255,20 @@ void MainWindow::setup_ui()
 	addToolBar(toolbar);
 
 	// Setup the sampling bar
-	_sampling_bar = new toolbars::SamplingBar(_session, this);
+	sampling_bar_ = new toolbars::SamplingBar(session_, this);
 
 	// Populate the device list and select the initially selected device
 	update_device_list();
 
-	connect(_sampling_bar, SIGNAL(run_stop()), this,
+	connect(sampling_bar_, SIGNAL(run_stop()), this,
 		SLOT(run_stop()));
-	addToolBar(_sampling_bar);
+	addToolBar(sampling_bar_);
 
 	// Set the title
 	setWindowTitle(tr("PulseView"));
 
-	// Setup _session events
-	connect(&_session, SIGNAL(capture_state_changed(int)), this,
+	// Setup session_ events
+	connect(&session_, SIGNAL(capture_state_changed(int)), this,
 		SLOT(capture_state_changed(int)));
 }
 
@@ -284,7 +284,7 @@ void MainWindow::save_ui_settings()
 	settings.setValue("geometry", saveGeometry());
 	settings.endGroup();
 
-	if (_session.device()) {
+	if (session_.device()) {
 		settings.beginGroup("Device");
 		key_list.push_back("vendor");
 		key_list.push_back("model");
@@ -292,8 +292,8 @@ void MainWindow::save_ui_settings()
 		key_list.push_back("serial_num");
 		key_list.push_back("connection_id");
 
-		dev_info = _device_manager.get_device_info(
-			_session.device());
+		dev_info = device_manager_.get_device_info(
+			session_.device());
 
 		for (string key : key_list) {
 
@@ -346,10 +346,10 @@ void MainWindow::restore_ui_settings()
 			dev_info.insert(std::make_pair(key, value));
 	}
 
-	device = _device_manager.find_device_from_info(dev_info);
+	device = device_manager_.find_device_from_info(dev_info);
 
 	if (device) {
-		_session.set_device(device);
+		session_.set_device(device);
 		update_device_list();
 	}
 
@@ -366,16 +366,16 @@ void MainWindow::session_error(
 
 void MainWindow::update_device_list()
 {
-	assert(_sampling_bar);
+	assert(sampling_bar_);
 
-	shared_ptr<Device> selected_device = _session.device();
+	shared_ptr<Device> selected_device = session_.device();
 	list< shared_ptr<Device> > devices;
 
-	if (_device_manager.devices().size() == 0)
+	if (device_manager_.devices().size() == 0)
 		return;
 
-	std::copy(_device_manager.devices().begin(),
-		_device_manager.devices().end(), std::back_inserter(devices));
+	std::copy(device_manager_.devices().begin(),
+		device_manager_.devices().end(), std::back_inserter(devices));
 
 	if (std::find(devices.begin(), devices.end(), selected_device) ==
 		devices.end())
@@ -386,9 +386,9 @@ void MainWindow::update_device_list()
 
 	for (auto device : devices)
 		device_list.push_back(make_pair(
-			device, _device_manager.get_display_name(device)));
+			device, device_manager_.get_display_name(device)));
 
-	_sampling_bar->set_device_list(device_list, selected_device);
+	sampling_bar_->set_device_list(device_list, selected_device);
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -404,17 +404,17 @@ void MainWindow::load_file(QString file_name)
 	const QString infoMessage;
 
 	try {
-		_session.set_file(file_name.toStdString());
+		session_.set_file(file_name.toStdString());
 	} catch(Error e) {
 		show_session_error(tr("Failed to load ") + file_name, e.what());
-		_session.set_default_device();
+		session_.set_default_device();
 		update_device_list();
 		return;
 	}
 
 	update_device_list();
 
-	_session.start_capture([&, errorMessage, infoMessage](QString) {
+	session_.start_capture([&, errorMessage, infoMessage](QString) {
 		session_error(errorMessage, infoMessage); });
 }
 
@@ -453,7 +453,7 @@ void MainWindow::on_actionSaveAs_triggered()
 	using pv::dialogs::StoreProgress;
 
 	// Stop any currently running capture session
-	_session.stop_capture();
+	session_.stop_capture();
 
 	QSettings settings;
 	const QString dir = settings.value(SettingSaveDirectory).toString();
@@ -468,21 +468,21 @@ void MainWindow::on_actionSaveAs_triggered()
 	const QString abs_path = QFileInfo(file_name).absolutePath();
 	settings.setValue(SettingSaveDirectory, abs_path);
 
-	StoreProgress *dlg = new StoreProgress(file_name, _session, this);
+	StoreProgress *dlg = new StoreProgress(file_name, session_, this);
 	dlg->run();
 }
 
 void MainWindow::on_actionConnect_triggered()
 {
 	// Stop any currently running capture session
-	_session.stop_capture();
+	session_.stop_capture();
 
-	dialogs::Connect dlg(this, _device_manager);
+	dialogs::Connect dlg(this, device_manager_);
 
 	// If the user selected a device, select it in the device list. Select the
 	// current device otherwise.
 	if (dlg.exec())
-		_session.set_device(dlg.get_selected_device());
+		session_.set_device(dlg.get_selected_device());
 
 	update_device_list();
 }
@@ -494,38 +494,38 @@ void MainWindow::on_actionQuit_triggered()
 
 void MainWindow::on_actionViewZoomIn_triggered()
 {
-	_view->zoom(1);
+	view_->zoom(1);
 }
 
 void MainWindow::on_actionViewZoomOut_triggered()
 {
-	_view->zoom(-1);
+	view_->zoom(-1);
 }
 
 void MainWindow::on_actionViewZoomFit_triggered()
 {
-	_view->zoom_fit();
+	view_->zoom_fit();
 }
 
 void MainWindow::on_actionViewZoomOneToOne_triggered()
 {
-	_view->zoom_one_to_one();
+	view_->zoom_one_to_one();
 }
 
 void MainWindow::on_actionViewShowCursors_triggered()
 {
-	assert(_view);
+	assert(view_);
 
-	const bool show = !_view->cursors_shown();
+	const bool show = !view_->cursors_shown();
 	if(show)
-		_view->centre_cursors();
+		view_->centre_cursors();
 
-	_view->show_cursors(show);
+	view_->show_cursors(show);
 }
 
 void MainWindow::on_actionAbout_triggered()
 {
-	dialogs::About dlg(_device_manager.context(), this);
+	dialogs::About dlg(device_manager_.context(), this);
 	dlg.exec();
 }
 
@@ -533,7 +533,7 @@ void MainWindow::add_decoder(srd_decoder *decoder)
 {
 #ifdef ENABLE_DECODE
 	assert(decoder);
-	_session.add_decoder(decoder);
+	session_.add_decoder(decoder);
 #else
 	(void)decoder;
 #endif
@@ -541,22 +541,22 @@ void MainWindow::add_decoder(srd_decoder *decoder)
 
 void MainWindow::run_stop()
 {
-	switch(_session.get_capture_state()) {
+	switch(session_.get_capture_state()) {
 	case SigSession::Stopped:
-		_session.start_capture([&](QString message) {
+		session_.start_capture([&](QString message) {
 			session_error("Capture failed", message); });
 		break;
 
 	case SigSession::AwaitingTrigger:
 	case SigSession::Running:
-		_session.stop_capture();
+		session_.stop_capture();
 		break;
 	}
 }
 
 void MainWindow::capture_state_changed(int state)
 {
-	_sampling_bar->set_capture_state((pv::SigSession::capture_state)state);
+	sampling_bar_->set_capture_state((pv::SigSession::capture_state)state);
 }
 
 } // namespace pv

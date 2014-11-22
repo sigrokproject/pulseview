@@ -75,9 +75,9 @@ private:
 		std::shared_ptr<sigrok::Device> b);
 
 protected:
-	std::shared_ptr<sigrok::Context> _context;
-	std::list< std::shared_ptr<sigrok::HardwareDevice> > _devices;
-	std::map< std::shared_ptr<sigrok::Device>, std::string > _display_names;
+	std::shared_ptr<sigrok::Context> context_;
+	std::list< std::shared_ptr<sigrok::HardwareDevice> > devices_;
+	std::map< std::shared_ptr<sigrok::Device>, std::string > display_names_;
 };
 
 } // namespace pv

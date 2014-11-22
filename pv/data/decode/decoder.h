@@ -73,13 +73,13 @@ public:
 	std::set< std::shared_ptr<pv::data::Logic> > get_data();	
 
 private:
-	const srd_decoder *const _decoder;
+	const srd_decoder *const decoder_;
 
-	bool _shown;
+	bool shown_;
 
 	std::map<const srd_channel*, std::shared_ptr<pv::view::LogicSignal> >
-		_channels;
-	std::map<std::string, GVariant*> _options;
+		channels_;
+	std::map<std::string, GVariant*> options_;
 };
 
 } // namespace decode

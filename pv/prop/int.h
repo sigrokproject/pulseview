@@ -51,11 +51,11 @@ private Q_SLOTS:
 	void on_value_changed(int);
 
 private:
-	const QString _suffix;
-	const boost::optional< std::pair<int64_t, int64_t> > _range;
+	const QString suffix_;
+	const boost::optional< std::pair<int64_t, int64_t> > range_;
 
-	Glib::VariantBase _value;
-	QSpinBox *_spin_box;
+	Glib::VariantBase value_;
+	QSpinBox *spin_box_;
 };
 
 } // prop

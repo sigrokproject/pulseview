@@ -132,7 +132,7 @@ public:
 	virtual void extents_changed(bool horz, bool vert) = 0;
 
 private:
-	item_list _items;
+	item_list items_;
 };
 
 } // view

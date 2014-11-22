@@ -61,19 +61,19 @@ static bool item_selected(shared_ptr<RowItem> r)
 
 Header::Header(View &parent) :
 	MarginWidget(parent),
-	_dragging(false)
+	dragging_(false)
 {
 	setFocusPolicy(Qt::ClickFocus);
 	setMouseTracking(true);
 
-	connect(&_view, SIGNAL(signals_moved()),
+	connect(&view_, SIGNAL(signals_moved()),
 		this, SLOT(on_signals_moved()));
 }
 
 QSize Header::sizeHint() const
 {
 	QRectF max_rect(-Padding, 0, Padding, 0);
-	for (auto &i : _view)
+	for (auto &i : view_)
 		if (i->enabled())
 			max_rect = max_rect.united(i->label_rect(0));
 	return QSize(max_rect.width() + Padding + BaselineOffset, 0);
@@ -82,7 +82,7 @@ QSize Header::sizeHint() const
 shared_ptr<RowItem> Header::get_mouse_over_row_item(const QPoint &pt)
 {
 	const int w = width() - BaselineOffset;
-	for (auto &i : _view)
+	for (auto &i : view_)
 		if (i->enabled() && i->label_rect(w).contains(pt))
 			return i;
 	return shared_ptr<RowItem>();
@@ -90,7 +90,7 @@ shared_ptr<RowItem> Header::get_mouse_over_row_item(const QPoint &pt)
 
 void Header::clear_selection()
 {
-	for (auto &i : _view)
+	for (auto &i : view_)
 		i->select(false);
 	update();
 }
@@ -99,7 +99,7 @@ void Header::show_popup(const shared_ptr<RowItem> &item)
 {
 	using pv::widgets::Popup;
 
-	Popup *const p = item->create_popup(&_view);
+	Popup *const p = item->create_popup(&view_);
 	if (!p)
 		return;
 
@@ -116,7 +116,7 @@ void Header::paintEvent(QPaintEvent*)
 	const int w = width() - BaselineOffset;
 
 	vector< shared_ptr<RowItem> > row_items(
-		_view.begin(), _view.end());
+		view_.begin(), view_.end());
 
 	stable_sort(row_items.begin(), row_items.end(),
 		[](const shared_ptr<RowItem> &a, const shared_ptr<RowItem> &b) {
@@ -129,8 +129,8 @@ void Header::paintEvent(QPaintEvent*)
 	{
 		assert(r);
 
-		const bool highlight = !_dragging &&
-			r->label_rect(w).contains(_mouse_point);
+		const bool highlight = !dragging_ &&
+			r->label_rect(w).contains(mouse_point_);
 		r->paint_label(painter, w, highlight);
 	}
 
@@ -145,21 +145,21 @@ void Header::mouseLeftPressEvent(QMouseEvent *event)
 		QApplication::keyboardModifiers() & Qt::ControlModifier;
 
 	// Clear selection if control is not pressed and this item is unselected
-	if ((!_mouse_down_item || !_mouse_down_item->selected()) &&
+	if ((!mouse_down_item_ || !mouse_down_item_->selected()) &&
 		!ctrl_pressed)
-		for (shared_ptr<RowItem> r : _view)
+		for (shared_ptr<RowItem> r : view_)
 			r->select(false);
 
 	// Set the signal selection state if the item has been clicked
-	if (_mouse_down_item) {
+	if (mouse_down_item_) {
 		if (ctrl_pressed)
-			_mouse_down_item->select(!_mouse_down_item->selected());
+			mouse_down_item_->select(!mouse_down_item_->selected());
 		else
-			_mouse_down_item->select(true);
+			mouse_down_item_->select(true);
 	}
 
 	// Save the offsets of any signals which will be dragged
-	for (const shared_ptr<RowItem> r : _view)
+	for (const shared_ptr<RowItem> r : view_)
 		if (r->selected())
 			r->drag();
 
@@ -171,8 +171,8 @@ void Header::mousePressEvent(QMouseEvent *event)
 {
 	assert(event);
 
-	_mouse_down_point = event->pos();
-	_mouse_down_item = get_mouse_over_row_item(event->pos());
+	mouse_down_point_ = event->pos();
+	mouse_down_item_ = get_mouse_over_row_item(event->pos());
 
 	if (event->button() & Qt::LeftButton)
 		mouseLeftPressEvent(event);
@@ -189,24 +189,24 @@ void Header::mouseLeftReleaseEvent(QMouseEvent *event)
 	const shared_ptr<RowItem> mouse_over =
 		get_mouse_over_row_item(event->pos());
 
-	for (auto &r : _view)
+	for (auto &r : view_)
 		r->drag_release();
 
-	if (_dragging)
-		_view.restack_all_row_items();
+	if (dragging_)
+		view_.restack_all_row_items();
 	else
 	{
 		if (!ctrl_pressed) {
-			for (shared_ptr<RowItem> r : _view)
-				if (_mouse_down_item != r)
+			for (shared_ptr<RowItem> r : view_)
+				if (mouse_down_item_ != r)
 					r->select(false);
 
-			if (_mouse_down_item)
-				show_popup(_mouse_down_item);
+			if (mouse_down_item_)
+				show_popup(mouse_down_item_);
 		}
 	}
 
-	_dragging = false;
+	dragging_ = false;
 }
 
 void Header::mouseReleaseEvent(QMouseEvent *event)
@@ -215,24 +215,24 @@ void Header::mouseReleaseEvent(QMouseEvent *event)
 	if (event->button() & Qt::LeftButton)
 		mouseLeftReleaseEvent(event);
 
-	_mouse_down_item = nullptr;
+	mouse_down_item_ = nullptr;
 }
 
 void Header::mouseMoveEvent(QMouseEvent *event)
 {
 	assert(event);
-	_mouse_point = event->pos();
+	mouse_point_ = event->pos();
 
 	if (!(event->buttons() & Qt::LeftButton))
 		return;
 
-	if ((event->pos() - _mouse_down_point).manhattanLength() <
+	if ((event->pos() - mouse_down_point_).manhattanLength() <
 		QApplication::startDragDistance())
 		return;
 
 	// Check all the drag items share a common owner
 	RowItemOwner *item_owner = nullptr;
-	for (shared_ptr<RowItem> r : _view)
+	for (shared_ptr<RowItem> r : view_)
 		if (r->dragging()) {
 			if (!item_owner)
 				item_owner = r->owner();
@@ -244,11 +244,11 @@ void Header::mouseMoveEvent(QMouseEvent *event)
 		return;
 
 	// Do the drag
-	_dragging = true;
+	dragging_ = true;
 
-	const int delta = event->pos().y() - _mouse_down_point.y();
+	const int delta = event->pos().y() - mouse_down_point_.y();
 
-	for (std::shared_ptr<RowItem> r : _view)
+	for (std::shared_ptr<RowItem> r : view_)
 		if (r->dragging()) {
 			r->force_to_v_offset(r->drag_point().y() + delta);
 
@@ -266,13 +266,13 @@ void Header::mouseMoveEvent(QMouseEvent *event)
 
 void Header::leaveEvent(QEvent*)
 {
-	_mouse_point = QPoint(-1, -1);
+	mouse_point_ = QPoint(-1, -1);
 	update();
 }
 
 void Header::contextMenuEvent(QContextMenuEvent *event)
 {
-	const shared_ptr<RowItem> r = get_mouse_over_row_item(_mouse_point);
+	const shared_ptr<RowItem> r = get_mouse_over_row_item(mouse_point_);
 	if (!r)
 		return;
 
@@ -280,7 +280,7 @@ void Header::contextMenuEvent(QContextMenuEvent *event)
 	if (!menu)
 		menu = new QMenu(this);
 
-	if (std::count_if(_view.begin(), _view.end(), item_selected) > 1)
+	if (std::count_if(view_.begin(), view_.end(), item_selected) > 1)
 	{
 		menu->addSeparator();
 
@@ -301,7 +301,7 @@ void Header::keyPressEvent(QKeyEvent *e)
 
 	if (e->key() == Qt::Key_Delete)
 	{
-		for (const shared_ptr<RowItem> r : _view)
+		for (const shared_ptr<RowItem> r : view_)
 			if (r->selected())
 				r->delete_pressed();
 	}
@@ -319,15 +319,15 @@ void Header::on_signals_moved()
 void Header::on_group()
 {
 	vector< shared_ptr<RowItem> > selected_items(
-		make_filter_iterator(item_selected, _view.begin(), _view.end()),
-		make_filter_iterator(item_selected, _view.end(), _view.end()));
+		make_filter_iterator(item_selected, view_.begin(), view_.end()),
+		make_filter_iterator(item_selected, view_.end(), view_.end()));
 	stable_sort(selected_items.begin(), selected_items.end(),
 		[](const shared_ptr<RowItem> &a, const shared_ptr<RowItem> &b) {
 			return a->visual_v_offset() < b->visual_v_offset(); });
 
 	shared_ptr<TraceGroup> group(new TraceGroup());
 	shared_ptr<RowItem> focus_item(
-		_mouse_down_item ? _mouse_down_item : selected_items.front());
+		mouse_down_item_ ? mouse_down_item_ : selected_items.front());
 
 	assert(focus_item);
 	assert(focus_item->owner());
@@ -354,7 +354,7 @@ void Header::on_ungroup()
 	bool restart;
 	do {
 		restart = false;
-		for (const shared_ptr<RowItem> r : _view) {
+		for (const shared_ptr<RowItem> r : view_) {
 			const shared_ptr<TraceGroup> tg =
 				dynamic_pointer_cast<TraceGroup>(r);
 			if (tg && tg->selected()) {

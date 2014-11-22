@@ -46,12 +46,12 @@ namespace binding {
 DecoderOptions::DecoderOptions(
 	shared_ptr<pv::data::DecoderStack> decoder_stack,
 	shared_ptr<data::decode::Decoder> decoder) :
-	_decoder_stack(decoder_stack),
-	_decoder(decoder)
+	decoder_stack_(decoder_stack),
+	decoder_(decoder)
 {
-	assert(_decoder);
+	assert(decoder_);
 
-	const srd_decoder *const dec = _decoder->decoder();
+	const srd_decoder *const dec = decoder_->decoder();
 	assert(dec);
 
 	for (GSList *l = dec->options; l; l = l->next)
@@ -82,7 +82,7 @@ DecoderOptions::DecoderOptions(
 		else
 			continue;
 
-		_properties.push_back(prop);
+		properties_.push_back(prop);
 	}
 }
 
@@ -103,20 +103,20 @@ Glib::VariantBase DecoderOptions::getter(const char *id)
 {
 	GVariant *val = NULL;
 
-	assert(_decoder);
+	assert(decoder_);
 
 	// Get the value from the hash table if it is already present
-	const map<string, GVariant*>& options = _decoder->options();
+	const map<string, GVariant*>& options = decoder_->options();
 	const auto iter = options.find(id);
 
 	if (iter != options.end())
 		val = (*iter).second;
 	else
 	{
-		assert(_decoder->decoder());
+		assert(decoder_->decoder());
 
 		// Get the default value if not
-		for (GSList *l = _decoder->decoder()->options; l; l = l->next)
+		for (GSList *l = decoder_->decoder()->options; l; l = l->next)
 		{
 			const srd_decoder_option *const opt =
 				(srd_decoder_option*)l->data;
@@ -135,11 +135,11 @@ Glib::VariantBase DecoderOptions::getter(const char *id)
 
 void DecoderOptions::setter(const char *id, Glib::VariantBase value)
 {
-	assert(_decoder);
-	_decoder->set_option(id, value.gobj());
+	assert(decoder_);
+	decoder_->set_option(id, value.gobj());
 
-	assert(_decoder_stack);
-	_decoder_stack->begin_decode();
+	assert(decoder_stack_);
+	decoder_stack_->begin_decode();
 }
 
 } // binding

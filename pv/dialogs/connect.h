@@ -68,21 +68,21 @@ private Q_SLOTS:
 	void scan_pressed();
 
 private:
-	pv::DeviceManager &_device_manager;
+	pv::DeviceManager &device_manager_;
 
-	QVBoxLayout _layout;
+	QVBoxLayout layout_;
 
-	QWidget _form;
-	QFormLayout _form_layout;
+	QWidget form_;
+	QFormLayout form_layout_;
 
-	QComboBox _drivers;
+	QComboBox drivers_;
 
-	QLineEdit _serial_device;
+	QLineEdit serial_device_;
 
-	QPushButton _scan_button;
-	QListWidget _device_list;
+	QPushButton scan_button_;
+	QListWidget device_list_;
 
-	QDialogButtonBox _button_box;
+	QDialogButtonBox button_box_;
 };
 
 } // namespace dialogs

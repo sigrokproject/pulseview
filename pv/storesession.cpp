@@ -54,11 +54,11 @@ const size_t StoreSession::BlockSize = 1024 * 1024;
 
 StoreSession::StoreSession(const std::string &file_name,
 	const SigSession &session) :
-	_file_name(file_name),
-	_session(session),
-	_interrupt(false),
-	_units_stored(0),
-	_unit_count(0)
+	file_name_(file_name),
+	session_(session),
+	interrupt_(false),
+	units_stored_(0),
+	unit_count_(0)
 {
 }
 
@@ -69,31 +69,31 @@ StoreSession::~StoreSession()
 
 pair<int, int> StoreSession::progress() const
 {
-	return make_pair(_units_stored.load(), _unit_count.load());
+	return make_pair(units_stored_.load(), unit_count_.load());
 }
 
 const QString& StoreSession::error() const
 {
-	lock_guard<mutex> lock(_mutex);
-	return _error;
+	lock_guard<mutex> lock(mutex_);
+	return error_;
 }
 
 bool StoreSession::start()
 {
 	set< shared_ptr<data::SignalData> > data_set =
-		_session.get_data();
+		session_.get_data();
 
-	shared_lock<shared_mutex> lock(_session.signals_mutex());
-	const vector< shared_ptr<view::Signal> > &sigs(_session.signals());
+	shared_lock<shared_mutex> lock(session_.signals_mutex());
+	const vector< shared_ptr<view::Signal> > &sigs(session_.signals());
 
 	// Check we have logic data
 	if (data_set.empty() || sigs.empty()) {
-		_error = tr("No data to save.");
+		error_ = tr("No data to save.");
 		return false;
 	}
 
 	if (data_set.size() > 1) {
-		_error = tr("PulseView currently only has support for "
+		error_ = tr("PulseView currently only has support for "
 			"storing a single data stream.");
 		return false;
 	}
@@ -101,7 +101,7 @@ bool StoreSession::start()
 	// Get the logic data
 	shared_ptr<data::Logic> data;
 	if (!(data = dynamic_pointer_cast<data::Logic>(*data_set.begin()))) {
-		_error = tr("PulseView currently only has support for "
+		error_ = tr("PulseView currently only has support for "
 			"storing a logic data.");
 		return false;
 	}
@@ -111,7 +111,7 @@ bool StoreSession::start()
 		data->get_snapshots();
 
 	if (snapshots.empty()) {
-		_error = tr("No snapshots to save.");
+		error_ = tr("No snapshots to save.");
 		return false;
 	}
 
@@ -120,34 +120,34 @@ bool StoreSession::start()
 
 	// Begin storing
 	try {
-		auto context = _session.session()->context();
+		auto context = session_.session()->context();
 		auto output_format = context->output_formats()["srzip"];
-		auto device = _session.device();
-		_output = output_format->create_output(device,
+		auto device = session_.device();
+		output_ = output_format->create_output(device,
 			{{"filename",
-				Glib::Variant<Glib::ustring>::create(_file_name)}});
+				Glib::Variant<Glib::ustring>::create(file_name_)}});
 		auto meta = context->create_meta_packet(
 			{{ConfigKey::SAMPLERATE,
 				Glib::Variant<guint64>::create(data->samplerate())}});
-		_output->receive(meta);
+		output_->receive(meta);
 	} catch (Error error) {
-		_error = tr("Error while saving.");
+		error_ = tr("Error while saving.");
 		return false;
 	}
 
-	_thread = std::thread(&StoreSession::store_proc, this, snapshot);
+	thread_ = std::thread(&StoreSession::store_proc, this, snapshot);
 	return true;
 }
 
 void StoreSession::wait()
 {
-	if (_thread.joinable())
-		_thread.join();
+	if (thread_.joinable())
+		thread_.join();
 }
 
 void StoreSession::cancel()
 {
-	_interrupt = true;
+	interrupt_ = true;
 }
 
 void StoreSession::store_proc(shared_ptr<data::LogicSnapshot> snapshot)
@@ -171,11 +171,11 @@ void StoreSession::store_proc(shared_ptr<data::LogicSnapshot> snapshot)
 	while ((sample_count >> progress_scale) > INT_MAX)
 		progress_scale ++;
 
-	_unit_count = sample_count >> progress_scale;
+	unit_count_ = sample_count >> progress_scale;
 
 	const unsigned int samples_per_block = BlockSize / unit_size;
 
-	while (!_interrupt && start_sample < sample_count)
+	while (!interrupt_ && start_sample < sample_count)
 	{
 		progress_updated();
 
@@ -186,21 +186,21 @@ void StoreSession::store_proc(shared_ptr<data::LogicSnapshot> snapshot)
 		size_t length = end_sample - start_sample;
 
 		try {
-			auto context = _session.session()->context();
+			auto context = session_.session()->context();
 			auto logic = context->create_logic_packet(data, length, unit_size);
-			_output->receive(logic);
+			output_->receive(logic);
 		} catch (Error error) {
-			_error = tr("Error while saving.");
+			error_ = tr("Error while saving.");
 			break;
 		}
 
 		start_sample = end_sample;
-		_units_stored = start_sample >> progress_scale;
+		units_stored_ = start_sample >> progress_scale;
 	}
 
 	progress_updated();
 
-	_output.reset();
+	output_.reset();
 
 	delete[] data;
 }

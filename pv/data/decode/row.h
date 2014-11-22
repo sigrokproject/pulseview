@@ -48,8 +48,8 @@ public:
 	bool operator<(const Row &other) const;
 
 private:
-	const srd_decoder *_decoder;
-	const srd_decoder_annotation_row *_row;
+	const srd_decoder *decoder_;
+	const srd_decoder_annotation_row *row_;
 };
 
 } // decode

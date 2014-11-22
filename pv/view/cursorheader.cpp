@@ -46,20 +46,20 @@ int CursorHeader::calculateTextHeight()
 
 CursorHeader::CursorHeader(View &parent) :
 	MarginWidget(parent),
-	_dragging(false),
-	_textHeight(calculateTextHeight())
+	dragging_(false),
+	textHeight_(calculateTextHeight())
 {
 	setMouseTracking(true);
 }
 
 QSize CursorHeader::sizeHint() const
 {
-	return QSize(0, _textHeight + Padding + BaselineOffset);
+	return QSize(0, textHeight_ + Padding + BaselineOffset);
 }
 
 void CursorHeader::clear_selection()
 {
-	CursorPair &cursors = _view.cursors();
+	CursorPair &cursors = view_.cursors();
 	cursors.first()->select(false);
 	cursors.second()->select(false);
 	update();
@@ -71,15 +71,15 @@ void CursorHeader::paintEvent(QPaintEvent*)
 	p.setRenderHint(QPainter::Antialiasing);
 
 	unsigned int prefix = pv::view::Ruler::calculate_tick_spacing(
-		p, _view.scale(), _view.offset()).second;
+		p, view_.scale(), view_.offset()).second;
 
 	// Draw the cursors
-	if (_view.cursors_shown()) {
+	if (view_.cursors_shown()) {
 		// The cursor labels are not drawn with the arrows exactly on the
 		// bottom line of the widget, because then the selection shadow
 		// would be clipped away.
 		const QRect r = rect().adjusted(0, 0, 0, -BaselineOffset);
-		_view.cursors().draw_markers(p, r, prefix);
+		view_.cursors().draw_markers(p, r, prefix);
 	}
 }
 
@@ -88,37 +88,37 @@ void CursorHeader::mouseMoveEvent(QMouseEvent *e)
 	if (!(e->buttons() & Qt::LeftButton))
 		return;
 
-	if ((e->pos() - _mouse_down_point).manhattanLength() <
+	if ((e->pos() - mouse_down_point_).manhattanLength() <
 		QApplication::startDragDistance())
 		return;
 
-	_dragging = true;
+	dragging_ = true;
 
-	if (shared_ptr<TimeMarker> m = _grabbed_marker.lock())
-		m->set_time(_view.offset() +
-			((double)e->x() + 0.5) * _view.scale());
+	if (shared_ptr<TimeMarker> m = grabbed_marker_.lock())
+		m->set_time(view_.offset() +
+			((double)e->x() + 0.5) * view_.scale());
 }
 
 void CursorHeader::mousePressEvent(QMouseEvent *e)
 {
 	if (e->buttons() & Qt::LeftButton) {
-		_mouse_down_point = e->pos();
+		mouse_down_point_ = e->pos();
 
-		_grabbed_marker.reset();
+		grabbed_marker_.reset();
 
 		clear_selection();
 
-		if (_view.cursors_shown()) {
-			CursorPair &cursors = _view.cursors();
+		if (view_.cursors_shown()) {
+			CursorPair &cursors = view_.cursors();
 			if (cursors.first()->get_label_rect(
 				rect()).contains(e->pos()))
-				_grabbed_marker = cursors.first();
+				grabbed_marker_ = cursors.first();
 			else if (cursors.second()->get_label_rect(
 				rect()).contains(e->pos()))
-				_grabbed_marker = cursors.second();
+				grabbed_marker_ = cursors.second();
 		}
 
-		if (shared_ptr<TimeMarker> m = _grabbed_marker.lock())
+		if (shared_ptr<TimeMarker> m = grabbed_marker_.lock())
 			m->select();
 
 		selection_changed();
@@ -129,16 +129,16 @@ void CursorHeader::mouseReleaseEvent(QMouseEvent *)
 {
 	using pv::widgets::Popup;
 
-	if (!_dragging)
-		if (shared_ptr<TimeMarker> m = _grabbed_marker.lock()) {
-			Popup *const p = m->create_popup(&_view);
+	if (!dragging_)
+		if (shared_ptr<TimeMarker> m = grabbed_marker_.lock()) {
+			Popup *const p = m->create_popup(&view_);
 			const QPoint arrpos(m->get_x(), height() - BaselineOffset);
 			p->set_position(mapToGlobal(arrpos), Popup::Bottom);
 			p->show();
 		}
 
-	_dragging = false;
-	_grabbed_marker.reset();
+	dragging_ = false;
+	grabbed_marker_.reset();
 }
 
 } // namespace view

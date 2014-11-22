@@ -46,7 +46,7 @@ private Q_SLOTS:
 	void on_state_changed(int);
 
 private:
-	QCheckBox *_check_box;
+	QCheckBox *check_box_;
 };
 
 } // prop

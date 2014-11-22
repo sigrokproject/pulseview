@@ -29,11 +29,11 @@
 #include <QDebug>
 #include <QSocketNotifier>
 
-int SignalHandler::_sockets[2];
+int SignalHandler::sockets_[2];
 
 bool SignalHandler::prepare_signals()
 {
-	if(socketpair(AF_UNIX, SOCK_STREAM, 0, _sockets) != 0)
+	if(socketpair(AF_UNIX, SOCK_STREAM, 0, sockets_) != 0)
 		return false;
 
 	struct sigaction sig_action;
@@ -44,8 +44,8 @@ bool SignalHandler::prepare_signals()
 
 	if(sigaction(SIGINT, &sig_action, 0) != 0 ||
 		sigaction(SIGTERM, &sig_action, 0) != 0) {
-		close(_sockets[0]);
-		close(_sockets[1]);
+		close(sockets_[0]);
+		close(sockets_[1]);
 		return false;
 	}
 
@@ -53,20 +53,20 @@ bool SignalHandler::prepare_signals()
 }
 
 SignalHandler::SignalHandler(QObject* parent) : QObject(parent),
-	_socket_notifier(0)
+	socket_notifier_(0)
 {
-	_socket_notifier = new QSocketNotifier(_sockets[1],
+	socket_notifier_ = new QSocketNotifier(sockets_[1],
 		QSocketNotifier::Read, this);
-	connect(_socket_notifier, SIGNAL(activated(int)),
+	connect(socket_notifier_, SIGNAL(activated(int)),
 		SLOT(on_socket_notifier_activated()));
 }
 
 void SignalHandler::on_socket_notifier_activated()
 {
-	_socket_notifier->setEnabled(false);
+	socket_notifier_->setEnabled(false);
 
 	int sig_number;
-	if(read(_sockets[1], &sig_number, sizeof(int)) !=
+	if(read(sockets_[1], &sig_number, sizeof(int)) !=
 		sizeof(int)) {
 		qDebug() << "Failed to catch signal";
 		abort();
@@ -82,12 +82,12 @@ void SignalHandler::on_socket_notifier_activated()
 		break;
 	}
 
-	_socket_notifier->setEnabled(true);
+	socket_notifier_->setEnabled(true);
 }
 
 void SignalHandler::handle_signals(int sig_number)
 {
-	if(write(_sockets[0], &sig_number, sizeof(int)) !=
+	if(write(sockets_[0], &sig_number, sizeof(int)) !=
 		sizeof(int)) {
 		// Failed to handle signal
 		abort();

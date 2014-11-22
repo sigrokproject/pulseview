@@ -53,11 +53,11 @@ public:
 	virtual void commit() = 0;
 
 protected:
-	const Getter _getter;
-	const Setter _setter;
+	const Getter getter_;
+	const Setter setter_;
 
 private:
-	QString _name;
+	QString name_;
 };
 
 } // prop

@@ -57,15 +57,15 @@ private Q_SLOTS:
 	void on_signals_moved();
 
 private:
-	View &_view;
+	View &view_;
 
-	QPoint _mouse_down_point;
-	double _mouse_down_offset;
-	bool _mouse_down_valid;
+	QPoint mouse_down_point_;
+	double mouse_down_offset_;
+	bool mouse_down_valid_;
 
-	double _pinch_offset0;
-	double _pinch_offset1;
-	bool _pinch_zoom_active;
+	double pinch_offset0_;
+	double pinch_offset1_;
+	bool pinch_zoom_active_;
 };
 
 } // namespace view

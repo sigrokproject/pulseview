@@ -57,10 +57,10 @@ AnalogSignal::AnalogSignal(
 	shared_ptr<Channel> channel,
 	shared_ptr<data::Analog> data) :
 	Signal(session, channel),
-	_data(data),
-	_scale(1.0f)
+	data_(data),
+	scale_(1.0f)
 {
-	_colour = SignalColours[_channel->index() % countof(SignalColours)];
+	colour_ = SignalColours[channel_->index() % countof(SignalColours)];
 }
 
 AnalogSignal::~AnalogSignal()
@@ -69,17 +69,17 @@ AnalogSignal::~AnalogSignal()
 
 shared_ptr<pv::data::SignalData> AnalogSignal::data() const
 {
-	return _data;
+	return data_;
 }
 
 shared_ptr<pv::data::Analog> AnalogSignal::analog_data() const
 {
-	return _data;
+	return data_;
 }
 
 void AnalogSignal::set_scale(float scale)
 {
-	_scale = scale;
+	scale_ = scale;
 }
 
 std::pair<int, int> AnalogSignal::v_extents() const
@@ -89,19 +89,19 @@ std::pair<int, int> AnalogSignal::v_extents() const
 
 void AnalogSignal::paint_back(QPainter &p, int left, int right)
 {
-	if (_channel->enabled())
+	if (channel_->enabled())
 		paint_axis(p, get_visual_y(), left, right);
 }
 
 void AnalogSignal::paint_mid(QPainter &p, int left, int right)
 {
-	assert(_data);
+	assert(data_);
 	assert(right >= left);
-	assert(_owner);
+	assert(owner_);
 
 	const int y = get_visual_y();
 
-	const View *const view = _owner->view();
+	const View *const view = owner_->view();
 	assert(view);
 
 	const double scale = view->scale();
@@ -109,11 +109,11 @@ void AnalogSignal::paint_mid(QPainter &p, int left, int right)
 
 	const double offset = view->offset();
 
-	if (!_channel->enabled())
+	if (!channel_->enabled())
 		return;
 
 	const deque< shared_ptr<pv::data::AnalogSnapshot> > &snapshots =
-		_data->get_snapshots();
+		data_->get_snapshots();
 	if (snapshots.empty())
 		return;
 
@@ -121,8 +121,8 @@ void AnalogSignal::paint_mid(QPainter &p, int left, int right)
 		snapshots.front();
 
 	const double pixels_offset = offset / scale;
-	const double samplerate = _data->samplerate();
-	const double start_time = _data->get_start_time();
+	const double samplerate = data_->samplerate();
+	const double start_time = data_->get_start_time();
 	const int64_t last_sample = snapshot->get_sample_count() - 1;
 	const double samples_per_pixel = samplerate * scale;
 	const double start = samplerate * (offset - start_time);
@@ -153,7 +153,7 @@ void AnalogSignal::paint_trace(QPainter &p,
 	const float *const samples = snapshot->get_samples(start, end);
 	assert(samples);
 
-	p.setPen(_colour);
+	p.setPen(colour_);
 
 	QPointF *points = new QPointF[sample_count];
 	QPointF *point = points;
@@ -162,7 +162,7 @@ void AnalogSignal::paint_trace(QPainter &p,
 		const float x = (sample / samples_per_pixel -
 			pixels_offset) + left;
 		*point++ = QPointF(x,
-			y - samples[sample - start] * _scale);
+			y - samples[sample - start] * scale_);
 	}
 
 	p.drawPolyline(points, point - points);
@@ -185,7 +185,7 @@ void AnalogSignal::paint_envelope(QPainter &p,
 		return;
 
 	p.setPen(QPen(Qt::NoPen));
-	p.setBrush(_colour);
+	p.setBrush(colour_);
 
 	QRectF *const rects = new QRectF[e.length];
 	QRectF *rect = rects;
@@ -198,8 +198,8 @@ void AnalogSignal::paint_envelope(QPainter &p,
 
 		// We overlap this sample with the next so that vertical
 		// gaps do not appear during steep rising or falling edges
-		const float b = y - max(s->max, (s+1)->min) * _scale;
-		const float t = y - min(s->min, (s+1)->max) * _scale;
+		const float b = y - max(s->max, (s+1)->min) * scale_;
+		const float t = y - min(s->min, (s+1)->max) * scale_;
 
 		float h = b - t;
 		if(h >= 0.0f && h <= 1.0f)

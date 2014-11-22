@@ -87,27 +87,27 @@ LogicSignal::LogicSignal(
 	shared_ptr<Channel> channel,
 	shared_ptr<data::Logic> data) :
 	Signal(session, channel),
-	_device(device),
-	_data(data),
-	_trigger_none(NULL),
-	_trigger_rising(NULL),
-	_trigger_high(NULL),
-	_trigger_falling(NULL),
-	_trigger_low(NULL),
-	_trigger_change(NULL)
+	device_(device),
+	data_(data),
+	trigger_none_(NULL),
+	trigger_rising_(NULL),
+	trigger_high_(NULL),
+	trigger_falling_(NULL),
+	trigger_low_(NULL),
+	trigger_change_(NULL)
 {
 	shared_ptr<Trigger> trigger;
 
-	_colour = SignalColours[channel->index() % countof(SignalColours)];
+	colour_ = SignalColours[channel->index() % countof(SignalColours)];
 
 	/* Populate this channel's trigger setting with whatever we
 	 * find in the current session trigger, if anything. */
-	_trigger_match = nullptr;
-	if ((trigger = _session.session()->trigger()))
+	trigger_match_ = nullptr;
+	if ((trigger = session_.session()->trigger()))
 		for (auto stage : trigger->stages())
 			for (auto match : stage->matches())
-				if (match->channel() == _channel)
-					_trigger_match = match->type();
+				if (match->channel() == channel_)
+					trigger_match_ = match->type();
 }
 
 LogicSignal::~LogicSignal()
@@ -116,12 +116,12 @@ LogicSignal::~LogicSignal()
 
 shared_ptr<pv::data::SignalData> LogicSignal::data() const
 {
-	return _data;
+	return data_;
 }
 
 shared_ptr<pv::data::Logic> LogicSignal::logic_data() const
 {
-	return _data;
+	return data_;
 }
 
 std::pair<int, int> LogicSignal::v_extents() const
@@ -131,7 +131,7 @@ std::pair<int, int> LogicSignal::v_extents() const
 
 void LogicSignal::paint_back(QPainter &p, int left, int right)
 {
-	if (_channel->enabled())
+	if (channel_->enabled())
 		paint_axis(p, get_visual_y(), left, right);
 }
 
@@ -143,14 +143,14 @@ void LogicSignal::paint_mid(QPainter &p, int left, int right)
 
 	vector< pair<int64_t, bool> > edges;
 
-	assert(_channel);
-	assert(_data);
+	assert(channel_);
+	assert(data_);
 	assert(right >= left);
-	assert(_owner);
+	assert(owner_);
 
 	const int y = get_visual_y();
 
-	const View *const view = _owner->view();
+	const View *const view = owner_->view();
 	assert(view);
 
 	const double scale = view->scale();
@@ -158,28 +158,28 @@ void LogicSignal::paint_mid(QPainter &p, int left, int right)
 
 	const double offset = view->offset();
 
-	if (!_channel->enabled())
+	if (!channel_->enabled())
 		return;
 
 	const float high_offset = y - SignalHeight + 0.5f;
 	const float low_offset = y + 0.5f;
 
 	const deque< shared_ptr<pv::data::LogicSnapshot> > &snapshots =
-		_data->get_snapshots();
+		data_->get_snapshots();
 	if (snapshots.empty())
 		return;
 
 	const shared_ptr<pv::data::LogicSnapshot> &snapshot =
 		snapshots.front();
 
-	double samplerate = _data->samplerate();
+	double samplerate = data_->samplerate();
 
 	// Show sample rate as 1Hz when it is unknown
 	if (samplerate == 0.0)
 		samplerate = 1.0;
 
 	const double pixels_offset = offset / scale;
-	const double start_time = _data->get_start_time();
+	const double start_time = data_->get_start_time();
 	const int64_t last_sample = snapshot->get_sample_count() - 1;
 	const double samples_per_pixel = samplerate * scale;
 	const double start = samplerate * (offset - start_time);
@@ -188,7 +188,7 @@ void LogicSignal::paint_mid(QPainter &p, int left, int right)
 	snapshot->get_subsampled_edges(edges,
 		min(max((int64_t)floor(start), (int64_t)0), last_sample),
 		min(max((int64_t)ceil(end), (int64_t)0), last_sample),
-		samples_per_pixel / Oversampling, _channel->index());
+		samples_per_pixel / Oversampling, channel_->index());
 	assert(edges.size() >= 2);
 
 	// Paint the edges
@@ -241,58 +241,58 @@ void LogicSignal::paint_caps(QPainter &p, QLineF *const lines,
 
 void LogicSignal::init_trigger_actions(QWidget *parent)
 {
-	_trigger_none = new QAction(QIcon(":/icons/trigger-none.svg"),
+	trigger_none_ = new QAction(QIcon(":/icons/trigger-none.svg"),
 		tr("No trigger"), parent);
-	_trigger_none->setCheckable(true);
-	connect(_trigger_none, SIGNAL(triggered()), this, SLOT(on_trigger()));
+	trigger_none_->setCheckable(true);
+	connect(trigger_none_, SIGNAL(triggered()), this, SLOT(on_trigger()));
 
-	_trigger_rising = new QAction(QIcon(":/icons/trigger-rising.svg"),
+	trigger_rising_ = new QAction(QIcon(":/icons/trigger-rising.svg"),
 		tr("Trigger on rising edge"), parent);
-	_trigger_rising->setCheckable(true);
-	connect(_trigger_rising, SIGNAL(triggered()), this, SLOT(on_trigger()));
+	trigger_rising_->setCheckable(true);
+	connect(trigger_rising_, SIGNAL(triggered()), this, SLOT(on_trigger()));
 
-	_trigger_high = new QAction(QIcon(":/icons/trigger-high.svg"),
+	trigger_high_ = new QAction(QIcon(":/icons/trigger-high.svg"),
 		tr("Trigger on high level"), parent);
-	_trigger_high->setCheckable(true);
-	connect(_trigger_high, SIGNAL(triggered()), this, SLOT(on_trigger()));
+	trigger_high_->setCheckable(true);
+	connect(trigger_high_, SIGNAL(triggered()), this, SLOT(on_trigger()));
 
-	_trigger_falling = new QAction(QIcon(":/icons/trigger-falling.svg"),
+	trigger_falling_ = new QAction(QIcon(":/icons/trigger-falling.svg"),
 		tr("Trigger on falling edge"), parent);
-	_trigger_falling->setCheckable(true);
-	connect(_trigger_falling, SIGNAL(triggered()), this, SLOT(on_trigger()));
+	trigger_falling_->setCheckable(true);
+	connect(trigger_falling_, SIGNAL(triggered()), this, SLOT(on_trigger()));
 
-	_trigger_low = new QAction(QIcon(":/icons/trigger-low.svg"),
+	trigger_low_ = new QAction(QIcon(":/icons/trigger-low.svg"),
 		tr("Trigger on low level"), parent);
-	_trigger_low->setCheckable(true);
-	connect(_trigger_low, SIGNAL(triggered()), this, SLOT(on_trigger()));
+	trigger_low_->setCheckable(true);
+	connect(trigger_low_, SIGNAL(triggered()), this, SLOT(on_trigger()));
 
-	_trigger_change = new QAction(QIcon(":/icons/trigger-change.svg"),
+	trigger_change_ = new QAction(QIcon(":/icons/trigger-change.svg"),
 		tr("Trigger on rising or falling edge"), parent);
-	_trigger_change->setCheckable(true);
-	connect(_trigger_change, SIGNAL(triggered()), this, SLOT(on_trigger()));
+	trigger_change_->setCheckable(true);
+	connect(trigger_change_, SIGNAL(triggered()), this, SLOT(on_trigger()));
 }
 
 QAction* LogicSignal::match_action(const TriggerMatchType *type)
 {
 	QAction *action;
 
-	action = _trigger_none;
+	action = trigger_none_;
 	if (type) {
 		switch (type->id()) {
 		case SR_TRIGGER_ZERO:
-			action = _trigger_low;
+			action = trigger_low_;
 			break;
 		case SR_TRIGGER_ONE:
-			action = _trigger_high;
+			action = trigger_high_;
 			break;
 		case SR_TRIGGER_RISING:
-			action = _trigger_rising;
+			action = trigger_rising_;
 			break;
 		case SR_TRIGGER_FALLING:
-			action = _trigger_falling;
+			action = trigger_falling_;
 			break;
 		case SR_TRIGGER_EDGE:
-			action = _trigger_change;
+			action = trigger_change_;
 			break;
 		default:
 			assert(0);
@@ -304,15 +304,15 @@ QAction* LogicSignal::match_action(const TriggerMatchType *type)
 
 const TriggerMatchType *LogicSignal::action_match(QAction *action)
 {
-	if (action == _trigger_low)
+	if (action == trigger_low_)
 		return TriggerMatchType::ZERO;
-	else if (action == _trigger_high)
+	else if (action == trigger_high_)
 		return TriggerMatchType::ONE;
-	else if (action == _trigger_rising)
+	else if (action == trigger_rising_)
 		return TriggerMatchType::RISING;
-	else if (action == _trigger_falling)
+	else if (action == trigger_falling_)
 		return TriggerMatchType::FALLING;
-	else if (action == _trigger_change)
+	else if (action == trigger_change_)
 		return TriggerMatchType::EDGE;
 	else
 		return nullptr;
@@ -326,53 +326,53 @@ void LogicSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
 	Signal::populate_popup_form(parent, form);
 
 	try {
-		gvar = _device->config_list(ConfigKey::TRIGGER_MATCH);
+		gvar = device_->config_list(ConfigKey::TRIGGER_MATCH);
 	} catch (Error e) {
 		return;
 	}
 
-	_trigger_bar = new QToolBar(parent);
-	init_trigger_actions(_trigger_bar);
-	_trigger_bar->addAction(_trigger_none);
-	_trigger_none->setChecked(!_trigger_match);
+	trigger_bar_ = new QToolBar(parent);
+	init_trigger_actions(trigger_bar_);
+	trigger_bar_->addAction(trigger_none_);
+	trigger_none_->setChecked(!trigger_match_);
 	trig_types =
 		Glib::VariantBase::cast_dynamic<Glib::Variant<vector<int32_t>>>(
 			gvar).get();
 	for (auto type_id : trig_types) {
 		auto type = TriggerMatchType::get(type_id);
-		_trigger_bar->addAction(match_action(type));
-		match_action(type)->setChecked(_trigger_match == type);
+		trigger_bar_->addAction(match_action(type));
+		match_action(type)->setChecked(trigger_match_ == type);
 	}
-	form->addRow(tr("Trigger"), _trigger_bar);
+	form->addRow(tr("Trigger"), trigger_bar_);
 
 }
 
 void LogicSignal::modify_trigger()
 {
-	auto trigger = _session.session()->trigger();
-	auto new_trigger = _session.device_manager().context()->create_trigger("pulseview");
+	auto trigger = session_.session()->trigger();
+	auto new_trigger = session_.device_manager().context()->create_trigger("pulseview");
 
 	if (trigger) {
 		for (auto stage : trigger->stages()) {
 			const auto &matches = stage->matches();
 			if (std::none_of(begin(matches), end(matches),
 			    [&](shared_ptr<TriggerMatch> match) {
-					return match->channel() != _channel; }))
+					return match->channel() != channel_; }))
 				continue;
 
 			auto new_stage = new_trigger->add_stage();
 			for (auto match : stage->matches()) {
-				if (match->channel() == _channel)
+				if (match->channel() == channel_)
 					continue;
 				new_stage->add_match(match->channel(), match->type());
 			}
 		}
 	}
 
-	if (_trigger_match)
-		new_trigger->add_stage()->add_match(_channel, _trigger_match);
+	if (trigger_match_)
+		new_trigger->add_stage()->add_match(channel_, trigger_match_);
 
-	_session.session()->set_trigger(
+	session_.session()->set_trigger(
 		new_trigger->stages().empty() ? nullptr : new_trigger);
 }
 
@@ -380,11 +380,11 @@ void LogicSignal::on_trigger()
 {
 	QAction *action;
 
-	match_action(_trigger_match)->setChecked(false);
+	match_action(trigger_match_)->setChecked(false);
 
 	action = (QAction *)sender();
 	action->setChecked(true);
-	_trigger_match = action_match(action);
+	trigger_match_ = action_match(action);
 
 	modify_trigger();
 }

@@ -89,8 +89,8 @@ private:
 		const double pixels_offset, const double samples_per_pixel);
 
 private:
-	std::shared_ptr<pv::data::Analog> _data;
-	float _scale;
+	std::shared_ptr<pv::data::Analog> data_;
+	float scale_;
 };
 
 } // namespace view

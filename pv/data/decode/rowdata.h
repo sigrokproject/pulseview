@@ -47,7 +47,7 @@ public:
 	void push_annotation(const Annotation &a);
 
 private:
-	std::vector<Annotation> _annotations;
+	std::vector<Annotation> annotations_;
 };
 
 }

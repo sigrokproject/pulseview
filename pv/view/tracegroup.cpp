@@ -42,7 +42,7 @@ const QColor TraceGroup::LineColour(QColor(0x55, 0x57, 0x53));
 
 TraceGroup::~TraceGroup()
 {
-	_owner = nullptr;
+	owner_ = nullptr;
 	clear_child_items();
 }
 
@@ -54,26 +54,26 @@ bool TraceGroup::enabled() const
 
 pv::SigSession& TraceGroup::session()
 {
-	assert(_owner);
-	return _owner->session();
+	assert(owner_);
+	return owner_->session();
 }
 
 const pv::SigSession& TraceGroup::session() const
 {
-	assert(_owner);
-	return _owner->session();
+	assert(owner_);
+	return owner_->session();
 }
 
 pv::view::View* TraceGroup::view()
 {
-	assert(_owner);
-	return _owner->view();
+	assert(owner_);
+	return owner_->view();
 }
 
 const pv::view::View* TraceGroup::view() const
 {
-	assert(_owner);
-	return _owner->view();
+	assert(owner_);
+	return owner_->view();
 }
 
 pair<int, int> TraceGroup::v_extents() const
@@ -152,7 +152,7 @@ pv::widgets::Popup* TraceGroup::create_popup(QWidget *parent)
 
 int TraceGroup::owner_visual_v_offset() const
 {
-	return _owner ? visual_v_offset() + _owner->owner_visual_v_offset() : 0;
+	return owner_ ? visual_v_offset() + owner_->owner_visual_v_offset() : 0;
 }
 
 void TraceGroup::restack_items()
@@ -192,7 +192,7 @@ void TraceGroup::restack_items()
 
 unsigned int TraceGroup::depth() const
 {
-	return _owner ? _owner->depth() + 1 : 0;
+	return owner_ ? owner_->depth() + 1 : 0;
 }
 
 void TraceGroup::ungroup()
@@ -202,9 +202,9 @@ void TraceGroup::ungroup()
 	clear_child_items();
 
 	for (shared_ptr<RowItem> r : items)
-		_owner->add_child_item(r);
+		owner_->add_child_item(r);
 
-	_owner->remove_child_item(shared_from_this());
+	owner_->remove_child_item(shared_from_this());
 }
 
 void TraceGroup::on_ungroup()
@@ -214,14 +214,14 @@ void TraceGroup::on_ungroup()
 
 void TraceGroup::appearance_changed(bool label, bool content)
 {
-	if (_owner)
-		_owner->appearance_changed(label, content);
+	if (owner_)
+		owner_->appearance_changed(label, content);
 }
 
 void TraceGroup::extents_changed(bool horz, bool vert)
 {
-	if (_owner)
-		_owner->extents_changed(horz, vert);
+	if (owner_)
+		owner_->extents_changed(horz, vert);
 }
 
 } // namespace view

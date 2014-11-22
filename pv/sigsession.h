@@ -148,29 +148,29 @@ private:
 		std::shared_ptr<sigrok::Packet> packet);
 
 private:
-	DeviceManager &_device_manager;
-	std::shared_ptr<sigrok::Session> _session;
+	DeviceManager &device_manager_;
+	std::shared_ptr<sigrok::Session> session_;
 
 	/**
 	 * The device instance that will be used in the next capture session.
 	 */
-	std::shared_ptr<sigrok::Device> _device;
+	std::shared_ptr<sigrok::Device> device_;
 
-	std::vector< std::shared_ptr<view::DecodeTrace> > _decode_traces;
+	std::vector< std::shared_ptr<view::DecodeTrace> > decode_traces_;
 
-	mutable std::mutex _sampling_mutex;
-	capture_state _capture_state;
+	mutable std::mutex sampling_mutex_;
+	capture_state capture_state_;
 
-	mutable boost::shared_mutex _signals_mutex;
-	std::vector< std::shared_ptr<view::Signal> > _signals;
+	mutable boost::shared_mutex signals_mutex_;
+	std::vector< std::shared_ptr<view::Signal> > signals_;
 
-	mutable std::mutex _data_mutex;
-	std::shared_ptr<data::Logic> _logic_data;
-	std::shared_ptr<data::LogicSnapshot> _cur_logic_snapshot;
+	mutable std::mutex data_mutex_;
+	std::shared_ptr<data::Logic> logic_data_;
+	std::shared_ptr<data::LogicSnapshot> cur_logic_snapshot_;
 	std::map< std::shared_ptr<sigrok::Channel>, std::shared_ptr<data::AnalogSnapshot> >
-		_cur_analog_snapshots;
+		cur_analog_snapshots_;
 
-	std::thread _sampling_thread;
+	std::thread sampling_thread_;
 
 Q_SIGNALS:
 	void capture_state_changed(int state);

@@ -32,16 +32,16 @@ RowData::RowData()
 
 uint64_t RowData::get_max_sample() const
 {
-	if (_annotations.empty())
+	if (annotations_.empty())
 		return 0;
-	return _annotations.back().end_sample();
+	return annotations_.back().end_sample();
 }
 
 void RowData::get_annotation_subset(
 	vector<pv::data::decode::Annotation> &dest,
 	uint64_t start_sample, uint64_t end_sample) const
 {
-	for (auto i = _annotations.cbegin(); i != _annotations.cend(); i++)
+	for (auto i = annotations_.cbegin(); i != annotations_.cend(); i++)
 		if ((*i).end_sample() > start_sample &&
 			(*i).start_sample() <= end_sample)
 			dest.push_back(*i);
@@ -49,7 +49,7 @@ void RowData::get_annotation_subset(
 
 void RowData::push_annotation(const Annotation &a)
 {
-	_annotations.push_back(a);
+	annotations_.push_back(a);
 }
 
 } // decode

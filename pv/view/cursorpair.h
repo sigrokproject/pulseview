@@ -69,10 +69,10 @@ public:
 	std::pair<float, float> get_cursor_offsets() const;
 
 private:
-	std::shared_ptr<Cursor> _first, _second;
-	const View &_view;
+	std::shared_ptr<Cursor> first_, second_;
+	const View &view_;
 
-	QSizeF _text_size;
+	QSizeF text_size_;
 };
 
 } // namespace view

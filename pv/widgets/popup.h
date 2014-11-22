@@ -87,8 +87,8 @@ Q_SIGNALS:
 	void closed();
 
 private:
-	QPoint _point;
-	Position _pos;
+	QPoint point_;
+	Position pos_;
 };
 
 } // namespace widgets

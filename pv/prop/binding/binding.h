@@ -54,7 +54,7 @@ public:
 	static QString print_gvariant(Glib::VariantBase gvar);
 
 protected:
-	std::vector< std::shared_ptr<Property> > _properties;
+	std::vector< std::shared_ptr<Property> > properties_;
 };
 
 } // binding

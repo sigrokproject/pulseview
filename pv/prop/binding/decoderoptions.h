@@ -55,8 +55,8 @@ private:
 	void setter(const char *id, Glib::VariantBase value);
 
 private:
-	std::shared_ptr<pv::data::DecoderStack> _decoder_stack;
-	std::shared_ptr<pv::data::decode::Decoder> _decoder;
+	std::shared_ptr<pv::data::DecoderStack> decoder_stack_;
+	std::shared_ptr<pv::data::decode::Decoder> decoder_;
 };
 
 } // binding

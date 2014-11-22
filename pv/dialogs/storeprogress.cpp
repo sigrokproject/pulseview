@@ -30,20 +30,20 @@ namespace dialogs {
 StoreProgress::StoreProgress(const QString &file_name,
 	const SigSession &session, QWidget *parent) :
 	QProgressDialog(tr("Saving..."), tr("Cancel"), 0, 0, parent),
-	_session(file_name.toStdString(), session)
+	session_(file_name.toStdString(), session)
 {
-	connect(&_session, SIGNAL(progress_updated()),
+	connect(&session_, SIGNAL(progress_updated()),
 		this, SLOT(on_progress_updated()));
 }
 
 StoreProgress::~StoreProgress()
 {
-	_session.wait();
+	session_.wait();
 }
 
 void StoreProgress::run()
 {
-	if (_session.start())
+	if (session_.start())
 		show();
 	else
 		show_error();
@@ -53,7 +53,7 @@ void StoreProgress::show_error()
 {
 	QMessageBox msg(parentWidget());
 	msg.setText(tr("Failed to save session."));
-	msg.setInformativeText(_session.error());
+	msg.setInformativeText(session_.error());
 	msg.setStandardButtons(QMessageBox::Ok);
 	msg.setIcon(QMessageBox::Warning);
 	msg.exec();
@@ -61,19 +61,19 @@ void StoreProgress::show_error()
 
 void StoreProgress::closeEvent(QCloseEvent*)
 {
-	_session.cancel();
+	session_.cancel();
 }
 
 void StoreProgress::on_progress_updated()
 {
-	const std::pair<int, int> p = _session.progress();
+	const std::pair<int, int> p = session_.progress();
 	assert(p.first <= p.second);
 
 	if (p.second) {
 		setValue(p.first);
 		setMaximum(p.second);
 	} else {
-		const QString err = _session.error();
+		const QString err = session_.error();
 		if (!err.isEmpty())
 			show_error();
 		close();

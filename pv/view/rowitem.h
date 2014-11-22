@@ -154,13 +154,13 @@ public:
 	virtual void hover_point_changed();
 
 protected:
-	pv::view::RowItemOwner *_owner;
+	pv::view::RowItemOwner *owner_;
 
-	int _layout_v_offset;
-	int _visual_v_offset;
+	int layout_v_offset_;
+	int visual_v_offset_;
 
 private:
-	QPropertyAnimation _v_offset_animation;
+	QPropertyAnimation v_offset_animation_;
 };
 
 } // namespace view

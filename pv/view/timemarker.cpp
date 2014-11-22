@@ -31,23 +31,23 @@ namespace pv {
 namespace view {
 
 TimeMarker::TimeMarker(View &view, const QColor &colour, double time) :
-	_view(view),
-	_colour(colour),
-	_time(time),
-	_value_action(NULL),
-	_value_widget(NULL),
-	_updating_value_widget(false)
+	view_(view),
+	colour_(colour),
+	time_(time),
+	value_action_(NULL),
+	value_widget_(NULL),
+	updating_value_widget_(false)
 {
 }
 
 double TimeMarker::time() const
 {
-	return _time;
+	return time_;
 }
 
 float TimeMarker::get_x() const
 {
-	return (_time - _view.offset()) / _view.scale();
+	return (time_ - view_.offset()) / view_.scale();
 }
 
 QPoint TimeMarker::point() const
@@ -57,12 +57,12 @@ QPoint TimeMarker::point() const
 
 void TimeMarker::set_time(double time)
 {
-	_time = time;
+	time_ = time;
 
-	if (_value_widget) {
-		_updating_value_widget = true;
-		_value_widget->setValue(time);
-		_updating_value_widget = false;
+	if (value_widget_) {
+		updating_value_widget_ = true;
+		value_widget_->setValue(time);
+		updating_value_widget_ = false;
 	}
 
 	time_changed();
@@ -71,7 +71,7 @@ void TimeMarker::set_time(double time)
 void TimeMarker::paint(QPainter &p, const QRect &rect)
 {
 	const float x = get_x();
-	p.setPen(_colour);
+	p.setPen(colour_);
 	p.drawLine(QPointF(x, rect.top()), QPointF(x, rect.bottom()));
 }
 
@@ -83,24 +83,24 @@ pv::widgets::Popup* TimeMarker::create_popup(QWidget *parent)
 	QFormLayout *const form = new QFormLayout(popup);
 	popup->setLayout(form);
 
-	_value_widget = new QDoubleSpinBox(parent);
-	_value_widget->setDecimals(9);
-	_value_widget->setSuffix("s");
-	_value_widget->setSingleStep(1e-6);
-	_value_widget->setValue(_time);
+	value_widget_ = new QDoubleSpinBox(parent);
+	value_widget_->setDecimals(9);
+	value_widget_->setSuffix("s");
+	value_widget_->setSingleStep(1e-6);
+	value_widget_->setValue(time_);
 
-	connect(_value_widget, SIGNAL(valueChanged(double)),
+	connect(value_widget_, SIGNAL(valueChanged(double)),
 		this, SLOT(on_value_changed(double)));
 
-	form->addRow(tr("Time"), _value_widget);
+	form->addRow(tr("Time"), value_widget_);
 
 	return popup;
 }
 
 void TimeMarker::on_value_changed(double value)
 {
-	if (!_updating_value_widget) {
-		_time = value;
+	if (!updating_value_widget_) {
+		time_ = value;
 		time_changed();
 	}
 }

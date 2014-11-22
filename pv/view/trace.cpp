@@ -42,37 +42,37 @@ const QPen Trace::AxisPen(QColor(128, 128, 128, 64));
 const int Trace::LabelHitPadding = 2;
 
 Trace::Trace(QString name) :
-	_name(name),
-	_popup(NULL),
-	_popup_form(NULL)
+	name_(name),
+	popup_(NULL),
+	popup_form_(NULL)
 {
 }
 
 QString Trace::name() const
 {
-	return _name;
+	return name_;
 }
 
 void Trace::set_name(QString name)
 {
-	_name = name;
+	name_ = name;
 }
 
 QColor Trace::colour() const
 {
-	return _colour;
+	return colour_;
 }
 
 void Trace::set_colour(QColor colour)
 {
-	_colour = colour;
+	colour_ = colour;
 }
 
 void Trace::paint_label(QPainter &p, int right, bool hover)
 {
 	const int y = get_visual_y();
 
-	p.setBrush(_colour);
+	p.setBrush(colour_);
 
 	if (!enabled())
 		return;
@@ -103,14 +103,14 @@ void Trace::paint_label(QPainter &p, int right, bool hover)
 	}
 
 	p.setPen(Qt::transparent);
-	p.setBrush(hover ? _colour.lighter() : _colour);
+	p.setBrush(hover ? colour_.lighter() : colour_);
 	p.drawPolygon(points, countof(points));
 
-	p.setPen(_colour.lighter());
+	p.setPen(colour_.lighter());
 	p.setBrush(Qt::transparent);
 	p.drawPolygon(highlight_points, countof(highlight_points));
 
-	p.setPen(_colour.darker());
+	p.setPen(colour_.darker());
 	p.setBrush(Qt::transparent);
 	p.drawPolygon(points, countof(points));
 
@@ -119,7 +119,7 @@ void Trace::paint_label(QPainter &p, int right, bool hover)
 	p.setFont(QApplication::font());
 	p.drawText(QRectF(r.x(), r.y(),
 		r.width() - label_arrow_length, r.height()),
-		Qt::AlignCenter | Qt::AlignVCenter, _name);
+		Qt::AlignCenter | Qt::AlignVCenter, name_);
 }
 
 QMenu* Trace::create_context_menu(QWidget *parent)
@@ -133,14 +133,14 @@ pv::widgets::Popup* Trace::create_popup(QWidget *parent)
 {
 	using pv::widgets::Popup;
 
-	_popup = new Popup(parent);
+	popup_ = new Popup(parent);
 
 	create_popup_form();
 
-	connect(_popup, SIGNAL(closed()),
+	connect(popup_, SIGNAL(closed()),
 		this, SLOT(on_popup_closed()));
 
-	return _popup;
+	return popup_;
 }
 
 QRectF Trace::label_rect(int right) const
@@ -149,7 +149,7 @@ QRectF Trace::label_rect(int right) const
 
 	QFontMetrics m(QApplication::font());
 	const QSize text_size(
-		m.boundingRect(QRect(), 0, _name).width(),
+		m.boundingRect(QRect(), 0, name_).width(),
 		m.boundingRect(QRect(), 0, "Tg").height());
 	const QSizeF label_size(
 		text_size.width() + View::LabelPadding.width() * 2,
@@ -164,7 +164,7 @@ QRectF Trace::label_rect(int right) const
 
 QColor Trace::get_text_colour() const
 {
-	return (_colour.lightness() > 64) ? Qt::black : Qt::white;
+	return (colour_.lightness() > 64) ? Qt::black : Qt::white;
 }
 
 void Trace::paint_axis(QPainter &p, int y, int left, int right)
@@ -180,7 +180,7 @@ void Trace::add_colour_option(QWidget *parent, QFormLayout *form)
 	ColourButton *const colour_button = new ColourButton(
 		TracePalette::Rows, TracePalette::Cols, parent);
 	colour_button->set_palette(TracePalette::Colours);
-	colour_button->set_colour(_colour);
+	colour_button->set_colour(colour_);
 	connect(colour_button, SIGNAL(selected(const QColor&)),
 		this, SLOT(on_colour_changed(const QColor&)));
 
@@ -194,19 +194,19 @@ void Trace::create_popup_form()
 	// Transfer the layout and the child widgets to a temporary widget
 	// which then goes out of scope destroying the layout and all the child
 	// widgets.
-	if (_popup_form)
-		QWidget().setLayout(_popup_form);
+	if (popup_form_)
+		QWidget().setLayout(popup_form_);
 
 	// Repopulate the popup
-	_popup_form = new QFormLayout(_popup);
-	_popup->setLayout(_popup_form);
-	populate_popup_form(_popup, _popup_form);
+	popup_form_ = new QFormLayout(popup_);
+	popup_->setLayout(popup_form_);
+	populate_popup_form(popup_, popup_form_);
 }
 
 void Trace::populate_popup_form(QWidget *parent, QFormLayout *form)
 {
 	QLineEdit *const name_edit = new QLineEdit(parent);
-	name_edit->setText(_name);
+	name_edit->setText(name_);
 	connect(name_edit, SIGNAL(textChanged(const QString&)),
 		this, SLOT(on_text_changed(const QString&)));
 	form->addRow(tr("Name"), name_edit);
@@ -216,24 +216,24 @@ void Trace::populate_popup_form(QWidget *parent, QFormLayout *form)
 
 void Trace::on_popup_closed()
 {
-	_popup = NULL;
-	_popup_form = NULL;
+	popup_ = NULL;
+	popup_form_ = NULL;
 }
 
 void Trace::on_text_changed(const QString &text)
 {
 	set_name(text);
 
-	if (_owner)
-		_owner->extents_changed(true, false);
+	if (owner_)
+		owner_->extents_changed(true, false);
 }
 
 void Trace::on_colour_changed(const QColor &colour)
 {
 	set_colour(colour);
 
-	if (_owner)
-		_owner->appearance_changed(true, false);
+	if (owner_)
+		owner_->appearance_changed(true, false);
 }
 
 } // namespace view

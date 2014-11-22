@@ -32,36 +32,36 @@ namespace data {
 
 Logic::Logic(unsigned int num_channels) :
 	SignalData(),
-	_num_channels(num_channels)
+	num_channels_(num_channels)
 {
-	assert(_num_channels > 0);
+	assert(num_channels_ > 0);
 }
 
 int Logic::get_num_channels() const
 {
-	return _num_channels;
+	return num_channels_;
 }
 
 void Logic::push_snapshot(
 	shared_ptr<LogicSnapshot> &snapshot)
 {
-	_snapshots.push_front(snapshot);
+	snapshots_.push_front(snapshot);
 }
 
 deque< shared_ptr<LogicSnapshot> >& Logic::get_snapshots()
 {
-	return _snapshots;
+	return snapshots_;
 }
 
 void Logic::clear()
 {
-	_snapshots.clear();
+	snapshots_.clear();
 }
 
 uint64_t Logic::get_max_sample_count() const
 {
 	uint64_t l = 0;
-	for (std::shared_ptr<LogicSnapshot> s : _snapshots) {
+	for (std::shared_ptr<LogicSnapshot> s : snapshots_) {
 		assert(s);
 		l = max(l, s->get_sample_count());
 	}

@@ -42,9 +42,9 @@ namespace view {
 
 Viewport::Viewport(View &parent) :
 	QWidget(&parent),
-	_view(parent),
-	_mouse_down_valid(false),
-	_pinch_zoom_active(false)
+	view_(parent),
+	mouse_down_valid_(false),
+	pinch_zoom_active_(false)
 {
 	setAttribute(Qt::WA_AcceptTouchEvents, true);
 
@@ -52,13 +52,13 @@ Viewport::Viewport(View &parent) :
 	setAutoFillBackground(true);
 	setBackgroundRole(QPalette::Base);
 
-	connect(&_view, SIGNAL(signals_moved()),
+	connect(&view_, SIGNAL(signals_moved()),
 		this, SLOT(on_signals_moved()));
 }
 
 void Viewport::paintEvent(QPaintEvent*)
 {
-	vector< shared_ptr<RowItem> > row_items(_view.begin(), _view.end());
+	vector< shared_ptr<RowItem> > row_items(view_.begin(), view_.end());
 	stable_sort(row_items.begin(), row_items.end(),
 		[](const shared_ptr<RowItem> &a, const shared_ptr<RowItem> &b) {
 			return a->visual_v_offset() < b->visual_v_offset(); });
@@ -66,8 +66,8 @@ void Viewport::paintEvent(QPaintEvent*)
 	QPainter p(this);
 	p.setRenderHint(QPainter::Antialiasing);
 
-	if (_view.cursors_shown())
-		_view.cursors().draw_viewport_background(p, rect());
+	if (view_.cursors_shown())
+		view_.cursors().draw_viewport_background(p, rect());
 
 	// Plot the signal
 	for (const shared_ptr<RowItem> r : row_items)
@@ -82,8 +82,8 @@ void Viewport::paintEvent(QPaintEvent*)
 	for (const shared_ptr<RowItem> r : row_items)
 		r->paint_fore(p, 0, width());
 
-	if (_view.cursors_shown())
-		_view.cursors().draw_viewport_foreground(p, rect());
+	if (view_.cursors_shown())
+		view_.cursors().draw_viewport_foreground(p, rect());
 
 	p.end();
 }
@@ -110,9 +110,9 @@ void Viewport::mousePressEvent(QMouseEvent *event)
 	assert(event);
 
 	if (event->button() == Qt::LeftButton) {
-		_mouse_down_point = event->pos();
-		_mouse_down_offset = _view.offset();
-		_mouse_down_valid = true;
+		mouse_down_point_ = event->pos();
+		mouse_down_offset_ = view_.offset();
+		mouse_down_valid_ = true;
 	}
 }
 
@@ -121,7 +121,7 @@ void Viewport::mouseReleaseEvent(QMouseEvent *event)
 	assert(event);
 
 	if (event->button() == Qt::LeftButton)
-		_mouse_down_valid = false;
+		mouse_down_valid_ = false;
 }
 
 void Viewport::mouseMoveEvent(QMouseEvent *event)
@@ -129,16 +129,16 @@ void Viewport::mouseMoveEvent(QMouseEvent *event)
 	assert(event);
 
 	if (event->buttons() & Qt::LeftButton) {
-		if (!_mouse_down_valid) {
-			_mouse_down_point = event->pos();
-			_mouse_down_offset = _view.offset();
-			_mouse_down_valid = true;
+		if (!mouse_down_valid_) {
+			mouse_down_point_ = event->pos();
+			mouse_down_offset_ = view_.offset();
+			mouse_down_valid_ = true;
 		}
 
-		_view.set_scale_offset(_view.scale(),
-			_mouse_down_offset +
-			(_mouse_down_point - event->pos()).x() *
-			_view.scale());
+		view_.set_scale_offset(view_.scale(),
+			mouse_down_offset_ +
+			(mouse_down_point_ - event->pos()).x() *
+			view_.scale());
 	}
 }
 
@@ -147,9 +147,9 @@ void Viewport::mouseDoubleClickEvent(QMouseEvent *event)
 	assert(event);
 
 	if (event->buttons() & Qt::LeftButton)
-		_view.zoom(2.0, event->x());
+		view_.zoom(2.0, event->x());
 	else if (event->buttons() & Qt::RightButton)
-		_view.zoom(-2.0, event->x());
+		view_.zoom(-2.0, event->x());
 }
 
 void Viewport::wheelEvent(QWheelEvent *event)
@@ -158,12 +158,12 @@ void Viewport::wheelEvent(QWheelEvent *event)
 
 	if (event->orientation() == Qt::Vertical) {
 		// Vertical scrolling is interpreted as zooming in/out
-		_view.zoom(event->delta() / 120, event->x());
+		view_.zoom(event->delta() / 120, event->x());
 	} else if (event->orientation() == Qt::Horizontal) {
 		// Horizontal scrolling is interpreted as moving left/right
-		_view.set_scale_offset(_view.scale(),
-				       event->delta() * _view.scale()
-				       + _view.offset());
+		view_.set_scale_offset(view_.scale(),
+				       event->delta() * view_.scale()
+				       + view_.offset());
 	}
 }
 
@@ -172,42 +172,42 @@ bool Viewport::touchEvent(QTouchEvent *event)
 	QList<QTouchEvent::TouchPoint> touchPoints = event->touchPoints();
 
 	if (touchPoints.count() != 2) {
-		_pinch_zoom_active = false;
+		pinch_zoom_active_ = false;
 		return false;
 	}
 
 	const QTouchEvent::TouchPoint &touchPoint0 = touchPoints.first();
 	const QTouchEvent::TouchPoint &touchPoint1 = touchPoints.last();
 
-	if (!_pinch_zoom_active ||
+	if (!pinch_zoom_active_ ||
 	    (event->touchPointStates() & Qt::TouchPointPressed)) {
-		_pinch_offset0 = _view.offset() + _view.scale() * touchPoint0.pos().x();
-		_pinch_offset1 = _view.offset() + _view.scale() * touchPoint1.pos().x();
-		_pinch_zoom_active = true;
+		pinch_offset0_ = view_.offset() + view_.scale() * touchPoint0.pos().x();
+		pinch_offset1_ = view_.offset() + view_.scale() * touchPoint1.pos().x();
+		pinch_zoom_active_ = true;
 	}
 
 	double w = touchPoint1.pos().x() - touchPoint0.pos().x();
 	if (abs(w) >= 1.0) {
-		double scale = (_pinch_offset1 - _pinch_offset0) / w;
+		double scale = (pinch_offset1_ - pinch_offset0_) / w;
 		if (scale < 0)
 			scale = -scale;
-		double offset = _pinch_offset0 - touchPoint0.pos().x() * scale;
+		double offset = pinch_offset0_ - touchPoint0.pos().x() * scale;
 		if (scale > 0)
-			_view.set_scale_offset(scale, offset);
+			view_.set_scale_offset(scale, offset);
 	}
 
 	if (event->touchPointStates() & Qt::TouchPointReleased) {
-		_pinch_zoom_active = false;
+		pinch_zoom_active_ = false;
 
 		if (touchPoint0.state() & Qt::TouchPointReleased) {
 			// Primary touch released
-			_mouse_down_valid = false;
+			mouse_down_valid_ = false;
 		} else {
 			// Update the mouse down fields so that continued
 			// dragging with the primary touch will work correctly
-			_mouse_down_point = touchPoint0.pos().toPoint();
-			_mouse_down_offset = _view.offset();
-			_mouse_down_valid = true;
+			mouse_down_point_ = touchPoint0.pos().toPoint();
+			mouse_down_offset_ = view_.offset();
+			mouse_down_valid_ = true;
 		}
 	}
 

@@ -77,7 +77,7 @@ private:
 	std::shared_ptr<Cursor> get_other_cursor() const;
 
 private:
-	QSizeF _text_size;
+	QSizeF text_size_;
 };
 
 } // namespace view

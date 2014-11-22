@@ -29,7 +29,7 @@ namespace widgets {
 
 DecoderMenu::DecoderMenu(QWidget *parent, bool first_level_decoder) :
 	QMenu(parent),
-	_mapper(this)
+	mapper_(this)
 {
 	GSList *l = g_slist_sort(g_slist_copy(
 		(GSList*)srd_decoder_list()), decoder_name_cmp);
@@ -43,14 +43,14 @@ DecoderMenu::DecoderMenu(QWidget *parent, bool first_level_decoder) :
 			QAction *const action =
 				addAction(QString::fromUtf8(d->name));
 			action->setData(qVariantFromValue(l->data));
-			_mapper.setMapping(action, action);
+			mapper_.setMapping(action, action);
 			connect(action, SIGNAL(triggered()),
-				&_mapper, SLOT(map()));
+				&mapper_, SLOT(map()));
 		}
 	}
 	g_slist_free(l);
 
-	connect(&_mapper, SIGNAL(mapped(QObject*)),
+	connect(&mapper_, SIGNAL(mapped(QObject*)),
 		this, SLOT(on_action(QObject*)));
 }
 

@@ -43,7 +43,7 @@ private Q_SLOTS:
 	void on_clicked(bool);
 
 private:
-	Popup *_popup;
+	Popup *popup_;
 };
 
 } // widgets

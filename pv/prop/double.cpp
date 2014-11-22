@@ -38,11 +38,11 @@ Double::Double(QString name,
 	Getter getter,
 	Setter setter) :
 	Property(name, getter, setter),
-	_decimals(decimals),
-	_suffix(suffix),
-	_range(range),
-	_step(step),
-	_spin_box(NULL)
+	decimals_(decimals),
+	suffix_(suffix),
+	range_(range),
+	step_(step),
+	spin_box_(NULL)
 {
 }
 
@@ -52,44 +52,44 @@ Double::~Double()
 
 QWidget* Double::get_widget(QWidget *parent, bool auto_commit)
 {
-	if (_spin_box)
-		return _spin_box;
+	if (spin_box_)
+		return spin_box_;
 
-	if (!_getter)
+	if (!getter_)
 		return NULL;
 
-	Glib::VariantBase variant = _getter();
+	Glib::VariantBase variant = getter_();
 	if (!variant.gobj())
 		return NULL;
 
 	double value = Glib::VariantBase::cast_dynamic<Glib::Variant<double>>(
 		variant).get();
 
-	_spin_box = new QDoubleSpinBox(parent);
-	_spin_box->setDecimals(_decimals);
-	_spin_box->setSuffix(_suffix);
-	if (_range)
-		_spin_box->setRange(_range->first, _range->second);
-	if (_step)
-		_spin_box->setSingleStep(*_step);
+	spin_box_ = new QDoubleSpinBox(parent);
+	spin_box_->setDecimals(decimals_);
+	spin_box_->setSuffix(suffix_);
+	if (range_)
+		spin_box_->setRange(range_->first, range_->second);
+	if (step_)
+		spin_box_->setSingleStep(*step_);
 
-	_spin_box->setValue(value);
+	spin_box_->setValue(value);
 
 	if (auto_commit)
-		connect(_spin_box, SIGNAL(valueChanged(double)),
+		connect(spin_box_, SIGNAL(valueChanged(double)),
 			this, SLOT(on_value_changed(double)));
 
-	return _spin_box;
+	return spin_box_;
 }
 
 void Double::commit()
 {
-	assert(_setter);
+	assert(setter_);
 
-	if (!_spin_box)
+	if (!spin_box_)
 		return;
 
-	_setter(Glib::Variant<double>::create(_spin_box->value()));
+	setter_(Glib::Variant<double>::create(spin_box_->value()));
 }
 
 void Double::on_value_changed(double)

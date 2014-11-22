@@ -24,15 +24,15 @@ namespace pv {
 namespace prop {
 
 Property::Property(QString name, Getter getter, Setter setter) :
-	_getter(getter),
-	_setter(setter),
-	_name(name)
+	getter_(getter),
+	setter_(setter),
+	name_(name)
 {
 }
 
 const QString& Property::name() const
 {
-	return _name;
+	return name_;
 }
 
 bool Property::labeled_widget() const

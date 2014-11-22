@@ -50,27 +50,27 @@ AnalogSnapshot::AnalogSnapshot(const uint64_t expected_num_samples) :
 {
 	set_capacity(expected_num_samples);
 
-	lock_guard<recursive_mutex> lock(_mutex);
-	memset(_envelope_levels, 0, sizeof(_envelope_levels));
+	lock_guard<recursive_mutex> lock(mutex_);
+	memset(envelope_levels_, 0, sizeof(envelope_levels_));
 }
 
 AnalogSnapshot::~AnalogSnapshot()
 {
-	lock_guard<recursive_mutex> lock(_mutex);
-	for (Envelope &e : _envelope_levels)
+	lock_guard<recursive_mutex> lock(mutex_);
+	for (Envelope &e : envelope_levels_)
 		free(e.samples);
 }
 
 void AnalogSnapshot::append_interleaved_samples(const float *data,
 	size_t sample_count, size_t stride)
 {
-	assert(_unit_size == sizeof(float));
+	assert(unit_size_ == sizeof(float));
 
-	lock_guard<recursive_mutex> lock(_mutex);
+	lock_guard<recursive_mutex> lock(mutex_);
 
-	_data.resize((_sample_count + sample_count) * sizeof(float));
+	data_.resize((sample_count_ + sample_count) * sizeof(float));
 
-	float *dst = (float*)_data.data() + _sample_count;
+	float *dst = (float*)data_.data() + sample_count_;
 	const float *dst_end = dst + sample_count;
 	while (dst != dst_end)
 	{
@@ -78,7 +78,7 @@ void AnalogSnapshot::append_interleaved_samples(const float *data,
 		data += stride;
 	}
 
-	_sample_count += sample_count;
+	sample_count_ += sample_count;
 
 	// Generate the first mip-map from the data
 	append_payload_to_envelope_levels();
@@ -88,15 +88,15 @@ const float* AnalogSnapshot::get_samples(
 	int64_t start_sample, int64_t end_sample) const
 {
 	assert(start_sample >= 0);
-	assert(start_sample < (int64_t)_sample_count);
+	assert(start_sample < (int64_t)sample_count_);
 	assert(end_sample >= 0);
-	assert(end_sample < (int64_t)_sample_count);
+	assert(end_sample < (int64_t)sample_count_);
 	assert(start_sample <= end_sample);
 
-	lock_guard<recursive_mutex> lock(_mutex);
+	lock_guard<recursive_mutex> lock(mutex_);
 
 	float *const data = new float[end_sample - start_sample];
-	memcpy(data, (float*)_data.data() + start_sample, sizeof(float) *
+	memcpy(data, (float*)data_.data() + start_sample, sizeof(float) *
 		(end_sample - start_sample));
 	return data;
 }
@@ -108,7 +108,7 @@ void AnalogSnapshot::get_envelope_section(EnvelopeSection &s,
 	assert(start <= end);
 	assert(min_length > 0);
 
-	lock_guard<recursive_mutex> lock(_mutex);
+	lock_guard<recursive_mutex> lock(mutex_);
 
 	const unsigned int min_level = max((int)floorf(logf(min_length) /
 		LogEnvelopeScaleFactor) - 1, 0);
@@ -121,7 +121,7 @@ void AnalogSnapshot::get_envelope_section(EnvelopeSection &s,
 	s.scale = 1 << scale_power;
 	s.length = end - start;
 	s.samples = new EnvelopeSample[s.length];
-	memcpy(s.samples, _envelope_levels[min_level].samples + start,
+	memcpy(s.samples, envelope_levels_[min_level].samples + start,
 		s.length * sizeof(EnvelopeSample));
 }
 
@@ -139,13 +139,13 @@ void AnalogSnapshot::reallocate_envelope(Envelope &e)
 
 void AnalogSnapshot::append_payload_to_envelope_levels()
 {
-	Envelope &e0 = _envelope_levels[0];
+	Envelope &e0 = envelope_levels_[0];
 	uint64_t prev_length;
 	EnvelopeSample *dest_ptr;
 
 	// Expand the data buffer to fit the new samples
 	prev_length = e0.length;
-	e0.length = _sample_count / EnvelopeScaleFactor;
+	e0.length = sample_count_ / EnvelopeScaleFactor;
 
 	// Break off if there are no new samples to compute
 	if (e0.length == prev_length)
@@ -156,9 +156,9 @@ void AnalogSnapshot::append_payload_to_envelope_levels()
 	dest_ptr = e0.samples + prev_length;
 
 	// Iterate through the samples to populate the first level mipmap
-	const float *const end_src_ptr = (float*)_data.data() +
+	const float *const end_src_ptr = (float*)data_.data() +
 		e0.length * EnvelopeScaleFactor;
-	for (const float *src_ptr = (float*)_data.data() +
+	for (const float *src_ptr = (float*)data_.data() +
 		prev_length * EnvelopeScaleFactor;
 		src_ptr < end_src_ptr; src_ptr += EnvelopeScaleFactor)
 	{
@@ -173,8 +173,8 @@ void AnalogSnapshot::append_payload_to_envelope_levels()
 	// Compute higher level mipmaps
 	for (unsigned int level = 1; level < ScaleStepCount; level++)
 	{
-		Envelope &e = _envelope_levels[level];
-		const Envelope &el = _envelope_levels[level-1];
+		Envelope &e = envelope_levels_[level];
+		const Envelope &el = envelope_levels_[level-1];
 
 		// Expand the data buffer to fit the new samples
 		prev_length = e.length;

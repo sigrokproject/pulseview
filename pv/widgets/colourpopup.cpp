@@ -25,21 +25,21 @@ namespace widgets {
 
 ColourPopup::ColourPopup(int rows, int cols, QWidget *parent) :
 	Popup(parent),
-	_well_array(rows, cols, this),
-	_layout(this)
+	well_array_(rows, cols, this),
+	layout_(this)
 {
-	_layout.addWidget(&_well_array);
-	setLayout(&_layout);
+	layout_.addWidget(&well_array_);
+	setLayout(&layout_);
 
-	connect(&_well_array, SIGNAL(selected(int, int)),
+	connect(&well_array_, SIGNAL(selected(int, int)),
 		this, SIGNAL(selected(int, int)));
-	connect(&_well_array, SIGNAL(selected(int, int)),
+	connect(&well_array_, SIGNAL(selected(int, int)),
 		this, SLOT(colour_selected(int, int)));
 }
 
 QWellArray& ColourPopup::well_array()
 {
-	return _well_array;
+	return well_array_;
 }
 
 void ColourPopup::colour_selected(int, int)

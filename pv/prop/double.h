@@ -53,12 +53,12 @@ private Q_SLOTS:
 	void on_value_changed(double);
 
 private:
-	const int _decimals;
-	const QString _suffix;
-	const boost::optional< std::pair<double, double> > _range;
-	const boost::optional<double> _step;
+	const int decimals_;
+	const QString suffix_;
+	const boost::optional< std::pair<double, double> > range_;
+	const boost::optional<double> step_;
 
-	QDoubleSpinBox *_spin_box;
+	QDoubleSpinBox *spin_box_;
 };
 
 } // prop

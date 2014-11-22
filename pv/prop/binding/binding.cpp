@@ -34,12 +34,12 @@ namespace binding {
 
 const std::vector< std::shared_ptr<Property> >& Binding::properties()
 {
-	return _properties;
+	return properties_;
 }
 
 void Binding::commit()
 {
-	for (shared_ptr<pv::prop::Property> p : _properties) {
+	for (shared_ptr<pv::prop::Property> p : properties_) {
 		assert(p);
 		p->commit();
 	}
@@ -50,7 +50,7 @@ void Binding::add_properties_to_form(QFormLayout *layout,
 {
 	assert(layout);
 
-	for (shared_ptr<pv::prop::Property> p : _properties)
+	for (shared_ptr<pv::prop::Property> p : properties_)
 	{
 		assert(p);
 

@@ -37,23 +37,23 @@ Analog::Analog() :
 
 void Analog::push_snapshot(shared_ptr<AnalogSnapshot> &snapshot)
 {
-	_snapshots.push_front(snapshot);
+	snapshots_.push_front(snapshot);
 }
 
 deque< shared_ptr<AnalogSnapshot> >& Analog::get_snapshots()
 {
-	return _snapshots;
+	return snapshots_;
 }
 
 void Analog::clear()
 {
-	_snapshots.clear();
+	snapshots_.clear();
 }
 
 uint64_t Analog::get_max_sample_count() const
 {
 	uint64_t l = 0;
-	for (const std::shared_ptr<AnalogSnapshot> s : _snapshots) {
+	for (const std::shared_ptr<AnalogSnapshot> s : snapshots_) {
 		assert(s);
 		l = max(l, s->get_sample_count());
 	}

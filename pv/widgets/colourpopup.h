@@ -45,8 +45,8 @@ private Q_SLOTS:
 	void colour_selected(int, int);
 
 private:
-	QWellArray _well_array;
-	QVBoxLayout _layout;
+	QWellArray well_array_;
+	QVBoxLayout layout_;
 };
 
 } // widgets

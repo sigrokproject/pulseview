@@ -78,7 +78,7 @@ private:
 	static const unsigned int DecodeNotifyPeriod;
 
 public:
-	DecoderStack(pv::SigSession &_session,
+	DecoderStack(pv::SigSession &session_,
 		const srd_decoder *const decoder);
 
 	virtual ~DecoderStack();
@@ -129,7 +129,7 @@ Q_SIGNALS:
 	void new_decode_data();
 
 private:
-	pv::SigSession &_session;
+	pv::SigSession &session_;
 
 	/**
 	 * This mutex prevents more than one decode operation occuring
@@ -137,28 +137,28 @@ private:
 	 * @todo A proper solution should be implemented to allow multiple
 	 * decode operations.
 	 */
-	static std::mutex _global_decode_mutex;
+	static std::mutex global_decode_mutex_;
 
-	std::list< std::shared_ptr<decode::Decoder> > _stack;
+	std::list< std::shared_ptr<decode::Decoder> > stack_;
 
-	std::shared_ptr<pv::data::LogicSnapshot> _snapshot;
+	std::shared_ptr<pv::data::LogicSnapshot> snapshot_;
 
-	mutable std::mutex _input_mutex;
-	mutable std::condition_variable _input_cond;
-	int64_t _sample_count;
-	bool _frame_complete;
+	mutable std::mutex input_mutex_;
+	mutable std::condition_variable input_cond_;
+	int64_t sample_count_;
+	bool frame_complete_;
 
-	mutable std::mutex _output_mutex;
-	int64_t	_samples_decoded;
+	mutable std::mutex output_mutex_;
+	int64_t	samples_decoded_;
 
-	std::map<const decode::Row, decode::RowData> _rows;
+	std::map<const decode::Row, decode::RowData> rows_;
 
-	std::map<std::pair<const srd_decoder*, int>, decode::Row> _class_rows;
+	std::map<std::pair<const srd_decoder*, int>, decode::Row> class_rows_;
 
-	QString _error_message;
+	QString error_message_;
 
-	std::thread _decode_thread;
-	std::atomic<bool> _interrupt;
+	std::thread decode_thread_;
+	std::atomic<bool> interrupt_;
 
 	friend struct DecoderStackTest::TwoDecoderStack;
 };

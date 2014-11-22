@@ -49,8 +49,8 @@ public:
 	uint64_t get_max_sample_count() const;
 
 private:
-	const unsigned int _num_channels;
-	std::deque< std::shared_ptr<LogicSnapshot> > _snapshots;
+	const unsigned int num_channels_;
+	std::deque< std::shared_ptr<LogicSnapshot> > snapshots_;
 };
 
 } // namespace data

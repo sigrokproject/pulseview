@@ -53,7 +53,7 @@ using sigrok::SessionDevice;
 namespace pv {
 
 DeviceManager::DeviceManager(shared_ptr<Context> context) :
-	_context(context)
+	context_(context)
 {
 	for (auto entry : context->drivers())
 		driver_scan(entry.second, map<const ConfigKey *, VariantBase>());
@@ -65,12 +65,12 @@ DeviceManager::~DeviceManager()
 
 shared_ptr<Context> DeviceManager::context()
 {
-	return _context;
+	return context_;
 }
 
 const list< shared_ptr<HardwareDevice> >& DeviceManager::devices() const
 {
-	return _devices;
+	return devices_;
 }
 
 list< shared_ptr<HardwareDevice> > DeviceManager::driver_scan(
@@ -82,7 +82,7 @@ list< shared_ptr<HardwareDevice> > DeviceManager::driver_scan(
 
 	// Remove any device instances from this driver from the device
 	// list. They will not be valid after the scan.
-	_devices.remove_if([&](shared_ptr<HardwareDevice> device) {
+	devices_.remove_if([&](shared_ptr<HardwareDevice> device) {
 		return device->driver() == driver; });
 
 	// Do the scan
@@ -90,21 +90,21 @@ list< shared_ptr<HardwareDevice> > DeviceManager::driver_scan(
 	driver_devices.insert(driver_devices.end(), devices.begin(), devices.end());
 
 	// Add the scanned devices to the main list, set display names and sort.
-	_devices.insert(_devices.end(), driver_devices.begin(),
+	devices_.insert(devices_.end(), driver_devices.begin(),
 		driver_devices.end());
 
-	for (shared_ptr<Device> device : _devices)
-		_display_names[device] = build_display_name(device);
+	for (shared_ptr<Device> device : devices_)
+		display_names_[device] = build_display_name(device);
 
-	_devices.sort([&](shared_ptr<Device> a, shared_ptr<Device> b)
+	devices_.sort([&](shared_ptr<Device> a, shared_ptr<Device> b)
 		{ return compare_devices(a, b); });
 
-	// As the display names depend on the complete _devices list,
+	// As the display names depend on the complete devices_ list,
 	// we need to recompute them. However, there is no need to
-	// recomute all names of the _devices list since only the
+	// recomute all names of the devices_ list since only the
 	// devices that use the given driver can be affected.
 	for (shared_ptr<Device> device : driver_devices)
-		_display_names[device] = build_display_name(device);
+		display_names_[device] = build_display_name(device);
 
 	driver_devices.sort([&](shared_ptr<Device> a, shared_ptr<Device> b)
 		{ return compare_devices(a, b); });
@@ -141,7 +141,7 @@ const shared_ptr<HardwareDevice> DeviceManager::find_device_from_info(
 
 	last_resort_dev = NULL;
 
-	for (shared_ptr<HardwareDevice> dev : _devices) {
+	for (shared_ptr<HardwareDevice> dev : devices_) {
 		assert(dev);
 		dev_info = get_device_info(dev);
 
@@ -200,7 +200,7 @@ const string DeviceManager::build_display_name(shared_ptr<Device> device)
 	// If we can find another device with the same model/vendor then
 	// we have at least two such devices and need to distinguish them.
 	if (hardware_device)
-		multiple_dev = any_of(_devices.begin(), _devices.end(),
+		multiple_dev = any_of(devices_.begin(), devices_.end(),
 			[&](shared_ptr<HardwareDevice> dev) {
 			return (dev->vendor() == hardware_device->vendor() &&
 			dev->model() == hardware_device->model()) &&
@@ -233,12 +233,12 @@ const string DeviceManager::build_display_name(shared_ptr<Device> device)
 
 const std::string DeviceManager::get_display_name(std::shared_ptr<sigrok::Device> dev)
 {
-	return _display_names[dev];
+	return display_names_[dev];
 }
 
 void DeviceManager::update_display_name(std::shared_ptr<sigrok::Device> dev)
 {
-	_display_names[dev] = build_display_name(dev);
+	display_names_[dev] = build_display_name(dev);
 }
 
 bool DeviceManager::compare_devices(shared_ptr<Device> a,
@@ -247,7 +247,7 @@ bool DeviceManager::compare_devices(shared_ptr<Device> a,
 	assert(a);
 	assert(b);
 
-	return _display_names[a].compare(_display_names[b]) < 0;
+	return display_names_[a].compare(display_names_[b]) < 0;
 }
 
 } // namespace pv

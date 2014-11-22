@@ -49,7 +49,7 @@ namespace prop {
 namespace binding {
 
 DeviceOptions::DeviceOptions(shared_ptr<sigrok::Configurable> configurable) :
-	_configurable(configurable)
+	configurable_(configurable)
 {
 	assert(configurable);
 
@@ -76,9 +76,9 @@ DeviceOptions::DeviceOptions(shared_ptr<sigrok::Configurable> configurable) :
 		const QString name = QString::fromStdString(name_str);
 
 		const Property::Getter get = [&, key]() {
-			return _configurable->config_get(key); };
+			return configurable_->config_get(key); };
 		const Property::Setter set = [&, key](Glib::VariantBase value) {
-			_configurable->config_set(key, value);
+			configurable_->config_set(key, value);
 			config_changed();
 		};
 
@@ -130,8 +130,8 @@ DeviceOptions::DeviceOptions(shared_ptr<sigrok::Configurable> configurable) :
 void DeviceOptions::bind_bool(const QString &name,
 	Property::Getter getter, Property::Setter setter)
 {
-	assert(_configurable);
-	_properties.push_back(shared_ptr<Property>(new Bool(
+	assert(configurable_);
+	properties_.push_back(shared_ptr<Property>(new Bool(
 		name, getter, setter)));
 }
 
@@ -142,13 +142,13 @@ void DeviceOptions::bind_enum(const QString &name,
 	Glib::VariantBase gvar;
 	vector< pair<Glib::VariantBase, QString> > values;
 
-	assert(_configurable);
+	assert(configurable_);
 
 	Glib::VariantIter iter(gvar_list);
 	while ((iter.next_value(gvar)))
 		values.push_back(make_pair(gvar, printer(gvar)));
 
-	_properties.push_back(shared_ptr<Property>(new Enum(name, values,
+	properties_.push_back(shared_ptr<Property>(new Enum(name, values,
 		getter, setter)));
 }
 
@@ -156,9 +156,9 @@ void DeviceOptions::bind_int(const QString &name, QString suffix,
 	optional< std::pair<int64_t, int64_t> > range,
 	Property::Getter getter, Property::Setter setter)
 {
-	assert(_configurable);
+	assert(configurable_);
 
-	_properties.push_back(shared_ptr<Property>(new Int(name, suffix, range,
+	properties_.push_back(shared_ptr<Property>(new Int(name, suffix, range,
 		getter, setter)));
 }
 

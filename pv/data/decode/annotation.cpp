@@ -32,41 +32,41 @@ namespace data {
 namespace decode {
 
 Annotation::Annotation(const srd_proto_data *const pdata) :
-	_start_sample(pdata->start_sample),
-	_end_sample(pdata->end_sample)
+	start_sample_(pdata->start_sample),
+	end_sample_(pdata->end_sample)
 {
 	assert(pdata);
 	const srd_proto_data_annotation *const pda =
 		(const srd_proto_data_annotation*)pdata->data;
 	assert(pda);
 
-	_format = pda->ann_class;
+	format_ = pda->ann_class;
 
 	const char *const *annotations = (char**)pda->ann_text;
 	while(*annotations) {
-		_annotations.push_back(QString::fromUtf8(*annotations));
+		annotations_.push_back(QString::fromUtf8(*annotations));
 		annotations++;
 	}
 }
 
 uint64_t Annotation::start_sample() const
 {
-	return _start_sample;
+	return start_sample_;
 }
 
 uint64_t Annotation::end_sample() const
 {
-	return _end_sample;
+	return end_sample_;
 }
 
 int Annotation::format() const
 {
-	return _format;
+	return format_;
 }
 
 const std::vector<QString>& Annotation::annotations() const
 {
-	return _annotations;
+	return annotations_;
 }
 
 } // namespace decode

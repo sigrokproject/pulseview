@@ -51,24 +51,24 @@ public:
 
 public:
 	RowItemIterator(Owner *owner) :
-		_owner(owner),
-		_lock(owner->session().signals_mutex()) {}
+		owner_(owner),
+		lock_(owner->session().signals_mutex()) {}
 
 	RowItemIterator(Owner *owner, child_iterator iter) :
-		_owner(owner),
-		_lock(owner->session().signals_mutex()) {
+		owner_(owner),
+		lock_(owner->session().signals_mutex()) {
 		assert(owner);
 		if (iter != owner->child_items().end())
-			_iter_stack.push(iter);
+			iter_stack_.push(iter);
 	}
 
 	RowItemIterator(const RowItemIterator<Owner, Item> &o) :
-		_owner(o._owner),
-		_lock(*o._lock.mutex()),
-		_iter_stack(o._iter_stack) {}
+		owner_(o.owner_),
+		lock_(*o.lock_.mutex()),
+		iter_stack_(o.iter_stack_) {}
 
 	reference operator*() const {
-		return *_iter_stack.top();
+		return *iter_stack_.top();
 	}
 
 	reference operator->() const {
@@ -79,21 +79,21 @@ public:
 		using std::dynamic_pointer_cast;
 		using std::shared_ptr;
 
-		assert(_owner);
-		assert(!_iter_stack.empty());
+		assert(owner_);
+		assert(!iter_stack_.empty());
 
 		shared_ptr<Owner> owner(dynamic_pointer_cast<Owner>(
-			*_iter_stack.top()));
+			*iter_stack_.top()));
 		if (owner && !owner->child_items().empty()) {
-			_owner = owner.get();
-			_iter_stack.push(owner->child_items().begin());
+			owner_ = owner.get();
+			iter_stack_.push(owner->child_items().begin());
 		} else {
-			++_iter_stack.top();
-			while (_owner && _iter_stack.top() ==
-				_owner->child_items().end()) {
-				_iter_stack.pop();
-				_owner = _iter_stack.empty() ? nullptr :
-					(*_iter_stack.top()++)->owner();
+			++iter_stack_.top();
+			while (owner_ && iter_stack_.top() ==
+				owner_->child_items().end()) {
+				iter_stack_.pop();
+				owner_ = iter_stack_.empty() ? nullptr :
+					(*iter_stack_.top()++)->owner();
 			}
 		}
 
@@ -107,13 +107,13 @@ public:
 	}
 
 	bool operator==(const RowItemIterator &o) const {
-		return (_iter_stack.empty() && o._iter_stack.empty()) ||
-			(_owner == o._owner &&
-			_iter_stack.size() == o._iter_stack.size() &&
+		return (iter_stack_.empty() && o.iter_stack_.empty()) ||
+			(owner_ == o.owner_ &&
+			iter_stack_.size() == o.iter_stack_.size() &&
 			std::equal(
-				_owner->child_items().cbegin(),
-				_owner->child_items().cend(),
-				o._owner->child_items().cbegin()));
+				owner_->child_items().cbegin(),
+				owner_->child_items().cend(),
+				o.owner_->child_items().cbegin()));
 	}
 
 	bool operator!=(const RowItemIterator &o) const {
@@ -121,14 +121,14 @@ public:
 	}
 
 	void swap(RowItemIterator<Owner, Item>& other) {
-		swap(_owner, other._owner);
-		swap(_iter_stack, other._iter_stack);
+		swap(owner_, other.owner_);
+		swap(iter_stack_, other.iter_stack_);
 	}
 
 private:
-	Owner *_owner;
-	boost::shared_lock<boost::shared_mutex> _lock;
-	std::stack<child_iterator> _iter_stack;
+	Owner *owner_;
+	boost::shared_lock<boost::shared_mutex> lock_;
+	std::stack<child_iterator> iter_stack_;
 };
 
 template<class Owner, class Item>

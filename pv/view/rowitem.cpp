@@ -28,91 +28,91 @@ namespace pv {
 namespace view {
 
 RowItem::RowItem() :
-	_owner(NULL),
-	_layout_v_offset(0),
-	_visual_v_offset(0),
-	_v_offset_animation(this, "visual_v_offset")
+	owner_(NULL),
+	layout_v_offset_(0),
+	visual_v_offset_(0),
+	v_offset_animation_(this, "visual_v_offset")
 {
 }
 
 int RowItem::layout_v_offset() const
 {
-	return _layout_v_offset;
+	return layout_v_offset_;
 }
 
 void RowItem::set_layout_v_offset(int v_offset)
 {
-	if (_layout_v_offset == v_offset)
+	if (layout_v_offset_ == v_offset)
 		return;
 
-	_layout_v_offset = v_offset;
+	layout_v_offset_ = v_offset;
 
-	if (_owner)
-		_owner->extents_changed(false, true);
+	if (owner_)
+		owner_->extents_changed(false, true);
 }
 
 int RowItem::visual_v_offset() const
 {
-	return _visual_v_offset;
+	return visual_v_offset_;
 }
 
 void RowItem::set_visual_v_offset(int v_offset)
 {
-	_visual_v_offset = v_offset;
+	visual_v_offset_ = v_offset;
 
-	if (_owner)
-		_owner->appearance_changed(true, true);
+	if (owner_)
+		owner_->appearance_changed(true, true);
 }
 
 void RowItem::force_to_v_offset(int v_offset)
 {
-	_v_offset_animation.stop();
-	_layout_v_offset = _visual_v_offset = v_offset;
+	v_offset_animation_.stop();
+	layout_v_offset_ = visual_v_offset_ = v_offset;
 }
 
 void RowItem::animate_to_layout_v_offset()
 {
-	if (_visual_v_offset == _layout_v_offset ||
-		(_v_offset_animation.endValue() == _layout_v_offset &&
-		_v_offset_animation.state() == QAbstractAnimation::Running))
+	if (visual_v_offset_ == layout_v_offset_ ||
+		(v_offset_animation_.endValue() == layout_v_offset_ &&
+		v_offset_animation_.state() == QAbstractAnimation::Running))
 		return;
 
-	_v_offset_animation.setDuration(100);
-	_v_offset_animation.setStartValue(_visual_v_offset);
-	_v_offset_animation.setEndValue(_layout_v_offset);
-	_v_offset_animation.setEasingCurve(QEasingCurve::OutQuad);
-	_v_offset_animation.start();
+	v_offset_animation_.setDuration(100);
+	v_offset_animation_.setStartValue(visual_v_offset_);
+	v_offset_animation_.setEndValue(layout_v_offset_);
+	v_offset_animation_.setEasingCurve(QEasingCurve::OutQuad);
+	v_offset_animation_.start();
 }
 
 RowItemOwner* RowItem::owner() const
 {
-	return _owner;
+	return owner_;
 }
 
 void RowItem::set_owner(RowItemOwner *owner)
 {
-	assert(_owner || owner);
-	_v_offset_animation.stop();
+	assert(owner_ || owner);
+	v_offset_animation_.stop();
 
-	if (_owner) {
-		const int owner_offset = _owner->owner_visual_v_offset();
-		_layout_v_offset += owner_offset;
-		_visual_v_offset += owner_offset;
+	if (owner_) {
+		const int owner_offset = owner_->owner_visual_v_offset();
+		layout_v_offset_ += owner_offset;
+		visual_v_offset_ += owner_offset;
 	}
 
-	_owner = owner;
+	owner_ = owner;
 
-	if (_owner) {
-		const int owner_offset = _owner->owner_visual_v_offset();
-		_layout_v_offset -= owner_offset;
-		_visual_v_offset -= owner_offset;
+	if (owner_) {
+		const int owner_offset = owner_->owner_visual_v_offset();
+		layout_v_offset_ -= owner_offset;
+		visual_v_offset_ -= owner_offset;
 	}
 }
 
 int RowItem::get_visual_y() const
 {
-	assert(_owner);
-	return _visual_v_offset + _owner->owner_visual_v_offset();
+	assert(owner_);
+	return visual_v_offset_ + owner_->owner_visual_v_offset();
 }
 
 QPoint RowItem::point() const

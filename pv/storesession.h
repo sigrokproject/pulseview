@@ -72,19 +72,19 @@ Q_SIGNALS:
 	void progress_updated();
 
 private:
-	const std::string _file_name;
-	const SigSession &_session;
+	const std::string file_name_;
+	const SigSession &session_;
 
-	std::shared_ptr<sigrok::Output> _output;
+	std::shared_ptr<sigrok::Output> output_;
 
-	std::thread _thread;
+	std::thread thread_;
 
-	std::atomic<bool> _interrupt;
+	std::atomic<bool> interrupt_;
 
-	std::atomic<int> _units_stored, _unit_count;
+	std::atomic<int> units_stored_, unit_count_;
 
-	mutable std::mutex _mutex;
-	QString _error;
+	mutable std::mutex mutex_;
+	QString error_;
 };
 
 } // pv

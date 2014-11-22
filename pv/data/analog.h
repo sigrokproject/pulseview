@@ -47,7 +47,7 @@ public:
 	uint64_t get_max_sample_count() const;
 
 private:
-	std::deque< std::shared_ptr<AnalogSnapshot> > _snapshots;
+	std::deque< std::shared_ptr<AnalogSnapshot> > snapshots_;
 };
 
 } // namespace data

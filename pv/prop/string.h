@@ -43,7 +43,7 @@ private Q_SLOTS:
 	void on_text_edited(const QString&);
 
 private:
-	QLineEdit *_line_edit;
+	QLineEdit *line_edit_;
 };
 
 } // prop

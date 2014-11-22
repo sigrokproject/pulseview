@@ -53,9 +53,9 @@ private Q_SLOTS:
 	void on_current_item_changed(int);
 
 private:
-	const std::vector< std::pair<Glib::VariantBase, QString> > _values;
+	const std::vector< std::pair<Glib::VariantBase, QString> > values_;
 
-	QComboBox *_selector;
+	QComboBox *selector_;
 };
 
 } // prop

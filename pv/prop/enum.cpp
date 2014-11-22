@@ -34,8 +34,8 @@ Enum::Enum(QString name,
 	vector<pair<Glib::VariantBase, QString> > values,
 	Getter getter, Setter setter) :
 	Property(name, getter, setter),
-	_values(values),
-	_selector(NULL)
+	values_(values),
+	selector_(NULL)
 {
 }
 
@@ -45,43 +45,43 @@ Enum::~Enum()
 
 QWidget* Enum::get_widget(QWidget *parent, bool auto_commit)
 {
-	if (_selector)
-		return _selector;
+	if (selector_)
+		return selector_;
 
-	if (!_getter)
+	if (!getter_)
 		return NULL;
 
-	Glib::VariantBase variant = _getter();
+	Glib::VariantBase variant = getter_();
 	if (!variant.gobj())
 		return NULL;
 
-	_selector = new QComboBox(parent);
-	for (unsigned int i = 0; i < _values.size(); i++) {
-		const pair<Glib::VariantBase, QString> &v = _values[i];
-		_selector->addItem(v.second, qVariantFromValue(v.first));
+	selector_ = new QComboBox(parent);
+	for (unsigned int i = 0; i < values_.size(); i++) {
+		const pair<Glib::VariantBase, QString> &v = values_[i];
+		selector_->addItem(v.second, qVariantFromValue(v.first));
 		if (v.first.equal(variant))
-			_selector->setCurrentIndex(i);
+			selector_->setCurrentIndex(i);
 	}
 
 	if (auto_commit)
-		connect(_selector, SIGNAL(currentIndexChanged(int)),
+		connect(selector_, SIGNAL(currentIndexChanged(int)),
 			this, SLOT(on_current_item_changed(int)));
 
-	return _selector;
+	return selector_;
 }
 
 void Enum::commit()
 {
-	assert(_setter);
+	assert(setter_);
 
-	if (!_selector)
+	if (!selector_)
 		return;
 
-	const int index = _selector->currentIndex();
+	const int index = selector_->currentIndex();
 	if (index < 0)
 		return;
 
-	_setter(_selector->itemData(index).value<Glib::VariantBase>());
+	setter_(selector_->itemData(index).value<Glib::VariantBase>());
 }
 
 void Enum::on_current_item_changed(int)

@@ -236,29 +236,29 @@ private Q_SLOTS:
 	void on_hover_point_changed();
 
 private:
-	SigSession &_session;
+	SigSession &session_;
 
-	Viewport *_viewport;
-	Ruler *_ruler;
-	CursorHeader *_cursorheader;
-	Header *_header;
+	Viewport *viewport_;
+	Ruler *ruler_;
+	CursorHeader *cursorheader_;
+	Header *header_;
 
 	/// The view time scale in seconds per pixel.
-	double _scale;
+	double scale_;
 
 	/// The view time offset in seconds.
-	double _offset;
+	double offset_;
 
-	int _v_offset;
-	bool _updating_scroll;
+	int v_offset_;
+	bool updating_scroll_;
 
-	bool _show_cursors;
-	CursorPair _cursors;
+	bool show_cursors_;
+	CursorPair cursors_;
 
-	QPoint _hover_point;
+	QPoint hover_point_;
 
-	unsigned int _sticky_events;
-	QTimer _lazy_event_handler;
+	unsigned int sticky_events_;
+	QTimer lazy_event_handler_;
 };
 
 } // namespace view

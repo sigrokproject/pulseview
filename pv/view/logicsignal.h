@@ -107,17 +107,17 @@ private Q_SLOTS:
 	void on_trigger();
 
 private:
-	std::shared_ptr<sigrok::Device> _device;
-	std::shared_ptr<pv::data::Logic> _data;
+	std::shared_ptr<sigrok::Device> device_;
+	std::shared_ptr<pv::data::Logic> data_;
 
-	const sigrok::TriggerMatchType *_trigger_match;
-	QToolBar *_trigger_bar;
-	QAction *_trigger_none;
-	QAction *_trigger_rising;
-	QAction *_trigger_high;
-	QAction *_trigger_falling;
-	QAction *_trigger_low;
-	QAction *_trigger_change;
+	const sigrok::TriggerMatchType *trigger_match_;
+	QToolBar *trigger_bar_;
+	QAction *trigger_none_;
+	QAction *trigger_rising_;
+	QAction *trigger_high_;
+	QAction *trigger_falling_;
+	QAction *trigger_low_;
+	QAction *trigger_change_;
 };
 
 } // namespace view

@@ -70,8 +70,8 @@ BOOST_AUTO_TEST_CASE(TwoDecoderStack)
 		BOOST_REQUIRE(dec1);
 
 		// Wait for the decode threads to complete
-		dec0->_decode_thread.join();
-		dec1->_decode_thread.join();
+		dec0->decode_thread_.join();
+		dec1->decode_thread_.join();
 
 		// Check there were no errors
 		BOOST_CHECK_EQUAL(dec0->error_message().isEmpty(), true);

@@ -32,45 +32,45 @@ namespace view {
 const int SelectableItem::HighlightRadius = 6;
 
 SelectableItem::SelectableItem() :
-	_context_parent(NULL),
-	_selected(false),
-	_drag_point(INT_MIN, INT_MIN)
+	context_parent_(NULL),
+	selected_(false),
+	drag_point_(INT_MIN, INT_MIN)
 {
 }
 
 bool SelectableItem::selected() const
 {
-	return _selected;
+	return selected_;
 }
 
 void SelectableItem::select(bool select)
 {
-	_selected = select;
+	selected_ = select;
 }
 
 bool SelectableItem::dragging() const
 {
-	return _drag_point.x() != INT_MIN && _drag_point.y() != INT_MIN;
+	return drag_point_.x() != INT_MIN && drag_point_.y() != INT_MIN;
 }
 
 QPoint SelectableItem::drag_point() const
 {
-	return _drag_point;
+	return drag_point_;
 }
 
 void SelectableItem::drag()
 {
-	_drag_point = point();
+	drag_point_ = point();
 }
 
 void SelectableItem::drag_release()
 {
-	_drag_point = QPoint(INT_MIN, INT_MIN);
+	drag_point_ = QPoint(INT_MIN, INT_MIN);
 }
 
 QMenu* SelectableItem::create_context_menu(QWidget *parent)
 {
-	_context_parent = parent;
+	context_parent_ = parent;
 	return new QMenu(parent);
 }
 

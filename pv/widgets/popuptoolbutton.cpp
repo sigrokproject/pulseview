@@ -27,31 +27,31 @@ namespace widgets {
 
 PopupToolButton::PopupToolButton(QWidget *parent) :
 	QToolButton(parent),
-	_popup(NULL)
+	popup_(NULL)
 {
 	connect(this, SIGNAL(clicked(bool)), this, SLOT(on_clicked(bool)));
 }
 
 Popup* PopupToolButton::popup() const
 {
-	return _popup;
+	return popup_;
 }
 
 void PopupToolButton::set_popup(Popup *popup)
 {
 	assert(popup);
-	_popup = popup;
+	popup_ = popup;
 }
 
 void PopupToolButton::on_clicked(bool)
 {
-	if(!_popup)
+	if(!popup_)
 		return;
 
 	const QRect r = rect();
-	_popup->set_position(mapToGlobal(QPoint((r.left() + r.right()) / 2,
+	popup_->set_position(mapToGlobal(QPoint((r.left() + r.right()) / 2,
 		((r.top() + r.bottom() * 3) / 4))), Popup::Bottom);
-	_popup->show();
+	popup_->show();
 }
 
 } // widgets

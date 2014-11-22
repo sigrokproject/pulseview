@@ -94,11 +94,11 @@ protected:
 	static QPen highlight_pen();
 
 protected:
-	QWidget *_context_parent;
+	QWidget *context_parent_;
 
 private:
-	bool _selected;
-	QPoint _drag_point;
+	bool selected_;
+	QPoint drag_point_;
 };
 
 } // namespace view

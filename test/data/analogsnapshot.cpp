@@ -51,7 +51,7 @@ BOOST_AUTO_TEST_CASE(Basic)
 	BOOST_CHECK(s.get_sample_count() == 0);
 	for (unsigned int i = 0; i < AnalogSnapshot::ScaleStepCount; i++)
 	{
-		const AnalogSnapshot::Envelope &m = s._envelope_levels[i];
+		const AnalogSnapshot::Envelope &m = s.envelope_levels_[i];
 		BOOST_CHECK_EQUAL(m.length, 0);
 		BOOST_CHECK_EQUAL(m.data_length, 0);
 		BOOST_CHECK(m.samples == NULL);
@@ -65,7 +65,7 @@ BOOST_AUTO_TEST_CASE(Basic)
 	// There should not be enough samples to have a single mip map sample
 	for (unsigned int i = 0; i < AnalogSnapshot::ScaleStepCount; i++)
 	{
-		const AnalogSnapshot::Envelope &m = s._envelope_levels[i];
+		const AnalogSnapshot::Envelope &m = s.envelope_levels_[i];
 		BOOST_CHECK_EQUAL(m.length, 0);
 		BOOST_CHECK_EQUAL(m.data_length, 0);
 		BOOST_CHECK(m.samples == NULL);
@@ -76,7 +76,7 @@ BOOST_AUTO_TEST_CASE(Basic)
 
 	// There should now be enough data for exactly one sample
 	// in mip map level 0, and that sample should be 0
-	const AnalogSnapshot::Envelope &e0 = s._envelope_levels[0];
+	const AnalogSnapshot::Envelope &e0 = s.envelope_levels_[0];
 	BOOST_CHECK_EQUAL(e0.length, 1);
 	BOOST_CHECK_EQUAL(e0.data_length, AnalogSnapshot::EnvelopeDataUnit);
 	BOOST_REQUIRE(e0.samples != NULL);
@@ -86,7 +86,7 @@ BOOST_AUTO_TEST_CASE(Basic)
 	// The higher levels should still be empty
 	for (unsigned int i = 1; i < AnalogSnapshot::ScaleStepCount; i++)
 	{
-		const AnalogSnapshot::Envelope &m = s._envelope_levels[i];
+		const AnalogSnapshot::Envelope &m = s.envelope_levels_[i];
 		BOOST_CHECK_EQUAL(m.length, 0);
 		BOOST_CHECK_EQUAL(m.data_length, 0);
 		BOOST_CHECK(m.samples == NULL);
@@ -103,7 +103,7 @@ BOOST_AUTO_TEST_CASE(Basic)
 		BOOST_CHECK_EQUAL(e0.samples[i].max, -1.0f);
 	}
 
-	const AnalogSnapshot::Envelope &e1 = s._envelope_levels[1];
+	const AnalogSnapshot::Envelope &e1 = s.envelope_levels_[1];
 	BOOST_CHECK_EQUAL(e1.length, 1);
 	BOOST_CHECK_EQUAL(e1.data_length, AnalogSnapshot::EnvelopeDataUnit);
 	BOOST_REQUIRE(e1.samples != NULL);

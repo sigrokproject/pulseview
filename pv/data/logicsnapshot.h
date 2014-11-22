@@ -103,8 +103,8 @@ private:
 	static uint64_t pow2_ceil(uint64_t x, unsigned int power);
 
 private:
-	struct MipMapLevel _mip_map[ScaleStepCount];
-	uint64_t _last_append_sample;
+	struct MipMapLevel mip_map_[ScaleStepCount];
+	uint64_t last_append_sample_;
 
 	friend struct LogicSnapshotTest::Pow2;
 	friend struct LogicSnapshotTest::Basic;

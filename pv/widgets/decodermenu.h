@@ -47,7 +47,7 @@ Q_SIGNALS:
 	void decoder_selected(srd_decoder *decoder);
 
 private:
-	QSignalMapper _mapper;
+	QSignalMapper mapper_;
 };
 
 } // widgets

@@ -83,9 +83,9 @@ using Glib::Variant;
 
 namespace pv {
 SigSession::SigSession(DeviceManager &device_manager) :
-	_device_manager(device_manager),
-	_session(device_manager.context()->create_session()),
-	_capture_state(Stopped)
+	device_manager_(device_manager),
+	session_(device_manager.context()->create_session()),
+	capture_state_(Stopped)
 {
 	set_default_device();
 }
@@ -98,22 +98,22 @@ SigSession::~SigSession()
 
 DeviceManager& SigSession::device_manager()
 {
-	return _device_manager;
+	return device_manager_;
 }
 
 const DeviceManager& SigSession::device_manager() const
 {
-	return _device_manager;
+	return device_manager_;
 }
 
 const shared_ptr<sigrok::Session>& SigSession::session() const
 {
-	return _session;
+	return session_;
 }
 
 shared_ptr<Device> SigSession::device() const
 {
-	return _device;
+	return device_;
 }
 
 void SigSession::set_device(shared_ptr<Device> device)
@@ -124,30 +124,30 @@ void SigSession::set_device(shared_ptr<Device> device)
 	// Are we setting a session device?
 	auto session_device = dynamic_pointer_cast<SessionDevice>(device);
 	// Did we have a session device selected previously?
-	auto prev_session_device = dynamic_pointer_cast<SessionDevice>(_device);
+	auto prev_session_device = dynamic_pointer_cast<SessionDevice>(device_);
 
-	if (_device) {
-		_session->remove_datafeed_callbacks();
+	if (device_) {
+		session_->remove_datafeed_callbacks();
 		if (!prev_session_device) {
-			_device->close();
-			_session->remove_devices();
+			device_->close();
+			session_->remove_devices();
 		}
 	}
 
 	if (session_device)
-		_session = session_device->parent();
+		session_ = session_device->parent();
 
-	_device = device;
-	_decode_traces.clear();
+	device_ = device;
+	decode_traces_.clear();
 
 	if (device) {
 		if (!session_device)
 		{
-			_session = _device_manager.context()->create_session();
+			session_ = device_manager_.context()->create_session();
 			device->open();
-			_session->add_device(device);
+			session_->add_device(device);
 		}
-		_session->add_datafeed_callback([=]
+		session_->add_datafeed_callback([=]
 			(shared_ptr<Device> device, shared_ptr<Packet> packet) {
 				data_feed_in(device, packet);
 			});
@@ -157,22 +157,22 @@ void SigSession::set_device(shared_ptr<Device> device)
 
 void SigSession::set_file(const string &name)
 {
-	_session = _device_manager.context()->load_session(name);
-	_device = _session->devices()[0];
-	_decode_traces.clear();
-	_session->add_datafeed_callback([=]
+	session_ = device_manager_.context()->load_session(name);
+	device_ = session_->devices()[0];
+	decode_traces_.clear();
+	session_->add_datafeed_callback([=]
 		(shared_ptr<Device> device, shared_ptr<Packet> packet) {
 			data_feed_in(device, packet);
 		});
-	_device_manager.update_display_name(_device);
-	update_signals(_device);
+	device_manager_.update_display_name(device_);
+	update_signals(device_);
 }
 
 void SigSession::set_default_device()
 {
 	shared_ptr<HardwareDevice> default_device;
 	const list< shared_ptr<HardwareDevice> > &devices =
-		_device_manager.devices();
+		device_manager_.devices();
 
 	if (!devices.empty()) {
 		// Fall back to the first device in the list.
@@ -191,8 +191,8 @@ void SigSession::set_default_device()
 
 SigSession::capture_state SigSession::get_capture_state() const
 {
-	lock_guard<mutex> lock(_sampling_mutex);
-	return _capture_state;
+	lock_guard<mutex> lock(sampling_mutex_);
+	return capture_state_;
 }
 
 void SigSession::start_capture(function<void (const QString)> error_handler)
@@ -200,13 +200,13 @@ void SigSession::start_capture(function<void (const QString)> error_handler)
 	stop_capture();
 
 	// Check that a device instance has been selected.
-	if (!_device) {
+	if (!device_) {
 		qDebug() << "No device selected";
 		return;
 	}
 
 	// Check that at least one channel is enabled
-	auto channels = _device->channels();
+	auto channels = device_->channels();
 	bool enabled = std::any_of(channels.begin(), channels.end(),
 		[](shared_ptr<Channel> channel) { return channel->enabled(); });
 
@@ -216,26 +216,26 @@ void SigSession::start_capture(function<void (const QString)> error_handler)
 	}
 
 	// Begin the session
-	_sampling_thread = std::thread(
-		&SigSession::sample_thread_proc, this, _device,
+	sampling_thread_ = std::thread(
+		&SigSession::sample_thread_proc, this, device_,
 			error_handler);
 }
 
 void SigSession::stop_capture()
 {
 	if (get_capture_state() != Stopped)
-		_session->stop();
+		session_->stop();
 
 	// Check that sampling stopped
-	if (_sampling_thread.joinable())
-		_sampling_thread.join();
+	if (sampling_thread_.joinable())
+		sampling_thread_.join();
 }
 
 set< shared_ptr<data::SignalData> > SigSession::get_data() const
 {
-	shared_lock<shared_mutex> lock(_signals_mutex);
+	shared_lock<shared_mutex> lock(signals_mutex_);
 	set< shared_ptr<data::SignalData> > data;
-	for (const shared_ptr<view::Signal> sig : _signals) {
+	for (const shared_ptr<view::Signal> sig : signals_) {
 		assert(sig);
 		data.insert(sig->data());
 	}
@@ -245,12 +245,12 @@ set< shared_ptr<data::SignalData> > SigSession::get_data() const
 
 boost::shared_mutex& SigSession::signals_mutex() const
 {
-	return _signals_mutex;
+	return signals_mutex_;
 }
 
 const vector< shared_ptr<view::Signal> >& SigSession::signals() const
 {
-	return _signals;
+	return signals_;
 }
 
 #ifdef ENABLE_DECODE
@@ -261,7 +261,7 @@ bool SigSession::add_decoder(srd_decoder *const dec)
 
 	try
 	{
-		lock_guard<boost::shared_mutex> lock(_signals_mutex);
+		lock_guard<boost::shared_mutex> lock(signals_mutex_);
 
 		// Create the decoder
 		decoder_stack = shared_ptr<data::DecoderStack>(
@@ -276,7 +276,7 @@ bool SigSession::add_decoder(srd_decoder *const dec)
 
 		// Auto select the initial channels
 		for (const srd_channel *pdch : all_channels)
-			for (shared_ptr<view::Signal> s : _signals)
+			for (shared_ptr<view::Signal> s : signals_)
 			{
 				shared_ptr<view::LogicSignal> l =
 					dynamic_pointer_cast<view::LogicSignal>(s);
@@ -294,8 +294,8 @@ bool SigSession::add_decoder(srd_decoder *const dec)
 		// Create the decode signal
 		shared_ptr<view::DecodeTrace> d(
 			new view::DecodeTrace(*this, decoder_stack,
-				_decode_traces.size()));
-		_decode_traces.push_back(d);
+				decode_traces_.size()));
+		decode_traces_.push_back(d);
 	}
 	catch(std::runtime_error e)
 	{
@@ -312,16 +312,16 @@ bool SigSession::add_decoder(srd_decoder *const dec)
 
 vector< shared_ptr<view::DecodeTrace> > SigSession::get_decode_signals() const
 {
-	shared_lock<shared_mutex> lock(_signals_mutex);
-	return _decode_traces;
+	shared_lock<shared_mutex> lock(signals_mutex_);
+	return decode_traces_;
 }
 
 void SigSession::remove_decode_signal(view::DecodeTrace *signal)
 {
-	for (auto i = _decode_traces.begin(); i != _decode_traces.end(); i++)
+	for (auto i = decode_traces_.begin(); i != decode_traces_.end(); i++)
 		if ((*i).get() == signal)
 		{
-			_decode_traces.erase(i);
+			decode_traces_.erase(i);
 			signals_changed();
 			return;
 		}
@@ -330,9 +330,9 @@ void SigSession::remove_decode_signal(view::DecodeTrace *signal)
 
 void SigSession::set_capture_state(capture_state state)
 {
-	lock_guard<mutex> lock(_sampling_mutex);
-	const bool changed = _capture_state != state;
-	_capture_state = state;
+	lock_guard<mutex> lock(sampling_mutex_);
+	const bool changed = capture_state_ != state;
+	capture_state_ = state;
 	if(changed)
 		capture_state_changed(state);
 }
@@ -340,10 +340,10 @@ void SigSession::set_capture_state(capture_state state)
 void SigSession::update_signals(shared_ptr<Device> device)
 {
 	assert(device);
-	assert(_capture_state == Stopped);
+	assert(capture_state_ == Stopped);
 
 	// Clear the decode traces
-	_decode_traces.clear();
+	decode_traces_.clear();
 
 	// Detect what data types we will receive
 	auto channels = device->channels();
@@ -354,21 +354,21 @@ void SigSession::update_signals(shared_ptr<Device> device)
 
 	// Create data containers for the logic data snapshots
 	{
-		lock_guard<mutex> data_lock(_data_mutex);
+		lock_guard<mutex> data_lock(data_mutex_);
 
-		_logic_data.reset();
+		logic_data_.reset();
 		if (logic_channel_count != 0) {
-			_logic_data.reset(new data::Logic(
+			logic_data_.reset(new data::Logic(
 				logic_channel_count));
-			assert(_logic_data);
+			assert(logic_data_);
 		}
 	}
 
 	// Make the Signals list
 	{
-		unique_lock<shared_mutex> lock(_signals_mutex);
+		unique_lock<shared_mutex> lock(signals_mutex_);
 
-		_signals.clear();
+		signals_.clear();
 
 		for (auto channel : device->channels()) {
 			shared_ptr<view::Signal> signal;
@@ -377,7 +377,7 @@ void SigSession::update_signals(shared_ptr<Device> device)
 			case SR_CHANNEL_LOGIC:
 				signal = shared_ptr<view::Signal>(
 					new view::LogicSignal(*this, device,
-						channel, _logic_data));
+						channel, logic_data_));
 				break;
 
 			case SR_CHANNEL_ANALOG:
@@ -396,7 +396,7 @@ void SigSession::update_signals(shared_ptr<Device> device)
 			}
 
 			assert(signal);
-			_signals.push_back(signal);
+			signals_.push_back(signal);
 		}
 
 	}
@@ -407,8 +407,8 @@ void SigSession::update_signals(shared_ptr<Device> device)
 shared_ptr<view::Signal> SigSession::signal_from_channel(
 	shared_ptr<Channel> channel) const
 {
-	lock_guard<boost::shared_mutex> lock(_signals_mutex);
-	for (shared_ptr<view::Signal> sig : _signals) {
+	lock_guard<boost::shared_mutex> lock(signals_mutex_);
+	for (shared_ptr<view::Signal> sig : signals_) {
 		assert(sig);
 		if (sig->channel() == channel)
 			return sig;
@@ -438,20 +438,20 @@ void SigSession::sample_thread_proc(shared_ptr<Device> device,
 	read_sample_rate(device);
 
 	try {
-		_session->start();
+		session_->start();
 	} catch(Error e) {
 		error_handler(e.what());
 		return;
 	}
 
-	set_capture_state(_session->trigger() ?
+	set_capture_state(session_->trigger() ?
 		AwaitingTrigger : Running);
 
-	_session->run();
+	session_->run();
 	set_capture_state(Stopped);
 
 	// Confirm that SR_DF_END was received
-	if (_cur_logic_snapshot)
+	if (cur_logic_snapshot_)
 	{
 		qDebug("SR_DF_END was not received.");
 		assert(0);
@@ -484,21 +484,21 @@ void SigSession::feed_in_meta(shared_ptr<Device> device,
 
 void SigSession::feed_in_frame_begin()
 {
-	if (_cur_logic_snapshot || !_cur_analog_snapshots.empty())
+	if (cur_logic_snapshot_ || !cur_analog_snapshots_.empty())
 		frame_began();
 }
 
 void SigSession::feed_in_logic(shared_ptr<Logic> logic)
 {
-	lock_guard<mutex> lock(_data_mutex);
+	lock_guard<mutex> lock(data_mutex_);
 
-	if (!_logic_data)
+	if (!logic_data_)
 	{
 		qDebug() << "Unexpected logic packet";
 		return;
 	}
 
-	if (!_cur_logic_snapshot)
+	if (!cur_logic_snapshot_)
 	{
 		// This could be the first packet after a trigger
 		set_capture_state(Running);
@@ -507,15 +507,15 @@ void SigSession::feed_in_logic(shared_ptr<Logic> logic)
 		uint64_t sample_limit;
 		try {
 			sample_limit = VariantBase::cast_dynamic<Variant<guint64>>(
-				_device->config_get(ConfigKey::LIMIT_SAMPLES)).get();
+				device_->config_get(ConfigKey::LIMIT_SAMPLES)).get();
 		} catch (Error) {
 			sample_limit = 0;
 		}
 
 		// Create a new data snapshot
-		_cur_logic_snapshot = shared_ptr<data::LogicSnapshot>(
+		cur_logic_snapshot_ = shared_ptr<data::LogicSnapshot>(
 			new data::LogicSnapshot(logic, sample_limit));
-		_logic_data->push_snapshot(_cur_logic_snapshot);
+		logic_data_->push_snapshot(cur_logic_snapshot_);
 
 		// @todo Putting this here means that only listeners querying
 		// for logic will be notified. Currently the only user of
@@ -526,7 +526,7 @@ void SigSession::feed_in_logic(shared_ptr<Logic> logic)
 	else
 	{
 		// Append to the existing data snapshot
-		_cur_logic_snapshot->append_payload(logic);
+		cur_logic_snapshot_->append_payload(logic);
 	}
 
 	data_received();
@@ -534,7 +534,7 @@ void SigSession::feed_in_logic(shared_ptr<Logic> logic)
 
 void SigSession::feed_in_analog(shared_ptr<Analog> analog)
 {
-	lock_guard<mutex> lock(_data_mutex);
+	lock_guard<mutex> lock(data_mutex_);
 
 	const vector<shared_ptr<Channel>> channels = analog->channels();
 	const unsigned int channel_count = channels.size();
@@ -548,8 +548,8 @@ void SigSession::feed_in_analog(shared_ptr<Analog> analog)
 
 		// Try to get the snapshot of the channel
 		const map< shared_ptr<Channel>, shared_ptr<data::AnalogSnapshot> >::
-			iterator iter = _cur_analog_snapshots.find(channel);
-		if (iter != _cur_analog_snapshots.end())
+			iterator iter = cur_analog_snapshots_.find(channel);
+		if (iter != cur_analog_snapshots_.end())
 			snapshot = (*iter).second;
 		else
 		{
@@ -562,7 +562,7 @@ void SigSession::feed_in_analog(shared_ptr<Analog> analog)
 			uint64_t sample_limit;
 			try {
 				sample_limit = VariantBase::cast_dynamic<Variant<guint64>>(
-					_device->config_get(ConfigKey::LIMIT_SAMPLES)).get();
+					device_->config_get(ConfigKey::LIMIT_SAMPLES)).get();
 			} catch (Error) {
 				sample_limit = 0;
 			}
@@ -570,7 +570,7 @@ void SigSession::feed_in_analog(shared_ptr<Analog> analog)
 			// Create a snapshot, keep it in the maps of channels
 			snapshot = shared_ptr<data::AnalogSnapshot>(
 				new data::AnalogSnapshot(sample_limit));
-			_cur_analog_snapshots[channel] = snapshot;
+			cur_analog_snapshots_[channel] = snapshot;
 
 			// Find the annalog data associated with the channel
 			shared_ptr<view::AnalogSignal> sig =
@@ -629,9 +629,9 @@ void SigSession::data_feed_in(shared_ptr<Device> device, shared_ptr<Packet> pack
 	case SR_DF_END:
 	{
 		{
-			lock_guard<mutex> lock(_data_mutex);
-			_cur_logic_snapshot.reset();
-			_cur_analog_snapshots.clear();
+			lock_guard<mutex> lock(data_mutex_);
+			cur_logic_snapshot_.reset();
+			cur_analog_snapshots_.clear();
 		}
 		frame_ended();
 		break;

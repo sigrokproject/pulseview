@@ -79,11 +79,11 @@ private Q_SLOTS:
 	void on_disable();
 
 protected:
-	pv::SigSession &_session;
-	std::shared_ptr<sigrok::Channel> _channel;
+	pv::SigSession &session_;
+	std::shared_ptr<sigrok::Channel> channel_;
 
-	QComboBox *_name_widget;
-	bool _updating_name_widget;
+	QComboBox *name_widget_;
+	bool updating_name_widget_;
 };
 
 } // namespace view

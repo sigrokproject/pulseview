@@ -100,16 +100,16 @@ Q_SIGNALS:
 	void time_changed();
 
 protected:
-	View &_view;
-	const QColor &_colour;
+	View &view_;
+	const QColor &colour_;
 
-	double _time;
+	double time_;
 
-	QSizeF _text_size;
+	QSizeF text_size_;
 
-	QWidgetAction *_value_action;
-	QDoubleSpinBox *_value_widget;
-	bool _updating_value_widget;
+	QWidgetAction *value_action_;
+	QDoubleSpinBox *value_widget_;
+	bool updating_value_widget_;
 };
 
 } // namespace view

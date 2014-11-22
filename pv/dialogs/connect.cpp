@@ -45,46 +45,46 @@ namespace dialogs {
 
 Connect::Connect(QWidget *parent, pv::DeviceManager &device_manager) :
 	QDialog(parent),
-	_device_manager(device_manager),
-	_layout(this),
-	_form(this),
-	_form_layout(&_form),
-	_drivers(&_form),
-	_serial_device(&_form),
-	_scan_button(tr("Scan for Devices"), this),
-	_device_list(this),
-	_button_box(QDialogButtonBox::Ok | QDialogButtonBox::Cancel,
+	device_manager_(device_manager),
+	layout_(this),
+	form_(this),
+	form_layout_(&form_),
+	drivers_(&form_),
+	serial_device_(&form_),
+	scan_button_(tr("Scan for Devices"), this),
+	device_list_(this),
+	button_box_(QDialogButtonBox::Ok | QDialogButtonBox::Cancel,
 		Qt::Horizontal, this)
 {
 	setWindowTitle(tr("Connect to Device"));
 
-	connect(&_button_box, SIGNAL(accepted()), this, SLOT(accept()));
-	connect(&_button_box, SIGNAL(rejected()), this, SLOT(reject()));
+	connect(&button_box_, SIGNAL(accepted()), this, SLOT(accept()));
+	connect(&button_box_, SIGNAL(rejected()), this, SLOT(reject()));
 
 	populate_drivers();
-	connect(&_drivers, SIGNAL(activated(int)),
+	connect(&drivers_, SIGNAL(activated(int)),
 		this, SLOT(device_selected(int)));
 
-	_form.setLayout(&_form_layout);
-	_form_layout.addRow(tr("Driver"), &_drivers);
+	form_.setLayout(&form_layout_);
+	form_layout_.addRow(tr("Driver"), &drivers_);
 
-	_form_layout.addRow(tr("Serial Port"), &_serial_device);
+	form_layout_.addRow(tr("Serial Port"), &serial_device_);
 
 	unset_connection();
 
-	connect(&_scan_button, SIGNAL(pressed()),
+	connect(&scan_button_, SIGNAL(pressed()),
 		this, SLOT(scan_pressed()));
 
-	setLayout(&_layout);
-	_layout.addWidget(&_form);
-	_layout.addWidget(&_scan_button);
-	_layout.addWidget(&_device_list);
-	_layout.addWidget(&_button_box);
+	setLayout(&layout_);
+	layout_.addWidget(&form_);
+	layout_.addWidget(&scan_button_);
+	layout_.addWidget(&device_list_);
+	layout_.addWidget(&button_box_);
 }
 
 shared_ptr<HardwareDevice> Connect::get_selected_device() const
 {
-	const QListWidgetItem *const item = _device_list.currentItem();
+	const QListWidgetItem *const item = device_list_.currentItem();
 	if (!item)
 		return shared_ptr<HardwareDevice>();
 
@@ -93,7 +93,7 @@ shared_ptr<HardwareDevice> Connect::get_selected_device() const
 
 void Connect::populate_drivers()
 {
-	for (auto entry : _device_manager.context()->drivers()) {
+	for (auto entry : device_manager_.context()->drivers()) {
 		auto name = entry.first;
 		auto driver = entry.second;
 		/**
@@ -107,7 +107,7 @@ void Connect::populate_drivers()
 			ConfigKey::SAMPLERATE, ConfigKey::DEVICE_OPTIONS);
 
 		if (supported_device)
-			_drivers.addItem(QString("%1 (%2)").arg(
+			drivers_.addItem(QString("%1 (%2)").arg(
 				driver->long_name().c_str()).arg(name.c_str()),
 				qVariantFromValue(driver));
 	}
@@ -115,62 +115,62 @@ void Connect::populate_drivers()
 
 void Connect::unset_connection()
 {
-	_device_list.clear();
-	_serial_device.hide();
-	_form_layout.labelForField(&_serial_device)->hide();
-	_button_box.button(QDialogButtonBox::Ok)->setDisabled(true);
+	device_list_.clear();
+	serial_device_.hide();
+	form_layout_.labelForField(&serial_device_)->hide();
+	button_box_.button(QDialogButtonBox::Ok)->setDisabled(true);
 }
 
 void Connect::set_serial_connection()
 {
-	_serial_device.show();
-	_form_layout.labelForField(&_serial_device)->show();
+	serial_device_.show();
+	form_layout_.labelForField(&serial_device_)->show();
 }
 
 void Connect::scan_pressed()
 {
-	_device_list.clear();
+	device_list_.clear();
 
-	const int index = _drivers.currentIndex();
+	const int index = drivers_.currentIndex();
 	if (index == -1)
 		return;
 
 	shared_ptr<Driver> driver =
-		_drivers.itemData(index).value<shared_ptr<Driver>>();
+		drivers_.itemData(index).value<shared_ptr<Driver>>();
 
 	assert(driver);
 
 	map<const ConfigKey *, VariantBase> drvopts;
 
-	if (_serial_device.isVisible())
+	if (serial_device_.isVisible())
 		drvopts[ConfigKey::CONN] = Variant<ustring>::create(
-			_serial_device.text().toUtf8().constData());
+			serial_device_.text().toUtf8().constData());
 
 	list< shared_ptr<HardwareDevice> > devices =
-		_device_manager.driver_scan(driver, drvopts);
+		device_manager_.driver_scan(driver, drvopts);
 
 	for (shared_ptr<HardwareDevice> device : devices)
 	{
 		assert(device);
 
 		QString text = QString::fromStdString(
-			_device_manager.get_display_name(device));
+			device_manager_.get_display_name(device));
 		text += QString(" with %1 channels").arg(device->channels().size());
 
 		QListWidgetItem *const item = new QListWidgetItem(text,
-			&_device_list);
+			&device_list_);
 		item->setData(Qt::UserRole, qVariantFromValue(device));
-		_device_list.addItem(item);
+		device_list_.addItem(item);
 	}
 
-	_device_list.setCurrentRow(0);
-	_button_box.button(QDialogButtonBox::Ok)->setDisabled(_device_list.count() == 0);
+	device_list_.setCurrentRow(0);
+	button_box_.button(QDialogButtonBox::Ok)->setDisabled(device_list_.count() == 0);
 }
 
 void Connect::device_selected(int index)
 {
 	shared_ptr<Driver> driver =
-		_drivers.itemData(index).value<shared_ptr<Driver>>();
+		drivers_.itemData(index).value<shared_ptr<Driver>>();
 
 	unset_connection();
 

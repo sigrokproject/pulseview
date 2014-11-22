@@ -58,8 +58,8 @@ Q_SIGNALS:
 	void selected(const QColor &colour);
 
 private:
-	ColourPopup _popup;
-	QColor _cur_colour;
+	ColourPopup popup_;
+	QColor cur_colour_;
 };
 
 } // widgets

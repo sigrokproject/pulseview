@@ -64,9 +64,9 @@ class DecodeTrace : public Trace
 private:
 	struct ChannelSelector
 	{
-		const QComboBox *_combo;
-		const std::shared_ptr<pv::data::decode::Decoder> _decoder;
-		const srd_channel *_pdch;
+		const QComboBox *combo_;
+		const std::shared_ptr<pv::data::decode::Decoder> decoder_;
+		const srd_channel *pdch_;
 	};
 
 private:
@@ -192,21 +192,21 @@ private Q_SLOTS:
 	void on_show_hide_decoder(int index);
 
 private:
-	pv::SigSession &_session;
-	std::shared_ptr<pv::data::DecoderStack> _decoder_stack;
+	pv::SigSession &session_;
+	std::shared_ptr<pv::data::DecoderStack> decoder_stack_;
 
-	uint64_t _decode_start, _decode_end;
+	uint64_t decode_start_, decode_end_;
 
 	std::list< std::shared_ptr<pv::prop::binding::DecoderOptions> >
-		_bindings;
+		bindings_;
 
-	std::list<ChannelSelector> _channel_selectors;
-	std::vector<pv::widgets::DecoderGroupBox*> _decoder_forms;
+	std::list<ChannelSelector> channel_selectors_;
+	std::vector<pv::widgets::DecoderGroupBox*> decoder_forms_;
 
-	std::vector<data::decode::Row> _visible_rows;
-	int _text_height, _row_height;
+	std::vector<data::decode::Row> visible_rows_;
+	int text_height_, row_height_;
 
-	QSignalMapper _delete_mapper, _show_hide_mapper;
+	QSignalMapper delete_mapper_, show_hide_mapper_;
 };
 
 } // namespace view

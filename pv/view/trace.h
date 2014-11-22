@@ -127,12 +127,12 @@ private Q_SLOTS:
 	void on_popup_closed();
 
 protected:
-	QString _name;
-	QColor _colour;
+	QString name_;
+	QColor colour_;
 
 private:
-	pv::widgets::Popup *_popup;
-	QFormLayout *_popup_form;
+	pv::widgets::Popup *popup_;
+	QFormLayout *popup_form_;
 };
 
 } // namespace view

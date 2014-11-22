@@ -92,27 +92,27 @@ protected:
 	bool eventFilter(QObject *watched, QEvent *event);
 
 private:
-	SigSession &_session;
+	SigSession &session_;
 
-	QComboBox _device_selector;
-	bool _updating_device_selector;
+	QComboBox device_selector_;
+	bool updating_device_selector_;
 
-	pv::widgets::PopupToolButton _configure_button;
-	QAction *_configure_button_action;
+	pv::widgets::PopupToolButton configure_button_;
+	QAction *configure_button_action_;
 
-	pv::widgets::PopupToolButton _channels_button;
+	pv::widgets::PopupToolButton channels_button_;
 
-	pv::widgets::SweepTimingWidget _sample_count;
-	pv::widgets::SweepTimingWidget _sample_rate;
-	bool _updating_sample_rate;
-	bool _updating_sample_count;
+	pv::widgets::SweepTimingWidget sample_count_;
+	pv::widgets::SweepTimingWidget sample_rate_;
+	bool updating_sample_rate_;
+	bool updating_sample_count_;
 
-	bool _sample_count_supported;
+	bool sample_count_supported_;
 
-	QIcon _icon_red;
-	QIcon _icon_green;
-	QIcon _icon_grey;
-	QToolButton _run_stop_button;
+	QIcon icon_red_;
+	QIcon icon_green_;
+	QIcon icon_grey_;
+	QToolButton run_stop_button_;
 };
 
 } // namespace toolbars

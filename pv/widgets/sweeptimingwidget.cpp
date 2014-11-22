@@ -37,35 +37,35 @@ namespace widgets {
 SweepTimingWidget::SweepTimingWidget(const char *suffix,
 	QWidget *parent) :
 	QWidget(parent),
-	_suffix(suffix),
-	_layout(this),
-	_value(this),
-	_list(this),
-	_value_type(None)
+	suffix_(suffix),
+	layout_(this),
+	value_(this),
+	list_(this),
+	value_type_(None)
 {
 	setContentsMargins(0, 0, 0, 0);
 
-	_value.setDecimals(0);
-	_value.setSuffix(QString::fromUtf8(suffix));
+	value_.setDecimals(0);
+	value_.setSuffix(QString::fromUtf8(suffix));
 
-	connect(&_list, SIGNAL(currentIndexChanged(int)),
+	connect(&list_, SIGNAL(currentIndexChanged(int)),
 		this, SIGNAL(value_changed()));
-	connect(&_value, SIGNAL(editingFinished()),
+	connect(&value_, SIGNAL(editingFinished()),
 		this, SIGNAL(value_changed()));
 
-	setLayout(&_layout);
-	_layout.setMargin(0);
-	_layout.addWidget(&_list);
-	_layout.addWidget(&_value);
+	setLayout(&layout_);
+	layout_.setMargin(0);
+	layout_.addWidget(&list_);
+	layout_.addWidget(&value_);
 
 	show_none();
 }
 
 void SweepTimingWidget::show_none()
 {
-	_value_type = None;
-	_value.hide();
-	_list.hide();
+	value_type_ = None;
+	value_.hide();
+	list_.hide();
 }
 
 void SweepTimingWidget::show_min_max_step(uint64_t min, uint64_t max,
@@ -74,30 +74,30 @@ void SweepTimingWidget::show_min_max_step(uint64_t min, uint64_t max,
 	assert(max > min);
 	assert(step > 0);
 
-	_value_type = MinMaxStep;
+	value_type_ = MinMaxStep;
 
-	_value.setRange(min, max);
-	_value.setSingleStep(step);
+	value_.setRange(min, max);
+	value_.setSingleStep(step);
 
-	_value.show();
-	_list.hide();
+	value_.show();
+	list_.hide();
 }
 
 void SweepTimingWidget::show_list(const uint64_t *vals, size_t count)
 {
-	_value_type = List;
+	value_type_ = List;
 
-	_list.clear();
+	list_.clear();
 	for (size_t i = 0; i < count; i++)
 	{
-		char *const s = sr_si_string_u64(vals[i], _suffix);
-		_list.addItem(QString::fromUtf8(s),
+		char *const s = sr_si_string_u64(vals[i], suffix_);
+		list_.addItem(QString::fromUtf8(s),
 			qVariantFromValue(vals[i]));
 		g_free(s);
 	}
 
-	_value.hide();
-	_list.show();
+	value_.hide();
+	list_.show();
 }
 
 void SweepTimingWidget::show_125_list(uint64_t min, uint64_t max)
@@ -142,18 +142,18 @@ void SweepTimingWidget::show_125_list(uint64_t min, uint64_t max)
 
 uint64_t SweepTimingWidget::value() const
 {
-	switch(_value_type)
+	switch(value_type_)
 	{
 	case None:
 		return 0;
 
 	case MinMaxStep:
-		return (uint64_t)_value.value();
+		return (uint64_t)value_.value();
 
 	case List:
 	{
-		const int index = _list.currentIndex();
-		return (index >= 0) ? _list.itemData(
+		const int index = list_.currentIndex();
+		return (index >= 0) ? list_.itemData(
 			index).value<uint64_t>() : 0;
 	}
 
@@ -166,21 +166,21 @@ uint64_t SweepTimingWidget::value() const
 
 void SweepTimingWidget::set_value(uint64_t value)
 {
-	_value.setValue(value);
+	value_.setValue(value);
 
-	int best_match = _list.count() - 1;
+	int best_match = list_.count() - 1;
 	int64_t best_variance = INT64_MAX;
 
-	for (int i = 0; i < _list.count(); i++) {
+	for (int i = 0; i < list_.count(); i++) {
 		const int64_t this_variance = abs(
-			(int64_t)value - _list.itemData(i).value<int64_t>());
+			(int64_t)value - list_.itemData(i).value<int64_t>());
 		if (this_variance < best_variance) {
 			best_variance = this_variance;
 			best_match = i;
 		}
 	}
 
-	_list.setCurrentIndex(best_match);
+	list_.setCurrentIndex(best_match);
 }
 
 } // widgets

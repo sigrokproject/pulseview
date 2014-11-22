@@ -35,28 +35,28 @@ namespace view {
 
 vector< shared_ptr<RowItem> >& RowItemOwner::child_items()
 {
-	return _items;
+	return items_;
 }
 
 const vector< shared_ptr<RowItem> >& RowItemOwner::child_items() const
 {
-	return _items;
+	return items_;
 }
 
 void RowItemOwner::clear_child_items()
 {
-	for (auto &i : _items) {
+	for (auto &i : items_) {
 		assert(i->owner() == this);
 		i->set_owner(nullptr);
 	}
-	_items.clear();
+	items_.clear();
 }
 
 void RowItemOwner::add_child_item(std::shared_ptr<RowItem> item)
 {
 	assert(!item->owner());
 	item->set_owner(this);
-	_items.push_back(item);
+	items_.push_back(item);
 
 	extents_changed(true, true);
 }
@@ -65,16 +65,16 @@ void RowItemOwner::remove_child_item(std::shared_ptr<RowItem> item)
 {
 	assert(item->owner() == this);
 	item->set_owner(nullptr);
-	auto iter = std::find(_items.begin(), _items.end(), item);
-	assert(iter != _items.end());
-	_items.erase(iter);
+	auto iter = std::find(items_.begin(), items_.end(), item);
+	assert(iter != items_.end());
+	items_.erase(iter);
 
 	extents_changed(true, true);
 }
 
 RowItemOwner::iterator RowItemOwner::begin()
 {
-	return iterator(this, _items.begin());
+	return iterator(this, items_.begin());
 }
 
 RowItemOwner::iterator RowItemOwner::end()
@@ -84,7 +84,7 @@ RowItemOwner::iterator RowItemOwner::end()
 
 RowItemOwner::const_iterator RowItemOwner::begin() const
 {
-	return const_iterator(this, _items.cbegin());
+	return const_iterator(this, items_.cbegin());
 }
 
 RowItemOwner::const_iterator RowItemOwner::end() const

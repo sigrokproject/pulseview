@@ -43,8 +43,8 @@ public:
 	virtual uint64_t get_max_sample_count() const = 0;
 
 protected:
-	double _start_time;
-	double _samplerate;
+	double start_time_;
+	double samplerate_;
 };
 
 } // namespace data

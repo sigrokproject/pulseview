@@ -42,7 +42,7 @@ Q_SIGNALS:
 	void selection_changed();
 
 protected:
-	pv::view::View &_view;
+	pv::view::View &view_;
 };
 
 } // namespace view

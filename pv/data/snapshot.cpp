@@ -31,62 +31,62 @@ namespace pv {
 namespace data {
 
 Snapshot::Snapshot(unsigned int unit_size) :
-	_sample_count(0),
-	_capacity(0),
-	_unit_size(unit_size)
+	sample_count_(0),
+	capacity_(0),
+	unit_size_(unit_size)
 {
-	lock_guard<recursive_mutex> lock(_mutex);
-	assert(_unit_size > 0);
+	lock_guard<recursive_mutex> lock(mutex_);
+	assert(unit_size_ > 0);
 }
 
 Snapshot::~Snapshot()
 {
-	lock_guard<recursive_mutex> lock(_mutex);
+	lock_guard<recursive_mutex> lock(mutex_);
 }
 
 uint64_t Snapshot::get_sample_count() const
 {
-	lock_guard<recursive_mutex> lock(_mutex);
-	return _sample_count;
+	lock_guard<recursive_mutex> lock(mutex_);
+	return sample_count_;
 }
 
 unsigned int Snapshot::unit_size() const
 {
-	return _unit_size;
+	return unit_size_;
 }
 
 void Snapshot::set_capacity(const uint64_t new_capacity)
 {
-	lock_guard<recursive_mutex> lock(_mutex);
+	lock_guard<recursive_mutex> lock(mutex_);
 
-	assert(_capacity >= _sample_count);
-	if (new_capacity > _capacity) {
-		_capacity = new_capacity;
-		_data.resize((new_capacity * _unit_size) + sizeof(uint64_t));
+	assert(capacity_ >= sample_count_);
+	if (new_capacity > capacity_) {
+		capacity_ = new_capacity;
+		data_.resize((new_capacity * unit_size_) + sizeof(uint64_t));
 	}
 }
 
 uint64_t Snapshot::capacity() const
 {
-	lock_guard<recursive_mutex> lock(_mutex);
-	return _data.size();
+	lock_guard<recursive_mutex> lock(mutex_);
+	return data_.size();
 }
 
 void Snapshot::append_data(void *data, uint64_t samples)
 {
-	lock_guard<recursive_mutex> lock(_mutex);
+	lock_guard<recursive_mutex> lock(mutex_);
 
-	assert(_capacity >= _sample_count);
+	assert(capacity_ >= sample_count_);
 
 	// Ensure there's enough capacity to copy.
-	const uint64_t free_space = _capacity - _sample_count;
+	const uint64_t free_space = capacity_ - sample_count_;
 	if (free_space < samples) {
-		set_capacity(_sample_count + samples);
+		set_capacity(sample_count_ + samples);
 	}
 
-	memcpy((uint8_t*)_data.data() + _sample_count * _unit_size,
-		data, samples * _unit_size);
-	_sample_count += samples;
+	memcpy((uint8_t*)data_.data() + sample_count_ * unit_size_,
+		data, samples * unit_size_);
+	sample_count_ += samples;
 }
 
 } // namespace data

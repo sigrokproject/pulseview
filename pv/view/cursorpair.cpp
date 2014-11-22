@@ -38,27 +38,27 @@ namespace view {
 const int CursorPair::DeltaPadding = 8;
 
 CursorPair::CursorPair(View &view) :
-	_first(new Cursor(view, 0.0)),
-	_second(new Cursor(view, 1.0)),
-	_view(view)
+	first_(new Cursor(view, 0.0)),
+	second_(new Cursor(view, 1.0)),
+	view_(view)
 {
 }
 
 shared_ptr<Cursor> CursorPair::first() const
 {
-	return _first;
+	return first_;
 }
 
 shared_ptr<Cursor> CursorPair::second() const
 {
-	return _second;
+	return second_;
 }
 
 QRectF CursorPair::get_label_rect(const QRect &rect) const
 {
 	const QSizeF label_size(
-		_text_size.width() + View::LabelPadding.width() * 2,
-		_text_size.height() + View::LabelPadding.height() * 2);
+		text_size_.width() + View::LabelPadding.width() * 2,
+		text_size_.height() + View::LabelPadding.height() * 2);
 	const pair<float, float> offsets(get_cursor_offsets());
 	const pair<float, float> normal_offsets(
 		(offsets.first < offsets.second) ? offsets :
@@ -77,8 +77,8 @@ QRectF CursorPair::get_label_rect(const QRect &rect) const
 void CursorPair::draw_markers(QPainter &p,
 	const QRect &rect, unsigned int prefix)
 {
-	assert(_first);
-	assert(_second);
+	assert(first_);
+	assert(second_);
 
 	compute_text_size(p, prefix);
 	QRectF delta_rect(get_label_rect(rect));
@@ -86,7 +86,7 @@ void CursorPair::draw_markers(QPainter &p,
 	const int radius = delta_rect.height() / 2;
 	const QRectF text_rect(delta_rect.intersected(
 		rect).adjusted(radius, 0, -radius, 0));
-	if(text_rect.width() >= _text_size.width())
+	if(text_rect.width() >= text_size_.width())
 	{
 		const int highlight_radius = delta_rect.height() / 2 - 2;
 
@@ -100,12 +100,12 @@ void CursorPair::draw_markers(QPainter &p,
 
 		p.setPen(Cursor::TextColour);
 		p.drawText(text_rect, Qt::AlignCenter | Qt::AlignVCenter,
-			pv::util::format_time(_second->time() - _first->time(), prefix, 2));
+			pv::util::format_time(second_->time() - first_->time(), prefix, 2));
 	}
 
 	// Paint the cursor markers
-	_first->paint_label(p, rect, prefix);
-	_second->paint_label(p, rect, prefix);
+	first_->paint_label(p, rect, prefix);
+	second_->paint_label(p, rect, prefix);
 }
 
 void CursorPair::draw_viewport_background(QPainter &p,
@@ -126,30 +126,30 @@ void CursorPair::draw_viewport_background(QPainter &p,
 void CursorPair::draw_viewport_foreground(QPainter &p,
 	const QRect &rect)
 {
-	assert(_first);
-	assert(_second);
+	assert(first_);
+	assert(second_);
 
-	_first->paint(p, rect);
-	_second->paint(p, rect);
+	first_->paint(p, rect);
+	second_->paint(p, rect);
 }
 
 void CursorPair::compute_text_size(QPainter &p, unsigned int prefix)
 {
-	assert(_first);
-	assert(_second);
+	assert(first_);
+	assert(second_);
 
-	_text_size = p.boundingRect(QRectF(), 0, pv::util::format_time(
-		_second->time() - _first->time(), prefix, 2)).size();
+	text_size_ = p.boundingRect(QRectF(), 0, pv::util::format_time(
+		second_->time() - first_->time(), prefix, 2)).size();
 }
 
 pair<float, float> CursorPair::get_cursor_offsets() const
 {
-	assert(_first);
-	assert(_second);
+	assert(first_);
+	assert(second_);
 
 	return pair<float, float>(
-		(_first->time() - _view.offset()) / _view.scale(),
-		(_second->time() - _view.offset()) / _view.scale());
+		(first_->time() - view_.offset()) / view_.scale(),
+		(second_->time() - view_.offset()) / view_.scale());
 }
 
 } // namespace view

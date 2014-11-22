@@ -39,9 +39,9 @@ Int::Int(QString name,
 	Getter getter,
 	Setter setter) :
 	Property(name, getter, setter),
-	_suffix(suffix),
-	_range(range),
-	_spin_box(NULL)
+	suffix_(suffix),
+	range_(range),
+	spin_box_(NULL)
 {
 }
 
@@ -53,20 +53,20 @@ QWidget* Int::get_widget(QWidget *parent, bool auto_commit)
 {
 	int64_t int_val = 0, range_min = 0, range_max = 0;
 
-	if (_spin_box)
-		return _spin_box;
+	if (spin_box_)
+		return spin_box_;
 
-	if (!_getter)
+	if (!getter_)
 		return NULL;
 
-	_value = _getter();
+	value_ = getter_();
 
-	GVariant *value = _value.gobj();
+	GVariant *value = value_.gobj();
 	if (!value)
 		return NULL;
 
-	_spin_box = new QSpinBox(parent);
-	_spin_box->setSuffix(_suffix);
+	spin_box_ = new QSpinBox(parent);
+	spin_box_->setSuffix(suffix_);
 
 	const GVariantType *const type = g_variant_get_type(value);
 	assert(type);
@@ -120,45 +120,45 @@ QWidget* Int::get_widget(QWidget *parent, bool auto_commit)
 	range_min = max(range_min, (int64_t)INT_MIN);
 	range_max = min(range_max, (int64_t)INT_MAX);
 
-	if (_range)
-		_spin_box->setRange((int)_range->first, (int)_range->second);
+	if (range_)
+		spin_box_->setRange((int)range_->first, (int)range_->second);
 	else
-		_spin_box->setRange((int)range_min, (int)range_max);
+		spin_box_->setRange((int)range_min, (int)range_max);
 
-	_spin_box->setValue((int)int_val);
+	spin_box_->setValue((int)int_val);
 
 	if (auto_commit)
-		connect(_spin_box, SIGNAL(valueChanged(int)),
+		connect(spin_box_, SIGNAL(valueChanged(int)),
 			this, SLOT(on_value_changed(int)));
 
-	return _spin_box;
+	return spin_box_;
 }
 
 void Int::commit()
 {
-	assert(_setter);
+	assert(setter_);
 
-	if (!_spin_box)
+	if (!spin_box_)
 		return;
 
 	GVariant *new_value = NULL;
-	const GVariantType *const type = g_variant_get_type(_value.gobj());
+	const GVariantType *const type = g_variant_get_type(value_.gobj());
 	assert(type);
 
 	if (g_variant_type_equal(type, G_VARIANT_TYPE_BYTE))
-		new_value = g_variant_new_byte(_spin_box->value());
+		new_value = g_variant_new_byte(spin_box_->value());
 	else if (g_variant_type_equal(type, G_VARIANT_TYPE_INT16))
-		new_value = g_variant_new_int16(_spin_box->value());
+		new_value = g_variant_new_int16(spin_box_->value());
 	else if (g_variant_type_equal(type, G_VARIANT_TYPE_UINT16))
-		new_value = g_variant_new_uint16(_spin_box->value());
+		new_value = g_variant_new_uint16(spin_box_->value());
 	else if (g_variant_type_equal(type, G_VARIANT_TYPE_INT32))
-		new_value = g_variant_new_int32(_spin_box->value());
+		new_value = g_variant_new_int32(spin_box_->value());
 	else if (g_variant_type_equal(type, G_VARIANT_TYPE_UINT32))
-		new_value = g_variant_new_int32(_spin_box->value());
+		new_value = g_variant_new_int32(spin_box_->value());
 	else if (g_variant_type_equal(type, G_VARIANT_TYPE_INT64))
-		new_value = g_variant_new_int64(_spin_box->value());
+		new_value = g_variant_new_int64(spin_box_->value());
 	else if (g_variant_type_equal(type, G_VARIANT_TYPE_UINT64))
-		new_value = g_variant_new_uint64(_spin_box->value());
+		new_value = g_variant_new_uint64(spin_box_->value());
 	else
 	{
 		// Unexpected value type.
@@ -167,9 +167,9 @@ void Int::commit()
 
 	assert(new_value);
 
-	_value = Glib::VariantBase(new_value);
+	value_ = Glib::VariantBase(new_value);
 
-	_setter(_value);
+	setter_(value_);
 }
 
 void Int::on_value_changed(int)

@@ -41,24 +41,24 @@ const unsigned int Popup::MarginWidth = 6;
 
 Popup::Popup(QWidget *parent) :
 	QWidget(parent, Qt::Popup | Qt::FramelessWindowHint),
-	_point(),
-	_pos(Left)
+	point_(),
+	pos_(Left)
 {
 }
 
 const QPoint& Popup::point() const
 {
-	return _point;
+	return point_;
 }
 
 Popup::Position Popup::position() const
 {
-	return _pos;
+	return pos_;
 }
 
 void Popup::set_position(const QPoint point, Position pos)
 {
-	_point = point, _pos = pos;
+	point_ = point, pos_ = pos;
 
 	setContentsMargins(
 		MarginWidth + ((pos == Right) ? ArrowLength : 0),
@@ -113,24 +113,24 @@ void Popup::show()
 bool Popup::space_for_arrow() const
 {
 	// Check if there is room for the arrow
-	switch (_pos) {
+	switch (pos_) {
 	case Right:
-		if (_point.x() > x())
+		if (point_.x() > x())
 			return false;
 		return true;
 
 	case Bottom:
-		if (_point.y() > y())
+		if (point_.y() > y())
 			return false;
 		return true;		
 
 	case Left:
-		if (_point.x() < (x() + width()))
+		if (point_.x() < (x() + width()))
 			return false;
 		return true;
 
 	case Top:
-		if (_point.y() < (y() + height()))
+		if (point_.y() < (y() + height()))
 			return false;
 		return true;
 	}
@@ -142,10 +142,10 @@ QPolygon Popup::arrow_polygon() const
 {
 	QPolygon poly;
 
-	const QPoint p = mapFromGlobal(_point);
+	const QPoint p = mapFromGlobal(point_);
 	const int l = ArrowLength + ArrowOverlap; 
 
-	switch (_pos)
+	switch (pos_)
         {
 	case Right:
 		poly << QPoint(p.x() + l, p.y() - l);
@@ -163,7 +163,7 @@ QPolygon Popup::arrow_polygon() const
 
 	poly << p;
 
-	switch (_pos)
+	switch (pos_)
         {
 	case Right:
 	case Bottom:
@@ -190,11 +190,11 @@ QRegion Popup::arrow_region() const
 QRect Popup::bubble_rect() const
 {
 	return QRect(
-		QPoint((_pos == Right) ? ArrowLength : 0,
-			(_pos == Bottom) ? ArrowLength : 0),
-		QSize(width() - ((_pos == Left || _pos == Right) ?
+		QPoint((pos_ == Right) ? ArrowLength : 0,
+			(pos_ == Bottom) ? ArrowLength : 0),
+		QSize(width() - ((pos_ == Left || pos_ == Right) ?
 				ArrowLength : 0),
-			height() - ((_pos == Top || _pos == Bottom) ?
+			height() - ((pos_ == Top || pos_ == Bottom) ?
 				ArrowLength : 0)));
 }
 
@@ -229,19 +229,19 @@ void Popup::reposition_widget()
 	QPoint o;
 
 	const QRect screen_rect = QApplication::desktop()->availableGeometry(
-		QApplication::desktop()->screenNumber(_point));
+		QApplication::desktop()->screenNumber(point_));
 
-	if (_pos == Right || _pos == Left)
+	if (pos_ == Right || pos_ == Left)
 		o.ry() = -height() / 2;
 	else
 		o.rx() = -width() / 2;
 
-	if (_pos == Left)
+	if (pos_ == Left)
 		o.rx() = -width();
-	else if(_pos == Top)
+	else if(pos_ == Top)
 		o.ry() = -height();
 
-	o += _point;
+	o += point_;
 	move(max(min(o.x(), screen_rect.right() - width()),
 			screen_rect.left()),
 		max(min(o.y(), screen_rect.bottom() - height()),
@@ -280,7 +280,7 @@ void Popup::paintEvent(QPaintEvent*)
 
 	const QRegion a(arrow_region());
 	const QRegion arrow_outline = a.subtracted(
-		a.translated(ArrowOffsets[_pos]));
+		a.translated(ArrowOffsets[pos_]));
 
 	painter.setClipRegion(bubble_outline.subtracted(a).united(
 		arrow_outline));

@@ -64,7 +64,7 @@ private:
 	static QString print_voltage_threshold(Glib::VariantBase gvar);
 
 protected:
-	std::shared_ptr<sigrok::Configurable> _configurable;
+	std::shared_ptr<sigrok::Configurable> configurable_;
 };
 
 } // binding

@@ -59,14 +59,14 @@ Q_SIGNALS:
 	void value_changed();
 
 private:
-	const char *const _suffix;
+	const char *const suffix_;
 
-	QHBoxLayout _layout;
+	QHBoxLayout layout_;
 
-	QDoubleSpinBox _value;
-	QComboBox _list;
+	QDoubleSpinBox value_;
+	QComboBox list_;
 
-	ValueType _value_type;
+	ValueType value_type_;
 };
 
 } // widgets

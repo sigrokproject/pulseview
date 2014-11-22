@@ -117,16 +117,16 @@ private:
 	 */
 	static const char *SettingSaveDirectory;
 
-	DeviceManager &_device_manager;
+	DeviceManager &device_manager_;
 
-	SigSession _session;
+	SigSession session_;
 
-	pv::view::View *_view;
+	pv::view::View *view_;
 
-	QWidget *_central_widget;
-	QVBoxLayout *_vertical_layout;
+	QWidget *central_widget_;
+	QVBoxLayout *vertical_layout_;
 
-	toolbars::SamplingBar *_sampling_bar;
+	toolbars::SamplingBar *sampling_bar_;
 };
 
 } // namespace pv

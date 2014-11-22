@@ -57,55 +57,55 @@ const uint64_t SamplingBar::DefaultSampleCount = 1000000;
 
 SamplingBar::SamplingBar(SigSession &session, QWidget *parent) :
 	QToolBar("Sampling Bar", parent),
-	_session(session),
-	_device_selector(this),
-	_updating_device_selector(false),
-	_configure_button(this),
-	_configure_button_action(NULL),
-	_channels_button(this),
-	_sample_count(" samples", this),
-	_sample_rate("Hz", this),
-	_updating_sample_rate(false),
-	_updating_sample_count(false),
-	_sample_count_supported(false),
-	_icon_red(":/icons/status-red.svg"),
-	_icon_green(":/icons/status-green.svg"),
-	_icon_grey(":/icons/status-grey.svg"),
-	_run_stop_button(this)
+	session_(session),
+	device_selector_(this),
+	updating_device_selector_(false),
+	configure_button_(this),
+	configure_button_action_(NULL),
+	channels_button_(this),
+	sample_count_(" samples", this),
+	sample_rate_("Hz", this),
+	updating_sample_rate_(false),
+	updating_sample_count_(false),
+	sample_count_supported_(false),
+	icon_red_(":/icons/status-red.svg"),
+	icon_green_(":/icons/status-green.svg"),
+	icon_grey_(":/icons/status-grey.svg"),
+	run_stop_button_(this)
 {
 	setObjectName(QString::fromUtf8("SamplingBar"));
 
-	connect(&_run_stop_button, SIGNAL(clicked()),
+	connect(&run_stop_button_, SIGNAL(clicked()),
 		this, SLOT(on_run_stop()));
-	connect(&_device_selector, SIGNAL(currentIndexChanged (int)),
+	connect(&device_selector_, SIGNAL(currentIndexChanged (int)),
 		this, SLOT(on_device_selected()));
-	connect(&_sample_count, SIGNAL(value_changed()),
+	connect(&sample_count_, SIGNAL(value_changed()),
 		this, SLOT(on_sample_count_changed()));
-	connect(&_sample_rate, SIGNAL(value_changed()),
+	connect(&sample_rate_, SIGNAL(value_changed()),
 		this, SLOT(on_sample_rate_changed()));
 
-	_sample_count.show_min_max_step(0, UINT64_MAX, 1);
+	sample_count_.show_min_max_step(0, UINT64_MAX, 1);
 
 	set_capture_state(pv::SigSession::Stopped);
 
-	_configure_button.setIcon(QIcon::fromTheme("configure",
+	configure_button_.setIcon(QIcon::fromTheme("configure",
 		QIcon(":/icons/configure.png")));
 
-	_channels_button.setIcon(QIcon::fromTheme("channels",
+	channels_button_.setIcon(QIcon::fromTheme("channels",
 		QIcon(":/icons/channels.svg")));
 
-	_run_stop_button.setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+	run_stop_button_.setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
 
-	addWidget(&_device_selector);
-	_configure_button_action = addWidget(&_configure_button);
-	addWidget(&_channels_button);
-	addWidget(&_sample_count);
-	addWidget(&_sample_rate);
+	addWidget(&device_selector_);
+	configure_button_action_ = addWidget(&configure_button_);
+	addWidget(&channels_button_);
+	addWidget(&sample_count_);
+	addWidget(&sample_rate_);
 
-	addWidget(&_run_stop_button);
+	addWidget(&run_stop_button_);
 
-	_sample_count.installEventFilter(this);
-	_sample_rate.installEventFilter(this);
+	sample_count_.installEventFilter(this);
+	sample_rate_.installEventFilter(this);
 }
 
 void SamplingBar::set_device_list(
@@ -116,9 +116,9 @@ void SamplingBar::set_device_list(
 
 	assert(selected);
 
-	_updating_device_selector = true;
+	updating_device_selector_ = true;
 
-	_device_selector.clear();
+	device_selector_.clear();
 
 	for (auto entry : devices) {
 		auto device = entry.first;
@@ -127,37 +127,37 @@ void SamplingBar::set_device_list(
 		assert(device);
 
 		if (selected == device)
-			selected_index = _device_selector.count();
+			selected_index = device_selector_.count();
 
-		_device_selector.addItem(display_name.c_str(),
+		device_selector_.addItem(display_name.c_str(),
 			qVariantFromValue(device));
 	}
 
 	// The selected device should have been in the list
 	assert(selected_index != -1);
-	_device_selector.setCurrentIndex(selected_index);
+	device_selector_.setCurrentIndex(selected_index);
 
 	update_device_config_widgets();
 
-	_updating_device_selector = false;
+	updating_device_selector_ = false;
 }
 
 shared_ptr<Device> SamplingBar::get_selected_device() const
 {
-	const int index = _device_selector.currentIndex();
+	const int index = device_selector_.currentIndex();
 	if (index < 0)
 		return shared_ptr<Device>();
 
-	return _device_selector.itemData(index).value<shared_ptr<Device>>();
+	return device_selector_.itemData(index).value<shared_ptr<Device>>();
 }
 
 void SamplingBar::set_capture_state(pv::SigSession::capture_state state)
 {
-	const QIcon *icons[] = {&_icon_grey, &_icon_red, &_icon_green};
-	_run_stop_button.setIcon(*icons[state]);
-	_run_stop_button.setText((state == pv::SigSession::Stopped) ?
+	const QIcon *icons[] = {&icon_grey_, &icon_red_, &icon_green_};
+	run_stop_button_.setIcon(*icons[state]);
+	run_stop_button_.setText((state == pv::SigSession::Stopped) ?
 		tr("Run") : tr("Stop"));
-	_run_stop_button.setShortcut(QKeySequence(Qt::Key_Space));
+	run_stop_button_.setShortcut(QKeySequence(Qt::Key_Space));
 }
 
 void SamplingBar::update_sample_rate_selector()
@@ -167,21 +167,21 @@ void SamplingBar::update_sample_rate_selector()
 	const uint64_t *elements = NULL;
 	gsize num_elements;
 
-	if (_updating_sample_rate)
+	if (updating_sample_rate_)
 		return;
 
 	const shared_ptr<Device> device = get_selected_device();
 	if (!device)
 		return;
 
-	assert(!_updating_sample_rate);
-	_updating_sample_rate = true;
+	assert(!updating_sample_rate_);
+	updating_sample_rate_ = true;
 
 	try {
 		gvar_dict = device->config_list(ConfigKey::SAMPLERATE);
 	} catch (Error error) {
-		_sample_rate.show_none();
-		_updating_sample_rate = false;
+		sample_rate_.show_none();
+		updating_sample_rate_ = false;
 		return;
 	}
 
@@ -203,14 +203,14 @@ void SamplingBar::update_sample_rate_selector()
 		assert(step > 0);
 
 		if (step == 1)
-			_sample_rate.show_125_list(min, max);
+			sample_rate_.show_125_list(min, max);
 		else
 		{
 			// When the step is not 1, we cam't make a 1-2-5-10
 			// list of sample rates, because we may not be able to
 			// make round numbers. Therefore in this case, show a
 			// spin box.
-			_sample_rate.show_min_max_step(min, max, step);
+			sample_rate_.show_min_max_step(min, max, step);
 		}
 	}
 	else if ((gvar_list = g_variant_lookup_value(gvar_dict.gobj(),
@@ -218,17 +218,17 @@ void SamplingBar::update_sample_rate_selector()
 	{
 		elements = (const uint64_t *)g_variant_get_fixed_array(
 				gvar_list, &num_elements, sizeof(uint64_t));
-		_sample_rate.show_list(elements, num_elements);
+		sample_rate_.show_list(elements, num_elements);
 		g_variant_unref(gvar_list);
 	}
-	_updating_sample_rate = false;
+	updating_sample_rate_ = false;
 
 	update_sample_rate_selector_value();
 }
 
 void SamplingBar::update_sample_rate_selector_value()
 {
-	if (_updating_sample_rate)
+	if (updating_sample_rate_)
 		return;
 
 	const shared_ptr<Device> device = get_selected_device();
@@ -239,10 +239,10 @@ void SamplingBar::update_sample_rate_selector_value()
 		auto gvar = device->config_get(ConfigKey::SAMPLERATE);
 		uint64_t samplerate =
 			Glib::VariantBase::cast_dynamic<Glib::Variant<guint64>>(gvar).get();
-		assert(!_updating_sample_rate);
-		_updating_sample_rate = true;
-		_sample_rate.set_value(samplerate);
-		_updating_sample_rate = false;
+		assert(!updating_sample_rate_);
+		updating_sample_rate_ = true;
+		sample_rate_.set_value(samplerate);
+		updating_sample_rate_ = false;
 	} catch (Error error) {
 		qDebug() << "WARNING: Failed to get value of sample rate";
 		return;
@@ -251,19 +251,19 @@ void SamplingBar::update_sample_rate_selector_value()
 
 void SamplingBar::update_sample_count_selector()
 {
-	if (_updating_sample_count)
+	if (updating_sample_count_)
 		return;
 
 	const shared_ptr<Device> device = get_selected_device();
 	if (!device)
 		return;
 
-	assert(!_updating_sample_count);
-	_updating_sample_count = true;
+	assert(!updating_sample_count_);
+	updating_sample_count_ = true;
 
-	if (_sample_count_supported)
+	if (sample_count_supported_)
 	{
-		uint64_t sample_count = _sample_count.value();
+		uint64_t sample_count = sample_count_.value();
 		uint64_t min_sample_count = 0;
 		uint64_t max_sample_count = MaxSampleCount;
 
@@ -279,7 +279,7 @@ void SamplingBar::update_sample_count_selector()
 		min_sample_count = min(max(min_sample_count, MinSampleCount),
 			max_sample_count);
 
-		_sample_count.show_125_list(
+		sample_count_.show_125_list(
 			min_sample_count, max_sample_count);
 
 		try {
@@ -291,12 +291,12 @@ void SamplingBar::update_sample_count_selector()
 				max_sample_count);
 		} catch (Error error) {}
 
-		_sample_count.set_value(sample_count);
+		sample_count_.set_value(sample_count);
 	}
 	else
-		_sample_count.show_none();
+		sample_count_.show_none();
 
-	_updating_sample_count = false;
+	updating_sample_count_ = false;
 }
 
 void SamplingBar::update_device_config_widgets()
@@ -309,16 +309,16 @@ void SamplingBar::update_device_config_widgets()
 
 	// Update the configure popup
 	DeviceOptions *const opts = new DeviceOptions(device, this);
-	_configure_button_action->setVisible(
+	configure_button_action_->setVisible(
 		!opts->binding().properties().empty());
-	_configure_button.set_popup(opts);
+	configure_button_.set_popup(opts);
 
 	// Update the channels popup
-	Channels *const channels = new Channels(_session, this);
-	_channels_button.set_popup(channels);
+	Channels *const channels = new Channels(session_, this);
+	channels_button_.set_popup(channels);
 
 	// Update supported options.
-	_sample_count_supported = false;
+	sample_count_supported_ = false;
 
 	try {
 		for (auto entry : device->config_keys(ConfigKey::DEVICE_OPTIONS))
@@ -328,7 +328,7 @@ void SamplingBar::update_device_config_widgets()
 			switch (key->id()) {
 			case SR_CONF_LIMIT_SAMPLES:
 				if (capabilities.count(Capability::SET))
-					_sample_count_supported = true;
+					sample_count_supported_ = true;
 				break;
 			case SR_CONF_LIMIT_FRAMES:
 				if (capabilities.count(Capability::SET))
@@ -358,19 +358,19 @@ void SamplingBar::commit_sample_count()
 {
 	uint64_t sample_count = 0;
 
-	if (_updating_sample_count)
+	if (updating_sample_count_)
 		return;
 
 	const shared_ptr<Device> device = get_selected_device();
 	if (!device)
 		return;
 
-	sample_count = _sample_count.value();
+	sample_count = sample_count_.value();
 
 	// Set the sample count
-	assert(!_updating_sample_count);
-	_updating_sample_count = true;
-	if (_sample_count_supported)
+	assert(!updating_sample_count_);
+	updating_sample_count_ = true;
+	if (sample_count_supported_)
 	{
 		try {
 			device->config_set(ConfigKey::LIMIT_SAMPLES,
@@ -381,27 +381,27 @@ void SamplingBar::commit_sample_count()
 			return;
 		}
 	}
-	_updating_sample_count = false;
+	updating_sample_count_ = false;
 }
 
 void SamplingBar::commit_sample_rate()
 {
 	uint64_t sample_rate = 0;
 
-	if (_updating_sample_rate)
+	if (updating_sample_rate_)
 		return;
 
 	const shared_ptr<Device> device = get_selected_device();
 	if (!device)
 		return;
 
-	sample_rate = _sample_rate.value();
+	sample_rate = sample_rate_.value();
 	if (sample_rate == 0)
 		return;
 
 	// Set the samplerate
-	assert(!_updating_sample_rate);
-	_updating_sample_rate = true;
+	assert(!updating_sample_rate_);
+	updating_sample_rate_ = true;
 	try {
 		device->config_set(ConfigKey::SAMPLERATE,
 			Glib::Variant<guint64>::create(sample_rate));
@@ -410,19 +410,19 @@ void SamplingBar::commit_sample_rate()
 		qDebug() << "Failed to configure samplerate.";
 		return;
 	}
-	_updating_sample_rate = false;
+	updating_sample_rate_ = false;
 }
 
 void SamplingBar::on_device_selected()
 {
-	if (_updating_device_selector)
+	if (updating_device_selector_)
 		return;
 
 	shared_ptr<Device> device = get_selected_device();
 	if (!device)
 		return;
 
-	_session.set_device(device);
+	session_.set_device(device);
 
 	update_device_config_widgets();
 }
@@ -454,9 +454,9 @@ void SamplingBar::on_config_changed()
 
 bool SamplingBar::eventFilter(QObject *watched, QEvent *event)
 {
-	if ((watched == &_sample_count || watched == &_sample_rate) &&
+	if ((watched == &sample_count_ || watched == &sample_rate_) &&
 		(event->type() == QEvent::ToolTip)) {
-		double sec = (double)_sample_count.value() / _sample_rate.value();
+		double sec = (double)sample_count_.value() / sample_rate_.value();
 		QHelpEvent *help_event = static_cast<QHelpEvent*>(event);
 
 		QString str = tr("Total sampling time: %1").arg(pv::util::format_second(sec));

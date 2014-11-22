@@ -55,7 +55,7 @@ private Q_SLOTS:
 	void on_progress_updated();
 
 private:
-	pv::StoreSession _session;
+	pv::StoreSession session_;
 };
 
 } // dialogs

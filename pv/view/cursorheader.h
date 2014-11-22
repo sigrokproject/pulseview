@@ -61,10 +61,10 @@ private:
 
 	int calculateTextHeight();
 
-	std::weak_ptr<TimeMarker> _grabbed_marker;
-	QPoint _mouse_down_point;
-	bool _dragging;
-	const int _textHeight;
+	std::weak_ptr<TimeMarker> grabbed_marker_;
+	QPoint mouse_down_point_;
+	bool dragging_;
+	const int textHeight_;
 };
 
 } // namespace view

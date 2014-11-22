@@ -81,82 +81,82 @@ const QSizeF View::LabelPadding(4, 0);
 
 View::View(SigSession &session, QWidget *parent) :
 	QAbstractScrollArea(parent),
-	_session(session),
-	_viewport(new Viewport(*this)),
-	_ruler(new Ruler(*this)),
-	_cursorheader(new CursorHeader(*this)),
-	_header(new Header(*this)),
-	_scale(1e-6),
-	_offset(0),
-	_v_offset(0),
-	_updating_scroll(false),
-	_show_cursors(false),
-	_cursors(*this),
-	_hover_point(-1, -1)
+	session_(session),
+	viewport_(new Viewport(*this)),
+	ruler_(new Ruler(*this)),
+	cursorheader_(new CursorHeader(*this)),
+	header_(new Header(*this)),
+	scale_(1e-6),
+	offset_(0),
+	v_offset_(0),
+	updating_scroll_(false),
+	show_cursors_(false),
+	cursors_(*this),
+	hover_point_(-1, -1)
 {
 	connect(horizontalScrollBar(), SIGNAL(valueChanged(int)),
 		this, SLOT(h_scroll_value_changed(int)));
 	connect(verticalScrollBar(), SIGNAL(valueChanged(int)),
 		this, SLOT(v_scroll_value_changed(int)));
 
-	connect(&_session, SIGNAL(signals_changed()),
+	connect(&session_, SIGNAL(signals_changed()),
 		this, SLOT(signals_changed()));
-	connect(&_session, SIGNAL(capture_state_changed(int)),
+	connect(&session_, SIGNAL(capture_state_changed(int)),
 		this, SLOT(data_updated()));
-	connect(&_session, SIGNAL(data_received()),
+	connect(&session_, SIGNAL(data_received()),
 		this, SLOT(data_updated()));
-	connect(&_session, SIGNAL(frame_ended()),
+	connect(&session_, SIGNAL(frame_ended()),
 		this, SLOT(data_updated()));
 
-	connect(_cursors.first().get(), SIGNAL(time_changed()),
+	connect(cursors_.first().get(), SIGNAL(time_changed()),
 		this, SLOT(marker_time_changed()));
-	connect(_cursors.second().get(), SIGNAL(time_changed()),
+	connect(cursors_.second().get(), SIGNAL(time_changed()),
 		this, SLOT(marker_time_changed()));
 
-	connect(_header, SIGNAL(signals_moved()),
+	connect(header_, SIGNAL(signals_moved()),
 		this, SLOT(on_signals_moved()));
 
-	connect(_header, SIGNAL(selection_changed()),
-		_cursorheader, SLOT(clear_selection()));
-	connect(_cursorheader, SIGNAL(selection_changed()),
-		_header, SLOT(clear_selection()));
+	connect(header_, SIGNAL(selection_changed()),
+		cursorheader_, SLOT(clear_selection()));
+	connect(cursorheader_, SIGNAL(selection_changed()),
+		header_, SLOT(clear_selection()));
 
-	connect(_header, SIGNAL(selection_changed()),
+	connect(header_, SIGNAL(selection_changed()),
 		this, SIGNAL(selection_changed()));
-	connect(_cursorheader, SIGNAL(selection_changed()),
+	connect(cursorheader_, SIGNAL(selection_changed()),
 		this, SIGNAL(selection_changed()));
 
 	connect(this, SIGNAL(hover_point_changed()),
 		this, SLOT(on_hover_point_changed()));
 
-	connect(&_lazy_event_handler, SIGNAL(timeout()),
+	connect(&lazy_event_handler_, SIGNAL(timeout()),
 		this, SLOT(process_sticky_events()));
-	_lazy_event_handler.setSingleShot(true);
+	lazy_event_handler_.setSingleShot(true);
 
-	setViewport(_viewport);
+	setViewport(viewport_);
 
-	_viewport->installEventFilter(this);
-	_ruler->installEventFilter(this);
-	_cursorheader->installEventFilter(this);
-	_header->installEventFilter(this);
+	viewport_->installEventFilter(this);
+	ruler_->installEventFilter(this);
+	cursorheader_->installEventFilter(this);
+	header_->installEventFilter(this);
 
 	// Trigger the initial event manually. The default device has signals
 	// which were created before this object came into being
 	signals_changed();
 
 	// make sure the transparent widgets are on the top
-	_cursorheader->raise();
-	_header->raise();
+	cursorheader_->raise();
+	header_->raise();
 }
 
 SigSession& View::session()
 {
-	return _session;
+	return session_;
 }
 
 const SigSession& View::session() const
 {
-	return _session;
+	return session_;
 }
 
 View* View::view()
@@ -171,27 +171,27 @@ const View* View::view() const
 
 Viewport* View::viewport()
 {
-	return _viewport;
+	return viewport_;
 }
 
 const Viewport* View::viewport() const
 {
-	return _viewport;
+	return viewport_;
 }
 
 double View::scale() const
 {
-	return _scale;
+	return scale_;
 }
 
 double View::offset() const
 {
-	return _offset;
+	return offset_;
 }
 
 int View::owner_visual_v_offset() const
 {
-	return -_v_offset;
+	return -v_offset_;
 }
 
 unsigned int View::depth() const
@@ -201,12 +201,12 @@ unsigned int View::depth() const
 
 void View::zoom(double steps)
 {
-	zoom(steps, _viewport->width() / 2);
+	zoom(steps, viewport_->width() / 2);
 }
 
 void View::zoom(double steps, int offset)
 {
-	set_zoom(_scale * pow(3.0/2.0, -steps), offset);
+	set_zoom(scale_ * pow(3.0/2.0, -steps), offset);
 }
 
 void View::zoom_fit()
@@ -216,8 +216,8 @@ void View::zoom_fit()
 	if (delta < 1e-12)
 		return;
 
-	assert(_viewport);
-	const int w = _viewport->width();
+	assert(viewport_);
+	const int w = viewport_->width();
 	if (w <= 0)
 		return;
 
@@ -243,8 +243,8 @@ void View::zoom_one_to_one()
 	if (samplerate == 0.0)
 		return;
 
-	assert(_viewport);
-	const int w = _viewport->width();
+	assert(viewport_);
+	const int w = viewport_->width();
 	if (w <= 0)
 		return;
 
@@ -253,13 +253,13 @@ void View::zoom_one_to_one()
 
 void View::set_scale_offset(double scale, double offset)
 {
-	_scale = scale;
-	_offset = offset;
+	scale_ = scale;
+	offset_ = offset;
 
 	update_scroll();
-	_ruler->update();
-	_cursorheader->update();
-	_viewport->update();
+	ruler_->update();
+	cursorheader_->update();
+	viewport_->update();
 	scale_offset_changed();
 }
 
@@ -301,45 +301,45 @@ pair<double, double> View::get_time_extents() const
 
 bool View::cursors_shown() const
 {
-	return _show_cursors;
+	return show_cursors_;
 }
 
 void View::show_cursors(bool show)
 {
-	_show_cursors = show;
-	_cursorheader->update();
-	_viewport->update();
+	show_cursors_ = show;
+	cursorheader_->update();
+	viewport_->update();
 }
 
 void View::centre_cursors()
 {
-	const double time_width = _scale * _viewport->width();
-	_cursors.first()->set_time(_offset + time_width * 0.4);
-	_cursors.second()->set_time(_offset + time_width * 0.6);
-	_cursorheader->update();
-	_viewport->update();
+	const double time_width = scale_ * viewport_->width();
+	cursors_.first()->set_time(offset_ + time_width * 0.4);
+	cursors_.second()->set_time(offset_ + time_width * 0.6);
+	cursorheader_->update();
+	viewport_->update();
 }
 
 CursorPair& View::cursors()
 {
-	return _cursors;
+	return cursors_;
 }
 
 const CursorPair& View::cursors() const
 {
-	return _cursors;
+	return cursors_;
 }
 
 const QPoint& View::hover_point() const
 {
-	return _hover_point;
+	return hover_point_;
 }
 
 void View::update_viewport()
 {
-	assert(_viewport);
-	_viewport->update();
-	_header->update();
+	assert(viewport_);
+	viewport_->update();
+	header_->update();
 }
 
 void View::restack_all_row_items()
@@ -367,13 +367,13 @@ void View::restack_all_row_items()
 void View::get_scroll_layout(double &length, double &offset) const
 {
 	const pair<double, double> extents = get_time_extents();
-	length = (extents.second - extents.first) / _scale;
-	offset = _offset / _scale;
+	length = (extents.second - extents.first) / scale_;
+	offset = offset_ / scale_;
 }
 
 void View::set_zoom(double scale, int offset)
 {
-	const double cursor_offset = _offset + _scale * offset;
+	const double cursor_offset = offset_ + scale_ * offset;
 	const double new_scale = max(min(scale, MaxScale), MinScale);
 	const double new_offset = cursor_offset - new_scale * offset;
 	set_scale_offset(new_scale, new_offset);
@@ -381,9 +381,9 @@ void View::set_zoom(double scale, int offset)
 
 void View::update_scroll()
 {
-	assert(_viewport);
+	assert(viewport_);
 
-	const QSize areaSize = _viewport->size();
+	const QSize areaSize = viewport_->size();
 
 	// Set the horizontal scroll bar
 	double length = 0, offset = 0;
@@ -392,7 +392,7 @@ void View::update_scroll()
 
 	horizontalScrollBar()->setPageStep(areaSize.width() / 2);
 
-	_updating_scroll = true;
+	updating_scroll_ = true;
 
 	if (length < MaxScrollValue) {
 		horizontalScrollBar()->setRange(0, length);
@@ -400,10 +400,10 @@ void View::update_scroll()
 	} else {
 		horizontalScrollBar()->setRange(0, MaxScrollValue);
 		horizontalScrollBar()->setSliderPosition(
-			_offset * MaxScrollValue / (_scale * length));
+			offset_ * MaxScrollValue / (scale_ * length));
 	}
 
-	_updating_scroll = false;
+	updating_scroll_ = false;
 
 	// Set the vertical scrollbar
 	verticalScrollBar()->setPageStep(areaSize.height());
@@ -417,16 +417,16 @@ void View::update_scroll()
 void View::update_layout()
 {
 	setViewportMargins(
-		_header->sizeHint().width() - pv::view::Header::BaselineOffset,
-		_ruler->sizeHint().height(), 0, 0);
-	_ruler->setGeometry(_viewport->x(), 0,
-		_viewport->width(), _viewport->y());
-	_cursorheader->setGeometry(
-		_viewport->x(),
-		_ruler->sizeHint().height() - _cursorheader->sizeHint().height() / 2,
-		_viewport->width(), _cursorheader->sizeHint().height());
-	_header->setGeometry(0, _viewport->y(),
-		_header->sizeHint().width(), _viewport->height());
+		header_->sizeHint().width() - pv::view::Header::BaselineOffset,
+		ruler_->sizeHint().height(), 0, 0);
+	ruler_->setGeometry(viewport_->x(), 0,
+		viewport_->width(), viewport_->y());
+	cursorheader_->setGeometry(
+		viewport_->x(),
+		ruler_->sizeHint().height() - cursorheader_->sizeHint().height() / 2,
+		viewport_->width(), cursorheader_->sizeHint().height());
+	header_->setGeometry(0, viewport_->y(),
+		header_->sizeHint().width(), viewport_->height());
 	update_scroll();
 }
 
@@ -488,19 +488,19 @@ bool View::eventFilter(QObject *object, QEvent *event)
 	if (type == QEvent::MouseMove) {
 
 		const QMouseEvent *const mouse_event = (QMouseEvent*)event;
-		if (object == _viewport)
-			_hover_point = mouse_event->pos();
-		else if (object == _ruler || object == _cursorheader)
-			_hover_point = QPoint(mouse_event->x(), 0);
-		else if (object == _header)
-			_hover_point = QPoint(0, mouse_event->y());
+		if (object == viewport_)
+			hover_point_ = mouse_event->pos();
+		else if (object == ruler_ || object == cursorheader_)
+			hover_point_ = QPoint(mouse_event->x(), 0);
+		else if (object == header_)
+			hover_point_ = QPoint(0, mouse_event->y());
 		else
-			_hover_point = QPoint(-1, -1);
+			hover_point_ = QPoint(-1, -1);
 
 		hover_point_changed();
 
 	} else if (type == QEvent::Leave) {
-		_hover_point = QPoint(-1, -1);
+		hover_point_ = QPoint(-1, -1);
 		hover_point_changed();
 	}
 
@@ -534,43 +534,43 @@ void View::resizeEvent(QResizeEvent*)
 void View::appearance_changed(bool label, bool content)
 {
 	if (label)
-		_header->update();
+		header_->update();
 	if (content)
-		_viewport->update();
+		viewport_->update();
 }
 
 void View::extents_changed(bool horz, bool vert)
 {
-	_sticky_events |=
+	sticky_events_ |=
 		(horz ? SelectableItemHExtentsChanged : 0) |
 		(vert ? SelectableItemVExtentsChanged : 0);
-	_lazy_event_handler.start();
+	lazy_event_handler_.start();
 }
 
 void View::h_scroll_value_changed(int value)
 {
-	if (_updating_scroll)
+	if (updating_scroll_)
 		return;
 
 	const int range = horizontalScrollBar()->maximum();
 	if (range < MaxScrollValue)
-		_offset = _scale * value;
+		offset_ = scale_ * value;
 	else {
 		double length = 0, offset;
 		get_scroll_layout(length, offset);
-		_offset = _scale * length * value / MaxScrollValue;
+		offset_ = scale_ * length * value / MaxScrollValue;
 	}
 
-	_ruler->update();
-	_cursorheader->update();
-	_viewport->update();
+	ruler_->update();
+	cursorheader_->update();
+	viewport_->update();
 }
 
 void View::v_scroll_value_changed(int value)
 {
-	_v_offset = value;
-	_header->update();
-	_viewport->update();
+	v_offset_ = value;
+	header_->update();
+	viewport_->update();
 }
 
 void View::signals_changed()
@@ -580,15 +580,15 @@ void View::signals_changed()
 	// Populate the traces
 	clear_child_items();
 
-	shared_ptr<sigrok::Device> device = _session.device();
+	shared_ptr<sigrok::Device> device = session_.device();
 	assert(device);
 
 	// Collect a set of signals
 	unordered_map<shared_ptr<sigrok::Channel>, shared_ptr<Signal> >
 		signal_map;
 
-	shared_lock<shared_mutex> lock(_session.signals_mutex());
-	const vector< shared_ptr<Signal> > &sigs(_session.signals());
+	shared_lock<shared_mutex> lock(session_.signals_mutex());
+	const vector< shared_ptr<Signal> > &sigs(session_.signals());
 
 	for (const shared_ptr<Signal> &sig : sigs)
 		signal_map[sig->channel()] = sig;
@@ -649,13 +649,13 @@ void View::data_updated()
 	update_scroll();
 
 	// Repaint the view
-	_viewport->update();
+	viewport_->update();
 }
 
 void View::marker_time_changed()
 {
-	_cursorheader->update();
-	_viewport->update();
+	cursorheader_->update();
+	viewport_->update();
 }
 
 void View::on_signals_moved()
@@ -666,13 +666,13 @@ void View::on_signals_moved()
 
 void View::process_sticky_events()
 {
-	if (_sticky_events & SelectableItemHExtentsChanged)
+	if (sticky_events_ & SelectableItemHExtentsChanged)
 		update_layout();
-	if (_sticky_events & SelectableItemVExtentsChanged)
+	if (sticky_events_ & SelectableItemVExtentsChanged)
 		restack_all_row_items();
 
 	// Clear the sticky events
-	_sticky_events = 0;
+	sticky_events_ = 0;
 }
 
 void View::on_hover_point_changed()

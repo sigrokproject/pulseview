@@ -85,7 +85,7 @@ private:
 	void append_payload_to_envelope_levels();
 
 private:
-	struct Envelope _envelope_levels[ScaleStepCount];
+	struct Envelope envelope_levels_[ScaleStepCount];
 
 	friend struct AnalogSnapshotTest::Basic;
 };

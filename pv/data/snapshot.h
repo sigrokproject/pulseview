@@ -70,11 +70,11 @@ protected:
 	void append_data(void *data, uint64_t samples);
 
 protected:
-	mutable std::recursive_mutex _mutex;
-	std::vector<uint8_t> _data;
-	uint64_t _sample_count;
-	uint64_t _capacity;
-	unsigned int _unit_size;
+	mutable std::recursive_mutex mutex_;
+	std::vector<uint8_t> data_;
+	uint64_t sample_count_;
+	uint64_t capacity_;
+	unsigned int unit_size_;
 };
 
 } // namespace data

@@ -41,7 +41,7 @@ Ruler::Ruler(View &parent) :
 {
 	setMouseTracking(true);
 
-	connect(&_view, SIGNAL(hover_point_changed()),
+	connect(&view_, SIGNAL(hover_point_changed()),
 		this, SLOT(hover_point_changed()));
 }
 
@@ -58,7 +58,7 @@ void Ruler::paintEvent(QPaintEvent*)
 	p.setRenderHint(QPainter::Antialiasing);
 
 	std::pair<double, unsigned int> spacing =
-		calculate_tick_spacing(p, _view.scale(), _view.offset());
+		calculate_tick_spacing(p, view_.scale(), view_.offset());
 
 	double tick_period = spacing.first;
 	unsigned int prefix = spacing.second;
@@ -71,9 +71,9 @@ void Ruler::paintEvent(QPaintEvent*)
 
 	const double minor_tick_period = tick_period / MinorTickSubdivision;
 	const double first_major_division =
-		floor(_view.offset() / tick_period);
+		floor(view_.offset() / tick_period);
 	const double first_minor_division =
-		ceil(_view.offset() / minor_tick_period);
+		ceil(view_.offset() / minor_tick_period);
 	const double t0 = first_major_division * tick_period;
 
 	int division = (int)round(first_minor_division -
@@ -87,7 +87,7 @@ void Ruler::paintEvent(QPaintEvent*)
 
 	do {
 		const double t = t0 + division * minor_tick_period;
-		x = (t - _view.offset()) / _view.scale();
+		x = (t - view_.offset()) / view_.scale();
 
 		if (division % MinorTickSubdivision == 0)
 		{
@@ -115,7 +115,7 @@ void Ruler::paintEvent(QPaintEvent*)
 
 void Ruler::draw_hover_mark(QPainter &p)
 {
-	const int x = _view.hover_point().x();
+	const int x = view_.hover_point().x();
 
 	if (x == -1)
 		return;
