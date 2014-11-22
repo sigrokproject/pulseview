@@ -79,7 +79,7 @@ const QColor View::CursorAreaColour(220, 231, 243);
 
 const QSizeF View::LabelPadding(4, 0);
 
-View::View(SigSession &session, QWidget *parent) :
+View::View(Session &session, QWidget *parent) :
 	QAbstractScrollArea(parent),
 	session_(session),
 	viewport_(new Viewport(*this)),
@@ -149,12 +149,12 @@ View::View(SigSession &session, QWidget *parent) :
 	header_->raise();
 }
 
-SigSession& View::session()
+Session& View::session()
 {
 	return session_;
 }
 
-const SigSession& View::session() const
+const Session& View::session() const
 {
 	return session_;
 }

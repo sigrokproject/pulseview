@@ -82,7 +82,7 @@ const QColor LogicSignal::SignalColours[10] = {
 };
 
 LogicSignal::LogicSignal(
-	pv::SigSession &session,
+	pv::Session &session,
 	shared_ptr<Device> device,
 	shared_ptr<Channel> channel,
 	shared_ptr<data::Logic> data) :

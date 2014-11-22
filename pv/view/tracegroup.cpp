@@ -52,13 +52,13 @@ bool TraceGroup::enabled() const
 		[](const shared_ptr<RowItem> &r) { return r->enabled(); });
 }
 
-pv::SigSession& TraceGroup::session()
+pv::Session& TraceGroup::session()
 {
 	assert(owner_);
 	return owner_->session();
 }
 
-const pv::SigSession& TraceGroup::session() const
+const pv::Session& TraceGroup::session() const
 {
 	assert(owner_);
 	return owner_->session();

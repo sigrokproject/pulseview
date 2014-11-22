@@ -56,7 +56,7 @@ const uint64_t SamplingBar::MinSampleCount = 100ULL;
 const uint64_t SamplingBar::MaxSampleCount = 1000000000000ULL;
 const uint64_t SamplingBar::DefaultSampleCount = 1000000;
 
-SamplingBar::SamplingBar(SigSession &session, MainWindow &main_window) :
+SamplingBar::SamplingBar(Session &session, MainWindow &main_window) :
 	QToolBar("Sampling Bar", &main_window),
 	session_(session),
 	main_window_(main_window),
@@ -88,7 +88,7 @@ SamplingBar::SamplingBar(SigSession &session, MainWindow &main_window) :
 
 	sample_count_.show_min_max_step(0, UINT64_MAX, 1);
 
-	set_capture_state(pv::SigSession::Stopped);
+	set_capture_state(pv::Session::Stopped);
 
 	configure_button_.setIcon(QIcon::fromTheme("configure",
 		QIcon(":/icons/configure.png")));
@@ -153,11 +153,11 @@ shared_ptr<Device> SamplingBar::get_selected_device() const
 	return device_selector_.itemData(index).value<shared_ptr<Device>>();
 }
 
-void SamplingBar::set_capture_state(pv::SigSession::capture_state state)
+void SamplingBar::set_capture_state(pv::Session::capture_state state)
 {
 	const QIcon *icons[] = {&icon_grey_, &icon_red_, &icon_green_};
 	run_stop_button_.setIcon(*icons[state]);
-	run_stop_button_.setText((state == pv::SigSession::Stopped) ?
+	run_stop_button_.setText((state == pv::Session::Stopped) ?
 		tr("Run") : tr("Stop"));
 	run_stop_button_.setShortcut(QKeySequence(Qt::Key_Space));
 }

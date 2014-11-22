@@ -49,7 +49,7 @@ BOOST_AUTO_TEST_CASE(TwoDecoderStack)
 
 	{
 		pv::DeviceManager dm(ctx);
-		pv::SigSession ss(dm);
+		pv::Session ss(dm);
 
 		const GSList *l = srd_decoder_list();
 		BOOST_REQUIRE(l);

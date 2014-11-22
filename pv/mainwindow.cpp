@@ -98,13 +98,13 @@ MainWindow::MainWindow(DeviceManager &device_manager,
 void MainWindow::run_stop()
 {
 	switch(session_.get_capture_state()) {
-	case SigSession::Stopped:
+	case Session::Stopped:
 		session_.start_capture([&](QString message) {
 			session_error("Capture failed", message); });
 		break;
 
-	case SigSession::AwaitingTrigger:
-	case SigSession::Running:
+	case Session::AwaitingTrigger:
+	case Session::Running:
 		session_.stop_capture();
 		break;
 	}
@@ -556,7 +556,7 @@ void MainWindow::add_decoder(srd_decoder *decoder)
 
 void MainWindow::capture_state_changed(int state)
 {
-	sampling_bar_->set_capture_state((pv::SigSession::capture_state)state);
+	sampling_bar_->set_capture_state((pv::Session::capture_state)state);
 }
 
 void MainWindow::device_selected()

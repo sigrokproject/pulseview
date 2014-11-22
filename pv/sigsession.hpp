@@ -65,7 +65,7 @@ class LogicSignal;
 class Signal;
 }
 
-class SigSession : public QObject
+class Session : public QObject
 {
 	Q_OBJECT
 
@@ -77,9 +77,9 @@ public:
 	};
 
 public:
-	SigSession(DeviceManager &device_manager);
+	Session(DeviceManager &device_manager);
 
-	~SigSession();
+	~Session();
 
 	DeviceManager& device_manager();
 

@@ -40,7 +40,7 @@ namespace sigrok {
 
 namespace pv {
 
-class SigSession;
+class Session;
 
 class DeviceManager
 {

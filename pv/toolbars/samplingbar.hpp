@@ -46,7 +46,7 @@ class QAction;
 namespace pv {
 
 class MainWindow;
-class SigSession;
+class Session;
 
 namespace toolbars {
 
@@ -60,7 +60,7 @@ private:
 	static const uint64_t DefaultSampleCount;
 
 public:
-	SamplingBar(SigSession &session, pv::MainWindow &main_window);
+	SamplingBar(Session &session, pv::MainWindow &main_window);
 
 	void set_device_list(
 		const std::list< std::pair<std::shared_ptr<sigrok::Device>, std::string> > &devices,
@@ -68,7 +68,7 @@ public:
 
 	std::shared_ptr<sigrok::Device> get_selected_device() const;
 
-	void set_capture_state(pv::SigSession::capture_state state);
+	void set_capture_state(pv::Session::capture_state state);
 
 Q_SIGNALS:
 	void run_stop();
@@ -93,7 +93,7 @@ protected:
 	bool eventFilter(QObject *watched, QEvent *event);
 
 private:
-	SigSession &session_;
+	Session &session_;
 	MainWindow &main_window_;
 
 	QComboBox device_selector_;

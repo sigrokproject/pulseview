@@ -36,7 +36,7 @@ namespace sigrok {
 
 namespace pv {
 
-class SigSession;
+class Session;
 
 namespace data {
 class SignalData;
@@ -49,7 +49,7 @@ class Signal : public Trace
 	Q_OBJECT
 
 protected:
-	Signal(pv::SigSession &session,
+	Signal(pv::Session &session,
 		std::shared_ptr<sigrok::Channel> channel);
 
 public:
@@ -79,7 +79,7 @@ private Q_SLOTS:
 	void on_disable();
 
 protected:
-	pv::SigSession &session_;
+	pv::Session &session_;
 	std::shared_ptr<sigrok::Channel> channel_;
 
 	QComboBox *name_widget_;

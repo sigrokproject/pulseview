@@ -39,7 +39,7 @@
 
 namespace pv {
 
-class SigSession;
+class Session;
 
 namespace view {
 
@@ -69,10 +69,10 @@ public:
 	static const QSizeF LabelPadding;
 
 public:
-	explicit View(SigSession &session, QWidget *parent = 0);
+	explicit View(Session &session, QWidget *parent = 0);
 
-	SigSession& session();
-	const SigSession& session() const;
+	Session& session();
+	const Session& session() const;
 
 	/**
 	 * Returns the view of the owner.
@@ -236,7 +236,7 @@ private Q_SLOTS:
 	void on_hover_point_changed();
 
 private:
-	SigSession &session_;
+	Session &session_;
 
 	Viewport *viewport_;
 	Ruler *ruler_;

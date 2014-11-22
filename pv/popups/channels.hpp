@@ -41,7 +41,7 @@ namespace sigrok {
 
 namespace pv {
 
-class SigSession;
+class Session;
 
 namespace prop {
 namespace binding {
@@ -60,7 +60,7 @@ class Channels : public pv::widgets::Popup
 	Q_OBJECT
 
 public:
-	Channels(SigSession &session_, QWidget *parent);
+	Channels(Session &session_, QWidget *parent);
 
 private:
 	void set_all_channels(bool set);
@@ -81,7 +81,7 @@ private Q_SLOTS:
 	void disable_all_channels();
 
 private:
-	pv::SigSession &session_;
+	pv::Session &session_;
 
 	QFormLayout layout_;
 

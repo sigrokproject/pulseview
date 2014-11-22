@@ -59,7 +59,7 @@ const unsigned int DecoderStack::DecodeNotifyPeriod = 65536;
 
 mutex DecoderStack::global_decode_mutex_;
 
-DecoderStack::DecoderStack(pv::SigSession &session,
+DecoderStack::DecoderStack(pv::Session &session,
 	const srd_decoder *const dec) :
 	session_(session),
 	sample_count_(0),

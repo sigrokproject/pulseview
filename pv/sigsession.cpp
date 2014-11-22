@@ -82,7 +82,7 @@ using Glib::VariantBase;
 using Glib::Variant;
 
 namespace pv {
-SigSession::SigSession(DeviceManager &device_manager) :
+Session::Session(DeviceManager &device_manager) :
 	device_manager_(device_manager),
 	session_(device_manager.context()->create_session()),
 	capture_state_(Stopped)
@@ -90,33 +90,33 @@ SigSession::SigSession(DeviceManager &device_manager) :
 	set_default_device();
 }
 
-SigSession::~SigSession()
+Session::~Session()
 {
 	// Stop and join to the thread
 	stop_capture();
 }
 
-DeviceManager& SigSession::device_manager()
+DeviceManager& Session::device_manager()
 {
 	return device_manager_;
 }
 
-const DeviceManager& SigSession::device_manager() const
+const DeviceManager& Session::device_manager() const
 {
 	return device_manager_;
 }
 
-const shared_ptr<sigrok::Session>& SigSession::session() const
+const shared_ptr<sigrok::Session>& Session::session() const
 {
 	return session_;
 }
 
-shared_ptr<Device> SigSession::device() const
+shared_ptr<Device> Session::device() const
 {
 	return device_;
 }
 
-void SigSession::set_device(shared_ptr<Device> device)
+void Session::set_device(shared_ptr<Device> device)
 {
 	// Ensure we are not capturing before setting the device
 	stop_capture();
@@ -157,7 +157,7 @@ void SigSession::set_device(shared_ptr<Device> device)
 	device_selected();
 }
 
-void SigSession::set_file(const string &name)
+void Session::set_file(const string &name)
 {
 	session_ = device_manager_.context()->load_session(name);
 	device_ = session_->devices()[0];
@@ -171,7 +171,7 @@ void SigSession::set_file(const string &name)
 	device_selected();
 }
 
-void SigSession::set_default_device()
+void Session::set_default_device()
 {
 	shared_ptr<HardwareDevice> default_device;
 	const list< shared_ptr<HardwareDevice> > &devices =
@@ -192,13 +192,13 @@ void SigSession::set_default_device()
 	}
 }
 
-SigSession::capture_state SigSession::get_capture_state() const
+Session::capture_state Session::get_capture_state() const
 {
 	lock_guard<mutex> lock(sampling_mutex_);
 	return capture_state_;
 }
 
-void SigSession::start_capture(function<void (const QString)> error_handler)
+void Session::start_capture(function<void (const QString)> error_handler)
 {
 	stop_capture();
 
@@ -220,11 +220,11 @@ void SigSession::start_capture(function<void (const QString)> error_handler)
 
 	// Begin the session
 	sampling_thread_ = std::thread(
-		&SigSession::sample_thread_proc, this, device_,
+		&Session::sample_thread_proc, this, device_,
 			error_handler);
 }
 
-void SigSession::stop_capture()
+void Session::stop_capture()
 {
 	if (get_capture_state() != Stopped)
 		session_->stop();
@@ -234,7 +234,7 @@ void SigSession::stop_capture()
 		sampling_thread_.join();
 }
 
-set< shared_ptr<data::SignalData> > SigSession::get_data() const
+set< shared_ptr<data::SignalData> > Session::get_data() const
 {
 	shared_lock<shared_mutex> lock(signals_mutex_);
 	set< shared_ptr<data::SignalData> > data;
@@ -246,18 +246,18 @@ set< shared_ptr<data::SignalData> > SigSession::get_data() const
 	return data;
 }
 
-boost::shared_mutex& SigSession::signals_mutex() const
+boost::shared_mutex& Session::signals_mutex() const
 {
 	return signals_mutex_;
 }
 
-const vector< shared_ptr<view::Signal> >& SigSession::signals() const
+const vector< shared_ptr<view::Signal> >& Session::signals() const
 {
 	return signals_;
 }
 
 #ifdef ENABLE_DECODE
-bool SigSession::add_decoder(srd_decoder *const dec)
+bool Session::add_decoder(srd_decoder *const dec)
 {
 	map<const srd_channel*, shared_ptr<view::LogicSignal> > channels;
 	shared_ptr<data::DecoderStack> decoder_stack;
@@ -313,13 +313,13 @@ bool SigSession::add_decoder(srd_decoder *const dec)
 	return true;
 }
 
-vector< shared_ptr<view::DecodeTrace> > SigSession::get_decode_signals() const
+vector< shared_ptr<view::DecodeTrace> > Session::get_decode_signals() const
 {
 	shared_lock<shared_mutex> lock(signals_mutex_);
 	return decode_traces_;
 }
 
-void SigSession::remove_decode_signal(view::DecodeTrace *signal)
+void Session::remove_decode_signal(view::DecodeTrace *signal)
 {
 	for (auto i = decode_traces_.begin(); i != decode_traces_.end(); i++)
 		if ((*i).get() == signal)
@@ -331,7 +331,7 @@ void SigSession::remove_decode_signal(view::DecodeTrace *signal)
 }
 #endif
 
-void SigSession::set_capture_state(capture_state state)
+void Session::set_capture_state(capture_state state)
 {
 	lock_guard<mutex> lock(sampling_mutex_);
 	const bool changed = capture_state_ != state;
@@ -340,7 +340,7 @@ void SigSession::set_capture_state(capture_state state)
 		capture_state_changed(state);
 }
 
-void SigSession::update_signals(shared_ptr<Device> device)
+void Session::update_signals(shared_ptr<Device> device)
 {
 	assert(device);
 	assert(capture_state_ == Stopped);
@@ -407,7 +407,7 @@ void SigSession::update_signals(shared_ptr<Device> device)
 	signals_changed();
 }
 
-shared_ptr<view::Signal> SigSession::signal_from_channel(
+shared_ptr<view::Signal> Session::signal_from_channel(
 	shared_ptr<Channel> channel) const
 {
 	lock_guard<boost::shared_mutex> lock(signals_mutex_);
@@ -419,7 +419,7 @@ shared_ptr<view::Signal> SigSession::signal_from_channel(
 	return shared_ptr<view::Signal>();
 }
 
-void SigSession::read_sample_rate(shared_ptr<Device> device)
+void Session::read_sample_rate(shared_ptr<Device> device)
 {
 	const auto keys = device_->config_keys(ConfigKey::DEVICE_OPTIONS);
 	const auto iter = keys.find(ConfigKey::SAMPLERATE);
@@ -436,7 +436,7 @@ void SigSession::read_sample_rate(shared_ptr<Device> device)
 	}
 }
 
-void SigSession::sample_thread_proc(shared_ptr<Device> device,
+void Session::sample_thread_proc(shared_ptr<Device> device,
 	function<void (const QString)> error_handler)
 {
 	assert(device);
@@ -465,12 +465,12 @@ void SigSession::sample_thread_proc(shared_ptr<Device> device,
 	}
 }
 
-void SigSession::feed_in_header(shared_ptr<Device> device)
+void Session::feed_in_header(shared_ptr<Device> device)
 {
 	read_sample_rate(device);
 }
 
-void SigSession::feed_in_meta(shared_ptr<Device> device,
+void Session::feed_in_meta(shared_ptr<Device> device,
 	shared_ptr<Meta> meta)
 {
 	(void)device;
@@ -489,13 +489,13 @@ void SigSession::feed_in_meta(shared_ptr<Device> device,
 	signals_changed();
 }
 
-void SigSession::feed_in_frame_begin()
+void Session::feed_in_frame_begin()
 {
 	if (cur_logic_snapshot_ || !cur_analog_snapshots_.empty())
 		frame_began();
 }
 
-void SigSession::feed_in_logic(shared_ptr<Logic> logic)
+void Session::feed_in_logic(shared_ptr<Logic> logic)
 {
 	lock_guard<mutex> lock(data_mutex_);
 
@@ -540,7 +540,7 @@ void SigSession::feed_in_logic(shared_ptr<Logic> logic)
 	data_received();
 }
 
-void SigSession::feed_in_analog(shared_ptr<Analog> analog)
+void Session::feed_in_analog(shared_ptr<Analog> analog)
 {
 	lock_guard<mutex> lock(data_mutex_);
 
@@ -608,7 +608,7 @@ void SigSession::feed_in_analog(shared_ptr<Analog> analog)
 	data_received();
 }
 
-void SigSession::data_feed_in(shared_ptr<Device> device, shared_ptr<Packet> packet)
+void Session::data_feed_in(shared_ptr<Device> device, shared_ptr<Packet> packet)
 {
 	assert(device);
 	assert(packet);

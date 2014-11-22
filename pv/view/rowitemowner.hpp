@@ -28,7 +28,7 @@
 
 namespace pv {
 
-class SigSession;
+class Session;
 
 namespace view {
 
@@ -46,12 +46,12 @@ public:
 	/**
 	 * Returns the session of the onwer.
 	 */
-	virtual pv::SigSession& session() = 0;
+	virtual pv::Session& session() = 0;
 
 	/**
 	 * Returns the session of the owner.
 	 */
-	virtual const pv::SigSession& session() const = 0;
+	virtual const pv::Session& session() const = 0;
 
 	/**
 	 * Returns the view of the owner.

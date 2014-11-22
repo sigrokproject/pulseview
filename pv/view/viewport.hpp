@@ -27,7 +27,7 @@
 
 class QPainter;
 class QPaintEvent;
-class SigSession;
+class Session;
 
 namespace pv {
 namespace view {

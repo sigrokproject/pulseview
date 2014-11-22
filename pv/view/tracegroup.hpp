@@ -51,12 +51,12 @@ public:
 	/**
 	 * Returns the session of the onwer.
 	 */
-	pv::SigSession& session();
+	pv::Session& session();
 
 	/**
 	 * Returns the session of the onwer.
 	 */
-	const pv::SigSession& session() const;
+	const pv::Session& session() const;
 
 	/**
 	 * Returns the view of the owner.

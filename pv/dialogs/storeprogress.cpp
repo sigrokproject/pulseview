@@ -28,7 +28,7 @@ namespace pv {
 namespace dialogs {
 
 StoreProgress::StoreProgress(const QString &file_name,
-	const SigSession &session, QWidget *parent) :
+	const Session &session, QWidget *parent) :
 	QProgressDialog(tr("Saving..."), tr("Cancel"), 0, 0, parent),
 	session_(file_name.toStdString(), session)
 {

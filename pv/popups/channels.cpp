@@ -53,7 +53,7 @@ using pv::view::Signal;
 namespace pv {
 namespace popups {
 
-Channels::Channels(SigSession &session, QWidget *parent) :
+Channels::Channels(Session &session, QWidget *parent) :
 	Popup(parent),
 	session_(session),
 	updating_channels_(false),

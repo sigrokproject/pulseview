@@ -57,7 +57,7 @@ private:
 	static const QColor SignalColours[10];
 
 public:
-	LogicSignal(pv::SigSession &session,
+	LogicSignal(pv::Session &session,
 		std::shared_ptr<sigrok::Device> device,
 		std::shared_ptr<sigrok::Channel> channel,
 		std::shared_ptr<pv::data::Logic> data);

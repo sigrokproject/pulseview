@@ -36,7 +36,7 @@ class Output;
 
 namespace pv {
 
-class SigSession;
+class Session;
 
 namespace data {
 class LogicSnapshot;
@@ -51,7 +51,7 @@ private:
 
 public:
 	StoreSession(const std::string &file_name,
-		const SigSession &session);
+		const Session &session);
 
 	~StoreSession();
 
@@ -73,7 +73,7 @@ Q_SIGNALS:
 
 private:
 	const std::string file_name_;
-	const SigSession &session_;
+	const Session &session_;
 
 	std::shared_ptr<sigrok::Output> output_;
 

@@ -120,7 +120,7 @@ private:
 
 	DeviceManager &device_manager_;
 
-	SigSession session_;
+	Session session_;
 
 	pv::view::View *view_;
 

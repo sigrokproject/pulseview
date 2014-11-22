@@ -50,7 +50,7 @@ struct TwoDecoderStack;
 
 namespace pv {
 
-class SigSession;
+class Session;
 
 namespace view {
 class LogicSignal;
@@ -78,7 +78,7 @@ private:
 	static const unsigned int DecodeNotifyPeriod;
 
 public:
-	DecoderStack(pv::SigSession &session_,
+	DecoderStack(pv::Session &session_,
 		const srd_decoder *const decoder);
 
 	virtual ~DecoderStack();
@@ -129,7 +129,7 @@ Q_SIGNALS:
 	void new_decode_data();
 
 private:
-	pv::SigSession &session_;
+	pv::Session &session_;
 
 	/**
 	 * This mutex prevents more than one decode operation occuring

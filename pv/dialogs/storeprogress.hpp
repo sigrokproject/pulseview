@@ -30,7 +30,7 @@
 
 namespace pv {
 
-class SigSession;
+class Session;
 
 namespace dialogs {
 
@@ -39,7 +39,7 @@ class StoreProgress : public QProgressDialog
 	Q_OBJECT
 
 public:
-	StoreProgress(const QString &file_name, const SigSession &session,
+	StoreProgress(const QString &file_name, const Session &session,
 		QWidget *parent = 0);
 
 	virtual ~StoreProgress();

@@ -39,7 +39,7 @@ class QComboBox;
 
 namespace pv {
 
-class SigSession;
+class Session;
 
 namespace data {
 class DecoderStack;
@@ -82,7 +82,7 @@ private:
 	static const QColor OutlineColours[16];
 
 public:
-	DecodeTrace(pv::SigSession &session,
+	DecodeTrace(pv::Session &session,
 		std::shared_ptr<pv::data::DecoderStack> decoder_stack,
 		int index);
 
@@ -192,7 +192,7 @@ private Q_SLOTS:
 	void on_show_hide_decoder(int index);
 
 private:
-	pv::SigSession &session_;
+	pv::Session &session_;
 	std::shared_ptr<pv::data::DecoderStack> decoder_stack_;
 
 	uint64_t decode_start_, decode_end_;

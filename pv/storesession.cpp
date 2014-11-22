@@ -53,7 +53,7 @@ namespace pv {
 const size_t StoreSession::BlockSize = 1024 * 1024;
 
 StoreSession::StoreSession(const std::string &file_name,
-	const SigSession &session) :
+	const Session &session) :
 	file_name_(file_name),
 	session_(session),
 	interrupt_(false),

@@ -43,7 +43,7 @@ private:
 	static const float EnvelopeThreshold;
 
 public:
-	AnalogSignal(pv::SigSession &session,
+	AnalogSignal(pv::Session &session,
 		std::shared_ptr<sigrok::Channel> channel,
 		std::shared_ptr<pv::data::Analog> data);
 
