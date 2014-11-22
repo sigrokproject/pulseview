@@ -198,6 +198,9 @@ void StoreSession::store_proc(shared_ptr<data::LogicSnapshot> snapshot)
 		units_stored_ = start_sample >> progress_scale;
 	}
 
+	// Zeroing the progress variables indicates completion
+	units_stored_ = unit_count_ = 0;
+
 	progress_updated();
 
 	output_.reset();
