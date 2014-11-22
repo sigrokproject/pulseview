@@ -22,9 +22,9 @@
 
 #include <libsigrok/libsigrok.hpp>
 
-#include "connect.h"
+#include "connect.hpp"
 
-#include "pv/devicemanager.h"
+#include "pv/devicemanager.hpp"
 
 using std::list;
 using std::map;

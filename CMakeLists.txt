@@ -193,42 +193,42 @@ set(pulseview_SOURCES
 
 # This list includes only QObject derived class headers.
 set(pulseview_HEADERS
-	pv/mainwindow.h
-	pv/sigsession.h
-	pv/storesession.h
-	pv/dialogs/about.h
-	pv/dialogs/connect.h
-	pv/dialogs/storeprogress.h
-	pv/popups/channels.h
-	pv/popups/deviceoptions.h
-	pv/prop/bool.h
-	pv/prop/double.h
-	pv/prop/enum.h
-	pv/prop/int.h
-	pv/prop/property.h
-	pv/prop/string.h
-	pv/prop/binding/deviceoptions.h
-	pv/toolbars/samplingbar.h
-	pv/view/cursor.h
-	pv/view/cursorheader.h
-	pv/view/header.h
-	pv/view/logicsignal.h
-	pv/view/marginwidget.h
-	pv/view/rowitem.h
-	pv/view/ruler.h
-	pv/view/selectableitem.h
-	pv/view/signal.h
-	pv/view/timemarker.h
-	pv/view/trace.h
-	pv/view/tracegroup.h
-	pv/view/view.h
-	pv/view/viewport.h
-	pv/widgets/colourbutton.h
-	pv/widgets/colourpopup.h
-	pv/widgets/popup.h
-	pv/widgets/popuptoolbutton.h
-	pv/widgets/sweeptimingwidget.h
-	pv/widgets/wellarray.h
+	pv/mainwindow.hpp
+	pv/sigsession.hpp
+	pv/storesession.hpp
+	pv/dialogs/about.hpp
+	pv/dialogs/connect.hpp
+	pv/dialogs/storeprogress.hpp
+	pv/popups/channels.hpp
+	pv/popups/deviceoptions.hpp
+	pv/prop/bool.hpp
+	pv/prop/double.hpp
+	pv/prop/enum.hpp
+	pv/prop/int.hpp
+	pv/prop/property.hpp
+	pv/prop/string.hpp
+	pv/prop/binding/deviceoptions.hpp
+	pv/toolbars/samplingbar.hpp
+	pv/view/cursor.hpp
+	pv/view/cursorheader.hpp
+	pv/view/header.hpp
+	pv/view/logicsignal.hpp
+	pv/view/marginwidget.hpp
+	pv/view/rowitem.hpp
+	pv/view/ruler.hpp
+	pv/view/selectableitem.hpp
+	pv/view/signal.hpp
+	pv/view/timemarker.hpp
+	pv/view/trace.hpp
+	pv/view/tracegroup.hpp
+	pv/view/view.hpp
+	pv/view/viewport.hpp
+	pv/widgets/colourbutton.hpp
+	pv/widgets/colourpopup.hpp
+	pv/widgets/popup.hpp
+	pv/widgets/popuptoolbutton.hpp
+	pv/widgets/sweeptimingwidget.hpp
+	pv/widgets/wellarray.hpp
 )
 
 set(pulseview_FORMS
@@ -241,7 +241,7 @@ set(pulseview_RESOURCES
 
 if(ENABLE_SIGNALS)
 	list(APPEND pulseview_SOURCES signalhandler.cpp)
-	list(APPEND pulseview_HEADERS signalhandler.h)
+	list(APPEND pulseview_HEADERS signalhandler.hpp)
 endif()
 
 if(ENABLE_DECODE)
@@ -258,10 +258,10 @@ if(ENABLE_DECODE)
 	)
 
 	list(APPEND pulseview_HEADERS
-		pv/data/decoderstack.h
-		pv/view/decodetrace.h
-		pv/widgets/decodergroupbox.h
-		pv/widgets/decodermenu.h
+		pv/data/decoderstack.hpp
+		pv/view/decodetrace.hpp
+		pv/widgets/decodergroupbox.hpp
+		pv/widgets/decodermenu.hpp
 	)
 endif()
 

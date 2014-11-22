@@ -20,7 +20,7 @@
 
 #include <assert.h>
 
-#include "popuptoolbutton.h"
+#include "popuptoolbutton.hpp"
 
 namespace pv {
 namespace widgets {

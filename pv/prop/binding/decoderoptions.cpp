@@ -20,16 +20,16 @@
 
 #include <libsigrokdecode/libsigrokdecode.h>
 
-#include "decoderoptions.h"
+#include "decoderoptions.hpp"
 
 #include <boost/none_t.hpp>
 
-#include <pv/data/decoderstack.h>
-#include <pv/data/decode/decoder.h>
-#include <pv/prop/double.h>
-#include <pv/prop/enum.h>
-#include <pv/prop/int.h>
-#include <pv/prop/string.h>
+#include <pv/data/decoderstack.hpp>
+#include <pv/data/decode/decoder.hpp>
+#include <pv/prop/double.hpp>
+#include <pv/prop/enum.hpp>
+#include <pv/prop/int.hpp>
+#include <pv/prop/string.hpp>
 
 using boost::none;
 using std::make_pair;

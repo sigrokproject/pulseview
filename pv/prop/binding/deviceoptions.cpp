@@ -22,12 +22,12 @@
 
 #include <QDebug>
 
-#include "deviceoptions.h"
+#include "deviceoptions.hpp"
 
-#include <pv/prop/bool.h>
-#include <pv/prop/double.h>
-#include <pv/prop/enum.h>
-#include <pv/prop/int.h>
+#include <pv/prop/bool.hpp>
+#include <pv/prop/double.hpp>
+#include <pv/prop/enum.hpp>
+#include <pv/prop/int.hpp>
 
 #include <libsigrok/libsigrok.hpp>
 

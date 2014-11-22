@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#include "colourpopup.h"
+#include "colourpopup.hpp"
 
 namespace pv {
 namespace widgets {

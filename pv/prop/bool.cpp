@@ -22,7 +22,7 @@
 
 #include <QCheckBox>
 
-#include "bool.h"
+#include "bool.hpp"
 
 namespace pv {
 namespace prop {

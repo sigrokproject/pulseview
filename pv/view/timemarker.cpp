@@ -18,14 +18,14 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#include "timemarker.h"
+#include "timemarker.hpp"
 
-#include "view.h"
+#include "view.hpp"
 
 #include <QFormLayout>
 #include <QPainter>
 
-#include <pv/widgets/popup.h>
+#include <pv/widgets/popup.hpp>
 
 namespace pv {
 namespace view {

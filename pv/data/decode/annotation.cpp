@@ -25,7 +25,7 @@ extern "C" {
 #include <cassert>
 #include <vector>
 
-#include "annotation.h"
+#include "annotation.hpp"
 
 namespace pv {
 namespace data {

@@ -27,12 +27,12 @@
 #include <QHelpEvent>
 #include <QToolTip>
 
-#include "samplingbar.h"
+#include "samplingbar.hpp"
 
-#include <pv/devicemanager.h>
-#include <pv/popups/deviceoptions.h>
-#include <pv/popups/channels.h>
-#include <pv/util.h>
+#include <pv/devicemanager.hpp>
+#include <pv/popups/deviceoptions.hpp>
+#include <pv/popups/channels.hpp>
+#include <pv/util.hpp>
 
 #include <libsigrok/libsigrok.hpp>
 

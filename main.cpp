@@ -30,15 +30,15 @@
 #include <QDebug>
 
 #ifdef ENABLE_SIGNALS
-#include "signalhandler.h"
+#include "signalhandler.hpp"
 #endif
 
-#include "pv/application.h"
-#include "pv/devicemanager.h"
-#include "pv/mainwindow.h"
+#include "pv/application.hpp"
+#include "pv/devicemanager.hpp"
+#include "pv/mainwindow.hpp"
 #ifdef ANDROID
 #include <libsigrokandroidutils/libsigrokandroidutils.h>
-#include "android/loghandler.h"
+#include "android/loghandler.hpp"
 #endif
 
 #include "config.h"

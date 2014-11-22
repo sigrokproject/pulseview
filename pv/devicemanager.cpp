@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#include "devicemanager.h"
-#include "sigsession.h"
+#include "devicemanager.hpp"
+#include "sigsession.hpp"
 
 #include <cassert>
 #include <stdexcept>

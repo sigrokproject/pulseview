@@ -34,19 +34,19 @@
 
 #include <libsigrok/libsigrok.hpp>
 
-#include "cursorheader.h"
-#include "decodetrace.h"
-#include "header.h"
-#include "logicsignal.h"
-#include "ruler.h"
-#include "signal.h"
-#include "tracegroup.h"
-#include "view.h"
-#include "viewport.h"
+#include "cursorheader.hpp"
+#include "decodetrace.hpp"
+#include "header.hpp"
+#include "logicsignal.hpp"
+#include "ruler.hpp"
+#include "signal.hpp"
+#include "tracegroup.hpp"
+#include "view.hpp"
+#include "viewport.hpp"
 
-#include "pv/sigsession.h"
-#include "pv/data/logic.h"
-#include "pv/data/logicsnapshot.h"
+#include "pv/sigsession.hpp"
+#include "pv/data/logic.hpp"
+#include "pv/data/logicsnapshot.hpp"
 
 using boost::shared_lock;
 using boost::shared_mutex;

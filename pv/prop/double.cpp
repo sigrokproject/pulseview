@@ -22,7 +22,7 @@
 
 #include <QDoubleSpinBox>
 
-#include "double.h"
+#include "double.hpp"
 
 using boost::optional;
 using std::pair;

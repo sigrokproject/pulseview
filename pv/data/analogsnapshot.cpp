@@ -27,7 +27,7 @@
 
 #include <algorithm>
 
-#include "analogsnapshot.h"
+#include "analogsnapshot.hpp"
 
 using std::lock_guard;
 using std::recursive_mutex;

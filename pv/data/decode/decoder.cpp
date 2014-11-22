@@ -23,9 +23,9 @@
 #include <libsigrok/libsigrok.hpp>
 #include <libsigrokdecode/libsigrokdecode.h>
 
-#include "decoder.h"
+#include "decoder.hpp"
 
-#include <pv/view/logicsignal.h>
+#include <pv/view/logicsignal.hpp>
 
 using std::set;
 using std::map;

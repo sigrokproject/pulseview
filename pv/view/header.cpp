@@ -18,12 +18,11 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#include "header.h"
-#include "view.h"
+#include "header.hpp"
+#include "view.hpp"
 
-#include "signal.h"
-#include "tracegroup.h"
-#include "../sigsession.h"
+#include "signal.hpp"
+#include "tracegroup.hpp"
 
 #include <cassert>
 #include <algorithm>
@@ -36,7 +35,8 @@
 #include <QPainter>
 #include <QRect>
 
-#include <pv/widgets/popup.h>
+#include <pv/sigsession.hpp>
+#include <pv/widgets/popup.hpp>
 
 using boost::make_filter_iterator;
 using std::dynamic_pointer_cast;

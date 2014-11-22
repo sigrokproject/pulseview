@@ -28,12 +28,12 @@
 #include <QKeyEvent>
 #include <QLineEdit>
 
-#include "trace.h"
-#include "tracepalette.h"
-#include "view.h"
+#include "trace.hpp"
+#include "tracepalette.hpp"
+#include "view.hpp"
 
-#include <pv/widgets/colourbutton.h>
-#include <pv/widgets/popup.h>
+#include <pv/widgets/colourbutton.hpp>
+#include <pv/widgets/popup.hpp>
 
 namespace pv {
 namespace view {

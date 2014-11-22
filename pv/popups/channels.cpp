@@ -25,11 +25,11 @@
 #include <QGridLayout>
 #include <QLabel>
 
-#include "channels.h"
+#include "channels.hpp"
 
-#include <pv/prop/binding/deviceoptions.h>
-#include <pv/sigsession.h>
-#include <pv/view/signal.h>
+#include <pv/prop/binding/deviceoptions.hpp>
+#include <pv/sigsession.hpp>
+#include <pv/view/signal.hpp>
 
 #include <libsigrok/libsigrok.hpp>
 

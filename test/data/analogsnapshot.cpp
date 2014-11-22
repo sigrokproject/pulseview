@@ -24,7 +24,7 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include "../../pv/data/analogsnapshot.h"
+#include <pv/data/analogsnapshot.hpp>
 
 using pv::data::AnalogSnapshot;
 

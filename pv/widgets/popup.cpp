@@ -27,7 +27,7 @@
 #include <QDesktopWidget>
 #include <QLineEdit>
 
-#include "popup.h"
+#include "popup.hpp"
 
 using std::max;
 using std::min;

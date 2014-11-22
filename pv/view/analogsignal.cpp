@@ -23,10 +23,10 @@
 #include <cassert>
 #include <cmath>
 
-#include "analogsignal.h"
-#include "pv/data/analog.h"
-#include "pv/data/analogsnapshot.h"
-#include "pv/view/view.h"
+#include "analogsignal.hpp"
+#include "pv/data/analog.hpp"
+#include "pv/data/analogsnapshot.hpp"
+#include "pv/view/view.hpp"
 
 #include <libsigrok/libsigrok.hpp>
 

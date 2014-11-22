@@ -24,7 +24,7 @@
 
 #include <QTextDocument>
 
-#include "about.h"
+#include "about.hpp"
 #include <ui_about.h>
 
 #include <libsigrok/libsigrok.hpp>

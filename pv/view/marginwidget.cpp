@@ -18,9 +18,9 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#include "view.h"
+#include "view.hpp"
 
-#include "marginwidget.h"
+#include "marginwidget.hpp"
 
 namespace pv {
 namespace view {

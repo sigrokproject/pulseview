@@ -28,14 +28,14 @@
 #include <QFormLayout>
 #include <QToolBar>
 
-#include "logicsignal.h"
-#include "view.h"
+#include "logicsignal.hpp"
+#include "view.hpp"
 
-#include <pv/sigsession.h>
-#include <pv/devicemanager.h>
-#include <pv/data/logic.h>
-#include <pv/data/logicsnapshot.h>
-#include <pv/view/view.h>
+#include <pv/sigsession.hpp>
+#include <pv/devicemanager.hpp>
+#include <pv/data/logic.hpp>
+#include <pv/data/logicsnapshot.hpp>
+#include <pv/view/view.hpp>
 
 #include <libsigrok/libsigrok.hpp>
 

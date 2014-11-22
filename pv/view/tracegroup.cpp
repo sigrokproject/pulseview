@@ -26,7 +26,7 @@
 #include <QMenu>
 #include <QPainter>
 
-#include "tracegroup.h"
+#include "tracegroup.hpp"
 
 using std::pair;
 using std::shared_ptr;

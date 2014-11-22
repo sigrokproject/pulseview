@@ -23,7 +23,7 @@
 #include <QLineEdit>
 #include <QSpinBox>
 
-#include "string.h"
+#include "string.hpp"
 
 using std::string;
 

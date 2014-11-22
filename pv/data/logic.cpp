@@ -20,8 +20,8 @@
 
 #include <cassert>
 
-#include "logic.h"
-#include "logicsnapshot.h"
+#include "logic.hpp"
+#include "logicsnapshot.hpp"
 
 using std::deque;
 using std::max;

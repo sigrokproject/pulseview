@@ -22,20 +22,20 @@
 #include <libsigrokdecode/libsigrokdecode.h>
 #endif
 
-#include "sigsession.h"
+#include "sigsession.hpp"
 
-#include "devicemanager.h"
+#include "devicemanager.hpp"
 
-#include "data/analog.h"
-#include "data/analogsnapshot.h"
-#include "data/decoderstack.h"
-#include "data/logic.h"
-#include "data/logicsnapshot.h"
-#include "data/decode/decoder.h"
+#include "data/analog.hpp"
+#include "data/analogsnapshot.hpp"
+#include "data/decoderstack.hpp"
+#include "data/logic.hpp"
+#include "data/logicsnapshot.hpp"
+#include "data/decode/decoder.hpp"
 
-#include "view/analogsignal.h"
-#include "view/decodetrace.h"
-#include "view/logicsignal.h"
+#include "view/analogsignal.hpp"
+#include "view/decodetrace.hpp"
+#include "view/logicsignal.hpp"
 
 #include <cassert>
 #include <mutex>

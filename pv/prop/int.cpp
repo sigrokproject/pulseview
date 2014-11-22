@@ -23,7 +23,7 @@
 
 #include <QSpinBox>
 
-#include "int.h"
+#include "int.hpp"
 
 using boost::optional;
 using std::max;

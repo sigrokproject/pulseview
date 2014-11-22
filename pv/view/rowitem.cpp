@@ -20,9 +20,9 @@
 
 #include <assert.h>
 
-#include "view.h"
+#include "view.hpp"
 
-#include "rowitem.h"
+#include "rowitem.hpp"
 
 namespace pv {
 namespace view {

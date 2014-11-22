@@ -24,14 +24,14 @@
 
 #include <QDebug>
 
-#include "decoderstack.h"
+#include "decoderstack.hpp"
 
-#include <pv/data/logic.h>
-#include <pv/data/logicsnapshot.h>
-#include <pv/data/decode/decoder.h>
-#include <pv/data/decode/annotation.h>
-#include <pv/sigsession.h>
-#include <pv/view/logicsignal.h>
+#include <pv/data/logic.hpp>
+#include <pv/data/logicsnapshot.hpp>
+#include <pv/data/decode/decoder.hpp>
+#include <pv/data/decode/annotation.hpp>
+#include <pv/sigsession.hpp>
+#include <pv/view/logicsignal.hpp>
 
 using std::lock_guard;
 using std::mutex;

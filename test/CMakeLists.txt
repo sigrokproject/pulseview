@@ -87,29 +87,29 @@ set(pulseview_TEST_SOURCES
 
 # This list includes only QObject derived class headers.
 set(pulseview_TEST_HEADERS
-	${PROJECT_SOURCE_DIR}/pv/sigsession.h
-	${PROJECT_SOURCE_DIR}/pv/prop/double.h
-	${PROJECT_SOURCE_DIR}/pv/prop/enum.h
-	${PROJECT_SOURCE_DIR}/pv/prop/int.h
-	${PROJECT_SOURCE_DIR}/pv/prop/property.h
-	${PROJECT_SOURCE_DIR}/pv/prop/string.h
-	${PROJECT_SOURCE_DIR}/pv/prop/binding/deviceoptions.h
-	${PROJECT_SOURCE_DIR}/pv/view/cursor.h
-	${PROJECT_SOURCE_DIR}/pv/view/cursorheader.h
-	${PROJECT_SOURCE_DIR}/pv/view/header.h
-	${PROJECT_SOURCE_DIR}/pv/view/logicsignal.h
-	${PROJECT_SOURCE_DIR}/pv/view/marginwidget.h
-	${PROJECT_SOURCE_DIR}/pv/view/ruler.h
-	${PROJECT_SOURCE_DIR}/pv/view/selectableitem.h
-	${PROJECT_SOURCE_DIR}/pv/view/signal.h
-	${PROJECT_SOURCE_DIR}/pv/view/timemarker.h
-	${PROJECT_SOURCE_DIR}/pv/view/trace.h
-	${PROJECT_SOURCE_DIR}/pv/view/view.h
-	${PROJECT_SOURCE_DIR}/pv/view/viewport.h
-	${PROJECT_SOURCE_DIR}/pv/widgets/colourbutton.h
-	${PROJECT_SOURCE_DIR}/pv/widgets/colourpopup.h
-	${PROJECT_SOURCE_DIR}/pv/widgets/popup.h
-	${PROJECT_SOURCE_DIR}/pv/widgets/wellarray.h
+	${PROJECT_SOURCE_DIR}/pv/sigsession.hpp
+	${PROJECT_SOURCE_DIR}/pv/prop/double.hpp
+	${PROJECT_SOURCE_DIR}/pv/prop/enum.hpp
+	${PROJECT_SOURCE_DIR}/pv/prop/int.hpp
+	${PROJECT_SOURCE_DIR}/pv/prop/property.hpp
+	${PROJECT_SOURCE_DIR}/pv/prop/string.hpp
+	${PROJECT_SOURCE_DIR}/pv/prop/binding/deviceoptions.hpp
+	${PROJECT_SOURCE_DIR}/pv/view/cursor.hpp
+	${PROJECT_SOURCE_DIR}/pv/view/cursorheader.hpp
+	${PROJECT_SOURCE_DIR}/pv/view/header.hpp
+	${PROJECT_SOURCE_DIR}/pv/view/logicsignal.hpp
+	${PROJECT_SOURCE_DIR}/pv/view/marginwidget.hpp
+	${PROJECT_SOURCE_DIR}/pv/view/ruler.hpp
+	${PROJECT_SOURCE_DIR}/pv/view/selectableitem.hpp
+	${PROJECT_SOURCE_DIR}/pv/view/signal.hpp
+	${PROJECT_SOURCE_DIR}/pv/view/timemarker.hpp
+	${PROJECT_SOURCE_DIR}/pv/view/trace.hpp
+	${PROJECT_SOURCE_DIR}/pv/view/view.hpp
+	${PROJECT_SOURCE_DIR}/pv/view/viewport.hpp
+	${PROJECT_SOURCE_DIR}/pv/widgets/colourbutton.hpp
+	${PROJECT_SOURCE_DIR}/pv/widgets/colourpopup.hpp
+	${PROJECT_SOURCE_DIR}/pv/widgets/popup.hpp
+	${PROJECT_SOURCE_DIR}/pv/widgets/wellarray.hpp
 )
 
 if(ENABLE_DECODE)
@@ -127,10 +127,10 @@ if(ENABLE_DECODE)
 	)
 
 	list(APPEND pulseview_TEST_HEADERS
-		${PROJECT_SOURCE_DIR}/pv/data/decoderstack.h
-		${PROJECT_SOURCE_DIR}/pv/view/decodetrace.h
-		${PROJECT_SOURCE_DIR}/pv/widgets/decodergroupbox.h
-		${PROJECT_SOURCE_DIR}/pv/widgets/decodermenu.h
+		${PROJECT_SOURCE_DIR}/pv/data/decoderstack.hpp
+		${PROJECT_SOURCE_DIR}/pv/view/decodetrace.hpp
+		${PROJECT_SOURCE_DIR}/pv/widgets/decodergroupbox.hpp
+		${PROJECT_SOURCE_DIR}/pv/widgets/decodermenu.hpp
 	)
 endif()
 

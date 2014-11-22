@@ -20,8 +20,8 @@
 
 #include <cassert>
 
-#include "analog.h"
-#include "analogsnapshot.h"
+#include "analog.hpp"
+#include "analogsnapshot.hpp"
 
 using std::deque;
 using std::max;

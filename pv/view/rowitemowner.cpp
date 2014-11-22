@@ -20,8 +20,8 @@
 
 #include <cassert>
 
-#include "rowitem.h"
-#include "rowitemowner.h"
+#include "rowitem.hpp"
+#include "rowitemowner.hpp"
 
 using std::max;
 using std::make_pair;

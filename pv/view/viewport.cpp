@@ -22,11 +22,11 @@
 #include <cmath>
 #include <algorithm>
 
-#include "view.h"
-#include "viewport.h"
+#include "signal.hpp"
+#include "view.hpp"
+#include "viewport.hpp"
 
-#include "signal.h"
-#include "../sigsession.h"
+#include <pv/sigsession.hpp>
 
 #include <QMouseEvent>
 

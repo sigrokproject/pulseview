@@ -22,9 +22,9 @@
 
 #include <QFormLayout>
 
-#include <pv/prop/property.h>
+#include <pv/prop/property.hpp>
 
-#include "binding.h"
+#include "binding.hpp"
 
 using std::shared_ptr;
 

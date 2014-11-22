@@ -26,7 +26,7 @@
 #include <stdint.h>
 #include <libsigrok/libsigrok.h>
 
-#include "android/loghandler.h"
+#include "android/loghandler.hpp"
 
 namespace pv {
 

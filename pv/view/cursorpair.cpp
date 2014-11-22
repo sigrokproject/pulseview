@@ -18,10 +18,10 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#include "cursorpair.h"
+#include "cursorpair.hpp"
 
-#include "view.h"
-#include "pv/util.h"
+#include "view.hpp"
+#include "pv/util.hpp"
 
 #include <cassert>
 #include <algorithm>

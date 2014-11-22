@@ -22,7 +22,7 @@
 
 #include <QMessageBox>
 
-#include "storeprogress.h"
+#include "storeprogress.hpp"
 
 namespace pv {
 namespace dialogs {

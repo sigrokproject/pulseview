@@ -18,12 +18,12 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#include "deviceoptions.h"
+#include "deviceoptions.hpp"
 
 #include <QFormLayout>
 #include <QListWidget>
 
-#include <pv/prop/property.h>
+#include <pv/prop/property.hpp>
 
 #include <libsigrok/libsigrok.hpp>
 

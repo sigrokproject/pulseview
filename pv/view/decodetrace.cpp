@@ -39,19 +39,19 @@ extern "C" {
 #include <QPushButton>
 #include <QToolTip>
 
-#include "decodetrace.h"
+#include "decodetrace.hpp"
 
-#include <pv/sigsession.h>
-#include <pv/data/decoderstack.h>
-#include <pv/data/decode/decoder.h>
-#include <pv/data/logic.h>
-#include <pv/data/logicsnapshot.h>
-#include <pv/data/decode/annotation.h>
-#include <pv/view/logicsignal.h>
-#include <pv/view/view.h>
-#include <pv/view/viewport.h>
-#include <pv/widgets/decodergroupbox.h>
-#include <pv/widgets/decodermenu.h>
+#include <pv/sigsession.hpp>
+#include <pv/data/decoderstack.hpp>
+#include <pv/data/decode/decoder.hpp>
+#include <pv/data/logic.hpp>
+#include <pv/data/logicsnapshot.hpp>
+#include <pv/data/decode/annotation.hpp>
+#include <pv/view/logicsignal.hpp>
+#include <pv/view/view.hpp>
+#include <pv/view/viewport.hpp>
+#include <pv/widgets/decodergroupbox.hpp>
+#include <pv/widgets/decodermenu.hpp>
 
 using boost::shared_lock;
 using boost::shared_mutex;

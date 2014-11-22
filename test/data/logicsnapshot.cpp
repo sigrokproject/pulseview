@@ -24,7 +24,7 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include "../../pv/data/logicsnapshot.h"
+#include <pv/data/logicsnapshot.hpp>
 
 using pv::data::LogicSnapshot;
 using std::vector;

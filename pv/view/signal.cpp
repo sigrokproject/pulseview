@@ -31,8 +31,8 @@
 
 #include <libsigrok/libsigrok.hpp>
 
-#include "signal.h"
-#include "view.h"
+#include "signal.hpp"
+#include "view.hpp"
 
 using std::shared_ptr;
 

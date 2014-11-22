@@ -20,12 +20,12 @@
 
 #include <cassert>
 
-#include "storesession.h"
+#include "storesession.hpp"
 
-#include <pv/sigsession.h>
-#include <pv/data/logic.h>
-#include <pv/data/logicsnapshot.h>
-#include <pv/view/signal.h>
+#include <pv/sigsession.hpp>
+#include <pv/data/logic.hpp>
+#include <pv/data/logicsnapshot.hpp>
+#include <pv/view/signal.hpp>
 
 #include <libsigrok/libsigrok.hpp>
 

@@ -22,7 +22,7 @@
 
 #include <QComboBox>
 
-#include "enum.h"
+#include "enum.hpp"
 
 using std::pair;
 using std::vector;

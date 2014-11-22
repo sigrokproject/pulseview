@@ -44,7 +44,7 @@
 #include <QStyle>
 #include <QStyleOptionFrame>
 
-#include "wellarray.h"
+#include "wellarray.hpp"
 
 void QWellArray::paintEvent(QPaintEvent *e)
 {

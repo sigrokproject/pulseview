@@ -40,17 +40,17 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
-#include "mainwindow.h"
+#include "mainwindow.hpp"
 
-#include "devicemanager.h"
-#include "dialogs/about.h"
-#include "dialogs/connect.h"
-#include "dialogs/storeprogress.h"
-#include "toolbars/samplingbar.h"
-#include "view/logicsignal.h"
-#include "view/view.h"
+#include "devicemanager.hpp"
+#include "dialogs/about.hpp"
+#include "dialogs/connect.hpp"
+#include "dialogs/storeprogress.hpp"
+#include "toolbars/samplingbar.hpp"
+#include "view/logicsignal.hpp"
+#include "view/view.hpp"
 #ifdef ENABLE_DECODE
-#include "widgets/decodermenu.h"
+#include "widgets/decodermenu.hpp"
 #endif
 
 #include <inttypes.h>

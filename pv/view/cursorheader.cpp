@@ -18,16 +18,16 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#include "cursorheader.h"
+#include "cursorheader.hpp"
 
-#include "ruler.h"
-#include "view.h"
+#include "ruler.hpp"
+#include "view.hpp"
 
 #include <QApplication>
 #include <QFontMetrics>
 #include <QMouseEvent>
 
-#include <pv/widgets/popup.h>
+#include <pv/widgets/popup.hpp>
 
 using std::shared_ptr;
 
