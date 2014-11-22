@@ -261,40 +261,42 @@ void SamplingBar::update_sample_count_selector()
 	assert(!updating_sample_count_);
 	updating_sample_count_ = true;
 
-	if (sample_count_supported_)
+	if (!sample_count_supported_)
 	{
-		uint64_t sample_count = sample_count_.value();
-		uint64_t min_sample_count = 0;
-		uint64_t max_sample_count = MaxSampleCount;
+		sample_count_.show_none();
+		updating_sample_count_ = false;
+		return;
+	}
 
+	uint64_t sample_count = sample_count_.value();
+	uint64_t min_sample_count = 0;
+	uint64_t max_sample_count = MaxSampleCount;
+
+	if (sample_count == 0)
+		sample_count = DefaultSampleCount;
+
+	try {
+		auto gvar = device->config_list(ConfigKey::LIMIT_SAMPLES);
+		g_variant_get(gvar.gobj(), "(tt)",
+			&min_sample_count, &max_sample_count);
+	} catch (Error error) {}
+
+	min_sample_count = min(max(min_sample_count, MinSampleCount),
+		max_sample_count);
+
+	sample_count_.show_125_list(
+		min_sample_count, max_sample_count);
+
+	try {
+		auto gvar = device->config_get(ConfigKey::LIMIT_SAMPLES);
+		sample_count = g_variant_get_uint64(gvar.gobj());
 		if (sample_count == 0)
 			sample_count = DefaultSampleCount;
-
-		try {
-			auto gvar = device->config_list(ConfigKey::LIMIT_SAMPLES);
-			g_variant_get(gvar.gobj(), "(tt)",
-				&min_sample_count, &max_sample_count);
-		} catch (Error error) {}
-
-		min_sample_count = min(max(min_sample_count, MinSampleCount),
+		sample_count = min(max(sample_count, MinSampleCount),
 			max_sample_count);
+	} catch (Error error) {}
 
-		sample_count_.show_125_list(
-			min_sample_count, max_sample_count);
-
-		try {
-			auto gvar = device->config_get(ConfigKey::LIMIT_SAMPLES);
-			sample_count = g_variant_get_uint64(gvar.gobj());
-			if (sample_count == 0)
-				sample_count = DefaultSampleCount;
-			sample_count = min(max(sample_count, MinSampleCount),
-				max_sample_count);
-		} catch (Error error) {}
-
-		sample_count_.set_value(sample_count);
-	}
-	else
-		sample_count_.show_none();
+	sample_count_.set_value(sample_count);
 
 	updating_sample_count_ = false;
 }
