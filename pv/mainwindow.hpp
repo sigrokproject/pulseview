@@ -103,6 +103,7 @@ private Q_SLOTS:
 	void run_stop();
 
 	void capture_state_changed(int state);
+	void device_selected();
 
 private:
 	/**

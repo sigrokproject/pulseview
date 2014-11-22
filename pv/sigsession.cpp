@@ -153,6 +153,8 @@ void SigSession::set_device(shared_ptr<Device> device)
 			});
 		update_signals(device);
 	}
+
+	device_selected();
 }
 
 void SigSession::set_file(const string &name)
@@ -166,6 +168,7 @@ void SigSession::set_file(const string &name)
 		});
 	device_manager_.update_display_name(device_);
 	update_signals(device_);
+	device_selected();
 }
 
 void SigSession::set_default_device()

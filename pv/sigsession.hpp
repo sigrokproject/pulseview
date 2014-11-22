@@ -174,6 +174,7 @@ private:
 
 Q_SIGNALS:
 	void capture_state_changed(int state);
+	void device_selected();
 
 	void signals_changed();
 

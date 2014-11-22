@@ -270,6 +270,8 @@ void MainWindow::setup_ui()
 	// Setup session_ events
 	connect(&session_, SIGNAL(capture_state_changed(int)), this,
 		SLOT(capture_state_changed(int)));
+	connect(&session_, SIGNAL(device_selected()), this,
+		SLOT(device_selected()));
 }
 
 void MainWindow::save_ui_settings()
@@ -557,6 +559,17 @@ void MainWindow::run_stop()
 void MainWindow::capture_state_changed(int state)
 {
 	sampling_bar_->set_capture_state((pv::SigSession::capture_state)state);
+}
+
+void MainWindow::device_selected()
+{
+	// Set the title to include the device/file name
+	const shared_ptr<sigrok::Device> device = session_.device();
+	if (!device)
+		return;
+
+	const string display_name = device_manager_.get_display_name(device);
+	setWindowTitle(tr("%1 - PulseView").arg(display_name.c_str()));
 }
 
 } // namespace pv
