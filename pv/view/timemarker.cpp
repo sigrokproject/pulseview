@@ -87,6 +87,7 @@ pv::widgets::Popup* TimeMarker::create_popup(QWidget *parent)
 	value_widget_->setDecimals(9);
 	value_widget_->setSuffix("s");
 	value_widget_->setSingleStep(1e-6);
+	value_widget_->setRange(-1.0e9, 1.0e9);
 	value_widget_->setValue(time_);
 
 	connect(value_widget_, SIGNAL(valueChanged(double)),
