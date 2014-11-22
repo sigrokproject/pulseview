@@ -45,6 +45,7 @@ class QAction;
 
 namespace pv {
 
+class MainWindow;
 class SigSession;
 
 namespace toolbars {
@@ -59,7 +60,7 @@ private:
 	static const uint64_t DefaultSampleCount;
 
 public:
-	SamplingBar(SigSession &session, QWidget *parent);
+	SamplingBar(SigSession &session, pv::MainWindow &main_window);
 
 	void set_device_list(
 		const std::list< std::pair<std::shared_ptr<sigrok::Device>, std::string> > &devices,
@@ -93,6 +94,7 @@ protected:
 
 private:
 	SigSession &session_;
+	MainWindow &main_window_;
 
 	QComboBox device_selector_;
 	bool updating_device_selector_;

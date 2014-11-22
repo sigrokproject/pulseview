@@ -95,6 +95,21 @@ MainWindow::MainWindow(DeviceManager &device_manager,
 	}
 }
 
+void MainWindow::run_stop()
+{
+	switch(session_.get_capture_state()) {
+	case SigSession::Stopped:
+		session_.start_capture([&](QString message) {
+			session_error("Capture failed", message); });
+		break;
+
+	case SigSession::AwaitingTrigger:
+	case SigSession::Running:
+		session_.stop_capture();
+		break;
+	}
+}
+
 void MainWindow::setup_ui()
 {
 	setObjectName(QString::fromUtf8("MainWindow"));
@@ -255,13 +270,11 @@ void MainWindow::setup_ui()
 	addToolBar(toolbar);
 
 	// Setup the sampling bar
-	sampling_bar_ = new toolbars::SamplingBar(session_, this);
+	sampling_bar_ = new toolbars::SamplingBar(session_, *this);
 
 	// Populate the device list and select the initially selected device
 	update_device_list();
 
-	connect(sampling_bar_, SIGNAL(run_stop()), this,
-		SLOT(run_stop()));
 	addToolBar(sampling_bar_);
 
 	// Set the title
@@ -539,21 +552,6 @@ void MainWindow::add_decoder(srd_decoder *decoder)
 #else
 	(void)decoder;
 #endif
-}
-
-void MainWindow::run_stop()
-{
-	switch(session_.get_capture_state()) {
-	case SigSession::Stopped:
-		session_.start_capture([&](QString message) {
-			session_error("Capture failed", message); });
-		break;
-
-	case SigSession::AwaitingTrigger:
-	case SigSession::Running:
-		session_.stop_capture();
-		break;
-	}
 }
 
 void MainWindow::capture_state_changed(int state)

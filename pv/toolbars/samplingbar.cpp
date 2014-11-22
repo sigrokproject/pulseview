@@ -30,6 +30,7 @@
 #include "samplingbar.hpp"
 
 #include <pv/devicemanager.hpp>
+#include <pv/mainwindow.hpp>
 #include <pv/popups/deviceoptions.hpp>
 #include <pv/popups/channels.hpp>
 #include <pv/util.hpp>
@@ -55,9 +56,10 @@ const uint64_t SamplingBar::MinSampleCount = 100ULL;
 const uint64_t SamplingBar::MaxSampleCount = 1000000000000ULL;
 const uint64_t SamplingBar::DefaultSampleCount = 1000000;
 
-SamplingBar::SamplingBar(SigSession &session, QWidget *parent) :
-	QToolBar("Sampling Bar", parent),
+SamplingBar::SamplingBar(SigSession &session, MainWindow &main_window) :
+	QToolBar("Sampling Bar", &main_window),
 	session_(session),
+	main_window_(main_window),
 	device_selector_(this),
 	updating_device_selector_(false),
 	configure_button_(this),
@@ -449,7 +451,7 @@ void SamplingBar::on_run_stop()
 {
 	commit_sample_count();
 	commit_sample_rate();	
-	run_stop();
+	main_window_.run_stop();
 }
 
 void SamplingBar::on_config_changed()

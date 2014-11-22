@@ -58,6 +58,8 @@ public:
 		const char *open_file_name = NULL,
 		QWidget *parent = 0);
 
+	void run_stop();
+
 private:
 	void setup_ui();
 
@@ -99,8 +101,6 @@ private Q_SLOTS:
 	void on_actionAbout_triggered();
 
 	void add_decoder(srd_decoder *decoder);
-
-	void run_stop();
 
 	void capture_state_changed(int state);
 	void device_selected();
