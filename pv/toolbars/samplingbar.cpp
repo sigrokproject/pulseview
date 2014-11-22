@@ -432,7 +432,7 @@ void SamplingBar::on_device_selected()
 	if (!device)
 		return;
 
-	session_.set_device(device);
+	main_window_.select_device(device);
 
 	update_device_config_widgets();
 }

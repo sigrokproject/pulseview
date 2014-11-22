@@ -110,6 +110,20 @@ void MainWindow::run_stop()
 	}
 }
 
+void MainWindow::select_device(shared_ptr<Device> device)
+{
+	try {
+		session_.set_device(device);
+	} catch(const QString &e) {
+		QMessageBox msg(this);
+		msg.setText(e);
+		msg.setInformativeText(tr("Failed to Select Device"));
+		msg.setStandardButtons(QMessageBox::Ok);
+		msg.setIcon(QMessageBox::Warning);
+		msg.exec();
+	}
+}
+
 void MainWindow::setup_ui()
 {
 	setObjectName(QString::fromUtf8("MainWindow"));
@@ -364,7 +378,7 @@ void MainWindow::restore_ui_settings()
 	device = device_manager_.find_device_from_info(dev_info);
 
 	if (device) {
-		session_.set_device(device);
+		select_device(device);
 		update_device_list();
 	}
 
@@ -497,7 +511,7 @@ void MainWindow::on_actionConnect_triggered()
 	// If the user selected a device, select it in the device list. Select the
 	// current device otherwise.
 	if (dlg.exec())
-		session_.set_device(dlg.get_selected_device());
+		select_device(dlg.get_selected_device());
 
 	update_device_list();
 }

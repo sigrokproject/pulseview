@@ -32,6 +32,10 @@ struct srd_decoder;
 
 class QVBoxLayout;
 
+namespace sigrok {
+class Device;
+}
+
 namespace pv {
 
 class DeviceManager;
@@ -59,6 +63,8 @@ public:
 		QWidget *parent = 0);
 
 	void run_stop();
+
+	void select_device(std::shared_ptr<sigrok::Device> device);
 
 private:
 	void setup_ui();

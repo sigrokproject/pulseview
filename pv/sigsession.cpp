@@ -137,22 +137,30 @@ void Session::set_device(shared_ptr<Device> device)
 	if (session_device)
 		session_ = session_device->parent();
 
-	device_ = device;
 	decode_traces_.clear();
 
 	if (device) {
 		if (!session_device)
 		{
 			session_ = device_manager_.context()->create_session();
-			device->open();
+
+			try {
+				device->open();
+			} catch(const sigrok::Error &e) {
+				throw QString(e.what());
+			}
+
 			session_->add_device(device);
 		}
+
+		device_ = device;
 		session_->add_datafeed_callback([=]
 			(shared_ptr<Device> device, shared_ptr<Packet> packet) {
 				data_feed_in(device, packet);
 			});
 		update_signals(device);
-	}
+	} else
+		device_ = nullptr;
 
 	device_selected();
 }
