@@ -421,8 +421,12 @@ shared_ptr<view::Signal> SigSession::signal_from_channel(
 
 void SigSession::read_sample_rate(shared_ptr<Device> device)
 {
-	uint64_t sample_rate = VariantBase::cast_dynamic<Variant<guint64>>(
-		device->config_get(ConfigKey::SAMPLERATE)).get();
+	const auto keys = device_->config_keys(ConfigKey::DEVICE_OPTIONS);
+	const auto iter = keys.find(ConfigKey::SAMPLERATE);
+	const uint64_t sample_rate = (iter != keys.end() &&
+		(*iter).second.find(sigrok::GET) != (*iter).second.end()) ?
+		VariantBase::cast_dynamic<Variant<guint64>>(
+			device->config_get(ConfigKey::SAMPLERATE)).get() : 0;
 
 	// Set the sample rate of all data
 	const set< shared_ptr<data::SignalData> > data_set = get_data();
@@ -507,13 +511,14 @@ void SigSession::feed_in_logic(shared_ptr<Logic> logic)
 		set_capture_state(Running);
 
 		// Get sample limit.
-		uint64_t sample_limit;
-		try {
-			sample_limit = VariantBase::cast_dynamic<Variant<guint64>>(
-				device_->config_get(ConfigKey::LIMIT_SAMPLES)).get();
-		} catch (Error) {
-			sample_limit = 0;
-		}
+		const auto keys = device_->config_keys(
+			ConfigKey::DEVICE_OPTIONS);
+		const auto iter = keys.find(ConfigKey::LIMIT_SAMPLES);
+		const uint64_t sample_limit = (iter != keys.end() &&
+			(*iter).second.find(sigrok::GET) !=
+			(*iter).second.end()) ?
+			VariantBase::cast_dynamic<Variant<guint64>>(
+			device_->config_get(ConfigKey::LIMIT_SAMPLES)).get() : 0;
 
 		// Create a new data snapshot
 		cur_logic_snapshot_ = shared_ptr<data::LogicSnapshot>(

@@ -177,9 +177,12 @@ void SamplingBar::update_sample_rate_selector()
 	assert(!updating_sample_rate_);
 	updating_sample_rate_ = true;
 
-	try {
+	const auto keys = device->config_keys(ConfigKey::DEVICE_OPTIONS);
+	const auto iter = keys.find(ConfigKey::SAMPLERATE);
+	if (iter != keys.end() &&
+		(*iter).second.find(sigrok::LIST) != (*iter).second.end()) {
 		gvar_dict = device->config_list(ConfigKey::SAMPLERATE);
-	} catch (Error error) {
+	} else {
 		sample_rate_.show_none();
 		updating_sample_rate_ = false;
 		return;
@@ -275,11 +278,14 @@ void SamplingBar::update_sample_count_selector()
 	if (sample_count == 0)
 		sample_count = DefaultSampleCount;
 
-	try {
+	const auto keys = device->config_keys(ConfigKey::DEVICE_OPTIONS);
+	const auto iter = keys.find(ConfigKey::LIMIT_SAMPLES);
+	if (iter != keys.end() &&
+		(*iter).second.find(sigrok::LIST) != (*iter).second.end()) {
 		auto gvar = device->config_list(ConfigKey::LIMIT_SAMPLES);
 		g_variant_get(gvar.gobj(), "(tt)",
 			&min_sample_count, &max_sample_count);
-	} catch (Error error) {}
+	}
 
 	min_sample_count = min(max(min_sample_count, MinSampleCount),
 		max_sample_count);
