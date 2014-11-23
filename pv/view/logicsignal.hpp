@@ -59,6 +59,10 @@ private:
 
 	static const QColor SignalColours[10];
 
+	static QColor TriggerMarkerBackgroundColour;
+	static const int TriggerMarkerPadding;
+	static const char* TriggerMarkerIcons[8];
+
 public:
 	LogicSignal(pv::Session &session,
 		std::shared_ptr<sigrok::Device> device,
@@ -93,6 +97,14 @@ public:
 	 **/
 	void paint_mid(QPainter &p, int left, int right);
 
+	/**
+	 * Paints the foreground layer of the signal with a QPainter
+	 * @param p the QPainter to paint into.
+	 * @param left the x-coordinate of the left edge of the signal
+	 * @param right the x-coordinate of the right edge of the signal
+	 **/
+	virtual void paint_fore(QPainter &p, int left, int right);
+
 private:
 	void paint_caps(QPainter &p, QLineF *const lines,
 		std::vector< std::pair<int64_t, bool> > &edges,
@@ -110,6 +122,7 @@ private:
 	void modify_trigger();
 
 	static const QIcon* get_icon(const char *path);
+	static const QPixmap* get_pixmap(const char *path);
 
 private Q_SLOTS:
 	void on_trigger();
@@ -128,6 +141,7 @@ private:
 	QAction *trigger_change_;
 
 	static QCache<QString, const QIcon> icon_cache_;
+	static QCache<QString, const QPixmap> pixmap_cache_;
 };
 
 } // namespace view

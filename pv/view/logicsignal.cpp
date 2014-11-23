@@ -81,6 +81,22 @@ const QColor LogicSignal::SignalColours[10] = {
 	QColor(0xEE, 0xEE, 0xEC),	// White
 };
 
+QColor LogicSignal::TriggerMarkerBackgroundColour = QColor(0xED, 0xD4, 0x00);
+const int LogicSignal::TriggerMarkerPadding = 2;
+const char* LogicSignal::TriggerMarkerIcons[8] = {
+	nullptr,
+	":/icons/trigger-marker-low.svg",
+	":/icons/trigger-marker-high.svg",
+	":/icons/trigger-marker-rising.svg",
+	":/icons/trigger-marker-falling.svg",
+	":/icons/trigger-marker-change.svg",
+	nullptr,
+	nullptr
+};
+
+QCache<QString, const QIcon> LogicSignal::icon_cache_;
+QCache<QString, const QPixmap> LogicSignal::pixmap_cache_;
+
 LogicSignal::LogicSignal(
 	pv::Session &session,
 	shared_ptr<Device> device,
@@ -218,6 +234,45 @@ void LogicSignal::paint_mid(QPainter &p, int left, int right)
 		pixels_offset, left, low_offset);
 
 	delete[] cap_lines;
+}
+
+void LogicSignal::paint_fore(QPainter &p, int left, int right)
+{
+	(void)left;
+
+	// Draw the trigger marker
+	if (!trigger_match_)
+		return;
+
+	const int y = get_visual_y();
+	const vector<int32_t> trig_types = get_trigger_types();
+	for (int32_t type_id : trig_types) {
+		const TriggerMatchType *const type =
+			TriggerMatchType::get(type_id);
+		if (trigger_match_ != type || type_id < 0 ||
+			(size_t)type_id >= countof(TriggerMarkerIcons) ||
+			!TriggerMarkerIcons[type_id])
+			continue;
+
+		const QPixmap *const pixmap = get_pixmap(
+			TriggerMarkerIcons[type_id]);
+		if (!pixmap)
+			continue;
+
+		const int pad = TriggerMarkerPadding;
+		const QSize size = pixmap->size();
+		const QPoint point(
+			right - size.width() - pad * 2,
+			y - (SignalHeight + size.height()) / 2);
+
+		p.setPen(QPen(Qt::NoPen));
+		p.setBrush(TriggerMarkerBackgroundColour);
+		p.drawRoundedRect(QRect(point, size).adjusted(
+			-pad, -pad, pad, pad), pad, pad);
+		p.drawPixmap(point, *pixmap);
+
+		break;
+	}
 }
 
 void LogicSignal::paint_caps(QPainter &p, QLineF *const lines,
@@ -378,6 +433,9 @@ void LogicSignal::modify_trigger()
 
 	session_.session()->set_trigger(
 		new_trigger->stages().empty() ? nullptr : new_trigger);
+
+	if (owner_)
+		owner_->appearance_changed(false, true);
 }
 
 const QIcon* LogicSignal::get_icon(const char *path)
@@ -389,6 +447,17 @@ const QIcon* LogicSignal::get_icon(const char *path)
 	}
 
 	return icon;
+}
+
+const QPixmap* LogicSignal::get_pixmap(const char *path)
+{
+	const QPixmap *pixmap = pixmap_cache_.take(path);
+	if (!pixmap) {
+		pixmap = new QPixmap(path);
+		pixmap_cache_.insert(path, pixmap);
+	}
+
+	return pixmap;
 }
 
 void LogicSignal::on_trigger()

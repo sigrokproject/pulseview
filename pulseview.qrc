@@ -16,6 +16,11 @@
 	<file>icons/trigger-falling.svg</file>
 	<file>icons/trigger-high.svg</file>
 	<file>icons/trigger-low.svg</file>
+	<file>icons/trigger-marker-change.svg</file>
+	<file>icons/trigger-marker-falling.svg</file>
+	<file>icons/trigger-marker-high.svg</file>
+	<file>icons/trigger-marker-low.svg</file>
+	<file>icons/trigger-marker-rising.svg</file>
 	<file>icons/trigger-none.svg</file>
 	<file>icons/trigger-rising.svg</file>
 	<file>icons/zoom-fit.png</file>
