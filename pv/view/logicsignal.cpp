@@ -272,6 +272,18 @@ void LogicSignal::init_trigger_actions(QWidget *parent)
 	connect(trigger_change_, SIGNAL(triggered()), this, SLOT(on_trigger()));
 }
 
+const vector<int32_t> LogicSignal::get_trigger_types() const
+{
+	try {
+		const Glib::VariantContainerBase gvar =
+			device_->config_list(ConfigKey::TRIGGER_MATCH);
+		return Glib::VariantBase::cast_dynamic<
+			Glib::Variant<vector<int32_t>>>(gvar).get();
+	} catch (Error e) {
+		return vector<int32_t>();
+	}
+}
+
 QAction* LogicSignal::action_from_trigger_type(const TriggerMatchType *type)
 {
 	QAction *action;
@@ -320,24 +332,14 @@ const TriggerMatchType *LogicSignal::trigger_type_from_action(QAction *action)
 
 void LogicSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
 {
-	Glib::VariantContainerBase gvar;
-	vector<int32_t> trig_types;
-
 	Signal::populate_popup_form(parent, form);
-
-	try {
-		gvar = device_->config_list(ConfigKey::TRIGGER_MATCH);
-	} catch (Error e) {
-		return;
-	}
 
 	trigger_bar_ = new QToolBar(parent);
 	init_trigger_actions(trigger_bar_);
 	trigger_bar_->addAction(trigger_none_);
 	trigger_none_->setChecked(!trigger_match_);
-	trig_types =
-		Glib::VariantBase::cast_dynamic<Glib::Variant<vector<int32_t>>>(
-			gvar).get();
+
+	const vector<int32_t> trig_types = get_trigger_types();
 	for (auto type_id : trig_types) {
 		const TriggerMatchType *const type =
 			TriggerMatchType::get(type_id);

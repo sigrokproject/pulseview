@@ -98,6 +98,7 @@ private:
 
 	void init_trigger_actions(QWidget *parent);
 
+	const std::vector<int32_t> get_trigger_types() const;
 	QAction* action_from_trigger_type(
 		const sigrok::TriggerMatchType *match);
 	const sigrok::TriggerMatchType* trigger_type_from_action(
