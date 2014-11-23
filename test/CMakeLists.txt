@@ -47,6 +47,7 @@ set(pulseview_TEST_SOURCES
 	${PROJECT_SOURCE_DIR}/pv/view/logicsignal.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/rowitem.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/rowitemowner.cpp
+	${PROJECT_SOURCE_DIR}/pv/view/rowitempaintparams.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/ruler.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/selectableitem.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/signal.cpp

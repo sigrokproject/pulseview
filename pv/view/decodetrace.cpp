@@ -166,13 +166,13 @@ pair<int, int> DecodeTrace::v_extents() const
 	return make_pair(-row_height / 2, row_height * 7 / 2);
 }
 
-void DecodeTrace::paint_back(QPainter &p, int left, int right)
+void DecodeTrace::paint_back(QPainter &p, const RowItemPaintParams &pp)
 {
-	Trace::paint_back(p, left, right);
-	paint_axis(p, get_visual_y(), left, right);
+	Trace::paint_back(p, pp);
+	paint_axis(p, get_visual_y(), pp.left(), pp.right());
 }
 
-void DecodeTrace::paint_mid(QPainter &p, int left, int right)
+void DecodeTrace::paint_mid(QPainter &p, const RowItemPaintParams &pp)
 {
 	using namespace pv::data::decode;
 
@@ -185,14 +185,16 @@ void DecodeTrace::paint_mid(QPainter &p, int left, int right)
 	const QString err = decoder_stack_->error_message();
 	if (!err.isEmpty())
 	{
-		draw_unresolved_period(p, annotation_height, left, right);
-		draw_error(p, err, left, right);
+		draw_unresolved_period(
+			p, annotation_height, pp.left(), pp.right());
+		draw_error(p, err, pp);
 		return;
 	}
 
 	// Iterate through the rows
 	int y = get_visual_y();
-	pair<uint64_t, uint64_t> sample_range = get_sample_range(left, right);
+	pair<uint64_t, uint64_t> sample_range = get_sample_range(
+		pp.left(), pp.right());
 
 	assert(decoder_stack_);
 	const vector<Row> rows(decoder_stack_->get_visible_rows());
@@ -214,8 +216,7 @@ void DecodeTrace::paint_mid(QPainter &p, int left, int right)
 		if (!annotations.empty()) {
 			for (const Annotation &a : annotations)
 				draw_annotation(a, p, get_text_colour(),
-					annotation_height, left, right, y,
-					base_colour);
+					annotation_height, pp, y, base_colour);
 			y += row_height_;
 
 			visible_rows_.push_back(rows[i]);
@@ -223,14 +224,12 @@ void DecodeTrace::paint_mid(QPainter &p, int left, int right)
 	}
 
 	// Draw the hatching
-	draw_unresolved_period(p, annotation_height, left, right);
+	draw_unresolved_period(p, annotation_height, pp.left(), pp.right());
 }
 
-void DecodeTrace::paint_fore(QPainter &p, int left, int right)
+void DecodeTrace::paint_fore(QPainter &p, const RowItemPaintParams &pp)
 {
 	using namespace pv::data::decode;
-
-	(void)right;
 
 	assert(row_height_);
 
@@ -244,15 +243,15 @@ void DecodeTrace::paint_fore(QPainter &p, int left, int right)
 		if (i != 0)
 		{
 			const QPointF points[] = {
-				QPointF(left, y - ArrowSize),
-				QPointF(left + ArrowSize, y),
-				QPointF(left, y + ArrowSize)
+				QPointF(pp.left(), y - ArrowSize),
+				QPointF(pp.left() + ArrowSize, y),
+				QPointF(pp.left(), y + ArrowSize)
 			};
 			p.drawPolygon(points, countof(points));
 		}
 
-		const QRect r(left + ArrowSize * 2, y - row_height_ / 2,
-			right - left, row_height_);
+		const QRect r(pp.left() + ArrowSize * 2, y - row_height_ / 2,
+			pp.right() - pp.left(), row_height_);
 		const QString h(visible_rows_[i].title());
 		const int f = Qt::AlignLeft | Qt::AlignVCenter |
 			Qt::TextDontClip;
@@ -337,7 +336,7 @@ QMenu* DecodeTrace::create_context_menu(QWidget *parent)
 }
 
 void DecodeTrace::draw_annotation(const pv::data::decode::Annotation &a,
-	QPainter &p, QColor text_color, int h, int left, int right, int y,
+	QPainter &p, QColor text_color, int h, const RowItemPaintParams &pp, int y,
 	size_t base_colour) const
 {
 	double samples_per_pixel, pixels_offset;
@@ -353,7 +352,7 @@ void DecodeTrace::draw_annotation(const pv::data::decode::Annotation &a,
 	const QColor &fill = Colours[colour];
 	const QColor &outline = OutlineColours[colour];
 
-	if (start > right + DrawPadding || end < left - DrawPadding)
+	if (start > pp.right() + DrawPadding || end < pp.left() - DrawPadding)
 		return;
 
 	if (a.start_sample() == a.end_sample())
@@ -441,7 +440,7 @@ void DecodeTrace::draw_range(const pv::data::decode::Annotation &a, QPainter &p,
 }
 
 void DecodeTrace::draw_error(QPainter &p, const QString &message,
-	int left, int right)
+	const RowItemPaintParams &pp)
 {
 	const int y = get_visual_y();
 
@@ -449,7 +448,7 @@ void DecodeTrace::draw_error(QPainter &p, const QString &message,
 	p.setBrush(ErrorBgColour);
 
 	const QRectF bounding_rect =
-		QRectF(left, INT_MIN / 2 + y, right - left, INT_MAX);
+		QRectF(pp.width(), INT_MIN / 2 + y, pp.width(), INT_MAX);
 	const QRectF text_rect = p.boundingRect(bounding_rect,
 		Qt::AlignCenter, message);
 	const float r = text_rect.height() / 4;

@@ -99,26 +99,23 @@ public:
 	/**
 	 * Paints the background layer of the trace with a QPainter
 	 * @param p the QPainter to paint into.
-	 * @param left the x-coordinate of the left edge of the signal.
-	 * @param right the x-coordinate of the right edge of the signal.
+	 * @param pp the painting parameters object to paint with..
 	 **/
-	void paint_back(QPainter &p, int left, int right);
+	void paint_back(QPainter &p, const RowItemPaintParams &pp);
 
 	/**
 	 * Paints the mid-layer of the trace with a QPainter
 	 * @param p the QPainter to paint into.
-	 * @param left the x-coordinate of the left edge of the signal
-	 * @param right the x-coordinate of the right edge of the signal
+	 * @param pp the painting parameters object to paint with.
 	 **/
-	void paint_mid(QPainter &p, int left, int right);
+	void paint_mid(QPainter &p, const RowItemPaintParams &pp);
 
 	/**
 	 * Paints the foreground layer of the trace with a QPainter
 	 * @param p the QPainter to paint into.
-	 * @param left the x-coordinate of the left edge of the signal
-	 * @param right the x-coordinate of the right edge of the signal
+	 * @param pp the painting parameters object to paint with.
 	 **/
-	void paint_fore(QPainter &p, int left, int right);
+	void paint_fore(QPainter &p, const RowItemPaintParams &pp);
 
 	void populate_popup_form(QWidget *parent, QFormLayout *form);
 
@@ -128,7 +125,7 @@ public:
 
 private:
 	void draw_annotation(const pv::data::decode::Annotation &a, QPainter &p,
-		QColor text_colour, int text_height, int left, int right, int y,
+		QColor text_colour, int text_height, const RowItemPaintParams &pp, int y,
 		size_t base_colour) const;
 
 	void draw_instant(const pv::data::decode::Annotation &a, QPainter &p,
@@ -140,7 +137,7 @@ private:
 		double end, int y) const;
 
 	void draw_error(QPainter &p, const QString &message,
-		int left, int right);
+		const RowItemPaintParams &pp);
 
 	void draw_unresolved_period(QPainter &p, int h, int left,
 		int right) const;

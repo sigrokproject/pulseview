@@ -145,13 +145,13 @@ std::pair<int, int> LogicSignal::v_extents() const
 	return make_pair(-SignalHeight - SignalMargin, SignalMargin);
 }
 
-void LogicSignal::paint_back(QPainter &p, int left, int right)
+void LogicSignal::paint_back(QPainter &p, const RowItemPaintParams &pp)
 {
 	if (channel_->enabled())
-		paint_axis(p, get_visual_y(), left, right);
+		paint_axis(p, get_visual_y(), pp.left(), pp.right());
 }
 
-void LogicSignal::paint_mid(QPainter &p, int left, int right)
+void LogicSignal::paint_mid(QPainter &p, const RowItemPaintParams &pp)
 {
 	using pv::view::View;
 
@@ -161,7 +161,6 @@ void LogicSignal::paint_mid(QPainter &p, int left, int right)
 
 	assert(channel_);
 	assert(data_);
-	assert(right >= left);
 	assert(owner_);
 
 	const int y = get_visual_y();
@@ -199,7 +198,7 @@ void LogicSignal::paint_mid(QPainter &p, int left, int right)
 	const int64_t last_sample = snapshot->get_sample_count() - 1;
 	const double samples_per_pixel = samplerate * scale;
 	const double start = samplerate * (offset - start_time);
-	const double end = start + samples_per_pixel * (right - left);
+	const double end = start + samples_per_pixel * pp.width();
 
 	snapshot->get_subsampled_edges(edges,
 		min(max((int64_t)floor(start), (int64_t)0), last_sample),
@@ -214,7 +213,7 @@ void LogicSignal::paint_mid(QPainter &p, int left, int right)
 
 	for (auto i = edges.cbegin() + 1; i != edges.cend() - 1; i++) {
 		const float x = ((*i).first / samples_per_pixel -
-			pixels_offset) + left;
+			pixels_offset) + pp.left();
 		*line++ = QLineF(x, high_offset, x, low_offset);
 	}
 
@@ -228,18 +227,16 @@ void LogicSignal::paint_mid(QPainter &p, int left, int right)
 
 	p.setPen(HighColour);
 	paint_caps(p, cap_lines, edges, true, samples_per_pixel,
-		pixels_offset, left, high_offset);
+		pixels_offset, pp.left(), high_offset);
 	p.setPen(LowColour);
 	paint_caps(p, cap_lines, edges, false, samples_per_pixel,
-		pixels_offset, left, low_offset);
+		pixels_offset, pp.left(), low_offset);
 
 	delete[] cap_lines;
 }
 
-void LogicSignal::paint_fore(QPainter &p, int left, int right)
+void LogicSignal::paint_fore(QPainter &p, const RowItemPaintParams &pp)
 {
-	(void)left;
-
 	// Draw the trigger marker
 	if (!trigger_match_)
 		return;
@@ -262,7 +259,7 @@ void LogicSignal::paint_fore(QPainter &p, int left, int right)
 		const int pad = TriggerMarkerPadding;
 		const QSize size = pixmap->size();
 		const QPoint point(
-			right - size.width() - pad * 2,
+			pp.right() - size.width() - pad * 2,
 			y - (SignalHeight + size.height()) / 2);
 
 		p.setPen(QPen(Qt::NoPen));

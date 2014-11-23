@@ -87,16 +87,15 @@ std::pair<int, int> AnalogSignal::v_extents() const
 	return make_pair(-NominalHeight / 2, NominalHeight / 2);
 }
 
-void AnalogSignal::paint_back(QPainter &p, int left, int right)
+void AnalogSignal::paint_back(QPainter &p, const RowItemPaintParams &pp)
 {
 	if (channel_->enabled())
-		paint_axis(p, get_visual_y(), left, right);
+		paint_axis(p, get_visual_y(), pp.left(), pp.right());
 }
 
-void AnalogSignal::paint_mid(QPainter &p, int left, int right)
+void AnalogSignal::paint_mid(QPainter &p, const RowItemPaintParams &pp)
 {
 	assert(data_);
-	assert(right >= left);
 	assert(owner_);
 
 	const int y = get_visual_y();
@@ -126,7 +125,7 @@ void AnalogSignal::paint_mid(QPainter &p, int left, int right)
 	const int64_t last_sample = snapshot->get_sample_count() - 1;
 	const double samples_per_pixel = samplerate * scale;
 	const double start = samplerate * (offset - start_time);
-	const double end = start + samples_per_pixel * (right - left);
+	const double end = start + samples_per_pixel * pp.width();
 
 	const int64_t start_sample = min(max((int64_t)floor(start),
 		(int64_t)0), last_sample);
@@ -134,11 +133,11 @@ void AnalogSignal::paint_mid(QPainter &p, int left, int right)
 		(int64_t)0), last_sample);
 
 	if (samples_per_pixel < EnvelopeThreshold)
-		paint_trace(p, snapshot, y, left,
+		paint_trace(p, snapshot, y, pp.left(),
 			start_sample, end_sample,
 			pixels_offset, samples_per_pixel);
 	else
-		paint_envelope(p, snapshot, y, left,
+		paint_envelope(p, snapshot, y, pp.left(),
 			start_sample, end_sample,
 			pixels_offset, samples_per_pixel);
 }

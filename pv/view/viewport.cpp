@@ -22,6 +22,7 @@
 #include <cmath>
 #include <algorithm>
 
+#include "rowitempaintparams.hpp"
 #include "signal.hpp"
 #include "view.hpp"
 #include "viewport.hpp"
@@ -69,18 +70,20 @@ void Viewport::paintEvent(QPaintEvent*)
 	if (view_.cursors_shown())
 		view_.cursors().draw_viewport_background(p, rect());
 
+	const RowItemPaintParams pp(0, width());
+
 	// Plot the signal
 	for (const shared_ptr<RowItem> r : row_items)
 	{
 		assert(r);
-		r->paint_back(p, 0, width());
+		r->paint_back(p, pp);
 	}
 
 	for (const shared_ptr<RowItem> r : row_items)
-		r->paint_mid(p, 0, width());
+		r->paint_mid(p, pp);
 
 	for (const shared_ptr<RowItem> r : row_items)
-		r->paint_fore(p, 0, width());
+		r->paint_fore(p, pp);
 
 	if (view_.cursors_shown())
 		view_.cursors().draw_viewport_foreground(p, rect());

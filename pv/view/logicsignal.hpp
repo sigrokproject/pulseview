@@ -84,26 +84,23 @@ public:
 	/**
 	 * Paints the background layer of the signal with a QPainter
 	 * @param p the QPainter to paint into.
-	 * @param left the x-coordinate of the left edge of the signal.
-	 * @param right the x-coordinate of the right edge of the signal.
+	 * @param pp the painting parameters object to paint with..
 	 **/
-	void paint_back(QPainter &p, int left, int right);
+	void paint_back(QPainter &p, const RowItemPaintParams &pp);
 
 	/**
 	 * Paints the mid-layer of the signal with a QPainter
 	 * @param p the QPainter to paint into.
-	 * @param left the x-coordinate of the left edge of the signal.
-	 * @param right the x-coordinate of the right edge of the signal.
+	 * @param pp the painting parameters object to paint with..
 	 **/
-	void paint_mid(QPainter &p, int left, int right);
+	void paint_mid(QPainter &p, const RowItemPaintParams &pp);
 
 	/**
 	 * Paints the foreground layer of the signal with a QPainter
 	 * @param p the QPainter to paint into.
-	 * @param left the x-coordinate of the left edge of the signal
-	 * @param right the x-coordinate of the right edge of the signal
+	 * @param pp the painting parameters object to paint with.
 	 **/
-	virtual void paint_fore(QPainter &p, int left, int right);
+	virtual void paint_fore(QPainter &p, const RowItemPaintParams &pp);
 
 private:
 	void paint_caps(QPainter &p, QLineF *const lines,
