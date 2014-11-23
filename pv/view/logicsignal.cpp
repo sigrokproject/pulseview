@@ -241,32 +241,32 @@ void LogicSignal::paint_caps(QPainter &p, QLineF *const lines,
 
 void LogicSignal::init_trigger_actions(QWidget *parent)
 {
-	trigger_none_ = new QAction(QIcon(":/icons/trigger-none.svg"),
+	trigger_none_ = new QAction(*get_icon(":/icons/trigger-none.svg"),
 		tr("No trigger"), parent);
 	trigger_none_->setCheckable(true);
 	connect(trigger_none_, SIGNAL(triggered()), this, SLOT(on_trigger()));
 
-	trigger_rising_ = new QAction(QIcon(":/icons/trigger-rising.svg"),
+	trigger_rising_ = new QAction(*get_icon(":/icons/trigger-rising.svg"),
 		tr("Trigger on rising edge"), parent);
 	trigger_rising_->setCheckable(true);
 	connect(trigger_rising_, SIGNAL(triggered()), this, SLOT(on_trigger()));
 
-	trigger_high_ = new QAction(QIcon(":/icons/trigger-high.svg"),
+	trigger_high_ = new QAction(*get_icon(":/icons/trigger-high.svg"),
 		tr("Trigger on high level"), parent);
 	trigger_high_->setCheckable(true);
 	connect(trigger_high_, SIGNAL(triggered()), this, SLOT(on_trigger()));
 
-	trigger_falling_ = new QAction(QIcon(":/icons/trigger-falling.svg"),
+	trigger_falling_ = new QAction(*get_icon(":/icons/trigger-falling.svg"),
 		tr("Trigger on falling edge"), parent);
 	trigger_falling_->setCheckable(true);
 	connect(trigger_falling_, SIGNAL(triggered()), this, SLOT(on_trigger()));
 
-	trigger_low_ = new QAction(QIcon(":/icons/trigger-low.svg"),
+	trigger_low_ = new QAction(*get_icon(":/icons/trigger-low.svg"),
 		tr("Trigger on low level"), parent);
 	trigger_low_->setCheckable(true);
 	connect(trigger_low_, SIGNAL(triggered()), this, SLOT(on_trigger()));
 
-	trigger_change_ = new QAction(QIcon(":/icons/trigger-change.svg"),
+	trigger_change_ = new QAction(*get_icon(":/icons/trigger-change.svg"),
 		tr("Trigger on rising or falling edge"), parent);
 	trigger_change_->setCheckable(true);
 	connect(trigger_change_, SIGNAL(triggered()), this, SLOT(on_trigger()));
@@ -378,6 +378,17 @@ void LogicSignal::modify_trigger()
 
 	session_.session()->set_trigger(
 		new_trigger->stages().empty() ? nullptr : new_trigger);
+}
+
+const QIcon* LogicSignal::get_icon(const char *path)
+{
+	const QIcon *icon = icon_cache_.take(path);
+	if (!icon) {
+		icon = new QIcon(path);
+		icon_cache_.insert(path, icon);
+	}
+
+	return icon;
 }
 
 void LogicSignal::on_trigger()

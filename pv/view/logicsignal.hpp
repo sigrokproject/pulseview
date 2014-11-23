@@ -21,10 +21,13 @@
 #ifndef PULSEVIEW_PV_VIEW_LOGICSIGNAL_H
 #define PULSEVIEW_PV_VIEW_LOGICSIGNAL_H
 
+#include <QCache>
+
 #include "signal.hpp"
 
 #include <memory>
 
+class QIcon;
 class QToolBar;
 
 namespace sigrok {
@@ -106,6 +109,8 @@ private:
 	void populate_popup_form(QWidget *parent, QFormLayout *form);
 	void modify_trigger();
 
+	static const QIcon* get_icon(const char *path);
+
 private Q_SLOTS:
 	void on_trigger();
 
@@ -121,6 +126,8 @@ private:
 	QAction *trigger_falling_;
 	QAction *trigger_low_;
 	QAction *trigger_change_;
+
+	static QCache<QString, const QIcon> icon_cache_;
 };
 
 } // namespace view
