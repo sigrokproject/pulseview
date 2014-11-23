@@ -98,8 +98,10 @@ private:
 
 	void init_trigger_actions(QWidget *parent);
 
-	QAction* match_action(const sigrok::TriggerMatchType *match);
-	const sigrok::TriggerMatchType *action_match(QAction *action);
+	QAction* action_from_trigger_type(
+		const sigrok::TriggerMatchType *match);
+	const sigrok::TriggerMatchType* trigger_type_from_action(
+		QAction *action);
 	void populate_popup_form(QWidget *parent, QFormLayout *form);
 	void modify_trigger();
 

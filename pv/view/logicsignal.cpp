@@ -272,7 +272,7 @@ void LogicSignal::init_trigger_actions(QWidget *parent)
 	connect(trigger_change_, SIGNAL(triggered()), this, SLOT(on_trigger()));
 }
 
-QAction* LogicSignal::match_action(const TriggerMatchType *type)
+QAction* LogicSignal::action_from_trigger_type(const TriggerMatchType *type)
 {
 	QAction *action;
 
@@ -302,7 +302,7 @@ QAction* LogicSignal::match_action(const TriggerMatchType *type)
 	return action;
 }
 
-const TriggerMatchType *LogicSignal::action_match(QAction *action)
+const TriggerMatchType *LogicSignal::trigger_type_from_action(QAction *action)
 {
 	if (action == trigger_low_)
 		return TriggerMatchType::ZERO;
@@ -341,7 +341,7 @@ void LogicSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
 	for (auto type_id : trig_types) {
 		const TriggerMatchType *const type =
 			TriggerMatchType::get(type_id);
-		QAction *const action = match_action(type);
+		QAction *const action = action_from_trigger_type(type);
 		trigger_bar_->addAction(action);
 		action->setChecked(trigger_match_ == type);
 	}
@@ -382,11 +382,11 @@ void LogicSignal::on_trigger()
 {
 	QAction *action;
 
-	match_action(trigger_match_)->setChecked(false);
+	action_from_trigger_type(trigger_match_)->setChecked(false);
 
 	action = (QAction *)sender();
 	action->setChecked(true);
-	trigger_match_ = action_match(action);
+	trigger_match_ = trigger_type_from_action(action);
 
 	modify_trigger();
 }
