@@ -14,6 +14,7 @@ cotire/
 Makefile
 Testing/
 
+.ninja_deps
 .ninja_log
 *.ninja
 
