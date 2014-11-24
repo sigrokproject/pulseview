@@ -27,7 +27,7 @@ namespace view {
 class RowItemPaintParams
 {
 public:
-	RowItemPaintParams(int left, int right);
+	RowItemPaintParams(int left, int right, double scale, double offset);
 
 	int left() const {
 		return left_;
@@ -37,13 +37,27 @@ public:
 		return right_;
 	}
 
+	double scale() const {
+		return scale_;
+	}
+
+	double offset() const {
+		return offset_;
+	}
+
 	int width() const {
 		return right_ - left_;
+	}
+
+	double pixels_offset() const {
+		return offset_ / scale_;
 	}
 
 private:
 	int left_;
 	int right_;
+	double scale_;
+	double offset_;
 };
 
 } // namespace view

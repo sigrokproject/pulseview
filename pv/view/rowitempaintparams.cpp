@@ -25,10 +25,14 @@
 namespace pv {
 namespace view {
 
-RowItemPaintParams::RowItemPaintParams(int left, int right) :
+RowItemPaintParams::RowItemPaintParams(
+	int left, int right, double scale, double offset) :
 	left_(left),
-	right_(right) {
+	right_(right),
+	scale_(scale),
+	offset_(offset) {
 	assert(left <= right);
+	assert(scale > 0.0);
 }
 
 } // namespace view

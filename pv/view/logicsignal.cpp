@@ -153,8 +153,6 @@ void LogicSignal::paint_back(QPainter &p, const RowItemPaintParams &pp)
 
 void LogicSignal::paint_mid(QPainter &p, const RowItemPaintParams &pp)
 {
-	using pv::view::View;
-
 	QLineF *line;
 
 	vector< pair<int64_t, bool> > edges;
@@ -164,14 +162,6 @@ void LogicSignal::paint_mid(QPainter &p, const RowItemPaintParams &pp)
 	assert(owner_);
 
 	const int y = get_visual_y();
-
-	const View *const view = owner_->view();
-	assert(view);
-
-	const double scale = view->scale();
-	assert(scale > 0);
-
-	const double offset = view->offset();
 
 	if (!channel_->enabled())
 		return;
@@ -193,11 +183,11 @@ void LogicSignal::paint_mid(QPainter &p, const RowItemPaintParams &pp)
 	if (samplerate == 0.0)
 		samplerate = 1.0;
 
-	const double pixels_offset = offset / scale;
+	const double pixels_offset = pp.pixels_offset();
 	const double start_time = data_->get_start_time();
 	const int64_t last_sample = snapshot->get_sample_count() - 1;
-	const double samples_per_pixel = samplerate * scale;
-	const double start = samplerate * (offset - start_time);
+	const double samples_per_pixel = samplerate * pp.scale();
+	const double start = samplerate * (pp.offset() - start_time);
 	const double end = start + samples_per_pixel * pp.width();
 
 	snapshot->get_subsampled_edges(edges,
