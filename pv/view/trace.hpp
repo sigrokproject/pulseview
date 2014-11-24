@@ -107,11 +107,10 @@ protected:
 	/**
 	 * Paints a zero axis across the viewport.
 	 * @param p the QPainter to paint into.
+	 * @param pp the painting parameters object to paint with.
 	 * @param y the y-offset of the axis.
-	 * @param left the x-coordinate of the left edge of the view.
-	 * @param right the x-coordinate of the right edge of the view.
 	 */
-	void paint_axis(QPainter &p, int y, int left, int right);
+	void paint_axis(QPainter &p, const RowItemPaintParams &pp, int y);
 
 	void add_colour_option(QWidget *parent, QFormLayout *form);
 

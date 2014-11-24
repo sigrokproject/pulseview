@@ -167,10 +167,10 @@ QColor Trace::get_text_colour() const
 	return (colour_.lightness() > 64) ? Qt::black : Qt::white;
 }
 
-void Trace::paint_axis(QPainter &p, int y, int left, int right)
+void Trace::paint_axis(QPainter &p, const RowItemPaintParams &pp, int y)
 {
 	p.setPen(AxisPen);
-	p.drawLine(QPointF(left, y + 0.5f), QPointF(right, y + 0.5f));
+	p.drawLine(QPointF(pp.left(), y + 0.5f), QPointF(pp.right(), y + 0.5f));
 }
 
 void Trace::add_colour_option(QWidget *parent, QFormLayout *form)

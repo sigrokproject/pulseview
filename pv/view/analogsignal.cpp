@@ -90,7 +90,7 @@ std::pair<int, int> AnalogSignal::v_extents() const
 void AnalogSignal::paint_back(QPainter &p, const RowItemPaintParams &pp)
 {
 	if (channel_->enabled())
-		paint_axis(p, get_visual_y(), pp.left(), pp.right());
+		paint_axis(p, pp, get_visual_y());
 }
 
 void AnalogSignal::paint_mid(QPainter &p, const RowItemPaintParams &pp)

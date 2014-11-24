@@ -169,7 +169,7 @@ pair<int, int> DecodeTrace::v_extents() const
 void DecodeTrace::paint_back(QPainter &p, const RowItemPaintParams &pp)
 {
 	Trace::paint_back(p, pp);
-	paint_axis(p, get_visual_y(), pp.left(), pp.right());
+	paint_axis(p, pp, get_visual_y());
 }
 
 void DecodeTrace::paint_mid(QPainter &p, const RowItemPaintParams &pp)

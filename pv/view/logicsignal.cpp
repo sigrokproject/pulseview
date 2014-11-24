@@ -148,7 +148,7 @@ std::pair<int, int> LogicSignal::v_extents() const
 void LogicSignal::paint_back(QPainter &p, const RowItemPaintParams &pp)
 {
 	if (channel_->enabled())
-		paint_axis(p, get_visual_y(), pp.left(), pp.right());
+		paint_axis(p, pp, get_visual_y());
 }
 
 void LogicSignal::paint_mid(QPainter &p, const RowItemPaintParams &pp)
