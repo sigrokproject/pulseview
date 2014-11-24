@@ -160,9 +160,7 @@ pair<int, int> DecodeTrace::v_extents() const
 {
 	/// @todo Replace this with an implementation that knows the true
 	/// height of the trace
-	QFontMetrics m(QApplication::font());
-	const int text_height =  m.boundingRect(QRect(), 0, "Tg").height();
-	const int row_height = (text_height * 6) / 4;
+	const int row_height = (RowItemPaintParams::text_height() * 6) / 4;
 	return make_pair(-row_height / 2, row_height * 7 / 2);
 }
 
@@ -176,8 +174,7 @@ void DecodeTrace::paint_mid(QPainter &p, const RowItemPaintParams &pp)
 {
 	using namespace pv::data::decode;
 
-	QFontMetrics m(QApplication::font());
-	text_height_ = m.boundingRect(QRect(), 0, "Tg").height();
+	text_height_ = RowItemPaintParams::text_height();
 	row_height_ = (text_height_ * 6) / 4;
 	const int annotation_height = (text_height_ * 5) / 4;
 

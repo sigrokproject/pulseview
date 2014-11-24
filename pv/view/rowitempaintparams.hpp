@@ -21,6 +21,8 @@
 #ifndef PULSEVIEW_PV_VIEW_ROWITEMPAINTPARAMS_H
 #define PULSEVIEW_PV_VIEW_ROWITEMPAINTPARAMS_H
 
+#include <QFont>
+
 namespace pv {
 namespace view {
 
@@ -52,6 +54,11 @@ public:
 	double pixels_offset() const {
 		return offset_ / scale_;
 	}
+
+public:
+	static QFont font();
+
+	static int text_height();
 
 private:
 	int left_;

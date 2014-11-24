@@ -20,6 +20,9 @@
 
 #include <cassert>
 
+#include <QApplication>
+#include <QFontMetrics>
+
 #include "rowitempaintparams.hpp"
 
 namespace pv {
@@ -33,6 +36,16 @@ RowItemPaintParams::RowItemPaintParams(
 	offset_(offset) {
 	assert(left <= right);
 	assert(scale > 0.0);
+}
+
+QFont RowItemPaintParams::font()
+{
+	return QApplication::font();
+}
+
+int RowItemPaintParams::text_height() {
+	QFontMetrics m(font());
+	return m.boundingRect(QRect(), 0, "Tg").height();
 }
 
 } // namespace view
