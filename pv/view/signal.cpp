@@ -60,7 +60,7 @@ const char *const ChannelNames[] = {
 
 Signal::Signal(pv::Session &session,
 	std::shared_ptr<sigrok::Channel> channel) :
-	Trace(channel->name().c_str()),
+	Trace(QString::fromUtf8(channel->name().c_str())),
 	session_(session),
 	channel_(channel),
 	name_widget_(NULL),
@@ -78,7 +78,7 @@ void Signal::set_name(QString name)
 
 	// Store the channel name in sigrok::Channel so that it
 	// will end up in the .sr file upon save.
-	channel_->set_name(name.toStdString());
+	channel_->set_name(name.toUtf8().constData());
 }
 
 bool Signal::enabled() const
