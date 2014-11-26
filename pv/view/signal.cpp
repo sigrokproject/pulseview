@@ -75,6 +75,10 @@ void Signal::set_name(QString name)
 	updating_name_widget_ = true;
 	name_widget_->setEditText(name);
 	updating_name_widget_ = false;
+
+	// Store the channel name in sigrok::Channel so that it
+	// will end up in the .sr file upon save.
+	channel_->set_name(name.toStdString());
 }
 
 bool Signal::enabled() const
