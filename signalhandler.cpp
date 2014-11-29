@@ -66,8 +66,7 @@ void SignalHandler::on_socket_notifier_activated()
 	socket_notifier_->setEnabled(false);
 
 	int sig_number;
-	if(read(sockets_[1], &sig_number, sizeof(int)) !=
-		sizeof(int)) {
+	if(read(sockets_[1], &sig_number, sizeof(int)) != sizeof(int)) {
 		qDebug() << "Failed to catch signal";
 		abort();
 	}
@@ -87,8 +86,7 @@ void SignalHandler::on_socket_notifier_activated()
 
 void SignalHandler::handle_signals(int sig_number)
 {
-	if(write(sockets_[0], &sig_number, sizeof(int)) !=
-		sizeof(int)) {
+	if(write(sockets_[0], &sig_number, sizeof(int)) != sizeof(int)) {
 		// Failed to handle signal
 		abort();
 	}

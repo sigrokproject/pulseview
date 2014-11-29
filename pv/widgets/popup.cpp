@@ -146,7 +146,7 @@ QPolygon Popup::arrow_polygon() const
 	const int l = ArrowLength + ArrowOverlap; 
 
 	switch (pos_)
-        {
+	{
 	case Right:
 		poly << QPoint(p.x() + l, p.y() - l);
 		break;
@@ -155,7 +155,7 @@ QPolygon Popup::arrow_polygon() const
 		poly << QPoint(p.x() - l, p.y() + l);
 		break;
 
-        case Left:
+	case Left:
 	case Top:
 		poly << QPoint(p.x() - l, p.y() - l);
 		break;
@@ -164,13 +164,13 @@ QPolygon Popup::arrow_polygon() const
 	poly << p;
 
 	switch (pos_)
-        {
+	{
 	case Right:
 	case Bottom:
 		poly << QPoint(p.x() + l, p.y() + l);
 		break;
 
-        case Left:
+	case Left:
 		poly << QPoint(p.x() - l, p.y() + l);
 		break;
 		
@@ -311,4 +311,3 @@ void Popup::showEvent(QShowEvent*)
 
 } // namespace widgets
 } // namespace pv
-

@@ -392,7 +392,7 @@ void DecoderStack::annotation_callback(srd_proto_data *pdata, void *decoder)
 	assert(decc);
 
 	auto row_iter = d->rows_.end();
-	
+
 	// Try looking up the sub-row of this class
 	const auto r = d->class_rows_.find(make_pair(decc, a.format()));
 	if (r != d->class_rows_.end())

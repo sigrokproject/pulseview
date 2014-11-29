@@ -70,7 +70,7 @@ public:
 	srd_decoder_inst* create_decoder_inst(
 		srd_session *session, int unit_size) const;
 
-	std::set< std::shared_ptr<pv::data::Logic> > get_data();	
+	std::set< std::shared_ptr<pv::data::Logic> > get_data();
 
 private:
 	const srd_decoder *const decoder_;

@@ -21,7 +21,7 @@
 #ifndef PULSEVIEW_EXTDEF_H
 #define PULSEVIEW_EXTDEF_H
 
-#define countof(x) (sizeof(x)/sizeof(x[0]))
+#define countof(x) (sizeof(x) / sizeof(x[0]))
 
 #define begin_element(x) (&x[0])
 #define end_element(x) (&x[countof(x)])

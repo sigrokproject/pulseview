@@ -186,4 +186,3 @@ QString DeviceOptions::print_voltage_threshold(Glib::VariantBase gvar)
 } // binding
 } // prop
 } // pv
-

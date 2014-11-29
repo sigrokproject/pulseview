@@ -154,7 +154,7 @@ int main(int argc, char *argv[])
 				QObject::connect(handler,
 					SIGNAL(term_received()),
 					&w, SLOT(close()));
-    			} else {
+			} else {
 				qWarning() <<
 					"Could not prepare signal handler.";
 			}

@@ -101,4 +101,3 @@ void AndroidLogHandler::install_callbacks()
 }
 
 } // namespace pv
-
