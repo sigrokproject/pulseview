@@ -21,38 +21,46 @@
 set(pulseview_TEST_SOURCES
 	${PROJECT_SOURCE_DIR}/pv/devicemanager.cpp
 	${PROJECT_SOURCE_DIR}/pv/sigsession.cpp
+	${PROJECT_SOURCE_DIR}/pv/storesession.cpp
 	${PROJECT_SOURCE_DIR}/pv/util.cpp
-	${PROJECT_SOURCE_DIR}/pv/view/cursorpair.cpp
 	${PROJECT_SOURCE_DIR}/pv/data/analog.cpp
 	${PROJECT_SOURCE_DIR}/pv/data/analogsnapshot.cpp
 	${PROJECT_SOURCE_DIR}/pv/data/logic.cpp
 	${PROJECT_SOURCE_DIR}/pv/data/logicsnapshot.cpp
-	${PROJECT_SOURCE_DIR}/pv/data/snapshot.cpp
 	${PROJECT_SOURCE_DIR}/pv/data/signaldata.cpp
+	${PROJECT_SOURCE_DIR}/pv/data/snapshot.cpp
+	${PROJECT_SOURCE_DIR}/pv/prop/bool.cpp
 	${PROJECT_SOURCE_DIR}/pv/prop/double.cpp
 	${PROJECT_SOURCE_DIR}/pv/prop/enum.cpp
 	${PROJECT_SOURCE_DIR}/pv/prop/int.cpp
 	${PROJECT_SOURCE_DIR}/pv/prop/property.cpp
 	${PROJECT_SOURCE_DIR}/pv/prop/string.cpp
 	${PROJECT_SOURCE_DIR}/pv/prop/binding/binding.cpp
+	${PROJECT_SOURCE_DIR}/pv/prop/binding/deviceoptions.cpp
+	${PROJECT_SOURCE_DIR}/pv/popups/channels.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/analogsignal.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/cursor.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/cursorheader.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/cursorpair.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/header.cpp
-	${PROJECT_SOURCE_DIR}/pv/view/logicsignal.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/marginwidget.cpp
+	${PROJECT_SOURCE_DIR}/pv/view/logicsignal.cpp
+	${PROJECT_SOURCE_DIR}/pv/view/rowitem.cpp
+	${PROJECT_SOURCE_DIR}/pv/view/rowitemowner.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/ruler.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/selectableitem.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/signal.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/timemarker.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/trace.cpp
+	${PROJECT_SOURCE_DIR}/pv/view/tracegroup.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/tracepalette.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/view.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/viewport.cpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/colourbutton.cpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/colourpopup.cpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/popup.cpp
+	${PROJECT_SOURCE_DIR}/pv/widgets/popuptoolbutton.cpp
+	${PROJECT_SOURCE_DIR}/pv/widgets/sweeptimingwidget.cpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/wellarray.cpp
 	data/analogsnapshot.cpp
 	data/logicsnapshot.cpp
@@ -62,6 +70,10 @@ set(pulseview_TEST_SOURCES
 # This list includes only QObject derived class headers.
 set(pulseview_TEST_HEADERS
 	${PROJECT_SOURCE_DIR}/pv/sigsession.hpp
+	${PROJECT_SOURCE_DIR}/pv/storesession.hpp
+	${PROJECT_SOURCE_DIR}/pv/popups/channels.hpp
+	${PROJECT_SOURCE_DIR}/pv/popups/deviceoptions.hpp
+	${PROJECT_SOURCE_DIR}/pv/prop/bool.hpp
 	${PROJECT_SOURCE_DIR}/pv/prop/double.hpp
 	${PROJECT_SOURCE_DIR}/pv/prop/enum.hpp
 	${PROJECT_SOURCE_DIR}/pv/prop/int.hpp
@@ -73,16 +85,20 @@ set(pulseview_TEST_HEADERS
 	${PROJECT_SOURCE_DIR}/pv/view/header.hpp
 	${PROJECT_SOURCE_DIR}/pv/view/logicsignal.hpp
 	${PROJECT_SOURCE_DIR}/pv/view/marginwidget.hpp
+	${PROJECT_SOURCE_DIR}/pv/view/rowitem.hpp
 	${PROJECT_SOURCE_DIR}/pv/view/ruler.hpp
 	${PROJECT_SOURCE_DIR}/pv/view/selectableitem.hpp
 	${PROJECT_SOURCE_DIR}/pv/view/signal.hpp
 	${PROJECT_SOURCE_DIR}/pv/view/timemarker.hpp
 	${PROJECT_SOURCE_DIR}/pv/view/trace.hpp
+	${PROJECT_SOURCE_DIR}/pv/view/tracegroup.hpp
 	${PROJECT_SOURCE_DIR}/pv/view/view.hpp
 	${PROJECT_SOURCE_DIR}/pv/view/viewport.hpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/colourbutton.hpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/colourpopup.hpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/popup.hpp
+	${PROJECT_SOURCE_DIR}/pv/widgets/popuptoolbutton.hpp
+	${PROJECT_SOURCE_DIR}/pv/widgets/sweeptimingwidget.hpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/wellarray.hpp
 )
 
