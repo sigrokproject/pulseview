@@ -29,6 +29,7 @@
 using pv::data::LogicSnapshot;
 using std::vector;
 
+#if 0
 BOOST_AUTO_TEST_SUITE(LogicSnapshotTest)
 
 void push_logic(LogicSnapshot &s, unsigned int length, uint8_t value)
@@ -532,3 +533,4 @@ BOOST_AUTO_TEST_CASE(Sixteen)
 }
 
 BOOST_AUTO_TEST_SUITE_END()
+#endif

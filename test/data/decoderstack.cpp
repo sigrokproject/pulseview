@@ -34,6 +34,7 @@ using pv::view::DecodeTrace;
 using std::shared_ptr;
 using std::vector;
 
+#if 0
 BOOST_AUTO_TEST_SUITE(DecoderStackTest)
 
 BOOST_AUTO_TEST_CASE(TwoDecoderStack)
@@ -84,3 +85,4 @@ BOOST_AUTO_TEST_CASE(TwoDecoderStack)
 }
 
 BOOST_AUTO_TEST_SUITE_END()
+#endif
