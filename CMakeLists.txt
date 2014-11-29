@@ -96,11 +96,19 @@ else()
 endif()
 
 if(WIN32)
+if(ENABLE_TESTS)
 	# On Windows/MinGW we need to use 'thread_win32' instead of 'thread'.
 	# The library is named libboost_thread_win32* (not libboost_thread*).
+	find_package(Boost 1.42 COMPONENTS filesystem system thread_win32 unit_test_framework REQUIRED)
+else()
 	find_package(Boost 1.42 COMPONENTS filesystem system thread_win32 REQUIRED)
+endif()
+else()
+if(ENABLE_TESTS)
+	find_package(Boost 1.42 COMPONENTS filesystem system thread unit_test_framework REQUIRED)
 else()
 	find_package(Boost 1.42 COMPONENTS filesystem system thread REQUIRED)
+endif()
 endif()
 
 # Find the platform's thread library (needed for C++11 threads).

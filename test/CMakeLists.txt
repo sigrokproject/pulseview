@@ -18,32 +18,6 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
-option(ENABLE_DECODE "Build with libsigrokdecode" FALSE)
-
-list(APPEND PKGDEPS libsigrok>=0.3.0)
-
-if(ENABLE_DECODE)
-	list(APPEND PKGDEPS libsigrokdecode>=0.3.0)
-endif()
-
-find_package(PkgConfig)
-pkg_check_modules(PKGDEPS REQUIRED ${PKGDEPS})
-
-if(WIN32)
-	# On Windows/MinGW we need to use 'thread_win32' instead of 'thread'.
-	# The library is named libboost_thread_win32* (not libboost_thread*).
-	find_package(Boost 1.42 COMPONENTS filesystem system thread_win32 unit_test_framework REQUIRED)
-else()
-	find_package(Boost 1.42 COMPONENTS filesystem system thread unit_test_framework REQUIRED)
-endif()
-
-# Find the platform's thread library (needed for C++11 threads).
-# This will set ${CMAKE_THREAD_LIBS_INIT} to the correct, OS-specific value.
-find_package(Threads REQUIRED)
-
-find_program(QT_QMAKE_EXECUTABLE NAMES qmake4 qmake-qt4 qmake-mac)
-find_package(Qt4 REQUIRED)
-
 set(pulseview_TEST_SOURCES
 	${PROJECT_SOURCE_DIR}/pv/devicemanager.cpp
 	${PROJECT_SOURCE_DIR}/pv/sigsession.cpp
@@ -134,34 +108,16 @@ if(ENABLE_DECODE)
 	)
 endif()
 
-qt4_wrap_cpp(pulseview_TEST_HEADERS_MOC ${pulseview_TEST_HEADERS})
-
-if(ENABLE_DECODE)
-	add_definitions(-DENABLE_DECODE)
+if(Qt5Core_FOUND)
+	qt5_wrap_cpp(pulseview_TEST_HEADERS_MOC ${pulseview_TEST_HEADERS})
+else()
+	qt4_wrap_cpp(pulseview_TEST_HEADERS_MOC ${pulseview_TEST_HEADERS})
+	include(${QT_USE_FILE})
 endif()
 
 # On MinGW we need to use static linking.
 if(NOT WIN32)
 	add_definitions(-DBOOST_TEST_DYN_LINK)
-endif()
-
-add_definitions(${QT_DEFINITIONS})
-
-include_directories(
-	${Boost_INCLUDE_DIRS}
-	${PKGDEPS_INCLUDE_DIRS}
-)
-
-set(PULSEVIEW_LINK_LIBS
-	${Boost_LIBRARIES}
-	${PKGDEPS_LIBRARIES}
-	${QT_LIBRARIES}
-	${CMAKE_THREAD_LIBS_INIT}
-)
-
-if(WIN32)
-	# Workaround for a MinGW linking issue.
-	list(APPEND PULSEVIEW_LINK_LIBS "-llzma -llcms2")
 endif()
 
 add_executable(pulseview-test
