@@ -62,6 +62,8 @@ mutex DecoderStack::global_decode_mutex_;
 DecoderStack::DecoderStack(pv::Session &session,
 	const srd_decoder *const dec) :
 	session_(session),
+	start_time_(0),
+	samplerate_(0),
 	sample_count_(0),
 	frame_complete_(false),
 	samples_decoded_(0)
@@ -110,6 +112,16 @@ void DecoderStack::remove(int index)
 
 	// Delete the element
 	stack_.erase(iter);
+}
+
+double DecoderStack::samplerate() const
+{
+	return samplerate_;
+}
+
+double DecoderStack::start_time() const
+{
+	return start_time_;
 }
 
 int64_t DecoderStack::samples_decoded() const

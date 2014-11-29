@@ -67,7 +67,7 @@ class Decoder;
 
 class Logic;
 
-class DecoderStack : public QObject, public SignalData
+class DecoderStack : public QObject
 {
 	Q_OBJECT
 
@@ -86,6 +86,10 @@ public:
 	const std::list< std::shared_ptr<decode::Decoder> >& stack() const;
 	void push(std::shared_ptr<decode::Decoder> decoder);
 	void remove(int index);
+
+	double samplerate() const;
+
+	double start_time() const;
 
 	int64_t samples_decoded() const;
 
@@ -130,6 +134,9 @@ Q_SIGNALS:
 
 private:
 	pv::Session &session_;
+
+	double start_time_;
+	double samplerate_;
 
 	/**
 	 * This mutex prevents more than one decode operation occuring
