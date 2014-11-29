@@ -245,7 +245,7 @@ void DecoderStack::begin_decode()
 
 	// Check we have a snapshot of data
 	const deque< shared_ptr<pv::data::LogicSnapshot> > &snapshots =
-		data->get_snapshots();
+		data->logic_snapshots();
 	if (snapshots.empty())
 		return;
 	snapshot_ = snapshots.front();

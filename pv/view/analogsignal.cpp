@@ -104,7 +104,7 @@ void AnalogSignal::paint_mid(QPainter &p, const RowItemPaintParams &pp)
 		return;
 
 	const deque< shared_ptr<pv::data::AnalogSnapshot> > &snapshots =
-		data_->get_snapshots();
+		data_->analog_snapshots();
 	if (snapshots.empty())
 		return;
 

@@ -108,7 +108,7 @@ bool StoreSession::start()
 
 	// Get the snapshot
 	const deque< shared_ptr<data::LogicSnapshot> > &snapshots =
-		data->get_snapshots();
+		data->logic_snapshots();
 
 	if (snapshots.empty()) {
 		error_ = tr("No snapshots to save.");

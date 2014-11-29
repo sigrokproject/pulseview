@@ -41,8 +41,8 @@ public:
 	void push_snapshot(
 		std::shared_ptr<LogicSnapshot> &snapshot);
 
-	std::deque< std::shared_ptr<LogicSnapshot> >&
-		get_snapshots();
+	const std::deque< std::shared_ptr<LogicSnapshot> >&
+		logic_snapshots() const;
 
 	void clear();
 

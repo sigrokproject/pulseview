@@ -481,11 +481,11 @@ void DecodeTrace::draw_unresolved_period(QPainter &p, int h, int left,
 			((data = logic_signal->logic_data())))
 			break;
 
-	if (!data || data->get_snapshots().empty())
+	if (!data || data->logic_snapshots().empty())
 		return;
 
 	const shared_ptr<LogicSnapshot> snapshot =
-		data->get_snapshots().front();
+		data->logic_snapshots().front();
 	assert(snapshot);
 	const int64_t sample_count = (int64_t)snapshot->get_sample_count();
 	if (sample_count == 0)

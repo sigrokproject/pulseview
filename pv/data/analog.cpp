@@ -40,7 +40,7 @@ void Analog::push_snapshot(shared_ptr<AnalogSnapshot> &snapshot)
 	snapshots_.push_front(snapshot);
 }
 
-deque< shared_ptr<AnalogSnapshot> >& Analog::get_snapshots()
+const deque< shared_ptr<AnalogSnapshot> >& Analog::analog_snapshots() const
 {
 	return snapshots_;
 }

@@ -170,7 +170,7 @@ void LogicSignal::paint_mid(QPainter &p, const RowItemPaintParams &pp)
 	const float low_offset = y + 0.5f;
 
 	const deque< shared_ptr<pv::data::LogicSnapshot> > &snapshots =
-		data_->get_snapshots();
+		data_->logic_snapshots();
 	if (snapshots.empty())
 		return;
 

@@ -48,7 +48,7 @@ void Logic::push_snapshot(
 	snapshots_.push_front(snapshot);
 }
 
-deque< shared_ptr<LogicSnapshot> >& Logic::get_snapshots()
+const deque< shared_ptr<LogicSnapshot> >& Logic::logic_snapshots() const
 {
 	return snapshots_;
 }

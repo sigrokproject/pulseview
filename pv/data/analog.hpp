@@ -39,8 +39,8 @@ public:
 	void push_snapshot(
 		std::shared_ptr<AnalogSnapshot> &snapshot);
 
-	std::deque< std::shared_ptr<AnalogSnapshot> >&
-		get_snapshots();
+	const std::deque< std::shared_ptr<AnalogSnapshot> >&
+		analog_snapshots() const;
 
 	void clear();
 
