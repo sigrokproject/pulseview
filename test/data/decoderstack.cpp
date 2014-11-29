@@ -21,12 +21,12 @@
 #include <libsigrokdecode/libsigrokdecode.h> /* First, so we avoid a _POSIX_C_SOURCE warning. */
 #include <boost/test/unit_test.hpp>
 
-#include <libsigrok/libsigrok.h>
+#include <libsigrok/libsigrok.hpp>
 
-#include "../../pv/data/decoderstack.h"
-#include "../../pv/devicemanager.h"
-#include "../../pv/sigsession.h"
-#include "../../pv/view/decodetrace.h"
+#include "../../pv/data/decoderstack.hpp"
+#include "../../pv/devicemanager.hpp"
+#include "../../pv/sigsession.hpp"
+#include "../../pv/view/decodetrace.hpp"
 
 using pv::data::DecoderStack;
 using pv::data::decode::Decoder;
