@@ -263,7 +263,7 @@ void DecoderStack::begin_decode()
 	snapshot_ = snapshots.front();
 
 	// Get the samplerate and start time
-	start_time_ = data->get_start_time();
+	start_time_ = snapshot_->start_time();
 	samplerate_ = data->samplerate();
 	if (samplerate_ == 0.0)
 		samplerate_ = 1.0;

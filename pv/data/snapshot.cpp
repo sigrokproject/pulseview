@@ -32,6 +32,7 @@ namespace data {
 
 Snapshot::Snapshot(unsigned int unit_size) :
 	sample_count_(0),
+	start_time_(0),
 	capacity_(0),
 	unit_size_(unit_size)
 {
@@ -48,6 +49,11 @@ uint64_t Snapshot::get_sample_count() const
 {
 	lock_guard<recursive_mutex> lock(mutex_);
 	return sample_count_;
+}
+
+double Snapshot::start_time() const
+{
+	return start_time_;
 }
 
 unsigned int Snapshot::unit_size() const

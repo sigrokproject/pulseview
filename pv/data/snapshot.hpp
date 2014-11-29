@@ -37,6 +37,8 @@ public:
 
 	uint64_t get_sample_count() const;
 
+	double start_time() const;
+
 	unsigned int unit_size() const;
 
 	/**
@@ -73,6 +75,7 @@ protected:
 	mutable std::recursive_mutex mutex_;
 	std::vector<uint8_t> data_;
 	uint64_t sample_count_;
+	double start_time_;
 	uint64_t capacity_;
 	unsigned int unit_size_;
 };

@@ -184,7 +184,7 @@ void LogicSignal::paint_mid(QPainter &p, const RowItemPaintParams &pp)
 		samplerate = 1.0;
 
 	const double pixels_offset = pp.pixels_offset();
-	const double start_time = data_->get_start_time();
+	const double start_time = snapshot->start_time();
 	const int64_t last_sample = snapshot->get_sample_count() - 1;
 	const double samples_per_pixel = samplerate * pp.scale();
 	const double start = samplerate * (pp.offset() - start_time);
