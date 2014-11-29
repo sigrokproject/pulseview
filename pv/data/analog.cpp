@@ -26,6 +26,7 @@
 using std::deque;
 using std::max;
 using std::shared_ptr;
+using std::vector;
 
 namespace pv {
 namespace data {
@@ -43,6 +44,12 @@ void Analog::push_snapshot(shared_ptr<AnalogSnapshot> &snapshot)
 const deque< shared_ptr<AnalogSnapshot> >& Analog::analog_snapshots() const
 {
 	return snapshots_;
+}
+
+vector< shared_ptr<Snapshot> > Analog::snapshots() const
+{
+	return vector< shared_ptr<Snapshot> >(
+		snapshots_.begin(), snapshots_.end());
 }
 
 void Analog::clear()

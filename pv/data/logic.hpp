@@ -24,7 +24,6 @@
 #include "signaldata.hpp"
 
 #include <deque>
-#include <memory>
 
 namespace pv {
 namespace data {
@@ -43,6 +42,8 @@ public:
 
 	const std::deque< std::shared_ptr<LogicSnapshot> >&
 		logic_snapshots() const;
+
+	std::vector< std::shared_ptr<Snapshot> > snapshots() const;
 
 	void clear();
 

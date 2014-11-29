@@ -21,10 +21,14 @@
 #ifndef PULSEVIEW_PV_DATA_SIGNALDATA_H
 #define PULSEVIEW_PV_DATA_SIGNALDATA_H
 
-#include <stdint.h>
+#include <cstdint>
+#include <memory>
+#include <vector>
 
 namespace pv {
 namespace data {
+
+class Snapshot;
 
 class SignalData
 {
@@ -37,6 +41,8 @@ public:
 	void set_samplerate(double samplerate);
 
 	double get_start_time() const;
+
+	virtual std::vector< std::shared_ptr<Snapshot> > snapshots() const = 0;
 
 	virtual void clear() = 0;
 

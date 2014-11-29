@@ -26,6 +26,7 @@
 using std::deque;
 using std::max;
 using std::shared_ptr;
+using std::vector;
 
 namespace pv {
 namespace data {
@@ -51,6 +52,12 @@ void Logic::push_snapshot(
 const deque< shared_ptr<LogicSnapshot> >& Logic::logic_snapshots() const
 {
 	return snapshots_;
+}
+
+vector< shared_ptr<Snapshot> > Logic::snapshots() const
+{
+	return vector< shared_ptr<Snapshot> >(
+		snapshots_.begin(), snapshots_.end());
 }
 
 void Logic::clear()

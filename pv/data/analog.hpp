@@ -42,6 +42,8 @@ public:
 	const std::deque< std::shared_ptr<AnalogSnapshot> >&
 		analog_snapshots() const;
 
+	std::vector< std::shared_ptr<Snapshot> > snapshots() const;
+
 	void clear();
 
 	uint64_t get_max_sample_count() const;
