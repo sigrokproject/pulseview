@@ -14,7 +14,9 @@ Requirements
  - pkg-config >= 0.22
  - cmake >= 2.8.6
  - libglib >= 2.28.0
- - Qt >= 4.5
+ - Qt4 >= 4.5 or Qt5 (including the following components):
+    - Qt4: QtCore, QtGui, QtSvg
+    - Qt5: Qt5Core, Qt5Gui, Qt5Widgets, Qt5Svg
  - libboost >= 1.42 (including the following libs):
     - libboost-system
     - libboost-filesystem
@@ -22,6 +24,7 @@ Requirements
     - libboost-test (optional, only needed to run the unit tests)
  - libsigrokxx >= 0.3.0 (libsigrok C++ bindings)
  - libsigrokdecode >= 0.3.0
+ - libsigrokandroidutils >= 0.1.0 (optional, only needed on Android)
 
 
 Building and installing
