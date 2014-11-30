@@ -26,7 +26,9 @@
 
 #include "view.hpp"
 
+#include <QApplication>
 #include <QFormLayout>
+#include <QFontMetrics>
 #include <QPainter>
 
 #include <pv/util.hpp>
@@ -84,6 +86,25 @@ void TimeMarker::paint(QPainter &p, const QRect &rect)
 	const float x = get_x();
 	p.setPen(colour_.darker());
 	p.drawLine(QPointF(x, rect.top()), QPointF(x, rect.bottom()));
+}
+
+QRectF TimeMarker::get_label_rect(const QRect &rect) const
+{
+	const float x = (time_ - view_.offset()) / view_.scale();
+
+	QFontMetrics m(QApplication::font());
+	QSize text_size = m.boundingRect(
+		pv::util::format_time(time_, view_.tick_prefix(), 2)).size();
+
+	const QSizeF label_size(
+		text_size.width() + View::LabelPadding.width() * 2,
+		text_size.height() + View::LabelPadding.height() * 2);
+	const float top = rect.height() - label_size.height() -
+		TimeMarker::Offset - TimeMarker::ArrowSize - 0.5f;
+	const float height = label_size.height();
+
+	return QRectF(x - label_size.width() / 2 - 0.5f, top,
+		label_size.width(), height);
 }
 
 void TimeMarker::paint_label(QPainter &p, const QRect &rect)

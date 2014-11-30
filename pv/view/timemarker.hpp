@@ -84,7 +84,7 @@ public:
 	 * @param rect The rectangle of the ruler client area.
 	 * @return Returns the label rectangle.
 	 */
-	virtual QRectF get_label_rect(const QRect &rect) const = 0;
+	virtual QRectF get_label_rect(const QRect &rect) const;
 
 	/**
 	 * Paints the marker's label to the ruler.
