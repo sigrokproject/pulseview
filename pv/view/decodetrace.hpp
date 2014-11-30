@@ -125,15 +125,14 @@ public:
 
 private:
 	void draw_annotation(const pv::data::decode::Annotation &a, QPainter &p,
-		QColor text_colour, int text_height, const RowItemPaintParams &pp, int y,
+		int text_height, const RowItemPaintParams &pp, int y,
 		size_t base_colour) const;
 
 	void draw_instant(const pv::data::decode::Annotation &a, QPainter &p,
-		QColor fill, QColor outline, QColor text_color, int h, double x,
-		int y) const;
+		QColor fill, QColor outline, int h, double x, int y) const;
 
 	void draw_range(const pv::data::decode::Annotation &a, QPainter &p,
-		QColor fill, QColor outline, QColor text_color, int h, double start,
+		QColor fill, QColor outline, int h, double start,
 		double end, int y) const;
 
 	void draw_error(QPainter &p, const QString &message,

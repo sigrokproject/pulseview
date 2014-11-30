@@ -212,8 +212,8 @@ void DecodeTrace::paint_mid(QPainter &p, const RowItemPaintParams &pp)
 			sample_range.first, sample_range.second);
 		if (!annotations.empty()) {
 			for (const Annotation &a : annotations)
-				draw_annotation(a, p, get_text_colour(),
-					annotation_height, pp, y, base_colour);
+				draw_annotation(a, p, annotation_height,
+					pp, y, base_colour);
 			y += row_height_;
 
 			visible_rows_.push_back(rows[i]);
@@ -333,7 +333,7 @@ QMenu* DecodeTrace::create_context_menu(QWidget *parent)
 }
 
 void DecodeTrace::draw_annotation(const pv::data::decode::Annotation &a,
-	QPainter &p, QColor text_color, int h, const RowItemPaintParams &pp, int y,
+	QPainter &p, int h, const RowItemPaintParams &pp, int y,
 	size_t base_colour) const
 {
 	double samples_per_pixel, pixels_offset;
@@ -353,15 +353,13 @@ void DecodeTrace::draw_annotation(const pv::data::decode::Annotation &a,
 		return;
 
 	if (a.start_sample() == a.end_sample())
-		draw_instant(a, p, fill, outline, text_color, h,
-			start, y);
+		draw_instant(a, p, fill, outline, h, start, y);
 	else
-		draw_range(a, p, fill, outline, text_color, h,
-			start, end, y);
+		draw_range(a, p, fill, outline, h, start, end, y);
 }
 
 void DecodeTrace::draw_instant(const pv::data::decode::Annotation &a, QPainter &p,
-	QColor fill, QColor outline, QColor text_color, int h, double x, int y) const
+	QColor fill, QColor outline, int h, double x, int y) const
 {
 	const QString text = a.annotations().empty() ?
 		QString() : a.annotations().back();
@@ -373,12 +371,12 @@ void DecodeTrace::draw_instant(const pv::data::decode::Annotation &a, QPainter &
 	p.setBrush(fill);
 	p.drawRoundedRect(rect, h / 2, h / 2);
 
-	p.setPen(text_color);
+	p.setPen(Qt::black);
 	p.drawText(rect, Qt::AlignCenter | Qt::AlignVCenter, text);
 }
 
 void DecodeTrace::draw_range(const pv::data::decode::Annotation &a, QPainter &p,
-	QColor fill, QColor outline, QColor text_color, int h, double start,
+	QColor fill, QColor outline, int h, double start,
 	double end, int y) const
 {
 	const double top = y + .5 - h / 2;
@@ -416,7 +414,7 @@ void DecodeTrace::draw_range(const pv::data::decode::Annotation &a, QPainter &p,
 	if (rect.width() <= 4)
 		return;
 
-	p.setPen(text_color);
+	p.setPen(Qt::black);
 
 	// Try to find an annotation that will fit
 	QString best_annotation;
@@ -453,7 +451,7 @@ void DecodeTrace::draw_error(QPainter &p, const QString &message,
 	p.drawRoundedRect(text_rect.adjusted(-r, -r, r, r), r, r,
 		Qt::AbsoluteSize);
 
-	p.setPen(get_text_colour());
+	p.setPen(Qt::black);
 	p.drawText(text_rect, message);
 }
 
