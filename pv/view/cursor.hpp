@@ -37,14 +37,7 @@ class Cursor : public TimeMarker
 	Q_OBJECT
 
 public:
-	static const QColor LineColour;
 	static const QColor FillColour;
-	static const QColor HighlightColour;
-	static const QColor TextColour;
-
-	static const int Offset;
-
-	static const int ArrowSize;
 
 public:
 	/**
@@ -62,20 +55,8 @@ public:
 	 */
 	QRectF get_label_rect(const QRect &rect) const;
 
-	/**
-	 * Paints the cursor's label to the ruler.
-	 * @param p The painter to draw with.
-	 * @param rect The rectangle of the ruler client area.
-	 */
-	void paint_label(QPainter &p, const QRect &rect);
-
 private:
-	void compute_text_size(QPainter &p, unsigned int prefix);
-
 	std::shared_ptr<Cursor> get_other_cursor() const;
-
-private:
-	QSizeF text_size_;
 };
 
 } // namespace view

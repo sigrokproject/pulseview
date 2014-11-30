@@ -70,7 +70,7 @@ QRectF CursorPair::get_label_rect(const QRect &rect) const
 		(float)rect.width() + height);
 
 	return QRectF(left, rect.height() - label_size.height() -
-		Cursor::ArrowSize - Cursor::Offset - 0.5f,
+		TimeMarker::ArrowSize - TimeMarker::Offset - 0.5f,
 		right - left, height);
 }
 
@@ -92,14 +92,15 @@ void CursorPair::draw_markers(QPainter &p, const QRect &rect)
 		const int highlight_radius = delta_rect.height() / 2 - 2;
 
 		p.setBrush(Cursor::FillColour);
-		p.setPen(Cursor::LineColour);
+		p.setPen(Cursor::FillColour.darker());
 		p.drawRoundedRect(delta_rect, radius, radius);
 
 		delta_rect.adjust(1, 1, -1, -1);
-		p.setPen(Cursor::HighlightColour);
+		p.setPen(Cursor::FillColour.lighter());
 		p.drawRoundedRect(delta_rect, highlight_radius, highlight_radius);
 
-		p.setPen(Cursor::TextColour);
+		p.setPen(SelectableItem::select_text_colour(
+			Cursor::FillColour));
 		p.drawText(text_rect, Qt::AlignCenter | Qt::AlignVCenter,
 			pv::util::format_time(second_->time() - first_->time(), prefix, 2));
 	}

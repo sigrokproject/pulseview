@@ -41,6 +41,10 @@ class TimeMarker : public SelectableItem
 {
 	Q_OBJECT
 
+public:
+	static const int ArrowSize;
+	static const int Offset;
+
 protected:
 	/**
 	 * Constructor.
@@ -87,7 +91,7 @@ public:
 	 * @param p The painter to draw with.
 	 * @param rect The rectangle of the ruler client area.
 	 */
-	virtual void paint_label(QPainter &p, const QRect &rect) = 0;
+	void paint_label(QPainter &p, const QRect &rect);
 
 	pv::widgets::Popup* create_popup(QWidget *parent);
 
