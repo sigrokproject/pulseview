@@ -84,6 +84,15 @@ public:
 	virtual QPoint point() const = 0;
 
 public:
+	/**
+	 * Gets the text colour.
+	 * @remarks This colour is computed by comparing the lightness
+	 * of the trace colour against a threshold to determine whether
+	 * white or black would be more visible.
+	 */
+	static QColor select_text_colour(QColor background);
+
+public:
 	virtual QMenu* create_context_menu(QWidget *parent);
 
 	virtual pv::widgets::Popup* create_popup(QWidget *parent) = 0;

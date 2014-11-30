@@ -85,5 +85,10 @@ QPen SelectableItem::highlight_pen()
 		Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
 }
 
+QColor SelectableItem::select_text_colour(QColor background)
+{
+	return (background.lightness() > 64) ? Qt::black : Qt::white;
+}
+
 } // namespace view
 } // namespace pv

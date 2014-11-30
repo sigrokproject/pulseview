@@ -115,7 +115,7 @@ void Trace::paint_label(QPainter &p, int right, bool hover)
 	p.drawPolygon(points, countof(points));
 
 	// Paint the text
-	p.setPen(get_text_colour());
+	p.setPen(select_text_colour(colour_));
 	p.setFont(QApplication::font());
 	p.drawText(QRectF(r.x(), r.y(),
 		r.width() - label_arrow_length, r.height()),
@@ -160,11 +160,6 @@ QRectF Trace::label_rect(int right) const
 		get_visual_y() + 0.5f - half_height,
 		label_size.width() + half_height,
 		label_size.height());
-}
-
-QColor Trace::get_text_colour() const
-{
-	return (colour_.lightness() > 64) ? Qt::black : Qt::white;
 }
 
 void Trace::paint_axis(QPainter &p, const RowItemPaintParams &pp, int y)
