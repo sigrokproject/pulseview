@@ -92,16 +92,18 @@ QRectF TimeMarker::get_label_rect(const QRect &rect) const
 	const float x = (time_ - view_.offset()) / view_.scale();
 
 	QFontMetrics m(QApplication::font());
-	QSize text_size = m.boundingRect(get_text()).size();
+	const float text_width =
+		max(m.boundingRect(get_text()).size().width(), ArrowSize);
+	const float text_height = m.boundingRect("Tg").size().height();
 
 	const QSizeF label_size(
-		text_size.width() + View::LabelPadding.width() * 2,
-		text_size.height() + View::LabelPadding.height() * 2);
+		text_width + View::LabelPadding.width() * 2,
+		text_height + View::LabelPadding.height() * 2);
 	const float top = rect.height() - label_size.height() -
 		TimeMarker::Offset - TimeMarker::ArrowSize - 0.5f;
 	const float height = label_size.height();
 
-	return QRectF(x - label_size.width() / 2 - 0.5f, top,
+	return QRectF(x - label_size.width() / 2, top,
 		label_size.width(), height);
 }
 
