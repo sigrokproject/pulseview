@@ -34,7 +34,6 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake")
 option(DISABLE_WERROR "Build without -Werror" FALSE)
 option(ENABLE_SIGNALS "Build with UNIX signals" TRUE)
 option(ENABLE_DECODE "Build with libsigrokdecode" TRUE)
-option(ENABLE_COTIRE "Enable cotire" FALSE)
 option(ENABLE_TESTS "Enable unit tests" FALSE)
 option(STATIC_PKGDEPS_LIBS "Statically link to (pkg-config) libraries" FALSE)
 option(FORCE_QT4 "Force use of Qt4 even if Qt5 is available" FALSE)
@@ -391,11 +390,6 @@ target_link_libraries(${PROJECT_NAME} ${PULSEVIEW_LINK_LIBS})
 if(WIN32)
 	# Pass -mwindows so that no "DOS box" opens when PulseView is started.
 	set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "-mwindows")
-endif()
-
-if(ENABLE_COTIRE)
-	include(cotire)
-	cotire(${PROJECT_NAME})
 endif()
 
 #===============================================================================
