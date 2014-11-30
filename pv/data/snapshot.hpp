@@ -31,13 +31,16 @@ namespace data {
 class Snapshot
 {
 public:
-	Snapshot(unsigned int unit_size);
+	Snapshot(uint64_t samplerate, unsigned int unit_size);
 
 	virtual ~Snapshot();
 
 	uint64_t get_sample_count() const;
 
 	double start_time() const;
+
+	double samplerate() const;
+	void set_samplerate(double samplerate);
 
 	unsigned int unit_size() const;
 
@@ -76,6 +79,7 @@ protected:
 	std::vector<uint8_t> data_;
 	uint64_t sample_count_;
 	double start_time_;
+	double samplerate_;
 	uint64_t capacity_;
 	unsigned int unit_size_;
 };

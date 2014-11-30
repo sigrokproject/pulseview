@@ -112,7 +112,7 @@ void AnalogSignal::paint_mid(QPainter &p, const RowItemPaintParams &pp)
 		snapshots.front();
 
 	const double pixels_offset = pp.pixels_offset();
-	const double samplerate = data_->samplerate();
+	const double samplerate = snapshot->samplerate();
 	const double start_time = snapshot->start_time();
 	const int64_t last_sample = snapshot->get_sample_count() - 1;
 	const double samples_per_pixel = samplerate * pp.scale();

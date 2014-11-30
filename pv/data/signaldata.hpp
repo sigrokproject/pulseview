@@ -37,17 +37,11 @@ public:
 	virtual ~SignalData() {}
 
 public:
-	double samplerate() const;
-	void set_samplerate(double samplerate);
-
 	virtual std::vector< std::shared_ptr<Snapshot> > snapshots() const = 0;
 
 	virtual void clear() = 0;
 
 	virtual uint64_t get_max_sample_count() const = 0;
-
-protected:
-	double samplerate_;
 };
 
 } // namespace data

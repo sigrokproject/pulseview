@@ -166,6 +166,7 @@ private:
 
 	mutable std::mutex data_mutex_;
 	std::shared_ptr<data::Logic> logic_data_;
+	uint64_t cur_samplerate_;
 	std::shared_ptr<data::LogicSnapshot> cur_logic_snapshot_;
 	std::map< std::shared_ptr<sigrok::Channel>, std::shared_ptr<data::AnalogSnapshot> >
 		cur_analog_snapshots_;

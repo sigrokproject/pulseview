@@ -30,9 +30,10 @@ using std::recursive_mutex;
 namespace pv {
 namespace data {
 
-Snapshot::Snapshot(unsigned int unit_size) :
+Snapshot::Snapshot(uint64_t samplerate, unsigned int unit_size) :
 	sample_count_(0),
 	start_time_(0),
+	samplerate_(samplerate),
 	capacity_(0),
 	unit_size_(unit_size)
 {
@@ -54,6 +55,16 @@ uint64_t Snapshot::get_sample_count() const
 double Snapshot::start_time() const
 {
 	return start_time_;
+}
+
+double Snapshot::samplerate() const
+{
+	return samplerate_;
+}
+
+void Snapshot::set_samplerate(double samplerate)
+{
+	samplerate_ = samplerate;
 }
 
 unsigned int Snapshot::unit_size() const

@@ -263,7 +263,10 @@ void View::zoom_one_to_one()
 	double samplerate = 0.0;
 	for (const shared_ptr<SignalData> d : visible_data) {
 		assert(d);
-		samplerate = max(samplerate, d->samplerate());
+		const vector< shared_ptr<Snapshot> > snapshots =
+			d->snapshots();
+		for (const shared_ptr<Snapshot> &s : snapshots)
+			samplerate = max(samplerate, s->samplerate());
 	}
 
 	if (samplerate == 0.0)
@@ -311,12 +314,12 @@ pair<double, double> View::get_time_extents() const
 	const set< shared_ptr<SignalData> > visible_data = get_visible_data();
 	for (const shared_ptr<SignalData> d : visible_data)
 	{
-		double samplerate = d->samplerate();
-		samplerate = (samplerate <= 0.0) ? 1.0 : samplerate;
-
 		const vector< shared_ptr<Snapshot> > snapshots =
 			d->snapshots();
 		for (const shared_ptr<Snapshot> &s : snapshots) {
+			double samplerate = s->samplerate();
+			samplerate = (samplerate <= 0.0) ? 1.0 : samplerate;
+
 			const double start_time = s->start_time();
 			left_time = min(left_time, start_time);
 			right_time = max(right_time, start_time +

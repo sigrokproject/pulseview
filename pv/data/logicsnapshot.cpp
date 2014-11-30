@@ -46,9 +46,9 @@ const int LogicSnapshot::MipMapScaleFactor = 1 << MipMapScalePower;
 const float LogicSnapshot::LogMipMapScaleFactor = logf(MipMapScaleFactor);
 const uint64_t LogicSnapshot::MipMapDataUnit = 64*1024;	// bytes
 
-LogicSnapshot::LogicSnapshot(shared_ptr<Logic> logic,
+LogicSnapshot::LogicSnapshot(shared_ptr<Logic> logic, uint64_t samplerate,
                              const uint64_t expected_num_samples) :
-	Snapshot(logic->unit_size()),
+	Snapshot(samplerate, logic->unit_size()),
 	last_append_sample_(0)
 {
 	set_capacity(expected_num_samples);

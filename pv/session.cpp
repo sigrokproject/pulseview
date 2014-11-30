@@ -85,7 +85,8 @@ namespace pv {
 Session::Session(DeviceManager &device_manager) :
 	device_manager_(device_manager),
 	session_(device_manager.context()->create_session()),
-	capture_state_(Stopped)
+	capture_state_(Stopped),
+	cur_samplerate_(0)
 {
 	set_default_device();
 }
@@ -431,17 +432,10 @@ void Session::read_sample_rate(shared_ptr<Device> device)
 {
 	const auto keys = device_->config_keys(ConfigKey::DEVICE_OPTIONS);
 	const auto iter = keys.find(ConfigKey::SAMPLERATE);
-	const uint64_t sample_rate = (iter != keys.end() &&
+	cur_samplerate_ = (iter != keys.end() &&
 		(*iter).second.find(sigrok::GET) != (*iter).second.end()) ?
 		VariantBase::cast_dynamic<Variant<guint64>>(
 			device->config_get(ConfigKey::SAMPLERATE)).get() : 0;
-
-	// Set the sample rate of all data
-	const set< shared_ptr<data::SignalData> > data_set = get_data();
-	for (shared_ptr<data::SignalData> data : data_set) {
-		assert(data);
-		data->set_samplerate(sample_rate);
-	}
 }
 
 void Session::sample_thread_proc(shared_ptr<Device> device,
@@ -530,7 +524,8 @@ void Session::feed_in_logic(shared_ptr<Logic> logic)
 
 		// Create a new data snapshot
 		cur_logic_snapshot_ = shared_ptr<data::LogicSnapshot>(
-			new data::LogicSnapshot(logic, sample_limit));
+			new data::LogicSnapshot(
+				logic, cur_samplerate_, sample_limit));
 		logic_data_->push_snapshot(cur_logic_snapshot_);
 
 		// @todo Putting this here means that only listeners querying
@@ -585,7 +580,8 @@ void Session::feed_in_analog(shared_ptr<Analog> analog)
 
 			// Create a snapshot, keep it in the maps of channels
 			snapshot = shared_ptr<data::AnalogSnapshot>(
-				new data::AnalogSnapshot(sample_limit));
+				new data::AnalogSnapshot(
+					cur_samplerate_, sample_limit));
 			cur_analog_snapshots_[channel] = snapshot;
 
 			// Find the annalog data associated with the channel

@@ -127,8 +127,8 @@ bool StoreSession::start()
 			{{"filename",
 				Glib::Variant<Glib::ustring>::create(file_name_)}});
 		auto meta = context->create_meta_packet(
-			{{ConfigKey::SAMPLERATE,
-				Glib::Variant<guint64>::create(data->samplerate())}});
+			{{ConfigKey::SAMPLERATE, Glib::Variant<guint64>::create(
+				snapshot->samplerate())}});
 		output_->receive(meta);
 	} catch (Error error) {
 		error_ = tr("Error while saving.");

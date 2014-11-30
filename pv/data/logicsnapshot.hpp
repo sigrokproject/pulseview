@@ -63,7 +63,7 @@ public:
 
 public:
 	LogicSnapshot(std::shared_ptr<sigrok::Logic> logic,
-	              uint64_t expected_num_samples = 0);
+		uint64_t samplerate, uint64_t expected_num_samples = 0);
 
 	virtual ~LogicSnapshot();
 

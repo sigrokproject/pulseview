@@ -66,7 +66,7 @@ private:
 	static const uint64_t EnvelopeDataUnit;
 
 public:
-	AnalogSnapshot(uint64_t expected_num_samples = 0);
+	AnalogSnapshot(uint64_t samplerate, uint64_t expected_num_samples = 0);
 
 	virtual ~AnalogSnapshot();
 

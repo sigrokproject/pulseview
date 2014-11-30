@@ -177,7 +177,7 @@ void LogicSignal::paint_mid(QPainter &p, const RowItemPaintParams &pp)
 	const shared_ptr<pv::data::LogicSnapshot> &snapshot =
 		snapshots.front();
 
-	double samplerate = data_->samplerate();
+	double samplerate = snapshot->samplerate();
 
 	// Show sample rate as 1Hz when it is unknown
 	if (samplerate == 0.0)
