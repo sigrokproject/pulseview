@@ -21,7 +21,7 @@
 #include <cassert>
 
 #include "logic.hpp"
-#include "logicsnapshot.hpp"
+#include "logicsegment.hpp"
 
 using std::deque;
 using std::max;
@@ -43,32 +43,32 @@ int Logic::get_num_channels() const
 	return num_channels_;
 }
 
-void Logic::push_snapshot(
-	shared_ptr<LogicSnapshot> &snapshot)
+void Logic::push_segment(
+	shared_ptr<LogicSegment> &segment)
 {
-	snapshots_.push_front(snapshot);
+	segments_.push_front(segment);
 }
 
-const deque< shared_ptr<LogicSnapshot> >& Logic::logic_snapshots() const
+const deque< shared_ptr<LogicSegment> >& Logic::logic_segments() const
 {
-	return snapshots_;
+	return segments_;
 }
 
-vector< shared_ptr<Snapshot> > Logic::snapshots() const
+vector< shared_ptr<Segment> > Logic::segments() const
 {
-	return vector< shared_ptr<Snapshot> >(
-		snapshots_.begin(), snapshots_.end());
+	return vector< shared_ptr<Segment> >(
+		segments_.begin(), segments_.end());
 }
 
 void Logic::clear()
 {
-	snapshots_.clear();
+	segments_.clear();
 }
 
 uint64_t Logic::get_max_sample_count() const
 {
 	uint64_t l = 0;
-	for (std::shared_ptr<LogicSnapshot> s : snapshots_) {
+	for (std::shared_ptr<LogicSegment> s : segments_) {
 		assert(s);
 		l = max(l, s->get_sample_count());
 	}

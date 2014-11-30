@@ -27,7 +27,7 @@
 #include "decoderstack.hpp"
 
 #include <pv/data/logic.hpp>
-#include <pv/data/logicsnapshot.hpp>
+#include <pv/data/logicsegment.hpp>
 #include <pv/data/decode/decoder.hpp>
 #include <pv/data/decode/annotation.hpp>
 #include <pv/session.hpp>
@@ -245,7 +245,7 @@ void DecoderStack::begin_decode()
 
 	// We get the logic data of the first channel in the list.
 	// This works because we are currently assuming all
-	// LogicSignals have the same data/snapshot
+	// LogicSignals have the same data/segment
 	for (const shared_ptr<decode::Decoder> &dec : stack_)
 		if (dec && !dec->channels().empty() &&
 			((logic_signal = (*dec->channels().begin()).second)) &&
@@ -255,16 +255,16 @@ void DecoderStack::begin_decode()
 	if (!data)
 		return;
 
-	// Check we have a snapshot of data
-	const deque< shared_ptr<pv::data::LogicSnapshot> > &snapshots =
-		data->logic_snapshots();
-	if (snapshots.empty())
+	// Check we have a segment of data
+	const deque< shared_ptr<pv::data::LogicSegment> > &segments =
+		data->logic_segments();
+	if (segments.empty())
 		return;
-	snapshot_ = snapshots.front();
+	segment_ = segments.front();
 
 	// Get the samplerate and start time
-	start_time_ = snapshot_->start_time();
-	samplerate_ = snapshot_->samplerate();
+	start_time_ = segment_->start_time();
+	samplerate_ = segment_->samplerate();
 	if (samplerate_ == 0.0)
 		samplerate_ = 1.0;
 
@@ -301,7 +301,7 @@ void DecoderStack::decode_data(
 	uint8_t chunk[DecodeChunkLength];
 
 	const unsigned int chunk_sample_count =
-		DecodeChunkLength / snapshot_->unit_size();
+		DecodeChunkLength / segment_->unit_size();
 
 	for (int64_t i = 0; !interrupt_ && i < sample_count;
 		i += chunk_sample_count)
@@ -310,7 +310,7 @@ void DecoderStack::decode_data(
 
 		const int64_t chunk_end = min(
 			i + chunk_sample_count, sample_count);
-		snapshot_->get_samples(chunk, i, chunk_end);
+		segment_->get_samples(chunk, i, chunk_end);
 
 		if (srd_session_send(session, i, i + sample_count, chunk,
 				(chunk_end - i) * unit_size) != SRD_OK) {
@@ -336,14 +336,14 @@ void DecoderStack::decode_proc()
 	srd_session *session;
 	srd_decoder_inst *prev_di = NULL;
 
-	assert(snapshot_);
+	assert(segment_);
 
 	// Create the session
 	srd_session_new(&session);
 	assert(session);
 
 	// Create the decoders
-	const unsigned int unit_size = snapshot_->unit_size();
+	const unsigned int unit_size = segment_->unit_size();
 
 	for (const shared_ptr<decode::Decoder> &dec : stack_)
 	{
@@ -365,7 +365,7 @@ void DecoderStack::decode_proc()
 	// Get the intial sample count
 	{
 		unique_lock<mutex> input_lock(input_mutex_);
-		sample_count = sample_count_ = snapshot_->get_sample_count();
+		sample_count = sample_count_ = segment_->get_sample_count();
 	}
 
 	// Start the session
@@ -436,8 +436,8 @@ void DecoderStack::on_data_received()
 {
 	{
 		unique_lock<mutex> lock(input_mutex_);
-		if (snapshot_)
-			sample_count_ = snapshot_->get_sample_count();
+		if (segment_)
+			sample_count_ = segment_->get_sample_count();
 	}
 	input_cond_.notify_one();
 }
@@ -446,7 +446,7 @@ void DecoderStack::on_frame_ended()
 {
 	{
 		unique_lock<mutex> lock(input_mutex_);
-		if (snapshot_)
+		if (segment_)
 			frame_complete_ = true;
 	}
 	input_cond_.notify_one();

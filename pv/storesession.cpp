@@ -24,7 +24,7 @@
 
 #include <pv/session.hpp>
 #include <pv/data/logic.hpp>
-#include <pv/data/logicsnapshot.hpp>
+#include <pv/data/logicsegment.hpp>
 #include <pv/view/signal.hpp>
 
 #include <libsigrok/libsigrok.hpp>
@@ -106,17 +106,17 @@ bool StoreSession::start()
 		return false;
 	}
 
-	// Get the snapshot
-	const deque< shared_ptr<data::LogicSnapshot> > &snapshots =
-		data->logic_snapshots();
+	// Get the segment
+	const deque< shared_ptr<data::LogicSegment> > &segments =
+		data->logic_segments();
 
-	if (snapshots.empty()) {
-		error_ = tr("No snapshots to save.");
+	if (segments.empty()) {
+		error_ = tr("No segments to save.");
 		return false;
 	}
 
-	const shared_ptr<data::LogicSnapshot> snapshot(snapshots.front());
-	assert(snapshot);
+	const shared_ptr<data::LogicSegment> segment(segments.front());
+	assert(segment);
 
 	// Begin storing
 	try {
@@ -128,14 +128,14 @@ bool StoreSession::start()
 				Glib::Variant<Glib::ustring>::create(file_name_)}});
 		auto meta = context->create_meta_packet(
 			{{ConfigKey::SAMPLERATE, Glib::Variant<guint64>::create(
-				snapshot->samplerate())}});
+				segment->samplerate())}});
 		output_->receive(meta);
 	} catch (Error error) {
 		error_ = tr("Error while saving.");
 		return false;
 	}
 
-	thread_ = std::thread(&StoreSession::store_proc, this, snapshot);
+	thread_ = std::thread(&StoreSession::store_proc, this, segment);
 	return true;
 }
 
@@ -150,9 +150,9 @@ void StoreSession::cancel()
 	interrupt_ = true;
 }
 
-void StoreSession::store_proc(shared_ptr<data::LogicSnapshot> snapshot)
+void StoreSession::store_proc(shared_ptr<data::LogicSegment> segment)
 {
-	assert(snapshot);
+	assert(segment);
 
 	uint64_t start_sample = 0, sample_count;
 	unsigned progress_scale = 0;
@@ -161,10 +161,10 @@ void StoreSession::store_proc(shared_ptr<data::LogicSnapshot> snapshot)
 	uint8_t *const data = new uint8_t[BlockSize];
 	assert(data);
 
-	const int unit_size = snapshot->unit_size();
+	const int unit_size = segment->unit_size();
 	assert(unit_size != 0);
 
-	sample_count = snapshot->get_sample_count();
+	sample_count = segment->get_sample_count();
 
 	// Qt needs the progress values to fit inside an int.  If they would
 	// not, scale the current and max values down until they do.
@@ -181,7 +181,7 @@ void StoreSession::store_proc(shared_ptr<data::LogicSnapshot> snapshot)
 
 		const uint64_t end_sample = min(
 			start_sample + samples_per_block, sample_count);
-		snapshot->get_samples(data, start_sample, end_sample);
+		segment->get_samples(data, start_sample, end_sample);
 
 		size_t length = end_sample - start_sample;
 

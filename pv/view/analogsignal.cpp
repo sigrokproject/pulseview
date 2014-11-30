@@ -25,7 +25,7 @@
 
 #include "analogsignal.hpp"
 #include "pv/data/analog.hpp"
-#include "pv/data/analogsnapshot.hpp"
+#include "pv/data/analogsegment.hpp"
 #include "pv/view/view.hpp"
 
 #include <libsigrok/libsigrok.hpp>
@@ -103,18 +103,18 @@ void AnalogSignal::paint_mid(QPainter &p, const RowItemPaintParams &pp)
 	if (!channel_->enabled())
 		return;
 
-	const deque< shared_ptr<pv::data::AnalogSnapshot> > &snapshots =
-		data_->analog_snapshots();
-	if (snapshots.empty())
+	const deque< shared_ptr<pv::data::AnalogSegment> > &segments =
+		data_->analog_segments();
+	if (segments.empty())
 		return;
 
-	const shared_ptr<pv::data::AnalogSnapshot> &snapshot =
-		snapshots.front();
+	const shared_ptr<pv::data::AnalogSegment> &segment =
+		segments.front();
 
 	const double pixels_offset = pp.pixels_offset();
-	const double samplerate = snapshot->samplerate();
-	const double start_time = snapshot->start_time();
-	const int64_t last_sample = snapshot->get_sample_count() - 1;
+	const double samplerate = segment->samplerate();
+	const double start_time = segment->start_time();
+	const int64_t last_sample = segment->get_sample_count() - 1;
 	const double samples_per_pixel = samplerate * pp.scale();
 	const double start = samplerate * (pp.offset() - start_time);
 	const double end = start + samples_per_pixel * pp.width();
@@ -125,23 +125,23 @@ void AnalogSignal::paint_mid(QPainter &p, const RowItemPaintParams &pp)
 		(int64_t)0), last_sample);
 
 	if (samples_per_pixel < EnvelopeThreshold)
-		paint_trace(p, snapshot, y, pp.left(),
+		paint_trace(p, segment, y, pp.left(),
 			start_sample, end_sample,
 			pixels_offset, samples_per_pixel);
 	else
-		paint_envelope(p, snapshot, y, pp.left(),
+		paint_envelope(p, segment, y, pp.left(),
 			start_sample, end_sample,
 			pixels_offset, samples_per_pixel);
 }
 
 void AnalogSignal::paint_trace(QPainter &p,
-	const shared_ptr<pv::data::AnalogSnapshot> &snapshot,
+	const shared_ptr<pv::data::AnalogSegment> &segment,
 	int y, int left, const int64_t start, const int64_t end,
 	const double pixels_offset, const double samples_per_pixel)
 {
 	const int64_t sample_count = end - start;
 
-	const float *const samples = snapshot->get_samples(start, end);
+	const float *const samples = segment->get_samples(start, end);
 	assert(samples);
 
 	p.setPen(colour_);
@@ -163,14 +163,14 @@ void AnalogSignal::paint_trace(QPainter &p,
 }
 
 void AnalogSignal::paint_envelope(QPainter &p,
-	const shared_ptr<pv::data::AnalogSnapshot> &snapshot,
+	const shared_ptr<pv::data::AnalogSegment> &segment,
 	int y, int left, const int64_t start, const int64_t end,
 	const double pixels_offset, const double samples_per_pixel)
 {
-	using pv::data::AnalogSnapshot;
+	using pv::data::AnalogSegment;
 
-	AnalogSnapshot::EnvelopeSection e;
-	snapshot->get_envelope_section(e, start, end, samples_per_pixel);
+	AnalogSegment::EnvelopeSection e;
+	segment->get_envelope_section(e, start, end, samples_per_pixel);
 
 	if (e.length < 2)
 		return;
@@ -184,7 +184,7 @@ void AnalogSignal::paint_envelope(QPainter &p,
 	for(uint64_t sample = 0; sample < e.length-1; sample++) {
 		const float x = ((e.scale * sample + e.start) /
 			samples_per_pixel - pixels_offset) + left;
-		const AnalogSnapshot::EnvelopeSample *const s =
+		const AnalogSegment::EnvelopeSample *const s =
 			e.samples + sample;
 
 		// We overlap this sample with the next so that vertical

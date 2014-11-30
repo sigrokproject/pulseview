@@ -45,7 +45,7 @@ extern "C" {
 #include <pv/data/decoderstack.hpp>
 #include <pv/data/decode/decoder.hpp>
 #include <pv/data/logic.hpp>
-#include <pv/data/logicsnapshot.hpp>
+#include <pv/data/logicsegment.hpp>
 #include <pv/data/decode/annotation.hpp>
 #include <pv/view/logicsignal.hpp>
 #include <pv/view/view.hpp>
@@ -474,20 +474,20 @@ void DecodeTrace::draw_unresolved_period(QPainter &p, int h, int left,
 
 	// We get the logic data of the first channel in the list.
 	// This works because we are currently assuming all
-	// LogicSignals have the same data/snapshot
+	// LogicSignals have the same data/segment
 	for (const shared_ptr<Decoder> &dec : stack)
 		if (dec && !dec->channels().empty() &&
 			((logic_signal = (*dec->channels().begin()).second)) &&
 			((data = logic_signal->logic_data())))
 			break;
 
-	if (!data || data->logic_snapshots().empty())
+	if (!data || data->logic_segments().empty())
 		return;
 
-	const shared_ptr<LogicSnapshot> snapshot =
-		data->logic_snapshots().front();
-	assert(snapshot);
-	const int64_t sample_count = (int64_t)snapshot->get_sample_count();
+	const shared_ptr<LogicSegment> segment =
+		data->logic_segments().front();
+	assert(segment);
+	const int64_t sample_count = (int64_t)segment->get_sample_count();
 	if (sample_count == 0)
 		return;
 

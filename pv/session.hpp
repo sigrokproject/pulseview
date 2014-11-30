@@ -53,9 +53,9 @@ class DeviceManager;
 
 namespace data {
 class Analog;
-class AnalogSnapshot;
+class AnalogSegment;
 class Logic;
-class LogicSnapshot;
+class LogicSegment;
 class SignalData;
 }
 
@@ -167,9 +167,9 @@ private:
 	mutable std::mutex data_mutex_;
 	std::shared_ptr<data::Logic> logic_data_;
 	uint64_t cur_samplerate_;
-	std::shared_ptr<data::LogicSnapshot> cur_logic_snapshot_;
-	std::map< std::shared_ptr<sigrok::Channel>, std::shared_ptr<data::AnalogSnapshot> >
-		cur_analog_snapshots_;
+	std::shared_ptr<data::LogicSegment> cur_logic_segment_;
+	std::map< std::shared_ptr<sigrok::Channel>, std::shared_ptr<data::AnalogSegment> >
+		cur_analog_segments_;
 
 	std::thread sampling_thread_;
 

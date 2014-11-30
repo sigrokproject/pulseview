@@ -29,7 +29,7 @@ namespace pv {
 
 namespace data {
 class Analog;
-class AnalogSnapshot;
+class AnalogSegment;
 }
 
 namespace view {
@@ -77,12 +77,12 @@ public:
 
 private:
 	void paint_trace(QPainter &p,
-		const std::shared_ptr<pv::data::AnalogSnapshot> &snapshot,
+		const std::shared_ptr<pv::data::AnalogSegment> &segment,
 		int y, int left, const int64_t start, const int64_t end,
 		const double pixels_offset, const double samples_per_pixel);
 
 	void paint_envelope(QPainter &p,
-		const std::shared_ptr<pv::data::AnalogSnapshot> &snapshot,
+		const std::shared_ptr<pv::data::AnalogSegment> &segment,
 		int y, int left, const int64_t start, const int64_t end,
 		const double pixels_offset, const double samples_per_pixel);
 

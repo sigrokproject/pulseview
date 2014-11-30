@@ -39,7 +39,7 @@ namespace pv {
 class Session;
 
 namespace data {
-class LogicSnapshot;
+class LogicSegment;
 }
 
 class StoreSession : public QObject
@@ -66,7 +66,7 @@ public:
 	void cancel();
 
 private:
-	void store_proc(std::shared_ptr<pv::data::LogicSnapshot> snapshot);
+	void store_proc(std::shared_ptr<pv::data::LogicSegment> segment);
 
 Q_SIGNALS:
 	void progress_updated();

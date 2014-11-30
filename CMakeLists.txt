@@ -147,11 +147,11 @@ set(pulseview_SOURCES
 	pv/storesession.cpp
 	pv/util.cpp
 	pv/data/analog.cpp
-	pv/data/analogsnapshot.cpp
+	pv/data/analogsegment.cpp
 	pv/data/logic.cpp
-	pv/data/logicsnapshot.cpp
+	pv/data/logicsegment.cpp
 	pv/data/signaldata.cpp
-	pv/data/snapshot.cpp
+	pv/data/segment.cpp
 	pv/dialogs/about.cpp
 	pv/dialogs/connect.cpp
 	pv/dialogs/storeprogress.cpp

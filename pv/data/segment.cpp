@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#include "snapshot.hpp"
+#include "segment.hpp"
 
 #include <assert.h>
 #include <stdlib.h>
@@ -30,7 +30,7 @@ using std::recursive_mutex;
 namespace pv {
 namespace data {
 
-Snapshot::Snapshot(uint64_t samplerate, unsigned int unit_size) :
+Segment::Segment(uint64_t samplerate, unsigned int unit_size) :
 	sample_count_(0),
 	start_time_(0),
 	samplerate_(samplerate),
@@ -41,38 +41,38 @@ Snapshot::Snapshot(uint64_t samplerate, unsigned int unit_size) :
 	assert(unit_size_ > 0);
 }
 
-Snapshot::~Snapshot()
+Segment::~Segment()
 {
 	lock_guard<recursive_mutex> lock(mutex_);
 }
 
-uint64_t Snapshot::get_sample_count() const
+uint64_t Segment::get_sample_count() const
 {
 	lock_guard<recursive_mutex> lock(mutex_);
 	return sample_count_;
 }
 
-double Snapshot::start_time() const
+double Segment::start_time() const
 {
 	return start_time_;
 }
 
-double Snapshot::samplerate() const
+double Segment::samplerate() const
 {
 	return samplerate_;
 }
 
-void Snapshot::set_samplerate(double samplerate)
+void Segment::set_samplerate(double samplerate)
 {
 	samplerate_ = samplerate;
 }
 
-unsigned int Snapshot::unit_size() const
+unsigned int Segment::unit_size() const
 {
 	return unit_size_;
 }
 
-void Snapshot::set_capacity(const uint64_t new_capacity)
+void Segment::set_capacity(const uint64_t new_capacity)
 {
 	lock_guard<recursive_mutex> lock(mutex_);
 
@@ -83,13 +83,13 @@ void Snapshot::set_capacity(const uint64_t new_capacity)
 	}
 }
 
-uint64_t Snapshot::capacity() const
+uint64_t Segment::capacity() const
 {
 	lock_guard<recursive_mutex> lock(mutex_);
 	return data_.size();
 }
 
-void Snapshot::append_data(void *data, uint64_t samples)
+void Segment::append_data(void *data, uint64_t samples)
 {
 	lock_guard<recursive_mutex> lock(mutex_);
 

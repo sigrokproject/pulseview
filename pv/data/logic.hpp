@@ -28,7 +28,7 @@
 namespace pv {
 namespace data {
 
-class LogicSnapshot;
+class LogicSegment;
 
 class Logic : public SignalData
 {
@@ -37,13 +37,13 @@ public:
 
 	int get_num_channels() const;
 
-	void push_snapshot(
-		std::shared_ptr<LogicSnapshot> &snapshot);
+	void push_segment(
+		std::shared_ptr<LogicSegment> &segment);
 
-	const std::deque< std::shared_ptr<LogicSnapshot> >&
-		logic_snapshots() const;
+	const std::deque< std::shared_ptr<LogicSegment> >&
+		logic_segments() const;
 
-	std::vector< std::shared_ptr<Snapshot> > snapshots() const;
+	std::vector< std::shared_ptr<Segment> > segments() const;
 
 	void clear();
 
@@ -51,7 +51,7 @@ public:
 
 private:
 	const unsigned int num_channels_;
-	std::deque< std::shared_ptr<LogicSnapshot> > snapshots_;
+	std::deque< std::shared_ptr<LogicSegment> > segments_;
 };
 
 } // namespace data

@@ -28,7 +28,7 @@
 namespace pv {
 namespace data {
 
-class Snapshot;
+class Segment;
 
 class SignalData
 {
@@ -37,7 +37,7 @@ public:
 	virtual ~SignalData() {}
 
 public:
-	virtual std::vector< std::shared_ptr<Snapshot> > snapshots() const = 0;
+	virtual std::vector< std::shared_ptr<Segment> > segments() const = 0;
 
 	virtual void clear() = 0;
 

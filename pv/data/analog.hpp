@@ -29,27 +29,27 @@
 namespace pv {
 namespace data {
 
-class AnalogSnapshot;
+class AnalogSegment;
 
 class Analog : public SignalData
 {
 public:
 	Analog();
 
-	void push_snapshot(
-		std::shared_ptr<AnalogSnapshot> &snapshot);
+	void push_segment(
+		std::shared_ptr<AnalogSegment> &segment);
 
-	const std::deque< std::shared_ptr<AnalogSnapshot> >&
-		analog_snapshots() const;
+	const std::deque< std::shared_ptr<AnalogSegment> >&
+		analog_segments() const;
 
-	std::vector< std::shared_ptr<Snapshot> > snapshots() const;
+	std::vector< std::shared_ptr<Segment> > segments() const;
 
 	void clear();
 
 	uint64_t get_max_sample_count() const;
 
 private:
-	std::deque< std::shared_ptr<AnalogSnapshot> > snapshots_;
+	std::deque< std::shared_ptr<AnalogSegment> > segments_;
 };
 
 } // namespace data

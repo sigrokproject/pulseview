@@ -28,12 +28,12 @@
 namespace pv {
 namespace data {
 
-class Snapshot
+class Segment
 {
 public:
-	Snapshot(uint64_t samplerate, unsigned int unit_size);
+	Segment(uint64_t samplerate, unsigned int unit_size);
 
-	virtual ~Snapshot();
+	virtual ~Segment();
 
 	uint64_t get_sample_count() const;
 
@@ -45,29 +45,29 @@ public:
 	unsigned int unit_size() const;
 
 	/**
-	 * @brief Increase the capacity of the snapshot.
+	 * @brief Increase the capacity of the segment.
 	 *
 	 * Increasing the capacity allows samples to be appended without needing
 	 * to reallocate memory.
 	 *
 	 * For the best efficiency @c set_capacity() should be called once before
-	 * @c append_data() is called to set up the snapshot with the expected number
+	 * @c append_data() is called to set up the segment with the expected number
 	 * of samples that will be appended in total.
 	 *
 	 * @note The capacity will automatically be increased when @c append_data()
 	 * is called if there is not enough capacity in the buffer to store the samples.
 	 *
-	 * @param[in] new_capacity The new capacity of the snapshot. If this value is
+	 * @param[in] new_capacity The new capacity of the segment. If this value is
 	 * 	smaller or equal than the current capacity then the method has no effect.
 	 */
 	void set_capacity(uint64_t new_capacity);
 
 	/**
-	 * @brief Get the current capacity of the snapshot.
+	 * @brief Get the current capacity of the segment.
 	 *
 	 * The capacity can be increased by calling @c set_capacity().
 	 *
-	 * @return The current capacity of the snapshot.
+	 * @return The current capacity of the segment.
 	 */
 	uint64_t capacity() const;
 

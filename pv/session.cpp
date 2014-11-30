@@ -27,10 +27,10 @@
 #include "devicemanager.hpp"
 
 #include "data/analog.hpp"
-#include "data/analogsnapshot.hpp"
+#include "data/analogsegment.hpp"
 #include "data/decoderstack.hpp"
 #include "data/logic.hpp"
-#include "data/logicsnapshot.hpp"
+#include "data/logicsegment.hpp"
 #include "data/decode/decoder.hpp"
 
 #include "view/analogsignal.hpp"
@@ -364,7 +364,7 @@ void Session::update_signals(shared_ptr<Device> device)
 		[] (shared_ptr<Channel> channel) {
 			return channel->type() == ChannelType::LOGIC; });
 
-	// Create data containers for the logic data snapshots
+	// Create data containers for the logic data segments
 	{
 		lock_guard<mutex> data_lock(data_mutex_);
 
@@ -460,7 +460,7 @@ void Session::sample_thread_proc(shared_ptr<Device> device,
 	set_capture_state(Stopped);
 
 	// Confirm that SR_DF_END was received
-	if (cur_logic_snapshot_)
+	if (cur_logic_segment_)
 	{
 		qDebug("SR_DF_END was not received.");
 		assert(0);
@@ -493,7 +493,7 @@ void Session::feed_in_meta(shared_ptr<Device> device,
 
 void Session::feed_in_frame_begin()
 {
-	if (cur_logic_snapshot_ || !cur_analog_snapshots_.empty())
+	if (cur_logic_segment_ || !cur_analog_segments_.empty())
 		frame_began();
 }
 
@@ -507,7 +507,7 @@ void Session::feed_in_logic(shared_ptr<Logic> logic)
 		return;
 	}
 
-	if (!cur_logic_snapshot_)
+	if (!cur_logic_segment_)
 	{
 		// This could be the first packet after a trigger
 		set_capture_state(Running);
@@ -522,11 +522,11 @@ void Session::feed_in_logic(shared_ptr<Logic> logic)
 			VariantBase::cast_dynamic<Variant<guint64>>(
 			device_->config_get(ConfigKey::LIMIT_SAMPLES)).get() : 0;
 
-		// Create a new data snapshot
-		cur_logic_snapshot_ = shared_ptr<data::LogicSnapshot>(
-			new data::LogicSnapshot(
+		// Create a new data segment
+		cur_logic_segment_ = shared_ptr<data::LogicSegment>(
+			new data::LogicSegment(
 				logic, cur_samplerate_, sample_limit));
-		logic_data_->push_snapshot(cur_logic_snapshot_);
+		logic_data_->push_segment(cur_logic_segment_);
 
 		// @todo Putting this here means that only listeners querying
 		// for logic will be notified. Currently the only user of
@@ -536,8 +536,8 @@ void Session::feed_in_logic(shared_ptr<Logic> logic)
 	}
 	else
 	{
-		// Append to the existing data snapshot
-		cur_logic_snapshot_->append_payload(logic);
+		// Append to the existing data segment
+		cur_logic_segment_->append_payload(logic);
 	}
 
 	data_received();
@@ -555,18 +555,18 @@ void Session::feed_in_analog(shared_ptr<Analog> analog)
 
 	for (auto channel : channels)
 	{
-		shared_ptr<data::AnalogSnapshot> snapshot;
+		shared_ptr<data::AnalogSegment> segment;
 
-		// Try to get the snapshot of the channel
-		const map< shared_ptr<Channel>, shared_ptr<data::AnalogSnapshot> >::
-			iterator iter = cur_analog_snapshots_.find(channel);
-		if (iter != cur_analog_snapshots_.end())
-			snapshot = (*iter).second;
+		// Try to get the segment of the channel
+		const map< shared_ptr<Channel>, shared_ptr<data::AnalogSegment> >::
+			iterator iter = cur_analog_segments_.find(channel);
+		if (iter != cur_analog_segments_.end())
+			segment = (*iter).second;
 		else
 		{
-			// If no snapshot was found, this means we havn't
+			// If no segment was found, this means we havn't
 			// created one yet. i.e. this is the first packet
-			// in the sweep containing this snapshot.
+			// in the sweep containing this segment.
 			sweep_beginning = true;
 
 			// Get sample limit.
@@ -578,11 +578,11 @@ void Session::feed_in_analog(shared_ptr<Analog> analog)
 				sample_limit = 0;
 			}
 
-			// Create a snapshot, keep it in the maps of channels
-			snapshot = shared_ptr<data::AnalogSnapshot>(
-				new data::AnalogSnapshot(
+			// Create a segment, keep it in the maps of channels
+			segment = shared_ptr<data::AnalogSegment>(
+				new data::AnalogSegment(
 					cur_samplerate_, sample_limit));
-			cur_analog_snapshots_[channel] = snapshot;
+			cur_analog_segments_[channel] = segment;
 
 			// Find the annalog data associated with the channel
 			shared_ptr<view::AnalogSignal> sig =
@@ -593,14 +593,14 @@ void Session::feed_in_analog(shared_ptr<Analog> analog)
 			shared_ptr<data::Analog> data(sig->analog_data());
 			assert(data);
 
-			// Push the snapshot into the analog data.
-			data->push_snapshot(snapshot);
+			// Push the segment into the analog data.
+			data->push_segment(segment);
 		}
 
-		assert(snapshot);
+		assert(segment);
 
-		// Append the samples in the snapshot
-		snapshot->append_interleaved_samples(data++, sample_count,
+		// Append the samples in the segment
+		segment->append_interleaved_samples(data++, sample_count,
 			channel_count);
 	}
 
@@ -642,8 +642,8 @@ void Session::data_feed_in(shared_ptr<Device> device, shared_ptr<Packet> packet)
 	{
 		{
 			lock_guard<mutex> lock(data_mutex_);
-			cur_logic_snapshot_.reset();
-			cur_analog_snapshots_.clear();
+			cur_logic_segment_.reset();
+			cur_analog_segments_.clear();
 		}
 		frame_ended();
 		break;

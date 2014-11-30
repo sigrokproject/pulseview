@@ -21,7 +21,7 @@
 #include <cassert>
 
 #include "analog.hpp"
-#include "analogsnapshot.hpp"
+#include "analogsegment.hpp"
 
 using std::deque;
 using std::max;
@@ -36,31 +36,31 @@ Analog::Analog() :
 {
 }
 
-void Analog::push_snapshot(shared_ptr<AnalogSnapshot> &snapshot)
+void Analog::push_segment(shared_ptr<AnalogSegment> &segment)
 {
-	snapshots_.push_front(snapshot);
+	segments_.push_front(segment);
 }
 
-const deque< shared_ptr<AnalogSnapshot> >& Analog::analog_snapshots() const
+const deque< shared_ptr<AnalogSegment> >& Analog::analog_segments() const
 {
-	return snapshots_;
+	return segments_;
 }
 
-vector< shared_ptr<Snapshot> > Analog::snapshots() const
+vector< shared_ptr<Segment> > Analog::segments() const
 {
-	return vector< shared_ptr<Snapshot> >(
-		snapshots_.begin(), snapshots_.end());
+	return vector< shared_ptr<Segment> >(
+		segments_.begin(), segments_.end());
 }
 
 void Analog::clear()
 {
-	snapshots_.clear();
+	segments_.clear();
 }
 
 uint64_t Analog::get_max_sample_count() const
 {
 	uint64_t l = 0;
-	for (const std::shared_ptr<AnalogSnapshot> s : snapshots_) {
+	for (const std::shared_ptr<AnalogSegment> s : segments_) {
 		assert(s);
 		l = max(l, s->get_sample_count());
 	}

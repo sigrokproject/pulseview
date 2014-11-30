@@ -34,7 +34,7 @@
 #include <pv/session.hpp>
 #include <pv/devicemanager.hpp>
 #include <pv/data/logic.hpp>
-#include <pv/data/logicsnapshot.hpp>
+#include <pv/data/logicsegment.hpp>
 #include <pv/view/view.hpp>
 
 #include <libsigrok/libsigrok.hpp>
@@ -169,28 +169,28 @@ void LogicSignal::paint_mid(QPainter &p, const RowItemPaintParams &pp)
 	const float high_offset = y - SignalHeight + 0.5f;
 	const float low_offset = y + 0.5f;
 
-	const deque< shared_ptr<pv::data::LogicSnapshot> > &snapshots =
-		data_->logic_snapshots();
-	if (snapshots.empty())
+	const deque< shared_ptr<pv::data::LogicSegment> > &segments =
+		data_->logic_segments();
+	if (segments.empty())
 		return;
 
-	const shared_ptr<pv::data::LogicSnapshot> &snapshot =
-		snapshots.front();
+	const shared_ptr<pv::data::LogicSegment> &segment =
+		segments.front();
 
-	double samplerate = snapshot->samplerate();
+	double samplerate = segment->samplerate();
 
 	// Show sample rate as 1Hz when it is unknown
 	if (samplerate == 0.0)
 		samplerate = 1.0;
 
 	const double pixels_offset = pp.pixels_offset();
-	const double start_time = snapshot->start_time();
-	const int64_t last_sample = snapshot->get_sample_count() - 1;
+	const double start_time = segment->start_time();
+	const int64_t last_sample = segment->get_sample_count() - 1;
 	const double samples_per_pixel = samplerate * pp.scale();
 	const double start = samplerate * (pp.offset() - start_time);
 	const double end = start + samples_per_pixel * pp.width();
 
-	snapshot->get_subsampled_edges(edges,
+	segment->get_subsampled_edges(edges,
 		min(max((int64_t)floor(start), (int64_t)0), last_sample),
 		min(max((int64_t)ceil(end), (int64_t)0), last_sample),
 		samples_per_pixel / Oversampling, channel_->index());

@@ -50,14 +50,14 @@
 
 #include "pv/session.hpp"
 #include "pv/data/logic.hpp"
-#include "pv/data/logicsnapshot.hpp"
+#include "pv/data/logicsegment.hpp"
 #include "pv/util.hpp"
 
 using boost::shared_lock;
 using boost::shared_mutex;
 
 using pv::data::SignalData;
-using pv::data::Snapshot;
+using pv::data::Segment;
 using pv::util::format_time;
 
 using std::back_inserter;
@@ -263,9 +263,9 @@ void View::zoom_one_to_one()
 	double samplerate = 0.0;
 	for (const shared_ptr<SignalData> d : visible_data) {
 		assert(d);
-		const vector< shared_ptr<Snapshot> > snapshots =
-			d->snapshots();
-		for (const shared_ptr<Snapshot> &s : snapshots)
+		const vector< shared_ptr<Segment> > segments =
+			d->segments();
+		for (const shared_ptr<Segment> &s : segments)
 			samplerate = max(samplerate, s->samplerate());
 	}
 
@@ -314,9 +314,9 @@ pair<double, double> View::get_time_extents() const
 	const set< shared_ptr<SignalData> > visible_data = get_visible_data();
 	for (const shared_ptr<SignalData> d : visible_data)
 	{
-		const vector< shared_ptr<Snapshot> > snapshots =
-			d->snapshots();
-		for (const shared_ptr<Snapshot> &s : snapshots) {
+		const vector< shared_ptr<Segment> > segments =
+			d->segments();
+		for (const shared_ptr<Segment> &s : segments) {
 			double samplerate = s->samplerate();
 			samplerate = (samplerate <= 0.0) ? 1.0 : samplerate;
 

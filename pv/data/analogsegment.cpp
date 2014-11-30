@@ -27,7 +27,7 @@
 
 #include <algorithm>
 
-#include "analogsnapshot.hpp"
+#include "analogsegment.hpp"
 
 using std::lock_guard;
 using std::recursive_mutex;
@@ -39,15 +39,15 @@ using std::min_element;
 namespace pv {
 namespace data {
 
-const int AnalogSnapshot::EnvelopeScalePower = 4;
-const int AnalogSnapshot::EnvelopeScaleFactor = 1 << EnvelopeScalePower;
-const float AnalogSnapshot::LogEnvelopeScaleFactor =
+const int AnalogSegment::EnvelopeScalePower = 4;
+const int AnalogSegment::EnvelopeScaleFactor = 1 << EnvelopeScalePower;
+const float AnalogSegment::LogEnvelopeScaleFactor =
 	logf(EnvelopeScaleFactor);
-const uint64_t AnalogSnapshot::EnvelopeDataUnit = 64*1024;	// bytes
+const uint64_t AnalogSegment::EnvelopeDataUnit = 64*1024;	// bytes
 
-AnalogSnapshot::AnalogSnapshot(
+AnalogSegment::AnalogSegment(
 	uint64_t samplerate, const uint64_t expected_num_samples) :
-	Snapshot(samplerate, sizeof(float))
+	Segment(samplerate, sizeof(float))
 {
 	set_capacity(expected_num_samples);
 
@@ -55,14 +55,14 @@ AnalogSnapshot::AnalogSnapshot(
 	memset(envelope_levels_, 0, sizeof(envelope_levels_));
 }
 
-AnalogSnapshot::~AnalogSnapshot()
+AnalogSegment::~AnalogSegment()
 {
 	lock_guard<recursive_mutex> lock(mutex_);
 	for (Envelope &e : envelope_levels_)
 		free(e.samples);
 }
 
-void AnalogSnapshot::append_interleaved_samples(const float *data,
+void AnalogSegment::append_interleaved_samples(const float *data,
 	size_t sample_count, size_t stride)
 {
 	assert(unit_size_ == sizeof(float));
@@ -85,7 +85,7 @@ void AnalogSnapshot::append_interleaved_samples(const float *data,
 	append_payload_to_envelope_levels();
 }
 
-const float* AnalogSnapshot::get_samples(
+const float* AnalogSegment::get_samples(
 	int64_t start_sample, int64_t end_sample) const
 {
 	assert(start_sample >= 0);
@@ -102,7 +102,7 @@ const float* AnalogSnapshot::get_samples(
 	return data;
 }
 
-void AnalogSnapshot::get_envelope_section(EnvelopeSection &s,
+void AnalogSegment::get_envelope_section(EnvelopeSection &s,
 	uint64_t start, uint64_t end, float min_length) const
 {
 	assert(end <= get_sample_count());
@@ -126,7 +126,7 @@ void AnalogSnapshot::get_envelope_section(EnvelopeSection &s,
 		s.length * sizeof(EnvelopeSample));
 }
 
-void AnalogSnapshot::reallocate_envelope(Envelope &e)
+void AnalogSegment::reallocate_envelope(Envelope &e)
 {
 	const uint64_t new_data_length = ((e.length + EnvelopeDataUnit - 1) /
 		EnvelopeDataUnit) * EnvelopeDataUnit;
@@ -138,7 +138,7 @@ void AnalogSnapshot::reallocate_envelope(Envelope &e)
 	}
 }
 
-void AnalogSnapshot::append_payload_to_envelope_levels()
+void AnalogSegment::append_payload_to_envelope_levels()
 {
 	Envelope &e0 = envelope_levels_[0];
 	uint64_t prev_length;

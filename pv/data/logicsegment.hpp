@@ -21,7 +21,7 @@
 #ifndef PULSEVIEW_PV_DATA_LOGICSNAPSHOT_H
 #define PULSEVIEW_PV_DATA_LOGICSNAPSHOT_H
 
-#include "snapshot.hpp"
+#include "segment.hpp"
 
 #include <utility>
 #include <vector>
@@ -30,7 +30,7 @@ namespace sigrok {
 	class Logic;
 }
 
-namespace LogicSnapshotTest {
+namespace LogicSegmentTest {
 struct Pow2;
 struct Basic;
 struct LargeData;
@@ -41,7 +41,7 @@ struct LongPulses;
 namespace pv {
 namespace data {
 
-class LogicSnapshot : public Snapshot
+class LogicSegment : public Segment
 {
 private:
 	struct MipMapLevel
@@ -62,10 +62,10 @@ public:
 	typedef std::pair<int64_t, bool> EdgePair;
 
 public:
-	LogicSnapshot(std::shared_ptr<sigrok::Logic> logic,
+	LogicSegment(std::shared_ptr<sigrok::Logic> logic,
 		uint64_t samplerate, uint64_t expected_num_samples = 0);
 
-	virtual ~LogicSnapshot();
+	virtual ~LogicSegment();
 
 	void append_payload(std::shared_ptr<sigrok::Logic> logic);
 
@@ -84,7 +84,7 @@ private:
 
 public:
 	/**
-	 * Parses a logic data snapshot to generate a list of transitions
+	 * Parses a logic data segment to generate a list of transitions
 	 * in a time interval to a given level of detail.
 	 * @param[out] edges The vector to place the edges into.
 	 * @param[in] start The start sample index.
@@ -106,11 +106,11 @@ private:
 	struct MipMapLevel mip_map_[ScaleStepCount];
 	uint64_t last_append_sample_;
 
-	friend struct LogicSnapshotTest::Pow2;
-	friend struct LogicSnapshotTest::Basic;
-	friend struct LogicSnapshotTest::LargeData;
-	friend struct LogicSnapshotTest::Pulses;
-	friend struct LogicSnapshotTest::LongPulses;
+	friend struct LogicSegmentTest::Pow2;
+	friend struct LogicSegmentTest::Basic;
+	friend struct LogicSegmentTest::LargeData;
+	friend struct LogicSegmentTest::Pulses;
+	friend struct LogicSegmentTest::LongPulses;
 };
 
 } // namespace data

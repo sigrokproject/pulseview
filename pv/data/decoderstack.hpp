@@ -58,7 +58,7 @@ class LogicSignal;
 
 namespace data {
 
-class LogicSnapshot;
+class LogicSegment;
 
 namespace decode {
 class Annotation;
@@ -148,7 +148,7 @@ private:
 
 	std::list< std::shared_ptr<decode::Decoder> > stack_;
 
-	std::shared_ptr<pv::data::LogicSnapshot> snapshot_;
+	std::shared_ptr<pv::data::LogicSegment> segment_;
 
 	mutable std::mutex input_mutex_;
 	mutable std::condition_variable input_cond_;

@@ -21,19 +21,19 @@
 #ifndef PULSEVIEW_PV_DATA_ANALOGSNAPSHOT_H
 #define PULSEVIEW_PV_DATA_ANALOGSNAPSHOT_H
 
-#include "snapshot.hpp"
+#include "segment.hpp"
 
 #include <utility>
 #include <vector>
 
-namespace AnalogSnapshotTest {
+namespace AnalogSegmentTest {
 struct Basic;
 }
 
 namespace pv {
 namespace data {
 
-class AnalogSnapshot : public Snapshot
+class AnalogSegment : public Segment
 {
 public:
 	struct EnvelopeSample
@@ -66,9 +66,9 @@ private:
 	static const uint64_t EnvelopeDataUnit;
 
 public:
-	AnalogSnapshot(uint64_t samplerate, uint64_t expected_num_samples = 0);
+	AnalogSegment(uint64_t samplerate, uint64_t expected_num_samples = 0);
 
-	virtual ~AnalogSnapshot();
+	virtual ~AnalogSegment();
 
 	void append_interleaved_samples(const float *data,
 		size_t sample_count, size_t stride);
@@ -87,7 +87,7 @@ private:
 private:
 	struct Envelope envelope_levels_[ScaleStepCount];
 
-	friend struct AnalogSnapshotTest::Basic;
+	friend struct AnalogSegmentTest::Basic;
 };
 
 } // namespace data

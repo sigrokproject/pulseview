@@ -25,7 +25,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "logicsnapshot.hpp"
+#include "logicsegment.hpp"
 
 #include <libsigrok/libsigrok.hpp>
 
@@ -41,14 +41,14 @@ using sigrok::Logic;
 namespace pv {
 namespace data {
 
-const int LogicSnapshot::MipMapScalePower = 4;
-const int LogicSnapshot::MipMapScaleFactor = 1 << MipMapScalePower;
-const float LogicSnapshot::LogMipMapScaleFactor = logf(MipMapScaleFactor);
-const uint64_t LogicSnapshot::MipMapDataUnit = 64*1024;	// bytes
+const int LogicSegment::MipMapScalePower = 4;
+const int LogicSegment::MipMapScaleFactor = 1 << MipMapScalePower;
+const float LogicSegment::LogMipMapScaleFactor = logf(MipMapScaleFactor);
+const uint64_t LogicSegment::MipMapDataUnit = 64*1024;	// bytes
 
-LogicSnapshot::LogicSnapshot(shared_ptr<Logic> logic, uint64_t samplerate,
+LogicSegment::LogicSegment(shared_ptr<Logic> logic, uint64_t samplerate,
                              const uint64_t expected_num_samples) :
-	Snapshot(samplerate, logic->unit_size()),
+	Segment(samplerate, logic->unit_size()),
 	last_append_sample_(0)
 {
 	set_capacity(expected_num_samples);
@@ -58,14 +58,14 @@ LogicSnapshot::LogicSnapshot(shared_ptr<Logic> logic, uint64_t samplerate,
 	append_payload(logic);
 }
 
-LogicSnapshot::~LogicSnapshot()
+LogicSegment::~LogicSegment()
 {
 	lock_guard<recursive_mutex> lock(mutex_);
 	for (MipMapLevel &l : mip_map_)
 		free(l.data);
 }
 
-uint64_t LogicSnapshot::unpack_sample(const uint8_t *ptr) const
+uint64_t LogicSegment::unpack_sample(const uint8_t *ptr) const
 {
 #ifdef HAVE_UNALIGNED_LITTLE_ENDIAN_ACCESS
 	return *(uint64_t*)ptr;
@@ -103,7 +103,7 @@ uint64_t LogicSnapshot::unpack_sample(const uint8_t *ptr) const
 #endif
 }
 
-void LogicSnapshot::pack_sample(uint8_t *ptr, uint64_t value)
+void LogicSegment::pack_sample(uint8_t *ptr, uint64_t value)
 {
 #ifdef HAVE_UNALIGNED_LITTLE_ENDIAN_ACCESS
 	*(uint64_t*)ptr = value;
@@ -139,7 +139,7 @@ void LogicSnapshot::pack_sample(uint8_t *ptr, uint64_t value)
 #endif
 }
 
-void LogicSnapshot::append_payload(shared_ptr<Logic> logic)
+void LogicSegment::append_payload(shared_ptr<Logic> logic)
 {
 	assert(unit_size_ == logic->unit_size());
 	assert((logic->data_length() % unit_size_) == 0);
@@ -153,7 +153,7 @@ void LogicSnapshot::append_payload(shared_ptr<Logic> logic)
 	append_payload_to_mipmap();
 }
 
-void LogicSnapshot::get_samples(uint8_t *const data,
+void LogicSegment::get_samples(uint8_t *const data,
 	int64_t start_sample, int64_t end_sample) const
 {
 	assert(data);
@@ -169,7 +169,7 @@ void LogicSnapshot::get_samples(uint8_t *const data,
 	memcpy(data, (const uint8_t*)data_.data() + start_sample * unit_size_, size);
 }
 
-void LogicSnapshot::reallocate_mipmap_level(MipMapLevel &m)
+void LogicSegment::reallocate_mipmap_level(MipMapLevel &m)
 {
 	const uint64_t new_data_length = ((m.length + MipMapDataUnit - 1) /
 		MipMapDataUnit) * MipMapDataUnit;
@@ -183,7 +183,7 @@ void LogicSnapshot::reallocate_mipmap_level(MipMapLevel &m)
 	}
 }
 
-void LogicSnapshot::append_payload_to_mipmap()
+void LogicSegment::append_payload_to_mipmap()
 {
 	MipMapLevel &m0 = mip_map_[0];
 	uint64_t prev_length;
@@ -265,14 +265,14 @@ void LogicSnapshot::append_payload_to_mipmap()
 	}
 }
 
-uint64_t LogicSnapshot::get_sample(uint64_t index) const
+uint64_t LogicSegment::get_sample(uint64_t index) const
 {
 	assert(index < sample_count_);
 
 	return unpack_sample((uint8_t*)data_.data() + index * unit_size_);
 }
 
-void LogicSnapshot::get_subsampled_edges(
+void LogicSegment::get_subsampled_edges(
 	std::vector<EdgePair> &edges,
 	uint64_t start, uint64_t end,
 	float min_length, int sig_index)
@@ -451,7 +451,7 @@ void LogicSnapshot::get_subsampled_edges(
 	edges.push_back(pair<int64_t, bool>(end + 1, end_sample));
 }
 
-uint64_t LogicSnapshot::get_subsample(int level, uint64_t offset) const
+uint64_t LogicSegment::get_subsample(int level, uint64_t offset) const
 {
 	assert(level >= 0);
 	assert(mip_map_[level].data);
@@ -459,7 +459,7 @@ uint64_t LogicSnapshot::get_subsample(int level, uint64_t offset) const
 		unit_size_ * offset);
 }
 
-uint64_t LogicSnapshot::pow2_ceil(uint64_t x, unsigned int power)
+uint64_t LogicSegment::pow2_ceil(uint64_t x, unsigned int power)
 {
 	const uint64_t p = 1 << power;
 	return (x + p - 1) / p * p;

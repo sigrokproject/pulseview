@@ -24,14 +24,14 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <pv/data/analogsnapshot.hpp>
+#include <pv/data/analogsegment.hpp>
 
-using pv::data::AnalogSnapshot;
+using pv::data::AnalogSegment;
 
 #if 0
-BOOST_AUTO_TEST_SUITE(AnalogSnapshotTest)
+BOOST_AUTO_TEST_SUITE(AnalogSegmentTest)
 
-void push_analog(AnalogSnapshot &s, unsigned int num_samples,
+void push_analog(AnalogSegment &s, unsigned int num_samples,
 	float value)
 {
 	float *const data = new float[num_samples];
@@ -44,15 +44,15 @@ void push_analog(AnalogSnapshot &s, unsigned int num_samples,
 
 BOOST_AUTO_TEST_CASE(Basic)
 {
-	// Create an empty AnalogSnapshot object
-	AnalogSnapshot s;
+	// Create an empty AnalogSegment object
+	AnalogSegment s;
 
-	//----- Test AnalogSnapshot::push_analog -----//
+	//----- Test AnalogSegment::push_analog -----//
 
 	BOOST_CHECK(s.get_sample_count() == 0);
-	for (unsigned int i = 0; i < AnalogSnapshot::ScaleStepCount; i++)
+	for (unsigned int i = 0; i < AnalogSegment::ScaleStepCount; i++)
 	{
-		const AnalogSnapshot::Envelope &m = s.envelope_levels_[i];
+		const AnalogSegment::Envelope &m = s.envelope_levels_[i];
 		BOOST_CHECK_EQUAL(m.length, 0);
 		BOOST_CHECK_EQUAL(m.data_length, 0);
 		BOOST_CHECK(m.samples == NULL);
@@ -64,9 +64,9 @@ BOOST_AUTO_TEST_CASE(Basic)
 	BOOST_CHECK(s.get_sample_count() == 8);
 
 	// There should not be enough samples to have a single mip map sample
-	for (unsigned int i = 0; i < AnalogSnapshot::ScaleStepCount; i++)
+	for (unsigned int i = 0; i < AnalogSegment::ScaleStepCount; i++)
 	{
-		const AnalogSnapshot::Envelope &m = s.envelope_levels_[i];
+		const AnalogSegment::Envelope &m = s.envelope_levels_[i];
 		BOOST_CHECK_EQUAL(m.length, 0);
 		BOOST_CHECK_EQUAL(m.data_length, 0);
 		BOOST_CHECK(m.samples == NULL);
@@ -77,17 +77,17 @@ BOOST_AUTO_TEST_CASE(Basic)
 
 	// There should now be enough data for exactly one sample
 	// in mip map level 0, and that sample should be 0
-	const AnalogSnapshot::Envelope &e0 = s.envelope_levels_[0];
+	const AnalogSegment::Envelope &e0 = s.envelope_levels_[0];
 	BOOST_CHECK_EQUAL(e0.length, 1);
-	BOOST_CHECK_EQUAL(e0.data_length, AnalogSnapshot::EnvelopeDataUnit);
+	BOOST_CHECK_EQUAL(e0.data_length, AnalogSegment::EnvelopeDataUnit);
 	BOOST_REQUIRE(e0.samples != NULL);
 	BOOST_CHECK_EQUAL(e0.samples[0].min, 0.0f);
 	BOOST_CHECK_EQUAL(e0.samples[0].max, 1.0f);
 
 	// The higher levels should still be empty
-	for (unsigned int i = 1; i < AnalogSnapshot::ScaleStepCount; i++)
+	for (unsigned int i = 1; i < AnalogSegment::ScaleStepCount; i++)
 	{
-		const AnalogSnapshot::Envelope &m = s.envelope_levels_[i];
+		const AnalogSegment::Envelope &m = s.envelope_levels_[i];
 		BOOST_CHECK_EQUAL(m.length, 0);
 		BOOST_CHECK_EQUAL(m.data_length, 0);
 		BOOST_CHECK(m.samples == NULL);
@@ -97,16 +97,16 @@ BOOST_AUTO_TEST_CASE(Basic)
 	push_analog(s, 240, -1.0f);
 
 	BOOST_CHECK_EQUAL(e0.length, 16);
-	BOOST_CHECK_EQUAL(e0.data_length, AnalogSnapshot::EnvelopeDataUnit);
+	BOOST_CHECK_EQUAL(e0.data_length, AnalogSegment::EnvelopeDataUnit);
 
 	for (unsigned int i = 1; i < e0.length; i++) {
 		BOOST_CHECK_EQUAL(e0.samples[i].min, -1.0f);
 		BOOST_CHECK_EQUAL(e0.samples[i].max, -1.0f);
 	}
 
-	const AnalogSnapshot::Envelope &e1 = s.envelope_levels_[1];
+	const AnalogSegment::Envelope &e1 = s.envelope_levels_[1];
 	BOOST_CHECK_EQUAL(e1.length, 1);
-	BOOST_CHECK_EQUAL(e1.data_length, AnalogSnapshot::EnvelopeDataUnit);
+	BOOST_CHECK_EQUAL(e1.data_length, AnalogSegment::EnvelopeDataUnit);
 	BOOST_REQUIRE(e1.samples != NULL);
 	BOOST_CHECK_EQUAL(e1.samples[0].min, -1.0f);
 	BOOST_CHECK_EQUAL(e1.samples[0].max, 1.0f);
