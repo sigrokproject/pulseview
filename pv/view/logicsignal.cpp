@@ -246,15 +246,15 @@ void LogicSignal::paint_fore(QPainter &p, const RowItemPaintParams &pp)
 		if (!pixmap)
 			continue;
 
-		const int pad = TriggerMarkerPadding;
+		const float pad = TriggerMarkerPadding - 0.5f;
 		const QSize size = pixmap->size();
 		const QPoint point(
 			pp.right() - size.width() - pad * 2,
 			y - (SignalHeight + size.height()) / 2);
 
-		p.setPen(QPen(Qt::NoPen));
+		p.setPen(QPen(TriggerMarkerBackgroundColour.darker()));
 		p.setBrush(TriggerMarkerBackgroundColour);
-		p.drawRoundedRect(QRect(point, size).adjusted(
+		p.drawRoundedRect(QRectF(point, size).adjusted(
 			-pad, -pad, pad, pad), pad, pad);
 		p.drawPixmap(point, *pixmap);
 

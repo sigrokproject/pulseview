@@ -31,7 +31,6 @@
 #include <QFontMetrics>
 #include <QPainter>
 
-#include <pv/util.hpp>
 #include <pv/widgets/popup.hpp>
 
 using std::max;
@@ -93,8 +92,7 @@ QRectF TimeMarker::get_label_rect(const QRect &rect) const
 	const float x = (time_ - view_.offset()) / view_.scale();
 
 	QFontMetrics m(QApplication::font());
-	QSize text_size = m.boundingRect(
-		pv::util::format_time(time_, view_.tick_prefix(), 2)).size();
+	QSize text_size = m.boundingRect(get_text()).size();
 
 	const QSizeF label_size(
 		text_size.width() + View::LabelPadding.width() * 2,
@@ -152,8 +150,7 @@ void TimeMarker::paint_label(QPainter &p, const QRect &rect)
 	p.drawPolygon(points, countof(points));
 
 	p.setPen(select_text_colour(colour_));
-	p.drawText(r, Qt::AlignCenter | Qt::AlignVCenter,
-		pv::util::format_time(time_, view_.tick_prefix(), 2));
+	p.drawText(r, Qt::AlignCenter | Qt::AlignVCenter, get_text());
 }
 
 pv::widgets::Popup* TimeMarker::create_popup(QWidget *parent)

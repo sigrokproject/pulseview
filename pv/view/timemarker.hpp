@@ -80,6 +80,11 @@ public:
 	virtual void paint(QPainter &p, const QRect &rect);
 
 	/**
+	 * Gets the text to show in the marker.
+	 */
+	virtual QString get_text() const = 0;
+
+	/**
 	 * Gets the marker label rectangle.
 	 * @param rect The rectangle of the ruler client area.
 	 * @return Returns the label rectangle.

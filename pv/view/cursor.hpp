@@ -49,6 +49,11 @@ public:
 
 public:
 	/**
+	 * Gets the text to show in the marker.
+	 */
+	QString get_text() const;
+
+	/**
 	 * Gets the marker label rectangle.
 	 * @param rect The rectangle of the ruler client area.
 	 * @return Returns the label rectangle.

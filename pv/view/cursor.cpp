@@ -45,6 +45,11 @@ Cursor::Cursor(View &view, double time) :
 {
 }
 
+QString Cursor::get_text() const
+{
+	return pv::util::format_time(time_, view_.tick_prefix(), 2);
+}
+
 QRectF Cursor::get_label_rect(const QRect &rect) const
 {
 	const shared_ptr<Cursor> other(get_other_cursor());
@@ -53,8 +58,7 @@ QRectF Cursor::get_label_rect(const QRect &rect) const
 	const float x = (time_ - view_.offset()) / view_.scale();
 
 	QFontMetrics m(QApplication::font());
-	QSize text_size = m.boundingRect(
-		pv::util::format_time(time_, view_.tick_prefix(), 2)).size();
+	QSize text_size = m.boundingRect(get_text()).size();
 
 	const QSizeF label_size(
 		text_size.width() + View::LabelPadding.width() * 2,
