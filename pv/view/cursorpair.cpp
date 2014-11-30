@@ -74,11 +74,12 @@ QRectF CursorPair::get_label_rect(const QRect &rect) const
 		right - left, height);
 }
 
-void CursorPair::draw_markers(QPainter &p,
-	const QRect &rect, unsigned int prefix)
+void CursorPair::draw_markers(QPainter &p, const QRect &rect)
 {
 	assert(first_);
 	assert(second_);
+
+	const unsigned int prefix = view_.tick_prefix();
 
 	compute_text_size(p, prefix);
 	QRectF delta_rect(get_label_rect(rect));
@@ -104,8 +105,8 @@ void CursorPair::draw_markers(QPainter &p,
 	}
 
 	// Paint the cursor markers
-	first_->paint_label(p, rect, prefix);
-	second_->paint_label(p, rect, prefix);
+	first_->paint_label(p, rect);
+	second_->paint_label(p, rect);
 }
 
 void CursorPair::draw_viewport_background(QPainter &p,

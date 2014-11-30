@@ -63,6 +63,8 @@ private:
 
 	static const int MaxScrollValue;
 
+	static const int ScaleUnits[3];
+
 public:
 	static const QColor CursorAreaColour;
 
@@ -99,6 +101,16 @@ public:
 	 */
 	double offset() const;
 	int owner_visual_v_offset() const;
+
+	/**
+	 * Returns the SI prefix to apply to the graticule time markings.
+	 */
+	unsigned int tick_prefix() const;
+
+	/**
+	 * Returns period of the graticule time markings.
+	 */
+	double tick_period() const;
 
 	/**
 	 * Returns the number of nested parents that this row item owner has.
@@ -174,6 +186,12 @@ private:
 	 * @param offset The offset of the left edge of the view in seconds.
 	 */
 	void set_zoom(double scale, int offset);
+
+	/**
+	 * Find a tick spacing and number formatting that does not cause
+	 * the values to collide.
+	 */
+	void calculate_tick_spacing();
 
 	void update_scroll();
 
@@ -251,6 +269,9 @@ private:
 
 	int v_offset_;
 	bool updating_scroll_;
+
+	double tick_period_;
+	unsigned int tick_prefix_;
 
 	bool show_cursors_;
 	CursorPair cursors_;

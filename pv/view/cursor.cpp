@@ -74,11 +74,12 @@ QRectF Cursor::get_label_rect(const QRect &rect) const
 			label_size.width(), height);
 }
 
-void Cursor::paint_label(QPainter &p, const QRect &rect,
-	unsigned int prefix)
+void Cursor::paint_label(QPainter &p, const QRect &rect)
 {
 	const shared_ptr<Cursor> other(get_other_cursor());
 	assert(other);
+
+	const unsigned int prefix = view_.tick_prefix();
 
 	compute_text_size(p, prefix);
 	const QRectF r(get_label_rect(rect));

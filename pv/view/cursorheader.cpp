@@ -70,16 +70,13 @@ void CursorHeader::paintEvent(QPaintEvent*)
 	QPainter p(this);
 	p.setRenderHint(QPainter::Antialiasing);
 
-	unsigned int prefix = pv::view::Ruler::calculate_tick_spacing(
-		p, view_.scale(), view_.offset()).second;
-
 	// Draw the cursors
 	if (view_.cursors_shown()) {
 		// The cursor labels are not drawn with the arrows exactly on the
 		// bottom line of the widget, because then the selection shadow
 		// would be clipped away.
 		const QRect r = rect().adjusted(0, 0, 0, -BaselineOffset);
-		view_.cursors().draw_markers(p, r, prefix);
+		view_.cursors().draw_markers(p, r);
 	}
 }
 

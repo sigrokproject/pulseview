@@ -22,13 +22,17 @@
 #include <libsigrokdecode/libsigrokdecode.h>
 #endif
 
+#include <extdef.h>
+
 #include <cassert>
 #include <climits>
 #include <cmath>
 #include <mutex>
 #include <unordered_set>
 
+#include <QApplication>
 #include <QEvent>
+#include <QFontMetrics>
 #include <QMouseEvent>
 #include <QScrollBar>
 
@@ -47,10 +51,14 @@
 #include "pv/session.hpp"
 #include "pv/data/logic.hpp"
 #include "pv/data/logicsnapshot.hpp"
+#include "pv/util.hpp"
 
 using boost::shared_lock;
 using boost::shared_mutex;
+
 using pv::data::SignalData;
+using pv::util::format_time;
+
 using std::back_inserter;
 using std::deque;
 using std::dynamic_pointer_cast;
@@ -75,6 +83,8 @@ const double View::MinScale = 1e-15;
 
 const int View::MaxScrollValue = INT_MAX / 2;
 
+const int View::ScaleUnits[3] = {1, 2, 5};
+
 const QColor View::CursorAreaColour(220, 231, 243);
 
 const QSizeF View::LabelPadding(4, 0);
@@ -90,6 +100,8 @@ View::View(Session &session, QWidget *parent) :
 	offset_(0),
 	v_offset_(0),
 	updating_scroll_(false),
+	tick_period_(0.0),
+	tick_prefix_(0),
 	show_cursors_(false),
 	cursors_(*this),
 	hover_point_(-1, -1)
@@ -147,6 +159,9 @@ View::View(Session &session, QWidget *parent) :
 	// make sure the transparent widgets are on the top
 	cursorheader_->raise();
 	header_->raise();
+
+	// Update the zoom state
+	calculate_tick_spacing();
 }
 
 Session& View::session()
@@ -197,6 +212,16 @@ int View::owner_visual_v_offset() const
 unsigned int View::depth() const
 {
 	return 0;
+}
+
+unsigned int View::tick_prefix() const
+{
+	return tick_prefix_;
+}
+
+double View::tick_period() const
+{
+	return tick_period_;
 }
 
 void View::zoom(double steps)
@@ -255,6 +280,8 @@ void View::set_scale_offset(double scale, double offset)
 {
 	scale_ = scale;
 	offset_ = offset;
+
+	calculate_tick_spacing();
 
 	update_scroll();
 	ruler_->update();
@@ -377,6 +404,40 @@ void View::set_zoom(double scale, int offset)
 	const double new_scale = max(min(scale, MaxScale), MinScale);
 	const double new_offset = cursor_offset - new_scale * offset;
 	set_scale_offset(new_scale, new_offset);
+}
+
+void View::calculate_tick_spacing()
+{
+	const double SpacingIncrement = 32.0f;
+	const double MinValueSpacing = 32.0f;
+
+	double min_width = SpacingIncrement, typical_width;
+
+	QFontMetrics m(QApplication::font());
+
+	do {
+		const double min_period = scale_ * min_width;
+
+		const int order = (int)floorf(log10f(min_period));
+		const double order_decimal = pow(10.0, order);
+
+		unsigned int unit = 0;
+
+		do {
+			tick_period_ = order_decimal * ScaleUnits[unit++];
+		} while (tick_period_ < min_period &&
+			unit < countof(ScaleUnits));
+
+		tick_prefix_ = (order - pv::util::FirstSIPrefixPower) / 3;
+
+		typical_width = m.boundingRect(0, 0, INT_MAX, INT_MAX,
+			Qt::AlignLeft | Qt::AlignTop,
+			format_time(offset_, tick_prefix_)).width() +
+				MinValueSpacing;
+
+		min_width += SpacingIncrement;
+
+	} while(typical_width > tick_period_ / scale_);
 }
 
 void View::update_scroll()

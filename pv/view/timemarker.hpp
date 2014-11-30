@@ -86,10 +86,8 @@ public:
 	 * Paints the marker's label to the ruler.
 	 * @param p The painter to draw with.
 	 * @param rect The rectangle of the ruler client area.
-	 * @param prefix The SI prefix to paint time value with.
 	 */
-	virtual void paint_label(QPainter &p, const QRect &rect,
-		unsigned int prefix) = 0;
+	virtual void paint_label(QPainter &p, const QRect &rect) = 0;
 
 	pv::widgets::Popup* create_popup(QWidget *parent);
 

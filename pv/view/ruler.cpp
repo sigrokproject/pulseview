@@ -32,7 +32,6 @@ namespace view {
 
 const int Ruler::RulerHeight = 30;
 const int Ruler::MinorTickSubdivision = 4;
-const int Ruler::ScaleUnits[3] = {1, 2, 5};
 
 const int Ruler::HoverArrowSize = 5;
 
@@ -57,11 +56,8 @@ void Ruler::paintEvent(QPaintEvent*)
 	QPainter p(this);
 	p.setRenderHint(QPainter::Antialiasing);
 
-	std::pair<double, unsigned int> spacing =
-		calculate_tick_spacing(p, view_.scale(), view_.offset());
-
-	double tick_period = spacing.first;
-	unsigned int prefix = spacing.second;
+	const double tick_period = view_.tick_period();
+	const unsigned int prefix = view_.tick_prefix();
 
 	const int text_height = p.boundingRect(0, 0, INT_MAX, INT_MAX,
 		AlignLeft | AlignTop, "8").height();
@@ -135,42 +131,6 @@ void Ruler::draw_hover_mark(QPainter &p)
 void Ruler::hover_point_changed()
 {
 	update();
-}
-
-std::pair<double, unsigned int> Ruler::calculate_tick_spacing(
-	QPainter& p, double scale, double offset)
-{
-	const double SpacingIncrement = 32.0f;
-	const double MinValueSpacing = 32.0f;
-
-	double min_width = SpacingIncrement, typical_width;
-
-	double tick_period;
-	unsigned int prefix;
-
-	do {
-		const double min_period = scale * min_width;
-
-		const int order = (int)floorf(log10f(min_period));
-		const double order_decimal = pow(10.0, order);
-
-		unsigned int unit = 0;
-
-		do {
-			tick_period = order_decimal * ScaleUnits[unit++];
-		} while (tick_period < min_period && unit < countof(ScaleUnits));
-
-		prefix = (order - pv::util::FirstSIPrefixPower) / 3;
-
-		typical_width = p.boundingRect(0, 0, INT_MAX, INT_MAX,
-			AlignLeft | AlignTop, pv::util::format_time(offset,
-			prefix)).width() + MinValueSpacing;
-
-		min_width += SpacingIncrement;
-
-	} while(typical_width > tick_period / scale);
-
-	return std::make_pair(tick_period, prefix);
 }
 
 } // namespace view
