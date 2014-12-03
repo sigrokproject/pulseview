@@ -29,6 +29,14 @@
 using pv::data::LogicSnapshot;
 using std::vector;
 
+// Dummy, remove again when unit tests are fixed.
+BOOST_AUTO_TEST_SUITE(DummyTestSuite)
+BOOST_AUTO_TEST_CASE(DummyTestCase)
+{
+	BOOST_CHECK_EQUAL(1, 1);
+}
+BOOST_AUTO_TEST_SUITE_END()
+
 #if 0
 BOOST_AUTO_TEST_SUITE(LogicSnapshotTest)
 
