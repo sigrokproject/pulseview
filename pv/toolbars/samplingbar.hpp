@@ -31,7 +31,7 @@
 #include <QToolBar>
 #include <QToolButton>
 
-#include <pv/sigsession.hpp>
+#include <pv/session.hpp>
 #include <pv/widgets/popuptoolbutton.hpp>
 #include <pv/widgets/sweeptimingwidget.hpp>
 

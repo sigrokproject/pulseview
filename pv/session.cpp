@@ -22,7 +22,7 @@
 #include <libsigrokdecode/libsigrokdecode.h>
 #endif
 
-#include "sigsession.hpp"
+#include "session.hpp"
 
 #include "devicemanager.hpp"
 

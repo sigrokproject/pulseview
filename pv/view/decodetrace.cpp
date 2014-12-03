@@ -41,7 +41,7 @@ extern "C" {
 
 #include "decodetrace.hpp"
 
-#include <pv/sigsession.hpp>
+#include <pv/session.hpp>
 #include <pv/data/decoderstack.hpp>
 #include <pv/data/decode/decoder.hpp>
 #include <pv/data/logic.hpp>

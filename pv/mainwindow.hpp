@@ -26,7 +26,7 @@
 
 #include <QMainWindow>
 
-#include "sigsession.hpp"
+#include "session.hpp"
 
 struct srd_decoder;
 

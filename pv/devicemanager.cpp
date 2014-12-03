@@ -19,7 +19,7 @@
  */
 
 #include "devicemanager.hpp"
-#include "sigsession.hpp"
+#include "session.hpp"
 
 #include <cassert>
 #include <stdexcept>

@@ -30,7 +30,7 @@
 #include <pv/data/logicsnapshot.hpp>
 #include <pv/data/decode/decoder.hpp>
 #include <pv/data/decode/annotation.hpp>
-#include <pv/sigsession.hpp>
+#include <pv/session.hpp>
 #include <pv/view/logicsignal.hpp>
 
 using std::lock_guard;

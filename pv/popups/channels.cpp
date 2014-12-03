@@ -28,7 +28,7 @@
 #include "channels.hpp"
 
 #include <pv/prop/binding/deviceoptions.hpp>
-#include <pv/sigsession.hpp>
+#include <pv/session.hpp>
 #include <pv/view/signal.hpp>
 
 #include <libsigrok/libsigrok.hpp>

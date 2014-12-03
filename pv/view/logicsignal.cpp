@@ -31,7 +31,7 @@
 #include "logicsignal.hpp"
 #include "view.hpp"
 
-#include <pv/sigsession.hpp>
+#include <pv/session.hpp>
 #include <pv/devicemanager.hpp>
 #include <pv/data/logic.hpp>
 #include <pv/data/logicsnapshot.hpp>

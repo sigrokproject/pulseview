@@ -31,7 +31,7 @@
 
 #include <boost/thread.hpp>
 
-#include <pv/sigsession.hpp>
+#include <pv/session.hpp>
 
 namespace pv {
 namespace view {

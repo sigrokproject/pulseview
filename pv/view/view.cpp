@@ -44,7 +44,7 @@
 #include "view.hpp"
 #include "viewport.hpp"
 
-#include "pv/sigsession.hpp"
+#include "pv/session.hpp"
 #include "pv/data/logic.hpp"
 #include "pv/data/logicsnapshot.hpp"
 

@@ -25,7 +25,7 @@
 
 #include "../../pv/data/decoderstack.hpp"
 #include "../../pv/devicemanager.hpp"
-#include "../../pv/sigsession.hpp"
+#include "../../pv/session.hpp"
 #include "../../pv/view/decodetrace.hpp"
 
 using pv::data::DecoderStack;

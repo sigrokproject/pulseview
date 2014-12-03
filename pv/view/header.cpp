@@ -35,7 +35,7 @@
 #include <QPainter>
 #include <QRect>
 
-#include <pv/sigsession.hpp>
+#include <pv/session.hpp>
 #include <pv/widgets/popup.hpp>
 
 using boost::make_filter_iterator;
