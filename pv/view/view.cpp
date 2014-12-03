@@ -451,7 +451,10 @@ void View::update_scroll()
 	get_scroll_layout(length, offset);
 	length = max(length - areaSize.width(), 0.0);
 
+	int major_tick_distance = tick_period_ / scale_;
+
 	horizontalScrollBar()->setPageStep(areaSize.width() / 2);
+	horizontalScrollBar()->setSingleStep(major_tick_distance);
 
 	updating_scroll_ = true;
 
