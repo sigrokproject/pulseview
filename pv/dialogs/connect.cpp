@@ -104,7 +104,9 @@ void Connect::populate_drivers()
 		 * and sensors.
 		 */
 		bool supported_device = driver->config_check(
-			ConfigKey::SAMPLERATE, ConfigKey::DEVICE_OPTIONS);
+			ConfigKey::LOGIC_ANALYZER, ConfigKey::DEVICE_OPTIONS) |
+		                        driver->config_check(
+			ConfigKey::OSCILLOSCOPE, ConfigKey::DEVICE_OPTIONS);
 
 		if (supported_device)
 			drivers_.addItem(QString("%1 (%2)").arg(
