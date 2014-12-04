@@ -47,6 +47,10 @@ if(WIN32)
 	set(Boost_USE_STATIC_LIBS ON)
 	add_definitions(-DBOOST_THREAD_USE_LIB)
 
+	# On Windows/MinGW we need to use 'thread_win32' instead of 'thread'.
+	# The library is named libboost_thread_win32* (not libboost_thread*).
+	set(Boost_THREADAPI win32)
+
 	# Windows does not support UNIX signals.
 	set(ENABLE_SIGNALS FALSE)
 endif()
@@ -94,20 +98,10 @@ else()
 	find_package(Qt4 REQUIRED QtCore QtGui QtSvg)
 endif()
 
-if(WIN32)
-if(ENABLE_TESTS)
-	# On Windows/MinGW we need to use 'thread_win32' instead of 'thread'.
-	# The library is named libboost_thread_win32* (not libboost_thread*).
-	find_package(Boost 1.42 COMPONENTS filesystem system thread_win32 unit_test_framework REQUIRED)
-else()
-	find_package(Boost 1.42 COMPONENTS filesystem system thread_win32 REQUIRED)
-endif()
-else()
 if(ENABLE_TESTS)
 	find_package(Boost 1.42 COMPONENTS filesystem system thread unit_test_framework REQUIRED)
 else()
 	find_package(Boost 1.42 COMPONENTS filesystem system thread REQUIRED)
-endif()
 endif()
 
 # Find the platform's thread library (needed for C++11 threads).
