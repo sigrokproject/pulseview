@@ -91,6 +91,11 @@ public:
 	const Viewport* viewport() const;
 
 	/**
+	 * Gets a list of time markers.
+	 */
+	std::vector< std::shared_ptr<TimeItem> > time_items() const;
+
+	/**
 	 * Returns the view time scale in seconds per pixel.
 	 */
 	double scale() const;

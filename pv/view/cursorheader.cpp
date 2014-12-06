@@ -30,6 +30,7 @@
 #include <pv/widgets/popup.hpp>
 
 using std::shared_ptr;
+using std::vector;
 
 namespace pv {
 namespace view {
@@ -59,9 +60,9 @@ QSize CursorHeader::sizeHint() const
 
 void CursorHeader::clear_selection()
 {
-	CursorPair &cursors = view_.cursors();
-	cursors.first()->select(false);
-	cursors.second()->select(false);
+	const vector< shared_ptr<TimeItem> > items(view_.time_items());
+	for (auto &i : items)
+		i->select(false);
 	update();
 }
 
