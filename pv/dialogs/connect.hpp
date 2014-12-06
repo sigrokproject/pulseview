@@ -58,9 +58,11 @@ public:
 private:
 	void populate_drivers();
 
+	void populate_serials(std::shared_ptr<sigrok::Driver> driver);
+
 	void unset_connection();
 
-	void set_serial_connection();
+	void set_serial_connection(std::shared_ptr<sigrok::Driver> driver);
 
 private Q_SLOTS:
 	void device_selected(int index);
@@ -77,7 +79,7 @@ private:
 
 	QComboBox drivers_;
 
-	QLineEdit serial_device_;
+	QComboBox serial_devices_;
 
 	QPushButton scan_button_;
 	QListWidget device_list_;
