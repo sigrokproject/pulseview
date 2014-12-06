@@ -45,6 +45,11 @@ Cursor::Cursor(View &view, double time) :
 {
 }
 
+bool Cursor::enabled() const
+{
+	return view_.cursors_shown();
+}
+
 QString Cursor::get_text() const
 {
 	return pv::util::format_time(time_, view_.tick_prefix(), 2);

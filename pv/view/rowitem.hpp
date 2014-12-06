@@ -48,11 +48,6 @@ public:
 	RowItem();
 
 	/**
-	 * Returns true if the item is visible and enabled.
-	 */
-	virtual bool enabled() const = 0;
-
-	/**
 	 * Gets the vertical layout offset of this signal.
 	 */
 	int layout_v_offset() const;

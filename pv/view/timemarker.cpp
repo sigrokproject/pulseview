@@ -107,6 +107,9 @@ QRectF TimeMarker::get_label_rect(const QRect &rect) const
 
 void TimeMarker::paint_label(QPainter &p, const QRect &rect)
 {
+	if (!enabled())
+		return;
+
 	const qreal x = (time_ - view_.offset()) / view_.scale();
 	const QRectF r(get_label_rect(rect));
 

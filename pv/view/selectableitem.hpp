@@ -49,6 +49,11 @@ public:
 
 public:
 	/**
+	 * Returns true if the item is visible and enabled.
+	 */
+	virtual bool enabled() const = 0;
+
+	/**
 	 * Returns true if the item has been selected by the user.
 	 */
 	bool selected() const;

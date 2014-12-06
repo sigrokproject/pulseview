@@ -49,6 +49,11 @@ public:
 
 public:
 	/**
+	 * Returns true if the item is visible and enabled.
+	 */
+	bool enabled() const;
+
+	/**
 	 * Gets the text to show in the marker.
 	 */
 	QString get_text() const;
