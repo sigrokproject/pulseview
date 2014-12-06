@@ -179,6 +179,7 @@ set(pulseview_SOURCES
 	pv/view/ruler.cpp
 	pv/view/selectableitem.cpp
 	pv/view/signal.cpp
+	pv/view/timeitem.cpp
 	pv/view/timemarker.cpp
 	pv/view/trace.cpp
 	pv/view/tracegroup.cpp
@@ -220,6 +221,7 @@ set(pulseview_HEADERS
 	pv/view/ruler.hpp
 	pv/view/selectableitem.hpp
 	pv/view/signal.hpp
+	pv/view/timeitem.hpp
 	pv/view/timemarker.hpp
 	pv/view/trace.hpp
 	pv/view/tracegroup.hpp

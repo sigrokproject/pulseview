@@ -27,7 +27,7 @@
 #include <QRectF>
 #include <QWidgetAction>
 
-#include "selectableitem.hpp"
+#include "timeitem.hpp"
 
 class QPainter;
 class QRect;
@@ -37,7 +37,7 @@ namespace view {
 
 class View;
 
-class TimeMarker : public SelectableItem
+class TimeMarker : public TimeItem
 {
 	Q_OBJECT
 
@@ -107,7 +107,6 @@ Q_SIGNALS:
 	void time_changed();
 
 protected:
-	View &view_;
 	const QColor &colour_;
 
 	double time_;

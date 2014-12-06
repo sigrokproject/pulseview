@@ -43,7 +43,7 @@ const int TimeMarker::ArrowSize = 4;
 const int TimeMarker::Offset = 1;
 
 TimeMarker::TimeMarker(View &view, const QColor &colour, double time) :
-	view_(view),
+	TimeItem(view),
 	colour_(colour),
 	time_(time),
 	value_action_(NULL),
