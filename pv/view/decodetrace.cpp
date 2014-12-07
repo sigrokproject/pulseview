@@ -587,11 +587,6 @@ const QString DecodeTrace::get_annotation_at_point(const QPoint &point)
 		QString() : annotations[0].annotations().front();
 }
 
-void DecodeTrace::hide_hover_annotation()
-{
-	QToolTip::hideText();
-}
-
 void DecodeTrace::hover_point_changed()
 {
 	assert(owner_);
@@ -605,7 +600,7 @@ void DecodeTrace::hover_point_changed()
 	assert(view);
 
 	if (!row_height_ || ann.isEmpty()) {
-		hide_hover_annotation();
+		QToolTip::hideText();
 		return;
 	}
 

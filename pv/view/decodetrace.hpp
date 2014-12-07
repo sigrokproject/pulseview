@@ -156,8 +156,6 @@ private:
 
 	const QString get_annotation_at_point(const QPoint &point);
 
-	void hide_hover_annotation();
-
 	void create_decoder_form(int index,
 		std::shared_ptr<pv::data::decode::Decoder> &dec,
 		QWidget *parent, QFormLayout *form);
