@@ -505,16 +505,16 @@ void View::update_layout()
 	update_scroll();
 }
 
-void View::paint_label(QPainter &p, int right, bool hover)
+void View::paint_label(QPainter &p, const QRect &rect, bool hover)
 {
 	(void)p;
-	(void)right;
+	(void)rect;
 	(void)hover;
 }
 
-QRectF View::label_rect(int right)
+QRectF View::label_rect(const QRectF &rect)
 {
-	(void)right;
+	(void)rect;
 	return QRectF();
 }
 

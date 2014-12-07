@@ -75,15 +75,15 @@ QSize Header::sizeHint() const
 	QRectF max_rect(-Padding, 0, Padding, 0);
 	for (auto &i : view_)
 		if (i->enabled())
-			max_rect = max_rect.united(i->label_rect(0));
+			max_rect = max_rect.united(i->label_rect(QRect()));
 	return QSize(max_rect.width() + Padding + BaselineOffset, 0);
 }
 
 shared_ptr<RowItem> Header::get_mouse_over_row_item(const QPoint &pt)
 {
-	const int w = width() - BaselineOffset;
+	const QRect r(BaselineOffset, 0, width() - BaselineOffset, height());
 	for (auto &i : view_)
-		if (i->enabled() && i->label_rect(w).contains(pt))
+		if (i->enabled() && i->label_rect(r).contains(pt))
 			return i;
 	return shared_ptr<RowItem>();
 }
@@ -113,7 +113,7 @@ void Header::paintEvent(QPaintEvent*)
 	// The trace labels are not drawn with the arrows exactly on the
 	// left edge of the widget, because then the selection shadow
 	// would be clipped away.
-	const int w = width() - BaselineOffset;
+	const QRect rect(BaselineOffset, 0, width() - BaselineOffset, height());
 
 	vector< shared_ptr<RowItem> > row_items(
 		view_.begin(), view_.end());
@@ -130,8 +130,8 @@ void Header::paintEvent(QPaintEvent*)
 		assert(r);
 
 		const bool highlight = !dragging_ &&
-			r->label_rect(w).contains(mouse_point_);
-		r->paint_label(painter, w, highlight);
+			r->label_rect(rect).contains(mouse_point_);
+		r->paint_label(painter, rect, highlight);
 	}
 
 	painter.end();

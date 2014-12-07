@@ -200,19 +200,17 @@ private:
 	/**
 	 * Satisifies RowItem functionality.
 	 * @param p the QPainter to paint into.
-	 * @param right the x-coordinate of the right edge of the header
-	 * 	area.
+	 * @param rect the rectangle of the header area.
 	 * @param hover true if the label is being hovered over by the mouse.
 	 */
-	void paint_label(QPainter &p, int right, bool hover);
+	void paint_label(QPainter &p, const QRect &rect, bool hover);
 
 	/**
 	 * Computes the outline rectangle of a label.
-	 * @param right the x-coordinate of the right edge of the header
-	 * 	area.
+	 * @param rect the rectangle of the header area.
 	 * @return Returns the rectangle of the signal label.
 	 */
-	QRectF label_rect(int right);
+	QRectF label_rect(const QRectF &rect);
 
 	static bool add_channels_to_owner(
 		const std::vector< std::shared_ptr<sigrok::Channel> > &channels,

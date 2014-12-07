@@ -129,19 +129,17 @@ public:
 	/**
 	 * Paints the signal label.
 	 * @param p the QPainter to paint into.
-	 * @param right the x-coordinate of the right edge of the header
-	 * 	area.
+	 * @param rect the rectangle of the header area.
 	 * @param hover true if the label is being hovered over by the mouse.
 	 */
-	virtual void paint_label(QPainter &p, int right, bool hover) = 0;
+	virtual void paint_label(QPainter &p, const QRect &rect, bool hover) = 0;
 
 	/**
 	 * Computes the outline rectangle of a label.
-	 * @param right the x-coordinate of the right edge of the header
-	 * 	area.
+	 * @param rect the rectangle of the header area.
 	 * @return Returns the rectangle of the signal label.
 	 */
-	virtual QRectF label_rect(int right) const = 0;
+	virtual QRectF label_rect(const QRectF &rect) const = 0;
 
 public:
 	virtual void hover_point_changed();

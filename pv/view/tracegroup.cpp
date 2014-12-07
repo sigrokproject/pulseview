@@ -81,9 +81,9 @@ pair<int, int> TraceGroup::v_extents() const
 	return RowItemOwner::v_extents();
 }
 
-void TraceGroup::paint_label(QPainter &p, int right, bool hover)
+void TraceGroup::paint_label(QPainter &p, const QRect &rect, bool hover)
 {
-	const QRectF r = label_rect(right).adjusted(
+	const QRectF r = label_rect(rect).adjusted(
 		LineThickness / 2, LineThickness / 2,
 		-LineThickness / 2, -LineThickness / 2);
 
@@ -112,15 +112,15 @@ void TraceGroup::paint_label(QPainter &p, int right, bool hover)
 	p.drawPolyline(points, countof(points));
 }
 
-QRectF TraceGroup::label_rect(int right) const
+QRectF TraceGroup::label_rect(const QRectF &rect) const
 {
-	QRectF rect;
+	QRectF child_rect;
 	for (const shared_ptr<RowItem> r : child_items())
 		if (r && r->enabled())
-			rect = rect.united(r->label_rect(right));
+			child_rect = child_rect.united(r->label_rect(rect));
 
-	return QRectF(rect.x() - Width - Padding, rect.y(),
-		Width, rect.height());
+	return QRectF(child_rect.x() - Width - Padding, child_rect.y(),
+		Width, child_rect.height());
 }
 
 bool TraceGroup::pt_in_label_rect(int left, int right, const QPoint &point)

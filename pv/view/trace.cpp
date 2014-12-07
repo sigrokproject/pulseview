@@ -68,7 +68,7 @@ void Trace::set_colour(QColor colour)
 	colour_ = colour;
 }
 
-void Trace::paint_label(QPainter &p, int right, bool hover)
+void Trace::paint_label(QPainter &p, const QRect &rect, bool hover)
 {
 	const int y = get_visual_y();
 
@@ -77,7 +77,7 @@ void Trace::paint_label(QPainter &p, int right, bool hover)
 	if (!enabled())
 		return;
 
-	const QRectF r = label_rect(right);
+	const QRectF r = label_rect(rect);
 
 	// Paint the label
 	const float label_arrow_length = r.height() / 2;
@@ -143,7 +143,7 @@ pv::widgets::Popup* Trace::create_popup(QWidget *parent)
 	return popup_;
 }
 
-QRectF Trace::label_rect(int right) const
+QRectF Trace::label_rect(const QRectF &rect) const
 {
 	using pv::view::View;
 
@@ -156,7 +156,7 @@ QRectF Trace::label_rect(int right) const
 		ceilf((text_size.height() + View::LabelPadding.height() * 2) / 2) * 2);
 	const float half_height = label_size.height() / 2;
 	return QRectF(
-		right - half_height - label_size.width() - 0.5,
+		rect.right() - half_height - label_size.width() - 0.5,
 		get_visual_y() + 0.5f - half_height,
 		label_size.width() + half_height,
 		label_size.height());
