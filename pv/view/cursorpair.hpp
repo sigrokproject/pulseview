@@ -32,7 +32,7 @@ class QPainter;
 namespace pv {
 namespace view {
 
-class CursorPair
+class CursorPair : public TimeItem
 {
 private:
 	static const int DeltaPadding;
@@ -44,6 +44,12 @@ public:
 	 */
 	CursorPair(View &view);
 
+public:
+	/**
+	 * Returns true if the item is visible and enabled.
+	 */
+	bool enabled() const;
+
 	/**
 	 * Returns a pointer to the first cursor.
 	 */
@@ -53,6 +59,10 @@ public:
 	 * Returns a pointer to the second cursor.
 	 */
 	std::shared_ptr<Cursor> second() const;
+
+	QPoint point() const;
+
+	pv::widgets::Popup* create_popup(QWidget *parent);
 
 public:
 	QRectF get_label_rect(const QRect &rect) const;
@@ -69,7 +79,6 @@ public:
 
 private:
 	std::shared_ptr<Cursor> first_, second_;
-	const View &view_;
 
 	QSizeF text_size_;
 };

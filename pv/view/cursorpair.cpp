@@ -38,10 +38,15 @@ namespace view {
 const int CursorPair::DeltaPadding = 8;
 
 CursorPair::CursorPair(View &view) :
+	TimeItem(view),
 	first_(new Cursor(view, 0.0)),
-	second_(new Cursor(view, 1.0)),
-	view_(view)
+	second_(new Cursor(view, 1.0))
 {
+}
+
+bool CursorPair::enabled() const
+{
+	return view_.cursors_shown();
 }
 
 shared_ptr<Cursor> CursorPair::first() const
@@ -52,6 +57,17 @@ shared_ptr<Cursor> CursorPair::first() const
 shared_ptr<Cursor> CursorPair::second() const
 {
 	return second_;
+}
+
+QPoint CursorPair::point() const
+{
+	return first_->point();
+}
+
+pv::widgets::Popup* CursorPair::create_popup(QWidget *parent)
+{
+	(void)parent;
+	return nullptr;
 }
 
 QRectF CursorPair::get_label_rect(const QRect &rect) const
