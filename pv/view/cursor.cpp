@@ -81,9 +81,10 @@ QRectF Cursor::get_label_rect(const QRect &rect) const
 
 shared_ptr<Cursor> Cursor::get_other_cursor() const
 {
-	const CursorPair &cursors = view_.cursors();
-	return (cursors.first().get() == this) ?
-		cursors.second() : cursors.first();
+	const shared_ptr<CursorPair> cursors(view_.cursors());
+	assert(cursors);
+	return (cursors->first().get() == this) ?
+		cursors->second() : cursors->first();
 }
 
 } // namespace view

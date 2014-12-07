@@ -104,7 +104,7 @@ View::View(Session &session, QWidget *parent) :
 	tick_period_(0.0),
 	tick_prefix_(0),
 	show_cursors_(false),
-	cursors_(*this),
+	cursors_(new CursorPair(*this)),
 	hover_point_(-1, -1)
 {
 	connect(horizontalScrollBar(), SIGNAL(valueChanged(int)),
@@ -121,9 +121,9 @@ View::View(Session &session, QWidget *parent) :
 	connect(&session_, SIGNAL(frame_ended()),
 		this, SLOT(data_updated()));
 
-	connect(cursors_.first().get(), SIGNAL(time_changed()),
+	connect(cursors_->first().get(), SIGNAL(time_changed()),
 		this, SLOT(marker_time_changed()));
-	connect(cursors_.second().get(), SIGNAL(time_changed()),
+	connect(cursors_->second().get(), SIGNAL(time_changed()),
 		this, SLOT(marker_time_changed()));
 
 	connect(header_, SIGNAL(signals_moved()),
@@ -198,8 +198,8 @@ const Viewport* View::viewport() const
 vector< shared_ptr<TimeItem> > View::time_items() const
 {
 	vector< shared_ptr<TimeItem> > items;
-	items.push_back(cursors_.first());
-	items.push_back(cursors_.second());
+	items.push_back(cursors_->first());
+	items.push_back(cursors_->second());
 	return items;
 }
 
@@ -357,18 +357,13 @@ void View::show_cursors(bool show)
 void View::centre_cursors()
 {
 	const double time_width = scale_ * viewport_->width();
-	cursors_.first()->set_time(offset_ + time_width * 0.4);
-	cursors_.second()->set_time(offset_ + time_width * 0.6);
+	cursors_->first()->set_time(offset_ + time_width * 0.4);
+	cursors_->second()->set_time(offset_ + time_width * 0.6);
 	cursorheader_->update();
 	viewport_->update();
 }
 
-CursorPair& View::cursors()
-{
-	return cursors_;
-}
-
-const CursorPair& View::cursors() const
+std::shared_ptr<CursorPair> View::cursors() const
 {
 	return cursors_;
 }

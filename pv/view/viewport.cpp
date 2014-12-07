@@ -68,7 +68,7 @@ void Viewport::paintEvent(QPaintEvent*)
 	p.setRenderHint(QPainter::Antialiasing);
 
 	if (view_.cursors_shown())
-		view_.cursors().draw_viewport_background(p, rect());
+		view_.cursors()->draw_viewport_background(p, rect());
 
 	const RowItemPaintParams pp(0, width(), view_.scale(), view_.offset());
 
@@ -86,7 +86,7 @@ void Viewport::paintEvent(QPaintEvent*)
 		r->paint_fore(p, pp);
 
 	if (view_.cursors_shown())
-		view_.cursors().draw_viewport_foreground(p, rect());
+		view_.cursors()->draw_viewport_foreground(p, rect());
 
 	p.end();
 }

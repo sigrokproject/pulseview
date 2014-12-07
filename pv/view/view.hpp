@@ -159,12 +159,7 @@ public:
 	/**
 	 * Returns a reference to the pair of cursors.
 	 */
-	CursorPair& cursors();
-
-	/**
-	 * Returns a reference to the pair of cursors.
-	 */
-	const CursorPair& cursors() const;
+	std::shared_ptr<CursorPair> cursors() const;
 
 	const QPoint& hover_point() const;
 
@@ -279,7 +274,7 @@ private:
 	unsigned int tick_prefix_;
 
 	bool show_cursors_;
-	CursorPair cursors_;
+	std::shared_ptr<CursorPair> cursors_;
 
 	QPoint hover_point_;
 

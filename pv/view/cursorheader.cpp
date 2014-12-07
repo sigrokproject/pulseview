@@ -71,14 +71,14 @@ void CursorHeader::paintEvent(QPaintEvent*)
 	QPainter p(this);
 	p.setRenderHint(QPainter::Antialiasing);
 
+	// The cursor labels are not drawn with the arrows exactly on the
+	// bottom line of the widget, because then the selection shadow
+	// would be clipped away.
+	const QRect r = rect().adjusted(0, 0, 0, -BaselineOffset);
+
 	// Draw the cursors
-	if (view_.cursors_shown()) {
-		// The cursor labels are not drawn with the arrows exactly on the
-		// bottom line of the widget, because then the selection shadow
-		// would be clipped away.
-		const QRect r = rect().adjusted(0, 0, 0, -BaselineOffset);
-		view_.cursors().draw_markers(p, r);
-	}
+	if (view_.cursors_shown())
+		view_.cursors()->draw_markers(p, r);
 }
 
 void CursorHeader::mouseMoveEvent(QMouseEvent *e)
@@ -107,13 +107,13 @@ void CursorHeader::mousePressEvent(QMouseEvent *e)
 		clear_selection();
 
 		if (view_.cursors_shown()) {
-			CursorPair &cursors = view_.cursors();
-			if (cursors.first()->get_label_rect(
+			shared_ptr<CursorPair> cursors(view_.cursors());
+			if (cursors->first()->get_label_rect(
 				rect()).contains(e->pos()))
-				grabbed_marker_ = cursors.first();
-			else if (cursors.second()->get_label_rect(
+				grabbed_marker_ = cursors->first();
+			else if (cursors->second()->get_label_rect(
 				rect()).contains(e->pos()))
-				grabbed_marker_ = cursors.second();
+				grabbed_marker_ = cursors->second();
 		}
 
 		if (shared_ptr<TimeMarker> m = grabbed_marker_.lock())
