@@ -134,13 +134,6 @@ public:
 	 */
 	virtual void paint_label(QPainter &p, const QRect &rect, bool hover) = 0;
 
-	/**
-	 * Computes the outline rectangle of a label.
-	 * @param rect the rectangle of the header area.
-	 * @return Returns the rectangle of the signal label.
-	 */
-	virtual QRectF label_rect(const QRectF &rect) const = 0;
-
 public:
 	virtual void hover_point_changed();
 

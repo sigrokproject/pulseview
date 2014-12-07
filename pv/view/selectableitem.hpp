@@ -88,6 +88,13 @@ public:
 	 */
 	virtual QPoint point() const = 0;
 
+	/**
+	 * Computes the outline rectangle of a label.
+	 * @param rect the rectangle of the header area.
+	 * @return Returns the rectangle of the signal label.
+	 */
+	virtual QRectF label_rect(const QRectF &rect) const = 0;
+
 public:
 	/**
 	 * Gets the text colour.

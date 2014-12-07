@@ -80,16 +80,16 @@ public:
 	virtual void paint(QPainter &p, const QRect &rect);
 
 	/**
+	 * Computes the outline rectangle of a label.
+	 * @param rect the rectangle of the header area.
+	 * @return Returns the rectangle of the signal label.
+	 */
+	QRectF label_rect(const QRectF &rect) const;
+
+	/**
 	 * Gets the text to show in the marker.
 	 */
 	virtual QString get_text() const = 0;
-
-	/**
-	 * Gets the marker label rectangle.
-	 * @param rect The rectangle of the ruler client area.
-	 * @return Returns the label rectangle.
-	 */
-	virtual QRectF label_rect(const QRectF &rect) const;
 
 	/**
 	 * Paints the marker's label to the ruler.
