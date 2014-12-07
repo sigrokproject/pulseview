@@ -108,10 +108,10 @@ void CursorHeader::mousePressEvent(QMouseEvent *e)
 
 		if (view_.cursors_shown()) {
 			shared_ptr<CursorPair> cursors(view_.cursors());
-			if (cursors->first()->get_label_rect(
+			if (cursors->first()->label_rect(
 				rect()).contains(e->pos()))
 				grabbed_marker_ = cursors->first();
-			else if (cursors->second()->get_label_rect(
+			else if (cursors->second()->label_rect(
 				rect()).contains(e->pos()))
 				grabbed_marker_ = cursors->second();
 		}

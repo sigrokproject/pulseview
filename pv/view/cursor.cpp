@@ -55,7 +55,7 @@ QString Cursor::get_text() const
 	return pv::util::format_time(time_, view_.tick_prefix(), 2);
 }
 
-QRectF Cursor::get_label_rect(const QRect &rect) const
+QRectF Cursor::label_rect(const QRectF &rect) const
 {
 	const shared_ptr<Cursor> other(get_other_cursor());
 	assert(other);

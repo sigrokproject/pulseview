@@ -70,7 +70,7 @@ pv::widgets::Popup* CursorPair::create_popup(QWidget *parent)
 	return nullptr;
 }
 
-QRectF CursorPair::get_label_rect(const QRect &rect) const
+QRectF CursorPair::label_rect(const QRectF &rect) const
 {
 	const QSizeF label_size(
 		text_size_.width() + View::LabelPadding.width() * 2,
@@ -98,7 +98,7 @@ void CursorPair::draw_markers(QPainter &p, const QRect &rect)
 	const unsigned int prefix = view_.tick_prefix();
 
 	compute_text_size(p, prefix);
-	QRectF delta_rect(get_label_rect(rect));
+	QRectF delta_rect(label_rect(rect));
 
 	const int radius = delta_rect.height() / 2;
 	const QRectF text_rect(delta_rect.intersected(

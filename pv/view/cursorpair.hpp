@@ -65,7 +65,7 @@ public:
 	pv::widgets::Popup* create_popup(QWidget *parent);
 
 public:
-	QRectF get_label_rect(const QRect &rect) const;
+	QRectF label_rect(const QRectF &rect) const;
 
 	void draw_markers(QPainter &p, const QRect &rect);
 

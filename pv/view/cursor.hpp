@@ -63,7 +63,7 @@ public:
 	 * @param rect The rectangle of the ruler client area.
 	 * @return Returns the label rectangle.
 	 */
-	QRectF get_label_rect(const QRect &rect) const;
+	QRectF label_rect(const QRectF &rect) const;
 
 private:
 	std::shared_ptr<Cursor> get_other_cursor() const;

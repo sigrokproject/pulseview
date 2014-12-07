@@ -87,7 +87,7 @@ void TimeMarker::paint(QPainter &p, const QRect &rect)
 	p.drawLine(QPointF(x, rect.top()), QPointF(x, rect.bottom()));
 }
 
-QRectF TimeMarker::get_label_rect(const QRect &rect) const
+QRectF TimeMarker::label_rect(const QRectF &rect) const
 {
 	const float x = (time_ - view_.offset()) / view_.scale();
 
@@ -113,7 +113,7 @@ void TimeMarker::paint_label(QPainter &p, const QRect &rect)
 		return;
 
 	const qreal x = (time_ - view_.offset()) / view_.scale();
-	const QRectF r(get_label_rect(rect));
+	const QRectF r(label_rect(rect));
 
 	const QPointF points[] = {
 		r.topLeft(),
