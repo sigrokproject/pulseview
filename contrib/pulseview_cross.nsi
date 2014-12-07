@@ -128,10 +128,7 @@ Section "PulseView (required)" Section1
 	# PulseView (statically linked, includes all libs).
 	File "${CROSS}/bin/pulseview.exe"
 
-	# libusb0.dll (needed for libusb-0.1).
-	File "${CROSS}/libusb0.dll"
-
-	# Zadig (used for installing libusb-win32 and WinUSB drivers).
+	# Zadig (used for installing WinUSB drivers).
 	File "${CROSS}/zadig.exe"
 	File "${CROSS}/zadig_xp.exe"
 
@@ -206,7 +203,6 @@ Section "Uninstall"
 	# Delete the application, the application data, and related libs.
 	Delete "$INSTDIR\COPYING"
 	Delete "$INSTDIR\pulseview.exe"
-	Delete "$INSTDIR\libusb0.dll"
 	Delete "$INSTDIR\zadig.exe"
 	Delete "$INSTDIR\zadig_xp.exe"
 	Delete "$INSTDIR\python32.dll"
