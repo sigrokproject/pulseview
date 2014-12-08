@@ -28,7 +28,7 @@
 namespace pv {
 namespace view {
 
-class TimeMarker;
+class TimeItem;
 
 /**
  * Widget to hold the labels over the cursors.
@@ -61,8 +61,8 @@ private:
 
 	int calculateTextHeight();
 
-	std::weak_ptr<TimeMarker> grabbed_marker_;
 	QPoint mouse_down_point_;
+	std::shared_ptr<TimeItem> mouse_down_item_;
 	bool dragging_;
 	const int textHeight_;
 };

@@ -90,11 +90,15 @@ void CursorHeader::mouseMoveEvent(QMouseEvent *e)
 		QApplication::startDragDistance())
 		return;
 
+	// Do the drag
 	dragging_ = true;
 
-	if (shared_ptr<TimeMarker> m = grabbed_marker_.lock())
-		m->set_time(view_.offset() +
-			((double)e->x() + 0.5) * view_.scale());
+	const int delta = e->pos().x() - mouse_down_point_.x();
+	const vector< shared_ptr<TimeItem> > items(view_.time_items());
+	for (auto &i : items)
+		if (i->dragging())
+			i->set_time(view_.offset() +
+				(i->drag_point().x() + delta) * view_.scale());
 }
 
 void CursorHeader::mousePressEvent(QMouseEvent *e)
@@ -102,22 +106,21 @@ void CursorHeader::mousePressEvent(QMouseEvent *e)
 	if (e->buttons() & Qt::LeftButton) {
 		mouse_down_point_ = e->pos();
 
-		grabbed_marker_.reset();
+		mouse_down_item_.reset();
 
 		clear_selection();
 
-		if (view_.cursors_shown()) {
-			shared_ptr<CursorPair> cursors(view_.cursors());
-			if (cursors->first()->label_rect(
-				rect()).contains(e->pos()))
-				grabbed_marker_ = cursors->first();
-			else if (cursors->second()->label_rect(
-				rect()).contains(e->pos()))
-				grabbed_marker_ = cursors->second();
-		}
+		const vector< shared_ptr<TimeItem> > items(view_.time_items());
+		for (auto &i : items)
+			if (i && i->label_rect(rect()).contains(e->pos())) {
+				mouse_down_item_ = i;
+				break;
+			}
 
-		if (shared_ptr<TimeMarker> m = grabbed_marker_.lock())
-			m->select();
+		if (mouse_down_item_) {
+			mouse_down_item_->select();
+			mouse_down_item_->drag();
+		}
 
 		selection_changed();
 	}
@@ -127,16 +130,20 @@ void CursorHeader::mouseReleaseEvent(QMouseEvent *)
 {
 	using pv::widgets::Popup;
 
-	if (!dragging_)
-		if (shared_ptr<TimeMarker> m = grabbed_marker_.lock()) {
-			Popup *const p = m->create_popup(&view_);
-			const QPoint arrpos(m->get_x(), height() - BaselineOffset);
-			p->set_position(mapToGlobal(arrpos), Popup::Bottom);
-			p->show();
-		}
+	if (!dragging_ && mouse_down_item_) {
+		Popup *const p = mouse_down_item_->create_popup(&view_);
+		const QPoint arrpos(mouse_down_item_->get_x(),
+			height() - BaselineOffset);
+		p->set_position(mapToGlobal(arrpos), Popup::Bottom);
+		p->show();
+	}
 
 	dragging_ = false;
-	grabbed_marker_.reset();
+	mouse_down_item_.reset();
+
+	const vector< shared_ptr<TimeItem> > items(view_.time_items());
+	for (auto &i : items)
+		i->drag_release();
 }
 
 } // namespace view
