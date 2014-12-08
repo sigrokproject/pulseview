@@ -118,6 +118,12 @@ void CursorPair::draw_markers(QPainter &p, const QRect &rect)
 	{
 		const int highlight_radius = delta_rect.height() / 2 - 2;
 
+		if (selected()) {
+			p.setBrush(Qt::transparent);
+			p.setPen(highlight_pen());
+			p.drawRoundedRect(delta_rect, radius, radius);
+		}
+
 		p.setBrush(Cursor::FillColour);
 		p.setPen(Cursor::FillColour.darker());
 		p.drawRoundedRect(delta_rect, radius, radius);
