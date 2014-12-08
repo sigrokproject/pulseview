@@ -65,6 +65,11 @@ void CursorPair::set_time(double time) {
 	second_->set_time(time + delta);
 }
 
+float CursorPair::get_x() const
+{
+	return (first_->get_x() + second_->get_x()) / 2.0f;
+}
+
 QPoint CursorPair::point() const
 {
 	return first_->point();

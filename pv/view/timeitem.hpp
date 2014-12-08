@@ -45,6 +45,8 @@ public:
 	 */
 	virtual void set_time(double time) = 0;
 
+	virtual float get_x() const = 0;
+
 protected:
 	View &view_;
 };

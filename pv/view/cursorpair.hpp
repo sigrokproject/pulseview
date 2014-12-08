@@ -65,6 +65,8 @@ public:
 	 */
 	void set_time(double time);
 
+	float get_x() const;
+
 	QPoint point() const;
 
 	pv::widgets::Popup* create_popup(QWidget *parent);
