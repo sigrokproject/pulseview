@@ -198,6 +198,7 @@ const Viewport* View::viewport() const
 vector< shared_ptr<TimeItem> > View::time_items() const
 {
 	vector< shared_ptr<TimeItem> > items;
+	items.push_back(cursors_);
 	items.push_back(cursors_->first());
 	items.push_back(cursors_->second());
 	return items;
