@@ -74,7 +74,7 @@ public:
 public:
 	QRectF label_rect(const QRectF &rect) const;
 
-	void draw_markers(QPainter &p, const QRect &rect);
+	void paint_label(QPainter &p, const QRect &rect);
 
 	void draw_viewport_background(QPainter &p, const QRect &rect);
 

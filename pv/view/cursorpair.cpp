@@ -101,7 +101,7 @@ QRectF CursorPair::label_rect(const QRectF &rect) const
 		right - left, height);
 }
 
-void CursorPair::draw_markers(QPainter &p, const QRect &rect)
+void CursorPair::paint_label(QPainter &p, const QRect &rect)
 {
 	assert(first_);
 	assert(second_);

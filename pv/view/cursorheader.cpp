@@ -78,7 +78,7 @@ void CursorHeader::paintEvent(QPaintEvent*)
 
 	// Draw the cursors
 	if (view_.cursors_shown())
-		view_.cursors()->draw_markers(p, r);
+		view_.cursors()->paint_label(p, r);
 }
 
 void CursorHeader::mouseMoveEvent(QMouseEvent *e)
