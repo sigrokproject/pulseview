@@ -60,6 +60,11 @@ public:
 	 */
 	std::shared_ptr<Cursor> second() const;
 
+	/**
+	 * Sets the time of the marker.
+	 */
+	void set_time(double time);
+
 	QPoint point() const;
 
 	pv::widgets::Popup* create_popup(QWidget *parent);

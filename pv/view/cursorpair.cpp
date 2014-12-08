@@ -59,6 +59,12 @@ shared_ptr<Cursor> CursorPair::second() const
 	return second_;
 }
 
+void CursorPair::set_time(double time) {
+	const double delta = second_->time() - first_->time();
+	first_->set_time(time);
+	second_->set_time(time + delta);
+}
+
 QPoint CursorPair::point() const
 {
 	return first_->point();

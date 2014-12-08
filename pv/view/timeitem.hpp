@@ -39,6 +39,12 @@ protected:
 	 */
 	TimeItem(View &view);
 
+public:
+	/**
+	 * Sets the time of the marker.
+	 */
+	virtual void set_time(double time) = 0;
+
 protected:
 	View &view_;
 };
