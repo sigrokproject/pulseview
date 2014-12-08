@@ -132,10 +132,12 @@ void CursorHeader::mouseReleaseEvent(QMouseEvent *)
 
 	if (!dragging_ && mouse_down_item_) {
 		Popup *const p = mouse_down_item_->create_popup(&view_);
-		const QPoint arrpos(mouse_down_item_->get_x(),
-			height() - BaselineOffset);
-		p->set_position(mapToGlobal(arrpos), Popup::Bottom);
-		p->show();
+		if (p) {
+			const QPoint arrpos(mouse_down_item_->get_x(),
+				height() - BaselineOffset);
+			p->set_position(mapToGlobal(arrpos), Popup::Bottom);
+			p->show();
+		}
 	}
 
 	dragging_ = false;
