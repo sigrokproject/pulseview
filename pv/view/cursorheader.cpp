@@ -47,7 +47,6 @@ int CursorHeader::calculateTextHeight()
 
 CursorHeader::CursorHeader(View &parent) :
 	MarginWidget(parent),
-	dragging_(false),
 	textHeight_(calculateTextHeight())
 {
 	setMouseTracking(true);
@@ -84,6 +83,8 @@ void CursorHeader::paintEvent(QPaintEvent*)
 
 void CursorHeader::mouseMoveEvent(QMouseEvent *e)
 {
+	mouse_point_ = e->pos();
+
 	if (!(e->buttons() & Qt::LeftButton))
 		return;
 
@@ -147,6 +148,12 @@ void CursorHeader::mouseReleaseEvent(QMouseEvent *)
 	const vector< shared_ptr<TimeItem> > items(view_.time_items());
 	for (auto &i : items)
 		i->drag_release();
+}
+
+void CursorHeader::leaveEvent(QEvent*)
+{
+	mouse_point_ = QPoint(-1, -1);
+	update();
 }
 
 } // namespace view

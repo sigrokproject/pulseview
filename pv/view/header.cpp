@@ -60,8 +60,7 @@ static bool item_selected(shared_ptr<RowItem> r)
 }
 
 Header::Header(View &parent) :
-	MarginWidget(parent),
-	dragging_(false)
+	MarginWidget(parent)
 {
 	setFocusPolicy(Qt::ClickFocus);
 	setMouseTracking(true);

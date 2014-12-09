@@ -21,6 +21,7 @@
 #ifndef PULSEVIEW_PV_MARGINWIDGET_H
 #define PULSEVIEW_PV_MARGINWIDGET_H
 
+#include <QPoint>
 #include <QWidget>
 
 namespace pv {
@@ -43,6 +44,9 @@ Q_SIGNALS:
 
 protected:
 	pv::view::View &view_;
+	QPoint mouse_point_;
+	QPoint mouse_down_point_;
+	bool dragging_;
 };
 
 } // namespace view

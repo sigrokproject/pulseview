@@ -58,12 +58,11 @@ private:
 	void mouseMoveEvent(QMouseEvent *e);
 	void mousePressEvent(QMouseEvent *e);
 	void mouseReleaseEvent(QMouseEvent *);
+	void leaveEvent(QEvent*);
 
 	int calculateTextHeight();
 
-	QPoint mouse_down_point_;
 	std::shared_ptr<TimeItem> mouse_down_item_;
-	bool dragging_;
 	const int textHeight_;
 };
 
