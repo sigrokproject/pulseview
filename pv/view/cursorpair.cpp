@@ -106,6 +106,9 @@ void CursorPair::paint_label(QPainter &p, const QRect &rect)
 	assert(first_);
 	assert(second_);
 
+	if (!enabled())
+		return;
+
 	const unsigned int prefix = view_.tick_prefix();
 
 	compute_text_size(p, prefix);
@@ -137,10 +140,6 @@ void CursorPair::paint_label(QPainter &p, const QRect &rect)
 		p.drawText(text_rect, Qt::AlignCenter | Qt::AlignVCenter,
 			pv::util::format_time(second_->time() - first_->time(), prefix, 2));
 	}
-
-	// Paint the cursor markers
-	first_->paint_label(p, rect);
-	second_->paint_label(p, rect);
 }
 
 void CursorPair::draw_viewport_background(QPainter &p,

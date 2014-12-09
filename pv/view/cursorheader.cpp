@@ -76,9 +76,10 @@ void CursorHeader::paintEvent(QPaintEvent*)
 	// would be clipped away.
 	const QRect r = rect().adjusted(0, 0, 0, -BaselineOffset);
 
-	// Draw the cursors
-	if (view_.cursors_shown())
-		view_.cursors()->paint_label(p, r);
+	// Draw the items
+	const vector< shared_ptr<TimeItem> > items(view_.time_items());
+	for (auto &m : items)
+		m->paint_label(p, r);
 }
 
 void CursorHeader::mouseMoveEvent(QMouseEvent *e)
