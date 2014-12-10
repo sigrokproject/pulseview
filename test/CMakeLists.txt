@@ -51,6 +51,7 @@ set(pulseview_TEST_SOURCES
 	${PROJECT_SOURCE_DIR}/pv/view/ruler.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/selectableitem.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/signal.cpp
+	${PROJECT_SOURCE_DIR}/pv/view/timeitem.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/timemarker.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/trace.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/tracegroup.cpp
@@ -90,6 +91,7 @@ set(pulseview_TEST_HEADERS
 	${PROJECT_SOURCE_DIR}/pv/view/ruler.hpp
 	${PROJECT_SOURCE_DIR}/pv/view/selectableitem.hpp
 	${PROJECT_SOURCE_DIR}/pv/view/signal.hpp
+	${PROJECT_SOURCE_DIR}/pv/view/timeitem.hpp
 	${PROJECT_SOURCE_DIR}/pv/view/timemarker.hpp
 	${PROJECT_SOURCE_DIR}/pv/view/trace.hpp
 	${PROJECT_SOURCE_DIR}/pv/view/tracegroup.hpp
