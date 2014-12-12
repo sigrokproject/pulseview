@@ -556,9 +556,15 @@ int DecodeTrace::get_row_at_point(const QPoint &point)
 	if (!row_height_)
 		return -1;
 
-	const int row = (point.y() - get_visual_y() + row_height_ / 2) /
-		row_height_;
-	if (row < 0 || row >= (int)visible_rows_.size())
+	const int y = (point.y() - get_visual_y() + row_height_ / 2);
+
+	/* Integer divison of (x-1)/x would yield 0, so we check for this. */
+	if (y < 0)
+		return -1;
+
+	const int row = y / row_height_;
+
+	if (row >= (int)visible_rows_.size())
 		return -1;
 
 	return row;
@@ -621,7 +627,7 @@ void DecodeTrace::hover_point_changed()
 
 	hp.setY(get_visual_y() - (row_height_ / 2) +
 		(hover_row * row_height_) -
-		row_height_ - text_size.height());
+		row_height_ - text_size.height() - padding);
 
 	QToolTip::showText(view->viewport()->mapToGlobal(hp), ann);
 }
