@@ -63,7 +63,7 @@ public:
 	SamplingBar(Session &session, pv::MainWindow &main_window);
 
 	void set_device_list(
-		const std::list< std::pair<std::shared_ptr<sigrok::Device>, std::string> > &devices,
+		const std::list< std::shared_ptr<sigrok::Device> > &devices,
 		std::shared_ptr<sigrok::Device> selected);
 
 	std::shared_ptr<sigrok::Device> get_selected_device() const;

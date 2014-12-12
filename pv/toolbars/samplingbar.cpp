@@ -111,7 +111,7 @@ SamplingBar::SamplingBar(Session &session, MainWindow &main_window) :
 }
 
 void SamplingBar::set_device_list(
-	const std::list< std::pair<std::shared_ptr<sigrok::Device>, std::string> > &devices,
+	const std::list< std::shared_ptr<sigrok::Device> > &devices,
 	shared_ptr<Device> selected)
 {
 	int selected_index = -1;
@@ -122,11 +122,11 @@ void SamplingBar::set_device_list(
 
 	device_selector_.clear();
 
-	for (auto entry : devices) {
-		auto device = entry.first;
-		auto display_name = entry.second;
-
+	for (auto device : devices) {
 		assert(device);
+
+		string display_name =
+			session_.device_manager().get_display_name(device);
 
 		if (selected == device)
 			selected_index = device_selector_.count();
