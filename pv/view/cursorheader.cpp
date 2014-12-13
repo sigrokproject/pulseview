@@ -114,9 +114,9 @@ void CursorHeader::mousePressEvent(QMouseEvent *e)
 		clear_selection();
 
 		const vector< shared_ptr<TimeItem> > items(view_.time_items());
-		for (auto &i : items)
-			if (i && i->label_rect(rect()).contains(e->pos())) {
-				mouse_down_item_ = i;
+		for (auto i = items.rbegin(); i != items.rend(); i++)
+			if ((*i)->label_rect(rect()).contains(e->pos())) {
+				mouse_down_item_ = (*i);
 				break;
 			}
 
