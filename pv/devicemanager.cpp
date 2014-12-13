@@ -29,12 +29,14 @@
 
 #include <libsigrok/libsigrok.hpp>
 
+#include <boost/algorithm/string/join.hpp>
 #include <boost/filesystem.hpp>
+
+using boost::algorithm::join;
 
 using std::dynamic_pointer_cast;
 using std::list;
 using std::map;
-using std::ostringstream;
 using std::remove_if;
 using std::runtime_error;
 using std::shared_ptr;
@@ -196,8 +198,6 @@ void DeviceManager::build_display_name(shared_ptr<Device> device)
 		return;
 	}
 
-	ostringstream s;
-
 	// First, build the device's full name. It always contains all
 	// possible information.
 	vector<string> parts = {device->vendor(), device->model(),
@@ -206,17 +206,7 @@ void DeviceManager::build_display_name(shared_ptr<Device> device)
 	if (device->connection_id().length() > 0)
 		parts.push_back("("+device->connection_id()+")");
 
-	for (size_t i = 0; i < parts.size(); i++)
-	{
-		if (parts[i].length() > 0)
-		{
-			if (i != 0)
-				s << " ";
-			s << parts[i];
-		}
-	}
-
-	full_names_[device] = s.str();
+	full_names_[device] = join(parts, " ");
 
 	// Next, build the display name. It only contains fields as required.
 	bool multiple_dev = false;
@@ -231,8 +221,6 @@ void DeviceManager::build_display_name(shared_ptr<Device> device)
 			dev != hardware_device;
 			} );
 
-	s.str("");
-	parts.clear();
 	parts = {device->vendor(), device->model()};
 
 	if (multiple_dev) {
@@ -244,17 +232,7 @@ void DeviceManager::build_display_name(shared_ptr<Device> device)
 			parts.push_back("("+device->connection_id()+")");
 	}
 
-	for (size_t i = 0; i < parts.size(); i++)
-	{
-		if (parts[i].length() > 0)
-		{
-			if (i != 0)
-				s << " ";
-			s << parts[i];
-		}
-	}
-
-	display_names_[device] = s.str();
+	display_names_[device] = join(parts, " ");
 }
 
 const std::string DeviceManager::get_display_name(std::shared_ptr<sigrok::Device> dev)
