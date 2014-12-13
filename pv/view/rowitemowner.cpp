@@ -94,7 +94,8 @@ RowItemOwner::const_iterator RowItemOwner::end() const
 
 pair<int, int> RowItemOwner::v_extents() const
 {
-	pair<int, int> extents(0, 0);
+	pair<int, int> extents(INT_MAX, INT_MIN);
+
 	for (const shared_ptr<RowItem> r : child_items()) {
 		assert(r);
 		if (!r->enabled())
