@@ -29,14 +29,10 @@ namespace view {
 class ViewItemPaintParams
 {
 public:
-	ViewItemPaintParams(int left, int right, double scale, double offset);
+	ViewItemPaintParams(const QRect &rect, double scale, double offset);
 
-	int left() const {
-		return left_;
-	}
-
-	int right() const {
-		return right_;
+	QRect rect() const {
+		return rect_;
 	}
 
 	double scale() const {
@@ -47,8 +43,28 @@ public:
 		return offset_;
 	}
 
+	int left() const {
+		return rect_.left();
+	}
+
+	int right() const {
+		return rect_.right();
+	}
+
+	int top() const {
+		return rect_.top();
+	}
+
+	int bottom() const {
+		return rect_.bottom();
+	}
+
 	int width() const {
-		return right_ - left_;
+		return rect_.width();
+	}
+
+	int height() const {
+		return rect_.width();
 	}
 
 	double pixels_offset() const {
@@ -61,8 +77,7 @@ public:
 	static int text_height();
 
 private:
-	int left_;
-	int right_;
+	QRect rect_;
 	double scale_;
 	double offset_;
 };

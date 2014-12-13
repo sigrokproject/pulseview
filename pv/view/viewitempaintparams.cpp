@@ -29,12 +29,10 @@ namespace pv {
 namespace view {
 
 ViewItemPaintParams::ViewItemPaintParams(
-	int left, int right, double scale, double offset) :
-	left_(left),
-	right_(right),
+	const QRect &rect, double scale, double offset) :
+	rect_(rect),
 	scale_(scale),
 	offset_(offset) {
-	assert(left <= right);
 	assert(scale > 0.0);
 }
 
