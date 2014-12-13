@@ -142,9 +142,10 @@ void CursorPair::paint_label(QPainter &p, const QRect &rect)
 	}
 }
 
-void CursorPair::draw_viewport_background(QPainter &p,
-	const QRect &rect)
-{
+void CursorPair::paint_back(QPainter &p, const ViewItemPaintParams &pp) {
+	if (!enabled())
+		return;
+
 	p.setPen(Qt::NoPen);
 	p.setBrush(QBrush(View::CursorAreaColour));
 
@@ -152,19 +153,9 @@ void CursorPair::draw_viewport_background(QPainter &p,
 	const int l = (int)max(min(
 		offsets.first, offsets.second), 0.0f);
 	const int r = (int)min(max(
-		offsets.first, offsets.second), (float)rect.width());
+		offsets.first, offsets.second), (float)pp.width());
 
-	p.drawRect(l, 0, r - l, rect.height());
-}
-
-void CursorPair::draw_viewport_foreground(QPainter &p,
-	const QRect &rect)
-{
-	assert(first_);
-	assert(second_);
-
-	first_->paint(p, rect);
-	second_->paint(p, rect);
+	p.drawRect(l, pp.top(), r - l, pp.height());
 }
 
 void CursorPair::compute_text_size(QPainter &p, unsigned int prefix)

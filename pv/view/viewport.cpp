@@ -34,6 +34,7 @@
 using std::abs;
 using std::max;
 using std::min;
+using std::none_of;
 using std::shared_ptr;
 using std::stable_sort;
 using std::vector;
@@ -60,33 +61,36 @@ Viewport::Viewport(View &parent) :
 void Viewport::paintEvent(QPaintEvent*)
 {
 	vector< shared_ptr<RowItem> > row_items(view_.begin(), view_.end());
+	assert(none_of(row_items.begin(), row_items.end(),
+		[](const shared_ptr<RowItem> &r) { return !r; }));
+
 	stable_sort(row_items.begin(), row_items.end(),
 		[](const shared_ptr<RowItem> &a, const shared_ptr<RowItem> &b) {
 			return a->visual_v_offset() < b->visual_v_offset(); });
 
+	const vector< shared_ptr<TimeItem> > time_items(view_.time_items());
+	assert(none_of(time_items.begin(), time_items.end(),
+		[](const shared_ptr<TimeItem> &t) { return !t; }));
+
 	QPainter p(this);
 	p.setRenderHint(QPainter::Antialiasing);
 
-	if (view_.cursors_shown())
-		view_.cursors()->draw_viewport_background(p, rect());
-
 	const ViewItemPaintParams pp(rect(), view_.scale(), view_.offset());
 
-	// Plot the signal
+	for (const shared_ptr<TimeItem> t : time_items)
+		t->paint_back(p, pp);
 	for (const shared_ptr<RowItem> r : row_items)
-	{
-		assert(r);
 		r->paint_back(p, pp);
-	}
 
+	for (const shared_ptr<TimeItem> t : time_items)
+		t->paint_mid(p, pp);
 	for (const shared_ptr<RowItem> r : row_items)
 		r->paint_mid(p, pp);
 
 	for (const shared_ptr<RowItem> r : row_items)
 		r->paint_fore(p, pp);
-
-	if (view_.cursors_shown())
-		view_.cursors()->draw_viewport_foreground(p, rect());
+	for (const shared_ptr<TimeItem> t : time_items)
+		t->paint_fore(p, pp);
 
 	p.end();
 }

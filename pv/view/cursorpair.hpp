@@ -76,9 +76,12 @@ public:
 
 	void paint_label(QPainter &p, const QRect &rect);
 
-	void draw_viewport_background(QPainter &p, const QRect &rect);
-
-	void draw_viewport_foreground(QPainter &p, const QRect &rect);
+	/**
+	 * Paints the background layer of the item with a QPainter
+	 * @param p the QPainter to paint into.
+	 * @param pp the painting parameters object to paint with.
+	 **/
+	void paint_back(QPainter &p, const ViewItemPaintParams &pp);
 
 	void compute_text_size(QPainter &p, unsigned int prefix);
 

@@ -73,13 +73,6 @@ public:
 	QPoint point() const;
 
 	/**
-	 * Paints the marker to the viewport.
-	 * @param p The painter to draw with.
-	 * @param rect The rectangle of the viewport client area.
-	 */
-	virtual void paint(QPainter &p, const QRect &rect);
-
-	/**
 	 * Computes the outline rectangle of a label.
 	 * @param rect the rectangle of the header area.
 	 * @return Returns the rectangle of the signal label.
@@ -97,6 +90,13 @@ public:
 	 * @param rect The rectangle of the ruler client area.
 	 */
 	void paint_label(QPainter &p, const QRect &rect);
+
+	/**
+	 * Paints the foreground layer of the item with a QPainter
+	 * @param p the QPainter to paint into.
+	 * @param pp the painting parameters object to paint with.
+	 **/
+	void paint_fore(QPainter &p, const ViewItemPaintParams &pp);
 
 	pv::widgets::Popup* create_popup(QWidget *parent);
 

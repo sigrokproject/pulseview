@@ -80,13 +80,6 @@ void TimeMarker::set_time(double time)
 	time_changed();
 }
 
-void TimeMarker::paint(QPainter &p, const QRect &rect)
-{
-	const float x = get_x();
-	p.setPen(colour_.darker());
-	p.drawLine(QPointF(x, rect.top()), QPointF(x, rect.bottom()));
-}
-
 QRectF TimeMarker::label_rect(const QRectF &rect) const
 {
 	const float x = (time_ - view_.offset()) / view_.scale();
@@ -156,6 +149,16 @@ void TimeMarker::paint_label(QPainter &p, const QRect &rect)
 
 	p.setPen(select_text_colour(colour_));
 	p.drawText(r, Qt::AlignCenter | Qt::AlignVCenter, get_text());
+}
+
+void TimeMarker::paint_fore(QPainter &p, const ViewItemPaintParams &pp)
+{
+	if (!enabled())
+		return;
+
+	const float x = get_x();
+	p.setPen(colour_.darker());
+	p.drawLine(QPointF(x, pp.top()), QPointF(x, pp.bottom()));
 }
 
 pv::widgets::Popup* TimeMarker::create_popup(QWidget *parent)
