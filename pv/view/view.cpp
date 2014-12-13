@@ -486,9 +486,8 @@ void View::update_scroll()
 	verticalScrollBar()->setSingleStep(areaSize.height() / 8);
 
 	const pair<int, int> extents = v_extents();
-	const int extra_scroll_height = (extents.second - extents.first) / 4;
-	verticalScrollBar()->setRange(extents.first - extra_scroll_height,
-		extents.first + extra_scroll_height);
+	verticalScrollBar()->setRange(extents.first - (areaSize.height() / 2),
+		extents.second - (areaSize.height() / 2));
 }
 
 void View::update_layout()
