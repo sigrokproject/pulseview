@@ -37,7 +37,7 @@ ColourPopup::ColourPopup(int rows, int cols, QWidget *parent) :
 		this, SLOT(colour_selected(int, int)));
 }
 
-QWellArray& ColourPopup::well_array()
+WellArray& ColourPopup::well_array()
 {
 	return well_array_;
 }

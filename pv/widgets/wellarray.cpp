@@ -46,7 +46,10 @@
 
 #include "wellarray.hpp"
 
-void QWellArray::paintEvent(QPaintEvent *e)
+namespace pv {
+namespace widgets {
+
+void WellArray::paintEvent(QPaintEvent *e)
 {
     QRect r = e->rect();
     int cx = r.x();
@@ -93,11 +96,11 @@ void QWellArray::paintEvent(QPaintEvent *e)
     }
 }
 
-struct QWellArrayData {
+struct WellArrayData {
     QBrush *brush;
 };
 
-QWellArray::QWellArray(int rows, int cols, QWidget *parent)
+WellArray::WellArray(int rows, int cols, QWidget *parent)
     : QWidget(parent)
         ,nrows(rows), ncols(cols)
 {
@@ -111,14 +114,14 @@ QWellArray::QWellArray(int rows, int cols, QWidget *parent)
     selRow = -1;
 }
 
-QSize QWellArray::sizeHint() const
+QSize WellArray::sizeHint() const
 {
     ensurePolished();
     return gridSize().boundedTo(QSize(640, 480));
 }
 
 
-void QWellArray::paintCell(QPainter* p, int row, int col, const QRect &rect)
+void WellArray::paintCell(QPainter* p, int row, int col, const QRect &rect)
 {
     int b = 3; //margin
 
@@ -148,7 +151,7 @@ void QWellArray::paintCell(QPainter* p, int row, int col, const QRect &rect)
 /*!
   Reimplement this function to change the contents of the well array.
  */
-void QWellArray::paintCellContents(QPainter *p, int row, int col, const QRect &r)
+void WellArray::paintCellContents(QPainter *p, int row, int col, const QRect &r)
 {
     if (d) {
         p->fillRect(r, d->brush[row*numCols()+col]);
@@ -160,14 +163,14 @@ void QWellArray::paintCellContents(QPainter *p, int row, int col, const QRect &r
     }
 }
 
-void QWellArray::mousePressEvent(QMouseEvent *e)
+void WellArray::mousePressEvent(QMouseEvent *e)
 {
     // The current cell marker is set to the cell the mouse is pressed in
     QPoint pos = e->pos();
     setCurrent(rowAt(pos.y()), columnAt(pos.x()));
 }
 
-void QWellArray::mouseReleaseEvent(QMouseEvent * /* event */)
+void WellArray::mouseReleaseEvent(QMouseEvent * /* event */)
 {
     // The current cell marker is set to the cell the mouse is clicked in
     setSelected(curRow, curCol);
@@ -179,7 +182,7 @@ void QWellArray::mouseReleaseEvent(QMouseEvent * /* event */)
   the same as the currently selected cell.
 */
 
-void QWellArray::setCurrent(int row, int col)
+void WellArray::setCurrent(int row, int col)
 {
     if ((curRow == row) && (curCol == col))
         return;
@@ -203,7 +206,7 @@ void QWellArray::setCurrent(int row, int col)
 
   Does not set the position of the focus indicator.
 */
-void QWellArray::setSelected(int row, int col)
+void WellArray::setSelected(int row, int col)
 {
     int oldRow = selRow;
     int oldCol = selCol;
@@ -220,15 +223,15 @@ void QWellArray::setSelected(int row, int col)
         Q_EMIT selected(row, col);
 }
 
-void QWellArray::focusInEvent(QFocusEvent*)
+void WellArray::focusInEvent(QFocusEvent*)
 {
     updateCell(curRow, curCol);
 }
 
-void QWellArray::setCellBrush(int row, int col, const QBrush &b)
+void WellArray::setCellBrush(int row, int col, const QBrush &b)
 {
     if (!d) {
-        d = new QWellArrayData;
+        d = new WellArrayData;
         int i = numRows()*numCols();
         d->brush = new QBrush[i];
     }
@@ -241,7 +244,7 @@ void QWellArray::setCellBrush(int row, int col, const QBrush &b)
   set, Qt::NoBrush is returned.
 */
 
-QBrush QWellArray::cellBrush(int row, int col)
+QBrush WellArray::cellBrush(int row, int col)
 {
     if (d && row >= 0 && row < numRows() && col >= 0 && col < numCols())
         return d->brush[row*numCols()+col];
@@ -253,14 +256,14 @@ QBrush QWellArray::cellBrush(int row, int col)
 /*!\reimp
 */
 
-void QWellArray::focusOutEvent(QFocusEvent*)
+void WellArray::focusOutEvent(QFocusEvent*)
 {
     updateCell(curRow, curCol);
 }
 
 /*\reimp
 */
-void QWellArray::keyPressEvent(QKeyEvent* e)
+void WellArray::keyPressEvent(QKeyEvent* e)
 {
     switch(e->key()) {                        // Look at the key code
     case Qt::Key_Left:                                // If 'left arrow'-key,
@@ -288,3 +291,6 @@ void QWellArray::keyPressEvent(QKeyEvent* e)
     }
 
 }
+
+} // namespace wellarray
+} // namespace pv

@@ -36,7 +36,7 @@ class ColourPopup : public Popup
 public:
 	ColourPopup(int rows, int cols, QWidget *partent);
 
-	QWellArray& well_array();
+	WellArray& well_array();
 
 Q_SIGNALS:
 	void selected(int row, int col);
@@ -45,7 +45,7 @@ private Q_SLOTS:
 	void colour_selected(int, int);
 
 private:
-	QWellArray well_array_;
+	WellArray well_array_;
 	QVBoxLayout layout_;
 };
 

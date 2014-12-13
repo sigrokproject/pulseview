@@ -41,16 +41,19 @@
 
 #include <QWidget>
 
-struct QWellArrayData;
+namespace pv {
+namespace widgets {
 
-class QWellArray : public QWidget
+struct WellArrayData;
+
+class WellArray : public QWidget
 {
     Q_OBJECT
     Q_PROPERTY(int selectedColumn READ selectedColumn)
     Q_PROPERTY(int selectedRow READ selectedRow)
 
 public:
-    QWellArray(int rows, int cols, QWidget* parent=0);
+    WellArray(int rows, int cols, QWidget* parent=0);
     QString cellContent(int row, int col) const;
 
     int selectedColumn() const { return selCol; }
@@ -119,7 +122,7 @@ protected:
     void paintEvent(QPaintEvent *);
 
 private:
-    Q_DISABLE_COPY(QWellArray)
+    Q_DISABLE_COPY(WellArray)
 
     int nrows;
     int ncols;
@@ -129,5 +132,8 @@ private:
     int curCol;
     int selRow;
     int selCol;
-    QWellArrayData *d;
+    WellArrayData *d;
 };
+
+} // namespace wellarray
+} // namespace pv
