@@ -209,17 +209,16 @@ void DeviceManager::build_display_name(shared_ptr<Device> device)
 	full_names_[device] = join(parts, " ");
 
 	// Next, build the display name. It only contains fields as required.
-	bool multiple_dev = false;
 
 	// If we can find another device with the same model/vendor then
 	// we have at least two such devices and need to distinguish them.
-	if (hardware_device)
-		multiple_dev = any_of(devices_.begin(), devices_.end(),
-			[&](shared_ptr<HardwareDevice> dev) {
+	const bool multiple_dev = hardware_device && any_of(
+		devices_.begin(), devices_.end(),
+		[&](shared_ptr<HardwareDevice> dev) {
 			return (dev->vendor() == hardware_device->vendor() &&
-			dev->model() == hardware_device->model()) &&
-			dev != hardware_device;
-			} );
+				dev->model() == hardware_device->model()) &&
+				dev != hardware_device;
+		} );
 
 	parts = {device->vendor(), device->model()};
 
