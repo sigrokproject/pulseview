@@ -121,11 +121,6 @@ View::View(Session &session, QWidget *parent) :
 	connect(&session_, SIGNAL(frame_ended()),
 		this, SLOT(data_updated()));
 
-	connect(cursors_->first().get(), SIGNAL(time_changed()),
-		this, SLOT(marker_time_changed()));
-	connect(cursors_->second().get(), SIGNAL(time_changed()),
-		this, SLOT(marker_time_changed()));
-
 	connect(header_, SIGNAL(signals_moved()),
 		this, SLOT(on_signals_moved()));
 
@@ -615,6 +610,14 @@ void View::row_item_appearance_changed(bool label, bool content)
 		viewport_->update();
 }
 
+void View::time_item_appearance_changed(bool label, bool content)
+{
+	if (label)
+		cursorheader_->update();
+	if (content)
+		viewport_->update();
+}
+
 void View::extents_changed(bool horz, bool vert)
 {
 	sticky_events_ |=
@@ -725,12 +728,6 @@ void View::data_updated()
 	update_scroll();
 
 	// Repaint the view
-	viewport_->update();
-}
-
-void View::marker_time_changed()
-{
-	cursorheader_->update();
 	viewport_->update();
 }
 

@@ -67,7 +67,7 @@ void TimeMarker::set_time(double time)
 		updating_value_widget_ = false;
 	}
 
-	time_changed();
+	view_.time_item_appearance_changed(true, true);
 }
 
 float TimeMarker::get_x() const
@@ -186,10 +186,8 @@ pv::widgets::Popup* TimeMarker::create_popup(QWidget *parent)
 
 void TimeMarker::on_value_changed(double value)
 {
-	if (!updating_value_widget_) {
-		time_ = value;
-		time_changed();
-	}
+	if (!updating_value_widget_)
+		set_time(value);
 }
 
 } // namespace view

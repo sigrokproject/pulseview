@@ -103,9 +103,6 @@ public:
 private Q_SLOTS:
 	void on_value_changed(double value);
 
-Q_SIGNALS:
-	void time_changed();
-
 protected:
 	const QColor &colour_;
 

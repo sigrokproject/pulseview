@@ -232,6 +232,7 @@ private:
 
 public:
 	void row_item_appearance_changed(bool label, bool content);
+	void time_item_appearance_changed(bool label, bool content);
 
 	void extents_changed(bool horz, bool vert);
 
@@ -242,8 +243,6 @@ private Q_SLOTS:
 
 	void signals_changed();
 	void data_updated();
-
-	void marker_time_changed();
 
 	void on_signals_moved();
 
