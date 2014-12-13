@@ -100,7 +100,8 @@ void CursorHeader::mouseMoveEvent(QMouseEvent *e)
 	for (auto &i : items)
 		if (i->dragging())
 			i->set_time(view_.offset() +
-				(i->drag_point().x() + delta) * view_.scale());
+				(i->drag_point().x() + delta - 0.5) *
+				view_.scale());
 }
 
 void CursorHeader::mousePressEvent(QMouseEvent *e)
