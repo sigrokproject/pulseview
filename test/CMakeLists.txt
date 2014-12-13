@@ -42,6 +42,7 @@ set(pulseview_TEST_SOURCES
 	${PROJECT_SOURCE_DIR}/pv/view/cursor.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/cursorheader.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/cursorpair.cpp
+	${PROJECT_SOURCE_DIR}/pv/view/flag.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/header.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/marginwidget.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/logicsignal.cpp
@@ -84,6 +85,7 @@ set(pulseview_TEST_HEADERS
 	${PROJECT_SOURCE_DIR}/pv/prop/binding/deviceoptions.hpp
 	${PROJECT_SOURCE_DIR}/pv/view/cursor.hpp
 	${PROJECT_SOURCE_DIR}/pv/view/cursorheader.hpp
+	${PROJECT_SOURCE_DIR}/pv/view/flag.hpp
 	${PROJECT_SOURCE_DIR}/pv/view/header.hpp
 	${PROJECT_SOURCE_DIR}/pv/view/logicsignal.hpp
 	${PROJECT_SOURCE_DIR}/pv/view/marginwidget.hpp

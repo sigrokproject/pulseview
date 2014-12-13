@@ -157,5 +157,10 @@ void CursorHeader::leaveEvent(QEvent*)
 	update();
 }
 
+void CursorHeader::mouseDoubleClickEvent(QMouseEvent *e)
+{
+	view_.add_flag(view_.offset() + ((double)e->x() + 0.5) * view_.scale());
+}
+
 } // namespace view
 } // namespace pv

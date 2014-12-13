@@ -60,6 +60,8 @@ private:
 	void mouseReleaseEvent(QMouseEvent *);
 	void leaveEvent(QEvent*);
 
+	void mouseDoubleClickEvent(QMouseEvent *e);
+
 	int calculateTextHeight();
 
 	std::shared_ptr<TimeItem> mouse_down_item_;

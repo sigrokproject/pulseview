@@ -60,7 +60,6 @@ using pv::data::SignalData;
 using pv::data::Segment;
 using pv::util::format_time;
 
-using std::back_inserter;
 using std::deque;
 using std::dynamic_pointer_cast;
 using std::list;
@@ -105,6 +104,7 @@ View::View(Session &session, QWidget *parent) :
 	tick_prefix_(0),
 	show_cursors_(false),
 	cursors_(new CursorPair(*this)),
+	next_flag_text_('A'),
 	hover_point_(-1, -1)
 {
 	connect(horizontalScrollBar(), SIGNAL(valueChanged(int)),
@@ -192,7 +192,8 @@ const Viewport* View::viewport() const
 
 vector< shared_ptr<TimeItem> > View::time_items() const
 {
-	vector< shared_ptr<TimeItem> > items;
+	const vector<shared_ptr<Flag>> f(flags());
+	vector<shared_ptr<TimeItem>> items(f.begin(), f.end());
 	items.push_back(cursors_);
 	items.push_back(cursors_->first());
 	items.push_back(cursors_->second());
@@ -362,6 +363,32 @@ void View::centre_cursors()
 std::shared_ptr<CursorPair> View::cursors() const
 {
 	return cursors_;
+}
+
+void View::add_flag(double time)
+{
+	flags_.push_back(shared_ptr<Flag>(new Flag(*this, time,
+		QString("%1").arg(next_flag_text_))));
+	next_flag_text_ = (next_flag_text_ >= 'Z') ? 'A' :
+		(next_flag_text_ + 1);
+	time_item_appearance_changed(true, true);
+}
+
+void View::remove_flag(std::shared_ptr<Flag> flag)
+{
+	flags_.remove(flag);
+	time_item_appearance_changed(true, true);
+}
+
+vector< std::shared_ptr<Flag> > View::flags() const
+{
+	vector< std::shared_ptr<Flag> > flags(flags_.begin(), flags_.end());
+	stable_sort(flags.begin(), flags.end(),
+		[](const shared_ptr<Flag> &a, const shared_ptr<Flag> &b) {
+			return a->time() < b->time();
+		});
+
+	return flags;
 }
 
 const QPoint& View::hover_point() const

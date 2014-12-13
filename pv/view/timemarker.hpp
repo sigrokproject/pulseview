@@ -98,7 +98,7 @@ public:
 	 **/
 	void paint_fore(QPainter &p, const ViewItemPaintParams &pp);
 
-	pv::widgets::Popup* create_popup(QWidget *parent);
+	virtual pv::widgets::Popup* create_popup(QWidget *parent);
 
 private Q_SLOTS:
 	void on_value_changed(double value);
