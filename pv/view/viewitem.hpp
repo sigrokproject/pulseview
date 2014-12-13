@@ -25,6 +25,8 @@
 
 #include <QPen>
 
+#include "viewitempaintparams.hpp"
+
 class QAction;
 class QMenu;
 class QWidget;
@@ -94,6 +96,27 @@ public:
 	 * @return Returns the rectangle of the signal label.
 	 */
 	virtual QRectF label_rect(const QRectF &rect) const = 0;
+
+	/**
+	 * Paints the background layer of the item with a QPainter
+	 * @param p the QPainter to paint into.
+	 * @param pp the painting parameters object to paint with.
+	 **/
+	virtual void paint_back(QPainter &p, const ViewItemPaintParams &pp);
+
+	/**
+	 * Paints the mid-layer of the item with a QPainter
+	 * @param p the QPainter to paint into.
+	 * @param pp the painting parameters object to paint with.
+	 **/
+	virtual void paint_mid(QPainter &p, const ViewItemPaintParams &pp);
+
+	/**
+	 * Paints the foreground layer of the item with a QPainter
+	 * @param p the QPainter to paint into.
+	 * @param pp the painting parameters object to paint with.
+	 **/
+	virtual void paint_fore(QPainter &p, const ViewItemPaintParams &pp);
 
 public:
 	/**

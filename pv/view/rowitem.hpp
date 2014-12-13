@@ -25,7 +25,6 @@
 
 #include <QPropertyAnimation>
 
-#include "viewitempaintparams.hpp"
 #include "viewitem.hpp"
 
 namespace pv {
@@ -104,27 +103,6 @@ public:
 	 * @return A pair containing the minimum and maximum y-values.
 	 */
 	virtual std::pair<int, int> v_extents() const = 0;
-
-	/**
-	 * Paints the background layer of the trace with a QPainter
-	 * @param p the QPainter to paint into.
-	 * @param pp the painting parameters object to paint with.
-	 **/
-	virtual void paint_back(QPainter &p, const ViewItemPaintParams &pp);
-
-	/**
-	 * Paints the mid-layer of the trace with a QPainter
-	 * @param p the QPainter to paint into.
-	 * @param pp the painting parameters object to paint with.
-	 **/
-	virtual void paint_mid(QPainter &p, const ViewItemPaintParams &pp);
-
-	/**
-	 * Paints the foreground layer of the trace with a QPainter
-	 * @param p the QPainter to paint into.
-	 * @param pp the painting parameters object to paint with.
-	 **/
-	virtual void paint_fore(QPainter &p, const ViewItemPaintParams &pp);
 
 	/**
 	 * Paints the signal label.

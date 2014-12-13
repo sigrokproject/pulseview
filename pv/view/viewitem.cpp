@@ -85,6 +85,24 @@ QPen ViewItem::highlight_pen()
 		Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
 }
 
+void ViewItem::paint_back(QPainter &p, const ViewItemPaintParams &pp)
+{
+	(void)p;
+	(void)pp;
+}
+
+void ViewItem::paint_mid(QPainter &p, const ViewItemPaintParams &pp)
+{
+	(void)p;
+	(void)pp;
+}
+
+void ViewItem::paint_fore(QPainter &p, const ViewItemPaintParams &pp)
+{
+	(void)p;
+	(void)pp;
+}
+
 QColor ViewItem::select_text_colour(QColor background)
 {
 	return (background.lightness() > 64) ? Qt::black : Qt::white;
