@@ -87,13 +87,13 @@ std::pair<int, int> AnalogSignal::v_extents() const
 	return make_pair(-NominalHeight / 2, NominalHeight / 2);
 }
 
-void AnalogSignal::paint_back(QPainter &p, const RowItemPaintParams &pp)
+void AnalogSignal::paint_back(QPainter &p, const ViewItemPaintParams &pp)
 {
 	if (channel_->enabled())
 		paint_axis(p, pp, get_visual_y());
 }
 
-void AnalogSignal::paint_mid(QPainter &p, const RowItemPaintParams &pp)
+void AnalogSignal::paint_mid(QPainter &p, const ViewItemPaintParams &pp)
 {
 	assert(data_);
 	assert(owner_);

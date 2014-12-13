@@ -101,21 +101,21 @@ public:
 	 * @param p the QPainter to paint into.
 	 * @param pp the painting parameters object to paint with..
 	 **/
-	void paint_back(QPainter &p, const RowItemPaintParams &pp);
+	void paint_back(QPainter &p, const ViewItemPaintParams &pp);
 
 	/**
 	 * Paints the mid-layer of the trace with a QPainter
 	 * @param p the QPainter to paint into.
 	 * @param pp the painting parameters object to paint with.
 	 **/
-	void paint_mid(QPainter &p, const RowItemPaintParams &pp);
+	void paint_mid(QPainter &p, const ViewItemPaintParams &pp);
 
 	/**
 	 * Paints the foreground layer of the trace with a QPainter
 	 * @param p the QPainter to paint into.
 	 * @param pp the painting parameters object to paint with.
 	 **/
-	void paint_fore(QPainter &p, const RowItemPaintParams &pp);
+	void paint_fore(QPainter &p, const ViewItemPaintParams &pp);
 
 	void populate_popup_form(QWidget *parent, QFormLayout *form);
 
@@ -125,7 +125,7 @@ public:
 
 private:
 	void draw_annotation(const pv::data::decode::Annotation &a, QPainter &p,
-		int text_height, const RowItemPaintParams &pp, int y,
+		int text_height, const ViewItemPaintParams &pp, int y,
 		size_t base_colour) const;
 
 	void draw_instant(const pv::data::decode::Annotation &a, QPainter &p,
@@ -136,7 +136,7 @@ private:
 		double end, int y) const;
 
 	void draw_error(QPainter &p, const QString &message,
-		const RowItemPaintParams &pp);
+		const ViewItemPaintParams &pp);
 
 	void draw_unresolved_period(QPainter &p, int h, int left,
 		int right) const;

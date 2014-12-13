@@ -145,13 +145,13 @@ std::pair<int, int> LogicSignal::v_extents() const
 	return make_pair(-SignalHeight - SignalMargin, SignalMargin);
 }
 
-void LogicSignal::paint_back(QPainter &p, const RowItemPaintParams &pp)
+void LogicSignal::paint_back(QPainter &p, const ViewItemPaintParams &pp)
 {
 	if (channel_->enabled())
 		paint_axis(p, pp, get_visual_y());
 }
 
-void LogicSignal::paint_mid(QPainter &p, const RowItemPaintParams &pp)
+void LogicSignal::paint_mid(QPainter &p, const ViewItemPaintParams &pp)
 {
 	QLineF *line;
 
@@ -225,7 +225,7 @@ void LogicSignal::paint_mid(QPainter &p, const RowItemPaintParams &pp)
 	delete[] cap_lines;
 }
 
-void LogicSignal::paint_fore(QPainter &p, const RowItemPaintParams &pp)
+void LogicSignal::paint_fore(QPainter &p, const ViewItemPaintParams &pp)
 {
 	// Draw the trigger marker
 	if (!trigger_match_)

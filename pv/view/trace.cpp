@@ -162,7 +162,7 @@ QRectF Trace::label_rect(const QRectF &rect) const
 		label_size.height());
 }
 
-void Trace::paint_axis(QPainter &p, const RowItemPaintParams &pp, int y)
+void Trace::paint_axis(QPainter &p, const ViewItemPaintParams &pp, int y)
 {
 	p.setPen(AxisPen);
 	p.drawLine(QPointF(pp.left(), y + 0.5f), QPointF(pp.right(), y + 0.5f));

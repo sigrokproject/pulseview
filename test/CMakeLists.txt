@@ -47,7 +47,6 @@ set(pulseview_TEST_SOURCES
 	${PROJECT_SOURCE_DIR}/pv/view/logicsignal.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/rowitem.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/rowitemowner.cpp
-	${PROJECT_SOURCE_DIR}/pv/view/rowitempaintparams.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/ruler.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/signal.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/timeitem.cpp
@@ -57,6 +56,7 @@ set(pulseview_TEST_SOURCES
 	${PROJECT_SOURCE_DIR}/pv/view/tracepalette.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/view.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/viewitem.cpp
+	${PROJECT_SOURCE_DIR}/pv/view/viewitempaintparams.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/viewport.cpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/colourbutton.cpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/colourpopup.cpp

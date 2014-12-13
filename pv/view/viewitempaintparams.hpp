@@ -18,35 +18,56 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#include <cassert>
+#ifndef PULSEVIEW_PV_VIEW_ROWITEMPAINTPARAMS_H
+#define PULSEVIEW_PV_VIEW_ROWITEMPAINTPARAMS_H
 
-#include <QApplication>
-#include <QFontMetrics>
-
-#include "rowitempaintparams.hpp"
+#include <QFont>
 
 namespace pv {
 namespace view {
 
-RowItemPaintParams::RowItemPaintParams(
-	int left, int right, double scale, double offset) :
-	left_(left),
-	right_(right),
-	scale_(scale),
-	offset_(offset) {
-	assert(left <= right);
-	assert(scale > 0.0);
-}
-
-QFont RowItemPaintParams::font()
+class ViewItemPaintParams
 {
-	return QApplication::font();
-}
+public:
+	ViewItemPaintParams(int left, int right, double scale, double offset);
 
-int RowItemPaintParams::text_height() {
-	QFontMetrics m(font());
-	return m.boundingRect(QRect(), 0, "Tg").height();
-}
+	int left() const {
+		return left_;
+	}
+
+	int right() const {
+		return right_;
+	}
+
+	double scale() const {
+		return scale_;
+	}
+
+	double offset() const {
+		return offset_;
+	}
+
+	int width() const {
+		return right_ - left_;
+	}
+
+	double pixels_offset() const {
+		return offset_ / scale_;
+	}
+
+public:
+	static QFont font();
+
+	static int text_height();
+
+private:
+	int left_;
+	int right_;
+	double scale_;
+	double offset_;
+};
 
 } // namespace view
 } // namespace pv
+
+#endif // PULSEVIEW_PV_VIEW_ROWITEMPAINTPARAMS_H

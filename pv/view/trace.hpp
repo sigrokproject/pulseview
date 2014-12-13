@@ -99,7 +99,7 @@ protected:
 	 * @param pp the painting parameters object to paint with.
 	 * @param y the y-offset of the axis.
 	 */
-	void paint_axis(QPainter &p, const RowItemPaintParams &pp, int y);
+	void paint_axis(QPainter &p, const ViewItemPaintParams &pp, int y);
 
 	void add_colour_option(QWidget *parent, QFormLayout *form);
 

@@ -86,21 +86,21 @@ public:
 	 * @param p the QPainter to paint into.
 	 * @param pp the painting parameters object to paint with..
 	 **/
-	void paint_back(QPainter &p, const RowItemPaintParams &pp);
+	void paint_back(QPainter &p, const ViewItemPaintParams &pp);
 
 	/**
 	 * Paints the mid-layer of the signal with a QPainter
 	 * @param p the QPainter to paint into.
 	 * @param pp the painting parameters object to paint with..
 	 **/
-	void paint_mid(QPainter &p, const RowItemPaintParams &pp);
+	void paint_mid(QPainter &p, const ViewItemPaintParams &pp);
 
 	/**
 	 * Paints the foreground layer of the signal with a QPainter
 	 * @param p the QPainter to paint into.
 	 * @param pp the painting parameters object to paint with.
 	 **/
-	virtual void paint_fore(QPainter &p, const RowItemPaintParams &pp);
+	virtual void paint_fore(QPainter &p, const ViewItemPaintParams &pp);
 
 private:
 	void paint_caps(QPainter &p, QLineF *const lines,

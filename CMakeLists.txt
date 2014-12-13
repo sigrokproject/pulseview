@@ -175,7 +175,6 @@ set(pulseview_SOURCES
 	pv/view/logicsignal.cpp
 	pv/view/rowitem.cpp
 	pv/view/rowitemowner.cpp
-	pv/view/rowitempaintparams.cpp
 	pv/view/ruler.cpp
 	pv/view/signal.cpp
 	pv/view/timeitem.cpp
@@ -185,6 +184,7 @@ set(pulseview_SOURCES
 	pv/view/tracepalette.cpp
 	pv/view/view.cpp
 	pv/view/viewitem.cpp
+	pv/view/viewitempaintparams.cpp
 	pv/view/viewport.cpp
 	pv/widgets/colourbutton.cpp
 	pv/widgets/colourpopup.cpp

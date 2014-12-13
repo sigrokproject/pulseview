@@ -160,21 +160,21 @@ pair<int, int> DecodeTrace::v_extents() const
 {
 	/// @todo Replace this with an implementation that knows the true
 	/// height of the trace
-	const int row_height = (RowItemPaintParams::text_height() * 6) / 4;
+	const int row_height = (ViewItemPaintParams::text_height() * 6) / 4;
 	return make_pair(-row_height / 2, row_height * 7 / 2);
 }
 
-void DecodeTrace::paint_back(QPainter &p, const RowItemPaintParams &pp)
+void DecodeTrace::paint_back(QPainter &p, const ViewItemPaintParams &pp)
 {
 	Trace::paint_back(p, pp);
 	paint_axis(p, pp, get_visual_y());
 }
 
-void DecodeTrace::paint_mid(QPainter &p, const RowItemPaintParams &pp)
+void DecodeTrace::paint_mid(QPainter &p, const ViewItemPaintParams &pp)
 {
 	using namespace pv::data::decode;
 
-	text_height_ = RowItemPaintParams::text_height();
+	text_height_ = ViewItemPaintParams::text_height();
 	row_height_ = (text_height_ * 6) / 4;
 	const int annotation_height = (text_height_ * 5) / 4;
 
@@ -224,7 +224,7 @@ void DecodeTrace::paint_mid(QPainter &p, const RowItemPaintParams &pp)
 	draw_unresolved_period(p, annotation_height, pp.left(), pp.right());
 }
 
-void DecodeTrace::paint_fore(QPainter &p, const RowItemPaintParams &pp)
+void DecodeTrace::paint_fore(QPainter &p, const ViewItemPaintParams &pp)
 {
 	using namespace pv::data::decode;
 
@@ -333,7 +333,7 @@ QMenu* DecodeTrace::create_context_menu(QWidget *parent)
 }
 
 void DecodeTrace::draw_annotation(const pv::data::decode::Annotation &a,
-	QPainter &p, int h, const RowItemPaintParams &pp, int y,
+	QPainter &p, int h, const ViewItemPaintParams &pp, int y,
 	size_t base_colour) const
 {
 	double samples_per_pixel, pixels_offset;
@@ -435,7 +435,7 @@ void DecodeTrace::draw_range(const pv::data::decode::Annotation &a, QPainter &p,
 }
 
 void DecodeTrace::draw_error(QPainter &p, const QString &message,
-	const RowItemPaintParams &pp)
+	const ViewItemPaintParams &pp)
 {
 	const int y = get_visual_y();
 

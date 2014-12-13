@@ -120,19 +120,19 @@ QPoint RowItem::point() const
 	return QPoint(0, visual_v_offset());
 }
 
-void RowItem::paint_back(QPainter &p, const RowItemPaintParams &pp)
+void RowItem::paint_back(QPainter &p, const ViewItemPaintParams &pp)
 {
 	(void)p;
 	(void)pp;
 }
 
-void RowItem::paint_mid(QPainter &p, const RowItemPaintParams &pp)
+void RowItem::paint_mid(QPainter &p, const ViewItemPaintParams &pp)
 {
 	(void)p;
 	(void)pp;
 }
 
-void RowItem::paint_fore(QPainter &p, const RowItemPaintParams &pp)
+void RowItem::paint_fore(QPainter &p, const ViewItemPaintParams &pp)
 {
 	(void)p;
 	(void)pp;
