@@ -618,8 +618,8 @@ void View::appearance_changed(bool label, bool content)
 void View::extents_changed(bool horz, bool vert)
 {
 	sticky_events_ |=
-		(horz ? SelectableItemHExtentsChanged : 0) |
-		(vert ? SelectableItemVExtentsChanged : 0);
+		(horz ? RowItemHExtentsChanged : 0) |
+		(vert ? RowItemVExtentsChanged : 0);
 	lazy_event_handler_.start();
 }
 
@@ -742,9 +742,9 @@ void View::on_signals_moved()
 
 void View::process_sticky_events()
 {
-	if (sticky_events_ & SelectableItemHExtentsChanged)
+	if (sticky_events_ & RowItemHExtentsChanged)
 		update_layout();
-	if (sticky_events_ & SelectableItemVExtentsChanged)
+	if (sticky_events_ & RowItemVExtentsChanged)
 		restack_all_row_items();
 
 	// Clear the sticky events

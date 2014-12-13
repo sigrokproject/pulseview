@@ -53,8 +53,8 @@ class View : public QAbstractScrollArea, public RowItemOwner {
 
 private:
 	enum StickyEvents {
-		SelectableItemHExtentsChanged = 1,
-		SelectableItemVExtentsChanged = 2
+		RowItemHExtentsChanged = 1,
+		RowItemVExtentsChanged = 2
 	};
 
 private:
