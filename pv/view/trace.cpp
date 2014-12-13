@@ -228,7 +228,7 @@ void Trace::on_colour_changed(const QColor &colour)
 	set_colour(colour);
 
 	if (owner_)
-		owner_->appearance_changed(true, false);
+		owner_->row_item_appearance_changed(true, false);
 }
 
 } // namespace view

@@ -61,7 +61,7 @@ void RowItem::set_visual_v_offset(int v_offset)
 	visual_v_offset_ = v_offset;
 
 	if (owner_)
-		owner_->appearance_changed(true, true);
+		owner_->row_item_appearance_changed(true, true);
 }
 
 void RowItem::force_to_v_offset(int v_offset)

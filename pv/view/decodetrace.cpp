@@ -774,7 +774,7 @@ void DecodeTrace::commit_channels()
 void DecodeTrace::on_new_decode_data()
 {
 	if (owner_)
-		owner_->appearance_changed(false, true);
+		owner_->row_item_appearance_changed(false, true);
 }
 
 void DecodeTrace::delete_pressed()
@@ -834,7 +834,7 @@ void DecodeTrace::on_show_hide_decoder(int index)
 	decoder_forms_[index]->set_decoder_visible(show);
 
 	if (owner_)
-		owner_->appearance_changed(false, true);
+		owner_->row_item_appearance_changed(false, true);
 }
 
 } // namespace view

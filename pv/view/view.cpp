@@ -607,7 +607,7 @@ void View::resizeEvent(QResizeEvent*)
 	update_layout();
 }
 
-void View::appearance_changed(bool label, bool content)
+void View::row_item_appearance_changed(bool label, bool content)
 {
 	if (label)
 		header_->update();

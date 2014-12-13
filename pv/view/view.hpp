@@ -231,7 +231,7 @@ private:
 	void resizeEvent(QResizeEvent *e);
 
 public:
-	void appearance_changed(bool label, bool content);
+	void row_item_appearance_changed(bool label, bool content);
 
 	void extents_changed(bool horz, bool vert);
 

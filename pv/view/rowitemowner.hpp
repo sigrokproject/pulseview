@@ -127,7 +127,7 @@ public:
 	virtual void restack_items();
 
 public:
-	virtual void appearance_changed(bool label, bool content) = 0;
+	virtual void row_item_appearance_changed(bool label, bool content) = 0;
 
 	virtual void extents_changed(bool horz, bool vert) = 0;
 

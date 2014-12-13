@@ -422,7 +422,7 @@ void LogicSignal::modify_trigger()
 		new_trigger->stages().empty() ? nullptr : new_trigger);
 
 	if (owner_)
-		owner_->appearance_changed(false, true);
+		owner_->row_item_appearance_changed(false, true);
 }
 
 const QIcon* LogicSignal::get_icon(const char *path)

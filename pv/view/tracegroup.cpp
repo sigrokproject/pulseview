@@ -212,10 +212,10 @@ void TraceGroup::on_ungroup()
 	ungroup();
 }
 
-void TraceGroup::appearance_changed(bool label, bool content)
+void TraceGroup::row_item_appearance_changed(bool label, bool content)
 {
 	if (owner_)
-		owner_->appearance_changed(label, content);
+		owner_->row_item_appearance_changed(label, content);
 }
 
 void TraceGroup::extents_changed(bool horz, bool vert)
