@@ -57,16 +57,6 @@ double TimeMarker::time() const
 	return time_;
 }
 
-float TimeMarker::get_x() const
-{
-	return (time_ - view_.offset()) / view_.scale();
-}
-
-QPoint TimeMarker::point() const
-{
-	return QPoint(get_x(), 0);
-}
-
 void TimeMarker::set_time(double time)
 {
 	time_ = time;
@@ -78,6 +68,16 @@ void TimeMarker::set_time(double time)
 	}
 
 	time_changed();
+}
+
+float TimeMarker::get_x() const
+{
+	return (time_ - view_.offset()) / view_.scale();
+}
+
+QPoint TimeMarker::point() const
+{
+	return QPoint(get_x(), 0);
 }
 
 QRectF TimeMarker::label_rect(const QRectF &rect) const
