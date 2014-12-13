@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_SELECTABLEITEM_H
-#define PULSEVIEW_PV_SELECTABLEITEM_H
+#ifndef PULSEVIEW_PV_VIEWITEM_H
+#define PULSEVIEW_PV_VIEWITEM_H
 
 #include <list>
 
@@ -37,7 +37,7 @@ class Popup;
 
 namespace view {
 
-class SelectableItem : public QObject
+class ViewItem : public QObject
 {
 	Q_OBJECT
 
@@ -45,7 +45,7 @@ private:
 	static const int HighlightRadius;
 
 public:
-	SelectableItem();
+	ViewItem();
 
 public:
 	/**
@@ -125,4 +125,4 @@ private:
 } // namespace view
 } // namespace pv
 
-#endif // PULSEVIEW_PV_SELECTABLEITEM_H
+#endif // PULSEVIEW_PV_VIEWITEM_H

@@ -135,7 +135,7 @@ void CursorPair::paint_label(QPainter &p, const QRect &rect)
 		p.setPen(Cursor::FillColour.lighter());
 		p.drawRoundedRect(delta_rect, highlight_radius, highlight_radius);
 
-		p.setPen(SelectableItem::select_text_colour(
+		p.setPen(ViewItem::select_text_colour(
 			Cursor::FillColour));
 		p.drawText(text_rect, Qt::AlignCenter | Qt::AlignVCenter,
 			pv::util::format_time(second_->time() - first_->time(), prefix, 2));

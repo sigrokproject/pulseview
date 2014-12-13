@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#include "selectableitem.hpp"
+#include "viewitem.hpp"
 
 #include <climits>
 
@@ -29,63 +29,63 @@
 namespace pv {
 namespace view {
 
-const int SelectableItem::HighlightRadius = 6;
+const int ViewItem::HighlightRadius = 6;
 
-SelectableItem::SelectableItem() :
+ViewItem::ViewItem() :
 	context_parent_(NULL),
 	selected_(false),
 	drag_point_(INT_MIN, INT_MIN)
 {
 }
 
-bool SelectableItem::selected() const
+bool ViewItem::selected() const
 {
 	return selected_;
 }
 
-void SelectableItem::select(bool select)
+void ViewItem::select(bool select)
 {
 	selected_ = select;
 }
 
-bool SelectableItem::dragging() const
+bool ViewItem::dragging() const
 {
 	return drag_point_.x() != INT_MIN && drag_point_.y() != INT_MIN;
 }
 
-QPoint SelectableItem::drag_point() const
+QPoint ViewItem::drag_point() const
 {
 	return drag_point_;
 }
 
-void SelectableItem::drag()
+void ViewItem::drag()
 {
 	drag_point_ = point();
 }
 
-void SelectableItem::drag_release()
+void ViewItem::drag_release()
 {
 	drag_point_ = QPoint(INT_MIN, INT_MIN);
 }
 
-QMenu* SelectableItem::create_context_menu(QWidget *parent)
+QMenu* ViewItem::create_context_menu(QWidget *parent)
 {
 	context_parent_ = parent;
 	return new QMenu(parent);
 }
 
-void SelectableItem::delete_pressed()
+void ViewItem::delete_pressed()
 {
 }
 
-QPen SelectableItem::highlight_pen()
+QPen ViewItem::highlight_pen()
 {
 	return QPen(QApplication::palette().brush(
 		QPalette::Highlight), HighlightRadius,
 		Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
 }
 
-QColor SelectableItem::select_text_colour(QColor background)
+QColor ViewItem::select_text_colour(QColor background)
 {
 	return (background.lightness() > 64) ? Qt::black : Qt::white;
 }

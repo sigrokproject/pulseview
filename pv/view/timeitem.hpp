@@ -21,14 +21,14 @@
 #ifndef PULSEVIEW_PV_VIEW_TIMEITEM_H
 #define PULSEVIEW_PV_VIEW_TIMEITEM_H
 
-#include "selectableitem.hpp"
+#include "viewitem.hpp"
 
 namespace pv {
 namespace view {
 
 class View;
 
-class TimeItem : public SelectableItem
+class TimeItem : public ViewItem
 {
 	Q_OBJECT
 

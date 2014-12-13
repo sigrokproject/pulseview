@@ -26,14 +26,14 @@
 #include <QPropertyAnimation>
 
 #include "rowitempaintparams.hpp"
-#include "selectableitem.hpp"
+#include "viewitem.hpp"
 
 namespace pv {
 namespace view {
 
 class RowItemOwner;
 
-class RowItem : public SelectableItem,
+class RowItem : public ViewItem,
 	public std::enable_shared_from_this<pv::view::RowItem>
 {
 	Q_OBJECT

@@ -177,7 +177,6 @@ set(pulseview_SOURCES
 	pv/view/rowitemowner.cpp
 	pv/view/rowitempaintparams.cpp
 	pv/view/ruler.cpp
-	pv/view/selectableitem.cpp
 	pv/view/signal.cpp
 	pv/view/timeitem.cpp
 	pv/view/timemarker.cpp
@@ -185,6 +184,7 @@ set(pulseview_SOURCES
 	pv/view/tracegroup.cpp
 	pv/view/tracepalette.cpp
 	pv/view/view.cpp
+	pv/view/viewitem.cpp
 	pv/view/viewport.cpp
 	pv/widgets/colourbutton.cpp
 	pv/widgets/colourpopup.cpp
@@ -219,13 +219,13 @@ set(pulseview_HEADERS
 	pv/view/marginwidget.hpp
 	pv/view/rowitem.hpp
 	pv/view/ruler.hpp
-	pv/view/selectableitem.hpp
 	pv/view/signal.hpp
 	pv/view/timeitem.hpp
 	pv/view/timemarker.hpp
 	pv/view/trace.hpp
 	pv/view/tracegroup.hpp
 	pv/view/view.hpp
+	pv/view/viewitem.hpp
 	pv/view/viewport.hpp
 	pv/widgets/colourbutton.hpp
 	pv/widgets/colourpopup.hpp

@@ -71,7 +71,7 @@ using sigrok::HardwareDevice;
 namespace pv {
 
 namespace view {
-class SelectableItem;
+class ViewItem;
 }
 
 const char *MainWindow::SettingOpenDirectory = "MainWindow/OpenDirectory";
