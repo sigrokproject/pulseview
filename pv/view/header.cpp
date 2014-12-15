@@ -80,7 +80,7 @@ QSize Header::sizeHint() const
 
 shared_ptr<RowItem> Header::get_mouse_over_row_item(const QPoint &pt)
 {
-	const QRect r(BaselineOffset, 0, width() - BaselineOffset, height());
+	const QRect r(0, 0, width() - BaselineOffset, height());
 	for (auto &i : view_)
 		if (i->enabled() && i->label_rect(r).contains(pt))
 			return i;
@@ -112,7 +112,7 @@ void Header::paintEvent(QPaintEvent*)
 	// The trace labels are not drawn with the arrows exactly on the
 	// left edge of the widget, because then the selection shadow
 	// would be clipped away.
-	const QRect rect(BaselineOffset, 0, width() - BaselineOffset, height());
+	const QRect rect(0, 0, width() - BaselineOffset, height());
 
 	vector< shared_ptr<RowItem> > row_items(
 		view_.begin(), view_.end());
