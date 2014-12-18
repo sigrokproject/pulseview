@@ -138,8 +138,11 @@ void Ruler::paintEvent(QPaintEvent*)
 
 	// Draw the items
 	const vector< shared_ptr<TimeItem> > items(view_.time_items());
-	for (auto &i : items)
-		i->paint_label(p, r);
+	for (auto &i : items) {
+		const bool highlight = !dragging_ &&
+			i->label_rect(r).contains(mouse_point_);
+		i->paint_label(p, r, highlight);
+	}
 }
 
 void Ruler::mouseMoveEvent(QMouseEvent *e)

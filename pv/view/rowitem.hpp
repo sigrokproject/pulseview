@@ -104,14 +104,6 @@ public:
 	 */
 	virtual std::pair<int, int> v_extents() const = 0;
 
-	/**
-	 * Paints the signal label.
-	 * @param p the QPainter to paint into.
-	 * @param rect the rectangle of the header area.
-	 * @param hover true if the label is being hovered over by the mouse.
-	 */
-	virtual void paint_label(QPainter &p, const QRect &rect, bool hover) = 0;
-
 public:
 	virtual void hover_point_changed();
 

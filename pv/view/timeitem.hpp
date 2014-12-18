@@ -48,13 +48,6 @@ public:
 
 	virtual float get_x() const = 0;
 
-	/**
-	 * Paints the marker's label to the ruler.
-	 * @param p The painter to draw with.
-	 * @param rect The rectangle of the ruler client area.
-	 */
-	virtual void paint_label(QPainter &p, const QRect &rect) = 0;
-
 protected:
 	View &view_;
 };

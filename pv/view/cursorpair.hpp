@@ -74,7 +74,13 @@ public:
 public:
 	QRectF label_rect(const QRectF &rect) const;
 
-	void paint_label(QPainter &p, const QRect &rect);
+	/**
+	 * Paints the marker's label to the ruler.
+	 * @param p The painter to draw with.
+	 * @param rect The rectangle of the ruler client area.
+	 * @param hover true if the label is being hovered over by the mouse.
+	 */
+	void paint_label(QPainter &p, const QRect &rect, bool hover);
 
 	/**
 	 * Paints the background layer of the item with a QPainter

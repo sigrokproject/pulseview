@@ -101,7 +101,7 @@ QRectF CursorPair::label_rect(const QRectF &rect) const
 		right - left, height);
 }
 
-void CursorPair::paint_label(QPainter &p, const QRect &rect)
+void CursorPair::paint_label(QPainter &p, const QRect &rect, bool hover)
 {
 	assert(first_);
 	assert(second_);
@@ -130,7 +130,8 @@ void CursorPair::paint_label(QPainter &p, const QRect &rect)
 			p.drawRoundedRect(delta_rect, radius, radius);
 		}
 
-		p.setBrush(Cursor::FillColour);
+		p.setBrush(hover ? Cursor::FillColour.lighter() :
+			Cursor::FillColour);
 		p.setPen(Cursor::FillColour.darker());
 		p.drawRoundedRect(delta_rect, radius, radius);
 

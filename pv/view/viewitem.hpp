@@ -98,6 +98,14 @@ public:
 	virtual QRectF label_rect(const QRectF &rect) const = 0;
 
 	/**
+	 * Paints the signal label.
+	 * @param p the QPainter to paint into.
+	 * @param rect the rectangle of the header area.
+	 * @param hover true if the label is being hovered over by the mouse.
+	 */
+	virtual void paint_label(QPainter &p, const QRect &rect, bool hover) = 0;
+
+	/**
 	 * Paints the background layer of the item with a QPainter
 	 * @param p the QPainter to paint into.
 	 * @param pp the painting parameters object to paint with.

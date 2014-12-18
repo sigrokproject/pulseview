@@ -100,7 +100,7 @@ QRectF TimeMarker::label_rect(const QRectF &rect) const
 		label_size.width(), height);
 }
 
-void TimeMarker::paint_label(QPainter &p, const QRect &rect)
+void TimeMarker::paint_label(QPainter &p, const QRect &rect, bool hover)
 {
 	if (!enabled())
 		return;
@@ -136,7 +136,7 @@ void TimeMarker::paint_label(QPainter &p, const QRect &rect)
 	}
 
 	p.setPen(Qt::transparent);
-	p.setBrush(colour_);
+	p.setBrush(hover ? colour_.lighter() : colour_);
 	p.drawPolygon(points, countof(points));
 
 	p.setPen(colour_.lighter());
