@@ -61,7 +61,12 @@ QString Flag::get_text() const
 
 pv::widgets::Popup* Flag::create_popup(QWidget *parent)
 {
-	pv::widgets::Popup *const popup = TimeMarker::create_popup(parent);
+	using pv::widgets::Popup;
+
+	Popup *const popup = TimeMarker::create_popup(parent);
+	popup->set_position(parent->mapToGlobal(
+		point(parent->rect())), Popup::Bottom);
+
 	QFormLayout *const form = (QFormLayout*)popup->layout();
 
 	QLineEdit *const text_edit = new QLineEdit(popup);

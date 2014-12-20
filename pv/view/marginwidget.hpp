@@ -21,6 +21,8 @@
 #ifndef PULSEVIEW_PV_MARGINWIDGET_H
 #define PULSEVIEW_PV_MARGINWIDGET_H
 
+#include <memory>
+
 #include <QPoint>
 #include <QWidget>
 
@@ -28,6 +30,7 @@ namespace pv {
 namespace view {
 
 class View;
+class ViewItem;
 
 class MarginWidget : public QWidget
 {
@@ -42,6 +45,13 @@ public:
 	 * the area to overlap the viewport.
 	 */
 	virtual QSize extended_size_hint() const = 0;
+
+protected:
+	/**
+	 * Shows the popup of a the specified @c ViewItem .
+	 * @param item The item to show the popup for.
+	 */
+	void show_popup(const std::shared_ptr<ViewItem> &item);
 
 public Q_SLOTS:
 	virtual void clear_selection();

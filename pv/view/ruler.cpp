@@ -29,7 +29,6 @@
 #include "view.hpp"
 
 #include <pv/util.hpp>
-#include <pv/widgets/popup.hpp>
 
 using namespace Qt;
 
@@ -199,15 +198,8 @@ void Ruler::mouseReleaseEvent(QMouseEvent *)
 {
 	using pv::widgets::Popup;
 
-	if (!dragging_ && mouse_down_item_) {
-		Popup *const p = mouse_down_item_->create_popup(&view_);
-		if (p) {
-			const QPoint arrpos(mouse_down_item_->get_x(),
-				height() - ViewItem::HighlightRadius);
-			p->set_position(mapToGlobal(arrpos), Popup::Bottom);
-			p->show();
-		}
-	}
+	if (!dragging_ && mouse_down_item_)
+		show_popup(mouse_down_item_);
 
 	dragging_ = false;
 	mouse_down_item_.reset();

@@ -96,19 +96,6 @@ void Header::clear_selection()
 	update();
 }
 
-void Header::show_popup(const shared_ptr<RowItem> &item)
-{
-	using pv::widgets::Popup;
-
-	Popup *const p = item->create_popup(&view_);
-	if (!p)
-		return;
-
-	const QPoint pt(width() - BaselineOffset, item->get_visual_y());
-	p->set_position(mapToGlobal(pt), Popup::Right);
-	p->show();
-}
-
 void Header::paintEvent(QPaintEvent*)
 {
 	// The trace labels are not drawn with the arrows exactly on the

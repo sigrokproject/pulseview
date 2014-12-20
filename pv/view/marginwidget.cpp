@@ -22,6 +22,10 @@
 
 #include "marginwidget.hpp"
 
+#include <pv/widgets/popup.hpp>
+
+using std::shared_ptr;
+
 namespace pv {
 namespace view {
 
@@ -33,6 +37,13 @@ MarginWidget::MarginWidget(View &parent) :
 	setAttribute(Qt::WA_NoSystemBackground, true);
 	setFocusPolicy(Qt::ClickFocus);
 	setMouseTracking(true);
+}
+
+void MarginWidget::show_popup(const shared_ptr<ViewItem> &item)
+{
+	pv::widgets::Popup *const p = item->create_popup(this);
+	if (p)
+		p->show();
 }
 
 void MarginWidget::clear_selection()
