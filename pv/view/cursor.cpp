@@ -66,8 +66,8 @@ QRectF Cursor::label_rect(const QRectF &rect) const
 	QSize text_size = m.boundingRect(get_text()).size();
 
 	const QSizeF label_size(
-		text_size.width() + View::LabelPadding.width() * 2,
-		text_size.height() + View::LabelPadding.height() * 2);
+		text_size.width() + LabelPadding.width() * 2,
+		text_size.height() + LabelPadding.height() * 2);
 	const float top = rect.height() - label_size.height() -
 		TimeMarker::ArrowSize - 0.5f;
 	const float height = label_size.height();

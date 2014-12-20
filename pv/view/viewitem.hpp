@@ -44,6 +44,7 @@ class ViewItem : public QObject
 	Q_OBJECT
 
 public:
+	static const QSizeF LabelPadding;
 	static const int HighlightRadius;
 
 public:

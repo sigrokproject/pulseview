@@ -89,8 +89,8 @@ QRectF TimeMarker::label_rect(const QRectF &rect) const
 	const float text_height = m.height();
 
 	const QSizeF label_size(
-		text_width + View::LabelPadding.width() * 2,
-		text_height + View::LabelPadding.height() * 2);
+		text_width + LabelPadding.width() * 2,
+		text_height + LabelPadding.height() * 2);
 	const float top = rect.height() - label_size.height() -
 		TimeMarker::ArrowSize - 0.5f;
 	const float height = label_size.height();

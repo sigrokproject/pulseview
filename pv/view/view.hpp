@@ -68,9 +68,6 @@ private:
 	static const int ScaleUnits[3];
 
 public:
-	static const QSizeF LabelPadding;
-
-public:
 	explicit View(Session &session, QWidget *parent = 0);
 
 	Session& session();

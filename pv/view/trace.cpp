@@ -151,8 +151,8 @@ QRectF Trace::label_rect(const QRectF &rect) const
 	const QSize text_size(
 		m.boundingRect(QRect(), 0, name_).width(), m.height());
 	const QSizeF label_size(
-		text_size.width() + View::LabelPadding.width() * 2,
-		ceilf((text_size.height() + View::LabelPadding.height() * 2) / 2) * 2);
+		text_size.width() + LabelPadding.width() * 2,
+		ceilf((text_size.height() + LabelPadding.height() * 2) / 2) * 2);
 	const float half_height = label_size.height() / 2;
 	return QRectF(
 		rect.right() - half_height - label_size.width() - 0.5,
