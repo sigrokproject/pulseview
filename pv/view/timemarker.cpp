@@ -87,7 +87,7 @@ QRectF TimeMarker::label_rect(const QRectF &rect) const
 	QFontMetrics m(QApplication::font());
 	const float text_width =
 		max(m.boundingRect(get_text()).size().width(), ArrowSize);
-	const float text_height = m.boundingRect("Tg").size().height();
+	const float text_height = m.height();
 
 	const QSizeF label_size(
 		text_width + View::LabelPadding.width() * 2,

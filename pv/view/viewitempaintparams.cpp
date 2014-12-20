@@ -42,8 +42,7 @@ QFont ViewItemPaintParams::font()
 }
 
 int ViewItemPaintParams::text_height() {
-	QFontMetrics m(font());
-	return m.boundingRect(QRect(), 0, "Tg").height();
+	return QFontMetrics(font()).height();
 }
 
 } // namespace view

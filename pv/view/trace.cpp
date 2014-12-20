@@ -149,8 +149,7 @@ QRectF Trace::label_rect(const QRectF &rect) const
 
 	QFontMetrics m(QApplication::font());
 	const QSize text_size(
-		m.boundingRect(QRect(), 0, name_).width(),
-		m.boundingRect(QRect(), 0, "Tg").height());
+		m.boundingRect(QRect(), 0, name_).width(), m.height());
 	const QSizeF label_size(
 		text_size.width() + View::LabelPadding.width() * 2,
 		ceilf((text_size.height() + View::LabelPadding.height() * 2) / 2) * 2);

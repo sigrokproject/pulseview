@@ -261,9 +261,7 @@ void Ruler::draw_hover_mark(QPainter &p)
 
 int Ruler::calculate_text_height() const
 {
-	QFontMetrics fm(font());
-	return fm.boundingRect(0, 0, INT_MAX, INT_MAX,
-		Qt::AlignLeft | Qt::AlignTop, "8").height();
+	return QFontMetrics(font()).ascent();
 }
 
 void Ruler::hover_point_changed()
