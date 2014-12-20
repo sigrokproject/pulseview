@@ -59,7 +59,7 @@ public:
 	static const int BaselineOffset;
 
 private:
-	std::shared_ptr<pv::view::RowItem> get_mouse_over_row_item(
+	std::shared_ptr<pv::view::RowItem> get_mouse_over_item(
 		const QPoint &pt);
 
 	void clear_selection();
