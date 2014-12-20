@@ -61,6 +61,10 @@ public:
 	QSize extended_size_hint() const;
 
 private:
+	std::shared_ptr<pv::view::TimeItem> get_mouse_over_item(
+		const QPoint &pt);
+
+private:
 	void paintEvent(QPaintEvent *event);
 
 	void mouseMoveEvent(QMouseEvent *e);

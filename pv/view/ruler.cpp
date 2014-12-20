@@ -76,6 +76,15 @@ QSize Ruler::extended_size_hint() const
 		ViewItem::HighlightRadius);
 }
 
+shared_ptr<TimeItem> Ruler::get_mouse_over_item(const QPoint &pt)
+{
+	const vector< shared_ptr<TimeItem> > items(view_.time_items());
+	for (auto i = items.rbegin(); i != items.rend(); i++)
+		if ((*i)->enabled() && (*i)->label_rect(rect()).contains(pt))
+			return *i;
+	return nullptr;
+}
+
 void Ruler::paintEvent(QPaintEvent*)
 {
 	const int ValueMargin = 3;
@@ -174,17 +183,9 @@ void Ruler::mousePressEvent(QMouseEvent *e)
 {
 	if (e->buttons() & Qt::LeftButton) {
 		mouse_down_point_ = e->pos();
-
-		mouse_down_item_.reset();
+		mouse_down_item_ = get_mouse_over_item(e->pos());
 
 		clear_selection();
-
-		const vector< shared_ptr<TimeItem> > items(view_.time_items());
-		for (auto i = items.rbegin(); i != items.rend(); i++)
-			if ((*i)->label_rect(rect()).contains(e->pos())) {
-				mouse_down_item_ = (*i);
-				break;
-			}
 
 		if (mouse_down_item_) {
 			mouse_down_item_->select();
