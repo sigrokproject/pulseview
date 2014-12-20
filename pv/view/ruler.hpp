@@ -41,7 +41,8 @@ private:
 
 	static const int MinorTickSubdivision;
 
-	static const int HoverArrowSize;
+	/// Height of the hover arrow in multiples of the text height
+	static const float HoverArrowSize;
 
 	static const int Padding;
 

@@ -41,7 +41,7 @@ namespace view {
 const float Ruler::RulerHeight = 2.5f;  // x Text Height
 const int Ruler::MinorTickSubdivision = 4;
 
-const int Ruler::HoverArrowSize = 5;
+const float Ruler::HoverArrowSize = 0.5f;  // x Text Height
 
 const int Ruler::Padding = 20;
 const int Ruler::BaselineOffset = 5;
@@ -252,10 +252,11 @@ void Ruler::draw_hover_mark(QPainter &p, int text_height)
 	p.setBrush(QBrush(palette().color(foregroundRole())));
 
 	const int b = RulerHeight * text_height;
+	const float hover_arrow_size = HoverArrowSize * text_height;
 	const QPointF points[] = {
 		QPointF(x, b),
-		QPointF(x - HoverArrowSize, b - HoverArrowSize),
-		QPointF(x + HoverArrowSize, b - HoverArrowSize)
+		QPointF(x - hover_arrow_size, b - hover_arrow_size),
+		QPointF(x + hover_arrow_size, b - hover_arrow_size)
 	};
 	p.drawPolygon(points, countof(points));
 }
