@@ -43,8 +43,6 @@ const int Ruler::MinorTickSubdivision = 4;
 
 const float Ruler::HoverArrowSize = 0.5f;  // x Text Height
 
-const int Ruler::Padding = 20;
-
 Ruler::Ruler(View &parent) :
 	MarginWidget(parent)
 {
@@ -70,9 +68,12 @@ QSize Ruler::sizeHint() const
 
 QSize Ruler::extended_size_hint() const
 {
-	const int text_height = calculate_text_height();
-	return QSize(0, RulerHeight * text_height +
-		(text_height + Padding + ViewItem::HighlightRadius) / 2);
+	QRectF max_rect;
+	std::vector< std::shared_ptr<TimeItem> > items(view_.time_items());
+	for (auto &i : items)
+		max_rect = max_rect.united(i->label_rect(QRect()));
+	return QSize(0, sizeHint().height() - max_rect.top() / 2 +
+		ViewItem::HighlightRadius);
 }
 
 void Ruler::paintEvent(QPaintEvent*)

@@ -44,8 +44,6 @@ private:
 	/// Height of the hover arrow in multiples of the text height
 	static const float HoverArrowSize;
 
-	static const int Padding;
-
 public:
 	Ruler(View &parent);
 
