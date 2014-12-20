@@ -36,6 +36,7 @@ namespace pv {
 namespace view {
 
 const int CursorPair::DeltaPadding = 8;
+const QColor CursorPair::ViewportFillColour(220, 231, 243);
 
 CursorPair::CursorPair(View &view) :
 	TimeItem(view),
@@ -150,7 +151,7 @@ void CursorPair::paint_back(QPainter &p, const ViewItemPaintParams &pp) {
 		return;
 
 	p.setPen(Qt::NoPen);
-	p.setBrush(QBrush(View::CursorAreaColour));
+	p.setBrush(QBrush(ViewportFillColour));
 
 	const pair<float, float> offsets(get_cursor_offsets());
 	const int l = (int)max(min(

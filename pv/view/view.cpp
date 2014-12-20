@@ -84,8 +84,6 @@ const int View::MaxScrollValue = INT_MAX / 2;
 
 const int View::ScaleUnits[3] = {1, 2, 5};
 
-const QColor View::CursorAreaColour(220, 231, 243);
-
 const QSizeF View::LabelPadding(4, 0);
 
 View::View(Session &session, QWidget *parent) :

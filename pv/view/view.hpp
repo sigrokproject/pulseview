@@ -68,8 +68,6 @@ private:
 	static const int ScaleUnits[3];
 
 public:
-	static const QColor CursorAreaColour;
-
 	static const QSizeF LabelPadding;
 
 public:
