@@ -110,7 +110,10 @@ void CursorPair::paint_label(QPainter &p, const QRect &rect)
 		return;
 
 	const unsigned int prefix = view_.tick_prefix();
+	const QColor text_colour =
+		ViewItem::select_text_colour(Cursor::FillColour);
 
+	p.setPen(text_colour);
 	compute_text_size(p, prefix);
 	QRectF delta_rect(label_rect(rect));
 
@@ -135,8 +138,7 @@ void CursorPair::paint_label(QPainter &p, const QRect &rect)
 		p.setPen(Cursor::FillColour.lighter());
 		p.drawRoundedRect(delta_rect, highlight_radius, highlight_radius);
 
-		p.setPen(ViewItem::select_text_colour(
-			Cursor::FillColour));
+		p.setPen(text_colour);
 		p.drawText(text_rect, Qt::AlignCenter | Qt::AlignVCenter,
 			pv::util::format_time(second_->time() - first_->time(), prefix, 2));
 	}
