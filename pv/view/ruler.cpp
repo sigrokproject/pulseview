@@ -44,7 +44,6 @@ const int Ruler::MinorTickSubdivision = 4;
 const float Ruler::HoverArrowSize = 0.5f;  // x Text Height
 
 const int Ruler::Padding = 20;
-const int Ruler::BaselineOffset = 5;
 
 Ruler::Ruler(View &parent) :
 	MarginWidget(parent)
@@ -73,7 +72,7 @@ QSize Ruler::extended_size_hint() const
 {
 	const int text_height = calculate_text_height();
 	return QSize(0, RulerHeight * text_height +
-		(text_height + Padding + BaselineOffset) / 2);
+		(text_height + Padding + ViewItem::HighlightRadius) / 2);
 }
 
 void Ruler::paintEvent(QPaintEvent*)
@@ -136,7 +135,7 @@ void Ruler::paintEvent(QPaintEvent*)
 	// The cursor labels are not drawn with the arrows exactly on the
 	// bottom line of the widget, because then the selection shadow
 	// would be clipped away.
-	const QRect r = rect().adjusted(0, 0, 0, -BaselineOffset);
+	const QRect r = rect().adjusted(0, 0, 0, -ViewItem::HighlightRadius);
 
 	// Draw the items
 	const vector< shared_ptr<TimeItem> > items(view_.time_items());
@@ -203,7 +202,7 @@ void Ruler::mouseReleaseEvent(QMouseEvent *)
 		Popup *const p = mouse_down_item_->create_popup(&view_);
 		if (p) {
 			const QPoint arrpos(mouse_down_item_->get_x(),
-				height() - BaselineOffset);
+				height() - ViewItem::HighlightRadius);
 			p->set_position(mapToGlobal(arrpos), Popup::Bottom);
 			p->show();
 		}
