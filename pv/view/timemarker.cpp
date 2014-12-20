@@ -81,22 +81,16 @@ QPoint TimeMarker::point() const
 
 QRectF TimeMarker::label_rect(const QRectF &rect) const
 {
-	const float x = (time_ - view_.offset()) / view_.scale();
-
 	QFontMetrics m(QApplication::font());
-	const float text_width =
-		max(m.boundingRect(get_text()).size().width(), ArrowSize);
-	const float text_height = m.height();
-
-	const QSizeF label_size(
-		text_width + LabelPadding.width() * 2,
-		text_height + LabelPadding.height() * 2);
+	const QSizeF text_size(
+		max(m.boundingRect(get_text()).size().width(), ArrowSize),
+		m.height());
+	const QSizeF label_size(text_size + LabelPadding * 2);
 	const float top = rect.height() - label_size.height() -
 		TimeMarker::ArrowSize - 0.5f;
-	const float height = label_size.height();
+	const float x = (time_ - view_.offset()) / view_.scale();
 
-	return QRectF(x - label_size.width() / 2, top,
-		label_size.width(), height);
+	return QRectF(QPointF(x - label_size.width() / 2, top), label_size);
 }
 
 void TimeMarker::paint_label(QPainter &p, const QRect &rect, bool hover)
