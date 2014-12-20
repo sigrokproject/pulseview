@@ -129,7 +129,6 @@ DecodeTrace::DecodeTrace(pv::Session &session,
 		decoder_stack->stack().front()->decoder()->name)),
 	session_(session),
 	decoder_stack_(decoder_stack),
-	text_height_(0),
 	row_height_(0),
 	delete_mapper_(this),
 	show_hide_mapper_(this)
@@ -174,9 +173,9 @@ void DecodeTrace::paint_mid(QPainter &p, const ViewItemPaintParams &pp)
 {
 	using namespace pv::data::decode;
 
-	text_height_ = ViewItemPaintParams::text_height();
-	row_height_ = (text_height_ * 6) / 4;
-	const int annotation_height = (text_height_ * 5) / 4;
+	const int text_height = ViewItemPaintParams::text_height();
+	row_height_ = (text_height * 6) / 4;
+	const int annotation_height = (text_height * 5) / 4;
 
 	assert(decoder_stack_);
 	const QString err = decoder_stack_->error_message();
