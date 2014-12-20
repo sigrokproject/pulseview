@@ -68,7 +68,7 @@ public:
 
 	float get_x() const;
 
-	QPoint point() const;
+	QPoint point(const QRect &rect) const;
 
 	pv::widgets::Popup* create_popup(QWidget *parent);
 

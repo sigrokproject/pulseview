@@ -115,9 +115,9 @@ int RowItem::get_visual_y() const
 	return visual_v_offset_ + owner_->owner_visual_v_offset();
 }
 
-QPoint RowItem::point() const
+QPoint RowItem::point(const QRect &rect) const
 {
-	return QPoint(0, visual_v_offset());
+	return QPoint(rect.right(), visual_v_offset());
 }
 
 void RowItem::hover_point_changed()

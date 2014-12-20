@@ -67,9 +67,10 @@ public:
 	float get_x() const;
 
 	/**
-	 * Gets the drag point of the row item.
+	 * Gets the arrow-tip point of the time marker.
+	 * @param rect the rectangle of the ruler area.
 	 */
-	QPoint point() const;
+	QPoint point(const QRect &rect) const;
 
 	/**
 	 * Computes the outline rectangle of a label.

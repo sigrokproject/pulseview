@@ -61,7 +61,7 @@ QPoint ViewItem::drag_point() const
 
 void ViewItem::drag()
 {
-	drag_point_ = point();
+	drag_point_ = point(QRect());
 }
 
 void ViewItem::drag_release()

@@ -71,9 +71,9 @@ float CursorPair::get_x() const
 	return (first_->get_x() + second_->get_x()) / 2.0f;
 }
 
-QPoint CursorPair::point() const
+QPoint CursorPair::point(const QRect &rect) const
 {
-	return first_->point();
+	return first_->point(rect);
 }
 
 pv::widgets::Popup* CursorPair::create_popup(QWidget *parent)

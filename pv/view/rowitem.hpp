@@ -94,9 +94,10 @@ public:
 	int get_visual_y() const;
 
 	/**
-	 * Gets the drag point of the row item.
+	 * Gets the arrow-tip point of the row item marker.
+	 * @param rect the rectangle of the header area.
 	 */
-	QPoint point() const;
+	QPoint point(const QRect &rect) const;
 
 	/**
 	 * Computes the vertical extents of the contents of this row item.
