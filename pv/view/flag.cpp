@@ -24,6 +24,7 @@
 #include <QColor>
 #include <QFormLayout>
 #include <QLineEdit>
+#include <QMenu>
 
 #include <libsigrok/libsigrok.hpp>
 
@@ -74,7 +75,24 @@ pv::widgets::Popup* Flag::create_popup(QWidget *parent)
 	return popup;
 }
 
+QMenu* Flag::create_context_menu(QWidget *parent)
+{
+	QMenu *const menu = new QMenu(parent);
+
+	QAction *const del = new QAction(tr("Delete"), this);
+	del->setShortcuts(QKeySequence::Delete);
+	connect(del, SIGNAL(triggered()), this, SLOT(on_delete()));
+	menu->addAction(del);
+
+	return menu;
+}
+
 void Flag::delete_pressed()
+{
+	on_delete();
+}
+
+void Flag::on_delete()
 {
 	view_.remove_flag(shared_ptr<Flag>(shared_from_this()));
 }

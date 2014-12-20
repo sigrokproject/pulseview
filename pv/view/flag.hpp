@@ -25,6 +25,8 @@
 
 #include "timemarker.hpp"
 
+class QMenu;
+
 namespace pv {
 namespace view {
 
@@ -62,9 +64,13 @@ public:
 
 	pv::widgets::Popup* create_popup(QWidget *parent);
 
+	QMenu* create_context_menu(QWidget *parent);
+
 	void delete_pressed();
 
 private Q_SLOTS:
+	void on_delete();
+
 	void on_text_changed(const QString &text);
 
 private:
