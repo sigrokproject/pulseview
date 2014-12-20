@@ -38,7 +38,6 @@
 
 #include <libsigrok/libsigrok.hpp>
 
-#include "cursorheader.hpp"
 #include "decodetrace.hpp"
 #include "header.hpp"
 #include "logicsignal.hpp"
@@ -94,7 +93,6 @@ View::View(Session &session, QWidget *parent) :
 	session_(session),
 	viewport_(new Viewport(*this)),
 	ruler_(new Ruler(*this)),
-	cursorheader_(new CursorHeader(*this)),
 	header_(new Header(*this)),
 	scale_(1e-6),
 	offset_(0),
@@ -125,13 +123,13 @@ View::View(Session &session, QWidget *parent) :
 		this, SLOT(on_signals_moved()));
 
 	connect(header_, SIGNAL(selection_changed()),
-		cursorheader_, SLOT(clear_selection()));
-	connect(cursorheader_, SIGNAL(selection_changed()),
+		ruler_, SLOT(clear_selection()));
+	connect(ruler_, SIGNAL(selection_changed()),
 		header_, SLOT(clear_selection()));
 
 	connect(header_, SIGNAL(selection_changed()),
 		this, SIGNAL(selection_changed()));
-	connect(cursorheader_, SIGNAL(selection_changed()),
+	connect(ruler_, SIGNAL(selection_changed()),
 		this, SIGNAL(selection_changed()));
 
 	connect(this, SIGNAL(hover_point_changed()),
@@ -145,7 +143,6 @@ View::View(Session &session, QWidget *parent) :
 
 	viewport_->installEventFilter(this);
 	ruler_->installEventFilter(this);
-	cursorheader_->installEventFilter(this);
 	header_->installEventFilter(this);
 
 	// Trigger the initial event manually. The default device has signals
@@ -153,7 +150,7 @@ View::View(Session &session, QWidget *parent) :
 	signals_changed();
 
 	// make sure the transparent widgets are on the top
-	cursorheader_->raise();
+	ruler_->raise();
 	header_->raise();
 
 	// Update the zoom state
@@ -294,7 +291,6 @@ void View::set_scale_offset(double scale, double offset)
 
 	update_scroll();
 	ruler_->update();
-	cursorheader_->update();
 	viewport_->update();
 	scale_offset_changed();
 }
@@ -347,7 +343,7 @@ bool View::cursors_shown() const
 void View::show_cursors(bool show)
 {
 	show_cursors_ = show;
-	cursorheader_->update();
+	ruler_->update();
 	viewport_->update();
 }
 
@@ -356,7 +352,7 @@ void View::centre_cursors()
 	const double time_width = scale_ * viewport_->width();
 	cursors_->first()->set_time(offset_ + time_width * 0.4);
 	cursors_->second()->set_time(offset_ + time_width * 0.6);
-	cursorheader_->update();
+	ruler_->update();
 	viewport_->update();
 }
 
@@ -518,13 +514,9 @@ void View::update_layout()
 		header_->sizeHint().width() - pv::view::Header::BaselineOffset,
 		ruler_->sizeHint().height(), 0, 0);
 	ruler_->setGeometry(viewport_->x(), 0,
-		viewport_->width(), viewport_->y());
-	cursorheader_->setGeometry(
-		viewport_->x(),
-		ruler_->sizeHint().height() - cursorheader_->sizeHint().height() / 2,
-		viewport_->width(), cursorheader_->sizeHint().height());
+		viewport_->width(), ruler_->extended_size_hint().height());
 	header_->setGeometry(0, viewport_->y(),
-		header_->sizeHint().width(), viewport_->height());
+		header_->extended_size_hint().width(), viewport_->height());
 	update_scroll();
 }
 
@@ -588,7 +580,7 @@ bool View::eventFilter(QObject *object, QEvent *event)
 		const QMouseEvent *const mouse_event = (QMouseEvent*)event;
 		if (object == viewport_)
 			hover_point_ = mouse_event->pos();
-		else if (object == ruler_ || object == cursorheader_)
+		else if (object == ruler_)
 			hover_point_ = QPoint(mouse_event->x(), 0);
 		else if (object == header_)
 			hover_point_ = QPoint(0, mouse_event->y());
@@ -640,7 +632,7 @@ void View::row_item_appearance_changed(bool label, bool content)
 void View::time_item_appearance_changed(bool label, bool content)
 {
 	if (label)
-		cursorheader_->update();
+		ruler_->update();
 	if (content)
 		viewport_->update();
 }
@@ -668,7 +660,6 @@ void View::h_scroll_value_changed(int value)
 	}
 
 	ruler_->update();
-	cursorheader_->update();
 	viewport_->update();
 }
 

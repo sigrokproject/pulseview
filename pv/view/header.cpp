@@ -75,6 +75,11 @@ QSize Header::sizeHint() const
 	return QSize(max_rect.width() + Padding + BaselineOffset, 0);
 }
 
+QSize Header::extended_size_hint() const
+{
+	return sizeHint() + QSize(ViewItem::HighlightRadius, 0);
+}
+
 shared_ptr<RowItem> Header::get_mouse_over_row_item(const QPoint &pt)
 {
 	const QRect r(0, 0, width() - BaselineOffset, height());

@@ -46,6 +46,13 @@ public:
 	QSize sizeHint() const;
 
 	/**
+	 * The extended area that the header widget would like to be sized to.
+	 * @remarks This area is the area specified by sizeHint, extended by
+	 * the area to overlap the viewport.
+	 */
+	QSize extended_size_hint() const;
+
+	/**
 	 * The horizontal offset, relative to the left edge of the widget,
 	 * where the arrows of the trace labels end.
 	 */

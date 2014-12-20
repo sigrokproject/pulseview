@@ -272,7 +272,6 @@ private:
 
 	Viewport *viewport_;
 	Ruler *ruler_;
-	CursorHeader *cursorheader_;
 	Header *header_;
 
 	/// The view time scale in seconds per pixel.

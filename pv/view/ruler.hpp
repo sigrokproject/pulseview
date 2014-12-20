@@ -28,6 +28,8 @@
 namespace pv {
 namespace view {
 
+class TimeItem;
+
 class Ruler : public MarginWidget
 {
 	Q_OBJECT
@@ -38,20 +40,53 @@ private:
 
 	static const int HoverArrowSize;
 
+	static const int Padding;
+
+	/**
+	 * The vertical offset, relative to the bottom line of the widget,
+	 * where the arrows of the cursor labels end.
+	 */
+	static const int BaselineOffset;
+
 public:
 	Ruler(View &parent);
 
 public:
+	void clear_selection();
+
+public:
 	QSize sizeHint() const;
+
+	/**
+	 * The extended area that the header widget would like to be sized to.
+	 * @remarks This area is the area specified by sizeHint, extended by
+	 * the area to overlap the viewport.
+	 */
+	QSize extended_size_hint() const;
 
 private:
 	void paintEvent(QPaintEvent *event);
+
+	void mouseMoveEvent(QMouseEvent *e);
+	void mousePressEvent(QMouseEvent *e);
+	void mouseReleaseEvent(QMouseEvent *);
+	void leaveEvent(QEvent*);
+
+	void mouseDoubleClickEvent(QMouseEvent *e);
+
+	void keyPressEvent(QKeyEvent *e);
 
 private:
 	/**
 	 * Draw a hover arrow under the cursor position.
 	 */
 	void draw_hover_mark(QPainter &p);
+
+	int calculate_text_height();
+
+private:
+	std::shared_ptr<TimeItem> mouse_down_item_;
+	const int text_height_;
 
 private Q_SLOTS:
 	void hover_point_changed();

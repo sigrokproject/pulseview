@@ -43,7 +43,7 @@ class ViewItem : public QObject
 {
 	Q_OBJECT
 
-private:
+public:
 	static const int HighlightRadius;
 
 public:

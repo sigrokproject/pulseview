@@ -36,6 +36,13 @@ class MarginWidget : public QWidget
 public:
 	MarginWidget(pv::view::View &parent);
 
+	/**
+	 * The extended area that the margin widget would like to be sized to.
+	 * @remarks This area is the area specified by sizeHint, extended by
+	 * the area to overlap the viewport.
+	 */
+	virtual QSize extended_size_hint() const = 0;
+
 public Q_SLOTS:
 	virtual void clear_selection();
 
