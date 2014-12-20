@@ -74,6 +74,8 @@ private:
 
 	void mouseDoubleClickEvent(QMouseEvent *e);
 
+	void contextMenuEvent(QContextMenuEvent *event);
+
 	void keyPressEvent(QKeyEvent *e);
 
 private:
