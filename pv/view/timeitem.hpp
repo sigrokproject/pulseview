@@ -29,6 +29,7 @@ namespace view {
 class View;
 
 class TimeItem : public ViewItem
+
 {
 	Q_OBJECT
 

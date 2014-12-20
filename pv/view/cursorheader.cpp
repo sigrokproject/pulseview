@@ -49,7 +49,6 @@ CursorHeader::CursorHeader(View &parent) :
 	MarginWidget(parent),
 	textHeight_(calculateTextHeight())
 {
-	setMouseTracking(true);
 }
 
 QSize CursorHeader::sizeHint() const
@@ -160,6 +159,19 @@ void CursorHeader::leaveEvent(QEvent*)
 void CursorHeader::mouseDoubleClickEvent(QMouseEvent *e)
 {
 	view_.add_flag(view_.offset() + ((double)e->x() + 0.5) * view_.scale());
+}
+
+void CursorHeader::keyPressEvent(QKeyEvent *e)
+{
+	assert(e);
+
+	if (e->key() == Qt::Key_Delete)
+	{
+		const vector< shared_ptr<TimeItem> > items(view_.time_items());
+		for (auto &i : items)
+			if (i->selected())
+				i->delete_pressed();
+	}
 }
 
 } // namespace view

@@ -43,7 +43,8 @@ Flag::Flag(View &view, double time, const QString &text) :
 }
 
 Flag::Flag(const Flag &flag) :
-	TimeMarker(flag.view_, FillColour, flag.time_)
+	TimeMarker(flag.view_, FillColour, flag.time_),
+	std::enable_shared_from_this<pv::view::Flag>(flag)
 {
 }
 
@@ -71,6 +72,11 @@ pv::widgets::Popup* Flag::create_popup(QWidget *parent)
 	form->insertRow(0, tr("Text"), text_edit);
 
 	return popup;
+}
+
+void Flag::delete_pressed()
+{
+	view_.remove_flag(shared_ptr<Flag>(shared_from_this()));
 }
 
 void Flag::on_text_changed(const QString &text)

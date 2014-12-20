@@ -21,12 +21,15 @@
 #ifndef PULSEVIEW_PV_VIEW_FLAG_H
 #define PULSEVIEW_PV_VIEW_FLAG_H
 
+#include <memory>
+
 #include "timemarker.hpp"
 
 namespace pv {
 namespace view {
 
-class Flag : public TimeMarker
+class Flag : public TimeMarker,
+	public std::enable_shared_from_this<pv::view::Flag>
 {
 	Q_OBJECT
 
@@ -58,6 +61,8 @@ public:
 	QString get_text() const;
 
 	pv::widgets::Popup* create_popup(QWidget *parent);
+
+	void delete_pressed();
 
 private Q_SLOTS:
 	void on_text_changed(const QString &text);

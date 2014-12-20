@@ -31,6 +31,8 @@ MarginWidget::MarginWidget(View &parent) :
 	dragging_(false)
 {
 	setAttribute(Qt::WA_NoSystemBackground, true);
+	setFocusPolicy(Qt::ClickFocus);
+	setMouseTracking(true);
 }
 
 void MarginWidget::clear_selection()
