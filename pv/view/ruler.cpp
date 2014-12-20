@@ -47,8 +47,7 @@ const int Ruler::Padding = 20;
 const int Ruler::BaselineOffset = 5;
 
 Ruler::Ruler(View &parent) :
-	MarginWidget(parent),
-	text_height_(calculate_text_height())
+	MarginWidget(parent)
 {
 	setMouseTracking(true);
 
@@ -71,8 +70,9 @@ QSize Ruler::sizeHint() const
 
 QSize Ruler::extended_size_hint() const
 {
+	const int text_height = calculate_text_height();
 	return QSize(0, RulerHeight +
-		(text_height_ + Padding + BaselineOffset) / 2);
+		(text_height + Padding + BaselineOffset) / 2);
 }
 
 void Ruler::paintEvent(QPaintEvent*)
@@ -98,7 +98,8 @@ void Ruler::paintEvent(QPaintEvent*)
 	int division = (int)round(first_minor_division -
 		first_major_division * MinorTickSubdivision) - 1;
 
-	const int major_tick_y1 = text_height_ + ValueMargin * 2;
+	const int text_height = calculate_text_height();
+	const int major_tick_y1 = text_height + ValueMargin * 2;
 	const int tick_y2 = RulerHeight;
 	const int minor_tick_y1 = (major_tick_y1 + tick_y2) / 2;
 
@@ -111,7 +112,7 @@ void Ruler::paintEvent(QPaintEvent*)
 		if (division % MinorTickSubdivision == 0)
 		{
 			// Draw a major tick
-			p.drawText(x, ValueMargin, 0, text_height_,
+			p.drawText(x, ValueMargin, 0, text_height,
 				AlignCenter | AlignTop | TextDontClip,
 				pv::util::format_time(t, prefix));
 			p.drawLine(QPointF(x, major_tick_y1),
@@ -258,7 +259,7 @@ void Ruler::draw_hover_mark(QPainter &p)
 	p.drawPolygon(points, countof(points));
 }
 
-int Ruler::calculate_text_height()
+int Ruler::calculate_text_height() const
 {
 	QFontMetrics fm(font());
 	return fm.boundingRect(0, 0, INT_MAX, INT_MAX,

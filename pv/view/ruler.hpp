@@ -82,11 +82,10 @@ private:
 	 */
 	void draw_hover_mark(QPainter &p);
 
-	int calculate_text_height();
+	int calculate_text_height() const;
 
 private:
 	std::shared_ptr<TimeItem> mouse_down_item_;
-	const int text_height_;
 
 private Q_SLOTS:
 	void hover_point_changed();
