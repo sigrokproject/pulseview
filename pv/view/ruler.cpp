@@ -38,7 +38,7 @@ using std::vector;
 namespace pv {
 namespace view {
 
-const int Ruler::RulerHeight = 30;
+const float Ruler::RulerHeight = 2.5f;  // x Text Height
 const int Ruler::MinorTickSubdivision = 4;
 
 const int Ruler::HoverArrowSize = 5;
@@ -65,13 +65,14 @@ void Ruler::clear_selection()
 
 QSize Ruler::sizeHint() const
 {
-	return QSize(0, RulerHeight);
+	const int text_height = calculate_text_height();
+	return QSize(0, RulerHeight * text_height);
 }
 
 QSize Ruler::extended_size_hint() const
 {
 	const int text_height = calculate_text_height();
-	return QSize(0, RulerHeight +
+	return QSize(0, RulerHeight * text_height +
 		(text_height + Padding + BaselineOffset) / 2);
 }
 
@@ -99,9 +100,9 @@ void Ruler::paintEvent(QPaintEvent*)
 		first_major_division * MinorTickSubdivision) - 1;
 
 	const int text_height = calculate_text_height();
+	const int ruler_height = RulerHeight * text_height;
 	const int major_tick_y1 = text_height + ValueMargin * 2;
-	const int tick_y2 = RulerHeight;
-	const int minor_tick_y1 = (major_tick_y1 + tick_y2) / 2;
+	const int minor_tick_y1 = (major_tick_y1 + ruler_height) / 2;
 
 	double x;
 
@@ -116,13 +117,13 @@ void Ruler::paintEvent(QPaintEvent*)
 				AlignCenter | AlignTop | TextDontClip,
 				pv::util::format_time(t, prefix));
 			p.drawLine(QPointF(x, major_tick_y1),
-				QPointF(x, tick_y2));
+				QPointF(x, ruler_height));
 		}
 		else
 		{
 			// Draw a minor tick
 			p.drawLine(QPointF(x, minor_tick_y1),
-				QPointF(x, tick_y2));
+				QPointF(x, ruler_height));
 		}
 
 		division++;
@@ -130,7 +131,7 @@ void Ruler::paintEvent(QPaintEvent*)
 	} while (x < width());
 
 	// Draw the hover mark
-	draw_hover_mark(p);
+	draw_hover_mark(p, text_height);
 
 	// The cursor labels are not drawn with the arrows exactly on the
 	// bottom line of the widget, because then the selection shadow
@@ -240,7 +241,7 @@ void Ruler::keyPressEvent(QKeyEvent *e)
 	}
 }
 
-void Ruler::draw_hover_mark(QPainter &p)
+void Ruler::draw_hover_mark(QPainter &p, int text_height)
 {
 	const int x = view_.hover_point().x();
 
@@ -250,7 +251,7 @@ void Ruler::draw_hover_mark(QPainter &p)
 	p.setPen(QPen(Qt::NoPen));
 	p.setBrush(QBrush(palette().color(foregroundRole())));
 
-	const int b = RulerHeight;
+	const int b = RulerHeight * text_height;
 	const QPointF points[] = {
 		QPointF(x, b),
 		QPointF(x - HoverArrowSize, b - HoverArrowSize),

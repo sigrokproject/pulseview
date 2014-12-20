@@ -35,7 +35,10 @@ class Ruler : public MarginWidget
 	Q_OBJECT
 
 private:
-	static const int RulerHeight;
+
+	/// Height of the ruler in multipes of the text height
+	static const float RulerHeight;
+
 	static const int MinorTickSubdivision;
 
 	static const int HoverArrowSize;
@@ -79,8 +82,10 @@ private:
 private:
 	/**
 	 * Draw a hover arrow under the cursor position.
+	 * @param p The painter to draw into.
+	 * @param text_height The height of a single text ascent.
 	 */
-	void draw_hover_mark(QPainter &p);
+	void draw_hover_mark(QPainter &p, int text_height);
 
 	int calculate_text_height() const;
 
