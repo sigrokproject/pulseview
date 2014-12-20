@@ -84,9 +84,7 @@ pv::widgets::Popup* CursorPair::create_popup(QWidget *parent)
 
 QRectF CursorPair::label_rect(const QRectF &rect) const
 {
-	const QSizeF label_size(
-		text_size_.width() + LabelPadding.width() * 2,
-		text_size_.height() + LabelPadding.height() * 2);
+	const QSizeF label_size(text_size_ + LabelPadding * 2);
 	const pair<float, float> offsets(get_cursor_offsets());
 	const pair<float, float> normal_offsets(
 		(offsets.first < offsets.second) ? offsets :
