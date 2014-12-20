@@ -69,7 +69,7 @@ QRectF Cursor::label_rect(const QRectF &rect) const
 		text_size.width() + View::LabelPadding.width() * 2,
 		text_size.height() + View::LabelPadding.height() * 2);
 	const float top = rect.height() - label_size.height() -
-		TimeMarker::Offset - TimeMarker::ArrowSize - 0.5f;
+		TimeMarker::ArrowSize - 0.5f;
 	const float height = label_size.height();
 
 	if (time_ > other->time())

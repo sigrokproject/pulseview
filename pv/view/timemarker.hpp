@@ -43,7 +43,6 @@ class TimeMarker : public TimeItem
 
 public:
 	static const int ArrowSize;
-	static const int Offset;
 
 protected:
 	/**

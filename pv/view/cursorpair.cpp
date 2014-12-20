@@ -97,7 +97,7 @@ QRectF CursorPair::label_rect(const QRectF &rect) const
 		(float)rect.width() + height);
 
 	return QRectF(left, rect.height() - label_size.height() -
-		TimeMarker::ArrowSize - TimeMarker::Offset - 0.5f,
+		TimeMarker::ArrowSize - 0.5f,
 		right - left, height);
 }
 

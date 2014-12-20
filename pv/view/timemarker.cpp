@@ -40,7 +40,6 @@ namespace pv {
 namespace view {
 
 const int TimeMarker::ArrowSize = 4;
-const int TimeMarker::Offset = 1;
 
 TimeMarker::TimeMarker(View &view, const QColor &colour, double time) :
 	TimeItem(view),
@@ -93,7 +92,7 @@ QRectF TimeMarker::label_rect(const QRectF &rect) const
 		text_width + View::LabelPadding.width() * 2,
 		text_height + View::LabelPadding.height() * 2);
 	const float top = rect.height() - label_size.height() -
-		TimeMarker::Offset - TimeMarker::ArrowSize - 0.5f;
+		TimeMarker::ArrowSize - 0.5f;
 	const float height = label_size.height();
 
 	return QRectF(x - label_size.width() / 2, top,
