@@ -29,7 +29,7 @@
 namespace pv {
 namespace view {
 
-const int ViewItem::HighlightRadius = 6;
+const int ViewItem::HighlightRadius = 3;
 
 ViewItem::ViewItem() :
 	context_parent_(NULL),
@@ -81,7 +81,7 @@ void ViewItem::delete_pressed()
 QPen ViewItem::highlight_pen()
 {
 	return QPen(QApplication::palette().brush(
-		QPalette::Highlight), HighlightRadius,
+		QPalette::Highlight), HighlightRadius * 2,
 		Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
 }
 
