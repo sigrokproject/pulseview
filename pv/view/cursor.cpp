@@ -32,8 +32,11 @@
 
 #include <cassert>
 #include <cstdio>
+#include <limits>
 
+using std::abs;
 using std::shared_ptr;
+using std::numeric_limits;
 
 namespace pv {
 namespace view {
@@ -72,7 +75,10 @@ QRectF Cursor::label_rect(const QRectF &rect) const
 		TimeMarker::ArrowSize - 0.5f;
 	const float height = label_size.height();
 
-	if (time_ > other->time())
+	const double other_time = other->time();
+	if (time_ > other_time ||
+		(abs(time_ - other_time) < numeric_limits<double>::epsilon() &&
+		this > other.get()))
 		return QRectF(x, top, label_size.width(), height);
 	else
 		return QRectF(x - label_size.width(), top,
