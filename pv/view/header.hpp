@@ -74,8 +74,6 @@ private:
 	std::shared_ptr<pv::view::ViewItem> get_mouse_over_item(
 		const QPoint &pt);
 
-	void clear_selection();
-
 private:
 	void paintEvent(QPaintEvent *event);
 

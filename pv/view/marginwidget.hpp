@@ -73,7 +73,7 @@ private:
 	virtual void contextMenuEvent(QContextMenuEvent *event);
 
 public Q_SLOTS:
-	virtual void clear_selection();
+	void clear_selection();
 
 Q_SIGNALS:
 	void selection_changed();

@@ -49,9 +49,6 @@ public:
 	Ruler(View &parent);
 
 public:
-	void clear_selection();
-
-public:
 	QSize sizeHint() const;
 
 	/**

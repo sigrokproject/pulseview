@@ -94,13 +94,6 @@ shared_ptr<ViewItem> Header::get_mouse_over_item(const QPoint &pt)
 	return shared_ptr<RowItem>();
 }
 
-void Header::clear_selection()
-{
-	for (auto &i : view_)
-		i->select(false);
-	update();
-}
-
 void Header::paintEvent(QPaintEvent*)
 {
 	// The trace labels are not drawn with the arrows exactly on the

@@ -68,6 +68,10 @@ void MarginWidget::contextMenuEvent(QContextMenuEvent *event)
 
 void MarginWidget::clear_selection()
 {
+	const auto items = this->items();
+	for (auto &i : items)
+		i->select(false);
+	update();
 }
 
 } // namespace view

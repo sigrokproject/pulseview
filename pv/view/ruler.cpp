@@ -51,14 +51,6 @@ Ruler::Ruler(View &parent) :
 		this, SLOT(hover_point_changed()));
 }
 
-void Ruler::clear_selection()
-{
-	const vector< shared_ptr<TimeItem> > items(view_.time_items());
-	for (auto &i : items)
-		i->select(false);
-	update();
-}
-
 QSize Ruler::sizeHint() const
 {
 	const int text_height = calculate_text_height();
