@@ -76,6 +76,13 @@ QSize Ruler::extended_size_hint() const
 		ViewItem::HighlightRadius);
 }
 
+vector< shared_ptr<ViewItem> > Ruler::items()
+{
+	const vector< shared_ptr<TimeItem> > time_items(view_.time_items());
+	return vector< shared_ptr<ViewItem> >(
+		time_items.begin(), time_items.end());
+}
+
 shared_ptr<ViewItem> Ruler::get_mouse_over_item(const QPoint &pt)
 {
 	const vector< shared_ptr<TimeItem> > items(view_.time_items());

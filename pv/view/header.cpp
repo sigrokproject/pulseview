@@ -80,6 +80,11 @@ QSize Header::extended_size_hint() const
 	return sizeHint() + QSize(ViewItem::HighlightRadius, 0);
 }
 
+vector< shared_ptr<ViewItem> > Header::items()
+{
+	return vector< shared_ptr<ViewItem> >(view_.begin(), view_.end());
+}
+
 shared_ptr<ViewItem> Header::get_mouse_over_item(const QPoint &pt)
 {
 	const QRect r(0, 0, width() - BaselineOffset, height());

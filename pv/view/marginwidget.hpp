@@ -48,6 +48,11 @@ public:
 
 protected:
 	/**
+	 * Gets the items in the margin widget.
+	 */
+	virtual std::vector< std::shared_ptr<pv::view::ViewItem> > items() = 0;
+
+	/**
 	 * Shows the popup of a the specified @c ViewItem .
 	 * @param item The item to show the popup for.
 	 */

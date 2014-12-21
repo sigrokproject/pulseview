@@ -61,6 +61,11 @@ public:
 
 private:
 	/**
+	 * Gets the row items.
+	 */
+	std::vector< std::shared_ptr<pv::view::ViewItem> > items();
+
+	/**
 	 * Gets the first view item which has a label that contains @c pt .
 	 * @param pt the point to search with.
 	 * @return the view item that has been found, or and empty
