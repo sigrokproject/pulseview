@@ -88,9 +88,6 @@ private:
 
 	int calculate_text_height() const;
 
-private:
-	std::shared_ptr<TimeItem> mouse_down_item_;
-
 private Q_SLOTS:
 	void hover_point_changed();
 };

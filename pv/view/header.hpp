@@ -91,9 +91,6 @@ private Q_SLOTS:
 
 Q_SIGNALS:
 	void signals_moved();
-
-private:
-	std::shared_ptr<RowItem> mouse_down_item_;
 };
 
 } // namespace view

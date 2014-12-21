@@ -314,8 +314,10 @@ void Header::on_group()
 			return a->visual_v_offset() < b->visual_v_offset(); });
 
 	shared_ptr<TraceGroup> group(new TraceGroup());
+	shared_ptr<RowItem> mouse_down_item(
+		std::dynamic_pointer_cast<RowItem>(mouse_down_item_));
 	shared_ptr<RowItem> focus_item(
-		mouse_down_item_ ? mouse_down_item_ : selected_items.front());
+		mouse_down_item ? mouse_down_item : selected_items.front());
 
 	assert(focus_item);
 	assert(focus_item->owner());
