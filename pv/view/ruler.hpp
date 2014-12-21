@@ -73,10 +73,20 @@ private:
 	std::shared_ptr<pv::view::ViewItem> get_mouse_over_item(
 		const QPoint &pt);
 
+	/**
+	 * Returns true if the selection of time items allows dragging.
+	 * @return Returns true if the drag is acceptable.
+	 */
+	bool accept_drag() const;
+
+	/**
+	 * Drag the dragging items by the delta offset.
+	 * @param delta the drag offset in pixels.
+	 */
+	void drag_items(const QPoint &delta);
+
 private:
 	void paintEvent(QPaintEvent *event);
-
-	void mouseMoveEvent(QMouseEvent *e);
 
 	void mouseDoubleClickEvent(QMouseEvent *e);
 

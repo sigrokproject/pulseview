@@ -94,6 +94,39 @@ shared_ptr<ViewItem> Header::get_mouse_over_item(const QPoint &pt)
 	return shared_ptr<RowItem>();
 }
 
+bool Header::accept_drag() const
+{
+	// Check all the drag items share a common owner
+	RowItemOwner *item_owner = nullptr;
+	for (shared_ptr<RowItem> r : view_)
+		if (r->dragging()) {
+			if (!item_owner)
+				item_owner = r->owner();
+			else if(item_owner != r->owner())
+				return false;
+		}
+
+	return item_owner;
+}
+
+void Header::drag_items(const QPoint &delta)
+{
+	RowItemOwner *item_owner = nullptr;
+	for (std::shared_ptr<RowItem> r : view_)
+		if (r->dragging()) {
+			item_owner = r->owner();
+			r->drag_by(delta);
+
+			// Ensure the trace is selected
+			r->select();
+		}
+
+	item_owner->restack_items();
+	for (const auto &r : *item_owner)
+		r->animate_to_layout_v_offset();
+	signals_moved();
+}
+
 void Header::paintEvent(QPaintEvent*)
 {
 	// The trace labels are not drawn with the arrows exactly on the
@@ -121,52 +154,6 @@ void Header::paintEvent(QPaintEvent*)
 	}
 
 	painter.end();
-}
-
-void Header::mouseMoveEvent(QMouseEvent *event)
-{
-	assert(event);
-	mouse_point_ = event->pos();
-
-	if (!(event->buttons() & Qt::LeftButton))
-		return;
-
-	if ((event->pos() - mouse_down_point_).manhattanLength() <
-		QApplication::startDragDistance())
-		return;
-
-	// Check all the drag items share a common owner
-	RowItemOwner *item_owner = nullptr;
-	for (shared_ptr<RowItem> r : view_)
-		if (r->dragging()) {
-			if (!item_owner)
-				item_owner = r->owner();
-			else if(item_owner != r->owner())
-				return;
-		}
-
-	if (!item_owner)
-		return;
-
-	// Do the drag
-	dragging_ = true;
-
-	const QPoint delta = event->pos() - mouse_down_point_;
-
-	for (std::shared_ptr<RowItem> r : view_)
-		if (r->dragging()) {
-			r->drag_by(delta);
-
-			// Ensure the trace is selected
-			r->select();
-		}
-
-	item_owner->restack_items();
-	for (const auto &r : *item_owner)
-		r->animate_to_layout_v_offset();
-	signals_moved();
-
-	update();
 }
 
 void Header::contextMenuEvent(QContextMenuEvent *event)

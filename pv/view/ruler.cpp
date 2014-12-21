@@ -83,6 +83,19 @@ shared_ptr<ViewItem> Ruler::get_mouse_over_item(const QPoint &pt)
 	return nullptr;
 }
 
+bool Ruler::accept_drag() const
+{
+	return true;
+}
+
+void Ruler::drag_items(const QPoint &delta)
+{
+	const vector< shared_ptr<TimeItem> > items(view_.time_items());
+	for (auto &i : items)
+		if (i->dragging())
+			i->drag_by(delta);
+}
+
 void Ruler::paintEvent(QPaintEvent*)
 {
 	const int ValueMargin = 3;
@@ -152,27 +165,6 @@ void Ruler::paintEvent(QPaintEvent*)
 			i->label_rect(r).contains(mouse_point_);
 		i->paint_label(p, r, highlight);
 	}
-}
-
-void Ruler::mouseMoveEvent(QMouseEvent *e)
-{
-	mouse_point_ = e->pos();
-
-	if (!(e->buttons() & Qt::LeftButton))
-		return;
-
-	if ((e->pos() - mouse_down_point_).manhattanLength() <
-		QApplication::startDragDistance())
-		return;
-
-	// Do the drag
-	dragging_ = true;
-
-	const QPoint delta = e->pos() - mouse_down_point_;
-	const vector< shared_ptr<TimeItem> > items(view_.time_items());
-	for (auto &i : items)
-		if (i->dragging())
-			i->drag_by(delta);
 }
 
 void Ruler::mouseDoubleClickEvent(QMouseEvent *e)

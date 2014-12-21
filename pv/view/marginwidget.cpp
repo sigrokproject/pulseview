@@ -132,6 +132,28 @@ void MarginWidget::mouseReleaseEvent(QMouseEvent *event)
 	mouse_down_item_ = nullptr;
 }
 
+void MarginWidget::mouseMoveEvent(QMouseEvent *event)
+{
+	assert(event);
+	mouse_point_ = event->pos();
+
+	if (!(event->buttons() & Qt::LeftButton))
+		return;
+
+	if ((event->pos() - mouse_down_point_).manhattanLength() <
+		QApplication::startDragDistance())
+		return;
+
+	if (!accept_drag())
+		return;
+
+	// Do the drag
+	dragging_ = true;
+	drag_items(event->pos() - mouse_down_point_);
+
+	update();
+}
+
 void MarginWidget::leaveEvent(QEvent*)
 {
 	mouse_point_ = QPoint(-1, -1);

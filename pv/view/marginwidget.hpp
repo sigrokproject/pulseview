@@ -68,6 +68,18 @@ protected:
 	void show_popup(const std::shared_ptr<ViewItem> &item);
 
 	/**
+	 * Returns true if the selection of row items allows dragging.
+	 * @return Returns true if the drag is acceptable.
+	 */
+	virtual bool accept_drag() const = 0;
+
+	/**
+	 * Drag the dragging items by the delta offset.
+	 * @param delta the drag offset in pixels.
+	 */
+	virtual void drag_items(const QPoint &delta) = 0;
+
+	/**
 	 * Handles left mouse button press events.
 	 * @param event the mouse event that triggered this handler.
 	 */
@@ -82,6 +94,7 @@ protected:
 protected:
 	void mousePressEvent(QMouseEvent * event);
 	void mouseReleaseEvent(QMouseEvent *event);
+	void mouseMoveEvent(QMouseEvent *event);
 
 	void leaveEvent(QEvent *event);
 
