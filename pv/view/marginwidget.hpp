@@ -24,15 +24,15 @@
 #include <memory>
 
 #include <QPoint>
-#include <QWidget>
+
+#include "viewwidget.hpp"
 
 namespace pv {
 namespace view {
 
-class View;
 class ViewItem;
 
-class MarginWidget : public QWidget
+class MarginWidget : public ViewWidget
 {
 	Q_OBJECT
 
@@ -109,7 +109,6 @@ Q_SIGNALS:
 	void selection_changed();
 
 protected:
-	pv::view::View &view_;
 	QPoint mouse_point_;
 	QPoint mouse_down_point_;
 	std::shared_ptr<ViewItem> mouse_down_item_;

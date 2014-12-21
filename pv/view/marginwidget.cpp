@@ -34,8 +34,7 @@ namespace pv {
 namespace view {
 
 MarginWidget::MarginWidget(View &parent) :
-	QWidget(&parent),
-	view_(parent),
+	ViewWidget(parent),
 	dragging_(false)
 {
 	setAttribute(Qt::WA_NoSystemBackground, true);

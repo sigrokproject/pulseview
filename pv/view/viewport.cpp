@@ -43,14 +43,12 @@ namespace pv {
 namespace view {
 
 Viewport::Viewport(View &parent) :
-	QWidget(&parent),
-	view_(parent),
+	ViewWidget(parent),
 	mouse_down_valid_(false),
 	pinch_zoom_active_(false)
 {
 	setAttribute(Qt::WA_AcceptTouchEvents, true);
 
-	setMouseTracking(true);
 	setAutoFillBackground(true);
 	setBackgroundRole(QPalette::Base);
 

@@ -22,8 +22,9 @@
 #define PULSEVIEW_PV_VIEW_VIEWPORT_H
 
 #include <QTimer>
-#include <QWidget>
 #include <QTouchEvent>
+
+#include "viewwidget.hpp"
 
 class QPainter;
 class QPaintEvent;
@@ -34,7 +35,7 @@ namespace view {
 
 class View;
 
-class Viewport : public QWidget
+class Viewport : public ViewWidget
 {
 	Q_OBJECT
 
@@ -57,8 +58,6 @@ private Q_SLOTS:
 	void on_signals_moved();
 
 private:
-	View &view_;
-
 	QPoint mouse_down_point_;
 	double mouse_down_offset_;
 	bool mouse_down_valid_;

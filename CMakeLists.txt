@@ -186,6 +186,7 @@ set(pulseview_SOURCES
 	pv/view/viewitem.cpp
 	pv/view/viewitempaintparams.cpp
 	pv/view/viewport.cpp
+	pv/view/viewwidget.cpp
 	pv/widgets/colourbutton.cpp
 	pv/widgets/colourpopup.cpp
 	pv/widgets/popup.cpp
@@ -227,6 +228,7 @@ set(pulseview_HEADERS
 	pv/view/view.hpp
 	pv/view/viewitem.hpp
 	pv/view/viewport.hpp
+	pv/view/viewwidget.hpp
 	pv/widgets/colourbutton.hpp
 	pv/widgets/colourpopup.hpp
 	pv/widgets/popup.hpp

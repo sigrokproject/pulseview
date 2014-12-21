@@ -58,6 +58,7 @@ set(pulseview_TEST_SOURCES
 	${PROJECT_SOURCE_DIR}/pv/view/viewitem.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/viewitempaintparams.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/viewport.cpp
+	${PROJECT_SOURCE_DIR}/pv/view/viewwidget.cpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/colourbutton.cpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/colourpopup.cpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/popup.cpp
@@ -97,6 +98,7 @@ set(pulseview_TEST_HEADERS
 	${PROJECT_SOURCE_DIR}/pv/view/view.hpp
 	${PROJECT_SOURCE_DIR}/pv/view/viewitem.hpp
 	${PROJECT_SOURCE_DIR}/pv/view/viewport.hpp
+	${PROJECT_SOURCE_DIR}/pv/view/viewwidget.hpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/colourbutton.hpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/colourpopup.hpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/popup.hpp
