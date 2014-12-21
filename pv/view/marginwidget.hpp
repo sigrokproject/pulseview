@@ -70,6 +70,8 @@ protected:
 private:
 	void leaveEvent(QEvent *event);
 
+	virtual void contextMenuEvent(QContextMenuEvent *event);
+
 public Q_SLOTS:
 	virtual void clear_selection();
 

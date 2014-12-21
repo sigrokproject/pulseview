@@ -18,6 +18,9 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
+#include <QMenu>
+#include <QMouseEvent>
+
 #include "view.hpp"
 
 #include "marginwidget.hpp"
@@ -50,6 +53,17 @@ void MarginWidget::leaveEvent(QEvent*)
 {
 	mouse_point_ = QPoint(-1, -1);
 	update();
+}
+
+void MarginWidget::contextMenuEvent(QContextMenuEvent *event)
+{
+	const shared_ptr<ViewItem> r = get_mouse_over_item(mouse_point_);
+	if (!r)
+		return;
+
+	QMenu *menu = r->create_context_menu(this);
+	if (menu)
+		menu->exec(event->globalPos());
 }
 
 void MarginWidget::clear_selection()

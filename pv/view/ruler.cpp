@@ -22,7 +22,6 @@
 
 #include <QApplication>
 #include <QFontMetrics>
-#include <QMenu>
 #include <QMouseEvent>
 
 #include "ruler.hpp"
@@ -219,17 +218,6 @@ void Ruler::mouseReleaseEvent(QMouseEvent *)
 void Ruler::mouseDoubleClickEvent(QMouseEvent *e)
 {
 	view_.add_flag(view_.offset() + ((double)e->x() + 0.5) * view_.scale());
-}
-
-void Ruler::contextMenuEvent(QContextMenuEvent *event)
-{
-	const shared_ptr<ViewItem> r = get_mouse_over_item(mouse_point_);
-	if (!r)
-		return;
-
-	QMenu *menu = r->create_context_menu(this);
-	if (menu)
-		menu->exec(event->globalPos());
 }
 
 void Ruler::keyPressEvent(QKeyEvent *e)
