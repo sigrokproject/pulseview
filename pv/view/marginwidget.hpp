@@ -53,6 +53,15 @@ protected:
 	virtual std::vector< std::shared_ptr<pv::view::ViewItem> > items() = 0;
 
 	/**
+	 * Gets the first view item which has a label that contains @c pt .
+	 * @param pt the point to search with.
+	 * @return the view item that has been found, or and empty
+	 *   @c shared_ptr if no item was found.
+	 */
+	virtual std::shared_ptr<pv::view::ViewItem> get_mouse_over_item(
+		const QPoint &pt) = 0;
+
+	/**
 	 * Shows the popup of a the specified @c ViewItem .
 	 * @param item The item to show the popup for.
 	 */
