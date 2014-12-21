@@ -67,7 +67,15 @@ protected:
 	 */
 	void show_popup(const std::shared_ptr<ViewItem> &item);
 
+	/**
+	 * Handles left mouse button press events.
+	 * @param event the mouse event that triggered this handler.
+	 */
+	void mouse_left_press_event(QMouseEvent *event);
+
 private:
+	void mousePressEvent(QMouseEvent * event);
+
 	void leaveEvent(QEvent *event);
 
 	virtual void contextMenuEvent(QContextMenuEvent *event);

@@ -175,23 +175,6 @@ void Ruler::mouseMoveEvent(QMouseEvent *e)
 			i->drag_by(delta);
 }
 
-void Ruler::mousePressEvent(QMouseEvent *e)
-{
-	if (e->buttons() & Qt::LeftButton) {
-		mouse_down_point_ = e->pos();
-		mouse_down_item_ = get_mouse_over_item(e->pos());
-
-		clear_selection();
-
-		if (mouse_down_item_) {
-			mouse_down_item_->select();
-			mouse_down_item_->drag();
-		}
-
-		selection_changed();
-	}
-}
-
 void Ruler::mouseReleaseEvent(QMouseEvent *)
 {
 	using pv::widgets::Popup;

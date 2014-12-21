@@ -123,47 +123,6 @@ void Header::paintEvent(QPaintEvent*)
 	painter.end();
 }
 
-void Header::mouseLeftPressEvent(QMouseEvent *event)
-{
-	(void)event;
-
-	const bool ctrl_pressed =
-		QApplication::keyboardModifiers() & Qt::ControlModifier;
-
-	// Clear selection if control is not pressed and this item is unselected
-	if ((!mouse_down_item_ || !mouse_down_item_->selected()) &&
-		!ctrl_pressed)
-		for (shared_ptr<RowItem> r : view_)
-			r->select(false);
-
-	// Set the signal selection state if the item has been clicked
-	if (mouse_down_item_) {
-		if (ctrl_pressed)
-			mouse_down_item_->select(!mouse_down_item_->selected());
-		else
-			mouse_down_item_->select(true);
-	}
-
-	// Save the offsets of any signals which will be dragged
-	for (const shared_ptr<RowItem> r : view_)
-		if (r->selected())
-			r->drag();
-
-	selection_changed();
-	update();
-}
-
-void Header::mousePressEvent(QMouseEvent *event)
-{
-	assert(event);
-
-	mouse_down_point_ = event->pos();
-	mouse_down_item_ = get_mouse_over_item(event->pos());
-
-	if (event->button() & Qt::LeftButton)
-		mouseLeftPressEvent(event);
-}
-
 void Header::mouseLeftReleaseEvent(QMouseEvent *event)
 {
 	assert(event);
