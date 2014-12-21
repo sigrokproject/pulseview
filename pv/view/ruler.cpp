@@ -209,12 +209,6 @@ void Ruler::mouseReleaseEvent(QMouseEvent *)
 		i->drag_release();
 }
 
-void Ruler::leaveEvent(QEvent*)
-{
-	mouse_point_ = QPoint(-1, -1);
-	update();
-}
-
 void Ruler::mouseDoubleClickEvent(QMouseEvent *e)
 {
 	view_.add_flag(view_.offset() + ((double)e->x() + 0.5) * view_.scale());

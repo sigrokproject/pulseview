@@ -53,6 +53,9 @@ protected:
 	 */
 	void show_popup(const std::shared_ptr<ViewItem> &item);
 
+private:
+	void leaveEvent(QEvent *event);
+
 public Q_SLOTS:
 	virtual void clear_selection();
 

@@ -46,6 +46,12 @@ void MarginWidget::show_popup(const shared_ptr<ViewItem> &item)
 		p->show();
 }
 
+void MarginWidget::leaveEvent(QEvent*)
+{
+	mouse_point_ = QPoint(-1, -1);
+	update();
+}
+
 void MarginWidget::clear_selection()
 {
 }

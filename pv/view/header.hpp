@@ -76,8 +76,6 @@ private:
 
 	void mouseMoveEvent(QMouseEvent *event);
 
-	void leaveEvent(QEvent *event);
-
 	void contextMenuEvent(QContextMenuEvent *event);
 
 	void keyPressEvent(QKeyEvent *e);

@@ -252,12 +252,6 @@ void Header::mouseMoveEvent(QMouseEvent *event)
 	update();
 }
 
-void Header::leaveEvent(QEvent*)
-{
-	mouse_point_ = QPoint(-1, -1);
-	update();
-}
-
 void Header::contextMenuEvent(QContextMenuEvent *event)
 {
 	const shared_ptr<RowItem> r = get_mouse_over_item(mouse_point_);
