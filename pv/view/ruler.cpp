@@ -195,19 +195,6 @@ void Ruler::mouseDoubleClickEvent(QMouseEvent *e)
 	view_.add_flag(view_.offset() + ((double)e->x() + 0.5) * view_.scale());
 }
 
-void Ruler::keyPressEvent(QKeyEvent *e)
-{
-	assert(e);
-
-	if (e->key() == Qt::Key_Delete)
-	{
-		const vector< shared_ptr<TimeItem> > items(view_.time_items());
-		for (auto &i : items)
-			if (i->selected())
-				i->delete_pressed();
-	}
-}
-
 void Ruler::draw_hover_mark(QPainter &p, int text_height)
 {
 	const int x = view_.hover_point().x();

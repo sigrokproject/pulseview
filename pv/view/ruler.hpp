@@ -81,8 +81,6 @@ private:
 
 	void mouseDoubleClickEvent(QMouseEvent *e);
 
-	void keyPressEvent(QKeyEvent *e);
-
 private:
 	/**
 	 * Draw a hover arrow under the cursor position.

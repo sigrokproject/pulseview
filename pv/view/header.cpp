@@ -238,13 +238,9 @@ void Header::keyPressEvent(QKeyEvent *e)
 {
 	assert(e);
 
-	if (e->key() == Qt::Key_Delete)
-	{
-		for (const shared_ptr<RowItem> r : view_)
-			if (r->selected())
-				r->delete_pressed();
-	}
-	else if (e->key() == Qt::Key_G && e->modifiers() == Qt::ControlModifier)
+	MarginWidget::keyPressEvent(e);
+
+	if (e->key() == Qt::Key_G && e->modifiers() == Qt::ControlModifier)
 		on_group();
 	else if (e->key() == Qt::Key_U && e->modifiers() == Qt::ControlModifier)
 		on_ungroup();
