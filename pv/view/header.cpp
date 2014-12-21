@@ -80,7 +80,7 @@ QSize Header::extended_size_hint() const
 	return sizeHint() + QSize(ViewItem::HighlightRadius, 0);
 }
 
-shared_ptr<RowItem> Header::get_mouse_over_item(const QPoint &pt)
+shared_ptr<ViewItem> Header::get_mouse_over_item(const QPoint &pt)
 {
 	const QRect r(0, 0, width() - BaselineOffset, height());
 	for (auto &i : view_)
@@ -174,7 +174,7 @@ void Header::mouseLeftReleaseEvent(QMouseEvent *event)
 		QApplication::keyboardModifiers() & Qt::ControlModifier;
 
 	// Unselect everything if control is not pressed
-	const shared_ptr<RowItem> mouse_over =
+	const shared_ptr<ViewItem> mouse_over =
 		get_mouse_over_item(event->pos());
 
 	for (auto &r : view_)
@@ -254,7 +254,7 @@ void Header::mouseMoveEvent(QMouseEvent *event)
 
 void Header::contextMenuEvent(QContextMenuEvent *event)
 {
-	const shared_ptr<RowItem> r = get_mouse_over_item(mouse_point_);
+	const shared_ptr<ViewItem> r = get_mouse_over_item(mouse_point_);
 	if (!r)
 		return;
 

@@ -32,6 +32,7 @@ namespace view {
 
 class RowItem;
 class View;
+class ViewItem;
 
 class Header : public MarginWidget
 {
@@ -59,7 +60,13 @@ public:
 	static const int BaselineOffset;
 
 private:
-	std::shared_ptr<pv::view::RowItem> get_mouse_over_item(
+	/**
+	 * Gets the first view item which has a label that contains @c pt .
+	 * @param pt the point to search with.
+	 * @return the view item that has been found, or and empty
+	 *   @c shared_ptr if no item was found.
+	 */
+	std::shared_ptr<pv::view::ViewItem> get_mouse_over_item(
 		const QPoint &pt);
 
 	void clear_selection();
