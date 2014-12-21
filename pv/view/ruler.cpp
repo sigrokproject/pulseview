@@ -76,7 +76,7 @@ QSize Ruler::extended_size_hint() const
 		ViewItem::HighlightRadius);
 }
 
-shared_ptr<TimeItem> Ruler::get_mouse_over_item(const QPoint &pt)
+shared_ptr<ViewItem> Ruler::get_mouse_over_item(const QPoint &pt)
 {
 	const vector< shared_ptr<TimeItem> > items(view_.time_items());
 	for (auto i = items.rbegin(); i != items.rend(); i++)
@@ -216,7 +216,7 @@ void Ruler::mouseDoubleClickEvent(QMouseEvent *e)
 
 void Ruler::contextMenuEvent(QContextMenuEvent *event)
 {
-	const shared_ptr<TimeItem> r = get_mouse_over_item(mouse_point_);
+	const shared_ptr<ViewItem> r = get_mouse_over_item(mouse_point_);
 	if (!r)
 		return;
 

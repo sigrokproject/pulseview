@@ -29,6 +29,7 @@ namespace pv {
 namespace view {
 
 class TimeItem;
+class ViewItem;
 
 class Ruler : public MarginWidget
 {
@@ -61,7 +62,13 @@ public:
 	QSize extended_size_hint() const;
 
 private:
-	std::shared_ptr<pv::view::TimeItem> get_mouse_over_item(
+	/**
+	 * Gets the first view item which has a label that contains @c pt .
+	 * @param pt the point to search with.
+	 * @return the view item that has been found, or and empty
+	 *   @c shared_ptr if no item was found.
+	 */
+	std::shared_ptr<pv::view::ViewItem> get_mouse_over_item(
 		const QPoint &pt);
 
 private:
