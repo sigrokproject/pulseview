@@ -73,8 +73,15 @@ protected:
 	 */
 	void mouse_left_press_event(QMouseEvent *event);
 
+	/**
+	 * Handles left mouse button release events.
+	 * @param event the mouse event that triggered this handler.
+	 */
+	void mouse_left_release_event(QMouseEvent *event);
+
 protected:
 	void mousePressEvent(QMouseEvent * event);
+	void mouseReleaseEvent(QMouseEvent *event);
 
 	void leaveEvent(QEvent *event);
 

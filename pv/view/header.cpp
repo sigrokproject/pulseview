@@ -123,46 +123,6 @@ void Header::paintEvent(QPaintEvent*)
 	painter.end();
 }
 
-void Header::mouseLeftReleaseEvent(QMouseEvent *event)
-{
-	assert(event);
-
-	const bool ctrl_pressed =
-		QApplication::keyboardModifiers() & Qt::ControlModifier;
-
-	// Unselect everything if control is not pressed
-	const shared_ptr<ViewItem> mouse_over =
-		get_mouse_over_item(event->pos());
-
-	for (auto &r : view_)
-		r->drag_release();
-
-	if (dragging_)
-		view_.restack_all_row_items();
-	else
-	{
-		if (!ctrl_pressed) {
-			for (shared_ptr<RowItem> r : view_)
-				if (mouse_down_item_ != r)
-					r->select(false);
-
-			if (mouse_down_item_)
-				show_popup(mouse_down_item_);
-		}
-	}
-
-	dragging_ = false;
-}
-
-void Header::mouseReleaseEvent(QMouseEvent *event)
-{
-	assert(event);
-	if (event->button() & Qt::LeftButton)
-		mouseLeftReleaseEvent(event);
-
-	mouse_down_item_ = nullptr;
-}
-
 void Header::mouseMoveEvent(QMouseEvent *event)
 {
 	assert(event);

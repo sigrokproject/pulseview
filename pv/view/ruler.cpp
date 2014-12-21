@@ -175,21 +175,6 @@ void Ruler::mouseMoveEvent(QMouseEvent *e)
 			i->drag_by(delta);
 }
 
-void Ruler::mouseReleaseEvent(QMouseEvent *)
-{
-	using pv::widgets::Popup;
-
-	if (!dragging_ && mouse_down_item_)
-		show_popup(mouse_down_item_);
-
-	dragging_ = false;
-	mouse_down_item_.reset();
-
-	const vector< shared_ptr<TimeItem> > items(view_.time_items());
-	for (auto &i : items)
-		i->drag_release();
-}
-
 void Ruler::mouseDoubleClickEvent(QMouseEvent *e)
 {
 	view_.add_flag(view_.offset() + ((double)e->x() + 0.5) * view_.scale());

@@ -80,6 +80,38 @@ void MarginWidget::mouse_left_press_event(QMouseEvent *event)
 	update();
 }
 
+void MarginWidget::mouse_left_release_event(QMouseEvent *event)
+{
+	assert(event);
+
+	auto items = this->items();
+	const bool ctrl_pressed =
+		QApplication::keyboardModifiers() & Qt::ControlModifier;
+
+	// Unselect everything if control is not pressed
+	const shared_ptr<ViewItem> mouse_over =
+		get_mouse_over_item(event->pos());
+
+	for (auto &i : items)
+		i->drag_release();
+
+	if (dragging_)
+		view_.restack_all_row_items();
+	else
+	{
+		if (!ctrl_pressed) {
+			for (shared_ptr<ViewItem> i : items)
+				if (mouse_down_item_ != i)
+					i->select(false);
+
+			if (mouse_down_item_)
+				show_popup(mouse_down_item_);
+		}
+	}
+
+	dragging_ = false;
+}
+
 void MarginWidget::mousePressEvent(QMouseEvent *event)
 {
 	assert(event);
@@ -89,6 +121,15 @@ void MarginWidget::mousePressEvent(QMouseEvent *event)
 
 	if (event->button() & Qt::LeftButton)
 		mouse_left_press_event(event);
+}
+
+void MarginWidget::mouseReleaseEvent(QMouseEvent *event)
+{
+	assert(event);
+	if (event->button() & Qt::LeftButton)
+		mouse_left_release_event(event);
+
+	mouse_down_item_ = nullptr;
 }
 
 void MarginWidget::leaveEvent(QEvent*)
