@@ -182,8 +182,6 @@ public:
 Q_SIGNALS:
 	void hover_point_changed();
 
-	void signals_moved();
-
 	void selection_changed();
 
 	void scale_offset_changed();
@@ -255,8 +253,6 @@ private Q_SLOTS:
 
 	void signals_changed();
 	void data_updated();
-
-	void on_signals_moved();
 
 	void process_sticky_events();
 

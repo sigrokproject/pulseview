@@ -54,9 +54,6 @@ private:
 	void wheelEvent(QWheelEvent *event);
 	bool touchEvent(QTouchEvent *e);
 
-private Q_SLOTS:
-	void on_signals_moved();
-
 private:
 	QPoint mouse_down_point_;
 	double mouse_down_offset_;

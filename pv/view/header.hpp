@@ -89,14 +89,9 @@ private:
 	void keyPressEvent(QKeyEvent *e);
 
 private Q_SLOTS:
-	void on_signals_moved();
-
 	void on_group();
 
 	void on_ungroup();
-
-Q_SIGNALS:
-	void signals_moved();
 };
 
 } // namespace view

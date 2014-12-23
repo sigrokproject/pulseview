@@ -115,9 +115,6 @@ View::View(Session &session, QWidget *parent) :
 	connect(&session_, SIGNAL(frame_ended()),
 		this, SLOT(data_updated()));
 
-	connect(header_, SIGNAL(signals_moved()),
-		this, SLOT(on_signals_moved()));
-
 	connect(header_, SIGNAL(selection_changed()),
 		ruler_, SLOT(clear_selection()));
 	connect(ruler_, SIGNAL(selection_changed()),
@@ -745,18 +742,14 @@ void View::data_updated()
 	viewport_->update();
 }
 
-void View::on_signals_moved()
-{
-	update_scroll();
-	signals_moved();
-}
-
 void View::process_sticky_events()
 {
 	if (sticky_events_ & RowItemHExtentsChanged)
 		update_layout();
-	if (sticky_events_ & RowItemVExtentsChanged)
+	if (sticky_events_ & RowItemVExtentsChanged) {
 		restack_all_row_items();
+		update_scroll();
+	}
 
 	// Clear the sticky events
 	sticky_events_ = 0;

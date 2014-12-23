@@ -68,6 +68,11 @@ void RowItem::force_to_v_offset(int v_offset)
 {
 	v_offset_animation_.stop();
 	layout_v_offset_ = visual_v_offset_ = v_offset;
+
+	if (owner_) {
+		owner_->row_item_appearance_changed(true, true);
+		owner_->extents_changed(false, true);
+	}
 }
 
 void RowItem::animate_to_layout_v_offset()

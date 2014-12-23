@@ -62,8 +62,6 @@ static bool item_selected(shared_ptr<RowItem> r)
 Header::Header(View &parent) :
 	MarginWidget(parent)
 {
-	connect(&view_, SIGNAL(signals_moved()),
-		this, SLOT(on_signals_moved()));
 }
 
 QSize Header::sizeHint() const
@@ -109,7 +107,6 @@ void Header::drag_items(const QPoint &delta)
 	item_owner->restack_items();
 	for (const auto &r : *item_owner)
 		r->animate_to_layout_v_offset();
-	signals_moved();
 }
 
 void Header::paintEvent(QPaintEvent*)
@@ -176,11 +173,6 @@ void Header::keyPressEvent(QKeyEvent *e)
 		on_group();
 	else if (e->key() == Qt::Key_U && e->modifiers() == Qt::ControlModifier)
 		on_ungroup();
-}
-
-void Header::on_signals_moved()
-{
-	update();
 }
 
 void Header::on_group()

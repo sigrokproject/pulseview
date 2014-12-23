@@ -51,9 +51,6 @@ Viewport::Viewport(View &parent) :
 
 	setAutoFillBackground(true);
 	setBackgroundRole(QPalette::Base);
-
-	connect(&view_, SIGNAL(signals_moved()),
-		this, SLOT(on_signals_moved()));
 }
 
 void Viewport::paintEvent(QPaintEvent*)
@@ -217,11 +214,6 @@ bool Viewport::touchEvent(QTouchEvent *event)
 	}
 
 	return true;
-}
-
-void Viewport::on_signals_moved()
-{
-	update();
 }
 
 } // namespace view
