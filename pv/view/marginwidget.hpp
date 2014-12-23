@@ -68,12 +68,6 @@ protected:
 	void show_popup(const std::shared_ptr<ViewItem> &item);
 
 	/**
-	 * Drag the dragging items by the delta offset.
-	 * @param delta the drag offset in pixels.
-	 */
-	virtual void drag_items(const QPoint &delta) = 0;
-
-	/**
 	 * Handles left mouse button press events.
 	 * @param event the mouse event that triggered this handler.
 	 */

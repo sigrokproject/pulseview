@@ -92,23 +92,6 @@ shared_ptr<ViewItem> Header::get_mouse_over_item(const QPoint &pt)
 	return shared_ptr<RowItem>();
 }
 
-void Header::drag_items(const QPoint &delta)
-{
-	RowItemOwner *item_owner = nullptr;
-	for (std::shared_ptr<RowItem> r : view_)
-		if (r->dragging()) {
-			item_owner = r->owner();
-			r->drag_by(delta);
-
-			// Ensure the trace is selected
-			r->select();
-		}
-
-	item_owner->restack_items();
-	for (const auto &r : *item_owner)
-		r->animate_to_layout_v_offset();
-}
-
 void Header::paintEvent(QPaintEvent*)
 {
 	// The trace labels are not drawn with the arrows exactly on the

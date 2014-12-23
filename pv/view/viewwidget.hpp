@@ -41,6 +41,12 @@ protected:
 	 */
 	bool accept_drag() const;
 
+	/**
+	 * Drag the dragging items by the delta offset.
+	 * @param delta the drag offset in pixels.
+	 */
+	void drag_items(const QPoint &delta);
+
 protected:
 	pv::view::View &view_;
 };

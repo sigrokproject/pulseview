@@ -83,14 +83,6 @@ shared_ptr<ViewItem> Ruler::get_mouse_over_item(const QPoint &pt)
 	return nullptr;
 }
 
-void Ruler::drag_items(const QPoint &delta)
-{
-	const vector< shared_ptr<TimeItem> > items(view_.time_items());
-	for (auto &i : items)
-		if (i->dragging())
-			i->drag_by(delta);
-}
-
 void Ruler::paintEvent(QPaintEvent*)
 {
 	const int ValueMargin = 3;

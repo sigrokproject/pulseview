@@ -70,5 +70,31 @@ bool ViewWidget::accept_drag() const
 	return false;
 }
 
+void ViewWidget::drag_items(const QPoint &delta)
+{
+	// Drag the row items
+	RowItemOwner *item_owner = nullptr;
+	for (std::shared_ptr<RowItem> r : view_)
+		if (r->dragging()) {
+			item_owner = r->owner();
+			r->drag_by(delta);
+
+			// Ensure the trace is selected
+			r->select();
+		}
+
+	if (item_owner) {
+		item_owner->restack_items();
+		for (const auto &r : *item_owner)
+			r->animate_to_layout_v_offset();
+	}
+
+	// Drag the time items
+	const vector< shared_ptr<TimeItem> > items(view_.time_items());
+	for (auto &i : items)
+		if (i->dragging())
+			i->drag_by(delta);
+}
+
 } // namespace view
 } // namespace pv

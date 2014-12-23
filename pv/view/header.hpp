@@ -74,12 +74,6 @@ private:
 	std::shared_ptr<pv::view::ViewItem> get_mouse_over_item(
 		const QPoint &pt);
 
-	/**
-	 * Drag the dragging items by the delta offset.
-	 * @param delta the drag offset in pixels.
-	 */
-	void drag_items(const QPoint &delta);
-
 private:
 	void paintEvent(QPaintEvent *event);
 
