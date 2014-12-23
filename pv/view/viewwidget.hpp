@@ -35,6 +35,12 @@ class ViewWidget : public QWidget
 protected:
 	ViewWidget(View &parent);
 
+	/**
+	 * Returns true if the selection of row items allows dragging.
+	 * @return Returns true if the drag is acceptable.
+	 */
+	bool accept_drag() const;
+
 protected:
 	pv::view::View &view_;
 };

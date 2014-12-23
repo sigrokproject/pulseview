@@ -83,11 +83,6 @@ shared_ptr<ViewItem> Ruler::get_mouse_over_item(const QPoint &pt)
 	return nullptr;
 }
 
-bool Ruler::accept_drag() const
-{
-	return true;
-}
-
 void Ruler::drag_items(const QPoint &delta)
 {
 	const vector< shared_ptr<TimeItem> > items(view_.time_items());

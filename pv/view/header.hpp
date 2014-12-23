@@ -75,12 +75,6 @@ private:
 		const QPoint &pt);
 
 	/**
-	 * Returns true if the selection of row items allows dragging.
-	 * @return Returns true if the drag is acceptable.
-	 */
-	bool accept_drag() const;
-
-	/**
 	 * Drag the dragging items by the delta offset.
 	 * @param delta the drag offset in pixels.
 	 */

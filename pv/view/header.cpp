@@ -94,21 +94,6 @@ shared_ptr<ViewItem> Header::get_mouse_over_item(const QPoint &pt)
 	return shared_ptr<RowItem>();
 }
 
-bool Header::accept_drag() const
-{
-	// Check all the drag items share a common owner
-	RowItemOwner *item_owner = nullptr;
-	for (shared_ptr<RowItem> r : view_)
-		if (r->dragging()) {
-			if (!item_owner)
-				item_owner = r->owner();
-			else if(item_owner != r->owner())
-				return false;
-		}
-
-	return item_owner;
-}
-
 void Header::drag_items(const QPoint &delta)
 {
 	RowItemOwner *item_owner = nullptr;

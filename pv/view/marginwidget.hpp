@@ -68,12 +68,6 @@ protected:
 	void show_popup(const std::shared_ptr<ViewItem> &item);
 
 	/**
-	 * Returns true if the selection of row items allows dragging.
-	 * @return Returns true if the drag is acceptable.
-	 */
-	virtual bool accept_drag() const = 0;
-
-	/**
 	 * Drag the dragging items by the delta offset.
 	 * @param delta the drag offset in pixels.
 	 */
