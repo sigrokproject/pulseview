@@ -117,7 +117,7 @@ int RowItem::get_visual_y() const
 
 QPoint RowItem::point(const QRect &rect) const
 {
-	return QPoint(rect.right(), visual_v_offset());
+	return QPoint(rect.right(), get_visual_y());
 }
 
 void RowItem::hover_point_changed()
