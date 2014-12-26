@@ -42,10 +42,23 @@ class Viewport : public ViewWidget
 public:
 	explicit Viewport(View &parent);
 
-protected:
+private:
+	/**
+	 * Gets the first view item which has a hit-box that contains @c pt .
+	 * @param pt the point to search with.
+	 * @return the view item that has been found, or and empty
+	 *   @c shared_ptr if no item was found.
+	 */
+	std::shared_ptr<pv::view::ViewItem> get_mouse_over_item(
+		const QPoint &pt);
+
+	/**
+	 * Gets the items in the view widget.
+	 */
+	std::vector< std::shared_ptr<pv::view::ViewItem> > items();
+
 	void paintEvent(QPaintEvent *event);
 
-private:
 	bool event(QEvent *event);
 	void mousePressEvent(QMouseEvent *event);
 	void mouseReleaseEvent(QMouseEvent *event);

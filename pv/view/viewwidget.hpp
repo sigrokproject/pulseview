@@ -21,12 +21,15 @@
 #ifndef PULSEVIEW_PV_VIEWWIDGET_H
 #define PULSEVIEW_PV_VIEWWIDGET_H
 
+#include <memory>
+
 #include <QWidget>
 
 namespace pv {
 namespace view {
 
 class View;
+class ViewItem;
 
 class ViewWidget : public QWidget
 {
@@ -34,6 +37,14 @@ class ViewWidget : public QWidget
 
 protected:
 	ViewWidget(View &parent);
+
+	/**
+	 * Indicates the event an a view item has been clicked.
+	 * @param item the view item that has been clicked.
+	 * @remarks the default implementation does nothing.
+	 */
+	virtual void item_clicked(
+		const std::shared_ptr<pv::view::ViewItem> &item);
 
 	/**
 	 * Returns true if the selection of row items allows dragging.
@@ -47,8 +58,51 @@ protected:
 	 */
 	void drag_items(const QPoint &delta);
 
+	/**
+	 * Gets the items in the view widget.
+	 */
+	virtual std::vector< std::shared_ptr<pv::view::ViewItem> > items() = 0;
+
+	/**
+	 * Gets the first view item which has a hit-box that contains @c pt .
+	 * @param pt the point to search with.
+	 * @return the view item that has been found, or and empty
+	 *   @c shared_ptr if no item was found.
+	 */
+	virtual std::shared_ptr<pv::view::ViewItem> get_mouse_over_item(
+		const QPoint &pt) = 0;
+
+	/**
+	 * Handles left mouse button press events.
+	 * @param event the mouse event that triggered this handler.
+	 */
+	void mouse_left_press_event(QMouseEvent *event);
+
+	/**
+	 * Handles left mouse button release events.
+	 * @param event the mouse event that triggered this handler.
+	 */
+	void mouse_left_release_event(QMouseEvent *event);
+
+protected:
+	void mousePressEvent(QMouseEvent * event);
+	void mouseReleaseEvent(QMouseEvent *event);
+	void mouseMoveEvent(QMouseEvent *event);
+
+	void leaveEvent(QEvent *event);
+
+public Q_SLOTS:
+	void clear_selection();
+
+Q_SIGNALS:
+	void selection_changed();
+
 protected:
 	pv::view::View &view_;
+	QPoint mouse_point_;
+	QPoint mouse_down_point_;
+	std::shared_ptr<ViewItem> mouse_down_item_;
+	bool dragging_;
 };
 
 } // namespace view

@@ -48,18 +48,11 @@ public:
 
 protected:
 	/**
-	 * Gets the items in the margin widget.
+	 * Indicates the event an a view item has been clicked.
+	 * @param item the view item that has been clicked.
 	 */
-	virtual std::vector< std::shared_ptr<pv::view::ViewItem> > items() = 0;
-
-	/**
-	 * Gets the first view item which has a label that contains @c pt .
-	 * @param pt the point to search with.
-	 * @return the view item that has been found, or and empty
-	 *   @c shared_ptr if no item was found.
-	 */
-	virtual std::shared_ptr<pv::view::ViewItem> get_mouse_over_item(
-		const QPoint &pt) = 0;
+	virtual void item_clicked(
+		const std::shared_ptr<pv::view::ViewItem> &item);
 
 	/**
 	 * Shows the popup of a the specified @c ViewItem .
@@ -67,40 +60,10 @@ protected:
 	 */
 	void show_popup(const std::shared_ptr<ViewItem> &item);
 
-	/**
-	 * Handles left mouse button press events.
-	 * @param event the mouse event that triggered this handler.
-	 */
-	void mouse_left_press_event(QMouseEvent *event);
-
-	/**
-	 * Handles left mouse button release events.
-	 * @param event the mouse event that triggered this handler.
-	 */
-	void mouse_left_release_event(QMouseEvent *event);
-
 protected:
-	void mousePressEvent(QMouseEvent * event);
-	void mouseReleaseEvent(QMouseEvent *event);
-	void mouseMoveEvent(QMouseEvent *event);
-
-	void leaveEvent(QEvent *event);
-
 	virtual void contextMenuEvent(QContextMenuEvent *event);
 
 	virtual void keyPressEvent(QKeyEvent *e);
-
-public Q_SLOTS:
-	void clear_selection();
-
-Q_SIGNALS:
-	void selection_changed();
-
-protected:
-	QPoint mouse_point_;
-	QPoint mouse_down_point_;
-	std::shared_ptr<ViewItem> mouse_down_item_;
-	bool dragging_;
 };
 
 } // namespace view

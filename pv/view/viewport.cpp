@@ -32,6 +32,8 @@
 #include <QMouseEvent>
 
 using std::abs;
+using std::back_inserter;
+using std::copy;
 using std::max;
 using std::min;
 using std::none_of;
@@ -51,6 +53,24 @@ Viewport::Viewport(View &parent) :
 
 	setAutoFillBackground(true);
 	setBackgroundRole(QPalette::Base);
+}
+
+shared_ptr<ViewItem> Viewport::get_mouse_over_item(const QPoint &pt)
+{
+	const vector< shared_ptr<ViewItem> > items(this->items());
+	for (auto i = items.rbegin(); i != items.rend(); i++)
+		if ((*i)->enabled() &&
+			(*i)->hit_box_rect(rect()).contains(pt))
+			return *i;
+	return nullptr;
+}
+
+vector< shared_ptr<ViewItem> > Viewport::items()
+{
+	vector< shared_ptr<ViewItem> > items(view_.begin(), view_.end());
+	const vector< shared_ptr<TimeItem> > time_items(view_.time_items());
+	copy(time_items.begin(), time_items.end(), back_inserter(items));
+	return items;
 }
 
 void Viewport::paintEvent(QPaintEvent*)

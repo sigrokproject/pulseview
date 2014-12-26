@@ -18,10 +18,10 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#include <algorithm>
+#include <QApplication>
+#include <QMouseEvent>
 
 #include "rowitem.hpp"
-#include "timeitem.hpp"
 #include "view.hpp"
 #include "viewwidget.hpp"
 
@@ -34,8 +34,24 @@ namespace view {
 
 ViewWidget::ViewWidget(View &parent) :
 	QWidget(&parent),
-	view_(parent)
+	view_(parent),
+	dragging_(false)
 {
+	setFocusPolicy(Qt::ClickFocus);
+	setMouseTracking(true);
+}
+
+void ViewWidget::clear_selection()
+{
+	const auto items = this->items();
+	for (auto &i : items)
+		i->select(false);
+	update();
+}
+
+void ViewWidget::item_clicked(const shared_ptr<ViewItem> &item)
+{
+	(void)item;
 }
 
 bool ViewWidget::accept_drag() const
@@ -94,6 +110,116 @@ void ViewWidget::drag_items(const QPoint &delta)
 	for (auto &i : items)
 		if (i->dragging())
 			i->drag_by(delta);
+}
+
+void ViewWidget::mouse_left_press_event(QMouseEvent *event)
+{
+	(void)event;
+
+	const bool ctrl_pressed =
+		QApplication::keyboardModifiers() & Qt::ControlModifier;
+
+	// Clear selection if control is not pressed and this item is unselected
+	if ((!mouse_down_item_ || !mouse_down_item_->selected()) &&
+		!ctrl_pressed)
+		clear_selection();
+
+	// Set the signal selection state if the item has been clicked
+	if (mouse_down_item_) {
+		if (ctrl_pressed)
+			mouse_down_item_->select(!mouse_down_item_->selected());
+		else
+			mouse_down_item_->select(true);
+	}
+
+	// Save the offsets of any signals which will be dragged
+	const auto items = this->items();
+	for (auto &i : items)
+		if (i->selected())
+			i->drag();
+
+	selection_changed();
+	update();
+}
+
+void ViewWidget::mouse_left_release_event(QMouseEvent *event)
+{
+	assert(event);
+
+	auto items = this->items();
+	const bool ctrl_pressed =
+		QApplication::keyboardModifiers() & Qt::ControlModifier;
+
+	// Unselect everything if control is not pressed
+	const shared_ptr<ViewItem> mouse_over =
+		get_mouse_over_item(event->pos());
+
+	for (auto &i : items)
+		i->drag_release();
+
+	if (dragging_)
+		view_.restack_all_row_items();
+	else
+	{
+		if (!ctrl_pressed) {
+			for (shared_ptr<ViewItem> i : items)
+				if (mouse_down_item_ != i)
+					i->select(false);
+
+			if (mouse_down_item_)
+				item_clicked(mouse_down_item_);
+		}
+	}
+
+	dragging_ = false;
+}
+
+void ViewWidget::mousePressEvent(QMouseEvent *event)
+{
+	assert(event);
+
+	mouse_down_point_ = event->pos();
+	mouse_down_item_ = get_mouse_over_item(event->pos());
+
+	if (event->button() & Qt::LeftButton)
+		mouse_left_press_event(event);
+}
+
+void ViewWidget::mouseReleaseEvent(QMouseEvent *event)
+{
+	assert(event);
+	if (event->button() & Qt::LeftButton)
+		mouse_left_release_event(event);
+
+	mouse_down_item_ = nullptr;
+}
+
+void ViewWidget::mouseMoveEvent(QMouseEvent *event)
+{
+	assert(event);
+	mouse_point_ = event->pos();
+
+	if (!(event->buttons() & Qt::LeftButton))
+		return;
+
+	if ((event->pos() - mouse_down_point_).manhattanLength() <
+		QApplication::startDragDistance())
+		return;
+
+	if (!accept_drag())
+		return;
+
+	// Do the drag
+	dragging_ = true;
+	drag_items(event->pos() - mouse_down_point_);
+
+	update();
+}
+
+void ViewWidget::leaveEvent(QEvent*)
+{
+	mouse_point_ = QPoint(-1, -1);
+	update();
 }
 
 } // namespace view
