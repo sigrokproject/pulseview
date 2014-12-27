@@ -163,6 +163,13 @@ QRectF Trace::label_rect(const QRectF &rect) const
 		label_size.height());
 }
 
+QRectF Trace::hit_box_rect(const QRectF &rect) const
+{
+	const float h = QFontMetrics(QApplication::font()).height();
+	return QRectF(rect.left(), get_visual_y() - h / 2.0f,
+		rect.width(), h);
+}
+
 void Trace::paint_axis(QPainter &p, const ViewItemPaintParams &pp, int y)
 {
 	p.setPen(AxisPen);

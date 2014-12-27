@@ -101,6 +101,14 @@ public:
 	virtual QRectF label_rect(const QRectF &rect) const = 0;
 
 	/**
+	 * Computes the outline rectangle of the viewport hit-box.
+	 * @param rect the rectangle of the viewport area.
+	 * @return Returns the rectangle of the hit-box.
+	 * @remarks The default implementation returns an empty hit-box.
+	 */
+	virtual QRectF hit_box_rect(const QRectF &rect) const;
+
+	/**
 	 * Paints the signal label.
 	 * @param p the QPainter to paint into.
 	 * @param rect the rectangle of the header area.

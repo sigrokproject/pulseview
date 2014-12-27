@@ -80,6 +80,13 @@ public:
 	QRectF label_rect(const QRectF &rect) const;
 
 	/**
+	 * Computes the outline rectangle of the viewport hit-box.
+	 * @param rect the rectangle of the viewport area.
+	 * @return Returns the rectangle of the hit-box.
+	 */
+	QRectF hit_box_rect(const QRectF &rect) const;
+
+	/**
 	 * Gets the text to show in the marker.
 	 */
 	virtual QString get_text() const = 0;

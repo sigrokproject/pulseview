@@ -88,9 +88,16 @@ QRectF TimeMarker::label_rect(const QRectF &rect) const
 	const QSizeF label_size(text_size + LabelPadding * 2);
 	const float top = rect.height() - label_size.height() -
 		TimeMarker::ArrowSize - 0.5f;
-	const float x = (time_ - view_.offset()) / view_.scale();
+	const float x = get_x();
 
 	return QRectF(QPointF(x - label_size.width() / 2, top), label_size);
+}
+
+QRectF TimeMarker::hit_box_rect(const QRectF &rect) const
+{
+	const float x = get_x();
+	const float h = QFontMetrics(QApplication::font()).height();
+	return QRectF(x - h / 2.0f, rect.top(), h, rect.height());
 }
 
 void TimeMarker::paint_label(QPainter &p, const QRect &rect, bool hover)

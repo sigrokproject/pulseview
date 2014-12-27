@@ -74,6 +74,13 @@ public:
 	void set_colour(QColor colour);
 
 	/**
+	 * Computes the outline rectangle of the viewport hit-box.
+	 * @param rect the rectangle of the viewport area.
+	 * @return Returns the rectangle of the hit-box.
+	 */
+	QRectF hit_box_rect(const QRectF &rect) const;
+
+	/**
 	 * Paints the signal label.
 	 * @param p the QPainter to paint into.
 	 * @param rect the rectangle of the header area.

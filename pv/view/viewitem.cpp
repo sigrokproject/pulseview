@@ -64,6 +64,12 @@ void ViewItem::drag_release()
 	drag_point_ = QPoint(INT_MIN, INT_MIN);
 }
 
+QRectF ViewItem::hit_box_rect(const QRectF &rect) const
+{
+	(void)rect;
+	return QRectF();
+}
+
 QMenu* ViewItem::create_context_menu(QWidget *parent)
 {
 	context_parent_ = parent;
