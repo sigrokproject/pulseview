@@ -113,7 +113,7 @@ void Header::paintEvent(QPaintEvent*)
 	{
 		assert(r);
 
-		const bool highlight = !dragging_ &&
+		const bool highlight = !item_dragging_ &&
 			r->label_rect(rect).contains(mouse_point_);
 		r->paint_label(painter, rect, highlight);
 	}

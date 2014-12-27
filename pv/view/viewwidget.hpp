@@ -102,7 +102,7 @@ protected:
 	QPoint mouse_point_;
 	QPoint mouse_down_point_;
 	std::shared_ptr<ViewItem> mouse_down_item_;
-	bool dragging_;
+	bool item_dragging_;
 };
 
 } // namespace view

@@ -35,7 +35,7 @@ namespace view {
 ViewWidget::ViewWidget(View &parent) :
 	QWidget(&parent),
 	view_(parent),
-	dragging_(false)
+	item_dragging_(false)
 {
 	setFocusPolicy(Qt::ClickFocus);
 	setMouseTracking(true);
@@ -157,7 +157,7 @@ void ViewWidget::mouse_left_release_event(QMouseEvent *event)
 	for (auto &i : items)
 		i->drag_release();
 
-	if (dragging_)
+	if (item_dragging_)
 		view_.restack_all_row_items();
 	else
 	{
@@ -171,7 +171,7 @@ void ViewWidget::mouse_left_release_event(QMouseEvent *event)
 		}
 	}
 
-	dragging_ = false;
+	item_dragging_ = false;
 }
 
 void ViewWidget::mousePressEvent(QMouseEvent *event)
@@ -210,7 +210,7 @@ void ViewWidget::mouseMoveEvent(QMouseEvent *event)
 		return;
 
 	// Do the drag
-	dragging_ = true;
+	item_dragging_ = true;
 	drag_items(event->pos() - mouse_down_point_);
 
 	update();
