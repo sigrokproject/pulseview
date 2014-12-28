@@ -49,8 +49,6 @@ Viewport::Viewport(View &parent) :
 	mouse_down_valid_(false),
 	pinch_zoom_active_(false)
 {
-	setAttribute(Qt::WA_AcceptTouchEvents, true);
-
 	setAutoFillBackground(true);
 	setBackgroundRole(QPalette::Base);
 }
@@ -71,6 +69,53 @@ vector< shared_ptr<ViewItem> > Viewport::items()
 	const vector< shared_ptr<TimeItem> > time_items(view_.time_items());
 	copy(time_items.begin(), time_items.end(), back_inserter(items));
 	return items;
+}
+
+bool Viewport::touch_event(QTouchEvent *event)
+{
+	QList<QTouchEvent::TouchPoint> touchPoints = event->touchPoints();
+
+	if (touchPoints.count() != 2) {
+		pinch_zoom_active_ = false;
+		return false;
+	}
+
+	const QTouchEvent::TouchPoint &touchPoint0 = touchPoints.first();
+	const QTouchEvent::TouchPoint &touchPoint1 = touchPoints.last();
+
+	if (!pinch_zoom_active_ ||
+	    (event->touchPointStates() & Qt::TouchPointPressed)) {
+		pinch_offset0_ = view_.offset() + view_.scale() * touchPoint0.pos().x();
+		pinch_offset1_ = view_.offset() + view_.scale() * touchPoint1.pos().x();
+		pinch_zoom_active_ = true;
+	}
+
+	double w = touchPoint1.pos().x() - touchPoint0.pos().x();
+	if (abs(w) >= 1.0) {
+		double scale = (pinch_offset1_ - pinch_offset0_) / w;
+		if (scale < 0)
+			scale = -scale;
+		double offset = pinch_offset0_ - touchPoint0.pos().x() * scale;
+		if (scale > 0)
+			view_.set_scale_offset(scale, offset);
+	}
+
+	if (event->touchPointStates() & Qt::TouchPointReleased) {
+		pinch_zoom_active_ = false;
+
+		if (touchPoint0.state() & Qt::TouchPointReleased) {
+			// Primary touch released
+			mouse_down_valid_ = false;
+		} else {
+			// Update the mouse down fields so that continued
+			// dragging with the primary touch will work correctly
+			mouse_down_point_ = touchPoint0.pos().toPoint();
+			mouse_down_offset_ = view_.offset();
+			mouse_down_valid_ = true;
+		}
+	}
+
+	return true;
 }
 
 void Viewport::paintEvent(QPaintEvent*)
@@ -108,23 +153,6 @@ void Viewport::paintEvent(QPaintEvent*)
 		t->paint_fore(p, pp);
 
 	p.end();
-}
-
-bool Viewport::event(QEvent *event)
-{
-	switch (event->type()) {
-	case QEvent::TouchBegin:
-	case QEvent::TouchUpdate:
-	case QEvent::TouchEnd:
-		if (touchEvent(static_cast<QTouchEvent *>(event)))
-			return true;
-		break;
-
-	default:
-		break;
-	}
-
-	return QWidget::event(event);
 }
 
 void Viewport::mousePressEvent(QMouseEvent *event)
@@ -187,53 +215,6 @@ void Viewport::wheelEvent(QWheelEvent *event)
 				       event->delta() * view_.scale()
 				       + view_.offset());
 	}
-}
-
-bool Viewport::touchEvent(QTouchEvent *event)
-{
-	QList<QTouchEvent::TouchPoint> touchPoints = event->touchPoints();
-
-	if (touchPoints.count() != 2) {
-		pinch_zoom_active_ = false;
-		return false;
-	}
-
-	const QTouchEvent::TouchPoint &touchPoint0 = touchPoints.first();
-	const QTouchEvent::TouchPoint &touchPoint1 = touchPoints.last();
-
-	if (!pinch_zoom_active_ ||
-	    (event->touchPointStates() & Qt::TouchPointPressed)) {
-		pinch_offset0_ = view_.offset() + view_.scale() * touchPoint0.pos().x();
-		pinch_offset1_ = view_.offset() + view_.scale() * touchPoint1.pos().x();
-		pinch_zoom_active_ = true;
-	}
-
-	double w = touchPoint1.pos().x() - touchPoint0.pos().x();
-	if (abs(w) >= 1.0) {
-		double scale = (pinch_offset1_ - pinch_offset0_) / w;
-		if (scale < 0)
-			scale = -scale;
-		double offset = pinch_offset0_ - touchPoint0.pos().x() * scale;
-		if (scale > 0)
-			view_.set_scale_offset(scale, offset);
-	}
-
-	if (event->touchPointStates() & Qt::TouchPointReleased) {
-		pinch_zoom_active_ = false;
-
-		if (touchPoint0.state() & Qt::TouchPointReleased) {
-			// Primary touch released
-			mouse_down_valid_ = false;
-		} else {
-			// Update the mouse down fields so that continued
-			// dragging with the primary touch will work correctly
-			mouse_down_point_ = touchPoint0.pos().toPoint();
-			mouse_down_offset_ = view_.offset();
-			mouse_down_valid_ = true;
-		}
-	}
-
-	return true;
 }
 
 } // namespace view

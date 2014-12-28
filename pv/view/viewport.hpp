@@ -57,16 +57,20 @@ private:
 	 */
 	std::vector< std::shared_ptr<pv::view::ViewItem> > items();
 
+	/**
+	 * Handles touch begin update and end events.
+	 * @param e the event that triggered this handler.
+	 */
+	bool touch_event(QTouchEvent *e);
+
+private:
 	void paintEvent(QPaintEvent *event);
 
-	bool event(QEvent *event);
 	void mousePressEvent(QMouseEvent *event);
 	void mouseReleaseEvent(QMouseEvent *event);
 	void mouseMoveEvent(QMouseEvent *event);
 	void mouseDoubleClickEvent(QMouseEvent * event);
 	void wheelEvent(QWheelEvent *event);
-	bool touchEvent(QTouchEvent *e);
-
 private:
 	QPoint mouse_down_point_;
 	double mouse_down_offset_;

@@ -20,6 +20,7 @@
 
 #include <QApplication>
 #include <QMouseEvent>
+#include <QTouchEvent>
 
 #include "rowitem.hpp"
 #include "view.hpp"
@@ -38,6 +39,7 @@ ViewWidget::ViewWidget(View &parent) :
 	item_dragging_(false)
 {
 	setFocusPolicy(Qt::ClickFocus);
+	setAttribute(Qt::WA_AcceptTouchEvents, true);
 	setMouseTracking(true);
 }
 
@@ -178,6 +180,29 @@ void ViewWidget::mouse_left_release_event(QMouseEvent *event)
 	}
 
 	item_dragging_ = false;
+}
+
+bool ViewWidget::touch_event(QTouchEvent *e)
+{
+	(void)e;
+	return false;
+}
+
+bool ViewWidget::event(QEvent *event)
+{
+	switch (event->type()) {
+	case QEvent::TouchBegin:
+	case QEvent::TouchUpdate:
+	case QEvent::TouchEnd:
+		if (touch_event(static_cast<QTouchEvent *>(event)))
+			return true;
+		break;
+
+	default:
+		break;
+	}
+
+	return QWidget::event(event);
 }
 
 void ViewWidget::mousePressEvent(QMouseEvent *event)

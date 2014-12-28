@@ -25,6 +25,8 @@
 
 #include <QWidget>
 
+class QTouchEvent;
+
 namespace pv {
 namespace view {
 
@@ -89,7 +91,15 @@ protected:
 	 */
 	void mouse_left_release_event(QMouseEvent *event);
 
+	/**
+	 * Handles touch begin update and end events.
+	 * @param e the event that triggered this handler.
+	 */
+	virtual bool touch_event(QTouchEvent *e);
+
 protected:
+	bool event(QEvent *event);
+
 	void mousePressEvent(QMouseEvent * event);
 	void mouseReleaseEvent(QMouseEvent *event);
 	void mouseMoveEvent(QMouseEvent *event);
