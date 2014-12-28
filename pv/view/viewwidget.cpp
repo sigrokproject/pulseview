@@ -86,6 +86,12 @@ bool ViewWidget::accept_drag() const
 	return false;
 }
 
+bool ViewWidget::mouse_down() const
+{
+	return mouse_down_point_.x() != INT_MIN &&
+		mouse_down_point_.y() != INT_MIN;
+}
+
 void ViewWidget::drag_items(const QPoint &delta)
 {
 	// Drag the row items
@@ -191,6 +197,7 @@ void ViewWidget::mouseReleaseEvent(QMouseEvent *event)
 	if (event->button() & Qt::LeftButton)
 		mouse_left_release_event(event);
 
+	mouse_down_point_ = QPoint(INT_MIN, INT_MIN);
 	mouse_down_item_ = nullptr;
 }
 

@@ -53,6 +53,11 @@ protected:
 	bool accept_drag() const;
 
 	/**
+	 * Returns true if the mouse button is down.
+	 */
+	bool mouse_down() const;
+
+	/**
 	 * Drag the dragging items by the delta offset.
 	 * @param delta the drag offset in pixels.
 	 */
