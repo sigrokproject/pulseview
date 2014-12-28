@@ -51,7 +51,7 @@ Connect::Connect(QWidget *parent, pv::DeviceManager &device_manager) :
 	form_layout_(&form_),
 	drivers_(&form_),
 	serial_device_(&form_),
-	scan_button_(tr("Scan for Devices"), this),
+	scan_button_(tr("&Scan for Devices"), this),
 	device_list_(this),
 	button_box_(QDialogButtonBox::Ok | QDialogButtonBox::Cancel,
 		Qt::Horizontal, this)
@@ -66,9 +66,9 @@ Connect::Connect(QWidget *parent, pv::DeviceManager &device_manager) :
 		this, SLOT(device_selected(int)));
 
 	form_.setLayout(&form_layout_);
-	form_layout_.addRow(tr("Driver"), &drivers_);
+	form_layout_.addRow(tr("&Driver"), &drivers_);
 
-	form_layout_.addRow(tr("Serial Port"), &serial_device_);
+	form_layout_.addRow(tr("Serial &Port"), &serial_device_);
 
 	unset_connection();
 
