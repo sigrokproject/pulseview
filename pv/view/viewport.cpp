@@ -92,9 +92,8 @@ bool Viewport::touch_event(QTouchEvent *event)
 
 	double w = touchPoint1.pos().x() - touchPoint0.pos().x();
 	if (abs(w) >= 1.0) {
-		double scale = (pinch_offset1_ - pinch_offset0_) / w;
-		if (scale < 0)
-			scale = -scale;
+		const double scale =
+			fabs((pinch_offset1_ - pinch_offset0_) / w);
 		double offset = pinch_offset0_ - touchPoint0.pos().x() * scale;
 		if (scale > 0)
 			view_.set_scale_offset(scale, offset);
