@@ -64,7 +64,7 @@ public:
 	}
 
 	int height() const {
-		return rect_.width();
+		return rect_.height();
 	}
 
 	double pixels_offset() const {
