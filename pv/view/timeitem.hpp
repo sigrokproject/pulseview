@@ -48,6 +48,12 @@ public:
 
 	virtual float get_x() const = 0;
 
+	/**
+	 * Drags the item to a delta relative to the drag point.
+	 * @param delta the offset from the drag point.
+	 */
+	void drag_by(const QPoint &delta);
+
 protected:
 	View &view_;
 };

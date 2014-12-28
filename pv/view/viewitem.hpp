@@ -72,11 +72,6 @@ public:
 	bool dragging() const;
 
 	/**
-	 * Retunrns the current drag point.
-	 */
-	QPoint drag_point() const;
-
-	/**
 	 * Sets this item into the dragged state.
 	 */
 	void drag();
@@ -85,6 +80,12 @@ public:
 	 * Sets this item into the un-dragged state.
 	 */
 	void drag_release();
+
+	/**
+	 * Drags the item to a delta relative to the drag point.
+	 * @param delta the offset from the drag point.
+	 */
+	virtual void drag_by(const QPoint &delta) = 0;
 
 	/**
 	 * Get the drag point.
@@ -149,10 +150,10 @@ protected:
 
 protected:
 	QWidget *context_parent_;
+	QPoint drag_point_;
 
 private:
 	bool selected_;
-	QPoint drag_point_;
 };
 
 } // namespace view

@@ -115,6 +115,12 @@ int RowItem::get_visual_y() const
 	return visual_v_offset_ + owner_->owner_visual_v_offset();
 }
 
+void RowItem::drag_by(const QPoint &delta)
+{
+	force_to_v_offset(drag_point_.y() + delta.y() -
+		owner_->owner_visual_v_offset());
+}
+
 QPoint RowItem::point(const QRect &rect) const
 {
 	return QPoint(rect.right(), get_visual_y());

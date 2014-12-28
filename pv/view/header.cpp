@@ -247,11 +247,11 @@ void Header::mouseMoveEvent(QMouseEvent *event)
 	// Do the drag
 	dragging_ = true;
 
-	const int delta = event->pos().y() - mouse_down_point_.y();
+	const QPoint delta = event->pos() - mouse_down_point_;
 
 	for (std::shared_ptr<RowItem> r : view_)
 		if (r->dragging()) {
-			r->force_to_v_offset(r->drag_point().y() + delta);
+			r->drag_by(delta);
 
 			// Ensure the trace is selected
 			r->select();

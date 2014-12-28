@@ -171,13 +171,11 @@ void Ruler::mouseMoveEvent(QMouseEvent *e)
 	// Do the drag
 	dragging_ = true;
 
-	const int delta = e->pos().x() - mouse_down_point_.x();
+	const QPoint delta = e->pos() - mouse_down_point_;
 	const vector< shared_ptr<TimeItem> > items(view_.time_items());
 	for (auto &i : items)
 		if (i->dragging())
-			i->set_time(view_.offset() +
-				(i->drag_point().x() + delta - 0.5) *
-				view_.scale());
+			i->drag_by(delta);
 }
 
 void Ruler::mousePressEvent(QMouseEvent *e)

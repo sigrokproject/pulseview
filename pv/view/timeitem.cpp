@@ -19,12 +19,19 @@
  */
 
 #include "timeitem.hpp"
+#include "view.hpp"
 
 namespace pv {
 namespace view {
 
 TimeItem::TimeItem(View &view) :
 	view_(view) {
+}
+
+void TimeItem::drag_by(const QPoint &delta)
+{
+	set_time(view_.offset() + (drag_point_.x() + delta.x() - 0.5) *
+		view_.scale());
 }
 
 } // namespace view

@@ -94,6 +94,12 @@ public:
 	int get_visual_y() const;
 
 	/**
+	 * Drags the item to a delta relative to the drag point.
+	 * @param delta the offset from the drag point.
+	 */
+	void drag_by(const QPoint &delta);
+
+	/**
 	 * Gets the arrow-tip point of the row item marker.
 	 * @param rect the rectangle of the header area.
 	 */

@@ -34,8 +34,8 @@ const int ViewItem::HighlightRadius = 3;
 
 ViewItem::ViewItem() :
 	context_parent_(NULL),
-	selected_(false),
-	drag_point_(INT_MIN, INT_MIN)
+	drag_point_(INT_MIN, INT_MIN),
+	selected_(false)
 {
 }
 
@@ -52,11 +52,6 @@ void ViewItem::select(bool select)
 bool ViewItem::dragging() const
 {
 	return drag_point_.x() != INT_MIN && drag_point_.y() != INT_MIN;
-}
-
-QPoint ViewItem::drag_point() const
-{
-	return drag_point_;
 }
 
 void ViewItem::drag()
