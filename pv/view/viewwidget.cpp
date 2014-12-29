@@ -85,7 +85,8 @@ bool ViewWidget::accept_drag() const
 		return true;
 	}
 
-	return false;
+	// A background drag is beginning
+	return true;
 }
 
 bool ViewWidget::mouse_down() const
@@ -96,6 +97,8 @@ bool ViewWidget::mouse_down() const
 
 void ViewWidget::drag_items(const QPoint &delta)
 {
+	bool item_dragged = false;
+
 	// Drag the row items
 	RowItemOwner *item_owner = nullptr;
 	for (std::shared_ptr<RowItem> r : view_)
@@ -108,6 +111,7 @@ void ViewWidget::drag_items(const QPoint &delta)
 		}
 
 	if (item_owner) {
+		item_dragged = true;
 		item_owner->restack_items();
 		for (const auto &r : *item_owner)
 			r->animate_to_layout_v_offset();
@@ -116,8 +120,27 @@ void ViewWidget::drag_items(const QPoint &delta)
 	// Drag the time items
 	const vector< shared_ptr<TimeItem> > items(view_.time_items());
 	for (auto &i : items)
-		if (i->dragging())
+		if (i->dragging()) {
 			i->drag_by(delta);
+			item_dragged = true;
+		}
+
+	// Do the background drag
+	if (!item_dragged)
+		drag_by(delta);
+}
+
+void ViewWidget::drag()
+{
+}
+
+void ViewWidget::drag_by(const QPoint &delta)
+{
+	(void)delta;
+}
+
+void ViewWidget::drag_release()
+{
 }
 
 void ViewWidget::mouse_left_press_event(QMouseEvent *event)
@@ -141,10 +164,17 @@ void ViewWidget::mouse_left_press_event(QMouseEvent *event)
 	}
 
 	// Save the offsets of any signals which will be dragged
+	bool item_dragged = false;
 	const auto items = this->items();
 	for (auto &i : items)
-		if (i->selected())
+		if (i->selected()) {
+			item_dragged = true;
 			i->drag();
+		}
+
+	// Do the background drag
+	if (!item_dragged)
+		drag();
 
 	selection_changed();
 	update();

@@ -53,6 +53,22 @@ private:
 		const QPoint &pt);
 
 	/**
+	 * Sets this item into the dragged state.
+	 */
+	void drag();
+
+	/**
+	 * Drag the background by the delta offset.
+	 * @param delta the drag offset in pixels.
+	 */
+	void drag_by(const QPoint &delta);
+
+	/**
+	 * Sets this item into the un-dragged state.
+	 */
+	void drag_release();
+
+	/**
 	 * Gets the items in the view widget.
 	 */
 	std::vector< std::shared_ptr<pv::view::ViewItem> > items();
@@ -66,15 +82,11 @@ private:
 private:
 	void paintEvent(QPaintEvent *event);
 
-	void mousePressEvent(QMouseEvent *event);
-	void mouseReleaseEvent(QMouseEvent *event);
-	void mouseMoveEvent(QMouseEvent *event);
 	void mouseDoubleClickEvent(QMouseEvent * event);
 	void wheelEvent(QWheelEvent *event);
+
 private:
-	QPoint mouse_down_point_;
-	double mouse_down_offset_;
-	bool mouse_down_valid_;
+	double drag_offset_;
 
 	double pinch_offset0_;
 	double pinch_offset1_;

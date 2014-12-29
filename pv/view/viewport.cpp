@@ -21,6 +21,7 @@
 #include <cassert>
 #include <cmath>
 #include <algorithm>
+#include <limits>
 
 #include "signal.hpp"
 #include "view.hpp"
@@ -37,6 +38,7 @@ using std::copy;
 using std::max;
 using std::min;
 using std::none_of;
+using std::numeric_limits;
 using std::shared_ptr;
 using std::stable_sort;
 using std::vector;
@@ -46,7 +48,7 @@ namespace view {
 
 Viewport::Viewport(View &parent) :
 	ViewWidget(parent),
-	mouse_down_valid_(false),
+	drag_offset_(numeric_limits<double>::signaling_NaN()),
 	pinch_zoom_active_(false)
 {
 	setAutoFillBackground(true);
@@ -61,6 +63,25 @@ shared_ptr<ViewItem> Viewport::get_mouse_over_item(const QPoint &pt)
 			(*i)->hit_box_rect(rect()).contains(pt))
 			return *i;
 	return nullptr;
+}
+
+void Viewport::drag()
+{
+	drag_offset_ = view_.offset();
+}
+
+void Viewport::drag_by(const QPoint &delta)
+{
+	if (isnan(drag_offset_))
+		return;
+
+	view_.set_scale_offset(view_.scale(), drag_offset_ -
+		delta.x() * view_.scale());
+}
+
+void Viewport::drag_release()
+{
+	drag_offset_ = numeric_limits<double>::signaling_NaN();
 }
 
 vector< shared_ptr<ViewItem> > Viewport::items()
@@ -104,13 +125,12 @@ bool Viewport::touch_event(QTouchEvent *event)
 
 		if (touchPoint0.state() & Qt::TouchPointReleased) {
 			// Primary touch released
-			mouse_down_valid_ = false;
+			drag_release();
 		} else {
 			// Update the mouse down fields so that continued
 			// dragging with the primary touch will work correctly
 			mouse_down_point_ = touchPoint0.pos().toPoint();
-			mouse_down_offset_ = view_.offset();
-			mouse_down_valid_ = true;
+			drag();
 		}
 	}
 
@@ -152,43 +172,6 @@ void Viewport::paintEvent(QPaintEvent*)
 		t->paint_fore(p, pp);
 
 	p.end();
-}
-
-void Viewport::mousePressEvent(QMouseEvent *event)
-{
-	assert(event);
-
-	if (event->button() == Qt::LeftButton) {
-		mouse_down_point_ = event->pos();
-		mouse_down_offset_ = view_.offset();
-		mouse_down_valid_ = true;
-	}
-}
-
-void Viewport::mouseReleaseEvent(QMouseEvent *event)
-{
-	assert(event);
-
-	if (event->button() == Qt::LeftButton)
-		mouse_down_valid_ = false;
-}
-
-void Viewport::mouseMoveEvent(QMouseEvent *event)
-{
-	assert(event);
-
-	if (event->buttons() & Qt::LeftButton) {
-		if (!mouse_down_valid_) {
-			mouse_down_point_ = event->pos();
-			mouse_down_offset_ = view_.offset();
-			mouse_down_valid_ = true;
-		}
-
-		view_.set_scale_offset(view_.scale(),
-			mouse_down_offset_ +
-			(mouse_down_point_ - event->pos()).x() *
-			view_.scale());
-	}
 }
 
 void Viewport::mouseDoubleClickEvent(QMouseEvent *event)

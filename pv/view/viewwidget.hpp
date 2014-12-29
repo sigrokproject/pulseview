@@ -66,6 +66,23 @@ protected:
 	void drag_items(const QPoint &delta);
 
 	/**
+	 * Sets this item into the dragged state.
+	 */
+	virtual void drag();
+
+	/**
+	 * Drag the background by the delta offset.
+	 * @param delta the drag offset in pixels.
+	 * @remarks The default implementation does nothing.
+	 */
+	virtual void drag_by(const QPoint &delta);
+
+	/**
+	 * Sets this item into the un-dragged state.
+	 */
+	virtual void drag_release();
+
+	/**
 	 * Gets the items in the view widget.
 	 */
 	virtual std::vector< std::shared_ptr<pv::view::ViewItem> > items() = 0;
