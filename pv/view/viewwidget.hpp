@@ -41,6 +41,15 @@ protected:
 	ViewWidget(View &parent);
 
 	/**
+	 * Indicates when a view item is being hovered over.
+	 * @param item The item that is being hovered over, or @c nullptr
+	 * if no view item is being hovered over.
+	 * @remarks the default implementation does nothing.
+	 */
+	virtual void item_hover(
+		const std::shared_ptr<pv::view::ViewItem> &item);
+
+	/**
 	 * Indicates the event an a view item has been clicked.
 	 * @param item the view item that has been clicked.
 	 * @remarks the default implementation does nothing.

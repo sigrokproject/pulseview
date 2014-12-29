@@ -51,6 +51,11 @@ void ViewWidget::clear_selection()
 	update();
 }
 
+void ViewWidget::item_hover(const shared_ptr<ViewItem> &item)
+{
+	(void)item;
+}
+
 void ViewWidget::item_clicked(const shared_ptr<ViewItem> &item)
 {
 	(void)item;
@@ -256,30 +261,32 @@ void ViewWidget::mouseReleaseEvent(QMouseEvent *event)
 	mouse_down_item_ = nullptr;
 }
 
-void ViewWidget::mouseMoveEvent(QMouseEvent *event)
+void ViewWidget::mouseMoveEvent(QMouseEvent *e)
 {
-	assert(event);
-	mouse_point_ = event->pos();
+	assert(e);
+	mouse_point_ = e->pos();
 
-	if (!(event->buttons() & Qt::LeftButton))
-		return;
-
-	if (!item_dragging_)
+	if (!e->buttons())
+		item_hover(get_mouse_over_item(e->pos()));
+	else if (e->buttons() & Qt::LeftButton)
 	{
-		if ((event->pos() - mouse_down_point_).manhattanLength() <
-			QApplication::startDragDistance())
-			return;
+		if (!item_dragging_)
+		{
+			if ((e->pos() - mouse_down_point_).manhattanLength() <
+				QApplication::startDragDistance())
+				return;
 
-		if (!accept_drag())
-			return;
+			if (!accept_drag())
+				return;
 
-		item_dragging_ = true;
+			item_dragging_ = true;
+		}
+
+		// Do the drag
+		drag_items(e->pos() - mouse_down_point_);
+
+		update();
 	}
-
-	// Do the drag
-	drag_items(event->pos() - mouse_down_point_);
-
-	update();
 }
 
 void ViewWidget::leaveEvent(QEvent*)

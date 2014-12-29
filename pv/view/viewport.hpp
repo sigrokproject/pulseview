@@ -44,6 +44,13 @@ public:
 
 private:
 	/**
+	 * Indicates when a view item is being hovered over.
+	 * @param item The item that is being hovered over, or @c nullptr
+	 * if no view item is being hovered over.
+	 */
+	void item_hover(const std::shared_ptr<pv::view::ViewItem> &item);
+
+	/**
 	 * Gets the first view item which has a hit-box that contains @c pt .
 	 * @param pt the point to search with.
 	 * @return the view item that has been found, or and empty

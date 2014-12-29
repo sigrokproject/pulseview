@@ -35,6 +35,7 @@
 using std::abs;
 using std::back_inserter;
 using std::copy;
+using std::dynamic_pointer_cast;
 using std::max;
 using std::min;
 using std::none_of;
@@ -63,6 +64,15 @@ shared_ptr<ViewItem> Viewport::get_mouse_over_item(const QPoint &pt)
 			(*i)->hit_box_rect(rect()).contains(pt))
 			return *i;
 	return nullptr;
+}
+
+void Viewport::item_hover(const shared_ptr<ViewItem> &item)
+{
+	if (item)
+		setCursor(dynamic_pointer_cast<RowItem>(item) ?
+			Qt::SizeVerCursor : Qt::SizeHorCursor);
+	else
+		unsetCursor();
 }
 
 void Viewport::drag()
