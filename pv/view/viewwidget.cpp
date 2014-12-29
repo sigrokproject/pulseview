@@ -264,15 +264,19 @@ void ViewWidget::mouseMoveEvent(QMouseEvent *event)
 	if (!(event->buttons() & Qt::LeftButton))
 		return;
 
-	if ((event->pos() - mouse_down_point_).manhattanLength() <
-		QApplication::startDragDistance())
-		return;
+	if (!item_dragging_)
+	{
+		if ((event->pos() - mouse_down_point_).manhattanLength() <
+			QApplication::startDragDistance())
+			return;
 
-	if (!accept_drag())
-		return;
+		if (!accept_drag())
+			return;
+
+		item_dragging_ = true;
+	}
 
 	// Do the drag
-	item_dragging_ = true;
 	drag_items(event->pos() - mouse_down_point_);
 
 	update();
