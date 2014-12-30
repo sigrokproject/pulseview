@@ -165,7 +165,7 @@ set(pulseview_SOURCES
 	pv/prop/string.cpp
 	pv/prop/binding/binding.cpp
 	pv/prop/binding/deviceoptions.cpp
-	pv/toolbars/samplingbar.cpp
+	pv/toolbars/mainbar.cpp
 	pv/view/analogsignal.cpp
 	pv/view/cursor.cpp
 	pv/view/cursorpair.cpp
@@ -212,7 +212,7 @@ set(pulseview_HEADERS
 	pv/prop/property.hpp
 	pv/prop/string.hpp
 	pv/prop/binding/deviceoptions.hpp
-	pv/toolbars/samplingbar.hpp
+	pv/toolbars/mainbar.hpp
 	pv/view/cursor.hpp
 	pv/view/flag.hpp
 	pv/view/header.hpp

@@ -27,7 +27,7 @@
 #include <QHelpEvent>
 #include <QToolTip>
 
-#include "samplingbar.hpp"
+#include "mainbar.hpp"
 
 #include <pv/devicemanager.hpp>
 #include <pv/mainwindow.hpp>
@@ -52,11 +52,11 @@ using sigrok::Error;
 namespace pv {
 namespace toolbars {
 
-const uint64_t SamplingBar::MinSampleCount = 100ULL;
-const uint64_t SamplingBar::MaxSampleCount = 1000000000000ULL;
-const uint64_t SamplingBar::DefaultSampleCount = 1000000;
+const uint64_t MainBar::MinSampleCount = 100ULL;
+const uint64_t MainBar::MaxSampleCount = 1000000000000ULL;
+const uint64_t MainBar::DefaultSampleCount = 1000000;
 
-SamplingBar::SamplingBar(Session &session, MainWindow &main_window) :
+MainBar::MainBar(Session &session, MainWindow &main_window) :
 	QToolBar("Sampling Bar", &main_window),
 	session_(session),
 	main_window_(main_window),
@@ -75,7 +75,7 @@ SamplingBar::SamplingBar(Session &session, MainWindow &main_window) :
 	icon_grey_(":/icons/status-grey.svg"),
 	run_stop_button_(this)
 {
-	setObjectName(QString::fromUtf8("SamplingBar"));
+	setObjectName(QString::fromUtf8("MainBar"));
 
 	connect(&run_stop_button_, SIGNAL(clicked()),
 		this, SLOT(on_run_stop()));
@@ -110,7 +110,7 @@ SamplingBar::SamplingBar(Session &session, MainWindow &main_window) :
 	sample_rate_.installEventFilter(this);
 }
 
-void SamplingBar::set_device_list(
+void MainBar::set_device_list(
 	const std::list< std::shared_ptr<sigrok::Device> > &devices,
 	shared_ptr<Device> selected)
 {
@@ -144,7 +144,7 @@ void SamplingBar::set_device_list(
 	updating_device_selector_ = false;
 }
 
-shared_ptr<Device> SamplingBar::get_selected_device() const
+shared_ptr<Device> MainBar::get_selected_device() const
 {
 	const int index = device_selector_.currentIndex();
 	if (index < 0)
@@ -153,7 +153,7 @@ shared_ptr<Device> SamplingBar::get_selected_device() const
 	return device_selector_.itemData(index).value<shared_ptr<Device>>();
 }
 
-void SamplingBar::set_capture_state(pv::Session::capture_state state)
+void MainBar::set_capture_state(pv::Session::capture_state state)
 {
 	const QIcon *icons[] = {&icon_grey_, &icon_red_, &icon_green_};
 	run_stop_button_.setIcon(*icons[state]);
@@ -162,7 +162,7 @@ void SamplingBar::set_capture_state(pv::Session::capture_state state)
 	run_stop_button_.setShortcut(QKeySequence(Qt::Key_Space));
 }
 
-void SamplingBar::update_sample_rate_selector()
+void MainBar::update_sample_rate_selector()
 {
 	Glib::VariantContainerBase gvar_dict;
 	GVariant *gvar_list;
@@ -240,7 +240,7 @@ void SamplingBar::update_sample_rate_selector()
 	update_sample_rate_selector_value();
 }
 
-void SamplingBar::update_sample_rate_selector_value()
+void MainBar::update_sample_rate_selector_value()
 {
 	if (updating_sample_rate_)
 		return;
@@ -263,7 +263,7 @@ void SamplingBar::update_sample_rate_selector_value()
 	}
 }
 
-void SamplingBar::update_sample_count_selector()
+void MainBar::update_sample_count_selector()
 {
 	if (updating_sample_count_)
 		return;
@@ -325,7 +325,7 @@ void SamplingBar::update_sample_count_selector()
 	updating_sample_count_ = false;
 }
 
-void SamplingBar::update_device_config_widgets()
+void MainBar::update_device_config_widgets()
 {
 	using namespace pv::popups;
 
@@ -380,7 +380,7 @@ void SamplingBar::update_device_config_widgets()
 	update_sample_rate_selector();
 }
 
-void SamplingBar::commit_sample_count()
+void MainBar::commit_sample_count()
 {
 	uint64_t sample_count = 0;
 
@@ -410,7 +410,7 @@ void SamplingBar::commit_sample_count()
 	updating_sample_count_ = false;
 }
 
-void SamplingBar::commit_sample_rate()
+void MainBar::commit_sample_rate()
 {
 	uint64_t sample_rate = 0;
 
@@ -439,7 +439,7 @@ void SamplingBar::commit_sample_rate()
 	updating_sample_rate_ = false;
 }
 
-void SamplingBar::on_device_selected()
+void MainBar::on_device_selected()
 {
 	if (updating_device_selector_)
 		return;
@@ -453,24 +453,24 @@ void SamplingBar::on_device_selected()
 	update_device_config_widgets();
 }
 
-void SamplingBar::on_sample_count_changed()
+void MainBar::on_sample_count_changed()
 {
 	commit_sample_count();
 }
 
-void SamplingBar::on_sample_rate_changed()
+void MainBar::on_sample_rate_changed()
 {
 	commit_sample_rate();
 }
 
-void SamplingBar::on_run_stop()
+void MainBar::on_run_stop()
 {
 	commit_sample_count();
 	commit_sample_rate();	
 	main_window_.run_stop();
 }
 
-void SamplingBar::on_config_changed()
+void MainBar::on_config_changed()
 {
 	commit_sample_count();
 	update_sample_count_selector();	
@@ -478,7 +478,7 @@ void SamplingBar::on_config_changed()
 	update_sample_rate_selector();
 }
 
-bool SamplingBar::eventFilter(QObject *watched, QEvent *event)
+bool MainBar::eventFilter(QObject *watched, QEvent *event)
 {
 	if ((watched == &sample_count_ || watched == &sample_rate_) &&
 		(event->type() == QEvent::ToolTip)) {

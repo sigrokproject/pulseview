@@ -42,7 +42,7 @@ class DeviceManager;
 
 namespace toolbars {
 class ContextBar;
-class SamplingBar;
+class MainBar;
 }
 
 namespace view {
@@ -133,7 +133,7 @@ private:
 	QWidget *central_widget_;
 	QVBoxLayout *vertical_layout_;
 
-	toolbars::SamplingBar *sampling_bar_;
+	toolbars::MainBar *main_bar_;
 };
 
 } // namespace pv

@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_TOOLBARS_SAMPLINGBAR_H
-#define PULSEVIEW_PV_TOOLBARS_SAMPLINGBAR_H
+#ifndef PULSEVIEW_PV_TOOLBARS_MAINBAR_H
+#define PULSEVIEW_PV_TOOLBARS_MAINBAR_H
 
 #include <stdint.h>
 
@@ -50,7 +50,7 @@ class Session;
 
 namespace toolbars {
 
-class SamplingBar : public QToolBar
+class MainBar : public QToolBar
 {
 	Q_OBJECT
 
@@ -60,7 +60,7 @@ private:
 	static const uint64_t DefaultSampleCount;
 
 public:
-	SamplingBar(Session &session, pv::MainWindow &main_window);
+	MainBar(Session &session, pv::MainWindow &main_window);
 
 	void set_device_list(
 		const std::list< std::shared_ptr<sigrok::Device> > &devices,
@@ -120,4 +120,4 @@ private:
 } // namespace toolbars
 } // namespace pv
 
-#endif // PULSEVIEW_PV_TOOLBARS_SAMPLINGBAR_H
+#endif // PULSEVIEW_PV_TOOLBARS_MAINBAR_H

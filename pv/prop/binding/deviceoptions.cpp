@@ -86,7 +86,7 @@ DeviceOptions::DeviceOptions(shared_ptr<sigrok::Configurable> configurable) :
 		{
 		case SR_CONF_SAMPLERATE:
 			// Sample rate values are not bound because they are shown
-			// in the SamplingBar
+			// in the MainBar
 			break;
 
 		case SR_CONF_CAPTURE_RATIO:

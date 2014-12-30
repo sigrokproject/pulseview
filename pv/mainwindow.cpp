@@ -46,7 +46,7 @@
 #include "dialogs/about.hpp"
 #include "dialogs/connect.hpp"
 #include "dialogs/storeprogress.hpp"
-#include "toolbars/samplingbar.hpp"
+#include "toolbars/mainbar.hpp"
 #include "view/logicsignal.hpp"
 #include "view/view.hpp"
 #ifdef ENABLE_DECODE
@@ -283,12 +283,12 @@ void MainWindow::setup_ui()
 	addToolBar(toolbar);
 
 	// Setup the sampling bar
-	sampling_bar_ = new toolbars::SamplingBar(session_, *this);
+	main_bar_ = new toolbars::MainBar(session_, *this);
 
 	// Populate the device list and select the initially selected device
 	update_device_list();
 
-	addToolBar(sampling_bar_);
+	addToolBar(main_bar_);
 
 	// Set the title
 	setWindowTitle(tr("PulseView"));
@@ -394,7 +394,7 @@ void MainWindow::session_error(
 
 void MainWindow::update_device_list()
 {
-	assert(sampling_bar_);
+	assert(main_bar_);
 
 	shared_ptr<Device> selected_device = session_.device();
 	list< shared_ptr<Device> > devices;
@@ -410,7 +410,7 @@ void MainWindow::update_device_list()
 		devices.push_back(selected_device);
 	assert(selected_device);
 
-	sampling_bar_->set_device_list(devices, selected_device);
+	main_bar_->set_device_list(devices, selected_device);
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -563,7 +563,7 @@ void MainWindow::add_decoder(srd_decoder *decoder)
 
 void MainWindow::capture_state_changed(int state)
 {
-	sampling_bar_->set_capture_state((pv::Session::capture_state)state);
+	main_bar_->set_capture_state((pv::Session::capture_state)state);
 }
 
 void MainWindow::device_selected()
