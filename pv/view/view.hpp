@@ -102,6 +102,10 @@ public:
 	 * seconds.
 	 */
 	double offset() const;
+
+	/**
+	 * Returns the vertical scroll offset.
+	 */
 	int owner_visual_v_offset() const;
 
 	/**
@@ -249,7 +253,7 @@ public:
 private Q_SLOTS:
 
 	void h_scroll_value_changed(int value);
-	void v_scroll_value_changed(int value);
+	void v_scroll_value_changed();
 
 	void signals_changed();
 	void data_updated();
@@ -271,7 +275,6 @@ private:
 	/// The view time offset in seconds.
 	double offset_;
 
-	int v_offset_;
 	bool updating_scroll_;
 
 	double tick_period_;

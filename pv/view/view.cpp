@@ -92,7 +92,6 @@ View::View(Session &session, QWidget *parent) :
 	header_(new Header(*this)),
 	scale_(1e-6),
 	offset_(0),
-	v_offset_(0),
 	updating_scroll_(false),
 	tick_period_(0.0),
 	tick_prefix_(0),
@@ -104,7 +103,7 @@ View::View(Session &session, QWidget *parent) :
 	connect(horizontalScrollBar(), SIGNAL(valueChanged(int)),
 		this, SLOT(h_scroll_value_changed(int)));
 	connect(verticalScrollBar(), SIGNAL(valueChanged(int)),
-		this, SLOT(v_scroll_value_changed(int)));
+		this, SLOT(v_scroll_value_changed()));
 
 	connect(&session_, SIGNAL(signals_changed()),
 		this, SLOT(signals_changed()));
@@ -202,7 +201,7 @@ double View::offset() const
 
 int View::owner_visual_v_offset() const
 {
-	return -v_offset_;
+	return -verticalScrollBar()->sliderPosition();
 }
 
 unsigned int View::depth() const
@@ -656,9 +655,8 @@ void View::h_scroll_value_changed(int value)
 	viewport_->update();
 }
 
-void View::v_scroll_value_changed(int value)
+void View::v_scroll_value_changed()
 {
-	v_offset_ = value;
 	header_->update();
 	viewport_->update();
 }
