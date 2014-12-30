@@ -90,7 +90,12 @@ public:
 	 **/
 	void paint_back(QPainter &p, const ViewItemPaintParams &pp);
 
-	void compute_text_size(QPainter &p, unsigned int prefix);
+	/**
+	 * Constructs the string to display.
+	 */
+	QString format_string();
+
+	void compute_text_size(QPainter &p);
 
 	std::pair<float, float> get_cursor_offsets() const;
 

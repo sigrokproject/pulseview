@@ -108,12 +108,11 @@ void CursorPair::paint_label(QPainter &p, const QRect &rect, bool hover)
 	if (!enabled())
 		return;
 
-	const unsigned int prefix = view_.tick_prefix();
 	const QColor text_colour =
 		ViewItem::select_text_colour(Cursor::FillColour);
 
 	p.setPen(text_colour);
-	compute_text_size(p, prefix);
+	compute_text_size(p);
 	QRectF delta_rect(label_rect(rect));
 
 	const int radius = delta_rect.height() / 2;
@@ -140,7 +139,7 @@ void CursorPair::paint_label(QPainter &p, const QRect &rect, bool hover)
 
 		p.setPen(text_colour);
 		p.drawText(text_rect, Qt::AlignCenter | Qt::AlignVCenter,
-			pv::util::format_time(second_->time() - first_->time(), prefix, 2));
+			format_string());
 	}
 }
 
@@ -160,13 +159,21 @@ void CursorPair::paint_back(QPainter &p, const ViewItemPaintParams &pp) {
 	p.drawRect(l, pp.top(), r - l, pp.height());
 }
 
-void CursorPair::compute_text_size(QPainter &p, unsigned int prefix)
+QString CursorPair::format_string()
+{
+	const unsigned int prefix = view_.tick_prefix();
+	const double delta = second_->time() - first_->time();
+	return QString("%1 / %2").
+		arg(util::format_time(delta, prefix, 2)).
+		arg(util::format_si_value(1.0 / fabs(delta), "Hz", -1, 4));
+}
+
+void CursorPair::compute_text_size(QPainter &p)
 {
 	assert(first_);
 	assert(second_);
 
-	text_size_ = p.boundingRect(QRectF(), 0, pv::util::format_time(
-		second_->time() - first_->time(), prefix, 2)).size();
+	text_size_ = p.boundingRect(QRectF(), 0, format_string()).size();
 }
 
 pair<float, float> CursorPair::get_cursor_offsets() const
