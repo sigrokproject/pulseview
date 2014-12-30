@@ -109,6 +109,11 @@ public:
 	int owner_visual_v_offset() const;
 
 	/**
+	 * Sets the visual v-offset.
+	 */
+	void set_v_offset(int offset);
+
+	/**
 	 * Returns the SI prefix to apply to the graticule time markings.
 	 */
 	unsigned int tick_prefix() const;

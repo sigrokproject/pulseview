@@ -204,6 +204,13 @@ int View::owner_visual_v_offset() const
 	return -verticalScrollBar()->sliderPosition();
 }
 
+void View::set_v_offset(int offset)
+{
+	verticalScrollBar()->setSliderPosition(offset);
+	header_->update();
+	viewport_->update();
+}
+
 unsigned int View::depth() const
 {
 	return 0;
