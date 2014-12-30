@@ -61,8 +61,8 @@ QString format_si_value(double v, QString unit, int prefix,
 	QTextStream ts(&s);
 	if (sign)
 		ts << forcesign;
-	ts << fixed << qSetRealNumberPrecision(precision)
-		<< (v  * multiplier) << SIPrefixes[prefix] << unit;
+	ts << fixed << qSetRealNumberPrecision(precision) <<
+		(v  * multiplier) << " " << SIPrefixes[prefix] << unit;
 
 	return s;
 }
