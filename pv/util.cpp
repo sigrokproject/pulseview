@@ -32,9 +32,10 @@ using namespace Qt;
 namespace pv {
 namespace util {
 
-static const QString SIPrefixes[9] =
-	{"f", "p", "n", QChar(0x03BC), "m", "", "k", "M", "G"};
-const int FirstSIPrefixPower = -15;
+static const QString SIPrefixes[17] =
+	{"y", "z", "a", "f", "p", "n", QChar(0x03BC), "m", "", "k", "M", "G",
+	"T", "P", "E", "Z", "Y"};
+const int FirstSIPrefixPower = -24;
 
 QString format_si_value(double v, QString unit, int prefix,
 	unsigned int precision, bool sign)
