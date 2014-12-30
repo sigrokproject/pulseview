@@ -36,9 +36,21 @@ static const QString SIPrefixes[9] =
 	{"f", "p", "n", QChar(0x03BC), "m", "", "k", "M", "G"};
 const int FirstSIPrefixPower = -15;
 
-QString format_time(double t, unsigned int prefix,
+QString format_si_value(double v, QString unit, int prefix,
 	unsigned int precision, bool sign)
 {
+	if (prefix < 0) {
+		int exp = -FirstSIPrefixPower;
+
+		prefix = 0;
+		while ((fabs(v) * pow(10.0, exp)) > 999.0 &&
+			prefix < (int)(countof(SIPrefixes) - 1)) {
+			prefix++;
+			exp -= 3;
+		}
+	}
+
+	assert(prefix >= 0);
 	assert(prefix < countof(SIPrefixes));
 
 	const double multiplier = pow(10.0,
@@ -46,26 +58,23 @@ QString format_time(double t, unsigned int prefix,
 
 	QString s;
 	QTextStream ts(&s);
-	if (sign) {
+	if (sign)
 		ts << forcesign;
-	}
 	ts << fixed << qSetRealNumberPrecision(precision)
-		<< (t  * multiplier) << SIPrefixes[prefix] << "s";
+		<< (v  * multiplier) << SIPrefixes[prefix] << unit;
 
 	return s;
 }
 
+QString format_time(double t, int prefix,
+	unsigned int precision, bool sign)
+{
+	return format_si_value(t, "s", prefix, precision, sign);
+}
+
 QString format_second(double second)
 {
-	unsigned int i = 0;
-	int exp = - FirstSIPrefixPower;
-
-	while ((second * pow(10.0, exp)) > 999.0 && i < countof(SIPrefixes) - 1) {
-		i++;
-		exp -= 3;
-	}
-
-	return format_time(second, i, 0, false);
+	return format_si_value(second, "s", -1, 0, false);
 }
 
 } // namespace util
