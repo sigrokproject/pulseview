@@ -36,7 +36,6 @@ using std::abs;
 using std::back_inserter;
 using std::copy;
 using std::dynamic_pointer_cast;
-using std::isnan;
 using std::max;
 using std::min;
 using std::none_of;
