@@ -52,7 +52,7 @@ QString format_si_value(double v, QString unit, int prefix,
 	}
 
 	assert(prefix >= 0);
-	assert(prefix < countof(SIPrefixes));
+	assert(prefix < (int)countof(SIPrefixes));
 
 	const double multiplier = pow(10.0,
 		(int)- prefix * 3 - FirstSIPrefixPower);
