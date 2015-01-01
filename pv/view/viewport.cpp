@@ -82,7 +82,8 @@ void Viewport::drag()
 
 void Viewport::drag_by(const QPoint &delta)
 {
-	if (isnan(drag_offset_))
+	// Use std::isnan() instead of isnan(), the latter can cause issues.
+	if (std::isnan(drag_offset_))
 		return;
 
 	view_.set_scale_offset(view_.scale(), drag_offset_ -
