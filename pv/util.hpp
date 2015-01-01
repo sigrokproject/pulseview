@@ -21,7 +21,7 @@
 #ifndef PULSEVIEW_UTIL_H
 #define PULSEVIEW_UTIL_H
 
-#include <math.h>
+#include <cmath>
 
 #include <QString>
 
