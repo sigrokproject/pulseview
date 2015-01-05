@@ -85,6 +85,7 @@ MainBar::MainBar(Session &session, MainWindow &main_window) :
 
 	setMovable(false);
 	setFloatable(false);
+	setContextMenuPolicy(Qt::PreventContextMenu);
 
 	// Device selector menu
 	connect(&device_selector_, SIGNAL(device_selected()),
