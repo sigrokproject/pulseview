@@ -293,9 +293,16 @@ void SamplingBar::update_sample_count_selector()
 	const auto iter = keys.find(ConfigKey::LIMIT_SAMPLES);
 	if (iter != keys.end() &&
 		(*iter).second.find(sigrok::LIST) != (*iter).second.end()) {
-		auto gvar = device->config_list(ConfigKey::LIMIT_SAMPLES);
-		g_variant_get(gvar.gobj(), "(tt)",
-			&min_sample_count, &max_sample_count);
+		try {
+			auto gvar =
+				device->config_list(ConfigKey::LIMIT_SAMPLES);
+			if (gvar)
+				g_variant_get(gvar.gobj(), "(tt)",
+					&min_sample_count, &max_sample_count);
+		} catch(const sigrok::Error &e) {
+			// Failed to query sample limit
+			(void)e;
+		}
 	}
 
 	min_sample_count = min(max(min_sample_count, MinSampleCount),
