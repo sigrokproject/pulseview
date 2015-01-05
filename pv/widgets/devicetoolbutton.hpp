@@ -79,6 +79,10 @@ private:
 private Q_SLOTS:
 	void on_action(QObject *action);
 
+	void on_menu_hovered(QAction *action);
+
+	void on_menu_hover_timeout();
+
 Q_SIGNALS:
 	void device_selected();
 
@@ -91,6 +95,8 @@ private:
 
 	std::shared_ptr<sigrok::Device> selected_device_;
 	std::vector< std::weak_ptr<sigrok::Device> > devices_;
+
+	QString device_tooltip_;
 };
 
 } // widgets

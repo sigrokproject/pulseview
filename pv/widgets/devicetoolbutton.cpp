@@ -20,6 +20,9 @@
 
 #include <cassert>
 
+#include <QTimer>
+#include <QToolTip>
+
 #include <libsigrok/libsigrok.hpp>
 
 #include <pv/devicemanager.hpp>
@@ -54,6 +57,9 @@ DeviceToolButton::DeviceToolButton(QWidget *parent,
 
 	connect(&mapper_, SIGNAL(mapped(QObject*)),
 		this, SLOT(on_action(QObject*)));
+
+	connect(&menu_, SIGNAL(hovered(QAction*)),
+		this, SLOT(on_menu_hovered(QAction*)));
 }
 
 shared_ptr<Device> DeviceToolButton::selected_device()
@@ -88,6 +94,7 @@ void DeviceToolButton::update_device_list()
 		a->setCheckable(true);
 		a->setChecked(selected_device_ == dev);
 		a->setData(qVariantFromValue((void*)dev.get()));
+		a->setToolTip(QString::fromStdString(device_manager_.get_full_name(dev)));
 		mapper_.setMapping(a, a);
 
 		connect(a, SIGNAL(triggered()), &mapper_, SLOT(map()));
@@ -114,6 +121,31 @@ void DeviceToolButton::on_action(QObject *action)
 		device_manager_.get_display_name(selected_device_)));
 
 	device_selected();
+}
+
+void DeviceToolButton::on_menu_hovered(QAction *action)
+{
+	assert(action);
+
+	// Only show the tooltip for device entries (they hold
+	// device pointers in their data field)
+	if (!action->data().isValid())
+		return;
+
+	device_tooltip_ = action->toolTip();
+
+	if (QToolTip::isVisible())
+		on_menu_hover_timeout();
+	else
+		QTimer::singleShot(1000, this, SLOT(on_menu_hover_timeout()));
+}
+
+void DeviceToolButton::on_menu_hover_timeout()
+{
+	if (device_tooltip_.isEmpty())
+		return;
+
+	QToolTip::showText(QCursor::pos(), device_tooltip_);
 }
 
 } // widgets
