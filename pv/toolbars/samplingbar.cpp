@@ -183,8 +183,17 @@ void SamplingBar::update_sample_rate_selector()
 	const auto iter = keys.find(ConfigKey::SAMPLERATE);
 	if (iter != keys.end() &&
 		(*iter).second.find(sigrok::LIST) != (*iter).second.end()) {
-		gvar_dict = device->config_list(ConfigKey::SAMPLERATE);
-	} else {
+		const auto keys = device->config_keys(
+			ConfigKey::DEVICE_OPTIONS);
+		try {
+			gvar_dict = device->config_list(ConfigKey::SAMPLERATE);
+		} catch(const sigrok::Error &e) {
+			// Failed to enunmerate samplerate
+			(void)e;
+		}
+	}
+
+	if (!gvar_dict) {
 		sample_rate_.show_none();
 		updating_sample_rate_ = false;
 		return;
