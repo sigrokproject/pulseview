@@ -82,7 +82,17 @@ MainWindow::MainWindow(DeviceManager &device_manager,
 	QWidget *parent) :
 	QMainWindow(parent),
 	device_manager_(device_manager),
-	session_(device_manager)
+	session_(device_manager),
+	action_open_(new QAction(this)),
+	action_save_as_(new QAction(this)),
+	action_connect_(new QAction(this)),
+	action_quit_(new QAction(this)),
+	action_view_zoom_in_(new QAction(this)),
+	action_view_zoom_out_(new QAction(this)),
+	action_view_zoom_fit_(new QAction(this)),
+	action_view_zoom_one_to_one_(new QAction(this)),
+	action_view_show_cursors_(new QAction(this)),
+	action_about_(new QAction(this))
 {
 	setup_ui();
 	restore_ui_settings();
@@ -92,6 +102,56 @@ MainWindow::MainWindow(DeviceManager &device_manager,
 			Qt::QueuedConnection,
 			Q_ARG(QString, s));
 	}
+}
+
+QAction* MainWindow::action_open() const
+{
+	return action_open_;
+}
+
+QAction* MainWindow::action_save_as() const
+{
+	return action_save_as_;
+}
+
+QAction* MainWindow::action_connect() const
+{
+	return action_connect_;
+}
+
+QAction* MainWindow::action_quit() const
+{
+	return action_quit_;
+}
+
+QAction* MainWindow::action_view_zoom_in() const
+{
+	return action_view_zoom_in_;
+}
+
+QAction* MainWindow::action_view_zoom_out() const
+{
+	return action_view_zoom_out_;
+}
+
+QAction* MainWindow::action_view_zoom_fit() const
+{
+	return action_view_zoom_fit_;
+}
+
+QAction* MainWindow::action_view_zoom_one_to_one() const
+{
+	return action_view_zoom_one_to_one_;
+}
+
+QAction* MainWindow::action_view_show_cursors() const
+{
+	return action_view_show_cursors_;
+}
+
+QAction* MainWindow::action_about() const
+{
+	return action_about_;
 }
 
 void MainWindow::run_stop()
@@ -152,90 +212,81 @@ void MainWindow::setup_ui()
 	QMenu *const menu_file = new QMenu;
 	menu_file->setTitle(tr("&File"));
 
-	QAction *const action_open = new QAction(this);
-	action_open->setText(tr("&Open..."));
-	action_open->setIcon(QIcon::fromTheme("document-open",
+	action_open_->setText(tr("&Open..."));
+	action_open_->setIcon(QIcon::fromTheme("document-open",
 		QIcon(":/icons/document-open.png")));
-	action_open->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_O));
-	action_open->setObjectName(QString::fromUtf8("actionOpen"));
-	menu_file->addAction(action_open);
+	action_open_->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_O));
+	action_open_->setObjectName(QString::fromUtf8("actionOpen"));
+	menu_file->addAction(action_open_);
 
-	QAction *const action_save_as = new QAction(this);
-	action_save_as->setText(tr("&Save As..."));
-	action_save_as->setIcon(QIcon::fromTheme("document-save-as",
+	action_save_as_->setText(tr("&Save As..."));
+	action_save_as_->setIcon(QIcon::fromTheme("document-save-as",
 		QIcon(":/icons/document-save-as.png")));
-	action_save_as->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_S));
-	action_save_as->setObjectName(QString::fromUtf8("actionSaveAs"));
-	menu_file->addAction(action_save_as);
+	action_save_as_->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_S));
+	action_save_as_->setObjectName(QString::fromUtf8("actionSaveAs"));
+	menu_file->addAction(action_save_as_);
 
 	menu_file->addSeparator();
 
-	QAction *const action_connect = new QAction(this);
-	action_connect->setText(tr("&Connect to Device..."));
-	action_connect->setObjectName(QString::fromUtf8("actionConnect"));
-	menu_file->addAction(action_connect);
+	action_connect_->setText(tr("&Connect to Device..."));
+	action_connect_->setObjectName(QString::fromUtf8("actionConnect"));
+	menu_file->addAction(action_connect_);
 
 	menu_file->addSeparator();
 
-	QAction *action_quit = new QAction(this);
-	action_quit->setText(tr("&Quit"));
-	action_quit->setIcon(QIcon::fromTheme("application-exit",
+	action_quit_->setText(tr("&Quit"));
+	action_quit_->setIcon(QIcon::fromTheme("application-exit",
 		QIcon(":/icons/application-exit.png")));
-	action_quit->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q));
-	action_quit->setObjectName(QString::fromUtf8("actionQuit"));
-	menu_file->addAction(action_quit);
+	action_quit_->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q));
+	action_quit_->setObjectName(QString::fromUtf8("actionQuit"));
+	menu_file->addAction(action_quit_);
 
 	// View Menu
 	QMenu *menu_view = new QMenu;
 	menu_view->setTitle(tr("&View"));
 
-	QAction *const action_view_zoom_in = new QAction(this);
-	action_view_zoom_in->setText(tr("Zoom &In"));
-	action_view_zoom_in->setIcon(QIcon::fromTheme("zoom-in",
+	action_view_zoom_in_->setText(tr("Zoom &In"));
+	action_view_zoom_in_->setIcon(QIcon::fromTheme("zoom-in",
 		QIcon(":/icons/zoom-in.png")));
 	// simply using Qt::Key_Plus shows no + in the menu
-	action_view_zoom_in->setShortcut(QKeySequence::ZoomIn);
-	action_view_zoom_in->setObjectName(
+	action_view_zoom_in_->setShortcut(QKeySequence::ZoomIn);
+	action_view_zoom_in_->setObjectName(
 		QString::fromUtf8("actionViewZoomIn"));
-	menu_view->addAction(action_view_zoom_in);
+	menu_view->addAction(action_view_zoom_in_);
 
-	QAction *const action_view_zoom_out = new QAction(this);
-	action_view_zoom_out->setText(tr("Zoom &Out"));
-	action_view_zoom_out->setIcon(QIcon::fromTheme("zoom-out",
+	action_view_zoom_out_->setText(tr("Zoom &Out"));
+	action_view_zoom_out_->setIcon(QIcon::fromTheme("zoom-out",
 		QIcon(":/icons/zoom-out.png")));
-	action_view_zoom_out->setShortcut(QKeySequence::ZoomOut);
-	action_view_zoom_out->setObjectName(
+	action_view_zoom_out_->setShortcut(QKeySequence::ZoomOut);
+	action_view_zoom_out_->setObjectName(
 		QString::fromUtf8("actionViewZoomOut"));
-	menu_view->addAction(action_view_zoom_out);
+	menu_view->addAction(action_view_zoom_out_);
 
-	QAction *const action_view_zoom_fit = new QAction(this);
-	action_view_zoom_fit->setText(tr("Zoom to &Fit"));
-	action_view_zoom_fit->setIcon(QIcon::fromTheme("zoom-fit",
+	action_view_zoom_fit_->setText(tr("Zoom to &Fit"));
+	action_view_zoom_fit_->setIcon(QIcon::fromTheme("zoom-fit",
 		QIcon(":/icons/zoom-fit.png")));
-	action_view_zoom_fit->setShortcut(QKeySequence(Qt::Key_F));
-	action_view_zoom_fit->setObjectName(
+	action_view_zoom_fit_->setShortcut(QKeySequence(Qt::Key_F));
+	action_view_zoom_fit_->setObjectName(
 		QString::fromUtf8("actionViewZoomFit"));
-	menu_view->addAction(action_view_zoom_fit);
+	menu_view->addAction(action_view_zoom_fit_);
 
-	QAction *const action_view_zoom_one_to_one = new QAction(this);
-	action_view_zoom_one_to_one->setText(tr("Zoom to &One-to-One"));
-	action_view_zoom_one_to_one->setIcon(QIcon::fromTheme("zoom-original",
+	action_view_zoom_one_to_one_->setText(tr("Zoom to &One-to-One"));
+	action_view_zoom_one_to_one_->setIcon(QIcon::fromTheme("zoom-original",
 		QIcon(":/icons/zoom-original.png")));
-	action_view_zoom_one_to_one->setShortcut(QKeySequence(Qt::Key_O));
-	action_view_zoom_one_to_one->setObjectName(
+	action_view_zoom_one_to_one_->setShortcut(QKeySequence(Qt::Key_O));
+	action_view_zoom_one_to_one_->setObjectName(
 		QString::fromUtf8("actionViewZoomOneToOne"));
-	menu_view->addAction(action_view_zoom_one_to_one);
+	menu_view->addAction(action_view_zoom_one_to_one_);
 
 	menu_view->addSeparator();
 
-	QAction *action_view_show_cursors = new QAction(this);
-	action_view_show_cursors->setCheckable(true);
-	action_view_show_cursors->setChecked(view_->cursors_shown());
-	action_view_show_cursors->setShortcut(QKeySequence(Qt::Key_C));
-	action_view_show_cursors->setObjectName(
+	action_view_show_cursors_->setCheckable(true);
+	action_view_show_cursors_->setChecked(view_->cursors_shown());
+	action_view_show_cursors_->setShortcut(QKeySequence(Qt::Key_C));
+	action_view_show_cursors_->setObjectName(
 		QString::fromUtf8("actionViewShowCursors"));
-	action_view_show_cursors->setText(tr("Show &Cursors"));
-	menu_view->addAction(action_view_show_cursors);
+	action_view_show_cursors_->setText(tr("Show &Cursors"));
+	menu_view->addAction(action_view_show_cursors_);
 
 	// Decoders Menu
 #ifdef ENABLE_DECODE
@@ -255,10 +306,9 @@ void MainWindow::setup_ui()
 	QMenu *const menu_help = new QMenu;
 	menu_help->setTitle(tr("&Help"));
 
-	QAction *const action_about = new QAction(this);
-	action_about->setObjectName(QString::fromUtf8("actionAbout"));
-	action_about->setText(tr("&About..."));
-	menu_help->addAction(action_about);
+	action_about_->setObjectName(QString::fromUtf8("actionAbout"));
+	action_about_->setText(tr("&About..."));
+	menu_help->addAction(action_about_);
 
 	menu_bar->addAction(menu_file->menuAction());
 	menu_bar->addAction(menu_view->menuAction());
@@ -273,13 +323,13 @@ void MainWindow::setup_ui()
 	// Setup the toolbar
 	QToolBar *const toolbar = new QToolBar(tr("Main Toolbar"), this);
 	toolbar->setObjectName(QString::fromUtf8("MainToolbar"));
-	toolbar->addAction(action_open);
-	toolbar->addAction(action_save_as);
+	toolbar->addAction(action_open_);
+	toolbar->addAction(action_save_as_);
 	toolbar->addSeparator();
-	toolbar->addAction(action_view_zoom_in);
-	toolbar->addAction(action_view_zoom_out);
-	toolbar->addAction(action_view_zoom_fit);
-	toolbar->addAction(action_view_zoom_one_to_one);
+	toolbar->addAction(action_view_zoom_in_);
+	toolbar->addAction(action_view_zoom_out_);
+	toolbar->addAction(action_view_zoom_fit_);
+	toolbar->addAction(action_view_zoom_one_to_one_);
 	addToolBar(toolbar);
 
 	// Setup the sampling bar

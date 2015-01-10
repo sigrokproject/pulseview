@@ -75,6 +75,17 @@ public:
 		const char *open_file_name = NULL,
 		QWidget *parent = 0);
 
+	QAction* action_open() const;
+	QAction* action_save_as() const;
+	QAction* action_connect() const;
+	QAction* action_quit() const;
+	QAction* action_view_zoom_in() const;
+	QAction* action_view_zoom_out() const;
+	QAction* action_view_zoom_fit() const;
+	QAction* action_view_zoom_one_to_one() const;
+	QAction* action_view_show_cursors() const;
+	QAction* action_about() const;
+
 	void run_stop();
 
 	void select_device(std::shared_ptr<sigrok::Device> device);
@@ -135,6 +146,17 @@ private:
 	QVBoxLayout *vertical_layout_;
 
 	toolbars::MainBar *main_bar_;
+
+	QAction *const action_open_;
+	QAction *const action_save_as_;
+	QAction *const action_connect_;
+	QAction *const action_quit_;
+	QAction *const action_view_zoom_in_;
+	QAction *const action_view_zoom_out_;
+	QAction *const action_view_zoom_fit_;
+	QAction *const action_view_zoom_one_to_one_;
+	QAction *const action_view_show_cursors_;
+	QAction *const action_about_;
 };
 
 } // namespace pv
