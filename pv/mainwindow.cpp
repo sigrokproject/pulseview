@@ -282,6 +282,8 @@ void MainWindow::setup_ui()
 
 	action_view_show_cursors_->setCheckable(true);
 	action_view_show_cursors_->setChecked(view_->cursors_shown());
+	action_view_show_cursors_->setIcon(QIcon::fromTheme("show-cursors",
+		QIcon(":/icons/show-cursors.svg")));
 	action_view_show_cursors_->setShortcut(QKeySequence(Qt::Key_C));
 	action_view_show_cursors_->setObjectName(
 		QString::fromUtf8("actionViewShowCursors"));
