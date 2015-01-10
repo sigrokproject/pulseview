@@ -52,6 +52,7 @@
 #ifdef ENABLE_DECODE
 #include "widgets/decodermenu.hpp"
 #endif
+#include "widgets/hidingmenubar.hpp"
 
 #include <inttypes.h>
 #include <stdint.h>
@@ -211,8 +212,8 @@ void MainWindow::setup_ui()
 	vertical_layout_->addWidget(view_);
 
 	// Setup the menu bar
-	QMenuBar *const menu_bar = new QMenuBar(this);
-	menu_bar->setGeometry(QRect(0, 0, 400, 25));
+	pv::widgets::HidingMenuBar *const menu_bar =
+		new pv::widgets::HidingMenuBar(this);
 
 	// File Menu
 	QMenu *const menu_file = new QMenu;
@@ -276,7 +277,7 @@ void MainWindow::setup_ui()
 		QString::fromUtf8("actionViewZoomFit"));
 	menu_view->addAction(action_view_zoom_fit_);
 
-	action_view_zoom_one_to_one_->setText(tr("Zoom to &One-to-One"));
+	action_view_zoom_one_to_one_->setText(tr("Zoom to O&ne-to-One"));
 	action_view_zoom_one_to_one_->setIcon(QIcon::fromTheme("zoom-original",
 		QIcon(":/icons/zoom-original.png")));
 	action_view_zoom_one_to_one_->setShortcut(QKeySequence(Qt::Key_O));
@@ -445,6 +446,15 @@ void MainWindow::closeEvent(QCloseEvent *event)
 {
 	save_ui_settings();
 	event->accept();
+}
+
+void MainWindow::keyReleaseEvent(QKeyEvent *event)
+{
+	if (event->key() == Qt::Key_Alt) {
+		menuBar()->setHidden(!menuBar()->isHidden());
+		menuBar()->setFocus();
+	}
+	QMainWindow::keyReleaseEvent(event);
 }
 
 void MainWindow::load_file(QString file_name)

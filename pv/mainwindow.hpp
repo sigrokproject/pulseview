@@ -104,9 +104,12 @@ private:
 	/**
 	 * Updates the device list in the toolbar
 	 */
-	void update_device_list();
+	void update_device_list();	
 
+private:
 	void closeEvent(QCloseEvent *event);
+
+	void keyReleaseEvent(QKeyEvent *event);
 
 private Q_SLOTS:
 	void load_file(QString file_name);
