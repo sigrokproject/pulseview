@@ -57,6 +57,19 @@ class MainWindow : public QMainWindow
 {
 	Q_OBJECT
 
+private:
+	/**
+	 * Name of the setting used to remember the directory
+	 * containing the last file that was opened.
+	 */
+	static const char *SettingOpenDirectory;
+
+	/**
+	 * Name of the setting used to remember the directory
+	 * containing the last file that was saved.
+	 */
+	static const char *SettingSaveDirectory;
+
 public:
 	explicit MainWindow(DeviceManager &device_manager,
 		const char *open_file_name = NULL,
@@ -112,18 +125,6 @@ private Q_SLOTS:
 	void device_selected();
 
 private:
-	/**
-	 * Name of the setting used to remember the directory
-	 * containing the last file that was opened.
-	 */
-	static const char *SettingOpenDirectory;
-
-	/**
-	 * Name of the setting used to remember the directory
-	 * containing the last file that was saved.
-	 */
-	static const char *SettingSaveDirectory;
-
 	DeviceManager &device_manager_;
 
 	Session session_;
