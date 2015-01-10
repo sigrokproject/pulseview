@@ -82,6 +82,15 @@ MainBar::MainBar(Session &session, MainWindow &main_window) :
 	setMovable(false);
 	setFloatable(false);
 
+	// Setup the decoder button
+#ifdef ENABLE_DECODE
+	QToolButton *add_decoder_button = new QToolButton(this);
+	add_decoder_button->setIcon(QIcon::fromTheme("add-decoder",
+		QIcon(":/icons/add-decoder.svg")));
+	add_decoder_button->setPopupMode(QToolButton::InstantPopup);
+	add_decoder_button->setMenu(main_window_.menu_decoder_add());
+#endif
+
 	// Setup the menu
 	QMenu *const menu = new QMenu(this);
 
@@ -137,6 +146,10 @@ MainBar::MainBar(Session &session, MainWindow &main_window) :
 	addWidget(&sample_count_);
 	addWidget(&sample_rate_);
 	addWidget(&run_stop_button_);
+#ifdef ENABLE_DECODE
+	addSeparator();
+	addWidget(add_decoder_button);
+#endif
 
 	QWidget *const spacer = new QWidget();
 	spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);

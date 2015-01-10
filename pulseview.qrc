@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/" >
+	<file>icons/add-decoder.svg</file>
 	<file>icons/application-exit.png</file>
 	<file>icons/configure.png</file>
 	<file>icons/decoder-delete.svg</file>
