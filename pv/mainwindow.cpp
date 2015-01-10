@@ -322,18 +322,6 @@ void MainWindow::setup_ui()
 	setMenuBar(menu_bar);
 	QMetaObject::connectSlotsByName(this);
 
-	// Setup the toolbar
-	QToolBar *const toolbar = new QToolBar(tr("Main Toolbar"), this);
-	toolbar->setObjectName(QString::fromUtf8("MainToolbar"));
-	toolbar->addAction(action_open_);
-	toolbar->addAction(action_save_as_);
-	toolbar->addSeparator();
-	toolbar->addAction(action_view_zoom_in_);
-	toolbar->addAction(action_view_zoom_out_);
-	toolbar->addAction(action_view_zoom_fit_);
-	toolbar->addAction(action_view_zoom_one_to_one_);
-	addToolBar(toolbar);
-
 	// Setup the sampling bar
 	main_bar_ = new toolbars::MainBar(session_, *this);
 
