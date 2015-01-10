@@ -25,6 +25,7 @@
 #include <QAction>
 #include <QDebug>
 #include <QHelpEvent>
+#include <QMenu>
 #include <QToolTip>
 
 #include "mainbar.hpp"
@@ -73,12 +74,39 @@ MainBar::MainBar(Session &session, MainWindow &main_window) :
 	icon_red_(":/icons/status-red.svg"),
 	icon_green_(":/icons/status-green.svg"),
 	icon_grey_(":/icons/status-grey.svg"),
-	run_stop_button_(this)
+	run_stop_button_(this),
+	menu_button_(this)
 {
 	setObjectName(QString::fromUtf8("MainBar"));
 
 	setMovable(false);
 	setFloatable(false);
+
+	// Setup the menu
+	QMenu *const menu = new QMenu(this);
+
+	QMenu *const menu_help = new QMenu;
+	menu_help->setTitle(tr("&Help"));
+	menu_help->addAction(main_window.action_about());
+
+	menu->addAction(menu_help->menuAction());
+	menu->addSeparator();
+	menu->addAction(main_window.action_quit());
+
+	menu_button_.setMenu(menu);
+	menu_button_.setPopupMode(QToolButton::InstantPopup);
+	menu_button_.setIcon(QIcon::fromTheme("menu",
+		QIcon(":/icons/menu.svg")));
+
+	// Setup the toolbar
+	addAction(main_window.action_open());
+	addAction(main_window.action_save_as());
+	addSeparator();
+	addAction(main_window.action_view_zoom_in());
+	addAction(main_window.action_view_zoom_out());
+	addAction(main_window.action_view_zoom_fit());
+	addAction(main_window.action_view_zoom_one_to_one());
+	addSeparator();
 
 	connect(&run_stop_button_, SIGNAL(clicked()),
 		this, SLOT(on_run_stop()));
@@ -106,8 +134,13 @@ MainBar::MainBar(Session &session, MainWindow &main_window) :
 	addWidget(&channels_button_);
 	addWidget(&sample_count_);
 	addWidget(&sample_rate_);
-
 	addWidget(&run_stop_button_);
+
+	QWidget *const spacer = new QWidget();
+	spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+	addWidget(spacer);
+
+	addWidget(&menu_button_);
 
 	sample_count_.installEventFilter(this);
 	sample_rate_.installEventFilter(this);

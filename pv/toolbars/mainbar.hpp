@@ -115,6 +115,8 @@ private:
 	QIcon icon_green_;
 	QIcon icon_grey_;
 	QToolButton run_stop_button_;
+
+	QToolButton menu_button_;
 };
 
 } // namespace toolbars
