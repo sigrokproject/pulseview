@@ -189,6 +189,7 @@ set(pulseview_SOURCES
 	pv/view/viewwidget.cpp
 	pv/widgets/colourbutton.cpp
 	pv/widgets/colourpopup.cpp
+	pv/widgets/devicetoolbutton.cpp
 	pv/widgets/popup.cpp
 	pv/widgets/popuptoolbutton.cpp
 	pv/widgets/sweeptimingwidget.cpp
@@ -231,6 +232,7 @@ set(pulseview_HEADERS
 	pv/view/viewwidget.hpp
 	pv/widgets/colourbutton.hpp
 	pv/widgets/colourpopup.hpp
+	pv/widgets/devicetoolbutton.hpp
 	pv/widgets/popup.hpp
 	pv/widgets/popuptoolbutton.hpp
 	pv/widgets/sweeptimingwidget.hpp

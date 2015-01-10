@@ -438,23 +438,7 @@ void MainWindow::session_error(
 
 void MainWindow::update_device_list()
 {
-	assert(main_bar_);
-
-	shared_ptr<Device> selected_device = session_.device();
-	list< shared_ptr<Device> > devices;
-
-	if (device_manager_.devices().size() == 0)
-		return;
-
-	std::copy(device_manager_.devices().begin(),
-		device_manager_.devices().end(), std::back_inserter(devices));
-
-	if (std::find(devices.begin(), devices.end(), selected_device) ==
-		devices.end())
-		devices.push_back(selected_device);
-	assert(selected_device);
-
-	main_bar_->set_device_list(devices, selected_device);
+	main_bar_->update_device_list();
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)

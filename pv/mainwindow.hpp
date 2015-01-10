@@ -102,7 +102,7 @@ private:
 	void session_error(const QString text, const QString info_text);
 
 	/**
-	 * Updates the device list in the sampling bar
+	 * Updates the device list in the toolbar
 	 */
 	void update_device_list();
 

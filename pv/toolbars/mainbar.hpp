@@ -28,10 +28,12 @@
 
 #include <QComboBox>
 #include <QDoubleSpinBox>
+#include <QMenu>
 #include <QToolBar>
 #include <QToolButton>
 
 #include <pv/session.hpp>
+#include <pv/widgets/devicetoolbutton.hpp>
 #include <pv/widgets/popuptoolbutton.hpp>
 #include <pv/widgets/sweeptimingwidget.hpp>
 
@@ -62,11 +64,7 @@ private:
 public:
 	MainBar(Session &session, pv::MainWindow &main_window);
 
-	void set_device_list(
-		const std::list< std::shared_ptr<sigrok::Device> > &devices,
-		std::shared_ptr<sigrok::Device> selected);
-
-	std::shared_ptr<sigrok::Device> get_selected_device() const;
+	void update_device_list();
 
 	void set_capture_state(pv::Session::capture_state state);
 
@@ -96,8 +94,7 @@ private:
 	Session &session_;
 	MainWindow &main_window_;
 
-	QComboBox device_selector_;
-	bool updating_device_selector_;
+	pv::widgets::DeviceToolButton device_selector_;
 
 	pv::widgets::PopupToolButton configure_button_;
 	QAction *configure_button_action_;
