@@ -107,6 +107,8 @@ MainBar::MainBar(Session &session, MainWindow &main_window) :
 	addAction(main_window.action_view_zoom_fit());
 	addAction(main_window.action_view_zoom_one_to_one());
 	addSeparator();
+	addAction(main_window.action_view_show_cursors());
+	addSeparator();
 
 	connect(&run_stop_button_, SIGNAL(clicked()),
 		this, SLOT(on_run_stop()));
