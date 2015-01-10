@@ -92,7 +92,8 @@ MainWindow::MainWindow(DeviceManager &device_manager,
 	action_view_zoom_fit_(new QAction(this)),
 	action_view_zoom_one_to_one_(new QAction(this)),
 	action_view_show_cursors_(new QAction(this)),
-	action_about_(new QAction(this))
+	action_about_(new QAction(this)),
+	menu_decoders_add_(new pv::widgets::DecoderMenu(this, true))
 {
 	setup_ui();
 	restore_ui_settings();
@@ -152,6 +153,11 @@ QAction* MainWindow::action_view_show_cursors() const
 QAction* MainWindow::action_about() const
 {
 	return action_about_;
+}
+
+QMenu* MainWindow::menu_decoder_add() const
+{
+	return menu_decoders_add_;
 }
 
 void MainWindow::run_stop()
@@ -295,13 +301,11 @@ void MainWindow::setup_ui()
 	QMenu *const menu_decoders = new QMenu;
 	menu_decoders->setTitle(tr("&Decoders"));
 
-	pv::widgets::DecoderMenu *const menu_decoders_add =
-		new pv::widgets::DecoderMenu(menu_decoders, true);
-	menu_decoders_add->setTitle(tr("&Add"));
-	connect(menu_decoders_add, SIGNAL(decoder_selected(srd_decoder*)),
+	menu_decoders_add_->setTitle(tr("&Add"));
+	connect(menu_decoders_add_, SIGNAL(decoder_selected(srd_decoder*)),
 		this, SLOT(add_decoder(srd_decoder*)));
 
-	menu_decoders->addMenu(menu_decoders_add);
+	menu_decoders->addMenu(menu_decoders_add_);
 #endif
 
 	// Help Menu

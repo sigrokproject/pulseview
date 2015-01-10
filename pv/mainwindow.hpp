@@ -86,6 +86,8 @@ public:
 	QAction* action_view_show_cursors() const;
 	QAction* action_about() const;
 
+	QMenu* menu_decoder_add() const;
+
 	void run_stop();
 
 	void select_device(std::shared_ptr<sigrok::Device> device);
@@ -157,6 +159,8 @@ private:
 	QAction *const action_view_zoom_one_to_one_;
 	QAction *const action_view_show_cursors_;
 	QAction *const action_about_;
+
+	QMenu *const menu_decoders_add_;
 };
 
 } // namespace pv
