@@ -77,6 +77,9 @@ MainBar::MainBar(Session &session, MainWindow &main_window) :
 {
 	setObjectName(QString::fromUtf8("MainBar"));
 
+	setMovable(false);
+	setFloatable(false);
+
 	connect(&run_stop_button_, SIGNAL(clicked()),
 		this, SLOT(on_run_stop()));
 	connect(&device_selector_, SIGNAL(currentIndexChanged (int)),
