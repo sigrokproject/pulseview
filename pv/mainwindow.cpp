@@ -196,8 +196,7 @@ void MainWindow::setup_ui()
 
 	// Set the window icon
 	QIcon icon;
-	icon.addFile(QString::fromUtf8(":/icons/sigrok-logo-notext.png"),
-		QSize(), QIcon::Normal, QIcon::Off);
+	icon.addFile(QString(":/icons/sigrok-logo-notext.svg"));
 	setWindowIcon(icon);
 
 	// Setup the central widget

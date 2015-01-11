@@ -28,7 +28,7 @@
         <string/>
        </property>
        <property name="pixmap">
-        <pixmap resource="pulseview.qrc">:/icons/sigrok-logo-notext.png</pixmap>
+        <pixmap resource="pulseview.qrc">:/icons/sigrok-logo-notext.svg</pixmap>
        </property>
       </widget>
      </item>
