@@ -34,6 +34,7 @@ class QVBoxLayout;
 
 namespace sigrok {
 class Device;
+class OutputFormat;
 }
 
 namespace pv {
@@ -91,6 +92,9 @@ public:
 	void run_stop();
 
 	void select_device(std::shared_ptr<sigrok::Device> device);
+
+public Q_SLOTS:
+	void export_file(std::shared_ptr<sigrok::OutputFormat> format);
 
 private:
 	void setup_ui();

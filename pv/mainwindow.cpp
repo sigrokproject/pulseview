@@ -49,6 +49,7 @@
 #include "toolbars/mainbar.hpp"
 #include "view/logicsignal.hpp"
 #include "view/view.hpp"
+#include "widgets/exportmenu.hpp"
 #ifdef ENABLE_DECODE
 #include "widgets/decodermenu.hpp"
 #endif
@@ -68,6 +69,7 @@ using std::string;
 using sigrok::Device;
 using sigrok::Error;
 using sigrok::HardwareDevice;
+using sigrok::OutputFormat;
 
 namespace pv {
 
@@ -190,6 +192,32 @@ void MainWindow::select_device(shared_ptr<Device> device)
 	}
 }
 
+void MainWindow::export_file(shared_ptr<OutputFormat> format)
+{
+	using pv::dialogs::StoreProgress;
+
+	// Stop any currently running capture session
+	session_.stop_capture();
+
+	QSettings settings;
+	const QString dir = settings.value(SettingSaveDirectory).toString();
+
+	// Show the dialog
+	const QString file_name = QFileDialog::getSaveFileName(
+		this, tr("Save File"), dir, tr("%1 files (*.*)").arg(
+			QString::fromStdString(format->description())));
+
+	if (file_name.isEmpty())
+		return;
+
+	const QString abs_path = QFileInfo(file_name).absolutePath();
+	settings.setValue(SettingSaveDirectory, abs_path);
+
+	StoreProgress *dlg = new StoreProgress(file_name, format,
+		session_, this);
+	dlg->run();
+}
+
 void MainWindow::setup_ui()
 {
 	setObjectName(QString::fromUtf8("MainWindow"));
@@ -231,6 +259,16 @@ void MainWindow::setup_ui()
 	action_save_as_->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_S));
 	action_save_as_->setObjectName(QString::fromUtf8("actionSaveAs"));
 	menu_file->addAction(action_save_as_);
+
+	menu_file->addSeparator();
+
+	widgets::ExportMenu *menu_file_export = new widgets::ExportMenu(this,
+		device_manager_.context());
+	menu_file_export->setTitle(tr("&Export"));
+	connect(menu_file_export,
+		SIGNAL(format_selected(std::shared_ptr<sigrok::OutputFormat>)),
+		this, SLOT(export_file(std::shared_ptr<sigrok::OutputFormat>)));
+	menu_file->addAction(menu_file_export->menuAction());
 
 	menu_file->addSeparator();
 
@@ -509,28 +547,7 @@ void MainWindow::on_actionOpen_triggered()
 
 void MainWindow::on_actionSaveAs_triggered()
 {
-	using pv::dialogs::StoreProgress;
-
-	// Stop any currently running capture session
-	session_.stop_capture();
-
-	QSettings settings;
-	const QString dir = settings.value(SettingSaveDirectory).toString();
-
-	// Show the dialog
-	const QString file_name = QFileDialog::getSaveFileName(
-		this, tr("Save File"), dir, tr("Sigrok Sessions (*.sr)"));
-
-	if (file_name.isEmpty())
-		return;
-
-	const QString abs_path = QFileInfo(file_name).absolutePath();
-	settings.setValue(SettingSaveDirectory, abs_path);
-
-	StoreProgress *dlg = new StoreProgress(file_name,
-		device_manager_.context()->output_formats()["srzip"],
-		session_, this);
-	dlg->run();
+	export_file(device_manager_.context()->output_formats()["srzip"]);
 }
 
 void MainWindow::on_actionConnect_triggered()

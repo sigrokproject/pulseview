@@ -36,6 +36,7 @@
 #include <pv/popups/deviceoptions.hpp>
 #include <pv/popups/channels.hpp>
 #include <pv/util.hpp>
+#include <pv/widgets/exportmenu.hpp>
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
 
@@ -87,6 +88,21 @@ MainBar::MainBar(Session &session, MainWindow &main_window) :
 	setFloatable(false);
 	setContextMenuPolicy(Qt::PreventContextMenu);
 
+	// Save button
+	QToolButton *const save_button = new QToolButton(this);
+
+	widgets::ExportMenu *export_menu = new widgets::ExportMenu(this,
+		session.device_manager().context(),
+		main_window.action_save_as());
+	connect(export_menu,
+		SIGNAL(format_selected(std::shared_ptr<sigrok::OutputFormat>)),
+		&main_window_,
+		SLOT(export_file(std::shared_ptr<sigrok::OutputFormat>)));
+
+	save_button->setMenu(export_menu);
+	save_button->setDefaultAction(main_window.action_save_as());
+	save_button->setPopupMode(QToolButton::MenuButtonPopup);
+
 	// Device selector menu
 	connect(&device_selector_, SIGNAL(device_selected()),
 		this, SLOT(on_device_selected()));
@@ -118,7 +134,7 @@ MainBar::MainBar(Session &session, MainWindow &main_window) :
 
 	// Setup the toolbar
 	addAction(main_window.action_open());
-	addAction(main_window.action_save_as());
+	addWidget(save_button);
 	addSeparator();
 	addAction(main_window.action_view_zoom_in());
 	addAction(main_window.action_view_zoom_out());
