@@ -38,7 +38,8 @@
 #include <pv/widgets/sweeptimingwidget.hpp>
 
 namespace sigrok {
-	class Device;
+class Device;
+class InputFormat;
 }
 
 Q_DECLARE_METATYPE(std::shared_ptr<sigrok::Device>)

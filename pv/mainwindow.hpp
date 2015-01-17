@@ -102,6 +102,7 @@ public:
 
 public Q_SLOTS:
 	void export_file(std::shared_ptr<sigrok::OutputFormat> format);
+	void import_file(std::shared_ptr<sigrok::InputFormat> format);
 
 private:
 	void setup_ui();

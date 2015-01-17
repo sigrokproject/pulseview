@@ -38,6 +38,7 @@
 #include <pv/popups/channels.hpp>
 #include <pv/util.hpp>
 #include <pv/widgets/exportmenu.hpp>
+#include <pv/widgets/importmenu.hpp>
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
 
@@ -54,6 +55,7 @@ using std::vector;
 using sigrok::Capability;
 using sigrok::ConfigKey;
 using sigrok::Error;
+using sigrok::InputFormat;
 
 namespace pv {
 namespace toolbars {
@@ -87,6 +89,21 @@ MainBar::MainBar(Session &session, MainWindow &main_window) :
 	setMovable(false);
 	setFloatable(false);
 	setContextMenuPolicy(Qt::PreventContextMenu);
+
+	// Open button
+	QToolButton *const open_button = new QToolButton(this);
+
+	widgets::ImportMenu *import_menu = new widgets::ImportMenu(this,
+		session.device_manager().context(),
+		main_window.action_open());
+	connect(import_menu,
+		SIGNAL(format_selected(std::shared_ptr<sigrok::InputFormat>)),
+		&main_window_,
+		SLOT(import_file(std::shared_ptr<sigrok::InputFormat>)));
+
+	open_button->setMenu(import_menu);
+	open_button->setDefaultAction(main_window.action_open());
+	open_button->setPopupMode(QToolButton::MenuButtonPopup);
 
 	// Save button
 	QToolButton *const save_button = new QToolButton(this);
@@ -133,7 +150,7 @@ MainBar::MainBar(Session &session, MainWindow &main_window) :
 		QIcon(":/icons/menu.svg")));
 
 	// Setup the toolbar
-	addAction(main_window.action_open());
+	addWidget(open_button);
 	addWidget(save_button);
 	addSeparator();
 	addAction(main_window.action_view_zoom_in());

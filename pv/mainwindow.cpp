@@ -56,6 +56,7 @@
 #include "view/logicsignal.hpp"
 #include "view/view.hpp"
 #include "widgets/exportmenu.hpp"
+#include "widgets/importmenu.hpp"
 #ifdef ENABLE_DECODE
 #include "widgets/decodermenu.hpp"
 #endif
@@ -253,6 +254,34 @@ void MainWindow::export_file(shared_ptr<OutputFormat> format)
 	dlg->run();
 }
 
+void MainWindow::import_file(shared_ptr<InputFormat> format)
+{
+	assert(format);
+
+	QSettings settings;
+	const QString dir = settings.value(SettingOpenDirectory).toString();
+
+	// Construct the filter
+	const vector<string> exts = format->extensions();
+	const QString filter = exts.empty() ? "" :
+		tr("%1 files (*.%2)").arg(
+			QString::fromStdString(format->description())).arg(
+			QString::fromStdString(join(exts, ", *.")));
+
+	// Show the file dialog
+	const QString file_name = QFileDialog::getOpenFileName(
+		this, tr("Import File"), dir, tr(
+			"%1 files (*.*);;All Files (*.*)").arg(
+			QString::fromStdString(format->description())));
+
+	if (!file_name.isEmpty()) {
+		load_file(file_name, format);
+
+		const QString abs_path = QFileInfo(file_name).absolutePath();
+		settings.setValue(SettingOpenDirectory, abs_path);
+	}
+}
+
 void MainWindow::setup_ui()
 {
 	setObjectName(QString::fromUtf8("MainWindow"));
@@ -304,6 +333,14 @@ void MainWindow::setup_ui()
 		SIGNAL(format_selected(std::shared_ptr<sigrok::OutputFormat>)),
 		this, SLOT(export_file(std::shared_ptr<sigrok::OutputFormat>)));
 	menu_file->addAction(menu_file_export->menuAction());
+
+	widgets::ImportMenu *menu_file_import = new widgets::ImportMenu(this,
+		device_manager_.context());
+	menu_file_import->setTitle(tr("&Import"));
+	connect(menu_file_import,
+		SIGNAL(format_selected(std::shared_ptr<sigrok::InputFormat>)),
+		this, SLOT(import_file(std::shared_ptr<sigrok::InputFormat>)));
+	menu_file->addAction(menu_file_import->menuAction());
 
 	menu_file->addSeparator();
 
