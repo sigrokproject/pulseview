@@ -384,21 +384,23 @@ void LogicSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
 {
 	Signal::populate_popup_form(parent, form);
 
-	trigger_bar_ = new QToolBar(parent);
-	init_trigger_actions(trigger_bar_);
-	trigger_bar_->addAction(trigger_none_);
-	trigger_none_->setChecked(!trigger_match_);
-
 	const vector<int32_t> trig_types = get_trigger_types();
-	for (auto type_id : trig_types) {
-		const TriggerMatchType *const type =
-			TriggerMatchType::get(type_id);
-		QAction *const action = action_from_trigger_type(type);
-		trigger_bar_->addAction(action);
-		action->setChecked(trigger_match_ == type);
-	}
-	form->addRow(tr("Trigger"), trigger_bar_);
 
+	if (!trig_types.empty()) {
+		trigger_bar_ = new QToolBar(parent);
+		init_trigger_actions(trigger_bar_);
+		trigger_bar_->addAction(trigger_none_);
+		trigger_none_->setChecked(!trigger_match_);
+
+		for (auto type_id : trig_types) {
+			const TriggerMatchType *const type =
+				TriggerMatchType::get(type_id);
+			QAction *const action = action_from_trigger_type(type);
+			trigger_bar_->addAction(action);
+			action->setChecked(trigger_match_ == type);
+		}
+		form->addRow(tr("Trigger"), trigger_bar_);
+	}
 }
 
 void LogicSignal::modify_trigger()
