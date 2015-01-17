@@ -24,6 +24,7 @@
 #include <stdint.h>
 
 #include <atomic>
+#include <fstream>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -80,6 +81,7 @@ private:
 	const Session &session_;
 
 	std::shared_ptr<sigrok::Output> output_;
+	std::ofstream output_stream_;
 
 	std::thread thread_;
 

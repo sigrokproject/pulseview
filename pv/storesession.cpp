@@ -34,8 +34,10 @@ using boost::shared_mutex;
 
 using std::deque;
 using std::dynamic_pointer_cast;
+using std::ios_base;
 using std::lock_guard;
 using std::make_pair;
+using std::map;
 using std::min;
 using std::mutex;
 using std::pair;
@@ -124,9 +126,20 @@ bool StoreSession::start()
 	try {
 		auto context = session_.session()->context();
 		auto device = session_.device();
-		output_ = output_format_->create_output(device,
-			{{"filename",
-				Glib::Variant<Glib::ustring>::create(file_name_)}});
+
+		map<string, Glib::VariantBase> options;
+
+		// If the output has the capability to write files, use it.
+		// Otherwise, open the output stream.
+		const auto opt_list = output_format_->options();
+		if (opt_list.find("filename") != opt_list.end())
+			options["filename"] =
+				Glib::Variant<Glib::ustring>::create(file_name_);
+		else
+			output_stream_.open(file_name_, ios_base::binary |
+				ios_base::trunc | ios_base::out);
+
+		output_ = output_format_->create_output(device, options);
 		auto meta = context->create_meta_packet(
 			{{ConfigKey::SAMPLERATE, Glib::Variant<guint64>::create(
 				segment->samplerate())}});
@@ -189,7 +202,9 @@ void StoreSession::store_proc(shared_ptr<data::LogicSegment> segment)
 		try {
 			auto context = session_.session()->context();
 			auto logic = context->create_logic_packet(data, length, unit_size);
-			output_->receive(logic);
+			const string data = output_->receive(logic);
+			if (output_stream_.is_open())
+				output_stream_ << data;
 		} catch (Error error) {
 			error_ = tr("Error while saving.");
 			break;
@@ -205,6 +220,7 @@ void StoreSession::store_proc(shared_ptr<data::LogicSegment> segment)
 	progress_updated();
 
 	output_.reset();
+	output_stream_.close();
 
 	delete[] data;
 }
