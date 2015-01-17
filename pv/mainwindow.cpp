@@ -326,7 +326,7 @@ void MainWindow::setup_ui()
 	setMenuBar(menu_bar);
 	QMetaObject::connectSlotsByName(this);
 
-	// Setup the sampling bar
+	// Setup the toolbar
 	main_bar_ = new toolbars::MainBar(session_, *this);
 
 	// Populate the device list and select the initially selected device
