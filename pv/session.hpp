@@ -94,7 +94,11 @@ public:
 	 */
 	void set_device(std::shared_ptr<sigrok::Device> device);
 
-	void set_file(const std::string &name);
+	/**
+	 * Sets a sigrok session file as the capture device.
+	 * @param name the path to the file.
+	 */
+	void set_session_file(const std::string &name);
 
 	void set_default_device();
 

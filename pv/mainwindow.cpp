@@ -463,7 +463,7 @@ void MainWindow::load_file(QString file_name)
 	const QString infoMessage;
 
 	try {
-		session_.set_file(file_name.toStdString());
+		session_.set_session_file(file_name.toStdString());
 	} catch(Error e) {
 		show_session_error(tr("Failed to load ") + file_name, e.what());
 		session_.set_default_device();

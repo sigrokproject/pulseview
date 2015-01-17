@@ -166,7 +166,7 @@ void Session::set_device(shared_ptr<Device> device)
 	device_selected();
 }
 
-void Session::set_file(const string &name)
+void Session::set_session_file(const string &name)
 {
 	session_ = device_manager_.context()->load_session(name);
 	device_ = session_->devices()[0];
