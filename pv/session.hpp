@@ -38,13 +38,13 @@ struct srd_decoder;
 struct srd_channel;
 
 namespace sigrok {
-	class Analog;
-	class Channel;
-	class Device;
-	class Logic;
-	class Meta;
-	class Packet;
-	class Session;
+class Analog;
+class Channel;
+class Device;
+class Logic;
+class Meta;
+class Packet;
+class Session;
 }
 
 namespace pv {
