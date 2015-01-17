@@ -687,8 +687,8 @@ void DecodeTrace::create_decoder_form(int index,
 	}
 
 	// Add the options
-	shared_ptr<binding::DecoderOptions> binding(
-		new binding::DecoderOptions(decoder_stack_, dec));
+	shared_ptr<binding::Decoder> binding(
+		new binding::Decoder(decoder_stack_, dec));
 	binding->add_properties_to_form(decoder_form, true);
 
 	bindings_.push_back(binding);

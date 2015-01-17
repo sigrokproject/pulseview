@@ -22,7 +22,7 @@
 
 #include <QDebug>
 
-#include "deviceoptions.hpp"
+#include "device.hpp"
 
 #include <pv/prop/bool.hpp>
 #include <pv/prop/double.hpp>
@@ -53,7 +53,7 @@ using pv::prop::Property;
 namespace pv {
 namespace binding {
 
-DeviceOptions::DeviceOptions(shared_ptr<sigrok::Configurable> configurable) :
+Device::Device(shared_ptr<sigrok::Configurable> configurable) :
 	configurable_(configurable)
 {
 	assert(configurable);
@@ -132,7 +132,7 @@ DeviceOptions::DeviceOptions(shared_ptr<sigrok::Configurable> configurable) :
 	}
 }
 
-void DeviceOptions::bind_bool(const QString &name,
+void Device::bind_bool(const QString &name,
 	Property::Getter getter, Property::Setter setter)
 {
 	assert(configurable_);
@@ -140,7 +140,7 @@ void DeviceOptions::bind_bool(const QString &name,
 		name, getter, setter)));
 }
 
-void DeviceOptions::bind_enum(const QString &name,
+void Device::bind_enum(const QString &name,
 	Glib::VariantContainerBase gvar_list, Property::Getter getter,
 	Property::Setter setter, function<QString (Glib::VariantBase)> printer)
 {
@@ -157,7 +157,7 @@ void DeviceOptions::bind_enum(const QString &name,
 		getter, setter)));
 }
 
-void DeviceOptions::bind_int(const QString &name, QString suffix,
+void Device::bind_int(const QString &name, QString suffix,
 	optional< std::pair<int64_t, int64_t> > range,
 	Property::Getter getter, Property::Setter setter)
 {
@@ -167,21 +167,21 @@ void DeviceOptions::bind_int(const QString &name, QString suffix,
 		getter, setter)));
 }
 
-QString DeviceOptions::print_timebase(Glib::VariantBase gvar)
+QString Device::print_timebase(Glib::VariantBase gvar)
 {
 	uint64_t p, q;
 	g_variant_get(gvar.gobj(), "(tt)", &p, &q);
 	return QString::fromUtf8(sr_period_string(p * q));
 }
 
-QString DeviceOptions::print_vdiv(Glib::VariantBase gvar)
+QString Device::print_vdiv(Glib::VariantBase gvar)
 {
 	uint64_t p, q;
 	g_variant_get(gvar.gobj(), "(tt)", &p, &q);
 	return QString::fromUtf8(sr_voltage_string(p, q));
 }
 
-QString DeviceOptions::print_voltage_threshold(Glib::VariantBase gvar)
+QString Device::print_voltage_threshold(Glib::VariantBase gvar)
 {
 	gdouble lo, hi;
 	g_variant_get(gvar.gobj(), "(dd)", &lo, &hi);

@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_BINDING_DECODEROPTIONS_H
-#define PULSEVIEW_PV_BINDING_DECODEROPTIONS_H
+#ifndef PULSEVIEW_PV_BINDING_DECODER_H
+#define PULSEVIEW_PV_BINDING_DECODER_H
 
 #include "binding.hpp"
 
@@ -38,10 +38,10 @@ class Decoder;
 
 namespace binding {
 
-class DecoderOptions : public Binding
+class Decoder : public Binding
 {
 public:
-	DecoderOptions(std::shared_ptr<pv::data::DecoderStack> decoder_stack,
+	Decoder(std::shared_ptr<pv::data::DecoderStack> decoder_stack,
 		std::shared_ptr<pv::data::decode::Decoder> decoder);
 
 private:
@@ -61,4 +61,4 @@ private:
 } // binding
 } // pv
 
-#endif // PULSEVIEW_PV_BINDING_DECODEROPTIONS_H
+#endif // PULSEVIEW_PV_BINDING_DECODER_H

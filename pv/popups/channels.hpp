@@ -44,7 +44,7 @@ namespace pv {
 class Session;
 
 namespace binding {
-class DeviceOptions;
+class Device;
 }
 
 namespace view {
@@ -85,7 +85,7 @@ private:
 
 	bool updating_channels_;
 
-	std::vector< std::shared_ptr<pv::binding::DeviceOptions> >
+	std::vector< std::shared_ptr<pv::binding::Device> >
 		 group_bindings_;
 	std::map< QCheckBox*, std::shared_ptr<pv::view::Signal> >
 		check_box_signal_map_;

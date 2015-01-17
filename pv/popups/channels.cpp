@@ -27,7 +27,7 @@
 
 #include "channels.hpp"
 
-#include <pv/binding/deviceoptions.hpp>
+#include <pv/binding/device.hpp>
 #include <pv/session.hpp>
 #include <pv/view/signal.hpp>
 
@@ -151,14 +151,14 @@ void Channels::set_all_channels(bool set)
 void Channels::populate_group(shared_ptr<ChannelGroup> group,
 	const vector< shared_ptr<pv::view::Signal> > sigs)
 {
-	using pv::binding::DeviceOptions;
+	using pv::binding::Device;
 
 	// Only bind options if this is a group. We don't do it for general
 	// options, because these properties are shown in the device config
 	// popup.
-	shared_ptr<DeviceOptions> binding;
+	shared_ptr<Device> binding;
 	if (group)
-		binding = shared_ptr<DeviceOptions>(new DeviceOptions(group));
+		binding = shared_ptr<Device>(new Device(group));
 
 	// Create a title if the group is going to have any content
 	if ((!sigs.empty() || (binding && !binding->properties().empty())) &&

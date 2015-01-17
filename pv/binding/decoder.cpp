@@ -20,7 +20,7 @@
 
 #include <libsigrokdecode/libsigrokdecode.h>
 
-#include "decoderoptions.hpp"
+#include "decoder.hpp"
 
 #include <boost/none_t.hpp>
 
@@ -48,7 +48,7 @@ using pv::prop::String;
 namespace pv {
 namespace binding {
 
-DecoderOptions::DecoderOptions(
+Decoder::Decoder(
 	shared_ptr<pv::data::DecoderStack> decoder_stack,
 	shared_ptr<data::decode::Decoder> decoder) :
 	decoder_stack_(decoder_stack),
@@ -91,7 +91,7 @@ DecoderOptions::DecoderOptions(
 	}
 }
 
-shared_ptr<Property> DecoderOptions::bind_enum(
+shared_ptr<Property> Decoder::bind_enum(
 	const QString &name, const srd_decoder_option *option,
 	Property::Getter getter, Property::Setter setter)
 {
@@ -104,7 +104,7 @@ shared_ptr<Property> DecoderOptions::bind_enum(
 	return shared_ptr<Property>(new Enum(name, values, getter, setter));
 }
 
-Glib::VariantBase DecoderOptions::getter(const char *id)
+Glib::VariantBase Decoder::getter(const char *id)
 {
 	GVariant *val = NULL;
 
@@ -138,7 +138,7 @@ Glib::VariantBase DecoderOptions::getter(const char *id)
 		return Glib::VariantBase();
 }
 
-void DecoderOptions::setter(const char *id, Glib::VariantBase value)
+void Decoder::setter(const char *id, Glib::VariantBase value)
 {
 	assert(decoder_);
 	decoder_->set_option(id, value.gobj());

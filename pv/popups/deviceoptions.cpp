@@ -45,7 +45,7 @@ DeviceOptions::DeviceOptions(shared_ptr<Device> device, QWidget *parent) :
 	layout_.addWidget(binding_.get_property_form(this, true));
 }
 
-pv::binding::DeviceOptions& DeviceOptions::binding()
+pv::binding::Device& DeviceOptions::binding()
 {
 	return binding_;
 }

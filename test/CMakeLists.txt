@@ -24,7 +24,7 @@ set(pulseview_TEST_SOURCES
 	${PROJECT_SOURCE_DIR}/pv/storesession.cpp
 	${PROJECT_SOURCE_DIR}/pv/util.cpp
 	${PROJECT_SOURCE_DIR}/pv/binding/binding.cpp
-	${PROJECT_SOURCE_DIR}/pv/binding/deviceoptions.cpp
+	${PROJECT_SOURCE_DIR}/pv/binding/device.cpp
 	${PROJECT_SOURCE_DIR}/pv/data/analog.cpp
 	${PROJECT_SOURCE_DIR}/pv/data/analogsegment.cpp
 	${PROJECT_SOURCE_DIR}/pv/data/logic.cpp
@@ -74,7 +74,7 @@ set(pulseview_TEST_SOURCES
 set(pulseview_TEST_HEADERS
 	${PROJECT_SOURCE_DIR}/pv/session.hpp
 	${PROJECT_SOURCE_DIR}/pv/storesession.hpp
-	${PROJECT_SOURCE_DIR}/pv/binding/deviceoptions.hpp
+	${PROJECT_SOURCE_DIR}/pv/binding/device.hpp
 	${PROJECT_SOURCE_DIR}/pv/popups/channels.hpp
 	${PROJECT_SOURCE_DIR}/pv/popups/deviceoptions.hpp
 	${PROJECT_SOURCE_DIR}/pv/prop/bool.hpp
@@ -109,7 +109,7 @@ set(pulseview_TEST_HEADERS
 
 if(ENABLE_DECODE)
 	list(APPEND pulseview_TEST_SOURCES
-		${PROJECT_SOURCE_DIR}/pv/binding/decoderoptions.cpp
+		${PROJECT_SOURCE_DIR}/pv/binding/decoder.cpp
 		${PROJECT_SOURCE_DIR}/pv/data/decoderstack.cpp
 		${PROJECT_SOURCE_DIR}/pv/data/decode/annotation.cpp
 		${PROJECT_SOURCE_DIR}/pv/data/decode/decoder.cpp

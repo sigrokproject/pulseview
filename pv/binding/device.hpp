@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_BINDING_DEVICEOPTIONS_H
-#define PULSEVIEW_PV_BINDING_DEVICEOPTIONS_H
+#ifndef PULSEVIEW_PV_BINDING_DEVICE_H
+#define PULSEVIEW_PV_BINDING_DEVICE_H
 
 #include <boost/optional.hpp>
 
@@ -38,12 +38,12 @@ namespace pv {
 
 namespace binding {
 
-class DeviceOptions : public QObject, public Binding
+class Device : public QObject, public Binding
 {
 	Q_OBJECT
 
 public:
-	DeviceOptions(std::shared_ptr<sigrok::Configurable> configurable);
+	Device(std::shared_ptr<sigrok::Configurable> configurable);
 
 Q_SIGNALS:
 	void config_changed();
@@ -69,4 +69,4 @@ protected:
 } // binding
 } // pv
 
-#endif // PULSEVIEW_PV_BINDING_DEVICEOPTIONS_H
+#endif // PULSEVIEW_PV_BINDING_DEVICE_H

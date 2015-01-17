@@ -147,7 +147,7 @@ set(pulseview_SOURCES
 	pv/storesession.cpp
 	pv/util.cpp
 	pv/binding/binding.cpp
-	pv/binding/deviceoptions.cpp
+	pv/binding/device.cpp
 	pv/data/analog.cpp
 	pv/data/analogsegment.cpp
 	pv/data/logic.cpp
@@ -203,7 +203,7 @@ set(pulseview_HEADERS
 	pv/mainwindow.hpp
 	pv/session.hpp
 	pv/storesession.hpp
-	pv/binding/deviceoptions.hpp
+	pv/binding/device.hpp
 	pv/dialogs/about.hpp
 	pv/dialogs/connect.hpp
 	pv/dialogs/storeprogress.hpp
@@ -258,7 +258,7 @@ endif()
 
 if(ENABLE_DECODE)
 	list(APPEND pulseview_SOURCES
-		pv/binding/decoderoptions.cpp
+		pv/binding/decoder.cpp
 		pv/data/decoderstack.cpp
 		pv/data/decode/annotation.cpp
 		pv/data/decode/decoder.cpp
