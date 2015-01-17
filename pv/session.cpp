@@ -123,9 +123,12 @@ void Session::set_device(shared_ptr<Device> device)
 	stop_capture();
 
 	// Are we setting a session device?
-	auto session_device = dynamic_pointer_cast<SessionDevice>(device);
+	const auto session_device =
+		dynamic_pointer_cast<SessionDevice>(device);
+
 	// Did we have a session device selected previously?
-	auto prev_session_device = dynamic_pointer_cast<SessionDevice>(device_);
+	const auto prev_session_device =
+		dynamic_pointer_cast<SessionDevice>(device_);
 
 	if (device_) {
 		session_->remove_datafeed_callbacks();
@@ -159,6 +162,7 @@ void Session::set_device(shared_ptr<Device> device)
 			(shared_ptr<Device> device, shared_ptr<Packet> packet) {
 				data_feed_in(device, packet);
 			});
+		device_manager_.update_display_name(device);
 		update_signals(device);
 	} else
 		device_ = nullptr;
@@ -168,16 +172,9 @@ void Session::set_device(shared_ptr<Device> device)
 
 void Session::set_session_file(const string &name)
 {
-	session_ = device_manager_.context()->load_session(name);
-	device_ = session_->devices()[0];
-	decode_traces_.clear();
-	session_->add_datafeed_callback([=]
-		(shared_ptr<Device> device, shared_ptr<Packet> packet) {
-			data_feed_in(device, packet);
-		});
-	device_manager_.update_display_name(device_);
-	update_signals(device_);
-	device_selected();
+	const shared_ptr<sigrok::Session> session =
+		device_manager_.context()->load_session(name);
+	set_device(session->devices()[0]);
 }
 
 void Session::set_default_device()
