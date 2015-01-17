@@ -27,7 +27,7 @@
 
 #include "logicsegment.hpp"
 
-#include <libsigrok/libsigrok.hpp>
+#include <libsigrokcxx/libsigrokcxx.hpp>
 
 using std::lock_guard;
 using std::recursive_mutex;

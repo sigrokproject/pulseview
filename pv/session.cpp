@@ -45,7 +45,7 @@
 
 #include <QDebug>
 
-#include <libsigrok/libsigrok.hpp>
+#include <libsigrokcxx/libsigrokcxx.hpp>
 
 using boost::shared_lock;
 using boost::shared_mutex;

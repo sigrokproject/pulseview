@@ -21,7 +21,7 @@
 #include <libsigrokdecode/libsigrokdecode.h> /* First, so we avoid a _POSIX_C_SOURCE warning. */
 #include <boost/test/unit_test.hpp>
 
-#include <libsigrok/libsigrok.hpp>
+#include <libsigrokcxx/libsigrokcxx.hpp>
 
 #include "../../pv/data/decoderstack.hpp"
 #include "../../pv/devicemanager.hpp"

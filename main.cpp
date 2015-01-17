@@ -23,7 +23,7 @@
 #endif
 
 #include <stdint.h>
-#include <libsigrok/libsigrok.hpp>
+#include <libsigrokcxx/libsigrokcxx.hpp>
 
 #include <getopt.h>
 

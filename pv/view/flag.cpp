@@ -26,7 +26,7 @@
 #include <QLineEdit>
 #include <QMenu>
 
-#include <libsigrok/libsigrok.hpp>
+#include <libsigrokcxx/libsigrokcxx.hpp>
 
 #include <pv/widgets/popup.hpp>
 

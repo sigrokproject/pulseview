@@ -28,7 +28,7 @@
 #include "pv/data/analogsegment.hpp"
 #include "pv/view/view.hpp"
 
-#include <libsigrok/libsigrok.hpp>
+#include <libsigrokcxx/libsigrokcxx.hpp>
 
 using std::max;
 using std::make_pair;

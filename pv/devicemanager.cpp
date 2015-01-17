@@ -27,7 +27,7 @@
 #include <string>
 #include <vector>
 
-#include <libsigrok/libsigrok.hpp>
+#include <libsigrokcxx/libsigrokcxx.hpp>
 
 #include <boost/algorithm/string/join.hpp>
 #include <boost/filesystem.hpp>

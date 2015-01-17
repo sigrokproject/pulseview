@@ -37,7 +37,7 @@
 #include <pv/popups/channels.hpp>
 #include <pv/util.hpp>
 
-#include <libsigrok/libsigrok.hpp>
+#include <libsigrokcxx/libsigrokcxx.hpp>
 
 using std::back_inserter;
 using std::copy;

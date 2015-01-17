@@ -31,7 +31,7 @@
 #include <pv/session.hpp>
 #include <pv/view/signal.hpp>
 
-#include <libsigrok/libsigrok.hpp>
+#include <libsigrokcxx/libsigrokcxx.hpp>
 
 using namespace Qt;
 

@@ -27,7 +27,7 @@
 #include "about.hpp"
 #include <ui_about.h>
 
-#include <libsigrok/libsigrok.hpp>
+#include <libsigrokcxx/libsigrokcxx.hpp>
 
 using std::shared_ptr;
 using sigrok::Context;

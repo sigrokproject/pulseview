@@ -29,7 +29,7 @@
 #include <pv/prop/enum.hpp>
 #include <pv/prop/int.hpp>
 
-#include <libsigrok/libsigrok.hpp>
+#include <libsigrokcxx/libsigrokcxx.hpp>
 
 using boost::optional;
 using std::function;

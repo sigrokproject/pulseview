@@ -29,7 +29,7 @@
 #include <QLineEdit>
 #include <QMenu>
 
-#include <libsigrok/libsigrok.hpp>
+#include <libsigrokcxx/libsigrokcxx.hpp>
 
 #include "signal.hpp"
 #include "view.hpp"

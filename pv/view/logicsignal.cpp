@@ -37,7 +37,7 @@
 #include <pv/data/logicsegment.hpp>
 #include <pv/view/view.hpp>
 
-#include <libsigrok/libsigrok.hpp>
+#include <libsigrokcxx/libsigrokcxx.hpp>
 
 using std::deque;
 using std::max;

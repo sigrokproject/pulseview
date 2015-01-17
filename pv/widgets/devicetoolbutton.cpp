@@ -23,7 +23,7 @@
 #include <QTimer>
 #include <QToolTip>
 
-#include <libsigrok/libsigrok.hpp>
+#include <libsigrokcxx/libsigrokcxx.hpp>
 
 #include <pv/devicemanager.hpp>
 

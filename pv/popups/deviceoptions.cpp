@@ -25,7 +25,7 @@
 
 #include <pv/prop/property.hpp>
 
-#include <libsigrok/libsigrok.hpp>
+#include <libsigrokcxx/libsigrokcxx.hpp>
 
 using std::shared_ptr;
 

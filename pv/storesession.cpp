@@ -27,7 +27,7 @@
 #include <pv/data/logicsegment.hpp>
 #include <pv/view/signal.hpp>
 
-#include <libsigrok/libsigrok.hpp>
+#include <libsigrokcxx/libsigrokcxx.hpp>
 
 using boost::shared_lock;
 using boost::shared_mutex;

@@ -65,7 +65,7 @@ endif()
 #= Dependencies
 #-------------------------------------------------------------------------------
 
-list(APPEND PKGDEPS libsigrokxx>=0.3.0)
+list(APPEND PKGDEPS libsigrokcxx>=0.3.0)
 
 if(ENABLE_DECODE)
 	list(APPEND PKGDEPS libsigrokdecode>=0.3.0)

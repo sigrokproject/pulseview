@@ -20,7 +20,7 @@
 
 #include <cassert>
 
-#include <libsigrok/libsigrok.hpp>
+#include <libsigrokcxx/libsigrokcxx.hpp>
 #include <libsigrokdecode/libsigrokdecode.h>
 
 #include "decoder.hpp"
