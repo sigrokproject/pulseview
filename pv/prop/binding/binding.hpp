@@ -21,7 +21,7 @@
 #ifndef PULSEVIEW_PV_PROP_BINDING_BINDING_H
 #define PULSEVIEW_PV_PROP_BINDING_BINDING_H
 
-#include <glibmm-2.4/glibmm.h>
+#include <glibmm.h>
 
 #include <vector>
 #include <memory>

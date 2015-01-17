@@ -21,7 +21,7 @@
 #ifndef PULSEVIEW_PV_PROP_PROPERTY_H
 #define PULSEVIEW_PV_PROP_PROPERTY_H
 
-#include <glibmm-2.4/glibmm.h>
+#include <glibmm.h>
 
 #include <functional>
 #include <QString>
