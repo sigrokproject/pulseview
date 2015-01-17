@@ -44,8 +44,13 @@ using sigrok::Configurable;
 using sigrok::ConfigKey;
 using sigrok::Error;
 
+using pv::prop::Bool;
+using pv::prop::Double;
+using pv::prop::Enum;
+using pv::prop::Int;
+using pv::prop::Property;
+
 namespace pv {
-namespace prop {
 namespace binding {
 
 DeviceOptions::DeviceOptions(shared_ptr<sigrok::Configurable> configurable) :
@@ -184,5 +189,4 @@ QString DeviceOptions::print_voltage_threshold(Glib::VariantBase gvar)
 }
 
 } // binding
-} // prop
 } // pv

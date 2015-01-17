@@ -39,8 +39,13 @@ using std::shared_ptr;
 using std::string;
 using std::vector;
 
+using pv::prop::Double;
+using pv::prop::Enum;
+using pv::prop::Int;
+using pv::prop::Property;
+using pv::prop::String;
+
 namespace pv {
-namespace prop {
 namespace binding {
 
 DecoderOptions::DecoderOptions(
@@ -143,5 +148,4 @@ void DecoderOptions::setter(const char *id, Glib::VariantBase value)
 }
 
 } // binding
-} // prop
 } // pv

@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_PROP_BINDING_DECODEROPTIONS_H
-#define PULSEVIEW_PV_PROP_BINDING_DECODEROPTIONS_H
+#ifndef PULSEVIEW_PV_BINDING_DECODEROPTIONS_H
+#define PULSEVIEW_PV_BINDING_DECODEROPTIONS_H
 
 #include "binding.hpp"
 
@@ -36,7 +36,6 @@ class Decoder;
 }
 }
 
-namespace prop {
 namespace binding {
 
 class DecoderOptions : public Binding
@@ -46,9 +45,9 @@ public:
 		std::shared_ptr<pv::data::decode::Decoder> decoder);
 
 private:
-	static std::shared_ptr<Property> bind_enum(const QString &name,
+	static std::shared_ptr<prop::Property> bind_enum(const QString &name,
 		const srd_decoder_option *option,
-		Property::Getter getter, Property::Setter setter);
+		prop::Property::Getter getter, prop::Property::Setter setter);
 
 	Glib::VariantBase getter(const char *id);
 
@@ -60,7 +59,6 @@ private:
 };
 
 } // binding
-} // prop
 } // pv
 
-#endif // PULSEVIEW_PV_PROP_BINDING_DECODEROPTIONS_H
+#endif // PULSEVIEW_PV_BINDING_DECODEROPTIONS_H

@@ -29,10 +29,9 @@
 using std::shared_ptr;
 
 namespace pv {
-namespace prop {
 namespace binding {
 
-const std::vector< std::shared_ptr<Property> >& Binding::properties()
+const std::vector< std::shared_ptr<prop::Property> >& Binding::properties()
 {
 	return properties_;
 }
@@ -90,5 +89,4 @@ QString Binding::print_gvariant(Glib::VariantBase gvar)
 }
 
 } // binding
-} // prop
 } // pv

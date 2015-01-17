@@ -24,7 +24,7 @@
 #include <QGroupBox>
 #include <QVBoxLayout>
 
-#include <pv/prop/binding/deviceoptions.hpp>
+#include <pv/binding/deviceoptions.hpp>
 #include <pv/widgets/popup.hpp>
 
 namespace sigrok {
@@ -42,14 +42,14 @@ public:
 	DeviceOptions(std::shared_ptr<sigrok::Device> device,
 		QWidget *parent);
 
-	pv::prop::binding::DeviceOptions& binding();
+	pv::binding::DeviceOptions& binding();
 
 private:
 	std::shared_ptr<sigrok::Device> device_;
 
 	QVBoxLayout layout_;
 
-	pv::prop::binding::DeviceOptions binding_;
+	pv::binding::DeviceOptions binding_;
 };
 
 } // namespace popups

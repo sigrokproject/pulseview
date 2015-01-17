@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_PROP_BINDING_BINDING_H
-#define PULSEVIEW_PV_PROP_BINDING_BINDING_H
+#ifndef PULSEVIEW_PV_BINDING_BINDING_H
+#define PULSEVIEW_PV_BINDING_BINDING_H
 
 #include <glibmm.h>
 
@@ -32,16 +32,17 @@ class QFormLayout;
 class QWidget;
 
 namespace pv {
-namespace prop {
 
+namespace prop {
 class Property;
+}
 
 namespace binding {
 
 class Binding
 {
 public:
-	const std::vector< std::shared_ptr<Property> >& properties();
+	const std::vector< std::shared_ptr<prop::Property> >& properties();
 
 	void commit();
 
@@ -54,11 +55,10 @@ public:
 	static QString print_gvariant(Glib::VariantBase gvar);
 
 protected:
-	std::vector< std::shared_ptr<Property> > properties_;
+	std::vector< std::shared_ptr<prop::Property> > properties_;
 };
 
 } // binding
-} // prop
 } // pv
 
-#endif // PULSEVIEW_PV_PROP_BINDING_BINDING_H
+#endif // PULSEVIEW_PV_BINDING_BINDING_H

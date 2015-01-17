@@ -29,7 +29,7 @@
 
 #include <QSignalMapper>
 
-#include <pv/prop/binding/decoderoptions.hpp>
+#include <pv/binding/decoderoptions.hpp>
 #include <pv/data/decode/row.hpp>
 
 struct srd_channel;
@@ -191,7 +191,7 @@ private:
 
 	uint64_t decode_start_, decode_end_;
 
-	std::list< std::shared_ptr<pv::prop::binding::DecoderOptions> >
+	std::list< std::shared_ptr<pv::binding::DecoderOptions> >
 		bindings_;
 
 	std::list<ChannelSelector> channel_selectors_;

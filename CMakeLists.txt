@@ -146,6 +146,8 @@ set(pulseview_SOURCES
 	pv/session.cpp
 	pv/storesession.cpp
 	pv/util.cpp
+	pv/binding/binding.cpp
+	pv/binding/deviceoptions.cpp
 	pv/data/analog.cpp
 	pv/data/analogsegment.cpp
 	pv/data/logic.cpp
@@ -163,8 +165,6 @@ set(pulseview_SOURCES
 	pv/prop/int.cpp
 	pv/prop/property.cpp
 	pv/prop/string.cpp
-	pv/prop/binding/binding.cpp
-	pv/prop/binding/deviceoptions.cpp
 	pv/toolbars/mainbar.cpp
 	pv/view/analogsignal.cpp
 	pv/view/cursor.cpp
@@ -203,6 +203,7 @@ set(pulseview_HEADERS
 	pv/mainwindow.hpp
 	pv/session.hpp
 	pv/storesession.hpp
+	pv/binding/deviceoptions.hpp
 	pv/dialogs/about.hpp
 	pv/dialogs/connect.hpp
 	pv/dialogs/storeprogress.hpp
@@ -214,7 +215,6 @@ set(pulseview_HEADERS
 	pv/prop/int.hpp
 	pv/prop/property.hpp
 	pv/prop/string.hpp
-	pv/prop/binding/deviceoptions.hpp
 	pv/toolbars/mainbar.hpp
 	pv/view/cursor.hpp
 	pv/view/flag.hpp
@@ -258,12 +258,12 @@ endif()
 
 if(ENABLE_DECODE)
 	list(APPEND pulseview_SOURCES
+		pv/binding/decoderoptions.cpp
 		pv/data/decoderstack.cpp
 		pv/data/decode/annotation.cpp
 		pv/data/decode/decoder.cpp
 		pv/data/decode/row.cpp
 		pv/data/decode/rowdata.cpp
-		pv/prop/binding/decoderoptions.cpp
 		pv/view/decodetrace.cpp
 		pv/widgets/decodergroupbox.cpp
 		pv/widgets/decodermenu.cpp
