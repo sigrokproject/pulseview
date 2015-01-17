@@ -68,9 +68,6 @@ public:
 
 	void set_capture_state(pv::Session::capture_state state);
 
-Q_SIGNALS:
-	void run_stop();
-
 private:
 	void update_sample_rate_selector();
 	void update_sample_rate_selector_value();
