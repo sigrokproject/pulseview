@@ -215,8 +215,6 @@ void MainBar::update_sample_rate_selector()
 	const auto iter = keys.find(ConfigKey::SAMPLERATE);
 	if (iter != keys.end() &&
 		(*iter).second.find(sigrok::LIST) != (*iter).second.end()) {
-		const auto keys = device->config_keys(
-			ConfigKey::DEVICE_OPTIONS);
 		try {
 			gvar_dict = device->config_list(ConfigKey::SAMPLERATE);
 		} catch(const sigrok::Error &e) {
