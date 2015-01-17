@@ -47,14 +47,16 @@ using std::vector;
 
 using sigrok::ConfigKey;
 using sigrok::Error;
+using sigrok::OutputFormat;
 
 namespace pv {
 
 const size_t StoreSession::BlockSize = 1024 * 1024;
 
 StoreSession::StoreSession(const std::string &file_name,
-	const Session &session) :
+	const shared_ptr<OutputFormat> &output_format, const Session &session) :
 	file_name_(file_name),
+	output_format_(output_format),
 	session_(session),
 	interrupt_(false),
 	units_stored_(0),
@@ -121,9 +123,8 @@ bool StoreSession::start()
 	// Begin storing
 	try {
 		auto context = session_.session()->context();
-		auto output_format = context->output_formats()["srzip"];
 		auto device = session_.device();
-		output_ = output_format->create_output(device,
+		output_ = output_format_->create_output(device,
 			{{"filename",
 				Glib::Variant<Glib::ustring>::create(file_name_)}});
 		auto meta = context->create_meta_packet(

@@ -24,6 +24,7 @@
 #include <stdint.h>
 
 #include <atomic>
+#include <memory>
 #include <mutex>
 #include <string>
 #include <thread>
@@ -32,6 +33,7 @@
 
 namespace sigrok {
 class Output;
+class OutputFormat;
 }
 
 namespace pv {
@@ -51,6 +53,7 @@ private:
 
 public:
 	StoreSession(const std::string &file_name,
+		const std::shared_ptr<sigrok::OutputFormat> &output_format,
 		const Session &session);
 
 	~StoreSession();
@@ -73,6 +76,7 @@ Q_SIGNALS:
 
 private:
 	const std::string file_name_;
+	const std::shared_ptr<sigrok::OutputFormat> output_format_;
 	const Session &session_;
 
 	std::shared_ptr<sigrok::Output> output_;

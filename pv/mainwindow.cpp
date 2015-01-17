@@ -527,7 +527,9 @@ void MainWindow::on_actionSaveAs_triggered()
 	const QString abs_path = QFileInfo(file_name).absolutePath();
 	settings.setValue(SettingSaveDirectory, abs_path);
 
-	StoreProgress *dlg = new StoreProgress(file_name, session_, this);
+	StoreProgress *dlg = new StoreProgress(file_name,
+		device_manager_.context()->output_formats()["srzip"],
+		session_, this);
 	dlg->run();
 }
 
