@@ -316,14 +316,22 @@ void LogicSignal::init_trigger_actions(QWidget *parent)
 
 const vector<int32_t> LogicSignal::get_trigger_types() const
 {
-	try {
-		const Glib::VariantContainerBase gvar =
-			device_->config_list(ConfigKey::TRIGGER_MATCH);
-		return Glib::VariantBase::cast_dynamic<
-			Glib::Variant<vector<int32_t>>>(gvar).get();
-	} catch (Error e) {
-		return vector<int32_t>();
+	const auto keys = device_->config_keys(ConfigKey::DEVICE_OPTIONS);
+	const auto iter = keys.find(ConfigKey::TRIGGER_MATCH);
+	if (iter != keys.end() &&
+		(*iter).second.find(sigrok::LIST) != (*iter).second.end()) {
+		try {
+			const Glib::VariantContainerBase gvar =
+				device_->config_list(ConfigKey::TRIGGER_MATCH);
+			return Glib::VariantBase::cast_dynamic<
+				Glib::Variant<vector<int32_t>>>(gvar).get();
+		} catch (Error e) {
+			// Failed to enumerate triggers
+			(void)e;
+		}
 	}
+
+	return vector<int32_t>();
 }
 
 QAction* LogicSignal::action_from_trigger_type(const TriggerMatchType *type)
