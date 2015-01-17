@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_VIEW_VIEWPORT_H
-#define PULSEVIEW_PV_VIEW_VIEWPORT_H
+#ifndef PULSEVIEW_PV_VIEW_VIEWPORT_HPP
+#define PULSEVIEW_PV_VIEW_VIEWPORT_HPP
 
 #include <QTimer>
 #include <QTouchEvent>
@@ -103,4 +103,4 @@ private:
 } // namespace view
 } // namespace pv
 
-#endif // PULSEVIEW_PV_VIEW_VIEWPORT_H
+#endif // PULSEVIEW_PV_VIEW_VIEWPORT_HPP

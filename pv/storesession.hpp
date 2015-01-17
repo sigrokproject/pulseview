@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_STORESESSION_H
-#define PULSEVIEW_PV_STORESESSION_H
+#ifndef PULSEVIEW_PV_STORESESSION_HPP
+#define PULSEVIEW_PV_STORESESSION_HPP
 
 #include <stdint.h>
 
@@ -95,4 +95,4 @@ private:
 
 } // pv
 
-#endif // PULSEVIEW_PV_STORESESSION_H
+#endif // PULSEVIEW_PV_STORESESSION_HPP

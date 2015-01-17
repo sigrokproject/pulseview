@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_UTIL_H
-#define PULSEVIEW_UTIL_H
+#ifndef PULSEVIEW_UTIL_HPP
+#define PULSEVIEW_UTIL_HPP
 
 #include <cmath>
 
@@ -71,4 +71,4 @@ QString format_second(double second);
 } // namespace util
 } // namespace pv
 
-#endif // PULSEVIEW_UTIL_H
+#endif // PULSEVIEW_UTIL_HPP

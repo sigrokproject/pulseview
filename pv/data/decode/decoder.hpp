@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_DATA_DECODE_DECODER_H
-#define PULSEVIEW_PV_DATA_DECODE_DECODER_H
+#ifndef PULSEVIEW_PV_DATA_DECODE_DECODER_HPP
+#define PULSEVIEW_PV_DATA_DECODE_DECODER_HPP
 
 #include <map>
 #include <memory>
@@ -86,4 +86,4 @@ private:
 } // namespace data
 } // namespace pv
 
-#endif // PULSEVIEW_PV_DATA_DECODE_DECODER_H
+#endif // PULSEVIEW_PV_DATA_DECODE_DECODER_HPP

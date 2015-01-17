@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef SIGNALHANDLER_H
-#define SIGNALHANDLER_H
+#ifndef SIGNALHANDLER_HPP
+#define SIGNALHANDLER_HPP
 
 #include <QObject>
 
@@ -52,4 +52,4 @@ private:
 	static int sockets_[2];
 };
 
-#endif // SIGNALHANDLER_H
+#endif // SIGNALHANDLER_HPP

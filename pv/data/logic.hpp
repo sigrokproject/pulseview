@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_DATA_LOGIC_H
-#define PULSEVIEW_PV_DATA_LOGIC_H
+#ifndef PULSEVIEW_PV_DATA_LOGIC_HPP
+#define PULSEVIEW_PV_DATA_LOGIC_HPP
 
 #include "signaldata.hpp"
 
@@ -57,4 +57,4 @@ private:
 } // namespace data
 } // namespace pv
 
-#endif // PULSEVIEW_PV_DATA_LOGIC_H
+#endif // PULSEVIEW_PV_DATA_LOGIC_HPP

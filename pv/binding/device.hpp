@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_BINDING_DEVICE_H
-#define PULSEVIEW_PV_BINDING_DEVICE_H
+#ifndef PULSEVIEW_PV_BINDING_DEVICE_HPP
+#define PULSEVIEW_PV_BINDING_DEVICE_HPP
 
 #include <boost/optional.hpp>
 
@@ -69,4 +69,4 @@ protected:
 } // binding
 } // pv
 
-#endif // PULSEVIEW_PV_BINDING_DEVICE_H
+#endif // PULSEVIEW_PV_BINDING_DEVICE_HPP

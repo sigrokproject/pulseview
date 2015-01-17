@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_TOOLBARS_MAINBAR_H
-#define PULSEVIEW_PV_TOOLBARS_MAINBAR_H
+#ifndef PULSEVIEW_PV_TOOLBARS_MAINBAR_HPP
+#define PULSEVIEW_PV_TOOLBARS_MAINBAR_HPP
 
 #include <stdint.h>
 
@@ -116,4 +116,4 @@ private:
 } // namespace toolbars
 } // namespace pv
 
-#endif // PULSEVIEW_PV_TOOLBARS_MAINBAR_H
+#endif // PULSEVIEW_PV_TOOLBARS_MAINBAR_HPP

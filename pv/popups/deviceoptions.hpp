@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_POPUPS_DEVICEOPTIONS_H
-#define PULSEVIEW_PV_POPUPS_DEVICEOPTIONS_H
+#ifndef PULSEVIEW_PV_POPUPS_DEVICEOPTIONS_HPP
+#define PULSEVIEW_PV_POPUPS_DEVICEOPTIONS_HPP
 
 #include <QGroupBox>
 #include <QVBoxLayout>
@@ -55,4 +55,4 @@ private:
 } // namespace popups
 } // namespace pv
 
-#endif // PULSEVIEW_PV_POPUPS_DEVICEOPTIONS_H
+#endif // PULSEVIEW_PV_POPUPS_DEVICEOPTIONS_HPP

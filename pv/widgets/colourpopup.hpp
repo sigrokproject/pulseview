@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_WIDGETS_COLOURPOPUP_H
-#define PULSEVIEW_PV_WIDGETS_COLOURPOPUP_H
+#ifndef PULSEVIEW_PV_WIDGETS_COLOURPOPUP_HPP
+#define PULSEVIEW_PV_WIDGETS_COLOURPOPUP_HPP
 
 #include "popup.hpp"
 #include "wellarray.hpp"
@@ -52,4 +52,4 @@ private:
 } // widgets
 } // pv
 
-#endif // PULSEVIEW_PV_WIDGETS_COLOURPOPUP_H
+#endif // PULSEVIEW_PV_WIDGETS_COLOURPOPUP_HPP

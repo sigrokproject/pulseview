@@ -17,8 +17,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PULSEVIEW_ANDROID_LOGHANDLER_H
-#define PULSEVIEW_ANDROID_LOGHANDLER_H
+#ifndef PULSEVIEW_ANDROID_LOGHANDLER_HPP
+#define PULSEVIEW_ANDROID_LOGHANDLER_HPP
 
 #include <stdarg.h>
 
@@ -36,4 +36,4 @@ public:
 
 } // namespace pv
 
-#endif // PULSEVIEW_ANDROID_LOGHANDLER_H
+#endif // PULSEVIEW_ANDROID_LOGHANDLER_HPP

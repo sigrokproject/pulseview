@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_PROP_ENUM_H
-#define PULSEVIEW_PV_PROP_ENUM_H
+#ifndef PULSEVIEW_PV_PROP_ENUM_HPP
+#define PULSEVIEW_PV_PROP_ENUM_HPP
 
 #include <utility>
 #include <vector>
@@ -61,4 +61,4 @@ private:
 } // prop
 } // pv
 
-#endif // PULSEVIEW_PV_PROP_ENUM_H
+#endif // PULSEVIEW_PV_PROP_ENUM_HPP

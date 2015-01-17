@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_VIEW_ROWITEMITERATOR_H
-#define PULSEVIEW_PV_VIEW_ROWITEMITERATOR_H
+#ifndef PULSEVIEW_PV_VIEW_ROWITEMITERATOR_HPP
+#define PULSEVIEW_PV_VIEW_ROWITEMITERATOR_HPP
 
 #include <algorithm>
 #include <cassert>
@@ -140,4 +140,4 @@ void swap(RowItemIterator<Owner, Item>& a, RowItemIterator<Owner, Item>& b)
 } // namespace view
 } // namespace pv
 
-#endif // PULSEVIEW_PV_VIEW_ROWITEMITERATOR_H
+#endif // PULSEVIEW_PV_VIEW_ROWITEMITERATOR_HPP

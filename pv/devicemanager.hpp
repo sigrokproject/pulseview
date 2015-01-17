@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_DEVICEMANAGER_H
-#define PULSEVIEW_PV_DEVICEMANAGER_H
+#ifndef PULSEVIEW_PV_DEVICEMANAGER_HPP
+#define PULSEVIEW_PV_DEVICEMANAGER_HPP
 
 #include <list>
 #include <map>
@@ -86,4 +86,4 @@ protected:
 
 } // namespace pv
 
-#endif // PULSEVIEW_PV_DEVICEMANAGER_H
+#endif // PULSEVIEW_PV_DEVICEMANAGER_HPP
