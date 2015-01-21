@@ -154,7 +154,7 @@ void Int::commit()
 	else if (g_variant_type_equal(type, G_VARIANT_TYPE_INT32))
 		new_value = g_variant_new_int32(spin_box_->value());
 	else if (g_variant_type_equal(type, G_VARIANT_TYPE_UINT32))
-		new_value = g_variant_new_int32(spin_box_->value());
+		new_value = g_variant_new_uint32(spin_box_->value());
 	else if (g_variant_type_equal(type, G_VARIANT_TYPE_INT64))
 		new_value = g_variant_new_int64(spin_box_->value());
 	else if (g_variant_type_equal(type, G_VARIANT_TYPE_UINT64))
