@@ -147,6 +147,7 @@ set(pulseview_SOURCES
 	pv/storesession.cpp
 	pv/util.cpp
 	pv/binding/binding.cpp
+	pv/binding/inputoutput.cpp
 	pv/binding/device.cpp
 	pv/data/analog.cpp
 	pv/data/analogsegment.cpp
