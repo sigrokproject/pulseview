@@ -27,6 +27,8 @@
 #include <algorithm>
 #include <iterator>
 
+#include <boost/algorithm/string/join.hpp>
+
 #include <QAction>
 #include <QApplication>
 #include <QButtonGroup>
@@ -66,6 +68,9 @@ using std::list;
 using std::map;
 using std::shared_ptr;
 using std::string;
+using std::vector;
+
+using boost::algorithm::join;
 
 using sigrok::Device;
 using sigrok::Error;
@@ -203,10 +208,21 @@ void MainWindow::export_file(shared_ptr<OutputFormat> format)
 	QSettings settings;
 	const QString dir = settings.value(SettingSaveDirectory).toString();
 
+	// Construct the filter
+	const vector<string> exts = format->extensions();
+	QString filter = tr("%1 files ").arg(
+		QString::fromStdString(format->description()));
+
+	if (exts.empty())
+		filter += "(*.*)";
+	else
+		filter += QString("(*.%1);;%2 (*.*)").arg(
+			QString::fromStdString(join(exts, ", *."))).arg(
+			tr("All Files"));
+
 	// Show the file dialog
 	const QString file_name = QFileDialog::getSaveFileName(
-		this, tr("Save File"), dir, tr("%1 files (*.*)").arg(
-			QString::fromStdString(format->description())));
+		this, tr("Save File"), dir, filter);
 
 	if (file_name.isEmpty())
 		return;
