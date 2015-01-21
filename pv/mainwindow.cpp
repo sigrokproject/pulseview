@@ -45,6 +45,7 @@
 #include "devicemanager.hpp"
 #include "dialogs/about.hpp"
 #include "dialogs/connect.hpp"
+#include "dialogs/inputoutputoptions.hpp"
 #include "dialogs/storeprogress.hpp"
 #include "toolbars/mainbar.hpp"
 #include "view/logicsignal.hpp"
@@ -202,7 +203,7 @@ void MainWindow::export_file(shared_ptr<OutputFormat> format)
 	QSettings settings;
 	const QString dir = settings.value(SettingSaveDirectory).toString();
 
-	// Show the dialog
+	// Show the file dialog
 	const QString file_name = QFileDialog::getSaveFileName(
 		this, tr("Save File"), dir, tr("%1 files (*.*)").arg(
 			QString::fromStdString(format->description())));
@@ -213,7 +214,19 @@ void MainWindow::export_file(shared_ptr<OutputFormat> format)
 	const QString abs_path = QFileInfo(file_name).absolutePath();
 	settings.setValue(SettingSaveDirectory, abs_path);
 
-	StoreProgress *dlg = new StoreProgress(file_name, format,
+	// Show the options dialog
+	map<string, Glib::VariantBase> options;
+	if (!format->options().empty()) {
+		dialogs::InputOutputOptions dlg(
+			tr("Export %1").arg(QString::fromStdString(
+				format->description())),
+			format->options(), this);
+		if (!dlg.exec())
+			return;
+		options = dlg.options();
+	}
+
+	StoreProgress *dlg = new StoreProgress(file_name, format, options,
 		session_, this);
 	dlg->run();
 }

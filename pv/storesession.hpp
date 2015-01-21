@@ -25,10 +25,13 @@
 
 #include <atomic>
 #include <fstream>
+#include <map>
 #include <memory>
 #include <mutex>
 #include <string>
 #include <thread>
+
+#include <glibmm/variant.h>
 
 #include <QObject>
 
@@ -55,6 +58,7 @@ private:
 public:
 	StoreSession(const std::string &file_name,
 		const std::shared_ptr<sigrok::OutputFormat> &output_format,
+		const std::map<std::string, Glib::VariantBase> &options,
 		const Session &session);
 
 	~StoreSession();
@@ -78,6 +82,7 @@ Q_SIGNALS:
 private:
 	const std::string file_name_;
 	const std::shared_ptr<sigrok::OutputFormat> output_format_;
+	const std::map<std::string, Glib::VariantBase> options_;
 	const Session &session_;
 
 	std::shared_ptr<sigrok::Output> output_;

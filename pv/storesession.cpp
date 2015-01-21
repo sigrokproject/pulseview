@@ -47,6 +47,8 @@ using std::string;
 using std::thread;
 using std::vector;
 
+using Glib::VariantBase;
+
 using sigrok::ConfigKey;
 using sigrok::Error;
 using sigrok::OutputFormat;
@@ -56,9 +58,11 @@ namespace pv {
 const size_t StoreSession::BlockSize = 1024 * 1024;
 
 StoreSession::StoreSession(const std::string &file_name,
-	const shared_ptr<OutputFormat> &output_format, const Session &session) :
+	const shared_ptr<OutputFormat> &output_format,
+	const map<string, VariantBase> &options, const Session &session) :
 	file_name_(file_name),
 	output_format_(output_format),
+	options_(options),
 	session_(session),
 	interrupt_(false),
 	units_stored_(0),
@@ -127,7 +131,7 @@ bool StoreSession::start()
 		auto context = session_.session()->context();
 		auto device = session_.device();
 
-		map<string, Glib::VariantBase> options;
+		map<string, Glib::VariantBase> options = options_;
 
 		// If the output has the capability to write files, use it.
 		// Otherwise, open the output stream.

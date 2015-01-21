@@ -157,6 +157,7 @@ set(pulseview_SOURCES
 	pv/data/segment.cpp
 	pv/dialogs/about.cpp
 	pv/dialogs/connect.cpp
+	pv/dialogs/inputoutputoptions.cpp
 	pv/dialogs/storeprogress.cpp
 	pv/popups/deviceoptions.cpp
 	pv/popups/channels.cpp
@@ -207,6 +208,7 @@ set(pulseview_HEADERS
 	pv/binding/device.hpp
 	pv/dialogs/about.hpp
 	pv/dialogs/connect.hpp
+	pv/dialogs/inputoutputoptions.hpp
 	pv/dialogs/storeprogress.hpp
 	pv/popups/channels.hpp
 	pv/popups/deviceoptions.hpp
