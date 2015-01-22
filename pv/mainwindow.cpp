@@ -274,12 +274,25 @@ void MainWindow::import_file(shared_ptr<InputFormat> format)
 			"%1 files (*.*);;All Files (*.*)").arg(
 			QString::fromStdString(format->description())));
 
-	if (!file_name.isEmpty()) {
-		load_file(file_name, format);
+	if (file_name.isEmpty())
+		return;
 
-		const QString abs_path = QFileInfo(file_name).absolutePath();
-		settings.setValue(SettingOpenDirectory, abs_path);
+	// Show the options dialog
+	map<string, Glib::VariantBase> options;
+	if (!format->options().empty()) {
+		dialogs::InputOutputOptions dlg(
+			tr("Import %1").arg(QString::fromStdString(
+				format->description())),
+			format->options(), this);
+		if (!dlg.exec())
+			return;
+		options = dlg.options();
 	}
+
+	load_file(file_name, format, options);
+
+	const QString abs_path = QFileInfo(file_name).absolutePath();
+	settings.setValue(SettingOpenDirectory, abs_path);
 }
 
 void MainWindow::setup_ui()
