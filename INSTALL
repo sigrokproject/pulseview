@@ -5,12 +5,12 @@ INSTALL
 Requirements
 ------------
 
- - git
+ - git (only needed when building from git)
  - A C++ compiler with C++11 support (-std=c++11 option), e.g.
    - g++ (>= 4.7)
    - clang++ (>= 3.1)
  - make
- - libtool
+ - libtool (only needed when building from git)
  - pkg-config >= 0.22
  - cmake >= 2.8.6
  - libglib >= 2.28.0
