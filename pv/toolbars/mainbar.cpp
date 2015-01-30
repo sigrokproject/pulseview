@@ -239,7 +239,7 @@ void MainBar::update_sample_rate_selector()
 		}
 	}
 
-	if (!gvar_dict) {
+	if (!gvar_dict.gobj()) {
 		sample_rate_.show_none();
 		updating_sample_rate_ = false;
 		return;
@@ -342,7 +342,7 @@ void MainBar::update_sample_count_selector()
 		try {
 			auto gvar =
 				device->config_list(ConfigKey::LIMIT_SAMPLES);
-			if (gvar)
+			if (gvar.gobj())
 				g_variant_get(gvar.gobj(), "(tt)",
 					&min_sample_count, &max_sample_count);
 		} catch(const sigrok::Error &e) {
