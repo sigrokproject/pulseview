@@ -123,30 +123,26 @@ void Session::set_device(shared_ptr<Device> device)
 	// Ensure we are not capturing before setting the device
 	stop_capture();
 
-	// Are we setting a session device?
-	const auto session_device =
-		dynamic_pointer_cast<SessionDevice>(device);
-
-	// Did we have a session device selected previously?
-	const auto prev_session_device =
-		dynamic_pointer_cast<SessionDevice>(device_);
-
 	if (device_) {
 		session_->remove_datafeed_callbacks();
-		if (!prev_session_device) {
+
+		// Did we have a hardware device selected previously?
+		if (!dynamic_pointer_cast<HardwareDevice>(device_)) {
 			device_->close();
 			session_->remove_devices();
 		}
 	}
 
-	if (session_device)
-		session_ = session_device->parent();
-
 	decode_traces_.clear();
 
 	if (device) {
-		if (!session_device)
-		{
+		// Are we setting a session device?
+		const auto session_device =
+			dynamic_pointer_cast<SessionDevice>(device);
+
+		if (session_device)
+			session_ = session_device->parent();
+		else {
 			session_ = device_manager_.context()->create_session();
 
 			try {
