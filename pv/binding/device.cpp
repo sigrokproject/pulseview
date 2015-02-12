@@ -62,14 +62,9 @@ Device::Device(shared_ptr<sigrok::Configurable> configurable) :
 		auto key = entry.first;
 		auto capabilities = entry.second;
 
-		Glib::VariantContainerBase gvar_list;
-
 		if (!capabilities.count(Capability::GET) ||
 			!capabilities.count(Capability::SET))
 			continue;
-
-		if (capabilities.count(Capability::LIST))
-			gvar_list = configurable->config_list(key);
 
 		string name_str;
 		try {
@@ -106,7 +101,7 @@ Device::Device(shared_ptr<sigrok::Configurable> configurable) :
 		case SR_CONF_FILTER:
 		case SR_CONF_COUPLING:
 		case SR_CONF_CLOCK_EDGE:
-			bind_enum(name, gvar_list, get, set);
+			bind_enum(name, key, capabilities, get, set);
 			break;
 
 		case SR_CONF_EXTERNAL_CLOCK:
@@ -115,15 +110,15 @@ Device::Device(shared_ptr<sigrok::Configurable> configurable) :
 			break;
 
 		case SR_CONF_TIMEBASE:
-			bind_enum(name, gvar_list, get, set, print_timebase);
+			bind_enum(name, key, capabilities, get, set, print_timebase);
 			break;
 
 		case SR_CONF_VDIV:
-			bind_enum(name, gvar_list, get, set, print_vdiv);
+			bind_enum(name, key, capabilities, get, set, print_vdiv);
 			break;
 
 		case SR_CONF_VOLTAGE_THRESHOLD:
-			bind_enum(name, gvar_list, get, set, print_voltage_threshold);
+			bind_enum(name, key, capabilities, get, set, print_voltage_threshold);
 			break;
 
 		default:
@@ -141,7 +136,8 @@ void Device::bind_bool(const QString &name,
 }
 
 void Device::bind_enum(const QString &name,
-	Glib::VariantContainerBase gvar_list, Property::Getter getter,
+	const ConfigKey *key, std::set<Capability> capabilities,
+	Property::Getter getter,
 	Property::Setter setter, function<QString (Glib::VariantBase)> printer)
 {
 	Glib::VariantBase gvar;
@@ -149,7 +145,10 @@ void Device::bind_enum(const QString &name,
 
 	assert(configurable_);
 
-	Glib::VariantIter iter(gvar_list);
+	if (!capabilities.count(Capability::LIST))
+		return;
+
+	Glib::VariantIter iter(configurable_->config_list(key));
 	while ((iter.next_value(gvar)))
 		values.push_back(make_pair(gvar, printer(gvar)));
 
