@@ -51,7 +51,9 @@ class View;
 }
 
 namespace widgets {
+#ifdef ENABLE_DECODE
 class DecoderMenu;
+#endif /* ENABLE_DECODE */
 }
 
 class MainWindow : public QMainWindow
@@ -87,7 +89,9 @@ public:
 	QAction* action_view_show_cursors() const;
 	QAction* action_about() const;
 
+#ifdef ENABLE_DECODE
 	QMenu* menu_decoder_add() const;
+#endif /* ENABLE_DECODE */
 
 	void run_stop();
 
@@ -167,7 +171,9 @@ private:
 	QAction *const action_view_show_cursors_;
 	QAction *const action_about_;
 
+#ifdef ENABLE_DECODE
 	QMenu *const menu_decoders_add_;
+#endif /* ENABLE_DECODE */
 };
 
 } // namespace pv

@@ -101,8 +101,10 @@ MainWindow::MainWindow(DeviceManager &device_manager,
 	action_view_zoom_fit_(new QAction(this)),
 	action_view_zoom_one_to_one_(new QAction(this)),
 	action_view_show_cursors_(new QAction(this)),
-	action_about_(new QAction(this)),
-	menu_decoders_add_(new pv::widgets::DecoderMenu(this, true))
+	action_about_(new QAction(this))
+#ifdef ENABLE_DECODE
+	, menu_decoders_add_(new pv::widgets::DecoderMenu(this, true))
+#endif /* ENABLE_DECODE */
 {
 	setup_ui();
 	restore_ui_settings();
@@ -164,10 +166,12 @@ QAction* MainWindow::action_about() const
 	return action_about_;
 }
 
+#ifdef ENABLE_DECODE
 QMenu* MainWindow::menu_decoder_add() const
 {
 	return menu_decoders_add_;
 }
+#endif /* ENABLE_DECODE */
 
 void MainWindow::run_stop()
 {
