@@ -104,7 +104,7 @@ MainWindow::MainWindow(DeviceManager &device_manager,
 	action_about_(new QAction(this))
 #ifdef ENABLE_DECODE
 	, menu_decoders_add_(new pv::widgets::DecoderMenu(this, true))
-#endif /* ENABLE_DECODE */
+#endif
 {
 	setup_ui();
 	restore_ui_settings();
@@ -171,7 +171,7 @@ QMenu* MainWindow::menu_decoder_add() const
 {
 	return menu_decoders_add_;
 }
-#endif /* ENABLE_DECODE */
+#endif
 
 void MainWindow::run_stop()
 {

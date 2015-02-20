@@ -53,7 +53,7 @@ class View;
 namespace widgets {
 #ifdef ENABLE_DECODE
 class DecoderMenu;
-#endif /* ENABLE_DECODE */
+#endif
 }
 
 class MainWindow : public QMainWindow
@@ -91,7 +91,7 @@ public:
 
 #ifdef ENABLE_DECODE
 	QMenu* menu_decoder_add() const;
-#endif /* ENABLE_DECODE */
+#endif
 
 	void run_stop();
 
@@ -173,7 +173,7 @@ private:
 
 #ifdef ENABLE_DECODE
 	QMenu *const menu_decoders_add_;
-#endif /* ENABLE_DECODE */
+#endif
 };
 
 } // namespace pv
