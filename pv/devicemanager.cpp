@@ -32,6 +32,8 @@
 #include <boost/algorithm/string/join.hpp>
 #include <boost/filesystem.hpp>
 
+#include <pv/devices/hardwaredevice.hpp>
+
 using boost::algorithm::join;
 
 using std::dynamic_pointer_cast;
@@ -48,8 +50,6 @@ using Glib::VariantBase;
 using sigrok::ConfigKey;
 using sigrok::Context;
 using sigrok::Driver;
-using sigrok::Device;
-using sigrok::HardwareDevice;
 using sigrok::SessionDevice;
 
 namespace pv {
@@ -75,80 +75,76 @@ shared_ptr<Context> DeviceManager::context()
 	return context_;
 }
 
-const list< shared_ptr<HardwareDevice> >& DeviceManager::devices() const
+const list< shared_ptr<devices::HardwareDevice> >&
+DeviceManager::devices() const
 {
 	return devices_;
 }
 
-list< shared_ptr<HardwareDevice> > DeviceManager::driver_scan(
+list< shared_ptr<devices::HardwareDevice> >
+DeviceManager::driver_scan(
 	shared_ptr<Driver> driver, map<const ConfigKey *, VariantBase> drvopts)
 {
-	list< shared_ptr<HardwareDevice> > driver_devices;
+	list< shared_ptr<devices::HardwareDevice> > driver_devices;
 
 	assert(driver);
 
 	// Remove any device instances from this driver from the device
 	// list. They will not be valid after the scan.
-	devices_.remove_if([&](shared_ptr<HardwareDevice> device) {
-		return device->driver() == driver; });
+	devices_.remove_if([&](shared_ptr<devices::HardwareDevice> device) {
+		return device->hardware_device()->driver() == driver; });
 
 	// Do the scan
 	auto devices = driver->scan(drvopts);
-	driver_devices.insert(driver_devices.end(), devices.begin(), devices.end());
 
 	// Add the scanned devices to the main list, set display names and sort.
+	for (shared_ptr<sigrok::HardwareDevice> device : devices) {
+		const shared_ptr<devices::HardwareDevice> d(
+			new devices::HardwareDevice(context_, device));
+		driver_devices.push_back(d);
+	}
+
+	for (shared_ptr<devices::HardwareDevice> device : driver_devices)
+		build_display_name(device);
+
 	devices_.insert(devices_.end(), driver_devices.begin(),
 		driver_devices.end());
-
-	for (shared_ptr<Device> device : devices_)
-		build_display_name(device);
-
-	devices_.sort([&](shared_ptr<Device> a, shared_ptr<Device> b)
-		{ return compare_devices(a, b); });
-
-	// As the display names depend on the complete devices_ list,
-	// we need to recompute them. However, there is no need to
-	// recomute all names of the devices_ list since only the
-	// devices that use the given driver can be affected.
-	for (shared_ptr<Device> device : driver_devices)
-		build_display_name(device);
-
-	driver_devices.sort([&](shared_ptr<Device> a, shared_ptr<Device> b)
+	devices_.sort([&](shared_ptr<devices::Device> a,
+		shared_ptr<devices::Device> b)
 		{ return compare_devices(a, b); });
 
 	return driver_devices;
 }
 
 const map<string, string> DeviceManager::get_device_info(
-	shared_ptr<Device> device)
+	shared_ptr<devices::Device> device)
 {
 	map<string, string> result;
 
 	assert(device);
 
-	if (device->vendor().length() > 0)
-		result["vendor"] = device->vendor();
-	if (device->model().length() > 0)
-		result["model"] = device->model();
-	if (device->version().length() > 0)
-		result["version"] = device->version();
-	if (device->serial_number().length() > 0)
-		result["serial_num"] = device->serial_number();
-	if (device->connection_id().length() > 0)
-		result["connection_id"] = device->connection_id();
+	const shared_ptr<sigrok::Device> sr_dev = device->device();
+	if (sr_dev->vendor().length() > 0)
+		result["vendor"] = sr_dev->vendor();
+	if (sr_dev->model().length() > 0)
+		result["model"] = sr_dev->model();
+	if (sr_dev->version().length() > 0)
+		result["version"] = sr_dev->version();
+	if (sr_dev->serial_number().length() > 0)
+		result["serial_num"] = sr_dev->serial_number();
+	if (sr_dev->connection_id().length() > 0)
+		result["connection_id"] = sr_dev->connection_id();
 
 	return result;
 }
 
-const shared_ptr<HardwareDevice> DeviceManager::find_device_from_info(
+const shared_ptr<devices::HardwareDevice> DeviceManager::find_device_from_info(
 	const map<string, string> search_info)
 {
-	shared_ptr<HardwareDevice> last_resort_dev;
+	shared_ptr<devices::HardwareDevice> last_resort_dev;
 	map<string, string> dev_info;
 
-	last_resort_dev = NULL;
-
-	for (shared_ptr<HardwareDevice> dev : devices_) {
+	for (shared_ptr<devices::HardwareDevice> dev : devices_) {
 		assert(dev);
 		dev_info = get_device_info(dev);
 
@@ -191,10 +187,11 @@ const shared_ptr<HardwareDevice> DeviceManager::find_device_from_info(
 	return last_resort_dev;
 }
 
-void DeviceManager::build_display_name(shared_ptr<Device> device)
+void DeviceManager::build_display_name(shared_ptr<devices::Device> device)
 {
-	auto session_device = dynamic_pointer_cast<SessionDevice>(device);
-	auto hardware_device = dynamic_pointer_cast<HardwareDevice>(device);
+	const shared_ptr<sigrok::Device> sr_dev = device->device();
+	auto session_device = dynamic_pointer_cast<sigrok::SessionDevice>(sr_dev);
+	auto hardware_device = dynamic_pointer_cast<sigrok::HardwareDevice>(sr_dev);
 
 	if (session_device) {
 		full_names_[device] = display_names_[device] =
@@ -205,11 +202,11 @@ void DeviceManager::build_display_name(shared_ptr<Device> device)
 
 	// First, build the device's full name. It always contains all
 	// possible information.
-	vector<string> parts = {device->vendor(), device->model(),
-		device->version(), device->serial_number()};
+	vector<string> parts = {sr_dev->vendor(), sr_dev->model(),
+		sr_dev->version(), sr_dev->serial_number()};
 
-	if (device->connection_id().length() > 0)
-		parts.push_back("("+device->connection_id()+")");
+	if (sr_dev->connection_id().length() > 0)
+		parts.push_back("("+sr_dev->connection_id()+")");
 
 	full_names_[device] = join(parts, " ");
 
@@ -219,43 +216,46 @@ void DeviceManager::build_display_name(shared_ptr<Device> device)
 	// we have at least two such devices and need to distinguish them.
 	const bool multiple_dev = hardware_device && any_of(
 		devices_.begin(), devices_.end(),
-		[&](shared_ptr<HardwareDevice> dev) {
-			return (dev->vendor() == hardware_device->vendor() &&
-				dev->model() == hardware_device->model()) &&
-				dev != hardware_device;
+		[&](shared_ptr<devices::HardwareDevice> dev) {
+			return (dev->device()->vendor() == hardware_device->vendor() &&
+				dev->device()->model() == hardware_device->model()) &&
+				dev != device;
 		} );
 
-	parts = {device->vendor(), device->model()};
+	parts = {sr_dev->vendor(), sr_dev->model()};
 
 	if (multiple_dev) {
-		parts.push_back(device->version());
-		parts.push_back(device->serial_number());
+		parts.push_back(sr_dev->version());
+		parts.push_back(sr_dev->serial_number());
 
-		if ((device->serial_number().length() == 0) &&
-			(device->connection_id().length() > 0))
-			parts.push_back("("+device->connection_id()+")");
+		if ((sr_dev->serial_number().length() == 0) &&
+			(sr_dev->connection_id().length() > 0))
+			parts.push_back("("+sr_dev->connection_id()+")");
 	}
 
 	display_names_[device] = join(parts, " ");
 }
 
-const std::string DeviceManager::get_display_name(std::shared_ptr<sigrok::Device> dev)
+const std::string DeviceManager::get_display_name(
+	std::shared_ptr<devices::Device> dev)
 {
 	return display_names_[dev];
 }
 
-const std::string DeviceManager::get_full_name(std::shared_ptr<sigrok::Device> dev)
+const std::string DeviceManager::get_full_name(
+	std::shared_ptr<devices::Device> dev)
 {
 	return full_names_[dev];
 }
 
-void DeviceManager::update_display_name(std::shared_ptr<sigrok::Device> dev)
+void DeviceManager::update_display_name(
+	std::shared_ptr<devices::Device> dev)
 {
 	build_display_name(dev);
 }
 
-bool DeviceManager::compare_devices(shared_ptr<Device> a,
-	shared_ptr<Device> b)
+bool DeviceManager::compare_devices(
+	shared_ptr<devices::Device> a, shared_ptr<devices::Device> b)
 {
 	assert(a);
 	assert(b);

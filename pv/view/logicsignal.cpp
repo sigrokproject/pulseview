@@ -33,6 +33,7 @@
 
 #include <pv/session.hpp>
 #include <pv/devicemanager.hpp>
+#include <pv/devices/device.hpp>
 #include <pv/data/logic.hpp>
 #include <pv/data/logicsegment.hpp>
 #include <pv/view/view.hpp>
@@ -49,7 +50,6 @@ using std::vector;
 
 using sigrok::Channel;
 using sigrok::ConfigKey;
-using sigrok::Device;
 using sigrok::Error;
 using sigrok::Trigger;
 using sigrok::TriggerStage;
@@ -99,7 +99,7 @@ QCache<QString, const QPixmap> LogicSignal::pixmap_cache_;
 
 LogicSignal::LogicSignal(
 	pv::Session &session,
-	shared_ptr<Device> device,
+	shared_ptr<devices::Device> device,
 	shared_ptr<Channel> channel,
 	shared_ptr<data::Logic> data) :
 	Signal(session, channel),
@@ -321,13 +321,14 @@ void LogicSignal::init_trigger_actions(QWidget *parent)
 
 const vector<int32_t> LogicSignal::get_trigger_types() const
 {
-	const auto keys = device_->config_keys(ConfigKey::DEVICE_OPTIONS);
+	const auto sr_dev = device_->device();
+	const auto keys = sr_dev->config_keys(ConfigKey::DEVICE_OPTIONS);
 	const auto iter = keys.find(ConfigKey::TRIGGER_MATCH);
 	if (iter != keys.end() &&
 		(*iter).second.find(sigrok::LIST) != (*iter).second.end()) {
 		try {
 			const Glib::VariantContainerBase gvar =
-				device_->config_list(ConfigKey::TRIGGER_MATCH);
+				sr_dev->config_list(ConfigKey::TRIGGER_MATCH);
 			return Glib::VariantBase::cast_dynamic<
 				Glib::Variant<vector<int32_t>>>(gvar).get();
 		} catch (Error e) {

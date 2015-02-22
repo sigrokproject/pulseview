@@ -26,6 +26,7 @@
 #include <libsigrokcxx/libsigrokcxx.hpp>
 
 #include <pv/devicemanager.hpp>
+#include <pv/devices/device.hpp>
 
 #include "devicetoolbutton.hpp"
 
@@ -35,7 +36,7 @@ using std::string;
 using std::weak_ptr;
 using std::vector;
 
-using sigrok::Device;
+using pv::devices::Device;
 
 namespace pv {
 namespace widgets {

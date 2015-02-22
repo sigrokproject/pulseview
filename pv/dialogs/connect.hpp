@@ -34,11 +34,16 @@
 
 namespace sigrok {
 class Driver;
+}
+
+namespace pv {
+namespace devices {
 class HardwareDevice;
+}
 }
 
 Q_DECLARE_METATYPE(std::shared_ptr<sigrok::Driver>);
-Q_DECLARE_METATYPE(std::shared_ptr<sigrok::HardwareDevice>);
+Q_DECLARE_METATYPE(std::shared_ptr<pv::devices::HardwareDevice>);
 
 namespace pv {
 
@@ -53,7 +58,7 @@ class Connect : public QDialog
 public:
 	Connect(QWidget *parent, pv::DeviceManager &device_manager);
 
-	std::shared_ptr<sigrok::HardwareDevice> get_selected_device() const;
+	std::shared_ptr<devices::HardwareDevice> get_selected_device() const;
 
 private:
 	void populate_drivers();

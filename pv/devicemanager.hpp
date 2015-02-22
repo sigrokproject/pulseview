@@ -34,11 +34,14 @@ namespace sigrok {
 class ConfigKey;
 class Context;
 class Driver;
-class Device;
-class HardwareDevice;
 }
 
 namespace pv {
+
+namespace devices {
+class Device;
+class HardwareDevice;
+}
 
 class Session;
 
@@ -53,37 +56,38 @@ public:
 
 	std::shared_ptr<sigrok::Context> context();
 
-	const std::list< std::shared_ptr<sigrok::HardwareDevice> >&
+	const std::list< std::shared_ptr<devices::HardwareDevice> >&
 		devices() const;
 
-	std::list< std::shared_ptr<sigrok::HardwareDevice> > driver_scan(
+	std::list< std::shared_ptr<devices::HardwareDevice> > driver_scan(
 		std::shared_ptr<sigrok::Driver> driver,
 		std::map<const sigrok::ConfigKey *, Glib::VariantBase> drvopts);
 
 	const std::map<std::string, std::string> get_device_info(
-		const std::shared_ptr<sigrok::Device> device);
+		const std::shared_ptr<devices::Device> device);
 
-	const std::shared_ptr<sigrok::HardwareDevice> find_device_from_info(
+	const std::shared_ptr<devices::HardwareDevice> find_device_from_info(
 		const std::map<std::string, std::string> search_info);
 
-	void build_display_name(std::shared_ptr<sigrok::Device> device);
+	void build_display_name(std::shared_ptr<devices::Device> device);
 
-	const std::string get_display_name(std::shared_ptr<sigrok::Device> dev);
+	const std::string get_display_name(
+		std::shared_ptr<devices::Device> dev);
 
-	const std::string get_full_name(std::shared_ptr<sigrok::Device> dev);
+	const std::string get_full_name(std::shared_ptr<devices::Device> dev);
 
-	void update_display_name(std::shared_ptr<sigrok::Device> dev);
+	void update_display_name(std::shared_ptr<devices::Device> dev);
 
 private:
-	bool compare_devices(std::shared_ptr<sigrok::Device> a,
-		std::shared_ptr<sigrok::Device> b);
+	bool compare_devices(std::shared_ptr<devices::Device> a,
+		std::shared_ptr<devices::Device> b);
 
 protected:
 	std::shared_ptr<sigrok::Context> context_;
-	std::list< std::shared_ptr<sigrok::HardwareDevice> > devices_;
+	std::list< std::shared_ptr<devices::HardwareDevice> > devices_;
 
-	std::map< std::shared_ptr<sigrok::Device>, std::string > display_names_;
-	std::map< std::shared_ptr<sigrok::Device>, std::string > full_names_;
+	std::map< std::shared_ptr<devices::Device>, std::string > display_names_;
+	std::map< std::shared_ptr<devices::Device>, std::string > full_names_;
 };
 
 } // namespace pv

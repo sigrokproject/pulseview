@@ -32,6 +32,7 @@
 #include "mainbar.hpp"
 
 #include <pv/devicemanager.hpp>
+#include <pv/devices/hardwaredevice.hpp>
 #include <pv/mainwindow.hpp>
 #include <pv/popups/deviceoptions.hpp>
 #include <pv/popups/channels.hpp>
@@ -52,7 +53,6 @@ using std::vector;
 
 using sigrok::Capability;
 using sigrok::ConfigKey;
-using sigrok::Device;
 using sigrok::Error;
 
 namespace pv {
@@ -187,8 +187,8 @@ MainBar::MainBar(Session &session, MainWindow &main_window) :
 void MainBar::update_device_list()
 {
 	DeviceManager &mgr = session_.device_manager();
-	shared_ptr<Device> selected_device = session_.device();
-	list< shared_ptr<Device> > devs;
+	shared_ptr<devices::Device> selected_device = session_.device();
+	list< shared_ptr<devices::Device> > devs;
 
 	copy(mgr.devices().begin(), mgr.devices().end(), back_inserter(devs));
 
@@ -220,19 +220,21 @@ void MainBar::update_sample_rate_selector()
 	if (updating_sample_rate_)
 		return;
 
-	const shared_ptr<Device> device = device_selector_.selected_device();
+	const shared_ptr<devices::Device> device =
+		device_selector_.selected_device();
 	if (!device)
 		return;
 
 	assert(!updating_sample_rate_);
 	updating_sample_rate_ = true;
 
-	const auto keys = device->config_keys(ConfigKey::DEVICE_OPTIONS);
+	const shared_ptr<sigrok::Device> sr_dev = device->device();
+	const auto keys = sr_dev->config_keys(ConfigKey::DEVICE_OPTIONS);
 	const auto iter = keys.find(ConfigKey::SAMPLERATE);
 	if (iter != keys.end() &&
 		(*iter).second.find(sigrok::LIST) != (*iter).second.end()) {
 		try {
-			gvar_dict = device->config_list(ConfigKey::SAMPLERATE);
+			gvar_dict = sr_dev->config_list(ConfigKey::SAMPLERATE);
 		} catch(const sigrok::Error &e) {
 			// Failed to enunmerate samplerate
 			(void)e;
@@ -291,12 +293,13 @@ void MainBar::update_sample_rate_selector_value()
 	if (updating_sample_rate_)
 		return;
 
-	const shared_ptr<Device> device = device_selector_.selected_device();
+	const shared_ptr<devices::Device> device =
+		device_selector_.selected_device();
 	if (!device)
 		return;
 
 	try {
-		auto gvar = device->config_get(ConfigKey::SAMPLERATE);
+		auto gvar = device->device()->config_get(ConfigKey::SAMPLERATE);
 		uint64_t samplerate =
 			Glib::VariantBase::cast_dynamic<Glib::Variant<guint64>>(gvar).get();
 		assert(!updating_sample_rate_);
@@ -314,9 +317,12 @@ void MainBar::update_sample_count_selector()
 	if (updating_sample_count_)
 		return;
 
-	const shared_ptr<Device> device = device_selector_.selected_device();
+	const shared_ptr<devices::Device> device =
+		device_selector_.selected_device();
 	if (!device)
 		return;
+
+	const shared_ptr<sigrok::Device> sr_dev = device->device();
 
 	assert(!updating_sample_count_);
 	updating_sample_count_ = true;
@@ -335,13 +341,13 @@ void MainBar::update_sample_count_selector()
 	if (sample_count == 0)
 		sample_count = DefaultSampleCount;
 
-	const auto keys = device->config_keys(ConfigKey::DEVICE_OPTIONS);
+	const auto keys = sr_dev->config_keys(ConfigKey::DEVICE_OPTIONS);
 	const auto iter = keys.find(ConfigKey::LIMIT_SAMPLES);
 	if (iter != keys.end() &&
 		(*iter).second.find(sigrok::LIST) != (*iter).second.end()) {
 		try {
 			auto gvar =
-				device->config_list(ConfigKey::LIMIT_SAMPLES);
+				sr_dev->config_list(ConfigKey::LIMIT_SAMPLES);
 			if (gvar.gobj())
 				g_variant_get(gvar.gobj(), "(tt)",
 					&min_sample_count, &max_sample_count);
@@ -358,7 +364,7 @@ void MainBar::update_sample_count_selector()
 		min_sample_count, max_sample_count);
 
 	try {
-		auto gvar = device->config_get(ConfigKey::LIMIT_SAMPLES);
+		auto gvar = sr_dev->config_get(ConfigKey::LIMIT_SAMPLES);
 		sample_count = g_variant_get_uint64(gvar.gobj());
 		if (sample_count == 0)
 			sample_count = DefaultSampleCount;
@@ -375,12 +381,17 @@ void MainBar::update_device_config_widgets()
 {
 	using namespace pv::popups;
 
-	const shared_ptr<Device> device = device_selector_.selected_device();
+	const shared_ptr<devices::Device> device =
+		device_selector_.selected_device();
 	if (!device)
 		return;
 
+	const shared_ptr<sigrok::Device> sr_dev = device->device();
+	if (!sr_dev)
+		return;
+
 	// Update the configure popup
-	DeviceOptions *const opts = new DeviceOptions(device, this);
+	DeviceOptions *const opts = new DeviceOptions(sr_dev, this);
 	configure_button_action_->setVisible(
 		!opts->binding().properties().empty());
 	configure_button_.set_popup(opts);
@@ -393,7 +404,7 @@ void MainBar::update_device_config_widgets()
 	sample_count_supported_ = false;
 
 	try {
-		for (auto entry : device->config_keys(ConfigKey::DEVICE_OPTIONS))
+		for (auto entry : sr_dev->config_keys(ConfigKey::DEVICE_OPTIONS))
 		{
 			auto key = entry.first;
 			auto capabilities = entry.second;
@@ -405,7 +416,7 @@ void MainBar::update_device_config_widgets()
 			case SR_CONF_LIMIT_FRAMES:
 				if (capabilities.count(Capability::SET))
 				{
-					device->config_set(ConfigKey::LIMIT_FRAMES,
+					sr_dev->config_set(ConfigKey::LIMIT_FRAMES,
 						Glib::Variant<guint64>::create(1));
 					on_config_changed();
 				}
@@ -433,9 +444,12 @@ void MainBar::commit_sample_count()
 	if (updating_sample_count_)
 		return;
 
-	const shared_ptr<Device> device = device_selector_.selected_device();
+	const shared_ptr<devices::Device> device =
+		device_selector_.selected_device();
 	if (!device)
 		return;
+
+	const shared_ptr<sigrok::Device> sr_dev = device->device();
 
 	sample_count = sample_count_.value();
 
@@ -445,7 +459,7 @@ void MainBar::commit_sample_count()
 	if (sample_count_supported_)
 	{
 		try {
-			device->config_set(ConfigKey::LIMIT_SAMPLES,
+			sr_dev->config_set(ConfigKey::LIMIT_SAMPLES,
 				Glib::Variant<guint64>::create(sample_count));
 			on_config_changed();
 		} catch (Error error) {
@@ -463,9 +477,12 @@ void MainBar::commit_sample_rate()
 	if (updating_sample_rate_)
 		return;
 
-	const shared_ptr<Device> device = device_selector_.selected_device();
+	const shared_ptr<devices::Device> device =
+		device_selector_.selected_device();
 	if (!device)
 		return;
+
+	const shared_ptr<sigrok::Device> sr_dev = device->device();
 
 	sample_rate = sample_rate_.value();
 	if (sample_rate == 0)
@@ -475,7 +492,7 @@ void MainBar::commit_sample_rate()
 	assert(!updating_sample_rate_);
 	updating_sample_rate_ = true;
 	try {
-		device->config_set(ConfigKey::SAMPLERATE,
+		sr_dev->config_set(ConfigKey::SAMPLERATE,
 			Glib::Variant<guint64>::create(sample_rate));
 		on_config_changed();
 	} catch (Error error) {
@@ -487,7 +504,7 @@ void MainBar::commit_sample_rate()
 
 void MainBar::on_device_selected()
 {
-	shared_ptr<Device> device = device_selector_.selected_device();
+	shared_ptr<devices::Device> device = device_selector_.selected_device();
 	if (!device)
 		return;
 

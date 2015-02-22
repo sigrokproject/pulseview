@@ -33,7 +33,6 @@ struct srd_decoder;
 class QVBoxLayout;
 
 namespace sigrok {
-class Device;
 class OutputFormat;
 }
 
@@ -95,7 +94,7 @@ public:
 
 	void run_stop();
 
-	void select_device(std::shared_ptr<sigrok::Device> device);
+	void select_device(std::shared_ptr<devices::Device> device);
 
 public Q_SLOTS:
 	void export_file(std::shared_ptr<sigrok::OutputFormat> format);

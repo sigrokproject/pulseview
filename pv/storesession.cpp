@@ -26,6 +26,7 @@
 #include <pv/session.hpp>
 #include <pv/data/logic.hpp>
 #include <pv/data/logicsegment.hpp>
+#include <pv/devices/device.hpp>
 #include <pv/view/signal.hpp>
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
@@ -132,7 +133,7 @@ bool StoreSession::start()
 	// Begin storing
 	try {
 		const auto context = session_.device_manager().context();
-		auto device = session_.device();
+		auto device = session_.device()->device();
 
 		map<string, Glib::VariantBase> options = options_;
 

@@ -48,6 +48,7 @@
 #include "viewport.hpp"
 
 #include "pv/session.hpp"
+#include "pv/devices/device.hpp"
 #include "pv/data/logic.hpp"
 #include "pv/data/logicsegment.hpp"
 #include "pv/util.hpp"
@@ -675,7 +676,7 @@ void View::signals_changed()
 	// Populate the traces
 	clear_child_items();
 
-	shared_ptr<sigrok::Device> device = session_.device();
+	shared_ptr<sigrok::Device> device = session_.device()->device();
 	assert(device);
 
 	// Collect a set of signals

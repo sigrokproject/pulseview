@@ -28,6 +28,7 @@
 #include "channels.hpp"
 
 #include <pv/binding/device.hpp>
+#include <pv/devices/device.hpp>
 #include <pv/session.hpp>
 #include <pv/view/signal.hpp>
 
@@ -65,7 +66,7 @@ Channels::Channels(Session &session, QWidget *parent) :
 	// Create the layout
 	setLayout(&layout_);
 
-	shared_ptr<sigrok::Device> device = session_.device();
+	const shared_ptr<sigrok::Device> device = session_.device()->device();
 	assert(device);
 
 	// Collect a set of signals

@@ -31,11 +31,14 @@ class QIcon;
 class QToolBar;
 
 namespace sigrok {
-class Device;
 class TriggerMatchType;
 }
 
 namespace pv {
+
+namespace devices {
+class Device;
+}
 
 namespace data {
 class Logic;
@@ -65,7 +68,7 @@ private:
 
 public:
 	LogicSignal(pv::Session &session,
-		std::shared_ptr<sigrok::Device> device,
+		std::shared_ptr<devices::Device> device,
 		std::shared_ptr<sigrok::Channel> channel,
 		std::shared_ptr<pv::data::Logic> data);
 
@@ -127,7 +130,7 @@ private Q_SLOTS:
 	void on_trigger();
 
 private:
-	std::shared_ptr<sigrok::Device> device_;
+	std::shared_ptr<pv::devices::Device> device_;
 	std::shared_ptr<pv::data::Logic> data_;
 
 	const sigrok::TriggerMatchType *trigger_match_;

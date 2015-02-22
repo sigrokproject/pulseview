@@ -32,13 +32,13 @@
 
 struct srd_decoder;
 
-namespace sigrok {
-class Device;
-}
-
 namespace pv {
 
 class DeviceManager;
+
+namespace devices {
+class Device;
+}
 
 namespace widgets {
 
@@ -59,7 +59,7 @@ public:
 	/**
 	 * Returns a reference to the selected device.
 	 */
-	std::shared_ptr<sigrok::Device> selected_device();
+	std::shared_ptr<devices::Device> selected_device();
 
 	/**
 	 * Sets the current list of devices.
@@ -67,8 +67,8 @@ public:
 	 * @param selected_device the currently active device.
 	 */
 	void set_device_list(
-		const std::list< std::shared_ptr<sigrok::Device> > &devices,
-		std::shared_ptr<sigrok::Device> selected);
+		const std::list< std::shared_ptr<devices::Device> > &devices,
+		std::shared_ptr<devices::Device> selected);
 
 private:
 	/**
@@ -93,8 +93,8 @@ private:
 	QMenu menu_;
 	QSignalMapper mapper_;
 
-	std::shared_ptr<sigrok::Device> selected_device_;
-	std::vector< std::weak_ptr<sigrok::Device> > devices_;
+	std::shared_ptr<devices::Device> selected_device_;
+	std::vector< std::weak_ptr<devices::Device> > devices_;
 
 	QString device_tooltip_;
 };

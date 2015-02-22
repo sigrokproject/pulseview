@@ -24,7 +24,8 @@
 
 #include "connect.hpp"
 
-#include "pv/devicemanager.hpp"
+#include <pv/devicemanager.hpp>
+#include <pv/devices/hardwaredevice.hpp>
 
 using std::list;
 using std::map;
@@ -38,7 +39,8 @@ using Glib::VariantBase;
 using sigrok::ConfigKey;
 using sigrok::Driver;
 using sigrok::Error;
-using sigrok::HardwareDevice;
+
+using pv::devices::HardwareDevice;
 
 namespace pv {
 namespace dialogs {
@@ -167,7 +169,7 @@ void Connect::scan_pressed()
 			serial.toUtf8().constData());
 	}
 
-	list< shared_ptr<HardwareDevice> > devices =
+	const list< shared_ptr<HardwareDevice> > devices =
 		device_manager_.driver_scan(driver, drvopts);
 
 	for (shared_ptr<HardwareDevice> device : devices)
@@ -176,7 +178,8 @@ void Connect::scan_pressed()
 
 		QString text = QString::fromStdString(
 			device_manager_.get_display_name(device));
-		text += QString(" with %1 channels").arg(device->channels().size());
+		text += QString(" with %1 channels").arg(
+			device->device()->channels().size());
 
 		QListWidgetItem *const item = new QListWidgetItem(text,
 			&device_list_);

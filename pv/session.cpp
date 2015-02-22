@@ -33,6 +33,9 @@
 #include "data/logicsegment.hpp"
 #include "data/decode/decoder.hpp"
 
+#include "devices/hardwaredevice.hpp"
+#include "devices/sessionfile.hpp"
+
 #include "view/analogsignal.hpp"
 #include "view/decodetrace.hpp"
 #include "view/logicsignal.hpp"
@@ -68,9 +71,7 @@ using sigrok::Channel;
 using sigrok::ChannelType;
 using sigrok::ConfigKey;
 using sigrok::DatafeedCallbackFunction;
-using sigrok::Device;
 using sigrok::Error;
-using sigrok::HardwareDevice;
 using sigrok::Header;
 using sigrok::Logic;
 using sigrok::Meta;
@@ -85,7 +86,6 @@ using Glib::Variant;
 namespace pv {
 Session::Session(DeviceManager &device_manager) :
 	device_manager_(device_manager),
-	session_(device_manager.context()->create_session()),
 	capture_state_(Stopped),
 	cur_samplerate_(0)
 {
@@ -108,91 +108,53 @@ const DeviceManager& Session::device_manager() const
 	return device_manager_;
 }
 
-const shared_ptr<sigrok::Session>& Session::session() const
+shared_ptr<sigrok::Session> Session::session() const
 {
-	return session_;
+	if (!device_)
+		return shared_ptr<sigrok::Session>();
+	return device_->session();
 }
 
-shared_ptr<Device> Session::device() const
+shared_ptr<devices::Device> Session::device() const
 {
 	return device_;
 }
 
-void Session::set_device(shared_ptr<Device> device)
+void Session::set_device(shared_ptr<devices::Device> device)
 {
+	assert(device);
+
 	// Ensure we are not capturing before setting the device
 	stop_capture();
 
-	if (device_) {
-		session_->remove_datafeed_callbacks();
-
-		// Did we have a hardware device selected previously?
-		if (!dynamic_pointer_cast<HardwareDevice>(device_)) {
-			device_->close();
-			session_->remove_devices();
-		}
-	}
+	device_ = std::move(device);
+	device_->create();
+	device_->session()->add_datafeed_callback([=]
+		(shared_ptr<sigrok::Device> device, shared_ptr<Packet> packet) {
+			data_feed_in(device, packet);
+		});
+	device_manager_.update_display_name(device_);
+	update_signals(device_);
 
 	decode_traces_.clear();
-
-	if (device) {
-		// Are we setting a session device?
-		const auto session_device =
-			dynamic_pointer_cast<SessionDevice>(device);
-
-		if (session_device)
-			session_ = session_device->parent();
-		else {
-			session_ = device_manager_.context()->create_session();
-
-			try {
-				device->open();
-			} catch(const sigrok::Error &e) {
-				throw QString(e.what());
-			}
-
-			session_->add_device(device);
-		}
-
-		device_ = device;
-		session_->add_datafeed_callback([=]
-			(shared_ptr<Device> device, shared_ptr<Packet> packet) {
-				data_feed_in(device, packet);
-			});
-		device_manager_.update_display_name(device);
-		update_signals(device);
-	} else
-		device_ = nullptr;
 
 	device_selected();
 }
 
-void Session::set_session_file(const string &name)
-{
-	const shared_ptr<sigrok::Session> session =
-		device_manager_.context()->load_session(name);
-	set_device(session->devices()[0]);
-}
-
 void Session::set_default_device()
 {
-	shared_ptr<HardwareDevice> default_device;
-	const list< shared_ptr<HardwareDevice> > &devices =
+	const list< shared_ptr<devices::HardwareDevice> > &devices =
 		device_manager_.devices();
 
-	if (!devices.empty()) {
-		// Fall back to the first device in the list.
-		default_device = devices.front();
+	if (devices.empty())
+		return;
 
-		// Try and find the demo device and select that by default
-		for (shared_ptr<HardwareDevice> dev : devices)
-			if (dev->driver()->name().compare("demo") == 0) {
-				default_device = dev;
-				break;
-			}
-
-		set_device(default_device);
-	}
+	// Try and find the demo device and select that by default
+	const auto iter = std::find_if(devices.begin(), devices.end(),
+		[] (const shared_ptr<devices::HardwareDevice> &d) {
+			return d->hardware_device()->driver()->name() ==
+			"demo";	});
+	set_device((iter == devices.end()) ? devices.front() : *iter);
 }
 
 Session::capture_state Session::get_capture_state() const
@@ -205,14 +167,11 @@ void Session::start_capture(function<void (const QString)> error_handler)
 {
 	stop_capture();
 
-	// Check that a device instance has been selected.
-	if (!device_) {
-		qDebug() << "No device selected";
-		return;
-	}
-
 	// Check that at least one channel is enabled
-	auto channels = device_->channels();
+	assert(device_);
+	const std::shared_ptr<sigrok::Device> device = device_->device();
+	assert(device);
+	auto channels = device->channels();
 	bool enabled = std::any_of(channels.begin(), channels.end(),
 		[](shared_ptr<Channel> channel) { return channel->enabled(); });
 
@@ -230,7 +189,7 @@ void Session::start_capture(function<void (const QString)> error_handler)
 void Session::stop_capture()
 {
 	if (get_capture_state() != Stopped)
-		session_->stop();
+		device_->stop();
 
 	// Check that sampling stopped
 	if (sampling_thread_.joinable())
@@ -343,13 +302,13 @@ void Session::set_capture_state(capture_state state)
 		capture_state_changed(state);
 }
 
-void Session::update_signals(shared_ptr<Device> device)
+void Session::update_signals(shared_ptr<devices::Device> device)
 {
 	assert(device);
 	assert(capture_state_ == Stopped);
 
 	// Detect what data types we will receive
-	auto channels = device->channels();
+	auto channels = device->device()->channels();
 	unsigned int logic_channel_count = std::count_if(
 		channels.begin(), channels.end(),
 		[] (shared_ptr<Channel> channel) {
@@ -376,7 +335,7 @@ void Session::update_signals(shared_ptr<Device> device)
 		unordered_set< shared_ptr<view::Signal> > prev_sigs(signals_);
 		signals_.clear();
 
-		for (auto channel : device->channels()) {
+		for (auto channel : device->device()->channels()) {
 			shared_ptr<view::Signal> signal;
 
 			// Find the channel in the old signals
@@ -439,9 +398,10 @@ shared_ptr<view::Signal> Session::signal_from_channel(
 	return shared_ptr<view::Signal>();
 }
 
-void Session::read_sample_rate(shared_ptr<Device> device)
+void Session::read_sample_rate(shared_ptr<sigrok::Device> device)
 {
-	const auto keys = device_->config_keys(ConfigKey::DEVICE_OPTIONS);
+	assert(device);
+	const auto keys = device->config_keys(ConfigKey::DEVICE_OPTIONS);
 	const auto iter = keys.find(ConfigKey::SAMPLERATE);
 	cur_samplerate_ = (iter != keys.end() &&
 		(*iter).second.find(sigrok::GET) != (*iter).second.end()) ?
@@ -449,25 +409,27 @@ void Session::read_sample_rate(shared_ptr<Device> device)
 			device->config_get(ConfigKey::SAMPLERATE)).get() : 0;
 }
 
-void Session::sample_thread_proc(shared_ptr<Device> device,
+void Session::sample_thread_proc(shared_ptr<devices::Device> device,
 	function<void (const QString)> error_handler)
 {
 	assert(device);
 	assert(error_handler);
 
-	read_sample_rate(device);
+	const std::shared_ptr<sigrok::Device> sr_dev = device->device();
+	assert(sr_dev);
+	read_sample_rate(sr_dev);
 
 	try {
-		session_->start();
+		device_->session()->start();
 	} catch(Error e) {
 		error_handler(e.what());
 		return;
 	}
 
-	set_capture_state(session_->trigger() ?
+	set_capture_state(device_->session()->trigger() ?
 		AwaitingTrigger : Running);
 
-	session_->run();
+	device_->run();
 	set_capture_state(Stopped);
 
 	// Confirm that SR_DF_END was received
@@ -478,16 +440,13 @@ void Session::sample_thread_proc(shared_ptr<Device> device,
 	}
 }
 
-void Session::feed_in_header(shared_ptr<Device> device)
+void Session::feed_in_header()
 {
-	read_sample_rate(device);
+	read_sample_rate(device_->device());
 }
 
-void Session::feed_in_meta(shared_ptr<Device> device,
-	shared_ptr<Meta> meta)
+void Session::feed_in_meta(shared_ptr<Meta> meta)
 {
-	(void)device;
-
 	for (auto entry : meta->config()) {
 		switch (entry.first->id()) {
 		case SR_CONF_SAMPLERATE:
@@ -524,14 +483,18 @@ void Session::feed_in_logic(shared_ptr<Logic> logic)
 		set_capture_state(Running);
 
 		// Get sample limit.
-		const auto keys = device_->config_keys(
+		assert(device_);
+		const std::shared_ptr<sigrok::Device> device =
+			device_->device();
+		assert(device);
+		const auto keys = device->config_keys(
 			ConfigKey::DEVICE_OPTIONS);
 		const auto iter = keys.find(ConfigKey::LIMIT_SAMPLES);
 		const uint64_t sample_limit = (iter != keys.end() &&
 			(*iter).second.find(sigrok::GET) !=
 			(*iter).second.end()) ?
 			VariantBase::cast_dynamic<Variant<guint64>>(
-			device_->config_get(ConfigKey::LIMIT_SAMPLES)).get() : 0;
+			device->config_get(ConfigKey::LIMIT_SAMPLES)).get() : 0;
 
 		// Create a new data segment
 		cur_logic_segment_ = shared_ptr<data::LogicSegment>(
@@ -583,8 +546,12 @@ void Session::feed_in_analog(shared_ptr<Analog> analog)
 			// Get sample limit.
 			uint64_t sample_limit;
 			try {
+				assert(device_);
+				const std::shared_ptr<sigrok::Device> device =
+					device_->device();
+				assert(device);
 				sample_limit = VariantBase::cast_dynamic<Variant<guint64>>(
-					device_->config_get(ConfigKey::LIMIT_SAMPLES)).get();
+					device->config_get(ConfigKey::LIMIT_SAMPLES)).get();
 			} catch (Error) {
 				sample_limit = 0;
 			}
@@ -623,18 +590,22 @@ void Session::feed_in_analog(shared_ptr<Analog> analog)
 	data_received();
 }
 
-void Session::data_feed_in(shared_ptr<Device> device, shared_ptr<Packet> packet)
+void Session::data_feed_in(shared_ptr<sigrok::Device> device,
+	shared_ptr<Packet> packet)
 {
+	(void)device;
+
 	assert(device);
+	assert(device == device_->device());
 	assert(packet);
 
 	switch (packet->type()->id()) {
 	case SR_DF_HEADER:
-		feed_in_header(device);
+		feed_in_header();
 		break;
 
 	case SR_DF_META:
-		feed_in_meta(device, dynamic_pointer_cast<Meta>(packet->payload()));
+		feed_in_meta(dynamic_pointer_cast<Meta>(packet->payload()));
 		break;
 
 	case SR_DF_FRAME_BEGIN:

@@ -45,6 +45,8 @@
 #include "mainwindow.hpp"
 
 #include "devicemanager.hpp"
+#include "devices/hardwaredevice.hpp"
+#include "devices/sessionfile.hpp"
 #include "dialogs/about.hpp"
 #include "dialogs/connect.hpp"
 #include "dialogs/inputoutputoptions.hpp"
@@ -72,9 +74,7 @@ using std::vector;
 
 using boost::algorithm::join;
 
-using sigrok::Device;
 using sigrok::Error;
-using sigrok::HardwareDevice;
 using sigrok::OutputFormat;
 
 namespace pv {
@@ -188,7 +188,7 @@ void MainWindow::run_stop()
 	}
 }
 
-void MainWindow::select_device(shared_ptr<Device> device)
+void MainWindow::select_device(shared_ptr<devices::Device> device)
 {
 	try {
 		session_.set_device(device);
@@ -455,8 +455,6 @@ void MainWindow::restore_ui_settings()
 {
 	QSettings settings;
 
-	shared_ptr<HardwareDevice> device;
-
 	map<string, string> dev_info;
 	list<string> key_list;
 	string value;
@@ -489,8 +487,8 @@ void MainWindow::restore_ui_settings()
 			dev_info.insert(std::make_pair(key, value));
 	}
 
-	device = device_manager_.find_device_from_info(dev_info);
-
+	const shared_ptr<devices::HardwareDevice> device =
+		device_manager_.find_device_from_info(dev_info);
 	if (device) {
 		select_device(device);
 		update_device_list();
@@ -534,7 +532,10 @@ void MainWindow::load_file(QString file_name)
 	const QString infoMessage;
 
 	try {
-		session_.set_session_file(file_name.toStdString());
+		session_.set_device(
+			shared_ptr<devices::Device>(new devices::SessionFile(
+				device_manager_.context(),
+				file_name.toStdString())));
 	} catch(Error e) {
 		show_session_error(tr("Failed to load ") + file_name, e.what());
 		session_.set_default_device();
@@ -658,7 +659,7 @@ void MainWindow::capture_state_changed(int state)
 void MainWindow::device_selected()
 {
 	// Set the title to include the device/file name
-	const shared_ptr<sigrok::Device> device = session_.device();
+	const shared_ptr<devices::Device> device = session_.device();
 	if (!device)
 		return;
 

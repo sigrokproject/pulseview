@@ -65,6 +65,10 @@ class LogicSegment;
 class SignalData;
 }
 
+namespace devices {
+class Device;
+}
+
 namespace view {
 class DecodeTrace;
 class LogicSignal;
@@ -91,20 +95,14 @@ public:
 
 	const DeviceManager& device_manager() const;
 
-	const std::shared_ptr<sigrok::Session>& session() const;
+	std::shared_ptr<sigrok::Session> session() const;
 
-	std::shared_ptr<sigrok::Device> device() const;
+	std::shared_ptr<devices::Device> device() const;
 
 	/**
 	 * Sets device instance that will be used in the next capture session.
 	 */
-	void set_device(std::shared_ptr<sigrok::Device> device);
-
-	/**
-	 * Sets a sigrok session file as the capture device.
-	 * @param name the path to the file.
-	 */
-	void set_session_file(const std::string &name);
+	void set_device(std::shared_ptr<devices::Device> device);
 
 	void set_default_device();
 
@@ -133,21 +131,20 @@ public:
 private:
 	void set_capture_state(capture_state state);
 
-	void update_signals(std::shared_ptr<sigrok::Device> device);
+	void update_signals(std::shared_ptr<devices::Device> device);
 
 	std::shared_ptr<view::Signal> signal_from_channel(
 		std::shared_ptr<sigrok::Channel> channel) const;
 
-	void read_sample_rate(std::shared_ptr<sigrok::Device>);
+	void read_sample_rate(std::shared_ptr<sigrok::Device> device);
 
 private:
-	void sample_thread_proc(std::shared_ptr<sigrok::Device> device,
+	void sample_thread_proc(std::shared_ptr<devices::Device> device,
 		std::function<void (const QString)> error_handler);
 
-	void feed_in_header(std::shared_ptr<sigrok::Device> device);
+	void feed_in_header();
 
-	void feed_in_meta(std::shared_ptr<sigrok::Device> device,
-		std::shared_ptr<sigrok::Meta> meta);
+	void feed_in_meta(std::shared_ptr<sigrok::Meta> meta);
 
 	void feed_in_frame_begin();
 
@@ -160,12 +157,7 @@ private:
 
 private:
 	DeviceManager &device_manager_;
-	std::shared_ptr<sigrok::Session> session_;
-
-	/**
-	 * The device instance that will be used in the next capture session.
-	 */
-	std::shared_ptr<sigrok::Device> device_;
+	std::shared_ptr<devices::Device> device_;
 
 	std::vector< std::shared_ptr<view::DecodeTrace> > decode_traces_;
 
