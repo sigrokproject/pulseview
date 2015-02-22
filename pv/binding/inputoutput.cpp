@@ -26,6 +26,7 @@
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
 
+#include <pv/prop/bool.hpp>
 #include <pv/prop/double.hpp>
 #include <pv/prop/enum.hpp>
 #include <pv/prop/int.hpp>
@@ -47,6 +48,7 @@ using Glib::VariantType;
 
 using sigrok::Option;
 
+using pv::prop::Bool;
 using pv::prop::Double;
 using pv::prop::Enum;
 using pv::prop::Int;
@@ -79,10 +81,14 @@ InputOutput::InputOutput(
 
 		if (!opt->values().empty())
 			prop = bind_enum(name, values, get, set);
+		else if (def_val.is_of_type(VariantType("b")))
+			prop = shared_ptr<Property>(new Bool(name, get, set));
 		else if (def_val.is_of_type(VariantType("d")))
 			prop = shared_ptr<Property>(new Double(name, 2, "",
 				nullptr, nullptr, get, set));
-		else if (def_val.is_of_type(VariantType("u")))
+		else if (def_val.is_of_type(VariantType("i")) ||
+			def_val.is_of_type(VariantType("t")) ||
+			def_val.is_of_type(VariantType("u")))
 			prop = shared_ptr<Property>(
 				new Int(name, "", none, get, set));
 		else if (def_val.is_of_type(VariantType("s")))
