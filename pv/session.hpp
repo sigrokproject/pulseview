@@ -29,6 +29,11 @@
 #include <thread>
 #include <vector>
 
+#ifdef _WIN32
+// Windows: Avoid namespace pollution by thread.hpp (which includes windows.h).
+#define NOGDI
+#define NORESOURCE
+#endif
 #include <boost/thread.hpp>
 
 #include <QObject>
