@@ -132,7 +132,10 @@ endif()
 if(Qt5Core_FOUND)
 	qt5_wrap_cpp(pulseview_TEST_HEADERS_MOC ${pulseview_TEST_HEADERS})
 else()
-	qt4_wrap_cpp(pulseview_TEST_HEADERS_MOC ${pulseview_TEST_HEADERS})
+	# Workaroud for QTBUG-22829: -DBOOST_NEXT_PRIOR_HPP_INCLUDED.
+	# https://bugreports.qt.io/browse/QTBUG-22829
+	qt4_wrap_cpp(pulseview_TEST_HEADERS_MOC ${pulseview_TEST_HEADERS}
+		OPTIONS -DBOOST_NEXT_PRIOR_HPP_INCLUDED)
 	include(${QT_USE_FILE})
 endif()
 
