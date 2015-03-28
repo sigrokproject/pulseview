@@ -66,6 +66,7 @@ using std::min;
 using std::pair;
 using std::shared_ptr;
 using std::tie;
+using std::unordered_set;
 using std::vector;
 
 namespace pv {
@@ -704,7 +705,12 @@ QComboBox* DecodeTrace::create_channel_selector(
 	assert(dec);
 
 	shared_lock<shared_mutex> lock(session_.signals_mutex());
-	const vector< shared_ptr<Signal> > &sigs(session_.signals());
+	const auto &sigs(session_.signals());
+
+	vector< shared_ptr<Signal> > sig_list(sigs.begin(), sigs.end());
+	std::sort(sig_list.begin(), sig_list.end(),
+		[](const shared_ptr<Signal> &a, const shared_ptr<Signal> b) {
+			return a->name().compare(b->name()) < 0; });
 
 	assert(decoder_stack_);
 	const auto channel_iter = dec->channels().find(pdch);
@@ -716,16 +722,15 @@ QComboBox* DecodeTrace::create_channel_selector(
 	if (channel_iter == dec->channels().end())
 		selector->setCurrentIndex(0);
 
-	for(size_t i = 0; i < sigs.size(); i++) {
-		const shared_ptr<view::Signal> s(sigs[i]);
+	for (const shared_ptr<view::Signal> &s : sig_list) {
 		assert(s);
-
 		if (dynamic_pointer_cast<LogicSignal>(s) && s->enabled())
 		{
 			selector->addItem(s->name(),
 				qVariantFromValue((void*)s.get()));
 			if ((*channel_iter).second == s)
-				selector->setCurrentIndex(i + 1);
+				selector->setCurrentIndex(
+					selector->count() - 1);
 		}
 	}
 
@@ -739,7 +744,7 @@ void DecodeTrace::commit_decoder_channels(shared_ptr<data::decode::Decoder> &dec
 	map<const srd_channel*, shared_ptr<LogicSignal> > channel_map;
 
 	shared_lock<shared_mutex> lock(session_.signals_mutex());
-	const vector< shared_ptr<Signal> > &sigs(session_.signals());
+	const unordered_set< shared_ptr<Signal> > &sigs(session_.signals());
 
 	for (const ChannelSelector &s : channel_selectors_)
 	{

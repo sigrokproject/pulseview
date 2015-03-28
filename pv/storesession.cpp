@@ -45,6 +45,7 @@ using std::set;
 using std::shared_ptr;
 using std::string;
 using std::thread;
+using std::unordered_set;
 using std::vector;
 
 using Glib::VariantBase;
@@ -92,7 +93,8 @@ bool StoreSession::start()
 		session_.get_data();
 
 	shared_lock<shared_mutex> lock(session_.signals_mutex());
-	const vector< shared_ptr<view::Signal> > &sigs(session_.signals());
+	const unordered_set< shared_ptr<view::Signal> > &sigs(
+		session_.signals());
 
 	// Check we have logic data
 	if (data_set.empty() || sigs.empty()) {

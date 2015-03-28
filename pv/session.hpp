@@ -27,6 +27,7 @@
 #include <set>
 #include <string>
 #include <thread>
+#include <unordered_set>
 #include <vector>
 
 #ifdef _WIN32
@@ -117,7 +118,8 @@ public:
 
 	boost::shared_mutex& signals_mutex() const;
 
-	const std::vector< std::shared_ptr<view::Signal> >& signals() const;
+	const std::unordered_set< std::shared_ptr<view::Signal> >&
+		signals() const;
 
 #ifdef ENABLE_DECODE
 	bool add_decoder(srd_decoder *const dec);
@@ -171,7 +173,7 @@ private:
 	capture_state capture_state_;
 
 	mutable boost::shared_mutex signals_mutex_;
-	std::vector< std::shared_ptr<view::Signal> > signals_;
+	std::unordered_set< std::shared_ptr<view::Signal> > signals_;
 
 	mutable std::mutex data_mutex_;
 	std::shared_ptr<data::Logic> logic_data_;

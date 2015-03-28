@@ -60,6 +60,7 @@ using std::mutex;
 using std::set;
 using std::shared_ptr;
 using std::string;
+using std::unordered_set;
 using std::vector;
 
 using sigrok::Analog;
@@ -257,7 +258,7 @@ boost::shared_mutex& Session::signals_mutex() const
 	return signals_mutex_;
 }
 
-const vector< shared_ptr<view::Signal> >& Session::signals() const
+const unordered_set< shared_ptr<view::Signal> >& Session::signals() const
 {
 	return signals_;
 }
@@ -405,7 +406,7 @@ void Session::update_signals(shared_ptr<Device> device)
 			}
 
 			assert(signal);
-			signals_.push_back(signal);
+			signals_.insert(signal);
 		}
 
 	}

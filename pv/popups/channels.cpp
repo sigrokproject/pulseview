@@ -42,6 +42,7 @@ using std::map;
 using std::mutex;
 using std::set;
 using std::shared_ptr;
+using std::unordered_set;
 using std::vector;
 
 using sigrok::Channel;
@@ -71,7 +72,7 @@ Channels::Channels(Session &session, QWidget *parent) :
 	map<shared_ptr<Channel>, shared_ptr<Signal> > signal_map;
 
 	shared_lock<shared_mutex> lock(session_.signals_mutex());
-	const vector< shared_ptr<Signal> > &sigs(session_.signals());
+	const unordered_set< shared_ptr<Signal> > &sigs(session_.signals());
 
 	for (const shared_ptr<Signal> &sig : sigs)
 		signal_map[sig->channel()] = sig;

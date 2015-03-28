@@ -297,7 +297,7 @@ void View::set_scale_offset(double scale, double offset)
 set< shared_ptr<SignalData> > View::get_visible_data() const
 {
 	shared_lock<shared_mutex> lock(session().signals_mutex());
-	const vector< shared_ptr<Signal> > &sigs(session().signals());
+	const unordered_set< shared_ptr<Signal> > &sigs(session().signals());
 
 	// Make a set of all the visible data objects
 	set< shared_ptr<SignalData> > visible_data;
@@ -683,7 +683,7 @@ void View::signals_changed()
 		signal_map;
 
 	shared_lock<shared_mutex> lock(session_.signals_mutex());
-	const vector< shared_ptr<Signal> > &sigs(session_.signals());
+	const unordered_set< shared_ptr<Signal> > &sigs(session_.signals());
 
 	for (const shared_ptr<Signal> &sig : sigs)
 		signal_map[sig->channel()] = sig;
