@@ -22,6 +22,7 @@
 
 #include "storesession.hpp"
 
+#include <pv/devicemanager.hpp>
 #include <pv/session.hpp>
 #include <pv/data/logic.hpp>
 #include <pv/data/logicsegment.hpp>
@@ -130,7 +131,7 @@ bool StoreSession::start()
 
 	// Begin storing
 	try {
-		auto context = session_.session()->context();
+		const auto context = session_.device_manager().context();
 		auto device = session_.device();
 
 		map<string, Glib::VariantBase> options = options_;
@@ -206,7 +207,7 @@ void StoreSession::store_proc(shared_ptr<data::LogicSegment> segment)
 		size_t length = end_sample - start_sample;
 
 		try {
-			auto context = session_.session()->context();
+			const auto context = session_.device_manager().context();
 			auto logic = context->create_logic_packet(data, length, unit_size);
 			const string data = output_->receive(logic);
 			if (output_stream_.is_open())
