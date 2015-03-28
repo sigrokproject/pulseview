@@ -352,9 +352,6 @@ void Session::update_signals(shared_ptr<Device> device)
 	assert(device);
 	assert(capture_state_ == Stopped);
 
-	// Clear the decode traces
-	decode_traces_.clear();
-
 	// Detect what data types we will receive
 	auto channels = device->channels();
 	unsigned int logic_channel_count = std::count_if(
@@ -366,8 +363,10 @@ void Session::update_signals(shared_ptr<Device> device)
 	{
 		lock_guard<mutex> data_lock(data_mutex_);
 
-		logic_data_.reset();
-		if (logic_channel_count != 0) {
+		if (logic_channel_count == 0) {
+			logic_data_.reset();
+		} else if (!logic_data_ ||
+			logic_data_->num_channels() != logic_channel_count) {
 			logic_data_.reset(new data::Logic(
 				logic_channel_count));
 			assert(logic_data_);
@@ -378,37 +377,55 @@ void Session::update_signals(shared_ptr<Device> device)
 	{
 		unique_lock<shared_mutex> lock(signals_mutex_);
 
+		unordered_set< shared_ptr<view::Signal> > prev_sigs(signals_);
 		signals_.clear();
 
 		for (auto channel : device->channels()) {
 			shared_ptr<view::Signal> signal;
 
-			switch(channel->type()->id()) {
-			case SR_CHANNEL_LOGIC:
-				signal = shared_ptr<view::Signal>(
-					new view::LogicSignal(*this, device,
-						channel, logic_data_));
-				break;
+			// Find the channel in the old signals
+			const auto iter = std::find_if(
+				prev_sigs.cbegin(), prev_sigs.cend(),
+				[&](const shared_ptr<view::Signal> &s) {
+					return s->channel() == channel;
+				});
+			if (iter != prev_sigs.end()) {
+				// Copy the signal from the old set to the new
+				signal = *iter;
+				auto logic_signal = dynamic_pointer_cast<
+					view::LogicSignal>(signal);
+				if (logic_signal)
+					logic_signal->set_logic_data(
+						logic_data_);
+			} else {
+				// Create a new signal
+				switch(channel->type()->id()) {
+				case SR_CHANNEL_LOGIC:
+					signal = shared_ptr<view::Signal>(
+						new view::LogicSignal(*this,
+							device,	channel,
+							logic_data_));
+					break;
 
-			case SR_CHANNEL_ANALOG:
-			{
-				shared_ptr<data::Analog> data(
-					new data::Analog());
-				signal = shared_ptr<view::Signal>(
-					new view::AnalogSignal(
-						*this, channel, data));
-				break;
-			}
+				case SR_CHANNEL_ANALOG:
+				{
+					shared_ptr<data::Analog> data(
+						new data::Analog());
+					signal = shared_ptr<view::Signal>(
+						new view::AnalogSignal(
+							*this, channel, data));
+					break;
+				}
 
-			default:
-				assert(0);
-				break;
+				default:
+					assert(0);
+					break;
+				}
 			}
 
 			assert(signal);
 			signals_.insert(signal);
 		}
-
 	}
 
 	signals_changed();
