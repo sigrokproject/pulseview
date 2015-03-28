@@ -33,8 +33,8 @@
 #include <QVBoxLayout>
 
 namespace sigrok {
-	class Driver;
-	class HardwareDevice;
+class Driver;
+class HardwareDevice;
 }
 
 Q_DECLARE_METATYPE(std::shared_ptr<sigrok::Driver>);
