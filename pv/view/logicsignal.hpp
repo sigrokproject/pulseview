@@ -75,6 +75,8 @@ public:
 
 	std::shared_ptr<pv::data::Logic> logic_data() const;
 
+	void set_logic_data(std::shared_ptr<pv::data::Logic> data);
+
 	/**
 	 * Computes the vertical extents of the contents of this row item.
 	 * @return A pair containing the minimum and maximum y-values.

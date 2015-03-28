@@ -140,6 +140,11 @@ shared_ptr<pv::data::Logic> LogicSignal::logic_data() const
 	return data_;
 }
 
+void LogicSignal::set_logic_data(std::shared_ptr<pv::data::Logic> data)
+{
+	data_ = data;
+}
+
 std::pair<int, int> LogicSignal::v_extents() const
 {
 	return make_pair(-SignalHeight - SignalMargin, SignalMargin);
