@@ -31,8 +31,8 @@ class QIcon;
 class QToolBar;
 
 namespace sigrok {
-	class Device;
-	class TriggerMatchType;
+class Device;
+class TriggerMatchType;
 }
 
 namespace pv {
