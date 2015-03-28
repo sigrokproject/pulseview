@@ -65,7 +65,7 @@ void Logic::clear()
 	segments_.clear();
 }
 
-uint64_t Logic::get_max_sample_count() const
+uint64_t Logic::max_sample_count() const
 {
 	uint64_t l = 0;
 	for (std::shared_ptr<LogicSegment> s : segments_) {

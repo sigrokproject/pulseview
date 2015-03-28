@@ -272,7 +272,7 @@ void DecoderStack::begin_decode()
 	decode_thread_ = std::thread(&DecoderStack::decode_proc, this);
 }
 
-uint64_t DecoderStack::get_max_sample_count() const
+uint64_t DecoderStack::max_sample_count() const
 {
 	uint64_t max_sample_count = 0;
 

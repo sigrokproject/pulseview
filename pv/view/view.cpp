@@ -323,7 +323,7 @@ pair<double, double> View::get_time_extents() const
 			const double start_time = s->start_time();
 			left_time = min(left_time, start_time);
 			right_time = max(right_time, start_time +
-				d->get_max_sample_count() / samplerate);
+				d->max_sample_count() / samplerate);
 		}
 	}
 

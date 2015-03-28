@@ -41,7 +41,7 @@ public:
 
 	virtual void clear() = 0;
 
-	virtual uint64_t get_max_sample_count() const = 0;
+	virtual uint64_t max_sample_count() const = 0;
 };
 
 } // namespace data

@@ -46,7 +46,7 @@ public:
 
 	void clear();
 
-	uint64_t get_max_sample_count() const;
+	uint64_t max_sample_count() const;
 
 private:
 	std::deque< std::shared_ptr<AnalogSegment> > segments_;
