@@ -65,6 +65,11 @@ DeviceManager::~DeviceManager()
 {
 }
 
+const std::shared_ptr<sigrok::Context>& DeviceManager::context() const
+{
+	return context_;
+}
+
 shared_ptr<Context> DeviceManager::context()
 {
 	return context_;

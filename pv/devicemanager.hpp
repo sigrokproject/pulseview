@@ -49,6 +49,8 @@ public:
 
 	~DeviceManager();
 
+	const std::shared_ptr<sigrok::Context>& context() const;
+
 	std::shared_ptr<sigrok::Context> context();
 
 	const std::list< std::shared_ptr<sigrok::HardwareDevice> >&
