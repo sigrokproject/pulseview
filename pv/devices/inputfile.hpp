@@ -25,12 +25,12 @@
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
 
-#include "device.hpp"
+#include "file.hpp"
 
 namespace pv {
 namespace devices {
 
-class InputFile final : public Device
+class InputFile final : public File
 {
 private:
 	static const std::streamsize BufferSize;
@@ -52,7 +52,6 @@ public:
 private:
 	const std::shared_ptr<sigrok::Context> context_;
 	const std::shared_ptr<sigrok::Input> input_;
-	const std::string file_name_;
 
 	std::atomic<bool> interrupt_;
 };

@@ -22,7 +22,10 @@
 #define PULSEVIEW_PV_MAINWINDOW_HPP
 
 #include <list>
+#include <map>
 #include <memory>
+
+#include <glibmm/variant.h>
 
 #include <QMainWindow>
 
@@ -33,6 +36,7 @@ struct srd_decoder;
 class QVBoxLayout;
 
 namespace sigrok {
+class InputFormat;
 class OutputFormat;
 }
 
@@ -119,7 +123,10 @@ private:
 	void keyReleaseEvent(QKeyEvent *event);
 
 private Q_SLOTS:
-	void load_file(QString file_name);
+	void load_file(QString file_name,
+		std::shared_ptr<sigrok::InputFormat> format = nullptr,
+		const std::map<std::string, Glib::VariantBase> &options =
+			std::map<std::string, Glib::VariantBase>());
 
 	void show_session_error(
 		const QString text, const QString info_text);

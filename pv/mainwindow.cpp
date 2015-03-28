@@ -46,6 +46,7 @@
 
 #include "devicemanager.hpp"
 #include "devices/hardwaredevice.hpp"
+#include "devices/inputfile.hpp"
 #include "devices/sessionfile.hpp"
 #include "dialogs/about.hpp"
 #include "dialogs/connect.hpp"
@@ -76,6 +77,7 @@ using boost::algorithm::join;
 
 using sigrok::Error;
 using sigrok::OutputFormat;
+using sigrok::InputFormat;
 
 namespace pv {
 
@@ -525,17 +527,26 @@ void MainWindow::keyReleaseEvent(QKeyEvent *event)
 	QMainWindow::keyReleaseEvent(event);
 }
 
-void MainWindow::load_file(QString file_name)
+void MainWindow::load_file(QString file_name,
+	std::shared_ptr<sigrok::InputFormat> format,
+	const std::map<std::string, Glib::VariantBase> &options)
 {
 	const QString errorMessage(
 		QString("Failed to load file %1").arg(file_name));
 	const QString infoMessage;
 
 	try {
-		session_.set_device(
-			shared_ptr<devices::Device>(new devices::SessionFile(
-				device_manager_.context(),
-				file_name.toStdString())));
+		if (format)
+			session_.set_device(shared_ptr<devices::Device>(
+				new devices::InputFile(
+					device_manager_.context(),
+					file_name.toStdString(),
+					format, options)));
+		else
+			session_.set_device(shared_ptr<devices::Device>(
+				new devices::SessionFile(
+					device_manager_.context(),
+					file_name.toStdString())));
 	} catch(Error e) {
 		show_session_error(tr("Failed to load ") + file_name, e.what());
 		session_.set_default_device();
