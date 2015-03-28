@@ -27,15 +27,15 @@
 #include <string>
 
 namespace Glib {
-	class VariantBase;
+class VariantBase;
 }
 
 namespace sigrok {
-	class ConfigKey;
-	class Context;
-	class Driver;
-	class Device;
-	class HardwareDevice;
+class ConfigKey;
+class Context;
+class Driver;
+class Device;
+class HardwareDevice;
 }
 
 namespace pv {
