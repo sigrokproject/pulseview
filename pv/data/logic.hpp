@@ -35,7 +35,7 @@ class Logic : public SignalData
 public:
 	Logic(unsigned int num_channels);
 
-	int get_num_channels() const;
+	unsigned int num_channels() const;
 
 	void push_segment(
 		std::shared_ptr<LogicSegment> &segment);

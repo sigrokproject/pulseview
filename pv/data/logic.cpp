@@ -38,7 +38,7 @@ Logic::Logic(unsigned int num_channels) :
 	assert(num_channels_ > 0);
 }
 
-int Logic::get_num_channels() const
+unsigned int Logic::num_channels() const
 {
 	return num_channels_;
 }
