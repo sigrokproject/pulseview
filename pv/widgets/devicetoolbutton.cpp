@@ -73,7 +73,7 @@ void DeviceToolButton::set_device_list(
 {
 	selected_device_ = selected;
 	setText(QString::fromStdString(
-		device_manager_.get_display_name(selected)));
+		selected->display_name(device_manager_)));
 	devices_ = vector< weak_ptr<Device> >(devices.begin(), devices.end());
 	update_device_list();
 }
@@ -91,11 +91,11 @@ void DeviceToolButton::update_device_list()
 			continue;
 
 		QAction *const a = new QAction(QString::fromStdString(
-			device_manager_.get_display_name(dev)), this);
+			dev->display_name(device_manager_)), this);
 		a->setCheckable(true);
 		a->setChecked(selected_device_ == dev);
 		a->setData(qVariantFromValue((void*)dev.get()));
-		a->setToolTip(QString::fromStdString(device_manager_.get_full_name(dev)));
+		a->setToolTip(QString::fromStdString(dev->full_name()));
 		mapper_.setMapping(a, a);
 
 		connect(a, SIGNAL(triggered()), &mapper_, SLOT(map()));
@@ -119,7 +119,7 @@ void DeviceToolButton::on_action(QObject *action)
 
 	update_device_list();
 	setText(QString::fromStdString(
-		device_manager_.get_display_name(selected_device_)));
+		selected_device_->display_name(device_manager_)));
 
 	device_selected();
 }

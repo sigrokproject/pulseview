@@ -133,7 +133,6 @@ void Session::set_device(shared_ptr<devices::Device> device)
 		(shared_ptr<sigrok::Device> device, shared_ptr<Packet> packet) {
 			data_feed_in(device, packet);
 		});
-	device_manager_.update_display_name(device_);
 	update_signals(device_);
 
 	decode_traces_.clear();

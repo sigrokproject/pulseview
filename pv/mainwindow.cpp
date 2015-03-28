@@ -663,7 +663,7 @@ void MainWindow::device_selected()
 	if (!device)
 		return;
 
-	const string display_name = device_manager_.get_display_name(device);
+	const string display_name = device->display_name(device_manager_);
 	setWindowTitle(tr("%1 - PulseView").arg(display_name.c_str()));
 }
 

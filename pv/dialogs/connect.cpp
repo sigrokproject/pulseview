@@ -177,7 +177,7 @@ void Connect::scan_pressed()
 		assert(device);
 
 		QString text = QString::fromStdString(
-			device_manager_.get_display_name(device));
+			device->display_name(device_manager_));
 		text += QString(" with %1 channels").arg(
 			device->device()->channels().size());
 
