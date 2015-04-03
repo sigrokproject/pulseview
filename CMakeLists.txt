@@ -158,6 +158,7 @@ set(pulseview_SOURCES
 	pv/devices/device.cpp
 	pv/devices/file.cpp
 	pv/devices/hardwaredevice.cpp
+	pv/devices/inputfile.cpp
 	pv/devices/sessionfile.cpp
 	pv/dialogs/about.cpp
 	pv/dialogs/connect.cpp

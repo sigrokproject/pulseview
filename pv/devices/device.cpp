@@ -80,6 +80,11 @@ T Device::read_config(const ConfigKey *key, const T default_value)
 		device_->config_get(ConfigKey::SAMPLERATE)).get();
 }
 
+void Device::start() {
+	assert(session_);
+	session_->start();
+}
+
 void Device::run() {
 	assert(device_);
 	assert(session_);

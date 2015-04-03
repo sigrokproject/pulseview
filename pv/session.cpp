@@ -415,7 +415,7 @@ void Session::sample_thread_proc(shared_ptr<devices::Device> device,
 	cur_samplerate_ = device_->read_config<uint64_t>(ConfigKey::SAMPLERATE);
 
 	try {
-		device_->session()->start();
+		device_->start();
 	} catch(Error e) {
 		error_handler(e.what());
 		return;

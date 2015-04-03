@@ -66,6 +66,8 @@ public:
 
 	virtual void create() = 0;
 
+	virtual void start();
+
 	virtual void run();
 
 	virtual void stop();
