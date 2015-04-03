@@ -21,10 +21,9 @@
 #ifndef PULSEVIEW_PV_DEVICES_SESSIONFILE_HPP
 #define PULSEVIEW_PV_DEVICES_SESSIONFILE_HPP
 
-#include <string>
 #include <memory>
 
-#include "device.hpp"
+#include "file.hpp"
 
 namespace sigrok {
 class Context;
@@ -33,27 +32,16 @@ class Context;
 namespace pv {
 namespace devices {
 
-class SessionFile final : public Device
+class SessionFile final : public File
 {
 public:
 	SessionFile(const std::shared_ptr<sigrok::Context> &context,
 		const std::string &file_name);
 
-	/**
-	 * Builds the full name. It only contains all the fields.
-	 */
-	std::string full_name() const;
-
-	/**
-	 * Builds the display name. It only contains fields as required.
-	 */
-	std::string display_name(const DeviceManager&) const;
-
 	void create();
 
 private:
 	const std::shared_ptr<sigrok::Context> &context_;
-	const std::string file_name_;
 };
 
 } // namespace devices

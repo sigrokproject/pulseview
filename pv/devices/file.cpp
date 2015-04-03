@@ -18,24 +18,23 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#include <libsigrokcxx/libsigrokcxx.hpp>
-
 #include <boost/filesystem.hpp>
 
-#include "sessionfile.hpp"
+#include "file.hpp"
 
 namespace pv {
 namespace devices {
 
-SessionFile::SessionFile(const std::shared_ptr<sigrok::Context> &context,
-	const std::string &file_name) :
-	File(file_name),
-	context_(context) {
+File::File(const std::string &file_name) :
+	file_name_(file_name) {
 }
 
-void SessionFile::create() {
-	session_ = context_->load_session(file_name_);
-	device_ = session_->devices()[0];
+std::string File::full_name() const {
+	return boost::filesystem::path(file_name_).filename().string();
+}
+
+std::string File::display_name(const DeviceManager&) const {
+	return File::full_name();
 }
 
 } // namespace devices

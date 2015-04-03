@@ -156,6 +156,7 @@ set(pulseview_SOURCES
 	pv/data/signaldata.cpp
 	pv/data/segment.cpp
 	pv/devices/device.cpp
+	pv/devices/file.cpp
 	pv/devices/hardwaredevice.cpp
 	pv/devices/sessionfile.cpp
 	pv/dialogs/about.cpp
