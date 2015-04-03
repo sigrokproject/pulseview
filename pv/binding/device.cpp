@@ -106,6 +106,7 @@ Device::Device(shared_ptr<sigrok::Configurable> configurable) :
 
 		case SR_CONF_EXTERNAL_CLOCK:
 		case SR_CONF_RLE:
+		case SR_CONF_POWER_OFF:
 			bind_bool(name, get, set);
 			break;
 
@@ -119,6 +120,10 @@ Device::Device(shared_ptr<sigrok::Configurable> configurable) :
 
 		case SR_CONF_VOLTAGE_THRESHOLD:
 			bind_enum(name, key, capabilities, get, set, print_voltage_threshold);
+			break;
+
+		case SR_CONF_PROBE_FACTOR:
+			bind_int(name, "", pair<int64_t, int64_t>(1, 500), get, set);
 			break;
 
 		default:
