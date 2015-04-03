@@ -41,6 +41,18 @@ public:
 
 	std::shared_ptr<sigrok::HardwareDevice> hardware_device() const;
 
+	/**
+	 * Builds the full name. It only contains all the fields.
+	 */
+	std::string full_name() const;
+
+	/**
+	 * Builds the display name. It only contains fields as required.
+	 * @param device_manager a reference to the device manager is needed
+	 * so that other similarly titled devices can be detected.
+	 */
+	std::string display_name(const DeviceManager &device_manager) const;
+
 	void create();
 
 private:

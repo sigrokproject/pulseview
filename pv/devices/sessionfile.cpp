@@ -20,6 +20,8 @@
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
 
+#include <boost/filesystem.hpp>
+
 #include "sessionfile.hpp"
 
 namespace pv {
@@ -29,6 +31,14 @@ SessionFile::SessionFile(const std::shared_ptr<sigrok::Context> &context,
 	const std::string &file_name) :
 	context_(context),
 	file_name_(file_name) {
+}
+
+std::string SessionFile::full_name() const {
+	return boost::filesystem::path(file_name_).filename().string();
+}
+
+std::string SessionFile::display_name(const DeviceManager&) const {
+	return SessionFile::full_name();
 }
 
 void SessionFile::create() {

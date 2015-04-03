@@ -39,6 +39,16 @@ public:
 	SessionFile(const std::shared_ptr<sigrok::Context> &context,
 		const std::string &file_name);
 
+	/**
+	 * Builds the full name. It only contains all the fields.
+	 */
+	std::string full_name() const;
+
+	/**
+	 * Builds the display name. It only contains fields as required.
+	 */
+	std::string display_name(const DeviceManager&) const;
+
 	void create();
 
 private:

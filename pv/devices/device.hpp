@@ -22,7 +22,7 @@
 #define PULSEVIEW_PV_DEVICES_DEVICE_HPP
 
 #include <memory>
-
+#include <string>
 
 namespace sigrok {
 class Device;
@@ -30,6 +30,9 @@ class Session;
 } // namespace sigrok
 
 namespace pv {
+
+class DeviceManager;
+
 namespace devices {
 
 class Device
@@ -43,6 +46,19 @@ public:
 	std::shared_ptr<sigrok::Session> session() const;
 
 	std::shared_ptr<sigrok::Device> device() const;
+
+	/**
+	 * Builds the full name. It only contains all the fields.
+	 */
+	virtual std::string full_name() const = 0;
+
+	/**
+	 * Builds the display name. It only contains fields as required.
+	 * @param device_manager a reference to the device manager is needed
+	 * so that other similarly titled devices can be detected.
+	 */
+	virtual std::string display_name(
+		const DeviceManager &device_manager) const = 0;
 
 	virtual void create() = 0;
 
