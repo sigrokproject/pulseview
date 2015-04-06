@@ -400,7 +400,12 @@ shared_ptr<view::Signal> Session::signal_from_channel(
 void Session::read_sample_rate(shared_ptr<sigrok::Device> device)
 {
 	assert(device);
-	const auto keys = device->config_keys(ConfigKey::DEVICE_OPTIONS);
+	map< const ConfigKey*, set<sigrok::Capability> > keys;
+
+	try {
+		keys = device->config_keys(ConfigKey::DEVICE_OPTIONS);
+	} catch (const Error) {}
+
 	const auto iter = keys.find(ConfigKey::SAMPLERATE);
 	cur_samplerate_ = (iter != keys.end() &&
 		(*iter).second.find(sigrok::GET) != (*iter).second.end()) ?
