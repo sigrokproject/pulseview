@@ -306,8 +306,15 @@ void Session::update_signals(shared_ptr<devices::Device> device)
 	assert(device);
 	assert(capture_state_ == Stopped);
 
+	const shared_ptr<sigrok::Device> sr_dev = device->device();
+	if (!sr_dev) {
+		signals_.clear();
+		logic_data_.reset();
+		return;
+	}
+
 	// Detect what data types we will receive
-	auto channels = device->device()->channels();
+	auto channels = sr_dev->channels();
 	unsigned int logic_channel_count = std::count_if(
 		channels.begin(), channels.end(),
 		[] (shared_ptr<Channel> channel) {
@@ -334,7 +341,7 @@ void Session::update_signals(shared_ptr<devices::Device> device)
 		unordered_set< shared_ptr<view::Signal> > prev_sigs(signals_);
 		signals_.clear();
 
-		for (auto channel : device->device()->channels()) {
+		for (auto channel : sr_dev->channels()) {
 			shared_ptr<view::Signal> signal;
 
 			// Find the channel in the old signals
