@@ -216,6 +216,7 @@ void MainBar::update_sample_rate_selector()
 	GVariant *gvar_list;
 	const uint64_t *elements = NULL;
 	gsize num_elements;
+	map< const ConfigKey*, std::set<Capability> > keys;
 
 	if (updating_sample_rate_)
 		return;
@@ -229,7 +230,11 @@ void MainBar::update_sample_rate_selector()
 	updating_sample_rate_ = true;
 
 	const shared_ptr<sigrok::Device> sr_dev = device->device();
-	const auto keys = sr_dev->config_keys(ConfigKey::DEVICE_OPTIONS);
+
+	try {
+		keys = sr_dev->config_keys(ConfigKey::DEVICE_OPTIONS);
+	} catch (Error) {}
+
 	const auto iter = keys.find(ConfigKey::SAMPLERATE);
 	if (iter != keys.end() &&
 		(*iter).second.find(sigrok::LIST) != (*iter).second.end()) {
