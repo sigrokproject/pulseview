@@ -56,9 +56,15 @@ namespace binding {
 Device::Device(shared_ptr<sigrok::Configurable> configurable) :
 	configurable_(configurable)
 {
-	assert(configurable);
+	std::map< const ConfigKey*, std::set<Capability> > keys;
 
-	for (auto entry : configurable->config_keys(ConfigKey::DEVICE_OPTIONS)) {
+	try {
+		keys = configurable->config_keys(ConfigKey::DEVICE_OPTIONS);
+	} catch (const Error) {
+		return;
+	}
+
+	for (auto entry : keys) {
 		auto key = entry.first;
 		auto capabilities = entry.second;
 
