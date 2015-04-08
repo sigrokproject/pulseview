@@ -38,6 +38,7 @@
 		<copylibs todir="${native.libs.absolute.dir}" property="bundled_libs">
 			<fileset dir="${pulseview-build-path}/libs"/>
 			<include name="libgnustl_shared.so"/>
+			<include name="libintl.so"/>
 			<include name="libffi.so"/>
 			<exclude name="lib*.so"/>
 		</copylibs>
