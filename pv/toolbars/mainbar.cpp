@@ -73,6 +73,7 @@ MainBar::MainBar(Session &session, MainWindow &main_window) :
 	configure_button_(this),
 	configure_button_action_(nullptr),
 	channels_button_(this),
+	channels_button_action_(nullptr),
 	sample_count_(" samples", this),
 	sample_rate_("Hz", this),
 	updating_sample_rate_(false),
@@ -82,6 +83,7 @@ MainBar::MainBar(Session &session, MainWindow &main_window) :
 	icon_green_(":/icons/status-green.svg"),
 	icon_grey_(":/icons/status-grey.svg"),
 	run_stop_button_(this),
+	run_stop_button_action_(nullptr),
 	menu_button_(this)
 {
 	setObjectName(QString::fromUtf8("MainBar"));
@@ -182,10 +184,10 @@ MainBar::MainBar(Session &session, MainWindow &main_window) :
 
 	addWidget(&device_selector_);
 	configure_button_action_ = addWidget(&configure_button_);
-	addWidget(&channels_button_);
+	channels_button_action_ = addWidget(&channels_button_);
 	addWidget(&sample_count_);
 	addWidget(&sample_rate_);
-	addWidget(&run_stop_button_);
+	run_stop_button_action_ = addWidget(&run_stop_button_);
 #ifdef ENABLE_DECODE
 	addSeparator();
 	addWidget(add_decoder_button);
@@ -211,7 +213,6 @@ void MainBar::update_device_list()
 
 	if (std::find(devs.begin(), devs.end(), selected_device) == devs.end())
 		devs.push_back(selected_device);
-	assert(selected_device);
 
 	device_selector_.set_device_list(devs, selected_device);
 	update_device_config_widgets();
@@ -235,8 +236,10 @@ void MainBar::update_sample_rate_selector()
 	gsize num_elements;
 	map< const ConfigKey*, std::set<Capability> > keys;
 
-	if (updating_sample_rate_)
+	if (updating_sample_rate_) {
+		sample_rate_.show_none();
 		return;
+	}
 
 	const shared_ptr<devices::Device> device =
 		device_selector_.selected_device();
@@ -405,8 +408,16 @@ void MainBar::update_device_config_widgets()
 
 	const shared_ptr<devices::Device> device =
 		device_selector_.selected_device();
-	if (!device)
+
+	// Hide the widgets if no device is selected
+	channels_button_action_->setVisible(!!device);
+	run_stop_button_action_->setVisible(!!device);
+	if (!device) {
+		configure_button_action_->setVisible(false);
+		sample_count_.show_none();
+		sample_rate_.show_none();
 		return;
+	}
 
 	const shared_ptr<sigrok::Device> sr_dev = device->device();
 	if (!sr_dev)
