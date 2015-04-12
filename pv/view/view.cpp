@@ -676,8 +676,12 @@ void View::signals_changed()
 	// Populate the traces
 	clear_child_items();
 
-	shared_ptr<sigrok::Device> device = session_.device()->device();
-	assert(device);
+	const auto device = session_.device();
+	if (!device)
+		return;
+
+	shared_ptr<sigrok::Device> sr_dev = device->device();
+	assert(sr_dev);
 
 	// Collect a set of signals
 	unordered_map<shared_ptr<sigrok::Channel>, shared_ptr<Signal> >
@@ -690,7 +694,7 @@ void View::signals_changed()
 		signal_map[sig->channel()] = sig;
 
 	// Populate channel groups
-	for (auto entry : device->channel_groups())
+	for (auto entry : sr_dev->channel_groups())
 	{
 		const shared_ptr<sigrok::ChannelGroup> &group = entry.second;
 
@@ -711,7 +715,7 @@ void View::signals_changed()
 	shared_ptr<TraceGroup> logic_trace_group(new TraceGroup());
 	int child_offset = 0;
 
-	if (add_channels_to_owner(device->channels(),
+	if (add_channels_to_owner(sr_dev->channels(),
 		logic_trace_group.get(), child_offset, signal_map,
 		[](shared_ptr<RowItem> r) -> bool {
 			return dynamic_pointer_cast<LogicSignal>(r) != nullptr;
@@ -723,7 +727,7 @@ void View::signals_changed()
 	}
 
 	// Add the remaining channels
-	add_channels_to_owner(device->channels(), this, offset, signal_map);
+	add_channels_to_owner(sr_dev->channels(), this, offset, signal_map);
 	assert(signal_map.empty());
 
 	// Add decode signals
