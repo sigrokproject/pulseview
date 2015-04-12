@@ -90,7 +90,6 @@ Session::Session(DeviceManager &device_manager) :
 	capture_state_(Stopped),
 	cur_samplerate_(0)
 {
-	set_default_device();
 }
 
 Session::~Session()

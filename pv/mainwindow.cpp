@@ -194,7 +194,10 @@ void MainWindow::run_stop()
 void MainWindow::select_device(shared_ptr<devices::Device> device)
 {
 	try {
-		session_.set_device(device);
+		if (device)
+			session_.set_device(device);
+		else
+			session_.set_default_device();
 	} catch(const QString &e) {
 		QMessageBox msg(this);
 		msg.setText(e);
@@ -540,10 +543,8 @@ void MainWindow::restore_ui_settings()
 
 	const shared_ptr<devices::HardwareDevice> device =
 		device_manager_.find_device_from_info(dev_info);
-	if (device) {
-		select_device(device);
-		update_device_list();
-	}
+	select_device(device);
+	update_device_list();
 
 	settings.endGroup();
 }
