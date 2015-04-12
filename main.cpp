@@ -56,9 +56,11 @@ void usage()
 		"  %s [OPTION…] [FILE] — %s\n"
 		"\n"
 		"Help Options:\n"
-		"  -l, --loglevel                  Set libsigrok/libsigrokdecode loglevel\n"
-		"  -V, --version                   Show release version\n"
 		"  -h, -?, --help                  Show help option\n"
+		"\n"
+		"Application Options:\n"
+		"  -V, --version                   Show release version\n"
+		"  -l, --loglevel                  Set libsigrok/libsigrokdecode loglevel\n"
 		"\n", PV_BIN_NAME, PV_DESCRIPTION);
 }
 
@@ -78,9 +80,9 @@ int main(int argc, char *argv[])
 	// Parse arguments
 	while (1) {
 		static const struct option long_options[] = {
-			{"loglevel", required_argument, 0, 'l'},
-			{"version", no_argument, 0, 'V'},
 			{"help", no_argument, 0, 'h'},
+			{"version", no_argument, 0, 'V'},
+			{"loglevel", required_argument, 0, 'l'},
 			{0, 0, 0, 0}
 		};
 
@@ -90,6 +92,16 @@ int main(int argc, char *argv[])
 			break;
 
 		switch (c) {
+		case 'h':
+		case '?':
+			usage();
+			return 0;
+
+		case 'V':
+			// Print version info
+			fprintf(stdout, "%s %s\n", PV_TITLE, PV_VERSION_STRING);
+			return 0;
+
 		case 'l':
 		{
 			const int loglevel = atoi(optarg);
@@ -101,16 +113,6 @@ int main(int argc, char *argv[])
 
 			break;
 		}
-
-		case 'V':
-			// Print version info
-			fprintf(stdout, "%s %s\n", PV_TITLE, PV_VERSION_STRING);
-			return 0;
-
-		case 'h':
-		case '?':
-			usage();
-			return 0;
 		}
 	}
 
