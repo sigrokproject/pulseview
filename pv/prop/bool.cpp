@@ -29,7 +29,7 @@ namespace prop {
 
 Bool::Bool(QString name, Getter getter, Setter setter) :
 	Property(name, getter, setter),
-	check_box_(NULL)
+	check_box_(nullptr)
 {
 }
 
@@ -43,11 +43,11 @@ QWidget* Bool::get_widget(QWidget *parent, bool auto_commit)
 		return check_box_;
 
 	if (!getter_)
-		return NULL;
+		return nullptr;
 
 	Glib::VariantBase variant = getter_();
 	if (!variant.gobj())
-		return NULL;
+		return nullptr;
 
 	bool value = Glib::VariantBase::cast_dynamic<Glib::Variant<bool>>(
 		variant).get();

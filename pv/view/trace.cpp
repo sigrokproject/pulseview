@@ -43,8 +43,8 @@ const int Trace::LabelHitPadding = 2;
 
 Trace::Trace(QString name) :
 	name_(name),
-	popup_(NULL),
-	popup_form_(NULL)
+	popup_(nullptr),
+	popup_form_(nullptr)
 {
 }
 
@@ -219,8 +219,8 @@ void Trace::populate_popup_form(QWidget *parent, QFormLayout *form)
 
 void Trace::on_popup_closed()
 {
-	popup_ = NULL;
-	popup_form_ = NULL;
+	popup_ = nullptr;
+	popup_form_ = nullptr;
 }
 
 void Trace::on_text_changed(const QString &text)

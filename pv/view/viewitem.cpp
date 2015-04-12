@@ -33,7 +33,7 @@ const QSizeF ViewItem::LabelPadding(4, 0);
 const int ViewItem::HighlightRadius = 3;
 
 ViewItem::ViewItem() :
-	context_parent_(NULL),
+	context_parent_(nullptr),
 	drag_point_(INT_MIN, INT_MIN),
 	selected_(false)
 {

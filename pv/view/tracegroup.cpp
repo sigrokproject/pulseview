@@ -147,7 +147,7 @@ QMenu* TraceGroup::create_context_menu(QWidget *parent)
 pv::widgets::Popup* TraceGroup::create_popup(QWidget *parent)
 {
 	(void)parent;
-	return NULL;
+	return nullptr;
 }
 
 int TraceGroup::owner_visual_v_offset() const

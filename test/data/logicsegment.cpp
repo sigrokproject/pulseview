@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_CASE(Basic)
 	sr_datafeed_logic logic;
 	logic.length = 0;
 	logic.unitsize = 1;
-	logic.data = NULL;
+	logic.data = nullptr;
 
 	LogicSegment s(logic);
 
@@ -86,7 +86,7 @@ BOOST_AUTO_TEST_CASE(Basic)
 		const LogicSegment::MipMapLevel &m = s.mip_map_[i];
 		BOOST_CHECK_EQUAL(m.length, 0);
 		BOOST_CHECK_EQUAL(m.data_length, 0);
-		BOOST_CHECK(m.data == NULL);
+		BOOST_CHECK(m.data == nullptr);
 	}
 
 	// Push 8 samples of all zeros
@@ -100,7 +100,7 @@ BOOST_AUTO_TEST_CASE(Basic)
 		const LogicSegment::MipMapLevel &m = s.mip_map_[i];
 		BOOST_CHECK_EQUAL(m.length, 0);
 		BOOST_CHECK_EQUAL(m.data_length, 0);
-		BOOST_CHECK(m.data == NULL);
+		BOOST_CHECK(m.data == nullptr);
 	}
 
 	// Push 8 samples of 0x11s to bring the total up to 16
@@ -111,7 +111,7 @@ BOOST_AUTO_TEST_CASE(Basic)
 	const LogicSegment::MipMapLevel &m0 = s.mip_map_[0];
 	BOOST_CHECK_EQUAL(m0.length, 1);
 	BOOST_CHECK_EQUAL(m0.data_length, LogicSegment::MipMapDataUnit);
-	BOOST_REQUIRE(m0.data != NULL);
+	BOOST_REQUIRE(m0.data != nullptr);
 	BOOST_CHECK_EQUAL(((uint8_t*)m0.data)[0], 0x11);
 
 	// The higher levels should still be empty
@@ -120,7 +120,7 @@ BOOST_AUTO_TEST_CASE(Basic)
 		const LogicSegment::MipMapLevel &m = s.mip_map_[i];
 		BOOST_CHECK_EQUAL(m.length, 0);
 		BOOST_CHECK_EQUAL(m.data_length, 0);
-		BOOST_CHECK(m.data == NULL);
+		BOOST_CHECK(m.data == nullptr);
 	}
 
 	// Push 240 samples of all zeros to bring the total up to 256
@@ -136,7 +136,7 @@ BOOST_AUTO_TEST_CASE(Basic)
 	const LogicSegment::MipMapLevel &m1 = s.mip_map_[1];
 	BOOST_CHECK_EQUAL(m1.length, 1);
 	BOOST_CHECK_EQUAL(m1.data_length, LogicSegment::MipMapDataUnit);
-	BOOST_REQUIRE(m1.data != NULL);
+	BOOST_REQUIRE(m1.data != nullptr);
 	BOOST_CHECK_EQUAL(((uint8_t*)m1.data)[0], 0x11);
 
 	//----- Test LogicSegment::get_subsampled_edges -----//
@@ -185,7 +185,7 @@ BOOST_AUTO_TEST_CASE(LargeData)
 	BOOST_CHECK_EQUAL(s.mip_map_[0].length, 62500);
 	BOOST_CHECK_EQUAL(s.mip_map_[0].data_length,
 		LogicSegment::MipMapDataUnit);
-	BOOST_REQUIRE(s.mip_map_[0].data != NULL);
+	BOOST_REQUIRE(s.mip_map_[0].data != nullptr);
 
 	prev_sample = 0;
 	for (unsigned int i = 0; i < s.mip_map_[0].length;)
@@ -208,7 +208,7 @@ BOOST_AUTO_TEST_CASE(LargeData)
 	BOOST_CHECK_EQUAL(s.mip_map_[1].length, 3906);
 	BOOST_CHECK_EQUAL(s.mip_map_[1].data_length,
 		LogicSegment::MipMapDataUnit);
-	BOOST_REQUIRE(s.mip_map_[1].data != NULL);
+	BOOST_REQUIRE(s.mip_map_[1].data != nullptr);
 
 	prev_sample = 0;
 	for (unsigned int i = 0; i < s.mip_map_[1].length; i++)
@@ -226,7 +226,7 @@ BOOST_AUTO_TEST_CASE(LargeData)
 	BOOST_CHECK_EQUAL(s.mip_map_[2].length, 244);
 	BOOST_CHECK_EQUAL(s.mip_map_[2].data_length,
 		LogicSegment::MipMapDataUnit);
-	BOOST_REQUIRE(s.mip_map_[2].data != NULL);
+	BOOST_REQUIRE(s.mip_map_[2].data != nullptr);
 
 	prev_sample = 0;
 	for (unsigned int i = 0; i < s.mip_map_[2].length; i++)
@@ -244,7 +244,7 @@ BOOST_AUTO_TEST_CASE(LargeData)
 	BOOST_CHECK_EQUAL(s.mip_map_[3].length, 15);
 	BOOST_CHECK_EQUAL(s.mip_map_[3].data_length,
 		LogicSegment::MipMapDataUnit);
-	BOOST_REQUIRE(s.mip_map_[3].data != NULL);
+	BOOST_REQUIRE(s.mip_map_[3].data != nullptr);
 
 	for (unsigned int i = 0; i < s.mip_map_[3].length; i++)
 		BOOST_CHECK_EQUAL(*((uint8_t*)s.mip_map_[3].data + i),
@@ -256,7 +256,7 @@ BOOST_AUTO_TEST_CASE(LargeData)
 		const LogicSegment::MipMapLevel &m = s.mip_map_[i];
 		BOOST_CHECK_EQUAL(m.length, 0);
 		BOOST_CHECK_EQUAL(m.data_length, 0);
-		BOOST_CHECK(m.data == NULL);
+		BOOST_CHECK(m.data == nullptr);
 	}
 
 	//----- Test LogicSegment::get_subsampled_edges -----//
@@ -310,7 +310,7 @@ BOOST_AUTO_TEST_CASE(Pulses)
 	BOOST_CHECK_EQUAL(s.mip_map_[0].length, 12);
 	BOOST_CHECK_EQUAL(s.mip_map_[0].data_length,
 		LogicSegment::MipMapDataUnit);
-	BOOST_REQUIRE(s.mip_map_[0].data != NULL);
+	BOOST_REQUIRE(s.mip_map_[0].data != nullptr);
 
 	for (unsigned int i = 0; i < s.mip_map_[0].length;) {
 		BOOST_TEST_MESSAGE("Testing mip_map[0].data[" << i << "]");
@@ -330,7 +330,7 @@ BOOST_AUTO_TEST_CASE(Pulses)
 		const LogicSegment::MipMapLevel &m = s.mip_map_[i];
 		BOOST_CHECK_EQUAL(m.length, 0);
 		BOOST_CHECK_EQUAL(m.data_length, 0);
-		BOOST_CHECK(m.data == NULL);
+		BOOST_CHECK(m.data == nullptr);
 	}
 
 	//----- Test get_subsampled_edges at reduced scale -----//
@@ -374,7 +374,7 @@ BOOST_AUTO_TEST_CASE(LongPulses)
 	BOOST_CHECK_EQUAL(s.mip_map_[0].length, 12);
 	BOOST_CHECK_EQUAL(s.mip_map_[0].data_length,
 		LogicSegment::MipMapDataUnit);
-	BOOST_REQUIRE(s.mip_map_[0].data != NULL);
+	BOOST_REQUIRE(s.mip_map_[0].data != nullptr);
 
 	for (unsigned int i = 0; i < s.mip_map_[0].length;) {
 		for (j = 0; i < s.mip_map_[0].length && j < 2; j++) {
@@ -396,7 +396,7 @@ BOOST_AUTO_TEST_CASE(LongPulses)
 		const LogicSegment::MipMapLevel &m = s.mip_map_[i];
 		BOOST_CHECK_EQUAL(m.length, 0);
 		BOOST_CHECK_EQUAL(m.data_length, 0);
-		BOOST_CHECK(m.data == NULL);
+		BOOST_CHECK(m.data == nullptr);
 	}
 
 	//----- Test get_subsampled_edges at a full scale -----//

@@ -78,7 +78,7 @@ private:
 
 public:
 	explicit MainWindow(DeviceManager &device_manager,
-		const char *open_file_name = NULL,
+		const char *open_file_name = nullptr,
 		QWidget *parent = 0);
 
 	QAction* action_open() const;

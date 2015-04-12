@@ -334,7 +334,7 @@ void DecoderStack::decode_proc()
 {
 	optional<int64_t> sample_count;
 	srd_session *session;
-	srd_decoder_inst *prev_di = NULL;
+	srd_decoder_inst *prev_di = nullptr;
 
 	assert(segment_);
 

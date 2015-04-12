@@ -71,7 +71,7 @@ MainBar::MainBar(Session &session, MainWindow &main_window) :
 	device_selector_(this, session.device_manager(),
 		main_window.action_connect()),
 	configure_button_(this),
-	configure_button_action_(NULL),
+	configure_button_action_(nullptr),
 	channels_button_(this),
 	sample_count_(" samples", this),
 	sample_rate_("Hz", this),
@@ -231,7 +231,7 @@ void MainBar::update_sample_rate_selector()
 {
 	Glib::VariantContainerBase gvar_dict;
 	GVariant *gvar_list;
-	const uint64_t *elements = NULL;
+	const uint64_t *elements = nullptr;
 	gsize num_elements;
 	map< const ConfigKey*, std::set<Capability> > keys;
 

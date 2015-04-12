@@ -55,7 +55,7 @@ BOOST_AUTO_TEST_CASE(Basic)
 		const AnalogSegment::Envelope &m = s.envelope_levels_[i];
 		BOOST_CHECK_EQUAL(m.length, 0);
 		BOOST_CHECK_EQUAL(m.data_length, 0);
-		BOOST_CHECK(m.samples == NULL);
+		BOOST_CHECK(m.samples == nullptr);
 	}
 
 	// Push 8 samples of all zeros
@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_CASE(Basic)
 		const AnalogSegment::Envelope &m = s.envelope_levels_[i];
 		BOOST_CHECK_EQUAL(m.length, 0);
 		BOOST_CHECK_EQUAL(m.data_length, 0);
-		BOOST_CHECK(m.samples == NULL);
+		BOOST_CHECK(m.samples == nullptr);
 	}
 
 	// Push 8 samples of 1.0s to bring the total up to 16
@@ -80,7 +80,7 @@ BOOST_AUTO_TEST_CASE(Basic)
 	const AnalogSegment::Envelope &e0 = s.envelope_levels_[0];
 	BOOST_CHECK_EQUAL(e0.length, 1);
 	BOOST_CHECK_EQUAL(e0.data_length, AnalogSegment::EnvelopeDataUnit);
-	BOOST_REQUIRE(e0.samples != NULL);
+	BOOST_REQUIRE(e0.samples != nullptr);
 	BOOST_CHECK_EQUAL(e0.samples[0].min, 0.0f);
 	BOOST_CHECK_EQUAL(e0.samples[0].max, 1.0f);
 
@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE(Basic)
 		const AnalogSegment::Envelope &m = s.envelope_levels_[i];
 		BOOST_CHECK_EQUAL(m.length, 0);
 		BOOST_CHECK_EQUAL(m.data_length, 0);
-		BOOST_CHECK(m.samples == NULL);
+		BOOST_CHECK(m.samples == nullptr);
 	}
 
 	// Push 240 samples of all zeros to bring the total up to 256
@@ -107,7 +107,7 @@ BOOST_AUTO_TEST_CASE(Basic)
 	const AnalogSegment::Envelope &e1 = s.envelope_levels_[1];
 	BOOST_CHECK_EQUAL(e1.length, 1);
 	BOOST_CHECK_EQUAL(e1.data_length, AnalogSegment::EnvelopeDataUnit);
-	BOOST_REQUIRE(e1.samples != NULL);
+	BOOST_REQUIRE(e1.samples != nullptr);
 	BOOST_CHECK_EQUAL(e1.samples[0].min, -1.0f);
 	BOOST_CHECK_EQUAL(e1.samples[0].max, 1.0f);
 }

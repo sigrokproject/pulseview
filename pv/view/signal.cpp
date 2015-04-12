@@ -63,7 +63,7 @@ Signal::Signal(pv::Session &session,
 	Trace(QString::fromUtf8(channel->name().c_str())),
 	session_(session),
 	channel_(channel),
-	name_widget_(NULL),
+	name_widget_(nullptr),
 	updating_name_widget_(false)
 {
 	assert(channel_);

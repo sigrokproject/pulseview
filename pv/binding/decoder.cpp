@@ -106,7 +106,7 @@ shared_ptr<Property> Decoder::bind_enum(
 
 Glib::VariantBase Decoder::getter(const char *id)
 {
-	GVariant *val = NULL;
+	GVariant *val = nullptr;
 
 	assert(decoder_);
 

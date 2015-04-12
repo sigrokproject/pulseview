@@ -38,7 +38,7 @@ Random notes
    glib's g_try_malloc()/g_try_malloc0() was used, use g_free() to free the
    memory. Otherwise use standard free(). Never use the wrong function!
 
- - Never use g_malloc() or g_malloc0(). These functions do not return NULL
+ - Never use g_malloc() or g_malloc0(). These functions do not return nullptr
    if not enough memory is available but rather lead to an exit() or segfault
    instead. This behaviour is not acceptable.
    Use g_try_malloc()/g_try_malloc0() instead and check the return value.

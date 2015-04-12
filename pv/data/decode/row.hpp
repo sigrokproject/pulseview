@@ -38,7 +38,7 @@ public:
 	Row();
 
 	Row(const srd_decoder *decoder,
-		const srd_decoder_annotation_row *row = NULL);
+		const srd_decoder_annotation_row *row = nullptr);
 
 	const srd_decoder* decoder() const;
 	const srd_decoder_annotation_row* row() const;

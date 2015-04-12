@@ -45,7 +45,7 @@ private:
 	};
 
 public:
-	SweepTimingWidget(const char *suffix, QWidget *parent = NULL);
+	SweepTimingWidget(const char *suffix, QWidget *parent = nullptr);
 
 	void show_none();
 	void show_min_max_step(uint64_t min, uint64_t max, uint64_t step);

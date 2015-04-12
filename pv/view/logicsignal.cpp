@@ -105,12 +105,12 @@ LogicSignal::LogicSignal(
 	Signal(session, channel),
 	device_(device),
 	data_(data),
-	trigger_none_(NULL),
-	trigger_rising_(NULL),
-	trigger_high_(NULL),
-	trigger_falling_(NULL),
-	trigger_low_(NULL),
-	trigger_change_(NULL)
+	trigger_none_(nullptr),
+	trigger_rising_(nullptr),
+	trigger_high_(nullptr),
+	trigger_falling_(nullptr),
+	trigger_low_(nullptr),
+	trigger_change_(nullptr)
 {
 	shared_ptr<Trigger> trigger;
 

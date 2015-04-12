@@ -27,8 +27,8 @@ namespace data {
 namespace decode {
 
 Row::Row() :
-	decoder_(NULL),
-	row_(NULL)
+	decoder_(nullptr),
+	row_(nullptr)
 {
 }
 

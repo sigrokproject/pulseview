@@ -27,7 +27,7 @@ namespace widgets {
 
 PopupToolButton::PopupToolButton(QWidget *parent) :
 	QToolButton(parent),
-	popup_(NULL)
+	popup_(nullptr)
 {
 	connect(this, SIGNAL(clicked(bool)), this, SLOT(on_clicked(bool)));
 }

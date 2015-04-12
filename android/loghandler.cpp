@@ -94,9 +94,9 @@ int AndroidLogHandler::srd_callback(void *cb_data, int loglevel, const char *for
 
 void AndroidLogHandler::install_callbacks()
 {
-	sr_log_callback_set(sr_callback, NULL);
+	sr_log_callback_set(sr_callback, nullptr);
 #ifdef ENABLE_DECODE
-	srd_log_callback_set(srd_callback, NULL);
+	srd_log_callback_set(srd_callback, nullptr);
 #endif
 }
 

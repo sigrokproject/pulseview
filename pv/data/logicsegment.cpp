@@ -306,7 +306,7 @@ void LogicSegment::get_subsampled_edges(
 
 		// We cannot fast-forward if there is no mip-map data at
 		// at the minimum level.
-		fast_forward = (mip_map_[level].data != NULL);
+		fast_forward = (mip_map_[level].data != nullptr);
 
 		if (min_length < MipMapScaleFactor)
 		{

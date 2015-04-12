@@ -35,7 +35,7 @@ Enum::Enum(QString name,
 	Getter getter, Setter setter) :
 	Property(name, getter, setter),
 	values_(values),
-	selector_(NULL)
+	selector_(nullptr)
 {
 }
 
@@ -49,11 +49,11 @@ QWidget* Enum::get_widget(QWidget *parent, bool auto_commit)
 		return selector_;
 
 	if (!getter_)
-		return NULL;
+		return nullptr;
 
 	Glib::VariantBase variant = getter_();
 	if (!variant.gobj())
-		return NULL;
+		return nullptr;
 
 	selector_ = new QComboBox(parent);
 	for (unsigned int i = 0; i < values_.size(); i++) {

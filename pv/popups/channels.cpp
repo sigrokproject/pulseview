@@ -110,7 +110,7 @@ Channels::Channels(Session &session, QWidget *parent) :
 	}
 
 	// Create a group
-	populate_group(NULL, global_sigs);
+	populate_group(nullptr, global_sigs);
 
 	// Create the enable/disable all buttons
 	connect(&enable_all_channels_, SIGNAL(clicked()),

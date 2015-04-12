@@ -42,7 +42,7 @@ Double::Double(QString name,
 	suffix_(suffix),
 	range_(range),
 	step_(step),
-	spin_box_(NULL)
+	spin_box_(nullptr)
 {
 }
 
@@ -56,11 +56,11 @@ QWidget* Double::get_widget(QWidget *parent, bool auto_commit)
 		return spin_box_;
 
 	if (!getter_)
-		return NULL;
+		return nullptr;
 
 	Glib::VariantBase variant = getter_();
 	if (!variant.gobj())
-		return NULL;
+		return nullptr;
 
 	double value = Glib::VariantBase::cast_dynamic<Glib::Variant<double>>(
 		variant).get();

@@ -41,7 +41,7 @@ Int::Int(QString name,
 	Property(name, getter, setter),
 	suffix_(suffix),
 	range_(range),
-	spin_box_(NULL)
+	spin_box_(nullptr)
 {
 }
 
@@ -57,13 +57,13 @@ QWidget* Int::get_widget(QWidget *parent, bool auto_commit)
 		return spin_box_;
 
 	if (!getter_)
-		return NULL;
+		return nullptr;
 
 	value_ = getter_();
 
 	GVariant *value = value_.gobj();
 	if (!value)
-		return NULL;
+		return nullptr;
 
 	spin_box_ = new QSpinBox(parent);
 	spin_box_->setSuffix(suffix_);
@@ -141,7 +141,7 @@ void Int::commit()
 	if (!spin_box_)
 		return;
 
-	GVariant *new_value = NULL;
+	GVariant *new_value = nullptr;
 	const GVariantType *const type = g_variant_get_type(value_.gobj());
 	assert(type);
 

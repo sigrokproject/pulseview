@@ -45,8 +45,8 @@ TimeMarker::TimeMarker(View &view, const QColor &colour, double time) :
 	TimeItem(view),
 	colour_(colour),
 	time_(time),
-	value_action_(NULL),
-	value_widget_(NULL),
+	value_action_(nullptr),
+	value_widget_(nullptr),
 	updating_value_widget_(false)
 {
 }

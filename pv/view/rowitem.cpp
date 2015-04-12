@@ -28,7 +28,7 @@ namespace pv {
 namespace view {
 
 RowItem::RowItem() :
-	owner_(NULL),
+	owner_(nullptr),
 	layout_v_offset_(0),
 	visual_v_offset_(0),
 	v_offset_animation_(this, "visual_v_offset")

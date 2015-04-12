@@ -717,7 +717,7 @@ QComboBox* DecodeTrace::create_channel_selector(
 
 	QComboBox *selector = new QComboBox(parent);
 
-	selector->addItem("-", qVariantFromValue((void*)NULL));
+	selector->addItem("-", qVariantFromValue((void*)nullptr));
 
 	if (channel_iter == dec->channels().end())
 		selector->setCurrentIndex(0);

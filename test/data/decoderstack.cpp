@@ -39,12 +39,12 @@ BOOST_AUTO_TEST_SUITE(DecoderStackTest)
 
 BOOST_AUTO_TEST_CASE(TwoDecoderStack)
 {
-	sr_context *ctx = NULL;
+	sr_context *ctx = nullptr;
 
 	BOOST_REQUIRE(sr_init(&ctx) == SR_OK);
 	BOOST_REQUIRE(ctx);
 
-	BOOST_REQUIRE(srd_init(NULL) == SRD_OK);
+	BOOST_REQUIRE(srd_init(nullptr) == SRD_OK);
 
 	srd_decoder_load_all();
 

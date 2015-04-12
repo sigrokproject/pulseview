@@ -36,7 +36,7 @@ String::String(QString name,
 	Getter getter,
 	Setter setter) :
 	Property(name, getter, setter),
-	line_edit_(NULL)
+	line_edit_(nullptr)
 {
 }
 
@@ -46,11 +46,11 @@ QWidget* String::get_widget(QWidget *parent, bool auto_commit)
 		return line_edit_;
 
 	if (!getter_)
-		return NULL;
+		return nullptr;
 
 	Glib::VariantBase variant = getter_();
 	if (!variant.gobj())
-		return NULL;
+		return nullptr;
 
 	string value = Glib::VariantBase::cast_dynamic<Glib::Variant<ustring>>(
 		variant).get();

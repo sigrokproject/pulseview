@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
 		};
 
 		const int c = getopt_long(argc, argv,
-			"l:Vh?", long_options, NULL);
+			"l:Vh?", long_options, nullptr);
 		if (c == -1)
 			break;
 
@@ -129,7 +129,7 @@ int main(int argc, char *argv[])
 
 #ifdef ENABLE_DECODE
 		// Initialise libsigrokdecode
-		if (srd_init(NULL) != SRD_OK) {
+		if (srd_init(nullptr) != SRD_OK) {
 			qDebug() << "ERROR: libsigrokdecode init failed.";
 			break;
 		}

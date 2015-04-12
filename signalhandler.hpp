@@ -33,7 +33,7 @@ public:
 	static bool prepare_signals();
 
 public:
-	explicit SignalHandler(QObject* parent = NULL);
+	explicit SignalHandler(QObject* parent = nullptr);
 
 Q_SIGNALS:
 	void int_received();

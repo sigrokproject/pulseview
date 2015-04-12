@@ -129,7 +129,7 @@ srd_decoder_inst* Decoder::create_decoder_inst(srd_session *session, int unit_si
 	g_hash_table_destroy(opt_hash);
 
 	if(!decoder_inst)
-		return NULL;
+		return nullptr;
 
 	// Setup the channels
 	GHashTable *const channels = g_hash_table_new_full(g_str_hash,
