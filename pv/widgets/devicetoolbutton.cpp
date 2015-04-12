@@ -72,8 +72,8 @@ void DeviceToolButton::set_device_list(
 	const list< shared_ptr<Device> > &devices, shared_ptr<Device> selected)
 {
 	selected_device_ = selected;
-	setText(QString::fromStdString(
-		selected->display_name(device_manager_)));
+	setText(selected ? QString::fromStdString(
+		selected->display_name(device_manager_)) : "<No Device>");
 	devices_ = vector< weak_ptr<Device> >(devices.begin(), devices.end());
 	update_device_list();
 }
@@ -86,7 +86,7 @@ void DeviceToolButton::update_device_list()
 	menu_.addSeparator();
 
 	for (weak_ptr<Device> dev_weak_ptr : devices_) {
-		shared_ptr<Device> dev(dev_weak_ptr);
+		shared_ptr<Device> dev(dev_weak_ptr.lock());
 		if (!dev)
 			continue;
 
