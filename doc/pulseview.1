@@ -39,6 +39,15 @@ Show a help text and exit.
 .TP
 .B "\-V, \-\-version"
 Show version information and exit.
+.TP
+.BR "\-i, \-\-input\-file " <filename>
+Load input from a file. If the
+.B \-\-input\-format
+option is not supplied, pulseview attempts to load the file as a sigrok session
+file.
+.TP
+.BR "\-I, \-\-input\-format " <format>
+Specifies the format of the input file to be loaded.
 .SH "EXIT STATUS"
 .B PulseView
 exits with 0 on success, 1 on most failures.

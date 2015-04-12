@@ -78,7 +78,8 @@ private:
 
 public:
 	explicit MainWindow(DeviceManager &device_manager,
-		const char *open_file_name = nullptr,
+		std::string open_file_name = std::string(),
+		std::string open_file_format = std::string(),
 		QWidget *parent = 0);
 
 	QAction* action_open() const;
@@ -107,6 +108,11 @@ public Q_SLOTS:
 private:
 	void setup_ui();
 
+	void select_init_device();
+
+	void load_init_file(const std::string &file_name,
+		const std::string &format);
+
 	void save_ui_settings();
 
 	void restore_ui_settings();
@@ -118,17 +124,17 @@ private:
 	 */
 	void update_device_list();	
 
+	void load_file(QString file_name,
+		std::shared_ptr<sigrok::InputFormat> format = nullptr,
+		const std::map<std::string, Glib::VariantBase> &options =
+			std::map<std::string, Glib::VariantBase>());
+
 private:
 	void closeEvent(QCloseEvent *event);
 
 	void keyReleaseEvent(QKeyEvent *event);
 
 private Q_SLOTS:
-	void load_file(QString file_name,
-		std::shared_ptr<sigrok::InputFormat> format = nullptr,
-		const std::map<std::string, Glib::VariantBase> &options =
-			std::map<std::string, Glib::VariantBase>());
-
 	void show_session_error(
 		const QString text, const QString info_text);
 

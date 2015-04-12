@@ -68,8 +68,11 @@
 #include <glib.h>
 #include <libsigrokcxx/libsigrokcxx.hpp>
 
+using std::cerr;
+using std::endl;
 using std::list;
 using std::map;
+using std::pair;
 using std::shared_ptr;
 using std::string;
 using std::vector;
@@ -90,7 +93,7 @@ const char *MainWindow::SettingOpenDirectory = "MainWindow/OpenDirectory";
 const char *MainWindow::SettingSaveDirectory = "MainWindow/SaveDirectory";
 
 MainWindow::MainWindow(DeviceManager &device_manager,
-	const char *open_file_name,
+	string open_file_name, string open_file_format,
 	QWidget *parent) :
 	QMainWindow(parent),
 	device_manager_(device_manager),
@@ -111,12 +114,10 @@ MainWindow::MainWindow(DeviceManager &device_manager,
 {
 	setup_ui();
 	restore_ui_settings();
-	if (open_file_name) {
-		const QString s(QString::fromUtf8(open_file_name));
-		QMetaObject::invokeMethod(this, "load_file",
-			Qt::QueuedConnection,
-			Q_ARG(QString, s));
-	}
+	if (open_file_name.empty())
+		select_init_device();
+	else
+		load_init_file(open_file_name, open_file_format);
 }
 
 QAction* MainWindow::action_open() const
@@ -470,6 +471,59 @@ void MainWindow::setup_ui()
 		SLOT(device_selected()));
 }
 
+void MainWindow::select_init_device() {
+	QSettings settings;
+	map<string, string> dev_info;
+	list<string> key_list;
+
+	// Re-select last used device if possible.
+	settings.beginGroup("Device");
+	key_list.push_back("vendor");
+	key_list.push_back("model");
+	key_list.push_back("version");
+	key_list.push_back("serial_num");
+	key_list.push_back("connection_id");
+
+	for (string key : key_list) {
+		const QString k = QString::fromStdString(key);
+		if (!settings.contains(k))
+			continue;
+
+		const string value = settings.value(k).toString().toStdString();
+		if (!value.empty())
+			dev_info.insert(std::make_pair(key, value));
+	}
+
+	const shared_ptr<devices::HardwareDevice> device =
+		device_manager_.find_device_from_info(dev_info);
+	select_device(device);
+	update_device_list();
+
+	settings.endGroup();
+}
+
+void MainWindow::load_init_file(const std::string &file_name,
+	const std::string &format) {
+	shared_ptr<InputFormat> input_format;
+
+	if (!format.empty()) {
+		const map<string, shared_ptr<InputFormat> > formats =
+			device_manager_.context()->input_formats();
+		const auto iter = find_if(formats.begin(), formats.end(),
+			[&](const pair<string, shared_ptr<InputFormat> > f) {
+				return f.first == format; });
+		if (iter == formats.end()) {
+			cerr << "Unexpected input format: " << format << endl;
+			return;
+		}
+
+		input_format = (*iter).second;
+	}
+
+	load_file(QString::fromStdString(file_name), input_format);
+}
+
+
 void MainWindow::save_ui_settings()
 {
 	QSettings settings;
@@ -510,9 +564,6 @@ void MainWindow::restore_ui_settings()
 {
 	QSettings settings;
 
-	map<string, string> dev_info;
-	list<string> key_list;
-
 	settings.beginGroup("MainWindow");
 
 	if (settings.contains("geometry")) {
@@ -520,31 +571,6 @@ void MainWindow::restore_ui_settings()
 		restoreState(settings.value("state").toByteArray());
 	} else
 		resize(1000, 720);
-
-	settings.endGroup();
-
-	// Re-select last used device if possible.
-	settings.beginGroup("Device");
-	key_list.push_back("vendor");
-	key_list.push_back("model");
-	key_list.push_back("version");
-	key_list.push_back("serial_num");
-	key_list.push_back("connection_id");
-
-	for (string key : key_list) {
-		const QString k = QString::fromStdString(key);
-		if (!settings.contains(k))
-			continue;
-
-		const string value = settings.value(k).toString().toStdString();
-		if (!value.empty())
-			dev_info.insert(std::make_pair(key, value));
-	}
-
-	const shared_ptr<devices::HardwareDevice> device =
-		device_manager_.find_device_from_info(dev_info);
-	select_device(device);
-	update_device_list();
 
 	settings.endGroup();
 }
@@ -560,21 +586,6 @@ void MainWindow::session_error(
 void MainWindow::update_device_list()
 {
 	main_bar_->update_device_list();
-}
-
-void MainWindow::closeEvent(QCloseEvent *event)
-{
-	save_ui_settings();
-	event->accept();
-}
-
-void MainWindow::keyReleaseEvent(QKeyEvent *event)
-{
-	if (event->key() == Qt::Key_Alt) {
-		menuBar()->setHidden(!menuBar()->isHidden());
-		menuBar()->setFocus();
-	}
-	QMainWindow::keyReleaseEvent(event);
 }
 
 void MainWindow::load_file(QString file_name,
@@ -608,6 +619,21 @@ void MainWindow::load_file(QString file_name,
 
 	session_.start_capture([&, errorMessage, infoMessage](QString) {
 		session_error(errorMessage, infoMessage); });
+}
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+	save_ui_settings();
+	event->accept();
+}
+
+void MainWindow::keyReleaseEvent(QKeyEvent *event)
+{
+	if (event->key() == Qt::Key_Alt) {
+		menuBar()->setHidden(!menuBar()->isHidden());
+		menuBar()->setFocus();
+	}
+	QMainWindow::keyReleaseEvent(event);
 }
 
 void MainWindow::show_session_error(

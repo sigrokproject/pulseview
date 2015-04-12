@@ -53,7 +53,7 @@ void usage()
 {
 	fprintf(stdout,
 		"Usage:\n"
-		"  %s [OPTION…] [FILE] — %s\n"
+		"  %s [OPTION…] — %s\n"
 		"\n"
 		"Help Options:\n"
 		"  -h, -?, --help                  Show help option\n"
@@ -61,6 +61,8 @@ void usage()
 		"Application Options:\n"
 		"  -V, --version                   Show release version\n"
 		"  -l, --loglevel                  Set libsigrok/libsigrokdecode loglevel\n"
+		"  -i, --input-file                Load input from file\n"
+		"  -I, --input-format              Input format\n"
 		"\n", PV_BIN_NAME, PV_DESCRIPTION);
 }
 
@@ -68,7 +70,7 @@ int main(int argc, char *argv[])
 {
 	int ret = 0;
 	std::shared_ptr<sigrok::Context> context;
-	const char *open_file = NULL;
+	std::string open_file, open_file_format;
 
 	Application a(argc, argv);
 
@@ -83,11 +85,13 @@ int main(int argc, char *argv[])
 			{"help", no_argument, 0, 'h'},
 			{"version", no_argument, 0, 'V'},
 			{"loglevel", required_argument, 0, 'l'},
+			{"input-file", required_argument, 0, 'i'},
+			{"input-format", required_argument, 0, 'I'},
 			{0, 0, 0, 0}
 		};
 
 		const int c = getopt_long(argc, argv,
-			"l:Vh?", long_options, nullptr);
+			"l:Vh?i:I:", long_options, nullptr);
 		if (c == -1)
 			break;
 
@@ -113,14 +117,21 @@ int main(int argc, char *argv[])
 
 			break;
 		}
+
+		case 'i':
+			open_file = optarg;
+			break;
+
+		case 'I':
+			open_file_format = optarg;
+			break;
 		}
 	}
 
-	if (argc - optind > 1) {
-		fprintf(stderr, "Only one file can be openened.\n");
+	if (argc != optind) {
+		fprintf(stderr, "Unexpected argument: %s\n", argv[optind]);
 		return 1;
-	} else if (argc - optind == 1)
-		open_file = argv[argc - 1];
+	}
 
 	// Initialise libsigrok
 	context = sigrok::Context::create();
@@ -143,7 +154,8 @@ int main(int argc, char *argv[])
 			pv::DeviceManager device_manager(context);
 
 			// Initialise the main window
-			pv::MainWindow w(device_manager, open_file);
+			pv::MainWindow w(device_manager,
+				open_file, open_file_format);
 			w.show();
 
 #ifdef ENABLE_SIGNALS
