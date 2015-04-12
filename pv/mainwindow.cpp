@@ -509,7 +509,6 @@ void MainWindow::restore_ui_settings()
 
 	map<string, string> dev_info;
 	list<string> key_list;
-	string value;
 
 	settings.beginGroup("MainWindow");
 
@@ -530,12 +529,12 @@ void MainWindow::restore_ui_settings()
 	key_list.push_back("connection_id");
 
 	for (string key : key_list) {
-		if (!settings.contains(QString::fromUtf8(key.c_str())))
+		const QString k = QString::fromStdString(key);
+		if (!settings.contains(k))
 			continue;
 
-		value = settings.value(QString::fromUtf8(key.c_str())).toString().toStdString();
-
-		if (value.size() > 0)
+		const string value = settings.value(k).toString().toStdString();
+		if (!value.empty())
 			dev_info.insert(std::make_pair(key, value));
 	}
 
