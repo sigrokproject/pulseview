@@ -169,15 +169,15 @@ void Session::start_capture(function<void (const QString)> error_handler)
 
 	// Check that at least one channel is enabled
 	assert(device_);
-	const std::shared_ptr<sigrok::Device> device = device_->device();
-	assert(device);
-	auto channels = device->channels();
-	bool enabled = std::any_of(channels.begin(), channels.end(),
-		[](shared_ptr<Channel> channel) { return channel->enabled(); });
-
-	if (!enabled) {
-		error_handler(tr("No channels enabled."));
-		return;
+	const shared_ptr<sigrok::Device> sr_dev = device_->device();
+	if (sr_dev) {
+		const auto channels = sr_dev->channels();
+		if (!std::any_of(channels.begin(), channels.end(),
+			[](shared_ptr<Channel> channel) {
+				return channel->enabled(); })) {
+			error_handler(tr("No channels enabled."));
+			return;
+		}
 	}
 
 	// Begin the session
@@ -305,7 +305,8 @@ void Session::set_capture_state(capture_state state)
 void Session::update_signals()
 {
 	assert(device_);
-	assert(capture_state_ == Stopped);
+
+	lock_guard<recursive_mutex> lock(data_mutex_);
 
 	const shared_ptr<sigrok::Device> sr_dev = device_->device();
 	if (!sr_dev) {
@@ -467,8 +468,10 @@ void Session::feed_in_logic(shared_ptr<Logic> logic)
 
 	if (!logic_data_)
 	{
-		qDebug() << "Unexpected logic packet";
-		return;
+		// The only reason logic_data_ would not have been created is
+		// if it was not possible to determine the signals when the
+		// device was created.
+		update_signals();
 	}
 
 	if (!cur_logic_segment_)
