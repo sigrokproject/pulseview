@@ -136,8 +136,6 @@ private:
 	std::shared_ptr<view::Signal> signal_from_channel(
 		std::shared_ptr<sigrok::Channel> channel) const;
 
-	void read_sample_rate(std::shared_ptr<sigrok::Device> device);
-
 private:
 	void sample_thread_proc(std::shared_ptr<devices::Device> device,
 		std::function<void (const QString)> error_handler);

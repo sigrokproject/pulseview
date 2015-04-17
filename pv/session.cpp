@@ -405,31 +405,13 @@ shared_ptr<view::Signal> Session::signal_from_channel(
 	return shared_ptr<view::Signal>();
 }
 
-void Session::read_sample_rate(shared_ptr<sigrok::Device> device)
-{
-	assert(device);
-	map< const ConfigKey*, set<sigrok::Capability> > keys;
-
-	try {
-		keys = device->config_keys(ConfigKey::DEVICE_OPTIONS);
-	} catch (const Error) {}
-
-	const auto iter = keys.find(ConfigKey::SAMPLERATE);
-	cur_samplerate_ = (iter != keys.end() &&
-		(*iter).second.find(sigrok::GET) != (*iter).second.end()) ?
-		VariantBase::cast_dynamic<Variant<guint64>>(
-			device->config_get(ConfigKey::SAMPLERATE)).get() : 0;
-}
-
 void Session::sample_thread_proc(shared_ptr<devices::Device> device,
 	function<void (const QString)> error_handler)
 {
 	assert(device);
 	assert(error_handler);
 
-	const std::shared_ptr<sigrok::Device> sr_dev = device->device();
-	assert(sr_dev);
-	read_sample_rate(sr_dev);
+	cur_samplerate_ = device_->read_config<uint64_t>(ConfigKey::SAMPLERATE);
 
 	try {
 		device_->session()->start();
@@ -454,7 +436,7 @@ void Session::sample_thread_proc(shared_ptr<devices::Device> device,
 
 void Session::feed_in_header()
 {
-	read_sample_rate(device_->device());
+	cur_samplerate_ = device_->read_config<uint64_t>(ConfigKey::SAMPLERATE);
 }
 
 void Session::feed_in_meta(shared_ptr<Meta> meta)

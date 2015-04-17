@@ -25,6 +25,7 @@
 #include <string>
 
 namespace sigrok {
+class ConfigKey;
 class Device;
 class Session;
 } // namespace sigrok
@@ -46,6 +47,9 @@ public:
 	std::shared_ptr<sigrok::Session> session() const;
 
 	std::shared_ptr<sigrok::Device> device() const;
+
+	template<typename T>
+	T read_config(const sigrok::ConfigKey *key, const T default_value = 0);
 
 	/**
 	 * Builds the full name. It only contains all the fields.

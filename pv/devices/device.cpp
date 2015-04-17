@@ -24,6 +24,15 @@
 
 #include "device.hpp"
 
+using std::map;
+using std::set;
+
+using sigrok::ConfigKey;
+using sigrok::Error;
+
+using Glib::VariantBase;
+using Glib::Variant;
+
 namespace pv {
 namespace devices {
 
@@ -41,6 +50,34 @@ std::shared_ptr<sigrok::Session> Device::session() const {
 
 std::shared_ptr<sigrok::Device> Device::device() const {
 	return device_;
+}
+
+template
+uint64_t Device::read_config(const sigrok::ConfigKey*,
+	const uint64_t);
+
+template<typename T>
+T Device::read_config(const ConfigKey *key, const T default_value)
+{
+	assert(key);
+	map< const ConfigKey*, set<sigrok::Capability> > keys;
+
+	if (!device_)
+		return default_value;
+
+	try {
+		keys = device_->config_keys(ConfigKey::DEVICE_OPTIONS);
+	} catch (const Error) {
+		return default_value;
+	}
+
+	const auto iter = keys.find(key);
+	if (iter == keys.end() ||
+		(*iter).second.find(sigrok::GET) != (*iter).second.end())
+		return default_value;
+
+	return VariantBase::cast_dynamic<Variant<T>>(
+		device_->config_get(ConfigKey::SAMPLERATE)).get();
 }
 
 void Device::run() {
