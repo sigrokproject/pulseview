@@ -477,18 +477,8 @@ void Session::feed_in_logic(shared_ptr<Logic> logic)
 		set_capture_state(Running);
 
 		// Get sample limit.
-		assert(device_);
-		const std::shared_ptr<sigrok::Device> device =
-			device_->device();
-		assert(device);
-		const auto keys = device->config_keys(
-			ConfigKey::DEVICE_OPTIONS);
-		const auto iter = keys.find(ConfigKey::LIMIT_SAMPLES);
-		const uint64_t sample_limit = (iter != keys.end() &&
-			(*iter).second.find(sigrok::GET) !=
-			(*iter).second.end()) ?
-			VariantBase::cast_dynamic<Variant<guint64>>(
-			device->config_get(ConfigKey::LIMIT_SAMPLES)).get() : 0;
+		const uint64_t sample_limit = device_->read_config<uint64_t>(
+			ConfigKey::LIMIT_SAMPLES);
 
 		// Create a new data segment
 		cur_logic_segment_ = shared_ptr<data::LogicSegment>(
