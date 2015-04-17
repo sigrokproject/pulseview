@@ -133,7 +133,7 @@ void Session::set_device(shared_ptr<devices::Device> device)
 		(shared_ptr<sigrok::Device> device, shared_ptr<Packet> packet) {
 			data_feed_in(device, packet);
 		});
-	update_signals(device_);
+	update_signals();
 
 	decode_traces_.clear();
 
@@ -301,12 +301,12 @@ void Session::set_capture_state(capture_state state)
 		capture_state_changed(state);
 }
 
-void Session::update_signals(shared_ptr<devices::Device> device)
+void Session::update_signals()
 {
-	assert(device);
+	assert(device_);
 	assert(capture_state_ == Stopped);
 
-	const shared_ptr<sigrok::Device> sr_dev = device->device();
+	const shared_ptr<sigrok::Device> sr_dev = device_->device();
 	if (!sr_dev) {
 		signals_.clear();
 		logic_data_.reset();
@@ -364,7 +364,7 @@ void Session::update_signals(shared_ptr<devices::Device> device)
 				case SR_CHANNEL_LOGIC:
 					signal = shared_ptr<view::Signal>(
 						new view::LogicSignal(*this,
-							device,	channel,
+							device_, channel,
 							logic_data_));
 					break;
 

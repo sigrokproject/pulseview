@@ -131,7 +131,7 @@ public:
 private:
 	void set_capture_state(capture_state state);
 
-	void update_signals(std::shared_ptr<devices::Device> device);
+	void update_signals();
 
 	std::shared_ptr<view::Signal> signal_from_channel(
 		std::shared_ptr<sigrok::Channel> channel) const;
