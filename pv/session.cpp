@@ -60,6 +60,7 @@ using std::lock_guard;
 using std::list;
 using std::map;
 using std::mutex;
+using std::recursive_mutex;
 using std::set;
 using std::shared_ptr;
 using std::string;
@@ -322,7 +323,7 @@ void Session::update_signals()
 
 	// Create data containers for the logic data segments
 	{
-		lock_guard<mutex> data_lock(data_mutex_);
+		lock_guard<recursive_mutex> data_lock(data_mutex_);
 
 		if (logic_channel_count == 0) {
 			logic_data_.reset();
@@ -480,7 +481,7 @@ void Session::feed_in_frame_begin()
 
 void Session::feed_in_logic(shared_ptr<Logic> logic)
 {
-	lock_guard<mutex> lock(data_mutex_);
+	lock_guard<recursive_mutex> lock(data_mutex_);
 
 	if (!logic_data_)
 	{
@@ -530,7 +531,7 @@ void Session::feed_in_logic(shared_ptr<Logic> logic)
 
 void Session::feed_in_analog(shared_ptr<Analog> analog)
 {
-	lock_guard<mutex> lock(data_mutex_);
+	lock_guard<recursive_mutex> lock(data_mutex_);
 
 	const vector<shared_ptr<Channel>> channels = analog->channels();
 	const unsigned int channel_count = channels.size();
@@ -634,7 +635,7 @@ void Session::data_feed_in(shared_ptr<sigrok::Device> device,
 	case SR_DF_END:
 	{
 		{
-			lock_guard<mutex> lock(data_mutex_);
+			lock_guard<recursive_mutex> lock(data_mutex_);
 			cur_logic_segment_.reset();
 			cur_analog_segments_.clear();
 		}

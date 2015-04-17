@@ -167,7 +167,7 @@ private:
 	mutable boost::shared_mutex signals_mutex_;
 	std::unordered_set< std::shared_ptr<view::Signal> > signals_;
 
-	mutable std::mutex data_mutex_;
+	mutable std::recursive_mutex data_mutex_;
 	std::shared_ptr<data::Logic> logic_data_;
 	uint64_t cur_samplerate_;
 	std::shared_ptr<data::LogicSegment> cur_logic_segment_;
