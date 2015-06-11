@@ -23,7 +23,7 @@
 #include <string>
 #include <utility>
 
-#include <libsigrok/libsigrok.hpp>
+#include <libsigrokcxx/libsigrokcxx.hpp>
 
 #include "importmenu.hpp"
 
