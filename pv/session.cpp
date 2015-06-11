@@ -411,6 +411,8 @@ void Session::sample_thread_proc(shared_ptr<devices::Device> device,
 	assert(device);
 	assert(error_handler);
 
+	(void)device;
+
 	cur_samplerate_ = device_->read_config<uint64_t>(ConfigKey::SAMPLERATE);
 
 	try {
