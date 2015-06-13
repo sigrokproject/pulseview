@@ -22,7 +22,9 @@
 
 #include "rowitem.hpp"
 #include "rowitemowner.hpp"
+#include "trace.hpp"
 
+using std::dynamic_pointer_cast;
 using std::max;
 using std::make_pair;
 using std::min;
@@ -100,6 +102,21 @@ set< RowItemOwner* > RowItemOwner::list_row_item_owners()
 		owners.insert(r->owner());
 	return owners;
 }
+
+template<class T>
+set< shared_ptr<T> > RowItemOwner::list_by_type()
+{
+	set< shared_ptr<T> > items;
+	for (const auto &r : *this) {
+		shared_ptr<T> p = dynamic_pointer_cast<T>(r);
+		if (p)
+			items.insert(p);
+	}
+
+	return items;
+}
+
+template set< shared_ptr<Trace> > RowItemOwner::list_by_type();
 
 pair<int, int> RowItemOwner::v_extents() const
 {

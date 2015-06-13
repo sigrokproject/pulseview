@@ -125,6 +125,12 @@ public:
 	std::set< RowItemOwner* > list_row_item_owners();
 
 	/**
+	 * Creates a list of decendant signals filtered by type.
+	 */
+	template<class T>
+	std::set< std::shared_ptr<T> > list_by_type();
+
+	/**
 	 * Computes the vertical extents of the contents of this row item owner.
 	 * @return A pair containing the minimum and maximum y-values.
 	 */
