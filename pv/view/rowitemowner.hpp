@@ -119,6 +119,12 @@ public:
 	const_iterator end() const;
 
 	/**
+	 * Makes a list of row item owners of all the row items that are
+	 * decendants of this item.
+	 */
+	std::set< RowItemOwner* > list_row_item_owners();
+
+	/**
 	 * Computes the vertical extents of the contents of this row item owner.
 	 * @return A pair containing the minimum and maximum y-values.
 	 */

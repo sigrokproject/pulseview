@@ -27,6 +27,7 @@ using std::max;
 using std::make_pair;
 using std::min;
 using std::pair;
+using std::set;
 using std::shared_ptr;
 using std::vector;
 
@@ -90,6 +91,14 @@ RowItemOwner::const_iterator RowItemOwner::begin() const
 RowItemOwner::const_iterator RowItemOwner::end() const
 {
 	return const_iterator(this);
+}
+
+set< RowItemOwner* > RowItemOwner::list_row_item_owners()
+{
+	set< RowItemOwner* > owners;
+	for (const auto &r : *this)
+		owners.insert(r->owner());
+	return owners;
 }
 
 pair<int, int> RowItemOwner::v_extents() const

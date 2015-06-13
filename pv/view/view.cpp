@@ -401,12 +401,8 @@ void View::update_viewport()
 
 void View::restack_all_row_items()
 {
-	// Make a set of owners
-	unordered_set< RowItemOwner* > owners;
-	for (const auto &r : *this)
-		owners.insert(r->owner());
-
-	// Make a list that is sorted from deepest first
+	// Make a list of owners that is sorted from deepest first
+	const auto owners = list_row_item_owners();
 	vector< RowItemOwner* > sorted_owners(owners.begin(), owners.end());
 	sort(sorted_owners.begin(), sorted_owners.end(),
 		[](const RowItemOwner* a, const RowItemOwner *b) {
