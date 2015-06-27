@@ -91,7 +91,7 @@ View::View(Session &session, QWidget *parent) :
 	viewport_(new Viewport(*this)),
 	ruler_(new Ruler(*this)),
 	header_(new Header(*this)),
-	scale_(1e-6),
+	scale_(1e-3),
 	offset_(0),
 	updating_scroll_(false),
 	tick_period_(0.0),
