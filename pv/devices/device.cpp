@@ -73,7 +73,7 @@ T Device::read_config(const ConfigKey *key, const T default_value)
 
 	const auto iter = keys.find(key);
 	if (iter == keys.end() ||
-		(*iter).second.find(sigrok::GET) != (*iter).second.end())
+		(*iter).second.find(sigrok::GET) == (*iter).second.end())
 		return default_value;
 
 	return VariantBase::cast_dynamic<Variant<T>>(
