@@ -101,8 +101,6 @@ shared_ptr<Channel> Signal::channel() const
 
 void Signal::populate_popup_form(QWidget *parent, QFormLayout *form)
 {
-	int index;
-
 	name_widget_ = new QComboBox(parent);
 	name_widget_->setEditable(true);
 	name_widget_->setCompleter(0);
@@ -110,7 +108,7 @@ void Signal::populate_popup_form(QWidget *parent, QFormLayout *form)
 	for(unsigned int i = 0; i < countof(ChannelNames); i++)
 		name_widget_->insertItem(i, ChannelNames[i]);
 
-	index = name_widget_->findText(name_, Qt::MatchExactly);
+	const int index = name_widget_->findText(name_, Qt::MatchExactly);
 
 	if (index == -1) {
 		name_widget_->insertItem(0, name_);
