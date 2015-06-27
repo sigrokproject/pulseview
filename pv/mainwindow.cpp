@@ -453,6 +453,10 @@ void MainWindow::setup_ui()
 	setMenuBar(menu_bar);
 	QMetaObject::connectSlotsByName(this);
 
+	// Also add all actions to the main window for always-enabled hotkeys
+	for (QAction* action : menu_bar->actions())
+		this->addAction(action);
+
 	// Setup the toolbar
 	main_bar_ = new toolbars::MainBar(session_, *this);
 
