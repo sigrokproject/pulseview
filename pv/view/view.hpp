@@ -39,6 +39,10 @@
 #include "flag.hpp"
 #include "rowitemowner.hpp"
 
+namespace sigrok {
+class ChannelGroup;
+}
+
 namespace pv {
 
 class Session;
@@ -48,6 +52,7 @@ namespace view {
 class CursorHeader;
 class Header;
 class Ruler;
+class Trace;
 class Viewport;
 
 class View : public QAbstractScrollArea, public RowItemOwner {
@@ -231,16 +236,17 @@ private:
 	 */
 	QRectF label_rect(const QRectF &rect);
 
-	static bool add_channels_to_owner(
-		const std::vector< std::shared_ptr<sigrok::Channel> > &channels,
-		RowItemOwner *owner, int &offset,
-		std::unordered_map<std::shared_ptr<sigrok::Channel>,
-			std::shared_ptr<Signal> > &signal_map,
-		std::function<bool (std::shared_ptr<RowItem>)> filter_func =
-			std::function<bool (std::shared_ptr<RowItem>)>());
+	RowItemOwner* find_prevalent_trace_group(
+		const std::shared_ptr<sigrok::ChannelGroup> &group,
+		const std::unordered_map<std::shared_ptr<sigrok::Channel>,
+			std::shared_ptr<Signal> > &signal_map);
 
-	static void apply_offset(
-		std::shared_ptr<RowItem> row_item, int &offset);
+	static std::vector< std::shared_ptr<Trace> >
+		extract_new_traces_for_channels(
+		const std::vector< std::shared_ptr<sigrok::Channel> > &channels,
+		const std::unordered_map<std::shared_ptr<sigrok::Channel>,
+			std::shared_ptr<Signal> > &signal_map,
+		std::set< std::shared_ptr<Trace> > &add_list);
 
 private:
 	bool eventFilter(QObject *object, QEvent *event);

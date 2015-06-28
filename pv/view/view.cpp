@@ -24,9 +24,11 @@
 
 #include <extdef.h>
 
+#include <algorithm>
 #include <cassert>
 #include <climits>
 #include <cmath>
+#include <iterator>
 #include <mutex>
 #include <unordered_set>
 
@@ -62,6 +64,7 @@ using pv::util::format_time;
 
 using std::deque;
 using std::dynamic_pointer_cast;
+using std::inserter;
 using std::list;
 using std::lock_guard;
 using std::max;
@@ -69,6 +72,7 @@ using std::make_pair;
 using std::min;
 using std::pair;
 using std::set;
+using std::set_difference;
 using std::shared_ptr;
 using std::unordered_map;
 using std::unordered_set;
@@ -529,43 +533,67 @@ QRectF View::label_rect(const QRectF &rect)
 	return QRectF();
 }
 
-bool View::add_channels_to_owner(
-	const vector< shared_ptr<sigrok::Channel> > &channels,
-	RowItemOwner *owner, int &offset,
-	unordered_map<shared_ptr<sigrok::Channel>, shared_ptr<Signal> >
-		&signal_map,
-	std::function<bool (shared_ptr<RowItem>)> filter_func)
+RowItemOwner* View::find_prevalent_trace_group(
+	const shared_ptr<sigrok::ChannelGroup> &group,
+	const unordered_map<shared_ptr<sigrok::Channel>, shared_ptr<Signal> >
+		&signal_map)
 {
-	bool any_added = false;
+	assert(group);
 
-	assert(owner);
+	unordered_set<RowItemOwner*> owners;
+	vector<RowItemOwner*> owner_list;
+
+	// Make a set and a list of all the owners
+	for (const auto &channel : group->channels()) {
+		const auto iter = signal_map.find(channel);
+		if (iter == signal_map.end())
+			continue;
+
+		RowItemOwner *const o = (*iter).second->owner();
+		owner_list.push_back(o);
+		owners.insert(o);
+	}
+
+	// Iterate through the list of owners, and find the most prevalent
+	size_t max_prevalence = 0;
+	RowItemOwner *prevalent_owner = nullptr;
+	for (RowItemOwner *owner : owners) {
+		const size_t prevalence = std::count_if(
+			owner_list.begin(), owner_list.end(),
+			[&](RowItemOwner *o) { return o == owner; });
+		if (prevalence > max_prevalence) {
+			max_prevalence = prevalence;
+			prevalent_owner = owner;
+		}
+	}
+
+	return prevalent_owner;
+}
+
+vector< shared_ptr<Trace> > View::extract_new_traces_for_channels(
+	const vector< shared_ptr<sigrok::Channel> > &channels,
+	const unordered_map<shared_ptr<sigrok::Channel>, shared_ptr<Signal> >
+		&signal_map,
+	set< shared_ptr<Trace> > &add_list)
+{
+	vector< shared_ptr<Trace> > filtered_traces;
 
 	for (const auto &channel : channels)
 	{
-		const auto iter = signal_map.find(channel);
-		if (iter == signal_map.end() ||
-			(filter_func && !filter_func((*iter).second)))
+		const auto map_iter = signal_map.find(channel);
+		if (map_iter == signal_map.end())
 			continue;
 
-		shared_ptr<RowItem> row_item = (*iter).second;
-		owner->add_child_item(row_item);
-		apply_offset(row_item, offset);
-		signal_map.erase(iter);
+		shared_ptr<Trace> trace = (*map_iter).second;
+		const auto list_iter = add_list.find(trace);
+		if (list_iter == add_list.end())
+			continue;
 
-		any_added = true;
+		filtered_traces.push_back(trace);
+		add_list.erase(list_iter);
 	}
 
-	return any_added;
-}
-
-void View::apply_offset(shared_ptr<RowItem> row_item, int &offset) {
-	assert(row_item);
-	const pair<int, int> extents = row_item->v_extents();
-	if (row_item->enabled())
-		offset += -extents.first;
-	row_item->force_to_v_offset(offset);
-	if (row_item->enabled())
-		offset += extents.second;
+	return filtered_traces;
 }
 
 bool View::eventFilter(QObject *object, QEvent *event)
@@ -667,10 +695,7 @@ void View::v_scroll_value_changed()
 
 void View::signals_changed()
 {
-	int offset = 0;
-
-	// Populate the traces
-	clear_child_items();
+	vector< shared_ptr<RowItem> > new_top_level_items;
 
 	const auto device = session_.device();
 	if (!device)
@@ -679,13 +704,34 @@ void View::signals_changed()
 	shared_ptr<sigrok::Device> sr_dev = device->device();
 	assert(sr_dev);
 
-	// Collect a set of signals
-	unordered_map<shared_ptr<sigrok::Channel>, shared_ptr<Signal> >
-		signal_map;
+	// Make a list of traces that are being added, and a list of traces
+	// that are being removed
+	const set<shared_ptr<Trace>> prev_traces = list_by_type<Trace>();
 
 	shared_lock<shared_mutex> lock(session_.signals_mutex());
 	const unordered_set< shared_ptr<Signal> > &sigs(session_.signals());
 
+	set< shared_ptr<Trace> > traces(sigs.begin(), sigs.end());
+
+#ifdef ENABLE_DECODE
+	const vector< shared_ptr<DecodeTrace> > decode_traces(
+		session().get_decode_signals());
+	traces.insert(decode_traces.begin(), decode_traces.end());
+#endif
+
+	set< shared_ptr<Trace> > add_traces;
+	set_difference(traces.begin(), traces.end(),
+		prev_traces.begin(), prev_traces.end(),
+		inserter(add_traces, add_traces.begin()));
+
+	set< shared_ptr<Trace> > remove_traces;
+	set_difference(prev_traces.begin(), prev_traces.end(),
+		traces.begin(), traces.end(),
+		inserter(remove_traces, remove_traces.begin()));
+
+	// Make a look-up table of sigrok Channels to pulseview Signals
+	unordered_map<shared_ptr<sigrok::Channel>, shared_ptr<Signal> >
+		signal_map;
 	for (const shared_ptr<Signal> &sig : sigs)
 		signal_map[sig->channel()] = sig;
 
@@ -697,46 +743,80 @@ void View::signals_changed()
 		if (group->channels().size() <= 1)
 			continue;
 
-		shared_ptr<TraceGroup> trace_group(new TraceGroup());
-		int child_offset = 0;
-		if (add_channels_to_owner(group->channels(),
-			trace_group.get(), child_offset, signal_map))
-		{
-			add_child_item(trace_group);
-			apply_offset(trace_group, offset);
+		// Find best trace group to add to
+		RowItemOwner *owner = find_prevalent_trace_group(
+			group, signal_map);
+
+		// If there is no trace group, create one
+		shared_ptr<TraceGroup> new_trace_group;
+		if (!owner) {
+			new_trace_group.reset(new TraceGroup());
+			owner = new_trace_group.get();
 		}
+
+		// Extract traces for the trace group, removing them from
+		// the add list
+		const vector< shared_ptr<Trace> > new_traces_in_group =
+			extract_new_traces_for_channels(group->channels(),
+				signal_map, add_traces);
+
+		// Add the traces to the group
+		const pair<int, int> prev_v_extents = owner->v_extents();
+		int offset = prev_v_extents.second - prev_v_extents.first;
+		for (shared_ptr<Trace> trace : new_traces_in_group) {
+			assert(trace);
+			owner->add_child_item(trace);
+
+			const pair<int, int> extents = trace->v_extents();
+			if (trace->enabled())
+				offset += -extents.first;
+			trace->force_to_v_offset(offset);
+			if (trace->enabled())
+				offset += extents.second;
+		}
+
+		// If this is a new group, enqueue it in the new top level
+		// items list
+		if (!new_traces_in_group.empty() && new_trace_group)
+			new_top_level_items.push_back(new_trace_group);
 	}
 
-	// Add the remaining logic channels
-	shared_ptr<TraceGroup> logic_trace_group(new TraceGroup());
-	int child_offset = 0;
+	// Enqueue the remaining channels as free ungrouped traces
+	const vector< shared_ptr<Trace> > new_top_level_signals =
+		extract_new_traces_for_channels(sr_dev->channels(),
+			signal_map, add_traces);
+	new_top_level_items.insert(new_top_level_items.end(),
+		new_top_level_signals.begin(), new_top_level_signals.end());
 
-	if (add_channels_to_owner(sr_dev->channels(),
-		logic_trace_group.get(), child_offset, signal_map,
-		[](shared_ptr<RowItem> r) -> bool {
-			return dynamic_pointer_cast<LogicSignal>(r) != nullptr;
-			}))
+	// Enqueue any remaining traces i.e. decode traces
+	new_top_level_items.insert(new_top_level_items.end(),
+		add_traces.begin(), add_traces.end());
 
-	{
-		add_child_item(logic_trace_group);
-		apply_offset(logic_trace_group, offset);
+	// Remove any removed traces
+	for (shared_ptr<Trace> trace : remove_traces) {
+		RowItemOwner *const owner = trace->owner();
+		assert(owner);
+		owner->remove_child_item(trace);
 	}
 
-	// Add the remaining channels
-	add_channels_to_owner(sr_dev->channels(), this, offset, signal_map);
-	assert(signal_map.empty());
+	// Add and position the pending top levels items
+	for (auto item : new_top_level_items) {
+		add_child_item(item);
 
-	// Add decode signals
-#ifdef ENABLE_DECODE
-	const vector< shared_ptr<DecodeTrace> > decode_sigs(
-		session().get_decode_signals());
-	for (auto s : decode_sigs) {
-		add_child_item(s);
-		apply_offset(s, offset);
+		// Position the item after the last present item
+		int offset = v_extents().second;
+		const pair<int, int> extents = item->v_extents();
+		if (item->enabled())
+			offset += -extents.first;
+		item->force_to_v_offset(offset);
+		if (item->enabled())
+			offset += extents.second;
 	}
-#endif
 
 	update_layout();
+
+	header_->update();
+	viewport_->update();
 }
 
 void View::data_updated()
