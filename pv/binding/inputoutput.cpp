@@ -85,7 +85,7 @@ InputOutput::InputOutput(
 			prop = shared_ptr<Property>(new Bool(name, get, set));
 		else if (def_val.is_of_type(VariantType("d")))
 			prop = shared_ptr<Property>(new Double(name, 2, "",
-				nullptr, nullptr, get, set));
+				none, none, get, set));
 		else if (def_val.is_of_type(VariantType("i")) ||
 			def_val.is_of_type(VariantType("t")) ||
 			def_val.is_of_type(VariantType("u")))
