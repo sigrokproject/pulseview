@@ -101,17 +101,17 @@ string HardwareDevice::display_name(
 
 void HardwareDevice::create() {
 	// Open the device
-        try {
-                device_->open();
-        } catch(const sigrok::Error &e) {
-                throw QString(e.what());
-        }
+	try {
+		device_->open();
+	} catch(const sigrok::Error &e) {
+		throw QString(e.what());
+	}
 
-        device_open_ = true;
+	device_open_ = true;
 
-        // Set up the session
-        session_ = context_->create_session();
-        session_->add_device(device_);
+	// Set up the session
+	session_ = context_->create_session();
+	session_->add_device(device_);
 }
 
 } // namespace devices
