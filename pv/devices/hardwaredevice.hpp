@@ -57,6 +57,7 @@ public:
 
 private:
 	const std::shared_ptr<sigrok::Context> context_;
+	bool device_open_;
 };
 
 } // namespace devices

@@ -43,12 +43,15 @@ namespace devices {
 
 HardwareDevice::HardwareDevice(const std::shared_ptr<sigrok::Context> &context,
 	std::shared_ptr<sigrok::HardwareDevice> device) :
-	context_(context) {
+	context_(context),
+	device_open_(false) {
 	device_ = device;
 }
 
 HardwareDevice::~HardwareDevice() {
-	device_->close();
+	if (device_open_)
+		device_->close();
+
 	if (session_)
 		session_->remove_devices();
 }
@@ -103,6 +106,8 @@ void HardwareDevice::create() {
         } catch(const sigrok::Error &e) {
                 throw QString(e.what());
         }
+
+        device_open_ = true;
 
         // Set up the session
         session_ = context_->create_session();
