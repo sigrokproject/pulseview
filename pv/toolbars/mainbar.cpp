@@ -507,9 +507,6 @@ void MainBar::commit_sample_rate()
 {
 	uint64_t sample_rate = 0;
 
-	if (updating_sample_rate_)
-		return;
-
 	const shared_ptr<devices::Device> device =
 		device_selector_.selected_device();
 	if (!device)
@@ -521,18 +518,14 @@ void MainBar::commit_sample_rate()
 	if (sample_rate == 0)
 		return;
 
-	// Set the samplerate
-	assert(!updating_sample_rate_);
-	updating_sample_rate_ = true;
 	try {
 		sr_dev->config_set(ConfigKey::SAMPLERATE,
 			Glib::Variant<guint64>::create(sample_rate));
-		on_config_changed();
+		update_sample_rate_selector();
 	} catch (Error error) {
 		qDebug() << "Failed to configure samplerate.";
 		return;
 	}
-	updating_sample_rate_ = false;
 }
 
 void MainBar::on_device_selected()
@@ -553,7 +546,8 @@ void MainBar::on_sample_count_changed()
 
 void MainBar::on_sample_rate_changed()
 {
-	commit_sample_rate();
+	if (!updating_sample_rate_)
+		commit_sample_rate();
 }
 
 void MainBar::on_run_stop()
@@ -566,9 +560,8 @@ void MainBar::on_run_stop()
 void MainBar::on_config_changed()
 {
 	commit_sample_count();
-	update_sample_count_selector();	
+	update_sample_count_selector();
 	commit_sample_rate();	
-	update_sample_rate_selector();
 }
 
 bool MainBar::eventFilter(QObject *watched, QEvent *event)
