@@ -474,9 +474,6 @@ void MainBar::commit_sample_count()
 {
 	uint64_t sample_count = 0;
 
-	if (updating_sample_count_)
-		return;
-
 	const shared_ptr<devices::Device> device =
 		device_selector_.selected_device();
 	if (!device)
@@ -485,22 +482,17 @@ void MainBar::commit_sample_count()
 	const shared_ptr<sigrok::Device> sr_dev = device->device();
 
 	sample_count = sample_count_.value();
-
-	// Set the sample count
-	assert(!updating_sample_count_);
-	updating_sample_count_ = true;
 	if (sample_count_supported_)
 	{
 		try {
 			sr_dev->config_set(ConfigKey::LIMIT_SAMPLES,
 				Glib::Variant<guint64>::create(sample_count));
-			on_config_changed();
+			update_sample_count_selector();
 		} catch (Error error) {
 			qDebug() << "Failed to configure sample count.";
 			return;
 		}
 	}
-	updating_sample_count_ = false;
 }
 
 void MainBar::commit_sample_rate()
@@ -541,7 +533,8 @@ void MainBar::on_device_selected()
 
 void MainBar::on_sample_count_changed()
 {
-	commit_sample_count();
+	if (!updating_sample_count_)
+		commit_sample_count();
 }
 
 void MainBar::on_sample_rate_changed()
@@ -560,7 +553,6 @@ void MainBar::on_run_stop()
 void MainBar::on_config_changed()
 {
 	commit_sample_count();
-	update_sample_count_selector();
 	commit_sample_rate();	
 }
 
