@@ -493,6 +493,11 @@ void MainBar::commit_sample_count()
 			return;
 		}
 	}
+
+	// Devices with built-in memory might impose limits on certain
+	// configurations, so let's check what sample rate the driver
+	// lets us use now.
+	update_sample_rate_selector();
 }
 
 void MainBar::commit_sample_rate()
@@ -518,6 +523,11 @@ void MainBar::commit_sample_rate()
 		qDebug() << "Failed to configure samplerate.";
 		return;
 	}
+
+	// Devices with built-in memory might impose limits on certain
+	// configurations, so let's check what sample count the driver
+	// lets us use now.
+	update_sample_count_selector();
 }
 
 void MainBar::on_device_selected()
