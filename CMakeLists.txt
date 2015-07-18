@@ -123,7 +123,7 @@ set(PV_TITLE PulseView)
 set(PV_DESCRIPTION "A GUI for sigrok")
 
 include(GetGitRevisionDescription)
-git_describe(PV_NAME_VERSION_STRING)
+git_describe(PV_NAME_VERSION_STRING --tags --dirty)
 
 if(NOT PV_NAME_VERSION_STRING)
 	# Read the version from a file that is distributed with

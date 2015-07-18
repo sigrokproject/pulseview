@@ -107,7 +107,7 @@ function(git_describe _var)
 	execute_process(COMMAND
 		"${GIT_EXECUTABLE}"
 		describe
-		${hash}
+#		${hash} commented to make --dirty work
 		${ARGN}
 		WORKING_DIRECTORY
 		"${CMAKE_SOURCE_DIR}"
