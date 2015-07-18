@@ -7,7 +7,7 @@ pulseview-test
 libpulseview.so
 
 # CMake cruft
-*.cmake
+/*.cmake
 CMakeCache.txt
 CMakeFiles/
 cotire/
@@ -48,5 +48,5 @@ android/src/org/qtproject/
 android/src/org/kde/
 
 # QtCreator cruft
-CMakeLists.txt.user
+/CMakeLists.txt.user*
 *.cbp
