@@ -65,10 +65,10 @@ endif()
 #= Dependencies
 #-------------------------------------------------------------------------------
 
-list(APPEND PKGDEPS libsigrokcxx>=0.3.0)
+list(APPEND PKGDEPS libsigrokcxx>=0.4.0)
 
 if(ENABLE_DECODE)
-	list(APPEND PKGDEPS libsigrokdecode>=0.3.0)
+	list(APPEND PKGDEPS libsigrokdecode>=0.4.0)
 endif()
 
 if(ANDROID)
