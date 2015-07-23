@@ -31,6 +31,11 @@ set(pulseview_TEST_SOURCES
 	${PROJECT_SOURCE_DIR}/pv/data/logicsegment.cpp
 	${PROJECT_SOURCE_DIR}/pv/data/segment.cpp
 	${PROJECT_SOURCE_DIR}/pv/data/signaldata.cpp
+	${PROJECT_SOURCE_DIR}/pv/devices/device.cpp
+	${PROJECT_SOURCE_DIR}/pv/devices/file.cpp
+	${PROJECT_SOURCE_DIR}/pv/devices/hardwaredevice.cpp
+	${PROJECT_SOURCE_DIR}/pv/devices/inputfile.cpp
+	${PROJECT_SOURCE_DIR}/pv/devices/sessionfile.cpp
 	${PROJECT_SOURCE_DIR}/pv/prop/bool.cpp
 	${PROJECT_SOURCE_DIR}/pv/prop/double.cpp
 	${PROJECT_SOURCE_DIR}/pv/prop/enum.cpp
@@ -75,6 +80,7 @@ set(pulseview_TEST_HEADERS
 	${PROJECT_SOURCE_DIR}/pv/session.hpp
 	${PROJECT_SOURCE_DIR}/pv/storesession.hpp
 	${PROJECT_SOURCE_DIR}/pv/binding/device.hpp
+	${PROJECT_SOURCE_DIR}/pv/devices/device.hpp
 	${PROJECT_SOURCE_DIR}/pv/popups/channels.hpp
 	${PROJECT_SOURCE_DIR}/pv/popups/deviceoptions.hpp
 	${PROJECT_SOURCE_DIR}/pv/prop/bool.hpp
