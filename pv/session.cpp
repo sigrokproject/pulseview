@@ -179,6 +179,11 @@ void Session::start_capture(function<void (const QString)> error_handler)
 		}
 	}
 
+	// Clear signal data
+	const set< shared_ptr<data::SignalData> > signal_data = get_data();
+	for (const shared_ptr<data::SignalData> d : signal_data)
+		d->clear();
+
 	// Begin the session
 	sampling_thread_ = std::thread(
 		&Session::sample_thread_proc, this, device_,
