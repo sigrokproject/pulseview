@@ -121,28 +121,39 @@ memaccess_check_unaligned_le(HAVE_UNALIGNED_LITTLE_ENDIAN_ACCESS)
 
 set(PV_TITLE PulseView)
 set(PV_DESCRIPTION "A GUI for sigrok")
+set(PV_VERSION_STRING "0.3.0")
 
 include(GetGitRevisionDescription)
-git_describe(PV_NAME_VERSION_STRING --tags --dirty)
+git_describe(PV_TAG_VERSION_STRING --tags --dirty)
 
-if(NOT PV_NAME_VERSION_STRING)
+if(NOT PV_TAG_VERSION_STRING)
 	# Read the version from a file that is distributed with
 	# the source package (see writepackageversion.cmake).
-	file(STRINGS "${PROJECT_SOURCE_DIR}/VERSION" PV_NAME_VERSION_STRING LIMIT_COUNT 1)
+	file(STRINGS "${PROJECT_SOURCE_DIR}/VERSION" PV_TAG_VERSION_STRING LIMIT_COUNT 1)
 endif()
 
-if(PV_NAME_VERSION_STRING MATCHES "^pulseview-([0-9]+)\\.([0-9]+)\\.([0-9]+)(-[-0-9a-z]+)?$")
+if(PV_TAG_VERSION_STRING MATCHES
+		"^pulseview-([0-9]+\\.[0-9]+\\.[0-9]+)(-[0-9a-z]+)?(-g[-0-9a-z]+)?$")
+	set(PV_TAG_VERSION ${CMAKE_MATCH_1})
+	set(PV_TAG_PATCHLEVEL ${CMAKE_MATCH_2})
+	set(PV_TAG_REVHASH ${CMAKE_MATCH_3})
+
+	if(PV_VERSION_STRING VERSION_GREATER ${PV_TAG_VERSION})
+		# Tagged version older than current one: indicate pre-release.
+		set(PV_VERSION_STRING "${PV_VERSION_STRING}-pre${PV_TAG_REVHASH}")
+	else()
+		# For post-release changes, indicate the patch level.
+		set(PV_VERSION_STRING "${PV_TAG_VERSION}${PV_TAG_PATCHLEVEL}${PV_TAG_REVHASH}")
+	endif()
+endif()
+
+if(PV_VERSION_STRING MATCHES "^([0-9]+)\\.([0-9]+)\\.([0-9]+)(-[-0-9a-z]*)?$")
 	set(PV_VERSION_MAJOR ${CMAKE_MATCH_1})
 	set(PV_VERSION_MINOR ${CMAKE_MATCH_2})
 	set(PV_VERSION_MICRO ${CMAKE_MATCH_3})
 	set(PV_VERSION_SUFFIX ${CMAKE_MATCH_4})
-else()
-	message(FATAL_ERROR "-- Cannot get the ${PV_TITLE} version from anywhere")
 endif()
 
-set(PV_VERSION_STRING
-	${PV_VERSION_MAJOR}.${PV_VERSION_MINOR}.${PV_VERSION_MICRO}${PV_VERSION_SUFFIX}
-)
 message("-- ${PV_TITLE} version: ${PV_VERSION_STRING}")
 
 configure_file (
