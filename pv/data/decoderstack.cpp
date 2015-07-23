@@ -312,7 +312,7 @@ void DecoderStack::decode_data(
 			i + chunk_sample_count, sample_count);
 		segment_->get_samples(chunk, i, chunk_end);
 
-		if (srd_session_send(session, i, i + sample_count, chunk,
+		if (srd_session_send(session, i, chunk_end, chunk,
 				(chunk_end - i) * unit_size) != SRD_OK) {
 			error_message_ = tr("Decoder reported an error");
 			break;
