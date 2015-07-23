@@ -90,6 +90,7 @@ public:
 	QAction* action_view_zoom_out() const;
 	QAction* action_view_zoom_fit() const;
 	QAction* action_view_zoom_one_to_one() const;
+	QAction* action_view_sticky_scrolling() const;
 	QAction* action_view_show_cursors() const;
 	QAction* action_about() const;
 
@@ -152,6 +153,8 @@ private Q_SLOTS:
 
 	void on_actionViewZoomOneToOne_triggered();
 
+	void on_actionViewStickyScrolling_triggered();
+
 	void on_actionViewShowCursors_triggered();
 
 	void on_actionAbout_triggered();
@@ -160,6 +163,8 @@ private Q_SLOTS:
 
 	void capture_state_changed(int state);
 	void device_selected();
+
+	void sticky_scrolling_changed(bool state);
 
 private:
 	DeviceManager &device_manager_;
@@ -181,6 +186,7 @@ private:
 	QAction *const action_view_zoom_out_;
 	QAction *const action_view_zoom_fit_;
 	QAction *const action_view_zoom_one_to_one_;
+	QAction *const action_view_sticky_scrolling_;
 	QAction *const action_view_show_cursors_;
 	QAction *const action_about_;
 

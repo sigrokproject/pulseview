@@ -106,6 +106,7 @@ MainWindow::MainWindow(DeviceManager &device_manager,
 	action_view_zoom_out_(new QAction(this)),
 	action_view_zoom_fit_(new QAction(this)),
 	action_view_zoom_one_to_one_(new QAction(this)),
+	action_view_sticky_scrolling_(new QAction(this)),
 	action_view_show_cursors_(new QAction(this)),
 	action_about_(new QAction(this))
 #ifdef ENABLE_DECODE
@@ -158,6 +159,11 @@ QAction* MainWindow::action_view_zoom_fit() const
 QAction* MainWindow::action_view_zoom_one_to_one() const
 {
 	return action_view_zoom_one_to_one_;
+}
+
+QAction* MainWindow::action_view_sticky_scrolling() const
+{
+	return action_view_sticky_scrolling_;
 }
 
 QAction* MainWindow::action_view_show_cursors() const
@@ -411,6 +417,18 @@ void MainWindow::setup_ui()
 		QString::fromUtf8("actionViewZoomOneToOne"));
 	menu_view->addAction(action_view_zoom_one_to_one_);
 
+	menu_file->addSeparator();
+
+	action_view_sticky_scrolling_->setCheckable(true);
+	action_view_sticky_scrolling_->setChecked(true);
+	action_view_sticky_scrolling_->setShortcut(QKeySequence(Qt::Key_R));
+	action_view_sticky_scrolling_->setObjectName(
+		QString::fromUtf8("actionViewStickyScrolling"));
+	action_view_sticky_scrolling_->setText(tr("Sticky Sc&rolling"));
+	menu_view->addAction(action_view_sticky_scrolling_);
+
+	view_->enable_sticky_scrolling(action_view_sticky_scrolling_->isChecked());
+
 	menu_view->addSeparator();
 
 	action_view_show_cursors_->setCheckable(true);
@@ -473,6 +491,11 @@ void MainWindow::setup_ui()
 		SLOT(capture_state_changed(int)));
 	connect(&session_, SIGNAL(device_selected()), this,
 		SLOT(device_selected()));
+
+	// Setup view_ events
+	connect(view_, SIGNAL(sticky_scrolling_changed(bool)), this,
+		SLOT(sticky_scrolling_changed(bool)));
+
 }
 
 void MainWindow::select_init_device() {
@@ -715,6 +738,11 @@ void MainWindow::on_actionViewZoomOneToOne_triggered()
 	view_->zoom_one_to_one();
 }
 
+void MainWindow::on_actionViewStickyScrolling_triggered()
+{
+	view_->enable_sticky_scrolling(action_view_sticky_scrolling_->isChecked());
+}
+
 void MainWindow::on_actionViewShowCursors_triggered()
 {
 	assert(view_);
@@ -730,6 +758,11 @@ void MainWindow::on_actionAbout_triggered()
 {
 	dialogs::About dlg(device_manager_.context(), this);
 	dlg.exec();
+}
+
+void MainWindow::sticky_scrolling_changed(bool state)
+{
+	action_view_sticky_scrolling_->setChecked(state);
 }
 
 void MainWindow::add_decoder(srd_decoder *decoder)

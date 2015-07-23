@@ -135,13 +135,19 @@ MainBar::MainBar(Session &session, MainWindow &main_window) :
 	add_decoder_button->setMenu(main_window_.menu_decoder_add());
 #endif
 
-	// Setup the menu
+	// Setup the burger menu
 	QMenu *const menu = new QMenu(this);
+
+	QMenu *const menu_view = new QMenu;
+	menu_view->setTitle(tr("&View"));
+	menu_view->addAction(main_window.action_view_sticky_scrolling());
 
 	QMenu *const menu_help = new QMenu;
 	menu_help->setTitle(tr("&Help"));
 	menu_help->addAction(main_window.action_about());
 
+	menu->addAction(menu_view->menuAction());
+	menu->addSeparator();
 	menu->addAction(menu_help->menuAction());
 	menu->addSeparator();
 	menu->addAction(main_window.action_quit());

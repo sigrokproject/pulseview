@@ -69,6 +69,7 @@ private:
 	static const double MinScale;
 
 	static const int MaxScrollValue;
+	static const int MaxViewAutoUpdateRate;
 
 	static const int ScaleUnits[3];
 
@@ -153,6 +154,12 @@ public:
 	std::pair<double, double> get_time_extents() const;
 
 	/**
+	 * Enables or disables sticky scrolling, i.e. the view always shows
+	 * the most recent samples when capturing data.
+	 */
+	void enable_sticky_scrolling(bool state);
+
+	/**
 	 * Returns true if cursors are displayed. false otherwise.
 	 */
 	bool cursors_shown() const;
@@ -199,6 +206,8 @@ Q_SIGNALS:
 	void selection_changed();
 
 	void scale_offset_changed();
+
+	void sticky_scrolling_changed(bool state);
 
 private:
 	void get_scroll_layout(double &length, double &offset) const;
@@ -269,6 +278,8 @@ private Q_SLOTS:
 	void signals_changed();
 	void data_updated();
 
+	void perform_delayed_view_update();
+
 	void process_sticky_events();
 
 	void on_hover_point_changed();
@@ -287,6 +298,8 @@ private:
 	double offset_;
 
 	bool updating_scroll_;
+	bool sticky_scrolling_;
+	QTimer delayed_view_updater_;
 
 	double tick_period_;
 	unsigned int tick_prefix_;

@@ -86,6 +86,7 @@ const double View::MaxScale = 1e9;
 const double View::MinScale = 1e-15;
 
 const int View::MaxScrollValue = INT_MAX / 2;
+const int View::MaxViewAutoUpdateRate = 25; // No more than 25 Hz
 
 const int View::ScaleUnits[3] = {1, 2, 5};
 
@@ -98,6 +99,7 @@ View::View(Session &session, QWidget *parent) :
 	scale_(1e-3),
 	offset_(0),
 	updating_scroll_(false),
+	sticky_scrolling_(false), // Default setting is set in MainWindow::setup_ui()
 	tick_period_(0.0),
 	tick_prefix_(0),
 	show_cursors_(false),
@@ -135,6 +137,11 @@ View::View(Session &session, QWidget *parent) :
 	connect(&lazy_event_handler_, SIGNAL(timeout()),
 		this, SLOT(process_sticky_events()));
 	lazy_event_handler_.setSingleShot(true);
+
+	connect(&delayed_view_updater_, SIGNAL(timeout()),
+		this, SLOT(perform_delayed_view_update()));
+	delayed_view_updater_.setSingleShot(true);
+	delayed_view_updater_.setInterval(1000 / MaxViewAutoUpdateRate);
 
 	setViewport(viewport_);
 
@@ -288,6 +295,13 @@ void View::zoom_one_to_one()
 
 void View::set_scale_offset(double scale, double offset)
 {
+	// Disable sticky scrolling when acquisition runs and user drags the viewport
+	if ((scale_ == scale) && (offset_ != offset) &&
+			sticky_scrolling_ && (session_.get_capture_state() == Session::Running)) {
+		sticky_scrolling_ = false;
+		sticky_scrolling_changed(false);
+	}
+
 	scale_ = scale;
 	offset_ = offset;
 
@@ -337,6 +351,11 @@ pair<double, double> View::get_time_extents() const
 
 	assert(left_time < right_time);
 	return make_pair(left_time, right_time);
+}
+
+void View::enable_sticky_scrolling(bool state)
+{
+	sticky_scrolling_ = state;
 }
 
 bool View::cursors_shown() const
@@ -674,6 +693,13 @@ void View::h_scroll_value_changed(int value)
 	if (updating_scroll_)
 		return;
 
+	// Disable sticky scrolling when user moves the horizontal scroll bar
+	// during a running acquisition
+	if (sticky_scrolling_ && (session_.get_capture_state() == Session::Running)) {
+		sticky_scrolling_ = false;
+		sticky_scrolling_changed(false);
+	}
+
 	const int range = horizontalScrollBar()->maximum();
 	if (range < MaxScrollValue)
 		offset_ = scale_ * value;
@@ -821,10 +847,31 @@ void View::signals_changed()
 
 void View::data_updated()
 {
-	// Update the scroll bars
-	update_scroll();
+	if (sticky_scrolling_) {
+		if (!delayed_view_updater_.isActive())
+			delayed_view_updater_.start();
+	} else {
+		update_scroll();
+		ruler_->update();
+		viewport_->update();
+	}
+}
 
-	// Repaint the view
+void View::perform_delayed_view_update()
+{
+	if (sticky_scrolling_) {
+		// Make right side of the view sticky
+		double length = 0, offset;
+		get_scroll_layout(length, offset);
+
+		const QSize areaSize = viewport_->size();
+		length = max(length - areaSize.width(), 0.0);
+
+		offset_ = scale_ * length;
+	}
+
+	update_scroll();
+	ruler_->update();
 	viewport_->update();
 }
 
