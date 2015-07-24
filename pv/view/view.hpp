@@ -137,7 +137,7 @@ public:
 	void zoom(double steps);
 	void zoom(double steps, int offset);
 
-	void zoom_fit();
+	void zoom_fit(bool gui_state);
 
 	void zoom_one_to_one();
 
@@ -208,6 +208,8 @@ Q_SIGNALS:
 	void scale_offset_changed();
 
 	void sticky_scrolling_changed(bool state);
+
+	void always_zoom_to_fit_changed(bool state);
 
 private:
 	void get_scroll_layout(double &length, double &offset) const;
@@ -299,6 +301,7 @@ private:
 
 	bool updating_scroll_;
 	bool sticky_scrolling_;
+	bool always_zoom_to_fit_;
 	QTimer delayed_view_updater_;
 
 	double tick_period_;

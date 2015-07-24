@@ -86,7 +86,7 @@ const double View::MaxScale = 1e9;
 const double View::MinScale = 1e-15;
 
 const int View::MaxScrollValue = INT_MAX / 2;
-const int View::MaxViewAutoUpdateRate = 25; // No more than 25 Hz
+const int View::MaxViewAutoUpdateRate = 25; // No more than 25 Hz with sticky scrolling
 
 const int View::ScaleUnits[3] = {1, 2, 5};
 
@@ -100,6 +100,7 @@ View::View(Session &session, QWidget *parent) :
 	offset_(0),
 	updating_scroll_(false),
 	sticky_scrolling_(false), // Default setting is set in MainWindow::setup_ui()
+	always_zoom_to_fit_(false),
 	tick_period_(0.0),
 	tick_prefix_(0),
 	show_cursors_(false),
@@ -248,8 +249,17 @@ void View::zoom(double steps, int offset)
 	set_zoom(scale_ * pow(3.0/2.0, -steps), offset);
 }
 
-void View::zoom_fit()
+void View::zoom_fit(bool gui_state)
 {
+	// Act as one-shot when stopped, toggle along with the GUI otherwise
+	if (session_.get_capture_state() == Session::Stopped) {
+		always_zoom_to_fit_ = false;
+		always_zoom_to_fit_changed(false);
+	} else {
+		always_zoom_to_fit_ = gui_state;
+		always_zoom_to_fit_changed(gui_state);
+	}
+
 	const pair<double, double> extents = get_time_extents();
 	const double delta = extents.second - extents.first;
 	if (delta < 1e-12)
@@ -295,11 +305,20 @@ void View::zoom_one_to_one()
 
 void View::set_scale_offset(double scale, double offset)
 {
-	// Disable sticky scrolling when acquisition runs and user drags the viewport
+	// Disable sticky scrolling / always zoom to fit when acquisition runs
+	// and user drags the viewport
 	if ((scale_ == scale) && (offset_ != offset) &&
-			sticky_scrolling_ && (session_.get_capture_state() == Session::Running)) {
-		sticky_scrolling_ = false;
-		sticky_scrolling_changed(false);
+			(session_.get_capture_state() == Session::Running)) {
+
+		if (sticky_scrolling_) {
+			sticky_scrolling_ = false;
+			sticky_scrolling_changed(false);
+		}
+
+		if (always_zoom_to_fit_) {
+			always_zoom_to_fit_ = false;
+			always_zoom_to_fit_changed(false);
+		}
 	}
 
 	scale_ = scale;
@@ -449,6 +468,10 @@ void View::get_scroll_layout(double &length, double &offset) const
 
 void View::set_zoom(double scale, int offset)
 {
+	// Reset the "always zoom to fit" feature as the user changed the zoom
+	always_zoom_to_fit_ = false;
+	always_zoom_to_fit_changed(false);
+
 	const double cursor_offset = offset_ + scale_ * offset;
 	const double new_scale = max(min(scale, MaxScale), MinScale);
 	const double new_offset = cursor_offset - new_scale * offset;
@@ -847,7 +870,13 @@ void View::signals_changed()
 
 void View::data_updated()
 {
-	if (sticky_scrolling_) {
+	// Reset "always zoom to fit" when we change to the stopped state
+	if (always_zoom_to_fit_ && (session_.get_capture_state() == Session::Stopped)) {
+		always_zoom_to_fit_ = false;
+		always_zoom_to_fit_changed(false);
+	}
+
+	if (always_zoom_to_fit_ || sticky_scrolling_) {
 		if (!delayed_view_updater_.isActive())
 			delayed_view_updater_.start();
 	} else {
@@ -859,6 +888,9 @@ void View::data_updated()
 
 void View::perform_delayed_view_update()
 {
+	if (always_zoom_to_fit_)
+		zoom_fit(true);
+
 	if (sticky_scrolling_) {
 		// Make right side of the view sticky
 		double length = 0, offset;

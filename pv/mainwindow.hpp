@@ -166,6 +166,8 @@ private Q_SLOTS:
 
 	void sticky_scrolling_changed(bool state);
 
+	void always_zoom_to_fit_changed(bool state);
+
 private:
 	DeviceManager &device_manager_;
 

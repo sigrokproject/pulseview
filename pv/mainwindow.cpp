@@ -401,6 +401,7 @@ void MainWindow::setup_ui()
 		QString::fromUtf8("actionViewZoomOut"));
 	menu_view->addAction(action_view_zoom_out_);
 
+	action_view_zoom_fit_->setCheckable(true);
 	action_view_zoom_fit_->setText(tr("Zoom to &Fit"));
 	action_view_zoom_fit_->setIcon(QIcon::fromTheme("zoom-fit",
 		QIcon(":/icons/zoom-fit.png")));
@@ -495,7 +496,8 @@ void MainWindow::setup_ui()
 	// Setup view_ events
 	connect(view_, SIGNAL(sticky_scrolling_changed(bool)), this,
 		SLOT(sticky_scrolling_changed(bool)));
-
+	connect(view_, SIGNAL(always_zoom_to_fit_changed(bool)), this,
+		SLOT(always_zoom_to_fit_changed(bool)));
 }
 
 void MainWindow::select_init_device() {
@@ -730,7 +732,7 @@ void MainWindow::on_actionViewZoomOut_triggered()
 
 void MainWindow::on_actionViewZoomFit_triggered()
 {
-	view_->zoom_fit();
+	view_->zoom_fit(action_view_zoom_fit_->isChecked());
 }
 
 void MainWindow::on_actionViewZoomOneToOne_triggered()
@@ -763,6 +765,11 @@ void MainWindow::on_actionAbout_triggered()
 void MainWindow::sticky_scrolling_changed(bool state)
 {
 	action_view_sticky_scrolling_->setChecked(state);
+}
+
+void MainWindow::always_zoom_to_fit_changed(bool state)
+{
+	action_view_zoom_fit_->setChecked(state);
 }
 
 void MainWindow::add_decoder(srd_decoder *decoder)
