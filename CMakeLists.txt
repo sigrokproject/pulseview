@@ -126,7 +126,7 @@ set(PV_VERSION_STRING "0.3.0")
 include(GetGitRevisionDescription)
 git_describe(PV_TAG_VERSION_STRING --tags --dirty)
 
-if(NOT PV_TAG_VERSION_STRING)
+if(NOT PV_TAG_VERSION_STRING AND EXISTS "${PROJECT_SOURCE_DIR}/VERSION")
 	# Read the version from a file that is distributed with
 	# the source package (see writepackageversion.cmake).
 	file(STRINGS "${PROJECT_SOURCE_DIR}/VERSION" PV_TAG_VERSION_STRING LIMIT_COUNT 1)
