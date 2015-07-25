@@ -238,7 +238,7 @@ void Popup::reposition_widget()
 
 	if (pos_ == Left)
 		o.rx() = -width();
-	else if(pos_ == Top)
+	else if (pos_ == Top)
 		o.ry() = -height();
 
 	o += point_;
@@ -300,7 +300,7 @@ void Popup::mouseReleaseEvent(QMouseEvent *e)
 
 	// We need our own out-of-bounds click handler because QWidget counts
 	// the drop-shadow region as inside the widget
-	if(!bubble_rect().contains(e->pos()))
+	if (!bubble_rect().contains(e->pos()))
 		close();
 }
 

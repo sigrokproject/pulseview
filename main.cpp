@@ -159,7 +159,7 @@ int main(int argc, char *argv[])
 			w.show();
 
 #ifdef ENABLE_SIGNALS
-			if(SignalHandler::prepare_signals()) {
+			if (SignalHandler::prepare_signals()) {
 				SignalHandler *const handler =
 					new SignalHandler(&w);
 				QObject::connect(handler,

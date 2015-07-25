@@ -33,7 +33,7 @@ DecoderMenu::DecoderMenu(QWidget *parent, bool first_level_decoder) :
 {
 	GSList *l = g_slist_sort(g_slist_copy(
 		(GSList*)srd_decoder_list()), decoder_name_cmp);
-	for(; l; l = l->next)
+	for (; l; l = l->next)
 	{
 		const srd_decoder *const d = (srd_decoder*)l->data;
 		assert(d);

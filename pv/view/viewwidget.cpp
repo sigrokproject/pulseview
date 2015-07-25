@@ -79,7 +79,7 @@ bool ViewWidget::accept_drag() const
 			if (r->dragging()) {
 				if (!item_owner)
 					item_owner = r->owner();
-				else if(item_owner != r->owner())
+				else if (item_owner != r->owner())
 					return false;
 			}
 

@@ -750,7 +750,7 @@ void MainWindow::on_actionViewShowCursors_triggered()
 	assert(view_);
 
 	const bool show = !view_->cursors_shown();
-	if(show)
+	if (show)
 		view_->centre_cursors();
 
 	view_->show_cursors(show);

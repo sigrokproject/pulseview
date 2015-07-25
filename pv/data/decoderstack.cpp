@@ -107,7 +107,7 @@ void DecoderStack::remove(int index)
 
 	// Find the decoder in the stack
 	auto iter = stack_.begin();
-	for(int i = 0; i < index; i++, iter++)
+	for (int i = 0; i < index; i++, iter++)
 		assert(iter != stack_.end());
 
 	// Delete the element
@@ -286,7 +286,7 @@ uint64_t DecoderStack::max_sample_count() const
 optional<int64_t> DecoderStack::wait_for_data() const
 {
 	unique_lock<mutex> input_lock(input_mutex_);
-	while(!interrupt_ && !frame_complete_ &&
+	while (!interrupt_ && !frame_complete_ &&
 		samples_decoded_ >= sample_count_)
 		input_cond_.wait(input_lock);
 	return boost::make_optional(!interrupt_ &&
@@ -379,7 +379,7 @@ void DecoderStack::decode_proc()
 
 	do {
 		decode_data(*sample_count, unit_size, session);
-	} while(error_message_.isEmpty() && (sample_count = wait_for_data()));
+	} while (error_message_.isEmpty() && (sample_count = wait_for_data()));
 
 	// Destroy the session
 	srd_session_destroy(session);

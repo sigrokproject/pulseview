@@ -658,7 +658,7 @@ void DecodeTrace::create_decoder_form(int index,
 	group->add_layout(decoder_form);
 
 	// Add the mandatory channels
-	for(l = decoder->channels; l; l = l->next) {
+	for (l = decoder->channels; l; l = l->next) {
 		const struct srd_channel *const pdch =
 			(struct srd_channel *)l->data;
 		QComboBox *const combo = create_channel_selector(parent, dec, pdch);
@@ -673,7 +673,7 @@ void DecodeTrace::create_decoder_form(int index,
 	}
 
 	// Add the optional channels
-	for(l = decoder->opt_channels; l; l = l->next) {
+	for (l = decoder->opt_channels; l; l = l->next) {
 		const struct srd_channel *const pdch =
 			(struct srd_channel *)l->data;
 		QComboBox *const combo = create_channel_selector(parent, dec, pdch);
@@ -748,7 +748,7 @@ void DecodeTrace::commit_decoder_channels(shared_ptr<data::decode::Decoder> &dec
 
 	for (const ChannelSelector &s : channel_selectors_)
 	{
-		if(s.decoder_ != dec)
+		if (s.decoder_ != dec)
 			break;
 
 		const LogicSignal *const selection =
@@ -756,7 +756,7 @@ void DecodeTrace::commit_decoder_channels(shared_ptr<data::decode::Decoder> &dec
 				s.combo_->currentIndex()).value<void*>();
 
 		for (shared_ptr<Signal> sig : sigs)
-			if(sig.get() == selection) {
+			if (sig.get() == selection) {
 				channel_map[s.pdch_] =
 					dynamic_pointer_cast<LogicSignal>(sig);
 				break;
@@ -825,7 +825,7 @@ void DecodeTrace::on_show_hide_decoder(int index)
 
 	// Find the decoder in the stack
 	auto iter = stack.cbegin();
-	for(int i = 0; i < index; i++, iter++)
+	for (int i = 0; i < index; i++, iter++)
 		assert(iter != stack.end());
 
 	shared_ptr<Decoder> dec = *iter;

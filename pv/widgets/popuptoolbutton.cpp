@@ -45,7 +45,7 @@ void PopupToolButton::set_popup(Popup *popup)
 
 void PopupToolButton::on_clicked(bool)
 {
-	if(!popup_)
+	if (!popup_)
 		return;
 
 	const QRect r = rect();

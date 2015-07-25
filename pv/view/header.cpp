@@ -207,7 +207,7 @@ void Header::on_ungroup()
 				break;
 			}
 		}
-	} while(restart);
+	} while (restart);
 }
 
 } // namespace view

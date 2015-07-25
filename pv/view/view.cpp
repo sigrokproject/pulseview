@@ -509,7 +509,7 @@ void View::calculate_tick_spacing()
 
 		min_width += SpacingIncrement;
 
-	} while(typical_width > tick_period_ / scale_);
+	} while (typical_width > tick_period_ / scale_);
 }
 
 void View::update_scroll()

@@ -181,7 +181,7 @@ void AnalogSignal::paint_envelope(QPainter &p,
 	QRectF *const rects = new QRectF[e.length];
 	QRectF *rect = rects;
 
-	for(uint64_t sample = 0; sample < e.length-1; sample++) {
+	for (uint64_t sample = 0; sample < e.length-1; sample++) {
 		const float x = ((e.scale * sample + e.start) /
 			samples_per_pixel - pixels_offset) + left;
 		const AnalogSegment::EnvelopeSample *const s =
@@ -193,9 +193,9 @@ void AnalogSignal::paint_envelope(QPainter &p,
 		const float t = y - min(s->min, (s+1)->max) * scale_;
 
 		float h = b - t;
-		if(h >= 0.0f && h <= 1.0f)
+		if (h >= 0.0f && h <= 1.0f)
 			h = 1.0f;
-		if(h <= 0.0f && h >= -1.0f)
+		if (h <= 0.0f && h >= -1.0f)
 			h = -1.0f;
 
 		*rect++ = QRectF(x, t, 1.0f, h);

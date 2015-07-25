@@ -238,9 +238,9 @@ bool Session::add_decoder(srd_decoder *const dec)
 
 		// Make a list of all the channels
 		std::vector<const srd_channel*> all_channels;
-		for(const GSList *i = dec->channels; i; i = i->next)
+		for (const GSList *i = dec->channels; i; i = i->next)
 			all_channels.push_back((const srd_channel*)i->data);
-		for(const GSList *i = dec->opt_channels; i; i = i->next)
+		for (const GSList *i = dec->opt_channels; i; i = i->next)
 			all_channels.push_back((const srd_channel*)i->data);
 
 		// Auto select the initial channels
@@ -302,7 +302,7 @@ void Session::set_capture_state(capture_state state)
 	lock_guard<mutex> lock(sampling_mutex_);
 	const bool changed = capture_state_ != state;
 	capture_state_ = state;
-	if(changed)
+	if (changed)
 		capture_state_changed(state);
 }
 

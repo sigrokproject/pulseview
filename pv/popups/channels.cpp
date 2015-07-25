@@ -200,7 +200,7 @@ QGridLayout* Channels::create_channel_group_grid(
 
 		check_box_signal_map_[checkbox] = sig;
 
-		if(++col >= 8)
+		if (++col >= 8)
 			col = 0, row++;
 	}
 
