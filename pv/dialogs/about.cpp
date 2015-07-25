@@ -76,6 +76,15 @@ About::About(shared_ptr<Context> context, QWidget *parent) :
 			 .arg(QString::fromUtf8(entry.second->description().c_str())));
 	}
 
+	s.append("<tr><td colspan=\"2\"><b>" +
+		tr("Supported output formats:") +
+		"</b></td></tr>");
+	for (auto entry : context->output_formats()) {
+		s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
+			 .arg(QString::fromUtf8(entry.first.c_str()))
+			 .arg(QString::fromUtf8(entry.second->description().c_str())));
+	}
+
 #ifdef ENABLE_DECODE
 	s.append("<tr><td colspan=\"2\"><b>" +
 		tr("Supported protocol decoders:") +
