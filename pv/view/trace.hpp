@@ -29,7 +29,7 @@
 
 #include <stdint.h>
 
-#include "rowitem.hpp"
+#include "tracetreeitem.hpp"
 
 class QFormLayout;
 
@@ -41,7 +41,7 @@ class Popup;
 
 namespace view {
 
-class Trace : public RowItem
+class Trace : public TraceTreeItem
 {
 	Q_OBJECT
 

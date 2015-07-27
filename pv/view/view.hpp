@@ -38,7 +38,7 @@
 
 #include "cursorpair.hpp"
 #include "flag.hpp"
-#include "rowitemowner.hpp"
+#include "tracetreeitemowner.hpp"
 
 namespace sigrok {
 class ChannelGroup;
@@ -56,13 +56,13 @@ class Ruler;
 class Trace;
 class Viewport;
 
-class View : public QAbstractScrollArea, public RowItemOwner {
+class View : public QAbstractScrollArea, public TraceTreeItemOwner {
 	Q_OBJECT
 
 private:
 	enum StickyEvents {
-		RowItemHExtentsChanged = 1,
-		RowItemVExtentsChanged = 2
+		TraceTreeItemHExtentsChanged = 1,
+		TraceTreeItemVExtentsChanged = 2
 	};
 
 private:
@@ -209,7 +209,7 @@ public:
 
 	void update_viewport();
 
-	void restack_all_row_items();
+	void restack_all_trace_tree_items();
 
 Q_SIGNALS:
 	void hover_point_changed();
@@ -260,7 +260,7 @@ private:
 	void update_layout();
 
 	/**
-	 * Satisifies RowItem functionality.
+	 * Satisifies TraceTreeItem functionality.
 	 * @param p the QPainter to paint into.
 	 * @param rect the rectangle of the header area.
 	 * @param hover true if the label is being hovered over by the mouse.
@@ -274,7 +274,7 @@ private:
 	 */
 	QRectF label_rect(const QRectF &rect);
 
-	RowItemOwner* find_prevalent_trace_group(
+	TraceTreeItemOwner* find_prevalent_trace_group(
 		const std::shared_ptr<sigrok::ChannelGroup> &group,
 		const std::unordered_map<std::shared_ptr<sigrok::Channel>,
 			std::shared_ptr<Signal> > &signal_map);

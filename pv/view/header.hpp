@@ -30,7 +30,7 @@
 namespace pv {
 namespace view {
 
-class RowItem;
+class TraceTreeItem;
 class View;
 class ViewItem;
 

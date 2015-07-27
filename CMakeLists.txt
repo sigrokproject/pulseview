@@ -207,8 +207,6 @@ set(pulseview_SOURCES
 	pv/view/header.cpp
 	pv/view/marginwidget.cpp
 	pv/view/logicsignal.cpp
-	pv/view/rowitem.cpp
-	pv/view/rowitemowner.cpp
 	pv/view/ruler.cpp
 	pv/view/signal.cpp
 	pv/view/timeitem.cpp
@@ -216,6 +214,8 @@ set(pulseview_SOURCES
 	pv/view/trace.cpp
 	pv/view/tracegroup.cpp
 	pv/view/tracepalette.cpp
+	pv/view/tracetreeitem.cpp
+	pv/view/tracetreeitemowner.cpp
 	pv/view/view.cpp
 	pv/view/viewitem.cpp
 	pv/view/viewitempaintparams.cpp
@@ -265,6 +265,7 @@ set(pulseview_HEADERS
 	pv/view/timemarker.hpp
 	pv/view/trace.hpp
 	pv/view/tracegroup.hpp
+	pv/view/tracetreeitem.hpp
 	pv/view/view.hpp
 	pv/view/viewitem.hpp
 	pv/view/viewport.hpp

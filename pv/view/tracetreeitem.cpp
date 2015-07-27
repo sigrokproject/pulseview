@@ -22,12 +22,12 @@
 
 #include "view.hpp"
 
-#include "rowitem.hpp"
+#include "tracetreeitem.hpp"
 
 namespace pv {
 namespace view {
 
-RowItem::RowItem() :
+TraceTreeItem::TraceTreeItem() :
 	owner_(nullptr),
 	layout_v_offset_(0),
 	visual_v_offset_(0),
@@ -35,12 +35,12 @@ RowItem::RowItem() :
 {
 }
 
-int RowItem::layout_v_offset() const
+int TraceTreeItem::layout_v_offset() const
 {
 	return layout_v_offset_;
 }
 
-void RowItem::set_layout_v_offset(int v_offset)
+void TraceTreeItem::set_layout_v_offset(int v_offset)
 {
 	if (layout_v_offset_ == v_offset)
 		return;
@@ -51,12 +51,12 @@ void RowItem::set_layout_v_offset(int v_offset)
 		owner_->extents_changed(false, true);
 }
 
-int RowItem::visual_v_offset() const
+int TraceTreeItem::visual_v_offset() const
 {
 	return visual_v_offset_;
 }
 
-void RowItem::set_visual_v_offset(int v_offset)
+void TraceTreeItem::set_visual_v_offset(int v_offset)
 {
 	visual_v_offset_ = v_offset;
 
@@ -64,7 +64,7 @@ void RowItem::set_visual_v_offset(int v_offset)
 		owner_->row_item_appearance_changed(true, true);
 }
 
-void RowItem::force_to_v_offset(int v_offset)
+void TraceTreeItem::force_to_v_offset(int v_offset)
 {
 	v_offset_animation_.stop();
 	layout_v_offset_ = visual_v_offset_ = v_offset;
@@ -75,7 +75,7 @@ void RowItem::force_to_v_offset(int v_offset)
 	}
 }
 
-void RowItem::animate_to_layout_v_offset()
+void TraceTreeItem::animate_to_layout_v_offset()
 {
 	if (visual_v_offset_ == layout_v_offset_ ||
 		(v_offset_animation_.endValue() == layout_v_offset_ &&
@@ -89,12 +89,12 @@ void RowItem::animate_to_layout_v_offset()
 	v_offset_animation_.start();
 }
 
-RowItemOwner* RowItem::owner() const
+TraceTreeItemOwner* TraceTreeItem::owner() const
 {
 	return owner_;
 }
 
-void RowItem::set_owner(RowItemOwner *owner)
+void TraceTreeItem::set_owner(TraceTreeItemOwner *owner)
 {
 	assert(owner_ || owner);
 	v_offset_animation_.stop();
@@ -114,24 +114,24 @@ void RowItem::set_owner(RowItemOwner *owner)
 	}
 }
 
-int RowItem::get_visual_y() const
+int TraceTreeItem::get_visual_y() const
 {
 	assert(owner_);
 	return visual_v_offset_ + owner_->owner_visual_v_offset();
 }
 
-void RowItem::drag_by(const QPoint &delta)
+void TraceTreeItem::drag_by(const QPoint &delta)
 {
 	force_to_v_offset(drag_point_.y() + delta.y() -
 		owner_->owner_visual_v_offset());
 }
 
-QPoint RowItem::point(const QRect &rect) const
+QPoint TraceTreeItem::point(const QRect &rect) const
 {
 	return QPoint(rect.right(), get_visual_y());
 }
 
-void RowItem::hover_point_changed()
+void TraceTreeItem::hover_point_changed()
 {
 }
 

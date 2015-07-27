@@ -54,7 +54,7 @@ namespace view {
 const int Header::Padding = 12;
 const int Header::BaselineOffset = 5;
 
-static bool item_selected(shared_ptr<RowItem> r)
+static bool item_selected(shared_ptr<TraceTreeItem> r)
 {
 	return r->selected();
 }
@@ -89,7 +89,7 @@ shared_ptr<ViewItem> Header::get_mouse_over_item(const QPoint &pt)
 	for (auto &i : view_)
 		if (i->enabled() && i->label_rect(r).contains(pt))
 			return i;
-	return shared_ptr<RowItem>();
+	return shared_ptr<TraceTreeItem>();
 }
 
 void Header::paintEvent(QPaintEvent*)
@@ -99,17 +99,17 @@ void Header::paintEvent(QPaintEvent*)
 	// would be clipped away.
 	const QRect rect(0, 0, width() - BaselineOffset, height());
 
-	vector< shared_ptr<RowItem> > row_items(
+	vector< shared_ptr<TraceTreeItem> > items(
 		view_.begin(), view_.end());
 
-	stable_sort(row_items.begin(), row_items.end(),
-		[](const shared_ptr<RowItem> &a, const shared_ptr<RowItem> &b) {
+	stable_sort(items.begin(), items.end(),
+		[](const shared_ptr<TraceTreeItem> &a, const shared_ptr<TraceTreeItem> &b) {
 			return a->visual_v_offset() < b->visual_v_offset(); });
 
 	QPainter painter(this);
 	painter.setRenderHint(QPainter::Antialiasing);
 
-	for (const shared_ptr<RowItem> r : row_items)
+	for (const shared_ptr<TraceTreeItem> r : items)
 	{
 		assert(r);
 
@@ -160,17 +160,17 @@ void Header::keyPressEvent(QKeyEvent *e)
 
 void Header::on_group()
 {
-	vector< shared_ptr<RowItem> > selected_items(
+	vector< shared_ptr<TraceTreeItem> > selected_items(
 		make_filter_iterator(item_selected, view_.begin(), view_.end()),
 		make_filter_iterator(item_selected, view_.end(), view_.end()));
 	stable_sort(selected_items.begin(), selected_items.end(),
-		[](const shared_ptr<RowItem> &a, const shared_ptr<RowItem> &b) {
+		[](const shared_ptr<TraceTreeItem> &a, const shared_ptr<TraceTreeItem> &b) {
 			return a->visual_v_offset() < b->visual_v_offset(); });
 
 	shared_ptr<TraceGroup> group(new TraceGroup());
-	shared_ptr<RowItem> mouse_down_item(
-		std::dynamic_pointer_cast<RowItem>(mouse_down_item_));
-	shared_ptr<RowItem> focus_item(
+	shared_ptr<TraceTreeItem> mouse_down_item(
+		std::dynamic_pointer_cast<TraceTreeItem>(mouse_down_item_));
+	shared_ptr<TraceTreeItem> focus_item(
 		mouse_down_item ? mouse_down_item : selected_items.front());
 
 	assert(focus_item);
@@ -182,7 +182,7 @@ void Header::on_group()
 		focus_item->v_extents().first);
 
 	for (size_t i = 0; i < selected_items.size(); i++) {
-		const shared_ptr<RowItem> &r = selected_items[i];
+		const shared_ptr<TraceTreeItem> &r = selected_items[i];
 		assert(r->owner());
 		r->owner()->remove_child_item(r);
 		group->add_child_item(r);
@@ -198,7 +198,7 @@ void Header::on_ungroup()
 	bool restart;
 	do {
 		restart = false;
-		for (const shared_ptr<RowItem> r : view_) {
+		for (const shared_ptr<TraceTreeItem> r : view_) {
 			const shared_ptr<TraceGroup> tg =
 				dynamic_pointer_cast<TraceGroup>(r);
 			if (tg && tg->selected()) {

@@ -49,7 +49,7 @@ TraceGroup::~TraceGroup()
 bool TraceGroup::enabled() const
 {
 	return std::any_of(child_items().begin(), child_items().end(),
-		[](const shared_ptr<RowItem> &r) { return r->enabled(); });
+		[](const shared_ptr<TraceTreeItem> &r) { return r->enabled(); });
 }
 
 pv::Session& TraceGroup::session()
@@ -78,7 +78,7 @@ const pv::view::View* TraceGroup::view() const
 
 pair<int, int> TraceGroup::v_extents() const
 {
-	return RowItemOwner::v_extents();
+	return TraceTreeItemOwner::v_extents();
 }
 
 void TraceGroup::paint_label(QPainter &p, const QRect &rect, bool hover)
@@ -115,7 +115,7 @@ void TraceGroup::paint_label(QPainter &p, const QRect &rect, bool hover)
 QRectF TraceGroup::label_rect(const QRectF &rect) const
 {
 	QRectF child_rect;
-	for (const shared_ptr<RowItem> r : child_items())
+	for (const shared_ptr<TraceTreeItem> r : child_items())
 		if (r && r->enabled())
 			child_rect = child_rect.united(r->label_rect(rect));
 
@@ -157,12 +157,12 @@ int TraceGroup::owner_visual_v_offset() const
 
 void TraceGroup::restack_items()
 {
-	vector< shared_ptr<RowItem> > items(
+	vector< shared_ptr<TraceTreeItem> > items(
 		child_items().begin(), child_items().end());
 
 	// Sort by the centre line of the extents
 	stable_sort(items.begin(), items.end(),
-		[](const shared_ptr<RowItem> &a, const shared_ptr<RowItem> &b) {
+		[](const shared_ptr<TraceTreeItem> &a, const shared_ptr<TraceTreeItem> &b) {
 			const auto aext = a->v_extents();
 			const auto bext = b->v_extents();
                         return a->layout_v_offset() +
@@ -172,7 +172,7 @@ void TraceGroup::restack_items()
 		});
 
 	int total_offset = 0;
-	for (shared_ptr<RowItem> r : items) {
+	for (shared_ptr<TraceTreeItem> r : items) {
 		const pair<int, int> extents = r->v_extents();
 		if (extents.first == 0 && extents.second == 0)
 			continue;
@@ -197,11 +197,11 @@ unsigned int TraceGroup::depth() const
 
 void TraceGroup::ungroup()
 {
-	const vector< shared_ptr<RowItem> > items(
+	const vector< shared_ptr<TraceTreeItem> > items(
 		child_items().begin(), child_items().end());
 	clear_child_items();
 
-	for (shared_ptr<RowItem> r : items)
+	for (shared_ptr<TraceTreeItem> r : items)
 		owner_->add_child_item(r);
 
 	owner_->remove_child_item(shared_from_this());

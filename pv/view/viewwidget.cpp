@@ -22,7 +22,7 @@
 #include <QMouseEvent>
 #include <QTouchEvent>
 
-#include "rowitem.hpp"
+#include "tracetreeitem.hpp"
 #include "view.hpp"
 #include "viewwidget.hpp"
 
@@ -66,7 +66,7 @@ bool ViewWidget::accept_drag() const
 	const vector< shared_ptr<TimeItem> > items(view_.time_items());
 
 	const bool any_row_items_selected = any_of(view_.begin(), view_.end(),
-		[](const shared_ptr<RowItem> &r) { return r->selected(); });
+		[](const shared_ptr<TraceTreeItem> &r) { return r->selected(); });
 
 	const bool any_time_items_selected = any_of(items.begin(), items.end(),
 		[](const shared_ptr<TimeItem> &i) { return i->selected(); });
@@ -74,8 +74,8 @@ bool ViewWidget::accept_drag() const
 	if (any_row_items_selected && !any_time_items_selected)
 	{
 		// Check all the drag items share a common owner
-		RowItemOwner *item_owner = nullptr;
-		for (shared_ptr<RowItem> r : view_)
+		TraceTreeItemOwner *item_owner = nullptr;
+		for (shared_ptr<TraceTreeItem> r : view_)
 			if (r->dragging()) {
 				if (!item_owner)
 					item_owner = r->owner();
@@ -105,8 +105,8 @@ void ViewWidget::drag_items(const QPoint &delta)
 	bool item_dragged = false;
 
 	// Drag the row items
-	RowItemOwner *item_owner = nullptr;
-	for (std::shared_ptr<RowItem> r : view_)
+	TraceTreeItemOwner *item_owner = nullptr;
+	for (std::shared_ptr<TraceTreeItem> r : view_)
 		if (r->dragging()) {
 			item_owner = r->owner();
 			r->drag_by(delta);
@@ -201,7 +201,7 @@ void ViewWidget::mouse_left_release_event(QMouseEvent *event)
 		i->drag_release();
 
 	if (item_dragging_)
-		view_.restack_all_row_items();
+		view_.restack_all_trace_tree_items();
 	else
 	{
 		if (!ctrl_pressed) {

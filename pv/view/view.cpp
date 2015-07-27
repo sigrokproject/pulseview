@@ -504,13 +504,13 @@ void View::update_viewport()
 	header_->update();
 }
 
-void View::restack_all_row_items()
+void View::restack_all_trace_tree_items()
 {
 	// Make a list of owners that is sorted from deepest first
 	const auto owners = list_row_item_owners();
-	vector< RowItemOwner* > sorted_owners(owners.begin(), owners.end());
+	vector< TraceTreeItemOwner* > sorted_owners(owners.begin(), owners.end());
 	sort(sorted_owners.begin(), sorted_owners.end(),
-		[](const RowItemOwner* a, const RowItemOwner *b) {
+		[](const TraceTreeItemOwner* a, const TraceTreeItemOwner *b) {
 			return a->depth() > b->depth(); });
 
 	// Restack the items recursively
@@ -672,15 +672,15 @@ QRectF View::label_rect(const QRectF &rect)
 	return QRectF();
 }
 
-RowItemOwner* View::find_prevalent_trace_group(
+TraceTreeItemOwner* View::find_prevalent_trace_group(
 	const shared_ptr<sigrok::ChannelGroup> &group,
 	const unordered_map<shared_ptr<sigrok::Channel>, shared_ptr<Signal> >
 		&signal_map)
 {
 	assert(group);
 
-	unordered_set<RowItemOwner*> owners;
-	vector<RowItemOwner*> owner_list;
+	unordered_set<TraceTreeItemOwner*> owners;
+	vector<TraceTreeItemOwner*> owner_list;
 
 	// Make a set and a list of all the owners
 	for (const auto &channel : group->channels()) {
@@ -688,18 +688,18 @@ RowItemOwner* View::find_prevalent_trace_group(
 		if (iter == signal_map.end())
 			continue;
 
-		RowItemOwner *const o = (*iter).second->owner();
+		TraceTreeItemOwner *const o = (*iter).second->owner();
 		owner_list.push_back(o);
 		owners.insert(o);
 	}
 
 	// Iterate through the list of owners, and find the most prevalent
 	size_t max_prevalence = 0;
-	RowItemOwner *prevalent_owner = nullptr;
-	for (RowItemOwner *owner : owners) {
+	TraceTreeItemOwner *prevalent_owner = nullptr;
+	for (TraceTreeItemOwner *owner : owners) {
 		const size_t prevalence = std::count_if(
 			owner_list.begin(), owner_list.end(),
-			[&](RowItemOwner *o) { return o == owner; });
+			[&](TraceTreeItemOwner *o) { return o == owner; });
 		if (prevalence > max_prevalence) {
 			max_prevalence = prevalence;
 			prevalent_owner = owner;
@@ -825,8 +825,8 @@ void View::time_item_appearance_changed(bool label, bool content)
 void View::extents_changed(bool horz, bool vert)
 {
 	sticky_events_ |=
-		(horz ? RowItemHExtentsChanged : 0) |
-		(vert ? RowItemVExtentsChanged : 0);
+		(horz ? TraceTreeItemHExtentsChanged : 0) |
+		(vert ? TraceTreeItemVExtentsChanged : 0);
 	lazy_event_handler_.start();
 }
 
@@ -864,7 +864,7 @@ void View::v_scroll_value_changed()
 
 void View::signals_changed()
 {
-	vector< shared_ptr<RowItem> > new_top_level_items;
+	vector< shared_ptr<TraceTreeItem> > new_top_level_items;
 
 	const auto device = session_.device();
 	if (!device)
@@ -913,7 +913,7 @@ void View::signals_changed()
 			continue;
 
 		// Find best trace group to add to
-		RowItemOwner *owner = find_prevalent_trace_group(
+		TraceTreeItemOwner *owner = find_prevalent_trace_group(
 			group, signal_map);
 
 		// If there is no trace group, create one
@@ -963,7 +963,7 @@ void View::signals_changed()
 
 	// Remove any removed traces
 	for (shared_ptr<Trace> trace : remove_traces) {
-		RowItemOwner *const owner = trace->owner();
+		TraceTreeItemOwner *const owner = trace->owner();
 		assert(owner);
 		owner->remove_child_item(trace);
 	}
@@ -1044,10 +1044,10 @@ void View::perform_delayed_view_update()
 
 void View::process_sticky_events()
 {
-	if (sticky_events_ & RowItemHExtentsChanged)
+	if (sticky_events_ & TraceTreeItemHExtentsChanged)
 		update_layout();
-	if (sticky_events_ & RowItemVExtentsChanged) {
-		restack_all_row_items();
+	if (sticky_events_ & TraceTreeItemVExtentsChanged) {
+		restack_all_trace_tree_items();
 		update_scroll();
 	}
 
@@ -1057,7 +1057,7 @@ void View::process_sticky_events()
 
 void View::on_hover_point_changed()
 {
-	for (shared_ptr<RowItem> r : *this)
+	for (shared_ptr<TraceTreeItem> r : *this)
 		r->hover_point_changed();
 }
 

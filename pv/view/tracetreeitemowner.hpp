@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_VIEW_ROWITEMOWNER_HPP
-#define PULSEVIEW_PV_VIEW_ROWITEMOWNER_HPP
+#ifndef PULSEVIEW_PV_VIEW_TRACETREEITEMOWNER_HPP
+#define PULSEVIEW_PV_VIEW_TRACETREEITEMOWNER_HPP
 
 #include <memory>
 #include <vector>
@@ -32,15 +32,15 @@ class Session;
 
 namespace view {
 
-class RowItem;
+class TraceTreeItem;
 class View;
 
-class RowItemOwner
+class TraceTreeItemOwner
 {
 public:
-	typedef std::vector< std::shared_ptr<RowItem> > item_list;
-	typedef RowItemIterator<RowItemOwner, RowItem> iterator;
-	typedef RowItemIterator<const RowItemOwner, RowItem> const_iterator;
+	typedef std::vector< std::shared_ptr<TraceTreeItem> > item_list;
+	typedef RowItemIterator<TraceTreeItemOwner, TraceTreeItem> iterator;
+	typedef RowItemIterator<const TraceTreeItemOwner, TraceTreeItem> const_iterator;
 
 public:
 	/**
@@ -88,33 +88,33 @@ public:
 	/**
 	 * Adds a child item to this object.
 	 */
-	void add_child_item(std::shared_ptr<RowItem> item);
+	void add_child_item(std::shared_ptr<TraceTreeItem> item);
 
 	/**
 	 * Removes a child item from this object.
 	 */
-	void remove_child_item(std::shared_ptr<RowItem> item);
+	void remove_child_item(std::shared_ptr<TraceTreeItem> item);
 
 	/**
-	 * Returns a depth-first iterator at the beginning of the child RowItem
+	 * Returns a depth-first iterator at the beginning of the child TraceTreeItem
 	 * tree.
 	 */
 	iterator begin();
 
 	/**
-	 * Returns a depth-first iterator at the end of the child RowItem tree.
+	 * Returns a depth-first iterator at the end of the child TraceTreeItem tree.
 	 */
 	iterator end();
 
 	/**
 	 * Returns a constant depth-first iterator at the beginning of the
-	 * child RowItem tree.
+	 * child TraceTreeItem tree.
 	 */
 	const_iterator begin() const;
 
 	/**
 	 * Returns a constant depth-first iterator at the end of the child
-	 * RowItem tree.
+	 * TraceTreeItem tree.
 	 */
 	const_iterator end() const;
 
@@ -122,7 +122,7 @@ public:
 	 * Makes a list of row item owners of all the row items that are
 	 * decendants of this item.
 	 */
-	std::set< RowItemOwner* > list_row_item_owners();
+	std::set< TraceTreeItemOwner* > list_row_item_owners();
 
 	/**
 	 * Creates a list of decendant signals filtered by type.
@@ -150,4 +150,4 @@ private:
 } // view
 } // pv
 
-#endif // PULSEVIEW_PV_VIEW_ROWITEMOWNER_HPP
+#endif // PULSEVIEW_PV_VIEW_TRACETREEITEMOWNER_HPP

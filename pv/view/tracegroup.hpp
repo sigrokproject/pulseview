@@ -21,13 +21,13 @@
 #ifndef PULSEVIEW_PV_VIEW_TRACEGROUP_HPP
 #define PULSEVIEW_PV_VIEW_TRACEGROUP_HPP
 
-#include "rowitem.hpp"
-#include "rowitemowner.hpp"
+#include "tracetreeitem.hpp"
+#include "tracetreeitemowner.hpp"
 
 namespace pv {
 namespace view {
 
-class TraceGroup : public RowItem, public RowItemOwner
+class TraceGroup : public TraceTreeItem, public TraceTreeItemOwner
 {
 	Q_OBJECT
 

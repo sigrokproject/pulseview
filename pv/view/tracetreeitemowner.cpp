@@ -20,8 +20,8 @@
 
 #include <cassert>
 
-#include "rowitem.hpp"
-#include "rowitemowner.hpp"
+#include "tracetreeitem.hpp"
+#include "tracetreeitemowner.hpp"
 #include "trace.hpp"
 
 using std::dynamic_pointer_cast;
@@ -36,17 +36,17 @@ using std::vector;
 namespace pv {
 namespace view {
 
-vector< shared_ptr<RowItem> >& RowItemOwner::child_items()
+vector< shared_ptr<TraceTreeItem> >& TraceTreeItemOwner::child_items()
 {
 	return items_;
 }
 
-const vector< shared_ptr<RowItem> >& RowItemOwner::child_items() const
+const vector< shared_ptr<TraceTreeItem> >& TraceTreeItemOwner::child_items() const
 {
 	return items_;
 }
 
-void RowItemOwner::clear_child_items()
+void TraceTreeItemOwner::clear_child_items()
 {
 	for (auto &i : items_) {
 		assert(i->owner() == this);
@@ -55,7 +55,7 @@ void RowItemOwner::clear_child_items()
 	items_.clear();
 }
 
-void RowItemOwner::add_child_item(std::shared_ptr<RowItem> item)
+void TraceTreeItemOwner::add_child_item(std::shared_ptr<TraceTreeItem> item)
 {
 	assert(!item->owner());
 	item->set_owner(this);
@@ -64,7 +64,7 @@ void RowItemOwner::add_child_item(std::shared_ptr<RowItem> item)
 	extents_changed(true, true);
 }
 
-void RowItemOwner::remove_child_item(std::shared_ptr<RowItem> item)
+void TraceTreeItemOwner::remove_child_item(std::shared_ptr<TraceTreeItem> item)
 {
 	assert(item->owner() == this);
 	item->set_owner(nullptr);
@@ -75,36 +75,36 @@ void RowItemOwner::remove_child_item(std::shared_ptr<RowItem> item)
 	extents_changed(true, true);
 }
 
-RowItemOwner::iterator RowItemOwner::begin()
+TraceTreeItemOwner::iterator TraceTreeItemOwner::begin()
 {
 	return iterator(this, items_.begin());
 }
 
-RowItemOwner::iterator RowItemOwner::end()
+TraceTreeItemOwner::iterator TraceTreeItemOwner::end()
 {
 	return iterator(this);
 }
 
-RowItemOwner::const_iterator RowItemOwner::begin() const
+TraceTreeItemOwner::const_iterator TraceTreeItemOwner::begin() const
 {
 	return const_iterator(this, items_.cbegin());
 }
 
-RowItemOwner::const_iterator RowItemOwner::end() const
+TraceTreeItemOwner::const_iterator TraceTreeItemOwner::end() const
 {
 	return const_iterator(this);
 }
 
-set< RowItemOwner* > RowItemOwner::list_row_item_owners()
+set< TraceTreeItemOwner* > TraceTreeItemOwner::list_row_item_owners()
 {
-	set< RowItemOwner* > owners;
+	set< TraceTreeItemOwner* > owners;
 	for (const auto &r : *this)
 		owners.insert(r->owner());
 	return owners;
 }
 
 template<class T>
-set< shared_ptr<T> > RowItemOwner::list_by_type()
+set< shared_ptr<T> > TraceTreeItemOwner::list_by_type()
 {
 	set< shared_ptr<T> > items;
 	for (const auto &r : *this) {
@@ -116,13 +116,13 @@ set< shared_ptr<T> > RowItemOwner::list_by_type()
 	return items;
 }
 
-template set< shared_ptr<Trace> > RowItemOwner::list_by_type();
+template set< shared_ptr<Trace> > TraceTreeItemOwner::list_by_type();
 
-pair<int, int> RowItemOwner::v_extents() const
+pair<int, int> TraceTreeItemOwner::v_extents() const
 {
 	pair<int, int> extents(INT_MAX, INT_MIN);
 
-	for (const shared_ptr<RowItem> r : child_items()) {
+	for (const shared_ptr<TraceTreeItem> r : child_items()) {
 		assert(r);
 		if (!r->enabled())
 			continue;
@@ -138,7 +138,7 @@ pair<int, int> RowItemOwner::v_extents() const
 	return extents;
 }
 
-void RowItemOwner::restack_items()
+void TraceTreeItemOwner::restack_items()
 {
 }
 
