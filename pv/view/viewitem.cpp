@@ -76,6 +76,12 @@ QMenu* ViewItem::create_context_menu(QWidget *parent)
 	return new QMenu(parent);
 }
 
+widgets::Popup* ViewItem::create_popup(QWidget *parent)
+{
+	(void)parent;
+	return nullptr;
+}
+
 void ViewItem::delete_pressed()
 {
 }

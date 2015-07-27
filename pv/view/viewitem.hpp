@@ -149,7 +149,7 @@ public:
 public:
 	virtual QMenu* create_context_menu(QWidget *parent);
 
-	virtual pv::widgets::Popup* create_popup(QWidget *parent) = 0;
+	virtual pv::widgets::Popup* create_popup(QWidget *parent);
 
 	virtual void delete_pressed();
 
