@@ -422,10 +422,10 @@ void MainWindow::setup_ui()
 
 	action_view_sticky_scrolling_->setCheckable(true);
 	action_view_sticky_scrolling_->setChecked(true);
-	action_view_sticky_scrolling_->setShortcut(QKeySequence(Qt::Key_R));
+	action_view_sticky_scrolling_->setShortcut(QKeySequence(Qt::Key_S));
 	action_view_sticky_scrolling_->setObjectName(
 		QString::fromUtf8("actionViewStickyScrolling"));
-	action_view_sticky_scrolling_->setText(tr("Sticky Sc&rolling"));
+	action_view_sticky_scrolling_->setText(tr("&Sticky Scrolling"));
 	menu_view->addAction(action_view_sticky_scrolling_);
 
 	view_->enable_sticky_scrolling(action_view_sticky_scrolling_->isChecked());
