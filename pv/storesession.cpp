@@ -137,17 +137,10 @@ bool StoreSession::start()
 
 		map<string, Glib::VariantBase> options = options_;
 
-		// If the output has the capability to write files, use it.
-		// Otherwise, open the output stream.
-		const auto opt_list = output_format_->options();
-		if (opt_list.find("filename") != opt_list.end())
-			options["filename"] =
-				Glib::Variant<Glib::ustring>::create(file_name_);
-		else
-			output_stream_.open(file_name_, ios_base::binary |
-				ios_base::trunc | ios_base::out);
+		output_stream_.open(file_name_, ios_base::binary |
+			ios_base::trunc | ios_base::out);
 
-		output_ = output_format_->create_output(device, options);
+		output_ = output_format_->create_output(file_name_, device, options);
 		auto meta = context->create_meta_packet(
 			{{ConfigKey::SAMPLERATE, Glib::Variant<guint64>::create(
 				segment->samplerate())}});
