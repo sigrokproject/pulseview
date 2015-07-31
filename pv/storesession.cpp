@@ -91,12 +91,15 @@ const QString& StoreSession::error() const
 
 bool StoreSession::start()
 {
-	set< shared_ptr<data::SignalData> > data_set =
-		session_.get_data();
-
 	shared_lock<shared_mutex> lock(session_.signals_mutex());
-	const unordered_set< shared_ptr<view::Signal> > &sigs(
-		session_.signals());
+	unordered_set< shared_ptr<view::Signal> > sigs(session_.signals());
+
+	// Add enabled channels to the data set
+	set< shared_ptr<data::SignalData> > data_set;
+
+	for (shared_ptr<view::Signal> signal : sigs)
+		if (signal->enabled())
+			data_set.insert(signal->data());
 
 	// Check we have logic data
 	if (data_set.empty() || sigs.empty()) {
@@ -114,7 +117,7 @@ bool StoreSession::start()
 	shared_ptr<data::Logic> data;
 	if (!(data = dynamic_pointer_cast<data::Logic>(*data_set.begin()))) {
 		error_ = tr("PulseView currently only has support for "
-			"storing a logic data.");
+			"storing logic data.");
 		return false;
 	}
 
