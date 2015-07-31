@@ -198,7 +198,7 @@ void StoreSession::store_proc(shared_ptr<data::LogicSegment> segment)
 			start_sample + samples_per_block, sample_count);
 		segment->get_samples(data, start_sample, end_sample);
 
-		size_t length = end_sample - start_sample;
+		size_t length = (end_sample - start_sample) * unit_size;
 
 		try {
 			const auto context = session_.device_manager().context();
