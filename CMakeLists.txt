@@ -99,9 +99,9 @@ else()
 endif()
 
 if(ENABLE_TESTS)
-	find_package(Boost 1.42 COMPONENTS filesystem system thread unit_test_framework REQUIRED)
+	find_package(Boost 1.48 COMPONENTS filesystem system thread unit_test_framework REQUIRED)
 else()
-	find_package(Boost 1.42 COMPONENTS filesystem system thread REQUIRED)
+	find_package(Boost 1.48 COMPONENTS filesystem system thread REQUIRED)
 endif()
 
 # Find the platform's thread library (needed for C++11 threads).
