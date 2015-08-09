@@ -61,6 +61,7 @@ using boost::shared_mutex;
 using pv::data::SignalData;
 using pv::data::Segment;
 using pv::util::format_time;
+using pv::util::TimeUnit;
 
 using std::deque;
 using std::dynamic_pointer_cast;
@@ -103,6 +104,7 @@ View::View(Session &session, QWidget *parent) :
 	always_zoom_to_fit_(false),
 	tick_period_(0.0),
 	tick_prefix_(0),
+	time_unit_(util::Time),
 	show_cursors_(false),
 	cursors_(new CursorPair(*this)),
 	next_flag_text_('A'),
@@ -237,6 +239,11 @@ unsigned int View::tick_prefix() const
 double View::tick_period() const
 {
 	return tick_period_;
+}
+
+TimeUnit View::time_unit() const
+{
+	return time_unit_;
 }
 
 void View::zoom(double steps)
@@ -504,7 +511,7 @@ void View::calculate_tick_spacing()
 
 		typical_width = m.boundingRect(0, 0, INT_MAX, INT_MAX,
 			Qt::AlignLeft | Qt::AlignTop,
-			format_time(offset_, tick_prefix_)).width() +
+			format_time(offset_, tick_prefix_, time_unit_)).width() +
 				MinValueSpacing;
 
 		min_width += SpacingIncrement;
@@ -636,6 +643,27 @@ vector< shared_ptr<Trace> > View::extract_new_traces_for_channels(
 	}
 
 	return filtered_traces;
+}
+
+void View::determine_time_unit()
+{
+	time_unit_ = util::Samples;
+
+	shared_lock<shared_mutex> lock(session().signals_mutex());
+	const unordered_set< shared_ptr<Signal> > &sigs(session().signals());
+
+	// Check all signals but...
+	for (const shared_ptr<Signal> signal : sigs) {
+		const shared_ptr<SignalData> data = signal->data();
+
+		// ...only check first segment of each
+		const vector< shared_ptr<Segment> > segments = data->segments();
+		if (!segments.empty())
+			if (segments[0]->samplerate()) {
+				time_unit_ = util::Time;
+				break;
+			}
+	}
 }
 
 bool View::eventFilter(QObject *object, QEvent *event)
@@ -880,6 +908,7 @@ void View::data_updated()
 		if (!delayed_view_updater_.isActive())
 			delayed_view_updater_.start();
 	} else {
+		determine_time_unit();
 		update_scroll();
 		ruler_->update();
 		viewport_->update();
@@ -902,6 +931,7 @@ void View::perform_delayed_view_update()
 		offset_ = scale_ * length;
 	}
 
+	determine_time_unit();
 	update_scroll();
 	ruler_->update();
 	viewport_->update();

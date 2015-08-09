@@ -164,7 +164,7 @@ QString CursorPair::format_string()
 	const unsigned int prefix = view_.tick_prefix();
 	const double delta = second_->time() - first_->time();
 	return QString("%1 / %2").
-		arg(util::format_time(delta, prefix, util::TimeUnit::Time, 2)).
+		arg(util::format_time(delta, prefix, view_.time_unit(), 2)).
 		arg(util::format_si_value(1.0 / fabs(delta), "Hz", -1, 4));
 }
 

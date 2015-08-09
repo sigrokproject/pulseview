@@ -34,6 +34,7 @@
 #include <QTimer>
 
 #include <pv/data/signaldata.hpp>
+#include <pv/util.hpp>
 
 #include "cursorpair.hpp"
 #include "flag.hpp"
@@ -128,6 +129,11 @@ public:
 	 * Returns period of the graticule time markings.
 	 */
 	double tick_period() const;
+
+	/**
+	 * Returns the unit of time currently used.
+	 */
+	util::TimeUnit time_unit() const;
 
 	/**
 	 * Returns the number of nested parents that this row item owner has.
@@ -259,6 +265,8 @@ private:
 			std::shared_ptr<Signal> > &signal_map,
 		std::set< std::shared_ptr<Trace> > &add_list);
 
+	void determine_time_unit();
+
 private:
 	bool eventFilter(QObject *object, QEvent *event);
 
@@ -306,6 +314,7 @@ private:
 
 	double tick_period_;
 	unsigned int tick_prefix_;
+	util::TimeUnit time_unit_;
 
 	bool show_cursors_;
 	std::shared_ptr<CursorPair> cursors_;
