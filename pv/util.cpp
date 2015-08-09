@@ -67,10 +67,13 @@ QString format_si_value(double v, QString unit, int prefix,
 	return s;
 }
 
-QString format_time(double t, int prefix,
+QString format_time(double t, int prefix, TimeUnit unit,
 	unsigned int precision, bool sign)
 {
-	return format_si_value(t, "s", prefix, precision, sign);
+	if (unit == TimeUnit::Time)
+		return format_si_value(t, "s", prefix, precision, sign);
+	else
+		return format_si_value(t, "sa", prefix, precision, sign);
 }
 
 QString format_second(double second)

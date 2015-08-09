@@ -55,7 +55,8 @@ bool Cursor::enabled() const
 
 QString Cursor::get_text() const
 {
-	return pv::util::format_time(time_, view_.tick_prefix(), 2);
+	return util::format_time(time_, view_.tick_prefix(),
+		util::TimeUnit::Time, 2);
 }
 
 QRectF Cursor::label_rect(const QRectF &rect) const

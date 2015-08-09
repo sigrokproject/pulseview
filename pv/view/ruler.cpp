@@ -122,7 +122,7 @@ void Ruler::paintEvent(QPaintEvent*)
 			// Draw a major tick
 			p.drawText(x, ValueMargin, 0, text_height,
 				AlignCenter | AlignTop | TextDontClip,
-				pv::util::format_time(t, prefix));
+				util::format_time(t, prefix));
 			p.drawLine(QPointF(x, major_tick_y1),
 				QPointF(x, ruler_height));
 		}

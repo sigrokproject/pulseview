@@ -28,6 +28,11 @@
 namespace pv {
 namespace util {
 
+enum TimeUnit {
+	Time = 1,
+	Samples = 2
+};
+
 extern const int FirstSIPrefixPower;
 
 /**
@@ -57,7 +62,8 @@ QString format_si_value(
  * @return The formated value.
  */
 QString format_time(
-	double t, int prefix = -1, unsigned precision = 0, bool sign = true);
+	double t, int prefix = -1, TimeUnit unit = Time, unsigned precision = 0,
+	bool sign = true);
 
 /**
  * Formats a given time value with a SI prefix so that the
