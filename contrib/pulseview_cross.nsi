@@ -167,6 +167,16 @@ Section "PulseView (required)" Section1
 		"$INSTDIR\Uninstall.exe" "" "$INSTDIR\Uninstall.exe" 0 \
 		SW_SHOWNORMAL "" "Uninstall PulseView"
 
+	# Create a shortcut for the Zadig executable.
+	CreateShortCut "$SMPROGRAMS\sigrok\PulseView\Zadig.lnk" \
+		"$INSTDIR\zadig.exe" "" "$INSTDIR\zadig.exe" 0 \
+		SW_SHOWNORMAL "" "Zadig"
+
+	# Create a shortcut for the Zadig executable (for Win XP).
+	CreateShortCut "$SMPROGRAMS\sigrok\PulseView\Zadig (Win XP).lnk" \
+		"$INSTDIR\zadig_xp.exe" "" "$INSTDIR\zadig_xp.exe" 0 \
+		SW_SHOWNORMAL "" "Zadig (Win XP)"
+
 	# Create registry keys for "Add/remove programs" in the control panel.
 	WriteRegStr HKLM "${REGSTR}" "DisplayName" "PulseView"
 	WriteRegStr HKLM "${REGSTR}" "UninstallString" \
@@ -227,6 +237,8 @@ Section "Uninstall"
 	# Delete the links from the start menu.
 	Delete "$SMPROGRAMS\sigrok\PulseView\PulseView.lnk"
 	Delete "$SMPROGRAMS\sigrok\PulseView\Uninstall.lnk"
+	Delete "$SMPROGRAMS\sigrok\PulseView\Zadig.lnk"
+	Delete "$SMPROGRAMS\sigrok\PulseView\Zadig (Win XP).lnk"
 
 	# Delete the sub-directory in the start menu.
 	RMDir "$SMPROGRAMS\sigrok\PulseView"
