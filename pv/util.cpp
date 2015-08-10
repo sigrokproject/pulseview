@@ -24,6 +24,8 @@
 
 #include <assert.h>
 
+#include <algorithm>
+
 #include <QTextStream>
 #include <QDebug>
 
@@ -35,7 +37,8 @@ namespace util {
 static const QString SIPrefixes[17] =
 	{"y", "z", "a", "f", "p", "n", QChar(0x03BC), "m", "", "k", "M", "G",
 	"T", "P", "E", "Z", "Y"};
-const int FirstSIPrefixPower = -24;
+const int FirstSIPrefix = 8;
+const int FirstSIPrefixPower = -(FirstSIPrefix * 3);
 
 QString format_si_value(double v, QString unit, int prefix,
 	unsigned int precision, bool sign)
@@ -67,13 +70,116 @@ QString format_si_value(double v, QString unit, int prefix,
 	return s;
 }
 
-QString format_time(double t, int prefix, TimeUnit unit,
-	unsigned int precision, bool sign)
+static QString pad_number(unsigned int number, int length)
 {
-	if (unit == TimeUnit::Time)
-		return format_si_value(t, "s", prefix, precision, sign);
-	else
-		return format_si_value(t, "sa", prefix, precision, sign);
+	return QString("%1").arg(number, length, 10, QChar('0'));
+}
+
+static QString format_time_in_full(double t, signed precision, bool force_sign)
+{
+	const unsigned int whole_seconds = abs((int) t);
+	const unsigned int days = whole_seconds / (60 * 60 * 24);
+	const unsigned int hours = (whole_seconds / (60 * 60)) % 24;
+	const unsigned int minutes = (whole_seconds / 60) % 60;
+	const unsigned int seconds = whole_seconds % 60;
+
+	QString s;
+	QTextStream ts(&s);
+
+	if (force_sign && (t >= 0))
+		ts << "+";
+	if (t < 0)
+		ts << "-";
+
+	bool use_padding = false;
+
+	if (days) {
+		ts << days << ":";
+		use_padding = true;
+	}
+
+	if (hours || days) {
+		ts << pad_number(hours, use_padding ? 2 : 0) << ":";
+		use_padding = true;
+	}
+
+	if (minutes || hours || days) {
+		ts << pad_number(minutes, use_padding ? 2 : 0);
+		use_padding = true;
+
+		// We're not showing any seconds with a negative precision
+		if (precision >= 0)
+			 ts << ":";
+	}
+
+	// precision < 0: Use DD:HH:MM format
+	// precision = 0: Use DD:HH:MM:SS format
+	// precision > 0: Use DD:HH:MM:SS.mmm nnn ppp fff format
+	if (precision >= 0) {
+		ts << pad_number(seconds, use_padding ? 2 : 0);
+
+		const double fraction = fabs(t - whole_seconds);
+
+		if (precision > 0 && precision < 1000) {
+			QString fs = QString("%1").arg(fraction, -(2 + precision), 'f',
+				precision, QChar('0'));
+
+			ts << ".";
+
+			// Copy all digits, inserting spaces as unit separators
+			for (int i = 1; i <= precision; i++) {
+				// Start at index 2 to skip the "0." at the beginning
+				ts << fs[1 + i];
+
+				if ((i > 0) && (i % 3 == 0))
+					ts << " ";
+			}
+		}
+	}
+
+	return s;
+}
+
+QString format_time(double t, int prefix, TimeUnit unit,
+	unsigned int precision, double step_size, bool sign)
+{
+	// If we have to use samples then we have no alternative formats
+	if (unit == Samples) {
+		// The precision is always given without taking the prefix into account
+		// so we need to deduct the number of decimals the prefix might imply
+		const int prefix_order =
+			-(prefix * 3 + pv::util::FirstSIPrefixPower);
+
+		const unsigned int relative_prec =
+			(prefix >= pv::util::FirstSIPrefix) ? precision :
+			std::max((int)(precision - prefix_order), 0);
+
+		return format_si_value(t, "sa", prefix, relative_prec, sign);
+	}
+
+	// View zoomed way out -> low precision (0), high step size (>60s)
+	// -> DD:HH:MM
+	if ((precision == 0) && (step_size >= 60)) {
+		return format_time_in_full(t, -1, sign);
+	}
+
+	// View in "normal" range -> medium precision, medium step size
+	// -> HH:MM:SS.mmm... or xxxx (si unit) if less than 60 seconds
+	// View zoomed way in -> high precision (>3), low step size (<1s)
+	// -> HH:MM:SS.mmm... or xxxx (si unit) if less than 60 seconds
+	if (abs(t) < 60) {
+		// The precision is always given without taking the prefix into account
+		// so we need to deduct the number of decimals the prefix might imply
+		const int prefix_order =
+			-(prefix * 3 + pv::util::FirstSIPrefixPower);
+
+		const unsigned int relative_prec =
+			(prefix >= pv::util::FirstSIPrefix) ? precision :
+			std::max((int)(precision - prefix_order), 0);
+
+		return format_si_value(t, "s", prefix, relative_prec, sign);
+	} else
+		return format_time_in_full(t, precision, sign);
 }
 
 QString format_second(double second)

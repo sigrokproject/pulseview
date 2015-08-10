@@ -56,14 +56,15 @@ QString format_si_value(
  * @param prefix The number of the prefix, from 0 for 'femto' up to
  *   8 for 'giga'. If prefix is set to -1, the prefix will be calculated.
  * @param unit The unit of quantity.
- * @param precision The number of digits after the decimal separator.
+ * @param precision The number of digits after the decimal separator or period (.).
+ * @param step_size The delta between two consecutive time markers (if applicable).
  * @param sign Whether or not to add a sign also for positive numbers.
  *
  * @return The formated value.
  */
 QString format_time(
 	double t, int prefix = -1, TimeUnit unit = Time, unsigned precision = 0,
-	bool sign = true);
+	double step_size = 0, bool sign = true);
 
 /**
  * Formats a given time value with a SI prefix so that the
