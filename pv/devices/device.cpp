@@ -76,7 +76,7 @@ T Device::read_config(const ConfigKey *key, const T default_value)
 		(*iter).second.find(sigrok::GET) == (*iter).second.end())
 		return default_value;
 
-	return VariantBase::cast_dynamic<Variant<T>>(
+	return VariantBase::cast_dynamic<Glib::Variant<guint64>>(
 		device_->config_get(ConfigKey::SAMPLERATE)).get();
 }
 
