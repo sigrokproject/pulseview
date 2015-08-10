@@ -126,6 +126,11 @@ public:
 	unsigned int tick_prefix() const;
 
 	/**
+	 * Returns the number of fractional digits shown for the time markings.
+	 */
+	unsigned int tick_precision() const;
+
+	/**
 	 * Returns period of the graticule time markings.
 	 */
 	double tick_period() const;
@@ -315,6 +320,7 @@ private:
 
 	double tick_period_;
 	unsigned int tick_prefix_;
+	unsigned int tick_precision_;
 	util::TimeUnit time_unit_;
 
 	bool show_cursors_;

@@ -91,7 +91,6 @@ void Ruler::paintEvent(QPaintEvent*)
 	p.setRenderHint(QPainter::Antialiasing);
 
 	const double tick_period = view_.tick_period();
-	const unsigned int prefix = view_.tick_prefix();
 
 	// Draw the tick marks
 	p.setPen(palette().color(foregroundRole()));
@@ -122,7 +121,8 @@ void Ruler::paintEvent(QPaintEvent*)
 			// Draw a major tick
 			p.drawText(x, ValueMargin, 0, text_height,
 				AlignCenter | AlignTop | TextDontClip,
-				util::format_time(t, prefix, view_.time_unit()));
+				util::format_time(t, view_.tick_prefix(), view_.time_unit(),
+					view_.tick_precision()));
 			p.drawLine(QPointF(x, major_tick_y1),
 				QPointF(x, ruler_height));
 		}

@@ -104,6 +104,7 @@ View::View(Session &session, QWidget *parent) :
 	always_zoom_to_fit_(false),
 	tick_period_(0.0),
 	tick_prefix_(0),
+	tick_precision_(0),
 	time_unit_(util::Time),
 	show_cursors_(false),
 	cursors_(new CursorPair(*this)),
@@ -234,6 +235,11 @@ unsigned int View::depth() const
 unsigned int View::tick_prefix() const
 {
 	return tick_prefix_;
+}
+
+unsigned int View::tick_precision() const
+{
+	return tick_precision_;
 }
 
 double View::tick_period() const
@@ -490,7 +496,8 @@ void View::calculate_tick_spacing()
 	const double SpacingIncrement = 32.0f;
 	const double MinValueSpacing = 32.0f;
 
-	double min_width = SpacingIncrement, typical_width;
+	double min_width = SpacingIncrement;
+	double label_width, tick_period_width;
 
 	QFontMetrics m(QApplication::font());
 
@@ -509,14 +516,22 @@ void View::calculate_tick_spacing()
 
 		tick_prefix_ = (order - pv::util::FirstSIPrefixPower) / 3;
 
-		typical_width = m.boundingRect(0, 0, INT_MAX, INT_MAX,
-			Qt::AlignLeft | Qt::AlignTop,
-			format_time(offset_, tick_prefix_, time_unit_)).width() +
+		// Precision is the number of fractional digits required, not
+		// taking the prefix into account (and it must never be negative)
+		tick_precision_ = std::max((int)ceil(log10f(1 / tick_period_)), 0);
+
+		tick_period_width = tick_period_ / scale_;
+
+		const QString label_text =
+			format_time(offset_, tick_prefix_, time_unit_, tick_precision_);
+
+		label_width = m.boundingRect(0, 0, INT_MAX, INT_MAX,
+			Qt::AlignLeft | Qt::AlignTop, label_text).width() +
 				MinValueSpacing;
 
 		min_width += SpacingIncrement;
 
-	} while (typical_width > tick_period_ / scale_);
+	} while (tick_period_width < label_width);
 }
 
 void View::update_scroll()
