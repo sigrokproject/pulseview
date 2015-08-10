@@ -118,7 +118,7 @@ View::View(Session &session, QWidget *parent) :
 	connect(&session_, SIGNAL(signals_changed()),
 		this, SLOT(signals_changed()));
 	connect(&session_, SIGNAL(capture_state_changed(int)),
-		this, SLOT(data_updated()));
+		this, SLOT(capture_state_updated(int)));
 	connect(&session_, SIGNAL(data_received()),
 		this, SLOT(data_updated()));
 	connect(&session_, SIGNAL(frame_ended()),
@@ -647,22 +647,23 @@ vector< shared_ptr<Trace> > View::extract_new_traces_for_channels(
 
 void View::determine_time_unit()
 {
-	time_unit_ = util::Samples;
+	// Check whether we know the sample rate and hence can use time as the unit
+	if (time_unit_ == util::Samples) {
+		shared_lock<shared_mutex> lock(session().signals_mutex());
+		const unordered_set< shared_ptr<Signal> > &sigs(session().signals());
 
-	shared_lock<shared_mutex> lock(session().signals_mutex());
-	const unordered_set< shared_ptr<Signal> > &sigs(session().signals());
+		// Check all signals but...
+		for (const shared_ptr<Signal> signal : sigs) {
+			const shared_ptr<SignalData> data = signal->data();
 
-	// Check all signals but...
-	for (const shared_ptr<Signal> signal : sigs) {
-		const shared_ptr<SignalData> data = signal->data();
-
-		// ...only check first segment of each
-		const vector< shared_ptr<Segment> > segments = data->segments();
-		if (!segments.empty())
-			if (segments[0]->samplerate()) {
-				time_unit_ = util::Time;
-				break;
-			}
+			// ...only check first segment of each
+			const vector< shared_ptr<Segment> > segments = data->segments();
+			if (!segments.empty())
+				if (segments[0]->samplerate()) {
+					time_unit_ = util::Time;
+					break;
+				}
+		}
 	}
 }
 
@@ -896,14 +897,20 @@ void View::signals_changed()
 	viewport_->update();
 }
 
-void View::data_updated()
+void View::capture_state_updated(int state)
 {
 	// Reset "always zoom to fit" when we change to the stopped state
-	if (always_zoom_to_fit_ && (session_.get_capture_state() == Session::Stopped)) {
+	if (always_zoom_to_fit_ && (state == Session::Stopped)) {
 		always_zoom_to_fit_ = false;
 		always_zoom_to_fit_changed(false);
 	}
 
+	if (state == Session::Running)
+		time_unit_ = util::Samples;
+}
+
+void View::data_updated()
+{
 	if (always_zoom_to_fit_ || sticky_scrolling_) {
 		if (!delayed_view_updater_.isActive())
 			delayed_view_updater_.start();

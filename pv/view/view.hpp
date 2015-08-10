@@ -286,6 +286,7 @@ private Q_SLOTS:
 	void v_scroll_value_changed();
 
 	void signals_changed();
+	void capture_state_updated(int state);
 	void data_updated();
 
 	void perform_delayed_view_update();
