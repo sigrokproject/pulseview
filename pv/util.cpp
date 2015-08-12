@@ -140,45 +140,40 @@ static QString format_time_in_full(double t, signed precision, bool force_sign)
 	return s;
 }
 
+static QString format_time_with_si(double t, QString unit, int prefix,
+	unsigned int precision, bool sign)
+{
+	// The precision is always given without taking the prefix into account
+	// so we need to deduct the number of decimals the prefix might imply
+	const int prefix_order =
+		-(prefix * 3 + pv::util::FirstSIPrefixPower);
+
+	const unsigned int relative_prec =
+		(prefix >= pv::util::FirstSIPrefix) ? precision :
+		std::max((int)(precision - prefix_order), 0);
+
+	return format_si_value(t, unit, prefix, relative_prec, sign);
+}
+
 QString format_time(double t, int prefix, TimeUnit unit,
 	unsigned int precision, double step_size, bool sign)
 {
 	// If we have to use samples then we have no alternative formats
-	if (unit == Samples) {
-		// The precision is always given without taking the prefix into account
-		// so we need to deduct the number of decimals the prefix might imply
-		const int prefix_order =
-			-(prefix * 3 + pv::util::FirstSIPrefixPower);
+	if (unit == Samples)
+		return format_time_with_si(t, "sa", prefix, precision, sign);
 
-		const unsigned int relative_prec =
-			(prefix >= pv::util::FirstSIPrefix) ? precision :
-			std::max((int)(precision - prefix_order), 0);
-
-		return format_si_value(t, "sa", prefix, relative_prec, sign);
-	}
-
-	// View zoomed way out -> low precision (0), high step size (>60s)
+	// View zoomed way out -> low precision (0), high step size (>=60s)
 	// -> DD:HH:MM
-	if ((precision == 0) && (step_size >= 60)) {
+	if ((precision == 0) && (step_size >= 60))
 		return format_time_in_full(t, -1, sign);
-	}
 
 	// View in "normal" range -> medium precision, medium step size
 	// -> HH:MM:SS.mmm... or xxxx (si unit) if less than 60 seconds
 	// View zoomed way in -> high precision (>3), low step size (<1s)
 	// -> HH:MM:SS.mmm... or xxxx (si unit) if less than 60 seconds
-	if (abs(t) < 60) {
-		// The precision is always given without taking the prefix into account
-		// so we need to deduct the number of decimals the prefix might imply
-		const int prefix_order =
-			-(prefix * 3 + pv::util::FirstSIPrefixPower);
-
-		const unsigned int relative_prec =
-			(prefix >= pv::util::FirstSIPrefix) ? precision :
-			std::max((int)(precision - prefix_order), 0);
-
-		return format_si_value(t, "s", prefix, relative_prec, sign);
-	} else
+	if (abs(t) < 60)
+		return format_time_with_si(t, "s", prefix, precision, sign);
+	else
 		return format_time_in_full(t, precision, sign);
 }
 
