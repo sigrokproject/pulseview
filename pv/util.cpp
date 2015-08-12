@@ -39,6 +39,7 @@ static const QString SIPrefixes[17] =
 	"T", "P", "E", "Z", "Y"};
 const int FirstSIPrefix = 8;
 const int FirstSIPrefixPower = -(FirstSIPrefix * 3);
+const double MinTimeDelta = 1e-15; // Anything below 1 fs can be considered zero
 
 QString format_si_value(double v, QString unit, int prefix,
 	unsigned int precision, bool sign)
@@ -158,6 +159,10 @@ static QString format_time_with_si(double t, QString unit, int prefix,
 QString format_time(double t, int prefix, TimeUnit unit,
 	unsigned int precision, double step_size, bool sign)
 {
+	// Make 0 appear as 0, not random +0 or -0
+	if (fabs(t) < MinTimeDelta)
+		return "0";
+
 	// If we have to use samples then we have no alternative formats
 	if (unit == Samples)
 		return format_time_with_si(t, "sa", prefix, precision, sign);
