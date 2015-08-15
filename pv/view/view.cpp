@@ -493,8 +493,8 @@ void View::set_zoom(double scale, int offset)
 
 void View::calculate_tick_spacing()
 {
-	const double SpacingIncrement = 32.0f;
-	const double MinValueSpacing = 32.0f;
+	const double SpacingIncrement = 10.0f;
+	const double MinValueSpacing = 25.0f;
 
 	// Figure out the highest numeric value visible on a label
 	const QSize areaSize = viewport_->size();
@@ -512,13 +512,19 @@ void View::calculate_tick_spacing()
 		const int order = (int)floorf(log10f(min_period));
 		const double order_decimal = pow(10.0, order);
 
+		// Allow for a margin of error so that a scale unit of 1 can be used.
+		// Otherwise, for a SU of 1 the tick period will almost always be below
+		// the min_period by a small amount - and thus skipped in favor of 2.
+		// Note: margin assumes that SU[0] and SU[1] contain the smallest values
+		double tp_margin = (ScaleUnits[0] + ScaleUnits[1]) / 2.0;
+		double tp_with_margin;
 		unsigned int unit = 0;
 
 		do {
-			tick_period_ = order_decimal * ScaleUnits[unit++];
-		} while (tick_period_ < min_period &&
-			unit < countof(ScaleUnits));
+			tp_with_margin = order_decimal * (ScaleUnits[unit++] + tp_margin);
+		} while (tp_with_margin < min_period && unit < countof(ScaleUnits));
 
+		tick_period_ = order_decimal * ScaleUnits[unit - 1];
 		tick_prefix_ = (order - pv::util::FirstSIPrefixPower) / 3;
 
 		// Precision is the number of fractional digits required, not
