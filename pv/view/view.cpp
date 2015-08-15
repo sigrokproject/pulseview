@@ -496,6 +496,11 @@ void View::calculate_tick_spacing()
 	const double SpacingIncrement = 32.0f;
 	const double MinValueSpacing = 32.0f;
 
+	// Figure out the highest numeric value visible on a label
+	const QSize areaSize = viewport_->size();
+	const double max_time = max(fabs(offset_),
+		fabs(offset_ + scale_ * areaSize.width()));
+
 	double min_width = SpacingIncrement;
 	double label_width, tick_period_width;
 
@@ -523,7 +528,7 @@ void View::calculate_tick_spacing()
 		tick_period_width = tick_period_ / scale_;
 
 		const QString label_text =
-			format_time(offset_, tick_prefix_, time_unit_, tick_precision_);
+			format_time(max_time, tick_prefix_, time_unit_, tick_precision_);
 
 		label_width = m.boundingRect(0, 0, INT_MAX, INT_MAX,
 			Qt::AlignLeft | Qt::AlignTop, label_text).width() +
