@@ -207,6 +207,7 @@ set(pulseview_SOURCES
 	pv/view/header.cpp
 	pv/view/marginwidget.cpp
 	pv/view/logicsignal.cpp
+	pv/view/rowitem.cpp
 	pv/view/ruler.cpp
 	pv/view/signal.cpp
 	pv/view/timeitem.cpp

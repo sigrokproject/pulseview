@@ -111,9 +111,6 @@ public:
 	 */
 	virtual std::pair<int, int> v_extents() const = 0;
 
-public:
-	virtual void hover_point_changed();
-
 protected:
 	pv::view::TraceTreeItemOwner *owner_;
 

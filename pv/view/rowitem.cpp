@@ -1,7 +1,7 @@
 /*
  * This file is part of the PulseView project.
  *
- * Copyright (C) 2013 Joel Holdsworth <joel@airwebreathe.org.uk>
+ * Copyright (C) 2015 Joel Holdsworth <joel@airwebreathe.org.uk>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,23 +18,14 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_VIEW_ROWITEM_HPP
-#define PULSEVIEW_PV_VIEW_ROWITEM_HPP
-
-#include "viewitem.hpp"
+#include "rowitem.hpp"
 
 namespace pv {
 namespace view {
 
-class RowItem : public ViewItem
+void RowItem::hover_point_changed()
 {
-	Q_OBJECT
-
-public:
-	virtual void hover_point_changed();
-};
+}
 
 } // namespace view
 } // namespace pv
-
-#endif // PULSEVIEW_PV_VIEW_ROWITEM_HPP

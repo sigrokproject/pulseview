@@ -131,9 +131,5 @@ QPoint TraceTreeItem::point(const QRect &rect) const
 	return QPoint(rect.right(), get_visual_y());
 }
 
-void TraceTreeItem::hover_point_changed()
-{
-}
-
 } // namespace view
 } // namespace pv
