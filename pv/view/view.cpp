@@ -518,8 +518,10 @@ void View::restack_all_trace_tree_items()
 		o->restack_items();
 
 	// Animate the items to their destination
-	for (const auto &r : *this)
-		r->animate_to_layout_v_offset();
+	const vector< shared_ptr<TraceTreeItem> > items(
+		list_by_type<TraceTreeItem>());
+	for (const auto &i : items)
+		i->animate_to_layout_v_offset();
 }
 
 void View::get_scroll_layout(double &length, Timestamp &offset) const
