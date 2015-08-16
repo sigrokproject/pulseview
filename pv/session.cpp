@@ -471,6 +471,8 @@ void Session::feed_in_logic(shared_ptr<Logic> logic)
 {
 	lock_guard<recursive_mutex> lock(data_mutex_);
 
+	const size_t sample_count = logic->data_length() / logic->unit_size();
+
 	if (!logic_data_)
 	{
 		// The only reason logic_data_ would not have been created is
@@ -484,14 +486,10 @@ void Session::feed_in_logic(shared_ptr<Logic> logic)
 		// This could be the first packet after a trigger
 		set_capture_state(Running);
 
-		// Get sample limit.
-		const uint64_t sample_limit = device_->read_config<uint64_t>(
-			ConfigKey::LIMIT_SAMPLES);
-
 		// Create a new data segment
 		cur_logic_segment_ = shared_ptr<data::LogicSegment>(
 			new data::LogicSegment(
-				logic, cur_samplerate_, sample_limit));
+				logic, cur_samplerate_, sample_count));
 		logic_data_->push_segment(cur_logic_segment_);
 
 		// @todo Putting this here means that only listeners querying
@@ -535,26 +533,13 @@ void Session::feed_in_analog(shared_ptr<Analog> analog)
 			// in the sweep containing this segment.
 			sweep_beginning = true;
 
-			// Get sample limit.
-			uint64_t sample_limit;
-			try {
-				assert(device_);
-				const std::shared_ptr<sigrok::Device> device =
-					device_->device();
-				assert(device);
-				sample_limit = VariantBase::cast_dynamic<Variant<guint64>>(
-					device->config_get(ConfigKey::LIMIT_SAMPLES)).get();
-			} catch (Error) {
-				sample_limit = 0;
-			}
-
 			// Create a segment, keep it in the maps of channels
 			segment = shared_ptr<data::AnalogSegment>(
 				new data::AnalogSegment(
-					cur_samplerate_, sample_limit));
+					cur_samplerate_, sample_count));
 			cur_analog_segments_[channel] = segment;
 
-			// Find the annalog data associated with the channel
+			// Find the analog data associated with the channel
 			shared_ptr<view::AnalogSignal> sig =
 				dynamic_pointer_cast<view::AnalogSignal>(
 					signal_from_channel(channel));
