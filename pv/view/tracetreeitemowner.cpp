@@ -103,21 +103,6 @@ set< TraceTreeItemOwner* > TraceTreeItemOwner::list_row_item_owners()
 	return owners;
 }
 
-template<class T>
-set< shared_ptr<T> > TraceTreeItemOwner::list_by_type()
-{
-	set< shared_ptr<T> > items;
-	for (const auto &r : *this) {
-		shared_ptr<T> p = dynamic_pointer_cast<T>(r);
-		if (p)
-			items.insert(p);
-	}
-
-	return items;
-}
-
-template set< shared_ptr<Trace> > TraceTreeItemOwner::list_by_type();
-
 pair<int, int> TraceTreeItemOwner::v_extents() const
 {
 	pair<int, int> extents(INT_MAX, INT_MIN);
