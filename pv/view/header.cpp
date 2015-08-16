@@ -198,15 +198,14 @@ void Header::on_ungroup()
 	bool restart;
 	do {
 		restart = false;
-		for (const shared_ptr<TraceTreeItem> r : view_) {
-			const shared_ptr<TraceGroup> tg =
-				dynamic_pointer_cast<TraceGroup>(r);
-			if (tg && tg->selected()) {
+		const vector< shared_ptr<TraceGroup> > groups(
+			view_.list_by_type<TraceGroup>());
+		for (const shared_ptr<TraceGroup> tg : groups)
+			if (tg->selected()) {
 				tg->ungroup();
 				restart = true;
 				break;
 			}
-		}
 	} while (restart);
 }
 
