@@ -95,7 +95,11 @@ void Viewport::drag_release()
 
 vector< shared_ptr<ViewItem> > Viewport::items()
 {
-	vector< shared_ptr<ViewItem> > items(view_.begin(), view_.end());
+	vector< shared_ptr<ViewItem> > items;
+	const vector< shared_ptr<TraceTreeItem> > trace_tree_items(
+		view_.list_by_type<TraceTreeItem>());
+	copy(trace_tree_items.begin(), trace_tree_items.end(),
+		back_inserter(items));
 	const vector< shared_ptr<TimeItem> > time_items(view_.time_items());
 	copy(time_items.begin(), time_items.end(), back_inserter(items));
 	return items;
@@ -148,11 +152,12 @@ bool Viewport::touch_event(QTouchEvent *event)
 
 void Viewport::paintEvent(QPaintEvent*)
 {
-	vector< shared_ptr<TraceTreeItem> > row_items(view_.begin(), view_.end());
-	assert(none_of(row_items.begin(), row_items.end(),
+	vector< shared_ptr<TraceTreeItem> > trace_tree_items(
+		view_.list_by_type<TraceTreeItem>());
+	assert(none_of(trace_tree_items.begin(), trace_tree_items.end(),
 		[](const shared_ptr<TraceTreeItem> &r) { return !r; }));
 
-	stable_sort(row_items.begin(), row_items.end(),
+	stable_sort(trace_tree_items.begin(), trace_tree_items.end(),
 		[](const shared_ptr<TraceTreeItem> &a, const shared_ptr<TraceTreeItem> &b) {
 			return a->visual_v_offset() < b->visual_v_offset(); });
 
@@ -167,17 +172,17 @@ void Viewport::paintEvent(QPaintEvent*)
 
 	for (const shared_ptr<TimeItem> t : time_items)
 		t->paint_back(p, pp);
-	for (const shared_ptr<TraceTreeItem> r : row_items)
+	for (const shared_ptr<TraceTreeItem> r : trace_tree_items)
 		r->paint_back(p, pp);
 
 	for (const shared_ptr<TimeItem> t : time_items)
 		t->paint_mid(p, pp);
-	for (const shared_ptr<TraceTreeItem> r : row_items)
+	for (const shared_ptr<TraceTreeItem> r : trace_tree_items)
 		r->paint_mid(p, pp);
 
 	p.setRenderHint(QPainter::Antialiasing, false);
 
-	for (const shared_ptr<TraceTreeItem> r : row_items)
+	for (const shared_ptr<TraceTreeItem> r : trace_tree_items)
 		r->paint_fore(p, pp);
 	for (const shared_ptr<TimeItem> t : time_items)
 		t->paint_fore(p, pp);

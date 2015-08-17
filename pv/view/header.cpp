@@ -67,7 +67,9 @@ Header::Header(View &parent) :
 QSize Header::sizeHint() const
 {
 	QRectF max_rect(-Padding, 0, Padding, 0);
-	for (auto &i : view_)
+	const vector<shared_ptr<TraceTreeItem>> items(
+		view_.list_by_type<TraceTreeItem>());
+	for (auto &i : items)
 		if (i->enabled())
 			max_rect = max_rect.united(i->label_rect(QRect()));
 	return QSize(max_rect.width() + Padding + BaselineOffset, 0);
@@ -80,13 +82,17 @@ QSize Header::extended_size_hint() const
 
 vector< shared_ptr<ViewItem> > Header::items()
 {
-	return vector< shared_ptr<ViewItem> >(view_.begin(), view_.end());
+	const vector<shared_ptr<TraceTreeItem>> items(
+		view_.list_by_type<TraceTreeItem>());
+	return vector< shared_ptr<ViewItem> >(items.begin(), items.end());
 }
 
 shared_ptr<ViewItem> Header::get_mouse_over_item(const QPoint &pt)
 {
 	const QRect r(0, 0, width() - BaselineOffset, height());
-	for (auto &i : view_)
+	const vector<shared_ptr<TraceTreeItem>> items(
+		view_.list_by_type<TraceTreeItem>());
+	for (auto &i : items)
 		if (i->enabled() && i->label_rect(r).contains(pt))
 			return i;
 	return shared_ptr<TraceTreeItem>();
@@ -100,7 +106,7 @@ void Header::paintEvent(QPaintEvent*)
 	const QRect rect(0, 0, width() - BaselineOffset, height());
 
 	vector< shared_ptr<TraceTreeItem> > items(
-		view_.begin(), view_.end());
+		view_.list_by_type<TraceTreeItem>());
 
 	stable_sort(items.begin(), items.end(),
 		[](const shared_ptr<TraceTreeItem> &a, const shared_ptr<TraceTreeItem> &b) {
@@ -131,7 +137,9 @@ void Header::contextMenuEvent(QContextMenuEvent *event)
 	if (!menu)
 		menu = new QMenu(this);
 
-	if (std::count_if(view_.begin(), view_.end(), item_selected) > 1)
+	const vector< shared_ptr<TraceTreeItem> > items(
+		view_.list_by_type<TraceTreeItem>());
+	if (std::count_if(items.begin(), items.end(), item_selected) > 1)
 	{
 		menu->addSeparator();
 
@@ -160,9 +168,11 @@ void Header::keyPressEvent(QKeyEvent *e)
 
 void Header::on_group()
 {
+	const vector< shared_ptr<TraceTreeItem> > items(
+		view_.list_by_type<TraceTreeItem>());
 	vector< shared_ptr<TraceTreeItem> > selected_items(
-		make_filter_iterator(item_selected, view_.begin(), view_.end()),
-		make_filter_iterator(item_selected, view_.end(), view_.end()));
+		make_filter_iterator(item_selected, items.begin(), items.end()),
+		make_filter_iterator(item_selected, items.end(), items.end()));
 	stable_sort(selected_items.begin(), selected_items.end(),
 		[](const shared_ptr<TraceTreeItem> &a, const shared_ptr<TraceTreeItem> &b) {
 			return a->visual_v_offset() < b->visual_v_offset(); });

@@ -509,8 +509,10 @@ void View::update_viewport()
 void View::restack_all_trace_tree_items()
 {
 	// Make a list of owners that is sorted from deepest first
+	const vector<shared_ptr<TraceTreeItem>> items(
+		list_by_type<TraceTreeItem>());
 	set< TraceTreeItemOwner* > owners;
-	for (const auto &r : *this)
+	for (const auto &r : items)
 		owners.insert(r->owner());
 	vector< TraceTreeItemOwner* > sorted_owners(owners.begin(), owners.end());
 	sort(sorted_owners.begin(), sorted_owners.end(),
@@ -522,8 +524,6 @@ void View::restack_all_trace_tree_items()
 		o->restack_items();
 
 	// Animate the items to their destination
-	const vector< shared_ptr<TraceTreeItem> > items(
-		list_by_type<TraceTreeItem>());
 	for (const auto &i : items)
 		i->animate_to_layout_v_offset();
 }
@@ -1065,7 +1065,9 @@ void View::process_sticky_events()
 
 void View::on_hover_point_changed()
 {
-	for (shared_ptr<TraceTreeItem> r : *this)
+	const vector<shared_ptr<TraceTreeItem>> trace_tree_items(
+		list_by_type<TraceTreeItem>());
+	for (shared_ptr<TraceTreeItem> r : trace_tree_items)
 		r->hover_point_changed();
 }
 
