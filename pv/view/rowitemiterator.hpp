@@ -34,7 +34,8 @@
 #define NOGDI
 #define NORESOURCE
 #endif
-#include <boost/thread.hpp>
+#include <boost/thread/locks.hpp>
+#include <boost/thread/shared_mutex.hpp>
 
 #include <pv/session.hpp>
 

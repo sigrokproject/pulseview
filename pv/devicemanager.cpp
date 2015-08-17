@@ -41,6 +41,8 @@ using std::bind;
 using std::dynamic_pointer_cast;
 using std::list;
 using std::map;
+using std::placeholders::_1;
+using std::placeholders::_2;
 using std::remove_if;
 using std::runtime_error;
 using std::shared_ptr;

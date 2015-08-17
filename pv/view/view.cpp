@@ -32,6 +32,8 @@
 #include <mutex>
 #include <unordered_set>
 
+#include <boost/thread/locks.hpp>
+
 #include <QApplication>
 #include <QEvent>
 #include <QFontMetrics>

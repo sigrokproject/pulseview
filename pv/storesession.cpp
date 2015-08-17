@@ -20,6 +20,9 @@
 
 #include <cassert>
 
+#include <boost/thread/locks.hpp>
+#include <boost/thread/shared_mutex.hpp>
+
 #include "storesession.hpp"
 
 #include <pv/devicemanager.hpp>

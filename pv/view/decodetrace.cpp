@@ -29,6 +29,8 @@ extern "C" {
 #include <tuple>
 
 #include <boost/functional/hash.hpp>
+#include <boost/thread/locks.hpp>
+#include <boost/thread/shared_mutex.hpp>
 
 #include <QAction>
 #include <QApplication>
