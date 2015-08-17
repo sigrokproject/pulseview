@@ -47,6 +47,11 @@ public:
 	TraceTreeItem();
 
 	/**
+	 * Gets the owner this item in the view item hierachy.
+	 */
+	TraceTreeItemOwner* owner() const;
+
+	/**
 	 * Gets the vertical layout offset of this signal.
 	 */
 	int layout_v_offset() const;
@@ -78,11 +83,6 @@ public:
 	void animate_to_layout_v_offset();
 
 	/**
-	 * Gets the owner this trace in the view trace hierachy.
-	 */
-	pv::view::TraceTreeItemOwner* owner() const;
-
-	/**
 	 * Sets the owner this trace in the view trace hierachy.
 	 * @param The new owner of the trace.
 	 */
@@ -112,7 +112,7 @@ public:
 	virtual std::pair<int, int> v_extents() const = 0;
 
 protected:
-	pv::view::TraceTreeItemOwner *owner_;
+	TraceTreeItemOwner *owner_;
 
 	int layout_v_offset_;
 	int visual_v_offset_;

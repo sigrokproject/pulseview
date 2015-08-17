@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_VIEW_ROWITEMITERATOR_HPP
-#define PULSEVIEW_PV_VIEW_ROWITEMITERATOR_HPP
+#ifndef PULSEVIEW_PV_VIEW_VIEWITEMITERATOR_HPP
+#define PULSEVIEW_PV_VIEW_VIEWITEMITERATOR_HPP
 
 #include <algorithm>
 #include <cassert>
@@ -34,7 +34,7 @@
 namespace pv {
 namespace view {
 
-template<class Owner, class Item> class RowItemIterator
+template<class Owner, class Item> class ViewItemIterator
 {
 public:
 	typedef typename std::conditional<std::is_const<Owner>::value,
@@ -48,17 +48,17 @@ public:
 	typedef std::forward_iterator_tag iterator_category;
 
 public:
-	RowItemIterator(Owner *owner) :
+	ViewItemIterator(Owner *owner) :
 		owner_stack_({owner}) {}
 
-	RowItemIterator(Owner *owner, child_iterator iter) :
+	ViewItemIterator(Owner *owner, child_iterator iter) :
 		owner_stack_({owner}) {
 		assert(owner);
 		if (iter != owner->child_items().end())
 			iter_stack_.push(iter);
 	}
 
-	RowItemIterator(const RowItemIterator<Owner, Item> &o) :
+	ViewItemIterator(const ViewItemIterator<Owner, Item> &o) :
 		owner_stack_(o.owner_stack_),
 		iter_stack_(o.iter_stack_) {}
 
@@ -70,7 +70,7 @@ public:
 		return *this;
 	}
 
-	RowItemIterator<Owner, Item>& operator++() {
+	ViewItemIterator<Owner, Item>& operator++() {
 		using std::dynamic_pointer_cast;
 		using std::shared_ptr;
 
@@ -93,24 +93,24 @@ public:
 		return *this;
 	}
 
-	RowItemIterator<Owner, Item> operator++(int) {
-		RowItemIterator<Owner, Item> pre = *this;
+	ViewItemIterator<Owner, Item> operator++(int) {
+		ViewItemIterator<Owner, Item> pre = *this;
 		++*this;
 		return pre;
 	}
 
-	bool operator==(const RowItemIterator &o) const {
+	bool operator==(const ViewItemIterator &o) const {
 		return (iter_stack_.empty() && o.iter_stack_.empty()) || (
 			iter_stack_.size() == o.iter_stack_.size() &&
 			owner_stack_.top() == o.owner_stack_.top() &&
 			iter_stack_.top() == o.iter_stack_.top());
 	}
 
-	bool operator!=(const RowItemIterator &o) const {
-		return !((const RowItemIterator&)*this == o);
+	bool operator!=(const ViewItemIterator &o) const {
+		return !((const ViewItemIterator&)*this == o);
 	}
 
-	void swap(RowItemIterator<Owner, Item>& other) {
+	void swap(ViewItemIterator<Owner, Item>& other) {
 		swap(owner_stack_, other.owner_stack_);
 		swap(iter_stack_, other.iter_stack_);
 	}
@@ -121,7 +121,7 @@ private:
 };
 
 template<class Owner, class Item>
-void swap(RowItemIterator<Owner, Item>& a, RowItemIterator<Owner, Item>& b)
+void swap(ViewItemIterator<Owner, Item>& a, ViewItemIterator<Owner, Item>& b)
 {
 	a.swap(b);
 }
@@ -129,4 +129,4 @@ void swap(RowItemIterator<Owner, Item>& a, RowItemIterator<Owner, Item>& b)
 } // namespace view
 } // namespace pv
 
-#endif // PULSEVIEW_PV_VIEW_ROWITEMITERATOR_HPP
+#endif // PULSEVIEW_PV_VIEW_VIEWITEMITERATOR_HPP

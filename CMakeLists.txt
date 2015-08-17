@@ -219,6 +219,7 @@ set(pulseview_SOURCES
 	pv/view/tracetreeitemowner.cpp
 	pv/view/view.cpp
 	pv/view/viewitem.cpp
+	pv/view/viewitemowner.cpp
 	pv/view/viewitempaintparams.cpp
 	pv/view/viewport.cpp
 	pv/view/viewwidget.cpp

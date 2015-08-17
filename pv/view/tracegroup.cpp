@@ -49,7 +49,7 @@ TraceGroup::~TraceGroup()
 bool TraceGroup::enabled() const
 {
 	return std::any_of(child_items().begin(), child_items().end(),
-		[](const shared_ptr<TraceTreeItem> &r) { return r->enabled(); });
+		[](const shared_ptr<ViewItem> &r) { return r->enabled(); });
 }
 
 pv::Session& TraceGroup::session()
@@ -115,7 +115,7 @@ void TraceGroup::paint_label(QPainter &p, const QRect &rect, bool hover)
 QRectF TraceGroup::label_rect(const QRectF &rect) const
 {
 	QRectF child_rect;
-	for (const shared_ptr<TraceTreeItem> r : child_items())
+	for (const shared_ptr<ViewItem> r : child_items())
 		if (r && r->enabled())
 			child_rect = child_rect.united(r->label_rect(rect));
 
@@ -157,8 +157,7 @@ int TraceGroup::owner_visual_v_offset() const
 
 void TraceGroup::restack_items()
 {
-	vector< shared_ptr<TraceTreeItem> > items(
-		child_items().begin(), child_items().end());
+	vector<shared_ptr<TraceTreeItem>> items(trace_tree_child_items());
 
 	// Sort by the centre line of the extents
 	stable_sort(items.begin(), items.end(),
@@ -197,8 +196,7 @@ unsigned int TraceGroup::depth() const
 
 void TraceGroup::ungroup()
 {
-	const vector< shared_ptr<TraceTreeItem> > items(
-		child_items().begin(), child_items().end());
+	const vector<shared_ptr<TraceTreeItem>> items(trace_tree_child_items());
 	clear_child_items();
 
 	for (shared_ptr<TraceTreeItem> r : items)

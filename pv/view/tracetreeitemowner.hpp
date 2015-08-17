@@ -21,10 +21,8 @@
 #ifndef PULSEVIEW_PV_VIEW_TRACETREEITEMOWNER_HPP
 #define PULSEVIEW_PV_VIEW_TRACETREEITEMOWNER_HPP
 
-#include <memory>
-#include <vector>
-
-#include "rowitemiterator.hpp"
+#include "viewitemowner.hpp"
+#include "tracetreeitem.hpp"
 
 namespace pv {
 
@@ -35,24 +33,9 @@ namespace view {
 class TraceTreeItem;
 class View;
 
-class TraceTreeItemOwner
+class TraceTreeItemOwner : public ViewItemOwner
 {
 public:
-	typedef std::vector< std::shared_ptr<TraceTreeItem> > item_list;
-	typedef RowItemIterator<TraceTreeItemOwner, TraceTreeItem> iterator;
-	typedef RowItemIterator<const TraceTreeItemOwner, TraceTreeItem> const_iterator;
-
-public:
-	/**
-	 * Returns the session of the onwer.
-	 */
-	virtual pv::Session& session() = 0;
-
-	/**
-	 * Returns the session of the owner.
-	 */
-	virtual const pv::Session& session() const = 0;
-
 	/**
 	 * Returns the view of the owner.
 	 */
@@ -64,6 +47,16 @@ public:
 	virtual const pv::view::View* view() const = 0;
 
 	virtual int owner_visual_v_offset() const = 0;
+
+	/**
+	 * Returns the session of the onwer.
+	 */
+	virtual pv::Session& session() = 0;
+
+	/**
+	 * Returns the session of the owner.
+	 */
+	virtual const pv::Session& session() const = 0;
 
 	/**
 	 * Returns the number of nested parents that this row item owner has.
@@ -81,6 +74,12 @@ public:
 	virtual const item_list& child_items() const;
 
 	/**
+	 * Returns a list of row items owned by this object.
+	 */
+	std::vector< std::shared_ptr<TraceTreeItem> >
+	trace_tree_child_items() const;
+
+	/**
 	 * Clears the list of child items.
 	 */
 	void clear_child_items();
@@ -95,43 +94,7 @@ public:
 	 */
 	void remove_child_item(std::shared_ptr<TraceTreeItem> item);
 
-	/**
-	 * Returns a depth-first iterator at the beginning of the child TraceTreeItem
-	 * tree.
-	 */
-	iterator begin();
-
-	/**
-	 * Returns a depth-first iterator at the end of the child TraceTreeItem tree.
-	 */
-	iterator end();
-
-	/**
-	 * Returns a constant depth-first iterator at the beginning of the
-	 * child TraceTreeItem tree.
-	 */
-	const_iterator begin() const;
-
-	/**
-	 * Returns a constant depth-first iterator at the end of the child
-	 * TraceTreeItem tree.
-	 */
-	const_iterator end() const;
-
-	/**
-	 * Creates a list of decendant signals filtered by type.
-	 */
-	template<class T>
-	std::vector< std::shared_ptr<T> > list_by_type() {
-		std::vector< std::shared_ptr<T> > items;
-		for (const auto &r : *this) {
-			std::shared_ptr<T> p = std::dynamic_pointer_cast<T>(r);
-			if (p)
-				items.push_back(p);
-		}
-
-		return items;
-	}
+	virtual void restack_items();
 
 	/**
 	 * Computes the vertical extents of the contents of this row item owner.
@@ -139,15 +102,10 @@ public:
 	 */
 	std::pair<int, int> v_extents() const;
 
-	virtual void restack_items();
-
 public:
 	virtual void row_item_appearance_changed(bool label, bool content) = 0;
 
 	virtual void extents_changed(bool horz, bool vert) = 0;
-
-private:
-	item_list items_;
 };
 
 } // view

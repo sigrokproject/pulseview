@@ -31,26 +31,41 @@ using std::min;
 using std::pair;
 using std::set;
 using std::shared_ptr;
+using std::static_pointer_cast;
 using std::vector;
 
 namespace pv {
 namespace view {
 
-vector< shared_ptr<TraceTreeItem> >& TraceTreeItemOwner::child_items()
+vector< shared_ptr<ViewItem> >& TraceTreeItemOwner::child_items()
 {
 	return items_;
 }
 
-const vector< shared_ptr<TraceTreeItem> >& TraceTreeItemOwner::child_items() const
+const vector< shared_ptr<ViewItem> >& TraceTreeItemOwner::child_items() const
 {
 	return items_;
+}
+
+vector< std::shared_ptr<TraceTreeItem> >
+TraceTreeItemOwner::trace_tree_child_items() const
+{
+	vector< shared_ptr<TraceTreeItem> > items;
+	for (auto &i : items_) {
+		assert(dynamic_pointer_cast<TraceTreeItem>(i));
+		const shared_ptr<TraceTreeItem> t(
+			static_pointer_cast<TraceTreeItem>(i));
+		items.push_back(t);
+	}
+
+	return items;
 }
 
 void TraceTreeItemOwner::clear_child_items()
 {
-	for (auto &i : items_) {
-		assert(i->owner() == this);
-		i->set_owner(nullptr);
+	for (auto &t : trace_tree_child_items()) {
+		assert(t->owner() == this);
+		t->set_owner(nullptr);
 	}
 	items_.clear();
 }
@@ -75,37 +90,17 @@ void TraceTreeItemOwner::remove_child_item(std::shared_ptr<TraceTreeItem> item)
 	extents_changed(true, true);
 }
 
-TraceTreeItemOwner::iterator TraceTreeItemOwner::begin()
-{
-	return iterator(this, items_.begin());
-}
-
-TraceTreeItemOwner::iterator TraceTreeItemOwner::end()
-{
-	return iterator(this);
-}
-
-TraceTreeItemOwner::const_iterator TraceTreeItemOwner::begin() const
-{
-	return const_iterator(this, items_.cbegin());
-}
-
-TraceTreeItemOwner::const_iterator TraceTreeItemOwner::end() const
-{
-	return const_iterator(this);
-}
-
 pair<int, int> TraceTreeItemOwner::v_extents() const
 {
 	pair<int, int> extents(INT_MAX, INT_MIN);
 
-	for (const shared_ptr<TraceTreeItem> r : child_items()) {
-		assert(r);
-		if (!r->enabled())
+	for (const shared_ptr<TraceTreeItem> t : trace_tree_child_items()) {
+		assert(t);
+		if (!t->enabled())
 			continue;
 
-		const int child_offset = r->layout_v_offset();
-		const pair<int, int> child_extents = r->v_extents();
+		const int child_offset = t->layout_v_offset();
+		const pair<int, int> child_extents = t->v_extents();
 		extents.first = min(child_extents.first + child_offset,
 			extents.first);
 		extents.second = max(child_extents.second + child_offset,

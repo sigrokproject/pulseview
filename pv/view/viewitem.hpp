@@ -39,6 +39,8 @@ class Popup;
 
 namespace view {
 
+class ViewItemOwner;
+
 class ViewItem : public QObject
 {
 	Q_OBJECT
