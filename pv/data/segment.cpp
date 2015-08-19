@@ -78,8 +78,9 @@ void Segment::set_capacity(const uint64_t new_capacity)
 
 	assert(capacity_ >= sample_count_);
 	if (new_capacity > capacity_) {
-		capacity_ = new_capacity;
+		// If we're out of memory, this will throw std::bad_alloc
 		data_.resize((new_capacity * unit_size_) + sizeof(uint64_t));
+		capacity_ = new_capacity;
 	}
 }
 

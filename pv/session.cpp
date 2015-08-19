@@ -419,6 +419,8 @@ void Session::sample_thread_proc(shared_ptr<devices::Device> device,
 
 	cur_samplerate_ = device_->read_config<uint64_t>(ConfigKey::SAMPLERATE);
 
+	out_of_memory_ = false;
+
 	try {
 		device_->start();
 	} catch(Error e) {
@@ -438,6 +440,9 @@ void Session::sample_thread_proc(shared_ptr<devices::Device> device,
 		qDebug("SR_DF_END was not received.");
 		assert(0);
 	}
+
+	if (out_of_memory_)
+		error_handler(tr("Out of memory, acquisition stopped."));
 }
 
 void Session::feed_in_header()
@@ -590,11 +595,21 @@ void Session::data_feed_in(shared_ptr<sigrok::Device> device,
 		break;
 
 	case SR_DF_LOGIC:
-		feed_in_logic(dynamic_pointer_cast<Logic>(packet->payload()));
+		try {
+			feed_in_logic(dynamic_pointer_cast<Logic>(packet->payload()));
+		} catch (std::bad_alloc) {
+			out_of_memory_ = true;
+			device_->stop();
+		}
 		break;
 
 	case SR_DF_ANALOG:
-		feed_in_analog(dynamic_pointer_cast<Analog>(packet->payload()));
+		try {
+			feed_in_analog(dynamic_pointer_cast<Analog>(packet->payload()));
+		} catch (std::bad_alloc) {
+			out_of_memory_ = true;
+			device_->stop();
+		}
 		break;
 
 	case SR_DF_END:

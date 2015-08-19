@@ -69,6 +69,7 @@ void AnalogSegment::append_interleaved_samples(const float *data,
 
 	lock_guard<recursive_mutex> lock(mutex_);
 
+	// If we're out of memory, this will throw std::bad_alloc
 	data_.resize((sample_count_ + sample_count) * sizeof(float));
 
 	float *dst = (float*)data_.data() + sample_count_;

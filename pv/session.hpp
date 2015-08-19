@@ -174,6 +174,8 @@ private:
 
 	std::thread sampling_thread_;
 
+	bool out_of_memory_;
+
 Q_SIGNALS:
 	void capture_state_changed(int state);
 	void device_selected();
