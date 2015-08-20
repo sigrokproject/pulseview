@@ -313,7 +313,7 @@ void DecoderStack::decode_data(
 		segment_->get_samples(chunk, i, chunk_end);
 
 		if (srd_session_send(session, i, chunk_end, chunk,
-				(chunk_end - i) * unit_size) != SRD_OK) {
+				(chunk_end - i) * unit_size, unit_size) != SRD_OK) {
 			error_message_ = tr("Decoder reported an error");
 			break;
 		}
@@ -347,7 +347,7 @@ void DecoderStack::decode_proc()
 
 	for (const shared_ptr<decode::Decoder> &dec : stack_)
 	{
-		srd_decoder_inst *const di = dec->create_decoder_inst(session, unit_size);
+		srd_decoder_inst *const di = dec->create_decoder_inst(session);
 
 		if (!di)
 		{

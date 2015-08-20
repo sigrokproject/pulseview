@@ -111,7 +111,7 @@ set< shared_ptr<pv::data::Logic> > Decoder::get_data()
 	return data;
 }
 
-srd_decoder_inst* Decoder::create_decoder_inst(srd_session *session, int unit_size) const
+srd_decoder_inst* Decoder::create_decoder_inst(srd_session *session) const
 {
 	GHashTable *const opt_hash = g_hash_table_new_full(g_str_hash,
 		g_str_equal, g_free, (GDestroyNotify)g_variant_unref);
@@ -144,7 +144,7 @@ srd_decoder_inst* Decoder::create_decoder_inst(srd_session *session, int unit_si
 		g_hash_table_insert(channels, (*i).first->id, gvar);
 	}
 
-	srd_inst_channel_set_all(decoder_inst, channels, unit_size);
+	srd_inst_channel_set_all(decoder_inst, channels);
 
 	return decoder_inst;
 }
