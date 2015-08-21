@@ -128,9 +128,11 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	if (argc != optind) {
-		fprintf(stderr, "Unexpected argument: %s\n", argv[optind]);
+	if (argc - optind > 1) {
+		fprintf(stderr, "Only one file can be openened.\n");
 		return 1;
+	} else if (argc - optind == 1) {
+		open_file = argv[argc - 1];
 	}
 
 	// Initialise libsigrok
