@@ -95,14 +95,6 @@ TraceTreeItemOwner::const_iterator TraceTreeItemOwner::end() const
 	return const_iterator(this);
 }
 
-set< TraceTreeItemOwner* > TraceTreeItemOwner::list_row_item_owners()
-{
-	set< TraceTreeItemOwner* > owners;
-	for (const auto &r : *this)
-		owners.insert(r->owner());
-	return owners;
-}
-
 pair<int, int> TraceTreeItemOwner::v_extents() const
 {
 	pair<int, int> extents(INT_MAX, INT_MIN);

@@ -119,12 +119,6 @@ public:
 	const_iterator end() const;
 
 	/**
-	 * Makes a list of row item owners of all the row items that are
-	 * decendants of this item.
-	 */
-	std::set< TraceTreeItemOwner* > list_row_item_owners();
-
-	/**
 	 * Creates a list of decendant signals filtered by type.
 	 */
 	template<class T>

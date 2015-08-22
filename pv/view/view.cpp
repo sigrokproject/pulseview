@@ -507,7 +507,9 @@ void View::update_viewport()
 void View::restack_all_trace_tree_items()
 {
 	// Make a list of owners that is sorted from deepest first
-	const auto owners = list_row_item_owners();
+	set< TraceTreeItemOwner* > owners;
+	for (const auto &r : *this)
+		owners.insert(r->owner());
 	vector< TraceTreeItemOwner* > sorted_owners(owners.begin(), owners.end());
 	sort(sorted_owners.begin(), sorted_owners.end(),
 		[](const TraceTreeItemOwner* a, const TraceTreeItemOwner *b) {
