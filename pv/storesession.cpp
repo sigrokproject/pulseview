@@ -95,8 +95,7 @@ const QString& StoreSession::error() const
 
 bool StoreSession::start()
 {
-	shared_lock<shared_mutex> lock(session_.signals_mutex());
-	const unordered_set< shared_ptr<view::Signal> > &sigs(session_.signals());
+	const unordered_set< shared_ptr<view::Signal> > sigs(session_.signals());
 
 	// Add enabled channels to the data set
 	set< shared_ptr<data::SignalData> > data_set;

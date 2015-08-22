@@ -75,8 +75,7 @@ Channels::Channels(Session &session, QWidget *parent) :
 	// Collect a set of signals
 	map<shared_ptr<Channel>, shared_ptr<Signal> > signal_map;
 
-	shared_lock<shared_mutex> lock(session_.signals_mutex());
-	const unordered_set< shared_ptr<Signal> > &sigs(session_.signals());
+	const unordered_set< shared_ptr<Signal> > sigs(session_.signals());
 
 	for (const shared_ptr<Signal> &sig : sigs)
 		signal_map[sig->channel()] = sig;

@@ -710,8 +710,7 @@ QComboBox* DecodeTrace::create_channel_selector(
 {
 	assert(dec);
 
-	shared_lock<shared_mutex> lock(session_.signals_mutex());
-	const auto &sigs(session_.signals());
+	const auto sigs(session_.signals());
 
 	vector< shared_ptr<Signal> > sig_list(sigs.begin(), sigs.end());
 	std::sort(sig_list.begin(), sig_list.end(),
@@ -749,8 +748,7 @@ void DecodeTrace::commit_decoder_channels(shared_ptr<data::decode::Decoder> &dec
 
 	map<const srd_channel*, shared_ptr<LogicSignal> > channel_map;
 
-	shared_lock<shared_mutex> lock(session_.signals_mutex());
-	const unordered_set< shared_ptr<Signal> > &sigs(session_.signals());
+	const unordered_set< shared_ptr<Signal> > sigs(session_.signals());
 
 	for (const ChannelSelector &s : channel_selectors_)
 	{

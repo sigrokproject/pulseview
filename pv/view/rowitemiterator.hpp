@@ -29,14 +29,6 @@
 #include <type_traits>
 #include <vector>
 
-#ifdef _WIN32
-// Windows: Avoid namespace pollution by thread.hpp (which includes windows.h).
-#define NOGDI
-#define NORESOURCE
-#endif
-#include <boost/thread/locks.hpp>
-#include <boost/thread/shared_mutex.hpp>
-
 #include <pv/session.hpp>
 
 namespace pv {
@@ -57,12 +49,10 @@ public:
 
 public:
 	RowItemIterator(Owner *owner) :
-		owner_(owner),
-		lock_(owner->session().signals_mutex()) {}
+		owner_(owner) {}
 
 	RowItemIterator(Owner *owner, child_iterator iter) :
-		owner_(owner),
-		lock_(owner->session().signals_mutex()) {
+		owner_(owner) {
 		assert(owner);
 		if (iter != owner->child_items().end())
 			iter_stack_.push(iter);
@@ -70,7 +60,6 @@ public:
 
 	RowItemIterator(const RowItemIterator<Owner, Item> &o) :
 		owner_(o.owner_),
-		lock_(*o.lock_.mutex()),
 		iter_stack_(o.iter_stack_) {}
 
 	reference operator*() const {
@@ -133,7 +122,6 @@ public:
 
 private:
 	Owner *owner_;
-	boost::shared_lock<boost::shared_mutex> lock_;
 	std::stack<child_iterator> iter_stack_;
 };
 

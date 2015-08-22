@@ -114,9 +114,7 @@ public:
 
 	std::set< std::shared_ptr<data::SignalData> > get_data() const;
 
-	boost::shared_mutex& signals_mutex() const;
-
-	const std::unordered_set< std::shared_ptr<view::Signal> >&
+	const std::unordered_set< std::shared_ptr<view::Signal> >
 		signals() const;
 
 #ifdef ENABLE_DECODE

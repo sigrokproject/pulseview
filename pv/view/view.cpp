@@ -396,8 +396,7 @@ void View::set_scale_offset(double scale, const Timestamp& offset)
 
 set< shared_ptr<SignalData> > View::get_visible_data() const
 {
-	shared_lock<shared_mutex> lock(session().signals_mutex());
-	const unordered_set< shared_ptr<Signal> > &sigs(session().signals());
+	const unordered_set< shared_ptr<Signal> > sigs(session().signals());
 
 	// Make a set of all the visible data objects
 	set< shared_ptr<SignalData> > visible_data;
@@ -745,8 +744,7 @@ void View::determine_time_unit()
 {
 	// Check whether we know the sample rate and hence can use time as the unit
 	if (time_unit_ == util::TimeUnit::Samples) {
-		shared_lock<shared_mutex> lock(session().signals_mutex());
-		const unordered_set< shared_ptr<Signal> > &sigs(session().signals());
+		const unordered_set< shared_ptr<Signal> > sigs(session().signals());
 
 		// Check all signals but...
 		for (const shared_ptr<Signal> signal : sigs) {
@@ -885,8 +883,7 @@ void View::signals_changed()
 	const set<shared_ptr<Trace>> prev_traces(
 		prev_trace_list.begin(), prev_trace_list.end());
 
-	shared_lock<shared_mutex> lock(session_.signals_mutex());
-	const unordered_set< shared_ptr<Signal> > &sigs(session_.signals());
+	const unordered_set< shared_ptr<Signal> > sigs(session_.signals());
 
 	set< shared_ptr<Trace> > traces(sigs.begin(), sigs.end());
 

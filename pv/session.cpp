@@ -217,13 +217,9 @@ set< shared_ptr<data::SignalData> > Session::get_data() const
 	return data;
 }
 
-boost::shared_mutex& Session::signals_mutex() const
+const unordered_set< shared_ptr<view::Signal> > Session::signals() const
 {
-	return signals_mutex_;
-}
-
-const unordered_set< shared_ptr<view::Signal> >& Session::signals() const
-{
+	shared_lock<shared_mutex> lock(signals_mutex_);
 	return signals_;
 }
 
