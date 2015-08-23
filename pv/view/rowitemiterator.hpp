@@ -49,17 +49,17 @@ public:
 
 public:
 	RowItemIterator(Owner *owner) :
-		owner_(owner) {}
+		owner_stack_({owner}) {}
 
 	RowItemIterator(Owner *owner, child_iterator iter) :
-		owner_(owner) {
+		owner_stack_({owner}) {
 		assert(owner);
 		if (iter != owner->child_items().end())
 			iter_stack_.push(iter);
 	}
 
 	RowItemIterator(const RowItemIterator<Owner, Item> &o) :
-		owner_(o.owner_),
+		owner_stack_(o.owner_stack_),
 		iter_stack_(o.iter_stack_) {}
 
 	reference operator*() const {
@@ -74,21 +74,19 @@ public:
 		using std::dynamic_pointer_cast;
 		using std::shared_ptr;
 
-		assert(owner_);
+		assert(!owner_stack_.empty());
 		assert(!iter_stack_.empty());
 
 		shared_ptr<Owner> owner(dynamic_pointer_cast<Owner>(
 			*iter_stack_.top()));
 		if (owner && !owner->child_items().empty()) {
-			owner_ = owner.get();
+			owner_stack_.push(owner.get());
 			iter_stack_.push(owner->child_items().begin());
 		} else {
-			++iter_stack_.top();
-			while (owner_ && iter_stack_.top() ==
-				owner_->child_items().end()) {
+			while (!iter_stack_.empty() && (++iter_stack_.top()) ==
+				owner_stack_.top()->child_items().end()) {
+				owner_stack_.pop();
 				iter_stack_.pop();
-				owner_ = iter_stack_.empty() ? nullptr :
-					(*iter_stack_.top()++)->owner();
 			}
 		}
 
@@ -102,13 +100,10 @@ public:
 	}
 
 	bool operator==(const RowItemIterator &o) const {
-		return (iter_stack_.empty() && o.iter_stack_.empty()) ||
-			(owner_ == o.owner_ &&
+		return (iter_stack_.empty() && o.iter_stack_.empty()) || (
 			iter_stack_.size() == o.iter_stack_.size() &&
-			std::equal(
-				owner_->child_items().cbegin(),
-				owner_->child_items().cend(),
-				o.owner_->child_items().cbegin()));
+			owner_stack_.top() == o.owner_stack_.top() &&
+			iter_stack_.top() == o.iter_stack_.top());
 	}
 
 	bool operator!=(const RowItemIterator &o) const {
@@ -116,12 +111,12 @@ public:
 	}
 
 	void swap(RowItemIterator<Owner, Item>& other) {
-		swap(owner_, other.owner_);
+		swap(owner_stack_, other.owner_stack_);
 		swap(iter_stack_, other.iter_stack_);
 	}
 
 private:
-	Owner *owner_;
+	std::stack<Owner*> owner_stack_;
 	std::stack<child_iterator> iter_stack_;
 };
 
