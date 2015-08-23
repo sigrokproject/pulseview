@@ -119,7 +119,7 @@ static QString format_time_in_full(double t, signed precision, bool force_sign)
 	if (precision >= 0) {
 		ts << pad_number(seconds, use_padding ? 2 : 0);
 
-		const double fraction = fabs(t - whole_seconds);
+		const double fraction = fabs(t) - whole_seconds;
 
 		if (precision > 0 && precision < 1000) {
 			QString fs = QString("%1").arg(fraction, -(2 + precision), 'f',
