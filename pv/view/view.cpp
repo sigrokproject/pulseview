@@ -84,7 +84,7 @@ namespace pv {
 namespace view {
 
 const double View::MaxScale = 1e9;
-const double View::MinScale = 1e-15;
+const double View::MinScale = 1e-12;
 
 const int View::MaxScrollValue = INT_MAX / 2;
 const int View::MaxViewAutoUpdateRate = 25; // No more than 25 Hz with sticky scrolling
