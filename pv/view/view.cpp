@@ -494,7 +494,7 @@ void View::set_zoom(double scale, int offset)
 void View::calculate_tick_spacing()
 {
 	const double SpacingIncrement = 10.0f;
-	const double MinValueSpacing = 25.0f;
+	const double MinValueSpacing = 40.0f;
 
 	// Figure out the highest numeric value visible on a label
 	const QSize areaSize = viewport_->size();
