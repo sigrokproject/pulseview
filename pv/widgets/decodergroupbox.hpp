@@ -34,7 +34,8 @@ class DecoderGroupBox : public QWidget
 	Q_OBJECT
 
 public:
-	DecoderGroupBox(QString title, QWidget *parent = nullptr);
+	DecoderGroupBox(QString title, QWidget *parent = nullptr,
+		bool isDeletable = true);
 
 	void add_layout(QLayout *layout);
 

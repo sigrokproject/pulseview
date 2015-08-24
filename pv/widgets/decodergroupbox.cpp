@@ -30,7 +30,7 @@
 namespace pv {
 namespace widgets {
 
-DecoderGroupBox::DecoderGroupBox(QString title, QWidget *parent) :
+DecoderGroupBox::DecoderGroupBox(QString title, QWidget *parent, bool isDeletable) :
 	QWidget(parent),
 	layout_(new QGridLayout),
 	show_hide_button_(QIcon(":/icons/decoder-shown.svg"), QString(), this)
@@ -51,13 +51,15 @@ DecoderGroupBox::DecoderGroupBox(QString title, QWidget *parent) :
 		this, SIGNAL(show_hide_decoder()));
 	toolbar->addWidget(&show_hide_button_);
 
-	QPushButton *const delete_button = new QPushButton(
-		QIcon(":/icons/decoder-delete.svg"), QString(), this);
-	delete_button->setFlat(true);
-	delete_button->setIconSize(QSize(16, 16));
-	connect(delete_button, SIGNAL(clicked()),
-		this, SIGNAL(delete_decoder()));
-	toolbar->addWidget(delete_button);
+	if (isDeletable) {
+		QPushButton *const delete_button = new QPushButton(
+			QIcon(":/icons/decoder-delete.svg"), QString(), this);
+		delete_button->setFlat(true);
+		delete_button->setIconSize(QSize(16, 16));
+		connect(delete_button, SIGNAL(clicked()),
+			this, SIGNAL(delete_decoder()));
+		toolbar->addWidget(delete_button);
+	}
 }
 
 void DecoderGroupBox::add_layout(QLayout *layout)

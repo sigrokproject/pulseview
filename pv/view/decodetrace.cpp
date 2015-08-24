@@ -642,13 +642,17 @@ void DecodeTrace::create_decoder_form(int index,
 	const srd_decoder *const decoder = dec->decoder();
 	assert(decoder);
 
+	const bool decoder_deletable = index > 0;
+
 	pv::widgets::DecoderGroupBox *const group =
 		new pv::widgets::DecoderGroupBox(
-			QString::fromUtf8(decoder->name));
+			QString::fromUtf8(decoder->name), nullptr, decoder_deletable);
 	group->set_decoder_visible(dec->shown());
 
-	delete_mapper_.setMapping(group, index);
-	connect(group, SIGNAL(delete_decoder()), &delete_mapper_, SLOT(map()));
+	if (decoder_deletable) {
+		delete_mapper_.setMapping(group, index);
+		connect(group, SIGNAL(delete_decoder()), &delete_mapper_, SLOT(map()));
+	}
 
 	show_hide_mapper_.setMapping(group, index);
 	connect(group, SIGNAL(show_hide_decoder()),
