@@ -232,6 +232,14 @@ void MainBar::set_capture_state(pv::Session::capture_state state)
 	run_stop_button_.setText((state == pv::Session::Stopped) ?
 		tr("Run") : tr("Stop"));
 	run_stop_button_.setShortcut(QKeySequence(Qt::Key_Space));
+
+	bool ui_enabled = (state == pv::Session::Stopped) ? true : false;
+
+	device_selector_.setEnabled(ui_enabled);
+	configure_button_.setEnabled(ui_enabled);
+	channels_button_.setEnabled(ui_enabled);
+	sample_count_.setEnabled(ui_enabled);
+	sample_rate_.setEnabled(ui_enabled);
 }
 
 void MainBar::update_sample_rate_selector()
