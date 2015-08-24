@@ -925,14 +925,20 @@ void View::signals_changed()
 
 void View::capture_state_updated(int state)
 {
-	// Reset "always zoom to fit" when we change to the stopped state
-	if (always_zoom_to_fit_ && (state == Session::Stopped)) {
-		always_zoom_to_fit_ = false;
-		always_zoom_to_fit_changed(false);
-	}
-
 	if (state == Session::Running)
 		time_unit_ = util::Samples;
+
+	if (state == Session::Stopped) {
+		// After acquisition has stopped we need to re-calculate the ticks once
+		// as it's otherwise done when the user pans or zooms, which is too late
+		calculate_tick_spacing();
+
+		// Reset "always zoom to fit", the acquisition has stopped
+		if (always_zoom_to_fit_) {
+			always_zoom_to_fit_ = false;
+			always_zoom_to_fit_changed(false);
+		}
+	}
 }
 
 void View::data_updated()
