@@ -51,7 +51,8 @@ Int::~Int()
 
 QWidget* Int::get_widget(QWidget *parent, bool auto_commit)
 {
-	int64_t int_val = 0, range_min = 0, range_max = 0;
+	int64_t int_val = 0, range_min = 0;
+	uint64_t range_max = 0;
 
 	if (spin_box_)
 		return spin_box_;
@@ -118,7 +119,7 @@ QWidget* Int::get_widget(QWidget *parent, bool auto_commit)
 	// custom widget.
 
 	range_min = max(range_min, (int64_t)INT_MIN);
-	range_max = min(range_max, (int64_t)INT_MAX);
+	range_max = min(range_max, (uint64_t)INT_MAX);
 
 	if (range_)
 		spin_box_->setRange((int)range_->first, (int)range_->second);
