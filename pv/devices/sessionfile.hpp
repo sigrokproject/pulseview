@@ -35,13 +35,13 @@ namespace devices {
 class SessionFile final : public File
 {
 public:
-	SessionFile(const std::shared_ptr<sigrok::Context> &context,
+	SessionFile(const std::shared_ptr<sigrok::Context> context,
 		const std::string &file_name);
 
 	void create();
 
 private:
-	const std::shared_ptr<sigrok::Context> &context_;
+	const std::shared_ptr<sigrok::Context> context_;
 };
 
 } // namespace devices
