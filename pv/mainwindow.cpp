@@ -623,7 +623,6 @@ void MainWindow::load_file(QString file_name,
 {
 	const QString errorMessage(
 		QString("Failed to load file %1").arg(file_name));
-	const QString infoMessage;
 
 	try {
 		if (format)
@@ -646,7 +645,7 @@ void MainWindow::load_file(QString file_name,
 
 	update_device_list();
 
-	session_.start_capture([&, errorMessage, infoMessage](QString) {
+	session_.start_capture([&, errorMessage](QString infoMessage) {
 		session_error(errorMessage, infoMessage); });
 }
 
