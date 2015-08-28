@@ -76,7 +76,7 @@ static QString pad_number(unsigned int number, int length)
 	return QString("%1").arg(number, length, 10, QChar('0'));
 }
 
-static QString format_time_in_full(double t, signed precision, bool force_sign)
+static QString format_time_in_full(double t, signed precision)
 {
 	const unsigned int whole_seconds = abs((int) t);
 	const unsigned int days = whole_seconds / (60 * 60 * 24);
@@ -87,9 +87,9 @@ static QString format_time_in_full(double t, signed precision, bool force_sign)
 	QString s;
 	QTextStream ts(&s);
 
-	if (force_sign && (t >= 0))
+	if (t >= 0)
 		ts << "+";
-	if (t < 0)
+	else
 		ts << "-";
 
 	bool use_padding = false;
@@ -142,7 +142,7 @@ static QString format_time_in_full(double t, signed precision, bool force_sign)
 }
 
 static QString format_time_with_si(double t, QString unit, int prefix,
-	unsigned int precision, bool sign)
+	unsigned int precision)
 {
 	// The precision is always given without taking the prefix into account
 	// so we need to deduct the number of decimals the prefix might imply
@@ -153,11 +153,10 @@ static QString format_time_with_si(double t, QString unit, int prefix,
 		(prefix >= pv::util::FirstSIPrefix) ? precision :
 		std::max((int)(precision - prefix_order), 0);
 
-	return format_si_value(t, unit, prefix, relative_prec, sign);
+	return format_si_value(t, unit, prefix, relative_prec);
 }
 
-QString format_time(double t, int prefix, TimeUnit unit,
-	unsigned int precision, double step_size, bool sign)
+QString format_time(double t, int prefix, TimeUnit unit, unsigned int precision)
 {
 	// Make 0 appear as 0, not random +0 or -0
 	if (fabs(t) < MinTimeDelta)
@@ -165,21 +164,16 @@ QString format_time(double t, int prefix, TimeUnit unit,
 
 	// If we have to use samples then we have no alternative formats
 	if (unit == Samples)
-		return format_time_with_si(t, "sa", prefix, precision, sign);
-
-	// View zoomed way out -> low precision (0), high step size (>=60s)
-	// -> DD:HH:MM
-	if ((precision == 0) && (step_size >= 60))
-		return format_time_in_full(t, -1, sign);
+		return format_time_with_si(t, "sa", prefix, precision);
 
 	// View in "normal" range -> medium precision, medium step size
 	// -> HH:MM:SS.mmm... or xxxx (si unit) if less than 60 seconds
 	// View zoomed way in -> high precision (>3), low step size (<1s)
 	// -> HH:MM:SS.mmm... or xxxx (si unit) if less than 60 seconds
 	if (abs(t) < 60)
-		return format_time_with_si(t, "s", prefix, precision, sign);
+		return format_time_with_si(t, "s", prefix, precision);
 	else
-		return format_time_in_full(t, precision, sign);
+		return format_time_in_full(t, precision);
 }
 
 QString format_second(double second)
