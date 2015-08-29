@@ -25,6 +25,7 @@
 #include "timemarker.hpp"
 
 #include "view.hpp"
+#include "pv/widgets/timestampspinbox.hpp"
 
 #include <QApplication>
 #include <QFormLayout>
@@ -63,7 +64,7 @@ void TimeMarker::set_time(const pv::util::Timestamp& time)
 
 	if (value_widget_) {
 		updating_value_widget_ = true;
-		value_widget_->setValue(time.convert_to<double>());
+		value_widget_->setValue(time);
 		updating_value_widget_ = false;
 	}
 
@@ -173,22 +174,18 @@ pv::widgets::Popup* TimeMarker::create_popup(QWidget *parent)
 	QFormLayout *const form = new QFormLayout(popup);
 	popup->setLayout(form);
 
-	value_widget_ = new QDoubleSpinBox(parent);
-	value_widget_->setDecimals(9);
-	value_widget_->setSuffix("s");
-	value_widget_->setSingleStep(1e-6);
-	value_widget_->setRange(-1.0e9, 1.0e9);
-	value_widget_->setValue(time_.convert_to<double>());
+	value_widget_ = new pv::widgets::TimestampSpinBox(parent);
+	value_widget_->setValue(time_);
 
-	connect(value_widget_, SIGNAL(valueChanged(double)),
-		this, SLOT(on_value_changed(double)));
+	connect(value_widget_, SIGNAL(valueChanged(const pv::util::Timestamp&)),
+		this, SLOT(on_value_changed(const pv::util::Timestamp&)));
 
 	form->addRow(tr("Time"), value_widget_);
 
 	return popup;
 }
 
-void TimeMarker::on_value_changed(double value)
+void TimeMarker::on_value_changed(const pv::util::Timestamp& value)
 {
 	if (!updating_value_widget_)
 		set_time(value);

@@ -230,6 +230,7 @@ set(pulseview_SOURCES
 	pv/widgets/popup.cpp
 	pv/widgets/popuptoolbutton.cpp
 	pv/widgets/sweeptimingwidget.cpp
+	pv/widgets/timestampspinbox.cpp
 	pv/widgets/wellarray.cpp
 )
 
@@ -277,6 +278,7 @@ set(pulseview_HEADERS
 	pv/widgets/popup.hpp
 	pv/widgets/popuptoolbutton.hpp
 	pv/widgets/sweeptimingwidget.hpp
+	pv/widgets/timestampspinbox.hpp
 	pv/widgets/wellarray.hpp
 )
 

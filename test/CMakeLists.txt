@@ -69,6 +69,7 @@ set(pulseview_TEST_SOURCES
 	${PROJECT_SOURCE_DIR}/pv/widgets/popup.cpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/popuptoolbutton.cpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/sweeptimingwidget.cpp
+	${PROJECT_SOURCE_DIR}/pv/widgets/timestampspinbox.cpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/wellarray.cpp
 	data/analogsegment.cpp
 	data/logicsegment.cpp
@@ -111,6 +112,7 @@ set(pulseview_TEST_HEADERS
 	${PROJECT_SOURCE_DIR}/pv/widgets/popup.hpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/popuptoolbutton.hpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/sweeptimingwidget.hpp
+	${PROJECT_SOURCE_DIR}/pv/widgets/timestampspinbox.hpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/wellarray.hpp
 )
 

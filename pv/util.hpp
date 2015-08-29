@@ -25,6 +25,7 @@
 
 #include <boost/multiprecision/cpp_dec_float.hpp>
 
+#include <QMetaType>
 #include <QString>
 
 namespace pv {
@@ -82,5 +83,7 @@ QString format_second(const Timestamp& second);
 
 } // namespace util
 } // namespace pv
+
+Q_DECLARE_METATYPE(pv::util::Timestamp)
 
 #endif // PULSEVIEW_UTIL_HPP

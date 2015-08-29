@@ -33,6 +33,10 @@ class QPainter;
 class QRect;
 
 namespace pv {
+namespace widgets {
+	class TimestampSpinBox;
+}
+
 namespace view {
 
 class View;
@@ -109,7 +113,7 @@ public:
 	virtual pv::widgets::Popup* create_popup(QWidget *parent);
 
 private Q_SLOTS:
-	void on_value_changed(double value);
+	void on_value_changed(const pv::util::Timestamp& value);
 
 protected:
 	const QColor &colour_;
@@ -119,7 +123,7 @@ protected:
 	QSizeF text_size_;
 
 	QWidgetAction *value_action_;
-	QDoubleSpinBox *value_widget_;
+	pv::widgets::TimestampSpinBox *value_widget_;
 	bool updating_value_widget_;
 };
 
