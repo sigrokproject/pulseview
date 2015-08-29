@@ -25,6 +25,7 @@
 #include <assert.h>
 
 #include <algorithm>
+#include <sstream>
 
 #include <QTextStream>
 #include <QDebug>
@@ -34,47 +35,96 @@ using namespace Qt;
 namespace pv {
 namespace util {
 
-static const QString SIPrefixes[17] =
-	{"y", "z", "a", "f", "p", "n", QChar(0x03BC), "m", "", "k", "M", "G",
-	"T", "P", "E", "Z", "Y"};
-const int FirstSIPrefix = 8;
-const int FirstSIPrefixPower = -(FirstSIPrefix * 3);
+static const QString SIPrefixes[17] = {
+	"y", "z",
+	"a", "f", "p",
+	"n", QChar(0x03BC), "m",
+	"",
+	"k", "M", "G",
+	"T", "P", "E",
+	"Z", "Y"};
+const int EmptySIPrefix = 8;
+const int FirstSIPrefixPower = -(EmptySIPrefix * 3);
 const double MinTimeDelta = 1e-15; // Anything below 1 fs can be considered zero
 
-static QString format_si_value(double v, QString unit, int prefix,
+// Insert the timestamp value into the stream in fixed-point notation
+// (and honor the precision)
+static QTextStream& operator<<(QTextStream& stream, const Timestamp& t)
+{
+	// The multiprecision types already have a function and a stream insertion
+	// operator to convert them to a string, however these functions abuse a
+	// precision value of zero to print all available decimal places instead of
+	// none, and the boost authors refuse to fix this because they don't want
+	// to break buggy code that relies on this bug.
+	// (https://svn.boost.org/trac/boost/ticket/10103)
+	// Therefore we have to work around the case where precision is zero.
+
+	int precision = stream.realNumberPrecision();
+
+	std::ostringstream ss;
+	ss << std::fixed;
+
+	if (stream.numberFlags() & QTextStream::ForceSign) {
+		ss << std::showpos;
+	}
+
+	if (0 == precision) {
+		ss
+			<< std::setprecision(1)
+			<< round(t);
+	} else {
+		ss
+			<< std::setprecision(precision)
+			<< t;
+	}
+
+	std::string str(ss.str());
+	if (0 == precision) {
+		// remove the separator and the unwanted decimal place
+		str.resize(str.size() - 2);
+	}
+
+	return stream << QString::fromStdString(str);
+}
+
+QString format_si_value(const Timestamp& v, QString unit, int prefix,
 	unsigned int precision, bool sign)
 {
 	if (prefix < 0) {
-		int exp = -FirstSIPrefixPower;
+		// No prefix given, calculate it
 
-		prefix = 0;
-		while ((fabs(v) * pow(10.0, exp)) > 999.0 &&
-			prefix < (int)(countof(SIPrefixes) - 1)) {
-			prefix++;
-			exp -= 3;
+		if (v.is_zero()) {
+			prefix = EmptySIPrefix;
+		} else {
+			int exp = -FirstSIPrefixPower;
+
+			prefix = 0;
+			while ((fabs(v) * pow(10.0, exp)) > 999.0 &&
+				prefix < (int)(countof(SIPrefixes) - 1)) {
+				prefix++;
+				exp -= 3;
+			}
 		}
 	}
 
 	assert(prefix >= 0);
 	assert(prefix < (int)countof(SIPrefixes));
 
-	const double multiplier = pow(10.0,
+	const Timestamp multiplier = pow(Timestamp(10),
 		(int)- prefix * 3 - FirstSIPrefixPower);
 
 	QString s;
 	QTextStream ts(&s);
-	if (sign)
+	if (sign && !v.is_zero())
 		ts << forcesign;
-	ts << fixed << qSetRealNumberPrecision(precision) <<
-		(v  * multiplier) << " " << SIPrefixes[prefix] << unit;
+	ts
+		<< qSetRealNumberPrecision(precision)
+		<< (v * multiplier)
+		<< ' '
+		<< SIPrefixes[prefix]
+		<< unit;
 
 	return s;
-}
-
-QString format_si_value(const Timestamp& v, QString unit, int prefix,
-	unsigned int precision, bool sign)
-{
-	return format_si_value(v.convert_to<double>(), unit, prefix, precision, sign);
 }
 
 static QString pad_number(unsigned int number, int length)
@@ -156,7 +206,7 @@ static QString format_time_with_si(double t, QString unit, int prefix,
 		-(prefix * 3 + pv::util::FirstSIPrefixPower);
 
 	const unsigned int relative_prec =
-		(prefix >= pv::util::FirstSIPrefix) ? precision :
+		(prefix >= EmptySIPrefix) ? precision :
 		std::max((int)(precision - prefix_order), 0);
 
 	return format_si_value(t, unit, prefix, relative_prec);
@@ -189,7 +239,7 @@ QString format_time(const Timestamp& t, int prefix, TimeUnit unit, unsigned int 
 
 QString format_second(const Timestamp& second)
 {
-	return format_si_value(second.convert_to<double>(), "s", -1, 0, false);
+	return format_si_value(second, "s", -1, 0, false);
 }
 
 } // namespace util

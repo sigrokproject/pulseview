@@ -73,6 +73,7 @@ set(pulseview_TEST_SOURCES
 	data/analogsegment.cpp
 	data/logicsegment.cpp
 	test.cpp
+	util.cpp
 )
 
 # This list includes only QObject derived class headers.
