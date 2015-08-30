@@ -119,7 +119,7 @@ double DecoderStack::samplerate() const
 	return samplerate_;
 }
 
-double DecoderStack::start_time() const
+const pv::util::Timestamp& DecoderStack::start_time() const
 {
 	return start_time_;
 }

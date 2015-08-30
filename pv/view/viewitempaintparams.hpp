@@ -21,6 +21,8 @@
 #ifndef PULSEVIEW_PV_VIEW_ROWITEMPAINTPARAMS_HPP
 #define PULSEVIEW_PV_VIEW_ROWITEMPAINTPARAMS_HPP
 
+#include "pv/util.hpp"
+
 #include <QFont>
 
 namespace pv {
@@ -29,7 +31,8 @@ namespace view {
 class ViewItemPaintParams
 {
 public:
-	ViewItemPaintParams(const QRect &rect, double scale, double offset);
+	ViewItemPaintParams(
+		const QRect &rect, double scale, const pv::util::Timestamp& offset);
 
 	QRect rect() const {
 		return rect_;
@@ -39,7 +42,7 @@ public:
 		return scale_;
 	}
 
-	double offset() const {
+	const pv::util::Timestamp& offset() const {
 		return offset_;
 	}
 
@@ -68,7 +71,7 @@ public:
 	}
 
 	double pixels_offset() const {
-		return offset_ / scale_;
+		return (offset_ / scale_).convert_to<double>();
 	}
 
 public:
@@ -79,7 +82,7 @@ public:
 private:
 	QRect rect_;
 	double scale_;
-	double offset_;
+	pv::util::Timestamp offset_;
 };
 
 } // namespace view

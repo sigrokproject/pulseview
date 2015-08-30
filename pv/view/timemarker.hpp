@@ -51,18 +51,18 @@ protected:
 	 * @param colour A reference to the colour of this cursor.
 	 * @param time The time to set the flag to.
 	 */
-	TimeMarker(View &view, const QColor &colour, double time);
+	TimeMarker(View &view, const QColor &colour, const pv::util::Timestamp& time);
 
 public:
 	/**
 	 * Gets the time of the marker.
 	 */
-	double time() const;
+	const pv::util::Timestamp& time() const;
 
 	/**
 	 * Sets the time of the marker.
 	 */
-	void set_time(double time);
+	void set_time(const pv::util::Timestamp& time) override;
 
 	float get_x() const;
 
@@ -114,7 +114,7 @@ private Q_SLOTS:
 protected:
 	const QColor &colour_;
 
-	double time_;
+	pv::util::Timestamp time_;
 
 	QSizeF text_size_;
 

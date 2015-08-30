@@ -525,7 +525,7 @@ pair<double, double> DecodeTrace::get_pixels_offset_samples_per_pixel() const
 	assert(scale > 0);
 
 	const double pixels_offset =
-		(view->offset() - decoder_stack_->start_time()) / scale;
+		((view->offset() - decoder_stack_->start_time()) / scale).convert_to<double>();
 
 	double samplerate = decoder_stack_->samplerate();
 

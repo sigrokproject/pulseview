@@ -45,7 +45,7 @@ public:
 	 * @param time The time to set the flag to.
 	 * @param text The text of the marker.
 	 */
-	Flag(View &view, double time, const QString &text);
+	Flag(View &view, const pv::util::Timestamp& time, const QString &text);
 
 	/**
 	 * Copy constructor.

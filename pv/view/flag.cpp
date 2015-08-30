@@ -37,7 +37,7 @@ namespace view {
 
 const QColor Flag::FillColour(0x73, 0xD2, 0x16);
 
-Flag::Flag(View &view, double time, const QString &text) :
+Flag::Flag(View &view, const pv::util::Timestamp& time, const QString &text) :
 	TimeMarker(view, FillColour, time),
 	text_(text)
 {

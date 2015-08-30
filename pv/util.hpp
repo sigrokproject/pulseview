@@ -23,6 +23,8 @@
 
 #include <cmath>
 
+#include <boost/multiprecision/cpp_dec_float.hpp>
+
 #include <QString>
 
 namespace pv {
@@ -33,35 +35,41 @@ enum TimeUnit {
 	Samples = 2
 };
 
+/// Timestamp type providing yoctosecond resolution.
+typedef boost::multiprecision::number<
+	boost::multiprecision::cpp_dec_float<24>,
+	boost::multiprecision::et_off> Timestamp;
+
 extern const int FirstSIPrefixPower;
 
 /**
  * Formats a given value with the specified SI prefix.
  * @param v The value to format.
  * @param unit The unit of quantity.
- * @param prefix The number of the prefix, from 0 for 'femto' up to
- *   8 for 'giga'. If prefix is set to -1, the prefix will be calculated.
+ * @param prefix The number of the prefix, from 0 for 'yotta' up to
+ *   16 for 'yokto'. If prefix is set to -1, the prefix will be calculated.
  * @param precision The number of digits after the decimal separator.
  * @param sign Whether or not to add a sign also for positive numbers.
  *
  * @return The formated value.
  */
 QString format_si_value(
-	double v, QString unit, int prefix = -1,
+	const Timestamp& v, QString unit, int prefix = -1,
 	unsigned precision = 0, bool sign = true);
 
 /**
  * Formats a given time with the specified SI prefix.
  * @param t The time value in seconds to format.
- * @param prefix The number of the prefix, from 0 for 'femto' up to
- *   8 for 'giga'. If prefix is set to -1, the prefix will be calculated.
+ * @param prefix The number of the prefix, from 0 for 'yotta' up to
+ *   16 for 'yokto'. If prefix is set to -1, the prefix will be calculated.
  * @param unit The unit of quantity.
  * @param precision The number of digits after the decimal separator or period (.).
  *
  * @return The formated value.
  */
 QString format_time(
-	double t, int prefix = -1, TimeUnit unit = Time, unsigned precision = 0);
+	const Timestamp& t, int prefix = -1,
+	TimeUnit unit = Time, unsigned precision = 0);
 
 /**
  * Formats a given time value with a SI prefix so that the
@@ -70,7 +78,7 @@ QString format_time(
  *
  * @return The formated value.
  */
-QString format_second(double second);
+QString format_second(const Timestamp& second);
 
 } // namespace util
 } // namespace pv

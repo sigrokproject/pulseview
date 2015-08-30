@@ -189,15 +189,18 @@ void LogicSignal::paint_mid(QPainter &p, const ViewItemPaintParams &pp)
 		samplerate = 1.0;
 
 	const double pixels_offset = pp.pixels_offset();
-	const double start_time = segment->start_time();
+	const pv::util::Timestamp& start_time = segment->start_time();
 	const int64_t last_sample = segment->get_sample_count() - 1;
 	const double samples_per_pixel = samplerate * pp.scale();
-	const double start = samplerate * (pp.offset() - start_time);
-	const double end = start + samples_per_pixel * pp.width();
+	const pv::util::Timestamp start = samplerate * (pp.offset() - start_time);
+	const pv::util::Timestamp end = start + samples_per_pixel * pp.width();
 
-	segment->get_subsampled_edges(edges,
-		min(max((int64_t)floor(start), (int64_t)0), last_sample),
-		min(max((int64_t)ceil(end), (int64_t)0), last_sample),
+	const int64_t start_sample = min(max(floor(start).convert_to<int64_t>(),
+		(int64_t)0), last_sample);
+	const uint64_t end_sample = min(max(ceil(end).convert_to<int64_t>(),
+		(int64_t)0), last_sample);
+
+	segment->get_subsampled_edges(edges, start_sample, end_sample,
 		samples_per_pixel / Oversampling, channel_->index());
 	assert(edges.size() >= 2);
 

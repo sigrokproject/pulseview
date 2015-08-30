@@ -97,9 +97,9 @@ void Ruler::paintEvent(QPaintEvent*)
 
 	const double minor_tick_period = tick_period / MinorTickSubdivision;
 	const double first_major_division =
-		floor(view_.offset() / tick_period);
+		floor(view_.offset() / tick_period).convert_to<double>();
 	const double first_minor_division =
-		ceil(view_.offset() / minor_tick_period);
+		ceil(view_.offset() / minor_tick_period).convert_to<double>();
 	const double t0 = first_major_division * tick_period;
 
 	int division = (int)round(first_minor_division -
@@ -114,7 +114,7 @@ void Ruler::paintEvent(QPaintEvent*)
 
 	do {
 		const double t = t0 + division * minor_tick_period;
-		x = (t - view_.offset()) / view_.scale();
+		x = ((t - view_.offset()) / view_.scale()).convert_to<double>();
 
 		if (division % MinorTickSubdivision == 0)
 		{

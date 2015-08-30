@@ -41,7 +41,8 @@ namespace view {
 
 const int TimeMarker::ArrowSize = 4;
 
-TimeMarker::TimeMarker(View &view, const QColor &colour, double time) :
+TimeMarker::TimeMarker(
+	View &view, const QColor &colour, const pv::util::Timestamp& time) :
 	TimeItem(view),
 	colour_(colour),
 	time_(time),
@@ -51,18 +52,18 @@ TimeMarker::TimeMarker(View &view, const QColor &colour, double time) :
 {
 }
 
-double TimeMarker::time() const
+const pv::util::Timestamp& TimeMarker::time() const
 {
 	return time_;
 }
 
-void TimeMarker::set_time(double time)
+void TimeMarker::set_time(const pv::util::Timestamp& time)
 {
 	time_ = time;
 
 	if (value_widget_) {
 		updating_value_widget_ = true;
-		value_widget_->setValue(time);
+		value_widget_->setValue(time.convert_to<double>());
 		updating_value_widget_ = false;
 	}
 
@@ -71,7 +72,7 @@ void TimeMarker::set_time(double time)
 
 float TimeMarker::get_x() const
 {
-	return (time_ - view_.offset()) / view_.scale();
+	return ((time_ - view_.offset()) / view_.scale()).convert_to<float>();
 }
 
 QPoint TimeMarker::point(const QRect &rect) const
@@ -105,7 +106,7 @@ void TimeMarker::paint_label(QPainter &p, const QRect &rect, bool hover)
 	if (!enabled())
 		return;
 
-	const qreal x = (time_ - view_.offset()) / view_.scale();
+	const qreal x = ((time_ - view_.offset()) / view_.scale()).convert_to<qreal>();
 	const QRectF r(label_rect(rect));
 
 	const QPointF points[] = {
@@ -177,7 +178,7 @@ pv::widgets::Popup* TimeMarker::create_popup(QWidget *parent)
 	value_widget_->setSuffix("s");
 	value_widget_->setSingleStep(1e-6);
 	value_widget_->setRange(-1.0e9, 1.0e9);
-	value_widget_->setValue(time_);
+	value_widget_->setValue(time_.convert_to<double>());
 
 	connect(value_widget_, SIGNAL(valueChanged(double)),
 		this, SLOT(on_value_changed(double)));

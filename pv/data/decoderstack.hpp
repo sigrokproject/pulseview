@@ -37,6 +37,7 @@
 
 #include <pv/data/decode/row.hpp>
 #include <pv/data/decode/rowdata.hpp>
+#include <pv/util.hpp>
 
 struct srd_decoder;
 struct srd_decoder_annotation_row;
@@ -89,7 +90,7 @@ public:
 
 	double samplerate() const;
 
-	double start_time() const;
+	const pv::util::Timestamp& start_time() const;
 
 	int64_t samples_decoded() const;
 
@@ -135,7 +136,7 @@ Q_SIGNALS:
 private:
 	pv::Session &session_;
 
-	double start_time_;
+	pv::util::Timestamp start_time_;
 	double samplerate_;
 
 	/**

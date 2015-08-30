@@ -52,7 +52,7 @@ uint64_t Segment::get_sample_count() const
 	return sample_count_;
 }
 
-double Segment::start_time() const
+const pv::util::Timestamp& Segment::start_time() const
 {
 	return start_time_;
 }

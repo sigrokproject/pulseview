@@ -66,8 +66,8 @@ private:
 	};
 
 private:
-	static const double MaxScale;
-	static const double MinScale;
+	static const pv::util::Timestamp MaxScale;
+	static const pv::util::Timestamp MinScale;
 
 	static const int MaxScrollValue;
 	static const int MaxViewAutoUpdateRate;
@@ -108,7 +108,7 @@ public:
 	 * Returns the time offset of the left edge of the view in
 	 * seconds.
 	 */
-	double offset() const;
+	const pv::util::Timestamp& offset() const;
 
 	/**
 	 * Returns the vertical scroll offset.
@@ -157,12 +157,12 @@ public:
 	 * @param scale The new view scale in seconds per pixel.
 	 * @param offset The view time offset in seconds.
 	 */
-	void set_scale_offset(double scale, double offset);
+	void set_scale_offset(double scale, const pv::util::Timestamp& offset);
 
 	std::set< std::shared_ptr<pv::data::SignalData> >
 		get_visible_data() const;
 
-	std::pair<double, double> get_time_extents() const;
+	std::pair<pv::util::Timestamp, pv::util::Timestamp> get_time_extents() const;
 
 	/**
 	 * Enables or disables sticky scrolling, i.e. the view always shows
@@ -193,7 +193,7 @@ public:
 	/**
 	 * Adds a new flag at a specified time.
 	 */
-	void add_flag(double time);
+	void add_flag(const pv::util::Timestamp& time);
 
 	/**
 	 * Removes a flag from the list.
@@ -223,7 +223,7 @@ Q_SIGNALS:
 	void always_zoom_to_fit_changed(bool state);
 
 private:
-	void get_scroll_layout(double &length, double &offset) const;
+	void get_scroll_layout(double &length, pv::util::Timestamp &offset) const;
 
 	/**
 	 * Simultaneously sets the zoom and offset.
@@ -311,7 +311,7 @@ private:
 	double scale_;
 
 	/// The view time offset in seconds.
-	double offset_;
+	pv::util::Timestamp offset_;
 
 	bool updating_scroll_;
 	bool sticky_scrolling_;

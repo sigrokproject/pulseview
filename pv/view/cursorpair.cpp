@@ -60,8 +60,8 @@ shared_ptr<Cursor> CursorPair::second() const
 	return second_;
 }
 
-void CursorPair::set_time(double time) {
-	const double delta = second_->time() - first_->time();
+void CursorPair::set_time(const pv::util::Timestamp& time) {
+	const pv::util::Timestamp delta = second_->time() - first_->time();
 	first_->set_time(time);
 	second_->set_time(time + delta);
 }
@@ -162,7 +162,7 @@ void CursorPair::paint_back(QPainter &p, const ViewItemPaintParams &pp) {
 QString CursorPair::format_string()
 {
 	const unsigned int prefix = view_.tick_prefix();
-	const double delta = second_->time() - first_->time();
+	const pv::util::Timestamp delta = second_->time() - first_->time();
 	return QString("%1 / %2").
 		arg(util::format_time(delta, prefix, view_.time_unit(), 2)).
 		arg(util::format_si_value(1.0 / fabs(delta), "Hz", -1, 4));
@@ -182,8 +182,8 @@ pair<float, float> CursorPair::get_cursor_offsets() const
 	assert(second_);
 
 	return pair<float, float>(
-		(first_->time() - view_.offset()) / view_.scale(),
-		(second_->time() - view_.offset()) / view_.scale());
+		((first_->time() - view_.offset()) / view_.scale()).convert_to<float>(),
+		((second_->time() - view_.offset()) / view_.scale()).convert_to<float>());
 }
 
 } // namespace view

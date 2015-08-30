@@ -64,7 +64,7 @@ public:
 	/**
 	 * Sets the time of the marker.
 	 */
-	void set_time(double time);
+	void set_time(const pv::util::Timestamp& time) override;
 
 	float get_x() const;
 

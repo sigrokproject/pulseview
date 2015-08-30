@@ -41,7 +41,7 @@ const int FirstSIPrefix = 8;
 const int FirstSIPrefixPower = -(FirstSIPrefix * 3);
 const double MinTimeDelta = 1e-15; // Anything below 1 fs can be considered zero
 
-QString format_si_value(double v, QString unit, int prefix,
+static QString format_si_value(double v, QString unit, int prefix,
 	unsigned int precision, bool sign)
 {
 	if (prefix < 0) {
@@ -69,6 +69,12 @@ QString format_si_value(double v, QString unit, int prefix,
 		(v  * multiplier) << " " << SIPrefixes[prefix] << unit;
 
 	return s;
+}
+
+QString format_si_value(const Timestamp& v, QString unit, int prefix,
+	unsigned int precision, bool sign)
+{
+	return format_si_value(v.convert_to<double>(), unit, prefix, precision, sign);
 }
 
 static QString pad_number(unsigned int number, int length)
@@ -156,7 +162,7 @@ static QString format_time_with_si(double t, QString unit, int prefix,
 	return format_si_value(t, unit, prefix, relative_prec);
 }
 
-QString format_time(double t, int prefix, TimeUnit unit, unsigned int precision)
+static QString format_time(double t, int prefix, TimeUnit unit, unsigned int precision)
 {
 	// Make 0 appear as 0, not random +0 or -0
 	if (fabs(t) < MinTimeDelta)
@@ -176,9 +182,14 @@ QString format_time(double t, int prefix, TimeUnit unit, unsigned int precision)
 		return format_time_in_full(t, precision);
 }
 
-QString format_second(double second)
+QString format_time(const Timestamp& t, int prefix, TimeUnit unit, unsigned int precision)
 {
-	return format_si_value(second, "s", -1, 0, false);
+	return format_time(t.convert_to<double>(), prefix, unit, precision);
+}
+
+QString format_second(const Timestamp& second)
+{
+	return format_si_value(second.convert_to<double>(), "s", -1, 0, false);
 }
 
 } // namespace util

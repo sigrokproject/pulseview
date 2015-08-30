@@ -49,7 +49,6 @@ namespace view {
 
 Viewport::Viewport(View &parent) :
 	ViewWidget(parent),
-	drag_offset_(numeric_limits<double>::signaling_NaN()),
 	pinch_zoom_active_(false)
 {
 	setAutoFillBackground(true);
@@ -82,17 +81,16 @@ void Viewport::drag()
 
 void Viewport::drag_by(const QPoint &delta)
 {
-	// Use std::isnan() instead of isnan(), the latter can cause issues.
-	if (std::isnan(drag_offset_))
+	if (drag_offset_ == boost::none)
 		return;
 
-	view_.set_scale_offset(view_.scale(), drag_offset_ -
-		delta.x() * view_.scale());
+	view_.set_scale_offset(view_.scale(),
+		(*drag_offset_ - delta.x() * view_.scale()));
 }
 
 void Viewport::drag_release()
 {
-	drag_offset_ = numeric_limits<double>::signaling_NaN();
+	drag_offset_ = boost::none;
 }
 
 vector< shared_ptr<ViewItem> > Viewport::items()
@@ -117,8 +115,8 @@ bool Viewport::touch_event(QTouchEvent *event)
 
 	if (!pinch_zoom_active_ ||
 	    (event->touchPointStates() & Qt::TouchPointPressed)) {
-		pinch_offset0_ = view_.offset() + view_.scale() * touchPoint0.pos().x();
-		pinch_offset1_ = view_.offset() + view_.scale() * touchPoint1.pos().x();
+		pinch_offset0_ = (view_.offset() + view_.scale() * touchPoint0.pos().x()).convert_to<double>();
+		pinch_offset1_ = (view_.offset() + view_.scale() * touchPoint1.pos().x()).convert_to<double>();
 		pinch_zoom_active_ = true;
 	}
 

@@ -64,7 +64,7 @@ QRectF Cursor::label_rect(const QRectF &rect) const
 	const shared_ptr<Cursor> other(get_other_cursor());
 	assert(other);
 
-	const float x = (time_ - view_.offset()) / view_.scale();
+	const float x = ((time_ - view_.offset())/ view_.scale()).convert_to<float>();
 
 	QFontMetrics m(QApplication::font());
 	QSize text_size = m.boundingRect(get_text()).size();
@@ -76,14 +76,13 @@ QRectF Cursor::label_rect(const QRectF &rect) const
 		TimeMarker::ArrowSize - 0.5f;
 	const float height = label_size.height();
 
-	const double other_time = other->time();
+	const pv::util::Timestamp& other_time = other->time();
+
 	if (time_ > other_time ||
-		(abs(time_ - other_time) < numeric_limits<double>::epsilon() &&
-		this > other.get()))
+		(abs(time_ - other_time).is_zero() && this > other.get()))
 		return QRectF(x, top, label_size.width(), height);
 	else
-		return QRectF(x - label_size.width(), top,
-			label_size.width(), height);
+		return QRectF(x - label_size.width(), top, label_size.width(), height);
 }
 
 shared_ptr<Cursor> Cursor::get_other_cursor() const

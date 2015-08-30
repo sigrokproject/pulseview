@@ -29,7 +29,7 @@ namespace pv {
 namespace view {
 
 ViewItemPaintParams::ViewItemPaintParams(
-	const QRect &rect, double scale, double offset) :
+	const QRect &rect, double scale, const pv::util::Timestamp& offset) :
 	rect_(rect),
 	scale_(scale),
 	offset_(offset) {

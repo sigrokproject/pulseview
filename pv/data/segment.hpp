@@ -21,6 +21,8 @@
 #ifndef PULSEVIEW_PV_DATA_SEGMENT_HPP
 #define PULSEVIEW_PV_DATA_SEGMENT_HPP
 
+#include "pv/util.hpp"
+
 #include <thread>
 #include <mutex>
 #include <vector>
@@ -37,7 +39,7 @@ public:
 
 	uint64_t get_sample_count() const;
 
-	double start_time() const;
+	const pv::util::Timestamp& start_time() const;
 
 	double samplerate() const;
 	void set_samplerate(double samplerate);
@@ -78,7 +80,7 @@ protected:
 	mutable std::recursive_mutex mutex_;
 	std::vector<uint8_t> data_;
 	uint64_t sample_count_;
-	double start_time_;
+	pv::util::Timestamp start_time_;
 	double samplerate_;
 	uint64_t capacity_;
 	unsigned int unit_size_;

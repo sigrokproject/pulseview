@@ -44,7 +44,7 @@ public:
 	/**
 	 * Sets the time of the marker.
 	 */
-	virtual void set_time(double time) = 0;
+	virtual void set_time(const pv::util::Timestamp& time) = 0;
 
 	virtual float get_x() const = 0;
 

@@ -21,9 +21,12 @@
 #ifndef PULSEVIEW_PV_VIEW_VIEWPORT_HPP
 #define PULSEVIEW_PV_VIEW_VIEWPORT_HPP
 
+#include <boost/optional.hpp>
+
 #include <QTimer>
 #include <QTouchEvent>
 
+#include "pv/util.hpp"
 #include "viewwidget.hpp"
 
 class QPainter;
@@ -93,7 +96,7 @@ private:
 	void wheelEvent(QWheelEvent *event);
 
 private:
-	double drag_offset_;
+	boost::optional<pv::util::Timestamp> drag_offset_;
 
 	double pinch_offset0_;
 	double pinch_offset1_;

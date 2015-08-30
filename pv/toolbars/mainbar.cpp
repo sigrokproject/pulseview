@@ -584,7 +584,7 @@ bool MainBar::eventFilter(QObject *watched, QEvent *event)
 {
 	if ((watched == &sample_count_ || watched == &sample_rate_) &&
 		(event->type() == QEvent::ToolTip)) {
-		double sec = (double)sample_count_.value() / sample_rate_.value();
+		auto sec = pv::util::Timestamp(sample_count_.value()) / sample_rate_.value();
 		QHelpEvent *help_event = static_cast<QHelpEvent*>(event);
 
 		QString str = tr("Total sampling time: %1").arg(pv::util::format_second(sec));

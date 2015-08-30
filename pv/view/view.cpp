@@ -62,6 +62,7 @@ using pv::data::SignalData;
 using pv::data::Segment;
 using pv::util::format_time;
 using pv::util::TimeUnit;
+using pv::util::Timestamp;
 
 using std::deque;
 using std::dynamic_pointer_cast;
@@ -83,8 +84,8 @@ using std::weak_ptr;
 namespace pv {
 namespace view {
 
-const double View::MaxScale = 1e9;
-const double View::MinScale = 1e-12;
+const Timestamp View::MaxScale("1e9");
+const Timestamp View::MinScale("1e-12");
 
 const int View::MaxScrollValue = INT_MAX / 2;
 const int View::MaxViewAutoUpdateRate = 25; // No more than 25 Hz with sticky scrolling
@@ -210,7 +211,7 @@ double View::scale() const
 	return scale_;
 }
 
-double View::offset() const
+const Timestamp& View::offset() const
 {
 	return offset_;
 }
@@ -273,9 +274,9 @@ void View::zoom_fit(bool gui_state)
 		always_zoom_to_fit_changed(gui_state);
 	}
 
-	const pair<double, double> extents = get_time_extents();
-	const double delta = extents.second - extents.first;
-	if (delta < 1e-12)
+	const pair<Timestamp, Timestamp> extents = get_time_extents();
+	const Timestamp delta = extents.second - extents.first;
+	if (delta < Timestamp("1e-12"))
 		return;
 
 	assert(viewport_);
@@ -283,8 +284,8 @@ void View::zoom_fit(bool gui_state)
 	if (w <= 0)
 		return;
 
-	const double scale = max(min(delta / w, MaxScale), MinScale);
-	set_scale_offset(scale, extents.first);
+	const Timestamp scale = max(min(delta / w, MaxScale), MinScale);
+	set_scale_offset(scale.convert_to<double>(), extents.first);
 }
 
 void View::zoom_one_to_one()
@@ -316,7 +317,7 @@ void View::zoom_one_to_one()
 	set_zoom(1.0 / samplerate, w / 2);
 }
 
-void View::set_scale_offset(double scale, double offset)
+void View::set_scale_offset(double scale, const Timestamp& offset)
 {
 	// Disable sticky scrolling / always zoom to fit when acquisition runs
 	// and user drags the viewport
@@ -359,9 +360,9 @@ set< shared_ptr<SignalData> > View::get_visible_data() const
 	return visible_data;
 }
 
-pair<double, double> View::get_time_extents() const
+pair<Timestamp, Timestamp> View::get_time_extents() const
 {
-	double left_time = DBL_MAX, right_time = DBL_MIN;
+	boost::optional<Timestamp> left_time, right_time;
 	const set< shared_ptr<SignalData> > visible_data = get_visible_data();
 	for (const shared_ptr<SignalData> d : visible_data)
 	{
@@ -371,18 +372,21 @@ pair<double, double> View::get_time_extents() const
 			double samplerate = s->samplerate();
 			samplerate = (samplerate <= 0.0) ? 1.0 : samplerate;
 
-			const double start_time = s->start_time();
-			left_time = min(left_time, start_time);
-			right_time = max(right_time, start_time +
-				d->max_sample_count() / samplerate);
+			const Timestamp start_time = s->start_time();
+			left_time = left_time ?
+				min(*left_time, start_time) :
+				                start_time;
+			right_time = right_time ?
+				max(*right_time, start_time + d->max_sample_count() / samplerate) :
+				                 start_time + d->max_sample_count() / samplerate;
 		}
 	}
 
-	if (left_time == DBL_MAX && right_time == DBL_MIN)
-		return make_pair(0.0, 0.0);
+	if (!left_time || !right_time)
+		return make_pair(0, 0);
 
-	assert(left_time < right_time);
-	return make_pair(left_time, right_time);
+	assert(*left_time < *right_time);
+	return make_pair(*left_time, *right_time);
 }
 
 void View::enable_sticky_scrolling(bool state)
@@ -416,7 +420,7 @@ std::shared_ptr<CursorPair> View::cursors() const
 	return cursors_;
 }
 
-void View::add_flag(double time)
+void View::add_flag(const Timestamp& time)
 {
 	flags_.push_back(shared_ptr<Flag>(new Flag(*this, time,
 		QString("%1").arg(next_flag_text_))));
@@ -472,10 +476,10 @@ void View::restack_all_row_items()
 		r->animate_to_layout_v_offset();
 }
 
-void View::get_scroll_layout(double &length, double &offset) const
+void View::get_scroll_layout(double &length, Timestamp &offset) const
 {
-	const pair<double, double> extents = get_time_extents();
-	length = (extents.second - extents.first) / scale_;
+	const pair<Timestamp, Timestamp> extents = get_time_extents();
+	length = ((extents.second - extents.first) / scale_).convert_to<double>();
 	offset = offset_ / scale_;
 }
 
@@ -485,10 +489,10 @@ void View::set_zoom(double scale, int offset)
 	always_zoom_to_fit_ = false;
 	always_zoom_to_fit_changed(false);
 
-	const double cursor_offset = offset_ + scale_ * offset;
-	const double new_scale = max(min(scale, MaxScale), MinScale);
-	const double new_offset = cursor_offset - new_scale * offset;
-	set_scale_offset(new_scale, new_offset);
+	const Timestamp cursor_offset = offset_ + scale_ * offset;
+	const Timestamp new_scale = max(min(Timestamp(scale), MaxScale), MinScale);
+	const Timestamp new_offset = cursor_offset - new_scale * offset;
+	set_scale_offset(new_scale.convert_to<double>(), new_offset);
 }
 
 void View::calculate_tick_spacing()
@@ -498,7 +502,7 @@ void View::calculate_tick_spacing()
 
 	// Figure out the highest numeric value visible on a label
 	const QSize areaSize = viewport_->size();
-	const double max_time = max(fabs(offset_),
+	const Timestamp max_time = max(fabs(offset_),
 		fabs(offset_ + scale_ * areaSize.width()));
 
 	double min_width = SpacingIncrement;
@@ -552,7 +556,8 @@ void View::update_scroll()
 	const QSize areaSize = viewport_->size();
 
 	// Set the horizontal scroll bar
-	double length = 0, offset = 0;
+	double length = 0;
+	Timestamp offset;
 	get_scroll_layout(length, offset);
 	length = max(length - areaSize.width(), 0.0);
 
@@ -565,11 +570,11 @@ void View::update_scroll()
 
 	if (length < MaxScrollValue) {
 		horizontalScrollBar()->setRange(0, length);
-		horizontalScrollBar()->setSliderPosition(offset);
+		horizontalScrollBar()->setSliderPosition(offset.convert_to<double>());
 	} else {
 		horizontalScrollBar()->setRange(0, MaxScrollValue);
 		horizontalScrollBar()->setSliderPosition(
-			offset_ * MaxScrollValue / (scale_ * length));
+			(offset_ * MaxScrollValue / (scale_ * length)).convert_to<double>());
 	}
 
 	updating_scroll_ = false;
@@ -782,7 +787,8 @@ void View::h_scroll_value_changed(int value)
 	if (range < MaxScrollValue)
 		offset_ = scale_ * value;
 	else {
-		double length = 0, offset;
+		double length = 0;
+		Timestamp offset;
 		get_scroll_layout(length, offset);
 		offset_ = scale_ * length * value / MaxScrollValue;
 	}
@@ -961,7 +967,8 @@ void View::perform_delayed_view_update()
 
 	if (sticky_scrolling_) {
 		// Make right side of the view sticky
-		double length = 0, offset;
+		double length = 0;
+		Timestamp offset;
 		get_scroll_layout(length, offset);
 
 		const QSize areaSize = viewport_->size();
