@@ -420,7 +420,7 @@ void LogicSignal::modify_trigger()
 	if (trigger) {
 		for (auto stage : trigger->stages()) {
 			const auto &matches = stage->matches();
-			if (std::none_of(begin(matches), end(matches),
+			if (std::none_of(matches.begin(), matches.end(),
 			    [&](shared_ptr<TriggerMatch> match) {
 					return match->channel() != channel_; }))
 				continue;
