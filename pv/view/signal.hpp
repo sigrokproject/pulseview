@@ -29,6 +29,7 @@
 #include <stdint.h>
 
 #include "trace.hpp"
+#include "viewitemowner.hpp"
 
 namespace sigrok {
 	class Channel;
@@ -44,7 +45,7 @@ class SignalData;
 
 namespace view {
 
-class Signal : public Trace
+class Signal : public Trace, public ViewItemOwner
 {
 	Q_OBJECT
 
@@ -69,6 +70,11 @@ public:
 
 	std::shared_ptr<sigrok::Channel> channel() const;
 
+	/**
+	 * Returns a list of row items owned by this object.
+	 */
+	const item_list& child_items() const;
+
 	virtual void populate_popup_form(QWidget *parent, QFormLayout *form);
 
 	QMenu* create_context_menu(QWidget *parent);
@@ -81,6 +87,8 @@ private Q_SLOTS:
 protected:
 	pv::Session &session_;
 	std::shared_ptr<sigrok::Channel> channel_;
+
+	const item_list items_;
 
 	QComboBox *name_widget_;
 	bool updating_name_widget_;

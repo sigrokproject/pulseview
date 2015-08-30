@@ -63,6 +63,7 @@ Signal::Signal(pv::Session &session,
 	Trace(QString::fromUtf8(channel->name().c_str())),
 	session_(session),
 	channel_(channel),
+	items_(),
 	name_widget_(nullptr),
 	updating_name_widget_(false)
 {
@@ -97,6 +98,11 @@ void Signal::enable(bool enable)
 shared_ptr<Channel> Signal::channel() const
 {
 	return channel_;
+}
+
+const ViewItemOwner::item_list& Signal::child_items() const
+{
+	return items_;
 }
 
 void Signal::populate_popup_form(QWidget *parent, QFormLayout *form)
