@@ -96,14 +96,14 @@ void Ruler::paintEvent(QPaintEvent*)
 	p.setPen(palette().color(foregroundRole()));
 
 	const double minor_tick_period = tick_period / MinorTickSubdivision;
-	const double first_major_division =
-		floor(view_.offset() / tick_period).convert_to<double>();
-	const double first_minor_division =
-		ceil(view_.offset() / minor_tick_period).convert_to<double>();
-	const double t0 = first_major_division * tick_period;
+	const pv::util::Timestamp first_major_division =
+		floor(view_.offset() / tick_period);
+	const pv::util::Timestamp first_minor_division =
+		ceil(view_.offset() / minor_tick_period);
+	const pv::util::Timestamp t0 = first_major_division * tick_period;
 
-	int division = (int)round(first_minor_division -
-		first_major_division * MinorTickSubdivision) - 1;
+	int division = (round(first_minor_division -
+		first_major_division * MinorTickSubdivision)).convert_to<int>() - 1;
 
 	const int text_height = calculate_text_height();
 	const int ruler_height = RulerHeight * text_height;
@@ -113,7 +113,7 @@ void Ruler::paintEvent(QPaintEvent*)
 	double x;
 
 	do {
-		const double t = t0 + division * minor_tick_period;
+		const pv::util::Timestamp t = t0 + division * minor_tick_period;
 		x = ((t - view_.offset()) / view_.scale()).convert_to<double>();
 
 		if (division % MinorTickSubdivision == 0)
@@ -134,7 +134,6 @@ void Ruler::paintEvent(QPaintEvent*)
 		}
 
 		division++;
-
 	} while (x < width());
 
 	// Draw the hover mark
