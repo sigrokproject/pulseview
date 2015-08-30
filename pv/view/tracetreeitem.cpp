@@ -122,6 +122,7 @@ int TraceTreeItem::get_visual_y() const
 
 void TraceTreeItem::drag_by(const QPoint &delta)
 {
+	assert(owner_);
 	force_to_v_offset(drag_point_.y() + delta.y() -
 		owner_->owner_visual_v_offset());
 }
