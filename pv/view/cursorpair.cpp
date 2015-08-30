@@ -161,11 +161,11 @@ void CursorPair::paint_back(QPainter &p, const ViewItemPaintParams &pp) {
 
 QString CursorPair::format_string()
 {
-	const unsigned int prefix = view_.tick_prefix();
+	const pv::util::SIPrefix prefix = view_.tick_prefix();
 	const pv::util::Timestamp delta = second_->time() - first_->time();
 	return QString("%1 / %2").
 		arg(util::format_time(delta, prefix, view_.time_unit(), 2)).
-		arg(util::format_si_value(1.0 / fabs(delta), "Hz", -1, 4));
+		arg(util::format_si_value(1 / fabs(delta), "Hz", pv::util::SIPrefix::unspecified, 4));
 }
 
 void CursorPair::compute_text_size(QPainter &p)

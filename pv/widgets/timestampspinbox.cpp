@@ -114,7 +114,7 @@ void TimestampSpinBox::on_editingFinished()
 void TimestampSpinBox::updateEdit()
 {
 	QString newtext = pv::util::format_si_value(
-		value_, "s", 8, precision_);
+		value_, "s", pv::util::SIPrefix::none, precision_);
 	lineEdit()->setText(newtext);
 }
 

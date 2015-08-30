@@ -104,9 +104,9 @@ View::View(Session &session, QWidget *parent) :
 	sticky_scrolling_(false), // Default setting is set in MainWindow::setup_ui()
 	always_zoom_to_fit_(false),
 	tick_period_(0.0),
-	tick_prefix_(0),
+	tick_prefix_(pv::util::SIPrefix::yocto),
 	tick_precision_(0),
-	time_unit_(util::Time),
+	time_unit_(util::TimeUnit::Time),
 	show_cursors_(false),
 	cursors_(new CursorPair(*this)),
 	next_flag_text_('A'),
@@ -233,7 +233,7 @@ unsigned int View::depth() const
 	return 0;
 }
 
-unsigned int View::tick_prefix() const
+pv::util::SIPrefix View::tick_prefix() const
 {
 	return tick_prefix_;
 }
@@ -529,7 +529,8 @@ void View::calculate_tick_spacing()
 		} while (tp_with_margin < min_period && unit < countof(ScaleUnits));
 
 		tick_period_ = order_decimal * ScaleUnits[unit - 1];
-		tick_prefix_ = (order - pv::util::FirstSIPrefixPower) / 3;
+		tick_prefix_ = static_cast<pv::util::SIPrefix>(
+			(order - pv::util::exponent(pv::util::SIPrefix::yocto)) / 3);
 
 		// Precision is the number of fractional digits required, not
 		// taking the prefix into account (and it must never be negative)
@@ -679,7 +680,7 @@ vector< shared_ptr<Trace> > View::extract_new_traces_for_channels(
 void View::determine_time_unit()
 {
 	// Check whether we know the sample rate and hence can use time as the unit
-	if (time_unit_ == util::Samples) {
+	if (time_unit_ == util::TimeUnit::Samples) {
 		shared_lock<shared_mutex> lock(session().signals_mutex());
 		const unordered_set< shared_ptr<Signal> > &sigs(session().signals());
 
@@ -691,7 +692,7 @@ void View::determine_time_unit()
 			const vector< shared_ptr<Segment> > segments = data->segments();
 			if (!segments.empty())
 				if (segments[0]->samplerate()) {
-					time_unit_ = util::Time;
+					time_unit_ = util::TimeUnit::Time;
 					break;
 				}
 		}
@@ -932,7 +933,7 @@ void View::signals_changed()
 void View::capture_state_updated(int state)
 {
 	if (state == Session::Running)
-		time_unit_ = util::Samples;
+		time_unit_ = util::TimeUnit::Samples;
 
 	if (state == Session::Stopped) {
 		// After acquisition has stopped we need to re-calculate the ticks once

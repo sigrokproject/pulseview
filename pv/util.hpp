@@ -31,46 +31,56 @@
 namespace pv {
 namespace util {
 
-enum TimeUnit {
+enum class TimeUnit {
 	Time = 1,
 	Samples = 2
 };
+
+enum class SIPrefix {
+	unspecified = -1,
+	yocto, zepto,
+	atto, femto, pico,
+	nano, micro, milli,
+	none,
+	kilo, mega, giga,
+	tera, peta, exa,
+	zetta, yotta
+};
+
+/// Returns the exponent that corresponds to a given prefix.
+int exponent(SIPrefix prefix);
 
 /// Timestamp type providing yoctosecond resolution.
 typedef boost::multiprecision::number<
 	boost::multiprecision::cpp_dec_float<24>,
 	boost::multiprecision::et_off> Timestamp;
 
-extern const int FirstSIPrefixPower;
-
 /**
  * Formats a given value with the specified SI prefix.
  * @param v The value to format.
  * @param unit The unit of quantity.
- * @param prefix The number of the prefix, from 0 for 'yotta' up to
- *   16 for 'yokto'. If prefix is set to -1, the prefix will be calculated.
+ * @param prefix The prefix to use.
  * @param precision The number of digits after the decimal separator.
  * @param sign Whether or not to add a sign also for positive numbers.
  *
  * @return The formated value.
  */
 QString format_si_value(
-	const Timestamp& v, QString unit, int prefix = -1,
+	const Timestamp& v, QString unit, SIPrefix prefix = SIPrefix::unspecified,
 	unsigned precision = 0, bool sign = true);
 
 /**
  * Formats a given time with the specified SI prefix.
  * @param t The time value in seconds to format.
- * @param prefix The number of the prefix, from 0 for 'yotta' up to
- *   16 for 'yokto'. If prefix is set to -1, the prefix will be calculated.
+ * @param prefix The prefix to use.
  * @param unit The unit of quantity.
  * @param precision The number of digits after the decimal separator or period (.).
  *
  * @return The formated value.
  */
 QString format_time(
-	const Timestamp& t, int prefix = -1,
-	TimeUnit unit = Time, unsigned precision = 0);
+	const Timestamp& t, SIPrefix prefix = SIPrefix::unspecified,
+	TimeUnit unit = TimeUnit::Time, unsigned precision = 0);
 
 /**
  * Formats a given time value with a SI prefix so that the

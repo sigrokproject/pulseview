@@ -35,16 +35,40 @@ using namespace Qt;
 namespace pv {
 namespace util {
 
-static const QString SIPrefixes[17] = {
-	"y", "z",
-	"a", "f", "p",
-	"n", QChar(0x03BC), "m",
-	"",
-	"k", "M", "G",
-	"T", "P", "E",
-	"Z", "Y"};
-const int EmptySIPrefix = 8;
-const int FirstSIPrefixPower = -(EmptySIPrefix * 3);
+static QTextStream& operator<<(QTextStream& stream, SIPrefix prefix)
+{
+	switch (prefix) {
+	case SIPrefix::yocto: return stream << 'y';
+	case SIPrefix::zepto: return stream << 'z';
+	case SIPrefix::atto:  return stream << 'a';
+	case SIPrefix::femto: return stream << 'f';
+	case SIPrefix::pico:  return stream << 'p';
+	case SIPrefix::nano:  return stream << 'n';
+	case SIPrefix::micro: return stream << QChar(0x03BC);
+	case SIPrefix::milli: return stream << 'm';
+	case SIPrefix::kilo:  return stream << 'k';
+	case SIPrefix::mega:  return stream << 'M';
+	case SIPrefix::giga:  return stream << 'G';
+	case SIPrefix::tera:  return stream << 'T';
+	case SIPrefix::peta:  return stream << 'P';
+	case SIPrefix::exa:   return stream << 'E';
+	case SIPrefix::zetta: return stream << 'Z';
+	case SIPrefix::yotta: return stream << 'Y';
+
+	default: return stream;
+	}
+}
+
+int exponent(SIPrefix prefix)
+{
+	return 3 * (static_cast<int>(prefix) - static_cast<int>(SIPrefix::none));
+}
+
+static SIPrefix successor(SIPrefix prefix)
+{
+	assert(prefix != SIPrefix::yotta);
+	return static_cast<SIPrefix>(static_cast<int>(prefix) + 1);
+}
 
 // Insert the timestamp value into the stream in fixed-point notation
 // (and honor the precision)
@@ -86,31 +110,29 @@ static QTextStream& operator<<(QTextStream& stream, const Timestamp& t)
 	return stream << QString::fromStdString(str);
 }
 
-QString format_si_value(const Timestamp& v, QString unit, int prefix,
+QString format_si_value(const Timestamp& v, QString unit, SIPrefix prefix,
 	unsigned int precision, bool sign)
 {
-	if (prefix < 0) {
+	if (prefix == SIPrefix::unspecified) {
 		// No prefix given, calculate it
 
 		if (v.is_zero()) {
-			prefix = EmptySIPrefix;
+			prefix = SIPrefix::none;
 		} else {
-			int exp = -FirstSIPrefixPower;
-
-			prefix = 0;
-			while ((fabs(v) * pow(10.0, exp)) > 999.0 &&
-				prefix < (int)(countof(SIPrefixes) - 1)) {
-				prefix++;
+			int exp = exponent(SIPrefix::yotta);
+			prefix = SIPrefix::yocto;
+			while ((fabs(v) * pow(Timestamp(10), exp)) > 999 &&
+					prefix < SIPrefix::yotta) {
+				prefix = successor(prefix);
 				exp -= 3;
 			}
 		}
 	}
 
-	assert(prefix >= 0);
-	assert(prefix < (int)countof(SIPrefixes));
+	assert(prefix >= SIPrefix::yocto);
+	assert(prefix <= SIPrefix::yotta);
 
-	const Timestamp multiplier = pow(Timestamp(10),
-		(int)- prefix * 3 - FirstSIPrefixPower);
+	const Timestamp multiplier = pow(Timestamp(10), -exponent(prefix));
 
 	QString s;
 	QTextStream ts(&s);
@@ -120,7 +142,7 @@ QString format_si_value(const Timestamp& v, QString unit, int prefix,
 		<< qSetRealNumberPrecision(precision)
 		<< (v * multiplier)
 		<< ' '
-		<< SIPrefixes[prefix]
+		<< prefix
 		<< unit;
 
 	return s;
@@ -202,21 +224,20 @@ static QString format_time_in_full(const Timestamp& t, signed precision)
 }
 
 static QString format_time_with_si(const Timestamp& t, QString unit,
-	int prefix, unsigned int precision)
+	SIPrefix prefix, unsigned int precision)
 {
 	// The precision is always given without taking the prefix into account
 	// so we need to deduct the number of decimals the prefix might imply
-	const int prefix_order =
-		-(prefix * 3 + pv::util::FirstSIPrefixPower);
+	const int prefix_order = -exponent(prefix);
 
 	const unsigned int relative_prec =
-		(prefix >= EmptySIPrefix) ? precision :
+		(prefix >= SIPrefix::none) ? precision :
 		std::max((int)(precision - prefix_order), 0);
 
 	return format_si_value(t, unit, prefix, relative_prec);
 }
 
-QString format_time(const Timestamp& t, int prefix, TimeUnit unit,
+QString format_time(const Timestamp& t, SIPrefix prefix, TimeUnit unit,
 	unsigned int precision)
 {
 	// Make 0 appear as 0, not random +0 or -0
@@ -224,7 +245,7 @@ QString format_time(const Timestamp& t, int prefix, TimeUnit unit,
 		return "0";
 
 	// If we have to use samples then we have no alternative formats
-	if (unit == Samples)
+	if (unit == TimeUnit::Samples)
 		return format_time_with_si(t, "sa", prefix, precision);
 
 	// View in "normal" range -> medium precision, medium step size
@@ -239,7 +260,7 @@ QString format_time(const Timestamp& t, int prefix, TimeUnit unit,
 
 QString format_second(const Timestamp& second)
 {
-	return format_si_value(second, "s", -1, 0, false);
+	return format_si_value(second, "s", SIPrefix::unspecified, 0, false);
 }
 
 } // namespace util

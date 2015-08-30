@@ -123,7 +123,7 @@ public:
 	/**
 	 * Returns the SI prefix to apply to the graticule time markings.
 	 */
-	unsigned int tick_prefix() const;
+	pv::util::SIPrefix tick_prefix() const;
 
 	/**
 	 * Returns the number of fractional digits shown for the time markings.
@@ -319,7 +319,7 @@ private:
 	QTimer delayed_view_updater_;
 
 	double tick_period_;
-	unsigned int tick_prefix_;
+	pv::util::SIPrefix tick_prefix_;
 	unsigned int tick_precision_;
 	util::TimeUnit time_unit_;
 
