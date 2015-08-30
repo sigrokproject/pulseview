@@ -210,6 +210,7 @@ set(pulseview_SOURCES
 	pv/view/rowitem.cpp
 	pv/view/ruler.cpp
 	pv/view/signal.cpp
+	pv/view/signalscalehandle.cpp
 	pv/view/timeitem.cpp
 	pv/view/timemarker.cpp
 	pv/view/trace.cpp
@@ -263,6 +264,7 @@ set(pulseview_HEADERS
 	pv/view/rowitem.hpp
 	pv/view/ruler.hpp
 	pv/view/signal.hpp
+	pv/view/signalscalehandle.hpp
 	pv/view/timeitem.hpp
 	pv/view/timemarker.hpp
 	pv/view/trace.hpp

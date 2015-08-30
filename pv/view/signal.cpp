@@ -35,6 +35,7 @@
 #include "view.hpp"
 
 using std::shared_ptr;
+using std::make_shared;
 
 using sigrok::Channel;
 
@@ -63,7 +64,8 @@ Signal::Signal(pv::Session &session,
 	Trace(QString::fromUtf8(channel->name().c_str())),
 	session_(session),
 	channel_(channel),
-	items_(),
+	scale_handle_(make_shared<SignalScaleHandle>(*this)),
+	items_({scale_handle_}),
 	name_widget_(nullptr),
 	updating_name_widget_(false)
 {

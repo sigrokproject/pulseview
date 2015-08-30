@@ -28,6 +28,7 @@
 
 #include <stdint.h>
 
+#include "signalscalehandle.hpp"
 #include "trace.hpp"
 #include "viewitemowner.hpp"
 
@@ -104,6 +105,7 @@ protected:
 	pv::Session &session_;
 	std::shared_ptr<sigrok::Channel> channel_;
 
+	const std::shared_ptr<SignalScaleHandle> scale_handle_;
 	const item_list items_;
 
 	QComboBox *name_widget_;
