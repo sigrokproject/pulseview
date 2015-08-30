@@ -141,4 +141,52 @@ BOOST_AUTO_TEST_CASE(format_si_value_test)
 	BOOST_CHECK_EQUAL(format_si_value(ts("1"), "V", 8, 0, false),   "1 V");
 }
 
+BOOST_AUTO_TEST_CASE(format_time_test)
+{
+	BOOST_CHECK_EQUAL(format_time(ts("-0.00005"), 6, Time, 5), QString("-50 ") + mu + "s");
+	BOOST_CHECK_EQUAL(format_time(ts( "0.00005"), 6, Time, 5), QString("+50 ") + mu + "s");
+	BOOST_CHECK_EQUAL(format_time(ts( "1")), "+1 s");
+	BOOST_CHECK_EQUAL(format_time(ts("-1")), "-1 s");
+	BOOST_CHECK_EQUAL(format_time(ts( "100")),                 "+1:40");
+	BOOST_CHECK_EQUAL(format_time(ts("-100")),                 "-1:40");
+	BOOST_CHECK_EQUAL(format_time(ts( "4000")),             "+1:06:40");
+	BOOST_CHECK_EQUAL(format_time(ts("-4000")),             "-1:06:40");
+	BOOST_CHECK_EQUAL(format_time(ts("12000"), 9, Time, 0), "+3:20:00");
+	BOOST_CHECK_EQUAL(format_time(ts("15000"), 9, Time, 0), "+4:10:00");
+	BOOST_CHECK_EQUAL(format_time(ts("20000"), 9, Time, 0), "+5:33:20");
+	BOOST_CHECK_EQUAL(format_time(ts("25000"), 9, Time, 0), "+6:56:40");
+
+	BOOST_CHECK_EQUAL(format_time(ts("10641906.007008009"), 0, Time, 0), "+123:04:05:06");
+	BOOST_CHECK_EQUAL(format_time(ts("10641906.007008009"), 0, Time, 1), "+123:04:05:06.0");
+	BOOST_CHECK_EQUAL(format_time(ts("10641906.007008009"), 0, Time, 2), "+123:04:05:06.00");
+	BOOST_CHECK_EQUAL(format_time(ts("10641906.007008009"), 0, Time, 3), "+123:04:05:06.007");
+	BOOST_CHECK_EQUAL(format_time(ts("10641906.007008009"), 0, Time, 4), "+123:04:05:06.007 0");
+	BOOST_CHECK_EQUAL(format_time(ts("10641906.007008009"), 0, Time, 5), "+123:04:05:06.007 00");
+	BOOST_CHECK_EQUAL(format_time(ts("10641906.007008009"), 0, Time, 6), "+123:04:05:06.007 008");
+	BOOST_CHECK_EQUAL(format_time(ts("10641906.007008009"), 0, Time, 7), "+123:04:05:06.007 008 0");
+	BOOST_CHECK_EQUAL(format_time(ts("10641906.007008009"), 0, Time, 8), "+123:04:05:06.007 008 00");
+	BOOST_CHECK_EQUAL(format_time(ts("10641906.007008009"), 0, Time, 9), "+123:04:05:06.007 008 009");
+
+	BOOST_CHECK_EQUAL(format_time(ts("-1.5"), 7), "-1500 ms");
+	BOOST_CHECK_EQUAL(format_time(ts("-1.0"), 7), "-1000 ms");
+	BOOST_CHECK_EQUAL(format_time(ts("-0.2")),     "-200 ms");
+	BOOST_CHECK_EQUAL(format_time(ts("-0.1")),     "-100 ms");
+	BOOST_CHECK_EQUAL(format_time(ts("0.0")),         "0");
+	BOOST_CHECK_EQUAL(format_time(ts("0.1")),      "+100 ms");
+	BOOST_CHECK_EQUAL(format_time(ts("0.2")),      "+200 ms");
+	BOOST_CHECK_EQUAL(format_time(ts("0.3")),      "+300 ms");
+	BOOST_CHECK_EQUAL(format_time(ts("0.4")),      "+400 ms");
+	BOOST_CHECK_EQUAL(format_time(ts("0.5")),      "+500 ms");
+	BOOST_CHECK_EQUAL(format_time(ts("0.6")),      "+600 ms");
+	BOOST_CHECK_EQUAL(format_time(ts("0.7")),      "+700 ms");
+	BOOST_CHECK_EQUAL(format_time(ts("0.8")),      "+800 ms");
+	BOOST_CHECK_EQUAL(format_time(ts("0.9")),      "+900 ms");
+	BOOST_CHECK_EQUAL(format_time(ts("1.0"), 7),  "+1000 ms");
+	BOOST_CHECK_EQUAL(format_time(ts("1.1"), 7),  "+1100 ms");
+	BOOST_CHECK_EQUAL(format_time(ts("1.2"), 7),  "+1200 ms");
+	BOOST_CHECK_EQUAL(format_time(ts("1.3"), 7),  "+1300 ms");
+	BOOST_CHECK_EQUAL(format_time(ts("1.4"), 7),  "+1400 ms");
+	BOOST_CHECK_EQUAL(format_time(ts("1.5"), 7),  "+1500 ms");
+}
+
 BOOST_AUTO_TEST_SUITE_END()

@@ -45,7 +45,6 @@ static const QString SIPrefixes[17] = {
 	"Z", "Y"};
 const int EmptySIPrefix = 8;
 const int FirstSIPrefixPower = -(EmptySIPrefix * 3);
-const double MinTimeDelta = 1e-15; // Anything below 1 fs can be considered zero
 
 // Insert the timestamp value into the stream in fixed-point notation
 // (and honor the precision)
@@ -132,13 +131,13 @@ static QString pad_number(unsigned int number, int length)
 	return QString("%1").arg(number, length, 10, QChar('0'));
 }
 
-static QString format_time_in_full(double t, signed precision)
+static QString format_time_in_full(const Timestamp& t, signed precision)
 {
-	const unsigned int whole_seconds = abs((int) t);
-	const unsigned int days = whole_seconds / (60 * 60 * 24);
-	const unsigned int hours = (whole_seconds / (60 * 60)) % 24;
-	const unsigned int minutes = (whole_seconds / 60) % 60;
-	const unsigned int seconds = whole_seconds % 60;
+	const Timestamp whole_seconds = floor(abs(t));
+	const Timestamp days = floor(whole_seconds / (60 * 60 * 24));
+	const unsigned int hours = fmod(whole_seconds / (60 * 60), 24).convert_to<uint>();
+	const unsigned int minutes = fmod(whole_seconds / 60, 60).convert_to<uint>();
+	const unsigned int seconds = fmod(whole_seconds, 60).convert_to<uint>();
 
 	QString s;
 	QTextStream ts(&s);
@@ -151,7 +150,7 @@ static QString format_time_in_full(double t, signed precision)
 	bool use_padding = false;
 
 	if (days) {
-		ts << days << ":";
+		ts << days.str().c_str() << ":";
 		use_padding = true;
 	}
 
@@ -175,11 +174,16 @@ static QString format_time_in_full(double t, signed precision)
 	if (precision >= 0) {
 		ts << pad_number(seconds, use_padding ? 2 : 0);
 
-		const double fraction = fabs(t) - whole_seconds;
+		const Timestamp fraction = fabs(t) - whole_seconds;
 
 		if (precision > 0 && precision < 1000) {
-			QString fs = QString("%1").arg(fraction, -(2 + precision), 'f',
-				precision, QChar('0'));
+			std::ostringstream ss;
+			ss
+				<< std::fixed
+				<< std::setprecision(2 + precision)
+				<< std::setfill('0')
+				<< fraction;
+			std::string fs = ss.str();
 
 			ts << ".";
 
@@ -188,7 +192,7 @@ static QString format_time_in_full(double t, signed precision)
 				// Start at index 2 to skip the "0." at the beginning
 				ts << fs[1 + i];
 
-				if ((i > 0) && (i % 3 == 0))
+				if ((i > 0) && (i % 3 == 0) && (i != precision))
 					ts << " ";
 			}
 		}
@@ -197,8 +201,8 @@ static QString format_time_in_full(double t, signed precision)
 	return s;
 }
 
-static QString format_time_with_si(double t, QString unit, int prefix,
-	unsigned int precision)
+static QString format_time_with_si(const Timestamp& t, QString unit,
+	int prefix, unsigned int precision)
 {
 	// The precision is always given without taking the prefix into account
 	// so we need to deduct the number of decimals the prefix might imply
@@ -212,10 +216,11 @@ static QString format_time_with_si(double t, QString unit, int prefix,
 	return format_si_value(t, unit, prefix, relative_prec);
 }
 
-static QString format_time(double t, int prefix, TimeUnit unit, unsigned int precision)
+QString format_time(const Timestamp& t, int prefix, TimeUnit unit,
+	unsigned int precision)
 {
 	// Make 0 appear as 0, not random +0 or -0
-	if (fabs(t) < MinTimeDelta)
+	if (t.is_zero())
 		return "0";
 
 	// If we have to use samples then we have no alternative formats
@@ -230,11 +235,6 @@ static QString format_time(double t, int prefix, TimeUnit unit, unsigned int pre
 		return format_time_with_si(t, "s", prefix, precision);
 	else
 		return format_time_in_full(t, precision);
-}
-
-QString format_time(const Timestamp& t, int prefix, TimeUnit unit, unsigned int precision)
-{
-	return format_time(t.convert_to<double>(), prefix, unit, precision);
 }
 
 QString format_second(const Timestamp& second)
