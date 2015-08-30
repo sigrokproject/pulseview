@@ -37,12 +37,7 @@ using std::vector;
 namespace pv {
 namespace view {
 
-vector< shared_ptr<ViewItem> >& TraceTreeItemOwner::child_items()
-{
-	return items_;
-}
-
-const vector< shared_ptr<ViewItem> >& TraceTreeItemOwner::child_items() const
+const ViewItemOwner::item_list& TraceTreeItemOwner::child_items() const
 {
 	return items_;
 }

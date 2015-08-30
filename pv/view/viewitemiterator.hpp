@@ -37,14 +37,11 @@ namespace view {
 template<class Owner, class Item> class ViewItemIterator
 {
 public:
-	typedef typename std::conditional<std::is_const<Owner>::value,
-		typename Owner::item_list::const_iterator,
-		typename Owner::item_list::iterator>::type child_iterator;
-
+	typedef typename Owner::item_list::const_iterator child_iterator;
 	typedef std::shared_ptr<Item> value_type;
 	typedef ptrdiff_t difference_type;
 	typedef value_type pointer;
-	typedef value_type& reference;
+	typedef const value_type& reference;
 	typedef std::forward_iterator_tag iterator_category;
 
 public:

@@ -46,11 +46,6 @@ public:
 	/**
 	 * Returns a list of row items owned by this object.
 	 */
-	virtual item_list& child_items() = 0;
-
-	/**
-	 * Returns a list of row items owned by this object.
-	 */
 	virtual const item_list& child_items() const = 0;
 
 	/**
