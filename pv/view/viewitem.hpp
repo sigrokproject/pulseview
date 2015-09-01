@@ -116,7 +116,7 @@ public:
 	 * @param rect the rectangle of the header area.
 	 * @param hover true if the label is being hovered over by the mouse.
 	 */
-	virtual void paint_label(QPainter &p, const QRect &rect, bool hover) = 0;
+	virtual void paint_label(QPainter &p, const QRect &rect, bool hover);
 
 	/**
 	 * Paints the background layer of the item with a QPainter

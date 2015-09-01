@@ -93,6 +93,13 @@ QPen ViewItem::highlight_pen()
 		Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
 }
 
+void ViewItem::paint_label(QPainter &p, const QRect &rect, bool hover)
+{
+	(void)p;
+	(void)rect;
+	(void)hover;
+}
+
 void ViewItem::paint_back(QPainter &p, const ViewItemPaintParams &pp)
 {
 	(void)p;
