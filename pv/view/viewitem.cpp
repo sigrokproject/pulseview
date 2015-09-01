@@ -64,6 +64,12 @@ void ViewItem::drag_release()
 	drag_point_ = QPoint(INT_MIN, INT_MIN);
 }
 
+QRectF ViewItem::label_rect(const QRectF &rect) const
+{
+	(void)rect;
+	return QRectF();
+}
+
 QRectF ViewItem::hit_box_rect(const QRectF &rect) const
 {
 	(void)rect;

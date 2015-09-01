@@ -99,8 +99,9 @@ public:
 	 * Computes the outline rectangle of a label.
 	 * @param rect the rectangle of the header area.
 	 * @return Returns the rectangle of the signal label.
+	 * @remarks The default implementation returns an empty rectangle.
 	 */
-	virtual QRectF label_rect(const QRectF &rect) const = 0;
+	virtual QRectF label_rect(const QRectF &rect) const;
 
 	/**
 	 * Computes the outline rectangle of the viewport hit-box.
