@@ -24,6 +24,7 @@
 #include "pv/util.hpp"
 
 #include <QFont>
+#include <QRect>
 
 namespace pv {
 namespace view {
