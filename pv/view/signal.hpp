@@ -81,6 +81,22 @@ public:
 
 	void delete_pressed();
 
+	/**
+	 * Returns the offset to show the drag handle.
+	 */
+	virtual int scale_handle_offset() const = 0;
+
+	/**
+	 * Handles the scale handle being dragged to an offset.
+	 * @param offset the offset the scale handle was dragged to.
+	 */
+	virtual void scale_handle_dragged(int offset) = 0;
+
+	/**
+	 * Handles the scale handle being being released.
+	 */
+	virtual void scale_handle_released() {};
+
 private Q_SLOTS:
 	void on_disable();
 

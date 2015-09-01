@@ -150,6 +150,16 @@ std::pair<int, int> LogicSignal::v_extents() const
 	return make_pair(-SignalHeight - SignalMargin, SignalMargin);
 }
 
+int LogicSignal::scale_handle_offset() const
+{
+	return SignalHeight;
+}
+
+void LogicSignal::scale_handle_dragged(int offset)
+{
+	(void)offset;
+}
+
 void LogicSignal::paint_back(QPainter &p, const ViewItemPaintParams &pp)
 {
 	if (channel_->enabled())

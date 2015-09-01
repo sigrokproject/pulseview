@@ -82,6 +82,16 @@ std::pair<int, int> AnalogSignal::v_extents() const
 	return make_pair(-NominalHeight / 2, NominalHeight / 2);
 }
 
+int AnalogSignal::scale_handle_offset() const
+{
+	return -NominalHeight / 3;
+}
+
+void AnalogSignal::scale_handle_dragged(int offset)
+{
+	(void)offset;
+}
+
 void AnalogSignal::paint_back(QPainter &p, const ViewItemPaintParams &pp)
 {
 	if (channel_->enabled())
