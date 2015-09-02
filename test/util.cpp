@@ -21,6 +21,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include "pv/util.hpp"
+#include "test/test.hpp"
 
 using namespace pv::util;
 using ts = pv::util::Timestamp;
@@ -37,11 +38,6 @@ namespace {
 	pv::util::SIPrefix yotta       = pv::util::SIPrefix::yotta;
 
 	pv::util::TimeUnit Time = pv::util::TimeUnit::Time;
-}
-
-std::ostream& operator<<(std::ostream& stream, const QString& str)
-{
-	return stream << str.toUtf8().data();
 }
 
 BOOST_AUTO_TEST_SUITE(UtilTest)

@@ -1,7 +1,7 @@
 /*
  * This file is part of the PulseView project.
  *
- * Copyright (C) 2012 Joel Holdsworth <joel@airwebreathe.org.uk>
+ * Copyright (C) 2015 Jens Steinhauser <jens.steinhauser@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,11 +18,11 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#define BOOST_TEST_MAIN
-#include <boost/test/unit_test.hpp>
-#include "test/test.hpp"
+#ifndef PULSEVIEW_TEST_TEST_HPP
+#define PULSEVIEW_TEST_TEST_HPP
 
-std::ostream& operator<<(std::ostream& stream, const QString& str)
-{
-	return stream << str.toUtf8().data();
-}
+#include <QString>
+
+std::ostream& operator<<(std::ostream& stream, const QString& str);
+
+#endif

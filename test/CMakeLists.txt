@@ -73,6 +73,7 @@ set(pulseview_TEST_SOURCES
 	${PROJECT_SOURCE_DIR}/pv/widgets/wellarray.cpp
 	data/analogsegment.cpp
 	data/logicsegment.cpp
+	view/ruler.cpp
 	test.cpp
 	util.cpp
 )

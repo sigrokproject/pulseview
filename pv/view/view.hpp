@@ -133,7 +133,7 @@ public:
 	/**
 	 * Returns period of the graticule time markings.
 	 */
-	double tick_period() const;
+	const pv::util::Timestamp& tick_period() const;
 
 	/**
 	 * Returns the unit of time currently used.
@@ -343,7 +343,7 @@ private Q_SLOTS:
 	 * Sets the 'tick_period_' member and emits the 'tick_period_changed'
 	 * signal if needed.
 	 */
-	void set_tick_period(double tick_period);
+	void set_tick_period(const pv::util::Timestamp& tick_period);
 
 	/**
 	 * Sets the 'time_unit' member and emits the 'time_unit_changed'
@@ -369,7 +369,7 @@ private:
 	bool always_zoom_to_fit_;
 	QTimer delayed_view_updater_;
 
-	double tick_period_;
+	pv::util::Timestamp tick_period_;
 	pv::util::SIPrefix tick_prefix_;
 	unsigned int tick_precision_;
 	util::TimeUnit time_unit_;

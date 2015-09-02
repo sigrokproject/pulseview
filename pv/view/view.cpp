@@ -103,7 +103,7 @@ View::View(Session &session, QWidget *parent) :
 	updating_scroll_(false),
 	sticky_scrolling_(false), // Default setting is set in MainWindow::setup_ui()
 	always_zoom_to_fit_(false),
-	tick_period_(0.0),
+	tick_period_(0),
 	tick_prefix_(pv::util::SIPrefix::yocto),
 	tick_precision_(0),
 	time_unit_(util::TimeUnit::Time),
@@ -275,12 +275,12 @@ void View::set_tick_precision(unsigned tick_precision)
 	}
 }
 
-double View::tick_period() const
+const pv::util::Timestamp& View::tick_period() const
 {
 	return tick_period_;
 }
 
-void View::set_tick_period(double tick_period)
+void View::set_tick_period(const pv::util::Timestamp& tick_period)
 {
 	if (tick_period_ != tick_period) {
 		tick_period_ = tick_period;
@@ -561,7 +561,8 @@ void View::calculate_tick_spacing()
 		const double min_period = scale_ * min_width;
 
 		const int order = (int)floorf(log10f(min_period));
-		const double order_decimal = pow(10.0, order);
+		const pv::util::Timestamp order_decimal =
+			pow(pv::util::Timestamp(10), order);
 
 		// Allow for a margin of error so that a scale unit of 1 can be used.
 		// Otherwise, for a SU of 1 the tick period will almost always be below
@@ -572,7 +573,8 @@ void View::calculate_tick_spacing()
 		unsigned int unit = 0;
 
 		do {
-			tp_with_margin = order_decimal * (ScaleUnits[unit++] + tp_margin);
+			tp_with_margin = order_decimal.convert_to<double>() *
+				(ScaleUnits[unit++] + tp_margin);
 		} while (tp_with_margin < min_period && unit < countof(ScaleUnits));
 
 		set_tick_period(order_decimal * ScaleUnits[unit - 1]);
@@ -581,9 +583,10 @@ void View::calculate_tick_spacing()
 
 		// Precision is the number of fractional digits required, not
 		// taking the prefix into account (and it must never be negative)
-		set_tick_precision(std::max((int)ceil(log10f(1 / tick_period_)), 0));
+		set_tick_precision(std::max(
+			ceil(log10(1 / tick_period_)).convert_to<int>(), 0));
 
-		tick_period_width = tick_period_ / scale_;
+		tick_period_width = (tick_period_ / scale_).convert_to<double>();
 
 		const QString label_text =
 			format_time(max_time, tick_prefix_, time_unit_, tick_precision_);
@@ -593,7 +596,6 @@ void View::calculate_tick_spacing()
 				MinValueSpacing;
 
 		min_width += SpacingIncrement;
-
 	} while (tick_period_width < label_width);
 }
 
@@ -609,7 +611,7 @@ void View::update_scroll()
 	get_scroll_layout(length, offset);
 	length = max(length - areaSize.width(), 0.0);
 
-	int major_tick_distance = tick_period_ / scale_;
+	int major_tick_distance = (tick_period_ / scale_).convert_to<int>();
 
 	horizontalScrollBar()->setPageStep(areaSize.width() / 2);
 	horizontalScrollBar()->setSingleStep(major_tick_distance);

@@ -29,6 +29,12 @@
 #include "marginwidget.hpp"
 #include <pv/util.hpp>
 
+namespace RulerTest {
+class tick_position_test_0;
+class tick_position_test_1;
+class tick_position_test_2;
+}
+
 namespace pv {
 namespace view {
 
@@ -38,6 +44,10 @@ class ViewItem;
 class Ruler : public MarginWidget
 {
 	Q_OBJECT
+
+	friend class RulerTest::tick_position_test_0;
+	friend class RulerTest::tick_position_test_1;
+	friend class RulerTest::tick_position_test_2;
 
 private:
 
@@ -116,7 +126,7 @@ private:
 	 *         tick positions.
 	 */
 	static TickPositions calculate_tick_positions(
-		const double major_period,
+		const pv::util::Timestamp& major_period,
 		const pv::util::Timestamp& offset,
 		const double scale,
 		const int width,
