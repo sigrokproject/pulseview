@@ -21,9 +21,13 @@
 #ifndef PULSEVIEW_PV_VIEW_RULER_HPP
 #define PULSEVIEW_PV_VIEW_RULER_HPP
 
+#include <functional>
 #include <memory>
 
+#include <boost/optional.hpp>
+
 #include "marginwidget.hpp"
+#include <pv/util.hpp>
 
 namespace pv {
 namespace view {
@@ -78,7 +82,6 @@ private:
 
 	void mouseDoubleClickEvent(QMouseEvent *e);
 
-private:
 	/**
 	 * Draw a hover arrow under the cursor position.
 	 * @param p The painter to draw into.
@@ -88,8 +91,45 @@ private:
 
 	int calculate_text_height() const;
 
+	struct TickPositions
+	{
+		std::vector<std::pair<double, QString>> major;
+		std::vector<double> minor;
+	};
+
+	/**
+	 * Holds the tick positions so that they don't have to be recalculated on
+	 * every redraw. Set by 'paintEvent()' when needed.
+	 */
+	boost::optional<TickPositions> tick_position_cache_;
+
+	/**
+	 * Calculates the major and minor tick positions.
+	 *
+	 * @param major_period The period between the major ticks.
+	 * @param offset The time at the left border of the ruler.
+	 * @param scale The scale in seconds per pixel.
+	 * @param width the Width of the ruler.
+	 * @param format_function A function used to format the major tick times.
+	 * @return An object of type 'TickPositions' that contains the major tick
+	 *         positions together with the labels at that ticks, and the minor
+	 *         tick positions.
+	 */
+	static TickPositions calculate_tick_positions(
+		const double major_period,
+		const pv::util::Timestamp& offset,
+		const double scale,
+		const int width,
+		std::function<QString(const pv::util::Timestamp&)> format_function);
+
+protected:
+	void resizeEvent(QResizeEvent*) override;
+
 private Q_SLOTS:
 	void hover_point_changed();
+
+	// Resets the 'tick_position_cache_'.
+	void invalidate_tick_position_cache();
 };
 
 } // namespace view

@@ -216,11 +216,27 @@ Q_SIGNALS:
 
 	void selection_changed();
 
-	void scale_offset_changed();
+	/// Emitted when the offset changed.
+	void offset_changed();
+
+	/// Emitted when the scale changed.
+	void scale_changed();
 
 	void sticky_scrolling_changed(bool state);
 
 	void always_zoom_to_fit_changed(bool state);
+
+	/// Emitted when the tick_prefix changed.
+	void tick_prefix_changed();
+
+	/// Emitted when the tick_precision changed.
+	void tick_precision_changed();
+
+	/// Emitted when the tick_period changed.
+	void tick_period_changed();
+
+	/// Emitted when the time_unit changed.
+	void time_unit_changed();
 
 private:
 	void get_scroll_layout(double &length, pv::util::Timestamp &offset) const;
@@ -272,7 +288,6 @@ private:
 
 	void determine_time_unit();
 
-private:
 	bool eventFilter(QObject *object, QEvent *event);
 
 	bool viewportEvent(QEvent *e);
@@ -299,6 +314,42 @@ private Q_SLOTS:
 	void process_sticky_events();
 
 	void on_hover_point_changed();
+
+	/**
+	 * Sets the 'offset_' member and emits the 'offset_changed'
+	 * signal if needed.
+	 */
+	void set_offset(const pv::util::Timestamp& offset);
+
+	/**
+	 * Sets the 'scale_' member and emits the 'scale_changed'
+	 * signal if needed.
+	 */
+	void set_scale(double scale);
+
+	/**
+	 * Sets the 'tick_prefix_' member and emits the 'tick_prefix_changed'
+	 * signal if needed.
+	 */
+	void set_tick_prefix(pv::util::SIPrefix tick_prefix);
+
+	/**
+	 * Sets the 'tick_precision_' member and emits the 'tick_precision_changed'
+	 * signal if needed.
+	 */
+	void set_tick_precision(unsigned tick_precision);
+
+	/**
+	 * Sets the 'tick_period_' member and emits the 'tick_period_changed'
+	 * signal if needed.
+	 */
+	void set_tick_period(double tick_period);
+
+	/**
+	 * Sets the 'time_unit' member and emits the 'time_unit_changed'
+	 * signal if needed.
+	 */
+	void set_time_unit(pv::util::TimeUnit time_unit);
 
 private:
 	Session &session_;

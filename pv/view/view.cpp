@@ -211,9 +211,25 @@ double View::scale() const
 	return scale_;
 }
 
+void View::set_scale(double scale)
+{
+	if (scale_ != scale) {
+		scale_ = scale;
+		Q_EMIT scale_changed();
+	}
+}
+
 const Timestamp& View::offset() const
 {
 	return offset_;
+}
+
+void View::set_offset(const pv::util::Timestamp& offset)
+{
+	if (offset_ != offset) {
+		offset_ = offset;
+		Q_EMIT offset_changed();
+	}
 }
 
 int View::owner_visual_v_offset() const
@@ -238,9 +254,25 @@ pv::util::SIPrefix View::tick_prefix() const
 	return tick_prefix_;
 }
 
+void View::set_tick_prefix(pv::util::SIPrefix tick_prefix)
+{
+	if (tick_prefix_ != tick_prefix) {
+		tick_prefix_ = tick_prefix;
+		Q_EMIT tick_prefix_changed();
+	}
+}
+
 unsigned int View::tick_precision() const
 {
 	return tick_precision_;
+}
+
+void View::set_tick_precision(unsigned tick_precision)
+{
+	if (tick_precision_ != tick_precision) {
+		tick_precision_ = tick_precision;
+		Q_EMIT tick_precision_changed();
+	}
 }
 
 double View::tick_period() const
@@ -248,9 +280,25 @@ double View::tick_period() const
 	return tick_period_;
 }
 
+void View::set_tick_period(double tick_period)
+{
+	if (tick_period_ != tick_period) {
+		tick_period_ = tick_period;
+		Q_EMIT tick_period_changed();
+	}
+}
+
 TimeUnit View::time_unit() const
 {
 	return time_unit_;
+}
+
+void View::set_time_unit(pv::util::TimeUnit time_unit)
+{
+	if (time_unit_ != time_unit) {
+		time_unit_ = time_unit;
+		Q_EMIT time_unit_changed();
+	}
 }
 
 void View::zoom(double steps)
@@ -335,15 +383,14 @@ void View::set_scale_offset(double scale, const Timestamp& offset)
 		}
 	}
 
-	scale_ = scale;
-	offset_ = offset;
+	set_scale(scale);
+	set_offset(offset);
 
 	calculate_tick_spacing();
 
 	update_scroll();
 	ruler_->update();
 	viewport_->update();
-	scale_offset_changed();
 }
 
 set< shared_ptr<SignalData> > View::get_visible_data() const
@@ -528,13 +575,13 @@ void View::calculate_tick_spacing()
 			tp_with_margin = order_decimal * (ScaleUnits[unit++] + tp_margin);
 		} while (tp_with_margin < min_period && unit < countof(ScaleUnits));
 
-		tick_period_ = order_decimal * ScaleUnits[unit - 1];
-		tick_prefix_ = static_cast<pv::util::SIPrefix>(
-			(order - pv::util::exponent(pv::util::SIPrefix::yocto)) / 3);
+		set_tick_period(order_decimal * ScaleUnits[unit - 1]);
+		set_tick_prefix(static_cast<pv::util::SIPrefix>(
+			(order - pv::util::exponent(pv::util::SIPrefix::yocto)) / 3));
 
 		// Precision is the number of fractional digits required, not
 		// taking the prefix into account (and it must never be negative)
-		tick_precision_ = std::max((int)ceil(log10f(1 / tick_period_)), 0);
+		set_tick_precision(std::max((int)ceil(log10f(1 / tick_period_)), 0));
 
 		tick_period_width = tick_period_ / scale_;
 
@@ -692,7 +739,7 @@ void View::determine_time_unit()
 			const vector< shared_ptr<Segment> > segments = data->segments();
 			if (!segments.empty())
 				if (segments[0]->samplerate()) {
-					time_unit_ = util::TimeUnit::Time;
+					set_time_unit(util::TimeUnit::Time);
 					break;
 				}
 		}
@@ -786,12 +833,12 @@ void View::h_scroll_value_changed(int value)
 
 	const int range = horizontalScrollBar()->maximum();
 	if (range < MaxScrollValue)
-		offset_ = scale_ * value;
+		set_offset(scale_ * value);
 	else {
 		double length = 0;
 		Timestamp offset;
 		get_scroll_layout(length, offset);
-		offset_ = scale_ * length * value / MaxScrollValue;
+		set_offset(scale_ * length * value / MaxScrollValue);
 	}
 
 	ruler_->update();
@@ -933,7 +980,7 @@ void View::signals_changed()
 void View::capture_state_updated(int state)
 {
 	if (state == Session::Running)
-		time_unit_ = util::TimeUnit::Samples;
+		set_time_unit(util::TimeUnit::Samples);
 
 	if (state == Session::Stopped) {
 		// After acquisition has stopped we need to re-calculate the ticks once
@@ -975,7 +1022,7 @@ void View::perform_delayed_view_update()
 		const QSize areaSize = viewport_->size();
 		length = max(length - areaSize.width(), 0.0);
 
-		offset_ = scale_ * length;
+		set_offset(scale_ * length);
 	}
 
 	determine_time_unit();

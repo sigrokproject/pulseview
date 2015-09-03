@@ -27,8 +27,6 @@
 #include "ruler.hpp"
 #include "view.hpp"
 
-#include <pv/util.hpp>
-
 using namespace Qt;
 
 using std::shared_ptr;
@@ -49,6 +47,18 @@ Ruler::Ruler(View &parent) :
 
 	connect(&view_, SIGNAL(hover_point_changed()),
 		this, SLOT(hover_point_changed()));
+	connect(&view_, SIGNAL(offset_changed()),
+		this, SLOT(invalidate_tick_position_cache()));
+	connect(&view_, SIGNAL(scale_changed()),
+		this, SLOT(invalidate_tick_position_cache()));
+	connect(&view_, SIGNAL(tick_prefix_changed()),
+		this, SLOT(invalidate_tick_position_cache()));
+	connect(&view_, SIGNAL(tick_precision_changed()),
+		this, SLOT(invalidate_tick_position_cache()));
+	connect(&view_, SIGNAL(tick_period_changed()),
+		this, SLOT(invalidate_tick_position_cache()));
+	connect(&view_, SIGNAL(time_unit_changed()),
+		this, SLOT(invalidate_tick_position_cache()));
 }
 
 QSize Ruler::sizeHint() const
@@ -85,56 +95,48 @@ shared_ptr<ViewItem> Ruler::get_mouse_over_item(const QPoint &pt)
 
 void Ruler::paintEvent(QPaintEvent*)
 {
+	if (!tick_position_cache_) {
+		auto ffunc = [this](const pv::util::Timestamp& t)
+		{
+			return util::format_time(
+				t,
+				this->view_.tick_prefix(),
+				this->view_.time_unit(),
+				this->view_.tick_precision());
+		};
+
+		tick_position_cache_.emplace(calculate_tick_positions(
+			view_.tick_period(),
+			view_.offset(),
+			view_.scale(),
+			width(),
+			ffunc));
+	}
+
 	const int ValueMargin = 3;
-
-	QPainter p(this);
-	p.setRenderHint(QPainter::Antialiasing);
-
-	const double tick_period = view_.tick_period();
-
-	// Draw the tick marks
-	p.setPen(palette().color(foregroundRole()));
-
-	const double minor_tick_period = tick_period / MinorTickSubdivision;
-	const pv::util::Timestamp first_major_division =
-		floor(view_.offset() / tick_period);
-	const pv::util::Timestamp first_minor_division =
-		ceil(view_.offset() / minor_tick_period);
-	const pv::util::Timestamp t0 = first_major_division * tick_period;
-
-	int division = (round(first_minor_division -
-		first_major_division * MinorTickSubdivision)).convert_to<int>() - 1;
 
 	const int text_height = calculate_text_height();
 	const int ruler_height = RulerHeight * text_height;
 	const int major_tick_y1 = text_height + ValueMargin * 2;
 	const int minor_tick_y1 = (major_tick_y1 + ruler_height) / 2;
 
-	double x;
+	QPainter p(this);
+	p.setRenderHint(QPainter::Antialiasing);
 
-	do {
-		const pv::util::Timestamp t = t0 + division * minor_tick_period;
-		x = ((t - view_.offset()) / view_.scale()).convert_to<double>();
+	// Draw the tick marks
+	p.setPen(palette().color(foregroundRole()));
 
-		if (division % MinorTickSubdivision == 0)
-		{
-			// Draw a major tick
-			p.drawText(x, ValueMargin, 0, text_height,
-				AlignCenter | AlignTop | TextDontClip,
-				util::format_time(t, view_.tick_prefix(), view_.time_unit(),
-					view_.tick_precision()));
-			p.drawLine(QPointF(x, major_tick_y1),
-				QPointF(x, ruler_height));
-		}
-		else
-		{
-			// Draw a minor tick
-			p.drawLine(QPointF(x, minor_tick_y1),
-				QPointF(x, ruler_height));
-		}
+	for (const auto& tick: tick_position_cache_->major) {
+		p.drawText(tick.first, ValueMargin, 0, text_height,
+				AlignCenter | AlignTop | TextDontClip, tick.second);
+		p.drawLine(QPointF(tick.first, major_tick_y1),
+			QPointF(tick.first, ruler_height));
+	}
 
-		division++;
-	} while (x < width());
+	for (const auto& tick: tick_position_cache_->minor) {
+		p.drawLine(QPointF(tick, minor_tick_y1),
+				QPointF(tick, ruler_height));
+	}
 
 	// Draw the hover mark
 	draw_hover_mark(p, text_height);
@@ -151,6 +153,41 @@ void Ruler::paintEvent(QPaintEvent*)
 			i->label_rect(r).contains(mouse_point_);
 		i->paint_label(p, r, highlight);
 	}
+}
+
+Ruler::TickPositions Ruler::calculate_tick_positions(
+	const double major_period,
+	const pv::util::Timestamp& offset,
+	const double scale,
+	const int width,
+	std::function<QString(const pv::util::Timestamp&)> format_function)
+{
+	TickPositions tp;
+
+	const double minor_period = major_period / MinorTickSubdivision;
+	const pv::util::Timestamp first_major_division = floor(offset / major_period);
+	const pv::util::Timestamp first_minor_division = ceil(offset / minor_period);
+	const pv::util::Timestamp t0 = first_major_division * major_period;
+
+	int division = (round(first_minor_division -
+		first_major_division * MinorTickSubdivision)).convert_to<int>() - 1;
+
+	double x;
+
+	do {
+		const pv::util::Timestamp t = t0 + division * minor_period;
+		x = ((t - offset) / scale).convert_to<double>();
+
+		if (division % MinorTickSubdivision == 0) {
+			tp.major.emplace_back(x, format_function(t));
+		} else {
+			tp.minor.emplace_back(x);
+		}
+
+		division++;
+	} while (x < width);
+
+	return tp;
 }
 
 void Ruler::mouseDoubleClickEvent(QMouseEvent *e)
@@ -186,6 +223,17 @@ int Ruler::calculate_text_height() const
 void Ruler::hover_point_changed()
 {
 	update();
+}
+
+void Ruler::invalidate_tick_position_cache()
+{
+	tick_position_cache_ = boost::none;
+}
+
+void Ruler::resizeEvent(QResizeEvent*)
+{
+	// the tick calculation depends on the width of this widget
+	invalidate_tick_position_cache();
 }
 
 } // namespace view
