@@ -107,7 +107,7 @@ void ViewItem::paint_fore(QPainter &p, const ViewItemPaintParams &pp)
 
 QColor ViewItem::select_text_colour(QColor background)
 {
-	return (background.lightness() > 64) ? Qt::black : Qt::white;
+	return (background.lightness() > 110) ? Qt::black : Qt::white;
 }
 
 } // namespace view
