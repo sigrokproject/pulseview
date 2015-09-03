@@ -20,6 +20,7 @@
 
 #include "cursor.hpp"
 
+#include "ruler.hpp"
 #include "view.hpp"
 #include "pv/util.hpp"
 
@@ -55,8 +56,11 @@ bool Cursor::enabled() const
 
 QString Cursor::get_text() const
 {
-	return util::format_time(time_, view_.tick_prefix(),
-		view_.time_unit(), 2);
+	const shared_ptr<Cursor> other = get_other_cursor();
+	const pv::util::Timestamp& diff = abs(time_ - other->time_);
+
+	return Ruler::format_time_with_distance(
+		diff, time_, view_.tick_prefix(), view_.time_unit(), view_.tick_precision());
 }
 
 QRectF Cursor::label_rect(const QRectF &rect) const

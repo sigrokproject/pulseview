@@ -29,7 +29,7 @@ using namespace pv::view;
 namespace {
 	QString format(const pv::util::Timestamp& t)
 	{
-		return pv::util::format_si_value(t, "s", pv::util::SIPrefix::none, 6);
+		return pv::util::format_time_si(t, pv::util::SIPrefix::none, 6);
 	}
 
 	const double e = 0.0001;

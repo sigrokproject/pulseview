@@ -56,40 +56,69 @@ typedef boost::multiprecision::number<
 	boost::multiprecision::et_off> Timestamp;
 
 /**
- * Formats a given value with the specified SI prefix.
- * @param v The value to format.
+ * Formats a given timestamp with the specified SI prefix.
+ *
+ * If 'prefix' is left 'unspecified', the function chooses a prefix so that
+ * the value in front of the decimal point is between 1 and 999.
+ *
+ * The default value "s" for the unit argument makes the most sense when
+ * formatting time values, but a different value can be given if the function
+ * is reused to format a value of another quantity.
+ *
+ * @param t The value to format.
+ * @param prefix The SI prefix to use.
+ * @param precision The number of digits after the decimal separator.
  * @param unit The unit of quantity.
- * @param prefix The prefix to use.
+ * @param sign Whether or not to add a sign also for positive numbers.
+ *
+ * @return The formated value.
+ */
+QString format_time_si(
+	const Timestamp& t,
+	SIPrefix prefix = SIPrefix::unspecified,
+	unsigned precision = 0,
+	QString unit = "s",
+	bool sign = true);
+
+/**
+ * Wrapper around 'format_time_si()' that interpretes the given 'precision'
+ * value as the number of decimal places if the timestamp would be formatted
+ * without a SI prefix (using 'SIPrefix::none') and adjustes the precision to
+ * match the given 'prefix'
+ *
+ * @param t The value to format.
+ * @param prefix The SI prefix to use.
+ * @param precision The number of digits after the decimal separator if the
+ *        'prefix' would be 'SIPrefix::none', see above for more information.
+ * @param unit The unit of quantity.
+ * @param sign Whether or not to add a sign also for positive numbers.
+ *
+ * @return The formated value.
+ */
+QString format_time_si_adjusted(
+	const Timestamp& t,
+	SIPrefix prefix,
+	unsigned precision = 0,
+	QString unit = "s",
+	bool sign = true);
+
+/**
+ * Formats the given timestamp using "[+-]DD:HH:MM:SS.mmm uuu nnn ppp..." format.
+ *
+ * "DD" and "HH" are left out if they would be "00" (but if "DD" is generated,
+ * "HH" is also always generated. The "MM:SS" part is always produced, the
+ * number of subsecond digits can be influenced using the 'precision' parameter.
+ *
+ * @param t The value to format.
  * @param precision The number of digits after the decimal separator.
  * @param sign Whether or not to add a sign also for positive numbers.
  *
  * @return The formated value.
  */
-QString format_si_value(
-	const Timestamp& v, QString unit, SIPrefix prefix = SIPrefix::unspecified,
-	unsigned precision = 0, bool sign = true);
-
-/**
- * Formats a given time with the specified SI prefix.
- * @param t The time value in seconds to format.
- * @param prefix The prefix to use.
- * @param unit The unit of quantity.
- * @param precision The number of digits after the decimal separator or period (.).
- *
- * @return The formated value.
- */
-QString format_time(
-	const Timestamp& t, SIPrefix prefix = SIPrefix::unspecified,
-	TimeUnit unit = TimeUnit::Time, unsigned precision = 0);
-
-/**
- * Formats a given time value with a SI prefix so that the
- * value is between 1 and 999.
- * @param second The time value in seconds to format.
- *
- * @return The formated value.
- */
-QString format_second(const Timestamp& second);
+QString format_time_minutes(
+	const Timestamp& t,
+	signed precision = 0,
+	bool sign = true);
 
 } // namespace util
 } // namespace pv

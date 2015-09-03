@@ -77,6 +77,38 @@ QSize Ruler::extended_size_hint() const
 		ViewItem::HighlightRadius);
 }
 
+QString Ruler::format_time_with_distance(
+	const pv::util::Timestamp& distance,
+	const pv::util::Timestamp& t,
+	pv::util::SIPrefix prefix,
+	pv::util::TimeUnit unit,
+	unsigned precision,
+	bool sign)
+{
+	const unsigned limit = 60;
+
+	if (t.is_zero())
+		return "0";
+
+	// If we have to use samples then we have no alternative formats
+	if (unit == pv::util::TimeUnit::Samples)
+		return pv::util::format_time_si_adjusted(t, prefix, precision, "sa", sign);
+
+	// View zoomed way out -> low precision (0), big distance (>=60s)
+	// -> DD:HH:MM
+	if ((precision == 0) && (distance >= limit))
+		return pv::util::format_time_minutes(t, 0, sign);
+
+	// View in "normal" range -> medium precision, medium step size
+	// -> HH:MM:SS.mmm... or xxxx (si unit) if less than limit seconds
+	// View zoomed way in -> high precision (>3), low step size (<1s)
+	// -> HH:MM:SS.mmm... or xxxx (si unit) if less than limit seconds
+	if (abs(t) < limit)
+		return pv::util::format_time_si_adjusted(t, prefix, precision, "s", sign);
+	else
+		return pv::util::format_time_minutes(t, precision, sign);
+}
+
 vector< shared_ptr<ViewItem> > Ruler::items()
 {
 	const vector< shared_ptr<TimeItem> > time_items(view_.time_items());
@@ -98,7 +130,8 @@ void Ruler::paintEvent(QPaintEvent*)
 	if (!tick_position_cache_) {
 		auto ffunc = [this](const pv::util::Timestamp& t)
 		{
-			return util::format_time(
+			return format_time_with_distance(
+				this->view_.tick_period(),
 				t,
 				this->view_.tick_prefix(),
 				this->view_.time_unit(),

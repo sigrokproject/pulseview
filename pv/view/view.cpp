@@ -60,7 +60,6 @@ using boost::shared_mutex;
 
 using pv::data::SignalData;
 using pv::data::Segment;
-using pv::util::format_time;
 using pv::util::TimeUnit;
 using pv::util::Timestamp;
 
@@ -594,8 +593,8 @@ void View::calculate_tick_spacing()
 
 		tick_period_width = (tick_period / scale_).convert_to<double>();
 
-		const QString label_text =
-			format_time(max_time, tick_prefix, time_unit_, tick_precision);
+		const QString label_text = Ruler::format_time_with_distance(
+			tick_period, max_time, tick_prefix, time_unit_, tick_precision);
 
 		label_width = m.boundingRect(0, 0, INT_MAX, INT_MAX,
 			Qt::AlignLeft | Qt::AlignTop, label_text).width() +

@@ -587,7 +587,8 @@ bool MainBar::eventFilter(QObject *watched, QEvent *event)
 		auto sec = pv::util::Timestamp(sample_count_.value()) / sample_rate_.value();
 		QHelpEvent *help_event = static_cast<QHelpEvent*>(event);
 
-		QString str = tr("Total sampling time: %1").arg(pv::util::format_second(sec));
+		QString str = tr("Total sampling time: %1").arg(
+			pv::util::format_time_si(sec, pv::util::SIPrefix::unspecified, 0, "s", false));
 		QToolTip::showText(help_event->globalPos(), str);
 
 		return true;

@@ -110,8 +110,12 @@ static QTextStream& operator<<(QTextStream& stream, const Timestamp& t)
 	return stream << QString::fromStdString(str);
 }
 
-QString format_si_value(const Timestamp& v, QString unit, SIPrefix prefix,
-	unsigned int precision, bool sign)
+QString format_time_si(
+	const Timestamp& v,
+	SIPrefix prefix,
+	unsigned int precision,
+	QString unit,
+	bool sign)
 {
 	if (prefix == SIPrefix::unspecified) {
 		// No prefix given, calculate it
@@ -148,12 +152,32 @@ QString format_si_value(const Timestamp& v, QString unit, SIPrefix prefix,
 	return s;
 }
 
+QString format_time_si_adjusted(
+	const Timestamp& t,
+	SIPrefix prefix,
+	unsigned precision,
+	QString unit,
+	bool sign)
+{
+	// The precision is always given without taking the prefix into account
+	// so we need to deduct the number of decimals the prefix might imply
+	const int prefix_order = -exponent(prefix);
+
+	const unsigned int relative_prec =
+		(prefix >= SIPrefix::none) ? precision :
+		std::max((int)(precision - prefix_order), 0);
+
+	return format_time_si(t, prefix, relative_prec, unit, sign);
+}
+
+
+// Helper for 'format_time_minutes()'.
 static QString pad_number(unsigned int number, int length)
 {
 	return QString("%1").arg(number, length, 10, QChar('0'));
 }
 
-static QString format_time_in_full(const Timestamp& t, signed precision)
+QString format_time_minutes(const Timestamp& t, signed precision, bool sign)
 {
 	const Timestamp whole_seconds = floor(abs(t));
 	const Timestamp days = floor(whole_seconds / (60 * 60 * 24));
@@ -164,103 +188,57 @@ static QString format_time_in_full(const Timestamp& t, signed precision)
 	QString s;
 	QTextStream ts(&s);
 
-	if (t >= 0)
-		ts << "+";
-	else
+	if (t < 0)
 		ts << "-";
+	else if (sign)
+		ts << "+";
 
 	bool use_padding = false;
 
+	// DD
 	if (days) {
 		ts << days.str().c_str() << ":";
 		use_padding = true;
 	}
 
+	// HH
 	if (hours || days) {
 		ts << pad_number(hours, use_padding ? 2 : 0) << ":";
 		use_padding = true;
 	}
 
-	if (minutes || hours || days) {
-		ts << pad_number(minutes, use_padding ? 2 : 0);
-		use_padding = true;
+	// MM
+	ts << pad_number(minutes, use_padding ? 2 : 0);
 
-		// We're not showing any seconds with a negative precision
-		if (precision >= 0)
-			 ts << ":";
-	}
+	ts << ":";
 
-	// precision < 0: Use DD:HH:MM format
-	// precision = 0: Use DD:HH:MM:SS format
-	// precision > 0: Use DD:HH:MM:SS.mmm nnn ppp fff format
-	if (precision >= 0) {
-		ts << pad_number(seconds, use_padding ? 2 : 0);
+	// SS
+	ts << pad_number(seconds, 2);
+
+	if (precision) {
+		ts << ".";
 
 		const Timestamp fraction = fabs(t) - whole_seconds;
 
-		if (precision > 0 && precision < 1000) {
-			std::ostringstream ss;
-			ss
-				<< std::fixed
-				<< std::setprecision(2 + precision)
-				<< std::setfill('0')
-				<< fraction;
-			std::string fs = ss.str();
+		std::ostringstream ss;
+		ss
+			<< std::fixed
+			<< std::setprecision(precision)
+			<< std::setfill('0')
+			<< fraction;
+		std::string fs = ss.str();
 
-			ts << ".";
+		// Copy all digits, inserting spaces as unit separators
+		for (int i = 1; i <= precision; i++) {
+			// Start at index 2 to skip the "0." at the beginning
+			ts << fs.at(1 + i);
 
-			// Copy all digits, inserting spaces as unit separators
-			for (int i = 1; i <= precision; i++) {
-				// Start at index 2 to skip the "0." at the beginning
-				ts << fs[1 + i];
-
-				if ((i > 0) && (i % 3 == 0) && (i != precision))
-					ts << " ";
-			}
+			if ((i > 0) && (i % 3 == 0) && (i != precision))
+				ts << " ";
 		}
 	}
 
 	return s;
-}
-
-static QString format_time_with_si(const Timestamp& t, QString unit,
-	SIPrefix prefix, unsigned int precision)
-{
-	// The precision is always given without taking the prefix into account
-	// so we need to deduct the number of decimals the prefix might imply
-	const int prefix_order = -exponent(prefix);
-
-	const unsigned int relative_prec =
-		(prefix >= SIPrefix::none) ? precision :
-		std::max((int)(precision - prefix_order), 0);
-
-	return format_si_value(t, unit, prefix, relative_prec);
-}
-
-QString format_time(const Timestamp& t, SIPrefix prefix, TimeUnit unit,
-	unsigned int precision)
-{
-	// Make 0 appear as 0, not random +0 or -0
-	if (t.is_zero())
-		return "0";
-
-	// If we have to use samples then we have no alternative formats
-	if (unit == TimeUnit::Samples)
-		return format_time_with_si(t, "sa", prefix, precision);
-
-	// View in "normal" range -> medium precision, medium step size
-	// -> HH:MM:SS.mmm... or xxxx (si unit) if less than 60 seconds
-	// View zoomed way in -> high precision (>3), low step size (<1s)
-	// -> HH:MM:SS.mmm... or xxxx (si unit) if less than 60 seconds
-	if (abs(t) < 60)
-		return format_time_with_si(t, "s", prefix, precision);
-	else
-		return format_time_in_full(t, precision);
-}
-
-QString format_second(const Timestamp& second)
-{
-	return format_si_value(second, "s", SIPrefix::unspecified, 0, false);
 }
 
 } // namespace util

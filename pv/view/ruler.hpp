@@ -72,6 +72,39 @@ public:
 	 */
 	QSize extended_size_hint() const;
 
+	/**
+	 * Formats a timestamp depending on its distance to another timestamp.
+	 *
+	 * Heuristic function, useful when multiple timestamps should be put side by
+	 * side. The function procedes in the following order:
+	 *   - If 't' is zero, "0" is returned.
+	 *   - If 'unit' is 'TimeUnit::Samples', 'pv::util::format_time_si_adjusted()'
+	 *     is used to format 't'.
+	 *   - If a zoomed out view is detected (determined by 'precision' and
+	 *     'distance'), 'pv::util::format_time_minutes() is used.
+	 *   - For timestamps "near the origin" (determined by 'distance'),
+	 *    'pv::util::format_time_si_adjusted()' is used.
+	 *   - If none of the previous was true, 'pv::util::format_time_minutes()'
+	 *     is used again.
+	 *
+	 * @param distance The distance between the timestamp to format and
+	 *        an adjacent one.
+	 * @param t The value to format
+	 * @param prefix The SI prefix to use.
+	 * @param unit The representation of the timestamp value.
+	 * @param precision The number of digits after the decimal separator.
+	 * @param sign Whether or not to add a sign also for positive numbers.
+	 *
+	 * @return The formated value.
+	 */
+	static QString format_time_with_distance(
+		const pv::util::Timestamp& distance,
+		const pv::util::Timestamp& t,
+		pv::util::SIPrefix prefix = pv::util::SIPrefix::unspecified,
+		pv::util::TimeUnit unit = pv::util::TimeUnit::Time,
+		unsigned precision = 0,
+		bool sign = true);
+
 private:
 	/**
 	 * Gets the time items.
@@ -87,7 +120,6 @@ private:
 	std::shared_ptr<pv::view::ViewItem> get_mouse_over_item(
 		const QPoint &pt);
 
-private:
 	void paintEvent(QPaintEvent *event);
 
 	void mouseDoubleClickEvent(QMouseEvent *e);

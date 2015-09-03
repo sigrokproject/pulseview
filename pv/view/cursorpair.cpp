@@ -20,6 +20,7 @@
 
 #include "cursorpair.hpp"
 
+#include "ruler.hpp"
 #include "view.hpp"
 #include "pv/util.hpp"
 
@@ -162,10 +163,14 @@ void CursorPair::paint_back(QPainter &p, const ViewItemPaintParams &pp) {
 QString CursorPair::format_string()
 {
 	const pv::util::SIPrefix prefix = view_.tick_prefix();
-	const pv::util::Timestamp delta = second_->time() - first_->time();
-	return QString("%1 / %2").
-		arg(util::format_time(delta, prefix, view_.time_unit(), 2)).
-		arg(util::format_si_value(1 / fabs(delta), "Hz", pv::util::SIPrefix::unspecified, 4));
+	const pv::util::Timestamp diff = abs(second_->time() - first_->time());
+
+	const QString s1 = Ruler::format_time_with_distance(
+		diff, diff, prefix, view_.time_unit(), view_.tick_precision(), false);
+	const QString s2 = util::format_time_si(
+		1 / diff, pv::util::SIPrefix::unspecified, 4, "Hz", false);
+
+	return QString("%1 / %2").arg(s1).arg(s2);
 }
 
 void CursorPair::compute_text_size(QPainter &p)
