@@ -154,7 +154,6 @@ void Ruler::paintEvent(QPaintEvent*)
 	const int minor_tick_y1 = (major_tick_y1 + ruler_height) / 2;
 
 	QPainter p(this);
-	p.setRenderHint(QPainter::Antialiasing);
 
 	// Draw the tick marks
 	p.setPen(palette().color(foregroundRole()));
@@ -173,6 +172,8 @@ void Ruler::paintEvent(QPaintEvent*)
 
 	// Draw the hover mark
 	draw_hover_mark(p, text_height);
+
+	p.setRenderHint(QPainter::Antialiasing);
 
 	// The cursor labels are not drawn with the arrows exactly on the
 	// bottom line of the widget, because then the selection shadow
