@@ -138,12 +138,12 @@ void Ruler::paintEvent(QPaintEvent*)
 				this->view_.tick_precision());
 		};
 
-		tick_position_cache_.emplace(calculate_tick_positions(
+		tick_position_cache_ = calculate_tick_positions(
 			view_.tick_period(),
 			view_.offset(),
 			view_.scale(),
 			width(),
-			ffunc));
+			ffunc);
 	}
 
 	const int ValueMargin = 3;
