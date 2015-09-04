@@ -42,8 +42,16 @@ InputFile::InputFile(const std::shared_ptr<sigrok::Context> &context,
 		throw QString("Failed to create input");
 }
 
-void InputFile::create() {
+void InputFile::open() {
+	if (session_)
+		close();
+
 	session_ = context_->create_session();
+}
+
+void InputFile::close() {
+	if (session_)
+		session_->remove_devices();
 }
 
 void InputFile::start() {

@@ -127,8 +127,11 @@ void Session::set_device(shared_ptr<devices::Device> device)
 	// Ensure we are not capturing before setting the device
 	stop_capture();
 
+	if (device_)
+		device_->close();
+
 	device_ = std::move(device);
-	device_->create();
+	device_->open();
 	device_->session()->add_datafeed_callback([=]
 		(shared_ptr<sigrok::Device> device, shared_ptr<Packet> packet) {
 			data_feed_in(device, packet);

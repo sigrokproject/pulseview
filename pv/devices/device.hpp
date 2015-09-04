@@ -64,7 +64,9 @@ public:
 	virtual std::string display_name(
 		const DeviceManager &device_manager) const = 0;
 
-	virtual void create() = 0;
+	virtual void open() = 0;
+
+	virtual void close() = 0;
 
 	virtual void start();
 

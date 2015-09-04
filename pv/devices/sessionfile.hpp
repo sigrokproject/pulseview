@@ -38,7 +38,9 @@ public:
 	SessionFile(const std::shared_ptr<sigrok::Context> context,
 		const std::string &file_name);
 
-	void create();
+	void open();
+
+	void close();
 
 private:
 	const std::shared_ptr<sigrok::Context> context_;

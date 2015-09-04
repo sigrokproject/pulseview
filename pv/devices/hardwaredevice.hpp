@@ -53,7 +53,9 @@ public:
 	 */
 	std::string display_name(const DeviceManager &device_manager) const;
 
-	void create();
+	void open();
+
+	void close();
 
 private:
 	const std::shared_ptr<sigrok::Context> context_;

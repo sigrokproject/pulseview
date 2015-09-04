@@ -33,9 +33,17 @@ SessionFile::SessionFile(const std::shared_ptr<sigrok::Context> context,
 	context_(context) {
 }
 
-void SessionFile::create() {
+void SessionFile::open() {
+	if (session_)
+		close();
+
 	session_ = context_->load_session(file_name_);
 	device_ = session_->devices()[0];
+}
+
+void SessionFile::close() {
+	if (session_)
+		session_->remove_devices();
 }
 
 } // namespace devices

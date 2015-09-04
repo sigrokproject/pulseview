@@ -49,11 +49,7 @@ HardwareDevice::HardwareDevice(const std::shared_ptr<sigrok::Context> &context,
 }
 
 HardwareDevice::~HardwareDevice() {
-	if (device_open_)
-		device_->close();
-
-	if (session_)
-		session_->remove_devices();
+	close();
 }
 
 string HardwareDevice::full_name() const {
@@ -99,8 +95,10 @@ string HardwareDevice::display_name(
 	return join(parts, " ");
 }
 
-void HardwareDevice::create() {
-	// Open the device
+void HardwareDevice::open() {
+	if (device_open_)
+		close();
+
 	try {
 		device_->open();
 	} catch(const sigrok::Error &e) {
@@ -112,6 +110,16 @@ void HardwareDevice::create() {
 	// Set up the session
 	session_ = context_->create_session();
 	session_->add_device(device_);
+}
+
+void HardwareDevice::close() {
+	if (device_open_)
+		device_->close();
+
+	if (session_)
+		session_->remove_devices();
+
+	device_open_ = false;
 }
 
 } // namespace devices

@@ -41,7 +41,9 @@ public:
 		std::shared_ptr<sigrok::InputFormat> format,
 		const std::map<std::string, Glib::VariantBase> &options);
 
-	void create();
+	void open();
+
+	void close();
 
 	void start();
 
