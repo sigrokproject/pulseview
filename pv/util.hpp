@@ -23,7 +23,9 @@
 
 #include <cmath>
 
+#ifndef Q_MOC_RUN
 #include <boost/multiprecision/cpp_dec_float.hpp>
+#endif
 
 #include <QMetaType>
 #include <QString>
