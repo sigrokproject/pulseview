@@ -198,8 +198,7 @@ Ruler::TickPositions Ruler::calculate_tick_positions(
 {
 	TickPositions tp;
 
-	const double minor_period =
-		(major_period / MinorTickSubdivision).convert_to<double>();
+	const pv::util::Timestamp minor_period = major_period / MinorTickSubdivision;
 	const pv::util::Timestamp first_major_division = floor(offset / major_period);
 	const pv::util::Timestamp first_minor_division = ceil(offset / minor_period);
 	const pv::util::Timestamp t0 = first_major_division * major_period;
@@ -214,7 +213,7 @@ Ruler::TickPositions Ruler::calculate_tick_positions(
 		x = ((t - offset) / scale).convert_to<double>();
 
 		if (division % MinorTickSubdivision == 0) {
-			// Recalculate 't' without using 'minor_period' which is of type double.
+			// Recalculate 't' without using 'minor_period' which is a fraction
 			t = t0 + division / MinorTickSubdivision * major_period;
 			tp.major.emplace_back(x, format_function(t));
 		} else {
