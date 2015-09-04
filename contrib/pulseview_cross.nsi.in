@@ -38,7 +38,7 @@
 Name "PulseView"
 
 # Filename of the installer executable.
-OutFile "pulseview-0.2.0-installer.exe"
+OutFile "pulseview-@PV_VERSION_STRING@-installer.exe"
 
 # Where to install the application.
 InstallDir "$PROGRAMFILES\sigrok\PulseView"
@@ -54,7 +54,7 @@ RequestExecutionLevel admin
 # --- MUI interface configuration ---------------------------------------------
 
 # Use the following icon for the installer EXE file.
-!define MUI_ICON "../icons/sigrok-logo-notext.ico"
+!define MUI_ICON "@PROJECT_SOURCE_DIR@/icons/sigrok-logo-notext.ico"
 
 # Show a nice image at the top of each installer page.
 !define MUI_HEADERIMAGE
@@ -72,11 +72,7 @@ RequestExecutionLevel admin
 
 # Path where the cross-compiled sigrok tools and libraries are located.
 # Change this to where-ever you installed libsigrok.a and so on.
-!define CROSS "$%HOME%/sr_mingw"
-
-# Path where the cross-compiled MXE tools and libraries are located.
-# Change this to where-ever you installed MXE (and the files it built).
-!define MXE "$%HOME%/mxe-git/usr/i686-pc-mingw32"
+!define CROSS "@CMAKE_INSTALL_PREFIX@"
 
 
 # --- MUI pages ---------------------------------------------------------------
@@ -85,7 +81,7 @@ RequestExecutionLevel admin
 !insertmacro MUI_PAGE_WELCOME
 
 # Show the license of the project.
-!insertmacro MUI_PAGE_LICENSE "../COPYING"
+!insertmacro MUI_PAGE_LICENSE "@PROJECT_SOURCE_DIR@/COPYING"
 
 # Show a screen which allows the user to select which components to install.
 !insertmacro MUI_PAGE_COMPONENTS
@@ -123,7 +119,7 @@ Section "PulseView (required)" Section1
 	SetOutPath "$INSTDIR"
 
 	# License file.
-	File "../COPYING"
+	File "@PROJECT_SOURCE_DIR@/COPYING"
 
 	# PulseView (statically linked, includes all libs).
 	File "${CROSS}/bin/pulseview.exe"
@@ -190,7 +186,7 @@ Section "PulseView (required)" Section1
 	WriteRegStr HKLM "${REGSTR}" "URLUpdateInfo" \
 		"http://sigrok.org/wiki/Downloads"
 	WriteRegStr HKLM "${REGSTR}" "URLInfoAbout" "http://sigrok.org"
-	WriteRegStr HKLM "${REGSTR}" "DisplayVersion" "0.2.0"
+	WriteRegStr HKLM "${REGSTR}" "DisplayVersion" "@PV_VERSION_STRING@"
 	WriteRegStr HKLM "${REGSTR}" "Contact" \
 		"sigrok-devel@lists.sourceforge.org"
 	WriteRegStr HKLM "${REGSTR}" "Comments" \
