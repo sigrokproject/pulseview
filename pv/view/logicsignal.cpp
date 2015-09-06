@@ -25,6 +25,7 @@
 
 #include <algorithm>
 
+#include <QApplication>
 #include <QFormLayout>
 #include <QToolBar>
 
@@ -60,7 +61,6 @@ namespace pv {
 namespace view {
 
 const int LogicSignal::SignalHeight = 30;
-const int LogicSignal::SignalMargin = 10;
 
 const float LogicSignal::Oversampling = 2.0f;
 
@@ -147,7 +147,9 @@ void LogicSignal::set_logic_data(std::shared_ptr<pv::data::Logic> data)
 
 std::pair<int, int> LogicSignal::v_extents() const
 {
-	return make_pair(-SignalHeight - SignalMargin, SignalMargin);
+	const int signal_margin =
+		QFontMetrics(QApplication::font()).height() / 2;
+	return make_pair(-SignalHeight - signal_margin, signal_margin);
 }
 
 int LogicSignal::scale_handle_offset() const

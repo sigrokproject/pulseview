@@ -52,7 +52,6 @@ class LogicSignal : public Signal
 
 private:
 	static const int SignalHeight;
-	static const int SignalMargin;
 
 	static const float Oversampling;
 
