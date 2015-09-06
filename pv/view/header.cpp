@@ -92,9 +92,9 @@ shared_ptr<ViewItem> Header::get_mouse_over_item(const QPoint &pt)
 	const QRect r(0, 0, width() - BaselineOffset, height());
 	const vector<shared_ptr<TraceTreeItem>> items(
 		view_.list_by_type<TraceTreeItem>());
-	for (auto &i : items)
-		if (i->enabled() && i->label_rect(r).contains(pt))
-			return i;
+	for (auto i = items.rbegin(); i != items.rend(); i++)
+		if ((*i)->enabled() && (*i)->label_rect(r).contains(pt))
+			return *i;
 	return shared_ptr<TraceTreeItem>();
 }
 
