@@ -107,23 +107,30 @@ void ViewWidget::drag_items(const QPoint &delta)
 	bool item_dragged = false;
 
 	// Drag the row items
-	TraceTreeItemOwner *item_owner = nullptr;
-	const vector< shared_ptr<TraceTreeItem> > trace_tree_items(
-		view_.list_by_type<TraceTreeItem>());
-	for (shared_ptr<TraceTreeItem> r : trace_tree_items)
+	const vector< shared_ptr<RowItem> > row_items(
+		view_.list_by_type<RowItem>());
+	for (shared_ptr<RowItem> r : row_items)
 		if (r->dragging()) {
-			item_owner = r->owner();
 			r->drag_by(delta);
 
 			// Ensure the trace is selected
 			r->select();
+
+			item_dragged = true;
 		}
 
+	// If an item is being dragged, update the stacking
+	TraceTreeItemOwner *item_owner = nullptr;
+	const vector< shared_ptr<TraceTreeItem> > trace_tree_items(
+		view_.list_by_type<TraceTreeItem>());
+	for (shared_ptr<TraceTreeItem> i : trace_tree_items)
+		if (i->dragging())
+			item_owner = i->owner();
+
 	if (item_owner) {
-		item_dragged = true;
 		item_owner->restack_items();
-		for (shared_ptr<TraceTreeItem> r : trace_tree_items)
-			r->animate_to_layout_v_offset();
+		for (shared_ptr<TraceTreeItem> i : trace_tree_items)
+			i->animate_to_layout_v_offset();
 	}
 
 	// Drag the time items
