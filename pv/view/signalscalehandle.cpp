@@ -59,6 +59,7 @@ void SignalScaleHandle::drag_by(const QPoint &delta)
 {
 	owner_.scale_handle_dragged(
 		drag_point_.y() + delta.y() - owner_.get_visual_y());
+	owner_.owner()->row_item_appearance_changed(true, true);
 }
 
 QPoint SignalScaleHandle::point(const QRect &rect) const

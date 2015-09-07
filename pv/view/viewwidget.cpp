@@ -294,8 +294,6 @@ void ViewWidget::mouseMoveEvent(QMouseEvent *e)
 
 		// Do the drag
 		drag_items(e->pos() - mouse_down_point_);
-
-		update();
 	}
 }
 
