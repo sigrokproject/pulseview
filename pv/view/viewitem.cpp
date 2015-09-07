@@ -70,9 +70,9 @@ QRectF ViewItem::label_rect(const QRectF &rect) const
 	return QRectF();
 }
 
-QRectF ViewItem::hit_box_rect(const QRectF &rect) const
+QRectF ViewItem::hit_box_rect(const ViewItemPaintParams &pp) const
 {
-	(void)rect;
+	(void)pp;
 	return QRectF();
 }
 

@@ -95,11 +95,11 @@ QRectF TimeMarker::label_rect(const QRectF &rect) const
 	return QRectF(QPointF(x - label_size.width() / 2, top), label_size);
 }
 
-QRectF TimeMarker::hit_box_rect(const QRectF &rect) const
+QRectF TimeMarker::hit_box_rect(const ViewItemPaintParams &pp) const
 {
 	const float x = get_x();
 	const float h = QFontMetrics(QApplication::font()).height();
-	return QRectF(x - h / 2.0f, rect.top(), h, rect.height());
+	return QRectF(x - h / 2.0f, pp.top(), h, pp.height());
 }
 
 void TimeMarker::paint_label(QPainter &p, const QRect &rect, bool hover)

@@ -109,7 +109,7 @@ public:
 	 * @return Returns the rectangle of the hit-box.
 	 * @remarks The default implementation returns an empty hit-box.
 	 */
-	virtual QRectF hit_box_rect(const QRectF &rect) const;
+	virtual QRectF hit_box_rect(const ViewItemPaintParams &pp) const;
 
 	/**
 	 * Paints the signal label.
