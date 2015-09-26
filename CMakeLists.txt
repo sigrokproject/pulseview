@@ -324,7 +324,10 @@ if(WIN32)
 endif()
 
 if(ANDROID)
-	list(APPEND pulseview_SOURCES android/loghandler.cpp)
+	list(APPEND pulseview_SOURCES
+		android/assetreader.cpp
+		android/loghandler.cpp
+	)
 endif()
 
 if(Qt5Core_FOUND)

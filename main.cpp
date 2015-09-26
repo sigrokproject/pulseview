@@ -38,6 +38,7 @@
 #include "pv/mainwindow.hpp"
 #ifdef ANDROID
 #include <libsigrokandroidutils/libsigrokandroidutils.h>
+#include "android/assetreader.hpp"
 #include "android/loghandler.hpp"
 #endif
 
@@ -77,6 +78,7 @@ int main(int argc, char *argv[])
 #ifdef ANDROID
 	srau_init_environment();
 	pv::AndroidLogHandler::install_callbacks();
+	pv::AndroidAssetReader asset_reader;
 #endif
 
 	// Parse arguments
@@ -137,7 +139,9 @@ int main(int argc, char *argv[])
 
 	// Initialise libsigrok
 	context = sigrok::Context::create();
-
+#ifdef ANDROID
+	context->set_resource_reader(&asset_reader);
+#endif
 	do {
 
 #ifdef ENABLE_DECODE
