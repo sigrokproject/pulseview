@@ -69,7 +69,6 @@
 				<include name="generic/libqevdevtouchplugin.so"/>
 				<include name="imageformats/libqsvg.so"/>
 				<include name="iconengines/libqsvgicon.so"/>
-				<include name="accessible/libqtaccessiblewidgets.so"/>
 			</fileset>
 			<filtermapper>
 				<replacestring from="/" to="_" />
