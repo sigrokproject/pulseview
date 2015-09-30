@@ -37,10 +37,14 @@
 	<target name="-pre-build" depends="-get-prefix, -declare-anttasks">
 		<copylibs todir="${native.libs.absolute.dir}" property="bundled_libs">
 			<fileset dir="${pulseview-build-path}/libs"/>
-			<include name="libgnustl_shared.so"/>
-			<include name="libintl.so"/>
-			<include name="libffi.so"/>
-			<exclude name="lib*.so"/>
+			<include name="libpulseview.so"/>
+			<exclude name="libQt5*.so"/>
+			<exclude name="libc.so"/>
+			<exclude name="libm.so"/>
+			<exclude name="libdl.so"/>
+			<exclude name="liblog.so"/>
+			<exclude name="libstdc++.so"/>
+			<exclude name="libz.so"/>
 		</copylibs>
 		<copy todir="${native.libs.absolute.dir}">
 			<fileset dir="${prefix}/jar">
