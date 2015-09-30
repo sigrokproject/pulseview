@@ -116,5 +116,8 @@
 				<exclude name="**/idlelib/**"/>
 			</fileset>
 		</copy>
+		<copy todir="${asset.absolute.dir}/sigrok-firmware">
+			<fileset dir="${prefix}/share/sigrok-firmware"/>
+		</copy>
 	</target>
 </project>
