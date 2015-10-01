@@ -22,6 +22,7 @@
 #include <memory>
 #include <QtCore/QDebug>
 #include <QtCore/QFile>
+#include <QtCore/QStandardPaths>
 
 using namespace pv;
 
@@ -31,7 +32,11 @@ AndroidAssetReader::~AndroidAssetReader()
 void AndroidAssetReader::open(struct sr_resource *res, std::string name)
 {
 	if (res->type == SR_RESOURCE_FIRMWARE) {
-		const auto path = QString::fromStdString("assets:/sigrok-firmware/" + name);
+		auto path = QStandardPaths::locate(QStandardPaths::GenericDataLocation,
+						   QString::fromStdString("sigrok-firmware/" + name));
+		if (path.isEmpty())
+			path = QString::fromStdString("assets:/sigrok-firmware/" + name);
+
 		std::unique_ptr<QFile> file {new QFile{path}};
 
 		if (!file->open(QIODevice::ReadOnly))
