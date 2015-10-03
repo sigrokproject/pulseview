@@ -132,13 +132,13 @@ Section "PulseView (required)" Section1
 	File "${CROSS}/python32.dll"
 	File "${CROSS}/python32.zip"
 
+	SetOutPath "$INSTDIR\share"
+
 	# Protocol decoders.
-	SetOutPath "$INSTDIR\decoders"
-	File /r /x "__pycache__" "${CROSS}/share/libsigrokdecode/decoders/*"
+	File /r /x "__pycache__" /x "*.pyc" "${CROSS}/share/libsigrokdecode"
 
 	# Firmware files.
-	SetOutPath "$INSTDIR\firmware"
-	File /r "${CROSS}/share/sigrok-firmware/*"
+	File /r "${CROSS}/share/sigrok-firmware"
 
 	# Example *.sr files.
 	SetOutPath "$INSTDIR\examples"
@@ -214,19 +214,18 @@ Section "Uninstall"
 	Delete "$INSTDIR\python32.dll"
 	Delete "$INSTDIR\python32.zip"
 
-	# Delete all decoders and everything else in decoders/.
+	# Delete all decoders and everything else in libsigrokdecode/.
 	# There could be *.pyc files or __pycache__ subdirs and so on.
-	RMDir /r "$INSTDIR\decoders\*"
+	RMDir /r "$INSTDIR\share\libsigrokdecode"
 
 	# Delete the firmware files.
-	RMDir /r "$INSTDIR\firmware\*"
+	RMDir /r "$INSTDIR\share\sigrok-firmware"
 
 	# Delete the example *.sr files.
 	RMDir /r "$INSTDIR\examples\*"
 
 	# Delete the install directory and its sub-directories.
-	RMDir "$INSTDIR\decoders"
-	RMDir "$INSTDIR\firmware"
+	RMDir "$INSTDIR\share"
 	RMDir "$INSTDIR\examples"
 	RMDir "$INSTDIR"
 
