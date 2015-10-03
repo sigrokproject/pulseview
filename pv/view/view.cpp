@@ -65,6 +65,8 @@ using pv::data::Segment;
 using pv::util::TimeUnit;
 using pv::util::Timestamp;
 
+using std::back_inserter;
+using std::copy_if;
 using std::deque;
 using std::dynamic_pointer_cast;
 using std::inserter;
@@ -72,6 +74,7 @@ using std::list;
 using std::lock_guard;
 using std::max;
 using std::make_pair;
+using std::make_shared;
 using std::min;
 using std::pair;
 using std::set;
@@ -868,6 +871,8 @@ void View::v_scroll_value_changed()
 
 void View::signals_changed()
 {
+	using sigrok::Channel;
+
 	vector< shared_ptr<TraceTreeItem> > new_top_level_items;
 
 	const auto device = session_.device();
@@ -876,6 +881,9 @@ void View::signals_changed()
 
 	shared_ptr<sigrok::Device> sr_dev = device->device();
 	assert(sr_dev);
+
+	const vector< shared_ptr<Channel> > channels(
+		sr_dev->channels());
 
 	// Make a list of traces that are being added, and a list of traces
 	// that are being removed
@@ -955,9 +963,23 @@ void View::signals_changed()
 			new_top_level_items.push_back(new_trace_group);
 	}
 
+	// Enqueue the remaining logic channels in a group
+	vector< shared_ptr<Channel> > logic_channels;
+	copy_if(channels.begin(), channels.end(), back_inserter(logic_channels),
+		[](const shared_ptr<Channel>& c) {
+			return c->type() == sigrok::ChannelType::LOGIC; });
+	const vector< shared_ptr<Trace> > non_grouped_logic_signals =
+		extract_new_traces_for_channels(logic_channels,
+			signal_map, add_traces);
+	const shared_ptr<TraceGroup> non_grouped_trace_group(
+		make_shared<TraceGroup>());
+	for (shared_ptr<Trace> trace : non_grouped_logic_signals)
+		non_grouped_trace_group->add_child_item(trace);
+	new_top_level_items.push_back(non_grouped_trace_group);
+
 	// Enqueue the remaining channels as free ungrouped traces
 	const vector< shared_ptr<Trace> > new_top_level_signals =
-		extract_new_traces_for_channels(sr_dev->channels(),
+		extract_new_traces_for_channels(channels,
 			signal_map, add_traces);
 	new_top_level_items.insert(new_top_level_items.end(),
 		new_top_level_signals.begin(), new_top_level_signals.end());
