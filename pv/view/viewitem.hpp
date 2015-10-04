@@ -81,7 +81,7 @@ public:
 	/**
 	 * Sets this item into the un-dragged state.
 	 */
-	void drag_release();
+	virtual void drag_release();
 
 	/**
 	 * Drags the item to a delta relative to the drag point.
