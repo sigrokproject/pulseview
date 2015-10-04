@@ -77,11 +77,6 @@ shared_ptr<pv::data::Analog> AnalogSignal::analog_data() const
 	return data_;
 }
 
-void AnalogSignal::set_scale(float scale)
-{
-	scale_ = scale;
-}
-
 std::pair<int, int> AnalogSignal::v_extents() const
 {
 	return make_pair(-NominalHeight / 2, NominalHeight / 2);

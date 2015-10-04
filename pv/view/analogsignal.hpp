@@ -53,8 +53,6 @@ public:
 
 	std::shared_ptr<pv::data::Analog> analog_data() const;
 
-	void set_scale(float scale);
-
 	/**
 	 * Computes the vertical extents of the contents of this row item.
 	 * @return A pair containing the minimum and maximum y-values.
