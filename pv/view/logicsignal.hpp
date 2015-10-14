@@ -51,8 +51,6 @@ class LogicSignal : public Signal
 	Q_OBJECT
 
 private:
-	static const int SignalHeight;
-
 	static const float Oversampling;
 
 	static const QColor EdgeColour;
@@ -140,6 +138,8 @@ private Q_SLOTS:
 	void on_trigger();
 
 private:
+	int signal_height_;
+
 	std::shared_ptr<pv::devices::Device> device_;
 	std::shared_ptr<pv::data::Logic> data_;
 

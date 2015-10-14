@@ -60,8 +60,6 @@ using sigrok::TriggerMatchType;
 namespace pv {
 namespace view {
 
-const int LogicSignal::SignalHeight = 30;
-
 const float LogicSignal::Oversampling = 2.0f;
 
 const QColor LogicSignal::EdgeColour(0x80, 0x80, 0x80);
@@ -103,6 +101,7 @@ LogicSignal::LogicSignal(
 	shared_ptr<Channel> channel,
 	shared_ptr<data::Logic> data) :
 	Signal(session, channel),
+	signal_height_(QFontMetrics(QApplication::font()).height() * 2),
 	device_(device),
 	data_(data),
 	trigger_none_(nullptr),
@@ -149,17 +148,19 @@ std::pair<int, int> LogicSignal::v_extents() const
 {
 	const int signal_margin =
 		QFontMetrics(QApplication::font()).height() / 2;
-	return make_pair(-SignalHeight - signal_margin, signal_margin);
+	return make_pair(-signal_height_ - signal_margin, signal_margin);
 }
 
 int LogicSignal::scale_handle_offset() const
 {
-	return SignalHeight;
+	return -signal_height_;
 }
 
 void LogicSignal::scale_handle_dragged(int offset)
 {
-	(void)offset;
+	const int font_height = QFontMetrics(QApplication::font()).height();
+	const int units = (-offset / font_height);
+	signal_height_ = ((units < 1) ? 1 : units) * font_height;
 }
 
 void LogicSignal::paint_back(QPainter &p, const ViewItemPaintParams &pp)
@@ -183,7 +184,7 @@ void LogicSignal::paint_mid(QPainter &p, const ViewItemPaintParams &pp)
 	if (!channel_->enabled())
 		return;
 
-	const float high_offset = y - SignalHeight + 0.5f;
+	const float high_offset = y - signal_height_ + 0.5f;
 	const float low_offset = y + 0.5f;
 
 	const deque< shared_ptr<pv::data::LogicSegment> > &segments =
@@ -270,7 +271,7 @@ void LogicSignal::paint_fore(QPainter &p, const ViewItemPaintParams &pp)
 		const QSize size = pixmap->size();
 		const QPoint point(
 			pp.right() - size.width() - pad * 2,
-			y - (SignalHeight + size.height()) / 2);
+			y - (signal_height_ + size.height()) / 2);
 
 		p.setPen(QPen(TriggerMarkerBackgroundColour.darker()));
 		p.setBrush(TriggerMarkerBackgroundColour);
