@@ -71,6 +71,11 @@ public:
 	void scale_handle_dragged(int offset);
 
 	/**
+	 * @copydoc pv::view::Signal::signal_scale_handle_drag_release()
+	 */
+	void scale_handle_drag_release();
+
+	/**
 	 * Paints the background layer of the signal with a QPainter
 	 * @param p the QPainter to paint into.
 	 * @param pp the painting parameters object to paint with..
@@ -95,9 +100,16 @@ private:
 		int y, int left, const int64_t start, const int64_t end,
 		const double pixels_offset, const double samples_per_pixel);
 
+	/**
+	 * Computes the scale factor from the scale index.
+	 */
+	float scale() const;
+
 private:
 	std::shared_ptr<pv::data::Analog> data_;
-	float scale_;
+
+	int scale_index_;
+	int scale_index_drag_offset_;
 };
 
 } // namespace view

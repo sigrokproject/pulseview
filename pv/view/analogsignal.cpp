@@ -22,6 +22,8 @@
 
 #include <cassert>
 #include <cmath>
+#include <cstdlib>
+#include <limits>
 
 #include "analogsignal.hpp"
 #include "pv/data/analog.hpp"
@@ -58,7 +60,8 @@ AnalogSignal::AnalogSignal(
 	shared_ptr<data::Analog> data) :
 	Signal(session, channel),
 	data_(data),
-	scale_(1.0f)
+	scale_index_(0),
+	scale_index_drag_offset_(0)
 {
 	colour_ = SignalColours[channel_->index() % countof(SignalColours)];
 }
@@ -79,17 +82,25 @@ shared_ptr<pv::data::Analog> AnalogSignal::analog_data() const
 
 std::pair<int, int> AnalogSignal::v_extents() const
 {
-	return make_pair(-NominalHeight / 2, NominalHeight / 2);
+	const int h = NominalHeight / 2;
+	return make_pair(-h, h);
 }
 
 int AnalogSignal::scale_handle_offset() const
 {
-	return -NominalHeight / 3;
+	return ((scale_index_drag_offset_ - scale_index_) *
+		NominalHeight / 4) - NominalHeight / 2;
 }
 
 void AnalogSignal::scale_handle_dragged(int offset)
 {
-	(void)offset;
+	scale_index_ = scale_index_drag_offset_ -
+		(offset + NominalHeight / 2) / (NominalHeight / 4);
+}
+
+void AnalogSignal::scale_handle_drag_release()
+{
+	scale_index_drag_offset_ = scale_index_;
 }
 
 void AnalogSignal::paint_back(QPainter &p, const ViewItemPaintParams &pp)
@@ -144,6 +155,7 @@ void AnalogSignal::paint_trace(QPainter &p,
 	int y, int left, const int64_t start, const int64_t end,
 	const double pixels_offset, const double samples_per_pixel)
 {
+	const float scale = this->scale();
 	const int64_t sample_count = end - start;
 
 	const float *const samples = segment->get_samples(start, end);
@@ -158,7 +170,7 @@ void AnalogSignal::paint_trace(QPainter &p,
 		const float x = (sample / samples_per_pixel -
 			pixels_offset) + left;
 		*point++ = QPointF(x,
-			y - samples[sample - start] * scale_);
+			y - samples[sample - start] * scale);
 	}
 
 	p.drawPolyline(points, point - points);
@@ -173,6 +185,8 @@ void AnalogSignal::paint_envelope(QPainter &p,
 	const double pixels_offset, const double samples_per_pixel)
 {
 	using pv::data::AnalogSegment;
+
+	const float scale = this->scale();
 
 	AnalogSegment::EnvelopeSection e;
 	segment->get_envelope_section(e, start, end, samples_per_pixel);
@@ -194,8 +208,8 @@ void AnalogSignal::paint_envelope(QPainter &p,
 
 		// We overlap this sample with the next so that vertical
 		// gaps do not appear during steep rising or falling edges
-		const float b = y - max(s->max, (s+1)->min) * scale_;
-		const float t = y - min(s->min, (s+1)->max) * scale_;
+		const float b = y - max(s->max, (s+1)->min) * scale;
+		const float t = y - min(s->min, (s+1)->max) * scale;
 
 		float h = b - t;
 		if (h >= 0.0f && h <= 1.0f)
@@ -210,6 +224,16 @@ void AnalogSignal::paint_envelope(QPainter &p,
 
 	delete[] rects;
 	delete[] e.samples;
+}
+
+float AnalogSignal::scale() const
+{
+	const float seq[] = {1.0f, 2.0f, 5.0f};
+	const int offset = std::numeric_limits<int>::max() / (2 * countof(seq));
+	const std::div_t d = std::div(
+		(int)(scale_index_ + countof(seq) * offset),
+		countof(seq));
+	return powf(10.0f, d.quot - offset) * seq[d.rem];
 }
 
 } // namespace view
