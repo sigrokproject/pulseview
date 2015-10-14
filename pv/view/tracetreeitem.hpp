@@ -52,6 +52,11 @@ public:
 	TraceTreeItemOwner* owner() const;
 
 	/**
+	 * Selects or deselects the signal.
+	 */
+	void select(bool select = true);
+
+	/**
 	 * Gets the vertical layout offset of this signal.
 	 */
 	int layout_v_offset() const;

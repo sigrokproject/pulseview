@@ -35,6 +35,12 @@ TraceTreeItem::TraceTreeItem() :
 {
 }
 
+void TraceTreeItem::select(bool select)
+{
+	ViewItem::select(select);
+	owner_->row_item_appearance_changed(true, true);
+}
+
 int TraceTreeItem::layout_v_offset() const
 {
 	return layout_v_offset_;

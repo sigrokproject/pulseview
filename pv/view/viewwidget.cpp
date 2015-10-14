@@ -48,7 +48,6 @@ void ViewWidget::clear_selection()
 	const auto items = this->items();
 	for (auto &i : items)
 		i->select(false);
-	update();
 }
 
 void ViewWidget::item_hover(const shared_ptr<ViewItem> &item)
@@ -187,7 +186,6 @@ void ViewWidget::mouse_left_press_event(QMouseEvent *event)
 		drag();
 
 	selection_changed();
-	update();
 }
 
 void ViewWidget::mouse_left_release_event(QMouseEvent *event)
