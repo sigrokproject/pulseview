@@ -66,7 +66,7 @@ public:
 	/**
 	 * Selects or deselects the signal.
 	 */
-	void select(bool select = true);
+	virtual void select(bool select = true);
 
 	/**
 	 * Returns true if the item is being dragged.
