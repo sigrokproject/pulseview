@@ -875,7 +875,9 @@ void View::signals_changed()
 
 	// Make a list of traces that are being added, and a list of traces
 	// that are being removed
-	const set<shared_ptr<Trace>> prev_traces = list_by_type<Trace>();
+	const vector<shared_ptr<Trace>> prev_trace_list = list_by_type<Trace>();
+	const set<shared_ptr<Trace>> prev_traces(
+		prev_trace_list.begin(), prev_trace_list.end());
 
 	shared_lock<shared_mutex> lock(session_.signals_mutex());
 	const unordered_set< shared_ptr<Signal> > &sigs(session_.signals());

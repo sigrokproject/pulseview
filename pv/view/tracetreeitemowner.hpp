@@ -128,12 +128,12 @@ public:
 	 * Creates a list of decendant signals filtered by type.
 	 */
 	template<class T>
-	std::set< std::shared_ptr<T> > list_by_type() {
-		std::set< std::shared_ptr<T> > items;
+	std::vector< std::shared_ptr<T> > list_by_type() {
+		std::vector< std::shared_ptr<T> > items;
 		for (const auto &r : *this) {
 			std::shared_ptr<T> p = std::dynamic_pointer_cast<T>(r);
 			if (p)
-				items.insert(p);
+				items.push_back(p);
 		}
 
 		return items;
