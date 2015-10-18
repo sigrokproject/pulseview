@@ -51,16 +51,19 @@ set(pulseview_TEST_SOURCES
 	${PROJECT_SOURCE_DIR}/pv/view/marginwidget.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/logicsignal.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/rowitem.cpp
-	${PROJECT_SOURCE_DIR}/pv/view/rowitemowner.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/ruler.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/signal.cpp
+	${PROJECT_SOURCE_DIR}/pv/view/signalscalehandle.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/timeitem.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/timemarker.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/trace.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/tracegroup.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/tracepalette.cpp
+	${PROJECT_SOURCE_DIR}/pv/view/tracetreeitem.cpp
+	${PROJECT_SOURCE_DIR}/pv/view/tracetreeitemowner.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/view.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/viewitem.cpp
+	${PROJECT_SOURCE_DIR}/pv/view/viewitemowner.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/viewitempaintparams.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/viewport.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/viewwidget.cpp
@@ -100,10 +103,12 @@ set(pulseview_TEST_HEADERS
 	${PROJECT_SOURCE_DIR}/pv/view/rowitem.hpp
 	${PROJECT_SOURCE_DIR}/pv/view/ruler.hpp
 	${PROJECT_SOURCE_DIR}/pv/view/signal.hpp
+	${PROJECT_SOURCE_DIR}/pv/view/signalscalehandle.hpp
 	${PROJECT_SOURCE_DIR}/pv/view/timeitem.hpp
 	${PROJECT_SOURCE_DIR}/pv/view/timemarker.hpp
 	${PROJECT_SOURCE_DIR}/pv/view/trace.hpp
 	${PROJECT_SOURCE_DIR}/pv/view/tracegroup.hpp
+	${PROJECT_SOURCE_DIR}/pv/view/tracetreeitem.hpp
 	${PROJECT_SOURCE_DIR}/pv/view/view.hpp
 	${PROJECT_SOURCE_DIR}/pv/view/viewitem.hpp
 	${PROJECT_SOURCE_DIR}/pv/view/viewport.hpp
