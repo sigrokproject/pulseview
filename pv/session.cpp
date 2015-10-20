@@ -521,7 +521,7 @@ void Session::feed_in_analog(shared_ptr<Analog> analog)
 	const vector<shared_ptr<Channel>> channels = analog->channels();
 	const unsigned int channel_count = channels.size();
 	const size_t sample_count = analog->num_samples() / channel_count;
-	const float *data = analog->data_pointer();
+	const float *data = static_cast<const float *>(analog->data_pointer());
 	bool sweep_beginning = false;
 
 	for (auto channel : channels)
