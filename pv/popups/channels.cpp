@@ -20,6 +20,11 @@
 
 #include <map>
 
+#ifdef _WIN32
+// Windows: Avoid boost/thread namespace pollution (which includes windows.h).
+#define NOGDI
+#define NORESOURCE
+#endif
 #include <boost/thread/locks.hpp>
 #include <boost/thread/shared_mutex.hpp>
 
