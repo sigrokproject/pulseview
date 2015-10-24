@@ -48,7 +48,7 @@ public:
 
 private:
 	Ui::About *ui;
-	std::auto_ptr<QTextDocument> supportedDoc;
+	QTextDocument *supportedDoc;
 };
 
 } // namespace dialogs

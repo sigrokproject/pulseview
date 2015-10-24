@@ -99,9 +99,9 @@ About::About(shared_ptr<Context> context, QWidget *parent) :
 
 	s.append("</table>");
 
-	supportedDoc.reset(new QTextDocument(this));
+	supportedDoc = new QTextDocument(this);
 	supportedDoc->setHtml(s);
-	ui->supportList->setDocument(supportedDoc.get());
+	ui->supportList->setDocument(supportedDoc);
 }
 
 About::~About()
