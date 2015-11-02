@@ -124,26 +124,14 @@ set(PV_DESCRIPTION "A GUI for sigrok")
 set(PV_VERSION_STRING "0.3.0")
 
 include(GetGitRevisionDescription)
-git_describe(PV_TAG_VERSION_STRING --tags --dirty)
 
-if(NOT PV_TAG_VERSION_STRING AND EXISTS "${PROJECT_SOURCE_DIR}/VERSION")
-	# Read the version from a file that is distributed with
-	# the source package (see writepackageversion.cmake).
-	file(STRINGS "${PROJECT_SOURCE_DIR}/VERSION" PV_TAG_VERSION_STRING LIMIT_COUNT 1)
-endif()
-
-if(PV_TAG_VERSION_STRING MATCHES
-		"^pulseview-([0-9]+\\.[0-9]+\\.[0-9]+)(-[0-9a-z]+)?(-g[-0-9a-z]+)?$")
-	set(PV_TAG_VERSION ${CMAKE_MATCH_1})
-	set(PV_TAG_PATCHLEVEL ${CMAKE_MATCH_2})
-	set(PV_TAG_REVHASH ${CMAKE_MATCH_3})
-
-	if(PV_VERSION_STRING VERSION_GREATER ${PV_TAG_VERSION})
-		# Tagged version older than current one: indicate pre-release.
-		set(PV_VERSION_STRING "${PV_VERSION_STRING}-pre${PV_TAG_REVHASH}")
-	else()
-		# For post-release changes, indicate the patch level.
-		set(PV_VERSION_STRING "${PV_TAG_VERSION}${PV_TAG_PATCHLEVEL}${PV_TAG_REVHASH}")
+# Append the revision hash unless we are exactly on a tagged release.
+git_describe(PV_TAG_VERSION_STRING --match "pulseview-${PV_VERSION_STRING}" --exact-match)
+if(NOT PV_TAG_VERSION_STRING)
+	get_git_head_revision(PV_REVSPEC PV_HASH)
+	if(PV_HASH)
+		string(SUBSTRING "${PV_HASH}" 0 7 PV_SHORTHASH)
+		set(PV_VERSION_STRING "${PV_VERSION_STRING}-git-${PV_SHORTHASH}")
 	endif()
 endif()
 
@@ -472,7 +460,6 @@ set(CPACK_RESOURCE_FILE_LICENSE ${CMAKE_CURRENT_SOURCE_DIR}/COPYING)
 set(CPACK_SOURCE_IGNORE_FILES ${CMAKE_CURRENT_BINARY_DIR} ".gitignore" ".git")
 set(CPACK_SOURCE_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-${PV_VERSION_STRING}")
 set(CPACK_SOURCE_GENERATOR "TGZ")
-set(CPACK_INSTALL_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/CMake/writepackageversion.cmake)
 
 include(CPack)
 
