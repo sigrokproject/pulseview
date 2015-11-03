@@ -34,7 +34,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake")
 option(DISABLE_WERROR "Build without -Werror" FALSE)
 option(ENABLE_SIGNALS "Build with UNIX signals" TRUE)
 option(ENABLE_DECODE "Build with libsigrokdecode" TRUE)
-option(ENABLE_TESTS "Enable unit tests" FALSE)
+option(ENABLE_TESTS "Enable unit tests" TRUE)
 option(STATIC_PKGDEPS_LIBS "Statically link to (pkg-config) libraries" FALSE)
 option(FORCE_QT4 "Force use of Qt4 even if Qt5 is available" FALSE)
 
