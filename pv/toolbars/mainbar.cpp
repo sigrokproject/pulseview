@@ -269,22 +269,9 @@ void MainBar::update_sample_rate_selector()
 
 	const shared_ptr<sigrok::Device> sr_dev = device->device();
 
-	try {
-		keys = sr_dev->config_keys(ConfigKey::DEVICE_OPTIONS);
-	} catch (Error) {}
-
-	const auto iter = keys.find(ConfigKey::SAMPLERATE);
-	if (iter != keys.end() &&
-		(*iter).second.find(sigrok::LIST) != (*iter).second.end()) {
-		try {
-			gvar_dict = sr_dev->config_list(ConfigKey::SAMPLERATE);
-		} catch (const sigrok::Error &e) {
-			// Failed to enunmerate samplerate
-			(void)e;
-		}
-	}
-
-	if (!gvar_dict.gobj()) {
+	if (sr_dev->config_check(ConfigKey::SAMPLERATE, Capability::LIST)) {
+		gvar_dict = sr_dev->config_list(ConfigKey::SAMPLERATE);
+	} else {
 		sample_rate_.show_none();
 		updating_sample_rate_ = false;
 		return;
@@ -379,20 +366,11 @@ void MainBar::update_sample_count_selector()
 	if (sample_count == 0)
 		sample_count = DefaultSampleCount;
 
-	const auto keys = sr_dev->config_keys(ConfigKey::DEVICE_OPTIONS);
-	const auto iter = keys.find(ConfigKey::LIMIT_SAMPLES);
-	if (iter != keys.end() &&
-		(*iter).second.find(sigrok::LIST) != (*iter).second.end()) {
-		try {
-			auto gvar =
-				sr_dev->config_list(ConfigKey::LIMIT_SAMPLES);
-			if (gvar.gobj())
-				g_variant_get(gvar.gobj(), "(tt)",
-					&min_sample_count, &max_sample_count);
-		} catch (const sigrok::Error &e) {
-			// Failed to query sample limit
-			(void)e;
-		}
+	if (sr_dev->config_check(ConfigKey::LIMIT_SAMPLES, Capability::LIST)) {
+		auto gvar = sr_dev->config_list(ConfigKey::LIMIT_SAMPLES);
+		if (gvar.gobj())
+			g_variant_get(gvar.gobj(), "(tt)",
+				&min_sample_count, &max_sample_count);
 	}
 
 	min_sample_count = min(max(min_sample_count, MinSampleCount),
@@ -401,14 +379,14 @@ void MainBar::update_sample_count_selector()
 	sample_count_.show_125_list(
 		min_sample_count, max_sample_count);
 
-	try {
+	if (sr_dev->config_check(ConfigKey::LIMIT_SAMPLES, Capability::GET)) {
 		auto gvar = sr_dev->config_get(ConfigKey::LIMIT_SAMPLES);
 		sample_count = g_variant_get_uint64(gvar.gobj());
 		if (sample_count == 0)
 			sample_count = DefaultSampleCount;
 		sample_count = min(max(sample_count, MinSampleCount),
 			max_sample_count);
-	} catch (Error error) {}
+	}
 
 	sample_count_.set_value(sample_count);
 
@@ -449,27 +427,14 @@ void MainBar::update_device_config_widgets()
 	// Update supported options.
 	sample_count_supported_ = false;
 
-	try {
-		for (auto entry : sr_dev->config_keys(ConfigKey::DEVICE_OPTIONS)) {
-			auto key = entry.first;
-			auto capabilities = entry.second;
-			switch (key->id()) {
-			case SR_CONF_LIMIT_SAMPLES:
-				if (capabilities.count(Capability::SET))
-					sample_count_supported_ = true;
-				break;
-			case SR_CONF_LIMIT_FRAMES:
-				if (capabilities.count(Capability::SET)) {
-					sr_dev->config_set(ConfigKey::LIMIT_FRAMES,
-						Glib::Variant<guint64>::create(1));
-					on_config_changed();
-				}
-				break;
-			default:
-				break;
-			}
-		}
-	} catch (Error error) {}
+	if (sr_dev->config_check(ConfigKey::LIMIT_SAMPLES, Capability::SET))
+		sample_count_supported_ = true;
+
+	if (sr_dev->config_check(ConfigKey::LIMIT_FRAMES, Capability::SET)) {
+		sr_dev->config_set(ConfigKey::LIMIT_FRAMES,
+			Glib::Variant<guint64>::create(1));
+			on_config_changed();
+	}
 
 	// Add notification of reconfigure events
 	disconnect(this, SLOT(on_config_changed()));

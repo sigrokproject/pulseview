@@ -56,17 +56,12 @@ namespace binding {
 Device::Device(shared_ptr<sigrok::Configurable> configurable) :
 	configurable_(configurable)
 {
-	std::map< const ConfigKey*, std::set<Capability> > keys;
 
-	try {
-		keys = configurable->config_keys(ConfigKey::DEVICE_OPTIONS);
-	} catch (const Error) {
-		return;
-	}
+	auto keys = configurable->config_keys();
 
-	for (auto entry : keys) {
-		auto key = entry.first;
-		auto capabilities = entry.second;
+	for (auto key : keys) {
+
+		auto capabilities = configurable->config_capabilities(key);
 
 		if (!capabilities.count(Capability::GET) ||
 			!capabilities.count(Capability::SET))
@@ -146,7 +141,7 @@ void Device::bind_bool(const QString &name,
 }
 
 void Device::bind_enum(const QString &name,
-	const ConfigKey *key, std::set<Capability> capabilities,
+	const ConfigKey *key, std::set<const Capability *> capabilities,
 	Property::Getter getter,
 	Property::Setter setter, function<QString (Glib::VariantBase)> printer)
 {

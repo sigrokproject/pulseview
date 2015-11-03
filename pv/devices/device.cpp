@@ -28,6 +28,7 @@ using std::map;
 using std::set;
 
 using sigrok::ConfigKey;
+using sigrok::Capability;
 using sigrok::Error;
 
 using Glib::VariantBase;
@@ -64,20 +65,11 @@ template<typename T>
 T Device::read_config(const ConfigKey *key, const T default_value)
 {
 	assert(key);
-	map< const ConfigKey*, set<sigrok::Capability> > keys;
 
 	if (!device_)
 		return default_value;
 
-	try {
-		keys = device_->config_keys(ConfigKey::DEVICE_OPTIONS);
-	} catch (const Error) {
-		return default_value;
-	}
-
-	const auto iter = keys.find(key);
-	if (iter == keys.end() ||
-		(*iter).second.find(sigrok::GET) == (*iter).second.end())
+	if (!device_->config_check(key, Capability::GET))
 		return default_value;
 
 	return VariantBase::cast_dynamic<Glib::Variant<guint64>>(

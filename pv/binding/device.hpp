@@ -50,7 +50,8 @@ private:
 	void bind_bool(const QString &name,
 		prop::Property::Getter getter, prop::Property::Setter setter);
 	void bind_enum(const QString &name,
-		const sigrok::ConfigKey *key, std::set<sigrok::Capability> capabilities,
+		const sigrok::ConfigKey *key,
+		std::set<const sigrok::Capability *> capabilities,
 		prop::Property::Getter getter, prop::Property::Setter setter,
 		std::function<QString (Glib::VariantBase)> printer = print_gvariant);
 	void bind_int(const QString &name, QString suffix,

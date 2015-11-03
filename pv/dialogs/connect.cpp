@@ -106,10 +106,10 @@ void Connect::populate_drivers()
 		 * @todo Add support for non-monotonic devices i.e. DMMs
 		 * and sensors.
 		 */
-		bool supported_device = driver->config_check(
-			ConfigKey::LOGIC_ANALYZER, ConfigKey::DEVICE_OPTIONS) |
-					driver->config_check(
-			ConfigKey::OSCILLOSCOPE, ConfigKey::DEVICE_OPTIONS);
+		const auto keys = driver->config_keys();
+
+		bool supported_device = keys.count(ConfigKey::LOGIC_ANALYZER) |
+			keys.count(ConfigKey::OSCILLOSCOPE);
 
 		if (supported_device)
 			drivers_.addItem(QString("%1 (%2)").arg(
@@ -197,7 +197,7 @@ void Connect::device_selected(int index)
 
 	unset_connection();
 
-	if (driver->config_check(ConfigKey::SERIALCOMM, ConfigKey::SCAN_OPTIONS))
+	if (driver->scan_options().count(ConfigKey::SERIALCOMM))
 		set_serial_connection(driver);
 }
 

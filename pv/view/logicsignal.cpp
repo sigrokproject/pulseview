@@ -51,6 +51,7 @@ using std::vector;
 
 using sigrok::Channel;
 using sigrok::ConfigKey;
+using sigrok::Capability;
 using sigrok::Error;
 using sigrok::Trigger;
 using sigrok::TriggerStage;
@@ -332,22 +333,14 @@ void LogicSignal::init_trigger_actions(QWidget *parent)
 const vector<int32_t> LogicSignal::get_trigger_types() const
 {
 	const auto sr_dev = device_->device();
-	const auto keys = sr_dev->config_keys(ConfigKey::DEVICE_OPTIONS);
-	const auto iter = keys.find(ConfigKey::TRIGGER_MATCH);
-	if (iter != keys.end() &&
-		(*iter).second.find(sigrok::LIST) != (*iter).second.end()) {
-		try {
-			const Glib::VariantContainerBase gvar =
-				sr_dev->config_list(ConfigKey::TRIGGER_MATCH);
-			return Glib::VariantBase::cast_dynamic<
-				Glib::Variant<vector<int32_t>>>(gvar).get();
-		} catch (Error e) {
-			// Failed to enumerate triggers
-			(void)e;
-		}
+	if (sr_dev->config_check(ConfigKey::TRIGGER_MATCH, Capability::LIST)) {
+		const Glib::VariantContainerBase gvar =
+			sr_dev->config_list(ConfigKey::TRIGGER_MATCH);
+		return Glib::VariantBase::cast_dynamic<
+			Glib::Variant<vector<int32_t>>>(gvar).get();
+	} else {
+		return vector<int32_t>();
 	}
-
-	return vector<int32_t>();
 }
 
 QAction* LogicSignal::action_from_trigger_type(const TriggerMatchType *type)
