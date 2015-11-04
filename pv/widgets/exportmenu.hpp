@@ -40,7 +40,7 @@ class ExportMenu : public QMenu
 
 public:
 	ExportMenu(QWidget *parent, std::shared_ptr<sigrok::Context> context,
-		QAction *open_action = nullptr);
+		std::vector<QAction *>open_actions = std::vector<QAction *>());
 
 private Q_SLOTS:
 	void on_action(QObject *action);

@@ -110,9 +110,12 @@ MainBar::MainBar(Session &session, MainWindow &main_window) :
 	// Save button
 	QToolButton *const save_button = new QToolButton(this);
 
+	vector<QAction *> open_actions;
+	open_actions.push_back(main_window.action_save_as());
+
 	widgets::ExportMenu *export_menu = new widgets::ExportMenu(this,
 		session.device_manager().context(),
-		main_window.action_save_as());
+		open_actions);
 	connect(export_menu,
 		SIGNAL(format_selected(std::shared_ptr<sigrok::OutputFormat>)),
 		&main_window_,

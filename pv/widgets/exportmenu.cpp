@@ -40,16 +40,23 @@ namespace pv {
 namespace widgets {
 
 ExportMenu::ExportMenu(QWidget *parent, shared_ptr<Context> context,
-	QAction *open_action) :
+	std::vector<QAction *>open_actions) :
 	QMenu(parent),
 	context_(context),
 	mapper_(this)
 {
 	assert(context);
 
-	if (open_action) {
-		addAction(open_action);
-		setDefaultAction(open_action);
+	if (!open_actions.empty()) {
+		bool first_action = true;
+		for (auto open_action : open_actions) {
+			addAction(open_action);
+
+			if (first_action) {
+				first_action = false;
+				setDefaultAction(open_action);
+			}
+		}
 		addSeparator();
 	}
 
