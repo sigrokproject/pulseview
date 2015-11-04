@@ -104,7 +104,8 @@ public:
 	void select_device(std::shared_ptr<devices::Device> device);
 
 public Q_SLOTS:
-	void export_file(std::shared_ptr<sigrok::OutputFormat> format);
+	void export_file(std::shared_ptr<sigrok::OutputFormat> format,
+		bool selection_only = false);
 	void import_file(std::shared_ptr<sigrok::InputFormat> format);
 
 private:

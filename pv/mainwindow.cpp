@@ -223,9 +223,12 @@ void MainWindow::select_device(shared_ptr<devices::Device> device)
 	}
 }
 
-void MainWindow::export_file(shared_ptr<OutputFormat> format)
+void MainWindow::export_file(shared_ptr<OutputFormat> format,
+	bool selection_only)
 {
 	using pv::dialogs::StoreProgress;
+
+	(void)selection_only;
 
 	// Stop any currently running capture session
 	session_.stop_capture();
