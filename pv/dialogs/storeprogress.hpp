@@ -42,7 +42,9 @@ public:
 	StoreProgress(const QString &file_name,
 		const std::shared_ptr<sigrok::OutputFormat> output_format,
 		const std::map<std::string, Glib::VariantBase> &options,
-		const Session &session, QWidget *parent = 0);
+		const std::pair<uint64_t, uint64_t> sample_range,
+		const Session &session,
+		QWidget *parent = 0);
 
 	virtual ~StoreProgress();
 

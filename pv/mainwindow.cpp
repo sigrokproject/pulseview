@@ -45,6 +45,8 @@
 #include "mainwindow.hpp"
 
 #include "devicemanager.hpp"
+#include "util.hpp"
+#include "data/segment.hpp"
 #include "devices/hardwaredevice.hpp"
 #include "devices/inputfile.hpp"
 #include "devices/sessionfile.hpp"
@@ -100,6 +102,7 @@ MainWindow::MainWindow(DeviceManager &device_manager,
 	session_(device_manager),
 	action_open_(new QAction(this)),
 	action_save_as_(new QAction(this)),
+	action_save_selection_as_(new QAction(this)),
 	action_connect_(new QAction(this)),
 	action_quit_(new QAction(this)),
 	action_view_zoom_in_(new QAction(this)),
@@ -259,8 +262,10 @@ void MainWindow::export_file(shared_ptr<OutputFormat> format)
 		options = dlg.options();
 	}
 
+	const std::pair<uint64_t, uint64_t> sample_range = std::make_pair(0, 0);
+
 	StoreProgress *dlg = new StoreProgress(file_name, format, options,
-		session_, this);
+		sample_range, session_, this);
 	dlg->run();
 }
 
@@ -346,6 +351,13 @@ void MainWindow::setup_ui()
 	action_save_as_->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_S));
 	action_save_as_->setObjectName(QString::fromUtf8("actionSaveAs"));
 	menu_file->addAction(action_save_as_);
+
+	action_save_selection_as_->setText(tr("Save Selected &Range As..."));
+	action_save_selection_as_->setIcon(QIcon::fromTheme("document-save-as",
+		QIcon(":/icons/document-save-as.png")));
+	action_save_selection_as_->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_R));
+	action_save_selection_as_->setObjectName(QString::fromUtf8("actionSaveSelectionAs"));
+	menu_file->addAction(action_save_selection_as_);
 
 	menu_file->addSeparator();
 
@@ -649,6 +661,87 @@ void MainWindow::load_file(QString file_name,
 		session_error(errorMessage, infoMessage); });
 }
 
+void MainWindow::save_selection_to_file()
+{
+	// Stop any currently running capture session
+	session_.stop_capture();
+
+	// Get sample rate
+	double samplerate = 0.0;
+
+	for (const shared_ptr<pv::data::SignalData> d : session_.get_data()) {
+		assert(d);
+		const vector< shared_ptr<pv::data::Segment> > segments =
+			d->segments();
+		for (const shared_ptr<pv::data::Segment> &s : segments)
+			samplerate = std::max(samplerate, s->samplerate());
+	}
+
+	if (samplerate == 0.0)
+		samplerate = 1;
+
+	// Verify that the cursors are active and fetch their values
+	if (!view_->cursors()->enabled()) {
+		show_session_error(tr("Missing Cursors"), tr("You need to set the " \
+				"cursors before you can save the data enclosed by them " \
+				"to a session file (e.g. using ALT-V - Show Cursors)."));
+		return;
+	}
+
+	const pv::util::Timestamp& start_time = view_->cursors()->first()->time();
+	const pv::util::Timestamp& end_time = view_->cursors()->second()->time();
+
+	const uint64_t start_sample = start_time.convert_to<double>() * samplerate;
+    const uint64_t end_sample = end_time.convert_to<double>() * samplerate;
+
+	const std::pair<uint64_t, uint64_t> sample_range =
+			std::make_pair(start_sample, end_sample);
+
+	// Ask for output file name
+	QSettings settings;
+	const QString dir = settings.value(SettingSaveDirectory).toString();
+
+	shared_ptr<OutputFormat> format =
+			device_manager_.context()->output_formats()["srzip"];
+
+	const vector<string> exts = format->extensions();
+	QString filter = tr("%1 files ").arg(
+		QString::fromStdString(format->description()));
+
+	if (exts.empty())
+		filter += "(*.*)";
+	else
+		filter += QString("(*.%1);;%2 (*.*)").arg(
+			QString::fromStdString(join(exts, ", *."))).arg(
+			tr("All Files"));
+
+	const QString file_name = QFileDialog::getSaveFileName(
+		this, tr("Save File"), dir, filter);
+
+	if (file_name.isEmpty())
+		return;
+
+	const QString abs_path = QFileInfo(file_name).absolutePath();
+	settings.setValue(SettingSaveDirectory, abs_path);
+
+	// Show the options dialog
+	map<string, Glib::VariantBase> options;
+	if (!format->options().empty()) {
+		dialogs::InputOutputOptions dlg(
+			tr("Export %1").arg(QString::fromStdString(
+				format->description())),
+			format->options(), this);
+		if (!dlg.exec())
+			return;
+		options = dlg.options();
+	}
+
+	// Save
+	pv::dialogs::StoreProgress *dlg = new pv::dialogs::StoreProgress(file_name,
+		format,	options, sample_range, session_, this);
+	dlg->run();
+}
+
 void MainWindow::closeEvent(QCloseEvent *event)
 {
 	save_ui_settings();
@@ -697,6 +790,11 @@ void MainWindow::on_actionOpen_triggered()
 void MainWindow::on_actionSaveAs_triggered()
 {
 	export_file(device_manager_.context()->output_formats()["srzip"]);
+}
+
+void MainWindow::on_actionSaveSelectionAs_triggered()
+{
+	save_selection_to_file();
 }
 
 void MainWindow::on_actionConnect_triggered()

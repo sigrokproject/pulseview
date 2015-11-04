@@ -71,10 +71,13 @@ const size_t StoreSession::BlockSize = 1024 * 1024;
 
 StoreSession::StoreSession(const std::string &file_name,
 	const shared_ptr<OutputFormat> &output_format,
-	const map<string, VariantBase> &options, const Session &session) :
+	const map<string, VariantBase> &options,
+	const std::pair<uint64_t, uint64_t> sample_range,
+	const Session &session) :
 	file_name_(file_name),
 	output_format_(output_format),
 	options_(options),
+	sample_range_(sample_range),
 	session_(session),
 	interrupt_(false),
 	units_stored_(0),
@@ -141,6 +144,15 @@ bool StoreSession::start()
 	const shared_ptr<data::LogicSegment> segment(segments.front());
 	assert(segment);
 
+	// Check whether the user wants to export a certain sample range
+	if (sample_range_.first == sample_range_.second) {
+		start_sample_ = 0;
+		sample_count_ = segment->get_sample_count();
+	} else {
+		start_sample_ = std::min(sample_range_.first, sample_range_.second);
+		sample_count_ = std::abs(sample_range_.second - sample_range_.first);
+	}
+
 	// Begin storing
 	try {
 		const auto context = session_.device_manager().context();
@@ -181,7 +193,6 @@ void StoreSession::store_proc(shared_ptr<data::LogicSegment> segment)
 {
 	assert(segment);
 
-	uint64_t start_sample = 0, sample_count;
 	unsigned progress_scale = 0;
 
 	/// TODO: Wrap this in a std::unique_ptr when we transition to C++11
@@ -191,26 +202,25 @@ void StoreSession::store_proc(shared_ptr<data::LogicSegment> segment)
 	const int unit_size = segment->unit_size();
 	assert(unit_size != 0);
 
-	sample_count = segment->get_sample_count();
-
 	// Qt needs the progress values to fit inside an int.  If they would
 	// not, scale the current and max values down until they do.
-	while ((sample_count >> progress_scale) > INT_MAX)
+	while ((sample_count_ >> progress_scale) > INT_MAX)
 		progress_scale ++;
 
-	unit_count_ = sample_count >> progress_scale;
+	unit_count_ = sample_count_ >> progress_scale;
 
 	const unsigned int samples_per_block = BlockSize / unit_size;
 
-	while (!interrupt_ && start_sample < sample_count)
+	while (!interrupt_ && sample_count_)
 	{
 		progress_updated();
 
-		const uint64_t end_sample = min(
-			start_sample + samples_per_block, sample_count);
-		segment->get_samples(data, start_sample, end_sample);
+		const uint64_t packet_len =
+			std::min((uint64_t)samples_per_block, sample_count_);
 
-		size_t length = (end_sample - start_sample) * unit_size;
+		segment->get_samples(data, start_sample_, start_sample_ + packet_len);
+
+		size_t length = packet_len * unit_size;
 
 		try {
 			const auto context = session_.device_manager().context();
@@ -223,8 +233,9 @@ void StoreSession::store_proc(shared_ptr<data::LogicSegment> segment)
 			break;
 		}
 
-		start_sample = end_sample;
-		units_stored_ = start_sample >> progress_scale;
+		sample_count_ -= packet_len;
+		start_sample_ += packet_len;
+		units_stored_ = unit_count_ - (sample_count_ >> progress_scale);
 	}
 
 	// Zeroing the progress variables indicates completion

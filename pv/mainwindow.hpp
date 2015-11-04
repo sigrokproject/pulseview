@@ -84,6 +84,7 @@ public:
 
 	QAction* action_open() const;
 	QAction* action_save_as() const;
+	QAction* action_save_selection_as() const;
 	QAction* action_connect() const;
 	QAction* action_quit() const;
 	QAction* action_view_zoom_in() const;
@@ -130,6 +131,8 @@ private:
 		const std::map<std::string, Glib::VariantBase> &options =
 			std::map<std::string, Glib::VariantBase>());
 
+	void save_selection_to_file();
+
 private:
 	void closeEvent(QCloseEvent *event);
 
@@ -141,6 +144,7 @@ private Q_SLOTS:
 
 	void on_actionOpen_triggered();
 	void on_actionSaveAs_triggered();
+	void on_actionSaveSelectionAs_triggered();
 	void on_actionQuit_triggered();
 
 	void on_actionConnect_triggered();
@@ -182,6 +186,7 @@ private:
 
 	QAction *const action_open_;
 	QAction *const action_save_as_;
+	QAction *const action_save_selection_as_;
 	QAction *const action_connect_;
 	QAction *const action_quit_;
 	QAction *const action_view_zoom_in_;

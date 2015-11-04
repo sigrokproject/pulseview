@@ -59,6 +59,7 @@ public:
 	StoreSession(const std::string &file_name,
 		const std::shared_ptr<sigrok::OutputFormat> &output_format,
 		const std::map<std::string, Glib::VariantBase> &options,
+		const std::pair<uint64_t, uint64_t> sample_range,
 		const Session &session);
 
 	~StoreSession();
@@ -83,6 +84,7 @@ private:
 	const std::string file_name_;
 	const std::shared_ptr<sigrok::OutputFormat> output_format_;
 	const std::map<std::string, Glib::VariantBase> options_;
+	const std::pair<uint64_t, uint64_t> sample_range_;
 	const Session &session_;
 
 	std::shared_ptr<sigrok::Output> output_;
@@ -96,6 +98,8 @@ private:
 
 	mutable std::mutex mutex_;
 	QString error_;
+
+	uint64_t start_sample_, sample_count_;
 };
 
 } // pv
