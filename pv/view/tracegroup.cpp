@@ -164,7 +164,7 @@ void TraceGroup::restack_items()
 		[](const shared_ptr<TraceTreeItem> &a, const shared_ptr<TraceTreeItem> &b) {
 			const auto aext = a->v_extents();
 			const auto bext = b->v_extents();
-                        return a->layout_v_offset() +
+			return a->layout_v_offset() +
 					(aext.first + aext.second) / 2 <
 				b->layout_v_offset() +
 					(bext.first + bext.second) / 2;

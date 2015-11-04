@@ -108,7 +108,7 @@ void Connect::populate_drivers()
 		 */
 		bool supported_device = driver->config_check(
 			ConfigKey::LOGIC_ANALYZER, ConfigKey::DEVICE_OPTIONS) |
-		                        driver->config_check(
+					driver->config_check(
 			ConfigKey::OSCILLOSCOPE, ConfigKey::DEVICE_OPTIONS);
 
 		if (supported_device)

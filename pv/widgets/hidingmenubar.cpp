@@ -52,5 +52,5 @@ void HidingMenuBar::item_triggered()
 	setHidden(true);
 }
 
-}  // namespace widgets
-}  // namespace pv
+} // namespace widgets
+} // namespace pv

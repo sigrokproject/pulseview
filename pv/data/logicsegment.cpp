@@ -47,7 +47,7 @@ const float LogicSegment::LogMipMapScaleFactor = logf(MipMapScaleFactor);
 const uint64_t LogicSegment::MipMapDataUnit = 64*1024;	// bytes
 
 LogicSegment::LogicSegment(shared_ptr<Logic> logic, uint64_t samplerate,
-                             const uint64_t expected_num_samples) :
+				const uint64_t expected_num_samples) :
 	Segment(samplerate, logic->unit_size()),
 	last_append_sample_(0)
 {

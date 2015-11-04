@@ -202,7 +202,7 @@ void StoreSession::store_proc(shared_ptr<data::LogicSegment> segment)
 	const int unit_size = segment->unit_size();
 	assert(unit_size != 0);
 
-	// Qt needs the progress values to fit inside an int.  If they would
+	// Qt needs the progress values to fit inside an int. If they would
 	// not, scale the current and max values down until they do.
 	while ((sample_count_ >> progress_scale) > INT_MAX)
 		progress_scale ++;

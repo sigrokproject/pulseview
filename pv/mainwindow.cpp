@@ -251,9 +251,9 @@ void MainWindow::export_file(shared_ptr<OutputFormat> format,
 		const pv::util::Timestamp& end_time = view_->cursors()->second()->time();
 
 		const uint64_t start_sample = start_time.convert_to<double>() * samplerate;
-	    const uint64_t end_sample = end_time.convert_to<double>() * samplerate;
+		const uint64_t end_sample = end_time.convert_to<double>() * samplerate;
 
-	    sample_range = std::make_pair(start_sample, end_sample);
+		sample_range = std::make_pair(start_sample, end_sample);
 	} else {
 		sample_range = std::make_pair(0, 0);
 	}

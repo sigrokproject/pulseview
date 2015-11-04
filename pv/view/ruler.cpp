@@ -35,10 +35,10 @@ using std::vector;
 namespace pv {
 namespace view {
 
-const float Ruler::RulerHeight = 2.5f;  // x Text Height
+const float Ruler::RulerHeight = 2.5f; // x Text Height
 const int Ruler::MinorTickSubdivision = 4;
 
-const float Ruler::HoverArrowSize = 0.5f;  // x Text Height
+const float Ruler::HoverArrowSize = 0.5f; // x Text Height
 
 Ruler::Ruler(View &parent) :
 	MarginWidget(parent)
