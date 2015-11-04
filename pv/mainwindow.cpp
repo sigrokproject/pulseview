@@ -666,20 +666,6 @@ void MainWindow::save_selection_to_file()
 	// Stop any currently running capture session
 	session_.stop_capture();
 
-	// Get sample rate
-	double samplerate = 0.0;
-
-	for (const shared_ptr<pv::data::SignalData> d : session_.get_data()) {
-		assert(d);
-		const vector< shared_ptr<pv::data::Segment> > segments =
-			d->segments();
-		for (const shared_ptr<pv::data::Segment> &s : segments)
-			samplerate = std::max(samplerate, s->samplerate());
-	}
-
-	if (samplerate == 0.0)
-		samplerate = 1;
-
 	// Verify that the cursors are active and fetch their values
 	if (!view_->cursors()->enabled()) {
 		show_session_error(tr("Missing Cursors"), tr("You need to set the " \
@@ -687,6 +673,8 @@ void MainWindow::save_selection_to_file()
 				"to a session file (e.g. using ALT-V - Show Cursors)."));
 		return;
 	}
+
+	const double samplerate = session_.get_samplerate();
 
 	const pv::util::Timestamp& start_time = view_->cursors()->first()->time();
 	const pv::util::Timestamp& end_time = view_->cursors()->second()->time();

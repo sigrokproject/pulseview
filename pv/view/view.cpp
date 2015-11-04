@@ -349,24 +349,12 @@ void View::zoom_one_to_one()
 	if (visible_data.empty())
 		return;
 
-	double samplerate = 0.0;
-	for (const shared_ptr<SignalData> d : visible_data) {
-		assert(d);
-		const vector< shared_ptr<Segment> > segments =
-			d->segments();
-		for (const shared_ptr<Segment> &s : segments)
-			samplerate = max(samplerate, s->samplerate());
-	}
-
-	if (samplerate == 0.0)
-		return;
-
 	assert(viewport_);
 	const int w = viewport_->width();
 	if (w <= 0)
 		return;
 
-	set_zoom(1.0 / samplerate, w / 2);
+	set_zoom(1.0 / session_.get_samplerate(), w / 2);
 }
 
 void View::set_scale_offset(double scale, const Timestamp& offset)

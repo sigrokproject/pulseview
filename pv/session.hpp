@@ -114,6 +114,8 @@ public:
 
 	std::set< std::shared_ptr<data::SignalData> > get_data() const;
 
+	double get_samplerate() const;
+
 	const std::unordered_set< std::shared_ptr<view::Signal> >
 		signals() const;
 

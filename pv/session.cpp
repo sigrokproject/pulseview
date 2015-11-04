@@ -222,6 +222,25 @@ set< shared_ptr<data::SignalData> > Session::get_data() const
 	return data;
 }
 
+double Session::get_samplerate() const
+{
+	double samplerate = 0.0;
+
+	for (const shared_ptr<pv::data::SignalData> d : get_data()) {
+		assert(d);
+		const vector< shared_ptr<pv::data::Segment> > segments =
+			d->segments();
+		for (const shared_ptr<pv::data::Segment> &s : segments)
+			samplerate = std::max(samplerate, s->samplerate());
+	}
+
+	// If there is no sample rate given we use samples as unit
+	if (samplerate == 0.0)
+		samplerate = 1.0;
+
+	return samplerate;
+}
+
 const unordered_set< shared_ptr<view::Signal> > Session::signals() const
 {
 	shared_lock<shared_mutex> lock(signals_mutex_);
