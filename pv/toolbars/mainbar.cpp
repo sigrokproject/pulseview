@@ -112,6 +112,7 @@ MainBar::MainBar(Session &session, MainWindow &main_window) :
 
 	vector<QAction *> open_actions;
 	open_actions.push_back(main_window.action_save_as());
+	open_actions.push_back(main_window.action_save_selection_as());
 
 	widgets::ExportMenu *export_menu = new widgets::ExportMenu(this,
 		session.device_manager().context(),

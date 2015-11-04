@@ -134,6 +134,11 @@ QAction* MainWindow::action_save_as() const
 	return action_save_as_;
 }
 
+QAction* MainWindow::action_save_selection_as() const
+{
+	return action_save_selection_as_;
+}
+
 QAction* MainWindow::action_connect() const
 {
 	return action_connect_;
