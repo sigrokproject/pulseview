@@ -68,6 +68,8 @@ public:
 
 	void delete_pressed();
 
+	void drag_by(const QPoint &delta);
+
 private Q_SLOTS:
 	void on_delete();
 

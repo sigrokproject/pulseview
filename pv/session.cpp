@@ -492,6 +492,27 @@ void Session::feed_in_meta(shared_ptr<Meta> meta)
 	signals_changed();
 }
 
+void Session::feed_in_trigger()
+{
+	// The channel containing most samples should be most accurate
+	uint64_t sample_count = 0;
+
+	for (const shared_ptr<pv::data::SignalData> d : get_data()) {
+		assert(d);
+		uint64_t temp_count = 0;
+
+		const vector< shared_ptr<pv::data::Segment> > segments =
+			d->segments();
+		for (const shared_ptr<pv::data::Segment> &s : segments)
+			temp_count += s->get_sample_count();
+
+		if (temp_count > sample_count)
+			sample_count = temp_count;
+	}
+
+	trigger_event(sample_count / get_samplerate());
+}
+
 void Session::feed_in_frame_begin()
 {
 	if (cur_logic_segment_ || !cur_analog_segments_.empty())
@@ -614,6 +635,10 @@ void Session::data_feed_in(shared_ptr<sigrok::Device> device,
 
 	case SR_DF_META:
 		feed_in_meta(dynamic_pointer_cast<Meta>(packet->payload()));
+		break;
+
+	case SR_DF_TRIGGER:
+		feed_in_trigger();
 		break;
 
 	case SR_DF_FRAME_BEGIN:

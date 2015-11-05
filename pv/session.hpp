@@ -40,6 +40,8 @@
 #include <QObject>
 #include <QString>
 
+#include "util.hpp"
+
 struct srd_decoder;
 struct srd_channel;
 
@@ -144,6 +146,8 @@ private:
 
 	void feed_in_meta(std::shared_ptr<sigrok::Meta> meta);
 
+	void feed_in_trigger();
+
 	void feed_in_frame_begin();
 
 	void feed_in_logic(std::shared_ptr<sigrok::Logic> logic);
@@ -181,6 +185,8 @@ Q_SIGNALS:
 	void device_selected();
 
 	void signals_changed();
+
+	void trigger_event(util::Timestamp location);
 
 	void frame_began();
 

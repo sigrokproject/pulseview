@@ -462,8 +462,14 @@ void View::add_flag(const Timestamp& time)
 {
 	flags_.push_back(shared_ptr<Flag>(new Flag(*this, time,
 		QString("%1").arg(next_flag_text_))));
+
 	next_flag_text_ = (next_flag_text_ >= 'Z') ? 'A' :
 		(next_flag_text_ + 1);
+
+	// Skip 'T' (for trigger) as it's treated special
+	if (next_flag_text_ == 'T')
+		next_flag_text_ += 1;
+
 	time_item_appearance_changed(true, true);
 }
 
@@ -516,6 +522,16 @@ void View::restack_all_trace_tree_items()
 	// Animate the items to their destination
 	for (const auto &i : items)
 		i->animate_to_layout_v_offset();
+}
+
+void View::trigger_event(util::Timestamp location)
+{
+	char next_flag_text = next_flag_text_;
+
+	next_flag_text_ = 'T';
+	add_flag(location);
+
+	next_flag_text_ = next_flag_text;
 }
 
 void View::get_scroll_layout(double &length, Timestamp &offset) const

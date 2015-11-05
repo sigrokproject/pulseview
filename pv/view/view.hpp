@@ -238,6 +238,9 @@ Q_SIGNALS:
 	/// Emitted when the time_unit changed.
 	void time_unit_changed();
 
+public Q_SLOTS:
+	void trigger_event(util::Timestamp location);
+
 private:
 	void get_scroll_layout(double &length, pv::util::Timestamp &offset) const;
 

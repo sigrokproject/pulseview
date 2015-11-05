@@ -108,5 +108,15 @@ void Flag::on_text_changed(const QString &text)
 	view_.time_item_appearance_changed(true, false);
 }
 
+void Flag::drag_by(const QPoint &delta)
+{
+	// Treat trigger markers as immovable
+	if (text_ == "T")
+		return;
+
+	TimeMarker::drag_by(delta);
+}
+
+
 } // namespace view
 } // namespace pv

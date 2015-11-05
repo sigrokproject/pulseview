@@ -116,6 +116,8 @@ MainWindow::MainWindow(DeviceManager &device_manager,
 	, menu_decoders_add_(new pv::widgets::DecoderMenu(this, true))
 #endif
 {
+	qRegisterMetaType<util::Timestamp>("util::Timestamp");
+
 	setup_ui();
 	restore_ui_settings();
 	if (open_file_name.empty())
@@ -532,12 +534,15 @@ void MainWindow::setup_ui()
 		SLOT(capture_state_changed(int)));
 	connect(&session_, SIGNAL(device_selected()), this,
 		SLOT(device_selected()));
+	connect(&session_, SIGNAL(trigger_event(util::Timestamp)), view_,
+		SLOT(trigger_event(util::Timestamp)));
 
 	// Setup view_ events
 	connect(view_, SIGNAL(sticky_scrolling_changed(bool)), this,
 		SLOT(sticky_scrolling_changed(bool)));
 	connect(view_, SIGNAL(always_zoom_to_fit_changed(bool)), this,
 		SLOT(always_zoom_to_fit_changed(bool)));
+
 }
 
 void MainWindow::select_init_device() {
