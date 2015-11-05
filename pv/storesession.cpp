@@ -149,8 +149,13 @@ bool StoreSession::start()
 		start_sample_ = 0;
 		sample_count_ = segment->get_sample_count();
 	} else {
-		start_sample_ = std::min(sample_range_.first, sample_range_.second);
-		sample_count_ = std::abs(sample_range_.second - sample_range_.first);
+		if (sample_range_.first > sample_range_.second) {
+			start_sample_ = sample_range_.second;
+			sample_count_ = sample_range_.first - sample_range_.second;
+		} else {
+			start_sample_ = sample_range_.first;
+			sample_count_ = sample_range_.second - sample_range_.first;
+		}
 	}
 
 	// Begin storing
