@@ -69,6 +69,11 @@ public:
 	virtual void select(bool select = true);
 
 	/**
+	  Returns true if the item may be dragged/moved.
+	 */
+	virtual bool is_draggable() const;
+
+	/**
 	 * Returns true if the item is being dragged.
 	 */
 	bool dragging() const;

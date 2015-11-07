@@ -49,6 +49,11 @@ void ViewItem::select(bool select)
 	selected_ = select;
 }
 
+bool ViewItem::is_draggable() const
+{
+	return true;
+}
+
 bool ViewItem::dragging() const
 {
 	return drag_point_.x() != INT_MIN && drag_point_.y() != INT_MIN;
@@ -56,7 +61,8 @@ bool ViewItem::dragging() const
 
 void ViewItem::drag()
 {
-	drag_point_ = point(QRect());
+	if (is_draggable())
+		drag_point_ = point(QRect());
 }
 
 void ViewItem::drag_release()
