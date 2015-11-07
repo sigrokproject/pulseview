@@ -55,6 +55,7 @@ class Header;
 class Ruler;
 class Trace;
 class Viewport;
+class TriggerMarker;
 
 class View : public QAbstractScrollArea, public TraceTreeItemOwner {
 	Q_OBJECT
@@ -382,6 +383,8 @@ private:
 
 	std::list< std::shared_ptr<Flag> > flags_;
 	char next_flag_text_;
+
+	std::shared_ptr<TriggerMarker> trigger_marker_;
 
 	QPoint hover_point_;
 

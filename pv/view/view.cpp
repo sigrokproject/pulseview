@@ -48,6 +48,7 @@
 #include "ruler.hpp"
 #include "signal.hpp"
 #include "tracegroup.hpp"
+#include "triggermarker.hpp"
 #include "view.hpp"
 #include "viewport.hpp"
 
@@ -114,6 +115,7 @@ View::View(Session &session, QWidget *parent) :
 	show_cursors_(false),
 	cursors_(new CursorPair(*this)),
 	next_flag_text_('A'),
+	trigger_marker_(nullptr),
 	hover_point_(-1, -1)
 {
 	connect(horizontalScrollBar(), SIGNAL(valueChanged(int)),
@@ -207,6 +209,10 @@ vector< shared_ptr<TimeItem> > View::time_items() const
 	items.push_back(cursors_);
 	items.push_back(cursors_->first());
 	items.push_back(cursors_->second());
+
+	if (trigger_marker_)
+		items.push_back(trigger_marker_);
+
 	return items;
 }
 
@@ -466,10 +472,6 @@ void View::add_flag(const Timestamp& time)
 	next_flag_text_ = (next_flag_text_ >= 'Z') ? 'A' :
 		(next_flag_text_ + 1);
 
-	// Skip 'T' (for trigger) as it's treated special
-	if (next_flag_text_ == 'T')
-		next_flag_text_ += 1;
-
 	time_item_appearance_changed(true, true);
 }
 
@@ -526,12 +528,10 @@ void View::restack_all_trace_tree_items()
 
 void View::trigger_event(util::Timestamp location)
 {
-	char next_flag_text = next_flag_text_;
-
-	next_flag_text_ = 'T';
-	add_flag(location);
-
-	next_flag_text_ = next_flag_text;
+	if (trigger_marker_)
+		trigger_marker_->set_time(location);
+	else
+		trigger_marker_ = std::shared_ptr<TriggerMarker>(new TriggerMarker(*this, location));
 }
 
 void View::get_scroll_layout(double &length, Timestamp &offset) const
