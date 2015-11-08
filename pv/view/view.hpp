@@ -384,7 +384,7 @@ private:
 	std::list< std::shared_ptr<Flag> > flags_;
 	char next_flag_text_;
 
-	std::shared_ptr<TriggerMarker> trigger_marker_;
+	std::vector< std::shared_ptr<TriggerMarker> > trigger_markers_;
 
 	QPoint hover_point_;
 

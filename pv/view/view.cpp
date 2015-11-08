@@ -115,7 +115,7 @@ View::View(Session &session, QWidget *parent) :
 	show_cursors_(false),
 	cursors_(new CursorPair(*this)),
 	next_flag_text_('A'),
-	trigger_marker_(nullptr),
+	trigger_markers_(),
 	hover_point_(-1, -1)
 {
 	connect(horizontalScrollBar(), SIGNAL(valueChanged(int)),
@@ -210,8 +210,8 @@ vector< shared_ptr<TimeItem> > View::time_items() const
 	items.push_back(cursors_->first());
 	items.push_back(cursors_->second());
 
-	if (trigger_marker_)
-		items.push_back(trigger_marker_);
+	for (auto trigger_marker : trigger_markers_)
+		items.push_back(trigger_marker);
 
 	return items;
 }
@@ -528,10 +528,8 @@ void View::restack_all_trace_tree_items()
 
 void View::trigger_event(util::Timestamp location)
 {
-	if (trigger_marker_)
-		trigger_marker_->set_time(location);
-	else
-		trigger_marker_ = std::shared_ptr<TriggerMarker>(new TriggerMarker(*this, location));
+	trigger_markers_.push_back(shared_ptr<TriggerMarker>(
+		new TriggerMarker(*this, location)));
 }
 
 void View::get_scroll_layout(double &length, Timestamp &offset) const
@@ -1021,8 +1019,11 @@ void View::signals_changed()
 
 void View::capture_state_updated(int state)
 {
-	if (state == Session::Running)
+	if (state == Session::Running) {
 		set_time_unit(util::TimeUnit::Samples);
+
+		trigger_markers_.clear();
+	}
 
 	if (state == Session::Stopped) {
 		// After acquisition has stopped we need to re-calculate the ticks once
