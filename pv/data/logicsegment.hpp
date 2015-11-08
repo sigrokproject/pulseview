@@ -92,7 +92,7 @@ public:
 	 * @param[in] min_length The minimum number of samples that
 	 * can be resolved at this level of detail.
 	 * @param[in] sig_index The index of the signal.
-	 **/
+	 */
 	void get_subsampled_edges(std::vector<EdgePair> &edges,
 		uint64_t start, uint64_t end,
 		float min_length, int sig_index);

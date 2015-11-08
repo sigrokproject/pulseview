@@ -69,7 +69,7 @@ public:
 	virtual void select(bool select = true);
 
 	/**
-	  Returns true if the item may be dragged/moved.
+	 * Returns true if the item may be dragged/moved.
 	 */
 	virtual bool is_draggable() const;
 
@@ -128,21 +128,21 @@ public:
 	 * Paints the background layer of the item with a QPainter
 	 * @param p the QPainter to paint into.
 	 * @param pp the painting parameters object to paint with.
-	 **/
+	 */
 	virtual void paint_back(QPainter &p, const ViewItemPaintParams &pp);
 
 	/**
 	 * Paints the mid-layer of the item with a QPainter
 	 * @param p the QPainter to paint into.
 	 * @param pp the painting parameters object to paint with.
-	 **/
+	 */
 	virtual void paint_mid(QPainter &p, const ViewItemPaintParams &pp);
 
 	/**
 	 * Paints the foreground layer of the item with a QPainter
 	 * @param p the QPainter to paint into.
 	 * @param pp the painting parameters object to paint with.
-	 **/
+	 */
 	virtual void paint_fore(QPainter &p, const ViewItemPaintParams &pp);
 
 public:

@@ -107,7 +107,7 @@ public:
 	 * Paints the foreground layer of the item with a QPainter
 	 * @param p the QPainter to paint into.
 	 * @param pp the painting parameters object to paint with.
-	 **/
+	 */
 	void paint_fore(QPainter &p, const ViewItemPaintParams &pp);
 
 	virtual pv::widgets::Popup* create_popup(QWidget *parent);

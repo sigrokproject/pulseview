@@ -79,14 +79,14 @@ public:
 	 * Paints the background layer of the signal with a QPainter
 	 * @param p the QPainter to paint into.
 	 * @param pp the painting parameters object to paint with..
-	 **/
+	 */
 	void paint_back(QPainter &p, const ViewItemPaintParams &pp);
 
 	/**
 	 * Paints the mid-layer of the signal with a QPainter
 	 * @param p the QPainter to paint into.
 	 * @param pp the painting parameters object to paint with..
-	 **/
+	 */
 	void paint_mid(QPainter &p, const ViewItemPaintParams &pp);
 
 private:
