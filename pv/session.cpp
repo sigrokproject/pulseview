@@ -324,9 +324,14 @@ void Session::remove_decode_signal(view::DecodeTrace *signal)
 
 void Session::set_capture_state(capture_state state)
 {
-	lock_guard<mutex> lock(sampling_mutex_);
-	const bool changed = capture_state_ != state;
-	capture_state_ = state;
+	bool changed;
+
+	{
+		lock_guard<mutex> lock(sampling_mutex_);
+		changed = capture_state_ != state;
+		capture_state_ = state;
+	}
+
 	if (changed)
 		capture_state_changed(state);
 }
