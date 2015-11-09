@@ -163,7 +163,7 @@ private:
 
 	std::vector< std::shared_ptr<view::DecodeTrace> > decode_traces_;
 
-	mutable std::mutex sampling_mutex_;
+	mutable std::mutex sampling_mutex_; //!< Protects access to capture_state_.
 	capture_state capture_state_;
 
 	mutable boost::shared_mutex signals_mutex_;
