@@ -586,7 +586,8 @@ void MainBar::on_config_changed()
 
 bool MainBar::eventFilter(QObject *watched, QEvent *event)
 {
-	if ((watched == &sample_count_ || watched == &sample_rate_) &&
+	if (sample_count_supported_ &&
+		(watched == &sample_count_ || watched == &sample_rate_) &&
 		(event->type() == QEvent::ToolTip)) {
 		auto sec = pv::util::Timestamp(sample_count_.value()) / sample_rate_.value();
 		QHelpEvent *help_event = static_cast<QHelpEvent*>(event);
