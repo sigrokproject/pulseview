@@ -447,8 +447,15 @@ void LogicSignal::modify_trigger()
 		}
 	}
 
-	if (trigger_match_)
-		new_trigger->add_stage()->add_match(channel_, trigger_match_);
+	if (trigger_match_) {
+		// Until we can let the user decide how to group trigger matches
+		// into stages, put all of the matches into a single stage --
+		// most devices only support a single trigger stage.
+		if (new_trigger->stages().empty())
+			new_trigger->add_stage();
+
+		new_trigger->stages().back()->add_match(channel_, trigger_match_);
+	}
 
 	session_.session()->set_trigger(
 		new_trigger->stages().empty() ? nullptr : new_trigger);
