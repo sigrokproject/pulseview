@@ -579,6 +579,10 @@ void Session::feed_in_analog(shared_ptr<Analog> analog)
 	const float *data = static_cast<const float *>(analog->data_pointer());
 	bool sweep_beginning = false;
 
+	if (signals_.empty()) {
+		update_signals();
+	}
+
 	for (auto channel : channels)
 	{
 		shared_ptr<data::AnalogSegment> segment;
