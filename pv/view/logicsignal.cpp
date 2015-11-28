@@ -249,7 +249,7 @@ void LogicSignal::paint_mid(QPainter &p, const ViewItemPaintParams &pp)
 void LogicSignal::paint_fore(QPainter &p, const ViewItemPaintParams &pp)
 {
 	// Draw the trigger marker
-	if (!trigger_match_)
+	if (!trigger_match_ || !channel_->enabled())
 		return;
 
 	const int y = get_visual_y();
