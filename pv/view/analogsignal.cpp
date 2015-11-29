@@ -128,7 +128,7 @@ void AnalogSignal::paint_mid(QPainter &p, const ViewItemPaintParams &pp)
 		segments.front();
 
 	const double pixels_offset = pp.pixels_offset();
-	const double samplerate = segment->samplerate();
+	const double samplerate = max(1.0, segment->samplerate());
 	const pv::util::Timestamp& start_time = segment->start_time();
 	const int64_t last_sample = segment->get_sample_count() - 1;
 	const double samples_per_pixel = samplerate * pp.scale();
