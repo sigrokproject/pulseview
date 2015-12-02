@@ -733,7 +733,9 @@ QComboBox* DecodeTrace::create_channel_selector(
 		{
 			selector->addItem(s->name(),
 				qVariantFromValue((void*)s.get()));
-			if ((*channel_iter).second == s)
+
+			if (channel_iter != dec->channels().end() &&
+				(*channel_iter).second == s)
 				selector->setCurrentIndex(
 					selector->count() - 1);
 		}
