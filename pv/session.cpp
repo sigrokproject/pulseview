@@ -486,6 +486,11 @@ void Session::feed_in_meta(shared_ptr<Meta> meta)
 	for (auto entry : meta->config()) {
 		switch (entry.first->id()) {
 		case SR_CONF_SAMPLERATE:
+			// We can't rely on the header to always contain the sample rate,
+			// so in case it's supplied via a meta packet, we use it.
+			if (!cur_samplerate_)
+				cur_samplerate_ = g_variant_get_uint64(entry.second.gobj());
+
 			/// @todo handle samplerate changes
 			break;
 		default:
