@@ -115,8 +115,7 @@ void Header::paintEvent(QPaintEvent*)
 	QPainter painter(this);
 	painter.setRenderHint(QPainter::Antialiasing);
 
-	for (const shared_ptr<RowItem> r : items)
-	{
+	for (const shared_ptr<RowItem> r : items) {
 		assert(r);
 
 		const bool highlight = !item_dragging_ &&

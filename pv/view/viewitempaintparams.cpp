@@ -32,7 +32,8 @@ ViewItemPaintParams::ViewItemPaintParams(
 	const QRect &rect, double scale, const pv::util::Timestamp& offset) :
 	rect_(rect),
 	scale_(scale),
-	offset_(offset) {
+	offset_(offset)
+{
 	assert(scale > 0.0);
 }
 
@@ -41,7 +42,8 @@ QFont ViewItemPaintParams::font()
 	return QApplication::font();
 }
 
-int ViewItemPaintParams::text_height() {
+int ViewItemPaintParams::text_height()
+{
 	return QFontMetrics(font()).height();
 }
 

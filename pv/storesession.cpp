@@ -216,8 +216,7 @@ void StoreSession::store_proc(shared_ptr<data::LogicSegment> segment)
 
 	const unsigned int samples_per_block = BlockSize / unit_size;
 
-	while (!interrupt_ && sample_count_)
-	{
+	while (!interrupt_ && sample_count_) {
 		progress_updated();
 
 		const uint64_t packet_len =

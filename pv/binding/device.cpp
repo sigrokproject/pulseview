@@ -88,8 +88,7 @@ Device::Device(shared_ptr<sigrok::Configurable> configurable) :
 			config_changed();
 		};
 
-		switch (key->id())
-		{
+		switch (key->id()) {
 		case SR_CONF_SAMPLERATE:
 			// Sample rate values are not bound because they are shown
 			// in the MainBar

@@ -44,15 +44,18 @@ namespace devices {
 HardwareDevice::HardwareDevice(const std::shared_ptr<sigrok::Context> &context,
 	std::shared_ptr<sigrok::HardwareDevice> device) :
 	context_(context),
-	device_open_(false) {
+	device_open_(false)
+{
 	device_ = device;
 }
 
-HardwareDevice::~HardwareDevice() {
+HardwareDevice::~HardwareDevice()
+{
 	close();
 }
 
-string HardwareDevice::full_name() const {
+string HardwareDevice::full_name() const
+{
 	vector<string> parts = {device_->vendor(), device_->model(),
 		device_->version(), device_->serial_number()};
 	if (device_->connection_id().length() > 0)
@@ -60,12 +63,14 @@ string HardwareDevice::full_name() const {
 	return join(parts, " ");
 }
 
-shared_ptr<sigrok::HardwareDevice> HardwareDevice::hardware_device() const {
+shared_ptr<sigrok::HardwareDevice> HardwareDevice::hardware_device() const
+{
 	return static_pointer_cast<sigrok::HardwareDevice>(device_);
 }
 
 string HardwareDevice::display_name(
-	const DeviceManager &device_manager) const {
+	const DeviceManager &device_manager) const
+{
 	const auto hw_dev = hardware_device();
 
 	// If we can find another device with the same model/vendor then
@@ -95,13 +100,14 @@ string HardwareDevice::display_name(
 	return join(parts, " ");
 }
 
-void HardwareDevice::open() {
+void HardwareDevice::open()
+{
 	if (device_open_)
 		close();
 
 	try {
 		device_->open();
-	} catch(const sigrok::Error &e) {
+	} catch (const sigrok::Error &e) {
 		throw QString(e.what());
 	}
 
@@ -112,7 +118,8 @@ void HardwareDevice::open() {
 	session_->add_device(device_);
 }
 
-void HardwareDevice::close() {
+void HardwareDevice::close()
+{
 	if (device_open_)
 		device_->close();
 

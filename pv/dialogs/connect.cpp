@@ -172,8 +172,7 @@ void Connect::scan_pressed()
 	const list< shared_ptr<HardwareDevice> > devices =
 		device_manager_.driver_scan(driver, drvopts);
 
-	for (shared_ptr<HardwareDevice> device : devices)
-	{
+	for (shared_ptr<HardwareDevice> device : devices) {
 		assert(device);
 
 		QString text = QString::fromStdString(

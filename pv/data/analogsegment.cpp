@@ -74,8 +74,7 @@ void AnalogSegment::append_interleaved_samples(const float *data,
 
 	float *dst = (float*)data_.data() + sample_count_;
 	const float *dst_end = dst + sample_count;
-	while (dst != dst_end)
-	{
+	while (dst != dst_end) {
 		*dst++ = *data;
 		data += stride;
 	}
@@ -131,8 +130,7 @@ void AnalogSegment::reallocate_envelope(Envelope &e)
 {
 	const uint64_t new_data_length = ((e.length + EnvelopeDataUnit - 1) /
 		EnvelopeDataUnit) * EnvelopeDataUnit;
-	if (new_data_length > e.data_length)
-	{
+	if (new_data_length > e.data_length) {
 		e.data_length = new_data_length;
 		e.samples = (EnvelopeSample*)realloc(e.samples,
 			new_data_length * sizeof(EnvelopeSample));
@@ -161,9 +159,8 @@ void AnalogSegment::append_payload_to_envelope_levels()
 	const float *const end_src_ptr = (float*)data_.data() +
 		e0.length * EnvelopeScaleFactor;
 	for (const float *src_ptr = (float*)data_.data() +
-		prev_length * EnvelopeScaleFactor;
-		src_ptr < end_src_ptr; src_ptr += EnvelopeScaleFactor)
-	{
+			prev_length * EnvelopeScaleFactor;
+			src_ptr < end_src_ptr; src_ptr += EnvelopeScaleFactor) {
 		const EnvelopeSample sub_sample = {
 			*min_element(src_ptr, src_ptr + EnvelopeScaleFactor),
 			*max_element(src_ptr, src_ptr + EnvelopeScaleFactor),
@@ -173,8 +170,7 @@ void AnalogSegment::append_payload_to_envelope_levels()
 	}
 
 	// Compute higher level mipmaps
-	for (unsigned int level = 1; level < ScaleStepCount; level++)
-	{
+	for (unsigned int level = 1; level < ScaleStepCount; level++) {
 		Envelope &e = envelope_levels_[level];
 		const Envelope &el = envelope_levels_[level-1];
 
@@ -193,14 +189,12 @@ void AnalogSegment::append_payload_to_envelope_levels()
 			el.samples + prev_length * EnvelopeScaleFactor;
 		const EnvelopeSample *const end_dest_ptr = e.samples + e.length;
 		for (dest_ptr = e.samples + prev_length;
-			dest_ptr < end_dest_ptr; dest_ptr++)
-		{
+				dest_ptr < end_dest_ptr; dest_ptr++) {
 			const EnvelopeSample *const end_src_ptr =
 				src_ptr + EnvelopeScaleFactor;
 
 			EnvelopeSample sub_sample = *src_ptr++;
-			while (src_ptr < end_src_ptr)
-			{
+			while (src_ptr < end_src_ptr) {
 				sub_sample.min = min(sub_sample.min, src_ptr->min);
 				sub_sample.max = max(sub_sample.max, src_ptr->max);
 				src_ptr++;

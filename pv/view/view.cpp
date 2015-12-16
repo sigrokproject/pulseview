@@ -408,8 +408,7 @@ pair<Timestamp, Timestamp> View::get_time_extents() const
 {
 	boost::optional<Timestamp> left_time, right_time;
 	const set< shared_ptr<SignalData> > visible_data = get_visible_data();
-	for (const shared_ptr<SignalData> d : visible_data)
-	{
+	for (const shared_ptr<SignalData> d : visible_data) {
 		const vector< shared_ptr<Segment> > segments =
 			d->segments();
 		for (const shared_ptr<Segment> &s : segments) {
@@ -727,8 +726,7 @@ vector< shared_ptr<Trace> > View::extract_new_traces_for_channels(
 {
 	vector< shared_ptr<Trace> > filtered_traces;
 
-	for (const auto &channel : channels)
-	{
+	for (const auto &channel : channels) {
 		const auto map_iter = signal_map.find(channel);
 		if (map_iter == signal_map.end())
 			continue;
@@ -793,7 +791,7 @@ bool View::eventFilter(QObject *object, QEvent *event)
 
 bool View::viewportEvent(QEvent *e)
 {
-	switch(e->type()) {
+	switch (e->type()) {
 	case QEvent::Paint:
 	case QEvent::MouseButtonPress:
 	case QEvent::MouseButtonRelease:
@@ -804,7 +802,6 @@ bool View::viewportEvent(QEvent *e)
 	case QEvent::TouchUpdate:
 	case QEvent::TouchEnd:
 		return false;
-
 	default:
 		return QAbstractScrollArea::viewportEvent(e);
 	}
@@ -920,8 +917,7 @@ void View::signals_changed()
 		signal_map[sig->channel()] = sig;
 
 	// Populate channel groups
-	for (auto entry : sr_dev->channel_groups())
-	{
+	for (auto entry : sr_dev->channel_groups()) {
 		const shared_ptr<sigrok::ChannelGroup> &group = entry.second;
 
 		if (group->channels().size() <= 1)

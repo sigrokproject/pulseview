@@ -195,12 +195,11 @@ QMenu* MainWindow::menu_decoder_add() const
 
 void MainWindow::run_stop()
 {
-	switch(session_.get_capture_state()) {
+	switch (session_.get_capture_state()) {
 	case Session::Stopped:
 		session_.start_capture([&](QString message) {
 			session_error("Capture failed", message); });
 		break;
-
 	case Session::AwaitingTrigger:
 	case Session::Running:
 		session_.stop_capture();
@@ -215,7 +214,7 @@ void MainWindow::select_device(shared_ptr<devices::Device> device)
 			session_.set_device(device);
 		else
 			session_.set_default_device();
-	} catch(const QString &e) {
+	} catch (const QString &e) {
 		QMessageBox msg(this);
 		msg.setText(e);
 		msg.setInformativeText(tr("Failed to Select Device"));
@@ -545,7 +544,8 @@ void MainWindow::setup_ui()
 
 }
 
-void MainWindow::select_init_device() {
+void MainWindow::select_init_device()
+{
 	QSettings settings;
 	map<string, string> dev_info;
 	list<string> key_list;
@@ -577,7 +577,8 @@ void MainWindow::select_init_device() {
 }
 
 void MainWindow::load_init_file(const std::string &file_name,
-	const std::string &format) {
+	const std::string &format)
+{
 	shared_ptr<InputFormat> input_format;
 
 	if (!format.empty()) {
@@ -622,7 +623,6 @@ void MainWindow::save_ui_settings()
 			session_.device());
 
 		for (string key : key_list) {
-
 			if (dev_info.count(key))
 				settings.setValue(QString::fromUtf8(key.c_str()),
 						QString::fromUtf8(dev_info.at(key).c_str()));
@@ -681,7 +681,7 @@ void MainWindow::load_file(QString file_name,
 				new devices::SessionFile(
 					device_manager_.context(),
 					file_name.toStdString())));
-	} catch(Error e) {
+	} catch (Error e) {
 		show_session_error(tr("Failed to load ") + file_name, e.what());
 		session_.set_default_device();
 		update_device_list();

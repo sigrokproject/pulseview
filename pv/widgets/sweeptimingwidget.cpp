@@ -88,8 +88,7 @@ void SweepTimingWidget::show_list(const uint64_t *vals, size_t count)
 	value_type_ = List;
 
 	list_.clear();
-	for (size_t i = 0; i < count; i++)
-	{
+	for (size_t i = 0; i < count; i++) {
 		char *const s = sr_si_string_u64(vals[i], suffix_);
 		list_.addItem(QString::fromUtf8(s),
 			qVariantFromValue(vals[i]));
@@ -142,8 +141,7 @@ void SweepTimingWidget::show_125_list(uint64_t min, uint64_t max)
 
 uint64_t SweepTimingWidget::value() const
 {
-	switch(value_type_)
-	{
+	switch(value_type_) {
 	case None:
 		return 0;
 

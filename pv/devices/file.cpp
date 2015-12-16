@@ -26,14 +26,17 @@ namespace pv {
 namespace devices {
 
 File::File(const std::string &file_name) :
-	file_name_(file_name) {
+	file_name_(file_name)
+{
 }
 
-std::string File::full_name() const {
+std::string File::full_name() const
+{
 	return boost::filesystem::path(file_name_).filename().string();
 }
 
-std::string File::display_name(const DeviceManager&) const {
+std::string File::display_name(const DeviceManager&) const
+{
 	return File::full_name();
 }
 

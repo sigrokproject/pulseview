@@ -128,8 +128,7 @@ shared_ptr<ViewItem> Ruler::get_mouse_over_item(const QPoint &pt)
 void Ruler::paintEvent(QPaintEvent*)
 {
 	if (!tick_position_cache_) {
-		auto ffunc = [this](const pv::util::Timestamp& t)
-		{
+		auto ffunc = [this](const pv::util::Timestamp& t) {
 			return format_time_with_distance(
 				this->view_.tick_period(),
 				t,

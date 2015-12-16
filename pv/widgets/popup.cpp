@@ -65,7 +65,6 @@ void Popup::set_position(const QPoint point, Position pos)
 		MarginWidth + ((pos == Bottom) ? ArrowLength : 0),
 		MarginWidth + ((pos == Left) ? ArrowLength : 0),
 		MarginWidth + ((pos == Top) ? ArrowLength : 0));
-
 }
 
 bool Popup::eventFilter(QObject *obj, QEvent *evt)
@@ -145,8 +144,7 @@ QPolygon Popup::arrow_polygon() const
 	const QPoint p = mapFromGlobal(point_);
 	const int l = ArrowLength + ArrowOverlap; 
 
-	switch (pos_)
-	{
+	switch (pos_) {
 	case Right:
 		poly << QPoint(p.x() + l, p.y() - l);
 		break;
@@ -163,8 +161,7 @@ QPolygon Popup::arrow_polygon() const
 
 	poly << p;
 
-	switch (pos_)
-	{
+	switch (pos_) {
 	case Right:
 	case Bottom:
 		poly << QPoint(p.x() + l, p.y() + l);

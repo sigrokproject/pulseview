@@ -66,8 +66,7 @@ void MarginWidget::keyPressEvent(QKeyEvent *e)
 {
 	assert(e);
 
-	if (e->key() == Qt::Key_Delete)
-	{
+	if (e->key() == Qt::Key_Delete) {
 		const auto items = this->items();
 		for (auto &i : items)
 			if (i->selected())

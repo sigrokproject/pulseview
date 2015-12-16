@@ -58,9 +58,7 @@ void ColourButton::set_colour(QColor colour)
 
 	for (unsigned int r = 0; r < rows; r++)
 		for (unsigned int c = 0; c < cols; c++)
-			if (popup_.well_array().cellBrush(r, c).color() ==
-				colour)
-			{
+			if (popup_.well_array().cellBrush(r, c).color() == colour) {
 				popup_.well_array().setSelected(r, c);
 				popup_.well_array().setCurrent(r, c);
 				return;

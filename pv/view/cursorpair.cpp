@@ -61,7 +61,8 @@ shared_ptr<Cursor> CursorPair::second() const
 	return second_;
 }
 
-void CursorPair::set_time(const pv::util::Timestamp& time) {
+void CursorPair::set_time(const pv::util::Timestamp& time)
+{
 	const pv::util::Timestamp delta = second_->time() - first_->time();
 	first_->set_time(time);
 	second_->set_time(time + delta);
@@ -119,8 +120,7 @@ void CursorPair::paint_label(QPainter &p, const QRect &rect, bool hover)
 	const int radius = delta_rect.height() / 2;
 	const QRectF text_rect(delta_rect.intersected(
 		rect).adjusted(radius, 0, -radius, 0));
-	if (text_rect.width() >= text_size_.width())
-	{
+	if (text_rect.width() >= text_size_.width()) {
 		const int highlight_radius = delta_rect.height() / 2 - 2;
 
 		if (selected()) {
@@ -144,7 +144,8 @@ void CursorPair::paint_label(QPainter &p, const QRect &rect, bool hover)
 	}
 }
 
-void CursorPair::paint_back(QPainter &p, const ViewItemPaintParams &pp) {
+void CursorPair::paint_back(QPainter &p, const ViewItemPaintParams &pp)
+{
 	if (!enabled())
 		return;
 

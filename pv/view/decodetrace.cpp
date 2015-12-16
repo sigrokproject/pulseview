@@ -182,8 +182,7 @@ void DecodeTrace::paint_mid(QPainter &p, const ViewItemPaintParams &pp)
 
 	assert(decoder_stack_);
 	const QString err = decoder_stack_->error_message();
-	if (!err.isEmpty())
-	{
+	if (!err.isEmpty()) {
 		draw_unresolved_period(
 			p, annotation_height, pp.left(), pp.right());
 		draw_error(p, err, pp);
@@ -199,8 +198,7 @@ void DecodeTrace::paint_mid(QPainter &p, const ViewItemPaintParams &pp)
 	const vector<Row> rows(decoder_stack_->get_visible_rows());
 
 	visible_rows_.clear();
-	for (size_t i = 0; i < rows.size(); i++)
-	{
+	for (size_t i = 0; i < rows.size(); i++) {
 		const Row &row = rows[i];
 
 		size_t base_colour = 0x13579BDF;
@@ -232,15 +230,13 @@ void DecodeTrace::paint_fore(QPainter &p, const ViewItemPaintParams &pp)
 
 	assert(row_height_);
 
-	for (size_t i = 0; i < visible_rows_.size(); i++)
-	{
+	for (size_t i = 0; i < visible_rows_.size(); i++) {
 		const int y = i * row_height_ + get_visual_y();
 
 		p.setPen(QPen(Qt::NoPen));
 		p.setBrush(QApplication::palette().brush(QPalette::WindowText));
 
-		if (i != 0)
-		{
+		if (i != 0) {
 			const QPointF points[] = {
 				QPointF(pp.left(), y - ArrowSize),
 				QPointF(pp.left() + ArrowSize, y),
@@ -286,15 +282,12 @@ void DecodeTrace::populate_popup_form(QWidget *parent, QFormLayout *form)
 
 	const list< shared_ptr<Decoder> >& stack = decoder_stack_->stack();
 
-	if (stack.empty())
-	{
+	if (stack.empty()) {
 		QLabel *const l = new QLabel(
 			tr("<p><i>No decoders in the stack</i></p>"));
 		l->setAlignment(Qt::AlignCenter);
 		form->addRow(l);
-	}
-	else
-	{
+	} else {
 		auto iter = stack.cbegin();
 		for (int i = 0; i < (int)stack.size(); i++, iter++) {
 			shared_ptr<Decoder> dec(*iter);
@@ -389,8 +382,7 @@ void DecodeTrace::draw_range(const pv::data::decode::Annotation &a, QPainter &p,
 	p.setBrush(fill);
 
 	// If the two ends are within 1 pixel, draw a vertical line
-	if (start + 1.0 > end)
-	{
+	if (start + 1.0 > end) {
 		p.drawLine(QPointF(start, top), QPointF(start, bottom));
 		return;
 	}
@@ -729,8 +721,7 @@ QComboBox* DecodeTrace::create_channel_selector(
 
 	for (const shared_ptr<view::Signal> &s : sig_list) {
 		assert(s);
-		if (dynamic_pointer_cast<LogicSignal>(s) && s->enabled())
-		{
+		if (dynamic_pointer_cast<LogicSignal>(s) && s->enabled()) {
 			selector->addItem(s->name(),
 				qVariantFromValue((void*)s.get()));
 
@@ -752,8 +743,7 @@ void DecodeTrace::commit_decoder_channels(shared_ptr<data::decode::Decoder> &dec
 
 	const unordered_set< shared_ptr<Signal> > sigs(session_.signals());
 
-	for (const ChannelSelector &s : channel_selectors_)
-	{
+	for (const ChannelSelector &s : channel_selectors_) {
 		if (s.decoder_ != dec)
 			break;
 

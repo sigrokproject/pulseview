@@ -253,8 +253,7 @@ bool Session::add_decoder(srd_decoder *const dec)
 	map<const srd_channel*, shared_ptr<view::LogicSignal> > channels;
 	shared_ptr<data::DecoderStack> decoder_stack;
 
-	try
-	{
+	try {
 		lock_guard<boost::shared_mutex> lock(signals_mutex_);
 
 		// Create the decoder
@@ -270,8 +269,7 @@ bool Session::add_decoder(srd_decoder *const dec)
 
 		// Auto select the initial channels
 		for (const srd_channel *pdch : all_channels)
-			for (shared_ptr<view::Signal> s : signals_)
-			{
+			for (shared_ptr<view::Signal> s : signals_) {
 				shared_ptr<view::LogicSignal> l =
 					dynamic_pointer_cast<view::LogicSignal>(s);
 				if (l && QString::fromUtf8(pdch->name).
@@ -290,9 +288,7 @@ bool Session::add_decoder(srd_decoder *const dec)
 			new view::DecodeTrace(*this, decoder_stack,
 				decode_traces_.size()));
 		decode_traces_.push_back(d);
-	}
-	catch(std::runtime_error e)
-	{
+	} catch (std::runtime_error e) {
 		return false;
 	}
 
@@ -313,8 +309,7 @@ vector< shared_ptr<view::DecodeTrace> > Session::get_decode_signals() const
 void Session::remove_decode_signal(view::DecodeTrace *signal)
 {
 	for (auto i = decode_traces_.begin(); i != decode_traces_.end(); i++)
-		if ((*i).get() == signal)
-		{
+		if ((*i).get() == signal) {
 			decode_traces_.erase(i);
 			signals_changed();
 			return;
@@ -454,7 +449,7 @@ void Session::sample_thread_proc(shared_ptr<devices::Device> device,
 
 	try {
 		device_->start();
-	} catch(Error e) {
+	} catch (Error e) {
 		error_handler(e.what());
 		return;
 	}
@@ -466,8 +461,7 @@ void Session::sample_thread_proc(shared_ptr<devices::Device> device,
 	set_capture_state(Stopped);
 
 	// Confirm that SR_DF_END was received
-	if (cur_logic_segment_)
-	{
+	if (cur_logic_segment_) {
 		qDebug("SR_DF_END was not received.");
 		assert(0);
 	}
@@ -535,16 +529,14 @@ void Session::feed_in_logic(shared_ptr<Logic> logic)
 
 	const size_t sample_count = logic->data_length() / logic->unit_size();
 
-	if (!logic_data_)
-	{
+	if (!logic_data_) {
 		// The only reason logic_data_ would not have been created is
 		// if it was not possible to determine the signals when the
 		// device was created.
 		update_signals();
 	}
 
-	if (!cur_logic_segment_)
-	{
+	if (!cur_logic_segment_) {
 		// This could be the first packet after a trigger
 		set_capture_state(Running);
 
@@ -559,9 +551,7 @@ void Session::feed_in_logic(shared_ptr<Logic> logic)
 		// frame_began is DecoderStack, but in future we need to signal
 		// this after both analog and logic sweeps have begun.
 		frame_began();
-	}
-	else
-	{
+	} else {
 		// Append to the existing data segment
 		cur_logic_segment_->append_payload(logic);
 	}
@@ -579,12 +569,10 @@ void Session::feed_in_analog(shared_ptr<Analog> analog)
 	const float *data = static_cast<const float *>(analog->data_pointer());
 	bool sweep_beginning = false;
 
-	if (signals_.empty()) {
+	if (signals_.empty())
 		update_signals();
-	}
 
-	for (auto channel : channels)
-	{
+	for (auto channel : channels) {
 		shared_ptr<data::AnalogSegment> segment;
 
 		// Try to get the segment of the channel
@@ -592,8 +580,7 @@ void Session::feed_in_analog(shared_ptr<Analog> analog)
 			iterator iter = cur_analog_segments_.find(channel);
 		if (iter != cur_analog_segments_.end())
 			segment = (*iter).second;
-		else
-		{
+		else {
 			// If no segment was found, this means we havn't
 			// created one yet. i.e. this is the first packet
 			// in the sweep containing this segment.

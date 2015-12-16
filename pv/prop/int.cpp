@@ -72,43 +72,28 @@ QWidget* Int::get_widget(QWidget *parent, bool auto_commit)
 	const GVariantType *const type = g_variant_get_type(value);
 	assert(type);
 
-	if (g_variant_type_equal(type, G_VARIANT_TYPE_BYTE))
-	{
+	if (g_variant_type_equal(type, G_VARIANT_TYPE_BYTE)) {
 		int_val = g_variant_get_byte(value);
 		range_min = 0, range_max = UINT8_MAX;
-	}
-	else if (g_variant_type_equal(type, G_VARIANT_TYPE_INT16))
-	{
+	} else if (g_variant_type_equal(type, G_VARIANT_TYPE_INT16)) {
 		int_val = g_variant_get_int16(value);
 		range_min = INT16_MIN, range_max = INT16_MAX;
-	}
-	else if (g_variant_type_equal(type, G_VARIANT_TYPE_UINT16))
-	{
+	} else if (g_variant_type_equal(type, G_VARIANT_TYPE_UINT16)) {
 		int_val = g_variant_get_uint16(value);
 		range_min = 0, range_max = UINT16_MAX;
-	}
-	else if (g_variant_type_equal(type, G_VARIANT_TYPE_INT32))
-	{
+	} else if (g_variant_type_equal(type, G_VARIANT_TYPE_INT32)) {
 		int_val = g_variant_get_int32(value);
 		range_min = INT32_MIN, range_max = INT32_MAX;
-	}
-	else if (g_variant_type_equal(type, G_VARIANT_TYPE_UINT32))
-	{
+	} else if (g_variant_type_equal(type, G_VARIANT_TYPE_UINT32)) {
 		int_val = g_variant_get_uint32(value);
 		range_min = 0, range_max = UINT32_MAX;
-	}
-	else if (g_variant_type_equal(type, G_VARIANT_TYPE_INT64))
-	{
+	} else if (g_variant_type_equal(type, G_VARIANT_TYPE_INT64)) {
 		int_val = g_variant_get_int64(value);
 		range_min = INT64_MIN, range_max = INT64_MAX;
-	}
-	else if (g_variant_type_equal(type, G_VARIANT_TYPE_UINT64))
-	{
+	} else if (g_variant_type_equal(type, G_VARIANT_TYPE_UINT64)) {
 		int_val = g_variant_get_uint64(value);
 		range_min = 0, range_max = UINT64_MAX;
-	}
-	else
-	{
+	} else {
 		// Unexpected value type.
 		assert(0);
 	}

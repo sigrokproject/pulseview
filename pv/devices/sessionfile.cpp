@@ -30,10 +30,12 @@ namespace devices {
 SessionFile::SessionFile(const std::shared_ptr<sigrok::Context> context,
 	const std::string &file_name) :
 	File(file_name),
-	context_(context) {
+	context_(context)
+{
 }
 
-void SessionFile::open() {
+void SessionFile::open()
+{
 	if (session_)
 		close();
 
@@ -41,7 +43,8 @@ void SessionFile::open() {
 	device_ = session_->devices()[0];
 }
 
-void SessionFile::close() {
+void SessionFile::close()
+{
 	if (session_)
 		session_->remove_devices();
 }

@@ -87,19 +87,13 @@ static QTextStream& operator<<(QTextStream& stream, const Timestamp& t)
 	std::ostringstream ss;
 	ss << std::fixed;
 
-	if (stream.numberFlags() & QTextStream::ForceSign) {
+	if (stream.numberFlags() & QTextStream::ForceSign)
 		ss << std::showpos;
-	}
 
-	if (0 == precision) {
-		ss
-			<< std::setprecision(1)
-			<< round(t);
-	} else {
-		ss
-			<< std::setprecision(precision)
-			<< t;
-	}
+	if (0 == precision)
+		ss << std::setprecision(1) << round(t);
+	else
+		ss << std::setprecision(precision) << t;
 
 	std::string str(ss.str());
 	if (0 == precision) {

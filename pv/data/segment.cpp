@@ -98,9 +98,8 @@ void Segment::append_data(void *data, uint64_t samples)
 
 	// Ensure there's enough capacity to copy.
 	const uint64_t free_space = capacity_ - sample_count_;
-	if (free_space < samples) {
+	if (free_space < samples)
 		set_capacity(sample_count_ + samples);
-	}
 
 	memcpy((uint8_t*)data_.data() + sample_count_ * unit_size_,
 		data, samples * unit_size_);

@@ -71,7 +71,7 @@ uint64_t LogicSegment::unpack_sample(const uint8_t *ptr) const
 	return *(uint64_t*)ptr;
 #else
 	uint64_t value = 0;
-	switch(unit_size_) {
+	switch (unit_size_) {
 	default:
 		value |= ((uint64_t)ptr[7]) << 56;
 		/* FALLTHRU */
@@ -108,7 +108,7 @@ void LogicSegment::pack_sample(uint8_t *ptr, uint64_t value)
 #ifdef HAVE_UNALIGNED_LITTLE_ENDIAN_ACCESS
 	*(uint64_t*)ptr = value;
 #else
-	switch(unit_size_) {
+	switch (unit_size_) {
 	default:
 		ptr[7] = value >> 56;
 		/* FALLTHRU */
@@ -173,8 +173,7 @@ void LogicSegment::reallocate_mipmap_level(MipMapLevel &m)
 {
 	const uint64_t new_data_length = ((m.length + MipMapDataUnit - 1) /
 		MipMapDataUnit) * MipMapDataUnit;
-	if (new_data_length > m.data_length)
-	{
+	if (new_data_length > m.data_length) {
 		m.data_length = new_data_length;
 
 		// Padding is added to allow for the uint64_t write word
@@ -208,14 +207,12 @@ void LogicSegment::append_payload_to_mipmap()
 	const uint8_t *const end_src_ptr = (uint8_t*)data_.data() +
 		m0.length * unit_size_ * MipMapScaleFactor;
 	for (src_ptr = (uint8_t*)data_.data() +
-		prev_length * unit_size_ * MipMapScaleFactor;
-		src_ptr < end_src_ptr;)
-	{
+			prev_length * unit_size_ * MipMapScaleFactor;
+			src_ptr < end_src_ptr;) {
 		// Accumulate transitions which have occurred in this sample
 		accumulator = 0;
 		diff_counter = MipMapScaleFactor;
-		while (diff_counter-- > 0)
-		{
+		while (diff_counter-- > 0) {
 			const uint64_t sample = unpack_sample(src_ptr);
 			accumulator |= last_append_sample_ ^ sample;
 			last_append_sample_ = sample;
@@ -227,8 +224,7 @@ void LogicSegment::append_payload_to_mipmap()
 	}
 
 	// Compute higher level mipmaps
-	for (unsigned int level = 1; level < ScaleStepCount; level++)
-	{
+	for (unsigned int level = 1; level < ScaleStepCount; level++) {
 		MipMapLevel &m = mip_map_[level];
 		const MipMapLevel &ml = mip_map_[level-1];
 
@@ -248,14 +244,12 @@ void LogicSegment::append_payload_to_mipmap()
 		const uint8_t *const end_dest_ptr =
 			(uint8_t*)m.data + unit_size_ * m.length;
 		for (dest_ptr = (uint8_t*)m.data +
-			unit_size_ * prev_length;
-			dest_ptr < end_dest_ptr;
-			dest_ptr += unit_size_)
-		{
+				unit_size_ * prev_length;
+				dest_ptr < end_dest_ptr;
+				dest_ptr += unit_size_) {
 			accumulator = 0;
 			diff_counter = MipMapScaleFactor;
-			while (diff_counter-- > 0)
-			{
+			while (diff_counter-- > 0) {
 				accumulator |= unpack_sample(src_ptr);
 				src_ptr += unit_size_;
 			}
@@ -299,8 +293,7 @@ void LogicSegment::get_subsampled_edges(
 	last_sample = (get_sample(start) & sig_mask) != 0;
 	edges.push_back(pair<int64_t, bool>(index++, last_sample));
 
-	while (index + block_length <= end)
-	{
+	while (index + block_length <= end) {
 		//----- Continue to search -----//
 		level = min_level;
 
@@ -308,17 +301,15 @@ void LogicSegment::get_subsampled_edges(
 		// at the minimum level.
 		fast_forward = (mip_map_[level].data != nullptr);
 
-		if (min_length < MipMapScaleFactor)
-		{
+		if (min_length < MipMapScaleFactor) {
 			// Search individual samples up to the beginning of
 			// the next first level mip map block
 			const uint64_t final_index = min(end,
 				pow2_ceil(index, MipMapScalePower));
 
 			for (; index < final_index &&
-				(index & ~(~0 << MipMapScalePower)) != 0;
-				index++)
-			{
+					(index & ~(~0 << MipMapScalePower)) != 0;
+					index++) {
 				const bool sample =
 					(get_sample(index) & sig_mask) != 0;
 
@@ -328,9 +319,7 @@ void LogicSegment::get_subsampled_edges(
 					break;
 				}
 			}
-		}
-		else
-		{
+		} else {
 			// If resolution is less than a mip map block,
 			// round up to the beginning of the mip-map block
 			// for this level of detail
@@ -399,7 +388,7 @@ void LogicSegment::get_subsampled_edges(
 				// Check if we reached the last block at this
 				// level, or if there was a change in this block
 				if (offset >= mip_map_[level].length ||
-					(get_subsample(level, offset) &
+						(get_subsample(level, offset) &
 						sig_mask)) {
 					// Zoom in unless we reached the minimum
 					// zoom

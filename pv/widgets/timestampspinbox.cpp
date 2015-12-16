@@ -104,8 +104,7 @@ void TimestampSpinBox::on_editingFinished()
 		captures.removeFirst(); // remove entire match
 		QString str = captures.join("");
 		setValue(pv::util::Timestamp(str.toStdString()));
-	}
-	else {
+	} else {
 		// replace the malformed entered string with the old value
 		updateEdit();
 	}

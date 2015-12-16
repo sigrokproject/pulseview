@@ -36,19 +36,23 @@ using Glib::Variant;
 namespace pv {
 namespace devices {
 
-Device::Device() {
+Device::Device()
+{
 }
 
-Device::~Device() {
+Device::~Device()
+{
 	if (session_)
 		session_->remove_datafeed_callbacks();
 }
 
-std::shared_ptr<sigrok::Session> Device::session() const {
+std::shared_ptr<sigrok::Session> Device::session() const
+{
 	return session_;
 }
 
-std::shared_ptr<sigrok::Device> Device::device() const {
+std::shared_ptr<sigrok::Device> Device::device() const
+{
 	return device_;
 }
 
@@ -80,18 +84,21 @@ T Device::read_config(const ConfigKey *key, const T default_value)
 		device_->config_get(ConfigKey::SAMPLERATE)).get();
 }
 
-void Device::start() {
+void Device::start()
+{
 	assert(session_);
 	session_->start();
 }
 
-void Device::run() {
+void Device::run()
+{
 	assert(device_);
 	assert(session_);
 	session_->run();
 }
 
-void Device::stop() {
+void Device::stop()
+{
 	assert(session_);
 	session_->stop();
 }

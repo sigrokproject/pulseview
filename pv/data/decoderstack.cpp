@@ -136,8 +136,7 @@ std::vector<Row> DecoderStack::get_visible_rows() const
 
 	vector<Row> rows;
 
-	for (const shared_ptr<decode::Decoder> &dec : stack_)
-	{
+	for (const shared_ptr<decode::Decoder> &dec : stack_) {
 		assert(dec);
 		if (!dec->shown())
 			continue;
@@ -150,8 +149,7 @@ std::vector<Row> DecoderStack::get_visible_rows() const
 			rows.push_back(Row(decc));
 
 		// Add the decoder rows
-		for (const GSList *l = decc->annotation_rows; l; l = l->next)
-		{
+		for (const GSList *l = decc->annotation_rows; l; l = l->next) {
 			const srd_decoder_annotation_row *const ann_row =
 				(srd_decoder_annotation_row *)l->data;
 			assert(ann_row);
@@ -213,8 +211,7 @@ void DecoderStack::begin_decode()
 		}
 
 	// Add classes
-	for (const shared_ptr<decode::Decoder> &dec : stack_)
-	{
+	for (const shared_ptr<decode::Decoder> &dec : stack_) {
 		assert(dec);
 		const srd_decoder *const decc = dec->decoder();
 		assert(dec->decoder());
@@ -224,8 +221,7 @@ void DecoderStack::begin_decode()
 			rows_[Row(decc)] = decode::RowData();
 
 		// Add the decoder rows
-		for (const GSList *l = decc->annotation_rows; l; l = l->next)
-		{
+		for (const GSList *l = decc->annotation_rows; l; l = l->next) {
 			const srd_decoder_annotation_row *const ann_row =
 				(srd_decoder_annotation_row *)l->data;
 			assert(ann_row);
@@ -304,8 +300,7 @@ void DecoderStack::decode_data(
 		DecodeChunkLength / segment_->unit_size();
 
 	for (int64_t i = 0; !interrupt_ && i < sample_count;
-		i += chunk_sample_count)
-	{
+			i += chunk_sample_count) {
 		lock_guard<mutex> decode_lock(global_decode_mutex_);
 
 		const int64_t chunk_end = min(
@@ -345,12 +340,10 @@ void DecoderStack::decode_proc()
 	// Create the decoders
 	const unsigned int unit_size = segment_->unit_size();
 
-	for (const shared_ptr<decode::Decoder> &dec : stack_)
-	{
+	for (const shared_ptr<decode::Decoder> &dec : stack_) {
 		srd_decoder_inst *const di = dec->create_decoder_inst(session);
 
-		if (!di)
-		{
+		if (!di) {
 			error_message_ = tr("Failed to create decoder instance");
 			srd_session_destroy(session);
 			return;
@@ -409,8 +402,7 @@ void DecoderStack::annotation_callback(srd_proto_data *pdata, void *decoder)
 	const auto r = d->class_rows_.find(make_pair(decc, a.format()));
 	if (r != d->class_rows_.end())
 		row_iter = d->rows_.find((*r).second);
-	else
-	{
+	else {
 		// Failing that, use the decoder as a key
 		row_iter = d->rows_.find(Row(decc));	
 	}

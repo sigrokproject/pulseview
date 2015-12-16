@@ -49,8 +49,7 @@ void Binding::add_properties_to_form(QFormLayout *layout,
 {
 	assert(layout);
 
-	for (shared_ptr<pv::prop::Property> p : properties_)
-	{
+	for (shared_ptr<pv::prop::Property> p : properties_) {
 		assert(p);
 
 		QWidget *const widget = p->get_widget(layout->parentWidget(),

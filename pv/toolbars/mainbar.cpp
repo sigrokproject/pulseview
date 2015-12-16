@@ -278,7 +278,7 @@ void MainBar::update_sample_rate_selector()
 		(*iter).second.find(sigrok::LIST) != (*iter).second.end()) {
 		try {
 			gvar_dict = sr_dev->config_list(ConfigKey::SAMPLERATE);
-		} catch(const sigrok::Error &e) {
+		} catch (const sigrok::Error &e) {
 			// Failed to enunmerate samplerate
 			(void)e;
 		}
@@ -291,8 +291,7 @@ void MainBar::update_sample_rate_selector()
 	}
 
 	if ((gvar_list = g_variant_lookup_value(gvar_dict.gobj(),
-			"samplerate-steps", G_VARIANT_TYPE("at"))))
-	{
+			"samplerate-steps", G_VARIANT_TYPE("at")))) {
 		elements = (const uint64_t *)g_variant_get_fixed_array(
 				gvar_list, &num_elements, sizeof(uint64_t));
 
@@ -309,18 +308,15 @@ void MainBar::update_sample_rate_selector()
 
 		if (step == 1)
 			sample_rate_.show_125_list(min, max);
-		else
-		{
+		else {
 			// When the step is not 1, we cam't make a 1-2-5-10
 			// list of sample rates, because we may not be able to
 			// make round numbers. Therefore in this case, show a
 			// spin box.
 			sample_rate_.show_min_max_step(min, max, step);
 		}
-	}
-	else if ((gvar_list = g_variant_lookup_value(gvar_dict.gobj(),
-			"samplerates", G_VARIANT_TYPE("at"))))
-	{
+	} else if ((gvar_list = g_variant_lookup_value(gvar_dict.gobj(),
+			"samplerates", G_VARIANT_TYPE("at")))) {
 		elements = (const uint64_t *)g_variant_get_fixed_array(
 				gvar_list, &num_elements, sizeof(uint64_t));
 		sample_rate_.show_list(elements, num_elements);
@@ -370,8 +366,7 @@ void MainBar::update_sample_count_selector()
 	assert(!updating_sample_count_);
 	updating_sample_count_ = true;
 
-	if (!sample_count_supported_)
-	{
+	if (!sample_count_supported_) {
 		sample_count_.show_none();
 		updating_sample_count_ = false;
 		return;
@@ -394,7 +389,7 @@ void MainBar::update_sample_count_selector()
 			if (gvar.gobj())
 				g_variant_get(gvar.gobj(), "(tt)",
 					&min_sample_count, &max_sample_count);
-		} catch(const sigrok::Error &e) {
+		} catch (const sigrok::Error &e) {
 			// Failed to query sample limit
 			(void)e;
 		}
@@ -455,8 +450,7 @@ void MainBar::update_device_config_widgets()
 	sample_count_supported_ = false;
 
 	try {
-		for (auto entry : sr_dev->config_keys(ConfigKey::DEVICE_OPTIONS))
-		{
+		for (auto entry : sr_dev->config_keys(ConfigKey::DEVICE_OPTIONS)) {
 			auto key = entry.first;
 			auto capabilities = entry.second;
 			switch (key->id()) {
@@ -465,8 +459,7 @@ void MainBar::update_device_config_widgets()
 					sample_count_supported_ = true;
 				break;
 			case SR_CONF_LIMIT_FRAMES:
-				if (capabilities.count(Capability::SET))
-				{
+				if (capabilities.count(Capability::SET)) {
 					sr_dev->config_set(ConfigKey::LIMIT_FRAMES,
 						Glib::Variant<guint64>::create(1));
 					on_config_changed();
@@ -500,8 +493,7 @@ void MainBar::commit_sample_count()
 	const shared_ptr<sigrok::Device> sr_dev = device->device();
 
 	sample_count = sample_count_.value();
-	if (sample_count_supported_)
-	{
+	if (sample_count_supported_) {
 		try {
 			sr_dev->config_set(ConfigKey::LIMIT_SAMPLES,
 				Glib::Variant<guint64>::create(sample_count));
@@ -586,9 +578,9 @@ void MainBar::on_config_changed()
 
 bool MainBar::eventFilter(QObject *watched, QEvent *event)
 {
-	if (sample_count_supported_ &&
-		(watched == &sample_count_ || watched == &sample_rate_) &&
-		(event->type() == QEvent::ToolTip)) {
+	if (sample_count_supported_ && (watched == &sample_count_ ||
+			watched == &sample_rate_) &&
+			(event->type() == QEvent::ToolTip)) {
 		auto sec = pv::util::Timestamp(sample_count_.value()) / sample_rate_.value();
 		QHelpEvent *help_event = static_cast<QHelpEvent*>(event);
 

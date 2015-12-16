@@ -151,10 +151,12 @@ const shared_ptr<devices::HardwareDevice> DeviceManager::find_device_from_info(
 
 		// If present, vendor and model always have to match.
 		if (dev_info.count("vendor") > 0 && search_info.count("vendor") > 0)
-			if (dev_info.at("vendor") != search_info.at("vendor")) continue;
+			if (dev_info.at("vendor") != search_info.at("vendor"))
+				continue;
 
 		if (dev_info.count("model") > 0 && search_info.count("model") > 0)
-			if (dev_info.at("model") != search_info.at("model")) continue;
+			if (dev_info.at("model") != search_info.at("model"))
+				continue;
 
 		// Most unique match: vendor/model/serial_num (but don't match a S/N of 0)
 		if ((dev_info.count("serial_num") > 0) && (dev_info.at("serial_num") != "0")
@@ -189,7 +191,8 @@ const shared_ptr<devices::HardwareDevice> DeviceManager::find_device_from_info(
 }
 
 bool DeviceManager::compare_devices(shared_ptr<devices::Device> a,
-	shared_ptr<devices::Device> b) {
+	shared_ptr<devices::Device> b)
+{
 	assert(a);
 	assert(b);
 	return a->display_name(*this).compare(b->display_name(*this)) < 0;

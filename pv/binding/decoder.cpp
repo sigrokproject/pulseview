@@ -59,8 +59,7 @@ Decoder::Decoder(
 	const srd_decoder *const dec = decoder_->decoder();
 	assert(dec);
 
-	for (GSList *l = dec->options; l; l = l->next)
-	{
+	for (GSList *l = dec->options; l; l = l->next) {
 		const srd_decoder_option *const opt =
 			(srd_decoder_option*)l->data;
 
@@ -116,13 +115,11 @@ Glib::VariantBase Decoder::getter(const char *id)
 
 	if (iter != options.end())
 		val = (*iter).second;
-	else
-	{
+	else {
 		assert(decoder_->decoder());
 
 		// Get the default value if not
-		for (GSList *l = decoder_->decoder()->options; l; l = l->next)
-		{
+		for (GSList *l = decoder_->decoder()->options; l; l = l->next) {
 			const srd_decoder_option *const opt =
 				(srd_decoder_option*)l->data;
 			if (strcmp(opt->id, id) == 0) {

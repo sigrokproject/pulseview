@@ -86,14 +86,12 @@ Channels::Channels(Session &session, QWidget *parent) :
 		signal_map[sig->channel()] = sig;
 
 	// Populate channel groups
-	for (auto entry : device->channel_groups())
-	{
+	for (auto entry : device->channel_groups()) {
 		shared_ptr<ChannelGroup> group = entry.second;
 		// Make a set of signals, and removed this signals from the
 		// signal map.
 		vector< shared_ptr<Signal> > group_sigs;
-		for (auto channel : group->channels())
-		{
+		for (auto channel : group->channels()) {
 			const auto iter = signal_map.find(channel);
 
 			if (iter == signal_map.end())
@@ -108,8 +106,7 @@ Channels::Channels(Session &session, QWidget *parent) :
 
 	// Make a vector of the remaining channels
 	vector< shared_ptr<Signal> > global_sigs;
-	for (auto channel : device->channels())
-	{
+	for (auto channel : device->channels()) {
 		const map<shared_ptr<Channel>, shared_ptr<Signal> >::
 			const_iterator iter = signal_map.find(channel);
 		if (iter != signal_map.end())
@@ -144,9 +141,8 @@ void Channels::set_all_channels(bool set)
 	updating_channels_ = true;
 
 	for (map<QCheckBox*, shared_ptr<Signal> >::const_iterator i =
-		check_box_signal_map_.begin();
-		i != check_box_signal_map_.end(); i++)
-	{
+			check_box_signal_map_.begin();
+			i != check_box_signal_map_.end(); i++) {
 		const shared_ptr<Signal> sig = (*i).second;
 		assert(sig);
 
@@ -194,8 +190,7 @@ QGridLayout* Channels::create_channel_group_grid(
 	int row = 0, col = 0;
 	QGridLayout *const grid = new QGridLayout();
 
-	for (const shared_ptr<pv::view::Signal>& sig : sigs)
-	{
+	for (const shared_ptr<pv::view::Signal>& sig : sigs) {
 		assert(sig);
 
 		QCheckBox *const checkbox = new QCheckBox(sig->name());
@@ -221,9 +216,8 @@ void Channels::showEvent(QShowEvent *e)
 	updating_channels_ = true;
 
 	for (map<QCheckBox*, shared_ptr<Signal> >::const_iterator i =
-		check_box_signal_map_.begin();
-		i != check_box_signal_map_.end(); i++)
-	{
+			check_box_signal_map_.begin();
+			i != check_box_signal_map_.end(); i++) {
 		const shared_ptr<Signal> sig = (*i).second;
 		assert(sig);
 

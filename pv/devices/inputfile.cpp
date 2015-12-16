@@ -37,27 +37,32 @@ InputFile::InputFile(const std::shared_ptr<sigrok::Context> &context,
 	File(file_name),
 	context_(context),
 	input_(format->create_input(options)),
-	interrupt_(false) {
+	interrupt_(false)
+{
 	if (!input_)
 		throw QString("Failed to create input");
 }
 
-void InputFile::open() {
+void InputFile::open()
+{
 	if (session_)
 		close();
 
 	session_ = context_->create_session();
 }
 
-void InputFile::close() {
+void InputFile::close()
+{
 	if (session_)
 		session_->remove_devices();
 }
 
-void InputFile::start() {
+void InputFile::start()
+{
 }
 
-void InputFile::run() {
+void InputFile::run()
+{
 	char buffer[BufferSize];
 	bool need_device = true;
 
@@ -92,7 +97,8 @@ void InputFile::run() {
 	input_->end();
 }
 
-void InputFile::stop() {
+void InputFile::stop()
+{
 	interrupt_ = true;
 }
 

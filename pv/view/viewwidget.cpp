@@ -73,8 +73,7 @@ bool ViewWidget::accept_drag() const
 	const bool any_time_items_selected = any_of(items.begin(), items.end(),
 		[](const shared_ptr<TimeItem> &i) { return i->selected(); });
 
-	if (any_row_items_selected && !any_time_items_selected)
-	{
+	if (any_row_items_selected && !any_time_items_selected) {
 		// Check all the drag items share a common owner
 		TraceTreeItemOwner *item_owner = nullptr;
 		for (shared_ptr<TraceTreeItem> r : trace_tree_items)
@@ -86,9 +85,7 @@ bool ViewWidget::accept_drag() const
 			}
 
 		return true;
-	}
-	else if (any_time_items_selected && !any_row_items_selected)
-	{
+	} else if (any_time_items_selected && !any_row_items_selected) {
 		return true;
 	}
 
@@ -212,8 +209,7 @@ void ViewWidget::mouse_left_release_event(QMouseEvent *event)
 
 	if (item_dragging_)
 		view_.restack_all_trace_tree_items();
-	else
-	{
+	else {
 		if (!ctrl_pressed) {
 			for (shared_ptr<ViewItem> i : items)
 				if (mouse_down_item_ != i)
@@ -278,10 +274,8 @@ void ViewWidget::mouseMoveEvent(QMouseEvent *e)
 
 	if (!e->buttons())
 		item_hover(get_mouse_over_item(e->pos()));
-	else if (e->buttons() & Qt::LeftButton)
-	{
-		if (!item_dragging_)
-		{
+	else if (e->buttons() & Qt::LeftButton) {
+		if (!item_dragging_) {
 			if ((e->pos() - mouse_down_point_).manhattanLength() <
 				QApplication::startDragDistance())
 				return;

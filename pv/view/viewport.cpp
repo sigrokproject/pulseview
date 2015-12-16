@@ -203,8 +203,7 @@ void Viewport::wheelEvent(QWheelEvent *e)
 {
 	assert(e);
 
-	if (e->orientation() == Qt::Vertical)
-	{
+	if (e->orientation() == Qt::Vertical) {
 		if (e->modifiers() & Qt::ControlModifier) {
 			// Vertical scrolling with the control key pressed
 			// is intrepretted as vertical scrolling
@@ -214,9 +213,7 @@ void Viewport::wheelEvent(QWheelEvent *e)
 			// Vertical scrolling is interpreted as zooming in/out
 			view_.zoom(e->delta() / 120, e->x());
 		}
-	}
-	else if (e->orientation() == Qt::Horizontal)
-	{
+	} else if (e->orientation() == Qt::Horizontal) {
 		// Horizontal scrolling is interpreted as moving left/right
 		view_.set_scale_offset(view_.scale(),
 			e->delta() * view_.scale() + view_.offset());
