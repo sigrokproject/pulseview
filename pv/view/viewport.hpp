@@ -97,6 +97,7 @@ private:
 
 private:
 	boost::optional<pv::util::Timestamp> drag_offset_;
+	int drag_v_offset_;
 
 	double pinch_offset0_;
 	double pinch_offset1_;

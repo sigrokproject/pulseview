@@ -78,6 +78,7 @@ void Viewport::item_hover(const shared_ptr<ViewItem> &item)
 void Viewport::drag()
 {
 	drag_offset_ = view_.offset();
+	drag_v_offset_ = view_.owner_visual_v_offset();
 }
 
 void Viewport::drag_by(const QPoint &delta)
@@ -87,6 +88,8 @@ void Viewport::drag_by(const QPoint &delta)
 
 	view_.set_scale_offset(view_.scale(),
 		(*drag_offset_ - delta.x() * view_.scale()));
+
+	view_.set_v_offset(-drag_v_offset_ - delta.y());
 }
 
 void Viewport::drag_release()
