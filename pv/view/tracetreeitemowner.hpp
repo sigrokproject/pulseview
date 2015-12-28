@@ -100,7 +100,7 @@ public:
 	/*
 	 * Reassigns background color states to all its children, thereby
 	 * providing them with alternating backgrounds.
-	 * @param next_brightness_state First brightness state to use.
+	 * @param next_bgcolour_state First brightness state to use.
 	 * @return The next brightness state to use.
 	 */
 	bool reassign_bgcolour_states(bool next_bgcolour_state);

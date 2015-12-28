@@ -111,7 +111,7 @@ public:
 	QPoint point(const QRect &rect) const;
 
 	/**
-     * Sets the new background colour state: false means dark, true means bright.
+	 * Sets the new background colour state: false = dark, true = bright.
 	 * This is to allow for alternating backgrounds but has no effect
 	 * when coloured background colours are used.
 	 * @param state New bg color state to use.
