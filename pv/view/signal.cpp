@@ -107,6 +107,12 @@ const ViewItemOwner::item_list& Signal::child_items() const
 	return items_;
 }
 
+void Signal::paint_back(QPainter &p, const ViewItemPaintParams &pp)
+{
+	if (channel_->enabled())
+		Trace::paint_back(p, pp);
+}
+
 void Signal::populate_popup_form(QWidget *parent, QFormLayout *form)
 {
 	name_widget_ = new QComboBox(parent);

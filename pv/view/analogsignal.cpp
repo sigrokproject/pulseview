@@ -63,7 +63,7 @@ AnalogSignal::AnalogSignal(
 	scale_index_(0),
 	scale_index_drag_offset_(0)
 {
-	colour_ = SignalColours[channel_->index() % countof(SignalColours)];
+	set_colour(SignalColours[channel_->index() % countof(SignalColours)]);
 }
 
 AnalogSignal::~AnalogSignal()
@@ -105,8 +105,10 @@ void AnalogSignal::scale_handle_drag_release()
 
 void AnalogSignal::paint_back(QPainter &p, const ViewItemPaintParams &pp)
 {
-	if (channel_->enabled())
+	if (channel_->enabled()) {
+		Trace::paint_back(p, pp);
 		paint_axis(p, pp, get_visual_y());
+	}
 }
 
 void AnalogSignal::paint_mid(QPainter &p, const ViewItemPaintParams &pp)

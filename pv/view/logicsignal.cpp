@@ -113,7 +113,7 @@ LogicSignal::LogicSignal(
 {
 	shared_ptr<Trigger> trigger;
 
-	colour_ = SignalColours[channel->index() % countof(SignalColours)];
+	set_colour(SignalColours[channel->index() % countof(SignalColours)]);
 
 	/* Populate this channel's trigger setting with whatever we
 	 * find in the current session trigger, if anything. */
@@ -161,12 +161,6 @@ void LogicSignal::scale_handle_dragged(int offset)
 	const int font_height = QFontMetrics(QApplication::font()).height();
 	const int units = (-offset / font_height);
 	signal_height_ = ((units < 1) ? 1 : units) * font_height;
-}
-
-void LogicSignal::paint_back(QPainter &p, const ViewItemPaintParams &pp)
-{
-	if (channel_->enabled())
-		paint_axis(p, pp, get_visual_y());
 }
 
 void LogicSignal::paint_mid(QPainter &p, const ViewItemPaintParams &pp)

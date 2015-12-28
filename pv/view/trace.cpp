@@ -66,6 +66,9 @@ QColor Trace::colour() const
 void Trace::set_colour(QColor colour)
 {
 	colour_ = colour;
+
+	bgcolour_ = colour;
+	bgcolour_.setAlpha(20);
 }
 
 void Trace::paint_label(QPainter &p, const QRect &rect, bool hover)
@@ -170,6 +173,21 @@ QRectF Trace::hit_box_rect(const ViewItemPaintParams &pp) const
 		pp.width(), h);
 }
 
+void Trace::paint_back(QPainter &p, const ViewItemPaintParams &pp)
+{
+	p.setPen(QPen(Qt::NoPen));
+	p.setBrush(bgcolour_);
+
+	const std::pair<int, int> extents = v_extents();
+
+	const int x = 0;
+	const int y = get_visual_y() + extents.first;
+	const int w = pp.right() - pp.left();
+	const int h = extents.second - extents.first;
+
+	p.drawRect(x, y, w, h);
+}
+
 void Trace::paint_axis(QPainter &p, const ViewItemPaintParams &pp, int y)
 {
 	p.setPen(AxisPen);
@@ -236,7 +254,7 @@ void Trace::on_colour_changed(const QColor &colour)
 	set_colour(colour);
 
 	if (owner_)
-		owner_->row_item_appearance_changed(true, false);
+		owner_->row_item_appearance_changed(true, true);
 }
 
 } // namespace view
