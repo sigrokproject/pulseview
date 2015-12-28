@@ -42,6 +42,7 @@
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
 
+#include "analogsignal.hpp"
 #include "decodetrace.hpp"
 #include "header.hpp"
 #include "logicsignal.hpp"
@@ -435,6 +436,31 @@ pair<Timestamp, Timestamp> View::get_time_extents() const
 void View::enable_sticky_scrolling(bool state)
 {
 	sticky_scrolling_ = state;
+}
+
+void View::enable_coloured_bg(bool state)
+{
+	const vector<shared_ptr<TraceTreeItem>> items(
+		list_by_type<TraceTreeItem>());
+
+	for (shared_ptr<TraceTreeItem> i : items) {
+		// Can't cast to Trace because it's abstract, so we need to
+		// check for any derived classes individually
+
+		shared_ptr<AnalogSignal> a = dynamic_pointer_cast<AnalogSignal>(i);
+		if (a)
+			a->set_coloured_bg(state);
+
+		shared_ptr<LogicSignal> l = dynamic_pointer_cast<LogicSignal>(i);
+		if (l)
+			l->set_coloured_bg(state);
+
+		shared_ptr<DecodeTrace> d = dynamic_pointer_cast<DecodeTrace>(i);
+		if (d)
+			d->set_coloured_bg(state);
+	}
+
+	viewport_->update();
 }
 
 bool View::cursors_shown() const

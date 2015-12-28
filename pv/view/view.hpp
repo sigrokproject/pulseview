@@ -172,6 +172,12 @@ public:
 	void enable_sticky_scrolling(bool state);
 
 	/**
+	 * Enables or disables coloured trace backgrounds. If they're not
+	 * coloured then they will use alternating colors.
+	 */
+	void enable_coloured_bg(bool state);
+
+	/**
 	 * Returns true if cursors are displayed. false otherwise.
 	 */
 	bool cursors_shown() const;

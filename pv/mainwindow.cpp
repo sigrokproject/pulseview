@@ -476,11 +476,13 @@ void MainWindow::setup_ui()
 
 	action_view_coloured_bg_->setCheckable(true);
 	action_view_coloured_bg_->setChecked(true);
-	action_view_coloured_bg_->setShortcut(QKeySequence(Qt::Key_S));
+	action_view_coloured_bg_->setShortcut(QKeySequence(Qt::Key_B));
 	action_view_coloured_bg_->setObjectName(
 		QString::fromUtf8("actionViewColouredBg"));
 	action_view_coloured_bg_->setText(tr("Use &coloured backgrounds"));
 	menu_view->addAction(action_view_coloured_bg_);
+
+	view_->enable_coloured_bg(action_view_coloured_bg_->isChecked());
 
 	menu_view->addSeparator();
 
@@ -807,6 +809,7 @@ void MainWindow::on_actionViewStickyScrolling_triggered()
 
 void MainWindow::on_actionViewColouredBg_triggered()
 {
+	view_->enable_coloured_bg(action_view_coloured_bg_->isChecked());
 }
 
 void MainWindow::on_actionViewShowCursors_triggered()

@@ -43,6 +43,7 @@ const int Trace::LabelHitPadding = 2;
 
 Trace::Trace(QString name) :
 	name_(name),
+	coloured_bg_(true), // Default setting is set in MainWindow::setup_ui()
 	popup_(nullptr),
 	popup_form_(nullptr)
 {
@@ -69,6 +70,11 @@ void Trace::set_colour(QColor colour)
 
 	bgcolour_ = colour;
 	bgcolour_.setAlpha(20);
+}
+
+void Trace::set_coloured_bg(bool state)
+{
+	coloured_bg_ = state;
 }
 
 void Trace::paint_label(QPainter &p, const QRect &rect, bool hover)
@@ -175,17 +181,19 @@ QRectF Trace::hit_box_rect(const ViewItemPaintParams &pp) const
 
 void Trace::paint_back(QPainter &p, const ViewItemPaintParams &pp)
 {
-	p.setPen(QPen(Qt::NoPen));
-	p.setBrush(bgcolour_);
+	if (coloured_bg_) {
+		p.setPen(QPen(Qt::NoPen));
+		p.setBrush(bgcolour_);
 
-	const std::pair<int, int> extents = v_extents();
+		const std::pair<int, int> extents = v_extents();
 
-	const int x = 0;
-	const int y = get_visual_y() + extents.first;
-	const int w = pp.right() - pp.left();
-	const int h = extents.second - extents.first;
+		const int x = 0;
+		const int y = get_visual_y() + extents.first;
+		const int w = pp.right() - pp.left();
+		const int h = extents.second - extents.first;
 
-	p.drawRect(x, y, w, h);
+		p.drawRect(x, y, w, h);
+	}
 }
 
 void Trace::paint_axis(QPainter &p, const ViewItemPaintParams &pp, int y)

@@ -74,6 +74,11 @@ public:
 	void set_colour(QColor colour);
 
 	/**
+	 * Enables or disables the coloured background for this trace.
+	 */
+	void set_coloured_bg(bool state);
+
+	/**
 	 * Computes the outline rectangle of the viewport hit-box.
 	 * @param rect the rectangle of the viewport area.
 	 * @return Returns the rectangle of the hit-box.
@@ -131,6 +136,7 @@ private Q_SLOTS:
 protected:
 	QString name_;
 	QColor colour_, bgcolour_;
+	bool coloured_bg_;
 
 private:
 	pv::widgets::Popup *popup_;
