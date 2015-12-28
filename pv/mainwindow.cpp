@@ -459,7 +459,7 @@ void MainWindow::setup_ui()
 		QString::fromUtf8("actionViewZoomOneToOne"));
 	menu_view->addAction(action_view_zoom_one_to_one_);
 
-	menu_file->addSeparator();
+	menu_view->addSeparator();
 
 	action_view_sticky_scrolling_->setCheckable(true);
 	action_view_sticky_scrolling_->setChecked(true);
