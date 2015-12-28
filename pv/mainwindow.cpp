@@ -110,6 +110,7 @@ MainWindow::MainWindow(DeviceManager &device_manager,
 	action_view_zoom_fit_(new QAction(this)),
 	action_view_zoom_one_to_one_(new QAction(this)),
 	action_view_sticky_scrolling_(new QAction(this)),
+	action_view_coloured_bg_(new QAction(this)),
 	action_view_show_cursors_(new QAction(this)),
 	action_about_(new QAction(this))
 #ifdef ENABLE_DECODE
@@ -473,6 +474,16 @@ void MainWindow::setup_ui()
 
 	menu_view->addSeparator();
 
+	action_view_coloured_bg_->setCheckable(true);
+	action_view_coloured_bg_->setChecked(true);
+	action_view_coloured_bg_->setShortcut(QKeySequence(Qt::Key_S));
+	action_view_coloured_bg_->setObjectName(
+		QString::fromUtf8("actionViewColouredBg"));
+	action_view_coloured_bg_->setText(tr("Use &coloured backgrounds"));
+	menu_view->addAction(action_view_coloured_bg_);
+
+	menu_view->addSeparator();
+
 	action_view_show_cursors_->setCheckable(true);
 	action_view_show_cursors_->setChecked(view_->cursors_shown());
 	action_view_show_cursors_->setIcon(QIcon::fromTheme("show-cursors",
@@ -792,6 +803,10 @@ void MainWindow::on_actionViewZoomOneToOne_triggered()
 void MainWindow::on_actionViewStickyScrolling_triggered()
 {
 	view_->enable_sticky_scrolling(action_view_sticky_scrolling_->isChecked());
+}
+
+void MainWindow::on_actionViewColouredBg_triggered()
+{
 }
 
 void MainWindow::on_actionViewShowCursors_triggered()

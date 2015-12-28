@@ -92,6 +92,7 @@ public:
 	QAction* action_view_zoom_fit() const;
 	QAction* action_view_zoom_one_to_one() const;
 	QAction* action_view_sticky_scrolling() const;
+	QAction* action_view_coloured_bg() const;
 	QAction* action_view_show_cursors() const;
 	QAction* action_about() const;
 
@@ -160,6 +161,8 @@ private Q_SLOTS:
 
 	void on_actionViewStickyScrolling_triggered();
 
+	void on_actionViewColouredBg_triggered();
+
 	void on_actionViewShowCursors_triggered();
 
 	void on_actionAbout_triggered();
@@ -195,6 +198,7 @@ private:
 	QAction *const action_view_zoom_fit_;
 	QAction *const action_view_zoom_one_to_one_;
 	QAction *const action_view_sticky_scrolling_;
+	QAction *const action_view_coloured_bg_;
 	QAction *const action_view_show_cursors_;
 	QAction *const action_about_;
 
