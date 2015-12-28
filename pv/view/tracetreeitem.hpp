@@ -111,6 +111,14 @@ public:
 	QPoint point(const QRect &rect) const;
 
 	/**
+     * Sets the new background colour state: false means dark, true means bright.
+	 * This is to allow for alternating backgrounds but has no effect
+	 * when coloured background colours are used.
+	 * @param state New bg color state to use.
+	 */
+	void set_bgcolour_state(bool state);
+
+	/**
 	 * Computes the vertical extents of the contents of this row item.
 	 * @return A pair containing the minimum and maximum y-values.
 	 */
@@ -121,6 +129,8 @@ protected:
 
 	int layout_v_offset_;
 	int visual_v_offset_;
+
+	bool bgcolour_state_;
 
 private:
 	QPropertyAnimation v_offset_animation_;

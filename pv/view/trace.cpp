@@ -41,6 +41,9 @@ namespace view {
 const QPen Trace::AxisPen(QColor(128, 128, 128, 64));
 const int Trace::LabelHitPadding = 2;
 
+const QColor Trace::DarkBGColour(235, 235, 235);    // Quite light grey
+const QColor Trace::BrightBGColour(245, 245, 245);  // Very light grey
+
 Trace::Trace(QString name) :
 	name_(name),
 	coloured_bg_(true), // Default setting is set in MainWindow::setup_ui()
@@ -181,19 +184,21 @@ QRectF Trace::hit_box_rect(const ViewItemPaintParams &pp) const
 
 void Trace::paint_back(QPainter &p, const ViewItemPaintParams &pp)
 {
-	if (coloured_bg_) {
-		p.setPen(QPen(Qt::NoPen));
+	if (coloured_bg_)
 		p.setBrush(bgcolour_);
+	else
+		p.setBrush(bgcolour_state_ ? BrightBGColour : DarkBGColour);
 
-		const std::pair<int, int> extents = v_extents();
+	p.setPen(QPen(Qt::NoPen));
 
-		const int x = 0;
-		const int y = get_visual_y() + extents.first;
-		const int w = pp.right() - pp.left();
-		const int h = extents.second - extents.first;
+	const std::pair<int, int> extents = v_extents();
 
-		p.drawRect(x, y, w, h);
-	}
+	const int x = 0;
+	const int y = get_visual_y() + extents.first;
+	const int w = pp.right() - pp.left();
+	const int h = extents.second - extents.first;
+
+	p.drawRect(x, y, w, h);
 }
 
 void Trace::paint_axis(QPainter &p, const ViewItemPaintParams &pp, int y)

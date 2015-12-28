@@ -138,5 +138,10 @@ QPoint TraceTreeItem::point(const QRect &rect) const
 	return QPoint(rect.right(), get_visual_y());
 }
 
+void TraceTreeItem::set_bgcolour_state(bool state)
+{
+       bgcolour_state_ = state;
+}
+
 } // namespace view
 } // namespace pv

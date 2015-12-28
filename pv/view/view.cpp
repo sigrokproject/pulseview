@@ -546,6 +546,12 @@ void View::restack_all_trace_tree_items()
 	for (auto &o : sorted_owners)
 		o->restack_items();
 
+	// Re-assign background colors
+	bool next_bgcolour_state = 0;
+
+	for (auto &o : sorted_owners)
+		next_bgcolour_state = o->reassign_bgcolour_states(next_bgcolour_state);
+
 	// Animate the items to their destination
 	for (const auto &i : items)
 		i->animate_to_layout_v_offset();

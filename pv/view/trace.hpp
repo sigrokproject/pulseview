@@ -49,6 +49,9 @@ private:
 	static const QPen AxisPen;
 	static const int LabelHitPadding;
 
+	static const QColor BrightBGColour;
+	static const QColor DarkBGColour;
+
 protected:
 	Trace(QString name);
 
@@ -136,7 +139,7 @@ private Q_SLOTS:
 protected:
 	QString name_;
 	QColor colour_, bgcolour_;
-	bool coloured_bg_;
+	bool coloured_bg_, coloured_bg_state_;
 
 private:
 	pv::widgets::Popup *popup_;
