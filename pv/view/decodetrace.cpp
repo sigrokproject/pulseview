@@ -138,7 +138,7 @@ DecodeTrace::DecodeTrace(pv::Session &session,
 {
 	assert(decoder_stack_);
 
-	colour_ = DecodeColours[index % countof(DecodeColours)];
+	set_colour(DecodeColours[index % countof(DecodeColours)]);
 
 	connect(decoder_stack_.get(), SIGNAL(new_decode_data()),
 		this, SLOT(on_new_decode_data()));
