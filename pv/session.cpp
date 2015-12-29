@@ -144,10 +144,10 @@ void Session::set_device(shared_ptr<devices::Device> device)
 		(shared_ptr<sigrok::Device> device, shared_ptr<Packet> packet) {
 			data_feed_in(device, packet);
 		});
-	update_signals();
 
 	decode_traces_.clear();
 
+	update_signals();
 	device_selected();
 }
 
