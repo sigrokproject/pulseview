@@ -203,6 +203,11 @@ const Viewport* View::viewport() const
 	return viewport_;
 }
 
+const QSize View::header_size() const
+{
+	return header_->sizeHint();
+}
+
 vector< shared_ptr<TimeItem> > View::time_items() const
 {
 	const vector<shared_ptr<Flag>> f(flags());
