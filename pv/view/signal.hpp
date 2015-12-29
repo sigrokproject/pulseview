@@ -111,7 +111,6 @@ protected:
 	const item_list items_;
 
 	QComboBox *name_widget_;
-	bool updating_name_widget_;
 };
 
 } // namespace view

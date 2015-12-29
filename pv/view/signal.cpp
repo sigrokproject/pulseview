@@ -66,8 +66,7 @@ Signal::Signal(pv::Session &session,
 	channel_(channel),
 	scale_handle_(make_shared<SignalScaleHandle>(*this)),
 	items_({scale_handle_}),
-	name_widget_(nullptr),
-	updating_name_widget_(false)
+	name_widget_(nullptr)
 {
 	assert(channel_);
 }
@@ -75,9 +74,9 @@ Signal::Signal(pv::Session &session,
 void Signal::set_name(QString name)
 {
 	Trace::set_name(name);
-	updating_name_widget_ = true;
-	name_widget_->setEditText(name);
-	updating_name_widget_ = false;
+
+	if (name != name_widget_->currentText())
+		name_widget_->setEditText(name);
 
 	// Store the channel name in sigrok::Channel so that it
 	// will end up in the .sr file upon save.
