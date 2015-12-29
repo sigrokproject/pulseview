@@ -211,9 +211,9 @@ void DecodeTrace::paint_mid(QPainter &p, const ViewItemPaintParams &pp)
 		decoder_stack_->get_annotation_subset(annotations, row,
 			sample_range.first, sample_range.second);
 		if (!annotations.empty()) {
-			for (const Annotation &a : annotations)
-				draw_annotation(a, p, annotation_height,
-					pp, y, base_colour);
+			draw_annotations(annotations, p, annotation_height, pp, y,
+				base_colour);
+
 			y += row_height_;
 
 			visible_rows_.push_back(rows[i]);
@@ -327,6 +327,48 @@ QMenu* DecodeTrace::create_context_menu(QWidget *parent)
 	return menu;
 }
 
+void DecodeTrace::draw_annotations(vector<pv::data::decode::Annotation> annotations,
+		QPainter &p, int h, const ViewItemPaintParams &pp, int y,
+		size_t base_colour)
+{
+	using namespace pv::data::decode;
+
+	vector<Annotation> a_block;
+	int prev_ann_pos = INT_MIN;
+
+	double samples_per_pixel, pixels_offset;
+	tie(pixels_offset, samples_per_pixel) =
+		get_pixels_offset_samples_per_pixel();
+
+	// Gather all annotations that form a visual "block" and draw them as such
+	for (const Annotation &a : annotations) {
+
+		const int end = a.end_sample() / samples_per_pixel - pixels_offset;
+		const int delta = end - prev_ann_pos;
+
+		// Some annotations are in reverse order, so we cannot
+		// simply check for delta > 1
+		if (abs(delta) > 1) {
+			// Block was broken, draw it
+			if (a_block.size() == 1)
+				draw_annotation(a_block.front(), p, h, pp, y, base_colour);
+			else
+				if (a_block.size() > 0)
+					draw_annotation_block(a_block, p, h, pp, y, base_colour);
+
+			a_block.clear();
+		}
+
+		a_block.push_back(a);
+		prev_ann_pos = end;
+	}
+
+	if (a_block.size() == 1)
+		draw_annotation(a_block.front(), p, h, pp, y, base_colour);
+	else
+		draw_annotation_block(a_block, p, h, pp, y, base_colour);
+}
+
 void DecodeTrace::draw_annotation(const pv::data::decode::Annotation &a,
 	QPainter &p, int h, const ViewItemPaintParams &pp, int y,
 	size_t base_colour) const
@@ -351,6 +393,33 @@ void DecodeTrace::draw_annotation(const pv::data::decode::Annotation &a,
 		draw_instant(a, p, fill, outline, h, start, y);
 	else
 		draw_range(a, p, fill, outline, h, start, end, y);
+}
+
+void DecodeTrace::draw_annotation_block(vector<pv::data::decode::Annotation> a,
+	QPainter &p, int h, const ViewItemPaintParams &pp, int y,
+	size_t base_colour) const
+{
+	double samples_per_pixel, pixels_offset;
+	tie(pixels_offset, samples_per_pixel) =
+		get_pixels_offset_samples_per_pixel();
+
+	const size_t colour =
+		(base_colour + a.front().format()) % countof(Colours);
+
+	const int start = a.front().start_sample() / samples_per_pixel -
+		pixels_offset;
+	const int end = a.back().end_sample() / samples_per_pixel -
+		pixels_offset;
+
+	const QRectF rect(
+		std::max(pp.left(), start),
+		y - h/2 + 0.5,
+		std::min(pp.right(), end) - std::max(pp.left(), start) + 1,
+		h);
+
+	p.setPen(OutlineColours[colour]);
+	p.setBrush(Colours[colour]);
+	p.drawRect(rect);
 }
 
 void DecodeTrace::draw_instant(const pv::data::decode::Annotation &a, QPainter &p,

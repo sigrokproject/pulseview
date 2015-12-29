@@ -26,6 +26,7 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <vector>
 
 #include <QSignalMapper>
 
@@ -124,8 +125,16 @@ public:
 	void delete_pressed();
 
 private:
+	void draw_annotations(std::vector<pv::data::decode::Annotation> annotations,
+		QPainter &p, int h, const ViewItemPaintParams &pp, int y,
+		size_t base_colour);
+
 	void draw_annotation(const pv::data::decode::Annotation &a, QPainter &p,
 		int text_height, const ViewItemPaintParams &pp, int y,
+		size_t base_colour) const;
+
+	void draw_annotation_block(std::vector<pv::data::decode::Annotation> a,
+		QPainter &p, int h, const ViewItemPaintParams &pp, int y,
 		size_t base_colour) const;
 
 	void draw_instant(const pv::data::decode::Annotation &a, QPainter &p,
