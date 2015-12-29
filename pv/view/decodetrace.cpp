@@ -160,10 +160,10 @@ const std::shared_ptr<pv::data::DecoderStack>& DecodeTrace::decoder() const
 
 pair<int, int> DecodeTrace::v_extents() const
 {
-	/// @todo Replace this with an implementation that knows the true
-	/// height of the trace
 	const int row_height = (ViewItemPaintParams::text_height() * 6) / 4;
-	return make_pair(-row_height / 2, row_height * 7 / 2);
+	const int rows = visible_rows_.size();
+
+	return make_pair(-row_height, row_height * rows);
 }
 
 void DecodeTrace::paint_back(QPainter &p, const ViewItemPaintParams &pp)
