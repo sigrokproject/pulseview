@@ -133,6 +133,7 @@ DecodeTrace::DecodeTrace(pv::Session &session,
 	session_(session),
 	decoder_stack_(decoder_stack),
 	row_height_(0),
+	max_visible_rows_(0),
 	delete_mapper_(this),
 	show_hide_mapper_(this)
 {
@@ -161,9 +162,8 @@ const std::shared_ptr<pv::data::DecoderStack>& DecodeTrace::decoder() const
 pair<int, int> DecodeTrace::v_extents() const
 {
 	const int row_height = (ViewItemPaintParams::text_height() * 6) / 4;
-	const int rows = visible_rows_.size();
 
-	return make_pair(-row_height, row_height * rows);
+	return make_pair(-row_height, row_height * max_visible_rows_);
 }
 
 void DecodeTrace::paint_back(QPainter &p, const ViewItemPaintParams &pp)
@@ -222,6 +222,9 @@ void DecodeTrace::paint_mid(QPainter &p, const ViewItemPaintParams &pp)
 
 	// Draw the hatching
 	draw_unresolved_period(p, annotation_height, pp.left(), pp.right());
+
+	// Update the maximum row count if needed
+	max_visible_rows_ = std::max(max_visible_rows_, (int)visible_rows_.size());
 }
 
 void DecodeTrace::paint_fore(QPainter &p, const ViewItemPaintParams &pp)

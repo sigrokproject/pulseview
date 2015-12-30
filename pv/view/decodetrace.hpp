@@ -206,7 +206,7 @@ private:
 	std::vector<pv::widgets::DecoderGroupBox*> decoder_forms_;
 
 	std::vector<data::decode::Row> visible_rows_;
-	int row_height_;
+	int row_height_, max_visible_rows_;
 
 	QSignalMapper delete_mapper_, show_hide_mapper_;
 };
