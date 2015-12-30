@@ -354,7 +354,7 @@ void DecodeTrace::draw_annotations(vector<pv::data::decode::Annotation> annotati
 				draw_annotation(a_block.front(), p, h, pp, y, base_colour);
 			else
 				if (a_block.size() > 0)
-					draw_annotation_block(a_block, p, h, pp, y, base_colour);
+					draw_annotation_block(a_block, p, h, y, base_colour);
 
 			a_block.clear();
 		}
@@ -366,7 +366,7 @@ void DecodeTrace::draw_annotations(vector<pv::data::decode::Annotation> annotati
 	if (a_block.size() == 1)
 		draw_annotation(a_block.front(), p, h, pp, y, base_colour);
 	else
-		draw_annotation_block(a_block, p, h, pp, y, base_colour);
+		draw_annotation_block(a_block, p, h, y, base_colour);
 }
 
 void DecodeTrace::draw_annotation(const pv::data::decode::Annotation &a,
@@ -395,31 +395,53 @@ void DecodeTrace::draw_annotation(const pv::data::decode::Annotation &a,
 		draw_range(a, p, fill, outline, h, start, end, y);
 }
 
-void DecodeTrace::draw_annotation_block(vector<pv::data::decode::Annotation> a,
-	QPainter &p, int h, const ViewItemPaintParams &pp, int y,
-	size_t base_colour) const
+void DecodeTrace::draw_annotation_block(
+	vector<pv::data::decode::Annotation> annotations, QPainter &p, int h,
+	int y, size_t base_colour) const
 {
+	using namespace pv::data::decode;
+
 	double samples_per_pixel, pixels_offset;
 	tie(pixels_offset, samples_per_pixel) =
 		get_pixels_offset_samples_per_pixel();
 
-	const size_t colour =
-		(base_colour + a.front().format()) % countof(Colours);
+	const double start = annotations.front().start_sample() /
+		samples_per_pixel - pixels_offset;
+	const double end = annotations.back().end_sample() /
+		samples_per_pixel - pixels_offset;
 
-	const int start = a.front().start_sample() / samples_per_pixel -
-		pixels_offset;
-	const int end = a.back().end_sample() / samples_per_pixel -
-		pixels_offset;
+	const double top = y + .5 - h / 2;
+	const double bottom = y + .5 + h / 2;
+	const double cap_width = min((end - start) / 4, EndCapWidth);
 
-	const QRectF rect(
-		std::max(pp.left(), start),
-		y - h/2 + 0.5,
-		std::min(pp.right(), end) - std::max(pp.left(), start) + 1,
-		h);
+	QPointF pts[] = {
+		QPointF(start, y + .5f),
+		QPointF(start + cap_width, top),
+		QPointF(end - cap_width, top),
+		QPointF(end, y + .5f),
+		QPointF(end - cap_width, bottom),
+		QPointF(start + cap_width, bottom)
+	};
 
-	p.setPen(OutlineColours[colour]);
-	p.setBrush(Colours[colour]);
-	p.drawRect(rect);
+	const size_t colour = (base_colour + annotations.front().format()) %
+		countof(Colours);
+
+	// Check if all annotations are of the same type (i.e. we can use one color)
+	// or if we should use a neutral color (i.e. gray)
+	bool single_format = true;
+	int format = annotations.front().format();
+
+	for (const Annotation &a : annotations)
+		if (a.format() != format) {
+			single_format = false;
+			break;
+		}
+
+	p.setPen((single_format ? OutlineColours[colour] : Qt::gray));
+	p.setBrush(QBrush((single_format ? Colours[colour] : Qt::gray),
+		Qt::Dense4Pattern));
+
+	p.drawConvexPolygon(pts, countof(pts));
 }
 
 void DecodeTrace::draw_instant(const pv::data::decode::Annotation &a, QPainter &p,

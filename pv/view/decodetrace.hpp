@@ -134,8 +134,7 @@ private:
 		size_t base_colour) const;
 
 	void draw_annotation_block(std::vector<pv::data::decode::Annotation> a,
-		QPainter &p, int h, const ViewItemPaintParams &pp, int y,
-		size_t base_colour) const;
+		QPainter &p, int h, int y, size_t base_colour) const;
 
 	void draw_instant(const pv::data::decode::Annotation &a, QPainter &p,
 		QColor fill, QColor outline, int h, double x, int y) const;
