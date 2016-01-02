@@ -431,14 +431,10 @@ void DecodeTrace::draw_annotation_block(
 
 	// Check if all annotations are of the same type (i.e. we can use one color)
 	// or if we should use a neutral color (i.e. gray)
-	bool single_format = true;
-	int format = annotations.front().format();
-
-	for (const Annotation &a : annotations)
-		if (a.format() != format) {
-			single_format = false;
-			break;
-		}
+	const int format = annotations.front().format();
+	const bool single_format = std::all_of(
+		annotations.begin(), annotations.end(),
+		[&](const Annotation &a) { return a.format() == format; });
 
 	p.setPen((single_format ? OutlineColours[colour] : Qt::gray));
 	p.setBrush(QBrush((single_format ? Colours[colour] : Qt::gray),
