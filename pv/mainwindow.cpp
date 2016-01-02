@@ -177,6 +177,11 @@ QAction* MainWindow::action_view_sticky_scrolling() const
 	return action_view_sticky_scrolling_;
 }
 
+QAction* MainWindow::action_view_coloured_bg() const
+{
+	return action_view_coloured_bg_;
+}
+
 QAction* MainWindow::action_view_show_cursors() const
 {
 	return action_view_show_cursors_;
