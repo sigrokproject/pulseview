@@ -87,11 +87,6 @@ public:
 	bool is_draggable() const;
 
 	/**
-	 * Selects or deselects the signal.
-	 */
-	void select(bool select = true);
-
-	/**
 	 * Computes the outline rectangle of the viewport hit-box.
 	 * @param rect the rectangle of the viewport area.
 	 * @return Returns the rectangle of the hit-box.

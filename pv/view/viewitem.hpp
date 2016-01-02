@@ -167,6 +167,8 @@ protected:
 protected:
 	QWidget *context_parent_;
 	QPoint drag_point_;
+
+private:
 	bool selected_;
 };
 

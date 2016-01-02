@@ -91,16 +91,6 @@ bool Trace::is_draggable() const
 	return (cursor_pos.x() <= view->header_size().width());
 }
 
-void Trace::select(bool select)
-{
-	// Trace can only be selected if the mouse cursor is in the header area;
-	// as is_draggable() checks the same thing, we re-use it here
-	if (is_draggable() && select)
-		selected_ = true;
-	else
-		selected_ = false;
-}
-
 void Trace::paint_label(QPainter &p, const QRect &rect, bool hover)
 {
 	const int y = get_visual_y();
