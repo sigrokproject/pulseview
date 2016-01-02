@@ -82,11 +82,6 @@ public:
 	void set_coloured_bg(bool state);
 
 	/**
-	 * Returns true if the item may be dragged/moved.
-	 */
-	bool is_draggable() const;
-
-	/**
 	 * Computes the outline rectangle of the viewport hit-box.
 	 * @param rect the rectangle of the viewport area.
 	 * @return Returns the rectangle of the hit-box.

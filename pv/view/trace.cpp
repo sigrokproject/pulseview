@@ -80,17 +80,6 @@ void Trace::set_coloured_bg(bool state)
 	coloured_bg_ = state;
 }
 
-bool Trace::is_draggable() const
-{
-	const View *const view = owner_->view();
-	assert(view);
-
-	QPoint cursor_pos = view->mapFromGlobal(QCursor::pos());
-
-	// The signal is draggable only in the header area
-	return (cursor_pos.x() <= view->header_size().width());
-}
-
 void Trace::paint_label(QPainter &p, const QRect &rect, bool hover)
 {
 	const int y = get_visual_y();

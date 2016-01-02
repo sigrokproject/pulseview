@@ -95,8 +95,6 @@ public:
 
 	const Viewport* viewport() const;
 
-	const QSize header_size() const;
-
 	/**
 	 * Gets a list of time markers.
 	 */
