@@ -415,16 +415,6 @@ void DecodeTrace::draw_annotation_block(
 
 	const double top = y + .5 - h / 2;
 	const double bottom = y + .5 + h / 2;
-	const double cap_width = min((end - start) / 4, EndCapWidth);
-
-	QPointF pts[] = {
-		QPointF(start, y + .5f),
-		QPointF(start + cap_width, top),
-		QPointF(end - cap_width, top),
-		QPointF(end, y + .5f),
-		QPointF(end - cap_width, bottom),
-		QPointF(start + cap_width, bottom)
-	};
 
 	const size_t colour = (base_colour + annotations.front().format()) %
 		countof(Colours);
@@ -439,8 +429,8 @@ void DecodeTrace::draw_annotation_block(
 	p.setPen((single_format ? OutlineColours[colour] : Qt::gray));
 	p.setBrush(QBrush((single_format ? Colours[colour] : Qt::gray),
 		Qt::Dense4Pattern));
-
-	p.drawConvexPolygon(pts, countof(pts));
+	p.drawRoundedRect(
+		QRectF(start, top, end - start, bottom - top), h/4, h/4);
 }
 
 void DecodeTrace::draw_instant(const pv::data::decode::Annotation &a, QPainter &p,
