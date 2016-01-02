@@ -145,6 +145,8 @@ MainBar::MainBar(Session &session, MainWindow &main_window) :
 	QMenu *const menu_view = new QMenu;
 	menu_view->setTitle(tr("&View"));
 	menu_view->addAction(main_window.action_view_sticky_scrolling());
+	menu_view->addSeparator();
+	menu_view->addAction(main_window.action_view_coloured_bg());
 
 	QMenu *const menu_help = new QMenu;
 	menu_help->setTitle(tr("&Help"));
