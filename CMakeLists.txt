@@ -329,7 +329,7 @@ if(Qt5Core_FOUND)
 	qt5_wrap_ui(pulseview_FORMS_HEADERS ${pulseview_FORMS})
 	qt5_add_resources(pulseview_RESOURCES_RCC ${pulseview_RESOURCES})
 else()
-	# Workaroud for QTBUG-22829: -DBOOST_NEXT_PRIOR_HPP_INCLUDED.
+	# Workaround for QTBUG-22829: -DBOOST_NEXT_PRIOR_HPP_INCLUDED.
 	# https://bugreports.qt.io/browse/QTBUG-22829
 	qt4_wrap_cpp(pulseview_HEADERS_MOC ${pulseview_HEADERS}
 		OPTIONS -DBOOST_NEXT_PRIOR_HPP_INCLUDED)

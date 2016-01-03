@@ -73,7 +73,7 @@ typedef boost::multiprecision::number<
  * @param unit The unit of quantity.
  * @param sign Whether or not to add a sign also for positive numbers.
  *
- * @return The formated value.
+ * @return The formatted value.
  */
 QString format_time_si(
 	const Timestamp& t,
@@ -83,9 +83,9 @@ QString format_time_si(
 	bool sign = true);
 
 /**
- * Wrapper around 'format_time_si()' that interpretes the given 'precision'
+ * Wrapper around 'format_time_si()' that interprets the given 'precision'
  * value as the number of decimal places if the timestamp would be formatted
- * without a SI prefix (using 'SIPrefix::none') and adjustes the precision to
+ * without a SI prefix (using 'SIPrefix::none') and adjusts the precision to
  * match the given 'prefix'
  *
  * @param t The value to format.
@@ -95,7 +95,7 @@ QString format_time_si(
  * @param unit The unit of quantity.
  * @param sign Whether or not to add a sign also for positive numbers.
  *
- * @return The formated value.
+ * @return The formatted value.
  */
 QString format_time_si_adjusted(
 	const Timestamp& t,
@@ -115,7 +115,7 @@ QString format_time_si_adjusted(
  * @param precision The number of digits after the decimal separator.
  * @param sign Whether or not to add a sign also for positive numbers.
  *
- * @return The formated value.
+ * @return The formatted value.
  */
 QString format_time_minutes(
 	const Timestamp& t,

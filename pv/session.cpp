@@ -581,7 +581,7 @@ void Session::feed_in_analog(shared_ptr<Analog> analog)
 		if (iter != cur_analog_segments_.end())
 			segment = (*iter).second;
 		else {
-			// If no segment was found, this means we havn't
+			// If no segment was found, this means we haven't
 			// created one yet. i.e. this is the first packet
 			// in the sweep containing this segment.
 			sweep_beginning = true;
