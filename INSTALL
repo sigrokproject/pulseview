@@ -17,7 +17,7 @@ Requirements
  - Qt4 >= 4.5 or Qt5 (including the following components):
     - Qt4: QtCore, QtGui, QtSvg
     - Qt5: Qt5Core, Qt5Gui, Qt5Widgets, Qt5Svg
- - libboost >= 1.48 (including the following libs):
+ - libboost >= 1.53 (including the following libs):
     - libboost-system
     - libboost-filesystem
     - libboost-thread
