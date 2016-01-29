@@ -1,3 +1,160 @@
+0.3.0 (2016-01-29)
+------------------
+
+ * PulseView now uses libsigrokcxx (the libsigrok C++ bindings library).
+ * Update to use the new APIs of libsigrokcxx 0.4.x and libsigrokdecode 0.4.x.
+ * Add support for vertical scaling of analog and logic traces.
+ * Add a "Save selection range as..." feature. This allows the user to select
+   a subset of the data (using the cursors) and save that into a file in the
+   libsigrok session format (*.sr).
+ * Remember the directory of the last file that was opened/saved.
+ * Automatically save and restore (upon PulseView shutdown/startup):
+    - the window state (size, position)
+    - the most recently used device
+ * Implement pinch-zoom support (useful e.g. on tablets).
+ * Implement an "always zoom-to-fit" feature.
+ * Implement a "sticky scrolling" feature, using hotkey 's' (bug #121).
+ * Show icons for active triggers on the right-hand side of the window.
+ * Cursors: Also show the frequency in addition to distance/time (bug #502).
+ * List available serial ports (for serial-based devices) in a drop-down.
+ * Add support for trace groups. An arbitrary number of traces can be grouped
+   together, which allows for dragging them around as a group and re-ordering
+   traces within the group. Hotkeys: group (CTRL+g), ungroup (CTRL+u).
+ * Use either alternating gray values as trace background color, or the
+   trace's own color (slightly modified). This behaviour is configurable
+   via the menu or the 'b' hotkey.
+ * Show a vertical marker at the trigger point (bug #685).
+ * Sampling bar: Show the total sampling time in a tooltip.
+ * Trace/Decoder popups: Close the popup when the ENTER/RETURN key is pressed.
+ * Improve horizontal arrow-key scrolling step size.
+ * The viewport can now be dragged vertically as well.
+ * Add support for placing arbitrary markers (double-click at the desired
+   position in the ruler area) with arbitrary name/content. Markers can be
+   removed via the delete key (or the right-click context menu).
+ * Show full device names in the device drop-down.
+ * The device selector combobox is now a split button. Clicking on a device
+   name will open the "Connect to Device" dialog which allows for manual
+   device selection. Clicking on the small arrow will open a drop-down with
+   all autodetected devices.
+ * The main menu is now hidden by default, pressing ALT will make it appear,
+   pressing ALT or ESC will hide it again.
+ * Add an Export menu item, which can export the data in various formats.
+ * Add an Import menu item, which allows data import of various formats.
+ * Support specifying input files + formats on the command-line (-i and -I).
+ * Update the possible samplerates/samplecounts widgets when needed.
+ * Various UI fixes and improvements (colors, font sizes, clipping, etc).
+ * Add support for the SR_CONF_{POWER_OFF,PROBE_FACTOR} config keys.
+ * Include the device / filename in the window title (bug #244).
+ * Keyboard shortcuts:
+   - Add space as a shortcut to start/stop an acquisition.
+   - Add shortcuts for the open/save menu items (CTRL-o, CTRL-s).
+   - Add trace group shortcuts: group (CTRL+g), ungroup (CTRL+u).
+   - Add 's' as shortcut for enabling/disabling sticky scrolling.
+   - Add 'b' as shortcut for colored / alternating-gray trace backgrounds.
+ * Add a few missing toolbar buttons.
+ * Provide tooltips for decoder annotations (which show the "full" annotation
+   text regardless of zoom-level).
+ * Improvements to work (better) with Qt5 (Qt4 remains supported as well).
+ * The whole code-base has been converted to C++11 (dropping the use
+   of various Boost functionality in favor of std:: equivalents).
+ * Build system:
+   - Always build with -std=c++11.
+   - Auto-detect Qt4 or Qt5. If both are available, Qt5 will be selected
+     unless the cmake option FORCE_QT4 is set to TRUE.
+   - Don't use Qt-defined keywords (can cause issues with other headers).
+   - Fix an issue with QtSvg linking (bug #369).
+   - Fix a build issue related to Qt4 MOC.
+   - Add "-git-<hash>" suffix to development version numbers (bug #609).
+   - Fix the build for older glibmm versions (bug #548).
+ * Updated build requirements:
+   - A C++ compiler with C++11 support (g++ >= 4.7 or clang++ >= 3.1)
+   - glibmm-2.4 (>= 2.28.0)
+   - Qt4 >= 4.5 or Qt5 (including the following components):
+    - Qt4: QtCore, QtGui, QtSvg
+    - Qt5: Qt5Core, Qt5Gui, Qt5Widgets, Qt5Svg
+   - Boost >= 1.53 (bugs #722, #593).
+   - libsigrokcxx >= 0.4.0 (libsigrok C++ bindings)
+   - libsigrokdecode >= 0.4.0
+   - libsigrokandroidutils >= 0.1.0 (optional, only needed on Android)
+ * Dropped build requirements:
+   - libsigrok (PulseView now uses libsigrokcxx instead).
+ * manpage:
+   - Various fixes and updates.
+   - Document all keyboard shortcuts.
+ * Android:
+   - Add basic Android support and support for building a PulseView APK.
+   - Install logging callbacks for Android.
+   - Fix a rendering issue by disabling the system background.
+   - Fix an issue due to a missing libintl.so in the APK (bug #575).
+   - Add asset reader functionality, e.g. for firmware files.
+   - Include firmware files (from sigrok-firmware) in the APK (bug #400).
+ * Windows:
+   - Fix an issue related to CMAKE_MODULE_PATH usage.
+   - Fix multiple Boost- and thread-related issues.
+   - Fix a build issue due to windows.h namespace pollution (bug #517).
+   - Fix an issue when saving .sr files (bug #615).
+ * Mac OS X:
+   - Fix an issue related to Glib::Variant types.
+   - Fix a build failure on Mac OS X 10.10 (bug #621).
+ * NSIS:
+   - Drop libusb0.dll, we use libusb-1.0 everywhere now.
+   - Add start menu entries for Zadig (bug #542).
+   - Support out-of-tree builds.
+   - Don't hardcode the MXE install location.
+ * README: Drop reference to obsolete sigrok-commits mailing list.
+ * Add a Doxygen file for auto-generated code documentation.
+ * Populate signal popup combo box with signal names (not probe names).
+ * Fix various thread related issues.
+ * Fix various compiler warnings and compiler portability issues.
+ * Adapt PulseView to use the new libsigrokcxx trigger API (bugs #448, #452).
+ * Reimplement file save using the "srzip" output module (bug #451).
+ * Check whether config keys are available before use (bug #487).
+ * Markers: Fix display of negative values in popups (bug #460).
+ * Properly handle device selection failure (bug #455).
+ * Fix a progressbar issue when saving files (bug #451).
+ * Fix incorrect channel names in .sr files (bug #490).
+ * Save and load signal names as UTF-8 strings (bug #498).
+ * Add a workaround for QTBUG-22829 (bug #532).
+ * Allow vertical scrolling via CTRL + mouse-wheel (bug #497).
+ * Fix an isnan() related compiler error (bug #531).
+ * Gracefully handle the case of a failing SAMPLERATE query (bug #529).
+ * Show less device info in the device dropdown (bug #285).
+ * Always show full device info in device selection tooltips (bug #489).
+ * Fix a segfault due to a missing Capability::LIST check (bug #453).
+ * Allow PulseView to be killed via CTRL-C from a terminal (bug #368).
+ * Support having no selected device (bug #488, #392).
+ * Add menu actions to the main window too (bug #590).
+ * Avoid confusing autocompletion in the channel name popups (bug #501).
+ * Fix an issue with channel ordering being reset incorrectly (bug #536).
+ * Fix an issue related to a disappearing samplerate dropdown (bug #594).
+ * Fix an issue with incorrect samplenumbers when running decoders.
+ * Suppress warnings from glibmm about deprecated auto_ptr (bug #654).
+ * Add a workaround for a corrupted timescale issue (bug #627).
+ * Fix a libzip-related issue resulting in errors writing .sr files (bug #570).
+ * Fix an issue that caused incorrect .sr files being saved (bug #599).
+ * When clicking a channel name, place the cursor in the text field (bug #298).
+ * Fix a double-free issue/segfault when trying to open an .sr file (bug #405).
+ * Fix an issue with incorrect placement of PD annotation tooltips (bug #477).
+ * Allow drag-moving both cursors (left + right) at the same time (bug #514).
+ * Improve the step-size of the vertical scroll bar click-movement (bug #513).
+ * Fix a too small display area for devices with many channels (bug #515).
+ * Fix a Qt5 QWellArray related static linking issue (bug #525).
+ * Fix broken session saving for devices with more than one channel (bug #404).
+ * Fix incorrect ruler units of kilo-/mega-/giga-seconds (bug #371).
+ * Fix an issue with segment sizes wasting huge amounts of memory (bug #622).
+ * Avoid a crash when running out of memory, show an error instead (bug #626).
+ * Improve behaviour when the last PD is removed from the stack (bug #510).
+ * Disable device options GUI elements after an acquisition start (bug #597).
+ * Fix an issue with the samplerate input format option (bug #595).
+ * Fix a segfault when switching from a file to a device and back (bug #596).
+ * Fix a segfault when loading very large .sr files (bug #592).
+ * Fix a segfault when selecting a device twice (bug #605).
+ * Fix an incorrect decode trace background color (bug #718).
+ * Fix incorrect annotation row background color behaviour (bug #719).
+ * Fix an issue with lingering decoder traces (bug #687).
+ * Fix non-intuitive channel name editing behaviour (bug #717).
+ * Speed up annotation drawing by quite a bit (bug #325).
+
 0.2.0 (2014-05-06)
 ------------------
 
