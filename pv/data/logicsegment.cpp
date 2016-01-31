@@ -308,7 +308,7 @@ void LogicSegment::get_subsampled_edges(
 				pow2_ceil(index, MipMapScalePower));
 
 			for (; index < final_index &&
-					(index & ~(~0 << MipMapScalePower)) != 0;
+					(index & ~((uint64_t)(~0) << MipMapScalePower)) != 0;
 					index++) {
 				const bool sample =
 					(get_sample(index) & sig_mask) != 0;
@@ -358,7 +358,7 @@ void LogicSegment::get_subsampled_edges(
 						sig_mask))
 					break;
 
-				if ((offset & ~(~0 << MipMapScalePower)) == 0) {
+				if ((offset & ~((uint64_t)(~0) << MipMapScalePower)) == 0) {
 					// If we are now at the beginning of a
 					// higher level mip-map block ascend one
 					// level
