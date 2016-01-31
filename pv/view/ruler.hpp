@@ -30,9 +30,9 @@
 #include <pv/util.hpp>
 
 namespace RulerTest {
-class tick_position_test_0;
-class tick_position_test_1;
-class tick_position_test_2;
+struct tick_position_test_0;
+struct tick_position_test_1;
+struct tick_position_test_2;
 }
 
 namespace pv {
@@ -45,9 +45,9 @@ class Ruler : public MarginWidget
 {
 	Q_OBJECT
 
-	friend class RulerTest::tick_position_test_0;
-	friend class RulerTest::tick_position_test_1;
-	friend class RulerTest::tick_position_test_2;
+	friend struct RulerTest::tick_position_test_0;
+	friend struct RulerTest::tick_position_test_1;
+	friend struct RulerTest::tick_position_test_2;
 
 private:
 

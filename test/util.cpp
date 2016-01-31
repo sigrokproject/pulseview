@@ -32,13 +32,13 @@ namespace {
 	pv::util::SIPrefix unspecified = pv::util::SIPrefix::unspecified;
 	pv::util::SIPrefix yocto       = pv::util::SIPrefix::yocto;
 	pv::util::SIPrefix nano        = pv::util::SIPrefix::nano;
-	pv::util::SIPrefix micro       = pv::util::SIPrefix::micro;
+/*	pv::util::SIPrefix micro       = pv::util::SIPrefix::micro; // Not currently used */
 	pv::util::SIPrefix milli       = pv::util::SIPrefix::milli;
 	pv::util::SIPrefix none        = pv::util::SIPrefix::none;
 	pv::util::SIPrefix kilo        = pv::util::SIPrefix::kilo;
 	pv::util::SIPrefix yotta       = pv::util::SIPrefix::yotta;
 
-	pv::util::TimeUnit Time = pv::util::TimeUnit::Time;
+/*	pv::util::TimeUnit Time = pv::util::TimeUnit::Time; // Not currently used */
 }
 
 BOOST_AUTO_TEST_SUITE(UtilTest)
