@@ -70,7 +70,7 @@ void InputFile::run()
 	assert(input_);
 
 	interrupt_ = false;
-	std::ifstream f(file_name_);
+	std::ifstream f(file_name_, std::ios::binary);
 	while (!interrupt_ && f) {
 		f.read(buffer, BufferSize);
 		const std::streamsize size = f.gcount();
