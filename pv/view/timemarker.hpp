@@ -68,27 +68,27 @@ public:
 	 */
 	void set_time(const pv::util::Timestamp& time) override;
 
-	float get_x() const;
+	float get_x() const override;
 
 	/**
 	 * Gets the arrow-tip point of the time marker.
 	 * @param rect the rectangle of the ruler area.
 	 */
-	QPoint point(const QRect &rect) const;
+	QPoint point(const QRect &rect) const override;
 
 	/**
 	 * Computes the outline rectangle of a label.
 	 * @param rect the rectangle of the header area.
 	 * @return Returns the rectangle of the signal label.
 	 */
-	QRectF label_rect(const QRectF &rect) const;
+	QRectF label_rect(const QRectF &rect) const override;
 
 	/**
 	 * Computes the outline rectangle of the viewport hit-box.
 	 * @param rect the rectangle of the viewport area.
 	 * @return Returns the rectangle of the hit-box.
 	 */
-	QRectF hit_box_rect(const ViewItemPaintParams &pp) const;
+	QRectF hit_box_rect(const ViewItemPaintParams &pp) const override;
 
 	/**
 	 * Gets the text to show in the marker.
@@ -101,16 +101,16 @@ public:
 	 * @param rect The rectangle of the ruler client area.
 	 * @param hover true if the label is being hovered over by the mouse.
 	 */
-	void paint_label(QPainter &p, const QRect &rect, bool hover);
+	void paint_label(QPainter &p, const QRect &rect, bool hover) override;
 
 	/**
 	 * Paints the foreground layer of the item with a QPainter
 	 * @param p the QPainter to paint into.
 	 * @param pp the painting parameters object to paint with.
 	 */
-	void paint_fore(QPainter &p, const ViewItemPaintParams &pp);
+	void paint_fore(QPainter &p, const ViewItemPaintParams &pp) override;
 
-	virtual pv::widgets::Popup* create_popup(QWidget *parent);
+	virtual pv::widgets::Popup* create_popup(QWidget *parent) override;
 
 private Q_SLOTS:
 	void on_value_changed(const pv::util::Timestamp& value);

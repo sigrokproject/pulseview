@@ -63,14 +63,14 @@ public:
 	Ruler(View &parent);
 
 public:
-	QSize sizeHint() const;
+	QSize sizeHint() const override;
 
 	/**
 	 * The extended area that the header widget would like to be sized to.
 	 * @remarks This area is the area specified by sizeHint, extended by
 	 * the area to overlap the viewport.
 	 */
-	QSize extended_size_hint() const;
+	QSize extended_size_hint() const override;
 
 	/**
 	 * Formats a timestamp depending on its distance to another timestamp.
@@ -109,7 +109,7 @@ private:
 	/**
 	 * Gets the time items.
 	 */
-	std::vector< std::shared_ptr<pv::view::ViewItem> > items();
+	std::vector< std::shared_ptr<pv::view::ViewItem> > items() override;
 
 	/**
 	 * Gets the first view item which has a label that contains @c pt .
@@ -118,11 +118,11 @@ private:
 	 *   @c shared_ptr if no item was found.
 	 */
 	std::shared_ptr<pv::view::ViewItem> get_mouse_over_item(
-		const QPoint &pt);
+		const QPoint &pt) override;
 
-	void paintEvent(QPaintEvent *event);
+	void paintEvent(QPaintEvent *event) override;
 
-	void mouseDoubleClickEvent(QMouseEvent *e);
+	void mouseDoubleClickEvent(QMouseEvent *e) override;
 
 	/**
 	 * Draw a hover arrow under the cursor position.

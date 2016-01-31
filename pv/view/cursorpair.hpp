@@ -49,7 +49,7 @@ public:
 	/**
 	 * Returns true if the item is visible and enabled.
 	 */
-	bool enabled() const;
+	bool enabled() const override;
 
 	/**
 	 * Returns a pointer to the first cursor.
@@ -66,14 +66,14 @@ public:
 	 */
 	void set_time(const pv::util::Timestamp& time) override;
 
-	float get_x() const;
+	float get_x() const override;
 
-	QPoint point(const QRect &rect) const;
+	QPoint point(const QRect &rect) const override;
 
-	pv::widgets::Popup* create_popup(QWidget *parent);
+	pv::widgets::Popup* create_popup(QWidget *parent) override;
 
 public:
-	QRectF label_rect(const QRectF &rect) const;
+	QRectF label_rect(const QRectF &rect) const override;
 
 	/**
 	 * Paints the marker's label to the ruler.
@@ -81,14 +81,14 @@ public:
 	 * @param rect The rectangle of the ruler client area.
 	 * @param hover true if the label is being hovered over by the mouse.
 	 */
-	void paint_label(QPainter &p, const QRect &rect, bool hover);
+	void paint_label(QPainter &p, const QRect &rect, bool hover) override;
 
 	/**
 	 * Paints the background layer of the item with a QPainter
 	 * @param p the QPainter to paint into.
 	 * @param pp the painting parameters object to paint with.
 	 */
-	void paint_back(QPainter &p, const ViewItemPaintParams &pp);
+	void paint_back(QPainter &p, const ViewItemPaintParams &pp) override;
 
 	/**
 	 * Constructs the string to display.
