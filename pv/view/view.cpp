@@ -43,7 +43,6 @@
 #include <libsigrokcxx/libsigrokcxx.hpp>
 
 #include "analogsignal.hpp"
-#include "decodetrace.hpp"
 #include "header.hpp"
 #include "logicsignal.hpp"
 #include "ruler.hpp"
@@ -58,6 +57,10 @@
 #include "pv/data/logic.hpp"
 #include "pv/data/logicsegment.hpp"
 #include "pv/util.hpp"
+
+#ifdef ENABLE_DECODE
+#include "decodetrace.hpp"
+#endif
 
 using boost::shared_lock;
 using boost::shared_mutex;
@@ -455,9 +458,11 @@ void View::enable_coloured_bg(bool state)
 		if (l)
 			l->set_coloured_bg(state);
 
+#ifdef ENABLE_DECODE
 		shared_ptr<DecodeTrace> d = dynamic_pointer_cast<DecodeTrace>(i);
 		if (d)
 			d->set_coloured_bg(state);
+#endif
 	}
 
 	viewport_->update();
