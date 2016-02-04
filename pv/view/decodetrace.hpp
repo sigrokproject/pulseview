@@ -77,6 +77,7 @@ private:
 
 	static const int ArrowSize;
 	static const double EndCapWidth;
+	static const int RowTitleMargin;
 	static const int DrawPadding;
 
 	static const QColor Colours[16];
@@ -127,11 +128,11 @@ public:
 private:
 	void draw_annotations(std::vector<pv::data::decode::Annotation> annotations,
 		QPainter &p, int h, const ViewItemPaintParams &pp, int y,
-		size_t base_colour);
+		size_t base_colour, int row_title_width);
 
 	void draw_annotation(const pv::data::decode::Annotation &a, QPainter &p,
 		int text_height, const ViewItemPaintParams &pp, int y,
-		size_t base_colour) const;
+		size_t base_colour, int row_title_width) const;
 
 	void draw_annotation_block(std::vector<pv::data::decode::Annotation> a,
 		QPainter &p, int h, int y, size_t base_colour) const;
@@ -141,7 +142,8 @@ private:
 
 	void draw_range(const pv::data::decode::Annotation &a, QPainter &p,
 		QColor fill, QColor outline, int h, double start,
-		double end, int y, const ViewItemPaintParams &pp) const;
+		double end, int y, const ViewItemPaintParams &pp,
+		int row_title_width) const;
 
 	void draw_error(QPainter &p, const QString &message,
 		const ViewItemPaintParams &pp);
@@ -206,6 +208,7 @@ private:
 	std::vector<pv::widgets::DecoderGroupBox*> decoder_forms_;
 
 	std::vector<data::decode::Row> visible_rows_;
+	std::map<data::decode::Row, int> row_title_widths_;
 	int row_height_, max_visible_rows_;
 
 	QSignalMapper delete_mapper_, show_hide_mapper_;

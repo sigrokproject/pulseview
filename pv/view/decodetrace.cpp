@@ -86,6 +86,7 @@ const QColor DecodeTrace::NoDecodeColour = QColor(0x88, 0x8A, 0x85);
 
 const int DecodeTrace::ArrowSize = 4;
 const double DecodeTrace::EndCapWidth = 5;
+const int DecodeTrace::RowTitleMargin = 10;
 const int DecodeTrace::DrawPadding = 100;
 
 const QColor DecodeTrace::Colours[16] = {
@@ -201,6 +202,18 @@ void DecodeTrace::paint_mid(QPainter &p, const ViewItemPaintParams &pp)
 	for (size_t i = 0; i < rows.size(); i++) {
 		const Row &row = rows[i];
 
+		// Cache the row title widths
+		int row_title_width;
+		try {
+			row_title_width = row_title_widths_.at(row);
+		} catch (std::out_of_range) {
+			const int w = p.boundingRect(QRectF(), 0, row.title()).width() +
+				RowTitleMargin;
+			row_title_widths_[row] = w;
+			row_title_width = w;
+		}
+
+		// Determine the row's color
 		size_t base_colour = 0x13579BDF;
 		boost::hash_combine(base_colour, this);
 		boost::hash_combine(base_colour, row.decoder());
@@ -212,7 +225,7 @@ void DecodeTrace::paint_mid(QPainter &p, const ViewItemPaintParams &pp)
 			sample_range.first, sample_range.second);
 		if (!annotations.empty()) {
 			draw_annotations(annotations, p, annotation_height, pp, y,
-				base_colour);
+				base_colour, row_title_width);
 
 			y += row_height_;
 
@@ -332,7 +345,7 @@ QMenu* DecodeTrace::create_context_menu(QWidget *parent)
 
 void DecodeTrace::draw_annotations(vector<pv::data::decode::Annotation> annotations,
 		QPainter &p, int h, const ViewItemPaintParams &pp, int y,
-		size_t base_colour)
+		size_t base_colour, int row_title_width)
 {
 	using namespace pv::data::decode;
 
@@ -376,7 +389,8 @@ void DecodeTrace::draw_annotations(vector<pv::data::decode::Annotation> annotati
 		if ((abs(delta) > 1) || a_is_separate) {
 			// Block was broken, draw annotations that form the current block
 			if (a_block.size() == 1) {
-				draw_annotation(a_block.front(), p, h, pp, y, base_colour);
+				draw_annotation(a_block.front(), p, h, pp, y, base_colour,
+					row_title_width);
 			}
 			else
 				draw_annotation_block(a_block, p, h, y, base_colour);
@@ -385,7 +399,7 @@ void DecodeTrace::draw_annotations(vector<pv::data::decode::Annotation> annotati
 		}
 
 		if (a_is_separate) {
-			draw_annotation(a, p, h, pp, y, base_colour);
+			draw_annotation(a, p, h, pp, y, base_colour, row_title_width);
 			// Next annotation must start a new block. delta will be > 1
 			// because we set p_end to INT_MIN but that's okay since
 			// a_block will be empty, so nothing will be drawn
@@ -397,14 +411,15 @@ void DecodeTrace::draw_annotations(vector<pv::data::decode::Annotation> annotati
 	}
 
 	if (a_block.size() == 1)
-		draw_annotation(a_block.front(), p, h, pp, y, base_colour);
+		draw_annotation(a_block.front(), p, h, pp, y, base_colour,
+			row_title_width);
 	else
 		draw_annotation_block(a_block, p, h, y, base_colour);
 }
 
 void DecodeTrace::draw_annotation(const pv::data::decode::Annotation &a,
 	QPainter &p, int h, const ViewItemPaintParams &pp, int y,
-	size_t base_colour) const
+	size_t base_colour, int row_title_width) const
 {
 	double samples_per_pixel, pixels_offset;
 	tie(pixels_offset, samples_per_pixel) =
@@ -425,7 +440,8 @@ void DecodeTrace::draw_annotation(const pv::data::decode::Annotation &a,
 	if (a.start_sample() == a.end_sample())
 		draw_instant(a, p, fill, outline, h, start, y);
 	else
-		draw_range(a, p, fill, outline, h, start, end, y, pp);
+		draw_range(a, p, fill, outline, h, start, end, y, pp,
+			row_title_width);
 }
 
 void DecodeTrace::draw_annotation_block(
@@ -485,7 +501,7 @@ void DecodeTrace::draw_instant(const pv::data::decode::Annotation &a, QPainter &
 
 void DecodeTrace::draw_range(const pv::data::decode::Annotation &a, QPainter &p,
 	QColor fill, QColor outline, int h, double start,
-	double end, int y, const ViewItemPaintParams &pp) const
+	double end, int y, const ViewItemPaintParams &pp, int row_title_width) const
 {
 	const double top = y + .5 - h / 2;
 	const double bottom = y + .5 + h / 2;
@@ -519,9 +535,8 @@ void DecodeTrace::draw_range(const pv::data::decode::Annotation &a, QPainter &p,
 	const int ann_start = start + cap_width;
 	const int ann_end = end - cap_width;
 
-	const int real_start = std::max(ann_start, pp.left());
+	const int real_start = std::max(ann_start, pp.left() + row_title_width);
 	const int real_end = std::min(ann_end, pp.right());
-
 	const int real_width = real_end - real_start;
 
 	QRectF rect(real_start, y - h / 2, real_width, h);
