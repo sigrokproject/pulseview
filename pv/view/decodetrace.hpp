@@ -141,7 +141,7 @@ private:
 
 	void draw_range(const pv::data::decode::Annotation &a, QPainter &p,
 		QColor fill, QColor outline, int h, double start,
-		double end, int y) const;
+		double end, int y, const ViewItemPaintParams &pp) const;
 
 	void draw_error(QPainter &p, const QString &message,
 		const ViewItemPaintParams &pp);

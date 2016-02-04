@@ -425,7 +425,7 @@ void DecodeTrace::draw_annotation(const pv::data::decode::Annotation &a,
 	if (a.start_sample() == a.end_sample())
 		draw_instant(a, p, fill, outline, h, start, y);
 	else
-		draw_range(a, p, fill, outline, h, start, end, y);
+		draw_range(a, p, fill, outline, h, start, end, y, pp);
 }
 
 void DecodeTrace::draw_annotation_block(
@@ -485,7 +485,7 @@ void DecodeTrace::draw_instant(const pv::data::decode::Annotation &a, QPainter &
 
 void DecodeTrace::draw_range(const pv::data::decode::Annotation &a, QPainter &p,
 	QColor fill, QColor outline, int h, double start,
-	double end, int y) const
+	double end, int y, const ViewItemPaintParams &pp) const
 {
 	const double top = y + .5 - h / 2;
 	const double bottom = y + .5 + h / 2;
@@ -516,8 +516,15 @@ void DecodeTrace::draw_range(const pv::data::decode::Annotation &a, QPainter &p,
 	if (annotations.empty())
 		return;
 
-	QRectF rect(start + cap_width, y - h / 2,
-		end - start - cap_width * 2, h);
+	const int ann_start = start + cap_width;
+	const int ann_end = end - cap_width;
+
+	const int real_start = std::max(ann_start, pp.left());
+	const int real_end = std::min(ann_end, pp.right());
+
+	const int real_width = real_end - real_start;
+
+	QRectF rect(real_start, y - h / 2, real_width, h);
 	if (rect.width() <= 4)
 		return;
 
