@@ -337,33 +337,63 @@ void DecodeTrace::draw_annotations(vector<pv::data::decode::Annotation> annotati
 	using namespace pv::data::decode;
 
 	vector<Annotation> a_block;
-	int prev_ann_pos = INT_MIN;
+	int p_end = INT_MIN;
 
 	double samples_per_pixel, pixels_offset;
 	tie(pixels_offset, samples_per_pixel) =
 		get_pixels_offset_samples_per_pixel();
 
+	// Sort the annotations by start sample so that decoders
+	// can't confuse us by creating annotations out of order
+	stable_sort(annotations.begin(), annotations.end(),
+		[](const Annotation &a, const Annotation &b) {
+			return a.start_sample() < b.start_sample(); });
+
 	// Gather all annotations that form a visual "block" and draw them as such
 	for (const Annotation &a : annotations) {
 
-		const int end = a.end_sample() / samples_per_pixel - pixels_offset;
-		const int delta = end - prev_ann_pos;
+		const int a_start = a.start_sample() / samples_per_pixel - pixels_offset;
+		const int a_end = a.end_sample() / samples_per_pixel - pixels_offset;
+		const int a_width = a_end - a_start;
 
-		// Some annotations are in reverse order, so we cannot
-		// simply check for delta > 1
-		if (abs(delta) > 1) {
-			// Block was broken, draw it
-			if (a_block.size() == 1)
+		const int delta = a_end - p_end;
+
+		bool a_is_separate = false;
+
+		// Annotation wider than the threshold for a useful label width?
+		if (a_width > 20) {
+			for (const QString &ann_text : a.annotations()) {
+				const int w = p.boundingRect(QRectF(), 0, ann_text).width();
+				// Annotation wide enough to fit a label? Don't put it in a block then
+				if (w <= a_width) {
+					a_is_separate = true;
+					break;
+				}
+			}
+		}
+
+		// Were the previous and this annotation more than a pixel apart?
+		if ((abs(delta) > 1) || a_is_separate) {
+			// Block was broken, draw annotations that form the current block
+			if (a_block.size() == 1) {
 				draw_annotation(a_block.front(), p, h, pp, y, base_colour);
+			}
 			else
-				if (a_block.size() > 0)
-					draw_annotation_block(a_block, p, h, y, base_colour);
+				draw_annotation_block(a_block, p, h, y, base_colour);
 
 			a_block.clear();
 		}
 
-		a_block.push_back(a);
-		prev_ann_pos = end;
+		if (a_is_separate) {
+			draw_annotation(a, p, h, pp, y, base_colour);
+			// Next annotation must start a new block. delta will be > 1
+			// because we set p_end to INT_MIN but that's okay since
+			// a_block will be empty, so nothing will be drawn
+			p_end = INT_MIN;
+		} else {
+			a_block.push_back(a);
+			p_end = a_end;
+		}
 	}
 
 	if (a_block.size() == 1)
@@ -403,6 +433,9 @@ void DecodeTrace::draw_annotation_block(
 	int y, size_t base_colour) const
 {
 	using namespace pv::data::decode;
+
+	if (annotations.empty())
+		return;
 
 	double samples_per_pixel, pixels_offset;
 	tie(pixels_offset, samples_per_pixel) =
