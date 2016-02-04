@@ -431,16 +431,16 @@ void DecodeTrace::draw_annotation(const pv::data::decode::Annotation &a,
 		pixels_offset;
 
 	const size_t colour = (base_colour + a.format()) % countof(Colours);
-	const QColor &fill = Colours[colour];
-	const QColor &outline = OutlineColours[colour];
+	p.setPen(OutlineColours[colour]);
+	p.setBrush(Colours[colour]);
 
 	if (start > pp.right() + DrawPadding || end < pp.left() - DrawPadding)
 		return;
 
 	if (a.start_sample() == a.end_sample())
-		draw_instant(a, p, fill, outline, h, start, y);
+		draw_instant(a, p, h, start, y);
 	else
-		draw_range(a, p, fill, outline, h, start, end, y, pp,
+		draw_range(a, p, h, start, end, y, pp,
 			row_title_width);
 }
 
@@ -483,7 +483,7 @@ void DecodeTrace::draw_annotation_block(
 }
 
 void DecodeTrace::draw_instant(const pv::data::decode::Annotation &a, QPainter &p,
-	QColor fill, QColor outline, int h, double x, int y) const
+	int h, double x, int y) const
 {
 	const QString text = a.annotations().empty() ?
 		QString() : a.annotations().back();
@@ -491,8 +491,6 @@ void DecodeTrace::draw_instant(const pv::data::decode::Annotation &a, QPainter &
 		0.0) + h;
 	const QRectF rect(x - w / 2, y - h / 2, w, h);
 
-	p.setPen(outline);
-	p.setBrush(fill);
 	p.drawRoundedRect(rect, h / 2, h / 2);
 
 	p.setPen(Qt::black);
@@ -500,15 +498,12 @@ void DecodeTrace::draw_instant(const pv::data::decode::Annotation &a, QPainter &
 }
 
 void DecodeTrace::draw_range(const pv::data::decode::Annotation &a, QPainter &p,
-	QColor fill, QColor outline, int h, double start,
-	double end, int y, const ViewItemPaintParams &pp, int row_title_width) const
+	int h, double start, double end, int y, const ViewItemPaintParams &pp,
+	int row_title_width) const
 {
 	const double top = y + .5 - h / 2;
 	const double bottom = y + .5 + h / 2;
 	const vector<QString> annotations = a.annotations();
-
-	p.setPen(outline);
-	p.setBrush(fill);
 
 	// If the two ends are within 1 pixel, draw a vertical line
 	if (start + 1.0 > end) {

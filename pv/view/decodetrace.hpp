@@ -138,11 +138,10 @@ private:
 		QPainter &p, int h, int y, size_t base_colour) const;
 
 	void draw_instant(const pv::data::decode::Annotation &a, QPainter &p,
-		QColor fill, QColor outline, int h, double x, int y) const;
+		int h, double x, int y) const;
 
 	void draw_range(const pv::data::decode::Annotation &a, QPainter &p,
-		QColor fill, QColor outline, int h, double start,
-		double end, int y, const ViewItemPaintParams &pp,
+		int h, double start, double end, int y, const ViewItemPaintParams &pp,
 		int row_title_width) const;
 
 	void draw_error(QPainter &p, const QString &message,
