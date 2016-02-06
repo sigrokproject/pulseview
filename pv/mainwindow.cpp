@@ -274,7 +274,7 @@ void MainWindow::export_file(shared_ptr<OutputFormat> format,
 		filter += "(*.*)";
 	else
 		filter += QString("(*.%1);;%2 (*.*)").arg(
-			QString::fromStdString(join(exts, ", *."))).arg(
+			QString::fromStdString(join(exts, ", *.")),
 			tr("All Files"));
 
 	// Show the file dialog
@@ -315,7 +315,7 @@ void MainWindow::import_file(shared_ptr<InputFormat> format)
 	const vector<string> exts = format->extensions();
 	const QString filter = exts.empty() ? "" :
 		tr("%1 files (*.%2)").arg(
-			QString::fromStdString(format->description())).arg(
+			QString::fromStdString(format->description()),
 			QString::fromStdString(join(exts, ", *.")));
 
 	// Show the file dialog

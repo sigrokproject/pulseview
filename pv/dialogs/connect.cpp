@@ -113,7 +113,7 @@ void Connect::populate_drivers()
 
 		if (supported_device)
 			drivers_.addItem(QString("%1 (%2)").arg(
-				driver->long_name().c_str()).arg(name.c_str()),
+				driver->long_name().c_str(), name.c_str()),
 				qVariantFromValue(driver));
 	}
 }
@@ -123,7 +123,7 @@ void Connect::populate_serials(shared_ptr<Driver> driver)
 	serial_devices_.clear();
 	for (auto serial : device_manager_.context()->serials(driver))
 		serial_devices_.addItem(QString("%1 (%2)").arg(
-			serial.first.c_str()).arg(serial.second.c_str()),
+			serial.first.c_str(), serial.second.c_str()),
 			QString::fromStdString(serial.first));
 }
 

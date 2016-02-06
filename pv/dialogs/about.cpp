@@ -49,10 +49,10 @@ About::About(shared_ptr<Context> context, QWidget *parent) :
 
 	/* Setup the version field */
 	ui->versionInfo->setText(tr("%1 %2<br />%3<br /><a href=\"%4\">%4</a>")
-				 .arg(QApplication::applicationName())
-				 .arg(QApplication::applicationVersion())
-				 .arg(tr("GNU GPL, version 3 or later"))
-				 .arg(QApplication::organizationDomain()));
+				 .arg(QApplication::applicationName(),
+				      QApplication::applicationVersion(),
+				      tr("GNU GPL, version 3 or later"),
+				      QApplication::organizationDomain()));
 	ui->versionInfo->setOpenExternalLinks(true);
 
 	s.append("<table>");
@@ -63,8 +63,8 @@ About::About(shared_ptr<Context> context, QWidget *parent) :
 		"</b></td></tr>");
 	for (auto entry : context->drivers()) {
 		s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
-			 .arg(QString::fromUtf8(entry.first.c_str()))
-			 .arg(QString::fromUtf8(entry.second->long_name().c_str())));
+			 .arg(QString::fromUtf8(entry.first.c_str()),
+			      QString::fromUtf8(entry.second->long_name().c_str())));
 	}
 
 	s.append("<tr><td colspan=\"2\"><b>" +
@@ -72,8 +72,8 @@ About::About(shared_ptr<Context> context, QWidget *parent) :
 		"</b></td></tr>");
 	for (auto entry : context->input_formats()) {
 		s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
-			 .arg(QString::fromUtf8(entry.first.c_str()))
-			 .arg(QString::fromUtf8(entry.second->description().c_str())));
+			 .arg(QString::fromUtf8(entry.first.c_str()),
+			      QString::fromUtf8(entry.second->description().c_str())));
 	}
 
 	s.append("<tr><td colspan=\"2\"><b>" +
@@ -81,8 +81,8 @@ About::About(shared_ptr<Context> context, QWidget *parent) :
 		"</b></td></tr>");
 	for (auto entry : context->output_formats()) {
 		s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
-			 .arg(QString::fromUtf8(entry.first.c_str()))
-			 .arg(QString::fromUtf8(entry.second->description().c_str())));
+			 .arg(QString::fromUtf8(entry.first.c_str()),
+			      QString::fromUtf8(entry.second->description().c_str())));
 	}
 
 #ifdef ENABLE_DECODE
@@ -92,8 +92,8 @@ About::About(shared_ptr<Context> context, QWidget *parent) :
 	for (const GSList *l = srd_decoder_list(); l; l = l->next) {
 		dec = (struct srd_decoder *)l->data;
 		s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
-			 .arg(QString::fromUtf8(dec->id))
-			 .arg(QString::fromUtf8(dec->longname)));
+			 .arg(QString::fromUtf8(dec->id),
+			      QString::fromUtf8(dec->longname)));
 	}
 #endif
 

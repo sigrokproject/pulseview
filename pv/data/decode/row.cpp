@@ -52,8 +52,8 @@ const QString Row::title() const
 {
 	if (decoder_ && decoder_->name && row_ && row_->desc)
 		return QString("%1: %2")
-			.arg(QString::fromUtf8(decoder_->name))
-			.arg(QString::fromUtf8(row_->desc));
+			.arg(QString::fromUtf8(decoder_->name),
+			     QString::fromUtf8(row_->desc));
 	if (decoder_ && decoder_->name)
 		return QString::fromUtf8(decoder_->name);
 	if (row_ && row_->desc)

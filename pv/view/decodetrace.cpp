@@ -793,8 +793,8 @@ void DecodeTrace::create_decoder_form(int index,
 		connect(combo, SIGNAL(currentIndexChanged(int)),
 			this, SLOT(on_channel_selected(int)));
 		decoder_form->addRow(tr("<b>%1</b> (%2) *")
-			.arg(QString::fromUtf8(pdch->name))
-			.arg(QString::fromUtf8(pdch->desc)), combo);
+			.arg(QString::fromUtf8(pdch->name),
+			     QString::fromUtf8(pdch->desc)), combo);
 
 		const ChannelSelector s = {combo, dec, pdch};
 		channel_selectors_.push_back(s);
@@ -808,8 +808,8 @@ void DecodeTrace::create_decoder_form(int index,
 		connect(combo, SIGNAL(currentIndexChanged(int)),
 			this, SLOT(on_channel_selected(int)));
 		decoder_form->addRow(tr("<b>%1</b> (%2)")
-			.arg(QString::fromUtf8(pdch->name))
-			.arg(QString::fromUtf8(pdch->desc)), combo);
+			.arg(QString::fromUtf8(pdch->name),
+			     QString::fromUtf8(pdch->desc)), combo);
 
 		const ChannelSelector s = {combo, dec, pdch};
 		channel_selectors_.push_back(s);
