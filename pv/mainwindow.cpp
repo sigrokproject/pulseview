@@ -567,8 +567,9 @@ void MainWindow::select_init_device()
 	QSettings settings;
 	map<string, string> dev_info;
 	list<string> key_list;
+	shared_ptr<devices::HardwareDevice> device;
 
-	// Re-select last used device if possible.
+	// Re-select last used device if possible but only if it's not demo
 	settings.beginGroup("Device");
 	key_list.push_back("vendor");
 	key_list.push_back("model");
@@ -586,8 +587,24 @@ void MainWindow::select_init_device()
 			dev_info.insert(std::make_pair(key, value));
 	}
 
-	const shared_ptr<devices::HardwareDevice> device =
-		device_manager_.find_device_from_info(dev_info);
+	if (dev_info.count("model") > 0)
+		if (dev_info.at("model").find("Demo device") == std::string::npos)
+			device = device_manager_.find_device_from_info(dev_info);
+
+	// When we can't find a device similar to the one we used last
+	// time and there is at least one device aside from demo, use it
+	if (!device) {
+		for (shared_ptr<devices::HardwareDevice> dev : device_manager_.devices()) {
+			dev_info = device_manager_.get_device_info(dev);
+
+			if (dev_info.count("model") > 0)
+				if (dev_info.at("model").find("Demo device") == std::string::npos) {
+					device = dev;
+					break;
+				}
+		}
+	}
+
 	select_device(device);
 	update_device_list();
 
