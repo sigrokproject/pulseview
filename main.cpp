@@ -84,12 +84,12 @@ int main(int argc, char *argv[])
 	// Parse arguments
 	while (1) {
 		static const struct option long_options[] = {
-			{"help", no_argument, 0, 'h'},
-			{"version", no_argument, 0, 'V'},
-			{"loglevel", required_argument, 0, 'l'},
-			{"input-file", required_argument, 0, 'i'},
-			{"input-format", required_argument, 0, 'I'},
-			{0, 0, 0, 0}
+			{"help", no_argument, nullptr, 'h'},
+			{"version", no_argument, nullptr, 'V'},
+			{"loglevel", required_argument, nullptr, 'l'},
+			{"input-file", required_argument, nullptr, 'i'},
+			{"input-format", required_argument, nullptr, 'I'},
+			{nullptr, 0, nullptr, 0}
 		};
 
 		const int c = getopt_long(argc, argv,

@@ -104,7 +104,7 @@ WellArray::WellArray(int rows, int cols, QWidget *parent)
     : QWidget(parent)
         ,nrows(rows), ncols(cols)
 {
-    d = 0;
+    d = nullptr;
     setFocusPolicy(Qt::StrongFocus);
     cellw = 28;
     cellh = 24;

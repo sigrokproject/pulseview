@@ -116,7 +116,7 @@ void Signal::populate_popup_form(QWidget *parent, QFormLayout *form)
 {
 	name_widget_ = new QComboBox(parent);
 	name_widget_->setEditable(true);
-	name_widget_->setCompleter(0);
+	name_widget_->setCompleter(nullptr);
 
 	for (unsigned int i = 0; i < countof(ChannelNames); i++)
 		name_widget_->insertItem(i, ChannelNames[i]);

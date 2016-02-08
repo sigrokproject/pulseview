@@ -42,8 +42,8 @@ bool SignalHandler::prepare_signals()
 	sigemptyset(&sig_action.sa_mask);
 	sig_action.sa_flags = SA_RESTART;
 
-	if (sigaction(SIGINT, &sig_action, 0) != 0 ||
-		sigaction(SIGTERM, &sig_action, 0) != 0) {
+	if (sigaction(SIGINT, &sig_action, nullptr) != 0 ||
+		sigaction(SIGTERM, &sig_action, nullptr) != 0) {
 		close(sockets_[0]);
 		close(sockets_[1]);
 		return false;
@@ -53,7 +53,7 @@ bool SignalHandler::prepare_signals()
 }
 
 SignalHandler::SignalHandler(QObject* parent) : QObject(parent),
-	socket_notifier_(0)
+	socket_notifier_(nullptr)
 {
 	socket_notifier_ = new QSocketNotifier(sockets_[1],
 		QSocketNotifier::Read, this);
