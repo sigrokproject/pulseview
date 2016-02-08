@@ -41,10 +41,10 @@ void RowData::get_annotation_subset(
 	vector<pv::data::decode::Annotation> &dest,
 	uint64_t start_sample, uint64_t end_sample) const
 {
-	for (auto i = annotations_.cbegin(); i != annotations_.cend(); i++)
-		if ((*i).end_sample() > start_sample &&
-			(*i).start_sample() <= end_sample)
-			dest.push_back(*i);
+	for (const auto & annotation : annotations_)
+		if (annotation.end_sample() > start_sample &&
+			annotation.start_sample() <= end_sample)
+			dest.push_back(annotation);
 }
 
 void RowData::push_annotation(const Annotation &a)

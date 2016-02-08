@@ -44,8 +44,8 @@ Decoder::Decoder(const srd_decoder *const dec) :
 
 Decoder::~Decoder()
 {
-	for (auto i = options_.begin(); i != options_.end(); i++)
-		g_variant_unref((*i).second);
+	for (auto & option : options_)
+		g_variant_unref(option.second);
 }
 
 const srd_decoder* Decoder::decoder() const
@@ -102,8 +102,8 @@ bool Decoder::have_required_channels() const
 set< shared_ptr<pv::data::Logic> > Decoder::get_data()
 {
 	set< shared_ptr<pv::data::Logic> > data;
-	for (auto i = channels_.cbegin(); i != channels_.cend(); i++) {
-		shared_ptr<view::LogicSignal> signal((*i).second);
+	for (const auto & channel : channels_) {
+		shared_ptr<view::LogicSignal> signal(channel.second);
 		assert(signal);
 		data.insert(signal->logic_data());
 	}
@@ -116,12 +116,11 @@ srd_decoder_inst* Decoder::create_decoder_inst(srd_session *session) const
 	GHashTable *const opt_hash = g_hash_table_new_full(g_str_hash,
 		g_str_equal, g_free, (GDestroyNotify)g_variant_unref);
 
-	for (auto i = options_.cbegin(); i != options_.cend(); i++)
-	{
-		GVariant *const value = (*i).second;
+	for (const auto & option : options_) {
+		GVariant *const value = option.second;
 		g_variant_ref(value);
 		g_hash_table_replace(opt_hash, (void*)g_strdup(
-			(*i).first.c_str()), value);
+			option.first.c_str()), value);
 	}
 
 	srd_decoder_inst *const decoder_inst = srd_inst_new(
@@ -135,13 +134,12 @@ srd_decoder_inst* Decoder::create_decoder_inst(srd_session *session) const
 	GHashTable *const channels = g_hash_table_new_full(g_str_hash,
 		g_str_equal, g_free, (GDestroyNotify)g_variant_unref);
 
-	for (auto i = channels_.cbegin(); i != channels_.cend(); i++)
-	{
-		shared_ptr<view::LogicSignal> signal((*i).second);
+	for (const auto & channel : channels_) {
+		shared_ptr<view::LogicSignal> signal(channel.second);
 		GVariant *const gvar = g_variant_new_int32(
 			signal->channel()->index());
 		g_variant_ref_sink(gvar);
-		g_hash_table_insert(channels, (*i).first->id, gvar);
+		g_hash_table_insert(channels, channel.first->id, gvar);
 	}
 
 	srd_inst_channel_set_all(decoder_inst, channels);

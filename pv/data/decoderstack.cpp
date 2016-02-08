@@ -272,9 +272,9 @@ uint64_t DecoderStack::max_sample_count() const
 {
 	uint64_t max_sample_count = 0;
 
-	for (auto i = rows_.cbegin(); i != rows_.end(); i++)
+	for (const auto & row : rows_)
 		max_sample_count = max(max_sample_count,
-			(*i).second.get_max_sample());
+			row.second.get_max_sample());
 
 	return max_sample_count;
 }
