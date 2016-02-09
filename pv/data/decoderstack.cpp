@@ -282,11 +282,22 @@ uint64_t DecoderStack::max_sample_count() const
 optional<int64_t> DecoderStack::wait_for_data() const
 {
 	unique_lock<mutex> input_lock(input_mutex_);
+
+	// Do wait if we decoded all samples but we're still capturing
+	// Do not wait if we're done capturing
 	while (!interrupt_ && !frame_complete_ &&
-		samples_decoded_ >= sample_count_)
+		(samples_decoded_ >= sample_count_) &&
+		(session_.get_capture_state() != Session::Stopped)) {
+
 		input_cond_.wait(input_lock);
+	}
+
+	// Return value is valid if we're not aborting the decode,
 	return boost::make_optional(!interrupt_ &&
-		(samples_decoded_ < sample_count_ || !frame_complete_),
+		// and there's more work to do...
+		(samples_decoded_ < sample_count_ || !frame_complete_) &&
+		// and if the end of the data hasn't been reached yet
+		(!((samples_decoded_ >= sample_count_) && (session_.get_capture_state() == Session::Stopped))),
 		sample_count_);
 }
 
