@@ -57,7 +57,7 @@ const double DecoderStack::DecodeThreshold = 0.2;
 const int64_t DecoderStack::DecodeChunkLength = 4096;
 const unsigned int DecoderStack::DecodeNotifyPeriod = 65536;
 
-mutex DecoderStack::global_decode_mutex_;
+mutex DecoderStack::global_srd_mutex_;
 
 DecoderStack::DecoderStack(pv::Session &session,
 	const srd_decoder *const dec) :
@@ -312,7 +312,6 @@ void DecoderStack::decode_data(
 
 	for (int64_t i = 0; !interrupt_ && i < sample_count;
 			i += chunk_sample_count) {
-		lock_guard<mutex> decode_lock(global_decode_mutex_);
 
 		const int64_t chunk_end = min(
 			i + chunk_sample_count, sample_count);
@@ -343,6 +342,9 @@ void DecoderStack::decode_proc()
 	srd_decoder_inst *prev_di = nullptr;
 
 	assert(segment_);
+
+	// Prevent any other decode threads from accessing libsigrokdecode
+	lock_guard<mutex> srd_lock(global_srd_mutex_);
 
 	// Create the session
 	srd_session_new(&session);

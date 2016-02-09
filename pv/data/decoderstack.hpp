@@ -140,12 +140,12 @@ private:
 	double samplerate_;
 
 	/**
-	 * This mutex prevents more than one decode operation occuring
-	 * concurrently.
+	 * This mutex prevents more than one thread from accessing
+	 * libsigrokdecode concurrently.
 	 * @todo A proper solution should be implemented to allow multiple
-	 * decode operations.
+	 * decode operations in parallel.
 	 */
-	static std::mutex global_decode_mutex_;
+	static std::mutex global_srd_mutex_;
 
 	std::list< std::shared_ptr<decode::Decoder> > stack_;
 
