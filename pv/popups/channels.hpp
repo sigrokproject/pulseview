@@ -70,7 +70,7 @@ private:
 		const std::vector< std::shared_ptr<pv::view::Signal> > sigs);
 
 private:
-	void showEvent(QShowEvent *e);
+	void showEvent(QShowEvent *event);
 
 private Q_SLOTS:
 	void on_channel_checked(QWidget *widget);

@@ -209,9 +209,9 @@ QGridLayout* Channels::create_channel_group_grid(
 	return grid;
 }
 
-void Channels::showEvent(QShowEvent *e)
+void Channels::showEvent(QShowEvent *event)
 {
-	pv::widgets::Popup::showEvent(e);
+	pv::widgets::Popup::showEvent(event);
 
 	updating_channels_ = true;
 

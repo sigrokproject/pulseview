@@ -45,13 +45,13 @@ private:
 	 * Handles the event that the widget loses keyboard focus.
 	 * @param e the representation of the event details.
 	 */
-	void focusOutEvent(QFocusEvent *e);
+	void focusOutEvent(QFocusEvent *event);
 
 	/**
 	 * Handles the event that a key is depressed.
 	 * @param e the representation of the event details.
 	 */
-	void keyPressEvent(QKeyEvent *e);
+	void keyPressEvent(QKeyEvent *event);
 
 private Q_SLOTS:
 	/**

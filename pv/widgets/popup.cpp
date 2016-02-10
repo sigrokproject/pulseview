@@ -67,14 +67,14 @@ void Popup::set_position(const QPoint point, Position pos)
 		MarginWidth + ((pos == Top) ? ArrowLength : 0));
 }
 
-bool Popup::eventFilter(QObject *obj, QEvent *evt)
+bool Popup::eventFilter(QObject *obj, QEvent *event)
 {
 	QKeyEvent *keyEvent;
 
 	(void)obj;
 
-	if (evt->type() == QEvent::KeyPress) {
-		keyEvent = static_cast<QKeyEvent*>(evt);
+	if (event->type() == QEvent::KeyPress) {
+		keyEvent = static_cast<QKeyEvent*>(event);
 		if (keyEvent->key() == Qt::Key_Enter ||
 		    keyEvent->key() == Qt::Key_Return) {
 			close();
@@ -291,13 +291,13 @@ void Popup::resizeEvent(QResizeEvent*)
 	setMask(popup_region());
 }
 
-void Popup::mouseReleaseEvent(QMouseEvent *e)
+void Popup::mouseReleaseEvent(QMouseEvent *event)
 {
-	assert(e);
+	assert(event);
 
 	// We need our own out-of-bounds click handler because QWidget counts
 	// the drop-shadow region as inside the widget
-	if (!bubble_rect().contains(e->pos()))
+	if (!bubble_rect().contains(event->pos()))
 		close();
 }
 

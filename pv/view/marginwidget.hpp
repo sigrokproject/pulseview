@@ -63,7 +63,7 @@ protected:
 protected:
 	virtual void contextMenuEvent(QContextMenuEvent *event);
 
-	virtual void keyPressEvent(QKeyEvent *e);
+	virtual void keyPressEvent(QKeyEvent *event);
 };
 
 } // namespace view

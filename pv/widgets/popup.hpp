@@ -52,7 +52,7 @@ public:
 
 	void set_position(const QPoint point, Position pos);
 
-	bool eventFilter(QObject *obj, QEvent *evt);
+	bool eventFilter(QObject *obj, QEvent *event);
 
 	void show();
 
@@ -78,10 +78,10 @@ private:
 
 	void resizeEvent(QResizeEvent*);
 
-	void mouseReleaseEvent(QMouseEvent *e);
+	void mouseReleaseEvent(QMouseEvent *event);
 
 protected:
-	void showEvent(QShowEvent *e);
+	void showEvent(QShowEvent *);
 
 Q_SIGNALS:
 	void closed();

@@ -122,7 +122,7 @@ private:
 
 	void paintEvent(QPaintEvent *event) override;
 
-	void mouseDoubleClickEvent(QMouseEvent *e) override;
+	void mouseDoubleClickEvent(QMouseEvent *event) override;
 
 	/**
 	 * Draw a hover arrow under the cursor position.

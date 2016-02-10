@@ -225,9 +225,9 @@ Ruler::TickPositions Ruler::calculate_tick_positions(
 	return tp;
 }
 
-void Ruler::mouseDoubleClickEvent(QMouseEvent *e)
+void Ruler::mouseDoubleClickEvent(QMouseEvent *event)
 {
-	view_.add_flag(view_.offset() + ((double)e->x() + 0.5) * view_.scale());
+	view_.add_flag(view_.offset() + ((double)event->x() + 0.5) * view_.scale());
 }
 
 void Ruler::draw_hover_mark(QPainter &p, int text_height)

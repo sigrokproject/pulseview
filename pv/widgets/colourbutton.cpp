@@ -90,9 +90,9 @@ void ColourButton::on_selected(int row, int col)
 	selected(cur_colour_);
 }
 
-void ColourButton::paintEvent(QPaintEvent *e)
+void ColourButton::paintEvent(QPaintEvent *event)
 {
-	QPushButton::paintEvent(e);
+	QPushButton::paintEvent(event);
 
 	QPainter p(this);
 

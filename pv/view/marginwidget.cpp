@@ -62,11 +62,11 @@ void MarginWidget::contextMenuEvent(QContextMenuEvent *event)
 		menu->exec(event->globalPos());
 }
 
-void MarginWidget::keyPressEvent(QKeyEvent *e)
+void MarginWidget::keyPressEvent(QKeyEvent *event)
 {
-	assert(e);
+	assert(event);
 
-	if (e->key() == Qt::Key_Delete) {
+	if (event->key() == Qt::Key_Delete) {
 		const auto items = this->items();
 		for (auto &i : items)
 			if (i->selected())

@@ -49,9 +49,9 @@
 namespace pv {
 namespace widgets {
 
-void WellArray::paintEvent(QPaintEvent *e)
+void WellArray::paintEvent(QPaintEvent *event)
 {
-    QRect r = e->rect();
+    QRect r = event->rect();
     int cx = r.x();
     int cy = r.y();
     int ch = r.height();
@@ -163,10 +163,10 @@ void WellArray::paintCellContents(QPainter *p, int row, int col, const QRect &r)
     }
 }
 
-void WellArray::mousePressEvent(QMouseEvent *e)
+void WellArray::mousePressEvent(QMouseEvent *event)
 {
     // The current cell marker is set to the cell the mouse is pressed in
-    QPoint pos = e->pos();
+    QPoint pos = event->pos();
     setCurrent(rowAt(pos.y()), columnAt(pos.x()));
 }
 
@@ -263,9 +263,9 @@ void WellArray::focusOutEvent(QFocusEvent*)
 
 /*\reimp
 */
-void WellArray::keyPressEvent(QKeyEvent* e)
+void WellArray::keyPressEvent(QKeyEvent* event)
 {
-    switch(e->key()) {                        // Look at the key code
+    switch(event->key()) {                        // Look at the key code
     case Qt::Key_Left:                                // If 'left arrow'-key,
         if (curCol > 0)                        // and cr't not in leftmost col
             setCurrent(curRow, curCol - 1);        // set cr't to next left column
@@ -286,7 +286,7 @@ void WellArray::keyPressEvent(QKeyEvent* e)
         setSelected(curRow, curCol);
         break;
     default:                                // If not an interesting key,
-        e->ignore();                        // we don't accept the event
+        event->ignore();                        // we don't accept the event
         return;
     }
 

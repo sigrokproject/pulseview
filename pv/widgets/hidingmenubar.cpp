@@ -33,18 +33,18 @@ HidingMenuBar::HidingMenuBar(QWidget *parent) :
 		this, SLOT(item_triggered()));
 }
 
-void HidingMenuBar::focusOutEvent(QFocusEvent *e)
+void HidingMenuBar::focusOutEvent(QFocusEvent *event)
 {
-	if (e->reason() != Qt::PopupFocusReason)
+	if (event->reason() != Qt::PopupFocusReason)
 		setHidden(true);
-	QMenuBar::focusOutEvent(e);
+	QMenuBar::focusOutEvent(event);
 }
 
-void HidingMenuBar::keyPressEvent(QKeyEvent *e)
+void HidingMenuBar::keyPressEvent(QKeyEvent *event)
 {
-	if (e->key() == Qt::Key_Escape)
+	if (event->key() == Qt::Key_Escape)
 		setHidden(true);
-	QMenuBar::keyPressEvent(e);
+	QMenuBar::keyPressEvent(event);
 }
 
 void HidingMenuBar::item_triggered()

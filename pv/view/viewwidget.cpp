@@ -223,9 +223,10 @@ void ViewWidget::mouse_left_release_event(QMouseEvent *event)
 	item_dragging_ = false;
 }
 
-bool ViewWidget::touch_event(QTouchEvent *e)
+bool ViewWidget::touch_event(QTouchEvent *event)
 {
-	(void)e;
+	(void)event;
+
 	return false;
 }
 
@@ -267,16 +268,16 @@ void ViewWidget::mouseReleaseEvent(QMouseEvent *event)
 	mouse_down_item_ = nullptr;
 }
 
-void ViewWidget::mouseMoveEvent(QMouseEvent *e)
+void ViewWidget::mouseMoveEvent(QMouseEvent *event)
 {
-	assert(e);
-	mouse_point_ = e->pos();
+	assert(event);
+	mouse_point_ = event->pos();
 
-	if (!e->buttons())
-		item_hover(get_mouse_over_item(e->pos()));
-	else if (e->buttons() & Qt::LeftButton) {
+	if (!event->buttons())
+		item_hover(get_mouse_over_item(event->pos()));
+	else if (event->buttons() & Qt::LeftButton) {
 		if (!item_dragging_) {
-			if ((e->pos() - mouse_down_point_).manhattanLength() <
+			if ((event->pos() - mouse_down_point_).manhattanLength() <
 				QApplication::startDragDistance())
 				return;
 
@@ -287,7 +288,7 @@ void ViewWidget::mouseMoveEvent(QMouseEvent *e)
 		}
 
 		// Do the drag
-		drag_items(e->pos() - mouse_down_point_);
+		drag_items(event->pos() - mouse_down_point_);
 	}
 }
 

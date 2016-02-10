@@ -92,8 +92,8 @@ private:
 private:
 	void paintEvent(QPaintEvent *event);
 
-	void mouseDoubleClickEvent(QMouseEvent * event);
-	void wheelEvent(QWheelEvent *e);
+	void mouseDoubleClickEvent(QMouseEvent *event);
+	void wheelEvent(QWheelEvent *event);
 
 private:
 	boost::optional<pv::util::Timestamp> drag_offset_;

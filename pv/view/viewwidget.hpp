@@ -121,14 +121,14 @@ protected:
 	 * Handles touch begin update and end events.
 	 * @param e the event that triggered this handler.
 	 */
-	virtual bool touch_event(QTouchEvent *e);
+	virtual bool touch_event(QTouchEvent *event);
 
 protected:
 	bool event(QEvent *event);
 
-	void mousePressEvent(QMouseEvent * event);
+	void mousePressEvent(QMouseEvent *event);
 	void mouseReleaseEvent(QMouseEvent *event);
-	void mouseMoveEvent(QMouseEvent *e);
+	void mouseMoveEvent(QMouseEvent *event);
 
 	void leaveEvent(QEvent *event);
 

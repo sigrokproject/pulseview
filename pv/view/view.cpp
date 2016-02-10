@@ -826,9 +826,9 @@ bool View::eventFilter(QObject *object, QEvent *event)
 	return QObject::eventFilter(object, event);
 }
 
-bool View::viewportEvent(QEvent *e)
+bool View::viewportEvent(QEvent *event)
 {
-	switch (e->type()) {
+	switch (event->type()) {
 	case QEvent::Paint:
 	case QEvent::MouseButtonPress:
 	case QEvent::MouseButtonRelease:
@@ -840,7 +840,7 @@ bool View::viewportEvent(QEvent *e)
 	case QEvent::TouchEnd:
 		return false;
 	default:
-		return QAbstractScrollArea::viewportEvent(e);
+		return QAbstractScrollArea::viewportEvent(event);
 	}
 }
 

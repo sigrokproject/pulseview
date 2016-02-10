@@ -153,15 +153,15 @@ void Header::contextMenuEvent(QContextMenuEvent *event)
 	menu->exec(event->globalPos());
 }
 
-void Header::keyPressEvent(QKeyEvent *e)
+void Header::keyPressEvent(QKeyEvent *event)
 {
-	assert(e);
+	assert(event);
 
-	MarginWidget::keyPressEvent(e);
+	MarginWidget::keyPressEvent(event);
 
-	if (e->key() == Qt::Key_G && e->modifiers() == Qt::ControlModifier)
+	if (event->key() == Qt::Key_G && event->modifiers() == Qt::ControlModifier)
 		on_group();
-	else if (e->key() == Qt::Key_U && e->modifiers() == Qt::ControlModifier)
+	else if (event->key() == Qt::Key_U && event->modifiers() == Qt::ControlModifier)
 		on_ungroup();
 }
 

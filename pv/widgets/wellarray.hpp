@@ -119,7 +119,7 @@ protected:
     void keyPressEvent(QKeyEvent*);
     void focusInEvent(QFocusEvent*);
     void focusOutEvent(QFocusEvent*);
-    void paintEvent(QPaintEvent *);
+    void paintEvent(QPaintEvent*);
 
 private:
     Q_DISABLE_COPY(WellArray)

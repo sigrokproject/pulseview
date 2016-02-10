@@ -80,7 +80,7 @@ private:
 private:
 	void contextMenuEvent(QContextMenuEvent *event);
 
-	void keyPressEvent(QKeyEvent *e);
+	void keyPressEvent(QKeyEvent *event);
 
 private Q_SLOTS:
 	void on_group();

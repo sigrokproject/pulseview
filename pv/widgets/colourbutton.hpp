@@ -47,7 +47,7 @@ public:
 	void set_palette(const QColor *const palette);
 
 private:
-	void paintEvent(QPaintEvent *e);
+	void paintEvent(QPaintEvent *event);
 
 private Q_SLOTS:
 	void on_clicked(bool);

@@ -300,9 +300,9 @@ private:
 
 	bool eventFilter(QObject *object, QEvent *event);
 
-	bool viewportEvent(QEvent *e);
+	bool viewportEvent(QEvent *event);
 
-	void resizeEvent(QResizeEvent *e);
+	void resizeEvent(QResizeEvent *event);
 
 public:
 	void row_item_appearance_changed(bool label, bool content);
