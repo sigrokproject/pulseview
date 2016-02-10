@@ -120,7 +120,7 @@ memaccess_check_unaligned_le(HAVE_UNALIGNED_LITTLE_ENDIAN_ACCESS)
 
 set(PV_TITLE PulseView)
 set(PV_DESCRIPTION "A GUI for sigrok")
-set(PV_VERSION_STRING "0.3.0")
+set(PV_VERSION_STRING "0.4.0")
 
 include(GetGitRevisionDescription)
 
