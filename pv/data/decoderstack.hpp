@@ -79,8 +79,7 @@ private:
 	static const unsigned int DecodeNotifyPeriod;
 
 public:
-	DecoderStack(pv::Session &session_,
-		const srd_decoder *const decoder);
+	DecoderStack(pv::Session &session, const srd_decoder *const dec);
 
 	virtual ~DecoderStack();
 

@@ -34,7 +34,7 @@ class ColourPopup : public Popup
 	Q_OBJECT
 
 public:
-	ColourPopup(int rows, int cols, QWidget *partent);
+	ColourPopup(int rows, int cols, QWidget *parent);
 
 	WellArray& well_array();
 

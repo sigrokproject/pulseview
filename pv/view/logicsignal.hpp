@@ -118,7 +118,7 @@ private:
 
 	const std::vector<int32_t> get_trigger_types() const;
 	QAction* action_from_trigger_type(
-		const sigrok::TriggerMatchType *match);
+		const sigrok::TriggerMatchType *type);
 	const sigrok::TriggerMatchType* trigger_type_from_action(
 		QAction *action);
 	void populate_popup_form(QWidget *parent, QFormLayout *form);

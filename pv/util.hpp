@@ -76,7 +76,7 @@ typedef boost::multiprecision::number<
  * @return The formatted value.
  */
 QString format_time_si(
-	const Timestamp& t,
+	const Timestamp& v,
 	SIPrefix prefix = SIPrefix::unspecified,
 	unsigned precision = 0,
 	QString unit = "s",

@@ -58,7 +58,7 @@ class Channels : public pv::widgets::Popup
 	Q_OBJECT
 
 public:
-	Channels(Session &session_, QWidget *parent);
+	Channels(Session &session, QWidget *parent);
 
 private:
 	void set_all_channels(bool set);

@@ -87,13 +87,13 @@ private:
 	 * Handles touch begin update and end events.
 	 * @param e the event that triggered this handler.
 	 */
-	bool touch_event(QTouchEvent *e);
+	bool touch_event(QTouchEvent *event);
 
 private:
 	void paintEvent(QPaintEvent *event);
 
 	void mouseDoubleClickEvent(QMouseEvent * event);
-	void wheelEvent(QWheelEvent *event);
+	void wheelEvent(QWheelEvent *e);
 
 private:
 	boost::optional<pv::util::Timestamp> drag_offset_;

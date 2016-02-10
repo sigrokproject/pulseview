@@ -47,7 +47,7 @@ namespace decode {
 class Decoder
 {
 public:
-	Decoder(const srd_decoder *const decoder);
+	Decoder(const srd_decoder *const dec);
 
 	virtual ~Decoder();
 

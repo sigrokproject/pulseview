@@ -80,7 +80,7 @@ public:
 		uint64_t start, uint64_t end, float min_length) const;
 
 private:
-	void reallocate_envelope(Envelope &l);
+	void reallocate_envelope(Envelope &e);
 
 	void append_payload_to_envelope_levels();
 

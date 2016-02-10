@@ -131,10 +131,10 @@ private:
 		size_t base_colour, int row_title_width);
 
 	void draw_annotation(const pv::data::decode::Annotation &a, QPainter &p,
-		int text_height, const ViewItemPaintParams &pp, int y,
+		int h, const ViewItemPaintParams &pp, int y,
 		size_t base_colour, int row_title_width) const;
 
-	void draw_annotation_block(std::vector<pv::data::decode::Annotation> a,
+	void draw_annotation_block(std::vector<pv::data::decode::Annotation> annotations,
 		QPainter &p, int h, int y, size_t base_colour) const;
 
 	void draw_instant(const pv::data::decode::Annotation &a, QPainter &p,
