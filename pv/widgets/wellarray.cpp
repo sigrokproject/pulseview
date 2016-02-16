@@ -125,7 +125,7 @@ void WellArray::paintCell(QPainter* p, int row, int col, const QRect &rect)
 {
     int b = 3; //margin
 
-    const QPalette & g = palette();
+    const QPalette& g = palette();
     QStyleOptionFrame opt;
     int dfw = style()->pixelMetric(QStyle::PM_DefaultFrameWidth);
     opt.lineWidth = dfw;

@@ -44,7 +44,7 @@ Decoder::Decoder(const srd_decoder *const dec) :
 
 Decoder::~Decoder()
 {
-	for (auto & option : options_)
+	for (auto& option : options_)
 		g_variant_unref(option.second);
 }
 
@@ -102,7 +102,7 @@ bool Decoder::have_required_channels() const
 set< shared_ptr<pv::data::Logic> > Decoder::get_data()
 {
 	set< shared_ptr<pv::data::Logic> > data;
-	for (const auto & channel : channels_) {
+	for (const auto& channel : channels_) {
 		shared_ptr<view::LogicSignal> signal(channel.second);
 		assert(signal);
 		data.insert(signal->logic_data());
@@ -116,7 +116,7 @@ srd_decoder_inst* Decoder::create_decoder_inst(srd_session *session) const
 	GHashTable *const opt_hash = g_hash_table_new_full(g_str_hash,
 		g_str_equal, g_free, (GDestroyNotify)g_variant_unref);
 
-	for (const auto & option : options_) {
+	for (const auto& option : options_) {
 		GVariant *const value = option.second;
 		g_variant_ref(value);
 		g_hash_table_replace(opt_hash, (void*)g_strdup(
@@ -134,7 +134,7 @@ srd_decoder_inst* Decoder::create_decoder_inst(srd_session *session) const
 	GHashTable *const channels = g_hash_table_new_full(g_str_hash,
 		g_str_equal, g_free, (GDestroyNotify)g_variant_unref);
 
-	for (const auto & channel : channels_) {
+	for (const auto& channel : channels_) {
 		shared_ptr<view::LogicSignal> signal(channel.second);
 		GVariant *const gvar = g_variant_new_int32(
 			signal->channel()->index());
