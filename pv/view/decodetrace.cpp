@@ -199,9 +199,7 @@ void DecodeTrace::paint_mid(QPainter &p, const ViewItemPaintParams &pp)
 	const vector<Row> rows(decoder_stack_->get_visible_rows());
 
 	visible_rows_.clear();
-	for (auto i : rows) {
-		const Row &row = i;
-
+	for (const Row& row : rows) {
 		// Cache the row title widths
 		int row_title_width;
 		try {
@@ -229,7 +227,7 @@ void DecodeTrace::paint_mid(QPainter &p, const ViewItemPaintParams &pp)
 
 			y += row_height_;
 
-			visible_rows_.push_back(i);
+			visible_rows_.push_back(row);
 		}
 	}
 
