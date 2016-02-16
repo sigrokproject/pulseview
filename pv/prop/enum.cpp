@@ -39,10 +39,6 @@ Enum::Enum(QString name,
 {
 }
 
-Enum::~Enum()
-{
-}
-
 QWidget* Enum::get_widget(QWidget *parent, bool auto_commit)
 {
 	if (selector_)

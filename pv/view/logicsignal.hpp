@@ -69,7 +69,7 @@ public:
 		std::shared_ptr<sigrok::Channel> channel,
 		std::shared_ptr<pv::data::Logic> data);
 
-	virtual ~LogicSignal();
+	virtual ~LogicSignal() = default;
 
 	std::shared_ptr<pv::data::SignalData> data() const;
 

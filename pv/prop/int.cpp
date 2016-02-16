@@ -45,10 +45,6 @@ Int::Int(QString name,
 {
 }
 
-Int::~Int()
-{
-}
-
 QWidget* Int::get_widget(QWidget *parent, bool auto_commit)
 {
 	int64_t int_val = 0, range_min = 0;

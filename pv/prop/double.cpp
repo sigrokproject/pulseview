@@ -46,10 +46,6 @@ Double::Double(QString name,
 {
 }
 
-Double::~Double()
-{
-}
-
 QWidget* Double::get_widget(QWidget *parent, bool auto_commit)
 {
 	if (spin_box_)

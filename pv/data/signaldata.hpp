@@ -33,7 +33,7 @@ class Segment;
 class SignalData
 {
 public:
-	SignalData();
+	SignalData() = default;
 	virtual ~SignalData() {}
 
 public:

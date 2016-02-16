@@ -43,7 +43,7 @@ public:
 	Enum(QString name, std::vector<std::pair<Glib::VariantBase, QString> > values,
 		Getter getter, Setter setter);
 
-	virtual ~Enum();
+	virtual ~Enum() = default;
 
 	QWidget* get_widget(QWidget *parent, bool auto_commit);
 

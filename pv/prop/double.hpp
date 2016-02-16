@@ -43,7 +43,7 @@ public:
 		Getter getter,
 		Setter setter);
 
-	virtual ~Double();
+	virtual ~Double() = default;
 
 	QWidget* get_widget(QWidget *parent, bool auto_commit);
 

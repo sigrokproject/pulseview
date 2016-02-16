@@ -41,7 +41,7 @@ public:
 		boost::optional< std::pair<int64_t, int64_t> > range,
 		Getter getter, Setter setter);
 
-	virtual ~Int();
+	virtual ~Int() = default;
 
 	QWidget* get_widget(QWidget *parent, bool auto_commit);
 

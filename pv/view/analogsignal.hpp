@@ -47,7 +47,7 @@ public:
 		std::shared_ptr<sigrok::Channel> channel,
 		std::shared_ptr<pv::data::Analog> data);
 
-	virtual ~AnalogSignal();
+	virtual ~AnalogSignal() = default;
 
 	std::shared_ptr<pv::data::SignalData> data() const;
 

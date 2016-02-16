@@ -66,10 +66,6 @@ AnalogSignal::AnalogSignal(
 	set_colour(SignalColours[channel_->index() % countof(SignalColours)]);
 }
 
-AnalogSignal::~AnalogSignal()
-{
-}
-
 shared_ptr<pv::data::SignalData> AnalogSignal::data() const
 {
 	return data_;

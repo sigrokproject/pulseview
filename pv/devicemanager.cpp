@@ -65,10 +65,6 @@ DeviceManager::DeviceManager(shared_ptr<Context> context) :
 		driver_scan(entry.second, map<const ConfigKey *, VariantBase>());
 }
 
-DeviceManager::~DeviceManager()
-{
-}
-
 const std::shared_ptr<sigrok::Context>& DeviceManager::context() const
 {
 	return context_;

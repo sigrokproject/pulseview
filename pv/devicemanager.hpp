@@ -50,7 +50,7 @@ class DeviceManager
 public:
 	DeviceManager(std::shared_ptr<sigrok::Context> context);
 
-	~DeviceManager();
+	~DeviceManager() = default;
 
 	const std::shared_ptr<sigrok::Context>& context() const;
 

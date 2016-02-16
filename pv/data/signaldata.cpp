@@ -23,9 +23,5 @@
 namespace pv {
 namespace data {
 
-SignalData::SignalData()
-{
-}
-
 } // namespace data
 } // namespace pv

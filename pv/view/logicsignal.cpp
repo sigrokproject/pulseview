@@ -126,10 +126,6 @@ LogicSignal::LogicSignal(
 					trigger_match_ = match->type();
 }
 
-LogicSignal::~LogicSignal()
-{
-}
-
 shared_ptr<pv::data::SignalData> LogicSignal::data() const
 {
 	return data_;

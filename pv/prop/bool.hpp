@@ -35,7 +35,7 @@ class Bool : public Property
 public:
 	Bool(QString name, Getter getter, Setter setter);
 
-	virtual ~Bool();
+	virtual ~Bool() = default;
 
 	QWidget* get_widget(QWidget *parent, bool auto_commit);
 	bool labeled_widget() const;
