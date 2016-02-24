@@ -72,7 +72,7 @@ public:
 	const_iterator end() const;
 
 	/**
-	 * Creates a list of decendant signals filtered by type.
+	 * Creates a list of descendant signals filtered by type.
 	 */
 	template<class T>
 	std::vector< std::shared_ptr<T> > list_by_type() {

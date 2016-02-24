@@ -47,7 +47,7 @@ public:
 	TraceTreeItem();
 
 	/**
-	 * Gets the owner this item in the view item hierachy.
+	 * Gets the owner of this item in the view item hierachy.
 	 */
 	TraceTreeItemOwner* owner() const;
 

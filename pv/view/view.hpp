@@ -270,7 +270,7 @@ private:
 	void update_layout();
 
 	/**
-	 * Satisifies TraceTreeItem functionality.
+	 * Satisfies TraceTreeItem functionality.
 	 * @param p the QPainter to paint into.
 	 * @param rect the rectangle of the header area.
 	 * @param hover true if the label is being hovered over by the mouse.
