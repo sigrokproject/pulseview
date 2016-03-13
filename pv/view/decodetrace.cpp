@@ -44,6 +44,7 @@ extern "C" {
 #include "decodetrace.hpp"
 
 #include <pv/session.hpp>
+#include <pv/strnatcmp.hpp>
 #include <pv/data/decoderstack.hpp>
 #include <pv/data/decode/decoder.hpp>
 #include <pv/data/logic.hpp>
@@ -835,7 +836,8 @@ QComboBox* DecodeTrace::create_channel_selector(
 	vector< shared_ptr<Signal> > sig_list(sigs.begin(), sigs.end());
 	std::sort(sig_list.begin(), sig_list.end(),
 		[](const shared_ptr<Signal> &a, const shared_ptr<Signal> b) {
-			return a->name().compare(b->name()) < 0; });
+			return strnatcasecmp(a->name().toStdString(),
+				b->name().toStdString()) < 0; });
 
 	assert(decoder_stack_);
 	const auto channel_iter = dec->channels().find(pdch);
