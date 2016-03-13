@@ -36,6 +36,7 @@
 #include <QObject>
 
 namespace sigrok {
+class Channel;
 class Output;
 class OutputFormat;
 }
@@ -45,6 +46,7 @@ namespace pv {
 class Session;
 
 namespace data {
+class AnalogSegment;
 class LogicSegment;
 }
 
@@ -75,7 +77,9 @@ public:
 	void cancel();
 
 private:
-	void store_proc(std::shared_ptr<pv::data::LogicSegment> segment);
+	void store_proc(std::vector< std::shared_ptr<sigrok::Channel> > achannel_list,
+		std::vector< std::shared_ptr<pv::data::AnalogSegment> > asegment_list,
+		std::shared_ptr<pv::data::LogicSegment> lsegment);
 
 Q_SIGNALS:
 	void progress_updated();

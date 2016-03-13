@@ -32,6 +32,8 @@
 
 #include <pv/devicemanager.hpp>
 #include <pv/session.hpp>
+#include <pv/data/analog.hpp>
+#include <pv/data/analogsegment.hpp>
 #include <pv/data/logic.hpp>
 #include <pv/data/logicsegment.hpp>
 #include <pv/devices/device.hpp>
@@ -105,49 +107,62 @@ bool StoreSession::start()
 {
 	const unordered_set< shared_ptr<view::Signal> > sigs(session_.signals());
 
-	// Add enabled channels to the data set
-	set< shared_ptr<data::SignalData> > data_set;
+	shared_ptr<data::Segment> any_segment;
+	shared_ptr<data::LogicSegment> lsegment;
+	vector< shared_ptr<sigrok::Channel> > achannel_list;
+	vector< shared_ptr<data::AnalogSegment> > asegment_list;
 
-	for (shared_ptr<view::Signal> signal : sigs)
-		if (signal->enabled())
-			data_set.insert(signal->data());
+	for (shared_ptr<view::Signal> signal : sigs) {
+		if (!signal->enabled())
+			continue;
 
-	// Check we have logic data
-	if (data_set.empty() || sigs.empty()) {
-		error_ = tr("No data to save.");
-		return false;
+		shared_ptr<data::SignalData> data = signal->data();
+
+		if (dynamic_pointer_cast<data::Logic>(data)) {
+			// All logic channels share the same data segments
+			shared_ptr<data::Logic> ldata = dynamic_pointer_cast<data::Logic>(data);
+
+			const deque< shared_ptr<data::LogicSegment> > &lsegments =
+				ldata->logic_segments();
+
+			if (lsegments.empty()) {
+				error_ = tr("Can't save logic channel without data.");
+				return false;
+			}
+
+			lsegment = lsegments.front();
+			any_segment = lsegment;
+		}
+
+		if (dynamic_pointer_cast<data::Analog>(data)) {
+			// Each analog channel has its own segments
+			shared_ptr<data::Analog> adata =
+				dynamic_pointer_cast<data::Analog>(data);
+
+			const deque< shared_ptr<data::AnalogSegment> > &asegments =
+				adata->analog_segments();
+
+			if (asegments.empty()) {
+				error_ = tr("Can't save analog channel without data.");
+				return false;
+			}
+
+			asegment_list.push_back(asegments.front());
+			any_segment = asegments.front();
+
+			achannel_list.push_back(signal->channel());
+		}
 	}
 
-	if (data_set.size() > 1) {
-		error_ = tr("PulseView currently only has support for "
-			"storing a single data stream.");
+	if (!any_segment) {
+		error_ = tr("No channels enabled.");
 		return false;
 	}
-
-	// Get the logic data
-	shared_ptr<data::Logic> data;
-	if (!(data = dynamic_pointer_cast<data::Logic>(*data_set.begin()))) {
-		error_ = tr("PulseView currently only has support for "
-			"storing logic data.");
-		return false;
-	}
-
-	// Get the segment
-	const deque< shared_ptr<data::LogicSegment> > &segments =
-		data->logic_segments();
-
-	if (segments.empty()) {
-		error_ = tr("No segments to save.");
-		return false;
-	}
-
-	const shared_ptr<data::LogicSegment> segment(segments.front());
-	assert(segment);
 
 	// Check whether the user wants to export a certain sample range
 	if (sample_range_.first == sample_range_.second) {
 		start_sample_ = 0;
-		sample_count_ = segment->get_sample_count();
+		sample_count_ =	any_segment->get_sample_count();
 	} else {
 		if (sample_range_.first > sample_range_.second) {
 			start_sample_ = sample_range_.second;
@@ -172,14 +187,15 @@ bool StoreSession::start()
 		output_ = output_format_->create_output(file_name_, device, options);
 		auto meta = context->create_meta_packet(
 			{{ConfigKey::SAMPLERATE, Glib::Variant<guint64>::create(
-				segment->samplerate())}});
+				any_segment->samplerate())}});
 		output_->receive(meta);
 	} catch (Error error) {
-		error_ = tr("Error while saving.");
+		error_ = tr("Error while saving: ") + error.what();
 		return false;
 	}
 
-	thread_ = std::thread(&StoreSession::store_proc, this, segment);
+	thread_ = std::thread(&StoreSession::store_proc, this,
+		achannel_list, asegment_list, lsegment);
 	return true;
 }
 
@@ -194,18 +210,30 @@ void StoreSession::cancel()
 	interrupt_ = true;
 }
 
-void StoreSession::store_proc(shared_ptr<data::LogicSegment> segment)
+void StoreSession::store_proc(vector< shared_ptr<sigrok::Channel> > achannel_list,
+	vector< shared_ptr<data::AnalogSegment> > asegment_list,
+	shared_ptr<data::LogicSegment> lsegment)
 {
-	assert(segment);
-
 	unsigned progress_scale = 0;
 
 	/// TODO: Wrap this in a std::unique_ptr when we transition to C++11
-	uint8_t *const data = new uint8_t[BlockSize];
-	assert(data);
+	uint8_t *const ldata = new uint8_t[BlockSize];
+	assert(ldata);
 
-	const int unit_size = segment->unit_size();
-	assert(unit_size != 0);
+	int aunit_size = 0;
+	int lunit_size = 0;
+	unsigned int lsamples_per_block = INT_MAX;
+	unsigned int asamples_per_block = INT_MAX;
+
+	if (!asegment_list.empty()) {
+		// We assume all analog channels use the sample unit size
+		aunit_size = asegment_list.front()->unit_size();
+		asamples_per_block = BlockSize / aunit_size;
+	}
+	if (lsegment) {
+		lunit_size = lsegment->unit_size();
+		lsamples_per_block = BlockSize / lunit_size;
+	}
 
 	// Qt needs the progress values to fit inside an int. If they would
 	// not, scale the current and max values down until they do.
@@ -214,7 +242,8 @@ void StoreSession::store_proc(shared_ptr<data::LogicSegment> segment)
 
 	unit_count_ = sample_count_ >> progress_scale;
 
-	const unsigned int samples_per_block = BlockSize / unit_size;
+	const unsigned int samples_per_block =
+		std::min(asamples_per_block, lsamples_per_block);
 
 	while (!interrupt_ && sample_count_) {
 		progress_updated();
@@ -222,18 +251,43 @@ void StoreSession::store_proc(shared_ptr<data::LogicSegment> segment)
 		const uint64_t packet_len =
 			std::min((uint64_t)samples_per_block, sample_count_);
 
-		segment->get_samples(data, start_sample_, start_sample_ + packet_len);
-
-		size_t length = packet_len * unit_size;
-
 		try {
 			const auto context = session_.device_manager().context();
-			auto logic = context->create_logic_packet(data, length, unit_size);
-			const string data = output_->receive(logic);
-			if (output_stream_.is_open())
-				output_stream_ << data;
+
+			for (unsigned int i = 0; i < achannel_list.size(); i++) {
+				shared_ptr<sigrok::Channel> achannel = achannel_list.at(i);
+				shared_ptr<data::AnalogSegment> asegment = asegment_list.at(i);
+
+				const float *adata =
+					asegment->get_samples(start_sample_, start_sample_ + packet_len);
+
+				// The srzip format currently only supports packets with one
+				// analog channel. See zip_append_analog() in srzip.c
+				auto analog = context->create_analog_packet(
+					vector<shared_ptr<sigrok::Channel> >{achannel},
+					(float *)adata, packet_len,
+					sigrok::Quantity::VOLTAGE, sigrok::Unit::VOLT,
+					vector<const sigrok::QuantityFlag *>());
+				const string adata_str = output_->receive(analog);
+
+				if (output_stream_.is_open())
+					output_stream_ << adata_str;
+
+				delete[] adata;
+			}
+
+			if (lsegment) {
+				lsegment->get_samples(ldata, start_sample_, start_sample_ + packet_len);
+
+				const size_t length = packet_len * lunit_size;
+				auto logic = context->create_logic_packet(ldata, length, lunit_size);
+				const string ldata_str = output_->receive(logic);
+
+				if (output_stream_.is_open())
+					output_stream_ << ldata_str;
+			}
 		} catch (Error error) {
-			error_ = tr("Error while saving.");
+			error_ = tr("Error while saving: ") + error.what();
 			break;
 		}
 
@@ -250,7 +304,7 @@ void StoreSession::store_proc(shared_ptr<data::LogicSegment> segment)
 	output_.reset();
 	output_stream_.close();
 
-	delete[] data;
+	delete[] ldata;
 }
 
 } // pv
