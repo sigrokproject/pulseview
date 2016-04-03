@@ -911,13 +911,11 @@ void View::signals_changed()
 
 	vector< shared_ptr<TraceTreeItem> > new_top_level_items;
 
-	const auto device = session_.device();
-	if (!device)
+	if (!session_.device())
 		return;
 
-	shared_ptr<sigrok::Device> sr_dev = device->device();
+	shared_ptr<sigrok::Device> sr_dev = session_.device()->device();
 	assert(sr_dev);
-
 	const vector< shared_ptr<Channel> > channels(
 		sr_dev->channels());
 
@@ -992,6 +990,9 @@ void View::signals_changed()
 				offset += extents.second;
 		}
 
+		// Assign proper vertical offsets to each channel in the group
+		new_trace_group->restack_items();
+
 		// If this is a new group, enqueue it in the new top level
 		// items list
 		if (!new_traces_in_group.empty() && new_trace_group)
@@ -1003,19 +1004,23 @@ void View::signals_changed()
 	copy_if(channels.begin(), channels.end(), back_inserter(logic_channels),
 		[](const shared_ptr<Channel>& c) {
 			return c->type() == sigrok::ChannelType::LOGIC; });
+
 	const vector< shared_ptr<Trace> > non_grouped_logic_signals =
-		extract_new_traces_for_channels(logic_channels,
-			signal_map, add_traces);
-	const shared_ptr<TraceGroup> non_grouped_trace_group(
-		make_shared<TraceGroup>());
-	for (shared_ptr<Trace> trace : non_grouped_logic_signals)
-		non_grouped_trace_group->add_child_item(trace);
-	new_top_level_items.push_back(non_grouped_trace_group);
+		extract_new_traces_for_channels(logic_channels,	signal_map, add_traces);
+
+	if (non_grouped_logic_signals.size() > 0) {
+		const shared_ptr<TraceGroup> non_grouped_trace_group(
+			make_shared<TraceGroup>());
+		for (shared_ptr<Trace> trace : non_grouped_logic_signals)
+			non_grouped_trace_group->add_child_item(trace);
+
+		non_grouped_trace_group->restack_items();
+		new_top_level_items.push_back(non_grouped_trace_group);
+	}
 
 	// Enqueue the remaining channels as free ungrouped traces
 	const vector< shared_ptr<Trace> > new_top_level_signals =
-		extract_new_traces_for_channels(channels,
-			signal_map, add_traces);
+		extract_new_traces_for_channels(channels, signal_map, add_traces);
 	new_top_level_items.insert(new_top_level_items.end(),
 		new_top_level_signals.begin(), new_top_level_signals.end());
 
@@ -1032,16 +1037,15 @@ void View::signals_changed()
 
 	// Add and position the pending top levels items
 	for (auto item : new_top_level_items) {
-		add_child_item(item);
-
-		// Position the item after the last present item
+		// Position the item after the last item or at the top if there is none
 		int offset = v_extents().second;
+
+		add_child_item(item);
+		item->force_to_v_offset(offset);
+
 		const pair<int, int> extents = item->v_extents();
 		if (item->enabled())
-			offset += -extents.first;
-		item->force_to_v_offset(offset);
-		if (item->enabled())
-			offset += extents.second;
+			offset += (extents.second - extents.first);
 	}
 
 	update_layout();
