@@ -138,14 +138,19 @@ void Session::set_device(shared_ptr<devices::Device> device)
 	if (device_)
 		device_->close();
 
+	device_.reset();
+
+	// Remove all traces
+	signals_.clear();
+	decode_traces_.clear();
+	signals_changed();
+
 	device_ = std::move(device);
 	device_->open();
 	device_->session()->add_datafeed_callback([=]
 		(shared_ptr<sigrok::Device> device, shared_ptr<Packet> packet) {
 			data_feed_in(device, packet);
 		});
-
-	decode_traces_.clear();
 
 	update_signals();
 	device_selected();
