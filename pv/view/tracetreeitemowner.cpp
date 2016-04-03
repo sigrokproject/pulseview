@@ -87,12 +87,15 @@ void TraceTreeItemOwner::remove_child_item(std::shared_ptr<TraceTreeItem> item)
 
 pair<int, int> TraceTreeItemOwner::v_extents() const
 {
-	pair<int, int> extents(INT_MAX, INT_MIN);
+	bool has_children = false;
 
+	pair<int, int> extents(INT_MAX, INT_MIN);
 	for (const shared_ptr<TraceTreeItem> t : trace_tree_child_items()) {
 		assert(t);
 		if (!t->enabled())
 			continue;
+
+		has_children = true;
 
 		const int child_offset = t->layout_v_offset();
 		const pair<int, int> child_extents = t->v_extents();
@@ -101,6 +104,9 @@ pair<int, int> TraceTreeItemOwner::v_extents() const
 		extents.second = max(child_extents.second + child_offset,
 			extents.second);
 	}
+
+	if (!has_children)
+		extents = make_pair(0, 0);
 
 	return extents;
 }
