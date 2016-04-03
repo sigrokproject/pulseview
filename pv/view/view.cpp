@@ -689,8 +689,47 @@ void View::update_scroll()
 	verticalScrollBar()->setSingleStep(areaSize.height() / 8);
 
 	const pair<int, int> extents = v_extents();
-	verticalScrollBar()->setRange(extents.first - (areaSize.height() / 2),
-		extents.second - (areaSize.height() / 2));
+
+	// Don't change the scrollbar range if there are no traces
+	if (extents.first != extents.second)
+		verticalScrollBar()->setRange(extents.first - areaSize.height(),
+			extents.second);
+
+	if (scroll_needs_defaults)
+		set_scroll_default();
+}
+
+void View::reset_scroll()
+{
+	verticalScrollBar()->setRange(0, 0);
+}
+
+void View::set_scroll_default()
+{
+	assert(viewport_);
+
+	const QSize areaSize = viewport_->size();
+
+	// Special case: when starting up and the window isn't visible yet,
+	// areaSize is [0, 0]. In this case we want to be called again later
+	if (areaSize.height() == 0) {
+		scroll_needs_defaults = true;
+		return;
+	} else {
+		scroll_needs_defaults = false;
+	}
+
+	const pair<int, int> extents = v_extents();
+	const int trace_height = extents.second - extents.first;
+
+	// Do all traces fit in the view?
+	if (areaSize.height() >= trace_height)
+		// Center all traces vertically
+		set_v_offset(extents.first -
+			((areaSize.height() - trace_height) / 2));
+	else
+		// Put the first trace at the top, letting the bottom ones overflow
+		set_v_offset(extents.first);
 }
 
 void View::update_layout()
@@ -909,15 +948,23 @@ void View::signals_changed()
 {
 	using sigrok::Channel;
 
+	vector< shared_ptr<Channel> > channels;
+	shared_ptr<sigrok::Device> sr_dev;
+
+	// Do we need to set the vertical scrollbar to its default position later?
+	// We do if there are no traces, i.e. the scroll bar has no range set
+	bool reset_scrollbar =
+		verticalScrollBar()->minimum() == verticalScrollBar()->maximum();
+
+	if (!session_.device()) {
+		reset_scroll();
+	} else {
+		assert(sr_dev);
+		sr_dev = session_.device()->device();
+		channels = sr_dev->channels();
+	}
+
 	vector< shared_ptr<TraceTreeItem> > new_top_level_items;
-
-	if (!session_.device())
-		return;
-
-	shared_ptr<sigrok::Device> sr_dev = session_.device()->device();
-	assert(sr_dev);
-	const vector< shared_ptr<Channel> > channels(
-		sr_dev->channels());
 
 	// Make a list of traces that are being added, and a list of traces
 	// that are being removed
@@ -952,52 +999,53 @@ void View::signals_changed()
 		signal_map[sig->channel()] = sig;
 
 	// Populate channel groups
-	for (auto entry : sr_dev->channel_groups()) {
-		const shared_ptr<sigrok::ChannelGroup> &group = entry.second;
+	if (sr_dev)
+		for (auto entry : sr_dev->channel_groups()) {
+			const shared_ptr<sigrok::ChannelGroup> &group = entry.second;
 
-		if (group->channels().size() <= 1)
-			continue;
+			if (group->channels().size() <= 1)
+				continue;
 
-		// Find best trace group to add to
-		TraceTreeItemOwner *owner = find_prevalent_trace_group(
-			group, signal_map);
+			// Find best trace group to add to
+			TraceTreeItemOwner *owner = find_prevalent_trace_group(
+				group, signal_map);
 
-		// If there is no trace group, create one
-		shared_ptr<TraceGroup> new_trace_group;
-		if (!owner) {
-			new_trace_group.reset(new TraceGroup());
-			owner = new_trace_group.get();
+			// If there is no trace group, create one
+			shared_ptr<TraceGroup> new_trace_group;
+			if (!owner) {
+				new_trace_group.reset(new TraceGroup());
+				owner = new_trace_group.get();
+			}
+
+			// Extract traces for the trace group, removing them from
+			// the add list
+			const vector< shared_ptr<Trace> > new_traces_in_group =
+				extract_new_traces_for_channels(group->channels(),
+					signal_map, add_traces);
+
+			// Add the traces to the group
+			const pair<int, int> prev_v_extents = owner->v_extents();
+			int offset = prev_v_extents.second - prev_v_extents.first;
+			for (shared_ptr<Trace> trace : new_traces_in_group) {
+				assert(trace);
+				owner->add_child_item(trace);
+
+				const pair<int, int> extents = trace->v_extents();
+				if (trace->enabled())
+					offset += -extents.first;
+				trace->force_to_v_offset(offset);
+				if (trace->enabled())
+					offset += extents.second;
+			}
+
+			// Assign proper vertical offsets to each channel in the group
+			new_trace_group->restack_items();
+
+			// If this is a new group, enqueue it in the new top level
+			// items list
+			if (!new_traces_in_group.empty() && new_trace_group)
+				new_top_level_items.push_back(new_trace_group);
 		}
-
-		// Extract traces for the trace group, removing them from
-		// the add list
-		const vector< shared_ptr<Trace> > new_traces_in_group =
-			extract_new_traces_for_channels(group->channels(),
-				signal_map, add_traces);
-
-		// Add the traces to the group
-		const pair<int, int> prev_v_extents = owner->v_extents();
-		int offset = prev_v_extents.second - prev_v_extents.first;
-		for (shared_ptr<Trace> trace : new_traces_in_group) {
-			assert(trace);
-			owner->add_child_item(trace);
-
-			const pair<int, int> extents = trace->v_extents();
-			if (trace->enabled())
-				offset += -extents.first;
-			trace->force_to_v_offset(offset);
-			if (trace->enabled())
-				offset += extents.second;
-		}
-
-		// Assign proper vertical offsets to each channel in the group
-		new_trace_group->restack_items();
-
-		// If this is a new group, enqueue it in the new top level
-		// items list
-		if (!new_traces_in_group.empty() && new_trace_group)
-			new_top_level_items.push_back(new_trace_group);
-	}
 
 	// Enqueue the remaining logic channels in a group
 	vector< shared_ptr<Channel> > logic_channels;
@@ -1052,6 +1100,9 @@ void View::signals_changed()
 
 	header_->update();
 	viewport_->update();
+
+	if (reset_scrollbar)
+		set_scroll_default();
 }
 
 void View::capture_state_updated(int state)

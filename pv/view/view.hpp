@@ -267,6 +267,10 @@ private:
 
 	void update_scroll();
 
+	void reset_scroll();
+
+	void set_scroll_default();
+
 	void update_layout();
 
 	/**
@@ -396,6 +400,9 @@ private:
 
 	unsigned int sticky_events_;
 	QTimer lazy_event_handler_;
+
+	// This is true when the defaults couldn't be set due to insufficient info
+	bool scroll_needs_defaults;
 };
 
 } // namespace view
