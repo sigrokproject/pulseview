@@ -338,7 +338,11 @@ void Session::set_capture_state(capture_state state)
 
 void Session::update_signals()
 {
-	assert(device_);
+	if (!device_) {
+		signals_.clear();
+		logic_data_.reset();
+		return;
+	}
 
 	lock_guard<recursive_mutex> lock(data_mutex_);
 
