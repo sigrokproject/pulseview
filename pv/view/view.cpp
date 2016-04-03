@@ -1083,6 +1083,11 @@ void View::signals_changed()
 		owner->remove_child_item(trace);
 	}
 
+	// Remove any empty trace groups
+	for (shared_ptr<TraceGroup> group : list_by_type<TraceGroup>())
+		if (group->child_items().size() == 0)
+			remove_child_item(group);
+
 	// Add and position the pending top levels items
 	for (auto item : new_top_level_items) {
 		// Position the item after the last item or at the top if there is none
