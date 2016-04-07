@@ -37,8 +37,8 @@ namespace view {
 class AnalogSignal : public Signal
 {
 private:
-	static const int NominalHeight;
 	static const QColor SignalColours[4];
+	static const QColor GridMajorColor, GridMinorColor;
 
 	static const float EnvelopeThreshold;
 
@@ -90,6 +90,8 @@ public:
 	void paint_mid(QPainter &p, const ViewItemPaintParams &pp);
 
 private:
+	void paint_grid(QPainter &p, int y, int left, int right);
+
 	void paint_trace(QPainter &p,
 		const std::shared_ptr<pv::data::AnalogSegment> &segment,
 		int y, int left, const int64_t start, const int64_t end,
@@ -110,6 +112,9 @@ private:
 
 	int scale_index_;
 	int scale_index_drag_offset_;
+
+	int div_height_;
+	int vdivs_;  // divs per positive/negative side
 };
 
 } // namespace view

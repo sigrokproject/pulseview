@@ -25,6 +25,8 @@
 #include <cstdlib>
 #include <limits>
 
+#include <QApplication>
+
 #include "analogsignal.hpp"
 #include "pv/data/analog.hpp"
 #include "pv/data/analogsegment.hpp"
@@ -43,14 +45,15 @@ using sigrok::Channel;
 namespace pv {
 namespace view {
 
-const int AnalogSignal::NominalHeight = 80;
-
 const QColor AnalogSignal::SignalColours[4] = {
 	QColor(0xC4, 0xA0, 0x00),	// Yellow
 	QColor(0x87, 0x20, 0x7A),	// Magenta
 	QColor(0x20, 0x4A, 0x87),	// Blue
 	QColor(0x4E, 0x9A, 0x06)	// Green
 };
+
+const QColor AnalogSignal::GridMajorColor = QColor(0xB0, 0xB0, 0xB0);
+const QColor AnalogSignal::GridMinorColor = QColor(0xD0, 0xD0, 0xD0);
 
 const float AnalogSignal::EnvelopeThreshold = 256.0f;
 
@@ -61,7 +64,9 @@ AnalogSignal::AnalogSignal(
 	Signal(session, channel),
 	data_(data),
 	scale_index_(0),
-	scale_index_drag_offset_(0)
+	scale_index_drag_offset_(0),
+	div_height_(3 * QFontMetrics(QApplication::font()).height()),
+	vdivs_(1)
 {
 	set_colour(SignalColours[channel_->index() % countof(SignalColours)]);
 }
@@ -78,20 +83,24 @@ shared_ptr<pv::data::Analog> AnalogSignal::analog_data() const
 
 std::pair<int, int> AnalogSignal::v_extents() const
 {
-	const int h = NominalHeight / 2;
+	const int h = vdivs_ * div_height_;
 	return make_pair(-h, h);
 }
 
 int AnalogSignal::scale_handle_offset() const
 {
+	const int h = vdivs_ * div_height_;
+
 	return ((scale_index_drag_offset_ - scale_index_) *
-		NominalHeight / 4) - NominalHeight / 2;
+		h / 4) - h / 2;
 }
 
 void AnalogSignal::scale_handle_dragged(int offset)
 {
+	const int h = vdivs_ * div_height_;
+
 	scale_index_ = scale_index_drag_offset_ -
-		(offset + NominalHeight / 2) / (NominalHeight / 4);
+		(offset + h / 2) / (h / 4);
 }
 
 void AnalogSignal::scale_handle_drag_release()
@@ -116,6 +125,8 @@ void AnalogSignal::paint_mid(QPainter &p, const ViewItemPaintParams &pp)
 
 	if (!channel_->enabled())
 		return;
+
+	paint_grid(p, y, pp.left(), pp.right());
 
 	const deque< shared_ptr<pv::data::AnalogSegment> > &segments =
 		data_->analog_segments();
@@ -146,6 +157,30 @@ void AnalogSignal::paint_mid(QPainter &p, const ViewItemPaintParams &pp)
 		paint_envelope(p, segment, y, pp.left(),
 			start_sample, end_sample,
 			pixels_offset, samples_per_pixel);
+}
+
+void AnalogSignal::paint_grid(QPainter &p, int y, int left, int right)
+{
+	p.setPen(QPen(GridMajorColor, 0.5, Qt::DashLine));
+	for (int i = 1; i <= vdivs_; i++) {
+		const int dy = i * div_height_;
+		p.drawLine(QLineF(left, y - dy, right, y - dy));
+		p.drawLine(QLineF(left, y + dy, right, y + dy));
+	}
+
+	p.setPen(QPen(GridMinorColor, 0.5, Qt::DashLine));
+	for (int i = 0; i < vdivs_; i++) {
+		const int dy = i * div_height_;
+		const float dy25 = dy + (0.25 * div_height_);
+		const float dy50 = dy + (0.50 * div_height_);
+		const float dy75 = dy + (0.75 * div_height_);
+		p.drawLine(QLineF(left, y - dy25, right, y - dy25));
+		p.drawLine(QLineF(left, y + dy25, right, y + dy25));
+		p.drawLine(QLineF(left, y - dy50, right, y - dy50));
+		p.drawLine(QLineF(left, y + dy50, right, y + dy50));
+		p.drawLine(QLineF(left, y - dy75, right, y - dy75));
+		p.drawLine(QLineF(left, y + dy75, right, y + dy75));
+	}
 }
 
 void AnalogSignal::paint_trace(QPainter &p,
