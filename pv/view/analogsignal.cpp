@@ -26,6 +26,8 @@
 #include <limits>
 
 #include <QApplication>
+#include <QFormLayout>
+#include <QSpinBox>
 
 #include "analogsignal.hpp"
 #include "pv/data/analog.hpp"
@@ -56,6 +58,8 @@ const QColor AnalogSignal::GridMajorColor = QColor(0xB0, 0xB0, 0xB0);
 const QColor AnalogSignal::GridMinorColor = QColor(0xD0, 0xD0, 0xD0);
 
 const float AnalogSignal::EnvelopeThreshold = 256.0f;
+
+const int AnalogSignal::MaximumVDivs = 10;
 
 AnalogSignal::AnalogSignal(
 	pv::Session &session,
@@ -273,6 +277,29 @@ void AnalogSignal::update_scale()
 	resolution_ = powf(10.0f, d.quot - offset) * seq[d.rem];
 	scale_ = div_height_ / resolution_;
 }
+
+void AnalogSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
+{
+	// Add the standard options
+	Signal::populate_popup_form(parent, form);
+
+	// Add the vdiv settings
+	QSpinBox *vdiv_sb = new QSpinBox(parent);
+	vdiv_sb->setRange(1, MaximumVDivs);
+	vdiv_sb->setValue(vdivs_);
+	connect(vdiv_sb, SIGNAL(valueChanged(int)),
+		this, SLOT(on_vdivs_changed(int)));
+	form->addRow(tr("Number of vertical divs"), vdiv_sb);
+}
+
+void AnalogSignal::on_vdivs_changed(int vdivs)
+{
+	vdivs_ = vdivs;
+
+	if (owner_)
+		owner_->extents_changed(false, true);
+}
+
 
 } // namespace view
 } // namespace pv

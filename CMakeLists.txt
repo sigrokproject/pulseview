@@ -244,6 +244,7 @@ set(pulseview_HEADERS
 	pv/prop/property.hpp
 	pv/prop/string.hpp
 	pv/toolbars/mainbar.hpp
+	pv/view/analogsignal.hpp
 	pv/view/cursor.hpp
 	pv/view/flag.hpp
 	pv/view/header.hpp

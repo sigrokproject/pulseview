@@ -36,11 +36,15 @@ namespace view {
 
 class AnalogSignal : public Signal
 {
+	Q_OBJECT
+
 private:
 	static const QColor SignalColours[4];
 	static const QColor GridMajorColor, GridMinorColor;
 
 	static const float EnvelopeThreshold;
+
+	static const int MaximumVDivs;
 
 public:
 	AnalogSignal(pv::Session &session,
@@ -106,6 +110,12 @@ private:
 	 * Computes the scale factor from the scale index and vdiv settings.
 	 */
 	void update_scale();
+
+protected:
+	void populate_popup_form(QWidget *parent, QFormLayout *form);
+
+private Q_SLOTS:
+	void on_vdivs_changed(int vdivs);
 
 private:
 	std::shared_ptr<pv::data::Analog> data_;
