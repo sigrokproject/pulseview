@@ -26,7 +26,10 @@
 #include <limits>
 
 #include <QApplication>
+#include <QComboBox>
 #include <QFormLayout>
+#include <QGridLayout>
+#include <QLabel>
 #include <QSpinBox>
 
 #include "analogsignal.hpp"
@@ -60,6 +63,8 @@ const QColor AnalogSignal::GridMinorColor = QColor(0xD0, 0xD0, 0xD0);
 const float AnalogSignal::EnvelopeThreshold = 256.0f;
 
 const int AnalogSignal::MaximumVDivs = 10;
+const int AnalogSignal::MinScaleIndex = -6;
+const int AnalogSignal::MaxScaleIndex = 7;
 
 AnalogSignal::AnalogSignal(
 	pv::Session &session,
@@ -265,16 +270,21 @@ void AnalogSignal::paint_envelope(QPainter &p,
 	delete[] e.samples;
 }
 
-void AnalogSignal::update_scale()
+float AnalogSignal::get_resolution(int scale_index)
 {
 	const float seq[] = {1.0f, 2.0f, 5.0f};
 
 	const int offset = std::numeric_limits<int>::max() / (2 * countof(seq));
 	const std::div_t d = std::div(
-		(int)(scale_index_ + countof(seq) * offset),
+		(int)(scale_index + countof(seq) * offset),
 		countof(seq));
 
-	resolution_ = powf(10.0f, d.quot - offset) * seq[d.rem];
+	return powf(10.0f, d.quot - offset) * seq[d.rem];
+}
+
+void AnalogSignal::update_scale()
+{
+	resolution_ = get_resolution(scale_index_);
 	scale_ = div_height_ / resolution_;
 }
 
@@ -283,13 +293,38 @@ void AnalogSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
 	// Add the standard options
 	Signal::populate_popup_form(parent, form);
 
-	// Add the vdiv settings
+	QFormLayout *const layout = new QFormLayout;
+
+	// Add the number of vdivs
 	QSpinBox *vdiv_sb = new QSpinBox(parent);
 	vdiv_sb->setRange(1, MaximumVDivs);
 	vdiv_sb->setValue(vdivs_);
 	connect(vdiv_sb, SIGNAL(valueChanged(int)),
 		this, SLOT(on_vdivs_changed(int)));
-	form->addRow(tr("Number of vertical divs"), vdiv_sb);
+	layout->addRow(tr("Number of vertical divs"), vdiv_sb);
+
+	// Add the vertical resolution
+	resolution_cb_ = new QComboBox(parent);
+
+	for (int i = MinScaleIndex; i < MaxScaleIndex; i++) {
+		const QString label = QString("%1").arg(get_resolution(i));
+		resolution_cb_->insertItem(0, label, QVariant(i));
+	}
+
+	const int cur_idx = resolution_cb_->findData(QVariant(scale_index_));
+	resolution_cb_->setCurrentIndex(cur_idx);
+
+	connect(resolution_cb_, SIGNAL(currentIndexChanged(int)),
+		this, SLOT(on_resolution_changed(int)));
+
+	QGridLayout *const vdiv_layout = new QGridLayout;
+	QLabel *const vdiv_unit = new QLabel(tr("V/div"));
+	vdiv_layout->addWidget(resolution_cb_, 0, 0);
+	vdiv_layout->addWidget(vdiv_unit, 0, 1);
+
+	layout->addRow(tr("Vertical resolution"), vdiv_layout);
+
+	form->addRow(layout);
 }
 
 void AnalogSignal::on_vdivs_changed(int vdivs)
@@ -300,6 +335,14 @@ void AnalogSignal::on_vdivs_changed(int vdivs)
 		owner_->extents_changed(false, true);
 }
 
+void AnalogSignal::on_resolution_changed(int index)
+{
+	scale_index_ = resolution_cb_->itemData(index).toInt();
+	update_scale();
+
+	if (owner_)
+		owner_->row_item_appearance_changed(false, true);
+}
 
 } // namespace view
 } // namespace pv

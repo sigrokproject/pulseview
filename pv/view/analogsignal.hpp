@@ -25,6 +25,8 @@
 
 #include <memory>
 
+#include <QComboBox>
+
 namespace pv {
 
 namespace data {
@@ -45,6 +47,7 @@ private:
 	static const float EnvelopeThreshold;
 
 	static const int MaximumVDivs;
+	static const int MaxScaleIndex, MinScaleIndex;
 
 public:
 	AnalogSignal(pv::Session &session,
@@ -109,6 +112,8 @@ private:
 	/**
 	 * Computes the scale factor from the scale index and vdiv settings.
 	 */
+	float get_resolution(int scale_index);
+
 	void update_scale();
 
 protected:
@@ -117,8 +122,12 @@ protected:
 private Q_SLOTS:
 	void on_vdivs_changed(int vdivs);
 
+	void on_resolution_changed(int index);
+
 private:
 	std::shared_ptr<pv::data::Analog> data_;
+
+	QComboBox *resolution_cb_;
 
 	float scale_;
 	int scale_index_;
