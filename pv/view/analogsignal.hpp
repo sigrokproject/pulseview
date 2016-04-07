@@ -103,18 +103,20 @@ private:
 		const double pixels_offset, const double samples_per_pixel);
 
 	/**
-	 * Computes the scale factor from the scale index.
+	 * Computes the scale factor from the scale index and vdiv settings.
 	 */
-	float scale() const;
+	void update_scale();
 
 private:
 	std::shared_ptr<pv::data::Analog> data_;
 
+	float scale_;
 	int scale_index_;
 	int scale_index_drag_offset_;
 
 	int div_height_;
 	int vdivs_;  // divs per positive/negative side
+	float resolution_; // e.g. 10 for 10 V/div
 };
 
 } // namespace view
