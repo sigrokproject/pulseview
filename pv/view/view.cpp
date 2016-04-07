@@ -1038,13 +1038,15 @@ void View::signals_changed()
 					offset += extents.second;
 			}
 
-			// Assign proper vertical offsets to each channel in the group
-			new_trace_group->restack_items();
+			if (new_trace_group) {
+				// Assign proper vertical offsets to each channel in the group
+				new_trace_group->restack_items();
 
-			// If this is a new group, enqueue it in the new top level
-			// items list
-			if (!new_traces_in_group.empty() && new_trace_group)
-				new_top_level_items.push_back(new_trace_group);
+				// If this is a new group, enqueue it in the new top level
+				// items list
+				if (!new_traces_in_group.empty())
+					new_top_level_items.push_back(new_trace_group);
+			}
 		}
 
 	// Enqueue the remaining logic channels in a group
