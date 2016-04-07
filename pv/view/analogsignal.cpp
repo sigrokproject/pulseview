@@ -31,6 +31,7 @@
 #include <QGridLayout>
 #include <QLabel>
 #include <QSpinBox>
+#include <QString>
 
 #include "analogsignal.hpp"
 #include "pv/data/analog.hpp"
@@ -65,6 +66,9 @@ const float AnalogSignal::EnvelopeThreshold = 256.0f;
 const int AnalogSignal::MaximumVDivs = 10;
 const int AnalogSignal::MinScaleIndex = -6;
 const int AnalogSignal::MaxScaleIndex = 7;
+
+const int AnalogSignal::InfoTextMarginRight = 20;
+const int AnalogSignal::InfoTextMarginBottom = 5;
 
 AnalogSignal::AnalogSignal(
 	pv::Session &session,
@@ -171,6 +175,27 @@ void AnalogSignal::paint_mid(QPainter &p, const ViewItemPaintParams &pp)
 		paint_envelope(p, segment, y, pp.left(),
 			start_sample, end_sample,
 			pixels_offset, samples_per_pixel);
+}
+
+void AnalogSignal::paint_fore(QPainter &p, const ViewItemPaintParams &pp)
+{
+	if (!enabled())
+		return;
+
+	const int y = get_visual_y();
+
+	// Show the info section on the right side of the trace
+	const QString infotext = QString("%1 V/div").arg(resolution_);
+
+	p.setPen(colour_);
+	p.setFont(QApplication::font());
+
+	const QRectF bounding_rect = QRectF(pp.left(),
+			y + v_extents().first,
+			pp.width() - InfoTextMarginRight,
+			v_extents().second - v_extents().first - InfoTextMarginBottom);
+
+	p.drawText(bounding_rect, Qt::AlignRight | Qt::AlignBottom, infotext);
 }
 
 void AnalogSignal::paint_grid(QPainter &p, int y, int left, int right)

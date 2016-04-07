@@ -48,6 +48,7 @@ private:
 
 	static const int MaximumVDivs;
 	static const int MaxScaleIndex, MinScaleIndex;
+	static const int InfoTextMarginRight, InfoTextMarginBottom;
 
 public:
 	AnalogSignal(pv::Session &session,
@@ -95,6 +96,13 @@ public:
 	 * @param pp the painting parameters object to paint with..
 	 */
 	void paint_mid(QPainter &p, const ViewItemPaintParams &pp);
+
+	/**
+	 * Paints the foreground layer of the item with a QPainter
+	 * @param p the QPainter to paint into.
+	 * @param pp the painting parameters object to paint with.
+	 */
+	void paint_fore(QPainter &p, const ViewItemPaintParams &pp);
 
 private:
 	void paint_grid(QPainter &p, int y, int left, int right);
