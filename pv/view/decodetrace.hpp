@@ -210,6 +210,8 @@ private:
 	std::map<data::decode::Row, int> row_title_widths_;
 	int row_height_, max_visible_rows_;
 
+	int min_useful_label_width_;
+
 	QSignalMapper delete_mapper_, show_hide_mapper_;
 };
 

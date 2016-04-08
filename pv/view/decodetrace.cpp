@@ -141,6 +141,10 @@ DecodeTrace::DecodeTrace(pv::Session &session,
 {
 	assert(decoder_stack_);
 
+	// Determine shortest string we want to see displayed in full
+	QFontMetrics m(QApplication::font());
+	min_useful_label_width_ = m.width("XX"); // e.g. two hex characters
+
 	set_colour(DecodeColours[index % countof(DecodeColours)]);
 
 	connect(decoder_stack_.get(), SIGNAL(new_decode_data()),
@@ -373,7 +377,7 @@ void DecodeTrace::draw_annotations(vector<pv::data::decode::Annotation> annotati
 		bool a_is_separate = false;
 
 		// Annotation wider than the threshold for a useful label width?
-		if (a_width > 20) {
+		if (a_width >= min_useful_label_width_) {
 			for (const QString &ann_text : a.annotations()) {
 				const int w = p.boundingRect(QRectF(), 0, ann_text).width();
 				// Annotation wide enough to fit a label? Don't put it in a block then
