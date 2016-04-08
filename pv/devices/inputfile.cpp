@@ -36,19 +36,18 @@ InputFile::InputFile(const std::shared_ptr<sigrok::Context> &context,
 	const std::map<std::string, Glib::VariantBase> &options) :
 	File(file_name),
 	context_(context),
-	input_(format->create_input(options)),
+	format_(format),
+	options_(options),
 	interrupt_(false)
 {
-	if (!input_)
-		throw QString("Failed to create input");
 }
 
 void InputFile::open()
 {
 	if (session_)
 		close();
-
-	session_ = context_->create_session();
+	else
+		session_ = context_->create_session();
 }
 
 void InputFile::close()
@@ -67,7 +66,11 @@ void InputFile::run()
 	bool need_device = true;
 
 	assert(session_);
-	assert(input_);
+
+	input_ = format_->create_input(options_);
+
+	if (!input_)
+		throw QString("Failed to create input");
 
 	interrupt_ = false;
 	std::ifstream f(file_name_, std::ios::binary);
@@ -86,6 +89,7 @@ void InputFile::run()
 				break;
 			}
 
+			session_->remove_devices(); // Remove instance from previous run
 			session_->add_device(device_);
 			need_device = false;
 		}

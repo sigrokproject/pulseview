@@ -53,7 +53,9 @@ public:
 
 private:
 	const std::shared_ptr<sigrok::Context> context_;
-	const std::shared_ptr<sigrok::Input> input_;
+	const std::shared_ptr<sigrok::InputFormat> format_;
+	const std::map<std::string, Glib::VariantBase> options_;
+	std::shared_ptr<sigrok::Input> input_;
 
 	std::atomic<bool> interrupt_;
 };
