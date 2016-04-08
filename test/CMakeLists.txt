@@ -96,6 +96,7 @@ set(pulseview_TEST_HEADERS
 	${PROJECT_SOURCE_DIR}/pv/prop/int.hpp
 	${PROJECT_SOURCE_DIR}/pv/prop/property.hpp
 	${PROJECT_SOURCE_DIR}/pv/prop/string.hpp
+	${PROJECT_SOURCE_DIR}/pv/view/analogsignal.hpp
 	${PROJECT_SOURCE_DIR}/pv/view/cursor.hpp
 	${PROJECT_SOURCE_DIR}/pv/view/flag.hpp
 	${PROJECT_SOURCE_DIR}/pv/view/header.hpp
