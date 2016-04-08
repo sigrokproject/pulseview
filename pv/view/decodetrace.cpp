@@ -169,7 +169,10 @@ pair<int, int> DecodeTrace::v_extents() const
 {
 	const int row_height = (ViewItemPaintParams::text_height() * 6) / 4;
 
-	return make_pair(-row_height, row_height * max_visible_rows_);
+	// Make an empty decode trace appear symmetrical
+	const int row_count = max(1, max_visible_rows_);
+
+	return make_pair(-row_height, row_height * row_count);
 }
 
 void DecodeTrace::paint_back(QPainter &p, const ViewItemPaintParams &pp)
