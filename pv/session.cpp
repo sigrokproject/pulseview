@@ -142,7 +142,16 @@ void Session::set_device(shared_ptr<devices::Device> device)
 
 	// Remove all traces
 	signals_.clear();
+	cur_logic_segment_.reset();
+
+	for (auto entry : cur_analog_segments_) {
+		shared_ptr<sigrok::Channel>(entry.first).reset();
+		shared_ptr<data::AnalogSegment>(entry.second).reset();
+	}
+
+	logic_data_.reset();
 	decode_traces_.clear();
+
 	signals_changed();
 
 	device_ = std::move(device);
