@@ -58,8 +58,8 @@ const QColor AnalogSignal::SignalColours[4] = {
 	QColor(0x4E, 0x9A, 0x06)	// Green
 };
 
-const QColor AnalogSignal::GridMajorColor = QColor(0xB0, 0xB0, 0xB0);
-const QColor AnalogSignal::GridMinorColor = QColor(0xD0, 0xD0, 0xD0);
+const QColor AnalogSignal::GridMajorColor = QColor(0, 0, 0, 40*256/100);
+const QColor AnalogSignal::GridMinorColor = QColor(0, 0, 0, 20*256/100);
 
 const float AnalogSignal::EnvelopeThreshold = 256.0f;
 
@@ -200,16 +200,18 @@ void AnalogSignal::paint_fore(QPainter &p, const ViewItemPaintParams &pp)
 
 void AnalogSignal::paint_grid(QPainter &p, int y, int left, int right)
 {
-	p.setPen(QPen(GridMajorColor, 0.5, Qt::DashLine));
+	p.setRenderHint(QPainter::Antialiasing, false);
+
+	p.setPen(QPen(GridMajorColor, 1, Qt::DashLine));
 	for (int i = 1; i <= vdivs_; i++) {
-		const int dy = i * div_height_;
+		const float dy = i * div_height_;
 		p.drawLine(QLineF(left, y - dy, right, y - dy));
 		p.drawLine(QLineF(left, y + dy, right, y + dy));
 	}
 
-	p.setPen(QPen(GridMinorColor, 0.5, Qt::DashLine));
+	p.setPen(QPen(GridMinorColor, 1, Qt::DashLine));
 	for (int i = 0; i < vdivs_; i++) {
-		const int dy = i * div_height_;
+		const float dy = i * div_height_;
 		const float dy25 = dy + (0.25 * div_height_);
 		const float dy50 = dy + (0.50 * div_height_);
 		const float dy75 = dy + (0.75 * div_height_);
@@ -220,6 +222,8 @@ void AnalogSignal::paint_grid(QPainter &p, int y, int left, int right)
 		p.drawLine(QLineF(left, y - dy75, right, y - dy75));
 		p.drawLine(QLineF(left, y + dy75, right, y + dy75));
 	}
+
+	p.setRenderHint(QPainter::Antialiasing, true);
 }
 
 void AnalogSignal::paint_trace(QPainter &p,

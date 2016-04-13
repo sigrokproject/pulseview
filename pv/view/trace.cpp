@@ -38,7 +38,7 @@
 namespace pv {
 namespace view {
 
-const QPen Trace::AxisPen(QColor(128, 128, 128, 64));
+const QPen Trace::AxisPen(QColor(0, 0, 0, 30*256/100));
 const int Trace::LabelHitPadding = 2;
 
 const QColor Trace::DarkBGColour(235, 235, 235);    // Quite light grey
@@ -196,8 +196,12 @@ void Trace::paint_back(QPainter &p, const ViewItemPaintParams &pp)
 
 void Trace::paint_axis(QPainter &p, const ViewItemPaintParams &pp, int y)
 {
+	p.setRenderHint(QPainter::Antialiasing, false);
+
 	p.setPen(AxisPen);
-	p.drawLine(QPointF(pp.left(), y + 0.5f), QPointF(pp.right(), y + 0.5f));
+	p.drawLine(QPointF(pp.left(), y), QPointF(pp.right(), y));
+
+	p.setRenderHint(QPainter::Antialiasing, true);
 }
 
 void Trace::add_colour_option(QWidget *parent, QFormLayout *form)
