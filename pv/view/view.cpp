@@ -1087,8 +1087,10 @@ void View::signals_changed()
 
 	// Remove any empty trace groups
 	for (shared_ptr<TraceGroup> group : list_by_type<TraceGroup>())
-		if (group->child_items().size() == 0)
+		if (group->child_items().size() == 0) {
 			remove_child_item(group);
+			group.reset();
+		}
 
 	// Add and position the pending top levels items
 	for (auto item : new_top_level_items) {
