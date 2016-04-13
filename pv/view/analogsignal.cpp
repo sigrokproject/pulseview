@@ -360,8 +360,11 @@ void AnalogSignal::on_vdivs_changed(int vdivs)
 {
 	vdivs_ = vdivs;
 
-	if (owner_)
+	if (owner_) {
+		// Call order is important, otherwise the lazy event handler won't work
 		owner_->extents_changed(false, true);
+		owner_->row_item_appearance_changed(false, true);
+	}
 }
 
 void AnalogSignal::on_resolution_changed(int index)
