@@ -203,6 +203,31 @@ QMenu* MainWindow::menu_decoder_add() const
 }
 #endif
 
+shared_ptr<pv::view::View> MainWindow::get_active_view() const
+{
+	// If there's only one view, use it...
+	if (view_docks_.size() == 1)
+		return view_docks_.begin()->second;
+
+	// ...otherwise find the dock widget the widget with focus is contained in
+	QObject *w = QApplication::focusWidget();
+	QDockWidget *dock = 0;
+
+	while (w) {
+	    dock = qobject_cast<QDockWidget*>(w);
+	    if (dock)
+	        break;
+	    w = w->parent();
+	}
+
+	// Get the view contained in the dock widget
+	for (auto entry : view_docks_)
+		if (entry.first.get() == dock)
+			return entry.second;
+
+	return shared_ptr<pv::view::View>();
+}
+
 void MainWindow::run_stop()
 {
 	switch (session_.get_capture_state()) {
@@ -239,6 +264,14 @@ void MainWindow::export_file(shared_ptr<OutputFormat> format,
 {
 	using pv::dialogs::StoreProgress;
 
+	// Make sure there's a view selected to pull the data from
+	shared_ptr<pv::view::View> view = get_active_view();
+	if (!view) {
+		show_session_error(tr("No View Selected"), tr("Please click on the " \
+				"view whose data you want to save and try again."));
+		return;
+	}
+
 	// Stop any currently running capture session
 	session_.stop_capture();
 
@@ -249,7 +282,7 @@ void MainWindow::export_file(shared_ptr<OutputFormat> format,
 
 	// Selection only? Verify that the cursors are active and fetch their values
 	if (selection_only) {
-		if (!view_->cursors()->enabled()) {
+		if (!view->cursors()->enabled()) {
 			show_session_error(tr("Missing Cursors"), tr("You need to set the " \
 					"cursors before you can save the data enclosed by them " \
 					"to a session file (e.g. using ALT-V - Show Cursors)."));
@@ -258,8 +291,8 @@ void MainWindow::export_file(shared_ptr<OutputFormat> format,
 
 		const double samplerate = session_.get_samplerate();
 
-		const pv::util::Timestamp& start_time = view_->cursors()->first()->time();
-		const pv::util::Timestamp& end_time = view_->cursors()->second()->time();
+		const pv::util::Timestamp& start_time = view->cursors()->first()->time();
+		const pv::util::Timestamp& end_time = view->cursors()->second()->time();
 
 		const uint64_t start_sample =
 			std::max((double)0, start_time.convert_to<double>() * samplerate);
@@ -365,8 +398,6 @@ void MainWindow::setup_ui()
 	dock->setWidget(view.get());
 	addDockWidget(Qt::TopDockWidgetArea, dock.get());
 	view_docks_[dock] = view;
-
-	view_ = view.get(); // view_ will be refactored later
 
 	// Setup the menu bar
 	pv::widgets::HidingMenuBar *const menu_bar =
@@ -478,7 +509,9 @@ void MainWindow::setup_ui()
 	action_view_sticky_scrolling_->setText(tr("&Sticky Scrolling"));
 	menu_view->addAction(action_view_sticky_scrolling_);
 
-	view_->enable_sticky_scrolling(action_view_sticky_scrolling_->isChecked());
+	// TODO: Refactor this into a "new view" method
+	if (view)
+		view->enable_sticky_scrolling(action_view_sticky_scrolling_->isChecked());
 
 	menu_view->addSeparator();
 
@@ -490,12 +523,13 @@ void MainWindow::setup_ui()
 	action_view_coloured_bg_->setText(tr("Use &coloured backgrounds"));
 	menu_view->addAction(action_view_coloured_bg_);
 
-	view_->enable_coloured_bg(action_view_coloured_bg_->isChecked());
+	// TODO: Refactor this into a "new view" method
+	if (view)
+		view->enable_coloured_bg(action_view_coloured_bg_->isChecked());
 
 	menu_view->addSeparator();
 
 	action_view_show_cursors_->setCheckable(true);
-	action_view_show_cursors_->setChecked(view_->cursors_shown());
 	action_view_show_cursors_->setIcon(QIcon::fromTheme("show-cursors",
 		QIcon(":/icons/show-cursors.svg")));
 	action_view_show_cursors_->setShortcut(QKeySequence(Qt::Key_C));
@@ -503,6 +537,10 @@ void MainWindow::setup_ui()
 		QString::fromUtf8("actionViewShowCursors"));
 	action_view_show_cursors_->setText(tr("Show &Cursors"));
 	menu_view->addAction(action_view_show_cursors_);
+
+	// TODO: Refactor this into a "new view" method
+	if (view)
+		action_view_show_cursors_->setChecked(view->cursors_shown());
 
 	// Decoders Menu
 #ifdef ENABLE_DECODE
@@ -554,15 +592,16 @@ void MainWindow::setup_ui()
 		SLOT(capture_state_changed(int)));
 	connect(&session_, SIGNAL(device_selected()), this,
 		SLOT(device_selected()));
-	connect(&session_, SIGNAL(trigger_event(util::Timestamp)), view_,
-		SLOT(trigger_event(util::Timestamp)));
 
-	// Setup view_ events
-	connect(view_, SIGNAL(sticky_scrolling_changed(bool)), this,
-		SLOT(sticky_scrolling_changed(bool)));
-	connect(view_, SIGNAL(always_zoom_to_fit_changed(bool)), this,
-		SLOT(always_zoom_to_fit_changed(bool)));
-
+	// TODO: Refactor this into a "new view" method
+	if (view) {
+		connect(&session_, SIGNAL(trigger_event(util::Timestamp)), view.get(),
+			SLOT(trigger_event(util::Timestamp)));
+		connect(view.get(), SIGNAL(sticky_scrolling_changed(bool)), this,
+			SLOT(sticky_scrolling_changed(bool)));
+		connect(view.get(), SIGNAL(always_zoom_to_fit_changed(bool)), this,
+			SLOT(always_zoom_to_fit_changed(bool)));
+	}
 }
 
 void MainWindow::select_init_device()
@@ -809,43 +848,57 @@ void MainWindow::on_actionQuit_triggered()
 
 void MainWindow::on_actionViewZoomIn_triggered()
 {
-	view_->zoom(1);
+	shared_ptr<pv::view::View> view = get_active_view();
+	if (view)
+		view->zoom(1);
 }
 
 void MainWindow::on_actionViewZoomOut_triggered()
 {
-	view_->zoom(-1);
+	shared_ptr<pv::view::View> view = get_active_view();
+	if (view)
+		view->zoom(-1);
 }
 
 void MainWindow::on_actionViewZoomFit_triggered()
 {
-	view_->zoom_fit(action_view_zoom_fit_->isChecked());
+	shared_ptr<pv::view::View> view = get_active_view();
+	if (view)
+		view->zoom_fit(action_view_zoom_fit_->isChecked());
 }
 
 void MainWindow::on_actionViewZoomOneToOne_triggered()
 {
-	view_->zoom_one_to_one();
+	shared_ptr<pv::view::View> view = get_active_view();
+	if (view)
+		view->zoom_one_to_one();
 }
 
 void MainWindow::on_actionViewStickyScrolling_triggered()
 {
-	view_->enable_sticky_scrolling(action_view_sticky_scrolling_->isChecked());
+	shared_ptr<pv::view::View> view = get_active_view();
+	if (view)
+		view->enable_sticky_scrolling(action_view_sticky_scrolling_->isChecked());
 }
 
 void MainWindow::on_actionViewColouredBg_triggered()
 {
-	view_->enable_coloured_bg(action_view_coloured_bg_->isChecked());
+	shared_ptr<pv::view::View> view = get_active_view();
+	if (view)
+		view->enable_coloured_bg(action_view_coloured_bg_->isChecked());
 }
 
 void MainWindow::on_actionViewShowCursors_triggered()
 {
-	assert(view_);
+	shared_ptr<pv::view::View> view = get_active_view();
+	if (!view)
+		return;
 
-	const bool show = !view_->cursors_shown();
+	const bool show = !view->cursors_shown();
 	if (show)
-		view_->centre_cursors();
+		view->centre_cursors();
 
-	view_->show_cursors(show);
+	view->show_cursors(show);
 }
 
 void MainWindow::on_actionAbout_triggered()

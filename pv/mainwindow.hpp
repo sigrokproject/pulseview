@@ -100,6 +100,8 @@ public:
 	QMenu* menu_decoder_add() const;
 #endif
 
+	std::shared_ptr<pv::view::View> get_active_view() const;
+
 	void run_stop();
 
 	void select_device(std::shared_ptr<devices::Device> device);
@@ -180,8 +182,6 @@ private:
 	DeviceManager &device_manager_;
 
 	Session session_;
-
-	pv::view::View *view_;
 
 	std::map< std::shared_ptr<QDockWidget>,
 		std::shared_ptr<pv::view::View> > view_docks_;
