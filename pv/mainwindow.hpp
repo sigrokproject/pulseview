@@ -183,8 +183,8 @@ private:
 
 	pv::view::View *view_;
 
-	QWidget *central_widget_;
-	QVBoxLayout *vertical_layout_;
+	std::map< std::shared_ptr<QDockWidget>,
+		std::shared_ptr<pv::view::View> > view_docks_;
 
 	toolbars::MainBar *main_bar_;
 

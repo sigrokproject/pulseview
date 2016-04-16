@@ -42,6 +42,8 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
+#include <QDockWidget>
+
 #include "mainwindow.hpp"
 
 #include "devicemanager.hpp"
@@ -73,6 +75,7 @@
 using std::cerr;
 using std::endl;
 using std::list;
+using std::make_shared;
 using std::map;
 using std::max;
 using std::pair;
@@ -356,16 +359,14 @@ void MainWindow::setup_ui()
 	icon.addFile(QString(":/icons/sigrok-logo-notext.svg"));
 	setWindowIcon(icon);
 
-	// Setup the central widget
-	central_widget_ = new QWidget(this);
-	vertical_layout_ = new QVBoxLayout(central_widget_);
-	vertical_layout_->setSpacing(6);
-	vertical_layout_->setContentsMargins(0, 0, 0, 0);
-	setCentralWidget(central_widget_);
+	// Set up the initial view
+	shared_ptr<pv::view::View> view = make_shared<pv::view::View>(session_, this);
+	shared_ptr<QDockWidget> dock = make_shared<QDockWidget>(tr("Untitled"), this);
+	dock->setWidget(view.get());
+	addDockWidget(Qt::TopDockWidgetArea, dock.get());
+	view_docks_[dock] = view;
 
-	view_ = new pv::view::View(session_, this);
-
-	vertical_layout_->addWidget(view_);
+	view_ = view.get(); // view_ will be refactored later
 
 	// Setup the menu bar
 	pv::widgets::HidingMenuBar *const menu_bar =
