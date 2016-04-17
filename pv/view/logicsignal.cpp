@@ -449,24 +449,22 @@ void LogicSignal::modify_trigger()
 
 const QIcon* LogicSignal::get_icon(const char *path)
 {
-	const QIcon *icon = icon_cache_.take(path);
-	if (!icon) {
-		icon = new QIcon(path);
+	if (!icon_cache_.contains(path)) {
+		const QIcon *icon = new QIcon(path);
 		icon_cache_.insert(path, icon);
 	}
 
-	return icon;
+	return icon_cache_.take(path);
 }
 
 const QPixmap* LogicSignal::get_pixmap(const char *path)
 {
-	const QPixmap *pixmap = pixmap_cache_.take(path);
-	if (!pixmap) {
-		pixmap = new QPixmap(path);
+	if (!pixmap_cache_.contains(path)) {
+		const QPixmap *pixmap = new QPixmap(path);
 		pixmap_cache_.insert(path, pixmap);
 	}
 
-	return pixmap;
+	return pixmap_cache_.take(path);
 }
 
 void LogicSignal::on_trigger()
