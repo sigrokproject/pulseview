@@ -332,8 +332,20 @@ const vector<int32_t> LogicSignal::get_trigger_types() const
 	if (sr_dev->config_check(ConfigKey::TRIGGER_MATCH, Capability::LIST)) {
 		const Glib::VariantContainerBase gvar =
 			sr_dev->config_list(ConfigKey::TRIGGER_MATCH);
-		return Glib::VariantBase::cast_dynamic<
-			Glib::Variant<vector<int32_t>>>(gvar).get();
+
+		vector<int32_t> ttypes;
+
+		for (unsigned int i = 0; i < gvar.get_n_children(); i++) {
+			Glib::VariantBase tmp_vb;
+			gvar.get_child(tmp_vb, i);
+
+			Glib::Variant<int32_t> tmp_v =
+				Glib::VariantBase::cast_dynamic< Glib::Variant<int32_t> >(tmp_vb);
+
+			ttypes.push_back(tmp_v.get());
+		}
+
+		return ttypes;
 	} else {
 		return vector<int32_t>();
 	}
