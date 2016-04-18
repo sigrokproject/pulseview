@@ -41,8 +41,9 @@ namespace view {
 const QPen Trace::AxisPen(QColor(0, 0, 0, 30*256/100));
 const int Trace::LabelHitPadding = 2;
 
-const QColor Trace::DarkBGColour(235, 235, 235);    // Quite light grey
-const QColor Trace::BrightBGColour(245, 245, 245);  // Very light grey
+const int Trace::ColourBGAlpha = 8*256/100;
+const QColor Trace::BrightGrayBGColour = QColor(0, 0, 0, 10*255/100);
+const QColor Trace::DarkGrayBGColour = QColor(0, 0, 0, 15*255/100);
 
 Trace::Trace(QString name) :
 	name_(name),
@@ -72,7 +73,7 @@ void Trace::set_colour(QColor colour)
 	colour_ = colour;
 
 	bgcolour_ = colour;
-	bgcolour_.setAlpha(20);
+	bgcolour_.setAlpha(ColourBGAlpha);
 }
 
 void Trace::set_coloured_bg(bool state)
@@ -180,7 +181,7 @@ void Trace::paint_back(QPainter &p, const ViewItemPaintParams &pp)
 	if (coloured_bg_)
 		p.setBrush(bgcolour_);
 	else
-		p.setBrush(bgcolour_state_ ? BrightBGColour : DarkBGColour);
+		p.setBrush(bgcolour_state_ ? BrightGrayBGColour : DarkGrayBGColour);
 
 	p.setPen(QPen(Qt::NoPen));
 

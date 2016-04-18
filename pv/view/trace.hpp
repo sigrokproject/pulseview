@@ -49,8 +49,9 @@ private:
 	static const QPen AxisPen;
 	static const int LabelHitPadding;
 
-	static const QColor BrightBGColour;
-	static const QColor DarkBGColour;
+	static const int ColourBGAlpha;
+	static const QColor BrightGrayBGColour;
+	static const QColor DarkGrayBGColour;
 
 protected:
 	Trace(QString name);
