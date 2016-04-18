@@ -527,13 +527,6 @@ const QPoint& View::hover_point() const
 	return hover_point_;
 }
 
-void View::update_viewport()
-{
-	assert(viewport_);
-	viewport_->update();
-	header_->update();
-}
-
 void View::restack_all_trace_tree_items()
 {
 	// Make a list of owners that is sorted from deepest first
@@ -742,19 +735,6 @@ void View::update_layout()
 	header_->setGeometry(0, viewport_->y(),
 		header_->extended_size_hint().width(), viewport_->height());
 	update_scroll();
-}
-
-void View::paint_label(QPainter &p, const QRect &rect, bool hover)
-{
-	(void)p;
-	(void)rect;
-	(void)hover;
-}
-
-QRectF View::label_rect(const QRectF &rect)
-{
-	(void)rect;
-	return QRectF();
 }
 
 TraceTreeItemOwner* View::find_prevalent_trace_group(

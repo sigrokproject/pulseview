@@ -214,8 +214,6 @@ public:
 
 	const QPoint& hover_point() const;
 
-	void update_viewport();
-
 	void restack_all_trace_tree_items();
 
 Q_SIGNALS:
@@ -272,21 +270,6 @@ private:
 	void set_scroll_default();
 
 	void update_layout();
-
-	/**
-	 * Satisfies TraceTreeItem functionality.
-	 * @param p the QPainter to paint into.
-	 * @param rect the rectangle of the header area.
-	 * @param hover true if the label is being hovered over by the mouse.
-	 */
-	void paint_label(QPainter &p, const QRect &rect, bool hover);
-
-	/**
-	 * Computes the outline rectangle of a label.
-	 * @param rect the rectangle of the header area.
-	 * @return Returns the rectangle of the signal label.
-	 */
-	QRectF label_rect(const QRectF &rect);
 
 	TraceTreeItemOwner* find_prevalent_trace_group(
 		const std::shared_ptr<sigrok::ChannelGroup> &group,
