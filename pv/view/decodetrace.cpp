@@ -245,6 +245,9 @@ void DecodeTrace::paint_mid(QPainter &p, const ViewItemPaintParams &pp)
 	// Draw the hatching
 	draw_unresolved_period(p, annotation_height, pp.left(), pp.right());
 
+	if ((int)visible_rows_.size() > max_visible_rows_)
+		owner_->extents_changed(false, true);
+
 	// Update the maximum row count if needed
 	max_visible_rows_ = std::max(max_visible_rows_, (int)visible_rows_.size());
 }
