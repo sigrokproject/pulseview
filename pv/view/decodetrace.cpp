@@ -198,6 +198,9 @@ void DecodeTrace::paint_mid(QPainter &p, const ViewItemPaintParams &pp)
 		return;
 	}
 
+	// Set default pen to allow for text width calculation
+	p.setPen(Qt::black);
+
 	// Iterate through the rows
 	int y = get_visual_y();
 	pair<uint64_t, uint64_t> sample_range = get_sample_range(
