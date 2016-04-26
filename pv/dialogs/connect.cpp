@@ -53,7 +53,7 @@ Connect::Connect(QWidget *parent, pv::DeviceManager &device_manager) :
 	form_layout_(&form_),
 	drivers_(&form_),
 	serial_devices_(&form_),
-	scan_button_(tr("&Scan for Devices"), this),
+	scan_button_(tr("&Scan for devices using driver above"), this),
 	device_list_(this),
 	button_box_(QDialogButtonBox::Ok | QDialogButtonBox::Cancel,
 		Qt::Horizontal, this)
