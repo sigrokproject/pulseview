@@ -48,6 +48,31 @@ void InputFile::open()
 		close();
 	else
 		session_ = context_->create_session();
+
+	input_ = format_->create_input(options_);
+
+	if (!input_)
+		throw QString("Failed to create input");
+
+	// open() should add the input device to the session but
+	// we can't open the device without sending some data first
+	f = new std::ifstream(file_name_, std::ios::binary);
+
+	char buffer[BufferSize];
+	f->read(buffer, BufferSize);
+	const std::streamsize size = f->gcount();
+	if (size == 0)
+		return;
+
+	input_->send(buffer, size);
+
+	try {
+		device_ = input_->device();
+	} catch (sigrok::Error) {
+		return;
+	}
+
+	session_->add_device(device_);
 }
 
 void InputFile::close()
@@ -63,42 +88,30 @@ void InputFile::start()
 void InputFile::run()
 {
 	char buffer[BufferSize];
-	bool need_device = true;
 
-	assert(session_);
-
-	input_ = format_->create_input(options_);
-
-	if (!input_)
-		throw QString("Failed to create input");
+	if (!f) {
+		// Previous call to run() processed the entire file already
+		f = new std::ifstream(file_name_, std::ios::binary);
+		input_->reset();
+	}
 
 	interrupt_ = false;
-	std::ifstream f(file_name_, std::ios::binary);
-	while (!interrupt_ && f) {
-		f.read(buffer, BufferSize);
-		const std::streamsize size = f.gcount();
+	while (!interrupt_ && !f->eof()) {
+		f->read(buffer, BufferSize);
+		const std::streamsize size = f->gcount();
 		if (size == 0)
 			break;
 
 		input_->send(buffer, size);
-
-		if (need_device) {
-			try {
-				device_ = input_->device();
-			} catch (sigrok::Error) {
-				break;
-			}
-
-			session_->remove_devices(); // Remove instance from previous run
-			session_->add_device(device_);
-			need_device = false;
-		}
 
 		if (size != BufferSize)
 			break;
 	}
 
 	input_->end();
+
+	delete f;
+	f = nullptr;
 }
 
 void InputFile::stop()

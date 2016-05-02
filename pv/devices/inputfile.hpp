@@ -57,6 +57,7 @@ private:
 	const std::map<std::string, Glib::VariantBase> options_;
 	std::shared_ptr<sigrok::Input> input_;
 
+	std::ifstream *f;
 	std::atomic<bool> interrupt_;
 };
 
