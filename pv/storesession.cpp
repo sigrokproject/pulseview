@@ -160,16 +160,20 @@ bool StoreSession::start()
 	}
 
 	// Check whether the user wants to export a certain sample range
+	uint64_t end_sample;
+
 	if (sample_range_.first == sample_range_.second) {
 		start_sample_ = 0;
 		sample_count_ =	any_segment->get_sample_count();
 	} else {
 		if (sample_range_.first > sample_range_.second) {
 			start_sample_ = sample_range_.second;
-			sample_count_ = sample_range_.first - sample_range_.second;
+			end_sample = min(sample_range_.first, any_segment->get_sample_count());
+			sample_count_ = end_sample - start_sample_;
 		} else {
 			start_sample_ = sample_range_.first;
-			sample_count_ = sample_range_.second - sample_range_.first;
+			end_sample = min(sample_range_.second, any_segment->get_sample_count());
+			sample_count_ = end_sample - start_sample_;
 		}
 	}
 
