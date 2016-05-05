@@ -30,6 +30,11 @@ class QTouchEvent;
 namespace pv {
 namespace view {
 
+enum ViewType {
+	TraceView,
+	TabularDecodeView
+};
+
 class View;
 class ViewItem;
 
