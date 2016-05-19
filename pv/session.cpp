@@ -140,8 +140,14 @@ void Session::set_device(shared_ptr<devices::Device> device)
 
 	device_.reset();
 
-	// Remove all traces
+	// Remove all stored data
 	signals_.clear();
+	{
+		shared_lock<shared_mutex> lock(signals_mutex_);
+		for (const shared_ptr<data::SignalData> d : all_signal_data_)
+			d->clear();
+	}
+	all_signal_data_.clear();
 	cur_logic_segment_.reset();
 
 	for (auto entry : cur_analog_segments_) {
@@ -205,8 +211,11 @@ void Session::start_capture(function<void (const QString)> error_handler)
 	}
 
 	// Clear signal data
-	for (const shared_ptr<data::SignalData> d : get_data())
-		d->clear();
+	{
+		shared_lock<shared_mutex> lock(signals_mutex_);
+		for (const shared_ptr<data::SignalData> d : all_signal_data_)
+			d->clear();
+	}
 
 	// Begin the session
 	sampling_thread_ = std::thread(
@@ -224,30 +233,20 @@ void Session::stop_capture()
 		sampling_thread_.join();
 }
 
-set< shared_ptr<data::SignalData> > Session::get_data() const
-{
-	shared_lock<shared_mutex> lock(signals_mutex_);
-	set< shared_ptr<data::SignalData> > data;
-	for (const shared_ptr<view::Signal> sig : signals_) {
-		assert(sig);
-		data.insert(sig->data());
-	}
-
-	return data;
-}
-
 double Session::get_samplerate() const
 {
 	double samplerate = 0.0;
 
-	for (const shared_ptr<pv::data::SignalData> d : get_data()) {
-		assert(d);
-		const vector< shared_ptr<pv::data::Segment> > segments =
-			d->segments();
-		for (const shared_ptr<pv::data::Segment> &s : segments)
-			samplerate = std::max(samplerate, s->samplerate());
+	{
+		shared_lock<shared_mutex> lock(signals_mutex_);
+		for (const shared_ptr<pv::data::SignalData> d : all_signal_data_) {
+			assert(d);
+			const vector< shared_ptr<pv::data::Segment> > segments =
+				d->segments();
+			for (const shared_ptr<pv::data::Segment> &s : segments)
+				samplerate = std::max(samplerate, s->samplerate());
+		}
 	}
-
 	// If there is no sample rate given we use samples as unit
 	if (samplerate == 0.0)
 		samplerate = 1.0;
@@ -415,6 +414,7 @@ void Session::update_signals()
 						new view::LogicSignal(*this,
 							device_, channel,
 							logic_data_));
+					all_signal_data_.insert(logic_data_);
 					break;
 
 				case SR_CHANNEL_ANALOG:
@@ -424,6 +424,7 @@ void Session::update_signals()
 					signal = shared_ptr<view::Signal>(
 						new view::AnalogSignal(
 							*this, channel, data));
+					all_signal_data_.insert(data);
 					break;
 				}
 
@@ -519,17 +520,20 @@ void Session::feed_in_trigger()
 	// The channel containing most samples should be most accurate
 	uint64_t sample_count = 0;
 
-	for (const shared_ptr<pv::data::SignalData> d : get_data()) {
-		assert(d);
-		uint64_t temp_count = 0;
+	{
+		shared_lock<shared_mutex> lock(signals_mutex_);
+		for (const shared_ptr<pv::data::SignalData> d : all_signal_data_) {
+			assert(d);
+			uint64_t temp_count = 0;
 
-		const vector< shared_ptr<pv::data::Segment> > segments =
-			d->segments();
-		for (const shared_ptr<pv::data::Segment> &s : segments)
-			temp_count += s->get_sample_count();
+			const vector< shared_ptr<pv::data::Segment> > segments =
+				d->segments();
+			for (const shared_ptr<pv::data::Segment> &s : segments)
+				temp_count += s->get_sample_count();
 
-		if (temp_count > sample_count)
-			sample_count = temp_count;
+			if (temp_count > sample_count)
+				sample_count = temp_count;
+		}
 	}
 
 	trigger_event(sample_count / get_samplerate());

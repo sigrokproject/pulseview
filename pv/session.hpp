@@ -114,8 +114,6 @@ public:
 
 	void stop_capture();
 
-	std::set< std::shared_ptr<data::SignalData> > get_data() const;
-
 	double get_samplerate() const;
 
 	const std::unordered_set< std::shared_ptr<view::Signal> >
@@ -168,6 +166,7 @@ private:
 
 	mutable boost::shared_mutex signals_mutex_;
 	std::unordered_set< std::shared_ptr<view::Signal> > signals_;
+	std::set< std::shared_ptr<data::SignalData> > all_signal_data_;
 
 	mutable std::recursive_mutex data_mutex_;
 	std::shared_ptr<data::Logic> logic_data_;
