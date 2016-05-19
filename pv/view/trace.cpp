@@ -224,10 +224,14 @@ void Trace::create_popup_form()
 	// Clear the layout
 
 	// Transfer the layout and the child widgets to a temporary widget
-	// which then goes out of scope destroying the layout and all the child
-	// widgets.
-	if (popup_form_)
-		QWidget().setLayout(popup_form_);
+	// which we delete after the event was handled. This way, the layout
+	// and all widgets contained therein are deleted after the event was
+	// handled, leaving the parent popup_ time to handle the change.
+	if (popup_form_) {
+		QWidget *suicidal = new QWidget();
+		suicidal->setLayout(popup_form_);
+		suicidal->deleteLater();
+	}
 
 	// Repopulate the popup
 	popup_form_ = new QFormLayout(popup_);
