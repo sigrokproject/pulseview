@@ -137,8 +137,7 @@ private:
 		std::shared_ptr<sigrok::Channel> channel) const;
 
 private:
-	void sample_thread_proc(std::shared_ptr<devices::Device> device,
-		std::function<void (const QString)> error_handler);
+	void sample_thread_proc(std::function<void (const QString)> error_handler);
 
 	void feed_in_header();
 

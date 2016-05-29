@@ -223,8 +223,7 @@ void Session::start_capture(function<void (const QString)> error_handler)
 
 	// Begin the session
 	sampling_thread_ = std::thread(
-		&Session::sample_thread_proc, this, device_,
-			error_handler);
+		&Session::sample_thread_proc, this, error_handler);
 }
 
 void Session::stop_capture()
@@ -458,10 +457,8 @@ shared_ptr<view::Signal> Session::signal_from_channel(
 	return shared_ptr<view::Signal>();
 }
 
-void Session::sample_thread_proc(shared_ptr<devices::Device> device,
-	function<void (const QString)> error_handler)
+void Session::sample_thread_proc(function<void (const QString)> error_handler)
 {
-	assert(device);
 	assert(error_handler);
 
 	if (!device_)
