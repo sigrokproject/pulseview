@@ -195,10 +195,14 @@ Session::capture_state Session::get_capture_state() const
 
 void Session::start_capture(function<void (const QString)> error_handler)
 {
+	if (!device_) {
+		error_handler(tr("No active device set, can't start acquisition."));
+		return;
+	}
+
 	stop_capture();
 
 	// Check that at least one channel is enabled
-	assert(device_);
 	const shared_ptr<sigrok::Device> sr_dev = device_->device();
 	if (sr_dev) {
 		const auto channels = sr_dev->channels();
@@ -460,7 +464,8 @@ void Session::sample_thread_proc(shared_ptr<devices::Device> device,
 	assert(device);
 	assert(error_handler);
 
-	(void)device;
+	if (!device_)
+		return;
 
 	cur_samplerate_ = device_->read_config<uint64_t>(ConfigKey::SAMPLERATE);
 
