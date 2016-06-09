@@ -22,6 +22,8 @@
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
 
+#include <QLabel>
+
 #include "connect.hpp"
 
 #include <pv/devicemanager.hpp>
@@ -47,6 +49,10 @@ namespace dialogs {
 
 Connect::Connect(QWidget *parent, pv::DeviceManager &device_manager) :
 	QDialog(parent),
+	tcp_endpoint_(&form_),
+	tcp_endpoint_layout_(&tcp_endpoint_),
+	tcp_host_(&tcp_endpoint_),
+	tcp_port_(&tcp_endpoint_),
 	device_manager_(device_manager),
 	layout_(this),
 	form_(this),
@@ -72,6 +78,15 @@ Connect::Connect(QWidget *parent, pv::DeviceManager &device_manager) :
 
 	form_layout_.addRow(tr("Serial &Port"), &serial_devices_);
 	serial_devices_.setEditable(true);
+
+	tcp_host_.setPlaceholderText("192.168.1.100");
+	tcp_endpoint_layout_.addWidget(&tcp_host_);
+	tcp_endpoint_layout_.addWidget(new QLabel(":"));
+	tcp_port_.setRange(1, 65535);
+	tcp_port_.setValue(5555);
+	tcp_endpoint_layout_.addWidget(&tcp_port_);
+	tcp_endpoint_layout_.setContentsMargins(0, 0, 0, 0);
+	form_layout_.addRow(tr("TCP &Endpoint"), &tcp_endpoint_);
 
 	unset_connection();
 
@@ -132,6 +147,8 @@ void Connect::unset_connection()
 	device_list_.clear();
 	serial_devices_.hide();
 	form_layout_.labelForField(&serial_devices_)->hide();
+	tcp_endpoint_.hide();
+	form_layout_.labelForField(&tcp_endpoint_)->hide();
 	button_box_.button(QDialogButtonBox::Ok)->setDisabled(true);
 }
 
@@ -140,6 +157,14 @@ void Connect::set_serial_connection(shared_ptr<Driver> driver)
 	populate_serials(driver);
 	serial_devices_.show();
 	form_layout_.labelForField(&serial_devices_)->show();
+}
+
+void Connect::set_tcp_connection(shared_ptr<Driver> driver)
+{
+	(void)driver;
+
+	tcp_endpoint_.show();
+	form_layout_.labelForField(&tcp_endpoint_)->show();
 }
 
 void Connect::scan_pressed()
@@ -167,6 +192,16 @@ void Connect::scan_pressed()
 			serial = serial_devices_.currentText();
 		drvopts[ConfigKey::CONN] = Variant<ustring>::create(
 			serial.toUtf8().constData());
+	}
+
+	if (tcp_endpoint_.isVisible()) {
+		QString host = tcp_host_.text();
+		QString port = tcp_port_.text();
+		if(!host.isEmpty()) {
+			QString conn = QString("tcp-raw/%1/%2").arg(host, port);
+			drvopts[ConfigKey::CONN] = Variant<ustring>::create(
+				conn.toUtf8().constData());
+		}
 	}
 
 	const list< shared_ptr<HardwareDevice> > devices =
@@ -199,6 +234,9 @@ void Connect::device_selected(int index)
 
 	if (driver->scan_options().count(ConfigKey::SERIALCOMM))
 		set_serial_connection(driver);
+
+	if (driver->name() == "rigol-ds") // NBNB
+		set_tcp_connection(driver);
 }
 
 } // namespace dialogs
