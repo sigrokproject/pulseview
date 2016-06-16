@@ -23,6 +23,8 @@
 #include <libsigrokcxx/libsigrokcxx.hpp>
 
 #include <QLabel>
+#include <QGroupBox>
+#include <QRadioButton>
 
 #include "connect.hpp"
 
@@ -55,10 +57,6 @@ Connect::Connect(QWidget *parent, pv::DeviceManager &device_manager) :
 	form_layout_(&form_),
 	drivers_(&form_),
 	serial_devices_(&form_),
-	tcp_endpoint_(&form_),
-	tcp_endpoint_layout_(&tcp_endpoint_),
-	tcp_host_(&tcp_endpoint_),
-	tcp_port_(&tcp_endpoint_),
 	scan_button_(tr("&Scan for devices using driver above"), this),
 	device_list_(this),
 	button_box_(QDialogButtonBox::Ok | QDialogButtonBox::Cancel,
@@ -70,33 +68,74 @@ Connect::Connect(QWidget *parent, pv::DeviceManager &device_manager) :
 	connect(&button_box_, SIGNAL(rejected()), this, SLOT(reject()));
 
 	populate_drivers();
-	connect(&drivers_, SIGNAL(activated(int)),
-		this, SLOT(device_selected(int)));
+	connect(&drivers_, SIGNAL(activated(int)), this, SLOT(driver_selected(int)));
 
 	form_.setLayout(&form_layout_);
-	form_layout_.addRow(tr("&Driver"), &drivers_);
 
-	form_layout_.addRow(tr("Serial &Port"), &serial_devices_);
+	QVBoxLayout *vbox_drv = new QVBoxLayout;
+	vbox_drv->addWidget(&drivers_);
+	QGroupBox *groupbox_drv = new QGroupBox(tr("Step 1: Choose the driver"));
+	groupbox_drv->setLayout(vbox_drv);
+	form_layout_.addRow(groupbox_drv);
+
+	QRadioButton *radiobtn_usb = new QRadioButton(tr("&USB"), this);
+	QRadioButton *radiobtn_serial = new QRadioButton(tr("Serial &Port"), this);
+	QRadioButton *radiobtn_tcp = new QRadioButton(tr("&TCP/IP"), this);
+
+	radiobtn_usb->setChecked(true);
+
 	serial_devices_.setEditable(true);
+	serial_devices_.setEnabled(false);
 
-	tcp_host_.setPlaceholderText("192.168.1.100");
-	tcp_endpoint_layout_.addWidget(&tcp_host_);
-	tcp_endpoint_layout_.addWidget(new QLabel(":"));
-	tcp_port_.setRange(1, 65535);
-	tcp_port_.setValue(5555);
-	tcp_endpoint_layout_.addWidget(&tcp_port_);
-	tcp_endpoint_layout_.setContentsMargins(0, 0, 0, 0);
-	form_layout_.addRow(tr("TCP &Endpoint"), &tcp_endpoint_);
+	tcp_config_ = new QWidget();
+	QHBoxLayout *tcp_config_layout = new QHBoxLayout(tcp_config_);
+	tcp_host_ = new QLineEdit;
+	tcp_host_->setText("192.168.1.100");
+	tcp_config_layout->addWidget(tcp_host_);
+	tcp_config_layout->addWidget(new QLabel(":"));
+	tcp_port_ = new QSpinBox;
+	tcp_port_->setRange(1, 65535);
+	tcp_port_->setValue(5555);
+	tcp_config_layout->addWidget(tcp_port_);
+	tcp_use_vxi_ = new QCheckBox();
+	tcp_use_vxi_->setText(tr("Use VXI"));
+	tcp_config_layout->addSpacing(30);
+	tcp_config_layout->addWidget(tcp_use_vxi_);
+	tcp_config_layout->setContentsMargins(0, 0, 0, 0);
+	tcp_config_->setEnabled(false);
+
+	QVBoxLayout *vbox_if = new QVBoxLayout;
+	vbox_if->addWidget(radiobtn_usb);
+	vbox_if->addWidget(radiobtn_serial);
+	vbox_if->addWidget(&serial_devices_);
+	vbox_if->addWidget(radiobtn_tcp);
+	vbox_if->addWidget(tcp_config_);
+
+	QGroupBox *groupbox_if = new QGroupBox(tr("Step 2: Choose the interface"));
+	groupbox_if->setLayout(vbox_if);
+	form_layout_.addRow(groupbox_if);
+
+	QVBoxLayout *vbox_scan = new QVBoxLayout;
+	vbox_scan->addWidget(&scan_button_);
+	QGroupBox *groupbox_scan = new QGroupBox(tr("Step 3: Scan for devices"));
+	groupbox_scan->setLayout(vbox_scan);
+	form_layout_.addRow(groupbox_scan);
+
+	QVBoxLayout *vbox_select = new QVBoxLayout;
+	vbox_select->addWidget(&device_list_);
+	QGroupBox *groupbox_select = new QGroupBox(tr("Step 4: Select the device"));
+	groupbox_select->setLayout(vbox_select);
+	form_layout_.addRow(groupbox_select);
 
 	unset_connection();
 
-	connect(&scan_button_, SIGNAL(pressed()),
-		this, SLOT(scan_pressed()));
+	connect(radiobtn_serial, SIGNAL(toggled(bool)), this, SLOT(serial_toggled(bool)));
+	connect(radiobtn_tcp, SIGNAL(toggled(bool)), this, SLOT(tcp_toggled(bool)));
+	connect(&scan_button_, SIGNAL(pressed()), this, SLOT(scan_pressed()));
 
 	setLayout(&layout_);
+
 	layout_.addWidget(&form_);
-	layout_.addWidget(&scan_button_);
-	layout_.addWidget(&device_list_);
 	layout_.addWidget(&button_box_);
 }
 
@@ -145,26 +184,17 @@ void Connect::populate_serials(shared_ptr<Driver> driver)
 void Connect::unset_connection()
 {
 	device_list_.clear();
-	serial_devices_.hide();
-	form_layout_.labelForField(&serial_devices_)->hide();
-	tcp_endpoint_.hide();
-	form_layout_.labelForField(&tcp_endpoint_)->hide();
 	button_box_.button(QDialogButtonBox::Ok)->setDisabled(true);
 }
 
-void Connect::set_serial_connection(shared_ptr<Driver> driver)
+void Connect::serial_toggled(bool checked)
 {
-	populate_serials(driver);
-	serial_devices_.show();
-	form_layout_.labelForField(&serial_devices_)->show();
+	serial_devices_.setEnabled(checked);
 }
 
-void Connect::set_tcp_connection(shared_ptr<Driver> driver)
+void Connect::tcp_toggled(bool checked)
 {
-	(void)driver;
-
-	tcp_endpoint_.show();
-	form_layout_.labelForField(&tcp_endpoint_)->show();
+	tcp_config_->setEnabled(checked);
 }
 
 void Connect::scan_pressed()
@@ -182,7 +212,7 @@ void Connect::scan_pressed()
 
 	map<const ConfigKey *, VariantBase> drvopts;
 
-	if (serial_devices_.isVisible()) {
+	if (serial_devices_.isEnabled()) {
 		QString serial;
 		const int index = serial_devices_.currentIndex();
 		if (index >= 0 && index < serial_devices_.count() &&
@@ -194,11 +224,16 @@ void Connect::scan_pressed()
 			serial.toUtf8().constData());
 	}
 
-	if (tcp_endpoint_.isVisible()) {
-		QString host = tcp_host_.text();
-		QString port = tcp_port_.text();
-		if(!host.isEmpty()) {
-			QString conn = QString("tcp-raw/%1/%2").arg(host, port);
+	if (tcp_config_->isEnabled()) {
+		QString host = tcp_host_->text();
+		QString port = tcp_port_->text();
+		if (!host.isEmpty()) {
+			QString conn;
+			if (tcp_use_vxi_->isChecked())
+				conn = QString("vxi/%1/%2").arg(host, port);
+			else
+				conn = QString("tcp-raw/%1/%2").arg(host, port);
+
 			drvopts[ConfigKey::CONN] = Variant<ustring>::create(
 				conn.toUtf8().constData());
 		}
@@ -225,18 +260,14 @@ void Connect::scan_pressed()
 	button_box_.button(QDialogButtonBox::Ok)->setDisabled(device_list_.count() == 0);
 }
 
-void Connect::device_selected(int index)
+void Connect::driver_selected(int index)
 {
 	shared_ptr<Driver> driver =
 		drivers_.itemData(index).value<shared_ptr<Driver>>();
 
 	unset_connection();
 
-	if (driver->scan_options().count(ConfigKey::SERIALCOMM))
-		set_serial_connection(driver);
-
-	if (driver->name() == "rigol-ds") // NBNB
-		set_tcp_connection(driver);
+	populate_serials(driver);
 }
 
 } // namespace dialogs

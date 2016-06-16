@@ -23,6 +23,7 @@
 
 #include <memory>
 
+#include <QCheckBox>
 #include <QComboBox>
 #include <QDialog>
 #include <QDialogButtonBox>
@@ -69,11 +70,11 @@ private:
 
 	void unset_connection();
 
-	void set_serial_connection(std::shared_ptr<sigrok::Driver> driver);
-	void set_tcp_connection(std::shared_ptr<sigrok::Driver> driver);
-
 private Q_SLOTS:
-	void device_selected(int index);
+	void driver_selected(int index);
+
+	void serial_toggled(bool checked);
+	void tcp_toggled(bool checked);
 
 	void scan_pressed();
 
@@ -89,10 +90,10 @@ private:
 
 	QComboBox serial_devices_;
 
-	QWidget tcp_endpoint_;
-	QHBoxLayout tcp_endpoint_layout_;
-	QLineEdit tcp_host_;
-	QSpinBox tcp_port_;
+	QWidget *tcp_config_;
+	QLineEdit *tcp_host_;
+	QSpinBox *tcp_port_;
+	QCheckBox *tcp_use_vxi_;
 
 	QPushButton scan_button_;
 	QListWidget device_list_;
