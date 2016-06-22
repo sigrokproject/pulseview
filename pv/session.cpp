@@ -161,7 +161,15 @@ void Session::set_device(shared_ptr<devices::Device> device)
 	signals_changed();
 
 	device_ = std::move(device);
-	device_->open();
+
+	try {
+		device_->open();
+	} catch (const QString &e) {
+		device_.reset();
+		device_selected();
+		throw;
+	}
+
 	device_->session()->add_datafeed_callback([=]
 		(shared_ptr<sigrok::Device> device, shared_ptr<Packet> packet) {
 			data_feed_in(device, packet);

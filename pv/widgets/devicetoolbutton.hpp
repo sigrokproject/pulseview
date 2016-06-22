@@ -70,6 +70,12 @@ public:
 		const std::list< std::shared_ptr<devices::Device> > &devices,
 		std::shared_ptr<devices::Device> selected);
 
+	/**
+	 * Sets the current device to "no device". Useful for when a selected
+	 * device fails to open.
+	 */
+	void reset();
+
 private:
 	/**
 	 * Repopulates the menu from the device list.

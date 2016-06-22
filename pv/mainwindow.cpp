@@ -882,8 +882,11 @@ void MainWindow::device_selected()
 {
 	// Set the title to include the device/file name
 	const shared_ptr<devices::Device> device = session_.device();
-	if (!device)
+
+	if (!device) {
+		main_bar_->reset_device_selector();
 		return;
+	}
 
 	const string display_name = device->display_name(device_manager_);
 	setWindowTitle(tr("%1 - PulseView").arg(display_name.c_str()));

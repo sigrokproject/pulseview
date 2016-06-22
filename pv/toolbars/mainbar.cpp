@@ -248,6 +248,11 @@ void MainBar::set_capture_state(pv::Session::capture_state state)
 	sample_rate_.setEnabled(ui_enabled);
 }
 
+void MainBar::reset_device_selector()
+{
+	device_selector_.reset();
+}
+
 void MainBar::update_sample_rate_selector()
 {
 	Glib::VariantContainerBase gvar_dict;

@@ -73,8 +73,15 @@ void DeviceToolButton::set_device_list(
 {
 	selected_device_ = selected;
 	setText(selected ? QString::fromStdString(
-		selected->display_name(device_manager_)) : "<No Device>");
+		selected->display_name(device_manager_)) : tr("<No Device>"));
 	devices_ = vector< weak_ptr<Device> >(devices.begin(), devices.end());
+	update_device_list();
+}
+
+void DeviceToolButton::reset()
+{
+	setText(tr("<No Device>"));
+	selected_device_.reset();
 	update_device_list();
 }
 
@@ -107,6 +114,8 @@ void DeviceToolButton::update_device_list()
 void DeviceToolButton::on_action(QObject *action)
 {
 	assert(action);
+
+	selected_device_.reset();
 
 	Device *const dev = (Device*)((QAction*)action)->data().value<void*>();
 	for (weak_ptr<Device> dev_weak_ptr : devices_) {

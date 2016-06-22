@@ -69,6 +69,8 @@ public:
 
 	void set_capture_state(pv::Session::capture_state state);
 
+	void reset_device_selector();
+
 private:
 	void update_sample_rate_selector();
 	void update_sample_rate_selector_value();
