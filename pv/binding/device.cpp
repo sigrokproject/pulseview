@@ -123,7 +123,10 @@ Device::Device(shared_ptr<sigrok::Configurable> configurable) :
 			break;
 
 		case SR_CONF_PROBE_FACTOR:
-			bind_int(name, "", pair<int64_t, int64_t>(1, 500), get, set);
+			if (capabilities.count(Capability::LIST))
+				bind_enum(name, key, capabilities, get, set, print_probe_factor);
+			else
+				bind_int(name, "", pair<int64_t, int64_t>(1, 500), get, set);
 			break;
 
 		default:
@@ -190,6 +193,13 @@ QString Device::print_voltage_threshold(Glib::VariantBase gvar)
 	gdouble lo, hi;
 	g_variant_get(gvar.gobj(), "(dd)", &lo, &hi);
 	return QString("L<%1V H>%2V").arg(lo, 0, 'f', 1).arg(hi, 0, 'f', 1);
+}
+
+QString Device::print_probe_factor(Glib::VariantBase gvar)
+{
+	uint64_t factor;
+	factor = g_variant_get_uint64(gvar.gobj());
+	return QString("%1x").arg(factor);
 }
 
 } // binding

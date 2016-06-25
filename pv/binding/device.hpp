@@ -61,6 +61,7 @@ private:
 	static QString print_timebase(Glib::VariantBase gvar);
 	static QString print_vdiv(Glib::VariantBase gvar);
 	static QString print_voltage_threshold(Glib::VariantBase gvar);
+	static QString print_probe_factor(Glib::VariantBase gvar);
 
 protected:
 	std::shared_ptr<sigrok::Configurable> configurable_;
