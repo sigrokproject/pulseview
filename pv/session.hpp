@@ -74,8 +74,7 @@ class Device;
 
 namespace view {
 class DecodeTrace;
-class LogicSignal;
-class Signal;
+class View;
 }
 
 class Session : public QObject
@@ -117,8 +116,12 @@ public:
 
 	double get_samplerate() const;
 
-	const std::unordered_set< std::shared_ptr<view::Signal> >
-		signals() const;
+	void register_view(std::shared_ptr<pv::view::View> view);
+
+	void deregister_view(std::shared_ptr<pv::view::View> view);
+
+	const std::unordered_set< std::shared_ptr<data::SignalBase> >
+		signalbases() const;
 
 #ifdef ENABLE_DECODE
 	bool add_decoder(srd_decoder *const dec);
@@ -159,16 +162,16 @@ private:
 	DeviceManager &device_manager_;
 	std::shared_ptr<devices::Device> device_;
 
+	std::unordered_set< std::shared_ptr<pv::view::View> > views_;
+
 	std::vector< std::shared_ptr<view::DecodeTrace> > decode_traces_;
 
 	mutable std::mutex sampling_mutex_; //!< Protects access to capture_state_.
 	capture_state capture_state_;
 
-	mutable boost::shared_mutex signals_mutex_;
-	std::unordered_set< std::shared_ptr<view::Signal> > signals_;
 
-	std::set< std::shared_ptr<data::SignalBase> > signalbases_;
-	std::set< std::shared_ptr<data::SignalData> > all_signal_data_;
+	std::unordered_set< std::shared_ptr<data::SignalBase> > signalbases_;
+	std::unordered_set< std::shared_ptr<data::SignalData> > all_signal_data_;
 
 	mutable std::recursive_mutex data_mutex_;
 	std::shared_ptr<data::Logic> logic_data_;

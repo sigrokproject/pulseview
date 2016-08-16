@@ -50,7 +50,6 @@ extern "C" {
 #include <pv/data/logic.hpp>
 #include <pv/data/logicsegment.hpp>
 #include <pv/data/decode/annotation.hpp>
-#include <pv/view/signal.hpp>
 #include <pv/view/view.hpp>
 #include <pv/view/viewport.hpp>
 #include <pv/widgets/decodergroupbox.hpp>
@@ -846,15 +845,15 @@ QComboBox* DecodeTrace::create_channel_selector(
 {
 	assert(dec);
 
-	const auto sigs(session_.signals());
+	const auto sigs(session_.signalbases());
 
-	vector< shared_ptr<Signal> > sig_list(sigs.begin(), sigs.end());
+	vector< shared_ptr<data::SignalBase> > sig_list(sigs.begin(), sigs.end());
 	std::sort(sig_list.begin(), sig_list.end(),
-		[](const shared_ptr<Signal> &a, const shared_ptr<Signal> b) {
-			return strnatcasecmp(a->base()->name().toStdString(),
-				b->base()->name().toStdString()) < 0; });
+		[](const shared_ptr<data::SignalBase> &a,
+		const shared_ptr<data::SignalBase> &b) {
+			return strnatcasecmp(a->name().toStdString(),
+				b->name().toStdString()) < 0; });
 
-	assert(decoder_stack_);
 	const auto channel_iter = dec->channels().find(pdch);
 
 	QComboBox *selector = new QComboBox(parent);
@@ -864,14 +863,14 @@ QComboBox* DecodeTrace::create_channel_selector(
 	if (channel_iter == dec->channels().end())
 		selector->setCurrentIndex(0);
 
-	for (const shared_ptr<view::Signal> &s : sig_list) {
-		assert(s);
-		if (s->base()->type() == sigrok::ChannelType::LOGIC && s->enabled()) {
-			selector->addItem(s->base()->name(),
-				qVariantFromValue((void*)s->base().get()));
+	for (const shared_ptr<data::SignalBase> &b : sig_list) {
+		assert(b);
+		if (b->type() == sigrok::ChannelType::LOGIC && b->enabled()) {
+			selector->addItem(b->name(),
+				qVariantFromValue((void*)b.get()));
 
 			if (channel_iter != dec->channels().end() &&
-				(*channel_iter).second == s->base())
+				(*channel_iter).second == b)
 				selector->setCurrentIndex(
 					selector->count() - 1);
 		}
@@ -886,7 +885,8 @@ void DecodeTrace::commit_decoder_channels(shared_ptr<data::decode::Decoder> &dec
 
 	map<const srd_channel*, shared_ptr<data::SignalBase> > channel_map;
 
-	const unordered_set< shared_ptr<Signal> > sigs(session_.signals());
+	const unordered_set< shared_ptr<data::SignalBase> >
+		sigs(session_.signalbases());
 
 	for (const ChannelSelector &s : channel_selectors_) {
 		if (s.decoder_ != dec)
@@ -896,9 +896,9 @@ void DecodeTrace::commit_decoder_channels(shared_ptr<data::decode::Decoder> &dec
 			(data::SignalBase*)s.combo_->itemData(
 				s.combo_->currentIndex()).value<void*>();
 
-		for (shared_ptr<Signal> sig : sigs)
-			if (sig->base().get() == selection) {
-				channel_map[s.pdch_] = sig->base();
+		for (shared_ptr<data::SignalBase> sig : sigs)
+			if (sig.get() == selection) {
+				channel_map[s.pdch_] = sig;
 				break;
 			}
 	}

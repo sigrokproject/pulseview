@@ -38,7 +38,6 @@
 #include <pv/data/logicsegment.hpp>
 #include <pv/data/signalbase.hpp>
 #include <pv/devices/device.hpp>
-#include <pv/view/signal.hpp>
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
 
@@ -63,6 +62,7 @@ using std::vector;
 
 using Glib::VariantBase;
 
+using sigrok::ChannelType;
 using sigrok::ConfigKey;
 using sigrok::Error;
 using sigrok::OutputFormat;
@@ -106,22 +106,20 @@ const QString& StoreSession::error() const
 
 bool StoreSession::start()
 {
-	const unordered_set< shared_ptr<view::Signal> > sigs(session_.signals());
+	const unordered_set< shared_ptr<data::SignalBase> > sigs(session_.signalbases());
 
 	shared_ptr<data::Segment> any_segment;
 	shared_ptr<data::LogicSegment> lsegment;
 	vector< shared_ptr<data::SignalBase> > achannel_list;
 	vector< shared_ptr<data::AnalogSegment> > asegment_list;
 
-	for (shared_ptr<view::Signal> signal : sigs) {
+	for (shared_ptr<data::SignalBase> signal : sigs) {
 		if (!signal->enabled())
 			continue;
 
-		shared_ptr<data::SignalData> data = signal->data();
-
-		if (dynamic_pointer_cast<data::Logic>(data)) {
+		if (signal->type() == ChannelType::LOGIC) {
 			// All logic channels share the same data segments
-			shared_ptr<data::Logic> ldata = dynamic_pointer_cast<data::Logic>(data);
+			shared_ptr<data::Logic> ldata = signal->logic_data();
 
 			const deque< shared_ptr<data::LogicSegment> > &lsegments =
 				ldata->logic_segments();
@@ -135,10 +133,9 @@ bool StoreSession::start()
 			any_segment = lsegment;
 		}
 
-		if (dynamic_pointer_cast<data::Analog>(data)) {
+		if (signal->type() == ChannelType::ANALOG) {
 			// Each analog channel has its own segments
-			shared_ptr<data::Analog> adata =
-				dynamic_pointer_cast<data::Analog>(data);
+			shared_ptr<data::Analog> adata = signal->analog_data();
 
 			const deque< shared_ptr<data::AnalogSegment> > &asegments =
 				adata->analog_segments();
@@ -151,7 +148,7 @@ bool StoreSession::start()
 			asegment_list.push_back(asegments.front());
 			any_segment = asegments.front();
 
-			achannel_list.push_back(signal->base());
+			achannel_list.push_back(signal);
 		}
 	}
 

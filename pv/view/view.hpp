@@ -53,6 +53,7 @@ namespace view {
 class CursorHeader;
 class Header;
 class Ruler;
+class Signal;
 class Trace;
 class Viewport;
 class TriggerMarker;
@@ -80,6 +81,15 @@ public:
 
 	Session& session();
 	const Session& session() const;
+
+	/**
+	 * Returns the signals contained in this view.
+	 */
+	std::unordered_set< std::shared_ptr<view::Signal> > signals() const;
+
+	void clear_signals();
+
+	void add_signal(const std::shared_ptr<view::Signal> signal);
 
 	/**
 	 * Returns the view of the owner.
@@ -354,6 +364,8 @@ private:
 	Viewport *viewport_;
 	Ruler *ruler_;
 	Header *header_;
+
+	std::unordered_set< std::shared_ptr<view::Signal> > signals_;
 
 	/// The view time scale in seconds per pixel.
 	double scale_;

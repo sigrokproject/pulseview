@@ -48,6 +48,8 @@
 #include "view/analogsignal.hpp"
 #include "view/decodetrace.hpp"
 #include "view/logicsignal.hpp"
+#include "view/signal.hpp"
+#include "view/view.hpp"
 
 #include <cassert>
 #include <mutex>
@@ -142,13 +144,12 @@ void Session::set_device(shared_ptr<devices::Device> device)
 	device_.reset();
 
 	// Remove all stored data
-	signals_.clear();
-	{
-		shared_lock<shared_mutex> lock(signals_mutex_);
-		for (const shared_ptr<data::SignalData> d : all_signal_data_)
-			d->clear();
-	}
+	for (std::shared_ptr<pv::view::View> view : views_)
+		view->clear_signals();
+	for (const shared_ptr<data::SignalData> d : all_signal_data_)
+		d->clear();
 	all_signal_data_.clear();
+	signalbases_.clear();
 	cur_logic_segment_.reset();
 
 	for (auto entry : cur_analog_segments_) {
@@ -224,11 +225,8 @@ void Session::start_capture(function<void (const QString)> error_handler)
 	}
 
 	// Clear signal data
-	{
-		shared_lock<shared_mutex> lock(signals_mutex_);
-		for (const shared_ptr<data::SignalData> d : all_signal_data_)
-			d->clear();
-	}
+	for (const shared_ptr<data::SignalData> d : all_signal_data_)
+		d->clear();
 
 	// Begin the session
 	sampling_thread_ = std::thread(
@@ -245,19 +243,26 @@ void Session::stop_capture()
 		sampling_thread_.join();
 }
 
+void Session::register_view(std::shared_ptr<pv::view::View> view)
+{
+	views_.insert(view);
+}
+
+void Session::deregister_view(std::shared_ptr<pv::view::View> view)
+{
+	views_.erase(view);
+}
+
 double Session::get_samplerate() const
 {
 	double samplerate = 0.0;
 
-	{
-		shared_lock<shared_mutex> lock(signals_mutex_);
-		for (const shared_ptr<pv::data::SignalData> d : all_signal_data_) {
-			assert(d);
-			const vector< shared_ptr<pv::data::Segment> > segments =
-				d->segments();
-			for (const shared_ptr<pv::data::Segment> &s : segments)
-				samplerate = std::max(samplerate, s->samplerate());
-		}
+	for (const shared_ptr<pv::data::SignalData> d : all_signal_data_) {
+		assert(d);
+		const vector< shared_ptr<pv::data::Segment> > segments =
+			d->segments();
+		for (const shared_ptr<pv::data::Segment> &s : segments)
+			samplerate = std::max(samplerate, s->samplerate());
 	}
 	// If there is no sample rate given we use samples as unit
 	if (samplerate == 0.0)
@@ -266,10 +271,10 @@ double Session::get_samplerate() const
 	return samplerate;
 }
 
-const unordered_set< shared_ptr<view::Signal> > Session::signals() const
+const std::unordered_set< std::shared_ptr<data::SignalBase> >
+	Session::signalbases() const
 {
-	shared_lock<shared_mutex> lock(signals_mutex_);
-	return signals_;
+	return signalbases_;
 }
 
 #ifdef ENABLE_DECODE
@@ -279,8 +284,6 @@ bool Session::add_decoder(srd_decoder *const dec)
 	shared_ptr<data::DecoderStack> decoder_stack;
 
 	try {
-		lock_guard<boost::shared_mutex> lock(signals_mutex_);
-
 		// Create the decoder
 		decoder_stack = shared_ptr<data::DecoderStack>(
 			new data::DecoderStack(*this, dec));
@@ -329,7 +332,6 @@ bool Session::add_decoder(srd_decoder *const dec)
 
 vector< shared_ptr<view::DecodeTrace> > Session::get_decode_signals() const
 {
-	shared_lock<shared_mutex> lock(signals_mutex_);
 	return decode_traces_;
 }
 
@@ -361,8 +363,10 @@ void Session::set_capture_state(capture_state state)
 void Session::update_signals()
 {
 	if (!device_) {
-		signals_.clear();
+		signalbases_.clear();
 		logic_data_.reset();
+		for (std::shared_ptr<pv::view::View> view : views_)
+			view->clear_signals();
 		return;
 	}
 
@@ -370,8 +374,10 @@ void Session::update_signals()
 
 	const shared_ptr<sigrok::Device> sr_dev = device_->device();
 	if (!sr_dev) {
-		signals_.clear();
+		signalbases_.clear();
 		logic_data_.reset();
+		for (std::shared_ptr<pv::view::View> view : views_)
+			view->clear_signals();
 		return;
 	}
 
@@ -396,12 +402,10 @@ void Session::update_signals()
 		}
 	}
 
-	// Make the Signals list
-	{
-		unique_lock<shared_mutex> lock(signals_mutex_);
-
-		unordered_set< shared_ptr<view::Signal> > prev_sigs(signals_);
-		signals_.clear();
+	// Make the signals list
+	for (std::shared_ptr<pv::view::View> view : views_) {
+		unordered_set< shared_ptr<view::Signal> > prev_sigs(view->signals());
+		view->clear_signals();
 
 		for (auto channel : sr_dev->channels()) {
 			shared_ptr<data::SignalBase> signalbase;
@@ -417,29 +421,45 @@ void Session::update_signals()
 				// Copy the signal from the old set to the new
 				signal = *iter;
 			} else {
-				// Create a new signal
-				signalbase = shared_ptr<data::SignalBase>(
-					new data::SignalBase(channel));
+				// Find the signalbase for this channel if possible
+				signalbase.reset();
+				for (const shared_ptr<data::SignalBase> b : signalbases_)
+					if (b->channel() == channel)
+						signalbase = b;
 
 				switch(channel->type()->id()) {
 				case SR_CHANNEL_LOGIC:
-					signalbase->set_data(logic_data_);
+					if (!signalbase) {
+						signalbase = shared_ptr<data::SignalBase>(
+							new data::SignalBase(channel));
+						signalbases_.insert(signalbase);
+
+						all_signal_data_.insert(logic_data_);
+						signalbase->set_data(logic_data_);
+					}
+
 					signal = shared_ptr<view::Signal>(
 						new view::LogicSignal(*this,
 							device_, signalbase));
-					all_signal_data_.insert(logic_data_);
-					signalbases_.insert(signalbase);
+					view->add_signal(signal);
 					break;
 
 				case SR_CHANNEL_ANALOG:
 				{
-					shared_ptr<data::Analog> data(new data::Analog());
-					signalbase->set_data(data);
+					if (!signalbase) {
+						signalbase = shared_ptr<data::SignalBase>(
+							new data::SignalBase(channel));
+						signalbases_.insert(signalbase);
+
+						shared_ptr<data::Analog> data(new data::Analog());
+						all_signal_data_.insert(data);
+						signalbase->set_data(data);
+					}
+
 					signal = shared_ptr<view::Signal>(
 						new view::AnalogSignal(
 							*this, signalbase));
-					all_signal_data_.insert(data);
-					signalbases_.insert(signalbase);
+					view->add_signal(signal);
 					break;
 				}
 
@@ -448,9 +468,6 @@ void Session::update_signals()
 					break;
 				}
 			}
-
-			assert(signal);
-			signals_.insert(signal);
 		}
 	}
 
@@ -534,7 +551,6 @@ void Session::feed_in_trigger()
 	uint64_t sample_count = 0;
 
 	{
-		shared_lock<shared_mutex> lock(signals_mutex_);
 		for (const shared_ptr<pv::data::SignalData> d : all_signal_data_) {
 			assert(d);
 			uint64_t temp_count = 0;
@@ -604,7 +620,7 @@ void Session::feed_in_analog(shared_ptr<Analog> analog)
 	const float *data = static_cast<const float *>(analog->data_pointer());
 	bool sweep_beginning = false;
 
-	if (signals_.empty())
+	if (signalbases_.empty())
 		update_signals();
 
 	for (auto channel : channels) {

@@ -186,6 +186,21 @@ const Session& View::session() const
 	return session_;
 }
 
+std::unordered_set< std::shared_ptr<view::Signal> > View::signals() const
+{
+	return signals_;
+}
+
+void View::clear_signals()
+{
+	signals_.clear();
+}
+
+void View::add_signal(const shared_ptr<view::Signal> signal)
+{
+	signals_.insert(signal);
+}
+
 View* View::view()
 {
 	return this;
@@ -397,11 +412,9 @@ void View::set_scale_offset(double scale, const Timestamp& offset)
 
 set< shared_ptr<SignalData> > View::get_visible_data() const
 {
-	const unordered_set< shared_ptr<Signal> > sigs(session().signals());
-
 	// Make a set of all the visible data objects
 	set< shared_ptr<SignalData> > visible_data;
-	for (const shared_ptr<Signal> sig : sigs)
+	for (const shared_ptr<Signal> sig : signals_)
 		if (sig->enabled())
 			visible_data.insert(sig->data());
 
@@ -803,10 +816,8 @@ void View::determine_time_unit()
 {
 	// Check whether we know the sample rate and hence can use time as the unit
 	if (time_unit_ == util::TimeUnit::Samples) {
-		const unordered_set< shared_ptr<Signal> > sigs(session().signals());
-
 		// Check all signals but...
-		for (const shared_ptr<Signal> signal : sigs) {
+		for (const shared_ptr<Signal> signal : signals_) {
 			const shared_ptr<SignalData> data = signal->data();
 
 			// ...only check first segment of each
@@ -938,6 +949,7 @@ void View::signals_changed()
 
 	if (!session_.device()) {
 		reset_scroll();
+		signals_.clear();
 	} else {
 		sr_dev = session_.device()->device();
 		assert(sr_dev);
@@ -952,9 +964,7 @@ void View::signals_changed()
 	const set<shared_ptr<Trace>> prev_traces(
 		prev_trace_list.begin(), prev_trace_list.end());
 
-	const unordered_set< shared_ptr<Signal> > sigs(session_.signals());
-
-	set< shared_ptr<Trace> > traces(sigs.begin(), sigs.end());
+	set< shared_ptr<Trace> > traces(signals_.begin(), signals_.end());
 
 #ifdef ENABLE_DECODE
 	const vector< shared_ptr<DecodeTrace> > decode_traces(
@@ -975,7 +985,7 @@ void View::signals_changed()
 	// Make a look-up table of sigrok Channels to pulseview Signals
 	unordered_map<shared_ptr<data::SignalBase>, shared_ptr<Signal> >
 		signal_map;
-	for (const shared_ptr<Signal> &sig : sigs)
+	for (const shared_ptr<Signal> &sig : signals_)
 		signal_map[sig->base()] = sig;
 
 	// Populate channel groups

@@ -131,6 +131,16 @@ MainWindow::MainWindow(DeviceManager &device_manager,
 		load_init_file(open_file_name, open_file_format);
 }
 
+MainWindow::~MainWindow()
+{
+	for (auto entry : view_docks_) {
+		const std::shared_ptr<QDockWidget> dock = entry.first;
+		dock->setWidget(0);
+		const std::shared_ptr<pv::view::View> view = entry.second;
+		session_.deregister_view(view);
+	}
+}
+
 QAction* MainWindow::action_open() const
 {
 	return action_open_;
@@ -258,6 +268,8 @@ shared_ptr<pv::view::View> MainWindow::add_view(const QString &title,
 			v->enable_coloured_bg(action_view_coloured_bg_->isChecked());
 			action_view_show_cursors_->setChecked(v->cursors_shown());
 		}
+
+		session.register_view(v);
 	}
 
 	return v;

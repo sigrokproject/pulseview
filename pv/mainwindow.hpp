@@ -83,6 +83,8 @@ public:
 		std::string open_file_format = std::string(),
 		QWidget *parent = 0);
 
+	~MainWindow();
+
 	QAction* action_open() const;
 	QAction* action_save_as() const;
 	QAction* action_save_selection_as() const;
