@@ -19,8 +19,12 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
+#include "analog.hpp"
+#include "logic.hpp"
 #include "signalbase.hpp"
+#include "signaldata.hpp"
 
+using std::dynamic_pointer_cast;
 using std::shared_ptr;
 
 using sigrok::Channel;
@@ -98,6 +102,28 @@ QColor SignalBase::bgcolour() const
 {
 	return bgcolour_;
 }
+
+void SignalBase::set_data(shared_ptr<pv::data::SignalData> data)
+{
+	data_ = data;
+}
+
+shared_ptr<data::Analog> SignalBase::analog_data() const
+{
+	if (type() == ChannelType::ANALOG)
+		return dynamic_pointer_cast<data::Analog>(data_);
+	else
+		return shared_ptr<data::Analog>();
+}
+
+shared_ptr<data::Logic> SignalBase::logic_data() const
+{
+	if (type() == ChannelType::LOGIC)
+		return dynamic_pointer_cast<data::Logic>(data_);
+	else
+		return shared_ptr<data::Logic>();
+}
+
 
 } // namespace data
 } // namespace pv

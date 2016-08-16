@@ -438,11 +438,11 @@ void Session::update_signals()
 
 				case SR_CHANNEL_ANALOG:
 				{
-					shared_ptr<data::Analog> data(
-						new data::Analog());
+					shared_ptr<data::Analog> data(new data::Analog());
+					signalbase->set_data(data);
 					signal = shared_ptr<view::Signal>(
 						new view::AnalogSignal(
-							*this, signalbase, data));
+							*this, signalbase));
 					all_signal_data_.insert(data);
 					signalbases_.insert(signalbase);
 					break;
@@ -462,7 +462,7 @@ void Session::update_signals()
 	signals_changed();
 }
 
-shared_ptr<data::SignalBase> Session::signal_from_channel(
+shared_ptr<data::SignalBase> Session::signalbase_from_channel(
 	shared_ptr<sigrok::Channel> channel) const
 {
 	for (shared_ptr<data::SignalBase> sig : signalbases_) {
@@ -633,12 +633,10 @@ void Session::feed_in_analog(shared_ptr<Analog> analog)
 			cur_analog_segments_[channel] = segment;
 
 			// Find the analog data associated with the channel
-			shared_ptr<view::AnalogSignal> sig =
-				dynamic_pointer_cast<view::AnalogSignal>(
-					signal_from_channel(channel));
-			assert(sig);
+			shared_ptr<data::SignalBase> base = signalbase_from_channel(channel);
+			assert(base);
 
-			shared_ptr<data::Analog> data(sig->analog_data());
+			shared_ptr<data::Analog> data(base->analog_data());
 			assert(data);
 
 			// Push the segment into the analog data.

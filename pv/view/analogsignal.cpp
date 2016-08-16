@@ -71,10 +71,8 @@ const int AnalogSignal::InfoTextMarginBottom = 5;
 
 AnalogSignal::AnalogSignal(
 	pv::Session &session,
-	shared_ptr<data::SignalBase> base,
-	shared_ptr<data::Analog> data) :
+	shared_ptr<data::SignalBase> base) :
 	Signal(session, base),
-	data_(data),
 	scale_index_(4), // 20 per div
 	scale_index_drag_offset_(0),
 	div_height_(3 * QFontMetrics(QApplication::font()).height()),
@@ -87,12 +85,7 @@ AnalogSignal::AnalogSignal(
 
 shared_ptr<pv::data::SignalData> AnalogSignal::data() const
 {
-	return data_;
-}
-
-shared_ptr<pv::data::Analog> AnalogSignal::analog_data() const
-{
-	return data_;
+	return base_->analog_data();
 }
 
 std::pair<int, int> AnalogSignal::v_extents() const
@@ -135,7 +128,7 @@ void AnalogSignal::paint_back(QPainter &p, const ViewItemPaintParams &pp)
 
 void AnalogSignal::paint_mid(QPainter &p, const ViewItemPaintParams &pp)
 {
-	assert(data_);
+	assert(base_->analog_data());
 	assert(owner_);
 
 	const int y = get_visual_y();
@@ -146,7 +139,7 @@ void AnalogSignal::paint_mid(QPainter &p, const ViewItemPaintParams &pp)
 	paint_grid(p, y, pp.left(), pp.right());
 
 	const deque< shared_ptr<pv::data::AnalogSegment> > &segments =
-		data_->analog_segments();
+		base_->analog_data()->analog_segments();
 	if (segments.empty())
 		return;
 

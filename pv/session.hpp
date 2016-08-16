@@ -134,7 +134,7 @@ private:
 
 	void update_signals();
 
-	std::shared_ptr<data::SignalBase> signal_from_channel(
+	std::shared_ptr<data::SignalBase> signalbase_from_channel(
 		std::shared_ptr<sigrok::Channel> channel) const;
 
 private:

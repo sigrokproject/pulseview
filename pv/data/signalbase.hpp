@@ -37,6 +37,10 @@ class ChannelType;
 namespace pv {
 namespace data {
 
+class Analog;
+class Logic;
+class SignalData;
+
 class SignalBase : public QObject
 {
 	Q_OBJECT
@@ -100,6 +104,22 @@ public:
 	 */
 	QColor bgcolour() const;
 
+	/**
+	 * Sets the internal data object.
+	 */
+	void set_data(std::shared_ptr<pv::data::SignalData> data);
+
+	/**
+	 * Get the internal data as analog data object in case of analog type.
+	 */
+	std::shared_ptr<pv::data::Analog> analog_data() const;
+
+	/**
+	 * Get the internal data as logic data object in case of logic type.
+	 */
+	std::shared_ptr<pv::data::Logic> logic_data() const;
+
+
 Q_SIGNALS:
 	void enabled_changed(const bool &value);
 
@@ -109,6 +129,8 @@ Q_SIGNALS:
 
 private:
 	std::shared_ptr<sigrok::Channel> channel_;
+	std::shared_ptr<pv::data::SignalData> data_;
+
 	QString name_;
 	QColor colour_, bgcolour_;
 };

@@ -53,14 +53,11 @@ private:
 
 public:
 	AnalogSignal(pv::Session &session,
-		std::shared_ptr<data::SignalBase> base,
-		std::shared_ptr<pv::data::Analog> data);
+		std::shared_ptr<data::SignalBase> base);
 
 	virtual ~AnalogSignal() = default;
 
 	std::shared_ptr<pv::data::SignalData> data() const;
-
-	std::shared_ptr<pv::data::Analog> analog_data() const;
 
 	/**
 	 * Computes the vertical extents of the contents of this row item.
@@ -134,8 +131,6 @@ private Q_SLOTS:
 	void on_resolution_changed(int index);
 
 private:
-	std::shared_ptr<pv::data::Analog> data_;
-
 	QComboBox *resolution_cb_;
 
 	float scale_;
