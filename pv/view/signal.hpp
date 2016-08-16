@@ -64,8 +64,6 @@ public:
 	 */
 	bool enabled() const;
 
-	void enable(bool enable = true);
-
 	std::shared_ptr<data::SignalBase> base() const;
 
 	/**
@@ -101,6 +99,8 @@ protected Q_SLOTS:
 	virtual void on_name_changed(const QString &text);
 
 	void on_disable();
+
+	void on_enabled_changed(bool enabled);
 
 protected:
 	pv::Session &session_;

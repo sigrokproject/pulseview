@@ -68,6 +68,9 @@ Signal::Signal(pv::Session &session,
 	name_widget_(nullptr)
 {
 	assert(base_);
+
+	connect(base_.get(), SIGNAL(enabled_changed(bool)),
+		this, SLOT(on_enabled_changed(bool)));
 }
 
 void Signal::set_name(QString name)
@@ -81,14 +84,6 @@ void Signal::set_name(QString name)
 bool Signal::enabled() const
 {
 	return base_->enabled();
-}
-
-void Signal::enable(bool enable)
-{
-	base_->set_enabled(enable);
-
-	if (owner_)
-		owner_->extents_changed(true, true);
 }
 
 shared_ptr<data::SignalBase> Signal::base() const
@@ -162,7 +157,15 @@ void Signal::on_name_changed(const QString &text)
 
 void Signal::on_disable()
 {
-	enable(false);
+	base_->set_enabled(false);
+}
+
+void Signal::on_enabled_changed(bool enabled)
+{
+	(void)enabled;
+
+	if (owner_)
+		owner_->extents_changed(true, true);
 }
 
 } // namespace view
