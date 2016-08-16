@@ -417,11 +417,6 @@ void Session::update_signals()
 			if (iter != prev_sigs.end()) {
 				// Copy the signal from the old set to the new
 				signal = *iter;
-				auto logic_signal = dynamic_pointer_cast<
-					view::LogicSignal>(signal);
-				if (logic_signal)
-					logic_signal->set_logic_data(
-						logic_data_);
 			} else {
 				// Create a new signal
 				signalbase = shared_ptr<data::SignalBase>(
@@ -429,9 +424,10 @@ void Session::update_signals()
 
 				switch(channel->type()->id()) {
 				case SR_CHANNEL_LOGIC:
+					signalbase->set_data(logic_data_);
 					signal = shared_ptr<view::Signal>(
 						new view::LogicSignal(*this,
-							device_, signalbase, logic_data_));
+							device_, signalbase));
 					all_signal_data_.insert(logic_data_);
 					signalbases_.insert(signalbase);
 					break;

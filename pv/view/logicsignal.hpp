@@ -66,16 +66,13 @@ private:
 public:
 	LogicSignal(pv::Session &session,
 		std::shared_ptr<devices::Device> device,
-		std::shared_ptr<data::SignalBase> base,
-		std::shared_ptr<pv::data::Logic> data);
+		std::shared_ptr<data::SignalBase> base);
 
 	virtual ~LogicSignal() = default;
 
 	std::shared_ptr<pv::data::SignalData> data() const;
 
 	std::shared_ptr<pv::data::Logic> logic_data() const;
-
-	void set_logic_data(std::shared_ptr<pv::data::Logic> data);
 
 	/**
 	 * Computes the vertical extents of the contents of this row item.
@@ -134,7 +131,6 @@ private:
 	int signal_height_;
 
 	std::shared_ptr<pv::devices::Device> device_;
-	std::shared_ptr<pv::data::Logic> data_;
 
 	const sigrok::TriggerMatchType *trigger_match_;
 	QToolBar *trigger_bar_;

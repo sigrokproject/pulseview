@@ -99,12 +99,10 @@ QCache<QString, const QPixmap> LogicSignal::pixmap_cache_;
 LogicSignal::LogicSignal(
 	pv::Session &session,
 	shared_ptr<devices::Device> device,
-	shared_ptr<data::SignalBase> base,
-	shared_ptr<data::Logic> data) :
+	shared_ptr<data::SignalBase> base) :
 	Signal(session, base),
 	signal_height_(QFontMetrics(QApplication::font()).height() * 2),
 	device_(device),
-	data_(data),
 	trigger_none_(nullptr),
 	trigger_rising_(nullptr),
 	trigger_high_(nullptr),
@@ -128,17 +126,12 @@ LogicSignal::LogicSignal(
 
 shared_ptr<pv::data::SignalData> LogicSignal::data() const
 {
-	return data_;
+	return base_->logic_data();
 }
 
 shared_ptr<pv::data::Logic> LogicSignal::logic_data() const
 {
-	return data_;
-}
-
-void LogicSignal::set_logic_data(std::shared_ptr<pv::data::Logic> data)
-{
-	data_ = data;
+	return base_->logic_data();
 }
 
 std::pair<int, int> LogicSignal::v_extents() const
@@ -167,7 +160,6 @@ void LogicSignal::paint_mid(QPainter &p, const ViewItemPaintParams &pp)
 	vector< pair<int64_t, bool> > edges;
 
 	assert(base_);
-	assert(data_);
 	assert(owner_);
 
 	const int y = get_visual_y();
@@ -179,7 +171,7 @@ void LogicSignal::paint_mid(QPainter &p, const ViewItemPaintParams &pp)
 	const float low_offset = y + 0.5f;
 
 	const deque< shared_ptr<pv::data::LogicSegment> > &segments =
-		data_->logic_segments();
+		base_->logic_data()->logic_segments();
 	if (segments.empty())
 		return;
 
