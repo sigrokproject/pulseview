@@ -128,18 +128,17 @@ const QColor DecodeTrace::OutlineColours[16] = {
 };
 
 DecodeTrace::DecodeTrace(pv::Session &session,
-	shared_ptr<data::SignalBase> signalbase,
-	std::shared_ptr<pv::data::DecoderStack> decoder_stack, int index) :
+	shared_ptr<data::SignalBase> signalbase, int index) :
 	Trace(signalbase),
 	session_(session),
 	signalbase_(signalbase),
-	decoder_stack_(decoder_stack),
 	row_height_(0),
 	max_visible_rows_(0),
 	delete_mapper_(this),
 	show_hide_mapper_(this)
 {
-	assert(decoder_stack_);
+	std::shared_ptr<pv::data::DecoderStack> decoder_stack =
+		signalbase_->decoder_stack();
 
 	// Determine shortest string we want to see displayed in full
 	QFontMetrics m(QApplication::font());
@@ -148,7 +147,7 @@ DecodeTrace::DecodeTrace(pv::Session &session,
 	signalbase_->set_name(QString::fromUtf8(decoder_stack->stack().front()->decoder()->name));
 	signalbase_->set_colour(DecodeColours[index % countof(DecodeColours)]);
 
-	connect(decoder_stack_.get(), SIGNAL(new_decode_data()),
+	connect(decoder_stack.get(), SIGNAL(new_decode_data()),
 		this, SLOT(on_new_decode_data()));
 	connect(&delete_mapper_, SIGNAL(mapped(int)),
 		this, SLOT(on_delete_decoder(int)));
@@ -161,9 +160,9 @@ bool DecodeTrace::enabled() const
 	return true;
 }
 
-const std::shared_ptr<pv::data::DecoderStack>& DecodeTrace::decoder() const
+std::shared_ptr<data::SignalBase> DecodeTrace::base() const
 {
-	return decoder_stack_;
+	return base_;
 }
 
 pair<int, int> DecodeTrace::v_extents() const
@@ -186,12 +185,15 @@ void DecodeTrace::paint_mid(QPainter &p, const ViewItemPaintParams &pp)
 {
 	using namespace pv::data::decode;
 
+	std::shared_ptr<pv::data::DecoderStack> decoder_stack =
+		signalbase_->decoder_stack();
+
 	const int text_height = ViewItemPaintParams::text_height();
 	row_height_ = (text_height * 6) / 4;
 	const int annotation_height = (text_height * 5) / 4;
 
-	assert(decoder_stack_);
-	const QString err = decoder_stack_->error_message();
+	assert(decoder_stack);
+	const QString err = decoder_stack->error_message();
 	if (!err.isEmpty()) {
 		draw_unresolved_period(
 			p, annotation_height, pp.left(), pp.right());
@@ -207,8 +209,7 @@ void DecodeTrace::paint_mid(QPainter &p, const ViewItemPaintParams &pp)
 	pair<uint64_t, uint64_t> sample_range = get_sample_range(
 		pp.left(), pp.right());
 
-	assert(decoder_stack_);
-	const vector<Row> rows(decoder_stack_->get_visible_rows());
+	const vector<Row> rows(decoder_stack->get_visible_rows());
 
 	visible_rows_.clear();
 	for (const Row& row : rows) {
@@ -231,7 +232,7 @@ void DecodeTrace::paint_mid(QPainter &p, const ViewItemPaintParams &pp)
 		base_colour >>= 16;
 
 		vector<Annotation> annotations;
-		decoder_stack_->get_annotation_subset(annotations, row,
+		decoder_stack->get_annotation_subset(annotations, row,
 			sample_range.first, sample_range.second);
 		if (!annotations.empty()) {
 			draw_annotations(annotations, p, annotation_height, pp, y,
@@ -297,9 +298,12 @@ void DecodeTrace::populate_popup_form(QWidget *parent, QFormLayout *form)
 {
 	using pv::data::decode::Decoder;
 
+	std::shared_ptr<pv::data::DecoderStack> decoder_stack =
+		signalbase_->decoder_stack();
+
 	assert(form);
 	assert(parent);
-	assert(decoder_stack_);
+	assert(decoder_stack);
 
 	// Add the standard options
 	Trace::populate_popup_form(parent, form);
@@ -309,7 +313,7 @@ void DecodeTrace::populate_popup_form(QWidget *parent, QFormLayout *form)
 	channel_selectors_.clear();
 	decoder_forms_.clear();
 
-	const list< shared_ptr<Decoder> >& stack = decoder_stack_->stack();
+	const list< shared_ptr<Decoder> >& stack = decoder_stack->stack();
 
 	if (stack.empty()) {
 		QLabel *const l = new QLabel(
@@ -600,12 +604,15 @@ void DecodeTrace::draw_unresolved_period(QPainter &p, int h, int left,
 
 	double samples_per_pixel, pixels_offset;
 
-	assert(decoder_stack_);	
+	std::shared_ptr<pv::data::DecoderStack> decoder_stack =
+		signalbase_->decoder_stack();
+
+	assert(decoder_stack);
 
 	shared_ptr<Logic> data;
 	shared_ptr<data::SignalBase> signalbase;
 
-	const list< shared_ptr<Decoder> > &stack = decoder_stack_->stack();
+	const list< shared_ptr<Decoder> > &stack = decoder_stack->stack();
 
 	// We get the logic data of the first channel in the list.
 	// This works because we are currently assuming all
@@ -626,7 +633,7 @@ void DecodeTrace::draw_unresolved_period(QPainter &p, int h, int left,
 	if (sample_count == 0)
 		return;
 
-	const int64_t samples_decoded = decoder_stack_->samples_decoded();
+	const int64_t samples_decoded = decoder_stack->samples_decoded();
 	if (sample_count == samples_decoded)
 		return;
 
@@ -652,8 +659,11 @@ void DecodeTrace::draw_unresolved_period(QPainter &p, int h, int left,
 
 pair<double, double> DecodeTrace::get_pixels_offset_samples_per_pixel() const
 {
+	std::shared_ptr<pv::data::DecoderStack> decoder_stack =
+		signalbase_->decoder_stack();
+
 	assert(owner_);
-	assert(decoder_stack_);
+	assert(decoder_stack);
 
 	const View *view = owner_->view();
 	assert(view);
@@ -662,9 +672,9 @@ pair<double, double> DecodeTrace::get_pixels_offset_samples_per_pixel() const
 	assert(scale > 0);
 
 	const double pixels_offset =
-		((view->offset() - decoder_stack_->start_time()) / scale).convert_to<double>();
+		((view->offset() - decoder_stack->start_time()) / scale).convert_to<double>();
 
-	double samplerate = decoder_stack_->samplerate();
+	double samplerate = decoder_stack->samplerate();
 
 	// Show sample rate as 1Hz when it is unknown
 	if (samplerate == 0.0)
@@ -722,8 +732,11 @@ const QString DecodeTrace::get_annotation_at_point(const QPoint &point)
 
 	vector<pv::data::decode::Annotation> annotations;
 
-	assert(decoder_stack_);
-	decoder_stack_->get_annotation_subset(annotations, visible_rows_[row],
+	std::shared_ptr<pv::data::DecoderStack> decoder_stack =
+		signalbase_->decoder_stack();
+
+	assert(decoder_stack);
+	decoder_stack->get_annotation_subset(annotations, visible_rows_[row],
 		sample_range.first, sample_range.second);
 
 	return (annotations.empty()) ?
@@ -828,9 +841,12 @@ void DecodeTrace::create_decoder_form(int index,
 		channel_selectors_.push_back(s);
 	}
 
+	std::shared_ptr<pv::data::DecoderStack> decoder_stack =
+		signalbase_->decoder_stack();
+
 	// Add the options
 	shared_ptr<binding::Decoder> binding(
-		new binding::Decoder(decoder_stack_, dec));
+		new binding::Decoder(decoder_stack, dec));
 	binding->add_properties_to_form(decoder_form, true);
 
 	bindings_.push_back(binding);
@@ -908,11 +924,14 @@ void DecodeTrace::commit_decoder_channels(shared_ptr<data::decode::Decoder> &dec
 
 void DecodeTrace::commit_channels()
 {
-	assert(decoder_stack_);
-	for (shared_ptr<data::decode::Decoder> dec : decoder_stack_->stack())
+	std::shared_ptr<pv::data::DecoderStack> decoder_stack =
+		signalbase_->decoder_stack();
+
+	assert(decoder_stack);
+	for (shared_ptr<data::decode::Decoder> dec : decoder_stack->stack())
 		commit_decoder_channels(dec);
 
-	decoder_stack_->begin_decode();
+	decoder_stack->begin_decode();
 }
 
 void DecodeTrace::on_new_decode_data()
@@ -928,7 +947,7 @@ void DecodeTrace::delete_pressed()
 
 void DecodeTrace::on_delete()
 {
-	session_.remove_decode_signal(this);
+	session_.remove_decode_signal(base_);
 }
 
 void DecodeTrace::on_channel_selected(int)
@@ -938,30 +957,39 @@ void DecodeTrace::on_channel_selected(int)
 
 void DecodeTrace::on_stack_decoder(srd_decoder *decoder)
 {
+	std::shared_ptr<pv::data::DecoderStack> decoder_stack =
+		signalbase_->decoder_stack();
+
 	assert(decoder);
-	assert(decoder_stack_);
-	decoder_stack_->push(shared_ptr<data::decode::Decoder>(
+	assert(decoder_stack);
+	decoder_stack->push(shared_ptr<data::decode::Decoder>(
 		new data::decode::Decoder(decoder)));
-	decoder_stack_->begin_decode();
+	decoder_stack->begin_decode();
 
 	create_popup_form();
 }
 
 void DecodeTrace::on_delete_decoder(int index)
 {
-	decoder_stack_->remove(index);
+	std::shared_ptr<pv::data::DecoderStack> decoder_stack =
+		signalbase_->decoder_stack();
+
+	decoder_stack->remove(index);
 
 	// Update the popup
 	create_popup_form();	
 
-	decoder_stack_->begin_decode();
+	decoder_stack->begin_decode();
 }
 
 void DecodeTrace::on_show_hide_decoder(int index)
 {
 	using pv::data::decode::Decoder;
 
-	const list< shared_ptr<Decoder> > stack(decoder_stack_->stack());
+	std::shared_ptr<pv::data::DecoderStack> decoder_stack =
+		signalbase_->decoder_stack();
+
+	const list< shared_ptr<Decoder> > stack(decoder_stack->stack());
 
 	// Find the decoder in the stack
 	auto iter = stack.cbegin();

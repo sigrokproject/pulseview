@@ -73,7 +73,6 @@ class Device;
 }
 
 namespace view {
-class DecodeTrace;
 class View;
 }
 
@@ -126,10 +125,7 @@ public:
 #ifdef ENABLE_DECODE
 	bool add_decoder(srd_decoder *const dec);
 
-	std::vector< std::shared_ptr<view::DecodeTrace> >
-		get_decode_signals() const;
-
-	void remove_decode_signal(view::DecodeTrace *signal);
+	void remove_decode_signal(std::shared_ptr<data::SignalBase> signalbase);
 #endif
 
 private:
@@ -163,8 +159,6 @@ private:
 	std::shared_ptr<devices::Device> device_;
 
 	std::unordered_set< std::shared_ptr<pv::view::View> > views_;
-
-	std::vector< std::shared_ptr<view::DecodeTrace> > decode_traces_;
 
 	mutable std::mutex sampling_mutex_; //!< Protects access to capture_state_.
 	capture_state capture_state_;

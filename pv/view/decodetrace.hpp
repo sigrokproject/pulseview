@@ -45,6 +45,7 @@ class Session;
 
 namespace data {
 class DecoderStack;
+class SignalBase;
 
 namespace decode {
 class Annotation;
@@ -86,12 +87,13 @@ private:
 
 public:
 	DecodeTrace(pv::Session &session, std::shared_ptr<data::SignalBase> signalbase,
-		std::shared_ptr<pv::data::DecoderStack> decoder_stack,
 		int index);
 
 	bool enabled() const;
 
 	const std::shared_ptr<pv::data::DecoderStack>& decoder() const;
+
+	std::shared_ptr<data::SignalBase> base() const;
 
 	/**
 	 * Computes the vertical extents of the contents of this row item.
@@ -198,8 +200,8 @@ private Q_SLOTS:
 private:
 	pv::Session &session_;
 	std::shared_ptr<data::SignalBase> signalbase_;
-	std::shared_ptr<pv::data::DecoderStack> decoder_stack_;
 
+	std::vector<data::decode::Row> visible_rows_;
 	uint64_t decode_start_, decode_end_;
 
 	std::list< std::shared_ptr<pv::binding::Decoder> >
@@ -208,7 +210,6 @@ private:
 	std::list<ChannelSelector> channel_selectors_;
 	std::vector<pv::widgets::DecoderGroupBox*> decoder_forms_;
 
-	std::vector<data::decode::Row> visible_rows_;
 	std::map<data::decode::Row, int> row_title_widths_;
 	int row_height_, max_visible_rows_;
 

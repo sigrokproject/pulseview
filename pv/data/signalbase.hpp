@@ -38,6 +38,7 @@ namespace pv {
 namespace data {
 
 class Analog;
+class DecoderStack;
 class Logic;
 class SignalData;
 
@@ -119,6 +120,14 @@ public:
 	 */
 	std::shared_ptr<pv::data::Logic> logic_data() const;
 
+#ifdef ENABLE_DECODE
+	bool is_decode_signal() const;
+
+	std::shared_ptr<pv::data::DecoderStack> decoder_stack() const;
+
+	void set_decoder_stack(std::shared_ptr<pv::data::DecoderStack>
+		decoder_stack);
+#endif
 
 Q_SIGNALS:
 	void enabled_changed(const bool &value);
@@ -130,6 +139,10 @@ Q_SIGNALS:
 private:
 	std::shared_ptr<sigrok::Channel> channel_;
 	std::shared_ptr<pv::data::SignalData> data_;
+
+#ifdef ENABLE_DECODE
+	std::shared_ptr<pv::data::DecoderStack> decoder_stack_;
+#endif
 
 	QString name_;
 	QColor colour_, bgcolour_;

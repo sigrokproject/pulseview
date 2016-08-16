@@ -23,6 +23,9 @@
 #include "logic.hpp"
 #include "signalbase.hpp"
 #include "signaldata.hpp"
+#include "decode/row.hpp"
+
+#include <pv/binding/decoder.hpp>
 
 using std::dynamic_pointer_cast;
 using std::shared_ptr;
@@ -124,6 +127,23 @@ shared_ptr<data::Logic> SignalBase::logic_data() const
 		return shared_ptr<data::Logic>();
 }
 
+#ifdef ENABLE_DECODE
+bool SignalBase::is_decode_signal() const
+{
+	return (decoder_stack_ != nullptr);
+}
+
+std::shared_ptr<pv::data::DecoderStack> SignalBase::decoder_stack() const
+{
+	return decoder_stack_;
+}
+
+void SignalBase::set_decoder_stack(std::shared_ptr<pv::data::DecoderStack>
+	decoder_stack)
+{
+	decoder_stack_ = decoder_stack;
+}
+#endif
 
 } // namespace data
 } // namespace pv

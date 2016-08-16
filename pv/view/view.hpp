@@ -51,6 +51,7 @@ class Session;
 namespace view {
 
 class CursorHeader;
+class DecodeTrace;
 class Header;
 class Ruler;
 class Signal;
@@ -90,6 +91,14 @@ public:
 	void clear_signals();
 
 	void add_signal(const std::shared_ptr<view::Signal> signal);
+
+#ifdef ENABLE_DECODE
+	void clear_decode_traces();
+
+	void add_decode_trace(std::shared_ptr<data::SignalBase> signalbase);
+
+	void remove_decode_trace(std::shared_ptr<data::SignalBase> signalbase);
+#endif
 
 	/**
 	 * Returns the view of the owner.
@@ -366,6 +375,10 @@ private:
 	Header *header_;
 
 	std::unordered_set< std::shared_ptr<view::Signal> > signals_;
+
+#ifdef ENABLE_DECODE
+	std::vector< std::shared_ptr<view::DecodeTrace> > decode_traces_;
+#endif
 
 	/// The view time scale in seconds per pixel.
 	double scale_;

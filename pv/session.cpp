@@ -144,8 +144,12 @@ void Session::set_device(shared_ptr<devices::Device> device)
 	device_.reset();
 
 	// Remove all stored data
-	for (std::shared_ptr<pv::view::View> view : views_)
+	for (std::shared_ptr<pv::view::View> view : views_) {
 		view->clear_signals();
+#ifdef ENABLE_DECODE
+		view->clear_decode_traces();
+#endif
+	}
 	for (const shared_ptr<data::SignalData> d : all_signal_data_)
 		d->clear();
 	all_signal_data_.clear();
@@ -158,7 +162,6 @@ void Session::set_device(shared_ptr<devices::Device> device)
 	}
 
 	logic_data_.reset();
-	decode_traces_.clear();
 
 	signals_changed();
 
@@ -314,10 +317,10 @@ bool Session::add_decoder(srd_decoder *const dec)
 		shared_ptr<data::SignalBase> signalbase =
 			shared_ptr<data::SignalBase>(new data::SignalBase(nullptr));
 
-		shared_ptr<view::DecodeTrace> d(
-			new view::DecodeTrace(*this, signalbase, decoder_stack,
-				decode_traces_.size()));
-		decode_traces_.push_back(d);
+		signalbase->set_decoder_stack(decoder_stack);
+
+		for (std::shared_ptr<pv::view::View> view : views_)
+			view->add_decode_trace(signalbase);
 	} catch (std::runtime_error e) {
 		return false;
 	}
@@ -330,19 +333,10 @@ bool Session::add_decoder(srd_decoder *const dec)
 	return true;
 }
 
-vector< shared_ptr<view::DecodeTrace> > Session::get_decode_signals() const
+void Session::remove_decode_signal(shared_ptr<data::SignalBase> signalbase)
 {
-	return decode_traces_;
-}
-
-void Session::remove_decode_signal(view::DecodeTrace *signal)
-{
-	for (auto i = decode_traces_.begin(); i != decode_traces_.end(); i++)
-		if ((*i).get() == signal) {
-			decode_traces_.erase(i);
-			signals_changed();
-			return;
-		}
+	for (std::shared_ptr<pv::view::View> view : views_)
+		view->remove_decode_trace(signalbase);
 }
 #endif
 
@@ -365,8 +359,12 @@ void Session::update_signals()
 	if (!device_) {
 		signalbases_.clear();
 		logic_data_.reset();
-		for (std::shared_ptr<pv::view::View> view : views_)
+		for (std::shared_ptr<pv::view::View> view : views_) {
 			view->clear_signals();
+#ifdef ENABLE_DECODE
+			view->clear_decode_traces();
+#endif
+		}
 		return;
 	}
 
@@ -376,8 +374,12 @@ void Session::update_signals()
 	if (!sr_dev) {
 		signalbases_.clear();
 		logic_data_.reset();
-		for (std::shared_ptr<pv::view::View> view : views_)
+		for (std::shared_ptr<pv::view::View> view : views_) {
 			view->clear_signals();
+#ifdef ENABLE_DECODE
+			view->clear_decode_traces();
+#endif
+		}
 		return;
 	}
 

@@ -201,6 +201,30 @@ void View::add_signal(const shared_ptr<view::Signal> signal)
 	signals_.insert(signal);
 }
 
+#ifdef ENABLE_DECODE
+void View::clear_decode_traces()
+{
+	decode_traces_.clear();
+}
+
+void View::add_decode_trace(shared_ptr<data::SignalBase> signalbase)
+{
+	shared_ptr<view::DecodeTrace> d(
+		new view::DecodeTrace(session_, signalbase, decode_traces_.size()));
+	decode_traces_.push_back(d);
+}
+
+void View::remove_decode_trace(shared_ptr<data::SignalBase> signalbase)
+{
+	for (auto i = decode_traces_.begin(); i != decode_traces_.end(); i++)
+		if ((*i)->base() == signalbase) {
+			decode_traces_.erase(i);
+			signals_changed();
+			return;
+		}
+}
+#endif
+
 View* View::view()
 {
 	return this;
@@ -967,9 +991,7 @@ void View::signals_changed()
 	set< shared_ptr<Trace> > traces(signals_.begin(), signals_.end());
 
 #ifdef ENABLE_DECODE
-	const vector< shared_ptr<DecodeTrace> > decode_traces(
-		session().get_decode_signals());
-	traces.insert(decode_traces.begin(), decode_traces.end());
+	traces.insert(decode_traces_.begin(), decode_traces_.end());
 #endif
 
 	set< shared_ptr<Trace> > add_traces;
