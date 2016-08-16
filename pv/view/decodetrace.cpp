@@ -50,7 +50,7 @@ extern "C" {
 #include <pv/data/logic.hpp>
 #include <pv/data/logicsegment.hpp>
 #include <pv/data/decode/annotation.hpp>
-#include <pv/view/logicsignal.hpp>
+#include <pv/view/signal.hpp>
 #include <pv/view/view.hpp>
 #include <pv/view/viewport.hpp>
 #include <pv/widgets/decodergroupbox.hpp>
@@ -604,7 +604,7 @@ void DecodeTrace::draw_unresolved_period(QPainter &p, int h, int left,
 	assert(decoder_stack_);	
 
 	shared_ptr<Logic> data;
-	shared_ptr<LogicSignal> logic_signal;
+	shared_ptr<data::SignalBase> signalbase;
 
 	const list< shared_ptr<Decoder> > &stack = decoder_stack_->stack();
 
@@ -613,8 +613,8 @@ void DecodeTrace::draw_unresolved_period(QPainter &p, int h, int left,
 	// LogicSignals have the same data/segment
 	for (const shared_ptr<Decoder> &dec : stack)
 		if (dec && !dec->channels().empty() &&
-			((logic_signal = (*dec->channels().begin()).second)) &&
-			((data = logic_signal->logic_data())))
+			((signalbase = (*dec->channels().begin()).second)) &&
+			((data = signalbase->logic_data())))
 			break;
 
 	if (!data || data->logic_segments().empty())
@@ -866,12 +866,12 @@ QComboBox* DecodeTrace::create_channel_selector(
 
 	for (const shared_ptr<view::Signal> &s : sig_list) {
 		assert(s);
-		if (dynamic_pointer_cast<LogicSignal>(s) && s->enabled()) {
+		if (s->base()->type() == sigrok::ChannelType::LOGIC && s->enabled()) {
 			selector->addItem(s->base()->name(),
-				qVariantFromValue((void*)s.get()));
+				qVariantFromValue((void*)s->base().get()));
 
 			if (channel_iter != dec->channels().end() &&
-				(*channel_iter).second == s)
+				(*channel_iter).second == s->base())
 				selector->setCurrentIndex(
 					selector->count() - 1);
 		}
@@ -884,7 +884,7 @@ void DecodeTrace::commit_decoder_channels(shared_ptr<data::decode::Decoder> &dec
 {
 	assert(dec);
 
-	map<const srd_channel*, shared_ptr<LogicSignal> > channel_map;
+	map<const srd_channel*, shared_ptr<data::SignalBase> > channel_map;
 
 	const unordered_set< shared_ptr<Signal> > sigs(session_.signals());
 
@@ -892,14 +892,13 @@ void DecodeTrace::commit_decoder_channels(shared_ptr<data::decode::Decoder> &dec
 		if (s.decoder_ != dec)
 			break;
 
-		const LogicSignal *const selection =
-			(LogicSignal*)s.combo_->itemData(
+		const data::SignalBase *const selection =
+			(data::SignalBase*)s.combo_->itemData(
 				s.combo_->currentIndex()).value<void*>();
 
 		for (shared_ptr<Signal> sig : sigs)
-			if (sig.get() == selection) {
-				channel_map[s.pdch_] =
-					dynamic_pointer_cast<LogicSignal>(sig);
+			if (sig->base().get() == selection) {
+				channel_map[s.pdch_] = sig->base();
 				break;
 			}
 	}

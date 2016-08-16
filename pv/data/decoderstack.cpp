@@ -191,7 +191,7 @@ void DecoderStack::clear()
 
 void DecoderStack::begin_decode()
 {
-	shared_ptr<pv::view::LogicSignal> logic_signal;
+	shared_ptr<pv::data::SignalBase> signalbase;
 	shared_ptr<pv::data::Logic> data;
 
 	if (decode_thread_.joinable()) {
@@ -241,11 +241,11 @@ void DecoderStack::begin_decode()
 
 	// We get the logic data of the first channel in the list.
 	// This works because we are currently assuming all
-	// LogicSignals have the same data/segment
+	// logic signals have the same data/segment
 	for (const shared_ptr<decode::Decoder> &dec : stack_)
 		if (dec && !dec->channels().empty() &&
-			((logic_signal = (*dec->channels().begin()).second)) &&
-			((data = logic_signal->logic_data())))
+			((signalbase = (*dec->channels().begin()).second)) &&
+			((data = signalbase->logic_data())))
 			break;
 
 	if (!data)

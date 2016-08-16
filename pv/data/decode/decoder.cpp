@@ -25,7 +25,7 @@
 
 #include "decoder.hpp"
 
-#include <pv/view/logicsignal.hpp>
+#include <pv/data/signalbase.hpp>
 
 using std::set;
 using std::map;
@@ -63,14 +63,14 @@ void Decoder::show(bool show)
 	shown_ = show;
 }
 
-const map<const srd_channel*, shared_ptr<view::LogicSignal> >&
+const map<const srd_channel*, shared_ptr<data::SignalBase> >&
 Decoder::channels() const
 {
 	return channels_;
 }
 
 void Decoder::set_channels(std::map<const srd_channel*,
-	std::shared_ptr<view::LogicSignal> > channels)
+	std::shared_ptr<data::SignalBase> > channels)
 {
 	channels_ = channels;
 }
@@ -103,9 +103,9 @@ set< shared_ptr<pv::data::Logic> > Decoder::get_data()
 {
 	set< shared_ptr<pv::data::Logic> > data;
 	for (const auto& channel : channels_) {
-		shared_ptr<view::LogicSignal> signal(channel.second);
-		assert(signal);
-		data.insert(signal->logic_data());
+		shared_ptr<data::SignalBase> b(channel.second);
+		assert(b);
+		data.insert(b->logic_data());
 	}
 
 	return data;
@@ -135,9 +135,8 @@ srd_decoder_inst* Decoder::create_decoder_inst(srd_session *session) const
 		g_str_equal, g_free, (GDestroyNotify)g_variant_unref);
 
 	for (const auto& channel : channels_) {
-		shared_ptr<view::LogicSignal> signal(channel.second);
-		GVariant *const gvar = g_variant_new_int32(
-			signal->base()->index());
+		shared_ptr<data::SignalBase> b(channel.second);
+		GVariant *const gvar = g_variant_new_int32(b->index());
 		g_variant_ref_sink(gvar);
 		g_hash_table_insert(channels, channel.first->id, gvar);
 	}

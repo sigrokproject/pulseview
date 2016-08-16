@@ -275,7 +275,7 @@ const unordered_set< shared_ptr<view::Signal> > Session::signals() const
 #ifdef ENABLE_DECODE
 bool Session::add_decoder(srd_decoder *const dec)
 {
-	map<const srd_channel*, shared_ptr<view::LogicSignal> > channels;
+	map<const srd_channel*, shared_ptr<data::SignalBase> > channels;
 	shared_ptr<data::DecoderStack> decoder_stack;
 
 	try {
@@ -294,13 +294,12 @@ bool Session::add_decoder(srd_decoder *const dec)
 
 		// Auto select the initial channels
 		for (const srd_channel *pdch : all_channels)
-			for (shared_ptr<view::Signal> s : signals_) {
-				shared_ptr<view::LogicSignal> l =
-					dynamic_pointer_cast<view::LogicSignal>(s);
-				if (l && QString::fromUtf8(pdch->name).
-					toLower().contains(
-					s->base()->name().toLower()))
-					channels[pdch] = l;
+			for (shared_ptr<data::SignalBase> b : signalbases_) {
+				if (b->type() == ChannelType::LOGIC) {
+					if (QString::fromUtf8(pdch->name).toLower().
+						contains(b->name().toLower()))
+						channels[pdch] = b;
+				}
 			}
 
 		assert(decoder_stack);

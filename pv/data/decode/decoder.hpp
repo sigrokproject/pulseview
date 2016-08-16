@@ -34,13 +34,10 @@ struct srd_session;
 
 namespace pv {
 
-namespace view {
-class LogicSignal;
-}
-
 namespace data {
 
 class Logic;
+class SignalBase;
 
 namespace decode {
 
@@ -57,9 +54,9 @@ public:
 	void show(bool show = true);
 
 	const std::map<const srd_channel*,
-		std::shared_ptr<view::LogicSignal> >& channels() const;
+		std::shared_ptr<data::SignalBase> >& channels() const;
 	void set_channels(std::map<const srd_channel*,
-		std::shared_ptr<view::LogicSignal> > channels);
+		std::shared_ptr<data::SignalBase> > channels);
 
 	const std::map<std::string, GVariant*>& options() const;
 
@@ -77,7 +74,7 @@ private:
 
 	bool shown_;
 
-	std::map<const srd_channel*, std::shared_ptr<pv::view::LogicSignal> >
+	std::map<const srd_channel*, std::shared_ptr<pv::data::SignalBase> >
 		channels_;
 	std::map<std::string, GVariant*> options_;
 };
