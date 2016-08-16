@@ -976,7 +976,7 @@ void View::signals_changed()
 	unordered_map<shared_ptr<data::SignalBase>, shared_ptr<Signal> >
 		signal_map;
 	for (const shared_ptr<Signal> &sig : sigs)
-		signal_map[sig->channel()] = sig;
+		signal_map[sig->base()] = sig;
 
 	// Populate channel groups
 	if (sr_dev)

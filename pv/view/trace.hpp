@@ -127,7 +127,7 @@ private Q_SLOTS:
 	void on_colouredit_changed(const QColor &colour);
 
 protected:
-	std::shared_ptr<data::SignalBase> channel_;
+	std::shared_ptr<data::SignalBase> base_;
 	bool coloured_bg_, coloured_bg_state_;
 
 private:

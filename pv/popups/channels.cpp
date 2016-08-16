@@ -83,7 +83,7 @@ Channels::Channels(Session &session, QWidget *parent) :
 
 	unordered_set< shared_ptr<SignalBase> > sigs;
 	for (const shared_ptr<view::Signal> s : session_.signals())
-		sigs.insert(s->channel());
+		sigs.insert(s->base());
 
 	for (const shared_ptr<SignalBase> &sig : sigs)
 		signal_map[sig->channel()] = sig;

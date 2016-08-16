@@ -53,7 +53,7 @@ private:
 
 public:
 	AnalogSignal(pv::Session &session,
-		std::shared_ptr<data::SignalBase> channel,
+		std::shared_ptr<data::SignalBase> base,
 		std::shared_ptr<pv::data::Analog> data);
 
 	virtual ~AnalogSignal() = default;

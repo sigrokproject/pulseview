@@ -99,9 +99,9 @@ QCache<QString, const QPixmap> LogicSignal::pixmap_cache_;
 LogicSignal::LogicSignal(
 	pv::Session &session,
 	shared_ptr<devices::Device> device,
-	shared_ptr<data::SignalBase> channel,
+	shared_ptr<data::SignalBase> base,
 	shared_ptr<data::Logic> data) :
-	Signal(session, channel),
+	Signal(session, base),
 	signal_height_(QFontMetrics(QApplication::font()).height() * 2),
 	device_(device),
 	data_(data),
@@ -114,7 +114,7 @@ LogicSignal::LogicSignal(
 {
 	shared_ptr<Trigger> trigger;
 
-	channel_->set_colour(SignalColours[channel->index() % countof(SignalColours)]);
+	base_->set_colour(SignalColours[base->index() % countof(SignalColours)]);
 
 	/* Populate this channel's trigger setting with whatever we
 	 * find in the current session trigger, if anything. */
@@ -122,7 +122,7 @@ LogicSignal::LogicSignal(
 	if ((trigger = session_.session()->trigger()))
 		for (auto stage : trigger->stages())
 			for (auto match : stage->matches())
-				if (match->channel() == channel_->channel())
+				if (match->channel() == base_->channel())
 					trigger_match_ = match->type();
 }
 
@@ -166,13 +166,13 @@ void LogicSignal::paint_mid(QPainter &p, const ViewItemPaintParams &pp)
 
 	vector< pair<int64_t, bool> > edges;
 
-	assert(channel_);
+	assert(base_);
 	assert(data_);
 	assert(owner_);
 
 	const int y = get_visual_y();
 
-	if (!channel_->enabled())
+	if (!base_->enabled())
 		return;
 
 	const float high_offset = y - signal_height_ + 0.5f;
@@ -205,7 +205,7 @@ void LogicSignal::paint_mid(QPainter &p, const ViewItemPaintParams &pp)
 		(int64_t)0), last_sample);
 
 	segment->get_subsampled_edges(edges, start_sample, end_sample,
-		samples_per_pixel / Oversampling, channel_->index());
+		samples_per_pixel / Oversampling, base_->index());
 	assert(edges.size() >= 2);
 
 	// Paint the edges
@@ -240,7 +240,7 @@ void LogicSignal::paint_mid(QPainter &p, const ViewItemPaintParams &pp)
 void LogicSignal::paint_fore(QPainter &p, const ViewItemPaintParams &pp)
 {
 	// Draw the trigger marker
-	if (!trigger_match_ || !channel_->enabled())
+	if (!trigger_match_ || !base_->enabled())
 		return;
 
 	const int y = get_visual_y();
@@ -430,12 +430,12 @@ void LogicSignal::modify_trigger()
 			const auto &matches = stage->matches();
 			if (std::none_of(matches.begin(), matches.end(),
 			    [&](shared_ptr<TriggerMatch> match) {
-					return match->channel() != channel_->channel(); }))
+					return match->channel() != base_->channel(); }))
 				continue;
 
 			auto new_stage = new_trigger->add_stage();
 			for (auto match : stage->matches()) {
-				if (match->channel() == channel_->channel())
+				if (match->channel() == base_->channel())
 					continue;
 				new_stage->add_match(match->channel(), match->type());
 			}
@@ -449,7 +449,7 @@ void LogicSignal::modify_trigger()
 		if (new_trigger->stages().empty())
 			new_trigger->add_stage();
 
-		new_trigger->stages().back()->add_match(channel_->channel(),
+		new_trigger->stages().back()->add_match(base_->channel(),
 			trigger_match_);
 	}
 

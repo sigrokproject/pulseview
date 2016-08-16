@@ -299,7 +299,7 @@ bool Session::add_decoder(srd_decoder *const dec)
 					dynamic_pointer_cast<view::LogicSignal>(s);
 				if (l && QString::fromUtf8(pdch->name).
 					toLower().contains(
-					s->channel()->name().toLower()))
+					s->base()->name().toLower()))
 					channels[pdch] = l;
 			}
 
@@ -412,7 +412,7 @@ void Session::update_signals()
 			const auto iter = std::find_if(
 				prev_sigs.cbegin(), prev_sigs.cend(),
 				[&](const shared_ptr<view::Signal> &s) {
-					return s->channel()->channel() == channel;
+					return s->base()->channel() == channel;
 				});
 			if (iter != prev_sigs.end()) {
 				// Copy the signal from the old set to the new

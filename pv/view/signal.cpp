@@ -67,7 +67,7 @@ Signal::Signal(pv::Session &session,
 	items_({scale_handle_}),
 	name_widget_(nullptr)
 {
-	assert(channel_);
+	assert(base_);
 }
 
 void Signal::set_name(QString name)
@@ -80,20 +80,20 @@ void Signal::set_name(QString name)
 
 bool Signal::enabled() const
 {
-	return channel_->enabled();
+	return base_->enabled();
 }
 
 void Signal::enable(bool enable)
 {
-	channel_->set_enabled(enable);
+	base_->set_enabled(enable);
 
 	if (owner_)
 		owner_->extents_changed(true, true);
 }
 
-shared_ptr<data::SignalBase> Signal::channel() const
+shared_ptr<data::SignalBase> Signal::base() const
 {
-	return channel_;
+	return base_;
 }
 
 const ViewItemOwner::item_list& Signal::child_items() const
@@ -103,7 +103,7 @@ const ViewItemOwner::item_list& Signal::child_items() const
 
 void Signal::paint_back(QPainter &p, const ViewItemPaintParams &pp)
 {
-	if (channel_->enabled())
+	if (base_->enabled())
 		Trace::paint_back(p, pp);
 }
 
@@ -116,10 +116,10 @@ void Signal::populate_popup_form(QWidget *parent, QFormLayout *form)
 	for (unsigned int i = 0; i < countof(ChannelNames); i++)
 		name_widget_->insertItem(i, ChannelNames[i]);
 
-	const int index = name_widget_->findText(channel_->name(), Qt::MatchExactly);
+	const int index = name_widget_->findText(base_->name(), Qt::MatchExactly);
 
 	if (index == -1) {
-		name_widget_->insertItem(0, channel_->name());
+		name_widget_->insertItem(0, base_->name());
 		name_widget_->setCurrentIndex(0);
 	} else {
 		name_widget_->setCurrentIndex(index);

@@ -137,7 +137,7 @@ srd_decoder_inst* Decoder::create_decoder_inst(srd_session *session) const
 	for (const auto& channel : channels_) {
 		shared_ptr<view::LogicSignal> signal(channel.second);
 		GVariant *const gvar = g_variant_new_int32(
-			signal->channel()->index());
+			signal->base()->index());
 		g_variant_ref_sink(gvar);
 		g_hash_table_insert(channels, channel.first->id, gvar);
 	}

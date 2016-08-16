@@ -71,9 +71,9 @@ const int AnalogSignal::InfoTextMarginBottom = 5;
 
 AnalogSignal::AnalogSignal(
 	pv::Session &session,
-	shared_ptr<data::SignalBase> channel,
+	shared_ptr<data::SignalBase> base,
 	shared_ptr<data::Analog> data) :
-	Signal(session, channel),
+	Signal(session, base),
 	data_(data),
 	scale_index_(4), // 20 per div
 	scale_index_drag_offset_(0),
@@ -81,7 +81,7 @@ AnalogSignal::AnalogSignal(
 	vdivs_(1),
 	resolution_(0)
 {
-	channel_->set_colour(SignalColours[channel_->index() % countof(SignalColours)]);
+	base_->set_colour(SignalColours[base_->index() % countof(SignalColours)]);
 	update_scale();
 }
 
@@ -127,7 +127,7 @@ void AnalogSignal::scale_handle_drag_release()
 
 void AnalogSignal::paint_back(QPainter &p, const ViewItemPaintParams &pp)
 {
-	if (channel_->enabled()) {
+	if (base_->enabled()) {
 		Trace::paint_back(p, pp);
 		paint_axis(p, pp, get_visual_y());
 	}
@@ -140,7 +140,7 @@ void AnalogSignal::paint_mid(QPainter &p, const ViewItemPaintParams &pp)
 
 	const int y = get_visual_y();
 
-	if (!channel_->enabled())
+	if (!base_->enabled())
 		return;
 
 	paint_grid(p, y, pp.left(), pp.right());
@@ -186,7 +186,7 @@ void AnalogSignal::paint_fore(QPainter &p, const ViewItemPaintParams &pp)
 	// Show the info section on the right side of the trace
 	const QString infotext = QString("%1 V/div").arg(resolution_);
 
-	p.setPen(channel_->colour());
+	p.setPen(base_->colour());
 	p.setFont(QApplication::font());
 
 	const QRectF bounding_rect = QRectF(pp.left(),
@@ -235,7 +235,7 @@ void AnalogSignal::paint_trace(QPainter &p,
 	const float *const samples = segment->get_samples(start, end);
 	assert(samples);
 
-	p.setPen(channel_->colour());
+	p.setPen(base_->colour());
 
 	QPointF *points = new QPointF[sample_count];
 	QPointF *point = points;
@@ -267,7 +267,7 @@ void AnalogSignal::paint_envelope(QPainter &p,
 		return;
 
 	p.setPen(QPen(Qt::NoPen));
-	p.setBrush(channel_->colour());
+	p.setBrush(base_->colour());
 
 	QRectF *const rects = new QRectF[e.length];
 	QRectF *rect = rects;

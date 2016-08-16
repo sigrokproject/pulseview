@@ -851,8 +851,8 @@ QComboBox* DecodeTrace::create_channel_selector(
 	vector< shared_ptr<Signal> > sig_list(sigs.begin(), sigs.end());
 	std::sort(sig_list.begin(), sig_list.end(),
 		[](const shared_ptr<Signal> &a, const shared_ptr<Signal> b) {
-			return strnatcasecmp(a->channel()->name().toStdString(),
-				b->channel()->name().toStdString()) < 0; });
+			return strnatcasecmp(a->base()->name().toStdString(),
+				b->base()->name().toStdString()) < 0; });
 
 	assert(decoder_stack_);
 	const auto channel_iter = dec->channels().find(pdch);
@@ -867,7 +867,7 @@ QComboBox* DecodeTrace::create_channel_selector(
 	for (const shared_ptr<view::Signal> &s : sig_list) {
 		assert(s);
 		if (dynamic_pointer_cast<LogicSignal>(s) && s->enabled()) {
-			selector->addItem(s->channel()->name(),
+			selector->addItem(s->base()->name(),
 				qVariantFromValue((void*)s.get()));
 
 			if (channel_iter != dec->channels().end() &&

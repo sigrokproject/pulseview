@@ -66,7 +66,7 @@ public:
 
 	void enable(bool enable = true);
 
-	std::shared_ptr<data::SignalBase> channel() const;
+	std::shared_ptr<data::SignalBase> base() const;
 
 	/**
 	 * Returns a list of row items owned by this object.

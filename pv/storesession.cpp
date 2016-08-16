@@ -151,7 +151,7 @@ bool StoreSession::start()
 			asegment_list.push_back(asegments.front());
 			any_segment = asegments.front();
 
-			achannel_list.push_back(signal->channel());
+			achannel_list.push_back(signal->base());
 		}
 	}
 
