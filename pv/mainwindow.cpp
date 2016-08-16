@@ -228,6 +228,38 @@ shared_ptr<pv::view::View> MainWindow::get_active_view() const
 	return shared_ptr<pv::view::View>();
 }
 
+shared_ptr<pv::view::View> MainWindow::add_view(const QString &title,
+	view::ViewType type, Session &session)
+{
+	shared_ptr<pv::view::View> v;
+
+	if (type == pv::view::TraceView)
+		v = make_shared<pv::view::View>(session, this);
+
+	if (v) {
+		shared_ptr<QDockWidget> dock = make_shared<QDockWidget>(title, this);
+		dock->setWidget(v.get());
+		dock->setObjectName(title);
+		addDockWidget(Qt::TopDockWidgetArea, dock.get());
+		view_docks_[dock] = v;
+
+		if (type == view::TraceView) {
+			connect(&session, SIGNAL(trigger_event(util::Timestamp)), v.get(),
+				SLOT(trigger_event(util::Timestamp)));
+			connect(v.get(), SIGNAL(sticky_scrolling_changed(bool)), this,
+				SLOT(sticky_scrolling_changed(bool)));
+			connect(v.get(), SIGNAL(always_zoom_to_fit_changed(bool)), this,
+				SLOT(always_zoom_to_fit_changed(bool)));
+
+			v->enable_sticky_scrolling(action_view_sticky_scrolling_->isChecked());
+			v->enable_coloured_bg(action_view_coloured_bg_->isChecked());
+			action_view_show_cursors_->setChecked(v->cursors_shown());
+		}
+	}
+
+	return v;
+}
+
 void MainWindow::run_stop()
 {
 	switch (session_.get_capture_state()) {
@@ -392,13 +424,6 @@ void MainWindow::setup_ui()
 	icon.addFile(QString(":/icons/sigrok-logo-notext.svg"));
 	setWindowIcon(icon);
 
-	// Set up the initial view
-	shared_ptr<pv::view::View> view = make_shared<pv::view::View>(session_, this);
-	shared_ptr<QDockWidget> dock = make_shared<QDockWidget>(tr("Untitled"), this);
-	dock->setWidget(view.get());
-	addDockWidget(Qt::TopDockWidgetArea, dock.get());
-	view_docks_[dock] = view;
-
 	// Setup the menu bar
 	pv::widgets::HidingMenuBar *const menu_bar =
 		new pv::widgets::HidingMenuBar(this);
@@ -509,10 +534,6 @@ void MainWindow::setup_ui()
 	action_view_sticky_scrolling_->setText(tr("&Sticky Scrolling"));
 	menu_view->addAction(action_view_sticky_scrolling_);
 
-	// TODO: Refactor this into a "new view" method
-	if (view)
-		view->enable_sticky_scrolling(action_view_sticky_scrolling_->isChecked());
-
 	menu_view->addSeparator();
 
 	action_view_coloured_bg_->setCheckable(true);
@@ -522,10 +543,6 @@ void MainWindow::setup_ui()
 		QString::fromUtf8("actionViewColouredBg"));
 	action_view_coloured_bg_->setText(tr("Use &coloured backgrounds"));
 	menu_view->addAction(action_view_coloured_bg_);
-
-	// TODO: Refactor this into a "new view" method
-	if (view)
-		view->enable_coloured_bg(action_view_coloured_bg_->isChecked());
 
 	menu_view->addSeparator();
 
@@ -537,10 +554,6 @@ void MainWindow::setup_ui()
 		QString::fromUtf8("actionViewShowCursors"));
 	action_view_show_cursors_->setText(tr("Show &Cursors"));
 	menu_view->addAction(action_view_show_cursors_);
-
-	// TODO: Refactor this into a "new view" method
-	if (view)
-		action_view_show_cursors_->setChecked(view->cursors_shown());
 
 	// Decoders Menu
 #ifdef ENABLE_DECODE
@@ -579,6 +592,9 @@ void MainWindow::setup_ui()
 	// Setup the toolbar
 	main_bar_ = new toolbars::MainBar(session_, *this);
 
+	// Set up the initial view
+	add_view(tr("Untitled"), pv::view::TraceView, session_);
+
 	// Populate the device list and select the initially selected device
 	update_device_list();
 
@@ -592,16 +608,6 @@ void MainWindow::setup_ui()
 		SLOT(capture_state_changed(int)));
 	connect(&session_, SIGNAL(device_selected()), this,
 		SLOT(device_selected()));
-
-	// TODO: Refactor this into a "new view" method
-	if (view) {
-		connect(&session_, SIGNAL(trigger_event(util::Timestamp)), view.get(),
-			SLOT(trigger_event(util::Timestamp)));
-		connect(view.get(), SIGNAL(sticky_scrolling_changed(bool)), this,
-			SLOT(sticky_scrolling_changed(bool)));
-		connect(view.get(), SIGNAL(always_zoom_to_fit_changed(bool)), this,
-			SLOT(always_zoom_to_fit_changed(bool)));
-	}
 }
 
 void MainWindow::select_init_device()

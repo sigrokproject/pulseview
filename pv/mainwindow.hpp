@@ -30,6 +30,7 @@
 #include <QMainWindow>
 
 #include "session.hpp"
+#include "view/viewwidget.hpp"
 
 struct srd_decoder;
 
@@ -101,6 +102,9 @@ public:
 #endif
 
 	std::shared_ptr<pv::view::View> get_active_view() const;
+
+	std::shared_ptr<pv::view::View> add_view(const QString &title,
+		view::ViewType type, Session &session);
 
 	void run_stop();
 
