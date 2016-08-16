@@ -424,7 +424,7 @@ void MainWindow::setup_ui()
 
 	// Set the window icon
 	QIcon icon;
-	icon.addFile(QString(":/icons/sigrok-logo-notext.svg"));
+	icon.addFile(QString(":/icons/sigrok-logo-notext.png"));
 	setWindowIcon(icon);
 
 	// Setup the menu bar
