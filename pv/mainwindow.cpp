@@ -243,6 +243,9 @@ shared_ptr<pv::view::View> MainWindow::add_view(const QString &title,
 		addDockWidget(Qt::TopDockWidgetArea, dock.get());
 		view_docks_[dock] = v;
 
+		dock->setFeatures(QDockWidget::DockWidgetMovable |
+			QDockWidget::DockWidgetFloatable);
+
 		if (type == view::TraceView) {
 			connect(&session, SIGNAL(trigger_event(util::Timestamp)), v.get(),
 				SLOT(trigger_event(util::Timestamp)));
