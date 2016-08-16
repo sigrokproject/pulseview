@@ -273,13 +273,13 @@ private:
 
 	TraceTreeItemOwner* find_prevalent_trace_group(
 		const std::shared_ptr<sigrok::ChannelGroup> &group,
-		const std::unordered_map<std::shared_ptr<sigrok::Channel>,
+		const std::unordered_map<std::shared_ptr<data::SignalBase>,
 			std::shared_ptr<Signal> > &signal_map);
 
 	static std::vector< std::shared_ptr<Trace> >
 		extract_new_traces_for_channels(
 		const std::vector< std::shared_ptr<sigrok::Channel> > &channels,
-		const std::unordered_map<std::shared_ptr<sigrok::Channel>,
+		const std::unordered_map<std::shared_ptr<data::SignalBase>,
 			std::shared_ptr<Signal> > &signal_map,
 		std::set< std::shared_ptr<Trace> > &add_list);
 

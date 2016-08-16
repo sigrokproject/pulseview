@@ -739,7 +739,7 @@ void View::update_layout()
 
 TraceTreeItemOwner* View::find_prevalent_trace_group(
 	const shared_ptr<sigrok::ChannelGroup> &group,
-	const unordered_map<shared_ptr<sigrok::Channel>, shared_ptr<Signal> >
+	const unordered_map<shared_ptr<data::SignalBase>, shared_ptr<Signal> >
 		&signal_map)
 {
 	assert(group);
@@ -749,13 +749,13 @@ TraceTreeItemOwner* View::find_prevalent_trace_group(
 
 	// Make a set and a list of all the owners
 	for (const auto &channel : group->channels()) {
-		const auto iter = signal_map.find(channel);
-		if (iter == signal_map.end())
-			continue;
-
-		TraceTreeItemOwner *const o = (*iter).second->owner();
-		owner_list.push_back(o);
-		owners.insert(o);
+		for (auto entry : signal_map) {
+			if (entry.first->channel() == channel) {
+				TraceTreeItemOwner *const o = (entry.second)->owner();
+				owner_list.push_back(o);
+				owners.insert(o);
+			}
+		}
 	}
 
 	// Iterate through the list of owners, and find the most prevalent
@@ -776,24 +776,24 @@ TraceTreeItemOwner* View::find_prevalent_trace_group(
 
 vector< shared_ptr<Trace> > View::extract_new_traces_for_channels(
 	const vector< shared_ptr<sigrok::Channel> > &channels,
-	const unordered_map<shared_ptr<sigrok::Channel>, shared_ptr<Signal> >
+	const unordered_map<shared_ptr<data::SignalBase>, shared_ptr<Signal> >
 		&signal_map,
 	set< shared_ptr<Trace> > &add_list)
 {
 	vector< shared_ptr<Trace> > filtered_traces;
 
 	for (const auto &channel : channels) {
-		const auto map_iter = signal_map.find(channel);
-		if (map_iter == signal_map.end())
-			continue;
+		for (auto entry : signal_map) {
+			if (entry.first->channel() == channel) {
+				shared_ptr<Trace> trace = entry.second;
+				const auto list_iter = add_list.find(trace);
+				if (list_iter == add_list.end())
+					continue;
 
-		shared_ptr<Trace> trace = (*map_iter).second;
-		const auto list_iter = add_list.find(trace);
-		if (list_iter == add_list.end())
-			continue;
-
-		filtered_traces.push_back(trace);
-		add_list.erase(list_iter);
+				filtered_traces.push_back(trace);
+				add_list.erase(list_iter);
+			}
+		}
 	}
 
 	return filtered_traces;
@@ -973,7 +973,7 @@ void View::signals_changed()
 		inserter(remove_traces, remove_traces.begin()));
 
 	// Make a look-up table of sigrok Channels to pulseview Signals
-	unordered_map<shared_ptr<sigrok::Channel>, shared_ptr<Signal> >
+	unordered_map<shared_ptr<data::SignalBase>, shared_ptr<Signal> >
 		signal_map;
 	for (const shared_ptr<Signal> &sig : sigs)
 		signal_map[sig->channel()] = sig;

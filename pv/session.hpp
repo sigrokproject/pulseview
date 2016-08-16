@@ -64,6 +64,7 @@ class Analog;
 class AnalogSegment;
 class Logic;
 class LogicSegment;
+class SignalBase;
 class SignalData;
 }
 
@@ -133,7 +134,7 @@ private:
 
 	void update_signals();
 
-	std::shared_ptr<view::Signal> signal_from_channel(
+	std::shared_ptr<data::SignalBase> signal_from_channel(
 		std::shared_ptr<sigrok::Channel> channel) const;
 
 private:
@@ -165,6 +166,8 @@ private:
 
 	mutable boost::shared_mutex signals_mutex_;
 	std::unordered_set< std::shared_ptr<view::Signal> > signals_;
+
+	std::set< std::shared_ptr<data::SignalBase> > signalbases_;
 	std::set< std::shared_ptr<data::SignalData> > all_signal_data_;
 
 	mutable std::recursive_mutex data_mutex_;

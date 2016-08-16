@@ -39,6 +39,7 @@
 #include "data/decoderstack.hpp"
 #include "data/logic.hpp"
 #include "data/logicsegment.hpp"
+#include "data/signalbase.hpp"
 #include "data/decode/decoder.hpp"
 
 #include "devices/hardwaredevice.hpp"
@@ -298,7 +299,7 @@ bool Session::add_decoder(srd_decoder *const dec)
 					dynamic_pointer_cast<view::LogicSignal>(s);
 				if (l && QString::fromUtf8(pdch->name).
 					toLower().contains(
-					l->name().toLower()))
+					s->channel()->name().toLower()))
 					channels[pdch] = l;
 			}
 
@@ -308,8 +309,11 @@ bool Session::add_decoder(srd_decoder *const dec)
 		decoder_stack->stack().front()->set_channels(channels);
 
 		// Create the decode signal
+		shared_ptr<data::SignalBase> signalbase =
+			shared_ptr<data::SignalBase>(new data::SignalBase(nullptr));
+
 		shared_ptr<view::DecodeTrace> d(
-			new view::DecodeTrace(*this, decoder_stack,
+			new view::DecodeTrace(*this, signalbase, decoder_stack,
 				decode_traces_.size()));
 		decode_traces_.push_back(d);
 	} catch (std::runtime_error e) {
@@ -401,13 +405,14 @@ void Session::update_signals()
 		signals_.clear();
 
 		for (auto channel : sr_dev->channels()) {
+			shared_ptr<data::SignalBase> signalbase;
 			shared_ptr<view::Signal> signal;
 
 			// Find the channel in the old signals
 			const auto iter = std::find_if(
 				prev_sigs.cbegin(), prev_sigs.cend(),
 				[&](const shared_ptr<view::Signal> &s) {
-					return s->channel() == channel;
+					return s->channel()->channel() == channel;
 				});
 			if (iter != prev_sigs.end()) {
 				// Copy the signal from the old set to the new
@@ -419,13 +424,16 @@ void Session::update_signals()
 						logic_data_);
 			} else {
 				// Create a new signal
+				signalbase = shared_ptr<data::SignalBase>(
+					new data::SignalBase(channel));
+
 				switch(channel->type()->id()) {
 				case SR_CHANNEL_LOGIC:
 					signal = shared_ptr<view::Signal>(
 						new view::LogicSignal(*this,
-							device_, channel,
-							logic_data_));
+							device_, signalbase, logic_data_));
 					all_signal_data_.insert(logic_data_);
+					signalbases_.insert(signalbase);
 					break;
 
 				case SR_CHANNEL_ANALOG:
@@ -434,8 +442,9 @@ void Session::update_signals()
 						new data::Analog());
 					signal = shared_ptr<view::Signal>(
 						new view::AnalogSignal(
-							*this, channel, data));
+							*this, signalbase, data));
 					all_signal_data_.insert(data);
+					signalbases_.insert(signalbase);
 					break;
 				}
 
@@ -453,16 +462,15 @@ void Session::update_signals()
 	signals_changed();
 }
 
-shared_ptr<view::Signal> Session::signal_from_channel(
-	shared_ptr<Channel> channel) const
+shared_ptr<data::SignalBase> Session::signal_from_channel(
+	shared_ptr<sigrok::Channel> channel) const
 {
-	lock_guard<boost::shared_mutex> lock(signals_mutex_);
-	for (shared_ptr<view::Signal> sig : signals_) {
+	for (shared_ptr<data::SignalBase> sig : signalbases_) {
 		assert(sig);
 		if (sig->channel() == channel)
 			return sig;
 	}
-	return shared_ptr<view::Signal>();
+	return shared_ptr<data::SignalBase>();
 }
 
 void Session::sample_thread_proc(function<void (const QString)> error_handler)

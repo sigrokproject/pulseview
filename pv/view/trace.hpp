@@ -31,6 +31,8 @@
 
 #include "tracetreeitem.hpp"
 
+#include "pv/data/signalbase.hpp"
+
 class QFormLayout;
 
 namespace pv {
@@ -49,33 +51,22 @@ private:
 	static const QPen AxisPen;
 	static const int LabelHitPadding;
 
-	static const int ColourBGAlpha;
 	static const QColor BrightGrayBGColour;
 	static const QColor DarkGrayBGColour;
 
 protected:
-	Trace(QString name);
+	Trace(std::shared_ptr<data::SignalBase> channel);
 
 public:
-	/**
-	 * Gets the name of this signal.
-	 */
-	QString name() const;
-
 	/**
 	 * Sets the name of the signal.
 	 */
 	virtual void set_name(QString name);
 
 	/**
-	 * Get the colour of the signal.
-	 */
-	QColor colour() const;
-
-	/**
 	 * Set the colour of the signal.
 	 */
-	void set_colour(QColor colour);
+	virtual void set_colour(QColor colour);
 
 	/**
 	 * Enables or disables the coloured background for this trace.
@@ -123,16 +114,20 @@ protected:
 
 	virtual void populate_popup_form(QWidget *parent, QFormLayout *form);
 
-private Q_SLOTS:
-	void on_text_changed(const QString &text);
+protected Q_SLOTS:
+	virtual void on_name_changed(const QString &text);
 
-	void on_colour_changed(const QColor &colour);
+	virtual void on_colour_changed(const QColor &colour);
 
 	void on_popup_closed();
 
+private Q_SLOTS:
+	void on_nameedit_changed(const QString &name);
+
+	void on_colouredit_changed(const QColor &colour);
+
 protected:
-	QString name_;
-	QColor colour_, bgcolour_;
+	std::shared_ptr<data::SignalBase> channel_;
 	bool coloured_bg_, coloured_bg_state_;
 
 private:

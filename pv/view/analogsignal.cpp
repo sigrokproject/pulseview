@@ -36,6 +36,7 @@
 #include "analogsignal.hpp"
 #include "pv/data/analog.hpp"
 #include "pv/data/analogsegment.hpp"
+#include "pv/data/signalbase.hpp"
 #include "pv/view/view.hpp"
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
@@ -45,8 +46,6 @@ using std::make_pair;
 using std::min;
 using std::shared_ptr;
 using std::deque;
-
-using sigrok::Channel;
 
 namespace pv {
 namespace view {
@@ -72,7 +71,7 @@ const int AnalogSignal::InfoTextMarginBottom = 5;
 
 AnalogSignal::AnalogSignal(
 	pv::Session &session,
-	shared_ptr<Channel> channel,
+	shared_ptr<data::SignalBase> channel,
 	shared_ptr<data::Analog> data) :
 	Signal(session, channel),
 	data_(data),
@@ -82,7 +81,7 @@ AnalogSignal::AnalogSignal(
 	vdivs_(1),
 	resolution_(0)
 {
-	set_colour(SignalColours[channel_->index() % countof(SignalColours)]);
+	channel_->set_colour(SignalColours[channel_->index() % countof(SignalColours)]);
 	update_scale();
 }
 
@@ -187,7 +186,7 @@ void AnalogSignal::paint_fore(QPainter &p, const ViewItemPaintParams &pp)
 	// Show the info section on the right side of the trace
 	const QString infotext = QString("%1 V/div").arg(resolution_);
 
-	p.setPen(colour_);
+	p.setPen(channel_->colour());
 	p.setFont(QApplication::font());
 
 	const QRectF bounding_rect = QRectF(pp.left(),
@@ -236,7 +235,7 @@ void AnalogSignal::paint_trace(QPainter &p,
 	const float *const samples = segment->get_samples(start, end);
 	assert(samples);
 
-	p.setPen(colour_);
+	p.setPen(channel_->colour());
 
 	QPointF *points = new QPointF[sample_count];
 	QPointF *point = points;
@@ -268,7 +267,7 @@ void AnalogSignal::paint_envelope(QPainter &p,
 		return;
 
 	p.setPen(QPen(Qt::NoPen));
-	p.setBrush(colour_);
+	p.setBrush(channel_->colour());
 
 	QRectF *const rects = new QRectF[e.length];
 	QRectF *rect = rects;

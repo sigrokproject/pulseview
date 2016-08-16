@@ -32,15 +32,12 @@
 #include "trace.hpp"
 #include "viewitemowner.hpp"
 
-namespace sigrok {
-	class Channel;
-}
-
 namespace pv {
 
 class Session;
 
 namespace data {
+class SignalBase;
 class SignalData;
 }
 
@@ -52,13 +49,13 @@ class Signal : public Trace, public ViewItemOwner
 
 protected:
 	Signal(pv::Session &session,
-		std::shared_ptr<sigrok::Channel> channel);
+		std::shared_ptr<data::SignalBase> channel);
 
 public:
 	/**
 	 * Sets the name of the signal.
 	 */
-	void set_name(QString name);
+	virtual void set_name(QString name);
 
 	virtual std::shared_ptr<pv::data::SignalData> data() const = 0;
 
@@ -69,7 +66,7 @@ public:
 
 	void enable(bool enable = true);
 
-	std::shared_ptr<sigrok::Channel> channel() const;
+	std::shared_ptr<data::SignalBase> channel() const;
 
 	/**
 	 * Returns a list of row items owned by this object.
@@ -100,12 +97,13 @@ public:
 	 */
 	virtual void scale_handle_released() {};
 
-private Q_SLOTS:
+protected Q_SLOTS:
+	virtual void on_name_changed(const QString &text);
+
 	void on_disable();
 
 protected:
 	pv::Session &session_;
-	std::shared_ptr<sigrok::Channel> channel_;
 
 	const std::shared_ptr<SignalScaleHandle> scale_handle_;
 	const item_list items_;

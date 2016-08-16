@@ -216,6 +216,7 @@ set(pulseview_SOURCES
 	pv/data/analogsegment.cpp
 	pv/data/logic.cpp
 	pv/data/logicsegment.cpp
+	pv/data/signalbase.cpp
 	pv/data/signaldata.cpp
 	pv/data/segment.cpp
 	pv/devices/device.cpp
@@ -280,6 +281,7 @@ set(pulseview_HEADERS
 	pv/session.hpp
 	pv/storesession.hpp
 	pv/binding/device.hpp
+	pv/data/signalbase.hpp
 	pv/dialogs/about.hpp
 	pv/dialogs/connect.hpp
 	pv/dialogs/inputoutputoptions.hpp

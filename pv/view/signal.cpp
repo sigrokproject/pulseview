@@ -31,13 +31,13 @@
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
 
+#include "pv/data/signalbase.hpp"
+
 #include "signal.hpp"
 #include "view.hpp"
 
 using std::shared_ptr;
 using std::make_shared;
-
-using sigrok::Channel;
 
 namespace pv {
 namespace view {
@@ -60,10 +60,9 @@ const char *const ChannelNames[] = {
 };
 
 Signal::Signal(pv::Session &session,
-	std::shared_ptr<sigrok::Channel> channel) :
-	Trace(QString::fromUtf8(channel->name().c_str())),
+	std::shared_ptr<data::SignalBase> channel) :
+	Trace(channel),
 	session_(session),
-	channel_(channel),
 	scale_handle_(make_shared<SignalScaleHandle>(*this)),
 	items_({scale_handle_}),
 	name_widget_(nullptr)
@@ -77,10 +76,6 @@ void Signal::set_name(QString name)
 
 	if (name != name_widget_->currentText())
 		name_widget_->setEditText(name);
-
-	// Store the channel name in sigrok::Channel so that it
-	// will end up in the .sr file upon save.
-	channel_->set_name(name.toUtf8().constData());
 }
 
 bool Signal::enabled() const
@@ -96,7 +91,7 @@ void Signal::enable(bool enable)
 		owner_->extents_changed(true, true);
 }
 
-shared_ptr<Channel> Signal::channel() const
+shared_ptr<data::SignalBase> Signal::channel() const
 {
 	return channel_;
 }
@@ -121,17 +116,17 @@ void Signal::populate_popup_form(QWidget *parent, QFormLayout *form)
 	for (unsigned int i = 0; i < countof(ChannelNames); i++)
 		name_widget_->insertItem(i, ChannelNames[i]);
 
-	const int index = name_widget_->findText(name_, Qt::MatchExactly);
+	const int index = name_widget_->findText(channel_->name(), Qt::MatchExactly);
 
 	if (index == -1) {
-		name_widget_->insertItem(0, name_);
+		name_widget_->insertItem(0, channel_->name());
 		name_widget_->setCurrentIndex(0);
 	} else {
 		name_widget_->setCurrentIndex(index);
 	}
 
 	connect(name_widget_, SIGNAL(editTextChanged(const QString&)),
-		this, SLOT(on_text_changed(const QString&)));
+		this, SLOT(on_nameedit_changed(const QString&)));
 
 	form->addRow(tr("Name"), name_widget_);
 
@@ -155,6 +150,14 @@ QMenu* Signal::create_context_menu(QWidget *parent)
 void Signal::delete_pressed()
 {
 	on_disable();
+}
+
+void Signal::on_name_changed(const QString &text)
+{
+	if (text != name_widget_->currentText())
+		name_widget_->setEditText(text);
+
+	Trace::on_name_changed(text);
 }
 
 void Signal::on_disable()

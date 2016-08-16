@@ -36,6 +36,7 @@
 #include "channels.hpp"
 
 #include <pv/binding/device.hpp>
+#include <pv/data/signalbase.hpp>
 #include <pv/devices/device.hpp>
 #include <pv/session.hpp>
 #include <pv/view/signal.hpp>
@@ -54,11 +55,11 @@ using std::shared_ptr;
 using std::unordered_set;
 using std::vector;
 
+using pv::data::SignalBase;
+
 using sigrok::Channel;
 using sigrok::ChannelGroup;
 using sigrok::Device;
-
-using pv::view::Signal;
 
 namespace pv {
 namespace popups {
@@ -78,11 +79,13 @@ Channels::Channels(Session &session, QWidget *parent) :
 	assert(device);
 
 	// Collect a set of signals
-	map<shared_ptr<Channel>, shared_ptr<Signal> > signal_map;
+	map<shared_ptr<Channel>, shared_ptr<SignalBase> > signal_map;
 
-	const unordered_set< shared_ptr<Signal> > sigs(session_.signals());
+	unordered_set< shared_ptr<SignalBase> > sigs;
+	for (const shared_ptr<view::Signal> s : session_.signals())
+		sigs.insert(s->channel());
 
-	for (const shared_ptr<Signal> &sig : sigs)
+	for (const shared_ptr<SignalBase> &sig : sigs)
 		signal_map[sig->channel()] = sig;
 
 	// Populate channel groups
@@ -90,7 +93,7 @@ Channels::Channels(Session &session, QWidget *parent) :
 		shared_ptr<ChannelGroup> group = entry.second;
 		// Make a set of signals, and removed this signals from the
 		// signal map.
-		vector< shared_ptr<Signal> > group_sigs;
+		vector< shared_ptr<SignalBase> > group_sigs;
 		for (auto channel : group->channels()) {
 			const auto iter = signal_map.find(channel);
 
@@ -105,9 +108,9 @@ Channels::Channels(Session &session, QWidget *parent) :
 	}
 
 	// Make a vector of the remaining channels
-	vector< shared_ptr<Signal> > global_sigs;
+	vector< shared_ptr<SignalBase> > global_sigs;
 	for (auto channel : device->channels()) {
-		const map<shared_ptr<Channel>, shared_ptr<Signal> >::
+		const map<shared_ptr<Channel>, shared_ptr<SignalBase> >::
 			const_iterator iter = signal_map.find(channel);
 		if (iter != signal_map.end())
 			global_sigs.push_back((*iter).second);
@@ -140,13 +143,13 @@ void Channels::set_all_channels(bool set)
 {
 	updating_channels_ = true;
 
-	for (map<QCheckBox*, shared_ptr<Signal> >::const_iterator i =
+	for (map<QCheckBox*, shared_ptr<SignalBase> >::const_iterator i =
 			check_box_signal_map_.begin();
 			i != check_box_signal_map_.end(); i++) {
-		const shared_ptr<Signal> sig = (*i).second;
+		const shared_ptr<SignalBase> sig = (*i).second;
 		assert(sig);
 
-		sig->enable(set);
+		sig->set_enabled(set);
 		(*i).first->setChecked(set);
 	}
 
@@ -154,7 +157,7 @@ void Channels::set_all_channels(bool set)
 }
 
 void Channels::populate_group(shared_ptr<ChannelGroup> group,
-	const vector< shared_ptr<pv::view::Signal> > sigs)
+	const vector< shared_ptr<SignalBase> > sigs)
 {
 	using pv::binding::Device;
 
@@ -185,12 +188,12 @@ void Channels::populate_group(shared_ptr<ChannelGroup> group,
 }
 
 QGridLayout* Channels::create_channel_group_grid(
-	const vector< shared_ptr<pv::view::Signal> > sigs)
+	const vector< shared_ptr<SignalBase> > sigs)
 {
 	int row = 0, col = 0;
 	QGridLayout *const grid = new QGridLayout();
 
-	for (const shared_ptr<pv::view::Signal>& sig : sigs) {
+	for (const shared_ptr<SignalBase>& sig : sigs) {
 		assert(sig);
 
 		QCheckBox *const checkbox = new QCheckBox(sig->name());
@@ -215,10 +218,10 @@ void Channels::showEvent(QShowEvent *event)
 
 	updating_channels_ = true;
 
-	for (map<QCheckBox*, shared_ptr<Signal> >::const_iterator i =
+	for (map<QCheckBox*, shared_ptr<SignalBase> >::const_iterator i =
 			check_box_signal_map_.begin();
 			i != check_box_signal_map_.end(); i++) {
-		const shared_ptr<Signal> sig = (*i).second;
+		const shared_ptr<SignalBase> sig = (*i).second;
 		assert(sig);
 
 		(*i).first->setChecked(sig->enabled());
@@ -236,14 +239,14 @@ void Channels::on_channel_checked(QWidget *widget)
 	assert(check_box);
 
 	// Look up the signal of this check-box
-	map< QCheckBox*, shared_ptr<Signal> >::const_iterator iter =
+	map< QCheckBox*, shared_ptr<SignalBase> >::const_iterator iter =
 		check_box_signal_map_.find((QCheckBox*)check_box);
 	assert(iter != check_box_signal_map_.end());
 
-	const shared_ptr<pv::view::Signal> s = (*iter).second;
+	const shared_ptr<SignalBase> s = (*iter).second;
 	assert(s);
 
-	s->enable(check_box->isChecked());
+	s->set_enabled(check_box->isChecked());
 }
 
 void Channels::enable_all_channels()

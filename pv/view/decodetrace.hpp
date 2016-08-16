@@ -31,6 +31,7 @@
 #include <QSignalMapper>
 
 #include <pv/binding/decoder.hpp>
+#include <pv/data/signalbase.hpp>
 #include <pv/data/decode/row.hpp>
 
 struct srd_channel;
@@ -84,7 +85,7 @@ private:
 	static const QColor OutlineColours[16];
 
 public:
-	DecodeTrace(pv::Session &session,
+	DecodeTrace(pv::Session &session, std::shared_ptr<data::SignalBase> signalbase,
 		std::shared_ptr<pv::data::DecoderStack> decoder_stack,
 		int index);
 
@@ -196,6 +197,7 @@ private Q_SLOTS:
 
 private:
 	pv::Session &session_;
+	std::shared_ptr<data::SignalBase> signalbase_;
 	std::shared_ptr<pv::data::DecoderStack> decoder_stack_;
 
 	uint64_t decode_start_, decode_end_;

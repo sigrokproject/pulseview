@@ -32,6 +32,7 @@ namespace pv {
 namespace data {
 class Analog;
 class AnalogSegment;
+class SignalBase;
 }
 
 namespace view {
@@ -52,7 +53,7 @@ private:
 
 public:
 	AnalogSignal(pv::Session &session,
-		std::shared_ptr<sigrok::Channel> channel,
+		std::shared_ptr<data::SignalBase> channel,
 		std::shared_ptr<pv::data::Analog> data);
 
 	virtual ~AnalogSignal() = default;

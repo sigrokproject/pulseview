@@ -66,7 +66,7 @@ private:
 public:
 	LogicSignal(pv::Session &session,
 		std::shared_ptr<devices::Device> device,
-		std::shared_ptr<sigrok::Channel> channel,
+		std::shared_ptr<data::SignalBase> channel,
 		std::shared_ptr<pv::data::Logic> data);
 
 	virtual ~LogicSignal() = default;

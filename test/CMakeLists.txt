@@ -30,6 +30,7 @@ set(pulseview_TEST_SOURCES
 	${PROJECT_SOURCE_DIR}/pv/data/logic.cpp
 	${PROJECT_SOURCE_DIR}/pv/data/logicsegment.cpp
 	${PROJECT_SOURCE_DIR}/pv/data/segment.cpp
+	${PROJECT_SOURCE_DIR}/pv/data/signalbase.cpp
 	${PROJECT_SOURCE_DIR}/pv/data/signaldata.cpp
 	${PROJECT_SOURCE_DIR}/pv/devices/device.cpp
 	${PROJECT_SOURCE_DIR}/pv/devices/file.cpp
@@ -87,6 +88,7 @@ set(pulseview_TEST_HEADERS
 	${PROJECT_SOURCE_DIR}/pv/session.hpp
 	${PROJECT_SOURCE_DIR}/pv/storesession.hpp
 	${PROJECT_SOURCE_DIR}/pv/binding/device.hpp
+	${PROJECT_SOURCE_DIR}/pv/data/signalbase.hpp
 	${PROJECT_SOURCE_DIR}/pv/devices/device.hpp
 	${PROJECT_SOURCE_DIR}/pv/popups/channels.hpp
 	${PROJECT_SOURCE_DIR}/pv/popups/deviceoptions.hpp

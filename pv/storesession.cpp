@@ -36,6 +36,7 @@
 #include <pv/data/analogsegment.hpp>
 #include <pv/data/logic.hpp>
 #include <pv/data/logicsegment.hpp>
+#include <pv/data/signalbase.hpp>
 #include <pv/devices/device.hpp>
 #include <pv/view/signal.hpp>
 
@@ -109,7 +110,7 @@ bool StoreSession::start()
 
 	shared_ptr<data::Segment> any_segment;
 	shared_ptr<data::LogicSegment> lsegment;
-	vector< shared_ptr<sigrok::Channel> > achannel_list;
+	vector< shared_ptr<data::SignalBase> > achannel_list;
 	vector< shared_ptr<data::AnalogSegment> > asegment_list;
 
 	for (shared_ptr<view::Signal> signal : sigs) {
@@ -214,7 +215,7 @@ void StoreSession::cancel()
 	interrupt_ = true;
 }
 
-void StoreSession::store_proc(vector< shared_ptr<sigrok::Channel> > achannel_list,
+void StoreSession::store_proc(vector< shared_ptr<data::SignalBase> > achannel_list,
 	vector< shared_ptr<data::AnalogSegment> > asegment_list,
 	shared_ptr<data::LogicSegment> lsegment)
 {
@@ -259,7 +260,7 @@ void StoreSession::store_proc(vector< shared_ptr<sigrok::Channel> > achannel_lis
 			const auto context = session_.device_manager().context();
 
 			for (unsigned int i = 0; i < achannel_list.size(); i++) {
-				shared_ptr<sigrok::Channel> achannel = achannel_list.at(i);
+				shared_ptr<sigrok::Channel> achannel = (achannel_list.at(i))->channel();
 				shared_ptr<data::AnalogSegment> asegment = asegment_list.at(i);
 
 				const float *adata =

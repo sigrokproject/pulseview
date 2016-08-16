@@ -129,10 +129,11 @@ const QColor DecodeTrace::OutlineColours[16] = {
 };
 
 DecodeTrace::DecodeTrace(pv::Session &session,
+	shared_ptr<data::SignalBase> signalbase,
 	std::shared_ptr<pv::data::DecoderStack> decoder_stack, int index) :
-	Trace(QString::fromUtf8(
-		decoder_stack->stack().front()->decoder()->name)),
+	Trace(signalbase),
 	session_(session),
+	signalbase_(signalbase),
 	decoder_stack_(decoder_stack),
 	row_height_(0),
 	max_visible_rows_(0),
@@ -145,7 +146,8 @@ DecodeTrace::DecodeTrace(pv::Session &session,
 	QFontMetrics m(QApplication::font());
 	min_useful_label_width_ = m.width("XX"); // e.g. two hex characters
 
-	set_colour(DecodeColours[index % countof(DecodeColours)]);
+	signalbase_->set_name(QString::fromUtf8(decoder_stack->stack().front()->decoder()->name));
+	signalbase_->set_colour(DecodeColours[index % countof(DecodeColours)]);
 
 	connect(decoder_stack_.get(), SIGNAL(new_decode_data()),
 		this, SLOT(on_new_decode_data()));
@@ -849,8 +851,8 @@ QComboBox* DecodeTrace::create_channel_selector(
 	vector< shared_ptr<Signal> > sig_list(sigs.begin(), sigs.end());
 	std::sort(sig_list.begin(), sig_list.end(),
 		[](const shared_ptr<Signal> &a, const shared_ptr<Signal> b) {
-			return strnatcasecmp(a->name().toStdString(),
-				b->name().toStdString()) < 0; });
+			return strnatcasecmp(a->channel()->name().toStdString(),
+				b->channel()->name().toStdString()) < 0; });
 
 	assert(decoder_stack_);
 	const auto channel_iter = dec->channels().find(pdch);
@@ -865,7 +867,7 @@ QComboBox* DecodeTrace::create_channel_selector(
 	for (const shared_ptr<view::Signal> &s : sig_list) {
 		assert(s);
 		if (dynamic_pointer_cast<LogicSignal>(s) && s->enabled()) {
-			selector->addItem(s->name(),
+			selector->addItem(s->channel()->name(),
 				qVariantFromValue((void*)s.get()));
 
 			if (channel_iter != dec->channels().end() &&

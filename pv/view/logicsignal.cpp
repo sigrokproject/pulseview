@@ -37,6 +37,7 @@
 #include <pv/devices/device.hpp>
 #include <pv/data/logic.hpp>
 #include <pv/data/logicsegment.hpp>
+#include <pv/data/signalbase.hpp>
 #include <pv/view/view.hpp>
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
@@ -49,7 +50,6 @@ using std::pair;
 using std::shared_ptr;
 using std::vector;
 
-using sigrok::Channel;
 using sigrok::ConfigKey;
 using sigrok::Capability;
 using sigrok::Error;
@@ -99,7 +99,7 @@ QCache<QString, const QPixmap> LogicSignal::pixmap_cache_;
 LogicSignal::LogicSignal(
 	pv::Session &session,
 	shared_ptr<devices::Device> device,
-	shared_ptr<Channel> channel,
+	shared_ptr<data::SignalBase> channel,
 	shared_ptr<data::Logic> data) :
 	Signal(session, channel),
 	signal_height_(QFontMetrics(QApplication::font()).height() * 2),
@@ -114,7 +114,7 @@ LogicSignal::LogicSignal(
 {
 	shared_ptr<Trigger> trigger;
 
-	set_colour(SignalColours[channel->index() % countof(SignalColours)]);
+	channel_->set_colour(SignalColours[channel->index() % countof(SignalColours)]);
 
 	/* Populate this channel's trigger setting with whatever we
 	 * find in the current session trigger, if anything. */
@@ -122,7 +122,7 @@ LogicSignal::LogicSignal(
 	if ((trigger = session_.session()->trigger()))
 		for (auto stage : trigger->stages())
 			for (auto match : stage->matches())
-				if (match->channel() == channel_)
+				if (match->channel() == channel_->channel())
 					trigger_match_ = match->type();
 }
 
@@ -430,12 +430,12 @@ void LogicSignal::modify_trigger()
 			const auto &matches = stage->matches();
 			if (std::none_of(matches.begin(), matches.end(),
 			    [&](shared_ptr<TriggerMatch> match) {
-					return match->channel() != channel_; }))
+					return match->channel() != channel_->channel(); }))
 				continue;
 
 			auto new_stage = new_trigger->add_stage();
 			for (auto match : stage->matches()) {
-				if (match->channel() == channel_)
+				if (match->channel() == channel_->channel())
 					continue;
 				new_stage->add_match(match->channel(), match->type());
 			}
@@ -449,7 +449,8 @@ void LogicSignal::modify_trigger()
 		if (new_trigger->stages().empty())
 			new_trigger->add_stage();
 
-		new_trigger->stages().back()->add_match(channel_, trigger_match_);
+		new_trigger->stages().back()->add_match(channel_->channel(),
+			trigger_match_);
 	}
 
 	session_.session()->set_trigger(
