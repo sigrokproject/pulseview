@@ -807,6 +807,11 @@ void MainWindow::keyReleaseEvent(QKeyEvent *event)
 	QMainWindow::keyReleaseEvent(event);
 }
 
+QMenu* MainWindow::createPopupMenu()
+{
+	return nullptr;
+}
+
 void MainWindow::show_session_error(
 	const QString text, const QString info_text)
 {

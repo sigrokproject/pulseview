@@ -148,6 +148,8 @@ private:
 
 	void keyReleaseEvent(QKeyEvent *event);
 
+	virtual QMenu* createPopupMenu();
+
 private Q_SLOTS:
 	void show_session_error(
 		const QString text, const QString info_text);
