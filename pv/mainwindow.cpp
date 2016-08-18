@@ -812,6 +812,17 @@ QMenu* MainWindow::createPopupMenu()
 	return nullptr;
 }
 
+bool MainWindow::restoreState(const QByteArray &state, int version)
+{
+	(void)state;
+	(void)version;
+
+	// Do nothing. We don't want Qt to handle this, or else it
+	// will try to restore all the dock widgets and create havoc.
+
+	return false;
+}
+
 void MainWindow::show_session_error(
 	const QString text, const QString info_text)
 {

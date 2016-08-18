@@ -150,6 +150,8 @@ private:
 
 	virtual QMenu* createPopupMenu();
 
+	virtual bool restoreState(const QByteArray &state, int version = 0);
+
 private Q_SLOTS:
 	void show_session_error(
 		const QString text, const QString info_text);
