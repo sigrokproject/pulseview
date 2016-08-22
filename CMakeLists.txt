@@ -266,7 +266,6 @@ set(pulseview_SOURCES
 	pv/widgets/colourpopup.cpp
 	pv/widgets/devicetoolbutton.cpp
 	pv/widgets/exportmenu.cpp
-	pv/widgets/hidingmenubar.cpp
 	pv/widgets/importmenu.cpp
 	pv/widgets/popup.cpp
 	pv/widgets/popuptoolbutton.cpp
@@ -319,7 +318,6 @@ set(pulseview_HEADERS
 	pv/widgets/colourpopup.hpp
 	pv/widgets/devicetoolbutton.hpp
 	pv/widgets/exportmenu.hpp
-	pv/widgets/hidingmenubar.hpp
 	pv/widgets/importmenu.hpp
 	pv/widgets/popup.hpp
 	pv/widgets/popuptoolbutton.hpp

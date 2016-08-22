@@ -64,7 +64,6 @@
 #ifdef ENABLE_DECODE
 #include "widgets/decodermenu.hpp"
 #endif
-#include "widgets/hidingmenubar.hpp"
 
 #include <inttypes.h>
 #include <stdint.h>
@@ -439,36 +438,23 @@ void MainWindow::setup_ui()
 	icon.addFile(QString(":/icons/sigrok-logo-notext.png"));
 	setWindowIcon(icon);
 
-	// Setup the menu bar
-	pv::widgets::HidingMenuBar *const menu_bar =
-		new pv::widgets::HidingMenuBar(this);
-
-	// File Menu
-	QMenu *const menu_file = new QMenu;
-	menu_file->setTitle(tr("&File"));
-
 	action_open_->setText(tr("&Open..."));
 	action_open_->setIcon(QIcon::fromTheme("document-open",
 		QIcon(":/icons/document-open.png")));
 	action_open_->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_O));
 	action_open_->setObjectName(QString::fromUtf8("actionOpen"));
-	menu_file->addAction(action_open_);
 
 	action_save_as_->setText(tr("&Save As..."));
 	action_save_as_->setIcon(QIcon::fromTheme("document-save-as",
 		QIcon(":/icons/document-save-as.png")));
 	action_save_as_->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_S));
 	action_save_as_->setObjectName(QString::fromUtf8("actionSaveAs"));
-	menu_file->addAction(action_save_as_);
 
 	action_save_selection_as_->setText(tr("Save Selected &Range As..."));
 	action_save_selection_as_->setIcon(QIcon::fromTheme("document-save-as",
 		QIcon(":/icons/document-save-as.png")));
 	action_save_selection_as_->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_R));
 	action_save_selection_as_->setObjectName(QString::fromUtf8("actionSaveSelectionAs"));
-	menu_file->addAction(action_save_selection_as_);
-
-	menu_file->addSeparator();
 
 	widgets::ExportMenu *menu_file_export = new widgets::ExportMenu(this,
 		device_manager_.context());
@@ -476,7 +462,6 @@ void MainWindow::setup_ui()
 	connect(menu_file_export,
 		SIGNAL(format_selected(std::shared_ptr<sigrok::OutputFormat>)),
 		this, SLOT(export_file(std::shared_ptr<sigrok::OutputFormat>)));
-	menu_file->addAction(menu_file_export->menuAction());
 
 	widgets::ImportMenu *menu_file_import = new widgets::ImportMenu(this,
 		device_manager_.context());
@@ -484,26 +469,15 @@ void MainWindow::setup_ui()
 	connect(menu_file_import,
 		SIGNAL(format_selected(std::shared_ptr<sigrok::InputFormat>)),
 		this, SLOT(import_file(std::shared_ptr<sigrok::InputFormat>)));
-	menu_file->addAction(menu_file_import->menuAction());
-
-	menu_file->addSeparator();
 
 	action_connect_->setText(tr("&Connect to Device..."));
 	action_connect_->setObjectName(QString::fromUtf8("actionConnect"));
-	menu_file->addAction(action_connect_);
-
-	menu_file->addSeparator();
 
 	action_quit_->setText(tr("&Quit"));
 	action_quit_->setIcon(QIcon::fromTheme("application-exit",
 		QIcon(":/icons/application-exit.png")));
 	action_quit_->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q));
 	action_quit_->setObjectName(QString::fromUtf8("actionQuit"));
-	menu_file->addAction(action_quit_);
-
-	// View Menu
-	QMenu *menu_view = new QMenu;
-	menu_view->setTitle(tr("&View"));
 
 	action_view_zoom_in_->setText(tr("Zoom &In"));
 	action_view_zoom_in_->setIcon(QIcon::fromTheme("zoom-in",
@@ -512,7 +486,6 @@ void MainWindow::setup_ui()
 	action_view_zoom_in_->setShortcut(QKeySequence::ZoomIn);
 	action_view_zoom_in_->setObjectName(
 		QString::fromUtf8("actionViewZoomIn"));
-	menu_view->addAction(action_view_zoom_in_);
 
 	action_view_zoom_out_->setText(tr("Zoom &Out"));
 	action_view_zoom_out_->setIcon(QIcon::fromTheme("zoom-out",
@@ -520,7 +493,6 @@ void MainWindow::setup_ui()
 	action_view_zoom_out_->setShortcut(QKeySequence::ZoomOut);
 	action_view_zoom_out_->setObjectName(
 		QString::fromUtf8("actionViewZoomOut"));
-	menu_view->addAction(action_view_zoom_out_);
 
 	action_view_zoom_fit_->setCheckable(true);
 	action_view_zoom_fit_->setText(tr("Zoom to &Fit"));
@@ -529,7 +501,6 @@ void MainWindow::setup_ui()
 	action_view_zoom_fit_->setShortcut(QKeySequence(Qt::Key_F));
 	action_view_zoom_fit_->setObjectName(
 		QString::fromUtf8("actionViewZoomFit"));
-	menu_view->addAction(action_view_zoom_fit_);
 
 	action_view_zoom_one_to_one_->setText(tr("Zoom to O&ne-to-One"));
 	action_view_zoom_one_to_one_->setIcon(QIcon::fromTheme("zoom-original",
@@ -537,9 +508,6 @@ void MainWindow::setup_ui()
 	action_view_zoom_one_to_one_->setShortcut(QKeySequence(Qt::Key_O));
 	action_view_zoom_one_to_one_->setObjectName(
 		QString::fromUtf8("actionViewZoomOneToOne"));
-	menu_view->addAction(action_view_zoom_one_to_one_);
-
-	menu_view->addSeparator();
 
 	action_view_sticky_scrolling_->setCheckable(true);
 	action_view_sticky_scrolling_->setChecked(true);
@@ -547,9 +515,6 @@ void MainWindow::setup_ui()
 	action_view_sticky_scrolling_->setObjectName(
 		QString::fromUtf8("actionViewStickyScrolling"));
 	action_view_sticky_scrolling_->setText(tr("&Sticky Scrolling"));
-	menu_view->addAction(action_view_sticky_scrolling_);
-
-	menu_view->addSeparator();
 
 	action_view_coloured_bg_->setCheckable(true);
 	action_view_coloured_bg_->setChecked(true);
@@ -557,9 +522,6 @@ void MainWindow::setup_ui()
 	action_view_coloured_bg_->setObjectName(
 		QString::fromUtf8("actionViewColouredBg"));
 	action_view_coloured_bg_->setText(tr("Use &coloured backgrounds"));
-	menu_view->addAction(action_view_coloured_bg_);
-
-	menu_view->addSeparator();
 
 	action_view_show_cursors_->setCheckable(true);
 	action_view_show_cursors_->setIcon(QIcon::fromTheme("show-cursors",
@@ -568,41 +530,17 @@ void MainWindow::setup_ui()
 	action_view_show_cursors_->setObjectName(
 		QString::fromUtf8("actionViewShowCursors"));
 	action_view_show_cursors_->setText(tr("Show &Cursors"));
-	menu_view->addAction(action_view_show_cursors_);
 
-	// Decoders Menu
 #ifdef ENABLE_DECODE
-	QMenu *const menu_decoders = new QMenu;
-	menu_decoders->setTitle(tr("&Decoders"));
-
 	menu_decoders_add_->setTitle(tr("&Add"));
 	connect(menu_decoders_add_, SIGNAL(decoder_selected(srd_decoder*)),
 		this, SLOT(add_decoder(srd_decoder*)));
-
-	menu_decoders->addMenu(menu_decoders_add_);
 #endif
-
-	// Help Menu
-	QMenu *const menu_help = new QMenu;
-	menu_help->setTitle(tr("&Help"));
 
 	action_about_->setObjectName(QString::fromUtf8("actionAbout"));
 	action_about_->setText(tr("&About..."));
-	menu_help->addAction(action_about_);
 
-	menu_bar->addAction(menu_file->menuAction());
-	menu_bar->addAction(menu_view->menuAction());
-#ifdef ENABLE_DECODE
-	menu_bar->addAction(menu_decoders->menuAction());
-#endif
-	menu_bar->addAction(menu_help->menuAction());
-
-	setMenuBar(menu_bar);
 	QMetaObject::connectSlotsByName(this);
-
-	// Also add all actions to the main window for always-enabled hotkeys
-	for (QAction* action : menu_bar->actions())
-		this->addAction(action);
 
 	// Setup the toolbar
 	main_bar_ = new toolbars::MainBar(session_, *this);
