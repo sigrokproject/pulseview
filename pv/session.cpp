@@ -45,6 +45,8 @@
 #include "devices/hardwaredevice.hpp"
 #include "devices/sessionfile.hpp"
 
+#include "toolbars/mainbar.hpp"
+
 #include "view/analogsignal.hpp"
 #include "view/decodetrace.hpp"
 #include "view/logicsignal.hpp"
@@ -129,6 +131,21 @@ shared_ptr<sigrok::Session> Session::session() const
 shared_ptr<devices::Device> Session::device() const
 {
 	return device_;
+}
+
+std::shared_ptr<pv::view::View> Session::main_view() const
+{
+	return main_view_;
+}
+
+void Session::set_main_bar(std::shared_ptr<pv::toolbars::MainBar> main_bar)
+{
+	main_bar_ = main_bar;
+}
+
+shared_ptr<pv::toolbars::MainBar> Session::main_bar() const
+{
+	return main_bar_;
 }
 
 void Session::set_device(shared_ptr<devices::Device> device)
@@ -248,12 +265,23 @@ void Session::stop_capture()
 
 void Session::register_view(std::shared_ptr<pv::view::View> view)
 {
+	if (views_.empty()) {
+		main_view_ = view;
+	}
+
 	views_.insert(view);
 }
 
 void Session::deregister_view(std::shared_ptr<pv::view::View> view)
 {
 	views_.erase(view);
+
+	if (views_.empty()) {
+		main_view_.reset();
+
+		// Without a view there can be no main bar
+		main_bar_.reset();
+	}
 }
 
 double Session::get_samplerate() const

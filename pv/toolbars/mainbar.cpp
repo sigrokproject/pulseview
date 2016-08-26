@@ -25,29 +25,46 @@
 
 #include <QAction>
 #include <QDebug>
+#include <QFileDialog>
 #include <QHelpEvent>
 #include <QMenu>
+#include <QMessageBox>
+#include <QSettings>
 #include <QToolTip>
 
 #include "mainbar.hpp"
 
+#include <boost/algorithm/string/join.hpp>
+
 #include <pv/devicemanager.hpp>
 #include <pv/devices/hardwaredevice.hpp>
+#include <pv/devices/inputfile.hpp>
+#include <pv/devices/sessionfile.hpp>
+#include <pv/dialogs/connect.hpp>
+#include <pv/dialogs/inputoutputoptions.hpp>
+#include <pv/dialogs/storeprogress.hpp>
 #include <pv/mainwindow.hpp>
 #include <pv/popups/deviceoptions.hpp>
 #include <pv/popups/channels.hpp>
 #include <pv/util.hpp>
+#include <pv/view/view.hpp>
 #include <pv/widgets/exportmenu.hpp>
 #include <pv/widgets/importmenu.hpp>
+#ifdef ENABLE_DECODE
+#include <pv/widgets/decodermenu.hpp>
+#endif
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
 
 using std::back_inserter;
+using std::cerr;
 using std::copy;
+using std::endl;
 using std::list;
 using std::map;
 using std::max;
 using std::min;
+using std::pair;
 using std::shared_ptr;
 using std::string;
 using std::vector;
@@ -56,6 +73,9 @@ using sigrok::Capability;
 using sigrok::ConfigKey;
 using sigrok::Error;
 using sigrok::InputFormat;
+using sigrok::OutputFormat;
+
+using boost::algorithm::join;
 
 namespace pv {
 namespace toolbars {
@@ -64,12 +84,24 @@ const uint64_t MainBar::MinSampleCount = 100ULL;
 const uint64_t MainBar::MaxSampleCount = 1000000000000ULL;
 const uint64_t MainBar::DefaultSampleCount = 1000000;
 
-MainBar::MainBar(Session &session, MainWindow &main_window) :
+const char *MainBar::SettingOpenDirectory = "MainWindow/OpenDirectory";
+const char *MainBar::SettingSaveDirectory = "MainWindow/SaveDirectory";
+
+MainBar::MainBar(Session &session, MainWindow &main_window,
+	string open_file_name, string open_file_format) :
 	QToolBar("Sampling Bar", &main_window),
+	action_open_(new QAction(this)),
+	action_save_as_(new QAction(this)),
+	action_save_selection_as_(new QAction(this)),
+	action_connect_(new QAction(this)),
+	action_view_zoom_in_(new QAction(this)),
+	action_view_zoom_out_(new QAction(this)),
+	action_view_zoom_fit_(new QAction(this)),
+	action_view_zoom_one_to_one_(new QAction(this)),
+	action_view_show_cursors_(new QAction(this)),
 	session_(session),
-	main_window_(main_window),
-	device_selector_(this, session.device_manager(),
-		main_window.action_connect()),
+	device_selector_(&main_window, session.device_manager(),
+		action_connect_),
 	configure_button_(this),
 	configure_button_action_(nullptr),
 	channels_button_(this),
@@ -85,6 +117,9 @@ MainBar::MainBar(Session &session, MainWindow &main_window) :
 	run_stop_button_(this),
 	run_stop_button_action_(nullptr),
 	menu_button_(this)
+#ifdef ENABLE_DECODE
+	, menu_decoders_add_(new pv::widgets::DecoderMenu(this, true))
+#endif
 {
 	setObjectName(QString::fromUtf8("MainBar"));
 
@@ -92,38 +127,111 @@ MainBar::MainBar(Session &session, MainWindow &main_window) :
 	setFloatable(false);
 	setContextMenuPolicy(Qt::PreventContextMenu);
 
+	// Actions
+	action_open_->setText(tr("&Open..."));
+	action_open_->setIcon(QIcon::fromTheme("document-open",
+		QIcon(":/icons/document-open.png")));
+	action_open_->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_O));
+	action_open_->setObjectName(QString::fromUtf8("actionOpen"));
+
+	action_save_as_->setText(tr("&Save As..."));
+	action_save_as_->setIcon(QIcon::fromTheme("document-save-as",
+		QIcon(":/icons/document-save-as.png")));
+	action_save_as_->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_S));
+	action_save_as_->setObjectName(QString::fromUtf8("actionSaveAs"));
+
+	action_save_selection_as_->setText(tr("Save Selected &Range As..."));
+	action_save_selection_as_->setIcon(QIcon::fromTheme("document-save-as",
+		QIcon(":/icons/document-save-as.png")));
+	action_save_selection_as_->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_R));
+	action_save_selection_as_->setObjectName(QString::fromUtf8("actionSaveSelectionAs"));
+
+	widgets::ExportMenu *menu_file_export = new widgets::ExportMenu(this,
+		session.device_manager().context());
+	menu_file_export->setTitle(tr("&Export"));
+	connect(menu_file_export,
+		SIGNAL(format_selected(std::shared_ptr<sigrok::OutputFormat>)),
+		this, SLOT(export_file(std::shared_ptr<sigrok::OutputFormat>)));
+
+	widgets::ImportMenu *menu_file_import = new widgets::ImportMenu(this,
+		session.device_manager().context());
+	menu_file_import->setTitle(tr("&Import"));
+	connect(menu_file_import,
+		SIGNAL(format_selected(std::shared_ptr<sigrok::InputFormat>)),
+		this, SLOT(import_file(std::shared_ptr<sigrok::InputFormat>)));
+
+	action_connect_->setText(tr("&Connect to Device..."));
+	action_connect_->setObjectName(QString::fromUtf8("actionConnect"));
+
+	action_view_zoom_in_->setText(tr("Zoom &In"));
+	action_view_zoom_in_->setIcon(QIcon::fromTheme("zoom-in",
+		QIcon(":/icons/zoom-in.png")));
+	// simply using Qt::Key_Plus shows no + in the menu
+	action_view_zoom_in_->setShortcut(QKeySequence::ZoomIn);
+	action_view_zoom_in_->setObjectName(
+		QString::fromUtf8("actionViewZoomIn"));
+
+	action_view_zoom_out_->setText(tr("Zoom &Out"));
+	action_view_zoom_out_->setIcon(QIcon::fromTheme("zoom-out",
+		QIcon(":/icons/zoom-out.png")));
+	action_view_zoom_out_->setShortcut(QKeySequence::ZoomOut);
+	action_view_zoom_out_->setObjectName(
+		QString::fromUtf8("actionViewZoomOut"));
+
+	action_view_zoom_fit_->setCheckable(true);
+	action_view_zoom_fit_->setText(tr("Zoom to &Fit"));
+	action_view_zoom_fit_->setIcon(QIcon::fromTheme("zoom-fit",
+		QIcon(":/icons/zoom-fit.png")));
+	action_view_zoom_fit_->setShortcut(QKeySequence(Qt::Key_F));
+	action_view_zoom_fit_->setObjectName(
+		QString::fromUtf8("actionViewZoomFit"));
+
+	action_view_zoom_one_to_one_->setText(tr("Zoom to O&ne-to-One"));
+	action_view_zoom_one_to_one_->setIcon(QIcon::fromTheme("zoom-original",
+		QIcon(":/icons/zoom-original.png")));
+	action_view_zoom_one_to_one_->setShortcut(QKeySequence(Qt::Key_O));
+	action_view_zoom_one_to_one_->setObjectName(
+		QString::fromUtf8("actionViewZoomOneToOne"));
+
+	action_view_show_cursors_->setCheckable(true);
+	action_view_show_cursors_->setIcon(QIcon::fromTheme("show-cursors",
+		QIcon(":/icons/show-cursors.svg")));
+	action_view_show_cursors_->setShortcut(QKeySequence(Qt::Key_C));
+	action_view_show_cursors_->setObjectName(
+		QString::fromUtf8("actionViewShowCursors"));
+	action_view_show_cursors_->setText(tr("Show &Cursors"));
+
 	// Open button
 	QToolButton *const open_button = new QToolButton(this);
 
 	widgets::ImportMenu *import_menu = new widgets::ImportMenu(this,
-		session.device_manager().context(),
-		main_window.action_open());
+		session.device_manager().context(), action_open_);
 	connect(import_menu,
 		SIGNAL(format_selected(std::shared_ptr<sigrok::InputFormat>)),
-		&main_window_,
+		&main_window,
 		SLOT(import_file(std::shared_ptr<sigrok::InputFormat>)));
 
 	open_button->setMenu(import_menu);
-	open_button->setDefaultAction(main_window.action_open());
+	open_button->setDefaultAction(action_open_);
 	open_button->setPopupMode(QToolButton::MenuButtonPopup);
 
 	// Save button
 	QToolButton *const save_button = new QToolButton(this);
 
 	vector<QAction *> open_actions;
-	open_actions.push_back(main_window.action_save_as());
-	open_actions.push_back(main_window.action_save_selection_as());
+	open_actions.push_back(action_save_as_);
+	open_actions.push_back(action_save_selection_as_);
 
 	widgets::ExportMenu *export_menu = new widgets::ExportMenu(this,
 		session.device_manager().context(),
 		open_actions);
 	connect(export_menu,
 		SIGNAL(format_selected(std::shared_ptr<sigrok::OutputFormat>)),
-		&main_window_,
+		&main_window,
 		SLOT(export_file(std::shared_ptr<sigrok::OutputFormat>)));
 
 	save_button->setMenu(export_menu);
-	save_button->setDefaultAction(main_window.action_save_as());
+	save_button->setDefaultAction(action_save_as_);
 	save_button->setPopupMode(QToolButton::MenuButtonPopup);
 
 	// Device selector menu
@@ -132,47 +240,27 @@ MainBar::MainBar(Session &session, MainWindow &main_window) :
 
 	// Setup the decoder button
 #ifdef ENABLE_DECODE
+	menu_decoders_add_->setTitle(tr("&Add"));
+	connect(menu_decoders_add_, SIGNAL(decoder_selected(srd_decoder*)),
+		this, SLOT(add_decoder(srd_decoder*)));
+
 	QToolButton *add_decoder_button = new QToolButton(this);
 	add_decoder_button->setIcon(QIcon::fromTheme("add-decoder",
 		QIcon(":/icons/add-decoder.svg")));
 	add_decoder_button->setPopupMode(QToolButton::InstantPopup);
-	add_decoder_button->setMenu(main_window_.menu_decoder_add());
+	add_decoder_button->setMenu(menu_decoders_add_);
 #endif
-
-	// Setup the burger menu
-	QMenu *const menu = new QMenu(this);
-
-	QMenu *const menu_view = new QMenu;
-	menu_view->setTitle(tr("&View"));
-	menu_view->addAction(main_window.action_view_sticky_scrolling());
-	menu_view->addSeparator();
-	menu_view->addAction(main_window.action_view_coloured_bg());
-
-	QMenu *const menu_help = new QMenu;
-	menu_help->setTitle(tr("&Help"));
-	menu_help->addAction(main_window.action_about());
-
-	menu->addAction(menu_view->menuAction());
-	menu->addSeparator();
-	menu->addAction(menu_help->menuAction());
-	menu->addSeparator();
-	menu->addAction(main_window.action_quit());
-
-	menu_button_.setMenu(menu);
-	menu_button_.setPopupMode(QToolButton::InstantPopup);
-	menu_button_.setIcon(QIcon::fromTheme("menu",
-		QIcon(":/icons/menu.svg")));
 
 	// Setup the toolbar
 	addWidget(open_button);
 	addWidget(save_button);
 	addSeparator();
-	addAction(main_window.action_view_zoom_in());
-	addAction(main_window.action_view_zoom_out());
-	addAction(main_window.action_view_zoom_fit());
-	addAction(main_window.action_view_zoom_one_to_one());
+	addAction(action_view_zoom_in_);
+	addAction(action_view_zoom_out_);
+	addAction(action_view_zoom_fit_);
+	addAction(action_view_zoom_one_to_one_);
 	addSeparator();
-	addAction(main_window.action_view_show_cursors());
+	addAction(action_view_show_cursors_);
 	addSeparator();
 
 	connect(&run_stop_button_, SIGNAL(clicked()),
@@ -213,6 +301,25 @@ MainBar::MainBar(Session &session, MainWindow &main_window) :
 
 	sample_count_.installEventFilter(this);
 	sample_rate_.installEventFilter(this);
+
+	QMetaObject::connectSlotsByName(this);
+
+	// Setup session_ events
+	connect(&session_, SIGNAL(capture_state_changed(int)), this,
+		SLOT(capture_state_changed(int)));
+	connect(&session_, SIGNAL(device_selected()), this,
+		SLOT(device_selected()));
+
+	// Figure out which file/device to use
+	if (open_file_name.empty())
+		select_init_device();
+	else
+		load_init_file(open_file_name, open_file_format);
+}
+
+Session &MainBar::session(void) const
+{
+	return session_;
 }
 
 void MainBar::update_device_list()
@@ -251,6 +358,191 @@ void MainBar::set_capture_state(pv::Session::capture_state state)
 void MainBar::reset_device_selector()
 {
 	device_selector_.reset();
+}
+
+QAction* MainBar::action_open() const
+{
+	return action_open_;
+}
+
+QAction* MainBar::action_save_as() const
+{
+	return action_save_as_;
+}
+
+QAction* MainBar::action_save_selection_as() const
+{
+	return action_save_selection_as_;
+}
+
+QAction* MainBar::action_connect() const
+{
+	return action_connect_;
+}
+
+QAction* MainBar::action_view_zoom_in() const
+{
+	return action_view_zoom_in_;
+}
+
+QAction* MainBar::action_view_zoom_out() const
+{
+	return action_view_zoom_out_;
+}
+
+QAction* MainBar::action_view_zoom_fit() const
+{
+	return action_view_zoom_fit_;
+}
+
+QAction* MainBar::action_view_zoom_one_to_one() const
+{
+	return action_view_zoom_one_to_one_;
+}
+
+QAction* MainBar::action_view_show_cursors() const
+{
+	return action_view_show_cursors_;
+}
+
+void MainBar::run_stop()
+{
+	switch (session_.get_capture_state()) {
+	case Session::Stopped:
+		session_.start_capture([&](QString message) {
+			session_error("Capture failed", message); });
+		break;
+	case Session::AwaitingTrigger:
+	case Session::Running:
+		session_.stop_capture();
+		break;
+	}
+}
+
+void MainBar::select_device(shared_ptr<devices::Device> device)
+{
+	try {
+		if (device)
+			session_.set_device(device);
+		else
+			session_.set_default_device();
+	} catch (const QString &e) {
+		QMessageBox msg(this);
+		msg.setText(e);
+		msg.setInformativeText(tr("Failed to Select Device"));
+		msg.setStandardButtons(QMessageBox::Ok);
+		msg.setIcon(QMessageBox::Warning);
+		msg.exec();
+	}
+}
+
+void MainBar::select_init_device()
+{
+	QSettings settings;
+	map<string, string> dev_info;
+	list<string> key_list;
+	shared_ptr<devices::HardwareDevice> device;
+
+	DeviceManager& device_manager = session_.device_manager();
+
+	// Re-select last used device if possible but only if it's not demo
+	settings.beginGroup("Device");
+	key_list.push_back("vendor");
+	key_list.push_back("model");
+	key_list.push_back("version");
+	key_list.push_back("serial_num");
+	key_list.push_back("connection_id");
+
+	for (string key : key_list) {
+		const QString k = QString::fromStdString(key);
+		if (!settings.contains(k))
+			continue;
+
+		const string value = settings.value(k).toString().toStdString();
+		if (!value.empty())
+			dev_info.insert(std::make_pair(key, value));
+	}
+
+	if (dev_info.count("model") > 0)
+		if (dev_info.at("model").find("Demo device") == std::string::npos)
+			device = device_manager.find_device_from_info(dev_info);
+
+	// When we can't find a device similar to the one we used last
+	// time and there is at least one device aside from demo, use it
+	if (!device) {
+		for (shared_ptr<devices::HardwareDevice> dev : device_manager.devices()) {
+			dev_info = device_manager.get_device_info(dev);
+
+			if (dev_info.count("model") > 0)
+				if (dev_info.at("model").find("Demo device") == std::string::npos) {
+					device = dev;
+					break;
+				}
+		}
+	}
+
+	select_device(device);
+	update_device_list();
+
+	settings.endGroup();
+}
+
+void MainBar::load_file(QString file_name,
+	std::shared_ptr<sigrok::InputFormat> format,
+	const std::map<std::string, Glib::VariantBase> &options)
+{
+	DeviceManager& device_manager = session_.device_manager();
+
+	const QString errorMessage(
+		QString("Failed to load file %1").arg(file_name));
+
+	try {
+		if (format)
+			session_.set_device(shared_ptr<devices::Device>(
+				new devices::InputFile(
+					device_manager.context(),
+					file_name.toStdString(),
+					format, options)));
+		else
+			session_.set_device(shared_ptr<devices::Device>(
+				new devices::SessionFile(
+					device_manager.context(),
+					file_name.toStdString())));
+	} catch (Error e) {
+		show_session_error(tr("Failed to load ") + file_name, e.what());
+		session_.set_default_device();
+		update_device_list();
+		return;
+	}
+
+	update_device_list();
+
+	session_.start_capture([&, errorMessage](QString infoMessage) {
+		session_error(errorMessage, infoMessage); });
+}
+
+void MainBar::load_init_file(const std::string &file_name,
+	const std::string &format)
+{
+	shared_ptr<InputFormat> input_format;
+
+	DeviceManager& device_manager = session_.device_manager();
+
+	if (!format.empty()) {
+		const map<string, shared_ptr<InputFormat> > formats =
+			device_manager.context()->input_formats();
+		const auto iter = find_if(formats.begin(), formats.end(),
+			[&](const pair<string, shared_ptr<InputFormat> > f) {
+				return f.first == format; });
+		if (iter == formats.end()) {
+			cerr << "Unexpected input format: " << format << endl;
+			return;
+		}
+
+		input_format = (*iter).second;
+	}
+
+	load_file(QString::fromStdString(file_name), input_format);
 }
 
 void MainBar::update_sample_rate_selector()
@@ -453,35 +745,6 @@ void MainBar::update_device_config_widgets()
 	update_sample_rate_selector();
 }
 
-void MainBar::commit_sample_count()
-{
-	uint64_t sample_count = 0;
-
-	const shared_ptr<devices::Device> device =
-		device_selector_.selected_device();
-	if (!device)
-		return;
-
-	const shared_ptr<sigrok::Device> sr_dev = device->device();
-
-	sample_count = sample_count_.value();
-	if (sample_count_supported_) {
-		try {
-			sr_dev->config_set(ConfigKey::LIMIT_SAMPLES,
-				Glib::Variant<guint64>::create(sample_count));
-			update_sample_count_selector();
-		} catch (Error error) {
-			qDebug() << "Failed to configure sample count.";
-			return;
-		}
-	}
-
-	// Devices with built-in memory might impose limits on certain
-	// configurations, so let's check what sample rate the driver
-	// lets us use now.
-	update_sample_rate_selector();
-}
-
 void MainBar::commit_sample_rate()
 {
 	uint64_t sample_rate = 0;
@@ -512,13 +775,192 @@ void MainBar::commit_sample_rate()
 	update_sample_count_selector();
 }
 
-void MainBar::on_device_selected()
+void MainBar::commit_sample_count()
 {
-	shared_ptr<devices::Device> device = device_selector_.selected_device();
+	uint64_t sample_count = 0;
+
+	const shared_ptr<devices::Device> device =
+		device_selector_.selected_device();
 	if (!device)
 		return;
 
-	main_window_.select_device(device);
+	const shared_ptr<sigrok::Device> sr_dev = device->device();
+
+	sample_count = sample_count_.value();
+	if (sample_count_supported_) {
+		try {
+			sr_dev->config_set(ConfigKey::LIMIT_SAMPLES,
+				Glib::Variant<guint64>::create(sample_count));
+			update_sample_count_selector();
+		} catch (Error error) {
+			qDebug() << "Failed to configure sample count.";
+			return;
+		}
+	}
+
+	// Devices with built-in memory might impose limits on certain
+	// configurations, so let's check what sample rate the driver
+	// lets us use now.
+	update_sample_rate_selector();
+}
+
+void MainBar::session_error(const QString text, const QString info_text)
+{
+	QMetaObject::invokeMethod(this, "show_session_error",
+		Qt::QueuedConnection, Q_ARG(QString, text),
+		Q_ARG(QString, info_text));
+}
+
+void MainBar::show_session_error(const QString text, const QString info_text)
+{
+	QMessageBox msg(this);
+	msg.setText(text);
+	msg.setInformativeText(info_text);
+	msg.setStandardButtons(QMessageBox::Ok);
+	msg.setIcon(QMessageBox::Warning);
+	msg.exec();
+}
+
+void MainBar::capture_state_changed(int state)
+{
+	set_capture_state((pv::Session::capture_state)state);
+}
+
+void MainBar::add_decoder(srd_decoder *decoder)
+{
+#ifdef ENABLE_DECODE
+	assert(decoder);
+	session_.add_decoder(decoder);
+#else
+	(void)decoder;
+#endif
+}
+
+void MainBar::export_file(shared_ptr<OutputFormat> format,
+	bool selection_only)
+{
+	using pv::dialogs::StoreProgress;
+
+	// Stop any currently running capture session
+	session_.stop_capture();
+
+	QSettings settings;
+	const QString dir = settings.value(SettingSaveDirectory).toString();
+
+	std::pair<uint64_t, uint64_t> sample_range;
+
+	// Selection only? Verify that the cursors are active and fetch their values
+	if (selection_only) {
+		if (!session_.main_view()->cursors()->enabled()) {
+			show_session_error(tr("Missing Cursors"), tr("You need to set the " \
+					"cursors before you can save the data enclosed by them " \
+					"to a session file (e.g. using ALT-V - Show Cursors)."));
+			return;
+		}
+
+		const double samplerate = session_.get_samplerate();
+
+		const pv::util::Timestamp& start_time = session_.main_view()->cursors()->first()->time();
+		const pv::util::Timestamp& end_time = session_.main_view()->cursors()->second()->time();
+
+		const uint64_t start_sample =
+			std::max((double)0, start_time.convert_to<double>() * samplerate);
+		const uint64_t end_sample = end_time.convert_to<double>() * samplerate;
+
+		sample_range = std::make_pair(start_sample, end_sample);
+	} else {
+		sample_range = std::make_pair(0, 0);
+	}
+
+	// Construct the filter
+	const vector<string> exts = format->extensions();
+	QString filter = tr("%1 files ").arg(
+		QString::fromStdString(format->description()));
+
+	if (exts.empty())
+		filter += "(*.*)";
+	else
+		filter += QString("(*.%1);;%2 (*.*)").arg(
+			QString::fromStdString(join(exts, ", *.")),
+			tr("All Files"));
+
+	// Show the file dialog
+	const QString file_name = QFileDialog::getSaveFileName(
+		this, tr("Save File"), dir, filter);
+
+	if (file_name.isEmpty())
+		return;
+
+	const QString abs_path = QFileInfo(file_name).absolutePath();
+	settings.setValue(SettingSaveDirectory, abs_path);
+
+	// Show the options dialog
+	map<string, Glib::VariantBase> options;
+	if (!format->options().empty()) {
+		dialogs::InputOutputOptions dlg(
+			tr("Export %1").arg(QString::fromStdString(
+				format->description())),
+			format->options(), this);
+		if (!dlg.exec())
+			return;
+		options = dlg.options();
+	}
+
+	StoreProgress *dlg = new StoreProgress(file_name, format, options,
+		sample_range, session_, this);
+	dlg->run();
+}
+
+void MainBar::import_file(shared_ptr<InputFormat> format)
+{
+	assert(format);
+
+	QSettings settings;
+	const QString dir = settings.value(SettingOpenDirectory).toString();
+
+	// Construct the filter
+	const vector<string> exts = format->extensions();
+	const QString filter = exts.empty() ? "" :
+		tr("%1 files (*.%2)").arg(
+			QString::fromStdString(format->description()),
+			QString::fromStdString(join(exts, ", *.")));
+
+	// Show the file dialog
+	const QString file_name = QFileDialog::getOpenFileName(
+		this, tr("Import File"), dir, tr(
+			"%1 files (*.*);;All Files (*.*)").arg(
+			QString::fromStdString(format->description())));
+
+	if (file_name.isEmpty())
+		return;
+
+	// Show the options dialog
+	map<string, Glib::VariantBase> options;
+	if (!format->options().empty()) {
+		dialogs::InputOutputOptions dlg(
+			tr("Import %1").arg(QString::fromStdString(
+				format->description())),
+			format->options(), this);
+		if (!dlg.exec())
+			return;
+		options = dlg.options();
+	}
+
+	load_file(file_name, format, options);
+
+	const QString abs_path = QFileInfo(file_name).absolutePath();
+	settings.setValue(SettingOpenDirectory, abs_path);
+}
+
+void MainBar::on_device_selected()
+{
+	shared_ptr<devices::Device> device = device_selector_.selected_device();
+	if (!device) {
+		reset_device_selector();
+		return;
+	}
+
+	select_device(device);
 
 	update_device_config_widgets();
 }
@@ -539,13 +981,86 @@ void MainBar::on_run_stop()
 {
 	commit_sample_count();
 	commit_sample_rate();	
-	main_window_.run_stop();
+	run_stop();
 }
 
 void MainBar::on_config_changed()
 {
 	commit_sample_count();
 	commit_sample_rate();	
+}
+
+void MainBar::on_actionOpen_triggered()
+{
+	QSettings settings;
+	const QString dir = settings.value(SettingOpenDirectory).toString();
+
+	// Show the dialog
+	const QString file_name = QFileDialog::getOpenFileName(
+		this, tr("Open File"), dir, tr(
+			"Sigrok Sessions (*.sr);;"
+			"All Files (*.*)"));
+
+	if (!file_name.isEmpty()) {
+		load_file(file_name);
+
+		const QString abs_path = QFileInfo(file_name).absolutePath();
+		settings.setValue(SettingOpenDirectory, abs_path);
+	}
+}
+
+void MainBar::on_actionSaveAs_triggered()
+{
+	export_file(session_.device_manager().context()->output_formats()["srzip"]);
+}
+
+void MainBar::on_actionSaveSelectionAs_triggered()
+{
+	export_file(session_.device_manager().context()->output_formats()["srzip"], true);
+}
+
+void MainBar::on_actionConnect_triggered()
+{
+	// Stop any currently running capture session
+	session_.stop_capture();
+
+	dialogs::Connect dlg(this, session_.device_manager());
+
+	// If the user selected a device, select it in the device list. Select the
+	// current device otherwise.
+	if (dlg.exec())
+		select_device(dlg.get_selected_device());
+
+	update_device_list();
+}
+
+void MainBar::on_actionViewZoomIn_triggered()
+{
+	session_.main_view()->zoom(1);
+}
+
+void MainBar::on_actionViewZoomOut_triggered()
+{
+	session_.main_view()->zoom(-1);
+}
+
+void MainBar::on_actionViewZoomFit_triggered()
+{
+	session_.main_view()->zoom_fit(action_view_zoom_fit_->isChecked());
+}
+
+void MainBar::on_actionViewZoomOneToOne_triggered()
+{
+	session_.main_view()->zoom_one_to_one();
+}
+
+void MainBar::on_actionViewShowCursors_triggered()
+{
+	const bool show = !session_.main_view()->cursors_shown();
+	if (show)
+		session_.main_view()->centre_cursors();
+
+	session_.main_view()->show_cursors(show);
 }
 
 bool MainBar::eventFilter(QObject *watched, QEvent *event)

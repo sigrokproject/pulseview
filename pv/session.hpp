@@ -72,6 +72,10 @@ namespace devices {
 class Device;
 }
 
+namespace toolbars {
+class MainBar;
+}
+
 namespace view {
 class View;
 }
@@ -99,6 +103,12 @@ public:
 	std::shared_ptr<sigrok::Session> session() const;
 
 	std::shared_ptr<devices::Device> device() const;
+
+	std::shared_ptr<pv::view::View> main_view() const;
+
+	void set_main_bar(std::shared_ptr<pv::toolbars::MainBar> main_bar);
+
+	std::shared_ptr<pv::toolbars::MainBar> main_bar() const;
 
 	/**
 	 * Sets device instance that will be used in the next capture session.
@@ -159,6 +169,9 @@ private:
 	std::shared_ptr<devices::Device> device_;
 
 	std::unordered_set< std::shared_ptr<pv::view::View> > views_;
+	std::shared_ptr<pv::view::View> main_view_;
+
+	std::shared_ptr<pv::toolbars::MainBar> main_bar_;
 
 	mutable std::mutex sampling_mutex_; //!< Protects access to capture_state_.
 	capture_state capture_state_;
