@@ -78,9 +78,7 @@ private:
 	static const char *SettingSaveDirectory;
 
 public:
-	MainBar(Session &session, pv::MainWindow &main_window,
-		std::string open_file_name = std::string(),
-		std::string open_file_format = std::string());
+	MainBar(Session &session, pv::MainWindow &main_window);
 
 	Session &session(void) const;
 
@@ -89,6 +87,11 @@ public:
 	void set_capture_state(pv::Session::capture_state state);
 
 	void reset_device_selector();
+
+	void select_device(std::shared_ptr<devices::Device> device);
+
+	void load_init_file(const std::string &file_name,
+		const std::string &format);
 
 	QAction* action_open() const;
 	QAction* action_save_as() const;
@@ -104,17 +107,12 @@ public:
 private:
 	void run_stop();
 
-	void select_device(std::shared_ptr<devices::Device> device);
-
 	void select_init_device();
 
 	void load_file(QString file_name,
 		std::shared_ptr<sigrok::InputFormat> format = nullptr,
 		const std::map<std::string, Glib::VariantBase> &options =
 			std::map<std::string, Glib::VariantBase>());
-
-	void load_init_file(const std::string &file_name,
-		const std::string &format);
 
 	void save_selection_to_file();
 

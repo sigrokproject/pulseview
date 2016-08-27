@@ -38,6 +38,7 @@
 #include <boost/thread/shared_mutex.hpp>
 
 #include <QObject>
+#include <QSettings>
 #include <QString>
 
 #include "util.hpp"
@@ -92,7 +93,7 @@ public:
 	};
 
 public:
-	Session(DeviceManager &device_manager);
+	Session(DeviceManager &device_manager, QString name);
 
 	~Session();
 
@@ -104,11 +105,19 @@ public:
 
 	std::shared_ptr<devices::Device> device() const;
 
+	QString name() const;
+
+	void set_name(QString name);
+
 	std::shared_ptr<pv::view::View> main_view() const;
 
 	void set_main_bar(std::shared_ptr<pv::toolbars::MainBar> main_bar);
 
 	std::shared_ptr<pv::toolbars::MainBar> main_bar() const;
+
+	void save_settings(QSettings &settings) const;
+
+	void restore_settings(QSettings &settings);
 
 	/**
 	 * Sets device instance that will be used in the next capture session.
@@ -128,6 +137,8 @@ public:
 	void register_view(std::shared_ptr<pv::view::View> view);
 
 	void deregister_view(std::shared_ptr<pv::view::View> view);
+
+	bool has_view(std::shared_ptr<pv::view::View> view);
 
 	const std::unordered_set< std::shared_ptr<data::SignalBase> >
 		signalbases() const;
@@ -167,6 +178,7 @@ private:
 private:
 	DeviceManager &device_manager_;
 	std::shared_ptr<devices::Device> device_;
+	QString default_name_, name_;
 
 	std::unordered_set< std::shared_ptr<pv::view::View> > views_;
 	std::shared_ptr<pv::view::View> main_view_;
@@ -175,7 +187,6 @@ private:
 
 	mutable std::mutex sampling_mutex_; //!< Protects access to capture_state_.
 	capture_state capture_state_;
-
 
 	std::unordered_set< std::shared_ptr<data::SignalBase> > signalbases_;
 	std::unordered_set< std::shared_ptr<data::SignalData> > all_signal_data_;
@@ -196,6 +207,8 @@ Q_SIGNALS:
 	void device_selected();
 
 	void signals_changed();
+
+	void name_changed();
 
 	void trigger_event(util::Timestamp location);
 

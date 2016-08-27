@@ -38,6 +38,7 @@
 
 #include "devicemanager.hpp"
 #include "util.hpp"
+#include "devices/hardwaredevice.hpp"
 #include "dialogs/about.hpp"
 #include "toolbars/mainbar.hpp"
 #include "view/view.hpp"
@@ -46,6 +47,7 @@
 #include <stdarg.h>
 #include <libsigrokcxx/libsigrokcxx.hpp>
 
+using std::dynamic_pointer_cast;
 using std::list;
 using std::make_shared;
 using std::map;
@@ -65,9 +67,6 @@ MainWindow::MainWindow(DeviceManager &device_manager,
 	QWidget *parent) :
 	QMainWindow(parent),
 	device_manager_(device_manager),
-	session_(device_manager),
-	open_file_name_(open_file_name),
-	open_file_format_(open_file_format),
 	action_view_sticky_scrolling_(new QAction(this)),
 	action_view_coloured_bg_(new QAction(this)),
 	action_about_(new QAction(this))
@@ -76,6 +75,32 @@ MainWindow::MainWindow(DeviceManager &device_manager,
 
 	setup_ui();
 	restore_ui_settings();
+
+	if (!open_file_name.empty()) {
+		shared_ptr<Session> session = add_session();
+		session->main_bar()->load_init_file(open_file_name, open_file_format);
+	}
+
+	// Add empty default session if there aren't any sessions
+	if (sessions_.size() == 0) {
+		shared_ptr<Session> session = add_session();
+
+		map<string, string> dev_info;
+		shared_ptr<devices::HardwareDevice> other_device, demo_device;
+
+		// Use any available device that's not demo
+		for (shared_ptr<devices::HardwareDevice> dev : device_manager_.devices()) {
+			if (dev->hardware_device()->driver()->name() == "demo") {
+				demo_device = dev;
+			} else {
+				other_device = dev;
+			}
+		}
+
+		// ...and if there isn't any, just use demo then
+		session->main_bar()->select_device(other_device ?
+			other_device : demo_device);
+	}
 }
 
 MainWindow::~MainWindow()
@@ -92,7 +117,10 @@ MainWindow::~MainWindow()
 		dock->setWidget(0);
 
 		const std::shared_ptr<pv::view::View> view = entry.second;
-		session_.deregister_view(view);
+
+		for (shared_ptr<Session> session : sessions_)
+			if (session->has_view(view))
+				session->deregister_view(view);
 	}
 }
 
@@ -173,19 +201,30 @@ shared_ptr<pv::view::View> MainWindow::add_view(const QString &title,
 
 			shared_ptr<MainBar> main_bar = session.main_bar();
 			if (!main_bar) {
-				main_bar = make_shared<MainBar>(session_, *this,
-					open_file_name_, open_file_format_);
+				main_bar = make_shared<MainBar>(session, *this);
 				dock_main->addToolBar(main_bar.get());
 				session.set_main_bar(main_bar);
-
-				open_file_name_.clear();
-				open_file_format_.clear();
 			}
 			main_bar->action_view_show_cursors()->setChecked(v->cursors_shown());
 		}
 	}
 
 	return v;
+}
+
+shared_ptr<Session> MainWindow::add_session()
+{
+	int id = sessions_.size();
+	QString name = tr("Untitled-%1").arg(id + 1);
+
+	shared_ptr<Session> session = make_shared<Session>(device_manager_, name);
+
+	sessions_.push_back(session);
+
+	shared_ptr<view::View> main_view =
+		add_view(name, pv::view::TraceView, *session);
+
+	return session;
 }
 
 void MainWindow::setup_ui()
@@ -214,10 +253,6 @@ void MainWindow::setup_ui()
 	action_about_->setObjectName(QString::fromUtf8("actionAbout"));
 	action_about_->setText(tr("&About..."));
 
-	// Set up the initial view
-	shared_ptr<view::View> main_view =
-		add_view(tr("Untitled"), pv::view::TraceView, session_);
-
 	// Set the title
 	setWindowTitle(tr("PulseView"));
 }
@@ -225,41 +260,36 @@ void MainWindow::setup_ui()
 void MainWindow::save_ui_settings()
 {
 	QSettings settings;
-
-	map<string, string> dev_info;
-	list<string> key_list;
+	int id = 0;
 
 	settings.beginGroup("MainWindow");
 	settings.setValue("state", saveState());
 	settings.setValue("geometry", saveGeometry());
 	settings.endGroup();
 
-	if (session_.device()) {
-		settings.beginGroup("Device");
-		key_list.push_back("vendor");
-		key_list.push_back("model");
-		key_list.push_back("version");
-		key_list.push_back("serial_num");
-		key_list.push_back("connection_id");
+	for (shared_ptr<Session> session : sessions_) {
+		// Ignore sessions using the demo device
+		if (session->device()) {
+			shared_ptr<devices::HardwareDevice> device =
+				dynamic_pointer_cast< devices::HardwareDevice >
+				(session->device());
 
-		dev_info = device_manager_.get_device_info(
-			session_.device());
-
-		for (string key : key_list) {
-			if (dev_info.count(key))
-				settings.setValue(QString::fromUtf8(key.c_str()),
-						QString::fromUtf8(dev_info.at(key).c_str()));
-			else
-				settings.remove(QString::fromUtf8(key.c_str()));
+			if (device->hardware_device()->driver()->name() == "demo")
+				continue;
 		}
 
+		settings.beginGroup("Session" + QString::number(id++));
+		session->save_settings(settings);
 		settings.endGroup();
 	}
+
+	settings.setValue("sessions", id);
 }
 
 void MainWindow::restore_ui_settings()
 {
 	QSettings settings;
+	int i, session_count;
 
 	settings.beginGroup("MainWindow");
 
@@ -270,6 +300,15 @@ void MainWindow::restore_ui_settings()
 		resize(1000, 720);
 
 	settings.endGroup();
+
+	session_count = settings.value("sessions", 0).toInt();
+
+	for (i = 0; i < session_count; i++) {
+		settings.beginGroup("Session" + QString::number(i));
+		shared_ptr<Session> session = add_session();
+		session->restore_settings(settings);
+		settings.endGroup();
+	}
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)

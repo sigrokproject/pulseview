@@ -98,8 +98,9 @@ using Glib::VariantBase;
 using Glib::Variant;
 
 namespace pv {
-Session::Session(DeviceManager &device_manager) :
+Session::Session(DeviceManager &device_manager, QString name) :
 	device_manager_(device_manager),
+	name_(name),
 	capture_state_(Stopped),
 	cur_samplerate_(0)
 {
@@ -133,6 +134,21 @@ shared_ptr<devices::Device> Session::device() const
 	return device_;
 }
 
+QString Session::name() const
+{
+	return name_;
+}
+
+void Session::set_name(QString name)
+{
+	if (default_name_.isEmpty())
+		default_name_ = name;
+
+	name_ = name;
+
+	name_changed();
+}
+
 std::shared_ptr<pv::view::View> Session::main_view() const
 {
 	return main_view_;
@@ -148,6 +164,71 @@ shared_ptr<pv::toolbars::MainBar> Session::main_bar() const
 	return main_bar_;
 }
 
+void Session::save_settings(QSettings &settings) const
+{
+	map<string, string> dev_info;
+	list<string> key_list;
+
+	if (device_) {
+		settings.beginGroup("Device");
+		key_list.push_back("vendor");
+		key_list.push_back("model");
+		key_list.push_back("version");
+		key_list.push_back("serial_num");
+		key_list.push_back("connection_id");
+
+		dev_info = device_manager_.get_device_info(device_);
+
+		for (string key : key_list) {
+			if (dev_info.count(key))
+				settings.setValue(QString::fromUtf8(key.c_str()),
+						QString::fromUtf8(dev_info.at(key).c_str()));
+			else
+				settings.remove(QString::fromUtf8(key.c_str()));
+		}
+
+		// TODO Save channel settings and decoders
+
+		settings.endGroup();
+	}
+}
+
+void Session::restore_settings(QSettings &settings)
+{
+	map<string, string> dev_info;
+	list<string> key_list;
+	shared_ptr<devices::HardwareDevice> device;
+
+	// Re-select last used device if possible but only if it's not demo
+	settings.beginGroup("Device");
+	key_list.push_back("vendor");
+	key_list.push_back("model");
+	key_list.push_back("version");
+	key_list.push_back("serial_num");
+	key_list.push_back("connection_id");
+
+	for (string key : key_list) {
+		const QString k = QString::fromStdString(key);
+		if (!settings.contains(k))
+			continue;
+
+		const string value = settings.value(k).toString().toStdString();
+		if (!value.empty())
+			dev_info.insert(std::make_pair(key, value));
+	}
+
+	if (dev_info.count("model") > 0)
+		device = device_manager_.find_device_from_info(dev_info);
+
+	if (device) {
+		set_device(device);
+
+		// TODO Restore channel settings and decoders
+	}
+
+	settings.endGroup();
+}
+
 void Session::set_device(shared_ptr<devices::Device> device)
 {
 	assert(device);
@@ -159,6 +240,10 @@ void Session::set_device(shared_ptr<devices::Device> device)
 		device_->close();
 
 	device_.reset();
+
+	// Revert name back to default name (e.g. "Untitled-1") as the data is gone
+	name_ = default_name_;
+	name_changed();
 
 	// Remove all stored data
 	for (std::shared_ptr<pv::view::View> view : views_) {
@@ -248,6 +333,10 @@ void Session::start_capture(function<void (const QString)> error_handler)
 	for (const shared_ptr<data::SignalData> d : all_signal_data_)
 		d->clear();
 
+	// Revert name back to default name (e.g. "Untitled-1") as the data is gone
+	name_ = default_name_;
+	name_changed();
+
 	// Begin the session
 	sampling_thread_ = std::thread(
 		&Session::sample_thread_proc, this, error_handler);
@@ -282,6 +371,11 @@ void Session::deregister_view(std::shared_ptr<pv::view::View> view)
 		// Without a view there can be no main bar
 		main_bar_.reset();
 	}
+}
+
+bool Session::has_view(std::shared_ptr<pv::view::View> view)
+{
+	return views_.find(view) != views_.end();
 }
 
 double Session::get_samplerate() const

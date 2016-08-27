@@ -87,8 +87,7 @@ const uint64_t MainBar::DefaultSampleCount = 1000000;
 const char *MainBar::SettingOpenDirectory = "MainWindow/OpenDirectory";
 const char *MainBar::SettingSaveDirectory = "MainWindow/SaveDirectory";
 
-MainBar::MainBar(Session &session, MainWindow &main_window,
-	string open_file_name, string open_file_format) :
+MainBar::MainBar(Session &session, MainWindow &main_window) :
 	QToolBar("Sampling Bar", &main_window),
 	action_open_(new QAction(this)),
 	action_save_as_(new QAction(this)),
@@ -310,11 +309,7 @@ MainBar::MainBar(Session &session, MainWindow &main_window,
 	connect(&session_, SIGNAL(device_selected()), this,
 		SLOT(device_selected()));
 
-	// Figure out which file/device to use
-	if (open_file_name.empty())
-		select_init_device();
-	else
-		load_init_file(open_file_name, open_file_format);
+	update_device_list();
 }
 
 Session &MainBar::session(void) const
@@ -358,6 +353,47 @@ void MainBar::set_capture_state(pv::Session::capture_state state)
 void MainBar::reset_device_selector()
 {
 	device_selector_.reset();
+}
+
+void MainBar::select_device(shared_ptr<devices::Device> device)
+{
+	try {
+		if (device)
+			session_.set_device(device);
+		else
+			session_.set_default_device();
+	} catch (const QString &e) {
+		QMessageBox msg(this);
+		msg.setText(e);
+		msg.setInformativeText(tr("Failed to Select Device"));
+		msg.setStandardButtons(QMessageBox::Ok);
+		msg.setIcon(QMessageBox::Warning);
+		msg.exec();
+	}
+}
+
+void MainBar::load_init_file(const std::string &file_name,
+	const std::string &format)
+{
+	shared_ptr<InputFormat> input_format;
+
+	DeviceManager& device_manager = session_.device_manager();
+
+	if (!format.empty()) {
+		const map<string, shared_ptr<InputFormat> > formats =
+			device_manager.context()->input_formats();
+		const auto iter = find_if(formats.begin(), formats.end(),
+			[&](const pair<string, shared_ptr<InputFormat> > f) {
+				return f.first == format; });
+		if (iter == formats.end()) {
+			cerr << "Unexpected input format: " << format << endl;
+			return;
+		}
+
+		input_format = (*iter).second;
+	}
+
+	load_file(QString::fromStdString(file_name), input_format);
 }
 
 QAction* MainBar::action_open() const
@@ -419,74 +455,6 @@ void MainBar::run_stop()
 	}
 }
 
-void MainBar::select_device(shared_ptr<devices::Device> device)
-{
-	try {
-		if (device)
-			session_.set_device(device);
-		else
-			session_.set_default_device();
-	} catch (const QString &e) {
-		QMessageBox msg(this);
-		msg.setText(e);
-		msg.setInformativeText(tr("Failed to Select Device"));
-		msg.setStandardButtons(QMessageBox::Ok);
-		msg.setIcon(QMessageBox::Warning);
-		msg.exec();
-	}
-}
-
-void MainBar::select_init_device()
-{
-	QSettings settings;
-	map<string, string> dev_info;
-	list<string> key_list;
-	shared_ptr<devices::HardwareDevice> device;
-
-	DeviceManager& device_manager = session_.device_manager();
-
-	// Re-select last used device if possible but only if it's not demo
-	settings.beginGroup("Device");
-	key_list.push_back("vendor");
-	key_list.push_back("model");
-	key_list.push_back("version");
-	key_list.push_back("serial_num");
-	key_list.push_back("connection_id");
-
-	for (string key : key_list) {
-		const QString k = QString::fromStdString(key);
-		if (!settings.contains(k))
-			continue;
-
-		const string value = settings.value(k).toString().toStdString();
-		if (!value.empty())
-			dev_info.insert(std::make_pair(key, value));
-	}
-
-	if (dev_info.count("model") > 0)
-		if (dev_info.at("model").find("Demo device") == std::string::npos)
-			device = device_manager.find_device_from_info(dev_info);
-
-	// When we can't find a device similar to the one we used last
-	// time and there is at least one device aside from demo, use it
-	if (!device) {
-		for (shared_ptr<devices::HardwareDevice> dev : device_manager.devices()) {
-			dev_info = device_manager.get_device_info(dev);
-
-			if (dev_info.count("model") > 0)
-				if (dev_info.at("model").find("Demo device") == std::string::npos) {
-					device = dev;
-					break;
-				}
-		}
-	}
-
-	select_device(device);
-	update_device_list();
-
-	settings.endGroup();
-}
-
 void MainBar::load_file(QString file_name,
 	std::shared_ptr<sigrok::InputFormat> format,
 	const std::map<std::string, Glib::VariantBase> &options)
@@ -515,34 +483,12 @@ void MainBar::load_file(QString file_name,
 		return;
 	}
 
+	session_.set_name(QFileInfo(file_name).fileName());
+
 	update_device_list();
 
 	session_.start_capture([&, errorMessage](QString infoMessage) {
 		session_error(errorMessage, infoMessage); });
-}
-
-void MainBar::load_init_file(const std::string &file_name,
-	const std::string &format)
-{
-	shared_ptr<InputFormat> input_format;
-
-	DeviceManager& device_manager = session_.device_manager();
-
-	if (!format.empty()) {
-		const map<string, shared_ptr<InputFormat> > formats =
-			device_manager.context()->input_formats();
-		const auto iter = find_if(formats.begin(), formats.end(),
-			[&](const pair<string, shared_ptr<InputFormat> > f) {
-				return f.first == format; });
-		if (iter == formats.end()) {
-			cerr << "Unexpected input format: " << format << endl;
-			return;
-		}
-
-		input_format = (*iter).second;
-	}
-
-	load_file(QString::fromStdString(file_name), input_format);
 }
 
 void MainBar::update_sample_rate_selector()
@@ -905,6 +851,8 @@ void MainBar::export_file(shared_ptr<OutputFormat> format,
 			return;
 		options = dlg.options();
 	}
+
+	session_.set_name(QFileInfo(file_name).fileName());
 
 	StoreProgress *dlg = new StoreProgress(file_name, format, options,
 		sample_range, session_, this);

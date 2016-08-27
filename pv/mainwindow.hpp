@@ -74,6 +74,8 @@ public:
 	std::shared_ptr<pv::view::View> add_view(const QString &title,
 		view::ViewType type, Session &session);
 
+	std::shared_ptr<Session> add_session();
+
 private:
 	void setup_ui();
 
@@ -98,12 +100,10 @@ private Q_SLOTS:
 private:
 	DeviceManager &device_manager_;
 
-	Session session_;
+	std::vector< std::shared_ptr<Session> > sessions_;
 
 	std::map< std::shared_ptr<QDockWidget>,
 		std::shared_ptr<pv::view::View> > view_docks_;
-
-	std::string open_file_name_, open_file_format_;
 
 	QAction *const action_view_sticky_scrolling_;
 	QAction *const action_view_coloured_bg_;
