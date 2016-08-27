@@ -270,7 +270,7 @@ void Session::set_device(shared_ptr<devices::Device> device)
 		device_->open();
 	} catch (const QString &e) {
 		device_.reset();
-		device_selected();
+		device_changed();
 		throw;
 	}
 
@@ -280,7 +280,7 @@ void Session::set_device(shared_ptr<devices::Device> device)
 		});
 
 	update_signals();
-	device_selected();
+	device_changed();
 }
 
 void Session::set_default_device()

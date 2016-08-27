@@ -147,6 +147,7 @@ private Q_SLOTS:
 	void import_file(std::shared_ptr<sigrok::InputFormat> format);
 
 	void on_device_selected();
+	void on_device_changed();
 	void on_sample_count_changed();
 	void on_sample_rate_changed();
 	void on_run_stop();

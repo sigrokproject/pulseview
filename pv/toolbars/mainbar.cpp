@@ -236,6 +236,8 @@ MainBar::MainBar(Session &session, MainWindow &main_window) :
 	// Device selector menu
 	connect(&device_selector_, SIGNAL(device_selected()),
 		this, SLOT(on_device_selected()));
+	connect(&session, SIGNAL(device_changed()),
+		this, SLOT(on_device_changed()));
 
 	// Setup the decoder button
 #ifdef ENABLE_DECODE
@@ -300,8 +302,6 @@ MainBar::MainBar(Session &session, MainWindow &main_window) :
 
 	sample_count_.installEventFilter(this);
 	sample_rate_.installEventFilter(this);
-
-	QMetaObject::connectSlotsByName(this);
 
 	// Setup session_ events
 	connect(&session_, SIGNAL(capture_state_changed(int)), this,
@@ -909,7 +909,11 @@ void MainBar::on_device_selected()
 	}
 
 	select_device(device);
+}
 
+void MainBar::on_device_changed()
+{
+	update_device_list();
 	update_device_config_widgets();
 }
 
