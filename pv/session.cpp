@@ -26,12 +26,13 @@
 #include <boost/thread/locks.hpp>
 #include <boost/thread/shared_mutex.hpp>
 
-#ifdef ENABLE_DECODE
-#include <libsigrokdecode/libsigrokdecode.h>
-#endif
+#include <cassert>
+#include <mutex>
+#include <stdexcept>
+
+#include <sys/stat.h>
 
 #include "session.hpp"
-
 #include "devicemanager.hpp"
 
 #include "data/analog.hpp"
@@ -53,15 +54,11 @@
 #include "view/signal.hpp"
 #include "view/view.hpp"
 
-#include <cassert>
-#include <mutex>
-#include <stdexcept>
-
-#include <sys/stat.h>
-
-#include <QDebug>
-
 #include <libsigrokcxx/libsigrokcxx.hpp>
+
+#ifdef ENABLE_DECODE
+#include <libsigrokdecode/libsigrokdecode.h>
+#endif
 
 using boost::shared_lock;
 using boost::shared_mutex;
