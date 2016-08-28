@@ -41,6 +41,8 @@ const int SignalBase::ColourBGAlpha = 8*256/100;
 SignalBase::SignalBase(shared_ptr<sigrok::Channel> channel) :
 	channel_(channel)
 {
+	if (channel_)
+		internal_name_ = QString::fromStdString(channel_->name());
 }
 
 shared_ptr<sigrok::Channel> SignalBase::channel() const
@@ -51,6 +53,11 @@ shared_ptr<sigrok::Channel> SignalBase::channel() const
 QString SignalBase::name() const
 {
 	return (channel_) ? QString::fromStdString(channel_->name()) : name_;
+}
+
+QString SignalBase::internal_name() const
+{
+	return internal_name_;
 }
 
 void SignalBase::set_name(QString name)

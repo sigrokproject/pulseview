@@ -86,6 +86,11 @@ public:
 	QString name() const;
 
 	/**
+	 * Gets the internal name of this signal, i.e. how the device calls it.
+	 */
+	QString internal_name() const;
+
+	/**
 	 * Sets the name of the signal.
 	 */
 	virtual void set_name(QString name);
@@ -144,7 +149,7 @@ private:
 	std::shared_ptr<pv::data::DecoderStack> decoder_stack_;
 #endif
 
-	QString name_;
+	QString internal_name_, name_;
 	QColor colour_, bgcolour_;
 };
 
