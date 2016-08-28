@@ -170,6 +170,8 @@ private Q_SLOTS:
 
 	void on_actionViewShowCursors_triggered();
 
+	void on_always_zoom_to_fit_changed(bool state);
+
 protected:
 	bool eventFilter(QObject *watched, QEvent *event);
 

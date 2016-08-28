@@ -131,19 +131,22 @@ MainBar::MainBar(Session &session, MainWindow &main_window) :
 	action_open_->setIcon(QIcon::fromTheme("document-open",
 		QIcon(":/icons/document-open.png")));
 	action_open_->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_O));
-	action_open_->setObjectName(QString::fromUtf8("actionOpen"));
+	connect(action_open_, SIGNAL(triggered(bool)),
+		this, SLOT(on_actionOpen_triggered()));
 
 	action_save_as_->setText(tr("&Save As..."));
 	action_save_as_->setIcon(QIcon::fromTheme("document-save-as",
 		QIcon(":/icons/document-save-as.png")));
 	action_save_as_->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_S));
-	action_save_as_->setObjectName(QString::fromUtf8("actionSaveAs"));
+	connect(action_save_as_, SIGNAL(triggered(bool)),
+		this, SLOT(on_actionSaveAs_triggered()));
 
 	action_save_selection_as_->setText(tr("Save Selected &Range As..."));
 	action_save_selection_as_->setIcon(QIcon::fromTheme("document-save-as",
 		QIcon(":/icons/document-save-as.png")));
 	action_save_selection_as_->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_R));
-	action_save_selection_as_->setObjectName(QString::fromUtf8("actionSaveSelectionAs"));
+	connect(action_save_selection_as_, SIGNAL(triggered(bool)),
+		this, SLOT(on_actionSaveSelectionAs_triggered()));
 
 	widgets::ExportMenu *menu_file_export = new widgets::ExportMenu(this,
 		session.device_manager().context());
@@ -160,44 +163,45 @@ MainBar::MainBar(Session &session, MainWindow &main_window) :
 		this, SLOT(import_file(std::shared_ptr<sigrok::InputFormat>)));
 
 	action_connect_->setText(tr("&Connect to Device..."));
-	action_connect_->setObjectName(QString::fromUtf8("actionConnect"));
+	connect(action_connect_, SIGNAL(triggered(bool)),
+		this, SLOT(on_actionConnect_triggered()));
 
 	action_view_zoom_in_->setText(tr("Zoom &In"));
 	action_view_zoom_in_->setIcon(QIcon::fromTheme("zoom-in",
 		QIcon(":/icons/zoom-in.png")));
 	// simply using Qt::Key_Plus shows no + in the menu
 	action_view_zoom_in_->setShortcut(QKeySequence::ZoomIn);
-	action_view_zoom_in_->setObjectName(
-		QString::fromUtf8("actionViewZoomIn"));
+	connect(action_view_zoom_in_, SIGNAL(triggered(bool)),
+		this, SLOT(on_actionViewZoomIn_triggered()));
 
 	action_view_zoom_out_->setText(tr("Zoom &Out"));
 	action_view_zoom_out_->setIcon(QIcon::fromTheme("zoom-out",
 		QIcon(":/icons/zoom-out.png")));
 	action_view_zoom_out_->setShortcut(QKeySequence::ZoomOut);
-	action_view_zoom_out_->setObjectName(
-		QString::fromUtf8("actionViewZoomOut"));
+	connect(action_view_zoom_out_, SIGNAL(triggered(bool)),
+		this, SLOT(on_actionViewZoomOut_triggered()));
 
 	action_view_zoom_fit_->setCheckable(true);
 	action_view_zoom_fit_->setText(tr("Zoom to &Fit"));
 	action_view_zoom_fit_->setIcon(QIcon::fromTheme("zoom-fit",
 		QIcon(":/icons/zoom-fit.png")));
 	action_view_zoom_fit_->setShortcut(QKeySequence(Qt::Key_F));
-	action_view_zoom_fit_->setObjectName(
-		QString::fromUtf8("actionViewZoomFit"));
+	connect(action_view_zoom_fit_, SIGNAL(triggered(bool)),
+		this, SLOT(on_actionViewZoomFit_triggered()));
 
 	action_view_zoom_one_to_one_->setText(tr("Zoom to O&ne-to-One"));
 	action_view_zoom_one_to_one_->setIcon(QIcon::fromTheme("zoom-original",
 		QIcon(":/icons/zoom-original.png")));
 	action_view_zoom_one_to_one_->setShortcut(QKeySequence(Qt::Key_O));
-	action_view_zoom_one_to_one_->setObjectName(
-		QString::fromUtf8("actionViewZoomOneToOne"));
+	connect(action_view_zoom_one_to_one_, SIGNAL(triggered(bool)),
+		this, SLOT(on_actionViewZoomOneToOne_triggered()));
 
 	action_view_show_cursors_->setCheckable(true);
 	action_view_show_cursors_->setIcon(QIcon::fromTheme("show-cursors",
 		QIcon(":/icons/show-cursors.svg")));
 	action_view_show_cursors_->setShortcut(QKeySequence(Qt::Key_C));
-	action_view_show_cursors_->setObjectName(
-		QString::fromUtf8("actionViewShowCursors"));
+	connect(action_view_show_cursors_, SIGNAL(triggered(bool)),
+		this, SLOT(on_actionViewShowCursors_triggered()));
 	action_view_show_cursors_->setText(tr("Show &Cursors"));
 
 	// Open button
@@ -207,7 +211,7 @@ MainBar::MainBar(Session &session, MainWindow &main_window) :
 		session.device_manager().context(), action_open_);
 	connect(import_menu,
 		SIGNAL(format_selected(std::shared_ptr<sigrok::InputFormat>)),
-		&main_window,
+		this,
 		SLOT(import_file(std::shared_ptr<sigrok::InputFormat>)));
 
 	open_button->setMenu(import_menu);
@@ -226,7 +230,7 @@ MainBar::MainBar(Session &session, MainWindow &main_window) :
 		open_actions);
 	connect(export_menu,
 		SIGNAL(format_selected(std::shared_ptr<sigrok::OutputFormat>)),
-		&main_window,
+		this,
 		SLOT(export_file(std::shared_ptr<sigrok::OutputFormat>)));
 
 	save_button->setMenu(export_menu);
@@ -236,8 +240,6 @@ MainBar::MainBar(Session &session, MainWindow &main_window) :
 	// Device selector menu
 	connect(&device_selector_, SIGNAL(device_selected()),
 		this, SLOT(on_device_selected()));
-	connect(&session, SIGNAL(device_changed()),
-		this, SLOT(on_device_changed()));
 
 	// Setup the decoder button
 #ifdef ENABLE_DECODE
@@ -304,10 +306,10 @@ MainBar::MainBar(Session &session, MainWindow &main_window) :
 	sample_rate_.installEventFilter(this);
 
 	// Setup session_ events
-	connect(&session_, SIGNAL(capture_state_changed(int)), this,
-		SLOT(capture_state_changed(int)));
-	connect(&session_, SIGNAL(device_selected()), this,
-		SLOT(device_selected()));
+	connect(&session_, SIGNAL(capture_state_changed(int)),
+		this, SLOT(capture_state_changed(int)));
+	connect(&session, SIGNAL(device_changed()),
+		this, SLOT(on_device_changed()));
 
 	update_device_list();
 }
@@ -1013,6 +1015,11 @@ void MainBar::on_actionViewShowCursors_triggered()
 		session_.main_view()->centre_cursors();
 
 	session_.main_view()->show_cursors(show);
+}
+
+void MainBar::on_always_zoom_to_fit_changed(bool state)
+{
+	action_view_zoom_fit_->setChecked(state);
 }
 
 bool MainBar::eventFilter(QObject *watched, QEvent *event)

@@ -191,10 +191,6 @@ shared_ptr<pv::view::View> MainWindow::add_view(const QString &title,
 		if (type == view::TraceView) {
 			connect(&session, SIGNAL(trigger_event(util::Timestamp)), v.get(),
 				SLOT(trigger_event(util::Timestamp)));
-			connect(v.get(), SIGNAL(sticky_scrolling_changed(bool)), this,
-				SLOT(sticky_scrolling_changed(bool)));
-			connect(v.get(), SIGNAL(always_zoom_to_fit_changed(bool)), this,
-				SLOT(always_zoom_to_fit_changed(bool)));
 
 			v->enable_sticky_scrolling(action_view_sticky_scrolling_->isChecked());
 			v->enable_coloured_bg(action_view_coloured_bg_->isChecked());
@@ -206,6 +202,9 @@ shared_ptr<pv::view::View> MainWindow::add_view(const QString &title,
 				session.set_main_bar(main_bar);
 			}
 			main_bar->action_view_show_cursors()->setChecked(v->cursors_shown());
+
+			connect(v.get(), SIGNAL(always_zoom_to_fit_changed(bool)),
+				main_bar.get(), SLOT(on_always_zoom_to_fit_changed(bool)));
 		}
 	}
 
