@@ -165,6 +165,7 @@ void Session::save_settings(QSettings &settings) const
 {
 	map<string, string> dev_info;
 	list<string> key_list;
+	int stacks = 0;
 
 	if (device_) {
 		settings.beginGroup("Device");
@@ -184,8 +185,31 @@ void Session::save_settings(QSettings &settings) const
 				settings.remove(QString::fromUtf8(key.c_str()));
 		}
 
-		// TODO Save channel settings and decoders
+		// Save channels and decoders
+		for (shared_ptr<data::SignalBase> base : signalbases_) {
+#ifdef ENABLE_DECODE
+			if (base->is_decode_signal()) {
+				shared_ptr<pv::data::DecoderStack> decoder_stack =
+						base->decoder_stack();
+				std::shared_ptr<data::decode::Decoder> top_decoder =
+						decoder_stack->stack().front();
 
+				settings.beginGroup("decoder_stack" + QString::number(stacks++));
+				settings.setValue("id", top_decoder->decoder()->id);
+				settings.setValue("name", top_decoder->decoder()->name);
+				settings.endGroup();
+			} else
+#endif
+			{
+				settings.beginGroup(base->internal_name());
+				settings.setValue("name", base->name());
+				settings.setValue("enabled", base->enabled());
+				settings.setValue("colour", base->colour());
+				settings.endGroup();
+			}
+		}
+
+		settings.setValue("decoder_stacks", stacks);
 		settings.endGroup();
 	}
 }
@@ -220,7 +244,28 @@ void Session::restore_settings(QSettings &settings)
 	if (device) {
 		set_device(device);
 
-		// TODO Restore channel settings and decoders
+		// Restore channels
+		for (shared_ptr<data::SignalBase> base : signalbases_) {
+			settings.beginGroup(base->internal_name());
+			base->set_name(settings.value("name").toString());
+			base->set_enabled(settings.value("enabled").toBool());
+			base->set_colour(settings.value("colour").value<QColor>());
+			settings.endGroup();
+		}
+
+		// Restore decoders
+#ifdef ENABLE_DECODE
+		int stacks = settings.value("decoder_stacks").toInt();
+
+		for (int i = 0; i < stacks; i++) {
+			settings.beginGroup("decoder_stack" + QString::number(i++));
+
+			QString id = settings.value("id").toString();
+			add_decoder(srd_decoder_get_by_id(id.toStdString().c_str()));
+
+			settings.endGroup();
+		}
+#endif
 	}
 
 	settings.endGroup();
@@ -437,6 +482,7 @@ bool Session::add_decoder(srd_decoder *const dec)
 			shared_ptr<data::SignalBase>(new data::SignalBase(nullptr));
 
 		signalbase->set_decoder_stack(decoder_stack);
+		signalbases_.insert(signalbase);
 
 		for (std::shared_ptr<pv::view::View> view : views_)
 			view->add_decode_trace(signalbase);

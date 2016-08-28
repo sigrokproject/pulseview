@@ -149,6 +149,11 @@ void Signal::delete_pressed()
 
 void Signal::on_name_changed(const QString &text)
 {
+	// On startup, this event is fired when a session restores signal
+	// names. However, the name widget hasn't yet been created.
+	if (!name_widget_)
+		return;
+
 	if (text != name_widget_->currentText())
 		name_widget_->setEditText(text);
 

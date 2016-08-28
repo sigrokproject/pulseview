@@ -278,6 +278,7 @@ void MainWindow::save_ui_settings()
 		}
 
 		settings.beginGroup("Session" + QString::number(id++));
+		settings.remove("");  // Remove all keys in this group
 		session->save_settings(settings);
 		settings.endGroup();
 	}
