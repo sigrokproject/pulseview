@@ -152,5 +152,20 @@ void SignalBase::set_decoder_stack(std::shared_ptr<pv::data::DecoderStack>
 }
 #endif
 
+void SignalBase::save_settings(QSettings &settings) const
+{
+	settings.setValue("name", name());
+	settings.setValue("enabled", enabled());
+	settings.setValue("colour", colour());
+}
+
+void SignalBase::restore_settings(QSettings &settings)
+{
+	set_name(settings.value("name").toString());
+	set_enabled(settings.value("enabled").toBool());
+	set_colour(settings.value("colour").value<QColor>());
+}
+
+
 } // namespace data
 } // namespace pv

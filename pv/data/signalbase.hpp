@@ -24,6 +24,7 @@
 
 #include <QColor>
 #include <QObject>
+#include <QSettings>
 #include <QString>
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
@@ -133,6 +134,10 @@ public:
 	void set_decoder_stack(std::shared_ptr<pv::data::DecoderStack>
 		decoder_stack);
 #endif
+
+	void save_settings(QSettings &settings) const;
+
+	void restore_settings(QSettings &settings);
 
 Q_SIGNALS:
 	void enabled_changed(const bool &value);

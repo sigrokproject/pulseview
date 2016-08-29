@@ -202,9 +202,7 @@ void Session::save_settings(QSettings &settings) const
 #endif
 			{
 				settings.beginGroup(base->internal_name());
-				settings.setValue("name", base->name());
-				settings.setValue("enabled", base->enabled());
-				settings.setValue("colour", base->colour());
+				base->save_settings(settings);
 				settings.endGroup();
 			}
 		}
@@ -247,9 +245,7 @@ void Session::restore_settings(QSettings &settings)
 		// Restore channels
 		for (shared_ptr<data::SignalBase> base : signalbases_) {
 			settings.beginGroup(base->internal_name());
-			base->set_name(settings.value("name").toString());
-			base->set_enabled(settings.value("enabled").toBool());
-			base->set_colour(settings.value("colour").value<QColor>());
+			base->restore_settings(settings);
 			settings.endGroup();
 		}
 
