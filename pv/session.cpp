@@ -26,6 +26,8 @@
 #include <boost/thread/locks.hpp>
 #include <boost/thread/shared_mutex.hpp>
 
+#include <QFileInfo>
+
 #include <cassert>
 #include <mutex>
 #include <stdexcept>
@@ -168,21 +170,41 @@ void Session::save_settings(QSettings &settings) const
 	int stacks = 0;
 
 	if (device_) {
-		settings.beginGroup("Device");
-		key_list.push_back("vendor");
-		key_list.push_back("model");
-		key_list.push_back("version");
-		key_list.push_back("serial_num");
-		key_list.push_back("connection_id");
+		shared_ptr<devices::HardwareDevice> hw_device =
+			dynamic_pointer_cast< devices::HardwareDevice >(device_);
 
-		dev_info = device_manager_.get_device_info(device_);
+		if (hw_device) {
+			settings.setValue("device_type", "hardware");
+			settings.beginGroup("device");
 
-		for (string key : key_list) {
-			if (dev_info.count(key))
-				settings.setValue(QString::fromUtf8(key.c_str()),
-						QString::fromUtf8(dev_info.at(key).c_str()));
-			else
-				settings.remove(QString::fromUtf8(key.c_str()));
+			key_list.push_back("vendor");
+			key_list.push_back("model");
+			key_list.push_back("version");
+			key_list.push_back("serial_num");
+			key_list.push_back("connection_id");
+
+			dev_info = device_manager_.get_device_info(device_);
+
+			for (string key : key_list) {
+				if (dev_info.count(key))
+					settings.setValue(QString::fromUtf8(key.c_str()),
+							QString::fromUtf8(dev_info.at(key).c_str()));
+				else
+					settings.remove(QString::fromUtf8(key.c_str()));
+			}
+
+			settings.endGroup();
+		}
+
+		shared_ptr<devices::SessionFile> sessionfile_device =
+			dynamic_pointer_cast< devices::SessionFile >(device_);
+
+		if (sessionfile_device) {
+			settings.setValue("device_type", "sessionfile");
+			settings.beginGroup("device");
+			settings.setValue("filename", QString::fromStdString(
+				sessionfile_device->full_name()));
+			settings.endGroup();
 		}
 
 		// Save channels and decoders
@@ -208,40 +230,63 @@ void Session::save_settings(QSettings &settings) const
 		}
 
 		settings.setValue("decoder_stacks", stacks);
-		settings.endGroup();
 	}
 }
 
 void Session::restore_settings(QSettings &settings)
 {
-	map<string, string> dev_info;
-	list<string> key_list;
-	shared_ptr<devices::HardwareDevice> device;
+	shared_ptr<devices::Device> device;
 
-	// Re-select last used device if possible but only if it's not demo
-	settings.beginGroup("Device");
-	key_list.push_back("vendor");
-	key_list.push_back("model");
-	key_list.push_back("version");
-	key_list.push_back("serial_num");
-	key_list.push_back("connection_id");
+	QString device_type = settings.value("device_type").toString();
 
-	for (string key : key_list) {
-		const QString k = QString::fromStdString(key);
-		if (!settings.contains(k))
-			continue;
+	if (device_type == "hardware") {
+		map<string, string> dev_info;
+		list<string> key_list;
 
-		const string value = settings.value(k).toString().toStdString();
-		if (!value.empty())
-			dev_info.insert(std::make_pair(key, value));
+		// Re-select last used device if possible but only if it's not demo
+		settings.beginGroup("device");
+		key_list.push_back("vendor");
+		key_list.push_back("model");
+		key_list.push_back("version");
+		key_list.push_back("serial_num");
+		key_list.push_back("connection_id");
+
+		for (string key : key_list) {
+			const QString k = QString::fromStdString(key);
+			if (!settings.contains(k))
+				continue;
+
+			const string value = settings.value(k).toString().toStdString();
+			if (!value.empty())
+				dev_info.insert(std::make_pair(key, value));
+		}
+
+		if (dev_info.count("model") > 0)
+			device = device_manager_.find_device_from_info(dev_info);
+
+		if (device)
+			set_device(device);
+
+		settings.endGroup();
 	}
 
-	if (dev_info.count("model") > 0)
-		device = device_manager_.find_device_from_info(dev_info);
+	if (device_type == "sessionfile") {
+		settings.beginGroup("device");
+		QString filename = settings.value("filename").toString();
+		settings.endGroup();
+
+		if (QFileInfo(filename).isReadable()) {
+			device = std::make_shared<devices::SessionFile>(device_manager_.context(),
+				filename.toStdString());
+			set_device(device);
+			set_name(filename);
+
+			// TODO Perform error handling
+			start_capture([](QString infoMessage) { (void)infoMessage; });
+		}
+	}
 
 	if (device) {
-		set_device(device);
-
 		// Restore channels
 		for (shared_ptr<data::SignalBase> base : signalbases_) {
 			settings.beginGroup(base->internal_name());
@@ -263,8 +308,6 @@ void Session::restore_settings(QSettings &settings)
 		}
 #endif
 	}
-
-	settings.endGroup();
 }
 
 void Session::set_device(shared_ptr<devices::Device> device)
