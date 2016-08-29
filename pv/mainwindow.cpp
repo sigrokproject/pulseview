@@ -273,7 +273,8 @@ void MainWindow::save_ui_settings()
 				dynamic_pointer_cast< devices::HardwareDevice >
 				(session->device());
 
-			if (device->hardware_device()->driver()->name() == "demo")
+			if (device &&
+				device->hardware_device()->driver()->name() == "demo")
 				continue;
 		}
 
