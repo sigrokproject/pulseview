@@ -42,6 +42,7 @@
 #include <QString>
 
 #include "util.hpp"
+#include "view/viewwidget.hpp"
 
 struct srd_decoder;
 struct srd_channel;
@@ -180,7 +181,7 @@ private:
 	std::shared_ptr<devices::Device> device_;
 	QString default_name_, name_;
 
-	std::unordered_set< std::shared_ptr<pv::view::View> > views_;
+	std::list< std::shared_ptr<pv::view::View> > views_;
 	std::shared_ptr<pv::view::View> main_view_;
 
 	std::shared_ptr<pv::toolbars::MainBar> main_bar_;
@@ -217,6 +218,9 @@ Q_SIGNALS:
 	void data_received();
 
 	void frame_ended();
+
+	void add_view(const QString &title, view::ViewType type,
+		Session *session);
 };
 
 } // namespace pv

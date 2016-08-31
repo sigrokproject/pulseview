@@ -167,7 +167,7 @@ void Session::save_settings(QSettings &settings) const
 {
 	map<string, string> dev_info;
 	list<string> key_list;
-	int stacks = 0;
+	int stacks = 0, views = 0;
 
 	if (device_) {
 		shared_ptr<devices::HardwareDevice> hw_device =
@@ -230,6 +230,22 @@ void Session::save_settings(QSettings &settings) const
 		}
 
 		settings.setValue("decoder_stacks", stacks);
+
+		// Save view states and their signal settings
+		// Note: main_view must be saved as view0
+		settings.beginGroup("view" + QString::number(views++));
+		main_view_->save_settings(settings);
+		settings.endGroup();
+
+		for (shared_ptr<view::View> view : views_) {
+			if (view != main_view_) {
+				settings.beginGroup("view" + QString::number(views++));
+				view->save_settings(settings);
+				settings.endGroup();
+			}
+		}
+
+		settings.setValue("views", views);
 	}
 }
 
@@ -307,6 +323,22 @@ void Session::restore_settings(QSettings &settings)
 			settings.endGroup();
 		}
 #endif
+
+		// Restore views
+		int views = settings.value("views").toInt();
+
+		for (int i = 0; i < views; i++) {
+			settings.beginGroup("view" + QString::number(i));
+
+			if (i > 0) {
+				view::ViewType type = (view::ViewType)settings.value("type").toInt();
+				add_view(name_, type, this);
+				views_.back()->restore_settings(settings);
+			} else
+				main_view_->restore_settings(settings);
+
+			settings.endGroup();
+		}
 	}
 }
 
@@ -439,12 +471,13 @@ void Session::register_view(std::shared_ptr<pv::view::View> view)
 		main_view_ = view;
 	}
 
-	views_.insert(view);
+	views_.push_back(view);
 }
 
 void Session::deregister_view(std::shared_ptr<pv::view::View> view)
 {
-	views_.erase(view);
+	views_.remove_if([&](std::shared_ptr<pv::view::View> v) {
+		return v == view; });
 
 	if (views_.empty()) {
 		main_view_.reset();
@@ -456,7 +489,11 @@ void Session::deregister_view(std::shared_ptr<pv::view::View> view)
 
 bool Session::has_view(std::shared_ptr<pv::view::View> view)
 {
-	return views_.find(view) != views_.end();
+	for (std::shared_ptr<pv::view::View> v : views_)
+		if (v == view)
+			return true;
+
+	return false;
 }
 
 double Session::get_samplerate() const

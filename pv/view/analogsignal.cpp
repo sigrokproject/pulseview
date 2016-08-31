@@ -88,6 +88,23 @@ shared_ptr<pv::data::SignalData> AnalogSignal::data() const
 	return base_->analog_data();
 }
 
+void AnalogSignal::save_settings(QSettings &settings) const
+{
+	settings.setValue("vdivs", vdivs_);
+	settings.setValue("scale_index", scale_index_);
+}
+
+void AnalogSignal::restore_settings(QSettings &settings)
+{
+	if (settings.contains("vdivs"))
+		vdivs_ = settings.value("vdivs").toInt();
+
+	if (settings.contains("scale_index")) {
+		scale_index_ = settings.value("scale_index").toInt();
+		update_scale();
+	}
+}
+
 std::pair<int, int> AnalogSignal::v_extents() const
 {
 	const int h = vdivs_ * div_height_;

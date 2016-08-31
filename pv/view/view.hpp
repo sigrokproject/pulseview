@@ -114,6 +114,10 @@ public:
 
 	const Viewport* viewport() const;
 
+	void save_settings(QSettings &settings) const;
+
+	void restore_settings(QSettings &settings);
+
 	/**
 	 * Gets a list of time markers.
 	 */

@@ -218,6 +218,9 @@ shared_ptr<Session> MainWindow::add_session()
 
 	shared_ptr<Session> session = make_shared<Session>(device_manager_, name);
 
+	connect(session.get(), SIGNAL(add_view(const QString&, view::ViewType, Session*)),
+		this, SLOT(on_add_view(const QString&, view::ViewType, Session*)));
+
 	sessions_.push_back(session);
 
 	shared_ptr<view::View> main_view =
@@ -332,6 +335,15 @@ bool MainWindow::restoreState(const QByteArray &state, int version)
 	// will try to restore all the dock widgets and create havoc.
 
 	return false;
+}
+
+void MainWindow::on_add_view(const QString &title, view::ViewType type,
+	Session *session)
+{
+	// We get a pointer and need a reference
+	for (std::shared_ptr<Session> s : sessions_)
+		if (s.get() == session)
+			add_view(title, type, *s);
 }
 
 void MainWindow::on_actionViewStickyScrolling_triggered()

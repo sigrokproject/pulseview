@@ -59,6 +59,10 @@ public:
 
 	std::shared_ptr<pv::data::SignalData> data() const;
 
+	virtual void save_settings(QSettings &settings) const;
+
+	virtual void restore_settings(QSettings &settings);
+
 	/**
 	 * Computes the vertical extents of the contents of this row item.
 	 * @return A pair containing the minimum and maximum y-values.

@@ -66,6 +66,10 @@ public:
 
 	std::shared_ptr<data::SignalBase> base() const;
 
+	virtual void save_settings(QSettings &settings) const;
+
+	virtual void restore_settings(QSettings &settings);
+
 	/**
 	 * Returns a list of row items owned by this object.
 	 */

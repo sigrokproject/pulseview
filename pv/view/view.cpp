@@ -28,10 +28,14 @@
 #include <cassert>
 #include <climits>
 #include <cmath>
+#include <iostream>
 #include <iterator>
 #include <mutex>
 #include <unordered_set>
 
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/serialization/serialization.hpp>
 #include <boost/thread/locks.hpp>
 
 #include <QApplication>
@@ -243,6 +247,45 @@ Viewport* View::viewport()
 const Viewport* View::viewport() const
 {
 	return viewport_;
+}
+
+void View::save_settings(QSettings &settings) const
+{
+	settings.setValue("scale", scale_);
+
+	std::stringstream ss;
+	boost::archive::text_oarchive oa(ss);
+	oa << boost::serialization::make_nvp("offset", offset_);
+	settings.setValue("offset", QString::fromStdString(ss.str()));
+
+	for (shared_ptr<view::Signal> signal : signals_) {
+		settings.beginGroup(signal->base()->internal_name());
+		signal->save_settings(settings);
+		settings.endGroup();
+	}
+}
+
+void View::restore_settings(QSettings &settings)
+{
+	if (settings.contains("scale"))
+		set_scale(settings.value("scale").toDouble());
+
+	if (settings.contains("offset")) {
+		util::Timestamp offset;
+		std::stringstream ss;
+		ss << settings.value("offset").toString().toStdString();
+
+		boost::archive::text_iarchive ia(ss);
+		ia >> boost::serialization::make_nvp("offset", offset);
+
+		set_offset(offset);
+	}
+
+	for (shared_ptr<view::Signal> signal : signals_) {
+		settings.beginGroup(signal->base()->internal_name());
+		signal->restore_settings(settings);
+		settings.endGroup();
+	}
 }
 
 vector< shared_ptr<TimeItem> > View::time_items() const

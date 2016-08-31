@@ -91,6 +91,16 @@ shared_ptr<data::SignalBase> Signal::base() const
 	return base_;
 }
 
+void Signal::save_settings(QSettings &settings) const
+{
+	(void)settings;
+}
+
+void Signal::restore_settings(QSettings &settings)
+{
+	(void)settings;
+}
+
 const ViewItemOwner::item_list& Signal::child_items() const
 {
 	return items_;

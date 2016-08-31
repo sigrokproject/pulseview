@@ -91,6 +91,9 @@ private:
 	virtual bool restoreState(const QByteArray &state, int version = 0);
 
 private Q_SLOTS:
+	void on_add_view(const QString &title, view::ViewType type,
+		Session *session);
+
 	void on_actionViewStickyScrolling_triggered();
 
 	void on_actionViewColouredBg_triggered();
