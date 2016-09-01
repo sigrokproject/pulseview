@@ -94,6 +94,9 @@ private Q_SLOTS:
 	void on_add_view(const QString &title, view::ViewType type,
 		Session *session);
 
+	void on_new_session();
+	void on_new_view(Session *session);
+
 	void on_actionViewStickyScrolling_triggered();
 
 	void on_actionViewColouredBg_triggered();

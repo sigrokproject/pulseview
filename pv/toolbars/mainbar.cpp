@@ -89,6 +89,8 @@ const char *MainBar::SettingSaveDirectory = "MainWindow/SaveDirectory";
 
 MainBar::MainBar(Session &session, MainWindow &main_window) :
 	QToolBar("Sampling Bar", &main_window),
+	action_new_session_(new QAction(this)),
+	action_new_view_(new QAction(this)),
 	action_open_(new QAction(this)),
 	action_save_as_(new QAction(this)),
 	action_save_selection_as_(new QAction(this)),
@@ -127,6 +129,18 @@ MainBar::MainBar(Session &session, MainWindow &main_window) :
 	setContextMenuPolicy(Qt::PreventContextMenu);
 
 	// Actions
+	action_new_session_->setText(tr("New &Session"));
+	action_new_session_->setIcon(QIcon::fromTheme("document-new",
+		QIcon(":/icons/document-new.png")));
+	connect(action_new_session_, SIGNAL(triggered(bool)),
+		this, SLOT(on_actionNewSession_triggered()));
+
+	action_new_view_->setText(tr("New &View"));
+	action_new_view_->setIcon(QIcon::fromTheme("window-new",
+		QIcon(":/icons/window-new.png")));
+	connect(action_new_view_, SIGNAL(triggered(bool)),
+		this, SLOT(on_actionNewView_triggered()));
+
 	action_open_->setText(tr("&Open..."));
 	action_open_->setIcon(QIcon::fromTheme("document-open",
 		QIcon(":/icons/document-open.png")));
@@ -255,6 +269,9 @@ MainBar::MainBar(Session &session, MainWindow &main_window) :
 #endif
 
 	// Setup the toolbar
+	addAction(action_new_session_);
+	addAction(action_new_view_);
+	addSeparator();
 	addWidget(open_button);
 	addWidget(save_button);
 	addSeparator();
@@ -942,6 +959,16 @@ void MainBar::on_config_changed()
 {
 	commit_sample_count();
 	commit_sample_rate();	
+}
+
+void MainBar::on_actionNewSession_triggered()
+{
+	new_session();
+}
+
+void MainBar::on_actionNewView_triggered()
+{
+	new_view(&session_);
 }
 
 void MainBar::on_actionOpen_triggered()

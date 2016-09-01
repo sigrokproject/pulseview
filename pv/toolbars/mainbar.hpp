@@ -93,6 +93,8 @@ public:
 	void load_init_file(const std::string &file_name,
 		const std::string &format);
 
+	QAction* action_new_session() const;
+	QAction* action_new_view() const;
 	QAction* action_open() const;
 	QAction* action_save_as() const;
 	QAction* action_save_selection_as() const;
@@ -125,6 +127,8 @@ private:
 
 	void session_error(const QString text, const QString info_text);
 
+	QAction *const action_new_session_;
+	QAction *const action_new_view_;
 	QAction *const action_open_;
 	QAction *const action_save_as_;
 	QAction *const action_save_selection_as_;
@@ -154,6 +158,9 @@ private Q_SLOTS:
 
 	void on_config_changed();
 
+	void on_actionNewSession_triggered();
+	void on_actionNewView_triggered();
+
 	void on_actionOpen_triggered();
 	void on_actionSaveAs_triggered();
 	void on_actionSaveSelectionAs_triggered();
@@ -174,6 +181,10 @@ private Q_SLOTS:
 
 protected:
 	bool eventFilter(QObject *watched, QEvent *event);
+
+Q_SIGNALS:
+	void new_session();
+	void new_view(Session *session);
 
 private:
 	Session &session_;

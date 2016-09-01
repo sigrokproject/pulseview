@@ -200,6 +200,11 @@ shared_ptr<pv::view::View> MainWindow::add_view(const QString &title,
 				main_bar = make_shared<MainBar>(session, *this);
 				dock_main->addToolBar(main_bar.get());
 				session.set_main_bar(main_bar);
+
+				connect(main_bar.get(), SIGNAL(new_session()),
+					this, SLOT(on_new_session()));
+				connect(main_bar.get(), SIGNAL(new_view(Session*)),
+					this, SLOT(on_new_view(Session*)));
 			}
 			main_bar->action_view_show_cursors()->setChecked(v->cursors_shown());
 
@@ -346,6 +351,19 @@ void MainWindow::on_add_view(const QString &title, view::ViewType type,
 	for (std::shared_ptr<Session> s : sessions_)
 		if (s.get() == session)
 			add_view(title, type, *s);
+}
+
+void MainWindow::on_new_session()
+{
+	add_session();
+}
+
+void MainWindow::on_new_view(Session *session)
+{
+	// We get a pointer and need a reference
+	for (std::shared_ptr<Session> s : sessions_)
+		if (s.get() == session)
+			add_view(session->name(), pv::view::TraceView, *s);
 }
 
 void MainWindow::on_actionViewStickyScrolling_triggered()
