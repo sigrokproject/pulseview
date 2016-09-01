@@ -255,6 +255,8 @@ void MainWindow::setup_ui()
 	action_about_->setObjectName(QString::fromUtf8("actionAbout"));
 	action_about_->setText(tr("&About..."));
 
+	setDockNestingEnabled(true);
+
 	// Set the title
 	setWindowTitle(tr("PulseView"));
 }
