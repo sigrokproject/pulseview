@@ -148,6 +148,11 @@ void Session::set_name(QString name)
 	name_changed();
 }
 
+const std::list< std::shared_ptr<pv::view::View> > Session::views() const
+{
+	return views_;
+}
+
 std::shared_ptr<pv::view::View> Session::main_view() const
 {
 	return main_view_;

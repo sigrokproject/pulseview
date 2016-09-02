@@ -76,6 +76,8 @@ public:
 
 	std::shared_ptr<Session> add_session();
 
+	void remove_session(std::shared_ptr<Session> session);
+
 private:
 	void setup_ui();
 
@@ -96,6 +98,7 @@ private Q_SLOTS:
 
 	void on_new_session();
 	void on_new_view(Session *session);
+	void on_view_close_clicked();
 
 	void on_actionViewStickyScrolling_triggered();
 
@@ -106,7 +109,7 @@ private Q_SLOTS:
 private:
 	DeviceManager &device_manager_;
 
-	std::vector< std::shared_ptr<Session> > sessions_;
+	std::list< std::shared_ptr<Session> > sessions_;
 
 	std::map< std::shared_ptr<QDockWidget>,
 		std::shared_ptr<pv::view::View> > view_docks_;

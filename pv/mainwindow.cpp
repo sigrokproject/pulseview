@@ -186,7 +186,14 @@ shared_ptr<pv::view::View> MainWindow::add_view(const QString &title,
 		dock->setWidget(dock_main);
 
 		dock->setFeatures(QDockWidget::DockWidgetMovable |
-			QDockWidget::DockWidgetFloatable);
+			QDockWidget::DockWidgetFloatable | QDockWidget::DockWidgetClosable);
+
+		QAbstractButton *close_btn =
+			dock->findChildren<QAbstractButton*>
+				("qt_dockwidget_closebutton").front();
+
+		connect(close_btn, SIGNAL(clicked(bool)),
+			this, SLOT(on_view_close_clicked()));
 
 		if (type == view::TraceView) {
 			connect(&session, SIGNAL(trigger_event(util::Timestamp)), v.get(),
@@ -232,6 +239,19 @@ shared_ptr<Session> MainWindow::add_session()
 		add_view(name, pv::view::TraceView, *session);
 
 	return session;
+}
+
+void MainWindow::remove_session(shared_ptr<Session> session)
+{
+	for (shared_ptr<view::View> view : session->views()) {
+		// Find the dock the view is contained in and close it
+		for (auto entry : view_docks_)
+			if (entry.second == view)
+				entry.first->close();
+	}
+
+	sessions_.remove_if([&](shared_ptr<Session> s) {
+		return s == session; });
 }
 
 void MainWindow::setup_ui()
@@ -364,6 +384,40 @@ void MainWindow::on_new_view(Session *session)
 	for (std::shared_ptr<Session> s : sessions_)
 		if (s.get() == session)
 			add_view(session->name(), pv::view::TraceView, *s);
+}
+
+void MainWindow::on_view_close_clicked()
+{
+	// Find the dock widget that contains the close button that was clicked
+	QObject *w = QObject::sender();
+	QDockWidget *dock = 0;
+
+	while (w) {
+	    dock = qobject_cast<QDockWidget*>(w);
+	    if (dock)
+	        break;
+	    w = w->parent();
+	}
+
+	// Get the view contained in the dock widget
+	shared_ptr<view::View> view;
+
+	for (auto entry : view_docks_)
+		if (entry.first.get() == dock)
+			view = entry.second;
+
+	// Deregister the view
+	for (shared_ptr<Session> session : sessions_) {
+		if (!session->has_view(view))
+			continue;
+
+		// Also destroy the entire session if its main view is closing
+		if (view == session->main_view()) {
+			remove_session(session);
+			break;
+		} else
+			session->deregister_view(view);
+	}
 }
 
 void MainWindow::on_actionViewStickyScrolling_triggered()

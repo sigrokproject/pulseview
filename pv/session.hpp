@@ -110,6 +110,8 @@ public:
 
 	void set_name(QString name);
 
+	const std::list< std::shared_ptr<pv::view::View> > views() const;
+
 	std::shared_ptr<pv::view::View> main_view() const;
 
 	void set_main_bar(std::shared_ptr<pv::toolbars::MainBar> main_bar);
