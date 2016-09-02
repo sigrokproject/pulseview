@@ -477,6 +477,8 @@ void Session::register_view(std::shared_ptr<pv::view::View> view)
 	}
 
 	views_.push_back(view);
+
+	update_signals();
 }
 
 void Session::deregister_view(std::shared_ptr<pv::view::View> view)
@@ -668,6 +670,7 @@ void Session::update_signals()
 			if (iter != prev_sigs.end()) {
 				// Copy the signal from the old set to the new
 				signal = *iter;
+				view->add_signal(signal);
 			} else {
 				// Find the signalbase for this channel if possible
 				signalbase.reset();
