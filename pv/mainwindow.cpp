@@ -163,7 +163,7 @@ shared_ptr<pv::view::View> MainWindow::get_active_view() const
 		if (entry.first.get() == dock)
 			return entry.second;
 
-	return shared_ptr<pv::view::View>();
+	return nullptr;
 }
 
 shared_ptr<pv::view::View> MainWindow::add_view(const QString &title,
