@@ -502,12 +502,12 @@ void MainBar::load_file(QString file_name,
 		return;
 	}
 
-	session_.set_name(QFileInfo(file_name).fileName());
-
 	update_device_list();
 
 	session_.start_capture([&, errorMessage](QString infoMessage) {
 		session_error(errorMessage, infoMessage); });
+
+	session_.set_name(QFileInfo(file_name).fileName());
 }
 
 void MainBar::update_sample_rate_selector()

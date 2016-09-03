@@ -57,6 +57,9 @@ class MainWindow : public QMainWindow
 {
 	Q_OBJECT
 
+private:
+	static const QString WindowTitle;
+
 public:
 	explicit MainWindow(DeviceManager &device_manager,
 		std::string open_file_name = std::string(),
@@ -96,7 +99,10 @@ private Q_SLOTS:
 	void on_add_view(const QString &title, view::ViewType type,
 		Session *session);
 
+	void on_focus_changed();
+
 	void on_new_session();
+	void on_session_name_changed();
 	void on_new_view(Session *session);
 	void on_view_close_clicked();
 

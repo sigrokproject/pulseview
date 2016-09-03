@@ -99,6 +99,7 @@ using Glib::Variant;
 namespace pv {
 Session::Session(DeviceManager &device_manager, QString name) :
 	device_manager_(device_manager),
+	default_name_(name),
 	name_(name),
 	capture_state_(Stopped),
 	cur_samplerate_(0)
@@ -300,10 +301,11 @@ void Session::restore_settings(QSettings &settings)
 			device = std::make_shared<devices::SessionFile>(device_manager_.context(),
 				filename.toStdString());
 			set_device(device);
-			set_name(filename);
 
 			// TODO Perform error handling
 			start_capture([](QString infoMessage) { (void)infoMessage; });
+
+			set_name(QFileInfo(filename).fileName());
 		}
 	}
 

@@ -62,6 +62,8 @@ class ViewItem;
 
 using toolbars::MainBar;
 
+const QString MainWindow::WindowTitle = tr("PulseView");
+
 MainWindow::MainWindow(DeviceManager &device_manager,
 	string open_file_name, string open_file_format,
 	QWidget *parent) :
@@ -232,6 +234,8 @@ shared_ptr<Session> MainWindow::add_session()
 
 	connect(session.get(), SIGNAL(add_view(const QString&, view::ViewType, Session*)),
 		this, SLOT(on_add_view(const QString&, view::ViewType, Session*)));
+	connect(session.get(), SIGNAL(name_changed()),
+		this, SLOT(on_session_name_changed()));
 
 	sessions_.push_back(session);
 
@@ -252,6 +256,11 @@ void MainWindow::remove_session(shared_ptr<Session> session)
 
 	sessions_.remove_if([&](shared_ptr<Session> s) {
 		return s == session; });
+
+	// Update the window title if there is no view left to
+	// generate focus change events
+	if (sessions_.empty())
+		on_session_name_changed();
 }
 
 void MainWindow::setup_ui()
@@ -282,8 +291,9 @@ void MainWindow::setup_ui()
 
 	setDockNestingEnabled(true);
 
-	// Set the title
-	setWindowTitle(tr("PulseView"));
+	connect(static_cast<QApplication *>(QCoreApplication::instance()),
+		SIGNAL(focusChanged(QWidget*, QWidget*)),
+		this, SLOT(on_focus_changed()));
 }
 
 void MainWindow::save_ui_settings()
@@ -373,9 +383,47 @@ void MainWindow::on_add_view(const QString &title, view::ViewType type,
 			add_view(title, type, *s);
 }
 
+void MainWindow::on_focus_changed()
+{
+	shared_ptr<view::View> view;
+	bool title_set = false;
+
+	view = get_active_view();
+
+	for (shared_ptr<Session> session : sessions_) {
+		if (!session->has_view(view))
+			continue;
+
+		setWindowTitle(session->name() + " - " + WindowTitle);
+		title_set = true;
+	}
+
+	if (!title_set)
+		setWindowTitle(WindowTitle);
+}
+
 void MainWindow::on_new_session()
 {
 	add_session();
+}
+
+void MainWindow::on_session_name_changed()
+{
+	// Update the corresponding dock widget's name(s)
+	Session *session = qobject_cast<Session*>(QObject::sender());
+	assert(session);
+
+	for (shared_ptr<view::View> view : session->views()) {
+		// Get the dock that contains the view
+		for (auto entry : view_docks_)
+			if (entry.second == view) {
+				entry.first->setObjectName(session->name());
+				entry.first->setWindowTitle(session->name());
+			}
+	}
+
+	// Refresh window title if the affected session has focus
+	on_focus_changed();
 }
 
 void MainWindow::on_new_view(Session *session)
