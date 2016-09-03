@@ -297,7 +297,7 @@ void MainWindow::save_ui_settings()
 	settings.endGroup();
 
 	for (shared_ptr<Session> session : sessions_) {
-		// Ignore sessions using the demo device
+		// Ignore sessions using the demo device or no device at all
 		if (session->device()) {
 			shared_ptr<devices::HardwareDevice> device =
 				dynamic_pointer_cast< devices::HardwareDevice >
@@ -306,12 +306,12 @@ void MainWindow::save_ui_settings()
 			if (device &&
 				device->hardware_device()->driver()->name() == "demo")
 				continue;
-		}
 
-		settings.beginGroup("Session" + QString::number(id++));
-		settings.remove("");  // Remove all keys in this group
-		session->save_settings(settings);
-		settings.endGroup();
+			settings.beginGroup("Session" + QString::number(id++));
+			settings.remove("");  // Remove all keys in this group
+			session->save_settings(settings);
+			settings.endGroup();
+		}
 	}
 
 	settings.setValue("sessions", id);
