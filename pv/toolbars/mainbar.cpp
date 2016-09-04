@@ -116,8 +116,7 @@ MainBar::MainBar(Session &session, MainWindow &main_window) :
 	icon_green_(":/icons/status-green.svg"),
 	icon_grey_(":/icons/status-grey.svg"),
 	run_stop_button_(this),
-	run_stop_button_action_(nullptr),
-	menu_button_(this)
+	run_stop_button_action_(nullptr)
 #ifdef ENABLE_DECODE
 	, menu_decoders_add_(new pv::widgets::DecoderMenu(this, true))
 #endif
@@ -312,12 +311,6 @@ MainBar::MainBar(Session &session, MainWindow &main_window) :
 	addSeparator();
 	addWidget(add_decoder_button);
 #endif
-
-	QWidget *const spacer = new QWidget();
-	spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-	addWidget(spacer);
-
-	addWidget(&menu_button_);
 
 	sample_count_.installEventFilter(this);
 	sample_rate_.installEventFilter(this);

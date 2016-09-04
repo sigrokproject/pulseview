@@ -210,8 +210,6 @@ private:
 	QToolButton run_stop_button_;
 	QAction *run_stop_button_action_;
 
-	QToolButton menu_button_;
-
 #ifdef ENABLE_DECODE
 	QMenu *const menu_decoders_add_;
 #endif
