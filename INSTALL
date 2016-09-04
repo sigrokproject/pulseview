@@ -22,6 +22,7 @@ Requirements
     - libboost-system
     - libboost-filesystem
     - libboost-thread
+    - libboost-serialization
     - libboost-test (optional, only needed to run the unit tests)
  - libsigrokcxx >= 0.4.0 (libsigrok C++ bindings)
  - libsigrokdecode >= 0.4.0
