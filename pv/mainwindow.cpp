@@ -260,7 +260,7 @@ void MainWindow::remove_session(shared_ptr<Session> session)
 	// Update the window title if there is no view left to
 	// generate focus change events
 	if (sessions_.empty())
-		on_session_name_changed();
+		setWindowTitle(WindowTitle);
 }
 
 void MainWindow::setup_ui()
