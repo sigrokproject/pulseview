@@ -6,6 +6,7 @@
 	<file>icons/decoder-delete.svg</file>
 	<file>icons/decoder-hidden.svg</file>
 	<file>icons/decoder-shown.svg</file>
+	<file>icons/document-new.png</file>
 	<file>icons/document-open.png</file>
 	<file>icons/document-save-as.png</file>
 	<file>icons/channels.svg</file>
@@ -27,6 +28,7 @@
 	<file>icons/trigger-marker-rising.svg</file>
 	<file>icons/trigger-none.svg</file>
 	<file>icons/trigger-rising.svg</file>
+	<file>icons/window-new.png</file>
 	<file>icons/zoom-fit.png</file>
 	<file>icons/zoom-in.png</file>
 	<file>icons/zoom-original.png</file>
