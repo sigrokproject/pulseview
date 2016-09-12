@@ -227,8 +227,8 @@ shared_ptr<pv::view::View> MainWindow::add_view(const QString &title,
 
 shared_ptr<Session> MainWindow::add_session()
 {
-	int id = sessions_.size();
-	QString name = tr("Untitled-%1").arg(id + 1);
+	static int last_session_id = 1;
+	QString name = tr("Untitled-%1").arg(last_session_id++);
 
 	shared_ptr<Session> session = make_shared<Session>(device_manager_, name);
 
