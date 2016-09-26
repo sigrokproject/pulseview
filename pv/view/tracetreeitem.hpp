@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_VIEW_TRACETREEITEM_HPP
-#define PULSEVIEW_PV_VIEW_TRACETREEITEM_HPP
+#ifndef PULSEVIEW_PV_VIEWS_TRACEVIEW_TRACETREEITEM_HPP
+#define PULSEVIEW_PV_VIEWS_TRACEVIEW_TRACETREEITEM_HPP
 
 #include <memory>
 
@@ -28,12 +28,13 @@
 #include "rowitem.hpp"
 
 namespace pv {
-namespace view {
+namespace views {
+namespace TraceView {
 
 class TraceTreeItemOwner;
 
 class TraceTreeItem : public RowItem,
-	public std::enable_shared_from_this<pv::view::TraceTreeItem>
+	public std::enable_shared_from_this<TraceTreeItem>
 {
 	Q_OBJECT
 	Q_PROPERTY(int visual_v_offset
@@ -91,7 +92,7 @@ public:
 	 * Sets the owner this trace in the view trace hierachy.
 	 * @param The new owner of the trace.
 	 */
-	void set_owner(pv::view::TraceTreeItemOwner *owner);
+	void set_owner(TraceTreeItemOwner *owner);
 
 	/**
 	 * Gets the visual y-offset of the axis.
@@ -136,7 +137,8 @@ private:
 	QPropertyAnimation v_offset_animation_;
 };
 
-} // namespace view
+} // namespace TraceView
+} // namespace views
 } // namespace pv
 
-#endif // PULSEVIEW_PV_VIEW_TRACETREEITEM_HPP
+#endif // PULSEVIEW_PV_VIEWS_TRACEVIEW_TRACETREEITEM_HPP

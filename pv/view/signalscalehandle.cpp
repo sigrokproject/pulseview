@@ -30,7 +30,8 @@ using std::max;
 using std::min;
 
 namespace pv {
-namespace view {
+namespace views {
+namespace TraceView {
 
 SignalScaleHandle::SignalScaleHandle(Signal &owner) :
 	owner_(owner)
@@ -103,5 +104,6 @@ void SignalScaleHandle::paint_fore(QPainter &p, const ViewItemPaintParams &pp)
 	p.drawEllipse(r);
 }
 
-} // view
-} // pv
+} // namespace TraceView
+} // namespace views
+} // namespace pv

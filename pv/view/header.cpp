@@ -49,7 +49,8 @@ using std::stable_sort;
 using std::vector;
 
 namespace pv {
-namespace view {
+namespace views {
+namespace TraceView {
 
 const int Header::Padding = 12;
 const int Header::BaselineOffset = 5;
@@ -218,5 +219,6 @@ void Header::on_ungroup()
 	} while (restart);
 }
 
-} // namespace view
+} // namespace TraceView
+} // namespace views
 } // namespace pv

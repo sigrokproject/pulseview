@@ -21,7 +21,8 @@
 #include "tracepalette.hpp"
 
 namespace pv {
-namespace view {
+namespace views {
+namespace TraceView {
 
 const QColor TracePalette::Colours[Cols * Rows] = {
 
@@ -66,5 +67,6 @@ const QColor TracePalette::Colours[Cols * Rows] = {
 	QColor(0xFF, 0xFF, 0xFF),	// White
 };
 
-} // view
-} // pv
+} // namespace TraceView
+} // namespace views
+} // namespace pv

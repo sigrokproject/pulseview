@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_VIEW_VIEWITEMOWNER_HPP
-#define PULSEVIEW_PV_VIEW_VIEWITEMOWNER_HPP
+#ifndef PULSEVIEW_PV_VIEWS_TRACEVIEW_VIEWITEMOWNER_HPP
+#define PULSEVIEW_PV_VIEWS_TRACEVIEW_VIEWITEMOWNER_HPP
 
 #include <memory>
 #include <vector>
@@ -30,7 +30,8 @@ namespace pv {
 
 class Session;
 
-namespace view {
+namespace views {
+namespace TraceView {
 
 class ViewItem;
 class View;
@@ -90,7 +91,8 @@ protected:
 	item_list items_;
 };
 
-} // view
-} // pv
+} // namespace TraceView
+} // namespace views
+} // namespace pv
 
-#endif // PULSEVIEW_PV_VIEW_VIEWITEMOWNER_HPP
+#endif // PULSEVIEW_PV_VIEWS_TRACEVIEW_VIEWITEMOWNER_HPP

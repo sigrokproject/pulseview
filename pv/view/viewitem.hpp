@@ -37,7 +37,8 @@ namespace widgets {
 class Popup;
 }
 
-namespace view {
+namespace views {
+namespace TraceView {
 
 class ViewItemOwner;
 
@@ -172,7 +173,8 @@ private:
 	bool selected_;
 };
 
-} // namespace view
+} // namespace TraceView
+} // namespace views
 } // namespace pv
 
 #endif // PULSEVIEW_PV_VIEWITEM_HPP

@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_VIEW_VIEWITEMITERATOR_HPP
-#define PULSEVIEW_PV_VIEW_VIEWITEMITERATOR_HPP
+#ifndef PULSEVIEW_PV_VIEWS_TRACEVIEW_VIEWITEMITERATOR_HPP
+#define PULSEVIEW_PV_VIEWS_TRACEVIEW_VIEWITEMITERATOR_HPP
 
 #include <algorithm>
 #include <cassert>
@@ -32,7 +32,8 @@
 #include <pv/session.hpp>
 
 namespace pv {
-namespace view {
+namespace views {
+namespace TraceView {
 
 template<class Owner, class Item> class ViewItemIterator
 {
@@ -123,7 +124,8 @@ void swap(ViewItemIterator<Owner, Item>& a, ViewItemIterator<Owner, Item>& b)
 	a.swap(b);
 }
 
-} // namespace view
+} // namespace TraceView
+} // namespace views
 } // namespace pv
 
-#endif // PULSEVIEW_PV_VIEW_VIEWITEMITERATOR_HPP
+#endif // PULSEVIEW_PV_VIEWS_TRACEVIEW_VIEWITEMITERATOR_HPP

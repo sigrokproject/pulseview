@@ -39,6 +39,7 @@
 #include <boost/thread/locks.hpp>
 
 #include <QApplication>
+#include <QHBoxLayout>
 #include <QEvent>
 #include <QFontMetrics>
 #include <QMouseEvent>
@@ -95,7 +96,8 @@ using std::vector;
 using std::weak_ptr;
 
 namespace pv {
-namespace view {
+namespace views {
+namespace TraceView {
 
 const Timestamp View::MaxScale("1e9");
 const Timestamp View::MinScale("1e-12");
@@ -105,12 +107,41 @@ const int View::MaxViewAutoUpdateRate = 25; // No more than 25 Hz with sticky sc
 
 const int View::ScaleUnits[3] = {1, 2, 5};
 
+
+CustomAbstractScrollArea::CustomAbstractScrollArea(QWidget *parent) :
+	QAbstractScrollArea(parent)
+{
+}
+
+void CustomAbstractScrollArea::setViewportMargins(int left, int top, int right, int bottom)
+{
+	QAbstractScrollArea::setViewportMargins(left, top, right, bottom);
+}
+
+bool CustomAbstractScrollArea::viewportEvent(QEvent *event)
+{
+	switch (event->type()) {
+	case QEvent::Paint:
+	case QEvent::MouseButtonPress:
+	case QEvent::MouseButtonRelease:
+	case QEvent::MouseButtonDblClick:
+	case QEvent::MouseMove:
+	case QEvent::Wheel:
+	case QEvent::TouchBegin:
+	case QEvent::TouchUpdate:
+	case QEvent::TouchEnd:
+		return false;
+	default:
+		return QAbstractScrollArea::viewportEvent(event);
+	}
+}
+
 View::View(Session &session, QWidget *parent) :
-	QAbstractScrollArea(parent),
-	session_(session),
+	ViewBase(session, parent),
 	viewport_(new Viewport(*this)),
 	ruler_(new Ruler(*this)),
 	header_(new Header(*this)),
+	scrollarea_(this),
 	scale_(1e-3),
 	offset_(0),
 	updating_scroll_(false),
@@ -126,19 +157,10 @@ View::View(Session &session, QWidget *parent) :
 	trigger_markers_(),
 	hover_point_(-1, -1)
 {
-	connect(horizontalScrollBar(), SIGNAL(valueChanged(int)),
+	connect(scrollarea_.horizontalScrollBar(), SIGNAL(valueChanged(int)),
 		this, SLOT(h_scroll_value_changed(int)));
-	connect(verticalScrollBar(), SIGNAL(valueChanged(int)),
+	connect(scrollarea_.verticalScrollBar(), SIGNAL(valueChanged(int)),
 		this, SLOT(v_scroll_value_changed()));
-
-	connect(&session_, SIGNAL(signals_changed()),
-		this, SLOT(signals_changed()));
-	connect(&session_, SIGNAL(capture_state_changed(int)),
-		this, SLOT(capture_state_updated(int)));
-	connect(&session_, SIGNAL(data_received()),
-		this, SLOT(data_updated()));
-	connect(&session_, SIGNAL(frame_ended()),
-		this, SLOT(data_updated()));
 
 	connect(header_, SIGNAL(selection_changed()),
 		ruler_, SLOT(clear_selection()));
@@ -162,7 +184,13 @@ View::View(Session &session, QWidget *parent) :
 	delayed_view_updater_.setSingleShot(true);
 	delayed_view_updater_.setInterval(1000 / MaxViewAutoUpdateRate);
 
-	setViewport(viewport_);
+	/* To let the scroll area fill up the parent QWidget (this), we need a layout */
+	QHBoxLayout *layout = new QHBoxLayout(this);
+	setLayout(layout);
+	layout->setContentsMargins(0, 0, 0, 0);
+	layout->addWidget(&scrollarea_);
+
+	scrollarea_.setViewport(viewport_);
 
 	viewport_->installEventFilter(this);
 	ruler_->installEventFilter(this);
@@ -190,7 +218,7 @@ const Session& View::session() const
 	return session_;
 }
 
-std::unordered_set< std::shared_ptr<view::Signal> > View::signals() const
+std::unordered_set< std::shared_ptr<Signal> > View::signals() const
 {
 	return signals_;
 }
@@ -200,25 +228,25 @@ void View::clear_signals()
 	signals_.clear();
 }
 
-void View::add_signal(const shared_ptr<view::Signal> signal)
+void View::add_signal(const shared_ptr<Signal> signal)
 {
 	signals_.insert(signal);
 }
 
 #ifdef ENABLE_DECODE
-void View::clear_decode_traces()
+void View::clear_decode_signals()
 {
 	decode_traces_.clear();
 }
 
-void View::add_decode_trace(shared_ptr<data::SignalBase> signalbase)
+void View::add_decode_signal(shared_ptr<data::SignalBase> signalbase)
 {
-	shared_ptr<view::DecodeTrace> d(
-		new view::DecodeTrace(session_, signalbase, decode_traces_.size()));
+	shared_ptr<DecodeTrace> d(
+		new DecodeTrace(session_, signalbase, decode_traces_.size()));
 	decode_traces_.push_back(d);
 }
 
-void View::remove_decode_trace(shared_ptr<data::SignalBase> signalbase)
+void View::remove_decode_signal(shared_ptr<data::SignalBase> signalbase)
 {
 	for (auto i = decode_traces_.begin(); i != decode_traces_.end(); i++)
 		if ((*i)->base() == signalbase) {
@@ -258,7 +286,7 @@ void View::save_settings(QSettings &settings) const
 	oa << boost::serialization::make_nvp("offset", offset_);
 	settings.setValue("offset", QString::fromStdString(ss.str()));
 
-	for (shared_ptr<view::Signal> signal : signals_) {
+	for (shared_ptr<Signal> signal : signals_) {
 		settings.beginGroup(signal->base()->internal_name());
 		signal->save_settings(settings);
 		settings.endGroup();
@@ -281,7 +309,7 @@ void View::restore_settings(QSettings &settings)
 		set_offset(offset);
 	}
 
-	for (shared_ptr<view::Signal> signal : signals_) {
+	for (shared_ptr<Signal> signal : signals_) {
 		settings.beginGroup(signal->base()->internal_name());
 		signal->restore_settings(settings);
 		settings.endGroup();
@@ -330,12 +358,12 @@ void View::set_offset(const pv::util::Timestamp& offset)
 
 int View::owner_visual_v_offset() const
 {
-	return -verticalScrollBar()->sliderPosition();
+	return -scrollarea_.verticalScrollBar()->sliderPosition();
 }
 
 void View::set_v_offset(int offset)
 {
-	verticalScrollBar()->setSliderPosition(offset);
+	scrollarea_.verticalScrollBar()->setSliderPosition(offset);
 	header_->update();
 	viewport_->update();
 }
@@ -730,6 +758,8 @@ void View::calculate_tick_spacing()
 void View::update_scroll()
 {
 	assert(viewport_);
+	QScrollBar *hscrollbar = scrollarea_.horizontalScrollBar();
+	QScrollBar *vscrollbar = scrollarea_.verticalScrollBar();
 
 	const QSize areaSize = viewport_->size();
 
@@ -741,31 +771,31 @@ void View::update_scroll()
 
 	int major_tick_distance = (tick_period_ / scale_).convert_to<int>();
 
-	horizontalScrollBar()->setPageStep(areaSize.width() / 2);
-	horizontalScrollBar()->setSingleStep(major_tick_distance);
+	hscrollbar->setPageStep(areaSize.width() / 2);
+	hscrollbar->setSingleStep(major_tick_distance);
 
 	updating_scroll_ = true;
 
 	if (length < MaxScrollValue) {
-		horizontalScrollBar()->setRange(0, length);
-		horizontalScrollBar()->setSliderPosition(offset.convert_to<double>());
+		hscrollbar->setRange(0, length);
+		hscrollbar->setSliderPosition(offset.convert_to<double>());
 	} else {
-		horizontalScrollBar()->setRange(0, MaxScrollValue);
-		horizontalScrollBar()->setSliderPosition(
+		hscrollbar->setRange(0, MaxScrollValue);
+		hscrollbar->setSliderPosition(
 			(offset_ * MaxScrollValue / (scale_ * length)).convert_to<double>());
 	}
 
 	updating_scroll_ = false;
 
 	// Set the vertical scrollbar
-	verticalScrollBar()->setPageStep(areaSize.height());
-	verticalScrollBar()->setSingleStep(areaSize.height() / 8);
+	vscrollbar->setPageStep(areaSize.height());
+	vscrollbar->setSingleStep(areaSize.height() / 8);
 
 	const pair<int, int> extents = v_extents();
 
 	// Don't change the scrollbar range if there are no traces
 	if (extents.first != extents.second)
-		verticalScrollBar()->setRange(extents.first - areaSize.height(),
+		vscrollbar->setRange(extents.first - areaSize.height(),
 			extents.second);
 
 	if (scroll_needs_defaults)
@@ -774,7 +804,7 @@ void View::update_scroll()
 
 void View::reset_scroll()
 {
-	verticalScrollBar()->setRange(0, 0);
+	scrollarea_.verticalScrollBar()->setRange(0, 0);
 }
 
 void View::set_scroll_default()
@@ -807,8 +837,8 @@ void View::set_scroll_default()
 
 void View::update_layout()
 {
-	setViewportMargins(
-		header_->sizeHint().width() - pv::view::Header::BaselineOffset,
+	scrollarea_.setViewportMargins(
+		header_->sizeHint().width() - Header::BaselineOffset,
 		ruler_->sizeHint().height(), 0, 0);
 	ruler_->setGeometry(viewport_->x(), 0,
 		viewport_->width(), ruler_->extended_size_hint().height());
@@ -923,24 +953,6 @@ bool View::eventFilter(QObject *object, QEvent *event)
 	return QObject::eventFilter(object, event);
 }
 
-bool View::viewportEvent(QEvent *event)
-{
-	switch (event->type()) {
-	case QEvent::Paint:
-	case QEvent::MouseButtonPress:
-	case QEvent::MouseButtonRelease:
-	case QEvent::MouseButtonDblClick:
-	case QEvent::MouseMove:
-	case QEvent::Wheel:
-	case QEvent::TouchBegin:
-	case QEvent::TouchUpdate:
-	case QEvent::TouchEnd:
-		return false;
-	default:
-		return QAbstractScrollArea::viewportEvent(event);
-	}
-}
-
 void View::resizeEvent(QResizeEvent*)
 {
 	update_layout();
@@ -982,7 +994,7 @@ void View::h_scroll_value_changed(int value)
 		sticky_scrolling_changed(false);
 	}
 
-	const int range = horizontalScrollBar()->maximum();
+	const int range = scrollarea_.horizontalScrollBar()->maximum();
 	if (range < MaxScrollValue)
 		set_offset(scale_ * value);
 	else {
@@ -1012,7 +1024,8 @@ void View::signals_changed()
 	// Do we need to set the vertical scrollbar to its default position later?
 	// We do if there are no traces, i.e. the scroll bar has no range set
 	bool reset_scrollbar =
-		verticalScrollBar()->minimum() == verticalScrollBar()->maximum();
+		(scrollarea_.verticalScrollBar()->minimum() ==
+			scrollarea_.verticalScrollBar()->maximum());
 
 	if (!session_.device()) {
 		reset_scroll();
@@ -1251,5 +1264,6 @@ void View::on_hover_point_changed()
 		r->hover_point_changed();
 }
 
-} // namespace view
+} // namespace TraceView
+} // namespace views
 } // namespace pv

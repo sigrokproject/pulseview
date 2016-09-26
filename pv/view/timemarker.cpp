@@ -38,7 +38,8 @@ using std::max;
 using std::min;
 
 namespace pv {
-namespace view {
+namespace views {
+namespace TraceView {
 
 const int TimeMarker::ArrowSize = 4;
 
@@ -191,5 +192,6 @@ void TimeMarker::on_value_changed(const pv::util::Timestamp& value)
 		set_time(value);
 }
 
-} // namespace view
+} // namespace TraceView
+} // namespace views
 } // namespace pv

@@ -34,7 +34,8 @@ using std::shared_ptr;
 using std::pair;
 
 namespace pv {
-namespace view {
+namespace views {
+namespace TraceView {
 
 const int CursorPair::DeltaPadding = 8;
 const QColor CursorPair::ViewportFillColour(220, 231, 243);
@@ -192,5 +193,6 @@ pair<float, float> CursorPair::get_cursor_offsets() const
 		((second_->time() - view_.offset()) / view_.scale()).convert_to<float>());
 }
 
-} // namespace view
+} // namespace TraceView
+} // namespace views
 } // namespace pv

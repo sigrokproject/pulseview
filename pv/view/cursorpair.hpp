@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_VIEW_CURSORPAIR_HPP
-#define PULSEVIEW_PV_VIEW_CURSORPAIR_HPP
+#ifndef PULSEVIEW_PV_VIEWS_TRACEVIEW_CURSORPAIR_HPP
+#define PULSEVIEW_PV_VIEWS_TRACEVIEW_CURSORPAIR_HPP
 
 #include "cursor.hpp"
 
@@ -30,7 +30,8 @@
 class QPainter;
 
 namespace pv {
-namespace view {
+namespace views {
+namespace TraceView {
 
 class CursorPair : public TimeItem
 {
@@ -105,7 +106,8 @@ private:
 	QSizeF text_size_;
 };
 
-} // namespace view
+} // namespace TraceView
+} // namespace views
 } // namespace pv
 
-#endif // PULSEVIEW_PV_VIEW_CURSORPAIR_HPP
+#endif // PULSEVIEW_PV_VIEWS_TRACEVIEW_CURSORPAIR_HPP

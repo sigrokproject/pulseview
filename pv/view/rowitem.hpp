@@ -18,13 +18,14 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_VIEW_ROWITEM_HPP
-#define PULSEVIEW_PV_VIEW_ROWITEM_HPP
+#ifndef PULSEVIEW_PV_VIEWS_TRACEVIEW_ROWITEM_HPP
+#define PULSEVIEW_PV_VIEWS_TRACEVIEW_ROWITEM_HPP
 
-#include "viewitem.hpp"
+#include <pv/view/viewitem.hpp>
 
 namespace pv {
-namespace view {
+namespace views {
+namespace TraceView {
 
 class RowItem : public ViewItem
 {
@@ -34,7 +35,8 @@ public:
 	virtual void hover_point_changed();
 };
 
-} // namespace view
+} // namespace TraceView
+} // namespace views
 } // namespace pv
 
-#endif // PULSEVIEW_PV_VIEW_ROWITEM_HPP
+#endif // PULSEVIEW_PV_VIEWS_TRACEVIEW_ROWITEM_HPP

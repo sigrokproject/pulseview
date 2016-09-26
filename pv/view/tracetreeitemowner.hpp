@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_VIEW_TRACETREEITEMOWNER_HPP
-#define PULSEVIEW_PV_VIEW_TRACETREEITEMOWNER_HPP
+#ifndef PULSEVIEW_PV_VIEWS_TRACEVIEW_TRACETREEITEMOWNER_HPP
+#define PULSEVIEW_PV_VIEWS_TRACEVIEW_TRACETREEITEMOWNER_HPP
 
 #include "viewitemowner.hpp"
 #include "tracetreeitem.hpp"
@@ -28,7 +28,8 @@ namespace pv {
 
 class Session;
 
-namespace view {
+namespace views {
+namespace TraceView {
 
 class TraceTreeItem;
 class View;
@@ -39,24 +40,24 @@ public:
 	/**
 	 * Returns the view of the owner.
 	 */
-	virtual pv::view::View* view() = 0;
+	virtual View* view() = 0;
 
 	/**
 	 * Returns the view of the owner.
 	 */
-	virtual const pv::view::View* view() const = 0;
+	virtual const View* view() const = 0;
 
 	virtual int owner_visual_v_offset() const = 0;
 
 	/**
-	 * Returns the session of the onwer.
+	 * Returns the session of the owner.
 	 */
-	virtual pv::Session& session() = 0;
+	virtual Session& session() = 0;
 
 	/**
 	 * Returns the session of the owner.
 	 */
-	virtual const pv::Session& session() const = 0;
+	virtual const Session& session() const = 0;
 
 	/**
 	 * Returns the number of nested parents that this row item owner has.
@@ -111,7 +112,8 @@ public:
 	virtual void extents_changed(bool horz, bool vert) = 0;
 };
 
-} // view
-} // pv
+} // namespace TraceView
+} // namespace views
+} // namespace pv
 
-#endif // PULSEVIEW_PV_VIEW_TRACETREEITEMOWNER_HPP
+#endif // PULSEVIEW_PV_VIEWS_TRACEVIEW_TRACETREEITEMOWNER_HPP

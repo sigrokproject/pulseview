@@ -31,7 +31,8 @@ using std::shared_ptr;
 using std::vector;
 
 namespace pv {
-namespace view {
+namespace views {
+namespace TraceView {
 
 ViewWidget::ViewWidget(View &parent) :
 	QWidget(&parent),
@@ -298,5 +299,6 @@ void ViewWidget::leaveEvent(QEvent*)
 	update();
 }
 
-} // namespace view
+} // namespace TraceView
+} // namespace views
 } // namespace pv

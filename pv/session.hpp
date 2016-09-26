@@ -42,7 +42,7 @@
 #include <QString>
 
 #include "util.hpp"
-#include "view/viewwidget.hpp"
+#include "views/viewbase.hpp"
 
 struct srd_decoder;
 struct srd_channel;
@@ -78,8 +78,8 @@ namespace toolbars {
 class MainBar;
 }
 
-namespace view {
-class View;
+namespace views {
+class ViewBase;
 }
 
 class Session : public QObject
@@ -110,9 +110,9 @@ public:
 
 	void set_name(QString name);
 
-	const std::list< std::shared_ptr<pv::view::View> > views() const;
+	const std::list< std::shared_ptr<views::ViewBase> > views() const;
 
-	std::shared_ptr<pv::view::View> main_view() const;
+	std::shared_ptr<views::ViewBase> main_view() const;
 
 	void set_main_bar(std::shared_ptr<pv::toolbars::MainBar> main_bar);
 
@@ -137,11 +137,11 @@ public:
 
 	double get_samplerate() const;
 
-	void register_view(std::shared_ptr<pv::view::View> view);
+	void register_view(std::shared_ptr<views::ViewBase> view);
 
-	void deregister_view(std::shared_ptr<pv::view::View> view);
+	void deregister_view(std::shared_ptr<views::ViewBase> view);
 
-	bool has_view(std::shared_ptr<pv::view::View> view);
+	bool has_view(std::shared_ptr<views::ViewBase> view);
 
 	const std::unordered_set< std::shared_ptr<data::SignalBase> >
 		signalbases() const;
@@ -183,8 +183,8 @@ private:
 	std::shared_ptr<devices::Device> device_;
 	QString default_name_, name_;
 
-	std::list< std::shared_ptr<pv::view::View> > views_;
-	std::shared_ptr<pv::view::View> main_view_;
+	std::list< std::shared_ptr<views::ViewBase> > views_;
+	std::shared_ptr<pv::views::ViewBase> main_view_;
 
 	std::shared_ptr<pv::toolbars::MainBar> main_bar_;
 
@@ -221,7 +221,7 @@ Q_SIGNALS:
 
 	void frame_ended();
 
-	void add_view(const QString &title, view::ViewType type,
+	void add_view(const QString &title, views::ViewType type,
 		Session *session);
 };
 

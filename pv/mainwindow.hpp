@@ -28,7 +28,7 @@
 #include <QMainWindow>
 
 #include "session.hpp"
-#include "view/viewwidget.hpp"
+#include "views/viewbase.hpp"
 
 struct srd_decoder;
 
@@ -72,10 +72,10 @@ public:
 	QAction* action_view_coloured_bg() const;
 	QAction* action_about() const;
 
-	std::shared_ptr<pv::view::View> get_active_view() const;
+	std::shared_ptr<views::ViewBase> get_active_view() const;
 
-	std::shared_ptr<pv::view::View> add_view(const QString &title,
-		view::ViewType type, Session &session);
+	std::shared_ptr<views::ViewBase> add_view(const QString &title,
+		views::ViewType type, Session &session);
 
 	std::shared_ptr<Session> add_session();
 
@@ -96,7 +96,7 @@ private:
 	virtual bool restoreState(const QByteArray &state, int version = 0);
 
 private Q_SLOTS:
-	void on_add_view(const QString &title, view::ViewType type,
+	void on_add_view(const QString &title, views::ViewType type,
 		Session *session);
 
 	void on_focus_changed();
@@ -118,7 +118,7 @@ private:
 	std::list< std::shared_ptr<Session> > sessions_;
 
 	std::map< std::shared_ptr<QDockWidget>,
-		std::shared_ptr<pv::view::View> > view_docks_;
+		std::shared_ptr<views::ViewBase> > view_docks_;
 
 	QAction *const action_view_sticky_scrolling_;
 	QAction *const action_view_coloured_bg_;

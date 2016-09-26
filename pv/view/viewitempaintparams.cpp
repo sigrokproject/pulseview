@@ -26,7 +26,8 @@
 #include "viewitempaintparams.hpp"
 
 namespace pv {
-namespace view {
+namespace views {
+namespace TraceView {
 
 ViewItemPaintParams::ViewItemPaintParams(
 	const QRect &rect, double scale, const pv::util::Timestamp& offset) :
@@ -47,5 +48,6 @@ int ViewItemPaintParams::text_height()
 	return QFontMetrics(font()).height();
 }
 
-} // namespace view
+} // namespace TraceView
+} // namespace views
 } // namespace pv

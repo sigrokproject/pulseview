@@ -36,7 +36,8 @@
 #include <pv/widgets/popup.hpp>
 
 namespace pv {
-namespace view {
+namespace views {
+namespace TraceView {
 
 const QPen Trace::AxisPen(QColor(0, 0, 0, 30*256/100));
 const int Trace::LabelHitPadding = 2;
@@ -140,8 +141,6 @@ pv::widgets::Popup* Trace::create_popup(QWidget *parent)
 
 QRectF Trace::label_rect(const QRectF &rect) const
 {
-	using pv::view::View;
-
 	QFontMetrics m(QApplication::font());
 	const QSize text_size(
 		m.boundingRect(QRect(), 0, base_->name()).width(), m.height());
@@ -278,5 +277,6 @@ void Trace::on_colouredit_changed(const QColor &colour)
 	set_colour(colour);
 }
 
-} // namespace view
+} // namespace TraceView
+} // namespace views
 } // namespace pv

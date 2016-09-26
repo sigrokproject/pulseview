@@ -35,7 +35,8 @@ using std::static_pointer_cast;
 using std::vector;
 
 namespace pv {
-namespace view {
+namespace views {
+namespace TraceView {
 
 const ViewItemOwner::item_list& TraceTreeItemOwner::child_items() const
 {
@@ -132,5 +133,6 @@ void TraceTreeItemOwner::restack_items()
 {
 }
 
-} // view
-} // pv
+} // namespace TraceView
+} // namespace views
+} // namespace pv

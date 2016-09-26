@@ -22,7 +22,8 @@
 #include "view.hpp"
 
 namespace pv {
-namespace view {
+namespace views {
+namespace TraceView {
 
 TimeItem::TimeItem(View &view) :
 	view_(view) {
@@ -34,5 +35,6 @@ void TimeItem::drag_by(const QPoint &delta)
 		view_.scale());
 }
 
-} // namespace view
+} // namespace TraceView
+} // namespace views
 } // namespace pv

@@ -32,6 +32,8 @@
 
 #include <QMouseEvent>
 
+#include <QDebug>
+
 using std::abs;
 using std::back_inserter;
 using std::copy;
@@ -45,7 +47,8 @@ using std::stable_sort;
 using std::vector;
 
 namespace pv {
-namespace view {
+namespace views {
+namespace TraceView {
 
 Viewport::Viewport(View &parent) :
 	ViewWidget(parent),
@@ -223,5 +226,6 @@ void Viewport::wheelEvent(QWheelEvent *event)
 	}
 }
 
-} // namespace view
+} // namespace TraceView
+} // namespace views
 } // namespace pv

@@ -21,11 +21,13 @@
 #include "rowitem.hpp"
 
 namespace pv {
-namespace view {
+namespace views {
+namespace TraceView {
 
 void RowItem::hover_point_changed()
 {
 }
 
-} // namespace view
+} // namespace TraceView
+} // namespace views
 } // namespace pv

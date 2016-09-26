@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_VIEW_ANALOGSIGNAL_HPP
-#define PULSEVIEW_PV_VIEW_ANALOGSIGNAL_HPP
+#ifndef PULSEVIEW_PV_VIEWS_TRACEVIEW_ANALOGSIGNAL_HPP
+#define PULSEVIEW_PV_VIEWS_TRACEVIEW_ANALOGSIGNAL_HPP
 
 #include "signal.hpp"
 
@@ -35,7 +35,8 @@ class AnalogSegment;
 class SignalBase;
 }
 
-namespace view {
+namespace views {
+namespace TraceView {
 
 class AnalogSignal : public Signal
 {
@@ -146,7 +147,8 @@ private:
 	float resolution_; // e.g. 10 for 10 V/div
 };
 
-} // namespace view
+} // namespace TraceView
+} // namespace views
 } // namespace pv
 
-#endif // PULSEVIEW_PV_VIEW_ANALOGSIGNAL_HPP
+#endif // PULSEVIEW_PV_VIEWS_TRACEVIEW_ANALOGSIGNAL_HPP

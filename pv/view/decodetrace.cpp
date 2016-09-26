@@ -72,7 +72,8 @@ using std::unordered_set;
 using std::vector;
 
 namespace pv {
-namespace view {
+namespace views {
+namespace TraceView {
 
 const QColor DecodeTrace::DecodeColours[4] = {
 	QColor(0xEF, 0x29, 0x29),	// Red
@@ -1009,5 +1010,6 @@ void DecodeTrace::on_show_hide_decoder(int index)
 		owner_->row_item_appearance_changed(false, true);
 }
 
-} // namespace view
+} // namespace TraceView
+} // namespace views
 } // namespace pv

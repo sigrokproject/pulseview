@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_VIEW_CURSOR_HPP
-#define PULSEVIEW_PV_VIEW_CURSOR_HPP
+#ifndef PULSEVIEW_PV_VIEWS_TRACEVIEW_CURSOR_HPP
+#define PULSEVIEW_PV_VIEWS_TRACEVIEW_CURSOR_HPP
 
 #include "timemarker.hpp"
 
@@ -30,7 +30,8 @@
 class QPainter;
 
 namespace pv {
-namespace view {
+namespace views {
+namespace TraceView {
 
 class Cursor : public TimeMarker
 {
@@ -69,7 +70,8 @@ private:
 	std::shared_ptr<Cursor> get_other_cursor() const;
 };
 
-} // namespace view
+} // namespace TraceView
+} // namespace views
 } // namespace pv
 
-#endif // PULSEVIEW_PV_VIEW_CURSOR_HPP
+#endif // PULSEVIEW_PV_VIEWS_TRACEVIEW_CURSOR_HPP

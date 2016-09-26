@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_VIEW_HEADER_HPP
-#define PULSEVIEW_PV_VIEW_HEADER_HPP
+#ifndef PULSEVIEW_PV_VIEWS_TRACEVIEW_HEADER_HPP
+#define PULSEVIEW_PV_VIEWS_TRACEVIEW_HEADER_HPP
 
 #include <list>
 #include <memory>
@@ -28,7 +28,8 @@
 #include "marginwidget.hpp"
 
 namespace pv {
-namespace view {
+namespace views {
+namespace TraceView {
 
 class TraceTreeItem;
 class View;
@@ -63,7 +64,7 @@ private:
 	/**
 	 * Gets the row items.
 	 */
-	std::vector< std::shared_ptr<pv::view::ViewItem> > items();
+	std::vector< std::shared_ptr<ViewItem> > items();
 
 	/**
 	 * Gets the first view item which has a label that contains @c pt .
@@ -71,8 +72,7 @@ private:
 	 * @return the view item that has been found, or and empty
 	 *   @c shared_ptr if no item was found.
 	 */
-	std::shared_ptr<pv::view::ViewItem> get_mouse_over_item(
-		const QPoint &pt);
+	std::shared_ptr<ViewItem> get_mouse_over_item(const QPoint &pt);
 
 private:
 	void paintEvent(QPaintEvent *event);
@@ -88,7 +88,8 @@ private Q_SLOTS:
 	void on_ungroup();
 };
 
-} // namespace view
+} // namespace TraceView
+} // namespace views
 } // namespace pv
 
-#endif // PULSEVIEW_PV_VIEW_HEADER_HPP
+#endif // PULSEVIEW_PV_VIEWS_TRACEVIEW_HEADER_HPP

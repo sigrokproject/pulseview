@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_VIEW_RULER_HPP
-#define PULSEVIEW_PV_VIEW_RULER_HPP
+#ifndef PULSEVIEW_PV_VIEWS_TRACEVIEW_RULER_HPP
+#define PULSEVIEW_PV_VIEWS_TRACEVIEW_RULER_HPP
 
 #include <functional>
 #include <memory>
@@ -36,7 +36,8 @@ struct tick_position_test_2;
 }
 
 namespace pv {
-namespace view {
+namespace views {
+namespace TraceView {
 
 class TimeItem;
 class ViewItem;
@@ -109,7 +110,7 @@ private:
 	/**
 	 * Gets the time items.
 	 */
-	std::vector< std::shared_ptr<pv::view::ViewItem> > items() override;
+	std::vector< std::shared_ptr<ViewItem> > items() override;
 
 	/**
 	 * Gets the first view item which has a label that contains @c pt .
@@ -117,7 +118,7 @@ private:
 	 * @return the view item that has been found, or and empty
 	 *   @c shared_ptr if no item was found.
 	 */
-	std::shared_ptr<pv::view::ViewItem> get_mouse_over_item(
+	std::shared_ptr<ViewItem> get_mouse_over_item(
 		const QPoint &pt) override;
 
 	void paintEvent(QPaintEvent *event) override;
@@ -174,7 +175,8 @@ private Q_SLOTS:
 	void invalidate_tick_position_cache();
 };
 
-} // namespace view
+} // namespace TraceView
+} // namespace views
 } // namespace pv
 
-#endif // PULSEVIEW_PV_VIEW_RULER_HPP
+#endif // PULSEVIEW_PV_VIEWS_TRACEVIEW_RULER_HPP

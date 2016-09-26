@@ -118,7 +118,7 @@ MainWindow::~MainWindow()
 		// Remove the QMainWindow
 		dock->setWidget(0);
 
-		const std::shared_ptr<pv::view::View> view = entry.second;
+		const std::shared_ptr<views::ViewBase> view = entry.second;
 
 		for (shared_ptr<Session> session : sessions_)
 			if (session->has_view(view))
@@ -141,7 +141,7 @@ QAction* MainWindow::action_about() const
 	return action_about_;
 }
 
-shared_ptr<pv::view::View> MainWindow::get_active_view() const
+shared_ptr<views::ViewBase> MainWindow::get_active_view() const
 {
 	// If there's only one view, use it...
 	if (view_docks_.size() == 1)
@@ -166,12 +166,10 @@ shared_ptr<pv::view::View> MainWindow::get_active_view() const
 	return nullptr;
 }
 
-shared_ptr<pv::view::View> MainWindow::add_view(const QString &title,
-	view::ViewType type, Session &session)
+shared_ptr<views::ViewBase> MainWindow::add_view(const QString &title,
+	views::ViewType type, Session &session)
 {
-	shared_ptr<pv::view::View> v;
-
-	if (type == pv::view::TraceView) {
+	if (type == views::ViewTypeTrace) {
 		shared_ptr<QDockWidget> dock = make_shared<QDockWidget>(title, this);
 		dock->setObjectName(title);
 		addDockWidget(Qt::TopDockWidgetArea, dock.get());
@@ -180,7 +178,8 @@ shared_ptr<pv::view::View> MainWindow::add_view(const QString &title,
 		QMainWindow *dock_main = new QMainWindow(dock.get());
 		dock_main->setWindowFlags(Qt::Widget);  // Remove Qt::Window flag
 
-		v = make_shared<pv::view::View>(session, dock_main);
+		shared_ptr<views::TraceView::View> v =
+			make_shared<views::TraceView::View>(session, dock_main);
 		view_docks_[dock] = v;
 		session.register_view(v);
 
@@ -197,8 +196,9 @@ shared_ptr<pv::view::View> MainWindow::add_view(const QString &title,
 		connect(close_btn, SIGNAL(clicked(bool)),
 			this, SLOT(on_view_close_clicked()));
 
-		if (type == view::TraceView) {
-			connect(&session, SIGNAL(trigger_event(util::Timestamp)), v.get(),
+		if (type == views::ViewTypeTrace) {
+			connect(&session, SIGNAL(trigger_event(util::Timestamp)),
+				qobject_cast<views::ViewBase*>(v.get()),
 				SLOT(trigger_event(util::Timestamp)));
 
 			v->enable_sticky_scrolling(action_view_sticky_scrolling_->isChecked());
@@ -220,9 +220,11 @@ shared_ptr<pv::view::View> MainWindow::add_view(const QString &title,
 			connect(v.get(), SIGNAL(always_zoom_to_fit_changed(bool)),
 				main_bar.get(), SLOT(on_always_zoom_to_fit_changed(bool)));
 		}
+
+		return v;
 	}
 
-	return v;
+	return nullptr;
 }
 
 shared_ptr<Session> MainWindow::add_session()
@@ -232,22 +234,22 @@ shared_ptr<Session> MainWindow::add_session()
 
 	shared_ptr<Session> session = make_shared<Session>(device_manager_, name);
 
-	connect(session.get(), SIGNAL(add_view(const QString&, view::ViewType, Session*)),
-		this, SLOT(on_add_view(const QString&, view::ViewType, Session*)));
+	connect(session.get(), SIGNAL(add_view(const QString&, views::ViewType, Session*)),
+		this, SLOT(on_add_view(const QString&, views::ViewType, Session*)));
 	connect(session.get(), SIGNAL(name_changed()),
 		this, SLOT(on_session_name_changed()));
 
 	sessions_.push_back(session);
 
-	shared_ptr<view::View> main_view =
-		add_view(name, pv::view::TraceView, *session);
+	shared_ptr<views::ViewBase> main_view =
+		add_view(name, views::ViewTypeTrace, *session);
 
 	return session;
 }
 
 void MainWindow::remove_session(shared_ptr<Session> session)
 {
-	for (shared_ptr<view::View> view : session->views()) {
+	for (shared_ptr<views::ViewBase> view : session->views()) {
 		// Find the dock the view is contained in and close it
 		for (auto entry : view_docks_)
 			if (entry.second == view)
@@ -374,7 +376,7 @@ bool MainWindow::restoreState(const QByteArray &state, int version)
 	return false;
 }
 
-void MainWindow::on_add_view(const QString &title, view::ViewType type,
+void MainWindow::on_add_view(const QString &title, views::ViewType type,
 	Session *session)
 {
 	// We get a pointer and need a reference
@@ -385,7 +387,7 @@ void MainWindow::on_add_view(const QString &title, view::ViewType type,
 
 void MainWindow::on_focus_changed()
 {
-	shared_ptr<view::View> view;
+	shared_ptr<views::ViewBase> view;
 	bool title_set = false;
 
 	view = get_active_view();
@@ -413,7 +415,7 @@ void MainWindow::on_session_name_changed()
 	Session *session = qobject_cast<Session*>(QObject::sender());
 	assert(session);
 
-	for (shared_ptr<view::View> view : session->views()) {
+	for (shared_ptr<views::ViewBase> view : session->views()) {
 		// Get the dock that contains the view
 		for (auto entry : view_docks_)
 			if (entry.second == view) {
@@ -431,7 +433,7 @@ void MainWindow::on_new_view(Session *session)
 	// We get a pointer and need a reference
 	for (std::shared_ptr<Session> s : sessions_)
 		if (s.get() == session)
-			add_view(session->name(), pv::view::TraceView, *s);
+			add_view(session->name(), views::ViewTypeTrace, *s);
 }
 
 void MainWindow::on_view_close_clicked()
@@ -448,7 +450,7 @@ void MainWindow::on_view_close_clicked()
 	}
 
 	// Get the view contained in the dock widget
-	shared_ptr<view::View> view;
+	shared_ptr<views::ViewBase> view;
 
 	for (auto entry : view_docks_)
 		if (entry.first.get() == dock)
@@ -470,14 +472,18 @@ void MainWindow::on_view_close_clicked()
 
 void MainWindow::on_actionViewStickyScrolling_triggered()
 {
-	shared_ptr<pv::view::View> view = get_active_view();
+	shared_ptr<views::ViewBase> viewbase = get_active_view();
+	views::TraceView::View* view =
+		qobject_cast<views::TraceView::View*>(viewbase.get());
 	if (view)
 		view->enable_sticky_scrolling(action_view_sticky_scrolling_->isChecked());
 }
 
 void MainWindow::on_actionViewColouredBg_triggered()
 {
-	shared_ptr<pv::view::View> view = get_active_view();
+	shared_ptr<views::ViewBase> viewbase = get_active_view();
+	views::TraceView::View* view =
+			qobject_cast<views::TraceView::View*>(viewbase.get());
 	if (view)
 		view->enable_coloured_bg(action_view_coloured_bg_->isChecked());
 }

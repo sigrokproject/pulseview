@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_VIEW_FLAG_HPP
-#define PULSEVIEW_PV_VIEW_FLAG_HPP
+#ifndef PULSEVIEW_PV_VIEWS_TRACEVIEW_FLAG_HPP
+#define PULSEVIEW_PV_VIEWS_TRACEVIEW_FLAG_HPP
 
 #include <memory>
 
@@ -28,10 +28,11 @@
 class QMenu;
 
 namespace pv {
-namespace view {
+namespace views {
+namespace TraceView {
 
 class Flag : public TimeMarker,
-	public std::enable_shared_from_this<pv::view::Flag>
+	public std::enable_shared_from_this<Flag>
 {
 	Q_OBJECT
 
@@ -77,7 +78,8 @@ private:
 	QString text_;
 };
 
-} // namespace view
+} // namespace TraceView
+} // namespace views
 } // namespace pv
 
-#endif // PULSEVIEW_PV_VIEW_FLAG_HPP
+#endif // PULSEVIEW_PV_VIEWS_TRACEVIEW_FLAG_HPP

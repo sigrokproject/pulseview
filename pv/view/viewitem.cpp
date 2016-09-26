@@ -27,7 +27,8 @@
 #include <QPalette>
 
 namespace pv {
-namespace view {
+namespace views {
+namespace TraceView {
 
 const QSizeF ViewItem::LabelPadding(4, 0);
 const int ViewItem::HighlightRadius = 3;
@@ -135,5 +136,6 @@ QColor ViewItem::select_text_colour(QColor background)
 	return (background.lightness() > 110) ? Qt::black : Qt::white;
 }
 
-} // namespace view
+} // namespace TraceView
+} // namespace views
 } // namespace pv

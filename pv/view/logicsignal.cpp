@@ -59,7 +59,8 @@ using sigrok::TriggerMatch;
 using sigrok::TriggerMatchType;
 
 namespace pv {
-namespace view {
+namespace views {
+namespace TraceView {
 
 const float LogicSignal::Oversampling = 2.0f;
 
@@ -485,5 +486,6 @@ void LogicSignal::on_trigger()
 	modify_trigger();
 }
 
-} // namespace view
+} // namespace TraceView
+} // namespace views
 } // namespace pv

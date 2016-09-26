@@ -33,7 +33,8 @@ using std::shared_ptr;
 using std::vector;
 
 namespace pv {
-namespace view {
+namespace views {
+namespace TraceView {
 
 const int TraceGroup::Padding = 8;
 const int TraceGroup::Width = 12;
@@ -64,13 +65,13 @@ const pv::Session& TraceGroup::session() const
 	return owner_->session();
 }
 
-pv::view::View* TraceGroup::view()
+View* TraceGroup::view()
 {
 	assert(owner_);
 	return owner_->view();
 }
 
-const pv::view::View* TraceGroup::view() const
+const View* TraceGroup::view() const
 {
 	assert(owner_);
 	return owner_->view();
@@ -222,5 +223,6 @@ void TraceGroup::extents_changed(bool horz, bool vert)
 		owner_->extents_changed(horz, vert);
 }
 
-} // namespace view
+} // namespace TraceView
+} // namespace views
 } // namespace pv

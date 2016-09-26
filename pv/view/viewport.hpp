@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_VIEW_VIEWPORT_HPP
-#define PULSEVIEW_PV_VIEW_VIEWPORT_HPP
+#ifndef PULSEVIEW_PV_VIEWS_TRACEVIEW_VIEWPORT_HPP
+#define PULSEVIEW_PV_VIEWS_TRACEVIEW_VIEWPORT_HPP
 
 #include <boost/optional.hpp>
 
@@ -34,7 +34,8 @@ class QPaintEvent;
 class Session;
 
 namespace pv {
-namespace view {
+namespace views {
+namespace TraceView {
 
 class View;
 
@@ -51,7 +52,7 @@ private:
 	 * @param item The item that is being hovered over, or @c nullptr
 	 * if no view item is being hovered over.
 	 */
-	void item_hover(const std::shared_ptr<pv::view::ViewItem> &item);
+	void item_hover(const std::shared_ptr<ViewItem> &item);
 
 	/**
 	 * Gets the first view item which has a hit-box that contains @c pt .
@@ -59,8 +60,7 @@ private:
 	 * @return the view item that has been found, or and empty
 	 *   @c shared_ptr if no item was found.
 	 */
-	std::shared_ptr<pv::view::ViewItem> get_mouse_over_item(
-		const QPoint &pt);
+	std::shared_ptr<ViewItem> get_mouse_over_item(const QPoint &pt);
 
 	/**
 	 * Sets this item into the dragged state.
@@ -81,7 +81,7 @@ private:
 	/**
 	 * Gets the items in the view widget.
 	 */
-	std::vector< std::shared_ptr<pv::view::ViewItem> > items();
+	std::vector< std::shared_ptr<ViewItem> > items();
 
 	/**
 	 * Handles touch begin update and end events.
@@ -104,7 +104,8 @@ private:
 	bool pinch_zoom_active_;
 };
 
-} // namespace view
+} // namespace TraceView
+} // namespace views
 } // namespace pv
 
-#endif // PULSEVIEW_PV_VIEW_VIEWPORT_HPP
+#endif // PULSEVIEW_PV_VIEWS_TRACEVIEW_VIEWPORT_HPP

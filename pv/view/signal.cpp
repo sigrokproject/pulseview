@@ -40,7 +40,8 @@ using std::shared_ptr;
 using std::make_shared;
 
 namespace pv {
-namespace view {
+namespace views {
+namespace TraceView {
 
 const char *const ChannelNames[] = {
 	"CLK",
@@ -183,5 +184,6 @@ void Signal::on_enabled_changed(bool enabled)
 		owner_->extents_changed(true, true);
 }
 
-} // namespace view
+} // namespace TraceView
+} // namespace views
 } // namespace pv

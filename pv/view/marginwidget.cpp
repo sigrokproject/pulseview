@@ -30,7 +30,8 @@
 using std::shared_ptr;
 
 namespace pv {
-namespace view {
+namespace views {
+namespace TraceView {
 
 MarginWidget::MarginWidget(View &parent) :
 	ViewWidget(parent)
@@ -74,5 +75,6 @@ void MarginWidget::keyPressEvent(QKeyEvent *event)
 	}
 }
 
-} // namespace view
+} // namespace TraceView
+} // namespace views
 } // namespace pv

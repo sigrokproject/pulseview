@@ -809,7 +809,10 @@ void MainBar::export_file(shared_ptr<OutputFormat> format,
 
 	// Selection only? Verify that the cursors are active and fetch their values
 	if (selection_only) {
-		if (!session_.main_view()->cursors()->enabled()) {
+		views::TraceView::View *trace_view =
+			qobject_cast<views::TraceView::View*>(session_.main_view().get());
+
+		if (!trace_view->cursors()->enabled()) {
 			show_session_error(tr("Missing Cursors"), tr("You need to set the " \
 					"cursors before you can save the data enclosed by them " \
 					"to a session file (e.g. using ALT-V - Show Cursors)."));
@@ -818,8 +821,8 @@ void MainBar::export_file(shared_ptr<OutputFormat> format,
 
 		const double samplerate = session_.get_samplerate();
 
-		const pv::util::Timestamp& start_time = session_.main_view()->cursors()->first()->time();
-		const pv::util::Timestamp& end_time = session_.main_view()->cursors()->second()->time();
+		const pv::util::Timestamp& start_time = trace_view->cursors()->first()->time();
+		const pv::util::Timestamp& end_time = trace_view->cursors()->second()->time();
 
 		const uint64_t start_sample =
 			std::max((double)0, start_time.convert_to<double>() * samplerate);
@@ -1010,31 +1013,46 @@ void MainBar::on_actionConnect_triggered()
 
 void MainBar::on_actionViewZoomIn_triggered()
 {
-	session_.main_view()->zoom(1);
+	views::TraceView::View *trace_view =
+		qobject_cast<views::TraceView::View*>(session_.main_view().get());
+
+	trace_view->zoom(1);
 }
 
 void MainBar::on_actionViewZoomOut_triggered()
 {
-	session_.main_view()->zoom(-1);
+	views::TraceView::View *trace_view =
+		qobject_cast<views::TraceView::View*>(session_.main_view().get());
+
+	trace_view->zoom(-1);
 }
 
 void MainBar::on_actionViewZoomFit_triggered()
 {
-	session_.main_view()->zoom_fit(action_view_zoom_fit_->isChecked());
+	views::TraceView::View *trace_view =
+		qobject_cast<views::TraceView::View*>(session_.main_view().get());
+
+	trace_view->zoom_fit(action_view_zoom_fit_->isChecked());
 }
 
 void MainBar::on_actionViewZoomOneToOne_triggered()
 {
-	session_.main_view()->zoom_one_to_one();
+	views::TraceView::View *trace_view =
+		qobject_cast<views::TraceView::View*>(session_.main_view().get());
+
+	trace_view->zoom_one_to_one();
 }
 
 void MainBar::on_actionViewShowCursors_triggered()
 {
-	const bool show = !session_.main_view()->cursors_shown();
-	if (show)
-		session_.main_view()->centre_cursors();
+	views::TraceView::View *trace_view =
+		qobject_cast<views::TraceView::View*>(session_.main_view().get());
 
-	session_.main_view()->show_cursors(show);
+	const bool show = !trace_view->cursors_shown();
+	if (show)
+		trace_view->centre_cursors();
+
+	trace_view->show_cursors(show);
 }
 
 void MainBar::on_always_zoom_to_fit_changed(bool state)

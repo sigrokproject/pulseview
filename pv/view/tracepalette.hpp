@@ -18,13 +18,14 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_TRACEPALETTE_HPP
-#define PULSEVIEW_PV_TRACEPALETTE_HPP
+#ifndef PULSEVIEW_PV_VIEWS_TRACEVIEW_TRACEPALETTE_HPP
+#define PULSEVIEW_PV_VIEWS_TRACEVIEW_TRACEPALETTE_HPP
 
 #include <QColor>
 
 namespace pv {
-namespace view {
+namespace views {
+namespace TraceView {
 
 class TracePalette
 {
@@ -34,8 +35,8 @@ public:
 	static const QColor Colours[Cols * Rows];
 };
 
+} // namespace TraceView
+} // namespace views
+} // namespace pv
 
-} // view
-} // pv
-
-#endif // PULSEVIEW_PV_VIEW_TRACEPALETTE_HPP
+#endif // PULSEVIEW_PV_VIEWS_TRACEVIEW_TRACEPALETTE_HPP

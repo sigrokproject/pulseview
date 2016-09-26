@@ -149,12 +149,12 @@ void Session::set_name(QString name)
 	name_changed();
 }
 
-const std::list< std::shared_ptr<pv::view::View> > Session::views() const
+const std::list< std::shared_ptr<views::ViewBase> > Session::views() const
 {
 	return views_;
 }
 
-std::shared_ptr<pv::view::View> Session::main_view() const
+std::shared_ptr<views::ViewBase> Session::main_view() const
 {
 	return main_view_;
 }
@@ -243,7 +243,7 @@ void Session::save_settings(QSettings &settings) const
 		main_view_->save_settings(settings);
 		settings.endGroup();
 
-		for (shared_ptr<view::View> view : views_) {
+		for (shared_ptr<views::ViewBase> view : views_) {
 			if (view != main_view_) {
 				settings.beginGroup("view" + QString::number(views++));
 				view->save_settings(settings);
@@ -338,7 +338,7 @@ void Session::restore_settings(QSettings &settings)
 			settings.beginGroup("view" + QString::number(i));
 
 			if (i > 0) {
-				view::ViewType type = (view::ViewType)settings.value("type").toInt();
+				views::ViewType type = (views::ViewType)settings.value("type").toInt();
 				add_view(name_, type, this);
 				views_.back()->restore_settings(settings);
 			} else
@@ -366,10 +366,10 @@ void Session::set_device(shared_ptr<devices::Device> device)
 	name_changed();
 
 	// Remove all stored data
-	for (std::shared_ptr<pv::view::View> view : views_) {
+	for (std::shared_ptr<views::ViewBase> view : views_) {
 		view->clear_signals();
 #ifdef ENABLE_DECODE
-		view->clear_decode_traces();
+		view->clear_decode_signals();
 #endif
 	}
 	for (const shared_ptr<data::SignalData> d : all_signal_data_)
@@ -472,7 +472,7 @@ void Session::stop_capture()
 		sampling_thread_.join();
 }
 
-void Session::register_view(std::shared_ptr<pv::view::View> view)
+void Session::register_view(std::shared_ptr<views::ViewBase> view)
 {
 	if (views_.empty()) {
 		main_view_ = view;
@@ -483,9 +483,9 @@ void Session::register_view(std::shared_ptr<pv::view::View> view)
 	update_signals();
 }
 
-void Session::deregister_view(std::shared_ptr<pv::view::View> view)
+void Session::deregister_view(std::shared_ptr<views::ViewBase> view)
 {
-	views_.remove_if([&](std::shared_ptr<pv::view::View> v) {
+	views_.remove_if([&](std::shared_ptr<views::ViewBase> v) {
 		return v == view; });
 
 	if (views_.empty()) {
@@ -496,9 +496,9 @@ void Session::deregister_view(std::shared_ptr<pv::view::View> view)
 	}
 }
 
-bool Session::has_view(std::shared_ptr<pv::view::View> view)
+bool Session::has_view(std::shared_ptr<views::ViewBase> view)
 {
-	for (std::shared_ptr<pv::view::View> v : views_)
+	for (std::shared_ptr<views::ViewBase> v : views_)
 		if (v == view)
 			return true;
 
@@ -569,8 +569,8 @@ bool Session::add_decoder(srd_decoder *const dec)
 		signalbase->set_decoder_stack(decoder_stack);
 		signalbases_.insert(signalbase);
 
-		for (std::shared_ptr<pv::view::View> view : views_)
-			view->add_decode_trace(signalbase);
+		for (std::shared_ptr<views::ViewBase> view : views_)
+			view->add_decode_signal(signalbase);
 	} catch (std::runtime_error e) {
 		return false;
 	}
@@ -585,8 +585,8 @@ bool Session::add_decoder(srd_decoder *const dec)
 
 void Session::remove_decode_signal(shared_ptr<data::SignalBase> signalbase)
 {
-	for (std::shared_ptr<pv::view::View> view : views_)
-		view->remove_decode_trace(signalbase);
+	for (std::shared_ptr<views::ViewBase> view : views_)
+		view->remove_decode_signal(signalbase);
 }
 #endif
 
@@ -609,10 +609,10 @@ void Session::update_signals()
 	if (!device_) {
 		signalbases_.clear();
 		logic_data_.reset();
-		for (std::shared_ptr<pv::view::View> view : views_) {
+		for (std::shared_ptr<views::ViewBase> view : views_) {
 			view->clear_signals();
 #ifdef ENABLE_DECODE
-			view->clear_decode_traces();
+			view->clear_decode_signals();
 #endif
 		}
 		return;
@@ -624,10 +624,10 @@ void Session::update_signals()
 	if (!sr_dev) {
 		signalbases_.clear();
 		logic_data_.reset();
-		for (std::shared_ptr<pv::view::View> view : views_) {
+		for (std::shared_ptr<views::ViewBase> view : views_) {
 			view->clear_signals();
 #ifdef ENABLE_DECODE
-			view->clear_decode_traces();
+			view->clear_decode_signals();
 #endif
 		}
 		return;
@@ -655,70 +655,76 @@ void Session::update_signals()
 	}
 
 	// Make the signals list
-	for (std::shared_ptr<pv::view::View> view : views_) {
-		unordered_set< shared_ptr<view::Signal> > prev_sigs(view->signals());
-		view->clear_signals();
+	for (std::shared_ptr<views::ViewBase> viewbase : views_) {
+		views::TraceView::View *trace_view =
+			qobject_cast<views::TraceView::View*>(viewbase.get());
 
-		for (auto channel : sr_dev->channels()) {
-			shared_ptr<data::SignalBase> signalbase;
-			shared_ptr<view::Signal> signal;
+		if (trace_view) {
+			unordered_set< shared_ptr<views::TraceView::Signal> >
+				prev_sigs(trace_view->signals());
+			trace_view->clear_signals();
 
-			// Find the channel in the old signals
-			const auto iter = std::find_if(
-				prev_sigs.cbegin(), prev_sigs.cend(),
-				[&](const shared_ptr<view::Signal> &s) {
-					return s->base()->channel() == channel;
-				});
-			if (iter != prev_sigs.end()) {
-				// Copy the signal from the old set to the new
-				signal = *iter;
-				view->add_signal(signal);
-			} else {
-				// Find the signalbase for this channel if possible
-				signalbase.reset();
-				for (const shared_ptr<data::SignalBase> b : signalbases_)
-					if (b->channel() == channel)
-						signalbase = b;
+			for (auto channel : sr_dev->channels()) {
+				shared_ptr<data::SignalBase> signalbase;
+				shared_ptr<views::TraceView::Signal> signal;
 
-				switch(channel->type()->id()) {
-				case SR_CHANNEL_LOGIC:
-					if (!signalbase) {
-						signalbase = shared_ptr<data::SignalBase>(
-							new data::SignalBase(channel));
-						signalbases_.insert(signalbase);
+				// Find the channel in the old signals
+				const auto iter = std::find_if(
+					prev_sigs.cbegin(), prev_sigs.cend(),
+					[&](const shared_ptr<views::TraceView::Signal> &s) {
+						return s->base()->channel() == channel;
+					});
+				if (iter != prev_sigs.end()) {
+					// Copy the signal from the old set to the new
+					signal = *iter;
+					trace_view->add_signal(signal);
+				} else {
+					// Find the signalbase for this channel if possible
+					signalbase.reset();
+					for (const shared_ptr<data::SignalBase> b : signalbases_)
+						if (b->channel() == channel)
+							signalbase = b;
 
-						all_signal_data_.insert(logic_data_);
-						signalbase->set_data(logic_data_);
+					switch(channel->type()->id()) {
+					case SR_CHANNEL_LOGIC:
+						if (!signalbase) {
+							signalbase = shared_ptr<data::SignalBase>(
+								new data::SignalBase(channel));
+							signalbases_.insert(signalbase);
+
+							all_signal_data_.insert(logic_data_);
+							signalbase->set_data(logic_data_);
+						}
+
+						signal = shared_ptr<views::TraceView::Signal>(
+							new views::TraceView::LogicSignal(*this,
+								device_, signalbase));
+						trace_view->add_signal(signal);
+						break;
+
+					case SR_CHANNEL_ANALOG:
+					{
+						if (!signalbase) {
+							signalbase = shared_ptr<data::SignalBase>(
+								new data::SignalBase(channel));
+							signalbases_.insert(signalbase);
+
+							shared_ptr<data::Analog> data(new data::Analog());
+							all_signal_data_.insert(data);
+							signalbase->set_data(data);
+						}
+
+						signal = shared_ptr<views::TraceView::Signal>(
+							new views::TraceView::AnalogSignal(
+								*this, signalbase));
+						trace_view->add_signal(signal);
+						break;
 					}
 
-					signal = shared_ptr<view::Signal>(
-						new view::LogicSignal(*this,
-							device_, signalbase));
-					view->add_signal(signal);
-					break;
-
-				case SR_CHANNEL_ANALOG:
-				{
-					if (!signalbase) {
-						signalbase = shared_ptr<data::SignalBase>(
-							new data::SignalBase(channel));
-						signalbases_.insert(signalbase);
-
-						shared_ptr<data::Analog> data(new data::Analog());
-						all_signal_data_.insert(data);
-						signalbase->set_data(data);
+					default:
+						assert(0);
+						break;
 					}
-
-					signal = shared_ptr<view::Signal>(
-						new view::AnalogSignal(
-							*this, signalbase));
-					view->add_signal(signal);
-					break;
-				}
-
-				default:
-					assert(0);
-					break;
 				}
 			}
 		}

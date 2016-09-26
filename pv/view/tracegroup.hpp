@@ -18,14 +18,15 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_VIEW_TRACEGROUP_HPP
-#define PULSEVIEW_PV_VIEW_TRACEGROUP_HPP
+#ifndef PULSEVIEW_PV_VIEWS_TRACEVIEW_TRACEGROUP_HPP
+#define PULSEVIEW_PV_VIEWS_TRACEVIEW_TRACEGROUP_HPP
 
 #include "tracetreeitem.hpp"
 #include "tracetreeitemowner.hpp"
 
 namespace pv {
-namespace view {
+namespace views {
+namespace TraceView {
 
 class TraceGroup : public TraceTreeItem, public TraceTreeItemOwner
 {
@@ -61,12 +62,12 @@ public:
 	/**
 	 * Returns the view of the owner.
 	 */
-	virtual pv::view::View* view();
+	virtual View* view();
 
 	/**
 	 * Returns the view of the owner.
 	 */
-	virtual const pv::view::View* view() const;
+	virtual const View* view() const;
 
 	/**
 	 * Computes the vertical extents of the contents of this row item.
@@ -127,7 +128,8 @@ private Q_SLOTS:
 	void on_ungroup();
 };
 
-} // view
-} // pv
+} // namespace TraceView
+} // namespace views
+} // namespace pv
 
-#endif // PULSEVIEW_PV_VIEW_TRACEGROUP_HPP
+#endif // PULSEVIEW_PV_VIEWS_TRACEVIEW_TRACEGROUP_HPP

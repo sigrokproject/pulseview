@@ -40,7 +40,8 @@ using std::shared_ptr;
 using std::numeric_limits;
 
 namespace pv {
-namespace view {
+namespace views {
+namespace TraceView {
 
 const QColor Cursor::FillColour(52, 101, 164);
 
@@ -97,5 +98,6 @@ shared_ptr<Cursor> Cursor::get_other_cursor() const
 		cursors->second() : cursors->first();
 }
 
-} // namespace view
+} // namespace TraceView
+} // namespace views
 } // namespace pv

@@ -33,7 +33,8 @@
 using std::shared_ptr;
 
 namespace pv {
-namespace view {
+namespace views {
+namespace TraceView {
 
 const QColor Flag::FillColour(0x73, 0xD2, 0x16);
 
@@ -45,7 +46,7 @@ Flag::Flag(View &view, const pv::util::Timestamp& time, const QString &text) :
 
 Flag::Flag(const Flag &flag) :
 	TimeMarker(flag.view_, FillColour, flag.time_),
-	std::enable_shared_from_this<pv::view::Flag>(flag)
+	std::enable_shared_from_this<Flag>(flag)
 {
 }
 
@@ -108,5 +109,6 @@ void Flag::on_text_changed(const QString &text)
 	view_.time_item_appearance_changed(true, false);
 }
 
-} // namespace view
+} // namespace TraceView
+} // namespace views
 } // namespace pv

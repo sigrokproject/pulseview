@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_VIEW_TRACE_HPP
-#define PULSEVIEW_PV_VIEW_TRACE_HPP
+#ifndef PULSEVIEW_PV_VIEWS_TRACEVIEW_TRACE_HPP
+#define PULSEVIEW_PV_VIEWS_TRACEVIEW_TRACE_HPP
 
 #include <QColor>
 #include <QPainter>
@@ -41,7 +41,8 @@ namespace widgets {
 class Popup;
 }
 
-namespace view {
+namespace views {
+namespace TraceView {
 
 class Trace : public TraceTreeItem
 {
@@ -135,7 +136,8 @@ private:
 	QFormLayout *popup_form_;
 };
 
-} // namespace view
+} // namespace TraceView
+} // namespace views
 } // namespace pv
 
-#endif // PULSEVIEW_PV_VIEW_TRACE_HPP
+#endif // PULSEVIEW_PV_VIEWS_TRACEVIEW_TRACE_HPP

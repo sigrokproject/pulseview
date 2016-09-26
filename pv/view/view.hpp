@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_VIEW_VIEW_HPP
-#define PULSEVIEW_PV_VIEW_VIEW_HPP
+#ifndef PULSEVIEW_PV_VIEWS_TRACEVIEW_VIEW_HPP
+#define PULSEVIEW_PV_VIEWS_TRACEVIEW_VIEW_HPP
 
 #include <stdint.h>
 
@@ -34,6 +34,7 @@
 #include <QTimer>
 
 #include <pv/data/signaldata.hpp>
+#include <pv/views/viewbase.hpp>
 #include <pv/util.hpp>
 
 #include "cursorpair.hpp"
@@ -48,7 +49,9 @@ namespace pv {
 
 class Session;
 
-namespace view {
+namespace views {
+
+namespace TraceView {
 
 class CursorHeader;
 class DecodeTrace;
@@ -59,7 +62,16 @@ class Trace;
 class Viewport;
 class TriggerMarker;
 
-class View : public QAbstractScrollArea, public TraceTreeItemOwner {
+class CustomAbstractScrollArea : public QAbstractScrollArea {
+	Q_OBJECT
+
+public:
+	CustomAbstractScrollArea(QWidget *parent = 0);
+	void setViewportMargins(int left, int top, int right, int bottom);
+	bool viewportEvent(QEvent *event);
+};
+
+class View : public ViewBase, public TraceTreeItemOwner {
 	Q_OBJECT
 
 private:
@@ -86,37 +98,37 @@ public:
 	/**
 	 * Returns the signals contained in this view.
 	 */
-	std::unordered_set< std::shared_ptr<view::Signal> > signals() const;
+	std::unordered_set< std::shared_ptr<Signal> > signals() const;
 
-	void clear_signals();
+	virtual void clear_signals();
 
-	void add_signal(const std::shared_ptr<view::Signal> signal);
+	virtual void add_signal(const std::shared_ptr<Signal> signal);
 
 #ifdef ENABLE_DECODE
-	void clear_decode_traces();
+	virtual void clear_decode_signals();
 
-	void add_decode_trace(std::shared_ptr<data::SignalBase> signalbase);
+	virtual void add_decode_signal(std::shared_ptr<data::SignalBase> signalbase);
 
-	void remove_decode_trace(std::shared_ptr<data::SignalBase> signalbase);
+	virtual void remove_decode_signal(std::shared_ptr<data::SignalBase> signalbase);
 #endif
 
 	/**
 	 * Returns the view of the owner.
 	 */
-	virtual pv::view::View* view();
+	virtual View* view();
 
 	/**
 	 * Returns the view of the owner.
 	 */
-	virtual const pv::view::View* view() const;
+	virtual const View* view() const;
 
 	Viewport* viewport();
 
 	const Viewport* viewport() const;
 
-	void save_settings(QSettings &settings) const;
+	virtual void save_settings(QSettings &settings) const;
 
-	void restore_settings(QSettings &settings);
+	virtual void restore_settings(QSettings &settings);
 
 	/**
 	 * Gets a list of time markers.
@@ -310,8 +322,6 @@ private:
 
 	bool eventFilter(QObject *object, QEvent *event);
 
-	bool viewportEvent(QEvent *event);
-
 	void resizeEvent(QResizeEvent *event);
 
 public:
@@ -372,17 +382,17 @@ private Q_SLOTS:
 	void set_time_unit(pv::util::TimeUnit time_unit);
 
 private:
-	Session &session_;
-
 	Viewport *viewport_;
 	Ruler *ruler_;
 	Header *header_;
 
-	std::unordered_set< std::shared_ptr<view::Signal> > signals_;
+	std::unordered_set< std::shared_ptr<Signal> > signals_;
 
 #ifdef ENABLE_DECODE
-	std::vector< std::shared_ptr<view::DecodeTrace> > decode_traces_;
+	std::vector< std::shared_ptr<DecodeTrace> > decode_traces_;
 #endif
+
+	CustomAbstractScrollArea scrollarea_;
 
 	/// The view time scale in seconds per pixel.
 	double scale_;
@@ -417,7 +427,8 @@ private:
 	bool scroll_needs_defaults;
 };
 
-} // namespace view
+} // namespace TraceView
+} // namespace views
 } // namespace pv
 
-#endif // PULSEVIEW_PV_VIEW_VIEW_HPP
+#endif // PULSEVIEW_PV_VIEWS_TRACEVIEW_VIEW_HPP

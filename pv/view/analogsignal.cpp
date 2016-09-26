@@ -48,7 +48,8 @@ using std::shared_ptr;
 using std::deque;
 
 namespace pv {
-namespace view {
+namespace views {
+namespace TraceView {
 
 const QColor AnalogSignal::SignalColours[4] = {
 	QColor(0xC4, 0xA0, 0x00),	// Yellow
@@ -385,5 +386,6 @@ void AnalogSignal::on_resolution_changed(int index)
 		owner_->row_item_appearance_changed(false, true);
 }
 
-} // namespace view
+} // namespace TraceView
+} // namespace views
 } // namespace pv

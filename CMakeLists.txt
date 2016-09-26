@@ -262,6 +262,7 @@ set(pulseview_SOURCES
 	pv/view/viewitempaintparams.cpp
 	pv/view/viewport.cpp
 	pv/view/viewwidget.cpp
+	pv/views/viewbase.cpp
 	pv/widgets/colourbutton.cpp
 	pv/widgets/colourpopup.cpp
 	pv/widgets/devicetoolbutton.cpp
@@ -314,6 +315,7 @@ set(pulseview_HEADERS
 	pv/view/viewitem.hpp
 	pv/view/viewport.hpp
 	pv/view/viewwidget.hpp
+	pv/views/viewbase.hpp
 	pv/widgets/colourbutton.hpp
 	pv/widgets/colourpopup.hpp
 	pv/widgets/devicetoolbutton.hpp

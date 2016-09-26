@@ -33,7 +33,8 @@ using std::shared_ptr;
 using std::vector;
 
 namespace pv {
-namespace view {
+namespace views {
+namespace TraceView {
 
 const float Ruler::RulerHeight = 2.5f; // x Text Height
 const int Ruler::MinorTickSubdivision = 4;
@@ -271,5 +272,6 @@ void Ruler::resizeEvent(QResizeEvent*)
 	invalidate_tick_position_cache();
 }
 
-} // namespace view
+} // namespace TraceView
+} // namespace views
 } // namespace pv

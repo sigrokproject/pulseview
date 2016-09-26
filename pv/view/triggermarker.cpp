@@ -22,7 +22,8 @@
 #include "view.hpp"
 
 namespace pv {
-namespace view {
+namespace views {
+namespace TraceView {
 
 const QColor TriggerMarker::Colour(0x00, 0x00, 0xB0);
 
@@ -78,5 +79,6 @@ void TriggerMarker::paint_fore(QPainter &p, const ViewItemPaintParams &pp)
 	p.drawLine(QPointF(x, pp.top()), QPointF(x, pp.bottom()));
 }
 
-} // namespace view
+} // namespace TraceView
+} // namespace views
 } // namespace pv

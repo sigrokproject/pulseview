@@ -34,7 +34,8 @@ using std::shared_ptr;
 using std::vector;
 
 namespace pv {
-namespace view {
+namespace views {
+namespace TraceView {
 
 ViewItemOwner::iterator ViewItemOwner::begin()
 {
@@ -56,5 +57,6 @@ ViewItemOwner::const_iterator ViewItemOwner::end() const
 	return const_iterator(this);
 }
 
-} // view
-} // pv
+} // namespace TraceView
+} // namespace views
+} // namespace pv

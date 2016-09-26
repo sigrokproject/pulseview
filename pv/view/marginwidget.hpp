@@ -28,7 +28,8 @@
 #include "viewwidget.hpp"
 
 namespace pv {
-namespace view {
+namespace views {
+namespace TraceView {
 
 class ViewItem;
 
@@ -37,7 +38,7 @@ class MarginWidget : public ViewWidget
 	Q_OBJECT
 
 public:
-	MarginWidget(pv::view::View &parent);
+	MarginWidget(View &parent);
 
 	/**
 	 * The extended area that the margin widget would like to be sized to.
@@ -52,7 +53,7 @@ protected:
 	 * @param item the view item that has been clicked.
 	 */
 	virtual void item_clicked(
-		const std::shared_ptr<pv::view::ViewItem> &item);
+		const std::shared_ptr<ViewItem> &item);
 
 	/**
 	 * Shows the popup of a the specified @c ViewItem .
@@ -66,7 +67,8 @@ protected:
 	virtual void keyPressEvent(QKeyEvent *event);
 };
 
-} // namespace view
+} // namespace TraceView
+} // namespace views
 } // namespace pv
 
 #endif // PULSEVIEW_PV_MARGINWIDGET_HPP

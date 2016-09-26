@@ -18,8 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#ifndef PULSEVIEW_PV_VIEW_MARKER_HPP
-#define PULSEVIEW_PV_VIEW_MARKER_HPP
+#ifndef PULSEVIEW_PV_VIEWS_TRACEVIEW_MARKER_HPP
+#define PULSEVIEW_PV_VIEWS_TRACEVIEW_MARKER_HPP
 
 #include <QColor>
 #include <QDoubleSpinBox>
@@ -37,7 +37,8 @@ namespace widgets {
 	class TimestampSpinBox;
 }
 
-namespace view {
+namespace views {
+namespace TraceView {
 
 class View;
 
@@ -127,7 +128,8 @@ protected:
 	bool updating_value_widget_;
 };
 
-} // namespace view
+} // namespace TraceView
+} // namespace views
 } // namespace pv
 
-#endif // PULSEVIEW_PV_VIEW_MARKER_HPP
+#endif // PULSEVIEW_PV_VIEWS_TRACEVIEW_MARKER_HPP

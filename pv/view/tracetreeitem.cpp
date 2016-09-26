@@ -25,7 +25,8 @@
 #include "tracetreeitem.hpp"
 
 namespace pv {
-namespace view {
+namespace views {
+namespace TraceView {
 
 TraceTreeItem::TraceTreeItem() :
 	owner_(nullptr),
@@ -143,5 +144,6 @@ void TraceTreeItem::set_bgcolour_state(bool state)
        bgcolour_state_ = state;
 }
 
-} // namespace view
+} // namespace TraceView
+} // namespace views
 } // namespace pv
