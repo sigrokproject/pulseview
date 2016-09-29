@@ -26,6 +26,7 @@
 #include <memory>
 
 #include <QMainWindow>
+#include <QTabWidget>
 
 #include "session.hpp"
 #include "views/viewbase.hpp"
@@ -119,6 +120,10 @@ private:
 
 	std::map< std::shared_ptr<QDockWidget>,
 		std::shared_ptr<views::ViewBase> > view_docks_;
+
+	std::map< std::shared_ptr<Session>, QMainWindow*> session_windows_;
+
+	QTabWidget session_selector_;
 
 	QAction *const action_view_sticky_scrolling_;
 	QAction *const action_view_coloured_bg_;

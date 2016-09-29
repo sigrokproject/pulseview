@@ -69,6 +69,7 @@ MainWindow::MainWindow(DeviceManager &device_manager,
 	QWidget *parent) :
 	QMainWindow(parent),
 	device_manager_(device_manager),
+	session_selector_(this),
 	action_view_sticky_scrolling_(new QAction(this)),
 	action_view_coloured_bg_(new QAction(this)),
 	action_about_(new QAction(this))
@@ -107,23 +108,8 @@ MainWindow::MainWindow(DeviceManager &device_manager,
 
 MainWindow::~MainWindow()
 {
-	for (auto entry : view_docks_) {
-
-		const std::shared_ptr<QDockWidget> dock = entry.first;
-
-		// Remove view from the dock widget's QMainWindow
-		QMainWindow *dock_main = dynamic_cast<QMainWindow*>(dock->widget());
-		dock_main->setCentralWidget(0);
-
-		// Remove the QMainWindow
-		dock->setWidget(0);
-
-		const std::shared_ptr<views::ViewBase> view = entry.second;
-
-		for (shared_ptr<Session> session : sessions_)
-			if (session->has_view(view))
-				session->deregister_view(view);
-	}
+	while (!sessions_.empty())
+		remove_session(sessions_.front());
 }
 
 QAction* MainWindow::action_view_sticky_scrolling() const
@@ -169,10 +155,17 @@ shared_ptr<views::ViewBase> MainWindow::get_active_view() const
 shared_ptr<views::ViewBase> MainWindow::add_view(const QString &title,
 	views::ViewType type, Session &session)
 {
+	QMainWindow *main_window;
+	for (auto entry : session_windows_)
+		if (entry.first.get() == &session)
+			main_window = entry.second;
+
+	assert(main_window);
+
 	if (type == views::ViewTypeTrace) {
-		shared_ptr<QDockWidget> dock = make_shared<QDockWidget>(title, this);
+		shared_ptr<QDockWidget> dock = make_shared<QDockWidget>(title, main_window);
 		dock->setObjectName(title);
-		addDockWidget(Qt::TopDockWidgetArea, dock.get());
+		main_window->addDockWidget(Qt::TopDockWidgetArea, dock.get());
 
 		// Insert a QMainWindow into the dock widget to allow for a tool bar
 		QMainWindow *dock_main = new QMainWindow(dock.get());
@@ -241,6 +234,11 @@ shared_ptr<Session> MainWindow::add_session()
 
 	sessions_.push_back(session);
 
+	QMainWindow *window = new QMainWindow();
+	window->setWindowFlags(Qt::Widget);  // Remove Qt::Window flag
+	session_windows_[session] = window;
+	session_selector_.addTab(window, name);
+
 	shared_ptr<views::ViewBase> main_view =
 		add_view(name, views::ViewTypeTrace, *session);
 
@@ -250,11 +248,27 @@ shared_ptr<Session> MainWindow::add_session()
 void MainWindow::remove_session(shared_ptr<Session> session)
 {
 	for (shared_ptr<views::ViewBase> view : session->views()) {
-		// Find the dock the view is contained in and close it
+		// Find the dock the view is contained in and remove it
 		for (auto entry : view_docks_)
-			if (entry.second == view)
-				entry.first->close();
+			if (entry.second == view) {
+				// Remove the view from the session
+				session->deregister_view(view);
+
+				// Remove the view from its parent; otherwise, Qt will
+				// call deleteLater() on it, which causes a double free
+				// since the shared_ptr in view_docks_ doesn't know
+				// that Qt keeps a pointer to the view around
+				entry.second->setParent(0);
+
+				// Remove this entry from the container
+				view_docks_.erase(entry.first);
+			}
 	}
+
+	QMainWindow *window = session_windows_.at(session);
+	session_selector_.removeTab(session_selector_.indexOf(window));
+
+	session_windows_.erase(session);
 
 	sessions_.remove_if([&](shared_ptr<Session> s) {
 		return s == session; });
@@ -268,6 +282,8 @@ void MainWindow::remove_session(shared_ptr<Session> session)
 void MainWindow::setup_ui()
 {
 	setObjectName(QString::fromUtf8("MainWindow"));
+
+	setCentralWidget(&session_selector_);
 
 	// Set the window icon
 	QIcon icon;
