@@ -239,6 +239,8 @@ shared_ptr<Session> MainWindow::add_session()
 	session_windows_[session] = window;
 	session_selector_.addTab(window, name);
 
+	window->setDockNestingEnabled(true);
+
 	shared_ptr<views::ViewBase> main_view =
 		add_view(name, views::ViewTypeTrace, *session);
 
@@ -311,8 +313,6 @@ void MainWindow::setup_ui()
 
 	connect(&session_selector_, SIGNAL(tabCloseRequested(int)),
 		this, SLOT(on_tab_close_requested(int)));
-
-	setDockNestingEnabled(true);
 
 	connect(static_cast<QApplication *>(QCoreApplication::instance()),
 		SIGNAL(focusChanged(QWidget*, QWidget*)),
