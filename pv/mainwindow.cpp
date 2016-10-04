@@ -307,6 +307,11 @@ void MainWindow::setup_ui()
 	action_about_->setObjectName(QString::fromUtf8("actionAbout"));
 	action_about_->setText(tr("&About..."));
 
+	session_selector_.setTabsClosable(true);
+
+	connect(&session_selector_, SIGNAL(tabCloseRequested(int)),
+		this, SLOT(on_tab_close_requested(int)));
+
 	setDockNestingEnabled(true);
 
 	connect(static_cast<QApplication *>(QCoreApplication::instance()),
@@ -484,6 +489,18 @@ void MainWindow::on_view_close_clicked()
 		} else
 			session->deregister_view(view);
 	}
+}
+
+void MainWindow::on_tab_close_requested(int index)
+{
+	// TODO Ask user if this is intended in case data is unsaved
+
+	// Find the session that belongs to this main window and remove it
+	for (auto entry : session_windows_)
+		if (entry.second == session_selector_.widget(index)) {
+			remove_session(entry.first);
+			break;
+		}
 }
 
 void MainWindow::on_actionViewStickyScrolling_triggered()

@@ -107,6 +107,8 @@ private Q_SLOTS:
 	void on_new_view(Session *session);
 	void on_view_close_clicked();
 
+	void on_tab_close_requested(int index);
+
 	void on_actionViewStickyScrolling_triggered();
 
 	void on_actionViewColouredBg_triggered();
