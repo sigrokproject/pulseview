@@ -118,8 +118,7 @@ private:
 
 	std::list< std::shared_ptr<Session> > sessions_;
 
-	std::map< std::shared_ptr<QDockWidget>,
-		std::shared_ptr<views::ViewBase> > view_docks_;
+	std::map< QDockWidget*,	std::shared_ptr<views::ViewBase> > view_docks_;
 
 	std::map< std::shared_ptr<Session>, QMainWindow*> session_windows_;
 

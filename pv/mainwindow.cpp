@@ -146,7 +146,7 @@ shared_ptr<views::ViewBase> MainWindow::get_active_view() const
 
 	// Get the view contained in the dock widget
 	for (auto entry : view_docks_)
-		if (entry.first.get() == dock)
+		if (entry.first == dock)
 			return entry.second;
 
 	return nullptr;
@@ -163,12 +163,12 @@ shared_ptr<views::ViewBase> MainWindow::add_view(const QString &title,
 	assert(main_window);
 
 	if (type == views::ViewTypeTrace) {
-		shared_ptr<QDockWidget> dock = make_shared<QDockWidget>(title, main_window);
+		QDockWidget* dock = new QDockWidget(title, main_window);
 		dock->setObjectName(title);
-		main_window->addDockWidget(Qt::TopDockWidgetArea, dock.get());
+		main_window->addDockWidget(Qt::TopDockWidgetArea, dock);
 
 		// Insert a QMainWindow into the dock widget to allow for a tool bar
-		QMainWindow *dock_main = new QMainWindow(dock.get());
+		QMainWindow *dock_main = new QMainWindow(dock);
 		dock_main->setWindowFlags(Qt::Widget);  // Remove Qt::Window flag
 
 		shared_ptr<views::TraceView::View> v =
@@ -469,7 +469,7 @@ void MainWindow::on_view_close_clicked()
 	shared_ptr<views::ViewBase> view;
 
 	for (auto entry : view_docks_)
-		if (entry.first.get() == dock)
+		if (entry.first == dock)
 			view = entry.second;
 
 	// Deregister the view
