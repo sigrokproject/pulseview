@@ -26,6 +26,7 @@
 #include <memory>
 
 #include <QMainWindow>
+#include <QToolButton>
 #include <QTabWidget>
 
 #include "session.hpp"
@@ -102,7 +103,7 @@ private Q_SLOTS:
 
 	void on_focus_changed();
 
-	void on_new_session();
+	void on_new_session_clicked();
 	void on_session_name_changed();
 	void on_new_view(Session *session);
 	void on_view_close_clicked();
@@ -124,6 +125,7 @@ private:
 
 	std::map< std::shared_ptr<Session>, QMainWindow*> session_windows_;
 
+	QToolButton *new_session_button_;
 	QTabWidget session_selector_;
 
 	QAction *const action_view_sticky_scrolling_;

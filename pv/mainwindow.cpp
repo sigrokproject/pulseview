@@ -31,6 +31,7 @@
 #include <QApplication>
 #include <QCloseEvent>
 #include <QDockWidget>
+#include <QHBoxLayout>
 #include <QSettings>
 #include <QWidget>
 
@@ -203,8 +204,6 @@ shared_ptr<views::ViewBase> MainWindow::add_view(const QString &title,
 				dock_main->addToolBar(main_bar.get());
 				session.set_main_bar(main_bar);
 
-				connect(main_bar.get(), SIGNAL(new_session()),
-					this, SLOT(on_new_session()));
 				connect(main_bar.get(), SIGNAL(new_view(Session*)),
 					this, SLOT(on_new_view(Session*)));
 			}
@@ -309,10 +308,29 @@ void MainWindow::setup_ui()
 	action_about_->setObjectName(QString::fromUtf8("actionAbout"));
 	action_about_->setText(tr("&About..."));
 
+	// Set up the tab area
+	new_session_button_ = new QToolButton();
+	new_session_button_->setIcon(QIcon::fromTheme("document-new",
+		QIcon(":/icons/document-new.png")));
+	new_session_button_->setAutoRaise(true);
+
+	QHBoxLayout* layout = new QHBoxLayout();
+	layout->setContentsMargins(2, 2, 2, 2);
+	layout->addWidget(new_session_button_);
+
+	QWidget* static_tab_widget_ = new QWidget();
+	static_tab_widget_->setLayout(layout);
+
+	session_selector_.setCornerWidget(static_tab_widget_, Qt::TopLeftCorner);
+
 	session_selector_.setTabsClosable(true);
+
+	connect(new_session_button_, SIGNAL(clicked(bool)),
+		this, SLOT(on_new_session_clicked()));
 
 	connect(&session_selector_, SIGNAL(tabCloseRequested(int)),
 		this, SLOT(on_tab_close_requested(int)));
+
 
 	connect(static_cast<QApplication *>(QCoreApplication::instance()),
 		SIGNAL(focusChanged(QWidget*, QWidget*)),
@@ -425,7 +443,7 @@ void MainWindow::on_focus_changed()
 		setWindowTitle(WindowTitle);
 }
 
-void MainWindow::on_new_session()
+void MainWindow::on_new_session_clicked()
 {
 	add_session();
 }
