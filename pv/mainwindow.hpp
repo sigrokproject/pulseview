@@ -90,6 +90,8 @@ private:
 
 	void restore_ui_settings();
 
+	std::shared_ptr<Session> get_tab_session(int index) const;
+
 private:
 	void closeEvent(QCloseEvent *event);
 
@@ -102,12 +104,14 @@ private Q_SLOTS:
 		Session *session);
 
 	void on_focus_changed();
+	void on_focused_session_changed(std::shared_ptr<Session> session);
 
 	void on_new_session_clicked();
 	void on_session_name_changed();
 	void on_new_view(Session *session);
 	void on_view_close_clicked();
 
+	void on_tab_changed(int index);
 	void on_tab_close_requested(int index);
 
 	void on_actionViewStickyScrolling_triggered();

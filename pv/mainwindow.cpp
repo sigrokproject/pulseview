@@ -330,6 +330,8 @@ void MainWindow::setup_ui()
 
 	connect(&session_selector_, SIGNAL(tabCloseRequested(int)),
 		this, SLOT(on_tab_close_requested(int)));
+	connect(&session_selector_, SIGNAL(currentChanged(int)),
+		this, SLOT(on_tab_changed(int)));
 
 
 	connect(static_cast<QApplication *>(QCoreApplication::instance()),
@@ -393,6 +395,16 @@ void MainWindow::restore_ui_settings()
 	}
 }
 
+std::shared_ptr<Session> MainWindow::get_tab_session(int index) const
+{
+	// Find the session that belongs to the tab's main window
+	for (auto entry : session_windows_)
+		if (entry.second == session_selector_.widget(index))
+			return entry.first;
+
+	return nullptr;
+}
+
 void MainWindow::closeEvent(QCloseEvent *event)
 {
 	save_ui_settings();
@@ -426,21 +438,37 @@ void MainWindow::on_add_view(const QString &title, views::ViewType type,
 
 void MainWindow::on_focus_changed()
 {
-	shared_ptr<views::ViewBase> view;
-	bool title_set = false;
+	static shared_ptr<Session> prev_session;
 
-	view = get_active_view();
+	shared_ptr<views::ViewBase> view = get_active_view();
 
-	for (shared_ptr<Session> session : sessions_) {
-		if (!session->has_view(view))
-			continue;
+	if (view) {
+		for (shared_ptr<Session> session : sessions_) {
+			if (session->has_view(view)) {
+				if (session != prev_session) {
+					// Activate correct tab if necessary
+					shared_ptr<Session> tab_session = get_tab_session(
+						session_selector_.currentIndex());
+					if (tab_session != session)
+						session_selector_.setCurrentWidget(
+							session_windows_.at(session));
 
-		setWindowTitle(session->name() + " - " + WindowTitle);
-		title_set = true;
+					on_focused_session_changed(session);
+				}
+
+				prev_session = session;
+				break;
+			}
+		}
 	}
 
-	if (!title_set)
+	if (sessions_.empty())
 		setWindowTitle(WindowTitle);
+}
+
+void MainWindow::on_focused_session_changed(shared_ptr<Session> session)
+{
+	setWindowTitle(session->name() + " - " + WindowTitle);
 }
 
 void MainWindow::on_new_session_clicked()
@@ -464,7 +492,10 @@ void MainWindow::on_session_name_changed()
 	}
 
 	// Refresh window title if the affected session has focus
-	on_focus_changed();
+	shared_ptr<views::ViewBase> view = get_active_view();
+
+	if (view && session->has_view(view))
+		setWindowTitle(session->name() + " - " + WindowTitle);
 }
 
 void MainWindow::on_new_view(Session *session)
@@ -509,16 +540,22 @@ void MainWindow::on_view_close_clicked()
 	}
 }
 
+void MainWindow::on_tab_changed(int index)
+{
+	shared_ptr<Session> session = get_tab_session(index);
+
+	if (session)
+		on_focused_session_changed(session);
+}
+
 void MainWindow::on_tab_close_requested(int index)
 {
 	// TODO Ask user if this is intended in case data is unsaved
 
-	// Find the session that belongs to this main window and remove it
-	for (auto entry : session_windows_)
-		if (entry.second == session_selector_.widget(index)) {
-			remove_session(entry.first);
-			break;
-		}
+	shared_ptr<Session> session = get_tab_session(index);
+
+	if (session)
+		remove_session(session);
 }
 
 void MainWindow::on_actionViewStickyScrolling_triggered()
