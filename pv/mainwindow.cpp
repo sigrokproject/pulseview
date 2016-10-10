@@ -248,6 +248,8 @@ shared_ptr<Session> MainWindow::add_session()
 
 void MainWindow::remove_session(shared_ptr<Session> session)
 {
+	int h = new_session_button_->height();
+
 	for (shared_ptr<views::ViewBase> view : session->views()) {
 		// Find the dock the view is contained in and remove it
 		for (auto entry : view_docks_)
@@ -274,10 +276,21 @@ void MainWindow::remove_session(shared_ptr<Session> session)
 	sessions_.remove_if([&](shared_ptr<Session> s) {
 		return s == session; });
 
-	// Update the window title if there is no view left to
-	// generate focus change events
-	if (sessions_.empty())
+	if (sessions_.empty()) {
+		// When there are no more tabs, the height of the QTabWidget
+		// drops to zero. We must prevent this to keep the static
+		// widgets visible
+		for (QWidget *w : static_tab_widget_->findChildren<QWidget*>())
+			w->setMinimumHeight(h);
+
+		int margin = static_tab_widget_->layout()->contentsMargins().bottom();
+		static_tab_widget_->setMinimumHeight(h + 2 * margin);
+		session_selector_.setMinimumHeight(h + 2 * margin);
+
+		// Update the window title if there is no view left to
+		// generate focus change events
 		setWindowTitle(WindowTitle);
+	}
 }
 
 void MainWindow::setup_ui()
@@ -318,11 +331,10 @@ void MainWindow::setup_ui()
 	layout->setContentsMargins(2, 2, 2, 2);
 	layout->addWidget(new_session_button_);
 
-	QWidget* static_tab_widget_ = new QWidget();
+	static_tab_widget_ = new QWidget();
 	static_tab_widget_->setLayout(layout);
 
 	session_selector_.setCornerWidget(static_tab_widget_, Qt::TopLeftCorner);
-
 	session_selector_.setTabsClosable(true);
 
 	connect(new_session_button_, SIGNAL(clicked(bool)),

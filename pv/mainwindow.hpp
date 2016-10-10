@@ -129,6 +129,7 @@ private:
 
 	std::map< std::shared_ptr<Session>, QMainWindow*> session_windows_;
 
+	QWidget *static_tab_widget_;
 	QToolButton *new_session_button_;
 	QTabWidget session_selector_;
 
