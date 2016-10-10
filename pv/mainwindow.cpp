@@ -236,7 +236,9 @@ shared_ptr<Session> MainWindow::add_session()
 	QMainWindow *window = new QMainWindow();
 	window->setWindowFlags(Qt::Widget);  // Remove Qt::Window flag
 	session_windows_[session] = window;
-	session_selector_.addTab(window, name);
+
+	int index = session_selector_.addTab(window, name);
+	session_selector_.setCurrentIndex(index);
 
 	window->setDockNestingEnabled(true);
 
