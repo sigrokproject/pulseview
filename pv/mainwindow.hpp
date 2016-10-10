@@ -26,6 +26,7 @@
 #include <memory>
 
 #include <QMainWindow>
+#include <QSignalMapper>
 #include <QToolButton>
 #include <QTabWidget>
 
@@ -92,12 +93,15 @@ private:
 
 	std::shared_ptr<Session> get_tab_session(int index) const;
 
-private:
 	void closeEvent(QCloseEvent *event);
 
 	virtual QMenu* createPopupMenu();
 
 	virtual bool restoreState(const QByteArray &state, int version = 0);
+
+	void session_error(const QString text, const QString info_text);
+
+	void show_session_error(const QString text, const QString info_text);
 
 private Q_SLOTS:
 	void on_add_view(const QString &title, views::ViewType type,
@@ -107,7 +111,11 @@ private Q_SLOTS:
 	void on_focused_session_changed(std::shared_ptr<Session> session);
 
 	void on_new_session_clicked();
+	void on_run_stop_clicked();
+
 	void on_session_name_changed();
+	void on_capture_state_changed(QObject *obj);
+
 	void on_new_view(Session *session);
 	void on_view_close_clicked();
 
@@ -130,12 +138,17 @@ private:
 	std::map< std::shared_ptr<Session>, QMainWindow*> session_windows_;
 
 	QWidget *static_tab_widget_;
-	QToolButton *new_session_button_;
+	QToolButton *new_session_button_, *run_stop_button_;
 	QTabWidget session_selector_;
+	QSignalMapper session_state_mapper_;
 
 	QAction *const action_view_sticky_scrolling_;
 	QAction *const action_view_coloured_bg_;
 	QAction *const action_about_;
+
+	QIcon icon_red_;
+	QIcon icon_green_;
+	QIcon icon_grey_;
 };
 
 } // namespace pv

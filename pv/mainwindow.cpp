@@ -32,6 +32,7 @@
 #include <QCloseEvent>
 #include <QDockWidget>
 #include <QHBoxLayout>
+#include <QMessageBox>
 #include <QSettings>
 #include <QWidget>
 
@@ -71,9 +72,13 @@ MainWindow::MainWindow(DeviceManager &device_manager,
 	QMainWindow(parent),
 	device_manager_(device_manager),
 	session_selector_(this),
+	session_state_mapper_(this),
 	action_view_sticky_scrolling_(new QAction(this)),
 	action_view_coloured_bg_(new QAction(this)),
-	action_about_(new QAction(this))
+	action_about_(new QAction(this)),
+	icon_red_(":/icons/status-red.svg"),
+	icon_green_(":/icons/status-green.svg"),
+	icon_grey_(":/icons/status-grey.svg")
 {
 	qRegisterMetaType<util::Timestamp>("util::Timestamp");
 
@@ -230,6 +235,9 @@ shared_ptr<Session> MainWindow::add_session()
 		this, SLOT(on_add_view(const QString&, views::ViewType, Session*)));
 	connect(session.get(), SIGNAL(name_changed()),
 		this, SLOT(on_session_name_changed()));
+	session_state_mapper_.setMapping(session.get(), session.get());
+	connect(session.get(), SIGNAL(capture_state_changed(int)),
+		&session_state_mapper_, SLOT(map()));
 
 	sessions_.push_back(session);
 
@@ -329,9 +337,15 @@ void MainWindow::setup_ui()
 		QIcon(":/icons/document-new.png")));
 	new_session_button_->setAutoRaise(true);
 
+	run_stop_button_ = new QToolButton();
+	run_stop_button_->setAutoRaise(true);
+	run_stop_button_->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+	run_stop_button_->setShortcut(QKeySequence(Qt::Key_Space));
+
 	QHBoxLayout* layout = new QHBoxLayout();
 	layout->setContentsMargins(2, 2, 2, 2);
 	layout->addWidget(new_session_button_);
+	layout->addWidget(run_stop_button_);
 
 	static_tab_widget_ = new QWidget();
 	static_tab_widget_->setLayout(layout);
@@ -341,6 +355,10 @@ void MainWindow::setup_ui()
 
 	connect(new_session_button_, SIGNAL(clicked(bool)),
 		this, SLOT(on_new_session_clicked()));
+	connect(run_stop_button_, SIGNAL(clicked(bool)),
+		this, SLOT(on_run_stop_clicked()));
+	connect(&session_state_mapper_, SIGNAL(mapped(QObject*)),
+		this, SLOT(on_capture_state_changed(QObject*)));
 
 	connect(&session_selector_, SIGNAL(tabCloseRequested(int)),
 		this, SLOT(on_tab_close_requested(int)));
@@ -441,6 +459,23 @@ bool MainWindow::restoreState(const QByteArray &state, int version)
 	return false;
 }
 
+void MainWindow::session_error(const QString text, const QString info_text)
+{
+	QMetaObject::invokeMethod(this, "show_session_error",
+		Qt::QueuedConnection, Q_ARG(QString, text),
+		Q_ARG(QString, info_text));
+}
+
+void MainWindow::show_session_error(const QString text, const QString info_text)
+{
+	QMessageBox msg(this);
+	msg.setText(text);
+	msg.setInformativeText(info_text);
+	msg.setStandardButtons(QMessageBox::Ok);
+	msg.setIcon(QMessageBox::Warning);
+	msg.exec();
+}
+
 void MainWindow::on_add_view(const QString &title, views::ViewType type,
 	Session *session)
 {
@@ -483,11 +518,30 @@ void MainWindow::on_focus_changed()
 void MainWindow::on_focused_session_changed(shared_ptr<Session> session)
 {
 	setWindowTitle(session->name() + " - " + WindowTitle);
+
+	// Update the state of the run/stop button, too
+	on_capture_state_changed(session.get());
 }
 
 void MainWindow::on_new_session_clicked()
 {
 	add_session();
+}
+
+void MainWindow::on_run_stop_clicked()
+{
+	Session &session = get_active_view()->session();
+
+	switch (session.get_capture_state()) {
+	case Session::Stopped:
+		session.start_capture([&](QString message) {
+			session_error("Capture failed", message); });
+		break;
+	case Session::AwaitingTrigger:
+	case Session::Running:
+		session.stop_capture();
+		break;
+	}
 }
 
 void MainWindow::on_session_name_changed()
@@ -510,6 +564,27 @@ void MainWindow::on_session_name_changed()
 
 	if (view && session->has_view(view))
 		setWindowTitle(session->name() + " - " + WindowTitle);
+}
+
+void MainWindow::on_capture_state_changed(QObject *obj)
+{
+	Session *caller = qobject_cast<Session*>(obj);
+
+	// Ignore if caller is not the currently focused session
+	// unless there is only one session
+	if (sessions_.size() > 1) {
+		Session &focused_session = get_active_view()->session();
+
+		if (caller != &focused_session)
+			return;
+	}
+
+	int state = caller->get_capture_state();
+
+	const QIcon *icons[] = {&icon_grey_, &icon_red_, &icon_green_};
+	run_stop_button_->setIcon(*icons[state]);
+	run_stop_button_->setText((state == pv::Session::Stopped) ?
+		tr("Run") : tr("Stop"));
 }
 
 void MainWindow::on_new_view(Session *session)

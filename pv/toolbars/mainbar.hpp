@@ -152,7 +152,6 @@ private Q_SLOTS:
 	void on_device_changed();
 	void on_sample_count_changed();
 	void on_sample_rate_changed();
-	void on_run_stop();
 
 	void on_config_changed();
 
@@ -199,12 +198,6 @@ private:
 	bool updating_sample_count_;
 
 	bool sample_count_supported_;
-
-	QIcon icon_red_;
-	QIcon icon_green_;
-	QIcon icon_grey_;
-	QToolButton run_stop_button_;
-	QAction *run_stop_button_action_;
 
 #ifdef ENABLE_DECODE
 	QMenu *const menu_decoders_add_;

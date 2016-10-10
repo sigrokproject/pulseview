@@ -110,12 +110,7 @@ MainBar::MainBar(Session &session, MainWindow &main_window) :
 	sample_rate_("Hz", this),
 	updating_sample_rate_(false),
 	updating_sample_count_(false),
-	sample_count_supported_(false),
-	icon_red_(":/icons/status-red.svg"),
-	icon_green_(":/icons/status-green.svg"),
-	icon_grey_(":/icons/status-grey.svg"),
-	run_stop_button_(this),
-	run_stop_button_action_(nullptr)
+	sample_count_supported_(false)
 #ifdef ENABLE_DECODE
 	, menu_decoders_add_(new pv::widgets::DecoderMenu(this, true))
 #endif
@@ -274,8 +269,6 @@ MainBar::MainBar(Session &session, MainWindow &main_window) :
 	addAction(action_view_show_cursors_);
 	addSeparator();
 
-	connect(&run_stop_button_, SIGNAL(clicked()),
-		this, SLOT(on_run_stop()));
 	connect(&sample_count_, SIGNAL(value_changed()),
 		this, SLOT(on_sample_count_changed()));
 	connect(&sample_rate_, SIGNAL(value_changed()),
@@ -291,14 +284,11 @@ MainBar::MainBar(Session &session, MainWindow &main_window) :
 	channels_button_.setIcon(QIcon::fromTheme("channels",
 		QIcon(":/icons/channels.svg")));
 
-	run_stop_button_.setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-
 	addWidget(&device_selector_);
 	configure_button_action_ = addWidget(&configure_button_);
 	channels_button_action_ = addWidget(&channels_button_);
 	addWidget(&sample_count_);
 	addWidget(&sample_rate_);
-	run_stop_button_action_ = addWidget(&run_stop_button_);
 #ifdef ENABLE_DECODE
 	addSeparator();
 	addWidget(add_decoder_button);
@@ -339,12 +329,6 @@ void MainBar::update_device_list()
 
 void MainBar::set_capture_state(pv::Session::capture_state state)
 {
-	const QIcon *icons[] = {&icon_grey_, &icon_red_, &icon_green_};
-	run_stop_button_.setIcon(*icons[state]);
-	run_stop_button_.setText((state == pv::Session::Stopped) ?
-		tr("Run") : tr("Stop"));
-	run_stop_button_.setShortcut(QKeySequence(Qt::Key_Space));
-
 	bool ui_enabled = (state == pv::Session::Stopped) ? true : false;
 
 	device_selector_.setEnabled(ui_enabled);
@@ -443,20 +427,6 @@ QAction* MainBar::action_view_zoom_one_to_one() const
 QAction* MainBar::action_view_show_cursors() const
 {
 	return action_view_show_cursors_;
-}
-
-void MainBar::run_stop()
-{
-	switch (session_.get_capture_state()) {
-	case Session::Stopped:
-		session_.start_capture([&](QString message) {
-			session_error("Capture failed", message); });
-		break;
-	case Session::AwaitingTrigger:
-	case Session::Running:
-		session_.stop_capture();
-		break;
-	}
 }
 
 void MainBar::load_file(QString file_name,
@@ -651,7 +621,6 @@ void MainBar::update_device_config_widgets()
 
 	// Hide the widgets if no device is selected
 	channels_button_action_->setVisible(!!device);
-	run_stop_button_action_->setVisible(!!device);
 	if (!device) {
 		configure_button_action_->setVisible(false);
 		sample_count_.show_none();
@@ -934,13 +903,6 @@ void MainBar::on_sample_rate_changed()
 {
 	if (!updating_sample_rate_)
 		commit_sample_rate();
-}
-
-void MainBar::on_run_stop()
-{
-	commit_sample_count();
-	commit_sample_rate();	
-	run_stop();
 }
 
 void MainBar::on_config_changed()
