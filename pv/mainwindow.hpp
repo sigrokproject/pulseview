@@ -101,9 +101,9 @@ private:
 
 	void session_error(const QString text, const QString info_text);
 
+private Q_SLOTS:
 	void show_session_error(const QString text, const QString info_text);
 
-private Q_SLOTS:
 	void on_add_view(const QString &title, views::ViewType type,
 		Session *session);
 
