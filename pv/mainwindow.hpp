@@ -132,6 +132,7 @@ private:
 	DeviceManager &device_manager_;
 
 	std::list< std::shared_ptr<Session> > sessions_;
+	std::shared_ptr<Session> last_focused_session_;
 
 	std::map< QDockWidget*,	std::shared_ptr<views::ViewBase> > view_docks_;
 

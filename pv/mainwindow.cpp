@@ -247,6 +247,7 @@ shared_ptr<Session> MainWindow::add_session()
 
 	int index = session_selector_.addTab(window, name);
 	session_selector_.setCurrentIndex(index);
+	last_focused_session_ = session;
 
 	window->setDockNestingEnabled(true);
 
@@ -282,6 +283,9 @@ void MainWindow::remove_session(shared_ptr<Session> session)
 	session_selector_.removeTab(session_selector_.indexOf(window));
 
 	session_windows_.erase(session);
+
+	if (last_focused_session_ == session)
+		last_focused_session_.reset();
 
 	sessions_.remove_if([&](shared_ptr<Session> s) {
 		return s == session; });
@@ -487,14 +491,12 @@ void MainWindow::on_add_view(const QString &title, views::ViewType type,
 
 void MainWindow::on_focus_changed()
 {
-	static shared_ptr<Session> prev_session;
-
 	shared_ptr<views::ViewBase> view = get_active_view();
 
 	if (view) {
 		for (shared_ptr<Session> session : sessions_) {
 			if (session->has_view(view)) {
-				if (session != prev_session) {
+				if (session != last_focused_session_) {
 					// Activate correct tab if necessary
 					shared_ptr<Session> tab_session = get_tab_session(
 						session_selector_.currentIndex());
@@ -505,7 +507,6 @@ void MainWindow::on_focus_changed()
 					on_focused_session_changed(session);
 				}
 
-				prev_session = session;
 				break;
 			}
 		}
@@ -517,6 +518,8 @@ void MainWindow::on_focus_changed()
 
 void MainWindow::on_focused_session_changed(shared_ptr<Session> session)
 {
+	last_focused_session_ = session;
+
 	setWindowTitle(session->name() + " - " + WindowTitle);
 
 	// Update the state of the run/stop button, too
@@ -530,16 +533,19 @@ void MainWindow::on_new_session_clicked()
 
 void MainWindow::on_run_stop_clicked()
 {
-	Session &session = get_active_view()->session();
+	shared_ptr<Session> session = last_focused_session_;
 
-	switch (session.get_capture_state()) {
+	if (!session)
+		return;
+
+	switch (session->get_capture_state()) {
 	case Session::Stopped:
-		session.start_capture([&](QString message) {
+		session->start_capture([&](QString message) {
 			session_error("Capture failed", message); });
 		break;
 	case Session::AwaitingTrigger:
 	case Session::Running:
-		session.stop_capture();
+		session->stop_capture();
 		break;
 	}
 }
@@ -560,9 +566,7 @@ void MainWindow::on_session_name_changed()
 	}
 
 	// Refresh window title if the affected session has focus
-	shared_ptr<views::ViewBase> view = get_active_view();
-
-	if (view && session->has_view(view))
+	if (session == last_focused_session_.get())
 		setWindowTitle(session->name() + " - " + WindowTitle);
 }
 
@@ -572,12 +576,8 @@ void MainWindow::on_capture_state_changed(QObject *obj)
 
 	// Ignore if caller is not the currently focused session
 	// unless there is only one session
-	if (sessions_.size() > 1) {
-		Session &focused_session = get_active_view()->session();
-
-		if (caller != &focused_session)
-			return;
-	}
+	if ((sessions_.size() > 1) && (caller != last_focused_session_.get()))
+		return;
 
 	int state = caller->get_capture_state();
 
