@@ -97,11 +97,11 @@ else()
 	find_package(Qt4 REQUIRED QtCore QtGui QtSvg)
 endif()
 
+set(BOOSTCOMPS filesystem serialization system thread)
 if(ENABLE_TESTS)
-	find_package(Boost 1.53 COMPONENTS filesystem serialization system thread unit_test_framework REQUIRED)
-else()
-	find_package(Boost 1.53 COMPONENTS filesystem serialization system thread REQUIRED)
+	list(APPEND BOOSTCOMPS unit_test_framework)
 endif()
+find_package(Boost 1.55 COMPONENTS ${BOOSTCOMPS} REQUIRED)
 
 # Find the platform's thread library (needed for C++11 threads).
 # This will set ${CMAKE_THREAD_LIBS_INIT} to the correct, OS-specific value.
