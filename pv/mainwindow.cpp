@@ -346,9 +346,13 @@ void MainWindow::setup_ui()
 	run_stop_button_->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
 	run_stop_button_->setShortcut(QKeySequence(Qt::Key_Space));
 
+	QFrame *separator = new QFrame();
+	separator->setFrameStyle(QFrame::VLine | QFrame::Raised);
+
 	QHBoxLayout* layout = new QHBoxLayout();
 	layout->setContentsMargins(2, 2, 2, 2);
 	layout->addWidget(new_session_button_);
+	layout->addWidget(separator);
 	layout->addWidget(run_stop_button_);
 
 	static_tab_widget_ = new QWidget();
