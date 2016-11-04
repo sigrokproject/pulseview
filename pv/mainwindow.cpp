@@ -578,6 +578,14 @@ void MainWindow::on_session_name_changed()
 			}
 	}
 
+	// Update the tab widget by finding the main window and the tab from that
+	for (auto entry : session_windows_)
+		if (entry.first.get() == session) {
+			QMainWindow *window = entry.second;
+			const int index = session_selector_.indexOf(window);
+			session_selector_.setTabText(index, session->name());
+		}
+
 	// Refresh window title if the affected session has focus
 	if (session == last_focused_session_.get())
 		setWindowTitle(session->name() + " - " + WindowTitle);
