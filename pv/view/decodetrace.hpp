@@ -200,7 +200,6 @@ private Q_SLOTS:
 
 private:
 	pv::Session &session_;
-	std::shared_ptr<data::SignalBase> signalbase_;
 
 	std::vector<data::decode::Row> visible_rows_;
 	uint64_t decode_start_, decode_end_;

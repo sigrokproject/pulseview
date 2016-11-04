@@ -132,21 +132,20 @@ DecodeTrace::DecodeTrace(pv::Session &session,
 	shared_ptr<data::SignalBase> signalbase, int index) :
 	Trace(signalbase),
 	session_(session),
-	signalbase_(signalbase),
 	row_height_(0),
 	max_visible_rows_(0),
 	delete_mapper_(this),
 	show_hide_mapper_(this)
 {
 	std::shared_ptr<pv::data::DecoderStack> decoder_stack =
-		signalbase_->decoder_stack();
+		base_->decoder_stack();
 
 	// Determine shortest string we want to see displayed in full
 	QFontMetrics m(QApplication::font());
 	min_useful_label_width_ = m.width("XX"); // e.g. two hex characters
 
-	signalbase_->set_name(QString::fromUtf8(decoder_stack->stack().front()->decoder()->name));
-	signalbase_->set_colour(DecodeColours[index % countof(DecodeColours)]);
+	base_->set_name(QString::fromUtf8(decoder_stack->stack().front()->decoder()->name));
+	base_->set_colour(DecodeColours[index % countof(DecodeColours)]);
 
 	connect(decoder_stack.get(), SIGNAL(new_decode_data()),
 		this, SLOT(on_new_decode_data()));
@@ -187,7 +186,7 @@ void DecodeTrace::paint_mid(QPainter &p, const ViewItemPaintParams &pp)
 	using namespace pv::data::decode;
 
 	std::shared_ptr<pv::data::DecoderStack> decoder_stack =
-		signalbase_->decoder_stack();
+		base_->decoder_stack();
 
 	const int text_height = ViewItemPaintParams::text_height();
 	row_height_ = (text_height * 6) / 4;
@@ -300,7 +299,7 @@ void DecodeTrace::populate_popup_form(QWidget *parent, QFormLayout *form)
 	using pv::data::decode::Decoder;
 
 	std::shared_ptr<pv::data::DecoderStack> decoder_stack =
-		signalbase_->decoder_stack();
+		base_->decoder_stack();
 
 	assert(form);
 	assert(parent);
@@ -606,7 +605,7 @@ void DecodeTrace::draw_unresolved_period(QPainter &p, int h, int left,
 	double samples_per_pixel, pixels_offset;
 
 	std::shared_ptr<pv::data::DecoderStack> decoder_stack =
-		signalbase_->decoder_stack();
+		base_->decoder_stack();
 
 	assert(decoder_stack);
 
@@ -661,7 +660,7 @@ void DecodeTrace::draw_unresolved_period(QPainter &p, int h, int left,
 pair<double, double> DecodeTrace::get_pixels_offset_samples_per_pixel() const
 {
 	std::shared_ptr<pv::data::DecoderStack> decoder_stack =
-		signalbase_->decoder_stack();
+		base_->decoder_stack();
 
 	assert(owner_);
 	assert(decoder_stack);
@@ -734,7 +733,7 @@ const QString DecodeTrace::get_annotation_at_point(const QPoint &point)
 	vector<pv::data::decode::Annotation> annotations;
 
 	std::shared_ptr<pv::data::DecoderStack> decoder_stack =
-		signalbase_->decoder_stack();
+		base_->decoder_stack();
 
 	assert(decoder_stack);
 	decoder_stack->get_annotation_subset(annotations, visible_rows_[row],
@@ -843,7 +842,7 @@ void DecodeTrace::create_decoder_form(int index,
 	}
 
 	std::shared_ptr<pv::data::DecoderStack> decoder_stack =
-		signalbase_->decoder_stack();
+		base_->decoder_stack();
 
 	// Add the options
 	shared_ptr<binding::Decoder> binding(
@@ -926,7 +925,7 @@ void DecodeTrace::commit_decoder_channels(shared_ptr<data::decode::Decoder> &dec
 void DecodeTrace::commit_channels()
 {
 	std::shared_ptr<pv::data::DecoderStack> decoder_stack =
-		signalbase_->decoder_stack();
+		base_->decoder_stack();
 
 	assert(decoder_stack);
 	for (shared_ptr<data::decode::Decoder> dec : decoder_stack->stack())
@@ -959,7 +958,7 @@ void DecodeTrace::on_channel_selected(int)
 void DecodeTrace::on_stack_decoder(srd_decoder *decoder)
 {
 	std::shared_ptr<pv::data::DecoderStack> decoder_stack =
-		signalbase_->decoder_stack();
+		base_->decoder_stack();
 
 	assert(decoder);
 	assert(decoder_stack);
@@ -973,7 +972,7 @@ void DecodeTrace::on_stack_decoder(srd_decoder *decoder)
 void DecodeTrace::on_delete_decoder(int index)
 {
 	std::shared_ptr<pv::data::DecoderStack> decoder_stack =
-		signalbase_->decoder_stack();
+		base_->decoder_stack();
 
 	decoder_stack->remove(index);
 
@@ -988,7 +987,7 @@ void DecodeTrace::on_show_hide_decoder(int index)
 	using pv::data::decode::Decoder;
 
 	std::shared_ptr<pv::data::DecoderStack> decoder_stack =
-		signalbase_->decoder_stack();
+		base_->decoder_stack();
 
 	const list< shared_ptr<Decoder> > stack(decoder_stack->stack());
 
