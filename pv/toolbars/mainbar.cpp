@@ -828,7 +828,8 @@ void MainBar::export_file(shared_ptr<OutputFormat> format,
 		options = dlg.options();
 	}
 
-	session_.set_name(QFileInfo(file_name).fileName());
+	if (!selection_only)
+		session_.set_name(QFileInfo(file_name).fileName());
 
 	StoreProgress *dlg = new StoreProgress(file_name, format, options,
 		sample_range, session_, this);
