@@ -252,16 +252,23 @@ void ViewWidget::mousePressEvent(QMouseEvent *event)
 {
 	assert(event);
 
-	mouse_down_point_ = event->pos();
-	mouse_down_item_ = get_mouse_over_item(event->pos());
-
-	if (event->button() & Qt::LeftButton)
+	/* Ignore right click events as they will open context menus when
+	 * used on trace labels. Those menus prevent ViewWidget::mouseReleaseEvent()
+	 * to be triggered upon button release, making mouse_down_item_
+	 * hold the last reference to a view item that might have been deleted
+	 * from the context menu, preventing it from being freed as intended.
+	 */
+	if (event->button() & Qt::LeftButton) {
+		mouse_down_point_ = event->pos();
+		mouse_down_item_ = get_mouse_over_item(event->pos());
 		mouse_left_press_event(event);
+	}
 }
 
 void ViewWidget::mouseReleaseEvent(QMouseEvent *event)
 {
 	assert(event);
+
 	if (event->button() & Qt::LeftButton)
 		mouse_left_release_event(event);
 

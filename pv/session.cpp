@@ -585,8 +585,12 @@ bool Session::add_decoder(srd_decoder *const dec)
 
 void Session::remove_decode_signal(shared_ptr<data::SignalBase> signalbase)
 {
+	signalbases_.erase(signalbase);
+
 	for (std::shared_ptr<views::ViewBase> view : views_)
 		view->remove_decode_signal(signalbase);
+
+	signals_changed();
 }
 #endif
 
