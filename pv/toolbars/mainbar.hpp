@@ -88,11 +88,6 @@ public:
 
 	void reset_device_selector();
 
-	void select_device(std::shared_ptr<devices::Device> device);
-
-	void load_init_file(const std::string &file_name,
-		const std::string &format);
-
 	QAction* action_new_view() const;
 	QAction* action_open() const;
 	QAction* action_save_as() const;
@@ -105,15 +100,12 @@ public:
 	QAction* action_view_zoom_one_to_one() const;
 	QAction* action_view_show_cursors() const;
 
+	void session_error(const QString text, const QString info_text);
+
 private:
 	void run_stop();
 
 	void select_init_device();
-
-	void load_file(QString file_name,
-		std::shared_ptr<sigrok::InputFormat> format = nullptr,
-		const std::map<std::string, Glib::VariantBase> &options =
-			std::map<std::string, Glib::VariantBase>());
 
 	void save_selection_to_file();
 
@@ -123,8 +115,6 @@ private:
 	void update_device_config_widgets();
 	void commit_sample_rate();
 	void commit_sample_count();
-
-	void session_error(const QString text, const QString info_text);
 
 	QAction *const action_new_view_;
 	QAction *const action_open_;

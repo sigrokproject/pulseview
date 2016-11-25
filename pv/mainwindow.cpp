@@ -87,7 +87,7 @@ MainWindow::MainWindow(DeviceManager &device_manager,
 
 	if (!open_file_name.empty()) {
 		shared_ptr<Session> session = add_session();
-		session->main_bar()->load_init_file(open_file_name, open_file_format);
+		session->load_init_file(open_file_name, open_file_format);
 	}
 
 	// Add empty default session if there aren't any sessions
@@ -107,8 +107,7 @@ MainWindow::MainWindow(DeviceManager &device_manager,
 		}
 
 		// ...and if there isn't any, just use demo then
-		session->main_bar()->select_device(other_device ?
-			other_device : demo_device);
+		session->select_device(other_device ? other_device : demo_device);
 	}
 }
 

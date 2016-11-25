@@ -51,8 +51,10 @@ namespace sigrok {
 class Analog;
 class Channel;
 class Device;
+class InputFormat;
 class Logic;
 class Meta;
+class OutputFormat;
 class Packet;
 class Session;
 }
@@ -114,13 +116,18 @@ public:
 
 	std::shared_ptr<views::ViewBase> main_view() const;
 
-	void set_main_bar(std::shared_ptr<pv::toolbars::MainBar> main_bar);
-
 	std::shared_ptr<pv::toolbars::MainBar> main_bar() const;
+
+	void set_main_bar(std::shared_ptr<pv::toolbars::MainBar> main_bar);
 
 	void save_settings(QSettings &settings) const;
 
 	void restore_settings(QSettings &settings);
+
+	/**
+	 * Attempts to set device instance, may fall back to demo if needed
+	 */
+	void select_device(std::shared_ptr<devices::Device> device);
 
 	/**
 	 * Sets device instance that will be used in the next capture session.
@@ -128,6 +135,14 @@ public:
 	void set_device(std::shared_ptr<devices::Device> device);
 
 	void set_default_device();
+
+	void load_init_file(const std::string &file_name,
+		const std::string &format);
+
+	void load_file(QString file_name,
+		std::shared_ptr<sigrok::InputFormat> format = nullptr,
+		const std::map<std::string, Glib::VariantBase> &options =
+			std::map<std::string, Glib::VariantBase>());
 
 	capture_state get_capture_state() const;
 

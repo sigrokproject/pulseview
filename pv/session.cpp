@@ -46,6 +46,7 @@
 #include "data/decode/decoder.hpp"
 
 #include "devices/hardwaredevice.hpp"
+#include "devices/inputfile.hpp"
 #include "devices/sessionfile.hpp"
 
 #include "toolbars/mainbar.hpp"
@@ -72,6 +73,7 @@ using std::lock_guard;
 using std::list;
 using std::map;
 using std::mutex;
+using std::pair;
 using std::recursive_mutex;
 using std::set;
 using std::shared_ptr;
@@ -86,8 +88,10 @@ using sigrok::ConfigKey;
 using sigrok::DatafeedCallbackFunction;
 using sigrok::Error;
 using sigrok::Header;
+using sigrok::InputFormat;
 using sigrok::Logic;
 using sigrok::Meta;
+using sigrok::OutputFormat;
 using sigrok::Packet;
 using sigrok::PacketPayload;
 using sigrok::Session;
@@ -349,6 +353,19 @@ void Session::restore_settings(QSettings &settings)
 	}
 }
 
+void Session::select_device(shared_ptr<devices::Device> device)
+{
+	try {
+		if (device)
+			set_device(device);
+		else
+			set_default_device();
+	} catch (const QString &e) {
+		main_bar_->session_error(tr("Failed to Select Device"),
+			tr("Failed to Select Device"));
+	}
+}
+
 void Session::set_device(shared_ptr<devices::Device> device)
 {
 	assert(device);
@@ -420,6 +437,63 @@ void Session::set_default_device()
 			return d->hardware_device()->driver()->name() ==
 			"demo";	});
 	set_device((iter == devices.end()) ? devices.front() : *iter);
+}
+
+void Session::load_init_file(const std::string &file_name,
+	const std::string &format)
+{
+	shared_ptr<InputFormat> input_format;
+
+	if (!format.empty()) {
+		const map<string, shared_ptr<InputFormat> > formats =
+			device_manager_.context()->input_formats();
+		const auto iter = find_if(formats.begin(), formats.end(),
+			[&](const pair<string, shared_ptr<InputFormat> > f) {
+				return f.first == format; });
+		if (iter == formats.end()) {
+			main_bar_->session_error(tr("Error"),
+				tr("Unexpected input format: %s").arg(QString::fromStdString(format)));
+			return;
+		}
+
+		input_format = (*iter).second;
+	}
+
+	load_file(QString::fromStdString(file_name), input_format);
+}
+
+void Session::load_file(QString file_name,
+	std::shared_ptr<sigrok::InputFormat> format,
+	const std::map<std::string, Glib::VariantBase> &options)
+{
+	const QString errorMessage(
+		QString("Failed to load file %1").arg(file_name));
+
+	try {
+		if (format)
+			set_device(shared_ptr<devices::Device>(
+				new devices::InputFile(
+					device_manager_.context(),
+					file_name.toStdString(),
+					format, options)));
+		else
+			set_device(shared_ptr<devices::Device>(
+				new devices::SessionFile(
+					device_manager_.context(),
+					file_name.toStdString())));
+	} catch (Error e) {
+		main_bar_->session_error(tr("Failed to load ") + file_name, e.what());
+		set_default_device();
+		main_bar_->update_device_list();
+		return;
+	}
+
+	main_bar_->update_device_list();
+
+	start_capture([&, errorMessage](QString infoMessage) {
+		main_bar_->session_error(errorMessage, infoMessage); });
+
+	set_name(QFileInfo(file_name).fileName());
 }
 
 Session::capture_state Session::get_capture_state() const
