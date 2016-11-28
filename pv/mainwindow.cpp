@@ -44,6 +44,7 @@
 #include "dialogs/about.hpp"
 #include "toolbars/mainbar.hpp"
 #include "view/view.hpp"
+#include "views/trace/standardbar.hpp"
 
 #include <stdint.h>
 #include <stdarg.h>
@@ -204,12 +205,17 @@ shared_ptr<views::ViewBase> MainWindow::add_view(const QString &title,
 
 			shared_ptr<MainBar> main_bar = session.main_bar();
 			if (!main_bar) {
-				main_bar = make_shared<MainBar>(session, *this);
+				/* Initial view, create the main bar */
+				main_bar = make_shared<MainBar>(session, this, v.get());
 				dock_main->addToolBar(main_bar.get());
 				session.set_main_bar(main_bar);
 
 				connect(main_bar.get(), SIGNAL(new_view(Session*)),
 					this, SLOT(on_new_view(Session*)));
+			} else {
+				/* Additional view, create a standard bar */
+				dock_main->addToolBar(
+					new pv::views::trace::StandardBar(session, this, v.get()));
 			}
 			main_bar->action_view_show_cursors()->setChecked(v->cursors_shown());
 

@@ -86,20 +86,17 @@ const uint64_t MainBar::DefaultSampleCount = 1000000;
 const char *MainBar::SettingOpenDirectory = "MainWindow/OpenDirectory";
 const char *MainBar::SettingSaveDirectory = "MainWindow/SaveDirectory";
 
-MainBar::MainBar(Session &session, MainWindow &main_window) :
-	QToolBar("Sampling Bar", &main_window),
+MainBar::MainBar(Session &session, QWidget *parent,
+		pv::views::TraceView::View *view) :
+	StandardBar(session, parent, view, false),
 	action_new_view_(new QAction(this)),
 	action_open_(new QAction(this)),
 	action_save_as_(new QAction(this)),
 	action_save_selection_as_(new QAction(this)),
 	action_connect_(new QAction(this)),
-	action_view_zoom_in_(new QAction(this)),
-	action_view_zoom_out_(new QAction(this)),
-	action_view_zoom_fit_(new QAction(this)),
-	action_view_zoom_one_to_one_(new QAction(this)),
-	action_view_show_cursors_(new QAction(this)),
-	session_(session),
-	device_selector_(&main_window, session.device_manager(),
+	open_button_(new QToolButton()),
+	save_button_(new QToolButton()),
+	device_selector_(parent, session.device_manager(),
 		action_connect_),
 	configure_button_(this),
 	configure_button_action_(nullptr),
@@ -111,14 +108,11 @@ MainBar::MainBar(Session &session, MainWindow &main_window) :
 	updating_sample_count_(false),
 	sample_count_supported_(false)
 #ifdef ENABLE_DECODE
-	, menu_decoders_add_(new pv::widgets::DecoderMenu(this, true))
+	, add_decoder_button_(new QToolButton()),
+	menu_decoders_add_(new pv::widgets::DecoderMenu(this, true))
 #endif
 {
 	setObjectName(QString::fromUtf8("MainBar"));
-
-	setMovable(false);
-	setFloatable(false);
-	setContextMenuPolicy(Qt::PreventContextMenu);
 
 	// Actions
 	action_new_view_->setText(tr("New &View"));
@@ -166,47 +160,7 @@ MainBar::MainBar(Session &session, MainWindow &main_window) :
 	connect(action_connect_, SIGNAL(triggered(bool)),
 		this, SLOT(on_actionConnect_triggered()));
 
-	action_view_zoom_in_->setText(tr("Zoom &In"));
-	action_view_zoom_in_->setIcon(QIcon::fromTheme("zoom-in",
-		QIcon(":/icons/zoom-in.png")));
-	// simply using Qt::Key_Plus shows no + in the menu
-	action_view_zoom_in_->setShortcut(QKeySequence::ZoomIn);
-	connect(action_view_zoom_in_, SIGNAL(triggered(bool)),
-		this, SLOT(on_actionViewZoomIn_triggered()));
-
-	action_view_zoom_out_->setText(tr("Zoom &Out"));
-	action_view_zoom_out_->setIcon(QIcon::fromTheme("zoom-out",
-		QIcon(":/icons/zoom-out.png")));
-	action_view_zoom_out_->setShortcut(QKeySequence::ZoomOut);
-	connect(action_view_zoom_out_, SIGNAL(triggered(bool)),
-		this, SLOT(on_actionViewZoomOut_triggered()));
-
-	action_view_zoom_fit_->setCheckable(true);
-	action_view_zoom_fit_->setText(tr("Zoom to &Fit"));
-	action_view_zoom_fit_->setIcon(QIcon::fromTheme("zoom-fit",
-		QIcon(":/icons/zoom-fit.png")));
-	action_view_zoom_fit_->setShortcut(QKeySequence(Qt::Key_F));
-	connect(action_view_zoom_fit_, SIGNAL(triggered(bool)),
-		this, SLOT(on_actionViewZoomFit_triggered()));
-
-	action_view_zoom_one_to_one_->setText(tr("Zoom to O&ne-to-One"));
-	action_view_zoom_one_to_one_->setIcon(QIcon::fromTheme("zoom-original",
-		QIcon(":/icons/zoom-original.png")));
-	action_view_zoom_one_to_one_->setShortcut(QKeySequence(Qt::Key_O));
-	connect(action_view_zoom_one_to_one_, SIGNAL(triggered(bool)),
-		this, SLOT(on_actionViewZoomOneToOne_triggered()));
-
-	action_view_show_cursors_->setCheckable(true);
-	action_view_show_cursors_->setIcon(QIcon::fromTheme("show-cursors",
-		QIcon(":/icons/show-cursors.svg")));
-	action_view_show_cursors_->setShortcut(QKeySequence(Qt::Key_C));
-	connect(action_view_show_cursors_, SIGNAL(triggered(bool)),
-		this, SLOT(on_actionViewShowCursors_triggered()));
-	action_view_show_cursors_->setText(tr("Show &Cursors"));
-
 	// Open button
-	QToolButton *const open_button = new QToolButton(this);
-
 	widgets::ImportMenu *import_menu = new widgets::ImportMenu(this,
 		session.device_manager().context(), action_open_);
 	connect(import_menu,
@@ -214,13 +168,11 @@ MainBar::MainBar(Session &session, MainWindow &main_window) :
 		this,
 		SLOT(import_file(std::shared_ptr<sigrok::InputFormat>)));
 
-	open_button->setMenu(import_menu);
-	open_button->setDefaultAction(action_open_);
-	open_button->setPopupMode(QToolButton::MenuButtonPopup);
+	open_button_->setMenu(import_menu);
+	open_button_->setDefaultAction(action_open_);
+	open_button_->setPopupMode(QToolButton::MenuButtonPopup);
 
 	// Save button
-	QToolButton *const save_button = new QToolButton(this);
-
 	vector<QAction *> open_actions;
 	open_actions.push_back(action_save_as_);
 	open_actions.push_back(action_save_selection_as_);
@@ -233,9 +185,9 @@ MainBar::MainBar(Session &session, MainWindow &main_window) :
 		this,
 		SLOT(export_file(std::shared_ptr<sigrok::OutputFormat>)));
 
-	save_button->setMenu(export_menu);
-	save_button->setDefaultAction(action_save_as_);
-	save_button->setPopupMode(QToolButton::MenuButtonPopup);
+	save_button_->setMenu(export_menu);
+	save_button_->setDefaultAction(action_save_as_);
+	save_button_->setPopupMode(QToolButton::MenuButtonPopup);
 
 	// Device selector menu
 	connect(&device_selector_, SIGNAL(device_selected()),
@@ -247,26 +199,11 @@ MainBar::MainBar(Session &session, MainWindow &main_window) :
 	connect(menu_decoders_add_, SIGNAL(decoder_selected(srd_decoder*)),
 		this, SLOT(add_decoder(srd_decoder*)));
 
-	QToolButton *add_decoder_button = new QToolButton(this);
-	add_decoder_button->setIcon(QIcon::fromTheme("add-decoder",
+	add_decoder_button_->setIcon(QIcon::fromTheme("add-decoder",
 		QIcon(":/icons/add-decoder.svg")));
-	add_decoder_button->setPopupMode(QToolButton::InstantPopup);
-	add_decoder_button->setMenu(menu_decoders_add_);
+	add_decoder_button_->setPopupMode(QToolButton::InstantPopup);
+	add_decoder_button_->setMenu(menu_decoders_add_);
 #endif
-
-	// Setup the toolbar
-	addAction(action_new_view_);
-	addSeparator();
-	addWidget(open_button);
-	addWidget(save_button);
-	addSeparator();
-	addAction(action_view_zoom_in_);
-	addAction(action_view_zoom_out_);
-	addAction(action_view_zoom_fit_);
-	addAction(action_view_zoom_one_to_one_);
-	addSeparator();
-	addAction(action_view_show_cursors_);
-	addSeparator();
 
 	connect(&sample_count_, SIGNAL(value_changed()),
 		this, SLOT(on_sample_count_changed()));
@@ -283,15 +220,7 @@ MainBar::MainBar(Session &session, MainWindow &main_window) :
 	channels_button_.setIcon(QIcon::fromTheme("channels",
 		QIcon(":/icons/channels.svg")));
 
-	addWidget(&device_selector_);
-	configure_button_action_ = addWidget(&configure_button_);
-	channels_button_action_ = addWidget(&channels_button_);
-	addWidget(&sample_count_);
-	addWidget(&sample_rate_);
-#ifdef ENABLE_DECODE
-	addSeparator();
-	addWidget(add_decoder_button);
-#endif
+	add_toolbar_widgets();
 
 	sample_count_.installEventFilter(this);
 	sample_rate_.installEventFilter(this);
@@ -303,11 +232,6 @@ MainBar::MainBar(Session &session, MainWindow &main_window) :
 		this, SLOT(on_device_changed()));
 
 	update_device_list();
-}
-
-Session &MainBar::session(void) const
-{
-	return session_;
 }
 
 void MainBar::update_device_list()
@@ -360,31 +284,6 @@ QAction* MainBar::action_save_selection_as() const
 QAction* MainBar::action_connect() const
 {
 	return action_connect_;
-}
-
-QAction* MainBar::action_view_zoom_in() const
-{
-	return action_view_zoom_in_;
-}
-
-QAction* MainBar::action_view_zoom_out() const
-{
-	return action_view_zoom_out_;
-}
-
-QAction* MainBar::action_view_zoom_fit() const
-{
-	return action_view_zoom_fit_;
-}
-
-QAction* MainBar::action_view_zoom_one_to_one() const
-{
-	return action_view_zoom_one_to_one_;
-}
-
-QAction* MainBar::action_view_show_cursors() const
-{
-	return action_view_show_cursors_;
 }
 
 void MainBar::update_sample_rate_selector()
@@ -883,53 +782,25 @@ void MainBar::on_actionConnect_triggered()
 	update_device_list();
 }
 
-void MainBar::on_actionViewZoomIn_triggered()
+void MainBar::add_toolbar_widgets()
 {
-	views::TraceView::View *trace_view =
-		qobject_cast<views::TraceView::View*>(session_.main_view().get());
+	addAction(action_new_view_);
+	addSeparator();
+	addWidget(open_button_);
+	addWidget(save_button_);
+	addSeparator();
 
-	trace_view->zoom(1);
-}
+	StandardBar::add_toolbar_widgets();
 
-void MainBar::on_actionViewZoomOut_triggered()
-{
-	views::TraceView::View *trace_view =
-		qobject_cast<views::TraceView::View*>(session_.main_view().get());
-
-	trace_view->zoom(-1);
-}
-
-void MainBar::on_actionViewZoomFit_triggered()
-{
-	views::TraceView::View *trace_view =
-		qobject_cast<views::TraceView::View*>(session_.main_view().get());
-
-	trace_view->zoom_fit(action_view_zoom_fit_->isChecked());
-}
-
-void MainBar::on_actionViewZoomOneToOne_triggered()
-{
-	views::TraceView::View *trace_view =
-		qobject_cast<views::TraceView::View*>(session_.main_view().get());
-
-	trace_view->zoom_one_to_one();
-}
-
-void MainBar::on_actionViewShowCursors_triggered()
-{
-	views::TraceView::View *trace_view =
-		qobject_cast<views::TraceView::View*>(session_.main_view().get());
-
-	const bool show = !trace_view->cursors_shown();
-	if (show)
-		trace_view->centre_cursors();
-
-	trace_view->show_cursors(show);
-}
-
-void MainBar::on_always_zoom_to_fit_changed(bool state)
-{
-	action_view_zoom_fit_->setChecked(state);
+	addWidget(&device_selector_);
+	configure_button_action_ = addWidget(&configure_button_);
+	channels_button_action_ = addWidget(&channels_button_);
+	addWidget(&sample_count_);
+	addWidget(&sample_rate_);
+#ifdef ENABLE_DECODE
+	addSeparator();
+	addWidget(add_decoder_button_);
+#endif
 }
 
 bool MainBar::eventFilter(QObject *watched, QEvent *event)

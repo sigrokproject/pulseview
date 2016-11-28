@@ -263,6 +263,7 @@ set(pulseview_SOURCES
 	pv/view/viewport.cpp
 	pv/view/viewwidget.cpp
 	pv/views/viewbase.cpp
+	pv/views/trace/standardbar.cpp
 	pv/widgets/colourbutton.cpp
 	pv/widgets/colourpopup.cpp
 	pv/widgets/devicetoolbutton.cpp
@@ -316,6 +317,7 @@ set(pulseview_HEADERS
 	pv/view/viewport.hpp
 	pv/view/viewwidget.hpp
 	pv/views/viewbase.hpp
+	pv/views/trace/standardbar.hpp
 	pv/widgets/colourbutton.hpp
 	pv/widgets/colourpopup.hpp
 	pv/widgets/devicetoolbutton.hpp

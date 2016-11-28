@@ -35,6 +35,7 @@
 #include <QToolButton>
 
 #include <pv/session.hpp>
+#include <pv/views/trace/standardbar.hpp>
 #include <pv/widgets/devicetoolbutton.hpp>
 #include <pv/widgets/popuptoolbutton.hpp>
 #include <pv/widgets/sweeptimingwidget.hpp>
@@ -54,9 +55,15 @@ namespace pv {
 class MainWindow;
 class Session;
 
+namespace views {
+namespace TraceView {
+class View;
+}
+}
+
 namespace toolbars {
 
-class MainBar : public QToolBar
+class MainBar : public pv::views::trace::StandardBar
 {
 	Q_OBJECT
 
@@ -78,9 +85,8 @@ private:
 	static const char *SettingSaveDirectory;
 
 public:
-	MainBar(Session &session, pv::MainWindow &main_window);
-
-	Session &session(void) const;
+	MainBar(Session &session, QWidget *parent,
+		pv::views::TraceView::View *view);
 
 	void update_device_list();
 
@@ -93,12 +99,6 @@ public:
 	QAction* action_save_as() const;
 	QAction* action_save_selection_as() const;
 	QAction* action_connect() const;
-	QAction* action_quit() const;
-	QAction* action_view_zoom_in() const;
-	QAction* action_view_zoom_out() const;
-	QAction* action_view_zoom_fit() const;
-	QAction* action_view_zoom_one_to_one() const;
-	QAction* action_view_show_cursors() const;
 
 	void session_error(const QString text, const QString info_text);
 
@@ -121,11 +121,6 @@ private:
 	QAction *const action_save_as_;
 	QAction *const action_save_selection_as_;
 	QAction *const action_connect_;
-	QAction *const action_view_zoom_in_;
-	QAction *const action_view_zoom_out_;
-	QAction *const action_view_zoom_fit_;
-	QAction *const action_view_zoom_one_to_one_;
-	QAction *const action_view_show_cursors_;
 
 private Q_SLOTS:
 	void show_session_error(const QString text, const QString info_text);
@@ -153,26 +148,16 @@ private Q_SLOTS:
 
 	void on_actionConnect_triggered();
 
-	void on_actionViewZoomIn_triggered();
-
-	void on_actionViewZoomOut_triggered();
-
-	void on_actionViewZoomFit_triggered();
-
-	void on_actionViewZoomOneToOne_triggered();
-
-	void on_actionViewShowCursors_triggered();
-
-	void on_always_zoom_to_fit_changed(bool state);
-
 protected:
+	void add_toolbar_widgets();
+
 	bool eventFilter(QObject *watched, QEvent *event);
 
 Q_SIGNALS:
 	void new_view(Session *session);
 
 private:
-	Session &session_;
+	QToolButton *open_button_, *save_button_;
 
 	pv::widgets::DeviceToolButton device_selector_;
 
@@ -190,6 +175,7 @@ private:
 	bool sample_count_supported_;
 
 #ifdef ENABLE_DECODE
+	QToolButton *add_decoder_button_;
 	QMenu *const menu_decoders_add_;
 #endif
 };
