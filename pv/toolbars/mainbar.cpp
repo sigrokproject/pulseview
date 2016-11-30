@@ -227,7 +227,7 @@ MainBar::MainBar(Session &session, QWidget *parent,
 
 	// Setup session_ events
 	connect(&session_, SIGNAL(capture_state_changed(int)),
-		this, SLOT(capture_state_changed(int)));
+		this, SLOT(on_capture_state_changed(int)));
 	connect(&session, SIGNAL(device_changed()),
 		this, SLOT(on_device_changed()));
 
@@ -561,11 +561,6 @@ void MainBar::show_session_error(const QString text, const QString info_text)
 	msg.exec();
 }
 
-void MainBar::capture_state_changed(int state)
-{
-	set_capture_state((pv::Session::capture_state)state);
-}
-
 void MainBar::add_decoder(srd_decoder *decoder)
 {
 #ifdef ENABLE_DECODE
@@ -713,6 +708,11 @@ void MainBar::on_device_changed()
 {
 	update_device_list();
 	update_device_config_widgets();
+}
+
+void MainBar::on_capture_state_changed(int state)
+{
+	set_capture_state((pv::Session::capture_state)state);
 }
 
 void MainBar::on_sample_count_changed()

@@ -125,8 +125,6 @@ private:
 private Q_SLOTS:
 	void show_session_error(const QString text, const QString info_text);
 
-	void capture_state_changed(int state);
-
 	void add_decoder(srd_decoder *decoder);
 
 	void export_file(std::shared_ptr<sigrok::OutputFormat> format,
@@ -135,6 +133,7 @@ private Q_SLOTS:
 
 	void on_device_selected();
 	void on_device_changed();
+	void on_capture_state_changed(int state);
 	void on_sample_count_changed();
 	void on_sample_rate_changed();
 
