@@ -212,15 +212,16 @@ shared_ptr<views::ViewBase> MainWindow::add_view(const QString &title,
 
 				connect(main_bar.get(), SIGNAL(new_view(Session*)),
 					this, SLOT(on_new_view(Session*)));
+
+				main_bar->action_view_show_cursors()->setChecked(v->cursors_shown());
 			} else {
 				/* Additional view, create a standard bar */
-				dock_main->addToolBar(
-					new pv::views::trace::StandardBar(session, this, v.get()));
-			}
-			main_bar->action_view_show_cursors()->setChecked(v->cursors_shown());
+				pv::views::trace::StandardBar *standard_bar =
+					new pv::views::trace::StandardBar(session, this, v.get());
+				dock_main->addToolBar(standard_bar);
 
-			connect(v.get(), SIGNAL(always_zoom_to_fit_changed(bool)),
-				main_bar.get(), SLOT(on_always_zoom_to_fit_changed(bool)));
+				standard_bar->action_view_show_cursors()->setChecked(v->cursors_shown());
+			}
 		}
 
 		return v;

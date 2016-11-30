@@ -69,7 +69,7 @@ StandardBar::StandardBar(Session &session, QWidget *parent,
 		QIcon(":/icons/zoom-fit.png")));
 	action_view_zoom_fit_->setShortcut(QKeySequence(Qt::Key_F));
 	connect(action_view_zoom_fit_, SIGNAL(triggered(bool)),
-		this, SLOT(on_actionViewZoomFit_triggered()));
+		this, SLOT(on_actionViewZoomFit_triggered(bool)));
 
 	action_view_zoom_one_to_one_->setText(tr("Zoom to O&ne-to-One"));
 	action_view_zoom_one_to_one_->setIcon(QIcon::fromTheme("zoom-original",
@@ -85,6 +85,9 @@ StandardBar::StandardBar(Session &session, QWidget *parent,
 	connect(action_view_show_cursors_, SIGNAL(triggered(bool)),
 		this, SLOT(on_actionViewShowCursors_triggered()));
 	action_view_show_cursors_->setText(tr("Show &Cursors"));
+
+	connect(view_, SIGNAL(always_zoom_to_fit_changed(bool)),
+		this, SLOT(on_always_zoom_to_fit_changed(bool)));
 
 	if (add_default_widgets)
 		add_toolbar_widgets();
@@ -141,9 +144,9 @@ void StandardBar::on_actionViewZoomOut_triggered()
 	view_->zoom(-1);
 }
 
-void StandardBar::on_actionViewZoomFit_triggered()
+void StandardBar::on_actionViewZoomFit_triggered(bool checked)
 {
-	view_->zoom_fit(action_view_zoom_fit_->isChecked());
+	view_->zoom_fit(checked);
 }
 
 void StandardBar::on_actionViewZoomOneToOne_triggered()

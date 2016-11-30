@@ -76,7 +76,7 @@ protected Q_SLOTS:
 
 	void on_actionViewZoomOut_triggered();
 
-	void on_actionViewZoomFit_triggered();
+	void on_actionViewZoomFit_triggered(bool checked);
 
 	void on_actionViewZoomOneToOne_triggered();
 
