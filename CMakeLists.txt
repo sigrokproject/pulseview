@@ -396,7 +396,7 @@ add_definitions(${QT_DEFINITIONS} -DQT_NO_KEYWORDS)
 add_definitions(-D__STDC_LIMIT_MACROS)
 add_definitions(-Wall -Wextra)
 add_definitions(-std=c++11)
-add_definitions(-fext-numeric-literals)
+add_definitions(-DBOOST_MATH_DISABLE_FLOAT128=1)
 
 if(ENABLE_DECODE)
 	add_definitions(-DENABLE_DECODE)
