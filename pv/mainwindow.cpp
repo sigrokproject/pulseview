@@ -161,7 +161,7 @@ shared_ptr<views::ViewBase> MainWindow::get_active_view() const
 shared_ptr<views::ViewBase> MainWindow::add_view(const QString &title,
 	views::ViewType type, Session &session)
 {
-	QMainWindow *main_window;
+	QMainWindow *main_window = nullptr;
 	for (auto entry : session_windows_)
 		if (entry.first.get() == &session)
 			main_window = entry.second;
