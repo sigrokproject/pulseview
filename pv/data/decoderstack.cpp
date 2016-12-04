@@ -240,7 +240,7 @@ void DecoderStack::begin_decode()
 	// This works because we are currently assuming all
 	// logic signals have the same data/segment
 	pv::data::SignalBase *signalbase;
-	pv::data::Logic *data;
+	pv::data::Logic *data = nullptr;
 
 	for (const shared_ptr<decode::Decoder> &dec : stack_)
 		if (dec && !dec->channels().empty() &&
