@@ -24,7 +24,7 @@
 #include "pv/view/ruler.hpp"
 #include "test/test.hpp"
 
-using namespace pv::view;
+using namespace pv::views::TraceView;
 
 namespace {
 	QString format(const pv::util::Timestamp& t)

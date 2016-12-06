@@ -25,6 +25,7 @@ set(pulseview_TEST_SOURCES
 	${PROJECT_SOURCE_DIR}/pv/util.cpp
 	${PROJECT_SOURCE_DIR}/pv/binding/binding.cpp
 	${PROJECT_SOURCE_DIR}/pv/binding/device.cpp
+	${PROJECT_SOURCE_DIR}/pv/binding/inputoutput.cpp
 	${PROJECT_SOURCE_DIR}/pv/data/analog.cpp
 	${PROJECT_SOURCE_DIR}/pv/data/analogsegment.cpp
 	${PROJECT_SOURCE_DIR}/pv/data/logic.cpp
@@ -37,6 +38,9 @@ set(pulseview_TEST_SOURCES
 	${PROJECT_SOURCE_DIR}/pv/devices/hardwaredevice.cpp
 	${PROJECT_SOURCE_DIR}/pv/devices/inputfile.cpp
 	${PROJECT_SOURCE_DIR}/pv/devices/sessionfile.cpp
+	${PROJECT_SOURCE_DIR}/pv/dialogs/connect.cpp
+	${PROJECT_SOURCE_DIR}/pv/dialogs/inputoutputoptions.cpp
+	${PROJECT_SOURCE_DIR}/pv/dialogs/storeprogress.cpp
 	${PROJECT_SOURCE_DIR}/pv/prop/bool.cpp
 	${PROJECT_SOURCE_DIR}/pv/prop/double.cpp
 	${PROJECT_SOURCE_DIR}/pv/prop/enum.cpp
@@ -44,6 +48,8 @@ set(pulseview_TEST_SOURCES
 	${PROJECT_SOURCE_DIR}/pv/prop/property.cpp
 	${PROJECT_SOURCE_DIR}/pv/prop/string.cpp
 	${PROJECT_SOURCE_DIR}/pv/popups/channels.cpp
+	${PROJECT_SOURCE_DIR}/pv/popups/deviceoptions.cpp
+	${PROJECT_SOURCE_DIR}/pv/toolbars/mainbar.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/analogsignal.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/cursor.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/cursorpair.cpp
@@ -69,8 +75,13 @@ set(pulseview_TEST_SOURCES
 	${PROJECT_SOURCE_DIR}/pv/view/viewitempaintparams.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/viewport.cpp
 	${PROJECT_SOURCE_DIR}/pv/view/viewwidget.cpp
+	${PROJECT_SOURCE_DIR}/pv/views/viewbase.cpp
+	${PROJECT_SOURCE_DIR}/pv/views/trace/standardbar.cpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/colourbutton.cpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/colourpopup.cpp
+	${PROJECT_SOURCE_DIR}/pv/widgets/devicetoolbutton.cpp
+	${PROJECT_SOURCE_DIR}/pv/widgets/exportmenu.cpp
+	${PROJECT_SOURCE_DIR}/pv/widgets/importmenu.cpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/popup.cpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/popuptoolbutton.cpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/sweeptimingwidget.cpp
@@ -90,6 +101,9 @@ set(pulseview_TEST_HEADERS
 	${PROJECT_SOURCE_DIR}/pv/binding/device.hpp
 	${PROJECT_SOURCE_DIR}/pv/data/signalbase.hpp
 	${PROJECT_SOURCE_DIR}/pv/devices/device.hpp
+	${PROJECT_SOURCE_DIR}/pv/dialogs/connect.hpp
+	${PROJECT_SOURCE_DIR}/pv/dialogs/inputoutputoptions.hpp
+	${PROJECT_SOURCE_DIR}/pv/dialogs/storeprogress.hpp
 	${PROJECT_SOURCE_DIR}/pv/popups/channels.hpp
 	${PROJECT_SOURCE_DIR}/pv/popups/deviceoptions.hpp
 	${PROJECT_SOURCE_DIR}/pv/prop/bool.hpp
@@ -98,6 +112,7 @@ set(pulseview_TEST_HEADERS
 	${PROJECT_SOURCE_DIR}/pv/prop/int.hpp
 	${PROJECT_SOURCE_DIR}/pv/prop/property.hpp
 	${PROJECT_SOURCE_DIR}/pv/prop/string.hpp
+	${PROJECT_SOURCE_DIR}/pv/toolbars/mainbar.hpp
 	${PROJECT_SOURCE_DIR}/pv/view/analogsignal.hpp
 	${PROJECT_SOURCE_DIR}/pv/view/cursor.hpp
 	${PROJECT_SOURCE_DIR}/pv/view/flag.hpp
@@ -118,8 +133,13 @@ set(pulseview_TEST_HEADERS
 	${PROJECT_SOURCE_DIR}/pv/view/viewitem.hpp
 	${PROJECT_SOURCE_DIR}/pv/view/viewport.hpp
 	${PROJECT_SOURCE_DIR}/pv/view/viewwidget.hpp
+	${PROJECT_SOURCE_DIR}/pv/views/viewbase.hpp
+	${PROJECT_SOURCE_DIR}/pv/views/trace/standardbar.hpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/colourbutton.hpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/colourpopup.hpp
+	${PROJECT_SOURCE_DIR}/pv/widgets/devicetoolbutton.hpp
+	${PROJECT_SOURCE_DIR}/pv/widgets/exportmenu.hpp
+	${PROJECT_SOURCE_DIR}/pv/widgets/importmenu.hpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/popup.hpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/popuptoolbutton.hpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/sweeptimingwidget.hpp
