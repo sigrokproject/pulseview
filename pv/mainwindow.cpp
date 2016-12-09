@@ -336,25 +336,28 @@ void MainWindow::setup_ui()
 	action_view_coloured_bg_->setShortcut(QKeySequence(Qt::Key_B));
 	action_view_coloured_bg_->setObjectName(
 		QString::fromUtf8("actionViewColouredBg"));
-	action_view_coloured_bg_->setText(tr("Use &coloured backgrounds"));
+	action_view_coloured_bg_->setText(tr("Use &Coloured Backgrounds"));
 
 	action_about_->setObjectName(QString::fromUtf8("actionAbout"));
-	action_about_->setText(tr("&About..."));
+	action_about_->setToolTip(tr("&About..."));
 
 	// Set up the tab area
 	new_session_button_ = new QToolButton();
 	new_session_button_->setIcon(QIcon::fromTheme("document-new",
 		QIcon(":/icons/document-new.png")));
+	new_session_button_->setToolTip(tr("Create New Session"));
 	new_session_button_->setAutoRaise(true);
 
 	run_stop_button_ = new QToolButton();
 	run_stop_button_->setAutoRaise(true);
 	run_stop_button_->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
 	run_stop_button_->setShortcut(QKeySequence(Qt::Key_Space));
+	run_stop_button_->setToolTip(tr("Start/Stop Acquisition"));
 
 	settings_button_ = new QToolButton();
 	settings_button_->setIcon(QIcon::fromTheme("configure",
 		QIcon(":/icons/configure.png")));
+	settings_button_->setToolTip(tr("Settings"));
 	settings_button_->setAutoRaise(true);
 
 	QFrame *separator1 = new QFrame();

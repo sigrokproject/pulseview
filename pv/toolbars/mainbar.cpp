@@ -214,9 +214,11 @@ MainBar::MainBar(Session &session, QWidget *parent,
 
 	set_capture_state(pv::Session::Stopped);
 
+	configure_button_.setToolTip(tr("Configure Device"));
 	configure_button_.setIcon(QIcon::fromTheme("configure",
 		QIcon(":/icons/configure.png")));
 
+	channels_button_.setToolTip(tr("Configure Channels"));
 	channels_button_.setIcon(QIcon::fromTheme("channels",
 		QIcon(":/icons/channels.svg")));
 
