@@ -280,8 +280,9 @@ void MainWindow::remove_session(shared_ptr<Session> session)
 				// that Qt keeps a pointer to the view around
 				entry.second->setParent(0);
 
-				// Remove this entry from the container
+				// Remove this entry from the container and stop iterating.
 				view_docks_.erase(entry.first);
+				break;
 			}
 	}
 

@@ -155,7 +155,8 @@ View::View(Session &session, QWidget *parent) :
 	cursors_(new CursorPair(*this)),
 	next_flag_text_('A'),
 	trigger_markers_(),
-	hover_point_(-1, -1)
+	hover_point_(-1, -1),
+	scroll_needs_defaults(false)
 {
 	connect(scrollarea_.horizontalScrollBar(), SIGNAL(valueChanged(int)),
 		this, SLOT(h_scroll_value_changed(int)));
