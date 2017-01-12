@@ -155,7 +155,7 @@ View::View(Session &session, QWidget *parent) :
 	next_flag_text_('A'),
 	trigger_markers_(),
 	hover_point_(-1, -1),
-	scroll_needs_defaults(false),
+	scroll_needs_defaults_(false),
 	saved_v_offset_(0)
 {
 	connect(scrollarea_.horizontalScrollBar(), SIGNAL(valueChanged(int)),
@@ -324,7 +324,7 @@ void View::restore_settings(QSettings &settings)
 	if (settings.contains("v_offset")) {
 		saved_v_offset_ = settings.value("v_offset").toInt();
 		set_v_offset(saved_v_offset_);
-		scroll_needs_defaults = false;
+		scroll_needs_defaults_ = false;
 		// Note: see resizeEvent() for additional information
 	}
 }
@@ -811,7 +811,7 @@ void View::update_scroll()
 		vscrollbar->setRange(extents.first - areaSize.height(),
 			extents.second);
 
-	if (scroll_needs_defaults)
+	if (scroll_needs_defaults_)
 		set_scroll_default();
 }
 
@@ -829,10 +829,10 @@ void View::set_scroll_default()
 	// Special case: when starting up and the window isn't visible yet,
 	// areaSize is [0, 0]. In this case we want to be called again later
 	if (areaSize.height() == 0) {
-		scroll_needs_defaults = true;
+		scroll_needs_defaults_ = true;
 		return;
 	} else {
-		scroll_needs_defaults = false;
+		scroll_needs_defaults_ = false;
 	}
 
 	const pair<int, int> extents = v_extents();

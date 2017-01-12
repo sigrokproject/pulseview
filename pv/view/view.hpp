@@ -423,7 +423,7 @@ private:
 	QTimer lazy_event_handler_;
 
 	// This is true when the defaults couldn't be set due to insufficient info
-	bool scroll_needs_defaults;
+	bool scroll_needs_defaults_;
 
 	// A nonzero value indicates the v offset to restore. See View::resizeEvent()
 	int saved_v_offset_;
