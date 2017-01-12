@@ -155,7 +155,8 @@ View::View(Session &session, QWidget *parent) :
 	next_flag_text_('A'),
 	trigger_markers_(),
 	hover_point_(-1, -1),
-	scroll_needs_defaults(false)
+	scroll_needs_defaults(false),
+	saved_v_offset_(0)
 {
 	connect(scrollarea_.horizontalScrollBar(), SIGNAL(valueChanged(int)),
 		this, SLOT(h_scroll_value_changed(int)));
@@ -280,6 +281,8 @@ const Viewport* View::viewport() const
 void View::save_settings(QSettings &settings) const
 {
 	settings.setValue("scale", scale_);
+	settings.setValue("v_offset",
+		scrollarea_.verticalScrollBar()->sliderPosition());
 
 	std::stringstream ss;
 	boost::archive::text_oarchive oa(ss);
@@ -295,6 +298,9 @@ void View::save_settings(QSettings &settings) const
 
 void View::restore_settings(QSettings &settings)
 {
+	// Note: It is assumed that this function is only called once,
+	// immediately after restoring a previous session.
+
 	if (settings.contains("scale"))
 		set_scale(settings.value("scale").toDouble());
 
@@ -313,6 +319,13 @@ void View::restore_settings(QSettings &settings)
 		settings.beginGroup(signal->base()->internal_name());
 		signal->restore_settings(settings);
 		settings.endGroup();
+	}
+
+	if (settings.contains("v_offset")) {
+		saved_v_offset_ = settings.value("v_offset").toInt();
+		set_v_offset(saved_v_offset_);
+		scroll_needs_defaults = false;
+		// Note: see resizeEvent() for additional information
 	}
 }
 
@@ -956,6 +969,20 @@ bool View::eventFilter(QObject *object, QEvent *event)
 void View::resizeEvent(QResizeEvent*)
 {
 	update_layout();
+
+	// This is somewhat of a hack, unfortunately. We cannot use
+	// set_v_offset() from within restore_settings() as the view
+	// at that point is neither visible nor properly sized.
+	// This is the least intrusive workaround I could come up
+	// with: set the vertical offset when the view is visible and
+	// resized to its final size. Resize events that are sent
+	// when the view is invisible must be ignored as they have
+	// wrong sizes, potentially preventing the v offset to be
+	// set successfully.
+	if (isVisible() && saved_v_offset_) {
+		set_v_offset(saved_v_offset_);
+		saved_v_offset_ = 0;
+	}
 }
 
 void View::row_item_appearance_changed(bool label, bool content)

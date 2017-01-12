@@ -424,6 +424,9 @@ private:
 
 	// This is true when the defaults couldn't be set due to insufficient info
 	bool scroll_needs_defaults;
+
+	// A nonzero value indicates the v offset to restore. See View::resizeEvent()
+	int saved_v_offset_;
 };
 
 } // namespace TraceView
