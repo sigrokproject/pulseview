@@ -827,15 +827,6 @@ void View::set_scroll_default()
 
 	const QSize areaSize = viewport_->size();
 
-	// Special case: when starting up and the window isn't visible yet,
-	// areaSize is [0, 0]. In this case we want to be called again later
-	if ((areaSize.height() == 0) || (!size_finalized_)) {
-		scroll_needs_defaults_ = true;
-		return;
-	} else {
-		scroll_needs_defaults_ = false;
-	}
-
 	const pair<int, int> extents = v_extents();
 	const int trace_height = extents.second - extents.first;
 
@@ -847,6 +838,11 @@ void View::set_scroll_default()
 	else
 		// Put the first trace at the top, letting the bottom ones overflow
 		set_v_offset(extents.first);
+
+	// If we're not sure whether setting the defaults worked as
+	// the window wasn't set up entirely yet, we want to be called
+	// again later to make sure
+	scroll_needs_defaults_ = !size_finalized_;
 }
 
 void View::update_layout()
