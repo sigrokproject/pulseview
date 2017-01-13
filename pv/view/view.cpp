@@ -156,7 +156,8 @@ View::View(Session &session, QWidget *parent) :
 	trigger_markers_(),
 	hover_point_(-1, -1),
 	scroll_needs_defaults_(false),
-	saved_v_offset_(0)
+	saved_v_offset_(0),
+	size_finalized_(false)
 {
 	connect(scrollarea_.horizontalScrollBar(), SIGNAL(valueChanged(int)),
 		this, SLOT(h_scroll_value_changed(int)));
@@ -828,7 +829,7 @@ void View::set_scroll_default()
 
 	// Special case: when starting up and the window isn't visible yet,
 	// areaSize is [0, 0]. In this case we want to be called again later
-	if (areaSize.height() == 0) {
+	if ((areaSize.height() == 0) || (!size_finalized_)) {
 		scroll_needs_defaults_ = true;
 		return;
 	} else {
@@ -974,15 +975,22 @@ void View::resizeEvent(QResizeEvent*)
 	// set_v_offset() from within restore_settings() as the view
 	// at that point is neither visible nor properly sized.
 	// This is the least intrusive workaround I could come up
-	// with: set the vertical offset when the view is visible and
-	// resized to its final size. Resize events that are sent
-	// when the view is invisible must be ignored as they have
-	// wrong sizes, potentially preventing the v offset to be
-	// set successfully.
-	if (isVisible() && saved_v_offset_) {
+	// with: set the vertical offset (or scroll defaults) when
+	// the view is visible and resized to its final size.
+	// Resize events that are sent when the view is not visible
+	// must be ignored as they have wrong sizes, potentially
+	// preventing the v offset from being set successfully.
+
+	if (isVisible())
+		size_finalized_ = true;
+
+	if (size_finalized_ && saved_v_offset_) {
 		set_v_offset(saved_v_offset_);
 		saved_v_offset_ = 0;
 	}
+
+	if (size_finalized_ && scroll_needs_defaults_)
+		set_scroll_default();
 }
 
 void View::row_item_appearance_changed(bool label, bool content)
