@@ -79,6 +79,8 @@ public:
 	std::shared_ptr<views::ViewBase> add_view(const QString &title,
 		views::ViewType type, Session &session);
 
+	void remove_view(std::shared_ptr<views::ViewBase> view);
+
 	std::shared_ptr<Session> add_session();
 
 	void remove_session(std::shared_ptr<Session> session);

@@ -229,6 +229,34 @@ shared_ptr<views::ViewBase> MainWindow::add_view(const QString &title,
 	return nullptr;
 }
 
+void MainWindow::remove_view(shared_ptr<views::ViewBase> view)
+{
+	for (shared_ptr<Session> session : sessions_) {
+		if (!session->has_view(view))
+			continue;
+
+		// Find the dock the view is contained in and remove it
+		for (auto entry : view_docks_)
+			if (entry.second == view) {
+				// Remove the view from the session
+				session->deregister_view(view);
+
+				// Remove the view from its parent; otherwise, Qt will
+				// call deleteLater() on it, which causes a double free
+				// since the shared_ptr in view_docks_ doesn't know
+				// that Qt keeps a pointer to the view around
+				view->setParent(0);
+
+				// Delete the view's dock widget and all widgets inside it
+				entry.first->deleteLater();
+
+				// Remove the dock widget from the list and stop iterating
+				view_docks_.erase(entry.first);
+				break;
+			}
+	}
+}
+
 shared_ptr<Session> MainWindow::add_session()
 {
 	static int last_session_id = 1;
@@ -266,24 +294,8 @@ void MainWindow::remove_session(shared_ptr<Session> session)
 {
 	int h = new_session_button_->height();
 
-	for (shared_ptr<views::ViewBase> view : session->views()) {
-		// Find the dock the view is contained in and remove it
-		for (auto entry : view_docks_)
-			if (entry.second == view) {
-				// Remove the view from the session
-				session->deregister_view(view);
-
-				// Remove the view from its parent; otherwise, Qt will
-				// call deleteLater() on it, which causes a double free
-				// since the shared_ptr in view_docks_ doesn't know
-				// that Qt keeps a pointer to the view around
-				entry.second->setParent(0);
-
-				// Remove this entry from the container and stop iterating.
-				view_docks_.erase(entry.first);
-				break;
-			}
-	}
+	for (shared_ptr<views::ViewBase> view : session->views())
+		remove_view(view);
 
 	QMainWindow *window = session_windows_.at(session);
 	session_selector_.removeTab(session_selector_.indexOf(window));
@@ -655,7 +667,7 @@ void MainWindow::on_view_close_clicked()
 			remove_session(session);
 			break;
 		} else
-			session->deregister_view(view);
+			remove_view(view);
 	}
 }
 
