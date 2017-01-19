@@ -119,6 +119,11 @@ public:
 
 	void set_main_bar(std::shared_ptr<pv::toolbars::MainBar> main_bar);
 
+	/**
+	 * Indicates whether the captured data was saved to disk already or not
+	 */
+	bool data_saved() const;
+
 	void save_settings(QSettings &settings) const;
 
 	void restore_settings(QSettings &settings);
@@ -218,6 +223,7 @@ private:
 	std::thread sampling_thread_;
 
 	bool out_of_memory_;
+	bool data_saved_;
 
 Q_SIGNALS:
 	void capture_state_changed(int state);
@@ -237,6 +243,9 @@ Q_SIGNALS:
 
 	void add_view(const QString &title, views::ViewType type,
 		Session *session);
+
+public Q_SLOTS:
+	void on_data_saved();
 };
 
 } // namespace pv

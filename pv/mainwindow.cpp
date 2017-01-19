@@ -477,8 +477,20 @@ std::shared_ptr<Session> MainWindow::get_tab_session(int index) const
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-	save_ui_settings();
-	event->accept();
+	bool data_saved = true;
+
+	for (auto entry : session_windows_)
+		if (!entry.first->data_saved())
+			data_saved = false;
+
+	if (!data_saved && (QMessageBox::question(this, tr("Confirmation"),
+		tr("There is unsaved data. Close anyway?"),
+		QMessageBox::Yes | QMessageBox::No) == QMessageBox::No)) {
+		event->ignore();
+	} else {
+		save_ui_settings();
+		event->accept();
+	}
 }
 
 QMenu* MainWindow::createPopupMenu()
@@ -681,11 +693,13 @@ void MainWindow::on_tab_changed(int index)
 
 void MainWindow::on_tab_close_requested(int index)
 {
-	// TODO Ask user if this is intended in case data is unsaved
-
 	shared_ptr<Session> session = get_tab_session(index);
 
-	if (session)
+	assert(session);
+
+	if (session->data_saved() || (QMessageBox::question(this, tr("Confirmation"),
+		tr("This session contains unsaved data. Close it anyway?"),
+		QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes))
 		remove_session(session);
 }
 

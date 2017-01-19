@@ -83,6 +83,8 @@ private:
 Q_SIGNALS:
 	void progress_updated();
 
+	void store_successful();
+
 private:
 	const std::string file_name_;
 	const std::shared_ptr<sigrok::OutputFormat> output_format_;

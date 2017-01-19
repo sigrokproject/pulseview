@@ -21,6 +21,8 @@
 
 #include <QMessageBox>
 
+#include "pv/session.hpp"
+
 #include "storeprogress.hpp"
 
 using std::map;
@@ -42,6 +44,8 @@ StoreProgress::StoreProgress(const QString &file_name,
 {
 	connect(&session_, SIGNAL(progress_updated()),
 		this, SLOT(on_progress_updated()));
+	connect(&session_, SIGNAL(store_successful()),
+		&session, SLOT(on_data_saved()));
 }
 
 StoreProgress::~StoreProgress()

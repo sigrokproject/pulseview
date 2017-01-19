@@ -300,6 +300,7 @@ void StoreSession::store_proc(vector< shared_ptr<data::SignalBase> > achannel_li
 	// Zeroing the progress variables indicates completion
 	units_stored_ = unit_count_ = 0;
 
+	store_successful();
 	progress_updated();
 
 	output_.reset();

@@ -105,7 +105,8 @@ Session::Session(DeviceManager &device_manager, QString name) :
 	default_name_(name),
 	name_(name),
 	capture_state_(Stopped),
-	cur_samplerate_(0)
+	cur_samplerate_(0),
+	data_saved_(true)
 {
 }
 
@@ -170,6 +171,11 @@ void Session::set_main_bar(std::shared_ptr<pv::toolbars::MainBar> main_bar)
 shared_ptr<pv::toolbars::MainBar> Session::main_bar() const
 {
 	return main_bar_;
+}
+
+bool Session::data_saved() const
+{
+	return data_saved_;
 }
 
 void Session::save_settings(QSettings &settings) const
@@ -851,6 +857,13 @@ void Session::sample_thread_proc(function<void (const QString)> error_handler)
 		assert(0);
 	}
 
+	// We now have unsaved data unless we just "captured" from a file
+	shared_ptr<devices::File> file_device =
+		dynamic_pointer_cast<devices::File>(device_);
+
+	if (!file_device)
+		data_saved_ = false;
+
 	if (out_of_memory_)
 		error_handler(tr("Out of memory, acquisition stopped."));
 }
@@ -1062,6 +1075,11 @@ void Session::data_feed_in(shared_ptr<sigrok::Device> device,
 	default:
 		break;
 	}
+}
+
+void Session::on_data_saved()
+{
+	data_saved_ = true;
 }
 
 } // namespace pv
