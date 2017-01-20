@@ -213,6 +213,12 @@ shared_ptr<views::ViewBase> MainWindow::add_view(const QString &title,
 					this, SLOT(on_new_view(Session*)));
 
 				main_bar->action_view_show_cursors()->setChecked(v->cursors_shown());
+
+				/* For the main view we need to prevent the dock widget from
+				 * closing itself when its close button is clicked. This is
+				 * so we can confirm with the user first. Regular views don't
+				 * need this */
+				close_btn->disconnect(SIGNAL(clicked()), dock, SLOT(close()));
 			} else {
 				/* Additional view, create a standard bar */
 				pv::views::trace::StandardBar *standard_bar =
@@ -674,11 +680,16 @@ void MainWindow::on_view_close_clicked()
 		if (!session->has_view(view))
 			continue;
 
-		// Also destroy the entire session if its main view is closing
+		// Also destroy the entire session if its main view is closing...
 		if (view == session->main_view()) {
-			remove_session(session);
+			// ...but only if data is saved or the user confirms closing
+			if (session->data_saved() || (QMessageBox::question(this, tr("Confirmation"),
+				tr("This session contains unsaved data. Close it anyway?"),
+				QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes))
+				remove_session(session);
 			break;
 		} else
+			// All other views can be closed at any time as no data will be lost
 			remove_view(view);
 	}
 }
