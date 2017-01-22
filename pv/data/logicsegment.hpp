@@ -68,8 +68,7 @@ public:
 
 	void append_payload(std::shared_ptr<sigrok::Logic> logic);
 
-	void get_samples(uint8_t *const data,
-		int64_t start_sample, int64_t end_sample) const;
+	const uint8_t* get_samples(int64_t start_sample, int64_t end_sample) const;
 
 private:
 	uint64_t unpack_sample(const uint8_t *ptr) const;

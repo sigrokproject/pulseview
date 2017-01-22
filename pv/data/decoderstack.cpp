@@ -304,8 +304,6 @@ void DecoderStack::decode_data(
 	const int64_t sample_count, const unsigned int unit_size,
 	srd_session *const session)
 {
-	uint8_t chunk[DecodeChunkLength];
-
 	const unsigned int chunk_sample_count =
 		DecodeChunkLength / segment_->unit_size();
 
@@ -314,7 +312,7 @@ void DecoderStack::decode_data(
 
 		const int64_t chunk_end = min(
 			i + chunk_sample_count, sample_count);
-		segment_->get_samples(chunk, i, chunk_end);
+		const uint8_t* chunk = segment_->get_samples(i, chunk_end);
 
 		if (srd_session_send(session, i, chunk_end, chunk,
 				(chunk_end - i) * unit_size, unit_size) != SRD_OK) {

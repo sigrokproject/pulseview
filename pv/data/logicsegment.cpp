@@ -152,10 +152,9 @@ void LogicSegment::append_payload(shared_ptr<Logic> logic)
 	append_payload_to_mipmap();
 }
 
-void LogicSegment::get_samples(uint8_t *const data,
-	int64_t start_sample, int64_t end_sample) const
+const uint8_t* LogicSegment::get_samples(int64_t start_sample,
+	int64_t end_sample) const
 {
-	assert(data);
 	assert(start_sample >= 0);
 	assert(start_sample <= (int64_t)sample_count_);
 	assert(end_sample >= 0);
@@ -164,8 +163,10 @@ void LogicSegment::get_samples(uint8_t *const data,
 
 	lock_guard<recursive_mutex> lock(mutex_);
 
+	uint8_t* data = new uint8_t[end_sample - start_sample];
 	const size_t size = (end_sample - start_sample) * unit_size_;
-	memcpy(data, (const uint8_t*)data_.data() + start_sample * unit_size_, size);
+	memcpy(data, (uint8_t*)data_.data() + start_sample * unit_size_, size);
+	return data;
 }
 
 void LogicSegment::reallocate_mipmap_level(MipMapLevel &m)

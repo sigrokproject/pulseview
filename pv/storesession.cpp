@@ -217,10 +217,6 @@ void StoreSession::store_proc(vector< shared_ptr<data::SignalBase> > achannel_li
 {
 	unsigned progress_scale = 0;
 
-	/// TODO: Wrap this in a std::unique_ptr when we transition to C++11
-	uint8_t *const ldata = new uint8_t[BlockSize];
-	assert(ldata);
-
 	int aunit_size = 0;
 	int lunit_size = 0;
 	unsigned int lsamples_per_block = INT_MAX;
@@ -278,14 +274,17 @@ void StoreSession::store_proc(vector< shared_ptr<data::SignalBase> > achannel_li
 			}
 
 			if (lsegment) {
-				lsegment->get_samples(ldata, start_sample_, start_sample_ + packet_len);
+				const uint8_t* ldata =
+					lsegment->get_samples(start_sample_, start_sample_ + packet_len);
 
 				const size_t length = packet_len * lunit_size;
-				auto logic = context->create_logic_packet(ldata, length, lunit_size);
+				auto logic = context->create_logic_packet((void*)ldata, length, lunit_size);
 				const string ldata_str = output_->receive(logic);
 
 				if (output_stream_.is_open())
 					output_stream_ << ldata_str;
+
+				delete[] ldata;
 			}
 		} catch (Error error) {
 			error_ = tr("Error while saving: ") + error.what();
@@ -305,8 +304,6 @@ void StoreSession::store_proc(vector< shared_ptr<data::SignalBase> > achannel_li
 
 	output_.reset();
 	output_stream_.close();
-
-	delete[] ldata;
 }
 
 } // pv
