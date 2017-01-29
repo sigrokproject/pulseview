@@ -44,9 +44,9 @@
 #include "config.h"
 
 #ifdef _WIN32
-// The static qsvg lib is required for SVG graphics/icons (on Windows).
 #include <QtPlugin>
-Q_IMPORT_PLUGIN(qsvg)
+Q_IMPORT_PLUGIN(QWindowsIntegrationPlugin)
+Q_IMPORT_PLUGIN(QSvgPlugin)
 #endif
 
 void usage()

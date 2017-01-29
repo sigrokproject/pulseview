@@ -81,6 +81,11 @@ if(FORCE_QT4)
 	set(Qt5Core_FOUND FALSE)
 else()
 	find_package(Qt5Core QUIET)
+if(WIN32)
+	# MXE workaround: Use pkg-config to find Qt5 libs.
+	# https://github.com/mxe/mxe/issues/1642
+	pkg_check_modules(QT5ALL REQUIRED Qt5Widgets Qt5Gui Qt5Svg)
+endif()
 endif()
 
 if(Qt5Core_FOUND)
@@ -446,11 +451,7 @@ set(PULSEVIEW_LINK_LIBS
 
 if(STATIC_PKGDEPS_LIBS)
 	link_directories(${PKGDEPS_STATIC_LIBRARY_DIRS})
-	list(APPEND PULSEVIEW_LINK_LIBS ${PKGDEPS_STATIC_LIBRARIES})
-if(WIN32)
-	# Workaround for a MinGW linking issue.
-	list(APPEND PULSEVIEW_LINK_LIBS "-llzma -llcms2")
-endif()
+	list(APPEND PULSEVIEW_LINK_LIBS ${PKGDEPS_STATIC_LDFLAGS})
 else()
 	link_directories(${PKGDEPS_LIBRARY_DIRS})
 	list(APPEND PULSEVIEW_LINK_LIBS ${PKGDEPS_LIBRARIES})
@@ -459,10 +460,12 @@ endif()
 if(WIN32)
 	# On Windows we need to statically link the libqsvg imageformat
 	# plugin (and the QtSvg component) for SVG graphics/icons to work.
+	# We also need QWindowsIntegrationPlugin, Qt5PlatformSupport, and all
+	# Qt libs and their dependencies.
 	add_definitions(-DQT_STATICPLUGIN)
-	link_directories("${QT_PLUGINS_DIR}/imageformats")
-	list(APPEND PULSEVIEW_LINK_LIBS "-lqsvg")
-	list(APPEND PULSEVIEW_LINK_LIBS ${QT_QTSVG_LIBRARY})
+	list(APPEND PULSEVIEW_LINK_LIBS Qt5::QSvgPlugin)
+	list(APPEND PULSEVIEW_LINK_LIBS Qt5::QWindowsIntegrationPlugin)
+	list(APPEND PULSEVIEW_LINK_LIBS -lQt5PlatformSupport ${QT5ALL_LDFLAGS})
 endif()
 
 if(ANDROID)
