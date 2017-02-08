@@ -44,12 +44,9 @@ const float AnalogSegment::LogEnvelopeScaleFactor =
 	logf(EnvelopeScaleFactor);
 const uint64_t AnalogSegment::EnvelopeDataUnit = 64*1024;	// bytes
 
-AnalogSegment::AnalogSegment(
-	uint64_t samplerate, const uint64_t expected_num_samples) :
+AnalogSegment::AnalogSegment(uint64_t samplerate) :
 	Segment(samplerate, sizeof(float))
 {
-	set_capacity(expected_num_samples);
-
 	lock_guard<recursive_mutex> lock(mutex_);
 	memset(envelope_levels_, 0, sizeof(envelope_levels_));
 }
@@ -68,17 +65,10 @@ void AnalogSegment::append_interleaved_samples(const float *data,
 
 	lock_guard<recursive_mutex> lock(mutex_);
 
-	// If we're out of memory, this will throw std::bad_alloc
-	data_.resize((sample_count_ + sample_count) * sizeof(float));
-
-	float *dst = (float*)data_.data() + sample_count_;
-	const float *dst_end = dst + sample_count;
-	while (dst != dst_end) {
-		*dst++ = *data;
+	for (uint32_t i=0; i < sample_count; i++) {
+		append_single_sample((void*)data);
 		data += stride;
 	}
-
-	sample_count_ += sample_count;
 
 	// Generate the first mip-map from the data
 	append_payload_to_envelope_levels();
@@ -95,10 +85,22 @@ const float* AnalogSegment::get_samples(
 
 	lock_guard<recursive_mutex> lock(mutex_);
 
-	float *const data = new float[end_sample - start_sample];
-	memcpy(data, (float*)data_.data() + start_sample, sizeof(float) *
-		(end_sample - start_sample));
-	return data;
+	return (float*)get_raw_samples(start_sample, (end_sample - start_sample));
+}
+
+SegmentAnalogDataIterator* AnalogSegment::begin_sample_iteration(uint64_t start) const
+{
+	return (SegmentAnalogDataIterator*)begin_raw_sample_iteration(start);
+}
+
+void AnalogSegment::continue_sample_iteration(SegmentAnalogDataIterator* it, uint64_t increase) const
+{
+	Segment::continue_raw_sample_iteration((SegmentRawDataIterator*)it, increase);
+}
+
+void AnalogSegment::end_sample_iteration(SegmentAnalogDataIterator* it) const
+{
+	Segment::end_raw_sample_iteration((SegmentRawDataIterator*)it);
 }
 
 void AnalogSegment::get_envelope_section(EnvelopeSection &s,
@@ -141,6 +143,7 @@ void AnalogSegment::append_payload_to_envelope_levels()
 	Envelope &e0 = envelope_levels_[0];
 	uint64_t prev_length;
 	EnvelopeSample *dest_ptr;
+	SegmentRawDataIterator* it;
 
 	// Expand the data buffer to fit the new samples
 	prev_length = e0.length;
@@ -155,18 +158,22 @@ void AnalogSegment::append_payload_to_envelope_levels()
 	dest_ptr = e0.samples + prev_length;
 
 	// Iterate through the samples to populate the first level mipmap
-	const float *const end_src_ptr = (float*)data_.data() +
-		e0.length * EnvelopeScaleFactor;
-	for (const float *src_ptr = (float*)data_.data() +
-			prev_length * EnvelopeScaleFactor;
-			src_ptr < end_src_ptr; src_ptr += EnvelopeScaleFactor) {
+	uint64_t start_sample = prev_length * EnvelopeScaleFactor;
+	uint64_t end_sample   = e0.length * EnvelopeScaleFactor;
+
+	it = begin_raw_sample_iteration(start_sample);
+	for (uint64_t i = start_sample; i < end_sample; i += EnvelopeScaleFactor) {
+		const float* samples = (float*)it->value;
+
 		const EnvelopeSample sub_sample = {
-			*min_element(src_ptr, src_ptr + EnvelopeScaleFactor),
-			*max_element(src_ptr, src_ptr + EnvelopeScaleFactor),
+			*min_element(samples, samples + EnvelopeScaleFactor),
+			*max_element(samples, samples + EnvelopeScaleFactor),
 		};
 
+		continue_raw_sample_iteration(it, EnvelopeScaleFactor);
 		*dest_ptr++ = sub_sample;
 	}
+	end_raw_sample_iteration(it);
 
 	// Compute higher level mipmaps
 	for (unsigned int level = 1; level < ScaleStepCount; level++) {
@@ -177,16 +184,17 @@ void AnalogSegment::append_payload_to_envelope_levels()
 		prev_length = e.length;
 		e.length = el.length / EnvelopeScaleFactor;
 
-		// Break off if there are no more samples to computed
+		// Break off if there are no more samples to be computed
 		if (e.length == prev_length)
 			break;
 
 		reallocate_envelope(e);
 
-		// Subsample the level lower level
+		// Subsample the lower level
 		const EnvelopeSample *src_ptr =
 			el.samples + prev_length * EnvelopeScaleFactor;
 		const EnvelopeSample *const end_dest_ptr = e.samples + e.length;
+
 		for (dest_ptr = e.samples + prev_length;
 				dest_ptr < end_dest_ptr; dest_ptr++) {
 			const EnvelopeSample *const end_src_ptr =

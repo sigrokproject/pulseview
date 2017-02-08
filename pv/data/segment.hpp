@@ -1,6 +1,7 @@
 /*
  * This file is part of the PulseView project.
  *
+ * Copyright (C) 2017 Soeren Apel <soeren@apelpie.net>
  * Copyright (C) 2012 Joel Holdsworth <joel@airwebreathe.org.uk>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -26,11 +27,32 @@
 #include <mutex>
 #include <vector>
 
+namespace SegmentTest {
+struct SmallSize8Single;
+struct MediumSize8Single;
+struct MaxSize8Single;
+struct MediumSize24Single;
+struct MediumSize32Single;
+struct MaxSize32Single;
+struct MediumSize32Multi;
+struct MaxSize32Multi;
+struct MaxSize32MultiIterated;
+}
+
 namespace pv {
 namespace data {
 
+typedef struct {
+	uint64_t sample_index, chunk_num, chunk_offs;
+	uint8_t* chunk;
+	uint8_t* value;
+} SegmentRawDataIterator;
+
 class Segment
 {
+private:
+	static const uint64_t MaxChunkSize = 10*1024*1024;  /* 10MiB */
+
 public:
 	Segment(uint64_t samplerate, unsigned int unit_size);
 
@@ -45,44 +67,34 @@ public:
 
 	unsigned int unit_size() const;
 
-	/**
-	 * @brief Increase the capacity of the segment.
-	 *
-	 * Increasing the capacity allows samples to be appended without needing
-	 * to reallocate memory.
-	 *
-	 * For the best efficiency @c set_capacity() should be called once before
-	 * @c append_data() is called to set up the segment with the expected number
-	 * of samples that will be appended in total.
-	 *
-	 * @note The capacity will automatically be increased when @c append_data()
-	 * is called if there is not enough capacity in the buffer to store the samples.
-	 *
-	 * @param[in] new_capacity The new capacity of the segment. If this value is
-	 * 	smaller or equal than the current capacity then the method has no effect.
-	 */
-	void set_capacity(uint64_t new_capacity);
-
-	/**
-	 * @brief Get the current capacity of the segment.
-	 *
-	 * The capacity can be increased by calling @c set_capacity().
-	 *
-	 * @return The current capacity of the segment.
-	 */
-	uint64_t capacity() const;
-
 protected:
-	void append_data(void *data, uint64_t samples);
+	void append_single_sample(void *data);
+	void append_samples(void *data, uint64_t samples);
+	uint8_t* get_raw_samples(uint64_t start, uint64_t count) const;
 
-protected:
+	SegmentRawDataIterator* begin_raw_sample_iteration(uint64_t start) const;
+	void continue_raw_sample_iteration(SegmentRawDataIterator* it, uint64_t increase) const;
+	void end_raw_sample_iteration(SegmentRawDataIterator* it) const;
+
 	mutable std::recursive_mutex mutex_;
-	std::vector<uint8_t> data_;
+	std::vector<uint8_t*> data_chunks_;
+	uint8_t* current_chunk_;
+	uint64_t used_samples_, unused_samples_;
 	uint64_t sample_count_;
 	pv::util::Timestamp start_time_;
 	double samplerate_;
-	uint64_t capacity_;
+	uint64_t chunk_size_;
 	unsigned int unit_size_;
+
+	friend struct SegmentTest::SmallSize8Single;
+	friend struct SegmentTest::MediumSize8Single;
+	friend struct SegmentTest::MaxSize8Single;
+	friend struct SegmentTest::MediumSize24Single;
+	friend struct SegmentTest::MediumSize32Single;
+	friend struct SegmentTest::MaxSize32Single;
+	friend struct SegmentTest::MediumSize32Multi;
+	friend struct SegmentTest::MaxSize32Multi;
+	friend struct SegmentTest::MaxSize32MultiIterated;
 };
 
 } // namespace data

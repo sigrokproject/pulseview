@@ -927,8 +927,6 @@ void Session::feed_in_logic(shared_ptr<Logic> logic)
 {
 	lock_guard<recursive_mutex> lock(data_mutex_);
 
-	const size_t sample_count = logic->data_length() / logic->unit_size();
-
 	if (!logic_data_) {
 		// The only reason logic_data_ would not have been created is
 		// if it was not possible to determine the signals when the
@@ -942,8 +940,7 @@ void Session::feed_in_logic(shared_ptr<Logic> logic)
 
 		// Create a new data segment
 		cur_logic_segment_ = shared_ptr<data::LogicSegment>(
-			new data::LogicSegment(
-				logic, cur_samplerate_, sample_count));
+			new data::LogicSegment(logic, cur_samplerate_));
 		logic_data_->push_segment(cur_logic_segment_);
 
 		// @todo Putting this here means that only listeners querying
@@ -988,8 +985,7 @@ void Session::feed_in_analog(shared_ptr<Analog> analog)
 
 			// Create a segment, keep it in the maps of channels
 			segment = shared_ptr<data::AnalogSegment>(
-				new data::AnalogSegment(
-					cur_samplerate_, sample_count));
+				new data::AnalogSegment(cur_samplerate_));
 			cur_analog_segments_[channel] = segment;
 
 			// Find the analog data associated with the channel

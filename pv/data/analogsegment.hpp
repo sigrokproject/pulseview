@@ -32,6 +32,12 @@ struct Basic;
 namespace pv {
 namespace data {
 
+typedef struct {
+	uint64_t sample_index, chunk_num, chunk_offs;
+	uint8_t* chunk;
+	float* value;
+} SegmentAnalogDataIterator;
+
 class AnalogSegment : public Segment
 {
 public:
@@ -65,7 +71,7 @@ private:
 	static const uint64_t EnvelopeDataUnit;
 
 public:
-	AnalogSegment(uint64_t samplerate, uint64_t expected_num_samples = 0);
+	AnalogSegment(uint64_t samplerate);
 
 	virtual ~AnalogSegment();
 
@@ -74,6 +80,10 @@ public:
 
 	const float* get_samples(int64_t start_sample,
 		int64_t end_sample) const;
+
+	SegmentAnalogDataIterator* begin_sample_iteration(uint64_t start) const;
+	void continue_sample_iteration(SegmentAnalogDataIterator* it, uint64_t increase) const;
+	void end_sample_iteration(SegmentAnalogDataIterator* it) const;
 
 	void get_envelope_section(EnvelopeSection &s,
 		uint64_t start, uint64_t end, float min_length) const;

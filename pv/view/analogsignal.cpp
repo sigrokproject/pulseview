@@ -240,26 +240,25 @@ void AnalogSignal::paint_trace(QPainter &p,
 	int y, int left, const int64_t start, const int64_t end,
 	const double pixels_offset, const double samples_per_pixel)
 {
-	const int64_t sample_count = end - start;
-
-	const float *const samples = segment->get_samples(start, end);
-	assert(samples);
-
 	p.setPen(base_->colour());
 
-	QPointF *points = new QPointF[sample_count];
+	QPointF *points = new QPointF[end - start];
 	QPointF *point = points;
+
+	pv::data::SegmentAnalogDataIterator* it =
+		segment->begin_sample_iteration(start);
 
 	for (int64_t sample = start; sample != end; sample++) {
 		const float x = (sample / samples_per_pixel -
 			pixels_offset) + left;
-		*point++ = QPointF(x,
-			y - samples[sample - start] * scale_);
+
+		*point++ = QPointF(x, y - *((float*)it->value) * scale_);
+		segment->continue_sample_iteration(it, 1);
 	}
+	segment->end_sample_iteration(it);
 
 	p.drawPolyline(points, point - points);
 
-	delete[] samples;
 	delete[] points;
 }
 

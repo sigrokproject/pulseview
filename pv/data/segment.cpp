@@ -1,6 +1,7 @@
 /*
  * This file is part of the PulseView project.
  *
+ * Copyright (C) 2017 Soeren Apel <soeren@apelpie.net>
  * Copyright (C) 2012 Joel Holdsworth <joel@airwebreathe.org.uk>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,8 +24,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <vector>
+
 using std::lock_guard;
 using std::recursive_mutex;
+using std::vector;
 
 namespace pv {
 namespace data {
@@ -33,16 +37,29 @@ Segment::Segment(uint64_t samplerate, unsigned int unit_size) :
 	sample_count_(0),
 	start_time_(0),
 	samplerate_(samplerate),
-	capacity_(0),
 	unit_size_(unit_size)
 {
 	lock_guard<recursive_mutex> lock(mutex_);
 	assert(unit_size_ > 0);
+
+	// Determine the number of samples we can fit in one chunk
+	// without exceeding MaxChunkSize
+	chunk_size_ = std::min(MaxChunkSize,
+		(MaxChunkSize / unit_size_) * unit_size_);
+
+	// Create the initial chunk
+	current_chunk_ = new uint8_t[chunk_size_];
+	data_chunks_.push_back(current_chunk_);
+	used_samples_ = 0;
+	unused_samples_ = chunk_size_ / unit_size_;
 }
 
 Segment::~Segment()
 {
 	lock_guard<recursive_mutex> lock(mutex_);
+
+	for (uint8_t* chunk : data_chunks_)
+		delete[] chunk;
 }
 
 uint64_t Segment::get_sample_count() const
@@ -71,39 +88,139 @@ unsigned int Segment::unit_size() const
 	return unit_size_;
 }
 
-void Segment::set_capacity(const uint64_t new_capacity)
+void Segment::append_single_sample(void *data)
 {
 	lock_guard<recursive_mutex> lock(mutex_);
 
-	assert(capacity_ >= sample_count_);
-	if (new_capacity > capacity_) {
-		// If we're out of memory, this will throw std::bad_alloc
-		data_.resize((new_capacity * unit_size_) + sizeof(uint64_t));
-		capacity_ = new_capacity;
+	// There will always be space for at least one sample in
+	// the current chunk, so we do not need to test for space
+
+	memcpy(current_chunk_ + (used_samples_ * unit_size_),
+		data, unit_size_);
+	used_samples_++;
+	unused_samples_--;
+
+	if (unused_samples_ == 0) {
+		current_chunk_ = new uint8_t[chunk_size_];
+		data_chunks_.push_back(current_chunk_);
+		used_samples_ = 0;
+		unused_samples_ = chunk_size_ / unit_size_;
 	}
+
+	sample_count_++;
 }
 
-uint64_t Segment::capacity() const
-{
-	lock_guard<recursive_mutex> lock(mutex_);
-	return data_.size();
-}
-
-void Segment::append_data(void *data, uint64_t samples)
+void Segment::append_samples(void* data, uint64_t samples)
 {
 	lock_guard<recursive_mutex> lock(mutex_);
 
-	assert(capacity_ >= sample_count_);
+	if (unused_samples_ >= samples) {
+		// All samples fit into the current chunk
+		memcpy(current_chunk_ + (used_samples_ * unit_size_),
+			data, (samples * unit_size_));
+		used_samples_ += samples;
+		unused_samples_ -= samples;
+	} else {
+		// Only a part of the samples fit, split data up between chunks
+		memcpy(current_chunk_ + (used_samples_ * unit_size_),
+			data, (unused_samples_ * unit_size_));
+		const uint64_t remaining_samples = samples - unused_samples_;
 
-	// Ensure there's enough capacity to copy.
-	const uint64_t free_space = capacity_ - sample_count_;
-	if (free_space < samples)
-		set_capacity(sample_count_ + samples);
+		// If we're out of memory, this will throw std::bad_alloc
+		current_chunk_ = new uint8_t[chunk_size_];
+		data_chunks_.push_back(current_chunk_);
+		memcpy(current_chunk_, (uint8_t*)data + (unused_samples_ * unit_size_),
+			(remaining_samples * unit_size_));
 
-	memcpy((uint8_t*)data_.data() + sample_count_ * unit_size_,
-		data, samples * unit_size_);
+		used_samples_ = remaining_samples;
+		unused_samples_ = (chunk_size_ / unit_size_) - remaining_samples;
+	}
+
+	if (unused_samples_ == 0) {
+		// If we're out of memory, this will throw std::bad_alloc
+		current_chunk_ = new uint8_t[chunk_size_];
+		data_chunks_.push_back(current_chunk_);
+		used_samples_ = 0;
+		unused_samples_ = chunk_size_ / unit_size_;
+	}
+
 	sample_count_ += samples;
 }
+
+uint8_t* Segment::get_raw_samples(uint64_t start, uint64_t count) const
+{
+	assert(start < sample_count_);
+	assert(start + count <= sample_count_);
+	assert(count > 0);
+
+	lock_guard<recursive_mutex> lock(mutex_);
+
+	uint8_t* dest = new uint8_t[count * unit_size_];
+	uint8_t* dest_ptr = dest;
+
+	uint64_t chunk_num = (start * unit_size_) / chunk_size_;
+	uint64_t chunk_offs = (start * unit_size_) % chunk_size_;
+
+	while (count > 0) {
+		const uint8_t* chunk = data_chunks_[chunk_num];
+
+		uint64_t copy_size = std::min(count * unit_size_,
+			chunk_size_ - chunk_offs);
+
+		memcpy(dest_ptr, chunk + chunk_offs, copy_size);
+
+		dest_ptr += copy_size;
+		count -= (copy_size / unit_size_);
+
+		chunk_num++;
+		chunk_offs = 0;
+	}
+
+	return dest;
+}
+
+SegmentRawDataIterator* Segment::begin_raw_sample_iteration(uint64_t start) const
+{
+	SegmentRawDataIterator* it = new SegmentRawDataIterator;
+
+	assert(start < sample_count_);
+
+	it->sample_index = start;
+	it->chunk_num = (start * unit_size_) / chunk_size_;
+	it->chunk_offs = (start * unit_size_) % chunk_size_;
+	it->chunk = data_chunks_[it->chunk_num];
+	it->value = it->chunk + it->chunk_offs;
+
+	return it;
+}
+
+void Segment::continue_raw_sample_iteration(SegmentRawDataIterator* it, uint64_t increase) const
+{
+	lock_guard<recursive_mutex> lock(mutex_);
+
+	if (it->sample_index > sample_count_)
+	{
+		// Fail gracefully if we are asked to deliver data we don't have
+		return;
+	} else {
+		it->sample_index += increase;
+		it->chunk_offs += (increase * unit_size_);
+	}
+
+	if (it->chunk_offs > (chunk_size_ - 1)) {
+		it->chunk_num++;
+		it->chunk_offs -= chunk_size_;
+		it->chunk = data_chunks_[it->chunk_num];
+	}
+
+	it->value = it->chunk + it->chunk_offs;
+}
+
+void Segment::end_raw_sample_iteration(SegmentRawDataIterator* it) const
+{
+	delete it;
+}
+
 
 } // namespace data
 } // namespace pv

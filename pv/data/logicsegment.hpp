@@ -40,6 +40,12 @@ struct LongPulses;
 namespace pv {
 namespace data {
 
+typedef struct {
+	uint64_t sample_index, chunk_num, chunk_offs;
+	uint8_t* chunk;
+	uint8_t* value;
+} SegmentLogicDataIterator;
+
 class LogicSegment : public Segment
 {
 private:
@@ -61,14 +67,17 @@ public:
 	typedef std::pair<int64_t, bool> EdgePair;
 
 public:
-	LogicSegment(std::shared_ptr<sigrok::Logic> logic,
-		uint64_t samplerate, uint64_t expected_num_samples = 0);
+	LogicSegment(std::shared_ptr<sigrok::Logic> logic, uint64_t samplerate);
 
 	virtual ~LogicSegment();
 
 	void append_payload(std::shared_ptr<sigrok::Logic> logic);
 
 	const uint8_t* get_samples(int64_t start_sample, int64_t end_sample) const;
+
+	SegmentLogicDataIterator* begin_sample_iteration(uint64_t start) const;
+	void continue_sample_iteration(SegmentLogicDataIterator* it, uint64_t increase) const;
+	void end_sample_iteration(SegmentLogicDataIterator* it) const;
 
 private:
 	uint64_t unpack_sample(const uint8_t *ptr) const;
@@ -78,7 +87,7 @@ private:
 
 	void append_payload_to_mipmap();
 
-	uint64_t get_sample(uint64_t index) const;
+	uint64_t get_unpacked_sample(uint64_t index) const;
 
 public:
 	/**
