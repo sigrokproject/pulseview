@@ -130,7 +130,8 @@ protected:
 	void populate_popup_form(QWidget *parent, QFormLayout *form);
 
 private Q_SLOTS:
-	void on_vdivs_changed(int vdivs);
+	void on_pos_vdivs_changed(int vdivs);
+	void on_neg_vdivs_changed(int vdivs);
 
 	void on_resolution_changed(int index);
 
@@ -142,7 +143,7 @@ private:
 	int scale_index_drag_offset_;
 
 	int div_height_;
-	int vdivs_;  // divs per positive/negative side
+	int pos_vdivs_, neg_vdivs_;  // divs per positive/negative side
 	float resolution_; // e.g. 10 for 10 V/div
 };
 

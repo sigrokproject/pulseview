@@ -76,7 +76,8 @@ AnalogSignal::AnalogSignal(
 	scale_index_(4), // 20 per div
 	scale_index_drag_offset_(0),
 	div_height_(3 * QFontMetrics(QApplication::font()).height()),
-	vdivs_(1),
+	pos_vdivs_(1),
+	neg_vdivs_(1),
 	resolution_(0)
 {
 	base_->set_colour(SignalColours[base_->index() % countof(SignalColours)]);
@@ -90,14 +91,18 @@ shared_ptr<pv::data::SignalData> AnalogSignal::data() const
 
 void AnalogSignal::save_settings(QSettings &settings) const
 {
-	settings.setValue("vdivs", vdivs_);
+	settings.setValue("pos_vdivs", pos_vdivs_);
+	settings.setValue("neg_vdivs", neg_vdivs_);
 	settings.setValue("scale_index", scale_index_);
 }
 
 void AnalogSignal::restore_settings(QSettings &settings)
 {
-	if (settings.contains("vdivs"))
-		vdivs_ = settings.value("vdivs").toInt();
+	if (settings.contains("pos_vdivs"))
+		pos_vdivs_ = settings.value("pos_vdivs").toInt();
+
+	if (settings.contains("neg_vdivs"))
+		neg_vdivs_ = settings.value("neg_vdivs").toInt();
 
 	if (settings.contains("scale_index")) {
 		scale_index_ = settings.value("scale_index").toInt();
@@ -107,13 +112,14 @@ void AnalogSignal::restore_settings(QSettings &settings)
 
 std::pair<int, int> AnalogSignal::v_extents() const
 {
-	const int h = vdivs_ * div_height_;
-	return make_pair(-h, h);
+	const int ph = pos_vdivs_ * div_height_;
+	const int nh = neg_vdivs_ * div_height_;
+	return make_pair(-ph, nh);
 }
 
 int AnalogSignal::scale_handle_offset() const
 {
-	const int h = vdivs_ * div_height_;
+	const int h = (pos_vdivs_ + neg_vdivs_) * div_height_;
 
 	return ((scale_index_drag_offset_ - scale_index_) *
 		h / 4) - h / 2;
@@ -121,7 +127,7 @@ int AnalogSignal::scale_handle_offset() const
 
 void AnalogSignal::scale_handle_dragged(int offset)
 {
-	const int h = vdivs_ * div_height_;
+	const int h = (pos_vdivs_ + neg_vdivs_) * div_height_;
 
 	scale_index_ = scale_index_drag_offset_ -
 		(offset + h / 2) / (h / 4);
@@ -211,25 +217,42 @@ void AnalogSignal::paint_grid(QPainter &p, int y, int left, int right)
 {
 	p.setRenderHint(QPainter::Antialiasing, false);
 
-	p.setPen(QPen(GridMajorColor, 1, Qt::DashLine));
-	for (int i = 1; i <= vdivs_; i++) {
-		const float dy = i * div_height_;
-		p.drawLine(QLineF(left, y - dy, right, y - dy));
-		p.drawLine(QLineF(left, y + dy, right, y + dy));
+	if (pos_vdivs_ > 0) {
+		p.setPen(QPen(GridMajorColor, 1, Qt::DashLine));
+		for (int i = 1; i <= pos_vdivs_; i++) {
+			const float dy = i * div_height_;
+			p.drawLine(QLineF(left, y - dy, right, y - dy));
+		}
+
+		p.setPen(QPen(GridMinorColor, 1, Qt::DashLine));
+		for (int i = 0; i < pos_vdivs_; i++) {
+			const float dy = i * div_height_;
+			const float dy25 = dy + (0.25 * div_height_);
+			const float dy50 = dy + (0.50 * div_height_);
+			const float dy75 = dy + (0.75 * div_height_);
+			p.drawLine(QLineF(left, y - dy25, right, y - dy25));
+			p.drawLine(QLineF(left, y - dy50, right, y - dy50));
+			p.drawLine(QLineF(left, y - dy75, right, y - dy75));
+		}
 	}
 
-	p.setPen(QPen(GridMinorColor, 1, Qt::DashLine));
-	for (int i = 0; i < vdivs_; i++) {
-		const float dy = i * div_height_;
-		const float dy25 = dy + (0.25 * div_height_);
-		const float dy50 = dy + (0.50 * div_height_);
-		const float dy75 = dy + (0.75 * div_height_);
-		p.drawLine(QLineF(left, y - dy25, right, y - dy25));
-		p.drawLine(QLineF(left, y + dy25, right, y + dy25));
-		p.drawLine(QLineF(left, y - dy50, right, y - dy50));
-		p.drawLine(QLineF(left, y + dy50, right, y + dy50));
-		p.drawLine(QLineF(left, y - dy75, right, y - dy75));
-		p.drawLine(QLineF(left, y + dy75, right, y + dy75));
+	if (neg_vdivs_ > 0) {
+		p.setPen(QPen(GridMajorColor, 1, Qt::DashLine));
+		for (int i = 1; i <= neg_vdivs_; i++) {
+			const float dy = i * div_height_;
+			p.drawLine(QLineF(left, y + dy, right, y + dy));
+		}
+
+		p.setPen(QPen(GridMinorColor, 1, Qt::DashLine));
+		for (int i = 0; i < neg_vdivs_; i++) {
+			const float dy = i * div_height_;
+			const float dy25 = dy + (0.25 * div_height_);
+			const float dy50 = dy + (0.50 * div_height_);
+			const float dy75 = dy + (0.75 * div_height_);
+			p.drawLine(QLineF(left, y + dy25, right, y + dy25));
+			p.drawLine(QLineF(left, y + dy50, right, y + dy50));
+			p.drawLine(QLineF(left, y + dy75, right, y + dy75));
+		}
 	}
 
 	p.setRenderHint(QPainter::Antialiasing, true);
@@ -333,12 +356,19 @@ void AnalogSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
 	QFormLayout *const layout = new QFormLayout;
 
 	// Add the number of vdivs
-	QSpinBox *vdiv_sb = new QSpinBox(parent);
-	vdiv_sb->setRange(1, MaximumVDivs);
-	vdiv_sb->setValue(vdivs_);
-	connect(vdiv_sb, SIGNAL(valueChanged(int)),
-		this, SLOT(on_vdivs_changed(int)));
-	layout->addRow(tr("Number of vertical divs"), vdiv_sb);
+	QSpinBox *pvdiv_sb = new QSpinBox(parent);
+	pvdiv_sb->setRange(0, MaximumVDivs);
+	pvdiv_sb->setValue(pos_vdivs_);
+	connect(pvdiv_sb, SIGNAL(valueChanged(int)),
+		this, SLOT(on_pos_vdivs_changed(int)));
+	layout->addRow(tr("Number of pos vertical divs"), pvdiv_sb);
+
+	QSpinBox *nvdiv_sb = new QSpinBox(parent);
+	nvdiv_sb->setRange(0, MaximumVDivs);
+	nvdiv_sb->setValue(neg_vdivs_);
+	connect(nvdiv_sb, SIGNAL(valueChanged(int)),
+		this, SLOT(on_neg_vdivs_changed(int)));
+	layout->addRow(tr("Number of neg vertical divs"), nvdiv_sb);
 
 	// Add the vertical resolution
 	resolution_cb_ = new QComboBox(parent);
@@ -364,9 +394,20 @@ void AnalogSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
 	form->addRow(layout);
 }
 
-void AnalogSignal::on_vdivs_changed(int vdivs)
+void AnalogSignal::on_pos_vdivs_changed(int vdivs)
 {
-	vdivs_ = vdivs;
+	pos_vdivs_ = vdivs;
+
+	if (owner_) {
+		// Call order is important, otherwise the lazy event handler won't work
+		owner_->extents_changed(false, true);
+		owner_->row_item_appearance_changed(false, true);
+	}
+}
+
+void AnalogSignal::on_neg_vdivs_changed(int vdivs)
+{
+	neg_vdivs_ = vdivs;
 
 	if (owner_) {
 		// Call order is important, otherwise the lazy event handler won't work
