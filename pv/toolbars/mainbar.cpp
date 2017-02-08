@@ -403,9 +403,12 @@ void MainBar::update_sample_count_selector()
 	uint64_t sample_count = sample_count_.value();
 	uint64_t min_sample_count = 0;
 	uint64_t max_sample_count = MaxSampleCount;
+	bool default_count_set = false;
 
-	if (sample_count == 0)
+	if (sample_count == 0) {
 		sample_count = DefaultSampleCount;
+		default_count_set = true;
+	}
 
 	if (sr_dev->config_check(ConfigKey::LIMIT_SAMPLES, Capability::LIST)) {
 		auto gvar = sr_dev->config_list(ConfigKey::LIMIT_SAMPLES);
@@ -423,8 +426,10 @@ void MainBar::update_sample_count_selector()
 	if (sr_dev->config_check(ConfigKey::LIMIT_SAMPLES, Capability::GET)) {
 		auto gvar = sr_dev->config_get(ConfigKey::LIMIT_SAMPLES);
 		sample_count = g_variant_get_uint64(gvar.gobj());
-		if (sample_count == 0)
+		if (sample_count == 0) {
 			sample_count = DefaultSampleCount;
+			default_count_set = true;
+		}
 		sample_count = min(max(sample_count, MinSampleCount),
 			max_sample_count);
 	}
@@ -432,6 +437,10 @@ void MainBar::update_sample_count_selector()
 	sample_count_.set_value(sample_count);
 
 	updating_sample_count_ = false;
+
+	// If we show the default rate then make sure the device uses the same
+	if (default_count_set)
+		commit_sample_count();
 }
 
 void MainBar::update_device_config_widgets()
