@@ -88,6 +88,21 @@ unsigned int Segment::unit_size() const
 	return unit_size_;
 }
 
+void Segment::free_unused_memory()
+{
+	lock_guard<recursive_mutex> lock(mutex_);
+
+	// No more data will come in, so re-create the last chunk accordingly
+	uint8_t* resized_chunk = new uint8_t[used_samples_ * unit_size_];
+	memcpy(resized_chunk, current_chunk_, used_samples_ * unit_size_);
+
+	delete[] current_chunk_;
+	current_chunk_ = resized_chunk;
+
+	data_chunks_.pop_back();
+	data_chunks_.push_back(resized_chunk);
+}
+
 void Segment::append_single_sample(void *data)
 {
 	lock_guard<recursive_mutex> lock(mutex_);

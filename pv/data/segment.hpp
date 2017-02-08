@@ -67,6 +67,8 @@ public:
 
 	unsigned int unit_size() const;
 
+	void free_unused_memory();
+
 protected:
 	void append_single_sample(void *data);
 	void append_samples(void *data, uint64_t samples);

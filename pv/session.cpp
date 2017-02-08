@@ -857,6 +857,9 @@ void Session::sample_thread_proc(function<void (const QString)> error_handler)
 		assert(0);
 	}
 
+	// Optimize memory usage
+	free_unused_memory();
+
 	// We now have unsaved data unless we just "captured" from a file
 	shared_ptr<devices::File> file_device =
 		dynamic_pointer_cast<devices::File>(device_);
@@ -866,6 +869,17 @@ void Session::sample_thread_proc(function<void (const QString)> error_handler)
 
 	if (out_of_memory_)
 		error_handler(tr("Out of memory, acquisition stopped."));
+}
+
+void Session::free_unused_memory()
+{
+	for (shared_ptr<data::SignalData> data : all_signal_data_) {
+		const vector< shared_ptr<data::Segment> > segments = data->segments();
+
+		for (shared_ptr<data::Segment> segment : segments) {
+			segment->free_unused_memory();
+		}
+	}
 }
 
 void Session::feed_in_header()

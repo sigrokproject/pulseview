@@ -182,6 +182,8 @@ private:
 private:
 	void sample_thread_proc(std::function<void (const QString)> error_handler);
 
+	void free_unused_memory();
+
 	void feed_in_header();
 
 	void feed_in_meta(std::shared_ptr<sigrok::Meta> meta);
