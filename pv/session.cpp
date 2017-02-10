@@ -1031,6 +1031,8 @@ void Session::feed_in_analog(shared_ptr<Analog> analog)
 void Session::data_feed_in(shared_ptr<sigrok::Device> device,
 	shared_ptr<Packet> packet)
 {
+	static bool frame_began=false;
+
 	(void)device;
 
 	assert(device);
@@ -1052,6 +1054,7 @@ void Session::data_feed_in(shared_ptr<sigrok::Device> device,
 
 	case SR_DF_FRAME_BEGIN:
 		feed_in_frame_begin();
+		frame_began = true;
 		break;
 
 	case SR_DF_LOGIC:
@@ -1072,6 +1075,7 @@ void Session::data_feed_in(shared_ptr<sigrok::Device> device,
 		}
 		break;
 
+	case SR_DF_FRAME_END:
 	case SR_DF_END:
 	{
 		{
@@ -1079,7 +1083,10 @@ void Session::data_feed_in(shared_ptr<sigrok::Device> device,
 			cur_logic_segment_.reset();
 			cur_analog_segments_.clear();
 		}
-		frame_ended();
+		if (frame_began) {
+			frame_began = false;
+			frame_ended();
+		}
 		break;
 	}
 	default:
