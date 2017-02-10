@@ -611,9 +611,10 @@ void MainBar::export_file(shared_ptr<OutputFormat> format,
 		const pv::util::Timestamp& start_time = trace_view->cursors()->first()->time();
 		const pv::util::Timestamp& end_time = trace_view->cursors()->second()->time();
 
-		const uint64_t start_sample =
-			std::max((double)0, start_time.convert_to<double>() * samplerate);
-		const uint64_t end_sample = end_time.convert_to<double>() * samplerate;
+		const uint64_t start_sample = (uint64_t)std::max(
+			(double)0, start_time.convert_to<double>() * samplerate);
+		const uint64_t end_sample = (uint64_t)std::max(
+			(double)0, end_time.convert_to<double>() * samplerate);
 
 		sample_range = std::make_pair(start_sample, end_sample);
 	} else {
