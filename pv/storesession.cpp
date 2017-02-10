@@ -258,8 +258,6 @@ void StoreSession::store_proc(vector< shared_ptr<data::SignalBase> > achannel_li
 				const float *adata =
 					asegment->get_samples(start_sample_, start_sample_ + packet_len);
 
-				// The srzip format currently only supports packets with one
-				// analog channel. See zip_append_analog() in srzip.c
 				auto analog = context->create_analog_packet(
 					vector<shared_ptr<sigrok::Channel> >{achannel},
 					(float *)adata, packet_len,
