@@ -81,6 +81,8 @@ public:
 	const float* get_samples(int64_t start_sample,
 		int64_t end_sample) const;
 
+	const std::pair<float, float> get_min_max() const;
+
 	SegmentAnalogDataIterator* begin_sample_iteration(uint64_t start) const;
 	void continue_sample_iteration(SegmentAnalogDataIterator* it, uint64_t increase) const;
 	void end_sample_iteration(SegmentAnalogDataIterator* it) const;
@@ -95,6 +97,8 @@ private:
 
 private:
 	struct Envelope envelope_levels_[ScaleStepCount];
+
+	float min_value_, max_value_;
 
 	friend struct AnalogSegmentTest::Basic;
 };

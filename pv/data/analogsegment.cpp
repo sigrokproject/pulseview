@@ -45,7 +45,9 @@ const float AnalogSegment::LogEnvelopeScaleFactor =
 const uint64_t AnalogSegment::EnvelopeDataUnit = 64*1024;	// bytes
 
 AnalogSegment::AnalogSegment(uint64_t samplerate) :
-	Segment(samplerate, sizeof(float))
+	Segment(samplerate, sizeof(float)),
+	min_value_(0),
+	max_value_(0)
 {
 	lock_guard<recursive_mutex> lock(mutex_);
 	memset(envelope_levels_, 0, sizeof(envelope_levels_));
@@ -86,6 +88,11 @@ const float* AnalogSegment::get_samples(
 	lock_guard<recursive_mutex> lock(mutex_);
 
 	return (float*)get_raw_samples(start_sample, (end_sample - start_sample));
+}
+
+const std::pair<float, float> AnalogSegment::get_min_max() const
+{
+	return std::make_pair(min_value_, max_value_);
 }
 
 SegmentAnalogDataIterator* AnalogSegment::begin_sample_iteration(uint64_t start) const
@@ -170,6 +177,9 @@ void AnalogSegment::append_payload_to_envelope_levels()
 			*max_element(samples, samples + EnvelopeScaleFactor),
 		};
 
+		if (sub_sample.min < min_value_) min_value_ = sub_sample.min;
+		if (sub_sample.max > max_value_) max_value_ = sub_sample.max;
+
 		continue_raw_sample_iteration(it, EnvelopeScaleFactor);
 		*dest_ptr++ = sub_sample;
 	}
@@ -202,7 +212,7 @@ void AnalogSegment::append_payload_to_envelope_levels()
 
 			EnvelopeSample sub_sample = *src_ptr++;
 			while (src_ptr < end_src_ptr) {
-				sub_sample.min = min(sub_sample.min, src_ptr->min);
+				sub_sample.min = min(sub_sample.min, src_ptr->min);;
 				sub_sample.max = max(sub_sample.max, src_ptr->max);
 				src_ptr++;
 			}

@@ -126,6 +126,8 @@ private:
 
 	void update_scale();
 
+	void perform_autoranging(bool force_update = false);
+
 protected:
 	void populate_popup_form(QWidget *parent, QFormLayout *form);
 
@@ -134,6 +136,8 @@ private Q_SLOTS:
 	void on_neg_vdivs_changed(int vdivs);
 
 	void on_resolution_changed(int index);
+
+	void on_autoranging_changed(int state);
 
 private:
 	QComboBox *resolution_cb_;
@@ -145,6 +149,8 @@ private:
 	int div_height_;
 	int pos_vdivs_, neg_vdivs_;  // divs per positive/negative side
 	float resolution_; // e.g. 10 for 10 V/div
+
+	bool autoranging_;
 };
 
 } // namespace TraceView

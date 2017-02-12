@@ -25,6 +25,7 @@
 #include <limits>
 
 #include <QApplication>
+#include <QCheckBox>
 #include <QComboBox>
 #include <QFormLayout>
 #include <QGridLayout>
@@ -78,7 +79,8 @@ AnalogSignal::AnalogSignal(
 	div_height_(3 * QFontMetrics(QApplication::font()).height()),
 	pos_vdivs_(1),
 	neg_vdivs_(1),
-	resolution_(0)
+	resolution_(0),
+	autoranging_(1)
 {
 	base_->set_colour(SignalColours[base_->index() % countof(SignalColours)]);
 	update_scale();
@@ -94,6 +96,7 @@ void AnalogSignal::save_settings(QSettings &settings) const
 	settings.setValue("pos_vdivs", pos_vdivs_);
 	settings.setValue("neg_vdivs", neg_vdivs_);
 	settings.setValue("scale_index", scale_index_);
+	settings.setValue("autoranging", autoranging_);
 }
 
 void AnalogSignal::restore_settings(QSettings &settings)
@@ -108,6 +111,9 @@ void AnalogSignal::restore_settings(QSettings &settings)
 		scale_index_ = settings.value("scale_index").toInt();
 		update_scale();
 	}
+
+	if (settings.contains("autoranging"))
+		autoranging_ = settings.value("autoranging").toBool();
 }
 
 std::pair<int, int> AnalogSignal::v_extents() const
@@ -348,6 +354,53 @@ void AnalogSignal::update_scale()
 	scale_ = div_height_ / resolution_;
 }
 
+void AnalogSignal::perform_autoranging(bool force_update)
+{
+	const deque< shared_ptr<pv::data::AnalogSegment> > &segments =
+		base_->analog_data()->analog_segments();
+
+	if (segments.empty())
+		return;
+
+	static double prev_min = 0, prev_max = 0;
+	double min = 0, max = 0;
+
+	for (shared_ptr<pv::data::AnalogSegment> segment : segments) {
+		std::pair<double, double> mm = segment->get_min_max();
+		min = std::min(min, mm.first);
+		max = std::max(max, mm.second);
+	}
+
+	if ((min == prev_min) && (max == prev_max) && !force_update)
+		return;
+
+	prev_min = min;
+	prev_max = max;
+
+	// Use all divs for the positive range if there are no negative values
+	if ((min == 0) && (neg_vdivs_ > 0)) {
+		pos_vdivs_ += neg_vdivs_;
+		neg_vdivs_ = 0;
+	}
+
+	double min_value_per_div;
+	if ((pos_vdivs_ > 0) && (neg_vdivs_ >  0))
+		min_value_per_div = std::max(max / pos_vdivs_, -min / neg_vdivs_);
+	else if (pos_vdivs_ > 0)
+		min_value_per_div = max / pos_vdivs_;
+	else
+		min_value_per_div = -min / neg_vdivs_;
+
+	// Find first scale value that is bigger than the value we need
+	for (int i = MinScaleIndex; i < MaxScaleIndex; i++)
+		if (get_resolution(i) > min_value_per_div) {
+			scale_index_ = i;
+			break;
+		}
+
+	update_scale();
+}
+
 void AnalogSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
 {
 	// Add the standard options
@@ -391,12 +444,24 @@ void AnalogSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
 
 	layout->addRow(tr("Vertical resolution"), vdiv_layout);
 
+	// Add the autoranging checkbox
+	QCheckBox* autoranging_cb = new QCheckBox();
+	autoranging_cb->setCheckState(autoranging_ ? Qt::Checked : Qt::Unchecked);
+
+	connect(autoranging_cb, SIGNAL(stateChanged(int)),
+		this, SLOT(on_autoranging_changed(int)));
+
+	layout->addRow(tr("Autoranging"), autoranging_cb);
+
 	form->addRow(layout);
 }
 
 void AnalogSignal::on_pos_vdivs_changed(int vdivs)
 {
 	pos_vdivs_ = vdivs;
+
+	if (autoranging_)
+		perform_autoranging(true);
 
 	if (owner_) {
 		// Call order is important, otherwise the lazy event handler won't work
@@ -409,6 +474,9 @@ void AnalogSignal::on_neg_vdivs_changed(int vdivs)
 {
 	neg_vdivs_ = vdivs;
 
+	if (autoranging_)
+		perform_autoranging(true);
+
 	if (owner_) {
 		// Call order is important, otherwise the lazy event handler won't work
 		owner_->extents_changed(false, true);
@@ -420,6 +488,17 @@ void AnalogSignal::on_resolution_changed(int index)
 {
 	scale_index_ = resolution_cb_->itemData(index).toInt();
 	update_scale();
+
+	if (owner_)
+		owner_->row_item_appearance_changed(false, true);
+}
+
+void AnalogSignal::on_autoranging_changed(int state)
+{
+	autoranging_ = (state == Qt::Checked);
+
+	if (autoranging_)
+		perform_autoranging(true);
 
 	if (owner_)
 		owner_->row_item_appearance_changed(false, true);
