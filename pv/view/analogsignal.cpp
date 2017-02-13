@@ -389,6 +389,12 @@ void AnalogSignal::perform_autoranging(bool force_update)
 		neg_vdivs_ = 0;
 	}
 
+	// Split up the divs if there are negative values but no negative divs
+	if ((min < 0) && (neg_vdivs_ == 0)) {
+		neg_vdivs_ = pos_vdivs_ / 2;
+		pos_vdivs_ -= neg_vdivs_;
+	}
+
 	double min_value_per_div;
 	if ((pos_vdivs_ > 0) && (neg_vdivs_ >  0))
 		min_value_per_div = std::max(max / pos_vdivs_, -min / neg_vdivs_);
