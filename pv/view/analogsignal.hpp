@@ -132,6 +132,8 @@ protected:
 	void populate_popup_form(QWidget *parent, QFormLayout *form);
 
 private Q_SLOTS:
+	void on_samples_added();
+
 	void on_pos_vdivs_changed(int vdivs);
 	void on_neg_vdivs_changed(int vdivs);
 

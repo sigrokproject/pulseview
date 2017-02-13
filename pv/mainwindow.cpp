@@ -81,6 +81,7 @@ MainWindow::MainWindow(DeviceManager &device_manager,
 	icon_grey_(":/icons/status-grey.svg")
 {
 	qRegisterMetaType<util::Timestamp>("util::Timestamp");
+	qRegisterMetaType<uint64_t>("uint64_t");
 
 	setup_ui();
 	restore_ui_settings();

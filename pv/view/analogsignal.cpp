@@ -82,6 +82,12 @@ AnalogSignal::AnalogSignal(
 	resolution_(0),
 	autoranging_(1)
 {
+	pv::data::Analog* analog_data =
+		dynamic_cast<pv::data::Analog*>(data().get());
+
+	connect(analog_data, SIGNAL(samples_added(QObject*, uint64_t, uint64_t)),
+		this, SLOT(on_samples_added()));
+
 	base_->set_colour(SignalColours[base_->index() % countof(SignalColours)]);
 	update_scale();
 }
@@ -456,6 +462,17 @@ void AnalogSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
 	form->addRow(layout);
 }
 
+void AnalogSignal::on_samples_added()
+{
+	perform_autoranging();
+
+	if (owner_) {
+		// Call order is important, otherwise the lazy event handler won't work
+		owner_->extents_changed(false, true);
+		owner_->row_item_appearance_changed(false, true);
+	}
+}
+
 void AnalogSignal::on_pos_vdivs_changed(int vdivs)
 {
 	pos_vdivs_ = vdivs;
@@ -500,8 +517,11 @@ void AnalogSignal::on_autoranging_changed(int state)
 	if (autoranging_)
 		perform_autoranging(true);
 
-	if (owner_)
+	if (owner_) {
+		// Call order is important, otherwise the lazy event handler won't work
+		owner_->extents_changed(false, true);
 		owner_->row_item_appearance_changed(false, true);
+	}
 }
 
 } // namespace TraceView
