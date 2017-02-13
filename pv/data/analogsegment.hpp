@@ -25,6 +25,8 @@
 #include <utility>
 #include <vector>
 
+#include <QObject>
+
 namespace AnalogSegmentTest {
 struct Basic;
 }
@@ -32,14 +34,18 @@ struct Basic;
 namespace pv {
 namespace data {
 
+class Analog;
+
 typedef struct {
 	uint64_t sample_index, chunk_num, chunk_offs;
 	uint8_t* chunk;
 	float* value;
 } SegmentAnalogDataIterator;
 
-class AnalogSegment : public Segment
+class AnalogSegment : public QObject, public Segment
 {
+	Q_OBJECT
+
 public:
 	struct EnvelopeSample
 	{
@@ -71,7 +77,7 @@ private:
 	static const uint64_t EnvelopeDataUnit;
 
 public:
-	AnalogSegment(uint64_t samplerate);
+	AnalogSegment(Analog& owner, uint64_t samplerate);
 
 	virtual ~AnalogSegment();
 
@@ -96,6 +102,8 @@ private:
 	void append_payload_to_envelope_levels();
 
 private:
+	Analog& owner_;
+
 	struct Envelope envelope_levels_[ScaleStepCount];
 
 	float min_value_, max_value_;

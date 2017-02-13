@@ -25,13 +25,17 @@
 #include <deque>
 #include <memory>
 
+#include <QObject>
+
 namespace pv {
 namespace data {
 
 class AnalogSegment;
 
-class Analog : public SignalData
+class Analog : public QObject, public SignalData
 {
+	Q_OBJECT
+
 public:
 	Analog();
 
@@ -46,6 +50,15 @@ public:
 	void clear();
 
 	uint64_t max_sample_count() const;
+
+	void notify_samples_added(QObject* segment, uint64_t start_sample,
+		uint64_t end_sample);
+
+Q_SIGNALS:
+	void samples_cleared();
+
+	void samples_added(QObject* segment, uint64_t start_sample,
+		uint64_t end_sample);
 
 private:
 	std::deque< std::shared_ptr<AnalogSegment> > segments_;

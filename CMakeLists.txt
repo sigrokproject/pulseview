@@ -287,6 +287,10 @@ set(pulseview_HEADERS
 	pv/session.hpp
 	pv/storesession.hpp
 	pv/binding/device.hpp
+	pv/data/analog.hpp
+	pv/data/analogsegment.hpp
+	pv/data/logic.hpp
+	pv/data/logicsegment.hpp
 	pv/data/signalbase.hpp
 	pv/dialogs/about.hpp
 	pv/dialogs/connect.hpp

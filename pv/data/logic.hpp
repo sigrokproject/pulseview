@@ -24,13 +24,17 @@
 
 #include <deque>
 
+#include <QObject>
+
 namespace pv {
 namespace data {
 
 class LogicSegment;
 
-class Logic : public SignalData
+class Logic : public QObject, public SignalData
 {
+	Q_OBJECT
+
 public:
 	Logic(unsigned int num_channels);
 
@@ -47,6 +51,15 @@ public:
 	void clear();
 
 	uint64_t max_sample_count() const;
+
+	void notify_samples_added(QObject* segment, uint64_t start_sample,
+		uint64_t end_sample);
+
+Q_SIGNALS:
+	void samples_cleared();
+
+	void samples_added(QObject* segment, uint64_t start_sample,
+		uint64_t end_sample);
 
 private:
 	const unsigned int num_channels_;

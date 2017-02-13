@@ -25,6 +25,8 @@
 #include <utility>
 #include <vector>
 
+#include <QObject>
+
 namespace sigrok {
 	class Logic;
 }
@@ -40,14 +42,18 @@ struct LongPulses;
 namespace pv {
 namespace data {
 
+class Logic;
+
 typedef struct {
 	uint64_t sample_index, chunk_num, chunk_offs;
 	uint8_t* chunk;
 	uint8_t* value;
 } SegmentLogicDataIterator;
 
-class LogicSegment : public Segment
+class LogicSegment : public QObject, public Segment
 {
+	Q_OBJECT
+
 private:
 	struct MipMapLevel
 	{
@@ -67,7 +73,7 @@ public:
 	typedef std::pair<int64_t, bool> EdgePair;
 
 public:
-	LogicSegment(std::shared_ptr<sigrok::Logic> logic, uint64_t samplerate);
+	LogicSegment(pv::data::Logic& owner, std::shared_ptr<sigrok::Logic> data, uint64_t samplerate);
 
 	virtual ~LogicSegment();
 
@@ -110,6 +116,8 @@ private:
 	static uint64_t pow2_ceil(uint64_t x, unsigned int power);
 
 private:
+	Logic& owner_;
+
 	struct MipMapLevel mip_map_[ScaleStepCount];
 	uint64_t last_append_sample_;
 

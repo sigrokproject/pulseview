@@ -954,7 +954,7 @@ void Session::feed_in_logic(shared_ptr<Logic> logic)
 
 		// Create a new data segment
 		cur_logic_segment_ = shared_ptr<data::LogicSegment>(
-			new data::LogicSegment(logic, cur_samplerate_));
+			new data::LogicSegment(*logic_data_, logic, cur_samplerate_));
 		logic_data_->push_segment(cur_logic_segment_);
 
 		// @todo Putting this here means that only listeners querying
@@ -997,17 +997,17 @@ void Session::feed_in_analog(shared_ptr<Analog> analog)
 			// in the sweep containing this segment.
 			sweep_beginning = true;
 
-			// Create a segment, keep it in the maps of channels
-			segment = shared_ptr<data::AnalogSegment>(
-				new data::AnalogSegment(cur_samplerate_));
-			cur_analog_segments_[channel] = segment;
-
 			// Find the analog data associated with the channel
 			shared_ptr<data::SignalBase> base = signalbase_from_channel(channel);
 			assert(base);
 
 			shared_ptr<data::Analog> data(base->analog_data());
 			assert(data);
+
+			// Create a segment, keep it in the maps of channels
+			segment = shared_ptr<data::AnalogSegment>(
+				new data::AnalogSegment(*data, cur_samplerate_));
+			cur_analog_segments_[channel] = segment;
 
 			// Push the segment into the analog data.
 			data->push_segment(segment);

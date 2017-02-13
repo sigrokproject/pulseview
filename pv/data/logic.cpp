@@ -62,6 +62,8 @@ vector< shared_ptr<Segment> > Logic::segments() const
 void Logic::clear()
 {
 	segments_.clear();
+
+	samples_cleared();
 }
 
 uint64_t Logic::max_sample_count() const
@@ -72,6 +74,12 @@ uint64_t Logic::max_sample_count() const
 		l = max(l, s->get_sample_count());
 	}
 	return l;
+}
+
+void Logic::notify_samples_added(QObject* segment, uint64_t start_sample,
+	uint64_t end_sample)
+{
+	samples_added(segment, start_sample, end_sample);
 }
 
 } // namespace data

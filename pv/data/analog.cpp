@@ -54,6 +54,8 @@ vector< shared_ptr<Segment> > Analog::segments() const
 void Analog::clear()
 {
 	segments_.clear();
+
+	samples_cleared();
 }
 
 uint64_t Analog::max_sample_count() const
@@ -64,6 +66,12 @@ uint64_t Analog::max_sample_count() const
 		l = max(l, s->get_sample_count());
 	}
 	return l;
+}
+
+void Analog::notify_samples_added(QObject* segment, uint64_t start_sample,
+	uint64_t end_sample)
+{
+	samples_added(segment, start_sample, end_sample);
 }
 
 } // namespace data

@@ -26,6 +26,7 @@
 
 #include <algorithm>
 
+#include "analog.hpp"
 #include "analogsegment.hpp"
 
 using std::lock_guard;
@@ -44,8 +45,9 @@ const float AnalogSegment::LogEnvelopeScaleFactor =
 	logf(EnvelopeScaleFactor);
 const uint64_t AnalogSegment::EnvelopeDataUnit = 64*1024;	// bytes
 
-AnalogSegment::AnalogSegment(uint64_t samplerate) :
+AnalogSegment::AnalogSegment(Analog& owner, uint64_t samplerate) :
 	Segment(samplerate, sizeof(float)),
+	owner_(owner),
 	min_value_(0),
 	max_value_(0)
 {
@@ -67,6 +69,8 @@ void AnalogSegment::append_interleaved_samples(const float *data,
 
 	lock_guard<recursive_mutex> lock(mutex_);
 
+	uint64_t prev_sample_count = sample_count_;
+
 	for (uint32_t i=0; i < sample_count; i++) {
 		append_single_sample((void*)data);
 		data += stride;
@@ -74,6 +78,13 @@ void AnalogSegment::append_interleaved_samples(const float *data,
 
 	// Generate the first mip-map from the data
 	append_payload_to_envelope_levels();
+
+	if (sample_count > 1)
+		owner_.notify_samples_added(this, prev_sample_count + 1,
+			prev_sample_count + 1 + sample_count);
+	else
+		owner_.notify_samples_added(this, prev_sample_count + 1,
+			prev_sample_count + 1);
 }
 
 const float* AnalogSegment::get_samples(

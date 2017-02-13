@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <cmath>
 
+#include "logic.hpp"
 #include "logicsegment.hpp"
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
@@ -45,13 +46,15 @@ const int LogicSegment::MipMapScaleFactor = 1 << MipMapScalePower;
 const float LogicSegment::LogMipMapScaleFactor = logf(MipMapScaleFactor);
 const uint64_t LogicSegment::MipMapDataUnit = 64*1024;	// bytes
 
-LogicSegment::LogicSegment(shared_ptr<Logic> logic, uint64_t samplerate) :
-	Segment(samplerate, logic->unit_size()),
+LogicSegment::LogicSegment(pv::data::Logic& owner, shared_ptr<sigrok::Logic> data,
+	uint64_t samplerate) :
+	Segment(samplerate, data->unit_size()),
+	owner_(owner),
 	last_append_sample_(0)
 {
 	lock_guard<recursive_mutex> lock(mutex_);
 	memset(mip_map_, 0, sizeof(mip_map_));
-	append_payload(logic);
+	append_payload(data);
 }
 
 LogicSegment::~LogicSegment()
@@ -135,18 +138,27 @@ void LogicSegment::pack_sample(uint8_t *ptr, uint64_t value)
 #endif
 }
 
-void LogicSegment::append_payload(shared_ptr<Logic> logic)
+void LogicSegment::append_payload(shared_ptr<sigrok::Logic> logic)
 {
 	assert(unit_size_ == logic->unit_size());
 	assert((logic->data_length() % unit_size_) == 0);
 
 	lock_guard<recursive_mutex> lock(mutex_);
 
-	append_samples(logic->data_pointer(),
-		logic->data_length() / unit_size_);
+	uint64_t prev_sample_count = sample_count_;
+	uint64_t sample_count = logic->data_length() / unit_size_;
+
+	append_samples(logic->data_pointer(), sample_count);
 
 	// Generate the first mip-map from the data
 	append_payload_to_mipmap();
+
+	if (sample_count > 1)
+		owner_.notify_samples_added(this, prev_sample_count + 1,
+			prev_sample_count + 1 + sample_count);
+	else
+		owner_.notify_samples_added(this, prev_sample_count + 1,
+			prev_sample_count + 1);
 }
 
 const uint8_t* LogicSegment::get_samples(int64_t start_sample,
