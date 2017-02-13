@@ -167,6 +167,18 @@ void AnalogSegment::append_payload_to_envelope_levels()
 	prev_length = e0.length;
 	e0.length = sample_count_ / EnvelopeScaleFactor;
 
+	// Calculate min/max values in case we have too few samples for an envelope
+	if (sample_count_ < EnvelopeScaleFactor) {
+		it = begin_raw_sample_iteration(0);
+		for (uint64_t i = 0; i < sample_count_; i++) {
+			const float sample = *((float*)it->value);
+			if (sample < min_value_) min_value_ = sample;
+			if (sample > max_value_) max_value_ = sample;
+			continue_raw_sample_iteration(it, 1);
+		}
+		end_raw_sample_iteration(it);
+	}
+
 	// Break off if there are no new samples to compute
 	if (e0.length == prev_length)
 		return;
