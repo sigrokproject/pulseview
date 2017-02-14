@@ -100,6 +100,10 @@ set(pulseview_TEST_HEADERS
 	${PROJECT_SOURCE_DIR}/pv/session.hpp
 	${PROJECT_SOURCE_DIR}/pv/storesession.hpp
 	${PROJECT_SOURCE_DIR}/pv/binding/device.hpp
+	${PROJECT_SOURCE_DIR}/pv/data/analog.hpp
+	${PROJECT_SOURCE_DIR}/pv/data/analogsegment.hpp
+	${PROJECT_SOURCE_DIR}/pv/data/logic.hpp
+	${PROJECT_SOURCE_DIR}/pv/data/logicsegment.hpp
 	${PROJECT_SOURCE_DIR}/pv/data/signalbase.hpp
 	${PROJECT_SOURCE_DIR}/pv/devices/device.hpp
 	${PROJECT_SOURCE_DIR}/pv/dialogs/connect.hpp
