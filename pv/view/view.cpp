@@ -1192,11 +1192,11 @@ void View::signals_changed()
 		}
 
 	// Add and position the pending top levels items
+	int offset = v_extents().second;
 	for (auto item : new_top_level_items) {
 		add_child_item(item);
 
 		// Position the item after the last item or at the top if there is none
-		int offset = v_extents().second;
 		const pair<int, int> extents = item->v_extents();
 
 		if (item->enabled())
