@@ -51,7 +51,7 @@ typedef struct {
 class Segment
 {
 private:
-	static const uint64_t MaxChunkSize = 10*1024*1024;  /* 10MiB */
+	static const uint64_t MaxChunkSize;
 
 public:
 	Segment(uint64_t samplerate, unsigned int unit_size);
