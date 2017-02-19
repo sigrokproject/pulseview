@@ -39,7 +39,9 @@ Segment::Segment(uint64_t samplerate, unsigned int unit_size) :
 	sample_count_(0),
 	start_time_(0),
 	samplerate_(samplerate),
-	unit_size_(unit_size)
+	unit_size_(unit_size),
+	iterator_count_(0),
+	mem_optimization_requested_(false)
 {
 	lock_guard<recursive_mutex> lock(mutex_);
 	assert(unit_size_ > 0);
@@ -93,6 +95,12 @@ unsigned int Segment::unit_size() const
 void Segment::free_unused_memory()
 {
 	lock_guard<recursive_mutex> lock(mutex_);
+
+	// Do not mess with the data chunks if we have iterators pointing at them
+	if (iterator_count_ > 0) {
+		mem_optimization_requested_ = true;
+		return;
+	}
 
 	// No more data will come in, so re-create the last chunk accordingly
 	uint8_t* resized_chunk = new uint8_t[used_samples_ * unit_size_];
@@ -196,11 +204,13 @@ uint8_t* Segment::get_raw_samples(uint64_t start, uint64_t count) const
 	return dest;
 }
 
-SegmentRawDataIterator* Segment::begin_raw_sample_iteration(uint64_t start) const
+SegmentRawDataIterator* Segment::begin_raw_sample_iteration(uint64_t start)
 {
 	SegmentRawDataIterator* it = new SegmentRawDataIterator;
 
 	assert(start < sample_count_);
+
+	iterator_count_++;
 
 	it->sample_index = start;
 	it->chunk_num = (start * unit_size_) / chunk_size_;
@@ -211,7 +221,7 @@ SegmentRawDataIterator* Segment::begin_raw_sample_iteration(uint64_t start) cons
 	return it;
 }
 
-void Segment::continue_raw_sample_iteration(SegmentRawDataIterator* it, uint64_t increase) const
+void Segment::continue_raw_sample_iteration(SegmentRawDataIterator* it, uint64_t increase)
 {
 	lock_guard<recursive_mutex> lock(mutex_);
 
@@ -233,9 +243,16 @@ void Segment::continue_raw_sample_iteration(SegmentRawDataIterator* it, uint64_t
 	it->value = it->chunk + it->chunk_offs;
 }
 
-void Segment::end_raw_sample_iteration(SegmentRawDataIterator* it) const
+void Segment::end_raw_sample_iteration(SegmentRawDataIterator* it)
 {
 	delete it;
+
+	iterator_count_--;
+
+	if ((iterator_count_ == 0) && mem_optimization_requested_) {
+		mem_optimization_requested_ = false;
+		free_unused_memory();
+	}
 }
 
 

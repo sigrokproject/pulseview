@@ -89,9 +89,9 @@ public:
 
 	const std::pair<float, float> get_min_max() const;
 
-	SegmentAnalogDataIterator* begin_sample_iteration(uint64_t start) const;
-	void continue_sample_iteration(SegmentAnalogDataIterator* it, uint64_t increase) const;
-	void end_sample_iteration(SegmentAnalogDataIterator* it) const;
+	SegmentAnalogDataIterator* begin_sample_iteration(uint64_t start);
+	void continue_sample_iteration(SegmentAnalogDataIterator* it, uint64_t increase);
+	void end_sample_iteration(SegmentAnalogDataIterator* it);
 
 	void get_envelope_section(EnvelopeSection &s,
 		uint64_t start, uint64_t end, float min_length) const;

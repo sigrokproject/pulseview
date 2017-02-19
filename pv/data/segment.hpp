@@ -74,9 +74,9 @@ protected:
 	void append_samples(void *data, uint64_t samples);
 	uint8_t* get_raw_samples(uint64_t start, uint64_t count) const;
 
-	SegmentRawDataIterator* begin_raw_sample_iteration(uint64_t start) const;
-	void continue_raw_sample_iteration(SegmentRawDataIterator* it, uint64_t increase) const;
-	void end_raw_sample_iteration(SegmentRawDataIterator* it) const;
+	SegmentRawDataIterator* begin_raw_sample_iteration(uint64_t start);
+	void continue_raw_sample_iteration(SegmentRawDataIterator* it, uint64_t increase);
+	void end_raw_sample_iteration(SegmentRawDataIterator* it);
 
 	mutable std::recursive_mutex mutex_;
 	std::vector<uint8_t*> data_chunks_;
@@ -87,6 +87,8 @@ protected:
 	double samplerate_;
 	uint64_t chunk_size_;
 	unsigned int unit_size_;
+	int iterator_count_;
+	bool mem_optimization_requested_;
 
 	friend struct SegmentTest::SmallSize8Single;
 	friend struct SegmentTest::MediumSize8Single;

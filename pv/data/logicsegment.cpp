@@ -175,17 +175,17 @@ const uint8_t* LogicSegment::get_samples(int64_t start_sample,
 	return get_raw_samples(start_sample, (end_sample-start_sample));
 }
 
-SegmentLogicDataIterator* LogicSegment::begin_sample_iteration(uint64_t start) const
+SegmentLogicDataIterator* LogicSegment::begin_sample_iteration(uint64_t start)
 {
 	return (SegmentLogicDataIterator*)begin_raw_sample_iteration(start);
 }
 
-void LogicSegment::continue_sample_iteration(SegmentLogicDataIterator* it, uint64_t increase) const
+void LogicSegment::continue_sample_iteration(SegmentLogicDataIterator* it, uint64_t increase)
 {
 	Segment::continue_raw_sample_iteration((SegmentRawDataIterator*)it, increase);
 }
 
-void LogicSegment::end_sample_iteration(SegmentLogicDataIterator* it) const
+void LogicSegment::end_sample_iteration(SegmentLogicDataIterator* it)
 {
 	Segment::end_raw_sample_iteration((SegmentRawDataIterator*)it);
 }

@@ -106,17 +106,17 @@ const std::pair<float, float> AnalogSegment::get_min_max() const
 	return std::make_pair(min_value_, max_value_);
 }
 
-SegmentAnalogDataIterator* AnalogSegment::begin_sample_iteration(uint64_t start) const
+SegmentAnalogDataIterator* AnalogSegment::begin_sample_iteration(uint64_t start)
 {
 	return (SegmentAnalogDataIterator*)begin_raw_sample_iteration(start);
 }
 
-void AnalogSegment::continue_sample_iteration(SegmentAnalogDataIterator* it, uint64_t increase) const
+void AnalogSegment::continue_sample_iteration(SegmentAnalogDataIterator* it, uint64_t increase)
 {
 	Segment::continue_raw_sample_iteration((SegmentRawDataIterator*)it, increase);
 }
 
-void AnalogSegment::end_sample_iteration(SegmentAnalogDataIterator* it) const
+void AnalogSegment::end_sample_iteration(SegmentAnalogDataIterator* it)
 {
 	Segment::end_raw_sample_iteration((SegmentRawDataIterator*)it);
 }

@@ -81,9 +81,9 @@ public:
 
 	const uint8_t* get_samples(int64_t start_sample, int64_t end_sample) const;
 
-	SegmentLogicDataIterator* begin_sample_iteration(uint64_t start) const;
-	void continue_sample_iteration(SegmentLogicDataIterator* it, uint64_t increase) const;
-	void end_sample_iteration(SegmentLogicDataIterator* it) const;
+	SegmentLogicDataIterator* begin_sample_iteration(uint64_t start);
+	void continue_sample_iteration(SegmentLogicDataIterator* it, uint64_t increase);
+	void end_sample_iteration(SegmentLogicDataIterator* it);
 
 private:
 	uint64_t unpack_sample(const uint8_t *ptr) const;
