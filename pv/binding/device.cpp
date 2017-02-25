@@ -177,7 +177,7 @@ QString Device::print_timebase(Glib::VariantBase gvar)
 {
 	uint64_t p, q;
 	g_variant_get(gvar.gobj(), "(tt)", &p, &q);
-	return QString::fromUtf8(sr_period_string(p * q));
+	return QString::fromUtf8(sr_period_string(p, q));
 }
 
 QString Device::print_vdiv(Glib::VariantBase gvar)
