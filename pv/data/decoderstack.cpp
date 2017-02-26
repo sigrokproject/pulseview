@@ -301,13 +301,13 @@ optional<int64_t> DecoderStack::wait_for_data() const
 }
 
 void DecoderStack::decode_data(
-	const int64_t sample_count, const unsigned int unit_size,
+	const int64_t abs_start_samplenum, const int64_t sample_count, const unsigned int unit_size,
 	srd_session *const session)
 {
 	const unsigned int chunk_sample_count =
 		DecodeChunkLength / segment_->unit_size();
 
-	for (int64_t i = 0; !interrupt_ && i < sample_count;
+	for (int64_t i = abs_start_samplenum; !interrupt_ && i < sample_count;
 			i += chunk_sample_count) {
 
 		const int64_t chunk_end = min(
@@ -380,8 +380,10 @@ void DecoderStack::decode_proc()
 
 	srd_session_start(session);
 
+	int64_t abs_start_samplenum = 0;
 	do {
-		decode_data(*sample_count, unit_size, session);
+		decode_data(abs_start_samplenum, *sample_count, unit_size, session);
+		abs_start_samplenum = *sample_count;
 	} while (error_message_.isEmpty() && (sample_count = wait_for_data()));
 
 	// Destroy the session
