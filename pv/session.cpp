@@ -415,16 +415,17 @@ void Session::set_device(shared_ptr<devices::Device> device)
 		device_->open();
 	} catch (const QString &e) {
 		device_.reset();
-		device_changed();
-		throw;
 	}
 
-	device_->session()->add_datafeed_callback([=]
-		(shared_ptr<sigrok::Device> device, shared_ptr<Packet> packet) {
-			data_feed_in(device, packet);
-		});
+	if (device_) {
+		device_->session()->add_datafeed_callback([=]
+			(shared_ptr<sigrok::Device> device, shared_ptr<Packet> packet) {
+				data_feed_in(device, packet);
+			});
 
-	update_signals();
+		update_signals();
+	}
+
 	device_changed();
 }
 
