@@ -383,7 +383,7 @@ void Session::set_device(shared_ptr<devices::Device> device)
 
 	device_.reset();
 
-	// Revert name back to default name (e.g. "Untitled-1") as the data is gone
+	// Revert name back to default name (e.g. "Session 1") as the data is gone
 	name_ = default_name_;
 	name_changed();
 
@@ -532,7 +532,7 @@ void Session::start_capture(function<void (const QString)> error_handler)
 	for (const shared_ptr<data::SignalData> d : all_signal_data_)
 		d->clear();
 
-	// Revert name back to default name (e.g. "Untitled-1") as the data is gone
+	// Revert name back to default name (e.g. "Session 1") as the data is gone
 	name_ = default_name_;
 	name_changed();
 

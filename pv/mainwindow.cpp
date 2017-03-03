@@ -268,7 +268,7 @@ void MainWindow::remove_view(shared_ptr<views::ViewBase> view)
 shared_ptr<Session> MainWindow::add_session()
 {
 	static int last_session_id = 1;
-	QString name = tr("Untitled-%1").arg(last_session_id++);
+	QString name = tr("Session %1").arg(last_session_id++);
 
 	shared_ptr<Session> session = make_shared<Session>(device_manager_, name);
 
