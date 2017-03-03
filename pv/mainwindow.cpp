@@ -34,6 +34,7 @@
 #include <QMessageBox>
 #include <QSettings>
 #include <QWidget>
+#include <QShortcut>
 
 #include "mainwindow.hpp"
 
@@ -370,8 +371,10 @@ void MainWindow::setup_ui()
 	run_stop_button_ = new QToolButton();
 	run_stop_button_->setAutoRaise(true);
 	run_stop_button_->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
-	run_stop_button_->setShortcut(QKeySequence(Qt::Key_Space));
 	run_stop_button_->setToolTip(tr("Start/Stop Acquisition"));
+
+	run_stop_shortcut_ = new QShortcut(QKeySequence(Qt::Key_Space), run_stop_button_, SLOT(click()));
+	run_stop_shortcut_->setAutoRepeat(false);
 
 	settings_button_ = new QToolButton();
 	settings_button_->setIcon(QIcon::fromTheme("configure",
