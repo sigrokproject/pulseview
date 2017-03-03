@@ -401,6 +401,11 @@ void MainWindow::setup_ui()
 	session_selector_.setCornerWidget(static_tab_widget_, Qt::TopLeftCorner);
 	session_selector_.setTabsClosable(true);
 
+	close_application_shortcut_ = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q), this, SLOT(close()));
+	close_application_shortcut_->setAutoRepeat(false);
+
+	close_current_tab_shortcut_ = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_W), this, SLOT(on_close_current_tab()));
+
 	connect(new_session_button_, SIGNAL(clicked(bool)),
 		this, SLOT(on_new_session_clicked()));
 	connect(run_stop_button_, SIGNAL(clicked(bool)),
@@ -740,6 +745,13 @@ void MainWindow::on_actionAbout_triggered()
 {
 	dialogs::About dlg(device_manager_.context(), this);
 	dlg.exec();
+}
+
+void MainWindow::on_close_current_tab()
+{
+	int tab = session_selector_.currentIndex();
+
+	on_tab_close_requested(tab);
 }
 
 } // namespace pv

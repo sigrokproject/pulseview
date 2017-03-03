@@ -130,6 +130,8 @@ private Q_SLOTS:
 
 	void on_actionAbout_triggered();
 
+	void on_close_current_tab();
+
 private:
 	DeviceManager &device_manager_;
 
@@ -154,6 +156,8 @@ private:
 	QIcon icon_grey_;
 
 	QShortcut *run_stop_shortcut_;
+	QShortcut *close_application_shortcut_;
+	QShortcut *close_current_tab_shortcut_;
 };
 
 } // namespace pv
