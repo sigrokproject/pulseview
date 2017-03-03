@@ -28,6 +28,7 @@
 #include <QSignalMapper>
 #include <QToolButton>
 #include <QTabWidget>
+#include <QShortcut>
 
 #include "session.hpp"
 #include "views/viewbase.hpp"
@@ -151,6 +152,8 @@ private:
 	QIcon icon_red_;
 	QIcon icon_green_;
 	QIcon icon_grey_;
+
+	QShortcut *run_stop_shortcut_;
 };
 
 } // namespace pv
