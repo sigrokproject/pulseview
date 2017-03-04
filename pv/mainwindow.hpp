@@ -71,8 +71,6 @@ public:
 
 	~MainWindow();
 
-	QAction* action_view_sticky_scrolling() const;
-	QAction* action_view_coloured_bg() const;
 	QAction* action_about() const;
 
 	std::shared_ptr<views::ViewBase> get_active_view() const;
@@ -124,9 +122,9 @@ private Q_SLOTS:
 	void on_tab_changed(int index);
 	void on_tab_close_requested(int index);
 
-	void on_actionViewStickyScrolling_triggered();
+	void on_view_sticky_scrolling_shortcut();
 
-	void on_actionViewColouredBg_triggered();
+	void on_view_coloured_bg_shortcut();
 
 	void on_actionAbout_triggered();
 
@@ -147,14 +145,14 @@ private:
 	QTabWidget session_selector_;
 	QSignalMapper session_state_mapper_;
 
-	QAction *const action_view_sticky_scrolling_;
-	QAction *const action_view_coloured_bg_;
 	QAction *const action_about_;
 
 	QIcon icon_red_;
 	QIcon icon_green_;
 	QIcon icon_grey_;
 
+	QShortcut *view_sticky_scrolling_shortcut_;
+	QShortcut *view_coloured_bg_shortcut_;
 	QShortcut *run_stop_shortcut_;
 	QShortcut *close_application_shortcut_;
 	QShortcut *close_current_tab_shortcut_;

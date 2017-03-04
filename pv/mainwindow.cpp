@@ -74,8 +74,6 @@ MainWindow::MainWindow(DeviceManager &device_manager,
 	device_manager_(device_manager),
 	session_selector_(this),
 	session_state_mapper_(this),
-	action_view_sticky_scrolling_(new QAction(this)),
-	action_view_coloured_bg_(new QAction(this)),
 	action_about_(new QAction(this)),
 	icon_red_(":/icons/status-red.svg"),
 	icon_green_(":/icons/status-green.svg"),
@@ -117,16 +115,6 @@ MainWindow::~MainWindow()
 {
 	while (!sessions_.empty())
 		remove_session(sessions_.front());
-}
-
-QAction* MainWindow::action_view_sticky_scrolling() const
-{
-	return action_view_sticky_scrolling_;
-}
-
-QAction* MainWindow::action_view_coloured_bg() const
-{
-	return action_view_coloured_bg_;
 }
 
 QAction* MainWindow::action_about() const
@@ -201,8 +189,8 @@ shared_ptr<views::ViewBase> MainWindow::add_view(const QString &title,
 				qobject_cast<views::ViewBase*>(v.get()),
 				SLOT(trigger_event(util::Timestamp)));
 
-			v->enable_sticky_scrolling(action_view_sticky_scrolling_->isChecked());
-			v->enable_coloured_bg(action_view_coloured_bg_->isChecked());
+			v->enable_sticky_scrolling(true);
+			v->enable_coloured_bg(true);
 
 			shared_ptr<MainBar> main_bar = session.main_bar();
 			if (!main_bar) {
@@ -344,19 +332,11 @@ void MainWindow::setup_ui()
 	icon.addFile(QString(":/icons/sigrok-logo-notext.png"));
 	setWindowIcon(icon);
 
-	action_view_sticky_scrolling_->setCheckable(true);
-	action_view_sticky_scrolling_->setChecked(true);
-	action_view_sticky_scrolling_->setShortcut(QKeySequence(Qt::Key_S));
-	action_view_sticky_scrolling_->setObjectName(
-		QString::fromUtf8("actionViewStickyScrolling"));
-	action_view_sticky_scrolling_->setText(tr("&Sticky Scrolling"));
+	view_sticky_scrolling_shortcut_ = new QShortcut(QKeySequence(Qt::Key_S), this, SLOT(on_view_sticky_scrolling_shortcut()));
+	view_sticky_scrolling_shortcut_->setAutoRepeat(false);
 
-	action_view_coloured_bg_->setCheckable(true);
-	action_view_coloured_bg_->setChecked(true);
-	action_view_coloured_bg_->setShortcut(QKeySequence(Qt::Key_B));
-	action_view_coloured_bg_->setObjectName(
-		QString::fromUtf8("actionViewColouredBg"));
-	action_view_coloured_bg_->setText(tr("Use &Coloured Backgrounds"));
+	view_coloured_bg_shortcut_ = new QShortcut(QKeySequence(Qt::Key_B), this, SLOT(on_view_coloured_bg_shortcut()));
+	view_coloured_bg_shortcut_->setAutoRepeat(false);
 
 	action_about_->setObjectName(QString::fromUtf8("actionAbout"));
 	action_about_->setToolTip(tr("&About..."));
@@ -723,22 +703,22 @@ void MainWindow::on_tab_close_requested(int index)
 		remove_session(session);
 }
 
-void MainWindow::on_actionViewStickyScrolling_triggered()
+void MainWindow::on_view_sticky_scrolling_shortcut()
 {
 	shared_ptr<views::ViewBase> viewbase = get_active_view();
 	views::TraceView::View* view =
 		qobject_cast<views::TraceView::View*>(viewbase.get());
 	if (view)
-		view->enable_sticky_scrolling(action_view_sticky_scrolling_->isChecked());
+		view->toggle_sticky_scrolling();
 }
 
-void MainWindow::on_actionViewColouredBg_triggered()
+void MainWindow::on_view_coloured_bg_shortcut()
 {
 	shared_ptr<views::ViewBase> viewbase = get_active_view();
 	views::TraceView::View* view =
 			qobject_cast<views::TraceView::View*>(viewbase.get());
 	if (view)
-		view->enable_coloured_bg(action_view_coloured_bg_->isChecked());
+		view->toggle_coloured_bg();
 }
 
 void MainWindow::on_actionAbout_triggered()

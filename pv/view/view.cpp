@@ -145,6 +145,7 @@ View::View(Session &session, QWidget *parent) :
 	offset_(0),
 	updating_scroll_(false),
 	sticky_scrolling_(false), // Default setting is set in MainWindow::setup_ui()
+	coloured_bg_(false),
 	always_zoom_to_fit_(false),
 	tick_period_(0),
 	tick_prefix_(pv::util::SIPrefix::yocto),
@@ -563,10 +564,22 @@ void View::enable_sticky_scrolling(bool state)
 	sticky_scrolling_ = state;
 }
 
+void View::toggle_sticky_scrolling(void)
+{
+	sticky_scrolling_ = !sticky_scrolling_;
+}
+
+bool View::get_coloured_bg(void)
+{
+	return coloured_bg_;
+}
+
 void View::enable_coloured_bg(bool state)
 {
 	const vector<shared_ptr<TraceTreeItem>> items(
 		list_by_type<TraceTreeItem>());
+
+	coloured_bg_ = state;
 
 	for (shared_ptr<TraceTreeItem> i : items) {
 		// Can't cast to Trace because it's abstract, so we need to
@@ -588,6 +601,11 @@ void View::enable_coloured_bg(bool state)
 	}
 
 	viewport_->update();
+}
+
+void View::toggle_coloured_bg(void)
+{
+	enable_coloured_bg(!coloured_bg_);
 }
 
 bool View::cursors_shown() const
