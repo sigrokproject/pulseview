@@ -206,10 +206,25 @@ public:
 	void enable_sticky_scrolling(bool state);
 
 	/**
+	 * Toggle sticky scrolling.
+	 */
+	void toggle_sticky_scrolling(void);
+
+	/**
+	 * Get current coloured_bg state. Returns true if coloured backgrounds are enabled.
+	 */
+	bool get_coloured_bg(void);
+
+	/**
 	 * Enables or disables coloured trace backgrounds. If they're not
 	 * coloured then they will use alternating colors.
 	 */
 	void enable_coloured_bg(bool state);
+
+	/**
+	 * Toggle coloured backgrounds.
+	 */
+	void toggle_coloured_bg(void);
 
 	/**
 	 * Returns true if cursors are displayed. false otherwise.
@@ -401,6 +416,7 @@ private:
 
 	bool updating_scroll_;
 	bool sticky_scrolling_;
+	bool coloured_bg_;
 	bool always_zoom_to_fit_;
 	QTimer delayed_view_updater_;
 
