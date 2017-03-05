@@ -159,6 +159,7 @@ shared_ptr<views::ViewBase> MainWindow::add_view(const QString &title,
 	views::ViewType type, Session &session)
 {
 	GlobalSettings settings;
+	shared_ptr<views::ViewBase> v;
 
 	QMainWindow *main_window = nullptr;
 	for (auto entry : session_windows_)
@@ -167,72 +168,75 @@ shared_ptr<views::ViewBase> MainWindow::add_view(const QString &title,
 
 	assert(main_window);
 
+	QDockWidget* dock = new QDockWidget(title, main_window);
+	dock->setObjectName(title);
+	main_window->addDockWidget(Qt::TopDockWidgetArea, dock);
+
+	// Insert a QMainWindow into the dock widget to allow for a tool bar
+	QMainWindow *dock_main = new QMainWindow(dock);
+	dock_main->setWindowFlags(Qt::Widget);  // Remove Qt::Window flag
+
+	if (type == views::ViewTypeTrace)
+		v =	make_shared<views::TraceView::View>(session, dock_main);
+
+	if (!v)
+		return nullptr;
+
+	view_docks_[dock] = v;
+	session.register_view(v);
+
+	dock_main->setCentralWidget(v.get());
+	dock->setWidget(dock_main);
+
+	dock->setFeatures(QDockWidget::DockWidgetMovable |
+		QDockWidget::DockWidgetFloatable | QDockWidget::DockWidgetClosable);
+
+	QAbstractButton *close_btn =
+		dock->findChildren<QAbstractButton*>
+			("qt_dockwidget_closebutton").front();
+
+	connect(close_btn, SIGNAL(clicked(bool)),
+		this, SLOT(on_view_close_clicked()));
+
+	connect(&session, SIGNAL(trigger_event(util::Timestamp)),
+		qobject_cast<views::ViewBase*>(v.get()),
+		SLOT(trigger_event(util::Timestamp)));
+
 	if (type == views::ViewTypeTrace) {
-		QDockWidget* dock = new QDockWidget(title, main_window);
-		dock->setObjectName(title);
-		main_window->addDockWidget(Qt::TopDockWidgetArea, dock);
+		views::TraceView::View *tv =
+			qobject_cast<views::TraceView::View*>(v.get());
 
-		// Insert a QMainWindow into the dock widget to allow for a tool bar
-		QMainWindow *dock_main = new QMainWindow(dock);
-		dock_main->setWindowFlags(Qt::Widget);  // Remove Qt::Window flag
+		tv->enable_sticky_scrolling(true);
+		tv->enable_coloured_bg(settings.value(GlobalSettings::Key_View_ColouredBG).toBool());
 
-		shared_ptr<views::TraceView::View> v =
-			make_shared<views::TraceView::View>(session, dock_main);
-		view_docks_[dock] = v;
-		session.register_view(v);
+		shared_ptr<MainBar> main_bar = session.main_bar();
+		if (!main_bar) {
+			/* Initial view, create the main bar */
+			main_bar = make_shared<MainBar>(session, this, tv);
+			dock_main->addToolBar(main_bar.get());
+			session.set_main_bar(main_bar);
 
-		dock_main->setCentralWidget(v.get());
-		dock->setWidget(dock_main);
+			connect(main_bar.get(), SIGNAL(new_view(Session*)),
+				this, SLOT(on_new_view(Session*)));
 
-		dock->setFeatures(QDockWidget::DockWidgetMovable |
-			QDockWidget::DockWidgetFloatable | QDockWidget::DockWidgetClosable);
+			main_bar->action_view_show_cursors()->setChecked(tv->cursors_shown());
 
-		QAbstractButton *close_btn =
-			dock->findChildren<QAbstractButton*>
-				("qt_dockwidget_closebutton").front();
+			/* For the main view we need to prevent the dock widget from
+			 * closing itself when its close button is clicked. This is
+			 * so we can confirm with the user first. Regular views don't
+			 * need this */
+			close_btn->disconnect(SIGNAL(clicked()), dock, SLOT(close()));
+		} else {
+			/* Additional view, create a standard bar */
+			pv::views::trace::StandardBar *standard_bar =
+				new pv::views::trace::StandardBar(session, this, tv);
+			dock_main->addToolBar(standard_bar);
 
-		connect(close_btn, SIGNAL(clicked(bool)),
-			this, SLOT(on_view_close_clicked()));
-
-		if (type == views::ViewTypeTrace) {
-			connect(&session, SIGNAL(trigger_event(util::Timestamp)),
-				qobject_cast<views::ViewBase*>(v.get()),
-				SLOT(trigger_event(util::Timestamp)));
-
-			v->enable_sticky_scrolling(true);
-			v->enable_coloured_bg(settings.value(GlobalSettings::Key_View_ColouredBG).toBool());
-
-			shared_ptr<MainBar> main_bar = session.main_bar();
-			if (!main_bar) {
-				/* Initial view, create the main bar */
-				main_bar = make_shared<MainBar>(session, this, v.get());
-				dock_main->addToolBar(main_bar.get());
-				session.set_main_bar(main_bar);
-
-				connect(main_bar.get(), SIGNAL(new_view(Session*)),
-					this, SLOT(on_new_view(Session*)));
-
-				main_bar->action_view_show_cursors()->setChecked(v->cursors_shown());
-
-				/* For the main view we need to prevent the dock widget from
-				 * closing itself when its close button is clicked. This is
-				 * so we can confirm with the user first. Regular views don't
-				 * need this */
-				close_btn->disconnect(SIGNAL(clicked()), dock, SLOT(close()));
-			} else {
-				/* Additional view, create a standard bar */
-				pv::views::trace::StandardBar *standard_bar =
-					new pv::views::trace::StandardBar(session, this, v.get());
-				dock_main->addToolBar(standard_bar);
-
-				standard_bar->action_view_show_cursors()->setChecked(v->cursors_shown());
-			}
+			standard_bar->action_view_show_cursors()->setChecked(tv->cursors_shown());
 		}
-
-		return v;
 	}
 
-	return nullptr;
+	return v;
 }
 
 void MainWindow::remove_view(shared_ptr<views::ViewBase> view)
