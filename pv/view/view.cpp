@@ -1233,10 +1233,12 @@ void View::capture_state_updated(int state)
 
 		trigger_markers_.clear();
 
-		// Activate "always zoom to fit" if the setting is enabled
+		// Activate "always zoom to fit" if the setting is enabled and we're
+		// the main view of this session (other trace views may be used for
+		// zooming and we don't want to mess them up)
 		GlobalSettings settings;
 		bool state = settings.value(GlobalSettings::Key_View_AlwaysZoomToFit).toBool();
-		if (state) {
+		if (is_main_view_ && state) {
 			always_zoom_to_fit_ = true;
 			always_zoom_to_fit_changed(always_zoom_to_fit_);
 		}
