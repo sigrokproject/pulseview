@@ -1232,6 +1232,14 @@ void View::capture_state_updated(int state)
 		set_time_unit(util::TimeUnit::Samples);
 
 		trigger_markers_.clear();
+
+		// Activate "always zoom to fit" if the setting is enabled
+		GlobalSettings settings;
+		bool state = settings.value(GlobalSettings::Key_View_AlwaysZoomToFit).toBool();
+		if (state) {
+			always_zoom_to_fit_ = true;
+			always_zoom_to_fit_changed(always_zoom_to_fit_);
+		}
 	}
 
 	if (state == Session::Stopped) {
@@ -1242,7 +1250,7 @@ void View::capture_state_updated(int state)
 		// Reset "always zoom to fit", the acquisition has stopped
 		if (always_zoom_to_fit_) {
 			always_zoom_to_fit_ = false;
-			always_zoom_to_fit_changed(false);
+			always_zoom_to_fit_changed(always_zoom_to_fit_);
 		}
 	}
 }
