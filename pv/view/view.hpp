@@ -211,20 +211,10 @@ public:
 	void toggle_sticky_scrolling(void);
 
 	/**
-	 * Get current coloured_bg state. Returns true if coloured backgrounds are enabled.
-	 */
-	bool get_coloured_bg(void);
-
-	/**
 	 * Enables or disables coloured trace backgrounds. If they're not
 	 * coloured then they will use alternating colors.
 	 */
 	void enable_coloured_bg(bool state);
-
-	/**
-	 * Toggle coloured backgrounds.
-	 */
-	void toggle_coloured_bg(void);
 
 	/**
 	 * Returns true if cursors are displayed. false otherwise.

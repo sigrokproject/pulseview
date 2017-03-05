@@ -57,6 +57,7 @@
 #include "viewport.hpp"
 
 #include "pv/session.hpp"
+#include "pv/globalsettings.hpp"
 #include "pv/devices/device.hpp"
 #include "pv/data/logic.hpp"
 #include "pv/data/logicsegment.hpp"
@@ -145,7 +146,6 @@ View::View(Session &session, QWidget *parent) :
 	offset_(0),
 	updating_scroll_(false),
 	sticky_scrolling_(false), // Default setting is set in MainWindow::setup_ui()
-	coloured_bg_(false),
 	always_zoom_to_fit_(false),
 	tick_period_(0),
 	tick_prefix_(pv::util::SIPrefix::yocto),
@@ -160,6 +160,9 @@ View::View(Session &session, QWidget *parent) :
 	saved_v_offset_(0),
 	size_finalized_(false)
 {
+	GlobalSettings settings;
+	coloured_bg_ = settings.value(GlobalSettings::Key_View_ColouredBG).toBool();
+
 	connect(scrollarea_.horizontalScrollBar(), SIGNAL(valueChanged(int)),
 		this, SLOT(h_scroll_value_changed(int)));
 	connect(scrollarea_.verticalScrollBar(), SIGNAL(valueChanged(int)),
@@ -569,17 +572,10 @@ void View::toggle_sticky_scrolling(void)
 	sticky_scrolling_ = !sticky_scrolling_;
 }
 
-bool View::get_coloured_bg(void)
-{
-	return coloured_bg_;
-}
-
 void View::enable_coloured_bg(bool state)
 {
 	const vector<shared_ptr<TraceTreeItem>> items(
 		list_by_type<TraceTreeItem>());
-
-	coloured_bg_ = state;
 
 	for (shared_ptr<TraceTreeItem> i : items) {
 		// Can't cast to Trace because it's abstract, so we need to
@@ -601,11 +597,6 @@ void View::enable_coloured_bg(bool state)
 	}
 
 	viewport_->update();
-}
-
-void View::toggle_coloured_bg(void)
-{
-	enable_coloured_bg(!coloured_bg_);
 }
 
 bool View::cursors_shown() const

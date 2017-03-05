@@ -87,6 +87,9 @@ MainWindow::MainWindow(DeviceManager &device_manager,
 	qRegisterMetaType<util::Timestamp>("util::Timestamp");
 	qRegisterMetaType<uint64_t>("uint64_t");
 
+	GlobalSettings::register_change_handler(GlobalSettings::Key_View_ColouredBG,
+		bind(&MainWindow::on_settingViewColouredBg_changed, this, _1));
+
 	setup_ui();
 	restore_ui_settings();
 
@@ -155,6 +158,8 @@ shared_ptr<views::ViewBase> MainWindow::get_active_view() const
 shared_ptr<views::ViewBase> MainWindow::add_view(const QString &title,
 	views::ViewType type, Session &session)
 {
+	GlobalSettings settings;
+
 	QMainWindow *main_window = nullptr;
 	for (auto entry : session_windows_)
 		if (entry.first.get() == &session)
@@ -195,7 +200,7 @@ shared_ptr<views::ViewBase> MainWindow::add_view(const QString &title,
 				SLOT(trigger_event(util::Timestamp)));
 
 			v->enable_sticky_scrolling(true);
-			v->enable_coloured_bg(true);
+			v->enable_coloured_bg(settings.value(GlobalSettings::Key_View_ColouredBG).toBool());
 
 			shared_ptr<MainBar> main_bar = session.main_bar();
 			if (!main_bar) {
@@ -727,11 +732,25 @@ void MainWindow::on_view_sticky_scrolling_shortcut()
 
 void MainWindow::on_view_coloured_bg_shortcut()
 {
-	shared_ptr<views::ViewBase> viewbase = get_active_view();
-	views::TraceView::View* view =
-			qobject_cast<views::TraceView::View*>(viewbase.get());
-	if (view)
-		view->toggle_coloured_bg();
+	GlobalSettings settings;
+
+	bool state = settings.value(GlobalSettings::Key_View_ColouredBG).toBool();
+	settings.setValue(GlobalSettings::Key_View_ColouredBG, !state);
+}
+
+void MainWindow::on_settingViewColouredBg_changed(const QVariant new_value)
+{
+	bool state = new_value.toBool();
+
+	for (auto entry : view_docks_) {
+		shared_ptr<views::ViewBase> viewbase = entry.second;
+
+		// Only trace views have this setting
+		views::TraceView::View* view =
+				qobject_cast<views::TraceView::View*>(viewbase.get());
+		if (view)
+			view->enable_coloured_bg(state);
+	}
 }
 
 void MainWindow::on_actionAbout_triggered()

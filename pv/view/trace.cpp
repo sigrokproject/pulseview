@@ -31,8 +31,9 @@
 #include "tracepalette.hpp"
 #include "view.hpp"
 
-#include <pv/widgets/colourbutton.hpp>
-#include <pv/widgets/popup.hpp>
+#include "pv/globalsettings.hpp"
+#include "pv/widgets/colourbutton.hpp"
+#include "pv/widgets/popup.hpp"
 
 namespace pv {
 namespace views {
@@ -46,10 +47,12 @@ const QColor Trace::DarkGrayBGColour = QColor(0, 0, 0, 15*255/100);
 
 Trace::Trace(std::shared_ptr<data::SignalBase> channel) :
 	base_(channel),
-	coloured_bg_(true), // Default setting is set in MainWindow::setup_ui()
 	popup_(nullptr),
 	popup_form_(nullptr)
 {
+	GlobalSettings settings;
+	coloured_bg_ = settings.value(GlobalSettings::Key_View_ColouredBG).toBool();
+
 	connect(channel.get(), SIGNAL(name_changed(const QString&)),
 		this, SLOT(on_name_changed(const QString&)));
 	connect(channel.get(), SIGNAL(colour_changed(const QColor&)),
