@@ -168,6 +168,8 @@ shared_ptr<views::ViewBase> MainWindow::add_view(const QString &title,
 
 	assert(main_window);
 
+	shared_ptr<MainBar> main_bar = session.main_bar();
+
 	QDockWidget* dock = new QDockWidget(title, main_window);
 	dock->setObjectName(title);
 	main_window->addDockWidget(Qt::TopDockWidgetArea, dock);
@@ -177,7 +179,9 @@ shared_ptr<views::ViewBase> MainWindow::add_view(const QString &title,
 	dock_main->setWindowFlags(Qt::Widget);  // Remove Qt::Window flag
 
 	if (type == views::ViewTypeTrace)
-		v =	make_shared<views::TraceView::View>(session, dock_main);
+		// This view will be the main view if there's no main bar yet
+		v = make_shared<views::TraceView::View>(session,
+			(main_bar ? false : true), dock_main);
 
 	if (!v)
 		return nullptr;
@@ -209,7 +213,6 @@ shared_ptr<views::ViewBase> MainWindow::add_view(const QString &title,
 		tv->enable_sticky_scrolling(true);
 		tv->enable_coloured_bg(settings.value(GlobalSettings::Key_View_ColouredBG).toBool());
 
-		shared_ptr<MainBar> main_bar = session.main_bar();
 		if (!main_bar) {
 			/* Initial view, create the main bar */
 			main_bar = make_shared<MainBar>(session, this, tv);

@@ -52,7 +52,7 @@ class ViewBase : public QWidget {
 	Q_OBJECT
 
 public:
-	explicit ViewBase(Session &session, QWidget *parent = 0);
+	explicit ViewBase(Session &session, bool is_main_view=false, QWidget *parent = 0);
 
 	Session& session();
 	const Session& session() const;
@@ -79,6 +79,8 @@ public Q_SLOTS:
 
 protected:
 	Session &session_;
+
+	const bool is_main_view_;
 
 	util::TimeUnit time_unit_;
 };

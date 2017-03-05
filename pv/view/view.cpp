@@ -136,8 +136,8 @@ bool CustomAbstractScrollArea::viewportEvent(QEvent *event)
 	}
 }
 
-View::View(Session &session, QWidget *parent) :
-	ViewBase(session, parent),
+View::View(Session &session, bool is_main_view, QWidget *parent) :
+	ViewBase(session, is_main_view, parent),
 	viewport_(new Viewport(*this)),
 	ruler_(new Ruler(*this)),
 	header_(new Header(*this)),

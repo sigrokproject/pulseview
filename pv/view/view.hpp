@@ -89,7 +89,7 @@ private:
 	static const int ScaleUnits[3];
 
 public:
-	explicit View(Session &session, QWidget *parent = 0);
+	explicit View(Session &session, bool is_main_view=false, QWidget *parent = 0);
 
 	Session& session();
 	const Session& session() const;

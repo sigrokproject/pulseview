@@ -32,8 +32,9 @@ using std::shared_ptr;
 namespace pv {
 namespace views {
 
-ViewBase::ViewBase(Session &session, QWidget *parent) :
-	session_(session)
+ViewBase::ViewBase(Session &session, bool is_main_view, QWidget *parent) :
+	session_(session),
+	is_main_view_(is_main_view)
 {
 	(void)parent;
 
