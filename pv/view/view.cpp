@@ -1251,6 +1251,8 @@ void View::capture_state_updated(int state)
 
 		// Reset "always zoom to fit", the acquisition has stopped
 		if (always_zoom_to_fit_) {
+			// Perform a final zoom-to-fit before disabling
+			zoom_fit(always_zoom_to_fit_);
 			always_zoom_to_fit_ = false;
 			always_zoom_to_fit_changed(always_zoom_to_fit_);
 		}
@@ -1272,10 +1274,9 @@ void View::data_updated()
 
 void View::perform_delayed_view_update()
 {
-	if (always_zoom_to_fit_)
+	if (always_zoom_to_fit_) {
 		zoom_fit(true);
-
-	if (sticky_scrolling_) {
+	} else if (sticky_scrolling_) {
 		// Make right side of the view sticky
 		double length = 0;
 		Timestamp offset;
