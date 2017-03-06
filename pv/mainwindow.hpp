@@ -112,6 +112,7 @@ private Q_SLOTS:
 
 	void on_new_session_clicked();
 	void on_run_stop_clicked();
+	void on_settings_clicked();
 
 	void on_session_name_changed();
 	void on_capture_state_changed(QObject *obj);

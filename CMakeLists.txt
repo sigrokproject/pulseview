@@ -210,6 +210,7 @@ set(pulseview_SOURCES
 	main.cpp
 	pv/application.cpp
 	pv/devicemanager.cpp
+	pv/globalsettings.cpp
 	pv/mainwindow.cpp
 	pv/session.cpp
 	pv/storesession.cpp
@@ -232,6 +233,7 @@ set(pulseview_SOURCES
 	pv/dialogs/about.cpp
 	pv/dialogs/connect.cpp
 	pv/dialogs/inputoutputoptions.cpp
+	pv/dialogs/settings.cpp
 	pv/dialogs/storeprogress.cpp
 	pv/popups/deviceoptions.cpp
 	pv/popups/channels.cpp
@@ -283,6 +285,7 @@ set(pulseview_SOURCES
 
 # This list includes only QObject derived class headers.
 set(pulseview_HEADERS
+	pv/globalsettings.hpp
 	pv/mainwindow.hpp
 	pv/session.hpp
 	pv/storesession.hpp
@@ -295,6 +298,7 @@ set(pulseview_HEADERS
 	pv/dialogs/about.hpp
 	pv/dialogs/connect.hpp
 	pv/dialogs/inputoutputoptions.hpp
+	pv/dialogs/settings.hpp
 	pv/dialogs/storeprogress.hpp
 	pv/popups/channels.hpp
 	pv/popups/deviceoptions.hpp

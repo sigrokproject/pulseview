@@ -39,9 +39,11 @@
 #include "mainwindow.hpp"
 
 #include "devicemanager.hpp"
+#include "globalsettings.hpp"
 #include "util.hpp"
 #include "devices/hardwaredevice.hpp"
 #include "dialogs/about.hpp"
+#include "dialogs/settings.hpp"
 #include "toolbars/mainbar.hpp"
 #include "view/view.hpp"
 #include "views/trace/standardbar.hpp"
@@ -64,6 +66,9 @@ class ViewItem;
 }
 
 using toolbars::MainBar;
+
+using std::bind;
+using std::placeholders::_1;
 
 const QString MainWindow::WindowTitle = tr("PulseView");
 
@@ -392,6 +397,8 @@ void MainWindow::setup_ui()
 		this, SLOT(on_run_stop_clicked()));
 	connect(&session_state_mapper_, SIGNAL(mapped(QObject*)),
 		this, SLOT(on_capture_state_changed(QObject*)));
+	connect(settings_button_, SIGNAL(clicked(bool)),
+		this, SLOT(on_settings_clicked()));
 
 	connect(&session_selector_, SIGNAL(tabCloseRequested(int)),
 		this, SLOT(on_tab_close_requested(int)));
@@ -589,6 +596,12 @@ void MainWindow::on_run_stop_clicked()
 		session->stop_capture();
 		break;
 	}
+}
+
+void MainWindow::on_settings_clicked()
+{
+	dialogs::Settings dlg;
+	dlg.exec();
 }
 
 void MainWindow::on_session_name_changed()
