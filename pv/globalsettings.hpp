@@ -45,8 +45,29 @@ public:
 
 	void setValue(const QString& key, const QVariant& value);
 
+	/**
+	 * Begins the tracking of changes. All changes will
+	 * be recorded until stop_tracking() is called.
+	 * The change tracking is global and doesn't support nesting.
+	 */
+	void start_tracking();
+
+	/**
+	 * Ends the tracking of changes without any changes to the settings.
+	 */
+	void stop_tracking();
+
+	/**
+	 * Ends the tracking of changes, undoing the changes since the
+	 * change tracking began.
+	 */
+	void undo_tracked_changes();
+
 private:
 	static std::multimap< QString, std::function<void(QVariant)> > callbacks_;
+
+	static bool tracking_;
+	static std::map<QString, QVariant> tracked_changes_;
 };
 
 } // namespace pv

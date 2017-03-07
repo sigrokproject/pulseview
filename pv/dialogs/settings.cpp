@@ -45,6 +45,10 @@ Settings::Settings(QWidget *parent) :
 
 	connect(button_box, SIGNAL(accepted()), this, SLOT(accept()));
 	connect(button_box, SIGNAL(rejected()), this, SLOT(reject()));
+
+	// Start to record changes
+	GlobalSettings settings;
+	settings.start_tracking();
 }
 
 QWidget *Settings::get_view_settings_form(QWidget *parent) const
@@ -76,11 +80,17 @@ QWidget *Settings::get_view_settings_form(QWidget *parent) const
 
 void Settings::accept()
 {
+	GlobalSettings settings;
+	settings.stop_tracking();
+
 	QDialog::accept();
 }
 
 void Settings::reject()
 {
+	GlobalSettings settings;
+	settings.undo_tracked_changes();
+
 	QDialog::reject();
 }
 

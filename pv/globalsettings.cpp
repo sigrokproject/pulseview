@@ -25,6 +25,8 @@ const QString GlobalSettings::Key_View_AlwaysZoomToFit = "View_AlwaysZoomToFit";
 const QString GlobalSettings::Key_View_ColouredBG = "View_ColouredBG";
 
 std::multimap< QString, std::function<void(QVariant)> > GlobalSettings::callbacks_;
+bool GlobalSettings::tracking_ = false;
+std::map<QString, QVariant> GlobalSettings::tracked_changes_;
 
 GlobalSettings::GlobalSettings() :
 	QSettings()
@@ -40,6 +42,11 @@ void GlobalSettings::register_change_handler(const QString key,
 
 void GlobalSettings::setValue(const QString &key, const QVariant &value)
 {
+	// Save previous value if we're tracking changes,
+	// not altering an already-existing saved setting
+	if (tracking_)
+		tracked_changes_.emplace(key, QSettings::value(key));
+
 	QSettings::setValue(key, value);
 
 	// Call all registered callbacks for this key
@@ -49,5 +56,26 @@ void GlobalSettings::setValue(const QString &key, const QVariant &value)
 		it->second(value);
 }
 
+void GlobalSettings::start_tracking()
+{
+	tracking_ = true;
+	tracked_changes_.clear();
+}
+
+void GlobalSettings::stop_tracking()
+{
+	tracking_ = false;
+	tracked_changes_.clear();
+}
+
+void GlobalSettings::undo_tracked_changes()
+{
+	tracking_ = false;
+
+	for (auto entry : tracked_changes_)
+		setValue(entry.first, entry.second);
+
+	tracked_changes_.clear();
+}
 
 } // namespace pv
