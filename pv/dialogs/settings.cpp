@@ -24,7 +24,7 @@
 #include <QDialogButtonBox>
 #include <QFormLayout>
 #include <QGroupBox>
-#include <QTabWidget>
+#include <QHBoxLayout>
 #include <QVBoxLayout>
 
 namespace pv {
@@ -33,22 +33,49 @@ namespace dialogs {
 Settings::Settings(QWidget *parent) :
 	QDialog(parent, nullptr)
 {
-	QTabWidget *tab_stack = new QTabWidget(this);
-	tab_stack->addTab(get_view_settings_form(tab_stack), tr("&Views"));
+	const int icon_size = 64;
+
+	page_list = new QListWidget;
+	page_list->setViewMode(QListView::IconMode);
+	page_list->setIconSize(QSize(icon_size, icon_size));
+	page_list->setMovement(QListView::Static);
+	page_list->setMaximumWidth(icon_size + icon_size/2);
+	page_list->setSpacing(12);
+
+	pages = new QStackedWidget;
+	create_pages();
+
+	QHBoxLayout *tab_layout = new QHBoxLayout;
+	tab_layout->addWidget(page_list);
+	tab_layout->addWidget(pages, Qt::AlignLeft);
 
 	QDialogButtonBox *button_box = new QDialogButtonBox(
 		QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
 
 	QVBoxLayout* root_layout = new QVBoxLayout(this);
-	root_layout->addWidget(tab_stack);
+	root_layout->addLayout(tab_layout);
 	root_layout->addWidget(button_box);
 
 	connect(button_box, SIGNAL(accepted()), this, SLOT(accept()));
 	connect(button_box, SIGNAL(rejected()), this, SLOT(reject()));
+	connect(page_list, SIGNAL(currentItemChanged(QListWidgetItem*, QListWidgetItem*)),
+		this, SLOT(on_page_changed(QListWidgetItem*, QListWidgetItem*)));
 
 	// Start to record changes
 	GlobalSettings settings;
 	settings.start_tracking();
+}
+
+void Settings::create_pages()
+{
+	// View page
+	pages->addWidget(get_view_settings_form(pages));
+
+	QListWidgetItem *viewButton = new QListWidgetItem(page_list);
+	viewButton->setIcon(QIcon(":/icons/sigrok-logo-notext.svg"));
+	viewButton->setText(tr("Views"));
+	viewButton->setTextAlignment(Qt::AlignHCenter);
+	viewButton->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
 }
 
 QWidget *Settings::get_view_settings_form(QWidget *parent) const
@@ -92,6 +119,14 @@ void Settings::reject()
 	settings.undo_tracked_changes();
 
 	QDialog::reject();
+}
+
+void Settings::on_page_changed(QListWidgetItem *current, QListWidgetItem *previous)
+{
+	if (!current)
+		current = previous;
+
+	pages->setCurrentIndex(page_list->row(current));
 }
 
 void Settings::on_view_alwaysZoomToFit_changed(int state)

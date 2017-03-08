@@ -21,6 +21,8 @@
 #define PULSEVIEW_PV_SETTINGS_HPP
 
 #include <QDialog>
+#include <QListWidget>
+#include <QStackedWidget>
 
 namespace pv {
 namespace dialogs {
@@ -32,14 +34,21 @@ class Settings : public QDialog
 public:
 	Settings(QWidget *parent = 0);
 
+	void create_pages();
+
 	QWidget *get_view_settings_form(QWidget *parent) const;
 
 	void accept();
 	void reject();
 
 private Q_SLOTS:
+	void on_page_changed(QListWidgetItem *current, QListWidgetItem *previous);
 	void on_view_alwaysZoomToFit_changed(int state);
 	void on_view_colouredBG_changed(int state);
+
+private:
+	QListWidget *page_list;
+	QStackedWidget *pages;
 };
 
 } // namespace dialogs
