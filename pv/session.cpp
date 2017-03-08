@@ -534,9 +534,15 @@ void Session::start_capture(function<void (const QString)> error_handler)
 	for (const shared_ptr<data::SignalData> d : all_signal_data_)
 		d->clear();
 
-	// Revert name back to default name (e.g. "Session 1") as the data is gone
-	name_ = default_name_;
-	name_changed();
+	// Revert name back to default name (e.g. "Session 1") for real devices
+	// as the (possibly saved) data is gone. File devices keep their name.
+	shared_ptr<devices::HardwareDevice> hw_device =
+		dynamic_pointer_cast< devices::HardwareDevice >(device_);
+
+	if (hw_device) {
+		name_ = default_name_;
+		name_changed();
+	}
 
 	// Begin the session
 	sampling_thread_ = std::thread(
