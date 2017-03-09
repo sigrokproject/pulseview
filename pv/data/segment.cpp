@@ -20,10 +20,9 @@
 
 #include "segment.hpp"
 
-#include <assert.h>
-#include <stdlib.h>
-#include <string.h>
-
+#include <cassert>
+#include <cstdlib>
+#include <cstring>
 #include <vector>
 
 using std::lock_guard;

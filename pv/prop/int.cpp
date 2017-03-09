@@ -17,8 +17,8 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdint.h>
-#include <assert.h>
+#include <cstdint>
+#include <cassert>
 
 #include <QSpinBox>
 

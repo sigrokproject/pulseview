@@ -18,8 +18,7 @@
  */
 
 #include <algorithm>
-
-#include <assert.h>
+#include <cassert>
 
 #include <QtGui>
 #include <QApplication>

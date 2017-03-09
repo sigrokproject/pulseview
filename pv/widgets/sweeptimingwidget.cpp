@@ -20,10 +20,8 @@
 #include "sweeptimingwidget.hpp"
 
 #include <cstdlib>
-
 #include <vector>
-
-#include <assert.h>
+#include <cassert>
 
 #include <extdef.h>
 

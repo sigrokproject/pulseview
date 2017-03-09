@@ -19,9 +19,9 @@
 
 #include <extdef.h>
 
-#include <assert.h>
-#include <string.h>
-#include <stdlib.h>
+#include <cassert>
+#include <cstring>
+#include <cstdlib>
 #include <cmath>
 
 #include <algorithm>

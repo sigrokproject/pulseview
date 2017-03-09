@@ -19,9 +19,10 @@
 
 #include "signalhandler.hpp"
 
-#include <assert.h>
-#include <signal.h>
-#include <stdlib.h>
+#include <cassert>
+#include <csignal>
+#include <cstdlib>
+
 #include <sys/socket.h>
 #include <unistd.h>
 

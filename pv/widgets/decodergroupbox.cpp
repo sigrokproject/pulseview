@@ -24,7 +24,7 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 
-#include <assert.h>
+#include <cassert>
 
 namespace pv {
 namespace widgets {

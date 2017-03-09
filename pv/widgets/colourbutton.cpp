@@ -19,7 +19,7 @@
 
 #include "colourbutton.hpp"
 
-#include <assert.h>
+#include <cassert>
 
 #include <QApplication>
 #include <QPainter>

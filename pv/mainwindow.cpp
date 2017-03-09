@@ -17,14 +17,15 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <cassert>
-
 #ifdef ENABLE_DECODE
 #include <libsigrokdecode/libsigrokdecode.h>
 #endif
 
+#include <cassert>
 #include <algorithm>
 #include <iterator>
+#include <cstdint>
+#include <cstdarg>
 
 #include <QAction>
 #include <QApplication>
@@ -48,8 +49,6 @@
 #include "view/view.hpp"
 #include "views/trace/standardbar.hpp"
 
-#include <stdint.h>
-#include <stdarg.h>
 #include <libsigrokcxx/libsigrokcxx.hpp>
 
 using std::dynamic_pointer_cast;

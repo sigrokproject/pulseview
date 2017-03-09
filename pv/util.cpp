@@ -21,8 +21,7 @@
 
 #include <extdef.h>
 
-#include <assert.h>
-
+#include <cassert>
 #include <algorithm>
 #include <sstream>
 
