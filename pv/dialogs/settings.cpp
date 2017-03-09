@@ -31,7 +31,7 @@ namespace pv {
 namespace dialogs {
 
 Settings::Settings(QWidget *parent) :
-	QDialog(parent, 0)
+	QDialog(parent, nullptr)
 {
 	QTabWidget *tab_stack = new QTabWidget(this);
 	tab_stack->addTab(get_view_settings_form(tab_stack), tr("&Views"));

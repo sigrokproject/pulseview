@@ -138,7 +138,7 @@ shared_ptr<views::ViewBase> MainWindow::get_active_view() const
 
 	// ...otherwise find the dock widget the widget with focus is contained in
 	QObject *w = QApplication::focusWidget();
-	QDockWidget *dock = 0;
+	QDockWidget *dock = nullptr;
 
 	while (w) {
 	    dock = qobject_cast<QDockWidget*>(w);
@@ -258,7 +258,7 @@ void MainWindow::remove_view(shared_ptr<views::ViewBase> view)
 				// call deleteLater() on it, which causes a double free
 				// since the shared_ptr in view_docks_ doesn't know
 				// that Qt keeps a pointer to the view around
-				view->setParent(0);
+				view->setParent(nullptr);
 
 				// Delete the view's dock widget and all widgets inside it
 				entry.first->deleteLater();
@@ -673,7 +673,7 @@ void MainWindow::on_view_close_clicked()
 {
 	// Find the dock widget that contains the close button that was clicked
 	QObject *w = QObject::sender();
-	QDockWidget *dock = 0;
+	QDockWidget *dock = nullptr;
 
 	while (w) {
 	    dock = qobject_cast<QDockWidget*>(w);
