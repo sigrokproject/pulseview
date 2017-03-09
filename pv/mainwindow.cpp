@@ -43,7 +43,6 @@
 #include "globalsettings.hpp"
 #include "util.hpp"
 #include "devices/hardwaredevice.hpp"
-#include "dialogs/about.hpp"
 #include "dialogs/settings.hpp"
 #include "toolbars/mainbar.hpp"
 #include "view/view.hpp"
@@ -78,7 +77,6 @@ MainWindow::MainWindow(DeviceManager &device_manager,
 	device_manager_(device_manager),
 	session_selector_(this),
 	session_state_mapper_(this),
-	action_about_(new QAction(this)),
 	icon_red_(":/icons/status-red.svg"),
 	icon_green_(":/icons/status-green.svg"),
 	icon_grey_(":/icons/status-grey.svg")
@@ -122,11 +120,6 @@ MainWindow::~MainWindow()
 {
 	while (!sessions_.empty())
 		remove_session(sessions_.front());
-}
-
-QAction* MainWindow::action_about() const
-{
-	return action_about_;
 }
 
 shared_ptr<views::ViewBase> MainWindow::get_active_view() const
@@ -353,9 +346,6 @@ void MainWindow::setup_ui()
 
 	view_coloured_bg_shortcut_ = new QShortcut(QKeySequence(Qt::Key_B), this, SLOT(on_view_coloured_bg_shortcut()));
 	view_coloured_bg_shortcut_->setAutoRepeat(false);
-
-	action_about_->setObjectName(QString::fromUtf8("actionAbout"));
-	action_about_->setToolTip(tr("&About..."));
 
 	// Set up the tab area
 	new_session_button_ = new QToolButton();
@@ -611,7 +601,7 @@ void MainWindow::on_run_stop_clicked()
 
 void MainWindow::on_settings_clicked()
 {
-	dialogs::Settings dlg;
+	dialogs::Settings dlg(device_manager_);
 	dlg.exec();
 }
 
@@ -757,12 +747,6 @@ void MainWindow::on_settingViewColouredBg_changed(const QVariant new_value)
 		if (view)
 			view->enable_coloured_bg(state);
 	}
-}
-
-void MainWindow::on_actionAbout_triggered()
-{
-	dialogs::About dlg(device_manager_.context(), this);
-	dlg.exec();
 }
 
 void MainWindow::on_close_current_tab()

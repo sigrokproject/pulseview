@@ -71,8 +71,6 @@ public:
 
 	~MainWindow();
 
-	QAction* action_about() const;
-
 	std::shared_ptr<views::ViewBase> get_active_view() const;
 
 	std::shared_ptr<views::ViewBase> add_view(const QString &title,
@@ -128,8 +126,6 @@ private Q_SLOTS:
 
 	void on_settingViewColouredBg_changed(const QVariant new_value);
 
-	void on_actionAbout_triggered();
-
 	void on_close_current_tab();
 
 private:
@@ -146,8 +142,6 @@ private:
 	QToolButton *new_session_button_, *run_stop_button_, *settings_button_;
 	QTabWidget session_selector_;
 	QSignalMapper session_state_mapper_;
-
-	QAction *const action_about_;
 
 	QIcon icon_red_;
 	QIcon icon_green_;

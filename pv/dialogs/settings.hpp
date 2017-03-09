@@ -25,6 +25,9 @@
 #include <QStackedWidget>
 
 namespace pv {
+
+class DeviceManager;
+
 namespace dialogs {
 
 class Settings : public QDialog
@@ -32,11 +35,12 @@ class Settings : public QDialog
 	Q_OBJECT
 
 public:
-	Settings(QWidget *parent = 0);
+	Settings(DeviceManager &device_manager, QWidget *parent = 0);
 
 	void create_pages();
 
 	QWidget *get_view_settings_form(QWidget *parent) const;
+	QWidget *get_about_page(QWidget *parent) const;
 
 	void accept();
 	void reject();
@@ -47,6 +51,7 @@ private Q_SLOTS:
 	void on_view_colouredBG_changed(int state);
 
 private:
+	DeviceManager &device_manager_;
 	QListWidget *page_list;
 	QStackedWidget *pages;
 };

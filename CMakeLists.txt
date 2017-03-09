@@ -230,7 +230,6 @@ set(pulseview_SOURCES
 	pv/devices/hardwaredevice.cpp
 	pv/devices/inputfile.cpp
 	pv/devices/sessionfile.cpp
-	pv/dialogs/about.cpp
 	pv/dialogs/connect.cpp
 	pv/dialogs/inputoutputoptions.cpp
 	pv/dialogs/settings.cpp
@@ -295,7 +294,6 @@ set(pulseview_HEADERS
 	pv/data/logic.hpp
 	pv/data/logicsegment.hpp
 	pv/data/signalbase.hpp
-	pv/dialogs/about.hpp
 	pv/dialogs/connect.hpp
 	pv/dialogs/inputoutputoptions.hpp
 	pv/dialogs/settings.hpp
@@ -341,10 +339,6 @@ set(pulseview_HEADERS
 	pv/widgets/sweeptimingwidget.hpp
 	pv/widgets/timestampspinbox.hpp
 	pv/widgets/wellarray.hpp
-)
-
-set(pulseview_FORMS
-	pv/dialogs/about.ui
 )
 
 set(pulseview_RESOURCES
@@ -393,14 +387,12 @@ endif()
 
 if(Qt5Core_FOUND)
 	qt5_wrap_cpp(pulseview_HEADERS_MOC ${pulseview_HEADERS})
-	qt5_wrap_ui(pulseview_FORMS_HEADERS ${pulseview_FORMS})
 	qt5_add_resources(pulseview_RESOURCES_RCC ${pulseview_RESOURCES})
 else()
 	# Workaround for QTBUG-22829: -DBOOST_NEXT_PRIOR_HPP_INCLUDED.
 	# https://bugreports.qt.io/browse/QTBUG-22829
 	qt4_wrap_cpp(pulseview_HEADERS_MOC ${pulseview_HEADERS}
 		OPTIONS -DBOOST_NEXT_PRIOR_HPP_INCLUDED)
-	qt4_wrap_ui(pulseview_FORMS_HEADERS ${pulseview_FORMS})
 	qt4_add_resources(pulseview_RESOURCES_RCC ${pulseview_RESOURCES})
 	include(${QT_USE_FILE})
 endif()
@@ -484,14 +476,12 @@ if(ANDROID)
 add_library(${PROJECT_NAME} SHARED
 	${pulseview_SOURCES}
 	${pulseview_HEADERS_MOC}
-	${pulseview_FORMS_HEADERS}
 	${pulseview_RESOURCES_RCC}
 )
 else()
 add_executable(${PROJECT_NAME}
 	${pulseview_SOURCES}
 	${pulseview_HEADERS_MOC}
-	${pulseview_FORMS_HEADERS}
 	${pulseview_RESOURCES_RCC}
 )
 endif()

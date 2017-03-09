@@ -17,23 +17,39 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "settings.hpp"
-#include "pv/globalsettings.hpp"
-
+#include <QApplication>
 #include <QCheckBox>
 #include <QDialogButtonBox>
 #include <QFormLayout>
 #include <QGroupBox>
 #include <QHBoxLayout>
+#include <QLabel>
+#include <QString>
+#include <QTextBrowser>
+#include <QTextDocument>
 #include <QVBoxLayout>
+
+#include "settings.hpp"
+
+#include "pv/devicemanager.hpp"
+#include "pv/globalsettings.hpp"
+
+#include <libsigrokcxx/libsigrokcxx.hpp>
+
+#ifdef ENABLE_DECODE
+#include <libsigrokdecode/libsigrokdecode.h>
+#endif
 
 namespace pv {
 namespace dialogs {
 
-Settings::Settings(QWidget *parent) :
-	QDialog(parent, nullptr)
+Settings::Settings(DeviceManager &device_manager, QWidget *parent) :
+	QDialog(parent, nullptr),
+	device_manager_(device_manager)
 {
 	const int icon_size = 64;
+
+	resize(600, 400);
 
 	page_list = new QListWidget;
 	page_list->setViewMode(QListView::IconMode);
@@ -76,6 +92,15 @@ void Settings::create_pages()
 	viewButton->setText(tr("Views"));
 	viewButton->setTextAlignment(Qt::AlignHCenter);
 	viewButton->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+
+	// About page
+	pages->addWidget(get_about_page(pages));
+
+	QListWidgetItem *aboutButton = new QListWidgetItem(page_list);
+	aboutButton->setIcon(QIcon(":/icons/information.svg"));
+	aboutButton->setText(tr("About"));
+	aboutButton->setTextAlignment(Qt::AlignHCenter);
+	aboutButton->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
 }
 
 QWidget *Settings::get_view_settings_form(QWidget *parent) const
@@ -103,6 +128,88 @@ QWidget *Settings::get_view_settings_form(QWidget *parent) const
 	trace_view_layout->addRow(tr("Always zoom-to-&fit during capture"), always_zoom_to_fit_cb);
 
 	return form;
+}
+
+QWidget *Settings::get_about_page(QWidget *parent) const
+{
+#ifdef ENABLE_DECODE
+	struct srd_decoder *dec;
+#endif
+
+	QLabel *icon = new QLabel();
+	icon->setPixmap(QPixmap(QString::fromUtf8(":/icons/sigrok-logo-notext.svg")));
+
+	/* Setup the version field */
+	QLabel *version_info = new QLabel();
+	version_info->setText(tr("%1 %2<br />%3<br /><a href=\"http://%4\">%4</a>")
+		.arg(QApplication::applicationName(),
+		QApplication::applicationVersion(),
+		tr("GNU GPL, version 3 or later"),
+		QApplication::organizationDomain()));
+	version_info->setOpenExternalLinks(true);
+
+	std::shared_ptr<sigrok::Context> context = device_manager_.context();
+
+	QString s;
+	s.append("<table>");
+
+	/* Set up the supported field */
+	s.append("<tr><td colspan=\"2\"><b>" +
+		tr("Supported hardware drivers:") +
+		"</b></td></tr>");
+	for (auto entry : context->drivers()) {
+		s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
+			.arg(QString::fromUtf8(entry.first.c_str()),
+				QString::fromUtf8(entry.second->long_name().c_str())));
+	}
+
+	s.append("<tr><td colspan=\"2\"><b>" +
+		tr("Supported input formats:") +
+		"</b></td></tr>");
+	for (auto entry : context->input_formats()) {
+		s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
+			.arg(QString::fromUtf8(entry.first.c_str()),
+				QString::fromUtf8(entry.second->description().c_str())));
+	}
+
+	s.append("<tr><td colspan=\"2\"><b>" +
+		tr("Supported output formats:") +
+		"</b></td></tr>");
+	for (auto entry : context->output_formats()) {
+		s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
+			.arg(QString::fromUtf8(entry.first.c_str()),
+				QString::fromUtf8(entry.second->description().c_str())));
+	}
+
+#ifdef ENABLE_DECODE
+	s.append("<tr><td colspan=\"2\"><b>" +
+		tr("Supported protocol decoders:") +
+		"</b></td></tr>");
+	for (const GSList *l = srd_decoder_list(); l; l = l->next) {
+		dec = (struct srd_decoder *)l->data;
+		s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
+			.arg(QString::fromUtf8(dec->id),
+				QString::fromUtf8(dec->longname)));
+	}
+#endif
+
+	s.append("</table>");
+
+	QTextDocument *supported_doc = new QTextDocument();
+	supported_doc->setHtml(s);
+
+	QTextBrowser *support_list = new QTextBrowser();
+	support_list->setDocument(supported_doc);
+
+	QGridLayout *layout = new QGridLayout();
+	layout->addWidget(icon, 0, 0, 1, 1);
+	layout->addWidget(version_info, 0, 1, 1, 1);
+	layout->addWidget(support_list, 1, 1, 1, 1);
+
+	QWidget *page = new QWidget(parent);
+	page->setLayout(layout);
+
+	return page;
 }
 
 void Settings::accept()

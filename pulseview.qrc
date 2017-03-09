@@ -2,6 +2,7 @@
     <qresource prefix="/" >
 	<file>icons/add-decoder.svg</file>
 	<file>icons/application-exit.png</file>
+	<file>icons/channels.svg</file>
 	<file>icons/configure.png</file>
 	<file>icons/decoder-delete.svg</file>
 	<file>icons/decoder-hidden.svg</file>
@@ -9,7 +10,7 @@
 	<file>icons/document-new.png</file>
 	<file>icons/document-open.png</file>
 	<file>icons/document-save-as.png</file>
-	<file>icons/channels.svg</file>
+	<file>icons/information.svg</file>
 	<file>icons/menu.svg</file>
 	<file>icons/sigrok-logo-notext.png</file>
 	<file>icons/sigrok-logo-notext.svg</file>
