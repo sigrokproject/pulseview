@@ -80,7 +80,7 @@ AnalogSignal::AnalogSignal(
 	pos_vdivs_(1),
 	neg_vdivs_(1),
 	resolution_(0),
-	autoranging_(1)
+	autoranging_(true)
 {
 	pv::data::Analog* analog_data =
 		dynamic_cast<pv::data::Analog*>(data().get());

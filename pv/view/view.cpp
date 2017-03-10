@@ -676,7 +676,7 @@ void View::restack_all_trace_tree_items()
 		o->restack_items();
 
 	// Re-assign background colors
-	bool next_bgcolour_state = 0;
+	bool next_bgcolour_state = false;
 
 	for (auto &o : sorted_owners)
 		next_bgcolour_state = o->reassign_bgcolour_states(next_bgcolour_state);

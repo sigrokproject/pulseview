@@ -376,7 +376,7 @@ void LogicSegment::get_subsampled_edges(
 
 			// Slide right and zoom out at the beginnings of mip-map
 			// blocks until we encounter a change
-			while (1) {
+			while (true) {
 				const int level_scale_power =
 					(level + 1) * MipMapScalePower;
 				const uint64_t offset =
@@ -408,7 +408,7 @@ void LogicSegment::get_subsampled_edges(
 
 			// Zoom in, and slide right until we encounter a change,
 			// and repeat until we reach min_level
-			while (1) {
+			while (true) {
 				assert(mip_map_[level].data);
 
 				const int level_scale_power =
