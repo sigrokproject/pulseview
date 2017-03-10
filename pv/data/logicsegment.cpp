@@ -322,7 +322,7 @@ void LogicSegment::get_subsampled_edges(
 
 	// Store the initial state
 	last_sample = (get_unpacked_sample(start) & sig_mask) != 0;
-	edges.push_back(pair<int64_t, bool>(index++, last_sample));
+	edges.emplace_back(index++, last_sample);
 
 	while (index + block_length <= end) {
 		//----- Continue to search -----//
@@ -458,7 +458,7 @@ void LogicSegment::get_subsampled_edges(
 		// Store the final state
 		const bool final_sample =
 			(get_unpacked_sample(final_index - 1) & sig_mask) != 0;
-		edges.push_back(pair<int64_t, bool>(index, final_sample));
+		edges.emplace_back(index, final_sample);
 
 		index = final_index;
 		last_sample = final_sample;
@@ -467,8 +467,8 @@ void LogicSegment::get_subsampled_edges(
 	// Add the final state
 	const bool end_sample = get_unpacked_sample(end) & sig_mask;
 	if (last_sample != end_sample)
-		edges.push_back(pair<int64_t, bool>(end, end_sample));
-	edges.push_back(pair<int64_t, bool>(end + 1, end_sample));
+		edges.emplace_back(end, end_sample);
+	edges.emplace_back(end + 1, end_sample);
 }
 
 uint64_t LogicSegment::get_subsample(int level, uint64_t offset) const

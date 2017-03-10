@@ -145,14 +145,14 @@ std::vector<Row> DecoderStack::get_visible_rows() const
 
 		// Add a row for the decoder if it doesn't have a row list
 		if (!decc->annotation_rows)
-			rows.push_back(Row(decc));
+			rows.emplace_back(decc);
 
 		// Add the decoder rows
 		for (const GSList *l = decc->annotation_rows; l; l = l->next) {
 			const srd_decoder_annotation_row *const ann_row =
 				(srd_decoder_annotation_row *)l->data;
 			assert(ann_row);
-			rows.push_back(Row(decc, ann_row));
+			rows.emplace_back(decc, ann_row);
 		}
 	}
 

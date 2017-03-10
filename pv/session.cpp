@@ -193,11 +193,11 @@ void Session::save_settings(QSettings &settings) const
 			settings.setValue("device_type", "hardware");
 			settings.beginGroup("device");
 
-			key_list.push_back("vendor");
-			key_list.push_back("model");
-			key_list.push_back("version");
-			key_list.push_back("serial_num");
-			key_list.push_back("connection_id");
+			key_list.emplace_back("vendor");
+			key_list.emplace_back("model");
+			key_list.emplace_back("version");
+			key_list.emplace_back("serial_num");
+			key_list.emplace_back("connection_id");
 
 			dev_info = device_manager_.get_device_info(device_);
 
@@ -277,11 +277,11 @@ void Session::restore_settings(QSettings &settings)
 
 		// Re-select last used device if possible but only if it's not demo
 		settings.beginGroup("device");
-		key_list.push_back("vendor");
-		key_list.push_back("model");
-		key_list.push_back("version");
-		key_list.push_back("serial_num");
-		key_list.push_back("connection_id");
+		key_list.emplace_back("vendor");
+		key_list.emplace_back("model");
+		key_list.emplace_back("version");
+		key_list.emplace_back("serial_num");
+		key_list.emplace_back("connection_id");
 
 		for (string key : key_list) {
 			const QString k = QString::fromStdString(key);
