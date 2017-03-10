@@ -120,12 +120,12 @@ QWidget *Settings::get_view_settings_form(QWidget *parent) const
 	QCheckBox *coloured_bg_cb = new QCheckBox();
 	coloured_bg_cb->setChecked(settings.value(GlobalSettings::Key_View_ColouredBG).toBool());
 	connect(coloured_bg_cb, SIGNAL(stateChanged(int)), this, SLOT(on_view_colouredBG_changed(int)));
-	trace_view_layout->addRow(tr("Use &coloured trace background"), coloured_bg_cb);
+	trace_view_layout->addRow(tr("Use coloured trace &background"), coloured_bg_cb);
 
 	QCheckBox *always_zoom_to_fit_cb = new QCheckBox();
 	always_zoom_to_fit_cb->setChecked(settings.value(GlobalSettings::Key_View_AlwaysZoomToFit).toBool());
 	connect(always_zoom_to_fit_cb, SIGNAL(stateChanged(int)), this, SLOT(on_view_alwaysZoomToFit_changed(int)));
-	trace_view_layout->addRow(tr("Always zoom-to-&fit during capture"), always_zoom_to_fit_cb);
+	trace_view_layout->addRow(tr("&Always zoom-to-fit during capture"), always_zoom_to_fit_cb);
 
 	return form;
 }
