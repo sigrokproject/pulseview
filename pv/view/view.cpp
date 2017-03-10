@@ -567,7 +567,7 @@ void View::enable_sticky_scrolling(bool state)
 	sticky_scrolling_ = state;
 }
 
-void View::toggle_sticky_scrolling(void)
+void View::toggle_sticky_scrolling()
 {
 	sticky_scrolling_ = !sticky_scrolling_;
 }

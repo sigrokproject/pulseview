@@ -92,7 +92,7 @@ StandardBar::StandardBar(Session &session, QWidget *parent,
 		add_toolbar_widgets();
 }
 
-Session &StandardBar::session(void) const
+Session &StandardBar::session() const
 {
 	return session_;
 }
