@@ -25,10 +25,6 @@ namespace pv {
 namespace data {
 namespace decode {
 
-RowData::RowData()
-{
-}
-
 uint64_t RowData::get_max_sample() const
 {
 	if (annotations_.empty())

@@ -31,7 +31,7 @@ namespace decode {
 class RowData
 {
 public:
-	RowData();
+	RowData() = default;
 
 public:
 	uint64_t get_max_sample() const;

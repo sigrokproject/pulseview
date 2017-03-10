@@ -38,7 +38,7 @@ namespace devices {
 class Device
 {
 protected:
-	Device();
+	Device() = default;
 
 public:
 	virtual ~Device();

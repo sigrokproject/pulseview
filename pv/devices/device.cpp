@@ -36,10 +36,6 @@ using Glib::Variant;
 namespace pv {
 namespace devices {
 
-Device::Device()
-{
-}
-
 Device::~Device()
 {
 	if (session_)
