@@ -76,6 +76,7 @@ using std::pair;
 using std::recursive_mutex;
 using std::set;
 using std::shared_ptr;
+using std::make_shared;
 using std::string;
 using std::unordered_set;
 using std::vector;
@@ -307,7 +308,7 @@ void Session::restore_settings(QSettings &settings)
 		settings.endGroup();
 
 		if (QFileInfo(filename).isReadable()) {
-			device = std::make_shared<devices::SessionFile>(device_manager_.context(),
+			device = make_shared<devices::SessionFile>(device_manager_.context(),
 				filename.toStdString());
 			set_device(device);
 
@@ -617,8 +618,7 @@ bool Session::add_decoder(srd_decoder *const dec)
 
 	try {
 		// Create the decoder
-		decoder_stack = shared_ptr<data::DecoderStack>(
-			new data::DecoderStack(*this, dec));
+		decoder_stack = make_shared<data::DecoderStack>(*this, dec);
 
 		// Make a list of all the channels
 		std::vector<const srd_channel*> all_channels;
@@ -644,7 +644,7 @@ bool Session::add_decoder(srd_decoder *const dec)
 
 		// Create the decode signal
 		shared_ptr<data::SignalBase> signalbase =
-			shared_ptr<data::SignalBase>(new data::SignalBase(nullptr));
+			make_shared<data::SignalBase>(nullptr);
 
 		signalbase->set_decoder_stack(decoder_stack);
 		signalbases_.insert(signalbase);
@@ -772,8 +772,7 @@ void Session::update_signals()
 					switch(channel->type()->id()) {
 					case SR_CHANNEL_LOGIC:
 						if (!signalbase) {
-							signalbase = shared_ptr<data::SignalBase>(
-								new data::SignalBase(channel));
+							signalbase = make_shared<data::SignalBase>(channel);
 							signalbases_.insert(signalbase);
 
 							all_signal_data_.insert(logic_data_);
@@ -789,8 +788,7 @@ void Session::update_signals()
 					case SR_CHANNEL_ANALOG:
 					{
 						if (!signalbase) {
-							signalbase = shared_ptr<data::SignalBase>(
-								new data::SignalBase(channel));
+							signalbase = make_shared<data::SignalBase>(channel);
 							signalbases_.insert(signalbase);
 
 							shared_ptr<data::Analog> data(new data::Analog());
@@ -954,8 +952,8 @@ void Session::feed_in_logic(shared_ptr<Logic> logic)
 		set_capture_state(Running);
 
 		// Create a new data segment
-		cur_logic_segment_ = shared_ptr<data::LogicSegment>(
-			new data::LogicSegment(*logic_data_, logic, cur_samplerate_));
+		cur_logic_segment_ = make_shared<data::LogicSegment>(
+			*logic_data_, logic, cur_samplerate_);
 		logic_data_->push_segment(cur_logic_segment_);
 
 		// @todo Putting this here means that only listeners querying
@@ -1006,8 +1004,8 @@ void Session::feed_in_analog(shared_ptr<Analog> analog)
 			assert(data);
 
 			// Create a segment, keep it in the maps of channels
-			segment = shared_ptr<data::AnalogSegment>(
-				new data::AnalogSegment(*data, cur_samplerate_));
+			segment = make_shared<data::AnalogSegment>(
+				*data, cur_samplerate_);
 			cur_analog_segments_[channel] = segment;
 
 			// Push the segment into the analog data.

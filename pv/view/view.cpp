@@ -627,8 +627,8 @@ std::shared_ptr<CursorPair> View::cursors() const
 
 void View::add_flag(const Timestamp& time)
 {
-	flags_.push_back(shared_ptr<Flag>(new Flag(*this, time,
-		QString("%1").arg(next_flag_text_))));
+	flags_.push_back(make_shared<Flag>(*this, time,
+		QString("%1").arg(next_flag_text_)));
 
 	next_flag_text_ = (next_flag_text_ >= 'Z') ? 'A' :
 		(next_flag_text_ + 1);
@@ -688,8 +688,7 @@ void View::restack_all_trace_tree_items()
 
 void View::trigger_event(util::Timestamp location)
 {
-	trigger_markers_.push_back(shared_ptr<TriggerMarker>(
-		new TriggerMarker(*this, location)));
+	trigger_markers_.push_back(make_shared<TriggerMarker>(*this, location));
 }
 
 void View::get_scroll_layout(double &length, Timestamp &offset) const

@@ -66,6 +66,7 @@ using std::map;
 using std::min;
 using std::pair;
 using std::shared_ptr;
+using std::make_shared;
 using std::tie;
 using std::unordered_set;
 using std::vector;
@@ -961,8 +962,7 @@ void DecodeTrace::on_stack_decoder(srd_decoder *decoder)
 
 	assert(decoder);
 	assert(decoder_stack);
-	decoder_stack->push(shared_ptr<data::decode::Decoder>(
-		new data::decode::Decoder(decoder)));
+	decoder_stack->push(make_shared<data::decode::Decoder>(decoder));
 	decoder_stack->begin_decode();
 
 	create_popup_form();

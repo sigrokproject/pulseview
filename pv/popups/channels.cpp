@@ -51,6 +51,7 @@ using std::map;
 using std::mutex;
 using std::set;
 using std::shared_ptr;
+using std::make_shared;
 using std::unordered_set;
 using std::vector;
 
@@ -165,7 +166,7 @@ void Channels::populate_group(shared_ptr<ChannelGroup> group,
 	// popup.
 	shared_ptr<Device> binding;
 	if (group)
-		binding = shared_ptr<Device>(new Device(group));
+		binding = make_shared<Device>(group);
 
 	// Create a title if the group is going to have any content
 	if ((!sigs.empty() || (binding && !binding->properties().empty())) &&

@@ -44,6 +44,7 @@ using std::list;
 using std::map;
 using std::pair;
 using std::shared_ptr;
+using std::make_shared;
 using std::vector;
 
 using namespace pv::data::decode;
@@ -74,8 +75,7 @@ DecoderStack::DecoderStack(pv::Session &session,
 	connect(&session_, SIGNAL(frame_ended()),
 		this, SLOT(on_frame_ended()));
 
-	stack_.push_back(shared_ptr<decode::Decoder>(
-		new decode::Decoder(dec)));
+	stack_.push_back(make_shared<decode::Decoder>(dec));
 }
 
 DecoderStack::~DecoderStack()
