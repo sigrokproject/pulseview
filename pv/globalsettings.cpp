@@ -23,6 +23,7 @@ namespace pv {
 
 const QString GlobalSettings::Key_View_AlwaysZoomToFit = "View_AlwaysZoomToFit";
 const QString GlobalSettings::Key_View_ColouredBG = "View_ColouredBG";
+const QString GlobalSettings::Key_View_StickyScrolling = "View_StickyScrolling";
 
 std::multimap< QString, std::function<void(QVariant)> > GlobalSettings::callbacks_;
 bool GlobalSettings::tracking_ = false;

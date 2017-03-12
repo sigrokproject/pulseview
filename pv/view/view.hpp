@@ -206,11 +206,6 @@ public:
 	void enable_sticky_scrolling(bool state);
 
 	/**
-	 * Toggle sticky scrolling.
-	 */
-	void toggle_sticky_scrolling(void);
-
-	/**
 	 * Enables or disables coloured trace backgrounds. If they're not
 	 * coloured then they will use alternating colors.
 	 */

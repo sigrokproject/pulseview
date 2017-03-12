@@ -567,11 +567,6 @@ void View::enable_sticky_scrolling(bool state)
 	sticky_scrolling_ = state;
 }
 
-void View::toggle_sticky_scrolling()
-{
-	sticky_scrolling_ = !sticky_scrolling_;
-}
-
 void View::enable_coloured_bg(bool state)
 {
 	const vector<shared_ptr<TraceTreeItem>> items(
