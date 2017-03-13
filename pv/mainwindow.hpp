@@ -125,7 +125,6 @@ private Q_SLOTS:
 	void on_view_sticky_scrolling_shortcut();
 
 	void on_settingViewColouredBg_changed(const QVariant new_value);
-	void on_settingViewStickyScrolling_changed(const QVariant new_value);
 
 	void on_close_current_tab();
 

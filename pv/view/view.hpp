@@ -200,12 +200,6 @@ public:
 	std::pair<pv::util::Timestamp, pv::util::Timestamp> get_time_extents() const;
 
 	/**
-	 * Enables or disables sticky scrolling, i.e. the view always shows
-	 * the most recent samples when capturing data.
-	 */
-	void enable_sticky_scrolling(bool state);
-
-	/**
 	 * Enables or disables coloured trace backgrounds. If they're not
 	 * coloured then they will use alternating colors.
 	 */

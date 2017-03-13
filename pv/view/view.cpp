@@ -562,11 +562,6 @@ pair<Timestamp, Timestamp> View::get_time_extents() const
 	return make_pair(*left_time, *right_time);
 }
 
-void View::enable_sticky_scrolling(bool state)
-{
-	sticky_scrolling_ = state;
-}
-
 void View::enable_coloured_bg(bool state)
 {
 	const vector<shared_ptr<TraceTreeItem>> items(
@@ -1236,6 +1231,9 @@ void View::capture_state_updated(int state)
 			always_zoom_to_fit_ = true;
 			always_zoom_to_fit_changed(always_zoom_to_fit_);
 		}
+
+		// Enable sticky scrolling if the setting is enabled
+		sticky_scrolling_ = settings.value(GlobalSettings::Key_View_StickyScrolling).toBool();
 	}
 
 	if (state == Session::Stopped) {

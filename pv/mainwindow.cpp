@@ -86,8 +86,6 @@ MainWindow::MainWindow(DeviceManager &device_manager,
 
 	GlobalSettings::register_change_handler(GlobalSettings::Key_View_ColouredBG,
 		bind(&MainWindow::on_settingViewColouredBg_changed, this, _1));
-	GlobalSettings::register_change_handler(GlobalSettings::Key_View_StickyScrolling,
-		bind(&MainWindow::on_settingViewStickyScrolling_changed, this, _1));
 
 	setup_ui();
 	restore_ui_settings();
@@ -204,7 +202,6 @@ shared_ptr<views::ViewBase> MainWindow::add_view(const QString &title,
 		views::TraceView::View *tv =
 			qobject_cast<views::TraceView::View*>(v.get());
 
-		tv->enable_sticky_scrolling(true);
 		tv->enable_coloured_bg(settings.value(GlobalSettings::Key_View_ColouredBG).toBool());
 
 		if (!main_bar) {
@@ -747,21 +744,6 @@ void MainWindow::on_settingViewColouredBg_changed(const QVariant new_value)
 				qobject_cast<views::TraceView::View*>(viewbase.get());
 		if (view)
 			view->enable_coloured_bg(state);
-	}
-}
-
-void MainWindow::on_settingViewStickyScrolling_changed(const QVariant new_value)
-{
-	bool state = new_value.toBool();
-
-	for (auto entry : view_docks_) {
-		shared_ptr<views::ViewBase> viewbase = entry.second;
-
-		// Only trace views have this setting
-		views::TraceView::View* view =
-				qobject_cast<views::TraceView::View*>(viewbase.get());
-		if (view)
-			view->enable_sticky_scrolling(state);
 	}
 }
 
