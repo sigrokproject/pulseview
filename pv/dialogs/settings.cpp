@@ -88,7 +88,7 @@ void Settings::create_pages()
 	pages->addWidget(get_view_settings_form(pages));
 
 	QListWidgetItem *viewButton = new QListWidgetItem(page_list);
-	viewButton->setIcon(QIcon(":/icons/sigrok-logo-notext.svg"));
+	viewButton->setIcon(QIcon(":/icons/settings-views.svg"));
 	viewButton->setText(tr("Views"));
 	viewButton->setTextAlignment(Qt::AlignHCenter);
 	viewButton->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
