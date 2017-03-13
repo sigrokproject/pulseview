@@ -60,6 +60,7 @@ Settings::Settings(DeviceManager &device_manager, QWidget *parent) :
 
 	pages = new QStackedWidget;
 	create_pages();
+	page_list->setCurrentIndex(page_list->model()->index(0, 0));
 
 	QHBoxLayout *tab_layout = new QHBoxLayout;
 	tab_layout->addWidget(page_list);
