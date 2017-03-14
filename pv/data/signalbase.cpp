@@ -122,7 +122,7 @@ shared_ptr<data::Analog> SignalBase::analog_data() const
 	if (channel_type_ == AnalogChannel)
 		return dynamic_pointer_cast<data::Analog>(data_);
 	else
-		return shared_ptr<data::Analog>();
+		return nullptr;
 }
 
 shared_ptr<data::Logic> SignalBase::logic_data() const
@@ -130,7 +130,7 @@ shared_ptr<data::Logic> SignalBase::logic_data() const
 	if (channel_type_ == LogicChannel)
 		return dynamic_pointer_cast<data::Logic>(data_);
 	else
-		return shared_ptr<data::Logic>();
+		return nullptr;
 }
 
 #ifdef ENABLE_DECODE
