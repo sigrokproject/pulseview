@@ -26,11 +26,13 @@
 #include "binding.hpp"
 
 using std::shared_ptr;
+using std::string;
+using std::vector;
 
 namespace pv {
 namespace binding {
 
-const std::vector< std::shared_ptr<prop::Property> >& Binding::properties()
+const vector< shared_ptr<prop::Property> >& Binding::properties()
 {
 	return properties_;
 }
@@ -78,7 +80,7 @@ QString Binding::print_gvariant(Glib::VariantBase gvar)
 		s = QString::fromStdString("(null)");
 	else if (gvar.is_of_type(Glib::VariantType("s")))
 		s = QString::fromStdString(
-			Glib::VariantBase::cast_dynamic<Glib::Variant<std::string>>(
+			Glib::VariantBase::cast_dynamic<Glib::Variant<string>>(
 				gvar).get());
 	else
 		s = QString::fromStdString(gvar.print());

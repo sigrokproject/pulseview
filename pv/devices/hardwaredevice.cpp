@@ -40,8 +40,8 @@ using sigrok::HardwareDevice;
 namespace pv {
 namespace devices {
 
-HardwareDevice::HardwareDevice(const std::shared_ptr<sigrok::Context> &context,
-	std::shared_ptr<sigrok::HardwareDevice> device) :
+HardwareDevice::HardwareDevice(const shared_ptr<sigrok::Context> &context,
+	shared_ptr<sigrok::HardwareDevice> device) :
 	context_(context),
 	device_open_(false)
 {

@@ -28,6 +28,11 @@
 #include "marginwidget.hpp"
 #include <pv/util.hpp>
 
+using std::function;
+using std::pair;
+using std::shared_ptr;
+using std::vector;
+
 namespace RulerTest {
 struct tick_position_test_0;
 struct tick_position_test_1;
@@ -109,7 +114,7 @@ private:
 	/**
 	 * Gets the time items.
 	 */
-	std::vector< std::shared_ptr<ViewItem> > items() override;
+	vector< shared_ptr<ViewItem> > items() override;
 
 	/**
 	 * Gets the first view item which has a label that contains @c pt .
@@ -117,8 +122,7 @@ private:
 	 * @return the view item that has been found, or and empty
 	 *   @c shared_ptr if no item was found.
 	 */
-	std::shared_ptr<ViewItem> get_mouse_over_item(
-		const QPoint &pt) override;
+	shared_ptr<ViewItem> get_mouse_over_item(const QPoint &pt) override;
 
 	void paintEvent(QPaintEvent *event) override;
 
@@ -135,8 +139,8 @@ private:
 
 	struct TickPositions
 	{
-		std::vector<std::pair<double, QString>> major;
-		std::vector<double> minor;
+		vector<pair<double, QString>> major;
+		vector<double> minor;
 	};
 
 	/**
@@ -162,7 +166,7 @@ private:
 		const pv::util::Timestamp& offset,
 		const double scale,
 		const int width,
-		std::function<QString(const pv::util::Timestamp&)> format_function);
+		function<QString(const pv::util::Timestamp&)> format_function);
 
 protected:
 	void resizeEvent(QResizeEvent*) override;

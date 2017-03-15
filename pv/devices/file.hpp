@@ -24,27 +24,29 @@
 
 #include "device.hpp"
 
+using std::string;
+
 namespace pv {
 namespace devices {
 
 class File : public Device
 {
 protected:
-	File(const std::string &file_name);
+	File(const string &file_name);
 
 public:
 	/**
 	 * Builds the full name. It only contains all the fields.
 	 */
-	std::string full_name() const;
+	string full_name() const;
 
 	/**
 	 * Builds the display name. It only contains fields as required.
 	 */
-	std::string display_name(const DeviceManager&) const;
+	string display_name(const DeviceManager&) const;
 
 protected:
-	const std::string file_name_;
+	const string file_name_;
 };
 
 } // namespace devices

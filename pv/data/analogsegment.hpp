@@ -27,6 +27,8 @@
 
 #include <QObject>
 
+using std::pair;
+
 namespace AnalogSegmentTest {
 struct Basic;
 }
@@ -87,7 +89,7 @@ public:
 	const float* get_samples(int64_t start_sample,
 		int64_t end_sample) const;
 
-	const std::pair<float, float> get_min_max() const;
+	const pair<float, float> get_min_max() const;
 
 	SegmentAnalogDataIterator* begin_sample_iteration(uint64_t start);
 	void continue_sample_iteration(SegmentAnalogDataIterator* it, uint64_t increase);

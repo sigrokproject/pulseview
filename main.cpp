@@ -49,6 +49,10 @@ Q_IMPORT_PLUGIN(QWindowsIntegrationPlugin)
 Q_IMPORT_PLUGIN(QSvgPlugin)
 #endif
 
+using std::exception;
+using std::shared_ptr;
+using std::string;
+
 void usage()
 {
 	fprintf(stdout,
@@ -69,8 +73,8 @@ void usage()
 int main(int argc, char *argv[])
 {
 	int ret = 0;
-	std::shared_ptr<sigrok::Context> context;
-	std::string open_file, open_file_format;
+	shared_ptr<sigrok::Context> context;
+	string open_file, open_file_format;
 
 	Application a(argc, argv);
 
@@ -182,7 +186,7 @@ int main(int argc, char *argv[])
 			// Run the application
 			ret = a.exec();
 
-		} catch (std::exception e) {
+		} catch (exception e) {
 			qDebug() << e.what();
 		}
 

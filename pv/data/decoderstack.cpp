@@ -34,7 +34,6 @@
 
 using std::lock_guard;
 using std::mutex;
-using boost::optional;
 using std::unique_lock;
 using std::deque;
 using std::make_pair;
@@ -46,6 +45,8 @@ using std::pair;
 using std::shared_ptr;
 using std::make_shared;
 using std::vector;
+
+using boost::optional;
 
 using namespace pv::data::decode;
 
@@ -87,13 +88,12 @@ DecoderStack::~DecoderStack()
 	}
 }
 
-const std::list< std::shared_ptr<decode::Decoder> >&
-DecoderStack::stack() const
+const list< shared_ptr<decode::Decoder> >& DecoderStack::stack() const
 {
 	return stack_;
 }
 
-void DecoderStack::push(std::shared_ptr<decode::Decoder> decoder)
+void DecoderStack::push(shared_ptr<decode::Decoder> decoder)
 {
 	assert(decoder);
 	stack_.push_back(decoder);
@@ -129,7 +129,7 @@ int64_t DecoderStack::samples_decoded() const
 	return samples_decoded_;
 }
 
-std::vector<Row> DecoderStack::get_visible_rows() const
+vector<Row> DecoderStack::get_visible_rows() const
 {
 	lock_guard<mutex> lock(output_mutex_);
 
@@ -160,7 +160,7 @@ std::vector<Row> DecoderStack::get_visible_rows() const
 }
 
 void DecoderStack::get_annotation_subset(
-	std::vector<pv::data::decode::Annotation> &dest,
+	vector<pv::data::decode::Annotation> &dest,
 	const Row &row, uint64_t start_sample,
 	uint64_t end_sample) const
 {

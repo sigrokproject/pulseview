@@ -39,13 +39,15 @@
 #include <pv/widgets/popuptoolbutton.hpp>
 #include <pv/widgets/sweeptimingwidget.hpp>
 
+using std::shared_ptr;
+
 namespace sigrok {
 class Device;
 class InputFormat;
 class OutputFormat;
 }
 
-Q_DECLARE_METATYPE(std::shared_ptr<sigrok::Device>)
+Q_DECLARE_METATYPE(shared_ptr<sigrok::Device>)
 
 class QAction;
 
@@ -126,9 +128,9 @@ private Q_SLOTS:
 
 	void add_decoder(srd_decoder *decoder);
 
-	void export_file(std::shared_ptr<sigrok::OutputFormat> format,
+	void export_file(shared_ptr<sigrok::OutputFormat> format,
 		bool selection_only = false);
-	void import_file(std::shared_ptr<sigrok::InputFormat> format);
+	void import_file(shared_ptr<sigrok::InputFormat> format);
 
 	void on_device_selected();
 	void on_device_changed();

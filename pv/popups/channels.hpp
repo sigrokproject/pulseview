@@ -31,6 +31,10 @@
 
 #include <pv/widgets/popup.hpp>
 
+using std::map;
+using std::shared_ptr;
+using std::vector;
+
 class QCheckBox;
 class QGridLayout;
 
@@ -66,11 +70,11 @@ public:
 private:
 	void set_all_channels(bool set);
 
-	void populate_group(std::shared_ptr<sigrok::ChannelGroup> group,
-		const std::vector< std::shared_ptr<pv::data::SignalBase> > sigs);
+	void populate_group(shared_ptr<sigrok::ChannelGroup> group,
+		const vector< shared_ptr<pv::data::SignalBase> > sigs);
 
 	QGridLayout* create_channel_group_grid(
-		const std::vector< std::shared_ptr<pv::data::SignalBase> > sigs);
+		const vector< shared_ptr<pv::data::SignalBase> > sigs);
 
 private:
 	void showEvent(QShowEvent *event);
@@ -88,9 +92,8 @@ private:
 
 	bool updating_channels_;
 
-	std::vector< std::shared_ptr<pv::binding::Device> >
-		 group_bindings_;
-	std::map< QCheckBox*, std::shared_ptr<pv::data::SignalBase> >
+	vector< shared_ptr<pv::binding::Device> > group_bindings_;
+	map< QCheckBox*, shared_ptr<pv::data::SignalBase> >
 		check_box_signal_map_;
 
 	QHBoxLayout buttons_bar_;

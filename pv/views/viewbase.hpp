@@ -32,6 +32,8 @@
 #include <pv/data/signalbase.hpp>
 #include <pv/util.hpp>
 
+using std::shared_ptr;
+
 namespace pv {
 
 class Session;
@@ -62,9 +64,9 @@ public:
 #ifdef ENABLE_DECODE
 	virtual void clear_decode_signals();
 
-	virtual void add_decode_signal(std::shared_ptr<data::SignalBase> signalbase);
+	virtual void add_decode_signal(shared_ptr<data::SignalBase> signalbase);
 
-	virtual void remove_decode_signal(std::shared_ptr<data::SignalBase> signalbase);
+	virtual void remove_decode_signal(shared_ptr<data::SignalBase> signalbase);
 #endif
 
 	virtual void save_settings(QSettings &settings) const;

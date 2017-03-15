@@ -26,6 +26,8 @@ extern "C" {
 
 #include "annotation.hpp"
 
+using std::vector;
+
 namespace pv {
 namespace data {
 namespace decode {
@@ -63,7 +65,7 @@ int Annotation::format() const
 	return format_;
 }
 
-const std::vector<QString>& Annotation::annotations() const
+const vector<QString>& Annotation::annotations() const
 {
 	return annotations_;
 }

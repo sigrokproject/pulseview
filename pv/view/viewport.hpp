@@ -28,6 +28,9 @@
 #include "pv/util.hpp"
 #include "viewwidget.hpp"
 
+using std::shared_ptr;
+using std::vector;
+
 class QPainter;
 class QPaintEvent;
 class Session;
@@ -51,7 +54,7 @@ private:
 	 * @param item The item that is being hovered over, or @c nullptr
 	 * if no view item is being hovered over.
 	 */
-	void item_hover(const std::shared_ptr<ViewItem> &item);
+	void item_hover(const shared_ptr<ViewItem> &item);
 
 	/**
 	 * Gets the first view item which has a hit-box that contains @c pt .
@@ -59,7 +62,7 @@ private:
 	 * @return the view item that has been found, or and empty
 	 *   @c shared_ptr if no item was found.
 	 */
-	std::shared_ptr<ViewItem> get_mouse_over_item(const QPoint &pt);
+	shared_ptr<ViewItem> get_mouse_over_item(const QPoint &pt);
 
 	/**
 	 * Sets this item into the dragged state.
@@ -80,7 +83,7 @@ private:
 	/**
 	 * Gets the items in the view widget.
 	 */
-	std::vector< std::shared_ptr<ViewItem> > items();
+	vector< shared_ptr<ViewItem> > items();
 
 	/**
 	 * Handles touch begin update and end events.

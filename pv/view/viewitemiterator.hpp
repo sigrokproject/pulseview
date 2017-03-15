@@ -30,6 +30,11 @@
 
 #include <pv/session.hpp>
 
+using std::dynamic_pointer_cast;
+using std::forward_iterator_tag;
+using std::shared_ptr;
+using std::stack;
+
 namespace pv {
 namespace views {
 namespace TraceView {
@@ -38,11 +43,11 @@ template<class Owner, class Item> class ViewItemIterator
 {
 public:
 	typedef typename Owner::item_list::const_iterator child_iterator;
-	typedef std::shared_ptr<Item> value_type;
+	typedef shared_ptr<Item> value_type;
 	typedef ptrdiff_t difference_type;
 	typedef value_type pointer;
 	typedef const value_type& reference;
-	typedef std::forward_iterator_tag iterator_category;
+	typedef forward_iterator_tag iterator_category;
 
 public:
 	ViewItemIterator(Owner *owner) :
@@ -68,9 +73,6 @@ public:
 	}
 
 	ViewItemIterator<Owner, Item>& operator++() {
-		using std::dynamic_pointer_cast;
-		using std::shared_ptr;
-
 		assert(!owner_stack_.empty());
 		assert(!iter_stack_.empty());
 
@@ -113,8 +115,8 @@ public:
 	}
 
 private:
-	std::stack<Owner*> owner_stack_;
-	std::stack<child_iterator> iter_stack_;
+	stack<Owner*> owner_stack_;
+	stack<child_iterator> iter_stack_;
 };
 
 template<class Owner, class Item>

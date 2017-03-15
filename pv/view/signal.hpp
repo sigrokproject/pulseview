@@ -31,6 +31,8 @@
 #include "trace.hpp"
 #include "viewitemowner.hpp"
 
+using std::shared_ptr;
+
 namespace pv {
 
 class Session;
@@ -48,8 +50,7 @@ class Signal : public Trace, public ViewItemOwner
 	Q_OBJECT
 
 protected:
-	Signal(pv::Session &session,
-		std::shared_ptr<data::SignalBase> channel);
+	Signal(pv::Session &session, shared_ptr<data::SignalBase> channel);
 
 public:
 	/**
@@ -57,14 +58,14 @@ public:
 	 */
 	virtual void set_name(QString name);
 
-	virtual std::shared_ptr<pv::data::SignalData> data() const = 0;
+	virtual shared_ptr<pv::data::SignalData> data() const = 0;
 
 	/**
 	 * Returns true if the trace is visible and enabled.
 	 */
 	bool enabled() const;
 
-	std::shared_ptr<data::SignalBase> base() const;
+	shared_ptr<data::SignalBase> base() const;
 
 	virtual void save_settings(QSettings &settings) const;
 
@@ -109,7 +110,7 @@ protected Q_SLOTS:
 protected:
 	pv::Session &session_;
 
-	const std::shared_ptr<SignalScaleHandle> scale_handle_;
+	const shared_ptr<SignalScaleHandle> scale_handle_;
 	const item_list items_;
 
 	QComboBox *name_widget_;

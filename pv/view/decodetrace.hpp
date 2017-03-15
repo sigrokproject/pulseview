@@ -33,6 +33,12 @@
 #include <pv/data/signalbase.hpp>
 #include <pv/data/decode/row.hpp>
 
+using std::list;
+using std::map;
+using std::pair;
+using std::shared_ptr;
+using std::vector;
+
 struct srd_channel;
 struct srd_decoder;
 
@@ -68,7 +74,7 @@ private:
 	struct ChannelSelector
 	{
 		const QComboBox *combo_;
-		const std::shared_ptr<pv::data::decode::Decoder> decoder_;
+		const shared_ptr<pv::data::decode::Decoder> decoder_;
 		const srd_channel *pdch_;
 	};
 
@@ -86,20 +92,20 @@ private:
 	static const QColor OutlineColours[16];
 
 public:
-	DecodeTrace(pv::Session &session, std::shared_ptr<data::SignalBase> signalbase,
+	DecodeTrace(pv::Session &session, shared_ptr<data::SignalBase> signalbase,
 		int index);
 
 	bool enabled() const;
 
-	const std::shared_ptr<pv::data::DecoderStack>& decoder() const;
+	const shared_ptr<pv::data::DecoderStack>& decoder() const;
 
-	std::shared_ptr<data::SignalBase> base() const;
+	shared_ptr<data::SignalBase> base() const;
 
 	/**
 	 * Computes the vertical extents of the contents of this row item.
 	 * @return A pair containing the minimum and maximum y-values.
 	 */
-	std::pair<int, int> v_extents() const;
+	pair<int, int> v_extents() const;
 
 	/**
 	 * Paints the background layer of the trace with a QPainter
@@ -129,7 +135,7 @@ public:
 	void delete_pressed();
 
 private:
-	void draw_annotations(std::vector<pv::data::decode::Annotation> annotations,
+	void draw_annotations(vector<pv::data::decode::Annotation> annotations,
 		QPainter &p, int h, const ViewItemPaintParams &pp, int y,
 		size_t base_colour, int row_title_width);
 
@@ -137,7 +143,7 @@ private:
 		int h, const ViewItemPaintParams &pp, int y,
 		size_t base_colour, int row_title_width) const;
 
-	void draw_annotation_block(std::vector<pv::data::decode::Annotation> annotations,
+	void draw_annotation_block(vector<pv::data::decode::Annotation> annotations,
 		QPainter &p, int h, int y, size_t base_colour) const;
 
 	void draw_instant(const pv::data::decode::Annotation &a, QPainter &p,
@@ -153,7 +159,7 @@ private:
 	void draw_unresolved_period(QPainter &p, int h, int left,
 		int right) const;
 
-	std::pair<double, double> get_pixels_offset_samples_per_pixel() const;
+	pair<double, double> get_pixels_offset_samples_per_pixel() const;
 
 	/**
 	 * Determines the start and end sample for a given pixel range.
@@ -162,22 +168,22 @@ private:
 	 * @return Returns a pair containing the start sample and the end
 	 * 	sample that correspond to the start and end coordinates.
 	 */
-	std::pair<uint64_t, uint64_t> get_sample_range(int x_start, int x_end) const;
+	pair<uint64_t, uint64_t> get_sample_range(int x_start, int x_end) const;
 
 	int get_row_at_point(const QPoint &point);
 
 	const QString get_annotation_at_point(const QPoint &point);
 
 	void create_decoder_form(int index,
-		std::shared_ptr<pv::data::decode::Decoder> &dec,
+		shared_ptr<pv::data::decode::Decoder> &dec,
 		QWidget *parent, QFormLayout *form);
 
 	QComboBox* create_channel_selector(QWidget *parent,
-		const std::shared_ptr<pv::data::decode::Decoder> &dec,
+		const shared_ptr<pv::data::decode::Decoder> &dec,
 		const srd_channel *const pdch);
 
 	void commit_decoder_channels(
-		std::shared_ptr<data::decode::Decoder> &dec);
+		shared_ptr<data::decode::Decoder> &dec);
 
 	void commit_channels();
 
@@ -200,16 +206,15 @@ private Q_SLOTS:
 private:
 	pv::Session &session_;
 
-	std::vector<data::decode::Row> visible_rows_;
+	vector<data::decode::Row> visible_rows_;
 	uint64_t decode_start_, decode_end_;
 
-	std::list< std::shared_ptr<pv::binding::Decoder> >
-		bindings_;
+	list< shared_ptr<pv::binding::Decoder> > bindings_;
 
-	std::list<ChannelSelector> channel_selectors_;
-	std::vector<pv::widgets::DecoderGroupBox*> decoder_forms_;
+	list<ChannelSelector> channel_selectors_;
+	vector<pv::widgets::DecoderGroupBox*> decoder_forms_;
 
-	std::map<data::decode::Row, int> row_title_widths_;
+	map<data::decode::Row, int> row_title_widths_;
 	int row_height_, max_visible_rows_;
 
 	int min_useful_label_width_;

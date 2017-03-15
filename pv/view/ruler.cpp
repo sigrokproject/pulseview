@@ -28,6 +28,7 @@
 
 using namespace Qt;
 
+using std::function;
 using std::shared_ptr;
 using std::vector;
 
@@ -70,7 +71,7 @@ QSize Ruler::sizeHint() const
 QSize Ruler::extended_size_hint() const
 {
 	QRectF max_rect;
-	std::vector< std::shared_ptr<TimeItem> > items(view_.time_items());
+	vector< shared_ptr<TimeItem> > items(view_.time_items());
 	for (auto &i : items)
 		max_rect = max_rect.united(i->label_rect(QRect()));
 	return QSize(0, sizeHint().height() - max_rect.top() / 2 +
@@ -193,7 +194,7 @@ Ruler::TickPositions Ruler::calculate_tick_positions(
 	const pv::util::Timestamp& offset,
 	const double scale,
 	const int width,
-	std::function<QString(const pv::util::Timestamp&)> format_function)
+	function<QString(const pv::util::Timestamp&)> format_function)
 {
 	TickPositions tp;
 

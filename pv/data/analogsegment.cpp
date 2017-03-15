@@ -31,10 +31,12 @@
 
 using std::lock_guard;
 using std::recursive_mutex;
+using std::make_pair;
 using std::max;
 using std::max_element;
 using std::min;
 using std::min_element;
+using std::pair;
 
 namespace pv {
 namespace data {
@@ -101,9 +103,9 @@ const float* AnalogSegment::get_samples(
 	return (float*)get_raw_samples(start_sample, (end_sample - start_sample));
 }
 
-const std::pair<float, float> AnalogSegment::get_min_max() const
+const pair<float, float> AnalogSegment::get_min_max() const
 {
-	return std::make_pair(min_value_, max_value_);
+	return make_pair(min_value_, max_value_);
 }
 
 SegmentAnalogDataIterator* AnalogSegment::begin_sample_iteration(uint64_t start)

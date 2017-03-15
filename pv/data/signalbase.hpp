@@ -28,6 +28,7 @@
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
 
+using std::shared_ptr;
 
 namespace sigrok {
 class Channel;
@@ -50,14 +51,14 @@ private:
 	static const int ColourBGAlpha;
 
 public:
-	SignalBase(std::shared_ptr<sigrok::Channel> channel);
+	SignalBase(shared_ptr<sigrok::Channel> channel);
 	virtual ~SignalBase() {}
 
 public:
 	/**
 	 * Returns the underlying SR channel.
 	 */
-	std::shared_ptr<sigrok::Channel> channel() const;
+	shared_ptr<sigrok::Channel> channel() const;
 
 	/**
 	 * Returns enabled status of this channel.
@@ -113,25 +114,24 @@ public:
 	/**
 	 * Sets the internal data object.
 	 */
-	void set_data(std::shared_ptr<pv::data::SignalData> data);
+	void set_data(shared_ptr<pv::data::SignalData> data);
 
 	/**
 	 * Get the internal data as analog data object in case of analog type.
 	 */
-	std::shared_ptr<pv::data::Analog> analog_data() const;
+	shared_ptr<pv::data::Analog> analog_data() const;
 
 	/**
 	 * Get the internal data as logic data object in case of logic type.
 	 */
-	std::shared_ptr<pv::data::Logic> logic_data() const;
+	shared_ptr<pv::data::Logic> logic_data() const;
 
 #ifdef ENABLE_DECODE
 	bool is_decode_signal() const;
 
-	std::shared_ptr<pv::data::DecoderStack> decoder_stack() const;
+	shared_ptr<pv::data::DecoderStack> decoder_stack() const;
 
-	void set_decoder_stack(std::shared_ptr<pv::data::DecoderStack>
-		decoder_stack);
+	void set_decoder_stack(shared_ptr<pv::data::DecoderStack> decoder_stack);
 #endif
 
 	void save_settings(QSettings &settings) const;
@@ -146,11 +146,11 @@ Q_SIGNALS:
 	void colour_changed(const QColor &colour);
 
 private:
-	std::shared_ptr<sigrok::Channel> channel_;
-	std::shared_ptr<pv::data::SignalData> data_;
+	shared_ptr<sigrok::Channel> channel_;
+	shared_ptr<pv::data::SignalData> data_;
 
 #ifdef ENABLE_DECODE
-	std::shared_ptr<pv::data::DecoderStack> decoder_stack_;
+	shared_ptr<pv::data::DecoderStack> decoder_stack_;
 #endif
 
 	QString internal_name_, name_;

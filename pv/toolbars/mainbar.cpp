@@ -60,9 +60,12 @@ using std::cerr;
 using std::copy;
 using std::endl;
 using std::list;
+using std::make_pair;
 using std::map;
 using std::max;
 using std::min;
+using std::pair;
+using std::set;
 using std::shared_ptr;
 using std::string;
 using std::vector;
@@ -145,15 +148,15 @@ MainBar::MainBar(Session &session, QWidget *parent,
 		session.device_manager().context());
 	menu_file_export->setTitle(tr("&Export"));
 	connect(menu_file_export,
-		SIGNAL(format_selected(std::shared_ptr<sigrok::OutputFormat>)),
-		this, SLOT(export_file(std::shared_ptr<sigrok::OutputFormat>)));
+		SIGNAL(format_selected(shared_ptr<sigrok::OutputFormat>)),
+		this, SLOT(export_file(shared_ptr<sigrok::OutputFormat>)));
 
 	widgets::ImportMenu *menu_file_import = new widgets::ImportMenu(this,
 		session.device_manager().context());
 	menu_file_import->setTitle(tr("&Import"));
 	connect(menu_file_import,
-		SIGNAL(format_selected(std::shared_ptr<sigrok::InputFormat>)),
-		this, SLOT(import_file(std::shared_ptr<sigrok::InputFormat>)));
+		SIGNAL(format_selected(shared_ptr<sigrok::InputFormat>)),
+		this, SLOT(import_file(shared_ptr<sigrok::InputFormat>)));
 
 	action_connect_->setText(tr("&Connect to Device..."));
 	connect(action_connect_, SIGNAL(triggered(bool)),
@@ -163,9 +166,9 @@ MainBar::MainBar(Session &session, QWidget *parent,
 	widgets::ImportMenu *import_menu = new widgets::ImportMenu(this,
 		session.device_manager().context(), action_open_);
 	connect(import_menu,
-		SIGNAL(format_selected(std::shared_ptr<sigrok::InputFormat>)),
+		SIGNAL(format_selected(shared_ptr<sigrok::InputFormat>)),
 		this,
-		SLOT(import_file(std::shared_ptr<sigrok::InputFormat>)));
+		SLOT(import_file(shared_ptr<sigrok::InputFormat>)));
 
 	open_button_->setMenu(import_menu);
 	open_button_->setDefaultAction(action_open_);
@@ -180,9 +183,9 @@ MainBar::MainBar(Session &session, QWidget *parent,
 		session.device_manager().context(),
 		open_actions);
 	connect(export_menu,
-		SIGNAL(format_selected(std::shared_ptr<sigrok::OutputFormat>)),
+		SIGNAL(format_selected(shared_ptr<sigrok::OutputFormat>)),
 		this,
-		SLOT(export_file(std::shared_ptr<sigrok::OutputFormat>)));
+		SLOT(export_file(shared_ptr<sigrok::OutputFormat>)));
 
 	save_button_->setMenu(export_menu);
 	save_button_->setDefaultAction(action_save_as_);
@@ -250,7 +253,6 @@ void MainBar::update_device_list()
 	update_device_config_widgets();
 }
 
-
 void MainBar::set_capture_state(pv::Session::capture_state state)
 {
 	bool ui_enabled = (state == pv::Session::Stopped) ? true : false;
@@ -293,7 +295,7 @@ void MainBar::update_sample_rate_selector()
 	GVariant *gvar_list;
 	const uint64_t *elements = nullptr;
 	gsize num_elements;
-	map< const ConfigKey*, std::set<Capability> > keys;
+	map< const ConfigKey*, set<Capability> > keys;
 
 	if (updating_sample_rate_) {
 		sample_rate_.show_none();
@@ -592,7 +594,7 @@ void MainBar::export_file(shared_ptr<OutputFormat> format,
 	QSettings settings;
 	const QString dir = settings.value(SettingSaveDirectory).toString();
 
-	std::pair<uint64_t, uint64_t> sample_range;
+	pair<uint64_t, uint64_t> sample_range;
 
 	// Selection only? Verify that the cursors are active and fetch their values
 	if (selection_only) {
@@ -611,14 +613,14 @@ void MainBar::export_file(shared_ptr<OutputFormat> format,
 		const pv::util::Timestamp& start_time = trace_view->cursors()->first()->time();
 		const pv::util::Timestamp& end_time = trace_view->cursors()->second()->time();
 
-		const uint64_t start_sample = (uint64_t)std::max(
+		const uint64_t start_sample = (uint64_t)max(
 			(double)0, start_time.convert_to<double>() * samplerate);
-		const uint64_t end_sample = (uint64_t)std::max(
+		const uint64_t end_sample = (uint64_t)max(
 			(double)0, end_time.convert_to<double>() * samplerate);
 
-		sample_range = std::make_pair(start_sample, end_sample);
+		sample_range = make_pair(start_sample, end_sample);
 	} else {
-		sample_range = std::make_pair(0, 0);
+		sample_range = make_pair(0, 0);
 	}
 
 	// Construct the filter

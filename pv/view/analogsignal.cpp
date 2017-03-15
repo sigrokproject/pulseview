@@ -42,11 +42,15 @@
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
 
+using std::deque;
+using std::div;
+using std::div_t;
 using std::max;
 using std::make_pair;
 using std::min;
+using std::numeric_limits;
+using std::pair;
 using std::shared_ptr;
-using std::deque;
 
 namespace pv {
 namespace views {
@@ -125,7 +129,7 @@ void AnalogSignal::restore_settings(QSettings &settings)
 		autoranging_ = settings.value("autoranging").toBool();
 }
 
-std::pair<int, int> AnalogSignal::v_extents() const
+pair<int, int> AnalogSignal::v_extents() const
 {
 	const int ph = pos_vdivs_ * div_height_;
 	const int nh = neg_vdivs_ * div_height_;
@@ -368,9 +372,8 @@ float AnalogSignal::get_resolution(int scale_index)
 {
 	const float seq[] = {1.0f, 2.0f, 5.0f};
 
-	const int offset = std::numeric_limits<int>::max() / (2 * countof(seq));
-	const std::div_t d = std::div(
-		(int)(scale_index + countof(seq) * offset),
+	const int offset = numeric_limits<int>::max() / (2 * countof(seq));
+	const div_t d = div((int)(scale_index + countof(seq) * offset),
 		countof(seq));
 
 	return powf(10.0f, d.quot - offset) * seq[d.rem];
@@ -394,7 +397,7 @@ void AnalogSignal::perform_autoranging(bool force_update)
 	double min = 0, max = 0;
 
 	for (shared_ptr<pv::data::AnalogSegment> segment : segments) {
-		std::pair<double, double> mm = segment->get_min_max();
+		pair<double, double> mm = segment->get_min_max();
 		min = std::min(min, mm.first);
 		max = std::max(max, mm.second);
 	}

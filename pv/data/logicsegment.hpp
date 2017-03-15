@@ -27,6 +27,10 @@
 
 #include <QObject>
 
+using std::pair;
+using std::shared_ptr;
+using std::vector;
+
 namespace sigrok {
 	class Logic;
 }
@@ -70,14 +74,14 @@ private:
 	static const uint64_t MipMapDataUnit;
 
 public:
-	typedef std::pair<int64_t, bool> EdgePair;
+	typedef pair<int64_t, bool> EdgePair;
 
 public:
-	LogicSegment(pv::data::Logic& owner, std::shared_ptr<sigrok::Logic> data, uint64_t samplerate);
+	LogicSegment(pv::data::Logic& owner, shared_ptr<sigrok::Logic> data, uint64_t samplerate);
 
 	virtual ~LogicSegment();
 
-	void append_payload(std::shared_ptr<sigrok::Logic> logic);
+	void append_payload(shared_ptr<sigrok::Logic> logic);
 
 	const uint8_t* get_samples(int64_t start_sample, int64_t end_sample) const;
 
@@ -106,7 +110,7 @@ public:
 	 * can be resolved at this level of detail.
 	 * @param[in] sig_index The index of the signal.
 	 */
-	void get_subsampled_edges(std::vector<EdgePair> &edges,
+	void get_subsampled_edges(vector<EdgePair> &edges,
 		uint64_t start, uint64_t end,
 		float min_length, int sig_index);
 

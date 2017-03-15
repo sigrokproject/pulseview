@@ -24,6 +24,9 @@
 #include <memory>
 #include <vector>
 
+using std::shared_ptr;
+using std::vector;
+
 namespace pv {
 namespace data {
 
@@ -36,7 +39,7 @@ public:
 	virtual ~SignalData() {}
 
 public:
-	virtual std::vector< std::shared_ptr<Segment> > segments() const = 0;
+	virtual vector< shared_ptr<Segment> > segments() const = 0;
 
 	virtual void clear() = 0;
 

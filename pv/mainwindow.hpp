@@ -33,6 +33,11 @@
 #include "session.hpp"
 #include "views/viewbase.hpp"
 
+using std::list;
+using std::map;
+using std::shared_ptr;
+using std::string;
+
 struct srd_decoder;
 
 class QVBoxLayout;
@@ -65,22 +70,22 @@ private:
 
 public:
 	explicit MainWindow(DeviceManager &device_manager,
-		std::string open_file_name = std::string(),
-		std::string open_file_format = std::string(),
+		string open_file_name = string(),
+		string open_file_format = string(),
 		QWidget *parent = 0);
 
 	~MainWindow();
 
-	std::shared_ptr<views::ViewBase> get_active_view() const;
+	shared_ptr<views::ViewBase> get_active_view() const;
 
-	std::shared_ptr<views::ViewBase> add_view(const QString &title,
+	shared_ptr<views::ViewBase> add_view(const QString &title,
 		views::ViewType type, Session &session);
 
-	void remove_view(std::shared_ptr<views::ViewBase> view);
+	void remove_view(shared_ptr<views::ViewBase> view);
 
-	std::shared_ptr<Session> add_session();
+	shared_ptr<Session> add_session();
 
-	void remove_session(std::shared_ptr<Session> session);
+	void remove_session(shared_ptr<Session> session);
 
 private:
 	void setup_ui();
@@ -89,7 +94,7 @@ private:
 
 	void restore_ui_settings();
 
-	std::shared_ptr<Session> get_tab_session(int index) const;
+	shared_ptr<Session> get_tab_session(int index) const;
 
 	void closeEvent(QCloseEvent *event);
 
@@ -106,7 +111,7 @@ private Q_SLOTS:
 		Session *session);
 
 	void on_focus_changed();
-	void on_focused_session_changed(std::shared_ptr<Session> session);
+	void on_focused_session_changed(shared_ptr<Session> session);
 
 	void on_new_session_clicked();
 	void on_run_stop_clicked();
@@ -133,12 +138,12 @@ private Q_SLOTS:
 private:
 	DeviceManager &device_manager_;
 
-	std::list< std::shared_ptr<Session> > sessions_;
-	std::shared_ptr<Session> last_focused_session_;
+	list< shared_ptr<Session> > sessions_;
+	shared_ptr<Session> last_focused_session_;
 
-	std::map< QDockWidget*,	std::shared_ptr<views::ViewBase> > view_docks_;
+	map< QDockWidget*, shared_ptr<views::ViewBase> > view_docks_;
 
-	std::map< std::shared_ptr<Session>, QMainWindow*> session_windows_;
+	map< shared_ptr<Session>, QMainWindow*> session_windows_;
 
 	QWidget *static_tab_widget_;
 	QToolButton *new_session_button_, *run_stop_button_, *settings_button_;

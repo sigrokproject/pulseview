@@ -77,6 +77,7 @@ using pv::util::Timestamp;
 
 using std::back_inserter;
 using std::copy_if;
+using std::count_if;
 using std::deque;
 using std::dynamic_pointer_cast;
 using std::inserter;
@@ -90,6 +91,7 @@ using std::pair;
 using std::set;
 using std::set_difference;
 using std::shared_ptr;
+using std::stringstream;
 using std::unordered_map;
 using std::unordered_set;
 using std::vector;
@@ -224,7 +226,7 @@ const Session& View::session() const
 	return session_;
 }
 
-std::unordered_set< std::shared_ptr<Signal> > View::signals() const
+unordered_set< shared_ptr<Signal> > View::signals() const
 {
 	return signals_;
 }
@@ -289,7 +291,7 @@ void View::save_settings(QSettings &settings) const
 	settings.setValue("v_offset",
 		scrollarea_.verticalScrollBar()->sliderPosition());
 
-	std::stringstream ss;
+	stringstream ss;
 	boost::archive::text_oarchive oa(ss);
 	oa << boost::serialization::make_nvp("offset", offset_);
 	settings.setValue("offset", QString::fromStdString(ss.str()));
@@ -311,7 +313,7 @@ void View::restore_settings(QSettings &settings)
 
 	if (settings.contains("offset")) {
 		util::Timestamp offset;
-		std::stringstream ss;
+		stringstream ss;
 		ss << settings.value("offset").toString().toStdString();
 
 		boost::archive::text_iarchive ia(ss);
@@ -617,7 +619,7 @@ void View::centre_cursors()
 	viewport_->update();
 }
 
-std::shared_ptr<CursorPair> View::cursors() const
+shared_ptr<CursorPair> View::cursors() const
 {
 	return cursors_;
 }
@@ -633,15 +635,15 @@ void View::add_flag(const Timestamp& time)
 	time_item_appearance_changed(true, true);
 }
 
-void View::remove_flag(std::shared_ptr<Flag> flag)
+void View::remove_flag(shared_ptr<Flag> flag)
 {
 	flags_.remove(flag);
 	time_item_appearance_changed(true, true);
 }
 
-vector< std::shared_ptr<Flag> > View::flags() const
+vector< shared_ptr<Flag> > View::flags() const
 {
-	vector< std::shared_ptr<Flag> > flags(flags_.begin(), flags_.end());
+	vector< shared_ptr<Flag> > flags(flags_.begin(), flags_.end());
 	stable_sort(flags.begin(), flags.end(),
 		[](const shared_ptr<Flag> &a, const shared_ptr<Flag> &b) {
 			return a->time() < b->time();
@@ -755,7 +757,7 @@ void View::calculate_tick_spacing()
 
 		// Precision is the number of fractional digits required, not
 		// taking the prefix into account (and it must never be negative)
-		tick_precision = std::max(ceil(log10(1 / tick_period)).convert_to<int>(), 0);
+		tick_precision = max(ceil(log10(1 / tick_period)).convert_to<int>(), 0);
 
 		tick_period_width = (tick_period / scale_).convert_to<double>();
 
@@ -887,7 +889,7 @@ TraceTreeItemOwner* View::find_prevalent_trace_group(
 	size_t max_prevalence = 0;
 	TraceTreeItemOwner *prevalent_owner = nullptr;
 	for (TraceTreeItemOwner *owner : owners) {
-		const size_t prevalence = std::count_if(
+		const size_t prevalence = count_if(
 			owner_list.begin(), owner_list.end(),
 			[&](TraceTreeItemOwner *o) { return o == owner; });
 		if (prevalence > max_prevalence) {

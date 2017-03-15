@@ -23,6 +23,10 @@
 #include "viewitemowner.hpp"
 #include "tracetreeitem.hpp"
 
+using std::pair;
+using std::shared_ptr;
+using std::vector;
+
 namespace pv {
 
 class Session;
@@ -71,7 +75,7 @@ public:
 	/**
 	 * Returns a list of row items owned by this object.
 	 */
-	std::vector< std::shared_ptr<TraceTreeItem> >
+	vector< shared_ptr<TraceTreeItem> >
 	trace_tree_child_items() const;
 
 	/**
@@ -82,12 +86,12 @@ public:
 	/**
 	 * Adds a child item to this object.
 	 */
-	void add_child_item(std::shared_ptr<TraceTreeItem> item);
+	void add_child_item(shared_ptr<TraceTreeItem> item);
 
 	/**
 	 * Removes a child item from this object.
 	 */
-	void remove_child_item(std::shared_ptr<TraceTreeItem> item);
+	void remove_child_item(shared_ptr<TraceTreeItem> item);
 
 	virtual void restack_items();
 
@@ -95,7 +99,7 @@ public:
 	 * Computes the vertical extents of the contents of this row item owner.
 	 * @return A pair containing the minimum and maximum y-values.
 	 */
-	std::pair<int, int> v_extents() const;
+	pair<int, int> v_extents() const;
 
 	/*
 	 * Reassigns background color states to all its children, thereby

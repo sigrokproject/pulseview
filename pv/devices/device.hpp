@@ -23,6 +23,9 @@
 #include <memory>
 #include <string>
 
+using std::shared_ptr;
+using std::string;
+
 namespace sigrok {
 class ConfigKey;
 class Device;
@@ -43,9 +46,9 @@ protected:
 public:
 	virtual ~Device();
 
-	std::shared_ptr<sigrok::Session> session() const;
+	shared_ptr<sigrok::Session> session() const;
 
-	std::shared_ptr<sigrok::Device> device() const;
+	shared_ptr<sigrok::Device> device() const;
 
 	template<typename T>
 	T read_config(const sigrok::ConfigKey *key, const T default_value = 0);
@@ -53,14 +56,14 @@ public:
 	/**
 	 * Builds the full name. It only contains all the fields.
 	 */
-	virtual std::string full_name() const = 0;
+	virtual string full_name() const = 0;
 
 	/**
 	 * Builds the display name. It only contains fields as required.
 	 * @param device_manager a reference to the device manager is needed
 	 * so that other similarly titled devices can be detected.
 	 */
-	virtual std::string display_name(
+	virtual string display_name(
 		const DeviceManager &device_manager) const = 0;
 
 	virtual void open() = 0;
@@ -74,8 +77,8 @@ public:
 	virtual void stop();
 
 protected:
-	std::shared_ptr<sigrok::Session> session_;
-	std::shared_ptr<sigrok::Device> device_;
+	shared_ptr<sigrok::Session> session_;
+	shared_ptr<sigrok::Device> device_;
 };
 
 } // namespace devices

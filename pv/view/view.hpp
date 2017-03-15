@@ -40,6 +40,13 @@
 #include "flag.hpp"
 #include "tracetreeitemowner.hpp"
 
+using std::list;
+using std::unordered_map;
+using std::unordered_set;
+using std::set;
+using std::shared_ptr;
+using std::vector;
+
 namespace sigrok {
 class ChannelGroup;
 }
@@ -97,18 +104,18 @@ public:
 	/**
 	 * Returns the signals contained in this view.
 	 */
-	std::unordered_set< std::shared_ptr<Signal> > signals() const;
+	unordered_set< shared_ptr<Signal> > signals() const;
 
 	virtual void clear_signals();
 
-	virtual void add_signal(const std::shared_ptr<Signal> signal);
+	virtual void add_signal(const shared_ptr<Signal> signal);
 
 #ifdef ENABLE_DECODE
 	virtual void clear_decode_signals();
 
-	virtual void add_decode_signal(std::shared_ptr<data::SignalBase> signalbase);
+	virtual void add_decode_signal(shared_ptr<data::SignalBase> signalbase);
 
-	virtual void remove_decode_signal(std::shared_ptr<data::SignalBase> signalbase);
+	virtual void remove_decode_signal(shared_ptr<data::SignalBase> signalbase);
 #endif
 
 	/**
@@ -132,7 +139,7 @@ public:
 	/**
 	 * Gets a list of time markers.
 	 */
-	std::vector< std::shared_ptr<TimeItem> > time_items() const;
+	vector< shared_ptr<TimeItem> > time_items() const;
 
 	/**
 	 * Returns the view time scale in seconds per pixel.
@@ -194,10 +201,9 @@ public:
 	 */
 	void set_scale_offset(double scale, const pv::util::Timestamp& offset);
 
-	std::set< std::shared_ptr<pv::data::SignalData> >
-		get_visible_data() const;
+	set< shared_ptr<pv::data::SignalData> > get_visible_data() const;
 
-	std::pair<pv::util::Timestamp, pv::util::Timestamp> get_time_extents() const;
+	pair<pv::util::Timestamp, pv::util::Timestamp> get_time_extents() const;
 
 	/**
 	 * Enables or disables coloured trace backgrounds. If they're not
@@ -228,7 +234,7 @@ public:
 	/**
 	 * Returns a reference to the pair of cursors.
 	 */
-	std::shared_ptr<CursorPair> cursors() const;
+	shared_ptr<CursorPair> cursors() const;
 
 	/**
 	 * Adds a new flag at a specified time.
@@ -238,12 +244,12 @@ public:
 	/**
 	 * Removes a flag from the list.
 	 */
-	void remove_flag(std::shared_ptr<Flag> flag);
+	void remove_flag(shared_ptr<Flag> flag);
 
 	/**
 	 * Gets the list of flags.
 	 */
-	std::vector< std::shared_ptr<Flag> > flags() const;
+	vector< shared_ptr<Flag> > flags() const;
 
 	const QPoint& hover_point() const;
 
@@ -305,16 +311,16 @@ private:
 	void update_layout();
 
 	TraceTreeItemOwner* find_prevalent_trace_group(
-		const std::shared_ptr<sigrok::ChannelGroup> &group,
-		const std::unordered_map<std::shared_ptr<data::SignalBase>,
-			std::shared_ptr<Signal> > &signal_map);
+		const shared_ptr<sigrok::ChannelGroup> &group,
+		const unordered_map<shared_ptr<data::SignalBase>,
+			shared_ptr<Signal> > &signal_map);
 
-	static std::vector< std::shared_ptr<Trace> >
+	static vector< shared_ptr<Trace> >
 		extract_new_traces_for_channels(
-		const std::vector< std::shared_ptr<sigrok::Channel> > &channels,
-		const std::unordered_map<std::shared_ptr<data::SignalBase>,
-			std::shared_ptr<Signal> > &signal_map,
-		std::set< std::shared_ptr<Trace> > &add_list);
+		const vector< shared_ptr<sigrok::Channel> > &channels,
+		const unordered_map<shared_ptr<data::SignalBase>,
+			shared_ptr<Signal> > &signal_map,
+		set< shared_ptr<Trace> > &add_list);
 
 	void determine_time_unit();
 
@@ -384,10 +390,10 @@ private:
 	Ruler *ruler_;
 	Header *header_;
 
-	std::unordered_set< std::shared_ptr<Signal> > signals_;
+	unordered_set< shared_ptr<Signal> > signals_;
 
 #ifdef ENABLE_DECODE
-	std::vector< std::shared_ptr<DecodeTrace> > decode_traces_;
+	vector< shared_ptr<DecodeTrace> > decode_traces_;
 #endif
 
 	CustomAbstractScrollArea scrollarea_;
@@ -410,12 +416,12 @@ private:
 	util::TimeUnit time_unit_;
 
 	bool show_cursors_;
-	std::shared_ptr<CursorPair> cursors_;
+	shared_ptr<CursorPair> cursors_;
 
-	std::list< std::shared_ptr<Flag> > flags_;
+	list< shared_ptr<Flag> > flags_;
 	char next_flag_text_;
 
-	std::vector< std::shared_ptr<TriggerMarker> > trigger_markers_;
+	vector< shared_ptr<TriggerMarker> > trigger_markers_;
 
 	QPoint hover_point_;
 

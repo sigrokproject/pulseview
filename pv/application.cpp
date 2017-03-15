@@ -22,6 +22,10 @@
 
 #include <iostream>
 
+using std::cerr;
+using std::endl;
+using std::exception;
+
 Application::Application(int &argc, char* argv[]) :
 	QApplication(argc, argv)
 {
@@ -35,8 +39,8 @@ bool Application::notify(QObject *receiver, QEvent *event)
 {
 	try {
 		return QApplication::notify(receiver, event);
-	} catch (std::exception& e) {
-		std::cerr << "Caught exception: " << e.what() << std::endl;
+	} catch (exception& e) {
+		cerr << "Caught exception: " << e.what() << endl;
 		exit(1);
 		return false;
 	}

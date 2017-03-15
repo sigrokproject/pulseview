@@ -26,6 +26,9 @@
 
 #include <QPainter>
 
+using std::pair;
+using std::shared_ptr;
+
 class QPainter;
 
 namespace pv {
@@ -54,12 +57,12 @@ public:
 	/**
 	 * Returns a pointer to the first cursor.
 	 */
-	std::shared_ptr<Cursor> first() const;
+	shared_ptr<Cursor> first() const;
 
 	/**
 	 * Returns a pointer to the second cursor.
 	 */
-	std::shared_ptr<Cursor> second() const;
+	shared_ptr<Cursor> second() const;
 
 	/**
 	 * Sets the time of the marker.
@@ -97,10 +100,10 @@ public:
 
 	void compute_text_size(QPainter &p);
 
-	std::pair<float, float> get_cursor_offsets() const;
+	pair<float, float> get_cursor_offsets() const;
 
 private:
-	std::shared_ptr<Cursor> first_, second_;
+	shared_ptr<Cursor> first_, second_;
 
 	QSizeF text_size_;
 };

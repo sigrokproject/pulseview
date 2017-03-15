@@ -25,6 +25,9 @@
 #include <QMenu>
 #include <QSignalMapper>
 
+using std::shared_ptr;
+using std::vector;
+
 namespace sigrok {
 class Context;
 class OutputFormat;
@@ -38,17 +41,17 @@ class ExportMenu : public QMenu
 	Q_OBJECT;
 
 public:
-	ExportMenu(QWidget *parent, std::shared_ptr<sigrok::Context> context,
-		std::vector<QAction *>open_actions = std::vector<QAction *>());
+	ExportMenu(QWidget *parent, shared_ptr<sigrok::Context> context,
+		vector<QAction *>open_actions = vector<QAction *>());
 
 private Q_SLOTS:
 	void on_action(QObject *action);
 
 Q_SIGNALS:
-	void format_selected(std::shared_ptr<sigrok::OutputFormat> format);
+	void format_selected(shared_ptr<sigrok::OutputFormat> format);
 
 private:
-	std::shared_ptr<sigrok::Context> context_;
+	shared_ptr<sigrok::Context> context_;
 	QSignalMapper mapper_;
 };
 

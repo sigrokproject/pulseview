@@ -24,14 +24,15 @@
 
 #include "timemarker.hpp"
 
+using std::enable_shared_from_this;
+
 class QMenu;
 
 namespace pv {
 namespace views {
 namespace TraceView {
 
-class Flag : public TimeMarker,
-	public std::enable_shared_from_this<Flag>
+class Flag : public TimeMarker, public enable_shared_from_this<Flag>
 {
 	Q_OBJECT
 

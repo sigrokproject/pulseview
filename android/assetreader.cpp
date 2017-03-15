@@ -26,10 +26,13 @@
 
 using namespace pv;
 
+using std::string;
+using std::unique_ptr;
+
 AndroidAssetReader::~AndroidAssetReader()
 {}
 
-void AndroidAssetReader::open(struct sr_resource *res, std::string name)
+void AndroidAssetReader::open(struct sr_resource *res, string name)
 {
 	if (res->type == SR_RESOURCE_FIRMWARE) {
 		auto path = QStandardPaths::locate(QStandardPaths::GenericDataLocation,
@@ -37,7 +40,7 @@ void AndroidAssetReader::open(struct sr_resource *res, std::string name)
 		if (path.isEmpty())
 			path = QString::fromStdString("assets:/sigrok-firmware/" + name);
 
-		std::unique_ptr<QFile> file {new QFile{path}};
+		unique_ptr<QFile> file {new QFile{path}};
 
 		if (!file->open(QIODevice::ReadOnly))
 			throw sigrok::Error{SR_ERR};
@@ -60,7 +63,7 @@ void AndroidAssetReader::close(struct sr_resource *res)
 		qCritical("AndroidAssetReader: Invalid handle");
 		throw sigrok::Error{SR_ERR_ARG};
 	}
-	const std::unique_ptr<QFile> file {static_cast<QFile*>(res->handle)};
+	const unique_ptr<QFile> file {static_cast<QFile*>(res->handle)};
 	res->handle = nullptr;
 
 	file->close();

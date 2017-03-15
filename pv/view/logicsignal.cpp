@@ -46,6 +46,7 @@ using std::deque;
 using std::max;
 using std::make_pair;
 using std::min;
+using std::none_of;
 using std::pair;
 using std::shared_ptr;
 using std::vector;
@@ -136,7 +137,7 @@ shared_ptr<pv::data::Logic> LogicSignal::logic_data() const
 	return base_->logic_data();
 }
 
-std::pair<int, int> LogicSignal::v_extents() const
+pair<int, int> LogicSignal::v_extents() const
 {
 	const int signal_margin =
 		QFontMetrics(QApplication::font()).height() / 2;
@@ -446,7 +447,7 @@ void LogicSignal::modify_trigger()
 	if (trigger) {
 		for (auto stage : trigger->stages()) {
 			const auto &matches = stage->matches();
-			if (std::none_of(matches.begin(), matches.end(),
+			if (none_of(matches.begin(), matches.end(),
 			    [&](shared_ptr<TriggerMatch> match) {
 					return match->channel() != base_->channel(); }))
 				continue;

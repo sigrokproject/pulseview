@@ -27,6 +27,10 @@
 #include <QString>
 #include <QVariant>
 
+using std::function;
+using std::map;
+using std::multimap;
+
 namespace pv {
 
 class GlobalSettings : public QSettings
@@ -43,7 +47,7 @@ public:
 	GlobalSettings();
 
 	static void register_change_handler(const QString key,
-		std::function<void(QVariant)> cb);
+		function<void(QVariant)> cb);
 
 	void setValue(const QString& key, const QVariant& value);
 
@@ -66,10 +70,10 @@ public:
 	void undo_tracked_changes();
 
 private:
-	static std::multimap< QString, std::function<void(QVariant)> > callbacks_;
+	static multimap< QString, function<void(QVariant)> > callbacks_;
 
 	static bool tracking_;
-	static std::map<QString, QVariant> tracked_changes_;
+	static map<QString, QVariant> tracked_changes_;
 };
 
 } // namespace pv

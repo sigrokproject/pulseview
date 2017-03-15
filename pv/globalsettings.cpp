@@ -19,6 +19,10 @@
 
 #include "globalsettings.hpp"
 
+using std::function;
+using std::map;
+using std::multimap;
+
 namespace pv {
 
 const QString GlobalSettings::Key_View_AlwaysZoomToFit = "View_AlwaysZoomToFit";
@@ -26,9 +30,9 @@ const QString GlobalSettings::Key_View_ColouredBG = "View_ColouredBG";
 const QString GlobalSettings::Key_View_StickyScrolling = "View_StickyScrolling";
 const QString GlobalSettings::Key_View_ShowSamplingPoints = "View_ShowSamplingPoints";
 
-std::multimap< QString, std::function<void(QVariant)> > GlobalSettings::callbacks_;
+multimap< QString, function<void(QVariant)> > GlobalSettings::callbacks_;
 bool GlobalSettings::tracking_ = false;
-std::map<QString, QVariant> GlobalSettings::tracked_changes_;
+map<QString, QVariant> GlobalSettings::tracked_changes_;
 
 GlobalSettings::GlobalSettings() :
 	QSettings()
@@ -37,7 +41,7 @@ GlobalSettings::GlobalSettings() :
 }
 
 void GlobalSettings::register_change_handler(const QString key,
-	std::function<void(QVariant)> cb)
+	function<void(QVariant)> cb)
 {
 	callbacks_.emplace(key, cb);
 }

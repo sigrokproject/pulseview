@@ -24,6 +24,9 @@
 
 #include "file.hpp"
 
+using std::shared_ptr;
+using std::string;
+
 namespace sigrok {
 class Context;
 } // sigrok
@@ -34,15 +37,15 @@ namespace devices {
 class SessionFile final : public File
 {
 public:
-	SessionFile(const std::shared_ptr<sigrok::Context> context,
-		const std::string &file_name);
+	SessionFile(const shared_ptr<sigrok::Context> context,
+		const string &file_name);
 
 	void open();
 
 	void close();
 
 private:
-	const std::shared_ptr<sigrok::Context> context_;
+	const shared_ptr<sigrok::Context> context_;
 };
 
 } // namespace devices

@@ -26,6 +26,9 @@
 
 #include <QComboBox>
 
+using std::pair;
+using std::shared_ptr;
+
 namespace pv {
 
 namespace data {
@@ -53,12 +56,11 @@ private:
 	static const int InfoTextMarginRight, InfoTextMarginBottom;
 
 public:
-	AnalogSignal(pv::Session &session,
-		std::shared_ptr<data::SignalBase> base);
+	AnalogSignal(pv::Session &session, shared_ptr<data::SignalBase> base);
 
 	virtual ~AnalogSignal() = default;
 
-	std::shared_ptr<pv::data::SignalData> data() const;
+	shared_ptr<pv::data::SignalData> data() const;
 
 	virtual void save_settings(QSettings &settings) const;
 
@@ -68,7 +70,7 @@ public:
 	 * Computes the vertical extents of the contents of this row item.
 	 * @return A pair containing the minimum and maximum y-values.
 	 */
-	std::pair<int, int> v_extents() const;
+	pair<int, int> v_extents() const;
 
 	/**
 	 * Returns the offset to show the drag handle.
@@ -111,12 +113,12 @@ private:
 	void paint_grid(QPainter &p, int y, int left, int right);
 
 	void paint_trace(QPainter &p,
-		const std::shared_ptr<pv::data::AnalogSegment> &segment,
+		const shared_ptr<pv::data::AnalogSegment> &segment,
 		int y, int left, const int64_t start, const int64_t end,
 		const double pixels_offset, const double samples_per_pixel);
 
 	void paint_envelope(QPainter &p,
-		const std::shared_ptr<pv::data::AnalogSegment> &segment,
+		const shared_ptr<pv::data::AnalogSegment> &segment,
 		int y, int left, const int64_t start, const int64_t end,
 		const double pixels_offset, const double samples_per_pixel);
 

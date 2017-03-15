@@ -25,6 +25,10 @@
 
 #include "viewitemiterator.hpp"
 
+using std::dynamic_pointer_cast;
+using std::shared_ptr;
+using std::vector;
+
 namespace pv {
 
 class Session;
@@ -38,7 +42,7 @@ class View;
 class ViewItemOwner
 {
 public:
-	typedef std::vector< std::shared_ptr<ViewItem> > item_list;
+	typedef vector< shared_ptr<ViewItem> > item_list;
 	typedef ViewItemIterator<ViewItemOwner, ViewItem> iterator;
 	typedef ViewItemIterator<const ViewItemOwner, ViewItem> const_iterator;
 
@@ -75,10 +79,10 @@ public:
 	 * Creates a list of descendant signals filtered by type.
 	 */
 	template<class T>
-	std::vector< std::shared_ptr<T> > list_by_type() {
-		std::vector< std::shared_ptr<T> > items;
+	vector< shared_ptr<T> > list_by_type() {
+		vector< shared_ptr<T> > items;
 		for (const auto &r : *this) {
-			std::shared_ptr<T> p = std::dynamic_pointer_cast<T>(r);
+			shared_ptr<T> p = dynamic_pointer_cast<T>(r);
 			if (p)
 				items.push_back(p);
 		}

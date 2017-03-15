@@ -139,12 +139,12 @@ bool SignalBase::is_decode_signal() const
 	return (decoder_stack_ != nullptr);
 }
 
-std::shared_ptr<pv::data::DecoderStack> SignalBase::decoder_stack() const
+shared_ptr<pv::data::DecoderStack> SignalBase::decoder_stack() const
 {
 	return decoder_stack_;
 }
 
-void SignalBase::set_decoder_stack(std::shared_ptr<pv::data::DecoderStack>
+void SignalBase::set_decoder_stack(shared_ptr<pv::data::DecoderStack>
 	decoder_stack)
 {
 	decoder_stack_ = decoder_stack;

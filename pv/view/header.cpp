@@ -38,6 +38,8 @@
 #include <pv/widgets/popup.hpp>
 
 using boost::make_filter_iterator;
+
+using std::count_if;
 using std::dynamic_pointer_cast;
 using std::max;
 using std::make_pair;
@@ -138,8 +140,7 @@ void Header::contextMenuEvent(QContextMenuEvent *event)
 
 	const vector< shared_ptr<TraceTreeItem> > items(
 		view_.list_by_type<TraceTreeItem>());
-	if (std::count_if(items.begin(), items.end(), item_selected) > 1)
-	{
+	if (count_if(items.begin(), items.end(), item_selected) > 1) {
 		menu->addSeparator();
 
 		QAction *const group = new QAction(tr("Group"), this);
@@ -178,7 +179,7 @@ void Header::on_group()
 
 	shared_ptr<TraceGroup> group(new TraceGroup());
 	shared_ptr<TraceTreeItem> mouse_down_item(
-		std::dynamic_pointer_cast<TraceTreeItem>(mouse_down_item_));
+		dynamic_pointer_cast<TraceTreeItem>(mouse_down_item_));
 	shared_ptr<TraceTreeItem> focus_item(
 		mouse_down_item ? mouse_down_item : selected_items.front());
 

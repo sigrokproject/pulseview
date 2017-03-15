@@ -26,6 +26,10 @@
 
 #include <memory>
 
+using std::pair;
+using std::shared_ptr;
+using std::vector;
+
 class QIcon;
 class QToolBar;
 
@@ -66,20 +70,20 @@ private:
 
 public:
 	LogicSignal(pv::Session &session,
-		std::shared_ptr<devices::Device> device,
-		std::shared_ptr<data::SignalBase> base);
+		shared_ptr<devices::Device> device,
+		shared_ptr<data::SignalBase> base);
 
 	virtual ~LogicSignal() = default;
 
-	std::shared_ptr<pv::data::SignalData> data() const;
+	shared_ptr<pv::data::SignalData> data() const;
 
-	std::shared_ptr<pv::data::Logic> logic_data() const;
+	shared_ptr<pv::data::Logic> logic_data() const;
 
 	/**
 	 * Computes the vertical extents of the contents of this row item.
 	 * @return A pair containing the minimum and maximum y-values.
 	 */
-	std::pair<int, int> v_extents() const;
+	pair<int, int> v_extents() const;
 
 	/**
 	 * Returns the offset to show the drag handle.
@@ -108,13 +112,13 @@ public:
 
 private:
 	void paint_caps(QPainter &p, QLineF *const lines,
-		std::vector< std::pair<int64_t, bool> > &edges,
+		vector< pair<int64_t, bool> > &edges,
 		bool level, double samples_per_pixel, double pixels_offset,
 		float x_offset, float y_offset);
 
 	void init_trigger_actions(QWidget *parent);
 
-	const std::vector<int32_t> get_trigger_types() const;
+	const vector<int32_t> get_trigger_types() const;
 	QAction* action_from_trigger_type(
 		const sigrok::TriggerMatchType *type);
 	const sigrok::TriggerMatchType* trigger_type_from_action(
@@ -131,7 +135,7 @@ private Q_SLOTS:
 private:
 	int signal_height_;
 
-	std::shared_ptr<pv::devices::Device> device_;
+	shared_ptr<pv::devices::Device> device_;
 
 	const sigrok::TriggerMatchType *trigger_match_;
 	QToolBar *trigger_bar_;

@@ -35,6 +35,7 @@ using std::max;
 using std::min;
 using std::pair;
 using std::shared_ptr;
+using std::vector;
 
 using sigrok::Logic;
 
@@ -298,7 +299,7 @@ uint64_t LogicSegment::get_unpacked_sample(uint64_t index) const
 }
 
 void LogicSegment::get_subsampled_edges(
-	std::vector<EdgePair> &edges,
+	vector<EdgePair> &edges,
 	uint64_t start, uint64_t end,
 	float min_length, int sig_index)
 {

@@ -22,6 +22,9 @@
 
 #include "device.hpp"
 
+using std::shared_ptr;
+using std::string;
+
 namespace sigrok {
 class Context;
 class HardwareDevice;
@@ -33,31 +36,31 @@ namespace devices {
 class HardwareDevice final : public Device
 {
 public:
-	HardwareDevice(const std::shared_ptr<sigrok::Context> &context,
-		std::shared_ptr<sigrok::HardwareDevice> device);
+	HardwareDevice(const shared_ptr<sigrok::Context> &context,
+		shared_ptr<sigrok::HardwareDevice> device);
 
 	~HardwareDevice();
 
-	std::shared_ptr<sigrok::HardwareDevice> hardware_device() const;
+	shared_ptr<sigrok::HardwareDevice> hardware_device() const;
 
 	/**
 	 * Builds the full name. It only contains all the fields.
 	 */
-	std::string full_name() const;
+	string full_name() const;
 
 	/**
 	 * Builds the display name. It only contains fields as required.
 	 * @param device_manager a reference to the device manager is needed
 	 * so that other similarly titled devices can be detected.
 	 */
-	std::string display_name(const DeviceManager &device_manager) const;
+	string display_name(const DeviceManager &device_manager) const;
 
 	void open();
 
 	void close();
 
 private:
-	const std::shared_ptr<sigrok::Context> context_;
+	const shared_ptr<sigrok::Context> context_;
 	bool device_open_;
 };
 

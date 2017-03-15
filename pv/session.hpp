@@ -43,6 +43,15 @@
 #include "util.hpp"
 #include "views/viewbase.hpp"
 
+using std::function;
+using std::list;
+using std::map;
+using std::mutex;
+using std::recursive_mutex;
+using std::shared_ptr;
+using std::string;
+using std::unordered_set;
+
 struct srd_decoder;
 struct srd_channel;
 
@@ -103,21 +112,21 @@ public:
 
 	const DeviceManager& device_manager() const;
 
-	std::shared_ptr<sigrok::Session> session() const;
+	shared_ptr<sigrok::Session> session() const;
 
-	std::shared_ptr<devices::Device> device() const;
+	shared_ptr<devices::Device> device() const;
 
 	QString name() const;
 
 	void set_name(QString name);
 
-	const std::list< std::shared_ptr<views::ViewBase> > views() const;
+	const list< shared_ptr<views::ViewBase> > views() const;
 
-	std::shared_ptr<views::ViewBase> main_view() const;
+	shared_ptr<views::ViewBase> main_view() const;
 
-	std::shared_ptr<pv::toolbars::MainBar> main_bar() const;
+	shared_ptr<pv::toolbars::MainBar> main_bar() const;
 
-	void set_main_bar(std::shared_ptr<pv::toolbars::MainBar> main_bar);
+	void set_main_bar(shared_ptr<pv::toolbars::MainBar> main_bar);
 
 	/**
 	 * Indicates whether the captured data was saved to disk already or not
@@ -131,44 +140,43 @@ public:
 	/**
 	 * Attempts to set device instance, may fall back to demo if needed
 	 */
-	void select_device(std::shared_ptr<devices::Device> device);
+	void select_device(shared_ptr<devices::Device> device);
 
 	/**
 	 * Sets device instance that will be used in the next capture session.
 	 */
-	void set_device(std::shared_ptr<devices::Device> device);
+	void set_device(shared_ptr<devices::Device> device);
 
 	void set_default_device();
 
-	void load_init_file(const std::string &file_name,
-		const std::string &format);
+	void load_init_file(const string &file_name, const string &format);
 
 	void load_file(QString file_name,
-		std::shared_ptr<sigrok::InputFormat> format = nullptr,
-		const std::map<std::string, Glib::VariantBase> &options =
-			std::map<std::string, Glib::VariantBase>());
+		shared_ptr<sigrok::InputFormat> format = nullptr,
+		const map<string, Glib::VariantBase> &options =
+			map<string, Glib::VariantBase>());
 
 	capture_state get_capture_state() const;
 
-	void start_capture(std::function<void (const QString)> error_handler);
+	void start_capture(function<void (const QString)> error_handler);
 
 	void stop_capture();
 
 	double get_samplerate() const;
 
-	void register_view(std::shared_ptr<views::ViewBase> view);
+	void register_view(shared_ptr<views::ViewBase> view);
 
-	void deregister_view(std::shared_ptr<views::ViewBase> view);
+	void deregister_view(shared_ptr<views::ViewBase> view);
 
-	bool has_view(std::shared_ptr<views::ViewBase> view);
+	bool has_view(shared_ptr<views::ViewBase> view);
 
-	const std::unordered_set< std::shared_ptr<data::SignalBase> >
+	const unordered_set< shared_ptr<data::SignalBase> >
 		signalbases() const;
 
 #ifdef ENABLE_DECODE
 	bool add_decoder(srd_decoder *const dec);
 
-	void remove_decode_signal(std::shared_ptr<data::SignalBase> signalbase);
+	void remove_decode_signal(shared_ptr<data::SignalBase> signalbase);
 #endif
 
 private:
@@ -176,50 +184,50 @@ private:
 
 	void update_signals();
 
-	std::shared_ptr<data::SignalBase> signalbase_from_channel(
-		std::shared_ptr<sigrok::Channel> channel) const;
+	shared_ptr<data::SignalBase> signalbase_from_channel(
+		shared_ptr<sigrok::Channel> channel) const;
 
 private:
-	void sample_thread_proc(std::function<void (const QString)> error_handler);
+	void sample_thread_proc(function<void (const QString)> error_handler);
 
 	void free_unused_memory();
 
 	void feed_in_header();
 
-	void feed_in_meta(std::shared_ptr<sigrok::Meta> meta);
+	void feed_in_meta(shared_ptr<sigrok::Meta> meta);
 
 	void feed_in_trigger();
 
 	void feed_in_frame_begin();
 
-	void feed_in_logic(std::shared_ptr<sigrok::Logic> logic);
+	void feed_in_logic(shared_ptr<sigrok::Logic> logic);
 
-	void feed_in_analog(std::shared_ptr<sigrok::Analog> analog);
+	void feed_in_analog(shared_ptr<sigrok::Analog> analog);
 
-	void data_feed_in(std::shared_ptr<sigrok::Device> device,
-		std::shared_ptr<sigrok::Packet> packet);
+	void data_feed_in(shared_ptr<sigrok::Device> device,
+		shared_ptr<sigrok::Packet> packet);
 
 private:
 	DeviceManager &device_manager_;
-	std::shared_ptr<devices::Device> device_;
+	shared_ptr<devices::Device> device_;
 	QString default_name_, name_;
 
-	std::list< std::shared_ptr<views::ViewBase> > views_;
-	std::shared_ptr<pv::views::ViewBase> main_view_;
+	list< shared_ptr<views::ViewBase> > views_;
+	shared_ptr<pv::views::ViewBase> main_view_;
 
-	std::shared_ptr<pv::toolbars::MainBar> main_bar_;
+	shared_ptr<pv::toolbars::MainBar> main_bar_;
 
-	mutable std::mutex sampling_mutex_; //!< Protects access to capture_state_.
+	mutable mutex sampling_mutex_; //!< Protects access to capture_state_.
 	capture_state capture_state_;
 
-	std::unordered_set< std::shared_ptr<data::SignalBase> > signalbases_;
-	std::unordered_set< std::shared_ptr<data::SignalData> > all_signal_data_;
+	unordered_set< shared_ptr<data::SignalBase> > signalbases_;
+	unordered_set< shared_ptr<data::SignalData> > all_signal_data_;
 
-	mutable std::recursive_mutex data_mutex_;
-	std::shared_ptr<data::Logic> logic_data_;
+	mutable recursive_mutex data_mutex_;
+	shared_ptr<data::Logic> logic_data_;
 	uint64_t cur_samplerate_;
-	std::shared_ptr<data::LogicSegment> cur_logic_segment_;
-	std::map< std::shared_ptr<sigrok::Channel>, std::shared_ptr<data::AnalogSegment> >
+	shared_ptr<data::LogicSegment> cur_logic_segment_;
+	map< shared_ptr<sigrok::Channel>, shared_ptr<data::AnalogSegment> >
 		cur_analog_segments_;
 
 	std::thread sampling_thread_;

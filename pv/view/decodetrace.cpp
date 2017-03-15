@@ -56,6 +56,8 @@ extern "C" {
 
 using boost::shared_lock;
 using boost::shared_mutex;
+
+using std::all_of;
 using std::dynamic_pointer_cast;
 using std::list;
 using std::lock_guard;
@@ -64,6 +66,7 @@ using std::max;
 using std::make_pair;
 using std::map;
 using std::min;
+using std::out_of_range;
 using std::pair;
 using std::shared_ptr;
 using std::make_shared;
@@ -137,8 +140,7 @@ DecodeTrace::DecodeTrace(pv::Session &session,
 	delete_mapper_(this),
 	show_hide_mapper_(this)
 {
-	std::shared_ptr<pv::data::DecoderStack> decoder_stack =
-		base_->decoder_stack();
+	shared_ptr<pv::data::DecoderStack> decoder_stack = base_->decoder_stack();
 
 	// Determine shortest string we want to see displayed in full
 	QFontMetrics m(QApplication::font());
@@ -160,7 +162,7 @@ bool DecodeTrace::enabled() const
 	return true;
 }
 
-std::shared_ptr<data::SignalBase> DecodeTrace::base() const
+shared_ptr<data::SignalBase> DecodeTrace::base() const
 {
 	return base_;
 }
@@ -185,8 +187,7 @@ void DecodeTrace::paint_mid(QPainter &p, const ViewItemPaintParams &pp)
 {
 	using namespace pv::data::decode;
 
-	std::shared_ptr<pv::data::DecoderStack> decoder_stack =
-		base_->decoder_stack();
+	shared_ptr<pv::data::DecoderStack> decoder_stack = base_->decoder_stack();
 
 	const int text_height = ViewItemPaintParams::text_height();
 	row_height_ = (text_height * 6) / 4;
@@ -217,7 +218,7 @@ void DecodeTrace::paint_mid(QPainter &p, const ViewItemPaintParams &pp)
 		int row_title_width;
 		try {
 			row_title_width = row_title_widths_.at(row);
-		} catch (std::out_of_range) {
+		} catch (out_of_range) {
 			const int w = p.boundingRect(QRectF(), 0, row.title()).width() +
 				RowTitleMargin;
 			row_title_widths_[row] = w;
@@ -251,7 +252,7 @@ void DecodeTrace::paint_mid(QPainter &p, const ViewItemPaintParams &pp)
 		owner_->extents_changed(false, true);
 
 	// Update the maximum row count if needed
-	max_visible_rows_ = std::max(max_visible_rows_, (int)visible_rows_.size());
+	max_visible_rows_ = max(max_visible_rows_, (int)visible_rows_.size());
 }
 
 void DecodeTrace::paint_fore(QPainter &p, const ViewItemPaintParams &pp)
@@ -298,8 +299,7 @@ void DecodeTrace::populate_popup_form(QWidget *parent, QFormLayout *form)
 {
 	using pv::data::decode::Decoder;
 
-	std::shared_ptr<pv::data::DecoderStack> decoder_stack =
-		base_->decoder_stack();
+	shared_ptr<pv::data::DecoderStack> decoder_stack = base_->decoder_stack();
 
 	assert(form);
 	assert(parent);
@@ -488,7 +488,7 @@ void DecodeTrace::draw_annotation_block(
 	// Check if all annotations are of the same type (i.e. we can use one color)
 	// or if we should use a neutral color (i.e. gray)
 	const int format = annotations.front().format();
-	const bool single_format = std::all_of(
+	const bool single_format = all_of(
 		annotations.begin(), annotations.end(),
 		[&](const Annotation &a) { return a.format() == format; });
 
@@ -547,8 +547,8 @@ void DecodeTrace::draw_range(const pv::data::decode::Annotation &a, QPainter &p,
 	const int ann_start = start + cap_width;
 	const int ann_end = end - cap_width;
 
-	const int real_start = std::max(ann_start, pp.left() + row_title_width);
-	const int real_end = std::min(ann_end, pp.right());
+	const int real_start = max(ann_start, pp.left() + row_title_width);
+	const int real_end = min(ann_end, pp.right());
 	const int real_width = real_end - real_start;
 
 	QRectF rect(real_start, y - h / 2, real_width, h);
@@ -604,8 +604,7 @@ void DecodeTrace::draw_unresolved_period(QPainter &p, int h, int left,
 
 	double samples_per_pixel, pixels_offset;
 
-	std::shared_ptr<pv::data::DecoderStack> decoder_stack =
-		base_->decoder_stack();
+	shared_ptr<pv::data::DecoderStack> decoder_stack = base_->decoder_stack();
 
 	assert(decoder_stack);
 
@@ -659,8 +658,7 @@ void DecodeTrace::draw_unresolved_period(QPainter &p, int h, int left,
 
 pair<double, double> DecodeTrace::get_pixels_offset_samples_per_pixel() const
 {
-	std::shared_ptr<pv::data::DecoderStack> decoder_stack =
-		base_->decoder_stack();
+	shared_ptr<pv::data::DecoderStack> decoder_stack = base_->decoder_stack();
 
 	assert(owner_);
 	assert(decoder_stack);
@@ -732,8 +730,7 @@ const QString DecodeTrace::get_annotation_at_point(const QPoint &point)
 
 	vector<pv::data::decode::Annotation> annotations;
 
-	std::shared_ptr<pv::data::DecoderStack> decoder_stack =
-		base_->decoder_stack();
+	shared_ptr<pv::data::DecoderStack> decoder_stack = base_->decoder_stack();
 
 	assert(decoder_stack);
 	decoder_stack->get_annotation_subset(annotations, visible_rows_[row],
@@ -841,8 +838,7 @@ void DecodeTrace::create_decoder_form(int index,
 		channel_selectors_.push_back(s);
 	}
 
-	std::shared_ptr<pv::data::DecoderStack> decoder_stack =
-		base_->decoder_stack();
+	shared_ptr<pv::data::DecoderStack> decoder_stack = base_->decoder_stack();
 
 	// Add the options
 	shared_ptr<binding::Decoder> binding(
@@ -864,7 +860,7 @@ QComboBox* DecodeTrace::create_channel_selector(
 	const auto sigs(session_.signalbases());
 
 	vector< shared_ptr<data::SignalBase> > sig_list(sigs.begin(), sigs.end());
-	std::sort(sig_list.begin(), sig_list.end(),
+	sort(sig_list.begin(), sig_list.end(),
 		[](const shared_ptr<data::SignalBase> &a,
 		const shared_ptr<data::SignalBase> &b) {
 			return strnatcasecmp(a->name().toStdString(),
@@ -924,8 +920,7 @@ void DecodeTrace::commit_decoder_channels(shared_ptr<data::decode::Decoder> &dec
 
 void DecodeTrace::commit_channels()
 {
-	std::shared_ptr<pv::data::DecoderStack> decoder_stack =
-		base_->decoder_stack();
+	shared_ptr<pv::data::DecoderStack> decoder_stack = base_->decoder_stack();
 
 	assert(decoder_stack);
 	for (shared_ptr<data::decode::Decoder> dec : decoder_stack->stack())
@@ -957,8 +952,7 @@ void DecodeTrace::on_channel_selected(int)
 
 void DecodeTrace::on_stack_decoder(srd_decoder *decoder)
 {
-	std::shared_ptr<pv::data::DecoderStack> decoder_stack =
-		base_->decoder_stack();
+	shared_ptr<pv::data::DecoderStack> decoder_stack = base_->decoder_stack();
 
 	assert(decoder);
 	assert(decoder_stack);
@@ -970,8 +964,7 @@ void DecodeTrace::on_stack_decoder(srd_decoder *decoder)
 
 void DecodeTrace::on_delete_decoder(int index)
 {
-	std::shared_ptr<pv::data::DecoderStack> decoder_stack =
-		base_->decoder_stack();
+	shared_ptr<pv::data::DecoderStack> decoder_stack = base_->decoder_stack();
 
 	decoder_stack->remove(index);
 
@@ -985,8 +978,7 @@ void DecodeTrace::on_show_hide_decoder(int index)
 {
 	using pv::data::decode::Decoder;
 
-	std::shared_ptr<pv::data::DecoderStack> decoder_stack =
-		base_->decoder_stack();
+	shared_ptr<pv::data::DecoderStack> decoder_stack = base_->decoder_stack();
 
 	const list< shared_ptr<Decoder> > stack(decoder_stack->stack());
 

@@ -27,6 +27,7 @@
 
 #include "tracegroup.hpp"
 
+using std::any_of;
 using std::pair;
 using std::shared_ptr;
 using std::vector;
@@ -48,7 +49,7 @@ TraceGroup::~TraceGroup()
 
 bool TraceGroup::enabled() const
 {
-	return std::any_of(child_items().begin(), child_items().end(),
+	return any_of(child_items().begin(), child_items().end(),
 		[](const shared_ptr<ViewItem> &r) { return r->enabled(); });
 }
 

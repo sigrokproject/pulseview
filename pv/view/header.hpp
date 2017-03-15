@@ -26,6 +26,9 @@
 
 #include "marginwidget.hpp"
 
+using std::shared_ptr;
+using std::vector;
+
 namespace pv {
 namespace views {
 namespace TraceView {
@@ -63,7 +66,7 @@ private:
 	/**
 	 * Gets the row items.
 	 */
-	std::vector< std::shared_ptr<ViewItem> > items();
+	vector< shared_ptr<ViewItem> > items();
 
 	/**
 	 * Gets the first view item which has a label that contains @c pt .
@@ -71,7 +74,7 @@ private:
 	 * @return the view item that has been found, or and empty
 	 *   @c shared_ptr if no item was found.
 	 */
-	std::shared_ptr<ViewItem> get_mouse_over_item(const QPoint &pt);
+	shared_ptr<ViewItem> get_mouse_over_item(const QPoint &pt);
 
 private:
 	void paintEvent(QPaintEvent *event);

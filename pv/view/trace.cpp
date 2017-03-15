@@ -35,6 +35,9 @@
 #include "pv/widgets/colourbutton.hpp"
 #include "pv/widgets/popup.hpp"
 
+using std::pair;
+using std::shared_ptr;
+
 namespace pv {
 namespace views {
 namespace TraceView {
@@ -45,7 +48,7 @@ const int Trace::LabelHitPadding = 2;
 const QColor Trace::BrightGrayBGColour = QColor(0, 0, 0, 10*255/100);
 const QColor Trace::DarkGrayBGColour = QColor(0, 0, 0, 15*255/100);
 
-Trace::Trace(std::shared_ptr<data::SignalBase> channel) :
+Trace::Trace(shared_ptr<data::SignalBase> channel) :
 	base_(channel),
 	popup_(nullptr),
 	popup_form_(nullptr)
@@ -166,7 +169,7 @@ void Trace::paint_back(QPainter &p, const ViewItemPaintParams &pp)
 
 	p.setPen(QPen(Qt::NoPen));
 
-	const std::pair<int, int> extents = v_extents();
+	const pair<int, int> extents = v_extents();
 
 	const int x = 0;
 	const int y = get_visual_y() + extents.first;

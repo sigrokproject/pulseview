@@ -68,13 +68,13 @@ Decoder::channels() const
 	return channels_;
 }
 
-void Decoder::set_channels(std::map<const srd_channel*,
-	std::shared_ptr<data::SignalBase> > channels)
+void Decoder::set_channels(map<const srd_channel*,
+	shared_ptr<data::SignalBase> > channels)
 {
 	channels_ = channels;
 }
 
-const std::map<std::string, GVariant*>& Decoder::options() const
+const map<string, GVariant*>& Decoder::options() const
 {
 	return options_;
 }

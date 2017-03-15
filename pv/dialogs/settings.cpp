@@ -40,6 +40,8 @@
 #include <libsigrokdecode/libsigrokdecode.h>
 #endif
 
+using std::shared_ptr;
+
 namespace pv {
 namespace dialogs {
 
@@ -159,7 +161,7 @@ QWidget *Settings::get_about_page(QWidget *parent) const
 		QApplication::organizationDomain()));
 	version_info->setOpenExternalLinks(true);
 
-	std::shared_ptr<sigrok::Context> context = device_manager_.context();
+	shared_ptr<sigrok::Context> context = device_manager_.context();
 
 	QString s;
 	s.append("<table>");

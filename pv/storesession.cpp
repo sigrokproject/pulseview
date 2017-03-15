@@ -55,7 +55,6 @@ using std::pair;
 using std::set;
 using std::shared_ptr;
 using std::string;
-using std::thread;
 using std::unordered_set;
 using std::vector;
 
@@ -71,10 +70,10 @@ namespace pv {
 
 const size_t StoreSession::BlockSize = 10 * 1024 * 1024;
 
-StoreSession::StoreSession(const std::string &file_name,
+StoreSession::StoreSession(const string &file_name,
 	const shared_ptr<OutputFormat> &output_format,
 	const map<string, VariantBase> &options,
-	const std::pair<uint64_t, uint64_t> sample_range,
+	const pair<uint64_t, uint64_t> sample_range,
 	const Session &session) :
 	file_name_(file_name),
 	output_format_(output_format),
@@ -240,13 +239,13 @@ void StoreSession::store_proc(vector< shared_ptr<data::SignalBase> > achannel_li
 	unit_count_ = sample_count_ >> progress_scale;
 
 	const unsigned int samples_per_block =
-		std::min(asamples_per_block, lsamples_per_block);
+		min(asamples_per_block, lsamples_per_block);
 
 	while (!interrupt_ && sample_count_) {
 		progress_updated();
 
 		const uint64_t packet_len =
-			std::min((uint64_t)samples_per_block, sample_count_);
+			min((uint64_t)samples_per_block, sample_count_);
 
 		try {
 			const auto context = session_.device_manager().context();

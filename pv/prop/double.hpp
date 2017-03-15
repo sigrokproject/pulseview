@@ -26,6 +26,8 @@
 
 #include "property.hpp"
 
+using std::pair;
+
 class QDoubleSpinBox;
 
 namespace pv {
@@ -37,7 +39,7 @@ class Double : public Property
 
 public:
 	Double(QString name, int decimals, QString suffix,
-		boost::optional< std::pair<double, double> > range,
+		boost::optional< pair<double, double> > range,
 		boost::optional<double> step,
 		Getter getter,
 		Setter setter);
@@ -54,7 +56,7 @@ private Q_SLOTS:
 private:
 	const int decimals_;
 	const QString suffix_;
-	const boost::optional< std::pair<double, double> > range_;
+	const boost::optional< pair<double, double> > range_;
 	const boost::optional<double> step_;
 
 	QDoubleSpinBox *spin_box_;

@@ -26,6 +26,9 @@
 
 #include "rowitem.hpp"
 
+using std::enable_shared_from_this;
+using std::pair;
+
 namespace pv {
 namespace views {
 namespace TraceView {
@@ -33,7 +36,7 @@ namespace TraceView {
 class TraceTreeItemOwner;
 
 class TraceTreeItem : public RowItem,
-	public std::enable_shared_from_this<TraceTreeItem>
+	public enable_shared_from_this<TraceTreeItem>
 {
 	Q_OBJECT
 	Q_PROPERTY(int visual_v_offset
@@ -122,7 +125,7 @@ public:
 	 * Computes the vertical extents of the contents of this row item.
 	 * @return A pair containing the minimum and maximum y-values.
 	 */
-	virtual std::pair<int, int> v_extents() const = 0;
+	virtual pair<int, int> v_extents() const = 0;
 
 protected:
 	TraceTreeItemOwner *owner_;

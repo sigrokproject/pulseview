@@ -26,6 +26,8 @@
 #include "storeprogress.hpp"
 
 using std::map;
+using std::pair;
+using std::shared_ptr;
 using std::string;
 
 using Glib::VariantBase;
@@ -34,9 +36,9 @@ namespace pv {
 namespace dialogs {
 
 StoreProgress::StoreProgress(const QString &file_name,
-	const std::shared_ptr<sigrok::OutputFormat> output_format,
+	const shared_ptr<sigrok::OutputFormat> output_format,
 	const map<string, VariantBase> &options,
-	const std::pair<uint64_t, uint64_t> sample_range,
+	const pair<uint64_t, uint64_t> sample_range,
 	const Session &session, QWidget *parent) :
 	QProgressDialog(tr("Saving..."), tr("Cancel"), 0, 0, parent),
 	session_(file_name.toStdString(), output_format, options, sample_range,
@@ -78,7 +80,7 @@ void StoreProgress::closeEvent(QCloseEvent*)
 
 void StoreProgress::on_progress_updated()
 {
-	const std::pair<int, int> p = session_.progress();
+	const pair<int, int> p = session_.progress();
 	assert(p.first <= p.second);
 
 	if (p.second) {

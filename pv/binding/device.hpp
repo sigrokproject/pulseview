@@ -31,6 +31,11 @@
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
 
+using std::function;
+using std::pair;
+using std::set;
+using std::shared_ptr;
+
 namespace pv {
 
 namespace binding {
@@ -40,7 +45,7 @@ class Device : public QObject, public Binding
 	Q_OBJECT
 
 public:
-	Device(std::shared_ptr<sigrok::Configurable> configurable);
+	Device(shared_ptr<sigrok::Configurable> configurable);
 
 Q_SIGNALS:
 	void config_changed();
@@ -50,11 +55,11 @@ private:
 		prop::Property::Getter getter, prop::Property::Setter setter);
 	void bind_enum(const QString &name,
 		const sigrok::ConfigKey *key,
-		std::set<const sigrok::Capability *> capabilities,
+		set<const sigrok::Capability *> capabilities,
 		prop::Property::Getter getter, prop::Property::Setter setter,
-		std::function<QString (Glib::VariantBase)> printer = print_gvariant);
+		function<QString (Glib::VariantBase)> printer = print_gvariant);
 	void bind_int(const QString &name, QString suffix,
-		boost::optional< std::pair<int64_t, int64_t> > range,
+		boost::optional< pair<int64_t, int64_t> > range,
 		prop::Property::Getter getter, prop::Property::Setter setter);
 
 	static QString print_timebase(Glib::VariantBase gvar);
@@ -63,7 +68,7 @@ private:
 	static QString print_probe_factor(Glib::VariantBase gvar);
 
 protected:
-	std::shared_ptr<sigrok::Configurable> configurable_;
+	shared_ptr<sigrok::Configurable> configurable_;
 };
 
 } // binding

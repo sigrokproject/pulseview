@@ -24,8 +24,9 @@
 #include "trace.hpp"
 
 using std::dynamic_pointer_cast;
-using std::max;
+using std::find;
 using std::make_pair;
+using std::max;
 using std::min;
 using std::pair;
 using std::set;
@@ -42,7 +43,7 @@ const ViewItemOwner::item_list& TraceTreeItemOwner::child_items() const
 	return items_;
 }
 
-vector< std::shared_ptr<TraceTreeItem> >
+vector< shared_ptr<TraceTreeItem> >
 TraceTreeItemOwner::trace_tree_child_items() const
 {
 	vector< shared_ptr<TraceTreeItem> > items;
@@ -65,7 +66,7 @@ void TraceTreeItemOwner::clear_child_items()
 	items_.clear();
 }
 
-void TraceTreeItemOwner::add_child_item(std::shared_ptr<TraceTreeItem> item)
+void TraceTreeItemOwner::add_child_item(shared_ptr<TraceTreeItem> item)
 {
 	assert(!item->owner());
 	item->set_owner(this);
@@ -74,11 +75,11 @@ void TraceTreeItemOwner::add_child_item(std::shared_ptr<TraceTreeItem> item)
 	extents_changed(true, true);
 }
 
-void TraceTreeItemOwner::remove_child_item(std::shared_ptr<TraceTreeItem> item)
+void TraceTreeItemOwner::remove_child_item(shared_ptr<TraceTreeItem> item)
 {
 	assert(item->owner() == this);
 	item->set_owner(nullptr);
-	auto iter = std::find(items_.begin(), items_.end(), item);
+	auto iter = find(items_.begin(), items_.end(), item);
 	assert(iter != items_.end());
 	items_.erase(iter);
 

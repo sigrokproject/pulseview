@@ -26,6 +26,7 @@
 #include <vector>
 
 using std::lock_guard;
+using std::min;
 using std::recursive_mutex;
 using std::vector;
 
@@ -47,8 +48,7 @@ Segment::Segment(uint64_t samplerate, unsigned int unit_size) :
 
 	// Determine the number of samples we can fit in one chunk
 	// without exceeding MaxChunkSize
-	chunk_size_ = std::min(MaxChunkSize,
-		(MaxChunkSize / unit_size_) * unit_size_);
+	chunk_size_ = min(MaxChunkSize, (MaxChunkSize / unit_size_) * unit_size_);
 
 	// Create the initial chunk
 	current_chunk_ = new uint8_t[chunk_size_];
@@ -188,7 +188,7 @@ uint8_t* Segment::get_raw_samples(uint64_t start, uint64_t count) const
 	while (count > 0) {
 		const uint8_t* chunk = data_chunks_[chunk_num];
 
-		uint64_t copy_size = std::min(count * unit_size_,
+		uint64_t copy_size = min(count * unit_size_,
 			chunk_size_ - chunk_offs);
 
 		memcpy(dest_ptr, chunk + chunk_offs, copy_size);

@@ -25,6 +25,8 @@
 using namespace pv::util;
 using ts = pv::util::Timestamp;
 
+using std::bind;
+
 namespace {
 	QChar mu = QChar(0x03BC);
 
@@ -202,7 +204,7 @@ BOOST_AUTO_TEST_CASE(format_time_minutes_test)
 {
 	using namespace std::placeholders;
 
-	auto fmt = std::bind(format_time_minutes, _1, _2, true);
+	auto fmt = bind(format_time_minutes, _1, _2, true);
 
 	BOOST_CHECK_EQUAL(fmt(ts(    0), 0),    "+0:00");
 	BOOST_CHECK_EQUAL(fmt(ts(    1), 0),    "+0:01");

@@ -29,6 +29,11 @@
 #include <QSignalMapper>
 #include <QToolButton>
 
+using std::list;
+using std::shared_ptr;
+using std::vector;
+using std::weak_ptr;
+
 struct srd_decoder;
 
 namespace pv {
@@ -58,7 +63,7 @@ public:
 	/**
 	 * Returns a reference to the selected device.
 	 */
-	std::shared_ptr<devices::Device> selected_device();
+	shared_ptr<devices::Device> selected_device();
 
 	/**
 	 * Sets the current list of devices.
@@ -66,8 +71,8 @@ public:
 	 * @param selected_device the currently active device.
 	 */
 	void set_device_list(
-		const std::list< std::shared_ptr<devices::Device> > &devices,
-		std::shared_ptr<devices::Device> selected);
+		const list< shared_ptr<devices::Device> > &devices,
+		shared_ptr<devices::Device> selected);
 
 	/**
 	 * Sets the current device to "no device". Useful for when a selected
@@ -98,8 +103,8 @@ private:
 	QMenu menu_;
 	QSignalMapper mapper_;
 
-	std::shared_ptr<devices::Device> selected_device_;
-	std::vector< std::weak_ptr<devices::Device> > devices_;
+	shared_ptr<devices::Device> selected_device_;
+	vector< weak_ptr<devices::Device> > devices_;
 
 	QString device_tooltip_;
 };

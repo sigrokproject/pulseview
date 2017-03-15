@@ -34,6 +34,16 @@
 
 #include <QObject>
 
+using std::atomic;
+using std::string;
+using std::shared_ptr;
+using std::pair;
+using std::map;
+using std::vector;
+using std::thread;
+using std::mutex;
+using std::ofstream;
+
 namespace sigrok {
 class Output;
 class OutputFormat;
@@ -57,15 +67,15 @@ private:
 	static const size_t BlockSize;
 
 public:
-	StoreSession(const std::string &file_name,
-		const std::shared_ptr<sigrok::OutputFormat> &output_format,
-		const std::map<std::string, Glib::VariantBase> &options,
-		const std::pair<uint64_t, uint64_t> sample_range,
+	StoreSession(const string &file_name,
+		const shared_ptr<sigrok::OutputFormat> &output_format,
+		const map<string, Glib::VariantBase> &options,
+		const pair<uint64_t, uint64_t> sample_range,
 		const Session &session);
 
 	~StoreSession();
 
-	std::pair<int, int> progress() const;
+	pair<int, int> progress() const;
 
 	const QString& error() const;
 
@@ -76,9 +86,9 @@ public:
 	void cancel();
 
 private:
-	void store_proc(std::vector< std::shared_ptr<data::SignalBase> > achannel_list,
-		std::vector< std::shared_ptr<pv::data::AnalogSegment> > asegment_list,
-		std::shared_ptr<pv::data::LogicSegment> lsegment);
+	void store_proc(vector< shared_ptr<data::SignalBase> > achannel_list,
+		vector< shared_ptr<pv::data::AnalogSegment> > asegment_list,
+		shared_ptr<pv::data::LogicSegment> lsegment);
 
 Q_SIGNALS:
 	void progress_updated();
@@ -86,22 +96,22 @@ Q_SIGNALS:
 	void store_successful();
 
 private:
-	const std::string file_name_;
-	const std::shared_ptr<sigrok::OutputFormat> output_format_;
-	const std::map<std::string, Glib::VariantBase> options_;
-	const std::pair<uint64_t, uint64_t> sample_range_;
+	const string file_name_;
+	const shared_ptr<sigrok::OutputFormat> output_format_;
+	const map<string, Glib::VariantBase> options_;
+	const pair<uint64_t, uint64_t> sample_range_;
 	const Session &session_;
 
-	std::shared_ptr<sigrok::Output> output_;
-	std::ofstream output_stream_;
+	shared_ptr<sigrok::Output> output_;
+	ofstream output_stream_;
 
 	std::thread thread_;
 
-	std::atomic<bool> interrupt_;
+	atomic<bool> interrupt_;
 
-	std::atomic<int> units_stored_, unit_count_;
+	atomic<int> units_stored_, unit_count_;
 
-	mutable std::mutex mutex_;
+	mutable mutex mutex_;
 	QString error_;
 
 	uint64_t start_sample_, sample_count_;

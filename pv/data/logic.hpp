@@ -26,6 +26,10 @@
 
 #include <QObject>
 
+using std::deque;
+using std::shared_ptr;
+using std::vector;
+
 namespace pv {
 namespace data {
 
@@ -40,13 +44,11 @@ public:
 
 	unsigned int num_channels() const;
 
-	void push_segment(
-		std::shared_ptr<LogicSegment> &segment);
+	void push_segment(shared_ptr<LogicSegment> &segment);
 
-	const std::deque< std::shared_ptr<LogicSegment> >&
-		logic_segments() const;
+	const deque< shared_ptr<LogicSegment> >& logic_segments() const;
 
-	std::vector< std::shared_ptr<Segment> > segments() const;
+	vector< shared_ptr<Segment> > segments() const;
 
 	void clear();
 
@@ -63,7 +65,7 @@ Q_SIGNALS:
 
 private:
 	const unsigned int num_channels_;
-	std::deque< std::shared_ptr<LogicSegment> > segments_;
+	deque< shared_ptr<LogicSegment> > segments_;
 };
 
 } // namespace data

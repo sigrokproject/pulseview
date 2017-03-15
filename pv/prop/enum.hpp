@@ -27,6 +27,9 @@
 
 #include <QMetaType>
 
+using std::pair;
+using std::vector;
+
 Q_DECLARE_METATYPE(Glib::VariantBase);
 
 class QComboBox;
@@ -39,7 +42,7 @@ class Enum : public Property
 	Q_OBJECT;
 
 public:
-	Enum(QString name, std::vector<std::pair<Glib::VariantBase, QString> > values,
+	Enum(QString name, vector<pair<Glib::VariantBase, QString> > values,
 		Getter getter, Setter setter);
 
 	virtual ~Enum() = default;
@@ -52,7 +55,7 @@ private Q_SLOTS:
 	void on_current_item_changed(int);
 
 private:
-	const std::vector< std::pair<Glib::VariantBase, QString> > values_;
+	const vector< pair<Glib::VariantBase, QString> > values_;
 
 	QComboBox *selector_;
 };

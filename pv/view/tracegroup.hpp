@@ -23,6 +23,8 @@
 #include "tracetreeitem.hpp"
 #include "tracetreeitemowner.hpp"
 
+using std::pair;
+
 namespace pv {
 namespace views {
 namespace TraceView {
@@ -72,7 +74,7 @@ public:
 	 * Computes the vertical extents of the contents of this row item.
 	 * @return A pair containing the minimum and maximum y-values.
 	 */
-	std::pair<int, int> v_extents() const;
+	pair<int, int> v_extents() const;
 
 	/**
 	 * Paints the signal label.

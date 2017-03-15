@@ -23,11 +23,14 @@
 
 #include "sessionfile.hpp"
 
+using std::shared_ptr;
+using std::string;
+
 namespace pv {
 namespace devices {
 
-SessionFile::SessionFile(const std::shared_ptr<sigrok::Context> context,
-	const std::string &file_name) :
+SessionFile::SessionFile(const shared_ptr<sigrok::Context> context,
+	const string &file_name) :
 	File(file_name),
 	context_(context)
 {

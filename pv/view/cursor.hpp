@@ -26,6 +26,8 @@
 
 #include <QSizeF>
 
+using std::shared_ptr;
+
 class QPainter;
 
 namespace pv {
@@ -66,7 +68,7 @@ public:
 	QRectF label_rect(const QRectF &rect) const;
 
 private:
-	std::shared_ptr<Cursor> get_other_cursor() const;
+	shared_ptr<Cursor> get_other_cursor() const;
 };
 
 } // namespace TraceView

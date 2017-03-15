@@ -38,6 +38,15 @@
 #include <pv/data/decode/rowdata.hpp>
 #include <pv/util.hpp>
 
+using std::atomic;
+using std::condition_variable;
+using std::list;
+using std::map;
+using std::mutex;
+using std::pair;
+using std::shared_ptr;
+using std::vector;
+
 struct srd_decoder;
 struct srd_decoder_annotation_row;
 struct srd_channel;
@@ -82,8 +91,8 @@ public:
 
 	virtual ~DecoderStack();
 
-	const std::list< std::shared_ptr<decode::Decoder> >& stack() const;
-	void push(std::shared_ptr<decode::Decoder> decoder);
+	const list< shared_ptr<decode::Decoder> >& stack() const;
+	void push(shared_ptr<decode::Decoder> decoder);
 	void remove(int index);
 
 	double samplerate() const;
@@ -92,13 +101,13 @@ public:
 
 	int64_t samples_decoded() const;
 
-	std::vector<decode::Row> get_visible_rows() const;
+	vector<decode::Row> get_visible_rows() const;
 
 	/**
 	 * Extracts sorted annotations between two period into a vector.
 	 */
 	void get_annotation_subset(
-		std::vector<pv::data::decode::Annotation> &dest,
+		vector<pv::data::decode::Annotation> &dest,
 		const decode::Row &row, uint64_t start_sample,
 		uint64_t end_sample) const;
 
@@ -143,28 +152,28 @@ private:
 	 * @todo A proper solution should be implemented to allow multiple
 	 * decode operations in parallel.
 	 */
-	static std::mutex global_srd_mutex_;
+	static mutex global_srd_mutex_;
 
-	std::list< std::shared_ptr<decode::Decoder> > stack_;
+	list< shared_ptr<decode::Decoder> > stack_;
 
-	std::shared_ptr<pv::data::LogicSegment> segment_;
+	shared_ptr<pv::data::LogicSegment> segment_;
 
-	mutable std::mutex input_mutex_;
-	mutable std::condition_variable input_cond_;
+	mutable mutex input_mutex_;
+	mutable condition_variable input_cond_;
 	int64_t sample_count_;
 	bool frame_complete_;
 
-	mutable std::mutex output_mutex_;
+	mutable mutex output_mutex_;
 	int64_t	samples_decoded_;
 
-	std::map<const decode::Row, decode::RowData> rows_;
+	map<const decode::Row, decode::RowData> rows_;
 
-	std::map<std::pair<const srd_decoder*, int>, decode::Row> class_rows_;
+	map<pair<const srd_decoder*, int>, decode::Row> class_rows_;
 
 	QString error_message_;
 
 	std::thread decode_thread_;
-	std::atomic<bool> interrupt_;
+	atomic<bool> interrupt_;
 
 	friend struct DecoderStackTest::TwoDecoderStack;
 };

@@ -24,15 +24,22 @@
 
 #include "inputfile.hpp"
 
+using std::map;
+using std::shared_ptr;
+using std::streamsize;
+using std::string;
+using std::ifstream;
+using std::ios;
+
 namespace pv {
 namespace devices {
 
-const std::streamsize InputFile::BufferSize = 16384;
+const streamsize InputFile::BufferSize = 16384;
 
-InputFile::InputFile(const std::shared_ptr<sigrok::Context> &context,
-	const std::string &file_name,
-	std::shared_ptr<sigrok::InputFormat> format,
-	const std::map<std::string, Glib::VariantBase> &options) :
+InputFile::InputFile(const shared_ptr<sigrok::Context> &context,
+	const string &file_name,
+	shared_ptr<sigrok::InputFormat> format,
+	const map<string, Glib::VariantBase> &options) :
 	File(file_name),
 	context_(context),
 	format_(format),
@@ -55,11 +62,11 @@ void InputFile::open()
 
 	// open() should add the input device to the session but
 	// we can't open the device without sending some data first
-	f = new std::ifstream(file_name_, std::ios::binary);
+	f = new ifstream(file_name_, ios::binary);
 
 	char buffer[BufferSize];
 	f->read(buffer, BufferSize);
-	const std::streamsize size = f->gcount();
+	const streamsize size = f->gcount();
 	if (size == 0)
 		return;
 
@@ -90,14 +97,14 @@ void InputFile::run()
 
 	if (!f) {
 		// Previous call to run() processed the entire file already
-		f = new std::ifstream(file_name_, std::ios::binary);
+		f = new ifstream(file_name_, ios::binary);
 		input_->reset();
 	}
 
 	interrupt_ = false;
 	while (!interrupt_ && !f->eof()) {
 		f->read(buffer, BufferSize);
-		const std::streamsize size = f->gcount();
+		const streamsize size = f->gcount();
 		if (size == 0)
 			break;
 

@@ -30,6 +30,8 @@ G_GNUC_END_IGNORE_DEPRECATIONS
 #include <QString>
 #include <QWidget>
 
+using std::function;
+
 class QWidget;
 
 namespace pv {
@@ -40,8 +42,8 @@ class Property : public QObject
 	Q_OBJECT;
 
 public:
-	typedef std::function<Glib::VariantBase ()> Getter;
-	typedef std::function<void (Glib::VariantBase)> Setter;
+	typedef function<Glib::VariantBase ()> Getter;
+	typedef function<void (Glib::VariantBase)> Setter;
 
 protected:
 	Property(QString name, Getter getter, Setter setter);

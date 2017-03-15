@@ -28,6 +28,11 @@
 
 #include <pv/prop/property.hpp>
 
+using std::map;
+using std::shared_ptr;
+using std::string;
+using std::vector;
+
 namespace sigrok {
 class Option;
 }
@@ -45,15 +50,13 @@ public:
 	 * Constructs a new @c InputOutput binding.
 	 * @param options the map of options to use as a template.
 	 */
-	InputOutput(
-		const std::map<std::string, std::shared_ptr<sigrok::Option>>
-			&options);
+	InputOutput(const map<string, shared_ptr<sigrok::Option>> &options);
 
 	/**
 	 * Gets the map of selected options.
 	 * @return the options.
 	 */
-	const std::map<std::string, Glib::VariantBase>& options() const;
+	const map<string, Glib::VariantBase>& options() const;
 
 private:
 	/**
@@ -63,15 +66,15 @@ private:
 	 * @param getter the getter that will read the values out of the map.
 	 * @param setter the setter that will set the values into the map.
 	 */
-	std::shared_ptr<prop::Property> bind_enum(const QString &name,
-		const std::vector<Glib::VariantBase> &values,
+	shared_ptr<prop::Property> bind_enum(const QString &name,
+		const vector<Glib::VariantBase> &values,
 		prop::Property::Getter getter, prop::Property::Setter setter);
 
 private:
 	/**
 	 * The current map of options.
 	 */
-	std::map<std::string, Glib::VariantBase> options_;
+	map<string, Glib::VariantBase> options_;
 };
 
 } // binding

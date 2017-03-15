@@ -26,6 +26,11 @@
 
 #include <glib.h>
 
+using std::map;
+using std::set;
+using std::shared_ptr;
+using std::string;
+
 struct srd_decoder;
 struct srd_decoder_inst;
 struct srd_channel;
@@ -52,12 +57,12 @@ public:
 	bool shown() const;
 	void show(bool show = true);
 
-	const std::map<const srd_channel*,
-		std::shared_ptr<data::SignalBase> >& channels() const;
-	void set_channels(std::map<const srd_channel*,
-		std::shared_ptr<data::SignalBase> > channels);
+	const map<const srd_channel*,
+		shared_ptr<data::SignalBase> >& channels() const;
+	void set_channels(map<const srd_channel*,
+		shared_ptr<data::SignalBase> > channels);
 
-	const std::map<std::string, GVariant*>& options() const;
+	const map<string, GVariant*>& options() const;
 
 	void set_option(const char *id, GVariant *value);
 
@@ -66,16 +71,15 @@ public:
 	srd_decoder_inst* create_decoder_inst(
 		srd_session *session) const;
 
-	std::set< std::shared_ptr<pv::data::Logic> > get_data();
+	set< shared_ptr<pv::data::Logic> > get_data();
 
 private:
 	const srd_decoder *const decoder_;
 
 	bool shown_;
 
-	std::map<const srd_channel*, std::shared_ptr<pv::data::SignalBase> >
-		channels_;
-	std::map<std::string, GVariant*> options_;
+	map<const srd_channel*, shared_ptr<pv::data::SignalBase> > channels_;
+	map<string, GVariant*> options_;
 };
 
 } // namespace decode

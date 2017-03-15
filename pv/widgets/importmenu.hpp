@@ -25,6 +25,8 @@
 #include <QMenu>
 #include <QSignalMapper>
 
+using std::shared_ptr;
+
 namespace sigrok {
 class Context;
 class InputFormat;
@@ -38,17 +40,17 @@ class ImportMenu : public QMenu
 	Q_OBJECT;
 
 public:
-	ImportMenu(QWidget *parent, std::shared_ptr<sigrok::Context> context,
+	ImportMenu(QWidget *parent, shared_ptr<sigrok::Context> context,
 		QAction *open_action = nullptr);
 
 private Q_SLOTS:
 	void on_action(QObject *action);
 
 Q_SIGNALS:
-	void format_selected(std::shared_ptr<sigrok::InputFormat> format);
+	void format_selected(shared_ptr<sigrok::InputFormat> format);
 
 private:
-	std::shared_ptr<sigrok::Context> context_;
+	shared_ptr<sigrok::Context> context_;
 	QSignalMapper mapper_;
 };
 

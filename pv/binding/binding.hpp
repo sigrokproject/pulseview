@@ -31,6 +31,9 @@ G_GNUC_END_IGNORE_DEPRECATIONS
 
 #include <QString>
 
+using std::shared_ptr;
+using std::vector;
+
 class QFormLayout;
 class QWidget;
 
@@ -45,7 +48,7 @@ namespace binding {
 class Binding
 {
 public:
-	const std::vector< std::shared_ptr<prop::Property> >& properties();
+	const vector< shared_ptr<prop::Property> >& properties();
 
 	void commit();
 
@@ -58,7 +61,7 @@ public:
 	static QString print_gvariant(Glib::VariantBase gvar);
 
 protected:
-	std::vector< std::shared_ptr<prop::Property> > properties_;
+	vector< shared_ptr<prop::Property> > properties_;
 };
 
 } // binding

@@ -26,19 +26,26 @@
 
 #include "file.hpp"
 
+using std::atomic;
+using std::ifstream;
+using std::map;
+using std::shared_ptr;
+using std::streamsize;
+using std::string;
+
 namespace pv {
 namespace devices {
 
 class InputFile final : public File
 {
 private:
-	static const std::streamsize BufferSize;
+	static const streamsize BufferSize;
 
 public:
-	InputFile(const std::shared_ptr<sigrok::Context> &context,
-		const std::string &file_name,
-		std::shared_ptr<sigrok::InputFormat> format,
-		const std::map<std::string, Glib::VariantBase> &options);
+	InputFile(const shared_ptr<sigrok::Context> &context,
+		const string &file_name,
+		shared_ptr<sigrok::InputFormat> format,
+		const map<string, Glib::VariantBase> &options);
 
 	void open();
 
@@ -51,13 +58,13 @@ public:
 	void stop();
 
 private:
-	const std::shared_ptr<sigrok::Context> context_;
-	const std::shared_ptr<sigrok::InputFormat> format_;
-	const std::map<std::string, Glib::VariantBase> options_;
-	std::shared_ptr<sigrok::Input> input_;
+	const shared_ptr<sigrok::Context> context_;
+	const shared_ptr<sigrok::InputFormat> format_;
+	const map<string, Glib::VariantBase> options_;
+	shared_ptr<sigrok::Input> input_;
 
-	std::ifstream *f;
-	std::atomic<bool> interrupt_;
+	ifstream *f;
+	atomic<bool> interrupt_;
 };
 
 } // namespace devices

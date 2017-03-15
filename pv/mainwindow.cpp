@@ -50,10 +50,12 @@
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
 
+using std::bind;
 using std::dynamic_pointer_cast;
 using std::list;
 using std::make_shared;
 using std::map;
+using std::placeholders::_1;
 using std::shared_ptr;
 using std::string;
 
@@ -64,9 +66,6 @@ class ViewItem;
 }
 
 using toolbars::MainBar;
-
-using std::bind;
-using std::placeholders::_1;
 
 const QString MainWindow::WindowTitle = tr("PulseView");
 
@@ -474,7 +473,7 @@ void MainWindow::restore_ui_settings()
 	}
 }
 
-std::shared_ptr<Session> MainWindow::get_tab_session(int index) const
+shared_ptr<Session> MainWindow::get_tab_session(int index) const
 {
 	// Find the session that belongs to the tab's main window
 	for (auto entry : session_windows_)
@@ -539,7 +538,7 @@ void MainWindow::on_add_view(const QString &title, views::ViewType type,
 	Session *session)
 {
 	// We get a pointer and need a reference
-	for (std::shared_ptr<Session> s : sessions_)
+	for (shared_ptr<Session> s : sessions_)
 		if (s.get() == session)
 			add_view(title, type, *s);
 }
@@ -659,7 +658,7 @@ void MainWindow::on_capture_state_changed(QObject *obj)
 void MainWindow::on_new_view(Session *session)
 {
 	// We get a pointer and need a reference
-	for (std::shared_ptr<Session> s : sessions_)
+	for (shared_ptr<Session> s : sessions_)
 		if (s.get() == session)
 			add_view(session->name(), views::ViewTypeTrace, *s);
 }

@@ -60,7 +60,7 @@ const char *const ChannelNames[] = {
 };
 
 Signal::Signal(pv::Session &session,
-	std::shared_ptr<data::SignalBase> channel) :
+	shared_ptr<data::SignalBase> channel) :
 	Trace(channel),
 	session_(session),
 	scale_handle_(make_shared<SignalScaleHandle>(*this)),

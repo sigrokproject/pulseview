@@ -26,6 +26,8 @@
 
 #include "property.hpp"
 
+using std::pair;
+
 class QSpinBox;
 
 namespace pv {
@@ -37,7 +39,7 @@ class Int : public Property
 
 public:
 	Int(QString name, QString suffix,
-		boost::optional< std::pair<int64_t, int64_t> > range,
+		boost::optional< pair<int64_t, int64_t> > range,
 		Getter getter, Setter setter);
 
 	virtual ~Int() = default;
@@ -51,7 +53,7 @@ private Q_SLOTS:
 
 private:
 	const QString suffix_;
-	const boost::optional< std::pair<int64_t, int64_t> > range_;
+	const boost::optional< pair<int64_t, int64_t> > range_;
 
 	Glib::VariantBase value_;
 	QSpinBox *spin_box_;

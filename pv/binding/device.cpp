@@ -31,9 +31,11 @@
 #include <libsigrokcxx/libsigrokcxx.hpp>
 
 using boost::optional;
+
 using std::function;
 using std::make_pair;
 using std::pair;
+using std::set;
 using std::shared_ptr;
 using std::string;
 using std::vector;
@@ -143,7 +145,7 @@ void Device::bind_bool(const QString &name,
 }
 
 void Device::bind_enum(const QString &name,
-	const ConfigKey *key, std::set<const Capability *> capabilities,
+	const ConfigKey *key, set<const Capability *> capabilities,
 	Property::Getter getter,
 	Property::Setter setter, function<QString (Glib::VariantBase)> printer)
 {
@@ -164,7 +166,7 @@ void Device::bind_enum(const QString &name,
 }
 
 void Device::bind_int(const QString &name, QString suffix,
-	optional< std::pair<int64_t, int64_t> > range,
+	optional< pair<int64_t, int64_t> > range,
 	Property::Getter getter, Property::Setter setter)
 {
 	assert(configurable_);

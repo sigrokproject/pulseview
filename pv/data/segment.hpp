@@ -27,6 +27,9 @@
 #include <mutex>
 #include <vector>
 
+using std::recursive_mutex;
+using std::vector;
+
 namespace SegmentTest {
 struct SmallSize8Single;
 struct MediumSize8Single;
@@ -78,8 +81,8 @@ protected:
 	void continue_raw_sample_iteration(SegmentRawDataIterator* it, uint64_t increase);
 	void end_raw_sample_iteration(SegmentRawDataIterator* it);
 
-	mutable std::recursive_mutex mutex_;
-	std::vector<uint8_t*> data_chunks_;
+	mutable recursive_mutex mutex_;
+	vector<uint8_t*> data_chunks_;
 	uint8_t* current_chunk_;
 	uint64_t used_samples_, unused_samples_;
 	uint64_t sample_count_;

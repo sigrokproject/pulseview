@@ -24,6 +24,9 @@
 
 #include <QWidget>
 
+using std::shared_ptr;
+using std::vector;
+
 class QTouchEvent;
 
 namespace pv {
@@ -46,16 +49,14 @@ protected:
 	 * if no view item is being hovered over.
 	 * @remarks the default implementation does nothing.
 	 */
-	virtual void item_hover(
-		const std::shared_ptr<ViewItem> &item);
+	virtual void item_hover(const shared_ptr<ViewItem> &item);
 
 	/**
 	 * Indicates the event an a view item has been clicked.
 	 * @param item the view item that has been clicked.
 	 * @remarks the default implementation does nothing.
 	 */
-	virtual void item_clicked(
-		const std::shared_ptr<ViewItem> &item);
+	virtual void item_clicked(const shared_ptr<ViewItem> &item);
 
 	/**
 	 * Returns true if the selection of row items allows dragging.
@@ -94,7 +95,7 @@ protected:
 	/**
 	 * Gets the items in the view widget.
 	 */
-	virtual std::vector< std::shared_ptr<ViewItem> > items() = 0;
+	virtual vector< shared_ptr<ViewItem> > items() = 0;
 
 	/**
 	 * Gets the first view item which has a hit-box that contains @c pt .
@@ -102,8 +103,7 @@ protected:
 	 * @return the view item that has been found, or and empty
 	 *   @c shared_ptr if no item was found.
 	 */
-	virtual std::shared_ptr<ViewItem> get_mouse_over_item(
-		const QPoint &pt) = 0;
+	virtual shared_ptr<ViewItem> get_mouse_over_item(const QPoint &pt) = 0;
 
 	/**
 	 * Handles left mouse button press events.
@@ -142,7 +142,7 @@ protected:
 	pv::views::TraceView::View &view_;
 	QPoint mouse_point_;
 	QPoint mouse_down_point_;
-	std::shared_ptr<ViewItem> mouse_down_item_;
+	shared_ptr<ViewItem> mouse_down_item_;
 	bool item_dragging_;
 };
 

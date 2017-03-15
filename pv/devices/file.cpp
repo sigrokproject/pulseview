@@ -21,20 +21,22 @@
 
 #include "file.hpp"
 
+using std::string;
+
 namespace pv {
 namespace devices {
 
-File::File(const std::string &file_name) :
+File::File(const string &file_name) :
 	file_name_(file_name)
 {
 }
 
-std::string File::full_name() const
+string File::full_name() const
 {
 	return file_name_;
 }
 
-std::string File::display_name(const DeviceManager&) const
+string File::display_name(const DeviceManager&) const
 {
 	return boost::filesystem::path(file_name_).filename().string();
 }

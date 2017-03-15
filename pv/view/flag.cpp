@@ -29,6 +29,7 @@
 
 #include <pv/widgets/popup.hpp>
 
+using std::enable_shared_from_this;
 using std::shared_ptr;
 
 namespace pv {
@@ -45,7 +46,7 @@ Flag::Flag(View &view, const pv::util::Timestamp& time, const QString &text) :
 
 Flag::Flag(const Flag &flag) :
 	TimeMarker(flag.view_, FillColour, flag.time_),
-	std::enable_shared_from_this<Flag>(flag)
+	enable_shared_from_this<Flag>(flag)
 {
 }
 

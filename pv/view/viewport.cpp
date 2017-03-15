@@ -102,7 +102,7 @@ void Viewport::drag_release()
 vector< shared_ptr<ViewItem> > Viewport::items()
 {
 	vector< shared_ptr<ViewItem> > items;
-	const std::vector< shared_ptr<ViewItem> > view_items(
+	const vector< shared_ptr<ViewItem> > view_items(
 		view_.list_by_type<ViewItem>());
 	copy(view_items.begin(), view_items.end(), back_inserter(items));
 	const vector< shared_ptr<TimeItem> > time_items(view_.time_items());
