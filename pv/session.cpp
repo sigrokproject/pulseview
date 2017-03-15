@@ -637,7 +637,7 @@ bool Session::add_decoder(srd_decoder *const dec)
 		// Auto select the initial channels
 		for (const srd_channel *pdch : all_channels)
 			for (shared_ptr<data::SignalBase> b : signalbases_) {
-				if (b->type() == data::SignalBase::LogicChannel) {
+				if (b->logic_data()) {
 					if (QString::fromUtf8(pdch->name).toLower().
 						contains(b->name().toLower()))
 						channels[pdch] = b;
