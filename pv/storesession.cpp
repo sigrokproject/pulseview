@@ -69,7 +69,7 @@ using sigrok::OutputFlag;
 
 namespace pv {
 
-const size_t StoreSession::BlockSize = 1024 * 1024;
+const size_t StoreSession::BlockSize = 10 * 1024 * 1024;
 
 StoreSession::StoreSession(const std::string &file_name,
 	const shared_ptr<OutputFormat> &output_format,
