@@ -47,17 +47,6 @@ const int LogicSegment::MipMapScaleFactor = 1 << MipMapScalePower;
 const float LogicSegment::LogMipMapScaleFactor = logf(MipMapScaleFactor);
 const uint64_t LogicSegment::MipMapDataUnit = 64*1024;	// bytes
 
-LogicSegment::LogicSegment(pv::data::Logic& owner, shared_ptr<sigrok::Logic> data,
-	uint64_t samplerate) :
-	Segment(samplerate, data->unit_size()),
-	owner_(owner),
-	last_append_sample_(0)
-{
-	lock_guard<recursive_mutex> lock(mutex_);
-	memset(mip_map_, 0, sizeof(mip_map_));
-	append_payload(data);
-}
-
 LogicSegment::LogicSegment(pv::data::Logic& owner, unsigned int unit_size,
 	uint64_t samplerate) :
 	Segment(samplerate, unit_size),

@@ -77,7 +77,6 @@ public:
 	typedef pair<int64_t, bool> EdgePair;
 
 public:
-	LogicSegment(pv::data::Logic& owner, shared_ptr<sigrok::Logic> data, uint64_t samplerate);
 	LogicSegment(pv::data::Logic& owner, unsigned int unit_size, uint64_t samplerate);
 
 	virtual ~LogicSegment();

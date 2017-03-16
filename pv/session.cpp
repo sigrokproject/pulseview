@@ -962,7 +962,7 @@ void Session::feed_in_logic(shared_ptr<Logic> logic)
 
 		// Create a new data segment
 		cur_logic_segment_ = make_shared<data::LogicSegment>(
-			*logic_data_, logic, cur_samplerate_);
+			*logic_data_, logic->unit_size(), cur_samplerate_);
 		logic_data_->push_segment(cur_logic_segment_);
 
 		// @todo Putting this here means that only listeners querying
@@ -970,10 +970,9 @@ void Session::feed_in_logic(shared_ptr<Logic> logic)
 		// frame_began is DecoderStack, but in future we need to signal
 		// this after both analog and logic sweeps have begun.
 		frame_began();
-	} else {
-		// Append to the existing data segment
-		cur_logic_segment_->append_payload(logic);
 	}
+
+	cur_logic_segment_->append_payload(logic);
 
 	data_received();
 }
