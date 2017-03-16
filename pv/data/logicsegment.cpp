@@ -58,6 +58,15 @@ LogicSegment::LogicSegment(pv::data::Logic& owner, shared_ptr<sigrok::Logic> dat
 	append_payload(data);
 }
 
+LogicSegment::LogicSegment(pv::data::Logic& owner, unsigned int unit_size,
+	uint64_t samplerate) :
+	Segment(samplerate, unit_size),
+	owner_(owner),
+	last_append_sample_(0)
+{
+	memset(mip_map_, 0, sizeof(mip_map_));
+}
+
 LogicSegment::~LogicSegment()
 {
 	lock_guard<recursive_mutex> lock(mutex_);
@@ -144,12 +153,19 @@ void LogicSegment::append_payload(shared_ptr<sigrok::Logic> logic)
 	assert(unit_size_ == logic->unit_size());
 	assert((logic->data_length() % unit_size_) == 0);
 
+	append_payload(logic->data_pointer(), logic->data_length());
+}
+
+void LogicSegment::append_payload(void *data, uint64_t data_size)
+{
+	assert((data_size % unit_size_) == 0);
+
 	lock_guard<recursive_mutex> lock(mutex_);
 
 	uint64_t prev_sample_count = sample_count_;
-	uint64_t sample_count = logic->data_length() / unit_size_;
+	uint64_t sample_count = data_size / unit_size_;
 
-	append_samples(logic->data_pointer(), sample_count);
+	append_samples(data, sample_count);
 
 	// Generate the first mip-map from the data
 	append_payload_to_mipmap();

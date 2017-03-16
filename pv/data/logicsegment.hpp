@@ -78,10 +78,12 @@ public:
 
 public:
 	LogicSegment(pv::data::Logic& owner, shared_ptr<sigrok::Logic> data, uint64_t samplerate);
+	LogicSegment(pv::data::Logic& owner, unsigned int unit_size, uint64_t samplerate);
 
 	virtual ~LogicSegment();
 
 	void append_payload(shared_ptr<sigrok::Logic> logic);
+	void append_payload(void *data, uint64_t data_size);
 
 	const uint8_t* get_samples(int64_t start_sample, int64_t end_sample) const;
 
