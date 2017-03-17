@@ -234,7 +234,8 @@ void LogicSignal::paint_mid(QPainter &p, const ViewItemPaintParams &pp)
 	GlobalSettings settings;
 	const bool show_sampling_points =
 		settings.value(GlobalSettings::Key_View_ShowSamplingPoints).toBool();
-	if (!show_sampling_points)
+
+	if (!show_sampling_points || (samples_per_pixel >= 0.25))
 		return;
 
 	// Paint the sampling points
