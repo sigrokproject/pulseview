@@ -44,6 +44,7 @@ class AnalogSignal : public Signal
 private:
 	static const QColor SignalColours[4];
 	static const QColor GridMajorColor, GridMinorColor;
+	static const QColor SamplingPointColour;
 
 	static const float EnvelopeThreshold;
 

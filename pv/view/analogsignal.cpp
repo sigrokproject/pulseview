@@ -38,6 +38,7 @@
 #include "pv/data/analogsegment.hpp"
 #include "pv/data/signalbase.hpp"
 #include "pv/view/view.hpp"
+#include "pv/globalsettings.hpp"
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
 
@@ -60,6 +61,8 @@ const QColor AnalogSignal::SignalColours[4] = {
 
 const QColor AnalogSignal::GridMajorColor = QColor(0, 0, 0, 40*256/100);
 const QColor AnalogSignal::GridMinorColor = QColor(0, 0, 0, 20*256/100);
+
+const QColor AnalogSignal::SamplingPointColour(0x77, 0x77, 0x77);
 
 const float AnalogSignal::EnvelopeThreshold = 256.0f;
 
@@ -282,21 +285,37 @@ void AnalogSignal::paint_trace(QPainter &p,
 	QPointF *points = new QPointF[points_count];
 	QPointF *point = points;
 
+	QRectF *const sampling_points = new QRectF[points_count];
+	QRectF *sampling_point = sampling_points;
+
 	pv::data::SegmentAnalogDataIterator* it =
 		segment->begin_sample_iteration(start);
 
+	const int w = 2;
 	for (int64_t sample = start; sample != end; sample++) {
 		const float x = (sample / samples_per_pixel -
 			pixels_offset) + left;
 
 		*point++ = QPointF(x, y - *((float*)it->value) * scale_);
+		*sampling_point++ = QRectF(x - (w / 2), y - *((float*)it->value) * scale_ - (w / 2), w, w);
+
 		segment->continue_sample_iteration(it, 1);
 	}
 	segment->end_sample_iteration(it);
 
 	p.drawPolyline(points, points_count);
 
+	// Paint the sampling points if enabled
+	GlobalSettings settings;
+	const bool show_sampling_points =
+		settings.value(GlobalSettings::Key_View_ShowSamplingPoints).toBool();
+	if (show_sampling_points) {
+		p.setPen(SamplingPointColour);
+		p.drawRects(sampling_points, points_count);
+	}
+
 	delete[] points;
+	delete[] sampling_points;
 }
 
 void AnalogSignal::paint_envelope(QPainter &p,
