@@ -277,7 +277,9 @@ void AnalogSignal::paint_trace(QPainter &p,
 {
 	p.setPen(base_->colour());
 
-	QPointF *points = new QPointF[end - start];
+	const int64_t points_count = end - start;
+
+	QPointF *points = new QPointF[points_count];
 	QPointF *point = points;
 
 	pv::data::SegmentAnalogDataIterator* it =
@@ -292,7 +294,7 @@ void AnalogSignal::paint_trace(QPainter &p,
 	}
 	segment->end_sample_iteration(it);
 
-	p.drawPolyline(points, point - points);
+	p.drawPolyline(points, points_count);
 
 	delete[] points;
 }
