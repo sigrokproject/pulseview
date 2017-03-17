@@ -56,6 +56,7 @@ private:
 	static const QColor EdgeColour;
 	static const QColor HighColour;
 	static const QColor LowColour;
+	static const QColor SamplingPointColour;
 
 	static const QColor SignalColours[10];
 

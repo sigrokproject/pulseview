@@ -66,6 +66,7 @@ const float LogicSignal::Oversampling = 2.0f;
 const QColor LogicSignal::EdgeColour(0x80, 0x80, 0x80);
 const QColor LogicSignal::HighColour(0x00, 0xC0, 0x00);
 const QColor LogicSignal::LowColour(0xC0, 0x00, 0x00);
+const QColor LogicSignal::SamplingPointColour(0x77, 0x77, 0x77);
 
 const QColor LogicSignal::SignalColours[10] = {
 	QColor(0x16, 0x19, 0x1A),	// Black
@@ -227,6 +228,22 @@ void LogicSignal::paint_mid(QPainter &p, const ViewItemPaintParams &pp)
 		pixels_offset, pp.left(), low_offset);
 
 	delete[] cap_lines;
+
+	// Paint the sampling points
+	const uint64_t sampling_points_count = end_sample - start_sample + 1;
+	QRectF *const sampling_points = new QRectF[sampling_points_count];
+	QRectF *sampling_point = sampling_points;
+
+	const int w = 1;
+	const float y_middle = high_offset - ((high_offset - low_offset) / 2);
+	for (uint64_t i = start_sample; i < end_sample + 1; ++i) {
+		const float x = (i / samples_per_pixel - pixels_offset) + pp.left();
+		*sampling_point++ = QRectF(x - (w / 2), y_middle - (w / 2), w, w);
+	}
+
+	p.setPen(SamplingPointColour);
+	p.drawRects(sampling_points, sampling_points_count);
+	delete[] sampling_points;
 }
 
 void LogicSignal::paint_fore(QPainter &p, const ViewItemPaintParams &pp)
