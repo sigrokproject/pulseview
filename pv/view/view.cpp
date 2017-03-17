@@ -562,6 +562,13 @@ pair<Timestamp, Timestamp> View::get_time_extents() const
 	return make_pair(*left_time, *right_time);
 }
 
+void View::enable_show_sampling_points(bool state)
+{
+	(void)state;
+
+	viewport_->update();
+}
+
 void View::enable_coloured_bg(bool state)
 {
 	const vector<shared_ptr<TraceTreeItem>> items(

@@ -37,6 +37,7 @@ public:
 	static const QString Key_View_AlwaysZoomToFit;
 	static const QString Key_View_ColouredBG;
 	static const QString Key_View_StickyScrolling;
+	static const QString Key_View_ShowSamplingPoints;
 
 public:
 	GlobalSettings();

@@ -38,6 +38,7 @@
 #include <pv/data/logicsegment.hpp>
 #include <pv/data/signalbase.hpp>
 #include <pv/view/view.hpp>
+#include <pv/globalsettings.hpp>
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
 
@@ -228,6 +229,13 @@ void LogicSignal::paint_mid(QPainter &p, const ViewItemPaintParams &pp)
 		pixels_offset, pp.left(), low_offset);
 
 	delete[] cap_lines;
+
+	// Return if we don't need to paint the sampling points
+	GlobalSettings settings;
+	const bool show_sampling_points =
+		settings.value(GlobalSettings::Key_View_ShowSamplingPoints).toBool();
+	if (!show_sampling_points)
+		return;
 
 	// Paint the sampling points
 	const uint64_t sampling_points_count = end_sample - start_sample + 1;

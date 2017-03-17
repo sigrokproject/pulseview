@@ -206,6 +206,11 @@ public:
 	void enable_coloured_bg(bool state);
 
 	/**
+	 * Enable or disable showing sampling points.
+	 */
+	void enable_show_sampling_points(bool state);
+
+	/**
 	 * Returns true if cursors are displayed. false otherwise.
 	 */
 	bool cursors_shown() const;

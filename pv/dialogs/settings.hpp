@@ -50,6 +50,7 @@ private Q_SLOTS:
 	void on_view_alwaysZoomToFit_changed(int state);
 	void on_view_colouredBG_changed(int state);
 	void on_view_stickyScrolling_changed(int state);
+	void on_view_showSamplingPoints_changed(int state);
 
 private:
 	DeviceManager &device_manager_;

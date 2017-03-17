@@ -133,6 +133,11 @@ QWidget *Settings::get_view_settings_form(QWidget *parent) const
 	connect(sticky_scrolling_cb, SIGNAL(stateChanged(int)), this, SLOT(on_view_stickyScrolling_changed(int)));
 	trace_view_layout->addRow(tr("Always keep &newest samples at the right edge during capture"), sticky_scrolling_cb);
 
+	QCheckBox *show_sampling_points_cb = new QCheckBox();
+	show_sampling_points_cb->setChecked(settings.value(GlobalSettings::Key_View_ShowSamplingPoints).toBool());
+	connect(show_sampling_points_cb, SIGNAL(stateChanged(int)), this, SLOT(on_view_showSamplingPoints_changed(int)));
+	trace_view_layout->addRow(tr("Show data &sampling points"), show_sampling_points_cb);
+
 	return form;
 }
 
@@ -260,6 +265,11 @@ void Settings::on_view_stickyScrolling_changed(int state)
 	settings.setValue(GlobalSettings::Key_View_StickyScrolling, state ? true : false);
 }
 
+void Settings::on_view_showSamplingPoints_changed(int state)
+{
+	GlobalSettings settings;
+	settings.setValue(GlobalSettings::Key_View_ShowSamplingPoints, state ? true : false);
+}
 
 } // namespace dialogs
 } // namespace pv
