@@ -140,8 +140,7 @@ void Int::commit()
 		new_value = g_variant_new_int64(spin_box_->value());
 	else if (g_variant_type_equal(type, G_VARIANT_TYPE_UINT64))
 		new_value = g_variant_new_uint64(spin_box_->value());
-	else
-	{
+	else {
 		// Unexpected value type.
 		assert(false);
 	}

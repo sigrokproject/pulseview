@@ -49,11 +49,12 @@ enum ViewType {
 	ViewTypeTabularDecode
 };
 
-class ViewBase : public QWidget {
+class ViewBase : public QWidget
+{
 	Q_OBJECT
 
 public:
-	explicit ViewBase(Session &session, bool is_main_view=false, QWidget *parent = nullptr);
+	explicit ViewBase(Session &session, bool is_main_view = false, QWidget *parent = nullptr);
 
 	Session& session();
 	const Session& session() const;

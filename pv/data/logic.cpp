@@ -42,8 +42,7 @@ unsigned int Logic::num_channels() const
 	return num_channels_;
 }
 
-void Logic::push_segment(
-	shared_ptr<LogicSegment> &segment)
+void Logic::push_segment(shared_ptr<LogicSegment> &segment)
 {
 	segments_.push_front(segment);
 }
@@ -55,8 +54,7 @@ const deque< shared_ptr<LogicSegment> >& Logic::logic_segments() const
 
 vector< shared_ptr<Segment> > Logic::segments() const
 {
-	return vector< shared_ptr<Segment> >(
-		segments_.begin(), segments_.end());
+	return vector< shared_ptr<Segment> >(segments_.begin(), segments_.end());
 }
 
 void Logic::clear()

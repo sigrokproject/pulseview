@@ -75,8 +75,7 @@ public:
 	/**
 	 * Returns a list of row items owned by this object.
 	 */
-	vector< shared_ptr<TraceTreeItem> >
-	trace_tree_child_items() const;
+	vector< shared_ptr<TraceTreeItem> > trace_tree_child_items() const;
 
 	/**
 	 * Clears the list of child items.

@@ -57,7 +57,7 @@ Settings::Settings(DeviceManager &device_manager, QWidget *parent) :
 	page_list->setViewMode(QListView::IconMode);
 	page_list->setIconSize(QSize(icon_size, icon_size));
 	page_list->setMovement(QListView::Static);
-	page_list->setMaximumWidth(icon_size + icon_size/2);
+	page_list->setMaximumWidth(icon_size + (icon_size / 2));
 	page_list->setSpacing(12);
 
 	pages = new QStackedWidget;
@@ -168,15 +168,13 @@ QWidget *Settings::get_about_page(QWidget *parent) const
 
 	/* Library info */
 	s.append("<tr><td colspan=\"2\"><b>" +
-			tr("Used libraries:") +
-			"</b></td></tr>");
+			tr("Used libraries:") + "</b></td></tr>");
 	s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
 			.arg(QString("Qt"), qVersion()));
 
 	/* Set up the supported field */
 	s.append("<tr><td colspan=\"2\"><b>" +
-		tr("Supported hardware drivers:") +
-		"</b></td></tr>");
+		tr("Supported hardware drivers:") + "</b></td></tr>");
 	for (auto entry : context->drivers()) {
 		s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
 			.arg(QString::fromUtf8(entry.first.c_str()),
@@ -184,8 +182,7 @@ QWidget *Settings::get_about_page(QWidget *parent) const
 	}
 
 	s.append("<tr><td colspan=\"2\"><b>" +
-		tr("Supported input formats:") +
-		"</b></td></tr>");
+		tr("Supported input formats:") + "</b></td></tr>");
 	for (auto entry : context->input_formats()) {
 		s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
 			.arg(QString::fromUtf8(entry.first.c_str()),
@@ -193,8 +190,7 @@ QWidget *Settings::get_about_page(QWidget *parent) const
 	}
 
 	s.append("<tr><td colspan=\"2\"><b>" +
-		tr("Supported output formats:") +
-		"</b></td></tr>");
+		tr("Supported output formats:") + "</b></td></tr>");
 	for (auto entry : context->output_formats()) {
 		s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
 			.arg(QString::fromUtf8(entry.first.c_str()),
@@ -203,8 +199,7 @@ QWidget *Settings::get_about_page(QWidget *parent) const
 
 #ifdef ENABLE_DECODE
 	s.append("<tr><td colspan=\"2\"><b>" +
-		tr("Supported protocol decoders:") +
-		"</b></td></tr>");
+		tr("Supported protocol decoders:") + "</b></td></tr>");
 	for (const GSList *l = srd_decoder_list(); l; l = l->next) {
 		dec = (struct srd_decoder *)l->data;
 		s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")

@@ -420,8 +420,7 @@ void MainBar::update_sample_count_selector()
 	min_sample_count = min(max(min_sample_count, MinSampleCount),
 		max_sample_count);
 
-	sample_count_.show_125_list(
-		min_sample_count, max_sample_count);
+	sample_count_.show_125_list(min_sample_count, max_sample_count);
 
 	if (sr_dev->config_check(ConfigKey::LIMIT_SAMPLES, Capability::GET)) {
 		auto gvar = sr_dev->config_get(ConfigKey::LIMIT_SAMPLES);
@@ -581,8 +580,7 @@ void MainBar::add_decoder(srd_decoder *decoder)
 #endif
 }
 
-void MainBar::export_file(shared_ptr<OutputFormat> format,
-	bool selection_only)
+void MainBar::export_file(shared_ptr<OutputFormat> format, bool selection_only)
 {
 	using pv::dialogs::StoreProgress;
 
@@ -741,7 +739,7 @@ void MainBar::on_sample_rate_changed()
 void MainBar::on_config_changed()
 {
 	commit_sample_count();
-	commit_sample_rate();	
+	commit_sample_rate();
 }
 
 void MainBar::on_actionNewView_triggered()

@@ -182,8 +182,7 @@ private:
 		const shared_ptr<pv::data::decode::Decoder> &dec,
 		const srd_channel *const pdch);
 
-	void commit_decoder_channels(
-		shared_ptr<data::decode::Decoder> &dec);
+	void commit_decoder_channels(shared_ptr<data::decode::Decoder> &dec);
 
 	void commit_channels();
 

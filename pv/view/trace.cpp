@@ -42,11 +42,11 @@ namespace pv {
 namespace views {
 namespace TraceView {
 
-const QPen Trace::AxisPen(QColor(0, 0, 0, 30*256/100));
+const QPen Trace::AxisPen(QColor(0, 0, 0, 30 * 256 / 100));
 const int Trace::LabelHitPadding = 2;
 
-const QColor Trace::BrightGrayBGColour = QColor(0, 0, 0, 10*255/100);
-const QColor Trace::DarkGrayBGColour = QColor(0, 0, 0, 15*255/100);
+const QColor Trace::BrightGrayBGColour = QColor(0, 0, 0, 10 * 255 / 100);
+const QColor Trace::DarkGrayBGColour = QColor(0, 0, 0, 15 * 255 / 100);
 
 Trace::Trace(shared_ptr<data::SignalBase> channel) :
 	base_(channel),
@@ -138,8 +138,7 @@ pv::widgets::Popup* Trace::create_popup(QWidget *parent)
 
 	create_popup_form();
 
-	connect(popup_, SIGNAL(closed()),
-		this, SLOT(on_popup_closed()));
+	connect(popup_, SIGNAL(closed()), this, SLOT(on_popup_closed()));
 
 	return popup_;
 }

@@ -87,8 +87,7 @@ void SweepTimingWidget::show_list(const uint64_t *vals, size_t count)
 	list_.clear();
 	for (size_t i = 0; i < count; i++) {
 		char *const s = sr_si_string_u64(vals[i], suffix_);
-		list_.addItem(QString::fromUtf8(s),
-			qVariantFromValue(vals[i]));
+		list_.addItem(QString::fromUtf8(s), qVariantFromValue(vals[i]));
 		g_free(s);
 	}
 
@@ -138,20 +137,17 @@ void SweepTimingWidget::show_125_list(uint64_t min, uint64_t max)
 
 uint64_t SweepTimingWidget::value() const
 {
-	switch(value_type_) {
+	switch (value_type_) {
 	case None:
 		return 0;
-
 	case MinMaxStep:
 		return (uint64_t)value_.value();
-
 	case List:
 	{
 		const int index = list_.currentIndex();
 		return (index >= 0) ? list_.itemData(
 			index).value<uint64_t>() : 0;
 	}
-
 	default:
 		// Unexpected value type
 		assert(false);

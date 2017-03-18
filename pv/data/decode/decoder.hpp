@@ -68,8 +68,7 @@ public:
 
 	bool have_required_channels() const;
 
-	srd_decoder_inst* create_decoder_inst(
-		srd_session *session) const;
+	srd_decoder_inst* create_decoder_inst(srd_session *session) const;
 
 	set< shared_ptr<pv::data::Logic> > get_data();
 

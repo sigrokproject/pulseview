@@ -71,8 +71,7 @@ void SignalHandler::on_socket_notifier_activated()
 		abort();
 	}
 
-	switch(sig_number)
-	{
+	switch (sig_number) {
 	case SIGINT:
 		Q_EMIT int_received();
 		break;

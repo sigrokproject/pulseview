@@ -136,9 +136,10 @@ int main(int argc, char *argv[])
 	if (argc - optind > 1) {
 		fprintf(stderr, "Only one file can be opened.\n");
 		return 1;
-	} else if (argc - optind == 1) {
-		open_file = argv[argc - 1];
 	}
+
+	if (argc - optind == 1)
+		open_file = argv[argc - 1];
 
 	// Initialise libsigrok
 	context = sigrok::Context::create();

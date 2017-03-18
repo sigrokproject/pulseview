@@ -176,8 +176,7 @@ void LogicSignal::paint_mid(QPainter &p, const ViewItemPaintParams &pp)
 	if (segments.empty())
 		return;
 
-	const shared_ptr<pv::data::LogicSegment> &segment =
-		segments.front();
+	const shared_ptr<pv::data::LogicSegment> &segment = segments.front();
 
 	double samplerate = segment->samplerate();
 

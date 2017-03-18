@@ -59,8 +59,7 @@ shared_ptr<ViewItem> Viewport::get_mouse_over_item(const QPoint &pt)
 	const ViewItemPaintParams pp(rect(), view_.scale(), view_.offset());
 	const vector< shared_ptr<ViewItem> > items(this->items());
 	for (auto i = items.rbegin(); i != items.rend(); i++)
-		if ((*i)->enabled() &&
-			(*i)->hit_box_rect(pp).contains(pt))
+		if ((*i)->enabled() && (*i)->hit_box_rect(pp).contains(pt))
 			return *i;
 	return nullptr;
 }

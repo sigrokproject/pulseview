@@ -52,7 +52,6 @@ extern "C" {
 #include <pv/widgets/decodergroupbox.hpp>
 #include <pv/widgets/decodermenu.hpp>
 
-
 using std::all_of;
 using std::list;
 using std::make_pair;
@@ -438,8 +437,7 @@ void DecodeTrace::draw_annotation(const pv::data::decode::Annotation &a,
 
 	const double start = a.start_sample() / samples_per_pixel -
 		pixels_offset;
-	const double end = a.end_sample() / samples_per_pixel -
-		pixels_offset;
+	const double end = a.end_sample() / samples_per_pixel - pixels_offset;
 
 	const size_t colour = (base_colour + a.format()) % countof(Colours);
 	p.setPen(OutlineColours[colour]);
@@ -451,8 +449,7 @@ void DecodeTrace::draw_annotation(const pv::data::decode::Annotation &a,
 	if (a.start_sample() == a.end_sample())
 		draw_instant(a, p, h, start, y);
 	else
-		draw_range(a, p, h, start, end, y, pp,
-			row_title_width);
+		draw_range(a, p, h, start, end, y, pp, row_title_width);
 }
 
 void DecodeTrace::draw_annotation_block(
@@ -490,7 +487,7 @@ void DecodeTrace::draw_annotation_block(
 	p.setBrush(QBrush((single_format ? Colours[colour] : Qt::gray),
 		Qt::Dense4Pattern));
 	p.drawRoundedRect(
-		QRectF(start, top, end - start, bottom - top), h/4, h/4);
+		QRectF(start, top, end - start, bottom - top), h / 4, h / 4);
 }
 
 void DecodeTrace::draw_instant(const pv::data::decode::Annotation &a, QPainter &p,
@@ -619,8 +616,7 @@ void DecodeTrace::draw_unresolved_period(QPainter &p, int h, int left,
 	if (!data || data->logic_segments().empty())
 		return;
 
-	const shared_ptr<LogicSegment> segment =
-		data->logic_segments().front();
+	const shared_ptr<LogicSegment> segment = data->logic_segments().front();
 	assert(segment);
 	const int64_t sample_count = (int64_t)segment->get_sample_count();
 	if (sample_count == 0)
@@ -639,7 +635,7 @@ void DecodeTrace::draw_unresolved_period(QPainter &p, int h, int left,
 		samples_per_pixel - pixels_offset, left - 1.0);
 	const double end = min(sample_count / samples_per_pixel -
 		pixels_offset, right + 1.0);
-	const QRectF no_decode_rect(start, y - h/2 + 0.5, end - start, h);
+	const QRectF no_decode_rect(start, y - (h / 2) + 0.5, end - start, h);
 
 	p.setPen(QPen(Qt::NoPen));
 	p.setBrush(Qt::white);
@@ -963,7 +959,7 @@ void DecodeTrace::on_delete_decoder(int index)
 	decoder_stack->remove(index);
 
 	// Update the popup
-	create_popup_form();	
+	create_popup_form();
 
 	decoder_stack->begin_decode();
 }

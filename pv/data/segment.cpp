@@ -117,8 +117,7 @@ void Segment::append_single_sample(void *data)
 	// There will always be space for at least one sample in
 	// the current chunk, so we do not need to test for space
 
-	memcpy(current_chunk_ + (used_samples_ * unit_size_),
-		data, unit_size_);
+	memcpy(current_chunk_ + (used_samples_ * unit_size_), data, unit_size_);
 	used_samples_++;
 	unused_samples_--;
 
@@ -222,14 +221,12 @@ void Segment::continue_raw_sample_iteration(SegmentRawDataIterator* it, uint64_t
 {
 	lock_guard<recursive_mutex> lock(mutex_);
 
+	// Fail gracefully if we are asked to deliver data we don't have
 	if (it->sample_index > sample_count_)
-	{
-		// Fail gracefully if we are asked to deliver data we don't have
 		return;
-	} else {
-		it->sample_index += increase;
-		it->chunk_offs += (increase * unit_size_);
-	}
+
+	it->sample_index += increase;
+	it->chunk_offs += (increase * unit_size_);
 
 	if (it->chunk_offs > (chunk_size_ - 1)) {
 		it->chunk_num++;
@@ -251,7 +248,6 @@ void Segment::end_raw_sample_iteration(SegmentRawDataIterator* it)
 		free_unused_memory();
 	}
 }
-
 
 } // namespace data
 } // namespace pv

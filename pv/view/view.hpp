@@ -67,7 +67,8 @@ class Trace;
 class Viewport;
 class TriggerMarker;
 
-class CustomAbstractScrollArea : public QAbstractScrollArea {
+class CustomAbstractScrollArea : public QAbstractScrollArea
+{
 	Q_OBJECT
 
 public:
@@ -76,7 +77,8 @@ public:
 	bool viewportEvent(QEvent *event);
 };
 
-class View : public ViewBase, public TraceTreeItemOwner {
+class View : public ViewBase, public TraceTreeItemOwner
+{
 	Q_OBJECT
 
 private:

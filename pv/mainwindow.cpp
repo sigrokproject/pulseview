@@ -134,10 +134,10 @@ shared_ptr<views::ViewBase> MainWindow::get_active_view() const
 	QDockWidget *dock = nullptr;
 
 	while (w) {
-	    dock = qobject_cast<QDockWidget*>(w);
-	    if (dock)
-	        break;
-	    w = w->parent();
+		dock = qobject_cast<QDockWidget*>(w);
+		if (dock)
+			break;
+		w = w->parent();
 	}
 
 	// Get the view contained in the dock widget

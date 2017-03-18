@@ -93,7 +93,7 @@ public:
 private:
 	uint64_t unpack_sample(const uint8_t *ptr) const;
 	void pack_sample(uint8_t *ptr, uint64_t value);
-	
+
 	void reallocate_mipmap_level(MipMapLevel &m);
 
 	void append_payload_to_mipmap();

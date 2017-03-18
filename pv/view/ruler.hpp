@@ -55,7 +55,6 @@ class Ruler : public MarginWidget
 	friend struct RulerTest::tick_position_test_2;
 
 private:
-
 	/// Height of the ruler in multipes of the text height
 	static const float RulerHeight;
 

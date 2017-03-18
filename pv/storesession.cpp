@@ -226,7 +226,7 @@ void StoreSession::store_proc(vector< shared_ptr<data::SignalBase> > achannel_li
 	// Qt needs the progress values to fit inside an int. If they would
 	// not, scale the current and max values down until they do.
 	while ((sample_count_ >> progress_scale) > INT_MAX)
-		progress_scale ++;
+		progress_scale++;
 
 	unit_count_ = sample_count_ >> progress_scale;
 

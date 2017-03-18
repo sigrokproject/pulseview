@@ -47,8 +47,7 @@ public:
 		const shared_ptr<sigrok::OutputFormat> output_format,
 		const map<string, Glib::VariantBase> &options,
 		const pair<uint64_t, uint64_t> sample_range,
-		const Session &session,
-		QWidget *parent = nullptr);
+		const Session &session, QWidget *parent = nullptr);
 
 	virtual ~StoreProgress();
 

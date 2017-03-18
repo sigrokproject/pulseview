@@ -43,8 +43,7 @@ namespace data {
 
 const int AnalogSegment::EnvelopeScalePower = 4;
 const int AnalogSegment::EnvelopeScaleFactor = 1 << EnvelopeScalePower;
-const float AnalogSegment::LogEnvelopeScaleFactor =
-	logf(EnvelopeScaleFactor);
+const float AnalogSegment::LogEnvelopeScaleFactor = logf(EnvelopeScaleFactor);
 const uint64_t AnalogSegment::EnvelopeDataUnit = 64*1024;	// bytes
 
 AnalogSegment::AnalogSegment(Analog& owner, uint64_t samplerate) :
@@ -73,7 +72,7 @@ void AnalogSegment::append_interleaved_samples(const float *data,
 
 	uint64_t prev_sample_count = sample_count_;
 
-	for (uint32_t i=0; i < sample_count; i++) {
+	for (uint32_t i = 0; i < sample_count; i++) {
 		append_single_sample((void*)data);
 		data += stride;
 	}
@@ -174,8 +173,10 @@ void AnalogSegment::append_payload_to_envelope_levels()
 		it = begin_raw_sample_iteration(0);
 		for (uint64_t i = 0; i < sample_count_; i++) {
 			const float sample = *((float*)it->value);
-			if (sample < min_value_) min_value_ = sample;
-			if (sample > max_value_) max_value_ = sample;
+			if (sample < min_value_)
+				min_value_ = sample;
+			if (sample > max_value_)
+				max_value_ = sample;
 			continue_raw_sample_iteration(it, 1);
 		}
 		end_raw_sample_iteration(it);
@@ -191,7 +192,7 @@ void AnalogSegment::append_payload_to_envelope_levels()
 
 	// Iterate through the samples to populate the first level mipmap
 	uint64_t start_sample = prev_length * EnvelopeScaleFactor;
-	uint64_t end_sample   = e0.length * EnvelopeScaleFactor;
+	uint64_t end_sample = e0.length * EnvelopeScaleFactor;
 
 	it = begin_raw_sample_iteration(start_sample);
 	for (uint64_t i = start_sample; i < end_sample; i += EnvelopeScaleFactor) {
@@ -202,8 +203,10 @@ void AnalogSegment::append_payload_to_envelope_levels()
 			*max_element(samples, samples + EnvelopeScaleFactor),
 		};
 
-		if (sub_sample.min < min_value_) min_value_ = sub_sample.min;
-		if (sub_sample.max > max_value_) max_value_ = sub_sample.max;
+		if (sub_sample.min < min_value_)
+			min_value_ = sub_sample.min;
+		if (sub_sample.max > max_value_)
+			max_value_ = sub_sample.max;
 
 		continue_raw_sample_iteration(it, EnvelopeScaleFactor);
 		*dest_ptr++ = sub_sample;
@@ -213,7 +216,7 @@ void AnalogSegment::append_payload_to_envelope_levels()
 	// Compute higher level mipmaps
 	for (unsigned int level = 1; level < ScaleStepCount; level++) {
 		Envelope &e = envelope_levels_[level];
-		const Envelope &el = envelope_levels_[level-1];
+		const Envelope &el = envelope_levels_[level - 1];
 
 		// Expand the data buffer to fit the new samples
 		prev_length = e.length;

@@ -416,7 +416,7 @@ void DecoderStack::annotation_callback(srd_proto_data *pdata, void *decoder)
 		row_iter = d->rows_.find((*r).second);
 	else {
 		// Failing that, use the decoder as a key
-		row_iter = d->rows_.find(Row(decc));	
+		row_iter = d->rows_.find(Row(decc));
 	}
 
 	assert(row_iter != d->rows_.end());

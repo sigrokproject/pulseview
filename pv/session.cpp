@@ -1035,7 +1035,7 @@ void Session::feed_in_analog(shared_ptr<Analog> analog)
 void Session::data_feed_in(shared_ptr<sigrok::Device> device,
 	shared_ptr<Packet> packet)
 {
-	static bool frame_began=false;
+	static bool frame_began = false;
 
 	(void)device;
 

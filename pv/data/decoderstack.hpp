@@ -127,8 +127,7 @@ private:
 
 	void decode_proc();
 
-	static void annotation_callback(srd_proto_data *pdata,
-		void *decoder);
+	static void annotation_callback(srd_proto_data *pdata, void *decoder);
 
 private Q_SLOTS:
 	void on_new_frame();

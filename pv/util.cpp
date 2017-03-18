@@ -110,12 +110,8 @@ static QTextStream& operator<<(QTextStream& stream, const Timestamp& t)
 	return stream << QString::fromStdString(str);
 }
 
-QString format_time_si(
-	const Timestamp& v,
-	SIPrefix prefix,
-	unsigned int precision,
-	QString unit,
-	bool sign)
+QString format_time_si(const Timestamp& v, SIPrefix prefix,
+	unsigned int precision, QString unit, bool sign)
 {
 	if (prefix == SIPrefix::unspecified) {
 		// No prefix given, calculate it
@@ -142,22 +138,14 @@ QString format_time_si(
 	QTextStream ts(&s);
 	if (sign && !v.is_zero())
 		ts << forcesign;
-	ts
-		<< qSetRealNumberPrecision(precision)
-		<< (v * multiplier)
-		<< ' '
-		<< prefix
-		<< unit;
+	ts << qSetRealNumberPrecision(precision) << (v * multiplier) << ' '
+		<< prefix << unit;
 
 	return s;
 }
 
-QString format_time_si_adjusted(
-	const Timestamp& t,
-	SIPrefix prefix,
-	unsigned precision,
-	QString unit,
-	bool sign)
+QString format_time_si_adjusted(const Timestamp& t, SIPrefix prefix,
+	unsigned precision, QString unit, bool sign)
 {
 	// The precision is always given without taking the prefix into account
 	// so we need to deduct the number of decimals the prefix might imply
@@ -169,7 +157,6 @@ QString format_time_si_adjusted(
 
 	return format_time_si(t, prefix, relative_prec, unit, sign);
 }
-
 
 // Helper for 'format_time_minutes()'.
 static QString pad_number(unsigned int number, int length)

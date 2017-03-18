@@ -168,13 +168,11 @@ void Channels::populate_group(shared_ptr<ChannelGroup> group,
 			QString("<h3>%1</h3>").arg(group->name().c_str())));
 
 	// Create the channel group grid
-	QGridLayout *const channel_grid =
-		create_channel_group_grid(sigs);
+	QGridLayout *const channel_grid = create_channel_group_grid(sigs);
 	layout_.addRow(channel_grid);
 
 	// Create the channel group options
-	if (binding)
-	{
+	if (binding) {
 		binding->add_properties_to_form(&layout_, true);
 		group_bindings_.push_back(binding);
 	}

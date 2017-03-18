@@ -37,7 +37,7 @@ using std::tie;
 namespace pv {
 namespace data {
 
-const int SignalBase::ColourBGAlpha = 8*256/100;
+const int SignalBase::ColourBGAlpha = 8 * 256 / 100;
 
 SignalBase::SignalBase(shared_ptr<sigrok::Channel> channel, ChannelType channel_type) :
 	channel_(channel),
@@ -397,7 +397,6 @@ void SignalBase::on_capture_state_changed(int state)
 		}
 	}
 }
-
 
 } // namespace data
 } // namespace pv

@@ -48,7 +48,7 @@ class StandardBar : public QToolBar
 
 public:
 	StandardBar(Session &session, QWidget *parent,
-		TraceView::View *view, bool add_default_widgets=true);
+		TraceView::View *view, bool add_default_widgets = true);
 
 	Session &session() const;
 

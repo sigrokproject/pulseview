@@ -68,8 +68,8 @@ const QColor AnalogSignal::SignalColours[4] = {
 	QColor(0x4E, 0x9A, 0x06)	// Green
 };
 
-const QColor AnalogSignal::GridMajorColor = QColor(0, 0, 0, 40*256/100);
-const QColor AnalogSignal::GridMinorColor = QColor(0, 0, 0, 20*256/100);
+const QColor AnalogSignal::GridMajorColor = QColor(0, 0, 0, 40 * 256 / 100);
+const QColor AnalogSignal::GridMinorColor = QColor(0, 0, 0, 20 * 256 / 100);
 
 const QColor AnalogSignal::SamplingPointColour(0x77, 0x77, 0x77);
 
@@ -157,16 +157,14 @@ int AnalogSignal::scale_handle_offset() const
 {
 	const int h = (pos_vdivs_ + neg_vdivs_) * div_height_;
 
-	return ((scale_index_drag_offset_ - scale_index_) *
-		h / 4) - h / 2;
+	return ((scale_index_drag_offset_ - scale_index_) * h / 4) - h / 2;
 }
 
 void AnalogSignal::scale_handle_dragged(int offset)
 {
 	const int h = (pos_vdivs_ + neg_vdivs_) * div_height_;
 
-	scale_index_ = scale_index_drag_offset_ -
-		(offset + h / 2) / (h / 4);
+	scale_index_ = scale_index_drag_offset_ - (offset + h / 2) / (h / 4);
 
 	update_scale();
 }
@@ -371,7 +369,7 @@ void AnalogSignal::paint_envelope(QPainter &p,
 	QRectF *const rects = new QRectF[e.length];
 	QRectF *rect = rects;
 
-	for (uint64_t sample = 0; sample < e.length-1; sample++) {
+	for (uint64_t sample = 0; sample < e.length - 1; sample++) {
 		const float x = ((e.scale * sample + e.start) /
 			samples_per_pixel - pixels_offset) + left;
 		const AnalogSegment::EnvelopeSample *const s =
@@ -379,8 +377,8 @@ void AnalogSignal::paint_envelope(QPainter &p,
 
 		// We overlap this sample with the next so that vertical
 		// gaps do not appear during steep rising or falling edges
-		const float b = y - max(s->max, (s+1)->min) * scale_;
-		const float t = y - min(s->min, (s+1)->max) * scale_;
+		const float b = y - max(s->max, (s + 1)->min) * scale_;
+		const float t = y - min(s->min, (s + 1)->max) * scale_;
 
 		float h = b - t;
 		if (h >= 0.0f && h <= 1.0f)

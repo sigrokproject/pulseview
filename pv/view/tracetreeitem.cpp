@@ -140,7 +140,7 @@ QPoint TraceTreeItem::point(const QRect &rect) const
 
 void TraceTreeItem::set_bgcolour_state(bool state)
 {
-       bgcolour_state_ = state;
+	bgcolour_state_ = state;
 }
 
 } // namespace TraceView

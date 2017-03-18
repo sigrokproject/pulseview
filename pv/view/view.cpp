@@ -65,7 +65,6 @@
 #include "decodetrace.hpp"
 #endif
 
-
 using pv::data::SignalData;
 using pv::data::Segment;
 using pv::util::TimeUnit;
@@ -444,7 +443,7 @@ void View::zoom(double steps)
 
 void View::zoom(double steps, int offset)
 {
-	set_zoom(scale_ * pow(3.0/2.0, -steps), offset);
+	set_zoom(scale_ * pow(3.0 / 2.0, -steps), offset);
 }
 
 void View::zoom_fit(bool gui_state)
@@ -533,8 +532,7 @@ pair<Timestamp, Timestamp> View::get_time_extents() const
 	boost::optional<Timestamp> left_time, right_time;
 	const set< shared_ptr<SignalData> > visible_data = get_visible_data();
 	for (const shared_ptr<SignalData> d : visible_data) {
-		const vector< shared_ptr<Segment> > segments =
-			d->segments();
+		const vector< shared_ptr<Segment> > segments = d->segments();
 		for (const shared_ptr<Segment> &s : segments) {
 			double samplerate = s->samplerate();
 			samplerate = (samplerate <= 0.0) ? 1.0 : samplerate;

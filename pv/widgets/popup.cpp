@@ -119,7 +119,7 @@ bool Popup::space_for_arrow() const
 	case Bottom:
 		if (point_.y() > y())
 			return false;
-		return true;		
+		return true;
 
 	case Left:
 		if (point_.x() < (x() + width()))
@@ -168,7 +168,7 @@ QPolygon Popup::arrow_polygon() const
 	case Left:
 		poly << QPoint(p.x() - l, p.y() + l);
 		break;
-		
+
 	case Top:
 		poly << QPoint(p.x() + l, p.y() - l);
 		break;

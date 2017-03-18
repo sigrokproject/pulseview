@@ -169,8 +169,7 @@ public:
 
 	bool has_view(shared_ptr<views::ViewBase> view);
 
-	const unordered_set< shared_ptr<data::SignalBase> >
-		signalbases() const;
+	const unordered_set< shared_ptr<data::SignalBase> > signalbases() const;
 
 #ifdef ENABLE_DECODE
 	bool add_decoder(srd_decoder *const dec);

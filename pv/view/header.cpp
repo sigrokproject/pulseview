@@ -103,8 +103,7 @@ void Header::paintEvent(QPaintEvent*)
 	// would be clipped away.
 	const QRect rect(0, 0, width() - BaselineOffset, height());
 
-	vector< shared_ptr<RowItem> > items(
-		view_.list_by_type<RowItem>());
+	vector< shared_ptr<RowItem> > items(view_.list_by_type<RowItem>());
 
 	stable_sort(items.begin(), items.end(),
 		[](const shared_ptr<RowItem> &a, const shared_ptr<RowItem> &b) {

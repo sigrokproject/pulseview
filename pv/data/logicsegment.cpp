@@ -44,7 +44,7 @@ namespace data {
 const int LogicSegment::MipMapScalePower = 4;
 const int LogicSegment::MipMapScaleFactor = 1 << MipMapScalePower;
 const float LogicSegment::LogMipMapScaleFactor = logf(MipMapScaleFactor);
-const uint64_t LogicSegment::MipMapDataUnit = 64*1024;	// bytes
+const uint64_t LogicSegment::MipMapDataUnit = 64 * 1024; // bytes
 
 LogicSegment::LogicSegment(pv::data::Logic& owner, unsigned int unit_size,
 	uint64_t samplerate) :
@@ -177,7 +177,7 @@ const uint8_t* LogicSegment::get_samples(int64_t start_sample,
 
 	lock_guard<recursive_mutex> lock(mutex_);
 
-	return get_raw_samples(start_sample, (end_sample-start_sample));
+	return get_raw_samples(start_sample, (end_sample - start_sample));
 }
 
 SegmentLogicDataIterator* LogicSegment::begin_sample_iteration(uint64_t start)
@@ -257,7 +257,7 @@ void LogicSegment::append_payload_to_mipmap()
 	// Compute higher level mipmaps
 	for (unsigned int level = 1; level < ScaleStepCount; level++) {
 		MipMapLevel &m = mip_map_[level];
-		const MipMapLevel &ml = mip_map_[level-1];
+		const MipMapLevel &ml = mip_map_[level - 1];
 
 		// Expand the data buffer to fit the new samples
 		prev_length = m.length;

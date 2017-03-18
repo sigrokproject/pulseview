@@ -47,7 +47,7 @@ public:
 	 * @param title the title of the dialog.
 	 * @param options the map of options to use as a template.
 	 * @param parent the parent widget of the dialog.
-	 */ 
+	 */
 	InputOutputOptions(const QString &title,
 		const map<string, shared_ptr<sigrok::Option>> &options,
 		QWidget *parent);

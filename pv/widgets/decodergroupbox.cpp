@@ -37,8 +37,7 @@ DecoderGroupBox::DecoderGroupBox(QString title, QWidget *parent, bool isDeletabl
 	layout_->setContentsMargins(0, 0, 0, 0);
 	setLayout(layout_);
 
-	layout_->addWidget(new QLabel(QString("<h3>%1</h3>").arg(title)),
-		0, 0);
+	layout_->addWidget(new QLabel(QString("<h3>%1</h3>").arg(title)), 0, 0);
 	layout_->setColumnStretch(0, 1);
 
 	QHBoxLayout *const toolbar = new QHBoxLayout;

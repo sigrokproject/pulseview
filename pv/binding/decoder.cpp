@@ -128,10 +128,7 @@ Glib::VariantBase Decoder::getter(const char *id)
 		}
 	}
 
-	if (val)
-		return Glib::VariantBase(val, true);
-	else
-		return Glib::VariantBase();
+	return (val) ? Glib::VariantBase(val, true) : Glib::VariantBase();
 }
 
 void Decoder::setter(const char *id, Glib::VariantBase value)
