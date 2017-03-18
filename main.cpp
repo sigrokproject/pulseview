@@ -21,7 +21,7 @@
 #include <libsigrokdecode/libsigrokdecode.h> /* First, so we avoid a _POSIX_C_SOURCE warning. */
 #endif
 
-#include <stdint.h>
+#include <cstdint>
 #include <libsigrokcxx/libsigrokcxx.hpp>
 
 #include <getopt.h>
@@ -85,7 +85,7 @@ int main(int argc, char *argv[])
 #endif
 
 	// Parse arguments
-	while (1) {
+	while (true) {
 		static const struct option long_options[] = {
 			{"help", no_argument, nullptr, 'h'},
 			{"version", no_argument, nullptr, 'V'},
@@ -195,7 +195,7 @@ int main(int argc, char *argv[])
 		srd_exit();
 #endif
 
-	} while (0);
+	} while (false);
 
 	return ret;
 }
