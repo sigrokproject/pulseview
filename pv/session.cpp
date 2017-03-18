@@ -620,6 +620,9 @@ const unordered_set< shared_ptr<data::SignalBase> > Session::signalbases() const
 #ifdef ENABLE_DECODE
 bool Session::add_decoder(srd_decoder *const dec)
 {
+	if (!dec)
+		return false;
+
 	map<const srd_channel*, shared_ptr<data::SignalBase> > channels;
 	shared_ptr<data::DecoderStack> decoder_stack;
 
