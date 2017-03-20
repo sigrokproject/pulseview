@@ -21,7 +21,7 @@
 #ifndef PULSEVIEW_PV_VIEWS_TRACE_STANDARDBAR_HPP
 #define PULSEVIEW_PV_VIEWS_TRACE_STANDARDBAR_HPP
 
-#include <stdint.h>
+#include <cstdint>
 
 #include <QAction>
 #include <QToolBar>

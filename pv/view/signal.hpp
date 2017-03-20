@@ -25,7 +25,7 @@
 #include <QComboBox>
 #include <QWidgetAction>
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "signalscalehandle.hpp"
 #include "trace.hpp"

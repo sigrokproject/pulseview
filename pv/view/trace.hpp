@@ -26,7 +26,7 @@
 #include <QRect>
 #include <QString>
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "tracetreeitem.hpp"
 

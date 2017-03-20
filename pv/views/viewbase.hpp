@@ -21,8 +21,7 @@
 #ifndef PULSEVIEW_PV_VIEWS_VIEWBASE_HPP
 #define PULSEVIEW_PV_VIEWS_VIEWBASE_HPP
 
-#include <stdint.h>
-
+#include <cstdint>
 #include <memory>
 #include <set>
 #include <vector>

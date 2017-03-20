@@ -20,8 +20,7 @@
 #ifndef PULSEVIEW_PV_VIEWS_TRACEVIEW_VIEW_HPP
 #define PULSEVIEW_PV_VIEWS_TRACEVIEW_VIEW_HPP
 
-#include <stdint.h>
-
+#include <cstdint>
 #include <list>
 #include <memory>
 #include <set>

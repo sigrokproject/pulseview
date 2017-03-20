@@ -20,7 +20,7 @@
 #ifndef PULSEVIEW_ANDROID_LOGHANDLER_HPP
 #define PULSEVIEW_ANDROID_LOGHANDLER_HPP
 
-#include <stdarg.h>
+#include <cstdarg>
 
 namespace pv {
 

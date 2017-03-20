@@ -20,8 +20,7 @@
 #ifndef PULSEVIEW_PV_TOOLBARS_MAINBAR_HPP
 #define PULSEVIEW_PV_TOOLBARS_MAINBAR_HPP
 
-#include <stdint.h>
-
+#include <cstdint>
 #include <list>
 #include <memory>
 
