@@ -72,7 +72,7 @@ public:
 	explicit MainWindow(DeviceManager &device_manager,
 		string open_file_name = string(),
 		string open_file_format = string(),
-		QWidget *parent = 0);
+		QWidget *parent = nullptr);
 
 	~MainWindow();
 

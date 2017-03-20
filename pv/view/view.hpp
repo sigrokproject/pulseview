@@ -72,7 +72,7 @@ class CustomAbstractScrollArea : public QAbstractScrollArea {
 	Q_OBJECT
 
 public:
-	CustomAbstractScrollArea(QWidget *parent = 0);
+	CustomAbstractScrollArea(QWidget *parent = nullptr);
 	void setViewportMargins(int left, int top, int right, int bottom);
 	bool viewportEvent(QEvent *event);
 };
@@ -96,7 +96,7 @@ private:
 	static const int ScaleUnits[3];
 
 public:
-	explicit View(Session &session, bool is_main_view=false, QWidget *parent = 0);
+	explicit View(Session &session, bool is_main_view=false, QWidget *parent = nullptr);
 
 	Session& session();
 	const Session& session() const;

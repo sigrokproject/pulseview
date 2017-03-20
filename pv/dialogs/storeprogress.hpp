@@ -48,7 +48,7 @@ public:
 		const map<string, Glib::VariantBase> &options,
 		const pair<uint64_t, uint64_t> sample_range,
 		const Session &session,
-		QWidget *parent = 0);
+		QWidget *parent = nullptr);
 
 	virtual ~StoreProgress();
 

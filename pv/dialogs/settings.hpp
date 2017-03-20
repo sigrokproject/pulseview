@@ -35,7 +35,7 @@ class Settings : public QDialog
 	Q_OBJECT
 
 public:
-	Settings(DeviceManager &device_manager, QWidget *parent = 0);
+	Settings(DeviceManager &device_manager, QWidget *parent = nullptr);
 
 	void create_pages();
 
