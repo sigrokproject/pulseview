@@ -56,9 +56,7 @@
 #include <libsigrokcxx/libsigrokcxx.hpp>
 
 using std::back_inserter;
-using std::cerr;
 using std::copy;
-using std::endl;
 using std::list;
 using std::make_pair;
 using std::map;

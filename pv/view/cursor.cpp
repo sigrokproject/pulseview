@@ -34,9 +34,8 @@
 #include <cstdio>
 #include <limits>
 
-using std::abs;
+using std::abs; // Force usage of std::abs() instead of C's abs().
 using std::shared_ptr;
-using std::numeric_limits;
 
 namespace pv {
 namespace views {

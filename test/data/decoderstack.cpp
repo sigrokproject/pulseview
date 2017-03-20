@@ -17,6 +17,8 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
+#if 0
+
 #include <libsigrokdecode/libsigrokdecode.h> /* First, so we avoid a _POSIX_C_SOURCE warning. */
 #include <boost/test/unit_test.hpp>
 
@@ -33,7 +35,6 @@ using pv::view::DecodeTrace;
 using std::shared_ptr;
 using std::vector;
 
-#if 0
 BOOST_AUTO_TEST_SUITE(DecoderStackTest)
 
 BOOST_AUTO_TEST_CASE(TwoDecoderStack)

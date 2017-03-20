@@ -41,7 +41,6 @@ using Glib::VariantBase;
 
 using sigrok::ConfigKey;
 using sigrok::Driver;
-using sigrok::Error;
 
 using pv::devices::HardwareDevice;
 

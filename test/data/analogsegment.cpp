@@ -17,6 +17,7 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
+#if 0
 #include <extdef.h>
 
 #include <cstdint>
@@ -27,7 +28,6 @@
 
 using pv::data::AnalogSegment;
 
-#if 0
 BOOST_AUTO_TEST_SUITE(AnalogSegmentTest)
 
 void push_analog(AnalogSegment &s, unsigned int num_samples,

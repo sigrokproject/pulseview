@@ -34,7 +34,6 @@
 #define NOGDI
 #define NORESOURCE
 #endif
-#include <boost/thread/shared_mutex.hpp>
 
 #include <QObject>
 #include <QSettings>

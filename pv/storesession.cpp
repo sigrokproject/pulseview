@@ -24,8 +24,6 @@
 #define NOGDI
 #define NORESOURCE
 #endif
-#include <boost/thread/locks.hpp>
-#include <boost/thread/shared_mutex.hpp>
 
 #include "storesession.hpp"
 
@@ -40,11 +38,7 @@
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
 
-using boost::shared_lock;
-using boost::shared_mutex;
-
 using std::deque;
-using std::dynamic_pointer_cast;
 using std::ios_base;
 using std::lock_guard;
 using std::make_pair;
@@ -52,7 +46,6 @@ using std::map;
 using std::min;
 using std::mutex;
 using std::pair;
-using std::set;
 using std::shared_ptr;
 using std::string;
 using std::unordered_set;

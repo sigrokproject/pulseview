@@ -23,13 +23,10 @@
 
 #include "device.hpp"
 
-using std::map;
-using std::set;
 using std::shared_ptr;
 
 using sigrok::ConfigKey;
 using sigrok::Capability;
-using sigrok::Error;
 
 using Glib::VariantBase;
 using Glib::Variant;

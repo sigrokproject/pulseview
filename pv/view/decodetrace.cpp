@@ -28,8 +28,6 @@ extern "C" {
 #include <tuple>
 
 #include <boost/functional/hash.hpp>
-#include <boost/thread/locks.hpp>
-#include <boost/thread/shared_mutex.hpp>
 
 #include <QAction>
 #include <QApplication>
@@ -54,13 +52,9 @@ extern "C" {
 #include <pv/widgets/decodergroupbox.hpp>
 #include <pv/widgets/decodermenu.hpp>
 
-using boost::shared_lock;
-using boost::shared_mutex;
 
 using std::all_of;
-using std::dynamic_pointer_cast;
 using std::list;
-using std::lock_guard;
 using std::make_pair;
 using std::max;
 using std::make_pair;

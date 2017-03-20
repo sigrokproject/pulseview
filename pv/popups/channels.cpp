@@ -24,8 +24,6 @@
 #define NOGDI
 #define NORESOURCE
 #endif
-#include <boost/thread/locks.hpp>
-#include <boost/thread/shared_mutex.hpp>
 
 #include <QCheckBox>
 #include <QFormLayout>
@@ -44,12 +42,7 @@
 
 using namespace Qt;
 
-using boost::shared_lock;
-using boost::shared_mutex;
-using std::lock_guard;
 using std::map;
-using std::mutex;
-using std::set;
 using std::shared_ptr;
 using std::make_shared;
 using std::unordered_set;

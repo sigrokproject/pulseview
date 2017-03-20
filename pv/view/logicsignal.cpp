@@ -53,9 +53,7 @@ using std::vector;
 
 using sigrok::ConfigKey;
 using sigrok::Capability;
-using sigrok::Error;
 using sigrok::Trigger;
-using sigrok::TriggerStage;
 using sigrok::TriggerMatch;
 using sigrok::TriggerMatchType;
 

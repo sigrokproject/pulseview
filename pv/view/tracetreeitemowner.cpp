@@ -23,13 +23,11 @@
 #include "tracetreeitemowner.hpp"
 #include "trace.hpp"
 
-using std::dynamic_pointer_cast;
 using std::find;
 using std::make_pair;
 using std::max;
 using std::min;
 using std::pair;
-using std::set;
 using std::shared_ptr;
 using std::static_pointer_cast;
 using std::vector;

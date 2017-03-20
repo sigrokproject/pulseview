@@ -22,8 +22,6 @@
 #define NOGDI
 #define NORESOURCE
 #endif
-#include <boost/thread/locks.hpp>
-#include <boost/thread/shared_mutex.hpp>
 
 #include <QFileInfo>
 
@@ -62,10 +60,6 @@
 #include <libsigrokdecode/libsigrokdecode.h>
 #endif
 
-using boost::shared_lock;
-using boost::shared_mutex;
-using boost::unique_lock;
-
 using std::bad_alloc;
 using std::dynamic_pointer_cast;
 using std::find_if;
@@ -81,7 +75,6 @@ using std::mutex;
 using std::pair;
 using std::recursive_mutex;
 using std::runtime_error;
-using std::set;
 using std::shared_ptr;
 using std::string;
 using std::unordered_set;
@@ -92,18 +85,13 @@ using sigrok::Channel;
 using sigrok::ConfigKey;
 using sigrok::DatafeedCallbackFunction;
 using sigrok::Error;
-using sigrok::Header;
 using sigrok::InputFormat;
 using sigrok::Logic;
 using sigrok::Meta;
-using sigrok::OutputFormat;
 using sigrok::Packet;
-using sigrok::PacketPayload;
 using sigrok::Session;
-using sigrok::SessionDevice;
 
 using Glib::VariantBase;
-using Glib::Variant;
 
 namespace pv {
 Session::Session(DeviceManager &device_manager, QString name) :

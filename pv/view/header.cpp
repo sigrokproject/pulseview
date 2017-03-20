@@ -41,10 +41,6 @@ using boost::make_filter_iterator;
 
 using std::count_if;
 using std::dynamic_pointer_cast;
-using std::max;
-using std::make_pair;
-using std::min;
-using std::pair;
 using std::shared_ptr;
 using std::stable_sort;
 using std::vector;

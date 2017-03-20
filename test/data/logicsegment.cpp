@@ -25,8 +25,10 @@
 
 #include <pv/data/logicsegment.hpp>
 
+#if 0
 using pv::data::LogicSegment;
 using std::vector;
+#endif
 
 // Dummy, remove again when unit tests are fixed.
 BOOST_AUTO_TEST_SUITE(DummyTestSuite)

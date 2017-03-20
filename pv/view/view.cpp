@@ -29,13 +29,11 @@
 #include <cmath>
 #include <iostream>
 #include <iterator>
-#include <mutex>
 #include <unordered_set>
 
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/serialization/serialization.hpp>
-#include <boost/thread/locks.hpp>
 
 #include <QApplication>
 #include <QHBoxLayout>
@@ -67,8 +65,6 @@
 #include "decodetrace.hpp"
 #endif
 
-using boost::shared_lock;
-using boost::shared_mutex;
 
 using pv::data::SignalData;
 using pv::data::Segment;
@@ -78,11 +74,8 @@ using pv::util::Timestamp;
 using std::back_inserter;
 using std::copy_if;
 using std::count_if;
-using std::deque;
 using std::dynamic_pointer_cast;
 using std::inserter;
-using std::list;
-using std::lock_guard;
 using std::max;
 using std::make_pair;
 using std::make_shared;
@@ -95,7 +88,6 @@ using std::stringstream;
 using std::unordered_map;
 using std::unordered_set;
 using std::vector;
-using std::weak_ptr;
 
 namespace pv {
 namespace views {

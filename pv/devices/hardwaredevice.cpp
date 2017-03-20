@@ -27,7 +27,6 @@
 
 #include "hardwaredevice.hpp"
 
-using std::dynamic_pointer_cast;
 using std::shared_ptr;
 using std::static_pointer_cast;
 using std::string;

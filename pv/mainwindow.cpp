@@ -52,7 +52,6 @@
 
 using std::bind;
 using std::dynamic_pointer_cast;
-using std::list;
 using std::make_shared;
 using std::map;
 using std::placeholders::_1;

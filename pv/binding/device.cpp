@@ -24,7 +24,6 @@
 #include "device.hpp"
 
 #include <pv/prop/bool.hpp>
-#include <pv/prop/double.hpp>
 #include <pv/prop/enum.hpp>
 #include <pv/prop/int.hpp>
 
@@ -46,7 +45,6 @@ using sigrok::ConfigKey;
 using sigrok::Error;
 
 using pv::prop::Bool;
-using pv::prop::Double;
 using pv::prop::Enum;
 using pv::prop::Int;
 using pv::prop::Property;

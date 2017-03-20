@@ -23,12 +23,10 @@
 #include <cassert>
 #include <cstdlib>
 #include <cstring>
-#include <vector>
 
 using std::lock_guard;
 using std::min;
 using std::recursive_mutex;
-using std::vector;
 
 namespace pv {
 namespace data {

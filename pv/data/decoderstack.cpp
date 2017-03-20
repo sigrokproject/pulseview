@@ -40,8 +40,6 @@ using std::make_pair;
 using std::max;
 using std::min;
 using std::list;
-using std::map;
-using std::pair;
 using std::shared_ptr;
 using std::make_shared;
 using std::vector;
