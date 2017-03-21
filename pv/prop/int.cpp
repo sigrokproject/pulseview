@@ -90,7 +90,7 @@ QWidget* Int::get_widget(QWidget *parent, bool auto_commit)
 		range_min = 0, range_max = UINT64_MAX;
 	} else {
 		// Unexpected value type.
-		assert(0);
+		assert(false);
 	}
 
 	// @todo Sigrok supports 64-bit quantities, but Qt does not have a
@@ -143,7 +143,7 @@ void Int::commit()
 	else
 	{
 		// Unexpected value type.
-		assert(0);
+		assert(false);
 	}
 
 	assert(new_value);

@@ -154,7 +154,7 @@ uint64_t SweepTimingWidget::value() const
 
 	default:
 		// Unexpected value type
-		assert(0);
+		assert(false);
 		return 0;
 	}
 }

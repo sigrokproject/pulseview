@@ -423,7 +423,7 @@ void DecoderStack::annotation_callback(srd_proto_data *pdata, void *decoder)
 	if (row_iter == d->rows_.end()) {
 		qDebug() << "Unexpected annotation: decoder = " << decc <<
 			", format = " << a.format();
-		assert(0);
+		assert(false);
 		return;
 	}
 

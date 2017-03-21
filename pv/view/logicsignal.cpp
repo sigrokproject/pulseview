@@ -395,7 +395,7 @@ QAction* LogicSignal::action_from_trigger_type(const TriggerMatchType *type)
 			action = trigger_change_;
 			break;
 		default:
-			assert(0);
+			assert(false);
 		}
 	}
 

@@ -89,7 +89,7 @@ static int strnatcmp0(char const *a, char const *b, int fold_case)
 
 	ai = bi = 0;
 
-	while (1) {
+	while (true) {
 		ca = a[ai];
 		cb = b[bi];
 

@@ -810,7 +810,7 @@ void Session::update_signals()
 					}
 
 					default:
-						assert(0);
+						assert(false);
 						break;
 					}
 				}
@@ -859,7 +859,7 @@ void Session::sample_thread_proc(function<void (const QString)> error_handler)
 	// Confirm that SR_DF_END was received
 	if (cur_logic_segment_) {
 		qDebug("SR_DF_END was not received.");
-		assert(0);
+		assert(false);
 	}
 
 	// Optimize memory usage
