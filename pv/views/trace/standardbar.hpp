@@ -50,7 +50,7 @@ public:
 	StandardBar(Session &session, QWidget *parent,
 		TraceView::View *view, bool add_default_widgets=true);
 
-	Session &session(void) const;
+	Session &session() const;
 
 	QAction* action_view_zoom_in() const;
 	QAction* action_view_zoom_out() const;
