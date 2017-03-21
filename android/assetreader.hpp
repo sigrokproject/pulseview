@@ -29,8 +29,8 @@ namespace pv {
 class AndroidAssetReader : public sigrok::ResourceReader
 {
 public:
-	AndroidAssetReader() {}
-	virtual ~AndroidAssetReader();
+	AndroidAssetReader() = default;
+	virtual ~AndroidAssetReader() = default;
 
 private:
 	void open(struct sr_resource *res, string name) override;

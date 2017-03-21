@@ -36,7 +36,7 @@ class SignalData
 {
 public:
 	SignalData() = default;
-	virtual ~SignalData() {}
+	virtual ~SignalData() = default;
 
 public:
 	virtual vector< shared_ptr<Segment> > segments() const = 0;

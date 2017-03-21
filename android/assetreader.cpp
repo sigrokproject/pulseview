@@ -29,9 +29,6 @@ using namespace pv;
 using std::string;
 using std::unique_ptr;
 
-AndroidAssetReader::~AndroidAssetReader()
-{}
-
 void AndroidAssetReader::open(struct sr_resource *res, string name)
 {
 	if (res->type == SR_RESOURCE_FIRMWARE) {
