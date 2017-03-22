@@ -66,6 +66,6 @@ bool Row::operator<(const Row &other) const
 		(decoder_ == other.decoder_ && row_ < other.row_);
 }
 
-} // decode
-} // data
-} // pv
+}  // namespace decode
+}  // namespace data
+}  // namespace pv

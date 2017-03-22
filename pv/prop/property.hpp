@@ -65,7 +65,7 @@ private:
 	QString name_;
 };
 
-} // prop
-} // pv
+}  // namespace prop
+}  // namespace pv
 
 #endif // PULSEVIEW_PV_PROP_PROPERTY_HPP

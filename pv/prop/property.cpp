@@ -39,5 +39,5 @@ bool Property::labeled_widget() const
 	return false;
 }
 
-} // prop
-} // pv
+}  // namespace prop
+}  // namespace pv

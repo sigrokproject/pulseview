@@ -59,7 +59,7 @@ private:
 	QSpinBox *spin_box_;
 };
 
-} // prop
-} // pv
+}  // namespace prop
+}  // namespace pv
 
 #endif // PULSEVIEW_PV_PROP_INT_HPP

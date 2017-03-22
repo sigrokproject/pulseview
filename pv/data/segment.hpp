@@ -40,7 +40,7 @@ struct MaxSize32Single;
 struct MediumSize32Multi;
 struct MaxSize32Multi;
 struct MaxSize32MultiIterated;
-}
+}  // namespace SegmentTest
 
 namespace pv {
 namespace data {

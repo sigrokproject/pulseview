@@ -68,5 +68,5 @@ void DecoderMenu::on_action(QObject *action)
 	decoder_selected(dec);
 }
 
-} // widgets
-} // pv
+}  // namespace widgets
+}  // namespace pv

@@ -88,5 +88,5 @@ QString Binding::print_gvariant(Glib::VariantBase gvar)
 	return s;
 }
 
-} // binding
-} // pv
+}  // namespace binding
+}  // namespace pv

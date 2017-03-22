@@ -61,7 +61,7 @@ private:
 	QColor cur_colour_;
 };
 
-} // widgets
-} // pv
+}  // namespace widgets
+}  // namespace pv
 
 #endif // PULSEVIEW_PV_WIDGETS_COLOURBUTTON_HPP

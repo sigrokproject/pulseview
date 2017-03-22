@@ -60,7 +60,7 @@ private:
 	QComboBox *selector_;
 };
 
-} // prop
-} // pv
+}  // namespace prop
+}  // namespace pv
 
 #endif // PULSEVIEW_PV_PROP_ENUM_HPP

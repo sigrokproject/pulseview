@@ -109,7 +109,7 @@ private:
 	QString device_tooltip_;
 };
 
-} // widgets
-} // pv
+}  // namespace widgets
+}  // namespace pv
 
 #endif // PULSEVIEW_PV_WIDGETS_DEVICETOOLBUTTON_HPP

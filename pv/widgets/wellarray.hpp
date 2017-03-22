@@ -135,5 +135,5 @@ private:
     WellArrayData *d;
 };
 
-} // namespace wellarray
+}  // namespace widgets
 } // namespace pv

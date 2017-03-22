@@ -55,7 +55,7 @@ private:
 	QSignalMapper mapper_;
 };
 
-} // widgets
-} // pv
+}  // namespace widgets
+}  // namespace pv
 
 #endif // PULSEVIEW_PV_WIDGETS_EXPORTMENU_HPP

@@ -78,5 +78,5 @@ void Bool::on_state_changed(int)
 	commit();
 }
 
-} // prop
-} // pv
+}  // namespace prop
+}  // namespace pv

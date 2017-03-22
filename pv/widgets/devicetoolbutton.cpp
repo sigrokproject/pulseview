@@ -157,5 +157,5 @@ void DeviceToolButton::on_menu_hover_timeout()
 	QToolTip::showText(QCursor::pos(), device_tooltip_);
 }
 
-} // widgets
-} // pv
+}  // namespace widgets
+}  // namespace pv

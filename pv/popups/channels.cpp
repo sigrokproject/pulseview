@@ -250,5 +250,5 @@ void Channels::disable_all_channels()
 	set_all_channels(false);
 }
 
-} // popups
-} // pv
+}  // namespace popups
+}  // namespace pv

@@ -106,5 +106,5 @@ void ViewBase::data_updated()
 {
 }
 
-} // namespace view
+}  // namespace views
 } // namespace pv

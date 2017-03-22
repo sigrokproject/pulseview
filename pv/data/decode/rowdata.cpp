@@ -47,6 +47,6 @@ void RowData::push_annotation(const Annotation &a)
 	annotations_.push_back(a);
 }
 
-} // decode
-} // data
-} // pv
+}  // namespace decode
+}  // namespace data
+}  // namespace pv

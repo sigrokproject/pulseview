@@ -94,5 +94,5 @@ void StoreProgress::on_progress_updated()
 	}
 }
 
-} // dialogs
-} // pv
+}  // namespace dialogs
+}  // namespace pv

@@ -92,5 +92,5 @@ void Double::on_value_changed(double)
 	commit();
 }
 
-} // prop
-} // pv
+}  // namespace prop
+}  // namespace pv

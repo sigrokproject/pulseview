@@ -157,5 +157,5 @@ void Int::on_value_changed(int)
 	commit();
 }
 
-} // prop
-} // pv
+}  // namespace prop
+}  // namespace pv

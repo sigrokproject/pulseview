@@ -65,7 +65,7 @@ private:
 	pv::StoreSession session_;
 };
 
-} // dialogs
-} // pv
+}  // namespace dialogs
+}  // namespace pv
 
 #endif // PULSEVIEW_PV_DIALOGS_SAVEPROGRESS_HPP

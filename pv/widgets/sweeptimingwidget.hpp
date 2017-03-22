@@ -68,7 +68,7 @@ private:
 	ValueType value_type_;
 };
 
-} // widgets
-} // pv
+}  // namespace widgets
+}  // namespace pv
 
 #endif // PULSEVIEW_PV_WIDGETS_SWEEPTIMINGWIDGET_HPP

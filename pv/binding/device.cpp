@@ -201,5 +201,5 @@ QString Device::print_probe_factor(Glib::VariantBase gvar)
 	return QString("%1x").arg(factor);
 }
 
-} // binding
-} // pv
+}  // namespace binding
+}  // namespace pv

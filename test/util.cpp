@@ -40,7 +40,7 @@ namespace {
 	pv::util::SIPrefix yotta       = pv::util::SIPrefix::yotta;
 
 /*	pv::util::TimeUnit Time = pv::util::TimeUnit::Time; // Not currently used */
-}
+}  // namespace
 
 BOOST_AUTO_TEST_SUITE(UtilTest)
 

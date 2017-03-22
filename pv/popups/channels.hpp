@@ -103,7 +103,7 @@ private:
 	QSignalMapper check_box_mapper_;
 };
 
-} // popups
-} // pv
+}  // namespace popups
+}  // namespace pv
 
 #endif // PULSEVIEW_PV_POPUPS_CHANNELS_HPP

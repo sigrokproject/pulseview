@@ -64,7 +64,7 @@ protected:
 	vector< shared_ptr<prop::Property> > properties_;
 };
 
-} // binding
-} // pv
+}  // namespace binding
+}  // namespace pv
 
 #endif // PULSEVIEW_PV_BINDING_BINDING_HPP

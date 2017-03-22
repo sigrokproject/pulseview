@@ -295,4 +295,4 @@ void StoreSession::store_proc(vector< shared_ptr<data::SignalBase> > achannel_li
 	output_stream_.close();
 }
 
-} // pv
+}  // namespace pv

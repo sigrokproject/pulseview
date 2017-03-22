@@ -140,5 +140,5 @@ void Decoder::setter(const char *id, Glib::VariantBase value)
 	decoder_stack_->begin_decode();
 }
 
-} // binding
-} // pv
+}  // namespace binding
+}  // namespace pv

@@ -50,7 +50,7 @@ private:
 	QPushButton show_hide_button_;
 };
 
-} // widgets
-} // pv
+}  // namespace widgets
+}  // namespace pv
 
 #endif // PULSEVIEW_PV_WIDGETS_DECODERGROUPBOX_HPP

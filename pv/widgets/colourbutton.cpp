@@ -102,5 +102,5 @@ void ColourButton::paintEvent(QPaintEvent *event)
 	p.drawRect(r);
 }
 
-} // widgets
-} // pv
+}  // namespace widgets
+}  // namespace pv

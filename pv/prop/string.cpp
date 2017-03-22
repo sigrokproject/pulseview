@@ -80,5 +80,5 @@ void String::on_text_edited(const QString&)
 	commit();
 }
 
-} // prop
-} // pv
+}  // namespace prop
+}  // namespace pv

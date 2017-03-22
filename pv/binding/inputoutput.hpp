@@ -77,7 +77,7 @@ private:
 	map<string, Glib::VariantBase> options_;
 };
 
-} // binding
-} // pv
+}  // namespace binding
+}  // namespace pv
 
 #endif // PULSEVIEW_PV_BINDING_INPUTOUTPUT_H

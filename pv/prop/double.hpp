@@ -62,7 +62,7 @@ private:
 	QDoubleSpinBox *spin_box_;
 };
 
-} // prop
-} // pv
+}  // namespace prop
+}  // namespace pv
 
 #endif // PULSEVIEW_PV_PROP_DOUBLE_HPP

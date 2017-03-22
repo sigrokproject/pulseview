@@ -145,6 +145,6 @@ srd_decoder_inst* Decoder::create_decoder_inst(srd_session *session) const
 	return decoder_inst;
 }
 
-} // decode
-} // data
-} // pv
+}  // namespace decode
+}  // namespace data
+}  // namespace pv

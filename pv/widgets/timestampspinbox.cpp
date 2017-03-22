@@ -116,5 +116,5 @@ void TimestampSpinBox::updateEdit()
 	lineEdit()->setText(newtext);
 }
 
-} // widgets
-} // pv
+}  // namespace widgets
+}  // namespace pv

@@ -292,5 +292,5 @@ void WellArray::keyPressEvent(QKeyEvent* event)
 
 }
 
-} // namespace wellarray
+}  // namespace widgets
 } // namespace pv

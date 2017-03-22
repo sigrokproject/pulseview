@@ -84,5 +84,5 @@ void Enum::on_current_item_changed(int)
 	commit();
 }
 
-} // prop
-} // pv
+}  // namespace prop
+}  // namespace pv

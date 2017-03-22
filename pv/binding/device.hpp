@@ -71,7 +71,7 @@ protected:
 	shared_ptr<sigrok::Configurable> configurable_;
 };
 
-} // binding
-} // pv
+}  // namespace binding
+}  // namespace pv
 
 #endif // PULSEVIEW_PV_BINDING_DEVICE_HPP

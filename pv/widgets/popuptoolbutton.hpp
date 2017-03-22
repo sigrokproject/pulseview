@@ -45,7 +45,7 @@ private:
 	Popup *popup_;
 };
 
-} // widgets
-} // pv
+}  // namespace widgets
+}  // namespace pv
 
 #endif // PULSEVIEW_PV_WIDGETS_POPUPTOOLBUTTON_HPP

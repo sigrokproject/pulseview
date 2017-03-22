@@ -174,5 +174,5 @@ void SweepTimingWidget::set_value(uint64_t value)
 	list_.setCurrentIndex(best_match);
 }
 
-} // widgets
-} // pv
+}  // namespace widgets
+}  // namespace pv

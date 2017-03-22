@@ -116,6 +116,6 @@ private:
 	uint64_t start_sample_, sample_count_;
 };
 
-} // pv
+}  // namespace pv
 
 #endif // PULSEVIEW_PV_STORESESSION_HPP

@@ -95,5 +95,5 @@ void ExportMenu::on_action(QObject *action)
 	format_selected((*iter).second);
 }
 
-} // widgets
-} // pv
+}  // namespace widgets
+}  // namespace pv

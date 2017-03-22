@@ -59,7 +59,7 @@ private:
 	shared_ptr<pv::data::decode::Decoder> decoder_;
 };
 
-} // binding
-} // pv
+}  // namespace binding
+}  // namespace pv
 
 #endif // PULSEVIEW_PV_BINDING_DECODER_HPP

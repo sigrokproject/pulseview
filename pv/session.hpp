@@ -64,7 +64,7 @@ class Meta;
 class OutputFormat;
 class Packet;
 class Session;
-}
+}  // namespace sigrok
 
 namespace pv {
 

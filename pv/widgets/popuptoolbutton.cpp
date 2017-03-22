@@ -53,5 +53,5 @@ void PopupToolButton::on_clicked(bool)
 	popup_->show();
 }
 
-} // widgets
-} // pv
+}  // namespace widgets
+}  // namespace pv

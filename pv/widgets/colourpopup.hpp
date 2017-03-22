@@ -48,7 +48,7 @@ private:
 	QVBoxLayout layout_;
 };
 
-} // widgets
-} // pv
+}  // namespace widgets
+}  // namespace pv
 
 #endif // PULSEVIEW_PV_WIDGETS_COLOURPOPUP_HPP

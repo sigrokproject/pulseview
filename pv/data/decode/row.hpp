@@ -51,8 +51,8 @@ private:
 	const srd_decoder_annotation_row *row_;
 };
 
-} // decode
-} // data
-} // pv
+}  // namespace decode
+}  // namespace data
+}  // namespace pv
 
 #endif // PULSEVIEW_PV_DATA_DECODE_ROW_HPP

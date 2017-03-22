@@ -51,8 +51,8 @@ private:
 	vector<Annotation> annotations_;
 };
 
-}
-} // data
-} // pv
+}  // namespace decode
+}  // namespace data
+}  // namespace pv
 
 #endif // PULSEVIEW_PV_DATA_DECODE_ROWDATA_HPP

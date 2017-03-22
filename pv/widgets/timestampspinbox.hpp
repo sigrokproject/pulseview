@@ -86,7 +86,7 @@ private:
 	void updateEdit();
 };
 
-} // widgets
-} // pv
+}  // namespace widgets
+}  // namespace pv
 
 #endif

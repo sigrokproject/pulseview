@@ -73,5 +73,5 @@ void DecoderGroupBox::set_decoder_visible(bool visible)
 		":/icons/decoder-hidden.svg"));
 }
 
-} // widgets
-} // pv
+}  // namespace widgets
+}  // namespace pv

@@ -46,5 +46,5 @@ void ColourPopup::colour_selected(int, int)
 	close();
 }
 
-} // widgets
-} // pv
+}  // namespace widgets
+}  // namespace pv
