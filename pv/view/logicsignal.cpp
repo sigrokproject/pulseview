@@ -347,6 +347,10 @@ void LogicSignal::init_trigger_actions(QWidget *parent)
 
 const vector<int32_t> LogicSignal::get_trigger_types() const
 {
+	// We may not be associated with a device
+	if (!device_)
+		return vector<int32_t>();
+
 	const auto sr_dev = device_->device();
 	if (sr_dev->config_check(ConfigKey::TRIGGER_MATCH, Capability::LIST)) {
 		const Glib::VariantContainerBase gvar =
