@@ -788,6 +788,9 @@ void Session::update_signals()
 
 							all_signal_data_.insert(logic_data_);
 							signalbase->set_data(logic_data_);
+
+							connect(this, SIGNAL(capture_state_changed(int)),
+								signalbase.get(), SLOT(on_capture_state_changed(int)));
 						}
 
 						signal = shared_ptr<views::TraceView::Signal>(
@@ -806,6 +809,9 @@ void Session::update_signals()
 							shared_ptr<data::Analog> data(new data::Analog());
 							all_signal_data_.insert(data);
 							signalbase->set_data(data);
+
+							connect(this, SIGNAL(capture_state_changed(int)),
+								signalbase.get(), SLOT(on_capture_state_changed(int)));
 						}
 
 						signal = shared_ptr<views::TraceView::Signal>(

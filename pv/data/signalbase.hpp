@@ -21,6 +21,8 @@
 #ifndef PULSEVIEW_PV_DATA_SIGNALBASE_HPP
 #define PULSEVIEW_PV_DATA_SIGNALBASE_HPP
 
+#include <thread>
+
 #include <QColor>
 #include <QObject>
 #include <QSettings>
@@ -55,12 +57,18 @@ public:
 		MathChannel
 	};
 
+	enum ConversionType {
+		NoConversion = 0,
+		A2LConversionByTreshold = 1,
+		A2LConversionBySchmittTrigger = 2
+	};
+
 private:
 	static const int ColourBGAlpha;
 
 public:
 	SignalBase(shared_ptr<sigrok::Channel> channel, ChannelType channel_type);
-	virtual ~SignalBase() {}
+	virtual ~SignalBase();
 
 public:
 	/**
@@ -134,6 +142,11 @@ public:
 	 */
 	shared_ptr<pv::data::Logic> logic_data() const;
 
+	/**
+	 * Changes the kind of conversion performed on this channel.
+	 */
+	void set_conversion_type(ConversionType t);
+
 #ifdef ENABLE_DECODE
 	bool is_decode_signal() const;
 
@@ -146,6 +159,13 @@ public:
 
 	void restore_settings(QSettings &settings);
 
+private:
+	uint8_t convert_a2l_threshold(float threshold, float value);
+	uint8_t convert_a2l_schmitt_trigger(float lo_thr, float hi_thr, float value);
+
+	void conversion_thread_proc(QObject* segment, uint64_t start_sample,
+		uint64_t end_sample);
+
 Q_SIGNALS:
 	void enabled_changed(const bool &value);
 
@@ -153,14 +173,28 @@ Q_SIGNALS:
 
 	void colour_changed(const QColor &colour);
 
+	void conversion_type_changed(const ConversionType t);
+
+private Q_SLOTS:
+	void on_samples_cleared();
+
+	void on_samples_added(QObject* segment, uint64_t start_sample,
+		uint64_t end_sample);
+
+	void on_capture_state_changed(int state);
+
 private:
 	shared_ptr<sigrok::Channel> channel_;
 	ChannelType channel_type_;
 	shared_ptr<pv::data::SignalData> data_;
+	shared_ptr<pv::data::SignalData> converted_data_;
+	int conversion_type_;
 
 #ifdef ENABLE_DECODE
 	shared_ptr<pv::data::DecoderStack> decoder_stack_;
 #endif
+
+	std::thread conversion_thread_;
 
 	QString internal_name_, name_;
 	QColor colour_, bgcolour_;
