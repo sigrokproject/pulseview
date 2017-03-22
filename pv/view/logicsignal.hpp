@@ -54,7 +54,7 @@ class LogicSignal : public Signal
 {
 	Q_OBJECT
 
-private:
+public:
 	static const float Oversampling;
 
 	static const QColor EdgeColour;
@@ -68,7 +68,6 @@ private:
 	static const int TriggerMarkerPadding;
 	static const char* TriggerMarkerIcons[8];
 
-public:
 	LogicSignal(pv::Session &session,
 		shared_ptr<devices::Device> device,
 		shared_ptr<data::SignalBase> base);

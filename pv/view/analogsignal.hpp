@@ -128,12 +128,21 @@ private:
 		int y, int left, const int64_t start, const int64_t end,
 		const double pixels_offset, const double samples_per_pixel);
 
+	void paint_logic_mid(QPainter &p, const ViewItemPaintParams &pp);
+
+	void paint_logic_caps(QPainter &p, QLineF *const lines,
+		vector< pair<int64_t, bool> > &edges,
+		bool level, double samples_per_pixel, double pixels_offset,
+		float x_offset, float y_offset);
+
 	/**
 	 * Computes the scale factor from the scale index and vdiv settings.
 	 */
 	float get_resolution(int scale_index);
 
 	void update_scale();
+
+	void update_conversion_type();
 
 	void perform_autoranging(bool force_update = false);
 

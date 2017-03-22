@@ -23,6 +23,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <limits>
+#include <vector>
 
 #include <QApplication>
 #include <QCheckBox>
@@ -36,8 +37,11 @@
 #include "analogsignal.hpp"
 #include "pv/data/analog.hpp"
 #include "pv/data/analogsegment.hpp"
+#include "pv/data/logic.hpp"
+#include "pv/data/logicsegment.hpp"
 #include "pv/data/signalbase.hpp"
 #include "pv/view/view.hpp"
+#include "pv/view/logicsignal.hpp"
 #include "pv/globalsettings.hpp"
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
@@ -51,6 +55,7 @@ using std::min;
 using std::numeric_limits;
 using std::pair;
 using std::shared_ptr;
+using std::vector;
 
 namespace pv {
 namespace views {
@@ -129,8 +134,10 @@ void AnalogSignal::restore_settings(QSettings &settings)
 		update_scale();
 	}
 
-	if (settings.contains("conversion_type"))
+	if (settings.contains("conversion_type")) {
 		conversion_type_ = (data::SignalBase::ConversionType)(settings.value("conversion_type").toInt());
+		update_conversion_type();
+	}
 
 	if (settings.contains("display_type"))
 		display_type_ = (DisplayType)(settings.value("display_type").toInt());
@@ -188,37 +195,47 @@ void AnalogSignal::paint_mid(QPainter &p, const ViewItemPaintParams &pp)
 	if (!base_->enabled())
 		return;
 
-	paint_grid(p, y, pp.left(), pp.right());
+	if ((display_type_ == DisplayAnalog) || (display_type_ == DisplayBoth)) {
+		paint_grid(p, y, pp.left(), pp.right());
 
-	const deque< shared_ptr<pv::data::AnalogSegment> > &segments =
-		base_->analog_data()->analog_segments();
-	if (segments.empty())
-		return;
+		const deque< shared_ptr<pv::data::AnalogSegment> > &segments =
+			base_->analog_data()->analog_segments();
+		if (segments.empty())
+			return;
 
-	const shared_ptr<pv::data::AnalogSegment> &segment =
-		segments.front();
+		const shared_ptr<pv::data::AnalogSegment> &segment =
+			segments.front();
 
-	const double pixels_offset = pp.pixels_offset();
-	const double samplerate = max(1.0, segment->samplerate());
-	const pv::util::Timestamp& start_time = segment->start_time();
-	const int64_t last_sample = segment->get_sample_count() - 1;
-	const double samples_per_pixel = samplerate * pp.scale();
-	const pv::util::Timestamp start = samplerate * (pp.offset() - start_time);
-	const pv::util::Timestamp end = start + samples_per_pixel * pp.width();
+		const double pixels_offset = pp.pixels_offset();
+		const double samplerate = max(1.0, segment->samplerate());
+		const pv::util::Timestamp& start_time = segment->start_time();
+		const int64_t last_sample = segment->get_sample_count() - 1;
+		const double samples_per_pixel = samplerate * pp.scale();
+		const pv::util::Timestamp start = samplerate * (pp.offset() - start_time);
+		const pv::util::Timestamp end = start + samples_per_pixel * pp.width();
 
-	const int64_t start_sample = min(max(floor(start).convert_to<int64_t>(),
-		(int64_t)0), last_sample);
-	const int64_t end_sample = min(max((ceil(end) + 1).convert_to<int64_t>(),
-		(int64_t)0), last_sample);
+		const int64_t start_sample = min(max(floor(start).convert_to<int64_t>(),
+			(int64_t)0), last_sample);
+		const int64_t end_sample = min(max((ceil(end) + 1).convert_to<int64_t>(),
+			(int64_t)0), last_sample);
 
-	if (samples_per_pixel < EnvelopeThreshold)
-		paint_trace(p, segment, y, pp.left(),
-			start_sample, end_sample,
-			pixels_offset, samples_per_pixel);
-	else
-		paint_envelope(p, segment, y, pp.left(),
-			start_sample, end_sample,
-			pixels_offset, samples_per_pixel);
+		if (samples_per_pixel < EnvelopeThreshold)
+			paint_trace(p, segment, y, pp.left(),
+				start_sample, end_sample,
+				pixels_offset, samples_per_pixel);
+		else
+			paint_envelope(p, segment, y, pp.left(),
+				start_sample, end_sample,
+				pixels_offset, samples_per_pixel);
+	}
+
+	if ((display_type_ == DisplayConverted) || (display_type_ == DisplayBoth)) {
+		if (((conversion_type_ == data::SignalBase::A2LConversionByTreshold) ||
+			(conversion_type_ == data::SignalBase::A2LConversionBySchmittTrigger))) {
+
+			paint_logic_mid(p, pp);
+		}
+	}
 }
 
 void AnalogSignal::paint_fore(QPainter &p, const ViewItemPaintParams &pp)
@@ -378,6 +395,129 @@ void AnalogSignal::paint_envelope(QPainter &p,
 	delete[] e.samples;
 }
 
+void AnalogSignal::paint_logic_mid(QPainter &p, const ViewItemPaintParams &pp)
+{
+	QLineF *line;
+
+	vector< pair<int64_t, bool> > edges;
+
+	assert(base_);
+
+	const int y = get_visual_y();
+
+	if (!base_->enabled())
+		return;
+
+	const int signal_margin =
+		QFontMetrics(QApplication::font()).height() / 2;
+
+	const int ph = min(pos_vdivs_, 1) * div_height_;
+	const int nh = min(neg_vdivs_, 1) * div_height_;
+	const float high_offset = y - ph + signal_margin + 0.5f;
+	const float low_offset = y + nh - signal_margin - 0.5f;
+
+	const deque< shared_ptr<pv::data::LogicSegment> > &segments =
+		base_->logic_data()->logic_segments();
+	if (segments.empty())
+		return;
+
+	const shared_ptr<pv::data::LogicSegment> &segment =
+		segments.front();
+
+	double samplerate = segment->samplerate();
+
+	// Show sample rate as 1Hz when it is unknown
+	if (samplerate == 0.0)
+		samplerate = 1.0;
+
+	const double pixels_offset = pp.pixels_offset();
+	const pv::util::Timestamp& start_time = segment->start_time();
+	const int64_t last_sample = segment->get_sample_count() - 1;
+	const double samples_per_pixel = samplerate * pp.scale();
+	const pv::util::Timestamp start = samplerate * (pp.offset() - start_time);
+	const pv::util::Timestamp end = start + samples_per_pixel * pp.width();
+
+	const int64_t start_sample = min(max(floor(start).convert_to<int64_t>(),
+		(int64_t)0), last_sample);
+	const uint64_t end_sample = min(max(ceil(end).convert_to<int64_t>(),
+		(int64_t)0), last_sample);
+
+	segment->get_subsampled_edges(edges, start_sample, end_sample,
+		samples_per_pixel / LogicSignal::Oversampling, 0);
+	assert(edges.size() >= 2);
+
+	// Paint the edges
+	const unsigned int edge_count = edges.size() - 2;
+	QLineF *const edge_lines = new QLineF[edge_count];
+	line = edge_lines;
+
+	for (auto i = edges.cbegin() + 1; i != edges.cend() - 1; i++) {
+		const float x = ((*i).first / samples_per_pixel -
+			pixels_offset) + pp.left();
+		*line++ = QLineF(x, high_offset, x, low_offset);
+	}
+
+	p.setPen(LogicSignal::EdgeColour);
+	p.drawLines(edge_lines, edge_count);
+	delete[] edge_lines;
+
+	// Paint the caps
+	const unsigned int max_cap_line_count = edges.size();
+	QLineF *const cap_lines = new QLineF[max_cap_line_count];
+
+	p.setPen(LogicSignal::HighColour);
+	paint_logic_caps(p, cap_lines, edges, true, samples_per_pixel,
+		pixels_offset, pp.left(), high_offset);
+	p.setPen(LogicSignal::LowColour);
+	paint_logic_caps(p, cap_lines, edges, false, samples_per_pixel,
+		pixels_offset, pp.left(), low_offset);
+
+	delete[] cap_lines;
+
+	// Return if we don't need to paint the sampling points
+	GlobalSettings settings;
+	const bool show_sampling_points =
+		settings.value(GlobalSettings::Key_View_ShowSamplingPoints).toBool();
+
+	if (!show_sampling_points || (samples_per_pixel >= 0.25))
+		return;
+
+	// Paint the sampling points
+	const uint64_t sampling_points_count = end_sample - start_sample + 1;
+	QRectF *const sampling_points = new QRectF[sampling_points_count];
+	QRectF *sampling_point = sampling_points;
+
+	const int w = 1;
+	const float y_middle = high_offset - ((high_offset - low_offset) / 2);
+	for (uint64_t i = start_sample; i < end_sample + 1; ++i) {
+		const float x = (i / samples_per_pixel - pixels_offset) + pp.left();
+		*sampling_point++ = QRectF(x - (w / 2), y_middle - (w / 2), w, w);
+	}
+
+	p.setPen(SamplingPointColour);
+	p.drawRects(sampling_points, sampling_points_count);
+	delete[] sampling_points;
+}
+
+void AnalogSignal::paint_logic_caps(QPainter &p, QLineF *const lines,
+	vector< pair<int64_t, bool> > &edges, bool level,
+	double samples_per_pixel, double pixels_offset, float x_offset,
+	float y_offset)
+{
+	QLineF *line = lines;
+
+	for (auto i = edges.begin(); i != (edges.end() - 1); i++)
+		if ((*i).second == level) {
+			*line++ = QLineF(
+				((*i).first / samples_per_pixel -
+					pixels_offset) + x_offset, y_offset,
+				((*(i+1)).first / samples_per_pixel -
+					pixels_offset) + x_offset, y_offset);
+		}
+
+	p.drawLines(lines, line - lines);
+}
+
 float AnalogSignal::get_resolution(int scale_index)
 {
 	const float seq[] = {1.0f, 2.0f, 5.0f};
@@ -393,6 +533,14 @@ void AnalogSignal::update_scale()
 {
 	resolution_ = get_resolution(scale_index_);
 	scale_ = div_height_ / resolution_;
+}
+
+void AnalogSignal::update_conversion_type()
+{
+	base_->set_conversion_type(conversion_type_);
+
+	if (owner_)
+		owner_->row_item_appearance_changed(false, true);
 }
 
 void AnalogSignal::perform_autoranging(bool force_update)
@@ -594,8 +742,14 @@ void AnalogSignal::on_autoranging_changed(int state)
 
 void AnalogSignal::on_conversion_changed(int index)
 {
+	data::SignalBase::ConversionType old_conv_type = conversion_type_;
+
 	conversion_type_ = (data::SignalBase::ConversionType)(conversion_cb_->itemData(index).toInt());
-	base_->set_conversion_type(conversion_type_);
+
+	if (conversion_type_ != old_conv_type) {
+		base_->set_conversion_type(conversion_type_);
+		update_conversion_type();
+	}
 }
 
 } // namespace TraceView
