@@ -60,7 +60,6 @@ using std::vector;
 
 using Glib::VariantBase;
 
-using sigrok::ChannelType;
 using sigrok::ConfigKey;
 using sigrok::Error;
 using sigrok::OutputFormat;
@@ -115,7 +114,7 @@ bool StoreSession::start()
 		if (!signal->enabled())
 			continue;
 
-		if (signal->type() == ChannelType::LOGIC) {
+		if (signal->type() == data::SignalBase::LogicChannel) {
 			// All logic channels share the same data segments
 			shared_ptr<data::Logic> ldata = signal->logic_data();
 
@@ -131,7 +130,7 @@ bool StoreSession::start()
 			any_segment = lsegment;
 		}
 
-		if (signal->type() == ChannelType::ANALOG) {
+		if (signal->type() == data::SignalBase::AnalogChannel) {
 			// Each analog channel has its own segments
 			shared_ptr<data::Analog> adata = signal->analog_data();
 

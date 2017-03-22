@@ -32,7 +32,6 @@ using std::shared_ptr;
 
 namespace sigrok {
 class Channel;
-class ChannelType;
 }
 
 namespace pv {
@@ -47,11 +46,20 @@ class SignalBase : public QObject
 {
 	Q_OBJECT
 
+public:
+	enum ChannelType {
+		AnalogChannel = 1,
+		LogicChannel,
+		DecodeChannel,
+		A2LChannel,  // Analog converted to logic, joint representation
+		MathChannel
+	};
+
 private:
 	static const int ColourBGAlpha;
 
 public:
-	SignalBase(shared_ptr<sigrok::Channel> channel);
+	SignalBase(shared_ptr<sigrok::Channel> channel, ChannelType channel_type);
 	virtual ~SignalBase() {}
 
 public:
@@ -74,7 +82,7 @@ public:
 	/**
 	 * Gets the type of this channel.
 	 */
-	const sigrok::ChannelType *type() const;
+	ChannelType type() const;
 
 	/**
 	 * Gets the index number of this channel.
@@ -147,6 +155,7 @@ Q_SIGNALS:
 
 private:
 	shared_ptr<sigrok::Channel> channel_;
+	ChannelType channel_type_;
 	shared_ptr<pv::data::SignalData> data_;
 
 #ifdef ENABLE_DECODE

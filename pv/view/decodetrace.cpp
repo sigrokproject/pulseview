@@ -877,7 +877,7 @@ QComboBox* DecodeTrace::create_channel_selector(
 
 	for (const shared_ptr<data::SignalBase> &b : sig_list) {
 		assert(b);
-		if (b->type() == sigrok::ChannelType::LOGIC && b->enabled()) {
+		if (b->type() == data::SignalBase::LogicChannel && b->enabled()) {
 			selector->addItem(b->name(),
 				qVariantFromValue((void*)b.get()));
 

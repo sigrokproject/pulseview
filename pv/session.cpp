@@ -89,7 +89,6 @@ using std::vector;
 
 using sigrok::Analog;
 using sigrok::Channel;
-using sigrok::ChannelType;
 using sigrok::ConfigKey;
 using sigrok::DatafeedCallbackFunction;
 using sigrok::Error;
@@ -638,7 +637,7 @@ bool Session::add_decoder(srd_decoder *const dec)
 		// Auto select the initial channels
 		for (const srd_channel *pdch : all_channels)
 			for (shared_ptr<data::SignalBase> b : signalbases_) {
-				if (b->type() == ChannelType::LOGIC) {
+				if (b->type() == data::SignalBase::LogicChannel) {
 					if (QString::fromUtf8(pdch->name).toLower().
 						contains(b->name().toLower()))
 						channels[pdch] = b;
@@ -652,7 +651,7 @@ bool Session::add_decoder(srd_decoder *const dec)
 
 		// Create the decode signal
 		shared_ptr<data::SignalBase> signalbase =
-			make_shared<data::SignalBase>(nullptr);
+			make_shared<data::SignalBase>(nullptr, data::SignalBase::DecodeChannel);
 
 		signalbase->set_decoder_stack(decoder_stack);
 		signalbases_.insert(signalbase);
@@ -730,7 +729,7 @@ void Session::update_signals()
 	unsigned int logic_channel_count = count_if(
 		channels.begin(), channels.end(),
 		[] (shared_ptr<Channel> channel) {
-			return channel->type() == ChannelType::LOGIC; });
+			return channel->type() == sigrok::ChannelType::LOGIC; });
 
 	// Create data containers for the logic data segments
 	{
@@ -780,7 +779,8 @@ void Session::update_signals()
 					switch(channel->type()->id()) {
 					case SR_CHANNEL_LOGIC:
 						if (!signalbase) {
-							signalbase = make_shared<data::SignalBase>(channel);
+							signalbase = make_shared<data::SignalBase>(channel,
+								data::SignalBase::LogicChannel);
 							signalbases_.insert(signalbase);
 
 							all_signal_data_.insert(logic_data_);
@@ -796,7 +796,8 @@ void Session::update_signals()
 					case SR_CHANNEL_ANALOG:
 					{
 						if (!signalbase) {
-							signalbase = make_shared<data::SignalBase>(channel);
+							signalbase = make_shared<data::SignalBase>(channel,
+								data::SignalBase::AnalogChannel);
 							signalbases_.insert(signalbase);
 
 							shared_ptr<data::Analog> data(new data::Analog());

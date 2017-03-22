@@ -30,15 +30,15 @@ using std::dynamic_pointer_cast;
 using std::shared_ptr;
 
 using sigrok::Channel;
-using sigrok::ChannelType;
 
 namespace pv {
 namespace data {
 
 const int SignalBase::ColourBGAlpha = 8*256/100;
 
-SignalBase::SignalBase(shared_ptr<sigrok::Channel> channel) :
-	channel_(channel)
+SignalBase::SignalBase(shared_ptr<sigrok::Channel> channel, ChannelType channel_type) :
+	channel_(channel),
+	channel_type_(channel_type)
 {
 	if (channel_)
 		internal_name_ = QString::fromStdString(channel_->name());
@@ -82,9 +82,9 @@ void SignalBase::set_enabled(bool value)
 	}
 }
 
-const ChannelType *SignalBase::type() const
+SignalBase::ChannelType SignalBase::type() const
 {
-	return (channel_) ? channel_->type() : nullptr;
+	return channel_type_;
 }
 
 unsigned int SignalBase::index() const
@@ -119,7 +119,7 @@ void SignalBase::set_data(shared_ptr<pv::data::SignalData> data)
 
 shared_ptr<data::Analog> SignalBase::analog_data() const
 {
-	if (type() == ChannelType::ANALOG)
+	if (channel_type_ == AnalogChannel)
 		return dynamic_pointer_cast<data::Analog>(data_);
 	else
 		return shared_ptr<data::Analog>();
@@ -127,7 +127,7 @@ shared_ptr<data::Analog> SignalBase::analog_data() const
 
 shared_ptr<data::Logic> SignalBase::logic_data() const
 {
-	if (type() == ChannelType::LOGIC)
+	if (channel_type_ == LogicChannel)
 		return dynamic_pointer_cast<data::Logic>(data_);
 	else
 		return shared_ptr<data::Logic>();
