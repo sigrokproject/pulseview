@@ -161,6 +161,8 @@ private Q_SLOTS:
 
 	void on_conversion_changed(int index);
 
+	void on_display_type_changed(int index);
+
 private:
 	QComboBox *resolution_cb_, *conversion_cb_, *display_type_cb_;
 

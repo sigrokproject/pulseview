@@ -243,20 +243,22 @@ void AnalogSignal::paint_fore(QPainter &p, const ViewItemPaintParams &pp)
 	if (!enabled())
 		return;
 
-	const int y = get_visual_y();
+	if ((display_type_ == DisplayAnalog) || (display_type_ == DisplayBoth)) {
+		const int y = get_visual_y();
 
-	// Show the info section on the right side of the trace
-	const QString infotext = QString("%1 V/div").arg(resolution_);
+		// Show the info section on the right side of the trace
+		const QString infotext = QString("%1 V/div").arg(resolution_);
 
-	p.setPen(base_->colour());
-	p.setFont(QApplication::font());
+		p.setPen(base_->colour());
+		p.setFont(QApplication::font());
 
-	const QRectF bounding_rect = QRectF(pp.left(),
-			y + v_extents().first,
-			pp.width() - InfoTextMarginRight,
-			v_extents().second - v_extents().first - InfoTextMarginBottom);
+		const QRectF bounding_rect = QRectF(pp.left(),
+				y + v_extents().first,
+				pp.width() - InfoTextMarginRight,
+				v_extents().second - v_extents().first - InfoTextMarginBottom);
 
-	p.drawText(bounding_rect, Qt::AlignRight | Qt::AlignBottom, infotext);
+		p.drawText(bounding_rect, Qt::AlignRight | Qt::AlignBottom, infotext);
+	}
 }
 
 void AnalogSignal::paint_grid(QPainter &p, int y, int left, int right)
@@ -675,6 +677,9 @@ void AnalogSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
 
 	layout->addRow(tr("Traces to show:"), display_type_cb_);
 
+	connect(display_type_cb_, SIGNAL(currentIndexChanged(int)),
+		this, SLOT(on_display_type_changed(int)));
+
 	form->addRow(layout);
 }
 
@@ -750,6 +755,14 @@ void AnalogSignal::on_conversion_changed(int index)
 		base_->set_conversion_type(conversion_type_);
 		update_conversion_type();
 	}
+}
+
+void AnalogSignal::on_display_type_changed(int index)
+{
+	display_type_ = (DisplayType)(display_type_cb_->itemData(index).toInt());
+
+	if (owner_)
+		owner_->row_item_appearance_changed(false, true);
 }
 
 } // namespace TraceView
