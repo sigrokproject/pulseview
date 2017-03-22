@@ -317,8 +317,10 @@ void DecoderStack::decode_data(
 		if (srd_session_send(session, i, chunk_end, chunk,
 				(chunk_end - i) * unit_size, unit_size) != SRD_OK) {
 			error_message_ = tr("Decoder reported an error");
+			delete[] chunk;
 			break;
 		}
+		delete[] chunk;
 
 		{
 			lock_guard<mutex> lock(output_mutex_);
