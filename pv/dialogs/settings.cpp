@@ -166,6 +166,13 @@ QWidget *Settings::get_about_page(QWidget *parent) const
 	QString s;
 	s.append("<table>");
 
+	/* Library info */
+	s.append("<tr><td colspan=\"2\"><b>" +
+			tr("Used libraries:") +
+			"</b></td></tr>");
+	s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
+			.arg(QString("Qt"), qVersion()));
+
 	/* Set up the supported field */
 	s.append("<tr><td colspan=\"2\"><b>" +
 		tr("Supported hardware drivers:") +
