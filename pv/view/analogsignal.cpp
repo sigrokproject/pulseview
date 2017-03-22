@@ -87,6 +87,8 @@ AnalogSignal::AnalogSignal(
 	pos_vdivs_(1),
 	neg_vdivs_(1),
 	resolution_(0),
+	conversion_type_(data::SignalBase::NoConversion),
+	display_type_(DisplayBoth),
 	autoranging_(true)
 {
 	pv::data::Analog* analog_data =
@@ -109,6 +111,8 @@ void AnalogSignal::save_settings(QSettings &settings) const
 	settings.setValue("pos_vdivs", pos_vdivs_);
 	settings.setValue("neg_vdivs", neg_vdivs_);
 	settings.setValue("scale_index", scale_index_);
+	settings.setValue("conversion_type", conversion_type_);
+	settings.setValue("display_type", display_type_);
 	settings.setValue("autoranging", autoranging_);
 }
 
@@ -124,6 +128,12 @@ void AnalogSignal::restore_settings(QSettings &settings)
 		scale_index_ = settings.value("scale_index").toInt();
 		update_scale();
 	}
+
+	if (settings.contains("conversion_type"))
+		conversion_type_ = (data::SignalBase::ConversionType)(settings.value("conversion_type").toInt());
+
+	if (settings.contains("display_type"))
+		display_type_ = (DisplayType)(settings.value("display_type").toInt());
 
 	if (settings.contains("autoranging"))
 		autoranging_ = settings.value("autoranging").toBool();
@@ -468,7 +478,7 @@ void AnalogSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
 		resolution_cb_->insertItem(0, label, QVariant(i));
 	}
 
-	const int cur_idx = resolution_cb_->findData(QVariant(scale_index_));
+	int cur_idx = resolution_cb_->findData(QVariant(scale_index_));
 	resolution_cb_->setCurrentIndex(cur_idx);
 
 	connect(resolution_cb_, SIGNAL(currentIndexChanged(int)),
@@ -489,6 +499,33 @@ void AnalogSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
 		this, SLOT(on_autoranging_changed(int)));
 
 	layout->addRow(tr("Autoranging"), autoranging_cb);
+
+	// Add the conversion type dropdown
+	conversion_cb_ = new QComboBox();
+
+	conversion_cb_->addItem("none", data::SignalBase::NoConversion);
+	conversion_cb_->addItem("to logic via threshold", data::SignalBase::A2LConversionByTreshold);
+	conversion_cb_->addItem("to logic via schmitt-trigger", data::SignalBase::A2LConversionBySchmittTrigger);
+
+	cur_idx = conversion_cb_->findData(QVariant(conversion_type_));
+	conversion_cb_->setCurrentIndex(cur_idx);
+
+	layout->addRow(tr("Conversion"), conversion_cb_);
+
+	connect(conversion_cb_, SIGNAL(currentIndexChanged(int)),
+		this, SLOT(on_conversion_changed(int)));
+
+	// Add the display type dropdown
+	display_type_cb_ = new QComboBox();
+
+	display_type_cb_->addItem(tr("Analog"), DisplayAnalog);
+	display_type_cb_->addItem(tr("Converted"), DisplayConverted);
+	display_type_cb_->addItem(tr("Both"), DisplayBoth);
+
+	cur_idx = display_type_cb_->findData(QVariant(display_type_));
+	display_type_cb_->setCurrentIndex(cur_idx);
+
+	layout->addRow(tr("Traces to show:"), display_type_cb_);
 
 	form->addRow(layout);
 }
@@ -553,6 +590,12 @@ void AnalogSignal::on_autoranging_changed(int state)
 		owner_->extents_changed(false, true);
 		owner_->row_item_appearance_changed(false, true);
 	}
+}
+
+void AnalogSignal::on_conversion_changed(int index)
+{
+	conversion_type_ = (data::SignalBase::ConversionType)(conversion_cb_->itemData(index).toInt());
+	base_->set_conversion_type(conversion_type_);
 }
 
 } // namespace TraceView

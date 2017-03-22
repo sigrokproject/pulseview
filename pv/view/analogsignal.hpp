@@ -55,6 +55,12 @@ private:
 	static const int MaxScaleIndex, MinScaleIndex;
 	static const int InfoTextMarginRight, InfoTextMarginBottom;
 
+	enum DisplayType {
+		DisplayAnalog = 0,
+		DisplayConverted = 1,
+		DisplayBoth = 2
+	};
+
 public:
 	AnalogSignal(pv::Session &session, shared_ptr<data::SignalBase> base);
 
@@ -144,8 +150,10 @@ private Q_SLOTS:
 
 	void on_autoranging_changed(int state);
 
+	void on_conversion_changed(int index);
+
 private:
-	QComboBox *resolution_cb_;
+	QComboBox *resolution_cb_, *conversion_cb_, *display_type_cb_;
 
 	float scale_;
 	int scale_index_;
@@ -155,6 +163,8 @@ private:
 	int pos_vdivs_, neg_vdivs_;  // divs per positive/negative side
 	float resolution_; // e.g. 10 for 10 V/div
 
+	data::SignalBase::ConversionType conversion_type_;
+	DisplayType display_type_;
 	bool autoranging_;
 };
 
