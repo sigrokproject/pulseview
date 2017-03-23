@@ -240,10 +240,9 @@ uint8_t SignalBase::convert_a2l_threshold(float threshold, float value)
 	return (value >= threshold) ? 1 : 0;
 }
 
-uint8_t SignalBase::convert_a2l_schmitt_trigger(float lo_thr, float hi_thr, float value)
+uint8_t SignalBase::convert_a2l_schmitt_trigger(float lo_thr, float hi_thr,
+	float value, uint8_t &state)
 {
-	static uint8_t state = 0;
-
 	if (value < lo_thr)
 		state = 0;
 	else if (value > hi_thr)
@@ -325,12 +324,13 @@ void SignalBase::conversion_thread_proc(QObject* segment, uint64_t start_sample,
 			const float amplitude = max_v - min_v;
 			const float lo_thr = min_v + (amplitude * 0.1);  // 10% above min
 			const float hi_thr = max_v - (amplitude * 0.1);  // 10% below max
+			uint8_t state = 0;  // TODO Use value of logic sample n-1 instead of 0
 
 			// Convert as many sample blocks as we can
 			while ((end_sample - i) > block_size) {
 				const float* asamples = asegment->get_samples(i, i + block_size);
 				for (uint32_t j = 0; j < block_size; j++)
-					lsamples.push_back(convert_a2l_schmitt_trigger(lo_thr, hi_thr, asamples[j]));
+					lsamples.push_back(convert_a2l_schmitt_trigger(lo_thr, hi_thr, asamples[j], state));
 				lsegment->append_payload(lsamples.data(), lsamples.size());
 				i += block_size;
 				lsamples.clear();
@@ -340,7 +340,7 @@ void SignalBase::conversion_thread_proc(QObject* segment, uint64_t start_sample,
 			// Convert remaining samples
 			const float* asamples = asegment->get_samples(i, end_sample);
 			for (uint32_t j = 0; j < (end_sample - i); j++)
-				lsamples.push_back(convert_a2l_schmitt_trigger(lo_thr, hi_thr, asamples[j]));
+				lsamples.push_back(convert_a2l_schmitt_trigger(lo_thr, hi_thr, asamples[j], state));
 			lsegment->append_payload(lsamples.data(), lsamples.size());
 			delete[] asamples;
 		}

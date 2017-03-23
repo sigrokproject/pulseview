@@ -161,7 +161,8 @@ public:
 
 private:
 	uint8_t convert_a2l_threshold(float threshold, float value);
-	uint8_t convert_a2l_schmitt_trigger(float lo_thr, float hi_thr, float value);
+	uint8_t convert_a2l_schmitt_trigger(float lo_thr, float hi_thr,
+		float value, uint8_t &state);
 
 	void conversion_thread_proc(QObject* segment, uint64_t start_sample,
 		uint64_t end_sample);
