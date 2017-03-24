@@ -31,7 +31,7 @@ using std::recursive_mutex;
 namespace pv {
 namespace data {
 
-const uint64_t Segment::MaxChunkSize = 10*1024*1024;  /* 10MiB */
+const uint64_t Segment::MaxChunkSize = 10 * 1024 * 1024;  /* 10MiB */
 
 Segment::Segment(uint64_t samplerate, unsigned int unit_size) :
 	sample_count_(0),

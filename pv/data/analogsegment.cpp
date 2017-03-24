@@ -44,7 +44,7 @@ namespace data {
 const int AnalogSegment::EnvelopeScalePower = 4;
 const int AnalogSegment::EnvelopeScaleFactor = 1 << EnvelopeScalePower;
 const float AnalogSegment::LogEnvelopeScaleFactor = logf(EnvelopeScaleFactor);
-const uint64_t AnalogSegment::EnvelopeDataUnit = 64*1024;	// bytes
+const uint64_t AnalogSegment::EnvelopeDataUnit = 64 * 1024;	// bytes
 
 AnalogSegment::AnalogSegment(Analog& owner, uint64_t samplerate) :
 	Segment(samplerate, sizeof(float)),
