@@ -219,8 +219,6 @@ SegmentRawDataIterator* Segment::begin_raw_sample_iteration(uint64_t start)
 
 void Segment::continue_raw_sample_iteration(SegmentRawDataIterator* it, uint64_t increase)
 {
-	lock_guard<recursive_mutex> lock(mutex_);
-
 	// Fail gracefully if we are asked to deliver data we don't have
 	if (it->sample_index > sample_count_)
 		return;

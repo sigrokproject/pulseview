@@ -49,6 +49,7 @@ private:
 	static const QColor GridMajorColor, GridMinorColor;
 	static const QColor SamplingPointColour;
 
+	static const int64_t TracePaintBlockSize;
 	static const float EnvelopeThreshold;
 
 	static const int MaximumVDivs;

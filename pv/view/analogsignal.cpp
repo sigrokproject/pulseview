@@ -73,7 +73,8 @@ const QColor AnalogSignal::GridMinorColor = QColor(0, 0, 0, 20 * 256 / 100);
 
 const QColor AnalogSignal::SamplingPointColour(0x77, 0x77, 0x77);
 
-const float AnalogSignal::EnvelopeThreshold = 256.0f;
+const int64_t AnalogSignal::TracePaintBlockSize = 1024 * 1024;  // 4 MiB (due to float)
+const float AnalogSignal::EnvelopeThreshold = 64.0f;
 
 const int AnalogSignal::MaximumVDivs = 10;
 const int AnalogSignal::MinScaleIndex = -6;
@@ -309,6 +310,15 @@ void AnalogSignal::paint_trace(QPainter &p,
 	int y, int left, const int64_t start, const int64_t end,
 	const double pixels_offset, const double samples_per_pixel)
 {
+	if (end <= start)
+		return;
+
+	// Calculate and paint the sampling points if enabled and useful
+	GlobalSettings settings;
+	const bool show_sampling_points =
+		settings.value(GlobalSettings::Key_View_ShowSamplingPoints).toBool() &&
+		(samples_per_pixel < 0.25);
+
 	p.setPen(base_->colour());
 
 	const int64_t points_count = end - start;
@@ -316,38 +326,45 @@ void AnalogSignal::paint_trace(QPainter &p,
 	QPointF *points = new QPointF[points_count];
 	QPointF *point = points;
 
-	QRectF *const sampling_points = new QRectF[points_count];
+	QRectF *sampling_points = nullptr;
+	if (show_sampling_points)
+		 sampling_points = new QRectF[points_count];
 	QRectF *sampling_point = sampling_points;
 
-	pv::data::SegmentAnalogDataIterator* it =
-		segment->begin_sample_iteration(start);
+	int64_t sample_count = min(points_count, TracePaintBlockSize);
+	int64_t block_sample = 0;
+	const float *sample_block = segment->get_samples(start, start + sample_count);
 
 	const int w = 2;
-	for (int64_t sample = start; sample != end; sample++) {
+	for (int64_t sample = start; sample != end; sample++, block_sample++) {
+
+		if (block_sample == TracePaintBlockSize) {
+			block_sample = 0;
+			delete[] sample_block;
+			sample_count = min(points_count - sample, TracePaintBlockSize);
+			sample_block = segment->get_samples(sample, sample + sample_count);
+		}
+
 		const float x = (sample / samples_per_pixel -
 			pixels_offset) + left;
 
-		*point++ = QPointF(x, y - *((float*)it->value) * scale_);
-		*sampling_point++ = QRectF(x - (w / 2), y - *((float*)it->value) * scale_ - (w / 2), w, w);
+		*point++ = QPointF(x, y - sample_block[block_sample] * scale_);
 
-		segment->continue_sample_iteration(it, 1);
+		if (show_sampling_points)
+			*sampling_point++ =
+				QRectF(x - (w / 2), y - sample_block[block_sample] * scale_ - (w / 2), w, w);
 	}
-	segment->end_sample_iteration(it);
+	delete[] sample_block;
 
 	p.drawPolyline(points, points_count);
 
-	// Paint the sampling points if enabled
-	GlobalSettings settings;
-	const bool show_sampling_points =
-		settings.value(GlobalSettings::Key_View_ShowSamplingPoints).toBool();
-
-	if (show_sampling_points && (samples_per_pixel < 0.25)) {
+	if (show_sampling_points) {
 		p.setPen(SamplingPointColour);
 		p.drawRects(sampling_points, points_count);
+		delete[] sampling_points;
 	}
 
 	delete[] points;
-	delete[] sampling_points;
 }
 
 void AnalogSignal::paint_envelope(QPainter &p,
