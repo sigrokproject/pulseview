@@ -25,10 +25,10 @@
 
 #include "decoderstack.hpp"
 
+#include <pv/data/decode/annotation.hpp>
+#include <pv/data/decode/decoder.hpp>
 #include <pv/data/logic.hpp>
 #include <pv/data/logicsegment.hpp>
-#include <pv/data/decode/decoder.hpp>
-#include <pv/data/decode/annotation.hpp>
 #include <pv/session.hpp>
 #include <pv/view/logicsignal.hpp>
 

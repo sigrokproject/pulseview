@@ -22,8 +22,8 @@
 
 #include <cassert>
 #include <functional>
-#include <stdexcept>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 
 #include <libsigrokcxx/libsigrokcxx.hpp>

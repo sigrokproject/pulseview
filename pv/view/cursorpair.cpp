@@ -19,12 +19,12 @@
 
 #include "cursorpair.hpp"
 
+#include "pv/util.hpp"
 #include "ruler.hpp"
 #include "view.hpp"
-#include "pv/util.hpp"
 
-#include <cassert>
 #include <algorithm>
+#include <cassert>
 
 using std::max;
 using std::make_pair;

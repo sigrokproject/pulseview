@@ -25,10 +25,10 @@
 #include <memory>
 
 #include <QMainWindow>
-#include <QSignalMapper>
-#include <QToolButton>
-#include <QTabWidget>
 #include <QShortcut>
+#include <QSignalMapper>
+#include <QTabWidget>
+#include <QToolButton>
 
 #include "session.hpp"
 #include "views/viewbase.hpp"

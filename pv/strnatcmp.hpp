@@ -27,8 +27,8 @@
 #ifndef PULSEVIEW_PV_STRNATCMP_HPP
 #define PULSEVIEW_PV_STRNATCMP_HPP
 
-#include <cstddef>	/* size_t */
 #include <cctype>
+#include <cstddef>	/* size_t */
 #include <string>
 
 using std::string;

@@ -20,10 +20,10 @@
 #include <algorithm>
 #include <cassert>
 
-#include <QtGui>
 #include <QApplication>
 #include <QDesktopWidget>
 #include <QLineEdit>
+#include <QtGui>
 
 #include "popup.hpp"
 

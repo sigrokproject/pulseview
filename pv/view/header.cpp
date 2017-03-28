@@ -23,8 +23,8 @@
 #include "signal.hpp"
 #include "tracegroup.hpp"
 
-#include <cassert>
 #include <algorithm>
+#include <cassert>
 
 #include <boost/iterator/filter_iterator.hpp>
 

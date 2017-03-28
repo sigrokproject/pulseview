@@ -18,11 +18,14 @@
  */
 
 #include "assetreader.hpp"
-#include <libsigrok/libsigrok.h>
+
 #include <memory>
+
 #include <QtCore/QDebug>
 #include <QtCore/QFile>
 #include <QtCore/QStandardPaths>
+
+#include <libsigrok/libsigrok.h>
 
 using namespace pv;
 

@@ -27,14 +27,14 @@
 
 #include "storesession.hpp"
 
-#include <pv/devicemanager.hpp>
-#include <pv/session.hpp>
 #include <pv/data/analog.hpp>
 #include <pv/data/analogsegment.hpp>
 #include <pv/data/logic.hpp>
 #include <pv/data/logicsegment.hpp>
 #include <pv/data/signalbase.hpp>
+#include <pv/devicemanager.hpp>
 #include <pv/devices/device.hpp>
+#include <pv/session.hpp>
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
 

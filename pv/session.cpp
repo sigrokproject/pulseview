@@ -31,16 +31,16 @@
 
 #include <sys/stat.h>
 
-#include "session.hpp"
 #include "devicemanager.hpp"
+#include "session.hpp"
 
 #include "data/analog.hpp"
 #include "data/analogsegment.hpp"
+#include "data/decode/decoder.hpp"
 #include "data/decoderstack.hpp"
 #include "data/logic.hpp"
 #include "data/logicsegment.hpp"
 #include "data/signalbase.hpp"
-#include "data/decode/decoder.hpp"
 
 #include "devices/hardwaredevice.hpp"
 #include "devices/inputfile.hpp"

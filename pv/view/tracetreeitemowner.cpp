@@ -20,8 +20,8 @@
 #include <cassert>
 
 #include "tracetreeitem.hpp"
-#include "tracetreeitemowner.hpp"
 #include "trace.hpp"
+#include "tracetreeitemowner.hpp"
 
 using std::find;
 using std::make_pair;

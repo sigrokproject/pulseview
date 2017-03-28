@@ -40,13 +40,13 @@ extern "C" {
 
 #include "decodetrace.hpp"
 
-#include <pv/session.hpp>
-#include <pv/strnatcmp.hpp>
-#include <pv/data/decoderstack.hpp>
+#include <pv/data/decode/annotation.hpp>
 #include <pv/data/decode/decoder.hpp>
+#include <pv/data/decoderstack.hpp>
 #include <pv/data/logic.hpp>
 #include <pv/data/logicsegment.hpp>
-#include <pv/data/decode/annotation.hpp>
+#include <pv/session.hpp>
+#include <pv/strnatcmp.hpp>
 #include <pv/view/view.hpp>
 #include <pv/view/viewport.hpp>
 #include <pv/widgets/decodergroupbox.hpp>

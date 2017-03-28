@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include <QPainter>
 #include <QPaintEvent>
+#include <QPainter>
 #include <QStyle>
 #include <QStyleOptionFrame>
 

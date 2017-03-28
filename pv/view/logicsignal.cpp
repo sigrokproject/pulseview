@@ -31,14 +31,14 @@
 #include "logicsignal.hpp"
 #include "view.hpp"
 
-#include <pv/session.hpp>
-#include <pv/devicemanager.hpp>
-#include <pv/devices/device.hpp>
 #include <pv/data/logic.hpp>
 #include <pv/data/logicsegment.hpp>
 #include <pv/data/signalbase.hpp>
-#include <pv/view/view.hpp>
+#include <pv/devicemanager.hpp>
+#include <pv/devices/device.hpp>
 #include <pv/globalsettings.hpp>
+#include <pv/session.hpp>
+#include <pv/view/view.hpp>
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
 

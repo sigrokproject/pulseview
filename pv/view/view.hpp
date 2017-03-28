@@ -32,8 +32,8 @@
 #include <QTimer>
 
 #include <pv/data/signaldata.hpp>
-#include <pv/views/viewbase.hpp>
 #include <pv/util.hpp>
+#include <pv/views/viewbase.hpp>
 
 #include "cursorpair.hpp"
 #include "flag.hpp"

@@ -23,8 +23,8 @@
 
 #include "pv/util.hpp"
 
-#include <thread>
 #include <mutex>
+#include <thread>
 #include <vector>
 
 using std::recursive_mutex;

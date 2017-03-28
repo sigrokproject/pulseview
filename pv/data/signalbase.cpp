@@ -20,14 +20,14 @@
 
 #include "analog.hpp"
 #include "analogsegment.hpp"
+#include "decode/row.hpp"
 #include "logic.hpp"
 #include "logicsegment.hpp"
 #include "signalbase.hpp"
 #include "signaldata.hpp"
-#include "decode/row.hpp"
 
-#include <pv/session.hpp>
 #include <pv/binding/decoder.hpp>
+#include <pv/session.hpp>
 
 using std::dynamic_pointer_cast;
 using std::make_shared;

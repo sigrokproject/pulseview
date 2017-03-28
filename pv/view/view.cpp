@@ -36,9 +36,9 @@
 #include <boost/serialization/serialization.hpp>
 
 #include <QApplication>
-#include <QHBoxLayout>
 #include <QEvent>
 #include <QFontMetrics>
+#include <QHBoxLayout>
 #include <QMouseEvent>
 #include <QScrollBar>
 
@@ -54,11 +54,11 @@
 #include "view.hpp"
 #include "viewport.hpp"
 
-#include "pv/session.hpp"
-#include "pv/globalsettings.hpp"
-#include "pv/devices/device.hpp"
 #include "pv/data/logic.hpp"
 #include "pv/data/logicsegment.hpp"
+#include "pv/devices/device.hpp"
+#include "pv/globalsettings.hpp"
+#include "pv/session.hpp"
 #include "pv/util.hpp"
 
 #ifdef ENABLE_DECODE

@@ -21,8 +21,8 @@
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
 
-#include <QLabel>
 #include <QGroupBox>
+#include <QLabel>
 #include <QRadioButton>
 
 #include "connect.hpp"

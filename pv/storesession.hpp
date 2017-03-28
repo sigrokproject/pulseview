@@ -20,8 +20,8 @@
 #ifndef PULSEVIEW_PV_STORESESSION_HPP
 #define PULSEVIEW_PV_STORESESSION_HPP
 
-#include <cstdint>
 #include <atomic>
+#include <cstdint>
 #include <fstream>
 #include <map>
 #include <memory>

@@ -29,9 +29,9 @@
 #include <QFormLayout>
 #include <QHBoxLayout>
 #include <QLineEdit>
-#include <QSpinBox>
 #include <QListWidget>
 #include <QPushButton>
+#include <QSpinBox>
 #include <QVBoxLayout>
 
 using std::shared_ptr;

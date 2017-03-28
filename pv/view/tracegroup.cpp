@@ -19,8 +19,8 @@
 
 #include <extdef.h>
 
-#include <cassert>
 #include <algorithm>
+#include <cassert>
 
 #include <QMenu>
 #include <QPainter>

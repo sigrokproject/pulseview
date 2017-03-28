@@ -19,9 +19,9 @@
 
 #include "cursor.hpp"
 
+#include "pv/util.hpp"
 #include "ruler.hpp"
 #include "view.hpp"
-#include "pv/util.hpp"
 
 #include <QApplication>
 #include <QBrush>

@@ -30,8 +30,8 @@
 #include <QSignalMapper>
 
 #include <pv/binding/decoder.hpp>
-#include <pv/data/signalbase.hpp>
 #include <pv/data/decode/row.hpp>
+#include <pv/data/signalbase.hpp>
 
 using std::list;
 using std::map;

@@ -23,8 +23,8 @@
 
 #include <boost/none_t.hpp>
 
-#include <pv/data/decoderstack.hpp>
 #include <pv/data/decode/decoder.hpp>
+#include <pv/data/decoderstack.hpp>
 #include <pv/prop/double.hpp>
 #include <pv/prop/enum.hpp>
 #include <pv/prop/int.hpp>

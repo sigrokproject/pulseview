@@ -40,9 +40,9 @@
 #include "pv/data/logic.hpp"
 #include "pv/data/logicsegment.hpp"
 #include "pv/data/signalbase.hpp"
-#include "pv/view/view.hpp"
-#include "pv/view/logicsignal.hpp"
 #include "pv/globalsettings.hpp"
+#include "pv/view/logicsignal.hpp"
+#include "pv/view/view.hpp"
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
 

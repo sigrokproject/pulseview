@@ -21,11 +21,11 @@
 #include <libsigrokdecode/libsigrokdecode.h>
 #endif
 
-#include <cassert>
 #include <algorithm>
-#include <iterator>
-#include <cstdint>
+#include <cassert>
 #include <cstdarg>
+#include <cstdint>
+#include <iterator>
 
 #include <QAction>
 #include <QApplication>
@@ -34,17 +34,17 @@
 #include <QHBoxLayout>
 #include <QMessageBox>
 #include <QSettings>
-#include <QWidget>
 #include <QShortcut>
+#include <QWidget>
 
 #include "mainwindow.hpp"
 
 #include "devicemanager.hpp"
-#include "globalsettings.hpp"
-#include "util.hpp"
 #include "devices/hardwaredevice.hpp"
 #include "dialogs/settings.hpp"
+#include "globalsettings.hpp"
 #include "toolbars/mainbar.hpp"
+#include "util.hpp"
 #include "view/view.hpp"
 #include "views/trace/standardbar.hpp"
 

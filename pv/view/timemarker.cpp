@@ -23,12 +23,12 @@
 
 #include "timemarker.hpp"
 
-#include "view.hpp"
 #include "pv/widgets/timestampspinbox.hpp"
+#include "view.hpp"
 
 #include <QApplication>
-#include <QFormLayout>
 #include <QFontMetrics>
+#include <QFormLayout>
 #include <QPainter>
 
 #include <pv/widgets/popup.hpp>

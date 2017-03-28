@@ -19,9 +19,9 @@
 
 #include "sweeptimingwidget.hpp"
 
+#include <cassert>
 #include <cstdlib>
 #include <vector>
-#include <cassert>
 
 #include <extdef.h>
 

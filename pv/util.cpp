@@ -21,12 +21,12 @@
 
 #include <extdef.h>
 
-#include <cassert>
 #include <algorithm>
+#include <cassert>
 #include <sstream>
 
-#include <QTextStream>
 #include <QDebug>
+#include <QTextStream>
 
 using std::fixed;
 using std::max;

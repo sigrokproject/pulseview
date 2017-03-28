@@ -43,8 +43,8 @@
 #include <pv/dialogs/inputoutputoptions.hpp>
 #include <pv/dialogs/storeprogress.hpp>
 #include <pv/mainwindow.hpp>
-#include <pv/popups/deviceoptions.hpp>
 #include <pv/popups/channels.hpp>
+#include <pv/popups/deviceoptions.hpp>
 #include <pv/util.hpp>
 #include <pv/view/view.hpp>
 #include <pv/widgets/exportmenu.hpp>

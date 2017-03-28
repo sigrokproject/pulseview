@@ -27,6 +27,7 @@ G_GNUC_BEGIN_IGNORE_DEPRECATIONS
 G_GNUC_END_IGNORE_DEPRECATIONS
 
 #include <functional>
+
 #include <QString>
 #include <QWidget>
 
