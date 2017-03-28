@@ -18,7 +18,7 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
-cmake_minimum_required(VERSION 2.8.6)
+cmake_minimum_required(VERSION 2.8.12)
 
 include(GNUInstallDirs)
 
@@ -68,10 +68,10 @@ endif()
 find_package(PkgConfig)
 pkg_check_modules(PKGDEPS REQUIRED ${PKGDEPS})
 
-find_package(Qt5Core REQUIRED)
-find_package(Qt5Widgets REQUIRED)
-find_package(Qt5Gui REQUIRED)
-find_package(Qt5Svg REQUIRED)
+set(CMAKE_AUTOMOC TRUE)
+set(CMAKE_AUTORCC TRUE)
+
+find_package(Qt5 COMPONENTS Core Gui Widgets Svg REQUIRED)
 
 if(WIN32)
 	# MXE workaround: Use pkg-config to find Qt5 libs.
@@ -79,10 +79,7 @@ if(WIN32)
 	pkg_check_modules(QT5ALL REQUIRED Qt5Widgets Qt5Gui Qt5Svg)
 endif()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS}")
-set(QT_INCLUDE_DIRS ${Qt5Gui_INCLUDE_DIRS} ${Qt5Widgets_INCLUDE_DIRS})
 set(QT_LIBRARIES Qt5::Gui Qt5::Widgets Qt5::Svg)
-add_definitions(${Qt5Gui_DEFINITIONS} ${Qt5Widgets_DEFINITIONS})
 
 set(BOOSTCOMPS filesystem serialization system)
 if(ENABLE_TESTS)
@@ -261,6 +258,7 @@ set(pulseview_SOURCES
 	pv/widgets/sweeptimingwidget.cpp
 	pv/widgets/timestampspinbox.cpp
 	pv/widgets/wellarray.cpp
+	pulseview.qrc
 )
 
 # This list includes only QObject derived class headers.
@@ -322,10 +320,6 @@ set(pulseview_HEADERS
 	pv/widgets/wellarray.hpp
 )
 
-set(pulseview_RESOURCES
-	pulseview.qrc
-)
-
 if(ENABLE_SIGNALS)
 	list(APPEND pulseview_SOURCES signalhandler.cpp)
 	list(APPEND pulseview_HEADERS signalhandler.hpp)
@@ -366,14 +360,11 @@ if(ANDROID)
 	)
 endif()
 
-qt5_wrap_cpp(pulseview_HEADERS_MOC ${pulseview_HEADERS})
-qt5_add_resources(pulseview_RESOURCES_RCC ${pulseview_RESOURCES})
-
 #===============================================================================
 #= Global Definitions
 #-------------------------------------------------------------------------------
 
-add_definitions(${QT_DEFINITIONS} -DQT_NO_KEYWORDS)
+add_definitions(-DQT_NO_KEYWORDS)
 add_definitions(-D__STDC_LIMIT_MACROS)
 add_definitions(-Wall -Wextra)
 add_definitions(-std=c++11)
@@ -399,7 +390,6 @@ include_directories(
 	${CMAKE_CURRENT_BINARY_DIR}
 	${CMAKE_CURRENT_SOURCE_DIR}
 	${Boost_INCLUDE_DIRS}
-	${QT_INCLUDE_DIRS}
 )
 
 if(STATIC_PKGDEPS_LIBS)
@@ -445,17 +435,9 @@ if(ANDROID)
 endif()
 
 if(ANDROID)
-add_library(${PROJECT_NAME} SHARED
-	${pulseview_SOURCES}
-	${pulseview_HEADERS_MOC}
-	${pulseview_RESOURCES_RCC}
-)
+	add_library(${PROJECT_NAME} SHARED ${pulseview_SOURCES})
 else()
-add_executable(${PROJECT_NAME}
-	${pulseview_SOURCES}
-	${pulseview_HEADERS_MOC}
-	${pulseview_RESOURCES_RCC}
-)
+	add_executable(${PROJECT_NAME} ${pulseview_SOURCES})
 endif()
 
 target_link_libraries(${PROJECT_NAME} ${PULSEVIEW_LINK_LIBS})

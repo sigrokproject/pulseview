@@ -176,8 +176,6 @@ if(ENABLE_DECODE)
 	)
 endif()
 
-qt5_wrap_cpp(pulseview_TEST_HEADERS_MOC ${pulseview_TEST_HEADERS})
-
 # On MinGW we need to use static linking.
 if(NOT WIN32)
 	add_definitions(-DBOOST_TEST_DYN_LINK)
