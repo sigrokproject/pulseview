@@ -35,7 +35,6 @@ option(ENABLE_SIGNALS "Build with UNIX signals" TRUE)
 option(ENABLE_DECODE "Build with libsigrokdecode" TRUE)
 option(ENABLE_TESTS "Enable unit tests" TRUE)
 option(STATIC_PKGDEPS_LIBS "Statically link to (pkg-config) libraries" FALSE)
-option(FORCE_QT4 "Force use of Qt4 even if Qt5 is available" FALSE)
 
 if(WIN32)
 	# On Windows/MinGW we need to statically link to libraries.
@@ -69,30 +68,21 @@ endif()
 find_package(PkgConfig)
 pkg_check_modules(PKGDEPS REQUIRED ${PKGDEPS})
 
-if(FORCE_QT4)
-	set(Qt5Core_FOUND FALSE)
-else()
-	find_package(Qt5Core QUIET)
+find_package(Qt5Core REQUIRED)
+find_package(Qt5Widgets REQUIRED)
+find_package(Qt5Gui REQUIRED)
+find_package(Qt5Svg REQUIRED)
+
 if(WIN32)
 	# MXE workaround: Use pkg-config to find Qt5 libs.
 	# https://github.com/mxe/mxe/issues/1642
 	pkg_check_modules(QT5ALL REQUIRED Qt5Widgets Qt5Gui Qt5Svg)
 endif()
-endif()
 
-if(Qt5Core_FOUND)
-	message("-- Using Qt5")
-	find_package(Qt5Widgets REQUIRED)
-	find_package(Qt5Gui REQUIRED)
-	find_package(Qt5Svg REQUIRED)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS}")
-	set(QT_INCLUDE_DIRS ${Qt5Gui_INCLUDE_DIRS} ${Qt5Widgets_INCLUDE_DIRS})
-	set(QT_LIBRARIES Qt5::Gui Qt5::Widgets Qt5::Svg)
-	add_definitions(${Qt5Gui_DEFINITIONS} ${Qt5Widgets_DEFINITIONS})
-else()
-	find_program(QT_QMAKE_EXECUTABLE NAMES qmake4 qmake-qt4 qmake-mac)
-	find_package(Qt4 REQUIRED QtCore QtGui QtSvg)
-endif()
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${Qt5Widgets_EXECUTABLE_COMPILE_FLAGS}")
+set(QT_INCLUDE_DIRS ${Qt5Gui_INCLUDE_DIRS} ${Qt5Widgets_INCLUDE_DIRS})
+set(QT_LIBRARIES Qt5::Gui Qt5::Widgets Qt5::Svg)
+add_definitions(${Qt5Gui_DEFINITIONS} ${Qt5Widgets_DEFINITIONS})
 
 set(BOOSTCOMPS filesystem serialization system)
 if(ENABLE_TESTS)
@@ -103,7 +93,6 @@ find_package(Boost 1.55 COMPONENTS ${BOOSTCOMPS} REQUIRED)
 # Find the platform's thread library (needed for C++11 threads).
 # This will set ${CMAKE_THREAD_LIBS_INIT} to the correct, OS-specific value.
 find_package(Threads REQUIRED)
-
 
 # Check for explicit link against libatomic
 #
@@ -377,17 +366,8 @@ if(ANDROID)
 	)
 endif()
 
-if(Qt5Core_FOUND)
-	qt5_wrap_cpp(pulseview_HEADERS_MOC ${pulseview_HEADERS})
-	qt5_add_resources(pulseview_RESOURCES_RCC ${pulseview_RESOURCES})
-else()
-	# Workaround for QTBUG-22829: -DBOOST_NEXT_PRIOR_HPP_INCLUDED.
-	# https://bugreports.qt.io/browse/QTBUG-22829
-	qt4_wrap_cpp(pulseview_HEADERS_MOC ${pulseview_HEADERS}
-		OPTIONS -DBOOST_NEXT_PRIOR_HPP_INCLUDED)
-	qt4_add_resources(pulseview_RESOURCES_RCC ${pulseview_RESOURCES})
-	include(${QT_USE_FILE})
-endif()
+qt5_wrap_cpp(pulseview_HEADERS_MOC ${pulseview_HEADERS})
+qt5_add_resources(pulseview_RESOURCES_RCC ${pulseview_RESOURCES})
 
 #===============================================================================
 #= Global Definitions
