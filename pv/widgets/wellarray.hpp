@@ -39,6 +39,9 @@
 **
 ****************************************************************************/
 
+#ifndef PULSEVIEW_PV_WIDGETS_WELLARRAY_HPP
+#define PULSEVIEW_PV_WIDGETS_WELLARRAY_HPP
+
 #include <QWidget>
 
 namespace pv {
@@ -137,3 +140,5 @@ private:
 
 }  // namespace widgets
 } // namespace pv
+
+#endif // PULSEVIEW_PV_WIDGETS_WELLARRAY_HPP
