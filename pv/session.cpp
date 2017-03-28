@@ -17,12 +17,6 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifdef _WIN32
-// Windows: Avoid boost/thread namespace pollution (which includes windows.h).
-#define NOGDI
-#define NORESOURCE
-#endif
-
 #include <QFileInfo>
 
 #include <cassert>

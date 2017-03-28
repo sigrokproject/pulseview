@@ -42,14 +42,6 @@ if(WIN32)
 	# This option is user configurable, but enable it by default on win32.
 	set(STATIC_PKGDEPS_LIBS TRUE)
 
-	# For boost-thread we need two additional settings on win32:
-	set(Boost_USE_STATIC_LIBS ON)
-	add_definitions(-DBOOST_THREAD_USE_LIB)
-
-	# On Windows/MinGW we need to use 'thread_win32' instead of 'thread'.
-	# The library is named libboost_thread_win32* (not libboost_thread*).
-	set(Boost_THREADAPI win32)
-
 	# Windows does not support UNIX signals.
 	set(ENABLE_SIGNALS FALSE)
 endif()
@@ -102,7 +94,7 @@ else()
 	find_package(Qt4 REQUIRED QtCore QtGui QtSvg)
 endif()
 
-set(BOOSTCOMPS filesystem serialization system thread)
+set(BOOSTCOMPS filesystem serialization system)
 if(ENABLE_TESTS)
 	list(APPEND BOOSTCOMPS unit_test_framework)
 endif()

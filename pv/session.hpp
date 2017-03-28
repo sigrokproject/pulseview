@@ -29,12 +29,6 @@
 #include <unordered_set>
 #include <vector>
 
-#ifdef _WIN32
-// Windows: Avoid boost/thread namespace pollution (which includes windows.h).
-#define NOGDI
-#define NORESOURCE
-#endif
-
 #include <QObject>
 #include <QSettings>
 #include <QString>

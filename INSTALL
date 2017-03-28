@@ -21,7 +21,6 @@ Requirements
  - libboost >= 1.55 (including the following libs):
     - libboost-system
     - libboost-filesystem
-    - libboost-thread
     - libboost-serialization
     - libboost-test (optional, only needed to run the unit tests)
  - libsigrokcxx >= 0.4.0 (libsigrok C++ bindings)

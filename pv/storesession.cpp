@@ -19,12 +19,6 @@
 
 #include <cassert>
 
-#ifdef _WIN32
-// Windows: Avoid boost/thread namespace pollution (which includes windows.h).
-#define NOGDI
-#define NORESOURCE
-#endif
-
 #include "storesession.hpp"
 
 #include <pv/data/analog.hpp>

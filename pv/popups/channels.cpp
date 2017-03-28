@@ -19,12 +19,6 @@
 
 #include <map>
 
-#ifdef _WIN32
-// Windows: Avoid boost/thread namespace pollution (which includes windows.h).
-#define NOGDI
-#define NORESOURCE
-#endif
-
 #include <QCheckBox>
 #include <QFormLayout>
 #include <QGridLayout>
