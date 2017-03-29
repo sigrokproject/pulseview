@@ -48,6 +48,7 @@ QWidget* Bool::get_widget(QWidget *parent, bool auto_commit)
 		variant).get();
 
 	check_box_ = new QCheckBox(name(), parent);
+	check_box_->setToolTip(desc());
 	check_box_->setCheckState(value ? Qt::Checked : Qt::Unchecked);
 
 	if (auto_commit)
