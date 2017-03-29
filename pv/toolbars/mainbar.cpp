@@ -203,6 +203,7 @@ MainBar::MainBar(Session &session, QWidget *parent,
 		QIcon(":/icons/add-decoder.svg")));
 	add_decoder_button_->setPopupMode(QToolButton::InstantPopup);
 	add_decoder_button_->setMenu(menu_decoders_add_);
+	add_decoder_button_->setToolTip(tr("Add low-level, non-stacked protocol decoder"));
 #endif
 
 	connect(&sample_count_, SIGNAL(value_changed()),
