@@ -784,7 +784,10 @@ void DecodeTrace::create_decoder_form(int index,
 
 	pv::widgets::DecoderGroupBox *const group =
 		new pv::widgets::DecoderGroupBox(
-			QString::fromUtf8(decoder->name), nullptr, decoder_deletable);
+			QString::fromUtf8(decoder->name),
+			tr("%1:\n%2").arg(QString::fromUtf8(decoder->longname),
+				QString::fromUtf8(decoder->desc)),
+			nullptr, decoder_deletable);
 	group->set_decoder_visible(dec->shown());
 
 	if (decoder_deletable) {

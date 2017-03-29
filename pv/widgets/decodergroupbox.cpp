@@ -29,7 +29,7 @@
 namespace pv {
 namespace widgets {
 
-DecoderGroupBox::DecoderGroupBox(QString title, QWidget *parent, bool isDeletable) :
+DecoderGroupBox::DecoderGroupBox(QString title, QString tooltip, QWidget *parent, bool isDeletable) :
 	QWidget(parent),
 	layout_(new QGridLayout),
 	show_hide_button_(QIcon(":/icons/decoder-shown.svg"), QString(), this)
@@ -37,7 +37,9 @@ DecoderGroupBox::DecoderGroupBox(QString title, QWidget *parent, bool isDeletabl
 	layout_->setContentsMargins(0, 0, 0, 0);
 	setLayout(layout_);
 
-	layout_->addWidget(new QLabel(QString("<h3>%1</h3>").arg(title)), 0, 0);
+	auto *lbl = new QLabel(QString("<h3>%1</h3>").arg(title));
+	lbl->setToolTip(tooltip);
+	layout_->addWidget(lbl, 0, 0);
 	layout_->setColumnStretch(0, 1);
 
 	QHBoxLayout *const toolbar = new QHBoxLayout;
