@@ -333,6 +333,7 @@ void DecodeTrace::populate_popup_form(QWidget *parent, QFormLayout *form)
 	QPushButton *const stack_button =
 		new QPushButton(tr("Stack Decoder"), parent);
 	stack_button->setMenu(decoder_menu);
+	stack_button->setToolTip(tr("Stack a higher-level decoder on top of this one"));
 
 	QHBoxLayout *stack_button_box = new QHBoxLayout;
 	stack_button_box->addWidget(stack_button, 0, Qt::AlignRight);
