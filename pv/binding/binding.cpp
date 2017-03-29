@@ -20,6 +20,7 @@
 #include <cassert>
 
 #include <QFormLayout>
+#include <QLabel>
 
 #include <pv/prop/property.hpp>
 
@@ -55,10 +56,13 @@ void Binding::add_properties_to_form(QFormLayout *layout,
 
 		QWidget *const widget = p->get_widget(layout->parentWidget(),
 			auto_commit);
-		if (p->labeled_widget())
+		if (p->labeled_widget()) {
 			layout->addRow(widget);
-		else
-			layout->addRow(p->name(), widget);
+		} else {
+			auto *lbl = new QLabel(p->name());
+			lbl->setToolTip(p->desc());
+			layout->addRow(lbl, widget);
+		}
 	}
 }
 
