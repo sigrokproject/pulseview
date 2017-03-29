@@ -51,14 +51,14 @@ Q_SIGNALS:
 	void config_changed();
 
 private:
-	void bind_bool(const QString &name,
+	void bind_bool(const QString &name, const QString &desc,
 		prop::Property::Getter getter, prop::Property::Setter setter);
-	void bind_enum(const QString &name,
+	void bind_enum(const QString &name, const QString &desc,
 		const sigrok::ConfigKey *key,
 		set<const sigrok::Capability *> capabilities,
 		prop::Property::Getter getter, prop::Property::Setter setter,
 		function<QString (Glib::VariantBase)> printer = print_gvariant);
-	void bind_int(const QString &name, QString suffix,
+	void bind_int(const QString &name, const QString &desc, QString suffix,
 		boost::optional< pair<int64_t, int64_t> > range,
 		prop::Property::Getter getter, prop::Property::Setter setter);
 

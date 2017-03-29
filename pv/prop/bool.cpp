@@ -26,8 +26,8 @@
 namespace pv {
 namespace prop {
 
-Bool::Bool(QString name, Getter getter, Setter setter) :
-	Property(name, getter, setter),
+Bool::Bool(QString name, QString desc, Getter getter, Setter setter) :
+	Property(name, desc, getter, setter),
 	check_box_(nullptr)
 {
 }

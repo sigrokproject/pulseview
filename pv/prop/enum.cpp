@@ -29,10 +29,10 @@ using std::vector;
 namespace pv {
 namespace prop {
 
-Enum::Enum(QString name,
+Enum::Enum(QString name, QString desc,
 	vector<pair<Glib::VariantBase, QString> > values,
 	Getter getter, Setter setter) :
-	Property(name, getter, setter),
+	Property(name, desc, getter, setter),
 	values_(values),
 	selector_(nullptr)
 {

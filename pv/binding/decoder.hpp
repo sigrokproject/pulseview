@@ -47,7 +47,7 @@ public:
 
 private:
 	static shared_ptr<prop::Property> bind_enum(const QString &name,
-		const srd_decoder_option *option,
+		const QString &desc, const srd_decoder_option *option,
 		prop::Property::Getter getter, prop::Property::Setter setter);
 
 	Glib::VariantBase getter(const char *id);

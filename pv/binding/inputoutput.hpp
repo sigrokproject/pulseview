@@ -62,12 +62,13 @@ private:
 	/**
 	 * A helper function to bind an option list to and enum property.
 	 * @param name the name of the property.
+	 * @param name the description of the property.
 	 * @param values the list of values.
 	 * @param getter the getter that will read the values out of the map.
 	 * @param setter the setter that will set the values into the map.
 	 */
 	shared_ptr<prop::Property> bind_enum(const QString &name,
-		const vector<Glib::VariantBase> &values,
+		const QString &desc, const vector<Glib::VariantBase> &values,
 		prop::Property::Getter getter, prop::Property::Setter setter);
 
 private:

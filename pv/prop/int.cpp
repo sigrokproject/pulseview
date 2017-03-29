@@ -33,11 +33,12 @@ namespace pv {
 namespace prop {
 
 Int::Int(QString name,
+	QString desc,
 	QString suffix,
 	optional< pair<int64_t, int64_t> > range,
 	Getter getter,
 	Setter setter) :
-	Property(name, getter, setter),
+	Property(name, desc, getter, setter),
 	suffix_(suffix),
 	range_(range),
 	spin_box_(nullptr)

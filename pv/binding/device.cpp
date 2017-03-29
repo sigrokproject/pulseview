@@ -89,7 +89,7 @@ Device::Device(shared_ptr<sigrok::Configurable> configurable) :
 			break;
 
 		case SR_CONF_CAPTURE_RATIO:
-			bind_int(name, "%", pair<int64_t, int64_t>(0, 100),
+			bind_int(name, "", "%", pair<int64_t, int64_t>(0, 100),
 				get, set);
 			break;
 
@@ -99,33 +99,33 @@ Device::Device(shared_ptr<sigrok::Configurable> configurable) :
 		case SR_CONF_TRIGGER_SLOPE:
 		case SR_CONF_COUPLING:
 		case SR_CONF_CLOCK_EDGE:
-			bind_enum(name, key, capabilities, get, set);
+			bind_enum(name, "", key, capabilities, get, set);
 			break;
 
 		case SR_CONF_FILTER:
 		case SR_CONF_EXTERNAL_CLOCK:
 		case SR_CONF_RLE:
 		case SR_CONF_POWER_OFF:
-			bind_bool(name, get, set);
+			bind_bool(name, "", get, set);
 			break;
 
 		case SR_CONF_TIMEBASE:
-			bind_enum(name, key, capabilities, get, set, print_timebase);
+			bind_enum(name, "", key, capabilities, get, set, print_timebase);
 			break;
 
 		case SR_CONF_VDIV:
-			bind_enum(name, key, capabilities, get, set, print_vdiv);
+			bind_enum(name, "", key, capabilities, get, set, print_vdiv);
 			break;
 
 		case SR_CONF_VOLTAGE_THRESHOLD:
-			bind_enum(name, key, capabilities, get, set, print_voltage_threshold);
+			bind_enum(name, "", key, capabilities, get, set, print_voltage_threshold);
 			break;
 
 		case SR_CONF_PROBE_FACTOR:
 			if (capabilities.count(Capability::LIST))
-				bind_enum(name, key, capabilities, get, set, print_probe_factor);
+				bind_enum(name, "", key, capabilities, get, set, print_probe_factor);
 			else
-				bind_int(name, "", pair<int64_t, int64_t>(1, 500), get, set);
+				bind_int(name, "", "", pair<int64_t, int64_t>(1, 500), get, set);
 			break;
 
 		default:
@@ -134,15 +134,15 @@ Device::Device(shared_ptr<sigrok::Configurable> configurable) :
 	}
 }
 
-void Device::bind_bool(const QString &name,
+void Device::bind_bool(const QString &name, const QString &desc,
 	Property::Getter getter, Property::Setter setter)
 {
 	assert(configurable_);
 	properties_.push_back(shared_ptr<Property>(new Bool(
-		name, getter, setter)));
+		name, desc, getter, setter)));
 }
 
-void Device::bind_enum(const QString &name,
+void Device::bind_enum(const QString &name, const QString &desc,
 	const ConfigKey *key, set<const Capability *> capabilities,
 	Property::Getter getter,
 	Property::Setter setter, function<QString (Glib::VariantBase)> printer)
@@ -159,18 +159,18 @@ void Device::bind_enum(const QString &name,
 	while ((iter.next_value(gvar)))
 		values.push_back(make_pair(gvar, printer(gvar)));
 
-	properties_.push_back(shared_ptr<Property>(new Enum(name, values,
+	properties_.push_back(shared_ptr<Property>(new Enum(name, desc, values,
 		getter, setter)));
 }
 
-void Device::bind_int(const QString &name, QString suffix,
+void Device::bind_int(const QString &name, const QString &desc, QString suffix,
 	optional< pair<int64_t, int64_t> > range,
 	Property::Getter getter, Property::Setter setter)
 {
 	assert(configurable_);
 
-	properties_.push_back(shared_ptr<Property>(new Int(name, suffix, range,
-		getter, setter)));
+	properties_.push_back(shared_ptr<Property>(new Int(name, desc, suffix,
+		range, getter, setter)));
 }
 
 QString Device::print_timebase(Glib::VariantBase gvar)

@@ -42,7 +42,8 @@ class Enum : public Property
 	Q_OBJECT;
 
 public:
-	Enum(QString name, vector<pair<Glib::VariantBase, QString> > values,
+	Enum(QString name, QString desc,
+		vector<pair<Glib::VariantBase, QString> > values,
 		Getter getter, Setter setter);
 
 	virtual ~Enum() = default;

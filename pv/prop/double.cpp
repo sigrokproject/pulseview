@@ -30,13 +30,14 @@ namespace pv {
 namespace prop {
 
 Double::Double(QString name,
+	QString desc,
 	int decimals,
 	QString suffix,
 	optional< pair<double, double> > range,
 	optional<double> step,
 	Getter getter,
 	Setter setter) :
-	Property(name, getter, setter),
+	Property(name, desc, getter, setter),
 	decimals_(decimals),
 	suffix_(suffix),
 	range_(range),

@@ -38,7 +38,7 @@ class Double : public Property
 	Q_OBJECT
 
 public:
-	Double(QString name, int decimals, QString suffix,
+	Double(QString name, QString desc, int decimals, QString suffix,
 		boost::optional< pair<double, double> > range,
 		boost::optional<double> step,
 		Getter getter,

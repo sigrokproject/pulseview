@@ -65,6 +65,7 @@ InputOutput::InputOutput(
 		assert(opt);
 
 		const QString name = QString::fromStdString(opt->name());
+		const QString desc = QString::fromStdString(opt->description());
 		const VariantBase def_val = opt->default_value();
 		const vector<VariantBase> values = opt->values();
 
@@ -78,20 +79,20 @@ InputOutput::InputOutput(
 		shared_ptr<Property> prop;
 
 		if (!opt->values().empty())
-			prop = bind_enum(name, values, get, set);
+			prop = bind_enum(name, desc, values, get, set);
 		else if (def_val.is_of_type(VariantType("b")))
-			prop = shared_ptr<Property>(new Bool(name, get, set));
+			prop = shared_ptr<Property>(new Bool(name, desc, get, set));
 		else if (def_val.is_of_type(VariantType("d")))
-			prop = shared_ptr<Property>(new Double(name, 2, "",
+			prop = shared_ptr<Property>(new Double(name, desc, 2, "",
 				none, none, get, set));
 		else if (def_val.is_of_type(VariantType("i")) ||
 			def_val.is_of_type(VariantType("t")) ||
 			def_val.is_of_type(VariantType("u")))
 			prop = shared_ptr<Property>(
-				new Int(name, "", none, get, set));
+				new Int(name, desc, "", none, get, set));
 		else if (def_val.is_of_type(VariantType("s")))
 			prop = shared_ptr<Property>(
-				new String(name, get, set));
+				new String(name, desc, get, set));
 		else
 			continue;
 
@@ -105,13 +106,13 @@ const map<string, VariantBase>& InputOutput::options() const
 }
 
 shared_ptr<Property> InputOutput::bind_enum(
-	const QString &name, const vector<VariantBase> &values,
+	const QString &name, const QString &desc, const vector<VariantBase> &values,
 	Property::Getter getter, Property::Setter setter)
 {
 	vector< pair<VariantBase, QString> > enum_vals;
 	for (VariantBase var : values)
 		enum_vals.push_back(make_pair(var, print_gvariant(var)));
-	return shared_ptr<Property>(new Enum(name, enum_vals, getter, setter));
+	return shared_ptr<Property>(new Enum(name, desc, enum_vals, getter, setter));
 }
 
 } // namespace binding
