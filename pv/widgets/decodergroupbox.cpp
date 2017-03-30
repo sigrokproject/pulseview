@@ -55,6 +55,7 @@ DecoderGroupBox::DecoderGroupBox(QString title, QString tooltip, QWidget *parent
 	if (isDeletable) {
 		QPushButton *const delete_button = new QPushButton(
 			QIcon(":/icons/decoder-delete.svg"), QString(), this);
+		delete_button->setToolTip(tr("Delete this decoder trace"));
 		delete_button->setFlat(true);
 		delete_button->setIconSize(QSize(16, 16));
 		connect(delete_button, SIGNAL(clicked()),
