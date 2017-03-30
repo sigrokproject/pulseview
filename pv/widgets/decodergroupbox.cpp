@@ -45,6 +45,7 @@ DecoderGroupBox::DecoderGroupBox(QString title, QString tooltip, QWidget *parent
 	QHBoxLayout *const toolbar = new QHBoxLayout;
 	layout_->addLayout(toolbar, 0, 1);
 
+	show_hide_button_.setToolTip(tr("Show/hide this decoder trace"));
 	show_hide_button_.setFlat(true);
 	show_hide_button_.setIconSize(QSize(16, 16));
 	connect(&show_hide_button_, SIGNAL(clicked()),
