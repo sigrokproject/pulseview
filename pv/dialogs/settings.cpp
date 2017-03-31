@@ -140,6 +140,11 @@ QWidget *Settings::get_view_settings_form(QWidget *parent) const
 	connect(show_sampling_points_cb, SIGNAL(stateChanged(int)), this, SLOT(on_view_showSamplingPoints_changed(int)));
 	trace_view_layout->addRow(tr("Show data &sampling points"), show_sampling_points_cb);
 
+	QCheckBox *show_analog_minor_grid_cb = new QCheckBox();
+	show_analog_minor_grid_cb->setChecked(settings.value(GlobalSettings::Key_View_ShowAnalogMinorGrid).toBool());
+	connect(show_analog_minor_grid_cb, SIGNAL(stateChanged(int)), this, SLOT(on_view_showAnalogMinorGrid_changed(int)));
+	trace_view_layout->addRow(tr("Show analog minor grid in addition to vdiv grid"), show_analog_minor_grid_cb);
+
 	return form;
 }
 
@@ -273,6 +278,12 @@ void Settings::on_view_showSamplingPoints_changed(int state)
 {
 	GlobalSettings settings;
 	settings.setValue(GlobalSettings::Key_View_ShowSamplingPoints, state ? true : false);
+}
+
+void Settings::on_view_showAnalogMinorGrid_changed(int state)
+{
+	GlobalSettings settings;
+	settings.setValue(GlobalSettings::Key_View_ShowAnalogMinorGrid, state ? true : false);
 }
 
 } // namespace dialogs

@@ -218,6 +218,11 @@ public:
 	void enable_show_sampling_points(bool state);
 
 	/**
+	 * Enable or disable showing the analog minor grid.
+	 */
+	void enable_show_analog_minor_grid(bool state);
+
+	/**
 	 * Returns true if cursors are displayed. false otherwise.
 	 */
 	bool cursors_shown() const;

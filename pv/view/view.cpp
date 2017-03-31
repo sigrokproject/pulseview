@@ -561,6 +561,13 @@ void View::enable_show_sampling_points(bool state)
 	viewport_->update();
 }
 
+void View::enable_show_analog_minor_grid(bool state)
+{
+	(void)state;
+
+	viewport_->update();
+}
+
 void View::enable_coloured_bg(bool state)
 {
 	const vector<shared_ptr<TraceTreeItem>> items(

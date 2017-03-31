@@ -42,6 +42,7 @@ public:
 	static const QString Key_View_ColouredBG;
 	static const QString Key_View_StickyScrolling;
 	static const QString Key_View_ShowSamplingPoints;
+	static const QString Key_View_ShowAnalogMinorGrid;
 
 public:
 	GlobalSettings();

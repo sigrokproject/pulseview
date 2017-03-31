@@ -264,13 +264,19 @@ void AnalogSignal::paint_grid(QPainter &p, int y, int left, int right)
 {
 	p.setRenderHint(QPainter::Antialiasing, false);
 
+	GlobalSettings settings;
+	const bool show_analog_minor_grid =
+		settings.value(GlobalSettings::Key_View_ShowAnalogMinorGrid).toBool();
+
 	if (pos_vdivs_ > 0) {
 		p.setPen(QPen(GridMajorColor, 1, Qt::DashLine));
 		for (int i = 1; i <= pos_vdivs_; i++) {
 			const float dy = i * div_height_;
 			p.drawLine(QLineF(left, y - dy, right, y - dy));
 		}
+	}
 
+	if ((pos_vdivs_ > 0) && show_analog_minor_grid) {
 		p.setPen(QPen(GridMinorColor, 1, Qt::DashLine));
 		for (int i = 0; i < pos_vdivs_; i++) {
 			const float dy = i * div_height_;
@@ -289,7 +295,9 @@ void AnalogSignal::paint_grid(QPainter &p, int y, int left, int right)
 			const float dy = i * div_height_;
 			p.drawLine(QLineF(left, y + dy, right, y + dy));
 		}
+	}
 
+	if ((pos_vdivs_ > 0) && show_analog_minor_grid) {
 		p.setPen(QPen(GridMinorColor, 1, Qt::DashLine));
 		for (int i = 0; i < neg_vdivs_; i++) {
 			const float dy = i * div_height_;

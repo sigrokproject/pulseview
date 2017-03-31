@@ -88,6 +88,9 @@ MainWindow::MainWindow(DeviceManager &device_manager,
 	GlobalSettings::register_change_handler(GlobalSettings::Key_View_ShowSamplingPoints,
 		bind(&MainWindow::on_settingViewShowSamplingPoints_changed, this, _1));
 
+	GlobalSettings::register_change_handler(GlobalSettings::Key_View_ShowAnalogMinorGrid,
+		bind(&MainWindow::on_settingViewShowAnalogMinorGrid_changed, this, _1));
+
 	setup_ui();
 	restore_ui_settings();
 
@@ -205,6 +208,7 @@ shared_ptr<views::ViewBase> MainWindow::add_view(const QString &title,
 
 		tv->enable_coloured_bg(settings.value(GlobalSettings::Key_View_ColouredBG).toBool());
 		tv->enable_show_sampling_points(settings.value(GlobalSettings::Key_View_ShowSamplingPoints).toBool());
+		tv->enable_show_analog_minor_grid(settings.value(GlobalSettings::Key_View_ShowAnalogMinorGrid).toBool());
 
 		if (!main_bar) {
 			/* Initial view, create the main bar */
@@ -347,6 +351,9 @@ void MainWindow::setup_ui()
 
 	view_show_sampling_points_shortcut_ = new QShortcut(QKeySequence(Qt::Key_Period), this, SLOT(on_view_show_sampling_points_shortcut()));
 	view_show_sampling_points_shortcut_->setAutoRepeat(false);
+
+	view_show_analog_minor_grid_shortcut_ = new QShortcut(QKeySequence(Qt::Key_G), this, SLOT(on_view_show_analog_minor_grid_shortcut()));
+	view_show_analog_minor_grid_shortcut_->setAutoRepeat(false);
 
 	view_coloured_bg_shortcut_ = new QShortcut(QKeySequence(Qt::Key_B), this, SLOT(on_view_coloured_bg_shortcut()));
 	view_coloured_bg_shortcut_->setAutoRepeat(false);
@@ -745,6 +752,14 @@ void MainWindow::on_view_show_sampling_points_shortcut()
 	settings.setValue(GlobalSettings::Key_View_ShowSamplingPoints, !state);
 }
 
+void MainWindow::on_view_show_analog_minor_grid_shortcut()
+{
+	GlobalSettings settings;
+
+	bool state = settings.value(GlobalSettings::Key_View_ShowAnalogMinorGrid).toBool();
+	settings.setValue(GlobalSettings::Key_View_ShowAnalogMinorGrid, !state);
+}
+
 void MainWindow::on_settingViewColouredBg_changed(const QVariant new_value)
 {
 	bool state = new_value.toBool();
@@ -772,6 +787,21 @@ void MainWindow::on_settingViewShowSamplingPoints_changed(const QVariant new_val
 				qobject_cast<views::TraceView::View*>(viewbase.get());
 		if (view)
 			view->enable_show_sampling_points(state);
+	}
+}
+
+void MainWindow::on_settingViewShowAnalogMinorGrid_changed(const QVariant new_value)
+{
+	bool state = new_value.toBool();
+
+	for (auto entry : view_docks_) {
+		shared_ptr<views::ViewBase> viewbase = entry.second;
+
+		// Only trace views have this setting
+		views::TraceView::View* view =
+				qobject_cast<views::TraceView::View*>(viewbase.get());
+		if (view)
+			view->enable_show_analog_minor_grid(state);
 	}
 }
 
