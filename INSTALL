@@ -7,8 +7,8 @@ Requirements
 
  - git (only needed when building from git)
  - A C++ compiler with C++11 support (-std=c++11 option), e.g.
-   - g++ (>= 4.7)
-   - clang++ (>= 3.1)
+   - g++ (>= 4.8.1)
+   - clang++ (>= 3.3)
  - make
  - libtool (only needed when building from git)
  - pkg-config >= 0.22
