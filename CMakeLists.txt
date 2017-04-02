@@ -69,7 +69,6 @@ find_package(PkgConfig)
 pkg_check_modules(PKGDEPS REQUIRED ${PKGDEPS})
 
 set(CMAKE_AUTOMOC TRUE)
-set(CMAKE_AUTORCC TRUE)
 
 find_package(Qt5 COMPONENTS Core Gui Widgets Svg REQUIRED)
 
@@ -258,7 +257,6 @@ set(pulseview_SOURCES
 	pv/widgets/sweeptimingwidget.cpp
 	pv/widgets/timestampspinbox.cpp
 	pv/widgets/wellarray.cpp
-	pulseview.qrc
 )
 
 # This list includes only QObject derived class headers.
@@ -320,6 +318,10 @@ set(pulseview_HEADERS
 	pv/widgets/wellarray.hpp
 )
 
+set(pulseview_RESOURCES
+	pulseview.qrc
+)
+
 if(ENABLE_SIGNALS)
 	list(APPEND pulseview_SOURCES signalhandler.cpp)
 	list(APPEND pulseview_HEADERS signalhandler.hpp)
@@ -359,6 +361,8 @@ if(ANDROID)
 		android/loghandler.cpp
 	)
 endif()
+
+qt5_add_resources(pulseview_RESOURCES_RCC ${pulseview_RESOURCES})
 
 #===============================================================================
 #= Global Definitions
@@ -435,9 +439,9 @@ if(ANDROID)
 endif()
 
 if(ANDROID)
-	add_library(${PROJECT_NAME} SHARED ${pulseview_SOURCES})
+	add_library(${PROJECT_NAME} SHARED ${pulseview_SOURCES} ${pulseview_RESOURCES_RCC})
 else()
-	add_executable(${PROJECT_NAME} ${pulseview_SOURCES})
+	add_executable(${PROJECT_NAME} ${pulseview_SOURCES} ${pulseview_RESOURCES_RCC})
 endif()
 
 target_link_libraries(${PROJECT_NAME} ${PULSEVIEW_LINK_LIBS})
