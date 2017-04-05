@@ -64,8 +64,8 @@ StandardBar::StandardBar(Session &session, QWidget *parent,
 
 	action_view_zoom_fit_->setCheckable(true);
 	action_view_zoom_fit_->setText(tr("Zoom to &Fit"));
-	action_view_zoom_fit_->setIcon(QIcon::fromTheme("zoom-fit",
-		QIcon(":/icons/zoom-fit.png")));
+	action_view_zoom_fit_->setIcon(QIcon::fromTheme("zoom-fit-best",
+		QIcon(":/icons/zoom-fit-best.png")));
 	action_view_zoom_fit_->setShortcut(QKeySequence(Qt::Key_F));
 	connect(action_view_zoom_fit_, SIGNAL(triggered(bool)),
 		this, SLOT(on_actionViewZoomFit_triggered(bool)));

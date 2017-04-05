@@ -374,8 +374,8 @@ void MainWindow::setup_ui()
 	run_stop_shortcut_->setAutoRepeat(false);
 
 	settings_button_ = new QToolButton();
-	settings_button_->setIcon(QIcon::fromTheme("configure",
-		QIcon(":/icons/configure.png")));
+	settings_button_->setIcon(QIcon::fromTheme("preferences-system",
+		QIcon(":/icons/preferences-system.png")));
 	settings_button_->setToolTip(tr("Settings"));
 	settings_button_->setAutoRaise(true);
 
