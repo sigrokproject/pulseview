@@ -148,11 +148,9 @@ public:
 	void set_conversion_type(ConversionType t);
 
 #ifdef ENABLE_DECODE
-	bool is_decode_signal() const;
+	virtual bool is_decode_signal() const;
 
-	shared_ptr<pv::data::DecoderStack> decoder_stack() const;
-
-	void set_decoder_stack(shared_ptr<pv::data::DecoderStack> decoder_stack);
+	virtual shared_ptr<pv::data::DecoderStack> decoder_stack() const;
 #endif
 
 	void save_settings(QSettings &settings) const;
@@ -189,16 +187,12 @@ private Q_SLOTS:
 
 	void on_capture_state_changed(int state);
 
-private:
+protected:
 	shared_ptr<sigrok::Channel> channel_;
 	ChannelType channel_type_;
 	shared_ptr<pv::data::SignalData> data_;
 	shared_ptr<pv::data::SignalData> converted_data_;
 	int conversion_type_;
-
-#ifdef ENABLE_DECODE
-	shared_ptr<pv::data::DecoderStack> decoder_stack_;
-#endif
 
 	std::thread conversion_thread_;
 

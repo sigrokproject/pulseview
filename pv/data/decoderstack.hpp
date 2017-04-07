@@ -104,6 +104,13 @@ public:
 	vector<decode::Row> get_visible_rows() const;
 
 	/**
+	 * Helper function for static annotation_callback(),
+	 * must be public so the function can access it.
+	 * Don't use from outside this class.
+	 */
+	uint64_t inc_annotation_count();
+
+	/**
 	 * Extracts sorted annotations between two period into a vector.
 	 */
 	void get_annotation_subset(
@@ -127,7 +134,7 @@ private:
 
 	void decode_proc();
 
-	static void annotation_callback(srd_proto_data *pdata, void *decoder);
+	static void annotation_callback(srd_proto_data *pdata, void *decoder_stack);
 
 private Q_SLOTS:
 	void on_new_frame();
@@ -137,7 +144,7 @@ private Q_SLOTS:
 	void on_frame_ended();
 
 Q_SIGNALS:
-	void new_decode_data();
+	void new_annotations();
 
 private:
 	pv::Session &session_;
@@ -159,7 +166,7 @@ private:
 
 	mutable mutex input_mutex_;
 	mutable condition_variable input_cond_;
-	int64_t sample_count_;
+	int64_t sample_count_, annotation_count_;
 	bool frame_complete_;
 
 	mutable mutex output_mutex_;

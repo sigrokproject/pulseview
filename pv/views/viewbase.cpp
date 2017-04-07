@@ -97,14 +97,14 @@ void ViewBase::clear_decode_signals()
 {
 }
 
-void ViewBase::add_decode_signal(shared_ptr<data::SignalBase> signalbase)
+void ViewBase::add_decode_signal(shared_ptr<data::DecodeSignal> signal)
 {
-	(void)signalbase;
+	(void)signal;
 }
 
-void ViewBase::remove_decode_signal(shared_ptr<data::SignalBase> signalbase)
+void ViewBase::remove_decode_signal(shared_ptr<data::DecodeSignal> signal)
 {
-	(void)signalbase;
+	(void)signal;
 }
 #endif
 

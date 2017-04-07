@@ -43,13 +43,14 @@ extern "C" {
 #include "viewport.hpp"
 
 #include <pv/globalsettings.hpp>
+#include <pv/session.hpp>
+#include <pv/strnatcmp.hpp>
+#include <pv/data/decodesignal.hpp>
 #include <pv/data/decode/annotation.hpp>
 #include <pv/data/decode/decoder.hpp>
 #include <pv/data/decoderstack.hpp>
 #include <pv/data/logic.hpp>
 #include <pv/data/logicsegment.hpp>
-#include <pv/session.hpp>
-#include <pv/strnatcmp.hpp>
 #include <pv/widgets/decodergroupbox.hpp>
 #include <pv/widgets/decodermenu.hpp>
 
@@ -134,17 +135,16 @@ DecodeTrace::DecodeTrace(pv::Session &session,
 	delete_mapper_(this),
 	show_hide_mapper_(this)
 {
-	shared_ptr<pv::data::DecoderStack> decoder_stack = base_->decoder_stack();
+	decode_signal_ = dynamic_pointer_cast<data::DecodeSignal>(base_);
 
 	// Determine shortest string we want to see displayed in full
 	QFontMetrics m(QApplication::font());
 	min_useful_label_width_ = m.width("XX"); // e.g. two hex characters
 
-	base_->set_name(QString::fromUtf8(decoder_stack->stack().front()->decoder()->name));
 	base_->set_colour(DecodeColours[index % countof(DecodeColours)]);
 
-	connect(decoder_stack.get(), SIGNAL(new_decode_data()),
-		this, SLOT(on_new_decode_data()));
+	connect(decode_signal_.get(), SIGNAL(new_annotations()),
+		this, SLOT(on_new_annotations()));
 	connect(&delete_mapper_, SIGNAL(mapped(int)),
 		this, SLOT(on_delete_decoder(int)));
 	connect(&show_hide_mapper_, SIGNAL(mapped(int)),
@@ -985,7 +985,7 @@ void DecodeTrace::commit_channels()
 	decoder_stack->begin_decode();
 }
 
-void DecodeTrace::on_new_decode_data()
+void DecodeTrace::on_new_annotations()
 {
 	if (owner_)
 		owner_->row_item_appearance_changed(false, true);
@@ -998,7 +998,7 @@ void DecodeTrace::delete_pressed()
 
 void DecodeTrace::on_delete()
 {
-	session_.remove_decode_signal(base_);
+	session_.remove_decode_signal(decode_signal_);
 }
 
 void DecodeTrace::on_channel_selected(int)
@@ -1013,49 +1013,25 @@ void DecodeTrace::on_initial_pin_selected(int)
 
 void DecodeTrace::on_stack_decoder(srd_decoder *decoder)
 {
-	shared_ptr<pv::data::DecoderStack> decoder_stack = base_->decoder_stack();
-
-	assert(decoder);
-	assert(decoder_stack);
-	decoder_stack->push(make_shared<data::decode::Decoder>(decoder));
-	decoder_stack->begin_decode();
+	decode_signal_->stack_decoder(decoder);
 
 	create_popup_form();
 }
 
 void DecodeTrace::on_delete_decoder(int index)
 {
-	shared_ptr<pv::data::DecoderStack> decoder_stack = base_->decoder_stack();
-
-	decoder_stack->remove(index);
+	decode_signal_->remove_decoder(index);
 
 	// Update the popup
 	create_popup_form();
-
-	decoder_stack->begin_decode();
 }
 
 void DecodeTrace::on_show_hide_decoder(int index)
 {
-	using pv::data::decode::Decoder;
-
-	shared_ptr<pv::data::DecoderStack> decoder_stack = base_->decoder_stack();
-
-	const list< shared_ptr<Decoder> > stack(decoder_stack->stack());
-
-	// Find the decoder in the stack
-	auto iter = stack.cbegin();
-	for (int i = 0; i < index; i++, iter++)
-		assert(iter != stack.end());
-
-	shared_ptr<Decoder> dec = *iter;
-	assert(dec);
-
-	const bool show = !dec->shown();
-	dec->show(show);
+	const bool state = decode_signal_->toggle_decoder_visibility(index);
 
 	assert(index < (int)decoder_forms_.size());
-	decoder_forms_[index]->set_decoder_visible(show);
+	decoder_forms_[index]->set_decoder_visible(state);
 
 	if (owner_)
 		owner_->row_item_appearance_changed(false, true);

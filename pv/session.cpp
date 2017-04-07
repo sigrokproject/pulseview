@@ -53,6 +53,7 @@
 
 #ifdef ENABLE_DECODE
 #include <libsigrokdecode/libsigrokdecode.h>
+#include "data/decodesignal.hpp"
 #endif
 
 using std::bad_alloc;
@@ -687,14 +688,13 @@ bool Session::add_decoder(srd_decoder *const dec)
 		decoder_stack->stack().front()->set_channels(channels);
 
 		// Create the decode signal
-		shared_ptr<data::SignalBase> signalbase =
-			make_shared<data::SignalBase>(nullptr, data::SignalBase::DecodeChannel);
+		shared_ptr<data::DecodeSignal> signal =
+			make_shared<data::DecodeSignal>(decoder_stack);
 
-		signalbase->set_decoder_stack(decoder_stack);
-		signalbases_.insert(signalbase);
+		signalbases_.insert(signal);
 
 		for (shared_ptr<views::ViewBase> view : views_)
-			view->add_decode_signal(signalbase);
+			view->add_decode_signal(signal);
 	} catch (runtime_error e) {
 		return false;
 	}
@@ -707,12 +707,12 @@ bool Session::add_decoder(srd_decoder *const dec)
 	return true;
 }
 
-void Session::remove_decode_signal(shared_ptr<data::SignalBase> signalbase)
+void Session::remove_decode_signal(shared_ptr<data::DecodeSignal> signal)
 {
-	signalbases_.erase(signalbase);
+	signalbases_.erase(signal);
 
 	for (shared_ptr<views::ViewBase> view : views_)
-		view->remove_decode_signal(signalbase);
+		view->remove_decode_signal(signal);
 
 	signals_changed();
 }

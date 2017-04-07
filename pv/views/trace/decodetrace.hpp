@@ -51,6 +51,7 @@ class Session;
 namespace data {
 class DecoderStack;
 class SignalBase;
+class DecodeSignal;
 
 namespace decode {
 class Annotation;
@@ -195,7 +196,7 @@ public:
 	void hover_point_changed();
 
 private Q_SLOTS:
-	void on_new_decode_data();
+	void on_new_annotations();
 
 	void on_delete();
 
@@ -211,6 +212,7 @@ private Q_SLOTS:
 
 private:
 	pv::Session &session_;
+	shared_ptr<data::DecodeSignal> decode_signal_;
 
 	vector<data::decode::Row> visible_rows_;
 	uint64_t decode_start_, decode_end_;

@@ -70,6 +70,7 @@ class DeviceManager;
 namespace data {
 class Analog;
 class AnalogSegment;
+class DecodeSignal;
 class Logic;
 class LogicSegment;
 class SignalBase;
@@ -171,7 +172,7 @@ public:
 #ifdef ENABLE_DECODE
 	bool add_decoder(srd_decoder *const dec);
 
-	void remove_decode_signal(shared_ptr<data::SignalBase> signalbase);
+	void remove_decode_signal(shared_ptr<data::DecodeSignal> signal);
 #endif
 
 private:

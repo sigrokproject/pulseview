@@ -157,6 +157,11 @@ vector<Row> DecoderStack::get_visible_rows() const
 	return rows;
 }
 
+uint64_t DecoderStack::inc_annotation_count()
+{
+	return (annotation_count_++);
+}
+
 void DecoderStack::get_annotation_subset(
 	vector<pv::data::decode::Annotation> &dest,
 	const Row &row, uint64_t start_sample,
@@ -179,6 +184,7 @@ QString DecoderStack::error_message()
 void DecoderStack::clear()
 {
 	sample_count_ = 0;
+	annotation_count_ = 0;
 	frame_complete_ = false;
 	samples_decoded_ = 0;
 	error_message_ = QString();
@@ -324,12 +330,7 @@ void DecoderStack::decode_data(
 			lock_guard<mutex> lock(output_mutex_);
 			samples_decoded_ = chunk_end;
 		}
-
-		if (i % DecodeNotifyPeriod == 0)
-			new_decode_data();
 	}
-
-	new_decode_data();
 }
 
 void DecoderStack::decode_proc()
@@ -386,19 +387,22 @@ void DecoderStack::decode_proc()
 		abs_start_samplenum = *sample_count;
 	} while (error_message_.isEmpty() && (sample_count = wait_for_data()));
 
+	// Make sure all annotations are known to the frontend
+	new_annotations();
+
 	// Destroy the session
 	srd_session_destroy(session);
 }
 
-void DecoderStack::annotation_callback(srd_proto_data *pdata, void *decoder)
+void DecoderStack::annotation_callback(srd_proto_data *pdata, void *decoder_stack)
 {
 	assert(pdata);
 	assert(decoder);
 
-	DecoderStack *const d = (DecoderStack*)decoder;
-	assert(d);
+	DecoderStack *const ds = (DecoderStack*)decoder_stack;
+	assert(ds);
 
-	lock_guard<mutex> lock(d->output_mutex_);
+	lock_guard<mutex> lock(ds->output_mutex_);
 
 	const Annotation a(pdata);
 
@@ -408,19 +412,19 @@ void DecoderStack::annotation_callback(srd_proto_data *pdata, void *decoder)
 	const srd_decoder *const decc = pdata->pdo->di->decoder;
 	assert(decc);
 
-	auto row_iter = d->rows_.end();
+	auto row_iter = ds->rows_.end();
 
 	// Try looking up the sub-row of this class
-	const auto r = d->class_rows_.find(make_pair(decc, a.format()));
-	if (r != d->class_rows_.end())
-		row_iter = d->rows_.find((*r).second);
+	const auto r = ds->class_rows_.find(make_pair(decc, a.format()));
+	if (r != ds->class_rows_.end())
+		row_iter = ds->rows_.find((*r).second);
 	else {
 		// Failing that, use the decoder as a key
-		row_iter = d->rows_.find(Row(decc));
+		row_iter = ds->rows_.find(Row(decc));
 	}
 
-	assert(row_iter != d->rows_.end());
-	if (row_iter == d->rows_.end()) {
+	assert(row_iter != ds->rows_.end());
+	if (row_iter == ds->rows_.end()) {
 		qDebug() << "Unexpected annotation: decoder = " << decc <<
 			", format = " << a.format();
 		assert(false);
@@ -429,6 +433,10 @@ void DecoderStack::annotation_callback(srd_proto_data *pdata, void *decoder)
 
 	// Add the annotation
 	(*row_iter).second.push_annotation(a);
+
+	// Notify the frontend every DecodeNotifyPeriod annotations
+	if (ds->inc_annotation_count() % DecodeNotifyPeriod == 0)
+		ds->new_annotations();
 }
 
 void DecoderStack::on_new_frame()

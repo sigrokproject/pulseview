@@ -32,6 +32,10 @@
 #include <pv/data/signalbase.hpp>
 #include <pv/util.hpp>
 
+#ifdef ENABLE_DECODE
+#include <pv/data/decodesignal.hpp>
+#endif
+
 using std::shared_ptr;
 using std::unordered_set;
 
@@ -78,9 +82,9 @@ public:
 #ifdef ENABLE_DECODE
 	virtual void clear_decode_signals();
 
-	virtual void add_decode_signal(shared_ptr<data::SignalBase> signalbase);
+	virtual void add_decode_signal(shared_ptr<data::DecodeSignal> signal);
 
-	virtual void remove_decode_signal(shared_ptr<data::SignalBase> signalbase);
+	virtual void remove_decode_signal(shared_ptr<data::DecodeSignal> signal);
 #endif
 
 	virtual void save_settings(QSettings &settings) const;

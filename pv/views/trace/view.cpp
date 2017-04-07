@@ -262,17 +262,17 @@ void View::clear_decode_signals()
 	decode_traces_.clear();
 }
 
-void View::add_decode_signal(shared_ptr<data::SignalBase> signalbase)
+void View::add_decode_signal(shared_ptr<data::DecodeSignal> signal)
 {
 	shared_ptr<DecodeTrace> d(
-		new DecodeTrace(session_, signalbase, decode_traces_.size()));
+		new DecodeTrace(session_, signal, decode_traces_.size()));
 	decode_traces_.push_back(d);
 }
 
-void View::remove_decode_signal(shared_ptr<data::SignalBase> signalbase)
+void View::remove_decode_signal(shared_ptr<data::DecodeSignal> signal)
 {
 	for (auto i = decode_traces_.begin(); i != decode_traces_.end(); i++)
-		if ((*i)->base() == signalbase) {
+		if ((*i)->base() == signal) {
 			decode_traces_.erase(i);
 			signals_changed();
 			return;

@@ -157,6 +157,7 @@ set(pulseview_TEST_HEADERS
 if(ENABLE_DECODE)
 	list(APPEND pulseview_TEST_SOURCES
 		${PROJECT_SOURCE_DIR}/pv/binding/decoder.cpp
+		${PROJECT_SOURCE_DIR}/pv/data/decodesignal.cpp
 		${PROJECT_SOURCE_DIR}/pv/data/decoderstack.cpp
 		${PROJECT_SOURCE_DIR}/pv/data/decode/annotation.cpp
 		${PROJECT_SOURCE_DIR}/pv/data/decode/decoder.cpp
@@ -169,6 +170,7 @@ if(ENABLE_DECODE)
 	)
 
 	list(APPEND pulseview_TEST_HEADERS
+		${PROJECT_SOURCE_DIR}/pv/data/decodesignal.hpp
 		${PROJECT_SOURCE_DIR}/pv/data/decoderstack.hpp
 		${PROJECT_SOURCE_DIR}/pv/views/trace/decodetrace.hpp
 		${PROJECT_SOURCE_DIR}/pv/widgets/decodergroupbox.hpp

@@ -334,6 +334,7 @@ endif()
 if(ENABLE_DECODE)
 	list(APPEND pulseview_SOURCES
 		pv/binding/decoder.cpp
+		pv/data/decodesignal.cpp
 		pv/data/decoderstack.cpp
 		pv/data/decode/annotation.cpp
 		pv/data/decode/decoder.cpp
@@ -345,6 +346,7 @@ if(ENABLE_DECODE)
 	)
 
 	list(APPEND pulseview_HEADERS
+		pv/data/decodesignal.hpp
 		pv/data/decoderstack.hpp
 		pv/views/trace/decodetrace.hpp
 		pv/widgets/decodergroupbox.hpp
