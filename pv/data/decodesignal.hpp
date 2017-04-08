@@ -20,14 +20,26 @@
 #ifndef PULSEVIEW_PV_DATA_DECODESIGNAL_HPP
 #define PULSEVIEW_PV_DATA_DECODESIGNAL_HPP
 
+#include <vector>
+
+#include <QString>
+
 #include <libsigrokdecode/libsigrokdecode.h>
 
 #include <pv/data/signalbase.hpp>
 
+using std::list;
+using std::vector;
 using std::shared_ptr;
 
 namespace pv {
 namespace data {
+
+namespace decode {
+class Annotation;
+class Decoder;
+class Row;
+}
 
 class DecoderStack;
 class Logic;
@@ -42,11 +54,24 @@ public:
 	virtual ~DecodeSignal();
 
 	bool is_decode_signal() const;
-	shared_ptr<pv::data::DecoderStack> decoder_stack() const;
+	shared_ptr<data::DecoderStack> decoder_stack() const;
+	const list< shared_ptr<data::decode::Decoder> >& decoder_stack_list() const;
 
 	void stack_decoder(srd_decoder *decoder);
 	void remove_decoder(int index);
 	bool toggle_decoder_visibility(int index);
+
+	QString error_message() const;
+
+	vector<decode::Row> visible_rows() const;
+
+	/**
+	 * Extracts sorted annotations between two period into a vector.
+	 */
+	void get_annotation_subset(
+		vector<pv::data::decode::Annotation> &dest,
+		const decode::Row &row, uint64_t start_sample,
+		uint64_t end_sample) const;
 
 Q_SIGNALS:
 	void new_annotations();

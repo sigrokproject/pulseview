@@ -24,12 +24,14 @@
 
 #include <pv/binding/decoder.hpp>
 #include <pv/data/decode/decoder.hpp>
+#include <pv/data/decode/row.hpp>
 #include <pv/data/decoderstack.hpp>
 #include <pv/session.hpp>
 
 using std::make_shared;
 using std::shared_ptr;
 using pv::data::decode::Decoder;
+using pv::data::decode::Row;
 
 namespace pv {
 namespace data {
@@ -56,6 +58,11 @@ bool DecodeSignal::is_decode_signal() const
 shared_ptr<pv::data::DecoderStack> DecodeSignal::decoder_stack() const
 {
 	return decoder_stack_;
+}
+
+const list< shared_ptr<Decoder> >& DecodeSignal::decoder_stack_list() const
+{
+	return decoder_stack_->stack();
 }
 
 void DecodeSignal::stack_decoder(srd_decoder *decoder)
@@ -90,6 +97,25 @@ bool DecodeSignal::toggle_decoder_visibility(int index)
 	}
 
 	return state;
+}
+
+QString DecodeSignal::error_message() const
+{
+	return decoder_stack_->error_message();
+}
+
+vector<Row> DecodeSignal::visible_rows() const
+{
+	return decoder_stack_->get_visible_rows();
+}
+
+void DecodeSignal::get_annotation_subset(
+	vector<pv::data::decode::Annotation> &dest,
+	const decode::Row &row, uint64_t start_sample,
+	uint64_t end_sample) const
+{
+	return decoder_stack_->get_annotation_subset(dest, row,
+		start_sample, end_sample);
 }
 
 void DecodeSignal::on_new_annotations()

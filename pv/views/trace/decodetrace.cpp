@@ -69,6 +69,9 @@ using std::tie;
 using std::unordered_set;
 using std::vector;
 
+using pv::data::decode::Annotation;
+using pv::data::decode::Row;
+
 namespace pv {
 namespace views {
 namespace trace {
@@ -179,16 +182,11 @@ void DecodeTrace::paint_back(QPainter &p, ViewItemPaintParams &pp)
 
 void DecodeTrace::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 {
-	using namespace pv::data::decode;
-
-	shared_ptr<pv::data::DecoderStack> decoder_stack = base_->decoder_stack();
-
 	const int text_height = ViewItemPaintParams::text_height();
 	row_height_ = (text_height * 6) / 4;
 	const int annotation_height = (text_height * 5) / 4;
 
-	assert(decoder_stack);
-	const QString err = decoder_stack->error_message();
+	const QString err = decode_signal_->error_message();
 	if (!err.isEmpty()) {
 		draw_unresolved_period(
 			p, annotation_height, pp.left(), pp.right());
@@ -204,7 +202,7 @@ void DecodeTrace::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 	pair<uint64_t, uint64_t> sample_range = get_sample_range(
 		pp.left(), pp.right());
 
-	const vector<Row> rows(decoder_stack->get_visible_rows());
+	const vector<Row> rows = decode_signal_->visible_rows();
 
 	visible_rows_.clear();
 	for (const Row& row : rows) {
@@ -227,7 +225,7 @@ void DecodeTrace::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 		base_colour >>= 16;
 
 		vector<Annotation> annotations;
-		decoder_stack->get_annotation_subset(annotations, row,
+		decode_signal_->get_annotation_subset(annotations, row,
 			sample_range.first, sample_range.second);
 		if (!annotations.empty()) {
 			draw_annotations(annotations, p, annotation_height, pp, y,
@@ -251,8 +249,6 @@ void DecodeTrace::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 
 void DecodeTrace::paint_fore(QPainter &p, ViewItemPaintParams &pp)
 {
-	using namespace pv::data::decode;
-
 	assert(row_height_);
 
 	for (size_t i = 0; i < visible_rows_.size(); i++) {
@@ -293,11 +289,7 @@ void DecodeTrace::populate_popup_form(QWidget *parent, QFormLayout *form)
 {
 	using pv::data::decode::Decoder;
 
-	shared_ptr<pv::data::DecoderStack> decoder_stack = base_->decoder_stack();
-
 	assert(form);
-	assert(parent);
-	assert(decoder_stack);
 
 	// Add the standard options
 	Trace::populate_popup_form(parent, form);
@@ -307,7 +299,8 @@ void DecodeTrace::populate_popup_form(QWidget *parent, QFormLayout *form)
 	channel_selectors_.clear();
 	decoder_forms_.clear();
 
-	const list< shared_ptr<Decoder> >& stack = decoder_stack->stack();
+	const list< shared_ptr<Decoder> >& stack =
+		decode_signal_->decoder_stack_list();
 
 	if (stack.empty()) {
 		QLabel *const l = new QLabel(
