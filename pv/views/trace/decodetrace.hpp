@@ -50,7 +50,6 @@ namespace pv {
 class Session;
 
 namespace data {
-class DecoderStack;
 class SignalBase;
 struct DecodeChannel;
 class DecodeSignal;

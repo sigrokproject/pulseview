@@ -48,7 +48,6 @@ extern "C" {
 #include <pv/data/decodesignal.hpp>
 #include <pv/data/decode/annotation.hpp>
 #include <pv/data/decode/decoder.hpp>
-#include <pv/data/decoderstack.hpp>
 #include <pv/data/logic.hpp>
 #include <pv/data/logicsegment.hpp>
 #include <pv/widgets/decodergroupbox.hpp>
@@ -305,7 +304,7 @@ void DecodeTrace::populate_popup_form(QWidget *parent, QFormLayout *form)
 	init_state_map_.clear();
 	decoder_forms_.clear();
 
-	const list< shared_ptr<Decoder> >& stack =
+	const list< shared_ptr<Decoder> > &stack =
 		decode_signal_->decoder_stack_list();
 
 	if (stack.empty()) {
@@ -594,49 +593,24 @@ void DecodeTrace::draw_error(QPainter &p, const QString &message,
 	p.drawText(text_rect, message);
 }
 
-void DecodeTrace::draw_unresolved_period(QPainter &p, int h, int left,
-	int right) const
+void DecodeTrace::draw_unresolved_period(QPainter &p, int h, int left, int right) const
 {
 	using namespace pv::data;
 	using pv::data::decode::Decoder;
 
 	double samples_per_pixel, pixels_offset;
 
-	shared_ptr<pv::data::DecoderStack> decoder_stack = base_->decoder_stack();
-
-	assert(decoder_stack);
-
-	shared_ptr<Logic> data;
-	shared_ptr<data::SignalBase> signalbase;
-
-	const list< shared_ptr<Decoder> > &stack = decoder_stack->stack();
-
-	// We get the logic data of the first channel in the list.
-	// This works because we are currently assuming all
-	// LogicSignals have the same data/segment
-	for (const shared_ptr<Decoder> &dec : stack)
-		if (dec && !dec->channels().empty() &&
-			((signalbase = (*dec->channels().begin()).second)) &&
-			((data = signalbase->logic_data())))
-			break;
-
-	if (!data || data->logic_segments().empty())
-		return;
-
-	const shared_ptr<LogicSegment> segment = data->logic_segments().front();
-	assert(segment);
-	const int64_t sample_count = (int64_t)segment->get_sample_count();
+	const int64_t sample_count = decode_signal_->sample_count();
 	if (sample_count == 0)
 		return;
 
-	const int64_t samples_decoded = decoder_stack->samples_decoded();
+	const int64_t samples_decoded = decode_signal_->samples_decoded();
 	if (sample_count == samples_decoded)
 		return;
 
 	const int y = get_visual_y();
 
-	tie(pixels_offset, samples_per_pixel) =
-		get_pixels_offset_samples_per_pixel();
+	tie(pixels_offset, samples_per_pixel) = get_pixels_offset_samples_per_pixel();
 
 	const double start = max(samples_decoded /
 		samples_per_pixel - pixels_offset, left - 1.0);
@@ -655,10 +629,7 @@ void DecodeTrace::draw_unresolved_period(QPainter &p, int h, int left,
 
 pair<double, double> DecodeTrace::get_pixels_offset_samples_per_pixel() const
 {
-	shared_ptr<pv::data::DecoderStack> decoder_stack = base_->decoder_stack();
-
 	assert(owner_);
-	assert(decoder_stack);
 
 	const View *view = owner_->view();
 	assert(view);
@@ -667,9 +638,9 @@ pair<double, double> DecodeTrace::get_pixels_offset_samples_per_pixel() const
 	assert(scale > 0);
 
 	const double pixels_offset =
-		((view->offset() - decoder_stack->start_time()) / scale).convert_to<double>();
+		((view->offset() - decode_signal_->start_time()) / scale).convert_to<double>();
 
-	double samplerate = decoder_stack->samplerate();
+	double samplerate = decode_signal_->samplerate();
 
 	// Show sample rate as 1Hz when it is unknown
 	if (samplerate == 0.0)
@@ -727,10 +698,7 @@ const QString DecodeTrace::get_annotation_at_point(const QPoint &point)
 
 	vector<pv::data::decode::Annotation> annotations;
 
-	shared_ptr<pv::data::DecoderStack> decoder_stack = base_->decoder_stack();
-
-	assert(decoder_stack);
-	decoder_stack->get_annotation_subset(annotations, visible_rows_[row],
+	decode_signal_->get_annotation_subset(annotations, visible_rows_[row],
 		sample_range.first, sample_range.second);
 
 	return (annotations.empty()) ?

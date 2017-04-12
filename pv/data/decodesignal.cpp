@@ -155,6 +155,44 @@ void DecodeSignal::set_initial_pin_state(const uint16_t channel_id, const int in
 	decoder_stack_->begin_decode();
 }
 
+int64_t DecodeSignal::sample_count() const
+{
+	shared_ptr<Logic> data;
+	shared_ptr<data::SignalBase> signalbase;
+
+	// We get the logic data of the first channel in the list.
+	// This works because we are currently assuming all
+	// LogicSignals have the same data/segment
+	for (const shared_ptr<Decoder> &dec : decoder_stack_->stack())
+		if (dec && !dec->channels().empty() &&
+			((signalbase = (*dec->channels().begin()).second)) &&
+			((data = signalbase->logic_data())))
+			break;
+
+	if (!data || data->logic_segments().empty())
+		return 0;
+
+	const shared_ptr<LogicSegment> segment = data->logic_segments().front();
+	assert(segment);
+
+	return (int64_t)segment->get_sample_count();
+}
+
+double DecodeSignal::samplerate() const
+{
+	return decoder_stack_->samplerate();
+}
+
+const pv::util::Timestamp& DecodeSignal::start_time() const
+{
+	return decoder_stack_->start_time();
+}
+
+int64_t DecodeSignal::samples_decoded() const
+{
+	return decoder_stack_->samples_decoded();
+}
+
 vector<Row> DecodeSignal::visible_rows() const
 {
 	return decoder_stack_->get_visible_rows();

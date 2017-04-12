@@ -84,6 +84,11 @@ public:
 
 	void set_initial_pin_state(const uint16_t channel_id, const int init_state);
 
+	double samplerate() const;
+	const pv::util::Timestamp& start_time() const;
+	int64_t sample_count() const;
+	int64_t samples_decoded() const;
+
 	vector<decode::Row> visible_rows() const;
 
 	/**
