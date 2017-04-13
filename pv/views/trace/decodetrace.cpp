@@ -807,11 +807,9 @@ void DecodeTrace::create_decoder_form(int index,
 			.arg(ch.name, ch.desc, required_flag), hlayout);
 	}
 
-	shared_ptr<pv::data::DecoderStack> decoder_stack = base_->decoder_stack();
-
 	// Add the options
 	shared_ptr<binding::Decoder> binding(
-		new binding::Decoder(decoder_stack, dec));
+		new binding::Decoder(decode_signal_, dec));
 	binding->add_properties_to_form(decoder_form, true);
 
 	bindings_.push_back(binding);

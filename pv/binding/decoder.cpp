@@ -24,7 +24,7 @@
 #include <boost/none_t.hpp>
 
 #include <pv/data/decode/decoder.hpp>
-#include <pv/data/decoderstack.hpp>
+#include <pv/data/decodesignal.hpp>
 #include <pv/prop/double.hpp>
 #include <pv/prop/enum.hpp>
 #include <pv/prop/int.hpp>
@@ -48,9 +48,9 @@ namespace pv {
 namespace binding {
 
 Decoder::Decoder(
-	shared_ptr<pv::data::DecoderStack> decoder_stack,
+	shared_ptr<pv::data::DecodeSignal> decode_signal,
 	shared_ptr<data::decode::Decoder> decoder) :
-	decoder_stack_(decoder_stack),
+	decode_signal_(decode_signal),
 	decoder_(decoder)
 {
 	assert(decoder_);
@@ -137,8 +137,8 @@ void Decoder::setter(const char *id, Glib::VariantBase value)
 	assert(decoder_);
 	decoder_->set_option(id, value.gobj());
 
-	assert(decoder_stack_);
-	decoder_stack_->begin_decode();
+	assert(decode_signal_);
+	decode_signal_->begin_decode();
 }
 
 }  // namespace binding

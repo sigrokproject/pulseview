@@ -31,7 +31,7 @@ struct srd_decoder_option;
 namespace pv {
 
 namespace data {
-class DecoderStack;
+class DecodeSignal;
 namespace decode {
 class Decoder;
 }
@@ -42,7 +42,7 @@ namespace binding {
 class Decoder : public Binding
 {
 public:
-	Decoder(shared_ptr<pv::data::DecoderStack> decoder_stack,
+	Decoder(shared_ptr<pv::data::DecodeSignal> decode_signal,
 		shared_ptr<pv::data::decode::Decoder> decoder);
 
 private:
@@ -55,7 +55,7 @@ private:
 	void setter(const char *id, Glib::VariantBase value);
 
 private:
-	shared_ptr<pv::data::DecoderStack> decoder_stack_;
+	shared_ptr<pv::data::DecodeSignal> decode_signal_;
 	shared_ptr<pv::data::decode::Decoder> decoder_;
 };
 

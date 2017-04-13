@@ -28,6 +28,7 @@
 #include <libsigrokdecode/libsigrokdecode.h>
 
 #include <pv/data/signalbase.hpp>
+#include <pv/util.hpp>
 
 using std::list;
 using std::unordered_set;
@@ -76,6 +77,7 @@ public:
 	void remove_decoder(int index);
 	bool toggle_decoder_visibility(int index);
 
+	void begin_decode();
 	QString error_message() const;
 
 	const list<data::DecodeChannel> get_channels() const;

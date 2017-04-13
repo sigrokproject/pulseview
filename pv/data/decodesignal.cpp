@@ -110,6 +110,11 @@ bool DecodeSignal::toggle_decoder_visibility(int index)
 	return state;
 }
 
+void DecodeSignal::begin_decode()
+{
+	decoder_stack_->begin_decode();
+}
+
 QString DecodeSignal::error_message() const
 {
 	return decoder_stack_->error_message();
