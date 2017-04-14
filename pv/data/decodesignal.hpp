@@ -88,8 +88,15 @@ public:
 
 	double samplerate() const;
 	const pv::util::Timestamp& start_time() const;
-	int64_t sample_count() const;
-	int64_t samples_decoded() const;
+
+	/**
+	 * Returns the number of samples that can be worked on,
+	 * i.e. the number of samples where samples are available
+	 * for all connected channels.
+	 */
+	int64_t get_working_sample_count() const;
+
+	int64_t get_decoded_sample_count() const;
 
 	vector<decode::Row> visible_rows() const;
 

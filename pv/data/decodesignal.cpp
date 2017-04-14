@@ -17,6 +17,8 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <limits>
+
 #include "logic.hpp"
 #include "logicsegment.hpp"
 #include "decodesignal.hpp"
@@ -29,6 +31,7 @@
 #include <pv/session.hpp>
 
 using std::make_shared;
+using std::min;
 using std::shared_ptr;
 using pv::data::decode::Decoder;
 using pv::data::decode::Row;
@@ -160,29 +163,6 @@ void DecodeSignal::set_initial_pin_state(const uint16_t channel_id, const int in
 	decoder_stack_->begin_decode();
 }
 
-int64_t DecodeSignal::sample_count() const
-{
-	shared_ptr<Logic> data;
-	shared_ptr<data::SignalBase> signalbase;
-
-	// We get the logic data of the first channel in the list.
-	// This works because we are currently assuming all
-	// LogicSignals have the same data/segment
-	for (const shared_ptr<Decoder> &dec : decoder_stack_->stack())
-		if (dec && !dec->channels().empty() &&
-			((signalbase = (*dec->channels().begin()).second)) &&
-			((data = signalbase->logic_data())))
-			break;
-
-	if (!data || data->logic_segments().empty())
-		return 0;
-
-	const shared_ptr<LogicSegment> segment = data->logic_segments().front();
-	assert(segment);
-
-	return (int64_t)segment->get_sample_count();
-}
-
 double DecodeSignal::samplerate() const
 {
 	return decoder_stack_->samplerate();
@@ -193,7 +173,34 @@ const pv::util::Timestamp& DecodeSignal::start_time() const
 	return decoder_stack_->start_time();
 }
 
-int64_t DecodeSignal::samples_decoded() const
+int64_t DecodeSignal::get_working_sample_count() const
+{
+	// The working sample count is the highest sample number for
+	// which all used signals have data available, so go through
+	// all channels and use the lowest overall sample count of the
+	// current segment
+
+	// TODO Currently, we assume only a single segment exists
+
+	int64_t count = std::numeric_limits<int64_t>::max();
+	bool no_signals_assigned = true;
+
+	for (const data::DecodeChannel &ch : channels_)
+		if (ch.assigned_signal) {
+			no_signals_assigned = false;
+
+			const shared_ptr<Logic> logic_data = ch.assigned_signal->logic_data();
+			if (!logic_data || logic_data->logic_segments().empty())
+				return 0;
+
+			const shared_ptr<LogicSegment> segment = logic_data->logic_segments().front();
+			count = min(count, (int64_t)segment->get_sample_count());
+		}
+
+	return (no_signals_assigned ? 0 : count);
+}
+
+int64_t DecodeSignal::get_decoded_sample_count() const
 {
 	return decoder_stack_->samples_decoded();
 }

@@ -600,11 +600,11 @@ void DecodeTrace::draw_unresolved_period(QPainter &p, int h, int left, int right
 
 	double samples_per_pixel, pixels_offset;
 
-	const int64_t sample_count = decode_signal_->sample_count();
+	const int64_t sample_count = decode_signal_->get_working_sample_count();
 	if (sample_count == 0)
 		return;
 
-	const int64_t samples_decoded = decode_signal_->samples_decoded();
+	const int64_t samples_decoded = decode_signal_->get_decoded_sample_count();
 	if (sample_count == samples_decoded)
 		return;
 
