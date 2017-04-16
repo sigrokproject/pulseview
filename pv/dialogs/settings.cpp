@@ -176,6 +176,12 @@ QWidget *Settings::get_about_page(QWidget *parent) const
 		tr("Used libraries:") + "</b></td></tr>");
 	s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
 		.arg(QString("Qt"), qVersion()));
+	s.append(QString("<tr><td><i>%1</i></td><td>%2 (lib version %3)</td></tr>")
+		.arg(QString("libsigrok"), sr_package_version_string_get(), sr_lib_version_string_get()));
+#ifdef ENABLE_DECODE
+	s.append(QString("<tr><td><i>%1</i></td><td>%2 (lib version %3)</td></tr>")
+		.arg(QString("libsigrokdecode"), srd_package_version_string_get(), srd_lib_version_string_get()));
+#endif
 
 	/* Set up the supported field */
 	s.append("<tr><td colspan=\"2\"><b>" +
