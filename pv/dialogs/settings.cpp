@@ -148,6 +148,17 @@ QWidget *Settings::get_view_settings_form(QWidget *parent) const
 	return form;
 }
 
+#ifdef ENABLE_DECODE
+static gint sort_pds(gconstpointer a, gconstpointer b)
+{
+	const struct srd_decoder *sda, *sdb;
+
+	sda = (const struct srd_decoder *)a;
+	sdb = (const struct srd_decoder *)b;
+	return strcmp(sda->id, sdb->id);
+}
+#endif
+
 QWidget *Settings::get_about_page(QWidget *parent) const
 {
 #ifdef ENABLE_DECODE
@@ -211,12 +222,15 @@ QWidget *Settings::get_about_page(QWidget *parent) const
 #ifdef ENABLE_DECODE
 	s.append("<tr><td colspan=\"2\"><b>" +
 		tr("Supported protocol decoders:") + "</b></td></tr>");
-	for (const GSList *l = srd_decoder_list(); l; l = l->next) {
+	GSList *sl = g_slist_copy((GSList *)srd_decoder_list());
+	sl = g_slist_sort(sl, sort_pds);
+	for (const GSList *l = sl; l; l = l->next) {
 		dec = (struct srd_decoder *)l->data;
 		s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
 			.arg(QString::fromUtf8(dec->id),
 				QString::fromUtf8(dec->longname)));
 	}
+	g_slist_free(sl);
 #endif
 
 	s.append("</table>");
