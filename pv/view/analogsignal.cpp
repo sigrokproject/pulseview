@@ -430,7 +430,7 @@ void AnalogSignal::paint_logic_mid(QPainter &p, ViewItemPaintParams &pp)
 
 	const int y = get_visual_y();
 
-	if (!base_->enabled())
+	if (!base_->enabled() || !base_->logic_data())
 		return;
 
 	const int signal_margin =
@@ -443,6 +443,7 @@ void AnalogSignal::paint_logic_mid(QPainter &p, ViewItemPaintParams &pp)
 
 	const deque< shared_ptr<pv::data::LogicSegment> > &segments =
 		base_->logic_data()->logic_segments();
+
 	if (segments.empty())
 		return;
 
