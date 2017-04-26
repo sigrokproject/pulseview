@@ -484,11 +484,17 @@ void DecodeTrace::draw_annotation_block(
 		annotations.begin(), annotations.end(),
 		[&](const Annotation &a) { return a.format() == format; });
 
+	const QRectF rect(start, top, end - start, bottom - top);
+	const int r = h / 4;
+
+	p.setPen(QPen(Qt::NoPen));
+	p.setBrush(Qt::white);
+	p.drawRoundedRect(rect, r, r);
+
 	p.setPen((single_format ? OutlineColours[colour] : Qt::gray));
 	p.setBrush(QBrush((single_format ? Colours[colour] : Qt::gray),
 		Qt::Dense4Pattern));
-	p.drawRoundedRect(
-		QRectF(start, top, end - start, bottom - top), h / 4, h / 4);
+	p.drawRoundedRect(rect, r, r);
 }
 
 void DecodeTrace::draw_instant(const pv::data::decode::Annotation &a, QPainter &p,
