@@ -183,7 +183,6 @@ void Viewport::paintEvent(QPaintEvent*)
 	for (const shared_ptr<RowItem> r : row_items)
 		r->paint_fore(p, pp);
 
-	p.setRenderHint(QPainter::Antialiasing, false);
 	for (const shared_ptr<TimeItem> t : time_items)
 		t->paint_fore(p, pp);
 

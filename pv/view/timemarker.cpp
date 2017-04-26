@@ -18,6 +18,7 @@
  */
 
 #include <algorithm>
+#include <cmath>
 
 #include <extdef.h>
 
@@ -73,7 +74,7 @@ void TimeMarker::set_time(const pv::util::Timestamp& time)
 
 float TimeMarker::get_x() const
 {
-	return ((time_ - view_.offset()) / view_.scale()).convert_to<float>();
+	return std::roundf(((time_ - view_.offset()) / view_.scale()).convert_to<float>()) + 0.5f;
 }
 
 QPoint TimeMarker::point(const QRect &rect) const
@@ -107,7 +108,7 @@ void TimeMarker::paint_label(QPainter &p, const QRect &rect, bool hover)
 	if (!enabled())
 		return;
 
-	const qreal x = ((time_ - view_.offset()) / view_.scale()).convert_to<qreal>();
+	const qreal x = get_x();
 	const QRectF r(label_rect(rect));
 
 	const QPointF points[] = {

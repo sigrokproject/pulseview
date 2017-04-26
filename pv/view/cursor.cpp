@@ -67,7 +67,7 @@ QRectF Cursor::label_rect(const QRectF &rect) const
 	const shared_ptr<Cursor> other(get_other_cursor());
 	assert(other);
 
-	const float x = ((time_ - view_.offset())/ view_.scale()).convert_to<float>();
+	const float x = get_x();
 
 	QFontMetrics m(QApplication::font());
 	QSize text_size = m.boundingRect(get_text()).size();

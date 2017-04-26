@@ -187,9 +187,7 @@ pair<float, float> CursorPair::get_cursor_offsets() const
 	assert(first_);
 	assert(second_);
 
-	return pair<float, float>(
-		((first_->time() - view_.offset()) / view_.scale()).convert_to<float>(),
-		((second_->time() - view_.offset()) / view_.scale()).convert_to<float>());
+	return pair<float, float>(first_->get_x(), second_->get_x());
 }
 
 } // namespace TraceView
