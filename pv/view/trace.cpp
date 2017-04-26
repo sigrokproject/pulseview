@@ -164,13 +164,8 @@ void Trace::paint_back(QPainter &p, const ViewItemPaintParams &pp)
 	p.setPen(QPen(Qt::NoPen));
 
 	const pair<int, int> extents = v_extents();
-
-	const int x = 0;
-	const int y = get_visual_y() + extents.first;
-	const int w = pp.right() - pp.left();
-	const int h = extents.second - extents.first;
-
-	p.drawRect(x, y, w, h);
+	p.drawRect(pp.left(), get_visual_y() + extents.first,
+		pp.width(), extents.second - extents.first);
 }
 
 void Trace::paint_axis(QPainter &p, const ViewItemPaintParams &pp, int y)
