@@ -32,7 +32,8 @@ ViewItemPaintParams::ViewItemPaintParams(
 	const QRect &rect, double scale, const pv::util::Timestamp& offset) :
 	rect_(rect),
 	scale_(scale),
-	offset_(offset)
+	offset_(offset),
+	bg_colour_state_(false)
 {
 	assert(scale > 0.0);
 }

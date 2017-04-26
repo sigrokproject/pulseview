@@ -125,7 +125,6 @@ private Q_SLOTS:
 
 protected:
 	shared_ptr<data::SignalBase> base_;
-	bool coloured_bg_state_;
 
 private:
 	pv::widgets::Popup *popup_;

@@ -159,7 +159,7 @@ void Trace::paint_back(QPainter &p, ViewItemPaintParams &pp)
 	if (view->coloured_bg())
 		p.setBrush(base_->bgcolour());
 	else
-		p.setBrush(bgcolour_state_ ? BrightGrayBGColour : DarkGrayBGColour);
+		p.setBrush(pp.next_bg_colour_state() ? BrightGrayBGColour : DarkGrayBGColour);
 
 	p.setPen(QPen(Qt::NoPen));
 

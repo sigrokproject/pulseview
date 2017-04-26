@@ -75,6 +75,12 @@ public:
 		return (offset_ / scale_).convert_to<double>();
 	}
 
+	bool next_bg_colour_state() {
+		const bool state = bg_colour_state_;
+		bg_colour_state_ = !bg_colour_state_;
+		return state;
+	}
+
 public:
 	static QFont font();
 
@@ -84,6 +90,7 @@ private:
 	QRect rect_;
 	double scale_;
 	pv::util::Timestamp offset_;
+	bool bg_colour_state_;
 };
 
 } // namespace TraceView

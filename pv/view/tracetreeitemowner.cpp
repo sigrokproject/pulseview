@@ -110,23 +110,6 @@ pair<int, int> TraceTreeItemOwner::v_extents() const
 	return extents;
 }
 
-bool TraceTreeItemOwner::reassign_bgcolour_states(bool next_bgcolour_state)
-{
-	vector< shared_ptr<TraceTreeItem> > items = trace_tree_child_items();
-
-	// Sort items according to vertical position
-	sort(items.begin(), items.end(),
-		[](const shared_ptr<TraceTreeItem> a, const shared_ptr<TraceTreeItem> b) {
-		return a->layout_v_offset() > b->layout_v_offset(); });
-
-	for (const shared_ptr<TraceTreeItem> item : items) {
-		item->set_bgcolour_state(next_bgcolour_state);
-		next_bgcolour_state = !next_bgcolour_state;
-	}
-
-	return next_bgcolour_state;
-}
-
 void TraceTreeItemOwner::restack_items()
 {
 }
