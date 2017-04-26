@@ -570,29 +570,13 @@ void View::enable_show_analog_minor_grid(bool state)
 
 void View::enable_coloured_bg(bool state)
 {
-	const vector<shared_ptr<TraceTreeItem>> items(
-		list_by_type<TraceTreeItem>());
-
-	for (shared_ptr<TraceTreeItem> i : items) {
-		// Can't cast to Trace because it's abstract, so we need to
-		// check for any derived classes individually
-
-		shared_ptr<AnalogSignal> a = dynamic_pointer_cast<AnalogSignal>(i);
-		if (a)
-			a->set_coloured_bg(state);
-
-		shared_ptr<LogicSignal> l = dynamic_pointer_cast<LogicSignal>(i);
-		if (l)
-			l->set_coloured_bg(state);
-
-#ifdef ENABLE_DECODE
-		shared_ptr<DecodeTrace> d = dynamic_pointer_cast<DecodeTrace>(i);
-		if (d)
-			d->set_coloured_bg(state);
-#endif
-	}
-
+	coloured_bg_ = state;
 	viewport_->update();
+}
+
+bool View::coloured_bg() const
+{
+	return coloured_bg_;
 }
 
 bool View::cursors_shown() const

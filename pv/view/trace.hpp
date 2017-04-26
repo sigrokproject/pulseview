@@ -71,11 +71,6 @@ public:
 	virtual void set_colour(QColor colour);
 
 	/**
-	 * Enables or disables the coloured background for this trace.
-	 */
-	void set_coloured_bg(bool state);
-
-	/**
 	 * Paints the signal label.
 	 * @param p the QPainter to paint into.
 	 * @param rect the rectangle of the header area.
@@ -130,7 +125,7 @@ private Q_SLOTS:
 
 protected:
 	shared_ptr<data::SignalBase> base_;
-	bool coloured_bg_, coloured_bg_state_;
+	bool coloured_bg_state_;
 
 private:
 	pv::widgets::Popup *popup_;

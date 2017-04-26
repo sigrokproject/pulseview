@@ -53,18 +53,10 @@ Trace::Trace(shared_ptr<data::SignalBase> channel) :
 	popup_(nullptr),
 	popup_form_(nullptr)
 {
-	GlobalSettings settings;
-	coloured_bg_ = settings.value(GlobalSettings::Key_View_ColouredBG).toBool();
-
 	connect(channel.get(), SIGNAL(name_changed(const QString&)),
 		this, SLOT(on_name_changed(const QString&)));
 	connect(channel.get(), SIGNAL(colour_changed(const QColor&)),
 		this, SLOT(on_colour_changed(const QColor&)));
-}
-
-void Trace::set_coloured_bg(bool state)
-{
-	coloured_bg_ = state;
 }
 
 void Trace::paint_label(QPainter &p, const QRect &rect, bool hover)
@@ -161,7 +153,10 @@ QRectF Trace::label_rect(const QRectF &rect) const
 
 void Trace::paint_back(QPainter &p, const ViewItemPaintParams &pp)
 {
-	if (coloured_bg_)
+	const View *view = owner_->view();
+	assert(view);
+
+	if (view->coloured_bg())
 		p.setBrush(base_->bgcolour());
 	else
 		p.setBrush(bgcolour_state_ ? BrightGrayBGColour : DarkGrayBGColour);

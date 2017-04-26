@@ -213,6 +213,11 @@ public:
 	void enable_coloured_bg(bool state);
 
 	/**
+	 * Returns true if the trace background should be drawn with a coloured background.
+	 */
+	bool coloured_bg() const;
+
+	/**
 	 * Enable or disable showing sampling points.
 	 */
 	void enable_show_sampling_points(bool state);
