@@ -154,7 +154,7 @@ void LogicSignal::scale_handle_dragged(int offset)
 	signal_height_ = ((units < 1) ? 1 : units) * font_height;
 }
 
-void LogicSignal::paint_mid(QPainter &p, const ViewItemPaintParams &pp)
+void LogicSignal::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 {
 	QLineF *line;
 
@@ -253,7 +253,7 @@ void LogicSignal::paint_mid(QPainter &p, const ViewItemPaintParams &pp)
 	delete[] sampling_points;
 }
 
-void LogicSignal::paint_fore(QPainter &p, const ViewItemPaintParams &pp)
+void LogicSignal::paint_fore(QPainter &p, ViewItemPaintParams &pp)
 {
 	// Draw the trigger marker
 	if (!trigger_match_ || !base_->enabled())

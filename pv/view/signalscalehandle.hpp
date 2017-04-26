@@ -81,7 +81,7 @@ public:
 	 * @param p the QPainter to paint into.
 	 * @param pp the painting parameters object to paint with.
 	 */
-	void paint_fore(QPainter &p, const ViewItemPaintParams &pp);
+	void paint_fore(QPainter &p, ViewItemPaintParams &pp);
 
 private:
 	Signal &owner_;

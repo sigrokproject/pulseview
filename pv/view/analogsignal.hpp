@@ -100,21 +100,21 @@ public:
 	 * @param p the QPainter to paint into.
 	 * @param pp the painting parameters object to paint with..
 	 */
-	void paint_back(QPainter &p, const ViewItemPaintParams &pp);
+	void paint_back(QPainter &p, ViewItemPaintParams &pp);
 
 	/**
 	 * Paints the mid-layer of the signal with a QPainter
 	 * @param p the QPainter to paint into.
 	 * @param pp the painting parameters object to paint with..
 	 */
-	void paint_mid(QPainter &p, const ViewItemPaintParams &pp);
+	void paint_mid(QPainter &p, ViewItemPaintParams &pp);
 
 	/**
 	 * Paints the foreground layer of the item with a QPainter
 	 * @param p the QPainter to paint into.
 	 * @param pp the painting parameters object to paint with.
 	 */
-	void paint_fore(QPainter &p, const ViewItemPaintParams &pp);
+	void paint_fore(QPainter &p, ViewItemPaintParams &pp);
 
 private:
 	void paint_grid(QPainter &p, int y, int left, int right);
@@ -129,7 +129,7 @@ private:
 		int y, int left, const int64_t start, const int64_t end,
 		const double pixels_offset, const double samples_per_pixel);
 
-	void paint_logic_mid(QPainter &p, const ViewItemPaintParams &pp);
+	void paint_logic_mid(QPainter &p, ViewItemPaintParams &pp);
 
 	void paint_logic_caps(QPainter &p, QLineF *const lines,
 		vector< pair<int64_t, bool> > &edges,

@@ -106,7 +106,7 @@ const ViewItemOwner::item_list& Signal::child_items() const
 	return items_;
 }
 
-void Signal::paint_back(QPainter &p, const ViewItemPaintParams &pp)
+void Signal::paint_back(QPainter &p, ViewItemPaintParams &pp)
 {
 	if (base_->enabled())
 		Trace::paint_back(p, pp);

@@ -176,7 +176,7 @@ void AnalogSignal::scale_handle_drag_release()
 	update_scale();
 }
 
-void AnalogSignal::paint_back(QPainter &p, const ViewItemPaintParams &pp)
+void AnalogSignal::paint_back(QPainter &p, ViewItemPaintParams &pp)
 {
 	if (base_->enabled()) {
 		Trace::paint_back(p, pp);
@@ -184,7 +184,7 @@ void AnalogSignal::paint_back(QPainter &p, const ViewItemPaintParams &pp)
 	}
 }
 
-void AnalogSignal::paint_mid(QPainter &p, const ViewItemPaintParams &pp)
+void AnalogSignal::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 {
 	assert(base_->analog_data());
 	assert(owner_);
@@ -237,7 +237,7 @@ void AnalogSignal::paint_mid(QPainter &p, const ViewItemPaintParams &pp)
 	}
 }
 
-void AnalogSignal::paint_fore(QPainter &p, const ViewItemPaintParams &pp)
+void AnalogSignal::paint_fore(QPainter &p, ViewItemPaintParams &pp)
 {
 	if (!enabled())
 		return;
@@ -420,7 +420,7 @@ void AnalogSignal::paint_envelope(QPainter &p,
 	delete[] e.samples;
 }
 
-void AnalogSignal::paint_logic_mid(QPainter &p, const ViewItemPaintParams &pp)
+void AnalogSignal::paint_logic_mid(QPainter &p, ViewItemPaintParams &pp)
 {
 	QLineF *line;
 

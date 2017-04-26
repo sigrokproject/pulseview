@@ -144,7 +144,7 @@ void CursorPair::paint_label(QPainter &p, const QRect &rect, bool hover)
 	}
 }
 
-void CursorPair::paint_back(QPainter &p, const ViewItemPaintParams &pp)
+void CursorPair::paint_back(QPainter &p, ViewItemPaintParams &pp)
 {
 	if (!enabled())
 		return;

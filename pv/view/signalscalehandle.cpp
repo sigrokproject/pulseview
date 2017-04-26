@@ -79,7 +79,7 @@ QRectF SignalScaleHandle::hit_box_rect(const ViewItemPaintParams &pp) const
 		text_height, text_height);
 }
 
-void SignalScaleHandle::paint_fore(QPainter &p, const ViewItemPaintParams &pp)
+void SignalScaleHandle::paint_fore(QPainter &p, ViewItemPaintParams &pp)
 {
 	if (!enabled())
 		return;

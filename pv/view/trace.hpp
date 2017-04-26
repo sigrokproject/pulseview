@@ -95,7 +95,7 @@ protected:
 	 * @param p The QPainter to paint into.
 	 * @param pp The painting parameters object to paint with.
 	 */
-	virtual void paint_back(QPainter &p, const ViewItemPaintParams &pp);
+	virtual void paint_back(QPainter &p, ViewItemPaintParams &pp);
 
 	/**
 	 * Paints a zero axis across the viewport.
@@ -103,7 +103,7 @@ protected:
 	 * @param pp the painting parameters object to paint with.
 	 * @param y the y-offset of the axis.
 	 */
-	void paint_axis(QPainter &p, const ViewItemPaintParams &pp, int y);
+	void paint_axis(QPainter &p, ViewItemPaintParams &pp, int y);
 
 	void add_colour_option(QWidget *parent, QFormLayout *form);
 

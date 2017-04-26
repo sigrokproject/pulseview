@@ -65,7 +65,7 @@ QPoint TriggerMarker::point(const QRect &rect) const
 	return QPoint(get_x(), rect.bottom());
 }
 
-void TriggerMarker::paint_fore(QPainter &p, const ViewItemPaintParams &pp)
+void TriggerMarker::paint_fore(QPainter &p, ViewItemPaintParams &pp)
 {
 	if (!enabled())
 		return;

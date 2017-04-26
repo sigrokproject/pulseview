@@ -151,7 +151,7 @@ QRectF Trace::label_rect(const QRectF &rect) const
 		label_size.height());
 }
 
-void Trace::paint_back(QPainter &p, const ViewItemPaintParams &pp)
+void Trace::paint_back(QPainter &p, ViewItemPaintParams &pp)
 {
 	const View *view = owner_->view();
 	assert(view);
@@ -168,7 +168,7 @@ void Trace::paint_back(QPainter &p, const ViewItemPaintParams &pp)
 		pp.width(), extents.second - extents.first);
 }
 
-void Trace::paint_axis(QPainter &p, const ViewItemPaintParams &pp, int y)
+void Trace::paint_axis(QPainter &p, ViewItemPaintParams &pp, int y)
 {
 	p.setRenderHint(QPainter::Antialiasing, false);
 

@@ -154,7 +154,7 @@ void TimeMarker::paint_label(QPainter &p, const QRect &rect, bool hover)
 	p.drawText(r, Qt::AlignCenter | Qt::AlignVCenter, get_text());
 }
 
-void TimeMarker::paint_fore(QPainter &p, const ViewItemPaintParams &pp)
+void TimeMarker::paint_fore(QPainter &p, ViewItemPaintParams &pp)
 {
 	if (!enabled())
 		return;

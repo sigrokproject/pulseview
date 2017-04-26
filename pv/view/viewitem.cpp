@@ -112,19 +112,19 @@ void ViewItem::paint_label(QPainter &p, const QRect &rect, bool hover)
 	(void)hover;
 }
 
-void ViewItem::paint_back(QPainter &p, const ViewItemPaintParams &pp)
+void ViewItem::paint_back(QPainter &p, ViewItemPaintParams &pp)
 {
 	(void)p;
 	(void)pp;
 }
 
-void ViewItem::paint_mid(QPainter &p, const ViewItemPaintParams &pp)
+void ViewItem::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 {
 	(void)p;
 	(void)pp;
 }
 
-void ViewItem::paint_fore(QPainter &p, const ViewItemPaintParams &pp)
+void ViewItem::paint_fore(QPainter &p, ViewItemPaintParams &pp)
 {
 	(void)p;
 	(void)pp;

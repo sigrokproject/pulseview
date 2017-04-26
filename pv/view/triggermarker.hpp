@@ -74,7 +74,7 @@ public:
 	 * @param p the QPainter to paint into.
 	 * @param pp the painting parameters object to paint with.
 	 */
-	void paint_fore(QPainter &p, const ViewItemPaintParams &pp) override;
+	void paint_fore(QPainter &p, ViewItemPaintParams &pp) override;
 
 private:
 	pv::util::Timestamp time_;

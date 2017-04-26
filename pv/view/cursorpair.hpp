@@ -91,7 +91,7 @@ public:
 	 * @param p the QPainter to paint into.
 	 * @param pp the painting parameters object to paint with.
 	 */
-	void paint_back(QPainter &p, const ViewItemPaintParams &pp) override;
+	void paint_back(QPainter &p, ViewItemPaintParams &pp) override;
 
 	/**
 	 * Constructs the string to display.

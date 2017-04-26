@@ -153,6 +153,12 @@ bool Viewport::touch_event(QTouchEvent *event)
 
 void Viewport::paintEvent(QPaintEvent*)
 {
+	typedef void (ViewItem::*LayerPaintFunc)(
+		QPainter &p, ViewItemPaintParams &pp);
+	LayerPaintFunc layer_paint_funcs[] = {
+		&ViewItem::paint_back, &ViewItem::paint_mid,
+		&ViewItem::paint_fore, nullptr};
+
 	vector< shared_ptr<RowItem> > row_items(view_.list_by_type<RowItem>());
 	assert(none_of(row_items.begin(), row_items.end(),
 		[](const shared_ptr<RowItem> &r) { return !r; }));
@@ -168,23 +174,16 @@ void Viewport::paintEvent(QPaintEvent*)
 	QPainter p(this);
 	p.setRenderHint(QPainter::Antialiasing);
 
-	const ViewItemPaintParams pp(rect(), view_.scale(), view_.offset());
+	for (LayerPaintFunc *paint_func = layer_paint_funcs;
+			*paint_func; paint_func++) {
+		ViewItemPaintParams time_pp(rect(), view_.scale(), view_.offset());
+		for (const shared_ptr<TimeItem> t : time_items)
+			(t.get()->*(*paint_func))(p, time_pp);
 
-	for (const shared_ptr<TimeItem> t : time_items)
-		t->paint_back(p, pp);
-	for (const shared_ptr<RowItem> r : row_items)
-		r->paint_back(p, pp);
-
-	for (const shared_ptr<TimeItem> t : time_items)
-		t->paint_mid(p, pp);
-	for (const shared_ptr<RowItem> r : row_items)
-		r->paint_mid(p, pp);
-
-	for (const shared_ptr<RowItem> r : row_items)
-		r->paint_fore(p, pp);
-
-	for (const shared_ptr<TimeItem> t : time_items)
-		t->paint_fore(p, pp);
+		ViewItemPaintParams row_pp(rect(), view_.scale(), view_.offset());
+		for (const shared_ptr<RowItem> r : row_items)
+			(r.get()->*(*paint_func))(p, row_pp);
+	}
 
 	p.end();
 }

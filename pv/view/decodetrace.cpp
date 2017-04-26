@@ -170,13 +170,13 @@ pair<int, int> DecodeTrace::v_extents() const
 	return make_pair(-row_height, row_height * row_count);
 }
 
-void DecodeTrace::paint_back(QPainter &p, const ViewItemPaintParams &pp)
+void DecodeTrace::paint_back(QPainter &p, ViewItemPaintParams &pp)
 {
 	Trace::paint_back(p, pp);
 	paint_axis(p, pp, get_visual_y());
 }
 
-void DecodeTrace::paint_mid(QPainter &p, const ViewItemPaintParams &pp)
+void DecodeTrace::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 {
 	using namespace pv::data::decode;
 
@@ -248,7 +248,7 @@ void DecodeTrace::paint_mid(QPainter &p, const ViewItemPaintParams &pp)
 	max_visible_rows_ = max(max_visible_rows_, (int)visible_rows_.size());
 }
 
-void DecodeTrace::paint_fore(QPainter &p, const ViewItemPaintParams &pp)
+void DecodeTrace::paint_fore(QPainter &p, ViewItemPaintParams &pp)
 {
 	using namespace pv::data::decode;
 

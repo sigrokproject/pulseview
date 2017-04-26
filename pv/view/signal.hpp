@@ -76,7 +76,7 @@ public:
 	 */
 	const item_list& child_items() const;
 
-	void paint_back(QPainter &p, const ViewItemPaintParams &pp);
+	void paint_back(QPainter &p, ViewItemPaintParams &pp);
 
 	virtual void populate_popup_form(QWidget *parent, QFormLayout *form);
 
