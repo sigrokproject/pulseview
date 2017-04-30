@@ -199,8 +199,7 @@ MainBar::MainBar(Session &session, QWidget *parent,
 	connect(menu_decoders_add_, SIGNAL(decoder_selected(srd_decoder*)),
 		this, SLOT(add_decoder(srd_decoder*)));
 
-	add_decoder_button_->setIcon(QIcon::fromTheme("add-decoder",
-		QIcon(":/icons/add-decoder.svg")));
+	add_decoder_button_->setIcon(QIcon(":/icons/add-decoder.svg"));
 	add_decoder_button_->setPopupMode(QToolButton::InstantPopup);
 	add_decoder_button_->setMenu(menu_decoders_add_);
 	add_decoder_button_->setToolTip(tr("Add low-level, non-stacked protocol decoder"));
@@ -220,8 +219,7 @@ MainBar::MainBar(Session &session, QWidget *parent,
 		QIcon(":/icons/preferences-system.png")));
 
 	channels_button_.setToolTip(tr("Configure Channels"));
-	channels_button_.setIcon(QIcon::fromTheme("channels",
-		QIcon(":/icons/channels.svg")));
+	channels_button_.setIcon(QIcon(":/icons/channels.svg"));
 
 	add_toolbar_widgets();
 

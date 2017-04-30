@@ -78,8 +78,7 @@ StandardBar::StandardBar(Session &session, QWidget *parent,
 		this, SLOT(on_actionViewZoomOneToOne_triggered()));
 
 	action_view_show_cursors_->setCheckable(true);
-	action_view_show_cursors_->setIcon(QIcon::fromTheme("show-cursors",
-		QIcon(":/icons/show-cursors.svg")));
+	action_view_show_cursors_->setIcon(QIcon(":/icons/show-cursors.svg"));
 	action_view_show_cursors_->setShortcut(QKeySequence(Qt::Key_C));
 	connect(action_view_show_cursors_, SIGNAL(triggered(bool)),
 		this, SLOT(on_actionViewShowCursors_triggered()));

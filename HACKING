@@ -67,6 +67,9 @@ Random notes
    and the final @return line. The @param lines themselves (if there is more
    than one) are not separated by empty lines.
 
+ - Use QIcon::fromTheme() for icons that are included in the freedesktop.org
+   icon naming specification. Do NOT use it for all other icons.
+
 
 Release engineering
 -------------------
