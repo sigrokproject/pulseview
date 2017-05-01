@@ -233,6 +233,36 @@ BOOST_AUTO_TEST_CASE(MaxSize32Multi)
 	delete[] sample_data;
 }
 
+BOOST_AUTO_TEST_CASE(MaxSize32MultiAtOnce)
+{
+	Segment s(1, sizeof(uint32_t));
+
+	// Chunk size is num*unit_size, so with pv::data::Segment::MaxChunkSize/unit_size, we reach the maximum size
+	uint32_t num_samples = 3*(pv::data::Segment::MaxChunkSize / sizeof(uint32_t));
+
+	//----- Add all samples, requiring multiple chunks, in one call ----//
+	uint32_t *data = new uint32_t[num_samples];
+	for (uint32_t i = 0; i < num_samples; i++)
+		data[i] = i;
+
+	s.append_samples(data, num_samples);
+	delete[] data;
+
+	BOOST_CHECK(s.get_sample_count() == num_samples);
+
+	for (uint32_t i = 0; i < num_samples; i++) {
+		uint8_t* sample_data = s.get_raw_samples(i, 1);
+		BOOST_CHECK_EQUAL(*((uint32_t*)sample_data), i);
+		delete[] sample_data;
+	}
+
+	uint8_t* sample_data = s.get_raw_samples(0, num_samples);
+	for (uint32_t i = 0; i < num_samples; i++) {
+		BOOST_CHECK_EQUAL(*((uint32_t*)(sample_data + i * sizeof(uint32_t))), i);
+	}
+	delete[] sample_data;
+}
+
 BOOST_AUTO_TEST_CASE(MaxSize32MultiIterated)
 {
 	Segment s(1, sizeof(uint32_t));

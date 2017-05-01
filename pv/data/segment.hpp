@@ -39,6 +39,7 @@ struct MediumSize32Single;
 struct MaxSize32Single;
 struct MediumSize32Multi;
 struct MaxSize32Multi;
+struct MaxSize32MultiAtOnce;
 struct MaxSize32MultiIterated;
 }  // namespace SegmentTest
 
@@ -101,6 +102,7 @@ protected:
 	friend struct SegmentTest::MaxSize32Single;
 	friend struct SegmentTest::MediumSize32Multi;
 	friend struct SegmentTest::MaxSize32Multi;
+	friend struct SegmentTest::MaxSize32MultiAtOnce;
 	friend struct SegmentTest::MaxSize32MultiIterated;
 };
 
