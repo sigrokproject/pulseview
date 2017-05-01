@@ -135,35 +135,38 @@ void Segment::append_samples(void* data, uint64_t samples)
 {
 	lock_guard<recursive_mutex> lock(mutex_);
 
-	if (unused_samples_ >= samples) {
-		// All samples fit into the current chunk
-		memcpy(current_chunk_ + (used_samples_ * unit_size_),
-			data, (samples * unit_size_));
-		used_samples_ += samples;
-		unused_samples_ -= samples;
-	} else {
-		// Only a part of the samples fit, split data up between chunks
-		memcpy(current_chunk_ + (used_samples_ * unit_size_),
-			data, (unused_samples_ * unit_size_));
-		const uint64_t remaining_samples = samples - unused_samples_;
+	const uint8_t* data_byte_ptr = (uint8_t*)data;
+	uint64_t remaining_samples = samples;
+	uint64_t data_offset = 0;
 
-		// If we're out of memory, this will throw std::bad_alloc
-		current_chunk_ = new uint8_t[chunk_size_];
-		data_chunks_.push_back(current_chunk_);
-		memcpy(current_chunk_, (uint8_t*)data + (unused_samples_ * unit_size_),
-			(remaining_samples * unit_size_));
+	do {
+		uint64_t copy_count = 0;
 
-		used_samples_ = remaining_samples;
-		unused_samples_ = (chunk_size_ / unit_size_) - remaining_samples;
-	}
+		if (remaining_samples <= unused_samples_) {
+			// All samples fit into the current chunk
+			copy_count = remaining_samples;
+		} else {
+			// Only a part of the samples fit, fill up current chunk
+			copy_count = unused_samples_;
+		}
 
-	if (unused_samples_ == 0) {
-		// If we're out of memory, this will throw std::bad_alloc
-		current_chunk_ = new uint8_t[chunk_size_];
-		data_chunks_.push_back(current_chunk_);
-		used_samples_ = 0;
-		unused_samples_ = chunk_size_ / unit_size_;
-	}
+		const uint8_t* dest = &(current_chunk_[used_samples_ * unit_size_]);
+		const uint8_t* src = &(data_byte_ptr[data_offset]);
+		memcpy((void*)dest, (void*)src, (copy_count * unit_size_));
+
+		used_samples_ += copy_count;
+		unused_samples_ -= copy_count;
+		remaining_samples -= copy_count;
+		data_offset += (copy_count * unit_size_);
+
+		if (unused_samples_ == 0) {
+			// If we're out of memory, this will throw std::bad_alloc
+			current_chunk_ = new uint8_t[chunk_size_];
+			data_chunks_.push_back(current_chunk_);
+			used_samples_ = 0;
+			unused_samples_ = chunk_size_ / unit_size_;
+		}
+	} while (remaining_samples > 0);
 
 	sample_count_ += samples;
 }
