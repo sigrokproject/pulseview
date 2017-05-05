@@ -38,6 +38,7 @@ namespace pv {
 namespace data {
 
 const int SignalBase::ColourBGAlpha = 8 * 256 / 100;
+const uint64_t SignalBase::ConversionBlockSize = 4096;
 
 SignalBase::SignalBase(shared_ptr<sigrok::Channel> channel, ChannelType channel_type) :
 	channel_(channel),
@@ -239,8 +240,6 @@ uint8_t SignalBase::convert_a2l_schmitt_trigger(float lo_thr, float hi_thr,
 void SignalBase::conversion_thread_proc(QObject* segment, uint64_t start_sample,
 	uint64_t end_sample)
 {
-	const uint64_t block_size = 4096;
-
 	// TODO Support for multiple segments is missing
 
 	if ((channel_type_ == AnalogChannel) &&
@@ -279,7 +278,7 @@ void SignalBase::conversion_thread_proc(QObject* segment, uint64_t start_sample,
 		tie(min_v, max_v) = asegment->get_min_max();
 
 		vector<uint8_t> lsamples;
-		lsamples.reserve(block_size);
+		lsamples.reserve(ConversionBlockSize);
 
 		uint64_t i = start_sample;
 
@@ -287,12 +286,12 @@ void SignalBase::conversion_thread_proc(QObject* segment, uint64_t start_sample,
 			const float threshold = (min_v + max_v) * 0.5;  // middle between min and max
 
 			// Convert as many sample blocks as we can
-			while ((end_sample - i) > block_size) {
-				const float* asamples = asegment->get_samples(i, i + block_size);
-				for (uint32_t j = 0; j < block_size; j++)
+			while ((end_sample - i) > ConversionBlockSize) {
+				const float* asamples = asegment->get_samples(i, i + ConversionBlockSize);
+				for (uint32_t j = 0; j < ConversionBlockSize; j++)
 					lsamples.push_back(convert_a2l_threshold(threshold, asamples[j]));
 				lsegment->append_payload(lsamples.data(), lsamples.size());
-				i += block_size;
+				i += ConversionBlockSize;
 				lsamples.clear();
 				delete[] asamples;
 			}
@@ -314,12 +313,12 @@ void SignalBase::conversion_thread_proc(QObject* segment, uint64_t start_sample,
 			uint8_t state = 0;  // TODO Use value of logic sample n-1 instead of 0
 
 			// Convert as many sample blocks as we can
-			while ((end_sample - i) > block_size) {
-				const float* asamples = asegment->get_samples(i, i + block_size);
-				for (uint32_t j = 0; j < block_size; j++)
+			while ((end_sample - i) > ConversionBlockSize) {
+				const float* asamples = asegment->get_samples(i, i + ConversionBlockSize);
+				for (uint32_t j = 0; j < ConversionBlockSize; j++)
 					lsamples.push_back(convert_a2l_schmitt_trigger(lo_thr, hi_thr, asamples[j], state));
 				lsegment->append_payload(lsamples.data(), lsamples.size());
-				i += block_size;
+				i += ConversionBlockSize;
 				lsamples.clear();
 				delete[] asamples;
 			}

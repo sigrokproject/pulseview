@@ -65,6 +65,7 @@ public:
 
 private:
 	static const int ColourBGAlpha;
+	static const uint64_t ConversionBlockSize;
 
 public:
 	SignalBase(shared_ptr<sigrok::Channel> channel, ChannelType channel_type);
