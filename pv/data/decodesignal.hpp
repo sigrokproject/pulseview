@@ -152,6 +152,8 @@ private:
 	void start_srd_session();
 	void stop_srd_session();
 
+	void connect_input_notifiers();
+
 	static void annotation_callback(srd_proto_data *pdata, void *decode_signal);
 
 Q_SIGNALS:
@@ -161,7 +163,6 @@ Q_SIGNALS:
 private Q_SLOTS:
 	void on_capture_state_changed(int state);
 	void on_data_received();
-	void on_frame_ended();
 
 private:
 	pv::Session &session_;

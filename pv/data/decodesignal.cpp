@@ -65,10 +65,6 @@ DecodeSignal::DecodeSignal(pv::Session &session) :
 {
 	connect(&session_, SIGNAL(capture_state_changed(int)),
 		this, SLOT(on_capture_state_changed(int)));
-	connect(&session_, SIGNAL(data_received()),
-		this, SLOT(on_data_received()));
-	connect(&session_, SIGNAL(frame_ended()),
-		this, SLOT(on_frame_ended()));
 
 	set_name(tr("Empty decoder signal"));
 }
@@ -257,6 +253,9 @@ void DecodeSignal::begin_decode()
 	// Decode the muxed logic data
 	decode_interrupt_ = false;
 	decode_thread_ = std::thread(&DecodeSignal::decode_proc, this);
+
+	// Receive notifications when new sample data is available
+	connect_input_notifiers();
 }
 
 QString DecodeSignal::error_message() const
@@ -588,7 +587,6 @@ void DecodeSignal::mux_logic_samples(const int64_t start, const int64_t end)
 void DecodeSignal::logic_mux_proc()
 {
 	do {
-
 		const uint64_t input_sample_count = get_working_sample_count();
 		const uint64_t output_sample_count = segment_->get_sample_count();
 
@@ -736,6 +734,22 @@ void DecodeSignal::stop_srd_session()
 	}
 }
 
+void DecodeSignal::connect_input_notifiers()
+{
+	// Disconnect the notification slot from the previous set of signals
+	disconnect(this, SLOT(on_data_received()));
+
+	// Connect the currently used signals to our slot
+	for (data::DecodeChannel &ch : channels_) {
+		if (!ch.assigned_signal)
+			continue;
+
+		shared_ptr<Logic> logic_data = ch.assigned_signal->logic_data();
+		connect(logic_data.get(), SIGNAL(samples_added(QObject*, uint64_t, uint64_t)),
+			this, SLOT(on_data_received()));
+	}
+}
+
 void DecodeSignal::annotation_callback(srd_proto_data *pdata, void *decode_signal)
 {
 	assert(pdata);
@@ -789,11 +803,6 @@ void DecodeSignal::on_capture_state_changed(int state)
 }
 
 void DecodeSignal::on_data_received()
-{
-	logic_mux_cond_.notify_one();
-}
-
-void DecodeSignal::on_frame_ended()
 {
 	logic_mux_cond_.notify_one();
 }
