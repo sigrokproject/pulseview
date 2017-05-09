@@ -27,6 +27,7 @@
 #include <getopt.h>
 
 #include <QDebug>
+#include <QSettings>
 
 #ifdef ENABLE_SIGNALS
 #include "signalhandler.hpp"
@@ -120,6 +121,11 @@ int main(int argc, char *argv[])
 			srd_log_loglevel_set(loglevel);
 #endif
 
+			if (loglevel >= 5) {
+				const QSettings settings;
+				qDebug() << "Settings:" << settings.fileName()
+					<< "format" << settings.format();
+			}
 			break;
 		}
 
