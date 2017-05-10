@@ -74,7 +74,8 @@ void TimeMarker::set_time(const pv::util::Timestamp& time)
 
 float TimeMarker::get_x() const
 {
-	return std::roundf(((time_ - view_.offset()) / view_.scale()).convert_to<float>()) + 0.5f;
+	// Use roundf() from cmath, std::roundf() causes Android issues (see #945).
+	return roundf(((time_ - view_.offset()) / view_.scale()).convert_to<float>()) + 0.5f;
 }
 
 QPoint TimeMarker::point(const QRect &rect) const
