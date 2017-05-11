@@ -55,6 +55,7 @@ mutex DecodeSignal::global_srd_mutex_;
 DecodeSignal::DecodeSignal(pv::Session &session) :
 	SignalBase(nullptr, SignalBase::DecodeChannel),
 	session_(session),
+	srd_session_(nullptr),
 	logic_mux_data_invalid_(false),
 	start_time_(0),
 	samplerate_(0),
@@ -85,6 +86,8 @@ DecodeSignal::~DecodeSignal()
 		logic_mux_cond_.notify_one();
 		logic_mux_thread_.join();
 	}
+
+	stop_srd_session();
 }
 
 const vector< shared_ptr<Decoder> >& DecodeSignal::decoder_stack() const
@@ -147,6 +150,8 @@ bool DecodeSignal::toggle_decoder_visibility(int index)
 
 void DecodeSignal::reset_decode()
 {
+	stop_srd_session();
+
 	annotation_count_ = 0;
 	frame_complete_ = false;
 	samples_decoded_ = 0;
@@ -624,8 +629,7 @@ void DecodeSignal::logic_mux_proc()
 }
 
 void DecodeSignal::decode_data(
-	const int64_t abs_start_samplenum, const int64_t sample_count,
-	srd_session *const session)
+	const int64_t abs_start_samplenum, const int64_t sample_count)
 {
 	const int64_t unit_size = segment_->unit_size();
 	const int64_t chunk_sample_count = DecodeChunkLength / unit_size;
@@ -639,7 +643,7 @@ void DecodeSignal::decode_data(
 
 		const uint8_t* chunk = segment_->get_samples(i, chunk_end);
 
-		if (srd_session_send(session, i, chunk_end, chunk,
+		if (srd_session_send(srd_session_, i, chunk_end, chunk,
 				(chunk_end - i) * unit_size, unit_size) != SRD_OK) {
 			error_message_ = tr("Decoder reported an error");
 			delete[] chunk;
@@ -656,73 +660,80 @@ void DecodeSignal::decode_data(
 
 void DecodeSignal::decode_proc()
 {
-	srd_session *session;
-	srd_decoder_inst *prev_di = nullptr;
-
-	// Prevent any other decode threads from accessing libsigrokdecode
-	lock_guard<mutex> srd_lock(global_srd_mutex_);
-
-	// Create the session
-	srd_session_new(&session);
-	assert(session);
-
-	// Create the decoders
-	for (const shared_ptr<decode::Decoder> &dec : stack_) {
-		srd_decoder_inst *const di = dec->create_decoder_inst(session);
-
-		if (!di) {
-			error_message_ = tr("Failed to create decoder instance");
-			srd_session_destroy(session);
-			return;
-		}
-
-		if (prev_di)
-			srd_inst_stack(session, prev_di, di);
-
-		prev_di = di;
-	}
-
-	// Start the session
-	srd_session_metadata_set(session, SRD_CONF_SAMPLERATE,
-		g_variant_new_uint64(samplerate_));
-
-	srd_pd_output_callback_add(session, SRD_OUTPUT_ANN,
-		DecodeSignal::annotation_callback, this);
-
-	srd_session_start(session);
+	start_srd_session();
 
 	uint64_t sample_count;
 	uint64_t abs_start_samplenum = 0;
 	do {
 		// Keep processing new samples until we exhaust the input data
 		do {
+			// Prevent any other decode threads from accessing libsigrokdecode
+			lock_guard<mutex> srd_lock(global_srd_mutex_);
+
 			{
 				lock_guard<mutex> input_lock(input_mutex_);
 				sample_count = segment_->get_sample_count() - abs_start_samplenum;
 			}
 
 			if (sample_count > 0) {
-				decode_data(abs_start_samplenum, sample_count, session);
+				decode_data(abs_start_samplenum, sample_count);
 				abs_start_samplenum += sample_count;
 			}
 		} while (error_message_.isEmpty() && (sample_count > 0));
 
-		// Terminate if we exhausted the input data
-		if ((int64_t)segment_->get_sample_count() == get_working_sample_count())
-			break;
-
 		if (error_message_.isEmpty()) {
+			// Make sure all annotations are known to the frontend
+			new_annotations();
+
 			// Wait for new input data or an interrupt request
 			unique_lock<mutex> input_wait_lock(input_mutex_);
 			decode_input_cond_.wait(input_wait_lock);
 		}
 	} while (error_message_.isEmpty() && !decode_interrupt_);
+}
 
-	// Make sure all annotations are known to the frontend
-	new_annotations();
+void DecodeSignal::start_srd_session()
+{
+	if (!srd_session_) {
+		// Create the session
+		srd_session_new(&srd_session_);
+		assert(srd_session_);
 
-	// Destroy the session
-	srd_session_destroy(session);
+		// Create the decoders
+		srd_decoder_inst *prev_di = nullptr;
+		for (const shared_ptr<decode::Decoder> &dec : stack_) {
+			srd_decoder_inst *const di = dec->create_decoder_inst(srd_session_);
+
+			if (!di) {
+				error_message_ = tr("Failed to create decoder instance");
+				srd_session_destroy(srd_session_);
+				return;
+			}
+
+			if (prev_di)
+				srd_inst_stack(srd_session_, prev_di, di);
+
+			prev_di = di;
+		}
+
+		// Start the session
+		srd_session_metadata_set(srd_session_, SRD_CONF_SAMPLERATE,
+			g_variant_new_uint64(samplerate_));
+
+		srd_pd_output_callback_add(srd_session_, SRD_OUTPUT_ANN,
+			DecodeSignal::annotation_callback, this);
+
+		srd_session_start(srd_session_);
+	}
+}
+
+void DecodeSignal::stop_srd_session()
+{
+	if (srd_session_) {
+		// Destroy the session
+		srd_session_destroy(srd_session_);
+		srd_session_ = nullptr;
+	}
 }
 
 void DecodeSignal::annotation_callback(srd_proto_data *pdata, void *decode_signal)

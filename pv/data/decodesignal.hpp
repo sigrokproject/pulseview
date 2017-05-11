@@ -145,10 +145,12 @@ private:
 
 	void logic_mux_proc();
 
-	void decode_data(const int64_t abs_start_samplenum, const int64_t sample_count,
-		srd_session *const session);
+	void decode_data(const int64_t abs_start_samplenum, const int64_t sample_count);
 
 	void decode_proc();
+
+	void start_srd_session();
+	void stop_srd_session();
 
 	static void annotation_callback(srd_proto_data *pdata, void *decode_signal);
 
@@ -165,6 +167,8 @@ private:
 	pv::Session &session_;
 
 	vector<data::DecodeChannel> channels_;
+
+	struct srd_session *srd_session_;
 
 	shared_ptr<Logic> logic_mux_data_;
 	shared_ptr<LogicSegment> segment_;
