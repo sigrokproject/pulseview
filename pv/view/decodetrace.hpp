@@ -74,6 +74,7 @@ private:
 	struct ChannelSelector
 	{
 		const QComboBox *combo_;
+		const QComboBox *combo_initial_pin_;
 		const shared_ptr<pv::data::decode::Decoder> decoder_;
 		const srd_channel *pdch_;
 	};
@@ -182,6 +183,10 @@ private:
 		const shared_ptr<pv::data::decode::Decoder> &dec,
 		const srd_channel *const pdch);
 
+	QComboBox* create_channel_selector_initial_pin(QWidget *parent,
+		const shared_ptr<pv::data::decode::Decoder> &dec,
+		const srd_channel *const pdch);
+
 	void commit_decoder_channels(shared_ptr<data::decode::Decoder> &dec);
 
 	void commit_channels();
@@ -195,6 +200,8 @@ private Q_SLOTS:
 	void on_delete();
 
 	void on_channel_selected(int);
+
+	void on_initial_pin_selected(int);
 
 	void on_stack_decoder(srd_decoder *decoder);
 

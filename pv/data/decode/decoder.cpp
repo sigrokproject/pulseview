@@ -37,7 +37,8 @@ namespace decode {
 
 Decoder::Decoder(const srd_decoder *const dec) :
 	decoder_(dec),
-	shown_(true)
+	shown_(true),
+	initial_pins_(nullptr)
 {
 }
 
@@ -72,6 +73,18 @@ void Decoder::set_channels(map<const srd_channel*,
 	shared_ptr<data::SignalBase> > channels)
 {
 	channels_ = channels;
+}
+
+void Decoder::set_initial_pins(GArray *initial_pins)
+{
+	if (initial_pins_)
+		g_array_free(initial_pins_, TRUE);
+	initial_pins_ = initial_pins;
+}
+
+GArray *Decoder::initial_pins() const
+{
+	return initial_pins_;
 }
 
 const map<string, GVariant*>& Decoder::options() const
@@ -141,6 +154,8 @@ srd_decoder_inst* Decoder::create_decoder_inst(srd_session *session) const
 	}
 
 	srd_inst_channel_set_all(decoder_inst, channels);
+
+	srd_inst_initial_pins_set_all(decoder_inst, initial_pins_);
 
 	return decoder_inst;
 }

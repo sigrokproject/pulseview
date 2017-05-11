@@ -812,14 +812,24 @@ void DecodeTrace::create_decoder_form(int index,
 	for (l = decoder->channels; l; l = l->next) {
 		const struct srd_channel *const pdch =
 			(struct srd_channel *)l->data;
+
 		QComboBox *const combo = create_channel_selector(parent, dec, pdch);
+		QComboBox *const combo_initial_pin = create_channel_selector_initial_pin(parent, dec, pdch);
+
 		connect(combo, SIGNAL(currentIndexChanged(int)),
 			this, SLOT(on_channel_selected(int)));
+		connect(combo_initial_pin, SIGNAL(currentIndexChanged(int)),
+			this, SLOT(on_initial_pin_selected(int)));
+
+		QHBoxLayout *const hlayout = new QHBoxLayout;
+		hlayout->addWidget(combo);
+		hlayout->addWidget(combo_initial_pin);
+
 		decoder_form->addRow(tr("<b>%1</b> (%2) *")
 			.arg(QString::fromUtf8(pdch->name),
-			     QString::fromUtf8(pdch->desc)), combo);
+			     QString::fromUtf8(pdch->desc)), hlayout);
 
-		const ChannelSelector s = {combo, dec, pdch};
+		const ChannelSelector s = {combo, combo_initial_pin, dec, pdch};
 		channel_selectors_.push_back(s);
 	}
 
@@ -827,14 +837,24 @@ void DecodeTrace::create_decoder_form(int index,
 	for (l = decoder->opt_channels; l; l = l->next) {
 		const struct srd_channel *const pdch =
 			(struct srd_channel *)l->data;
+
 		QComboBox *const combo = create_channel_selector(parent, dec, pdch);
+		QComboBox *const combo_initial_pin = create_channel_selector_initial_pin(parent, dec, pdch);
+
 		connect(combo, SIGNAL(currentIndexChanged(int)),
 			this, SLOT(on_channel_selected(int)));
+		connect(combo_initial_pin, SIGNAL(currentIndexChanged(int)),
+			this, SLOT(on_initial_pin_selected(int)));
+
+		QHBoxLayout *const hlayout = new QHBoxLayout;
+		hlayout->addWidget(combo);
+		hlayout->addWidget(combo_initial_pin);
+
 		decoder_form->addRow(tr("<b>%1</b> (%2)")
 			.arg(QString::fromUtf8(pdch->name),
-			     QString::fromUtf8(pdch->desc)), combo);
+			     QString::fromUtf8(pdch->desc)), hlayout);
 
-		const ChannelSelector s = {combo, dec, pdch};
+		const ChannelSelector s = {combo, combo_initial_pin, dec, pdch};
 		channel_selectors_.push_back(s);
 	}
 
@@ -891,6 +911,24 @@ QComboBox* DecodeTrace::create_channel_selector(
 	return selector;
 }
 
+QComboBox* DecodeTrace::create_channel_selector_initial_pin(QWidget *parent,
+	const shared_ptr<data::decode::Decoder> &dec, const srd_channel *const pdch)
+{
+	QComboBox *selector = new QComboBox(parent);
+
+	selector->addItem("0", qVariantFromValue((int)SRD_INITIAL_PIN_LOW));
+	selector->addItem("1", qVariantFromValue((int)SRD_INITIAL_PIN_HIGH));
+	selector->addItem("?", qVariantFromValue((int)SRD_INITIAL_PIN_SAME_AS_SAMPLE0));
+
+	// Default to index 2 (SRD_INITIAL_PIN_SAME_AS_SAMPLE0).
+	const int idx = (!dec->initial_pins()) ? 2 : dec->initial_pins()->data[pdch->order];
+	selector->setCurrentIndex(idx);
+
+	selector->setToolTip("Initial (assumed) pin value before the first sample");
+
+	return selector;
+}
+
 void DecodeTrace::commit_decoder_channels(shared_ptr<data::decode::Decoder> &dec)
 {
 	assert(dec);
@@ -899,6 +937,10 @@ void DecodeTrace::commit_decoder_channels(shared_ptr<data::decode::Decoder> &dec
 
 	const unordered_set< shared_ptr<data::SignalBase> >
 		sigs(session_.signalbases());
+
+	GArray *const initial_pins = g_array_sized_new(FALSE, TRUE,
+		sizeof(uint8_t), channel_selectors_.size());
+	g_array_set_size(initial_pins, channel_selectors_.size());
 
 	for (const ChannelSelector &s : channel_selectors_) {
 		if (s.decoder_ != dec)
@@ -913,9 +955,15 @@ void DecodeTrace::commit_decoder_channels(shared_ptr<data::decode::Decoder> &dec
 				channel_map[s.pdch_] = sig;
 				break;
 			}
+
+		int selection_initial_pin = s.combo_initial_pin_->itemData(
+			s.combo_initial_pin_->currentIndex()).value<int>();
+
+		initial_pins->data[s.pdch_->order] = selection_initial_pin;
 	}
 
 	dec->set_channels(channel_map);
+	dec->set_initial_pins(initial_pins);
 }
 
 void DecodeTrace::commit_channels()
@@ -946,6 +994,11 @@ void DecodeTrace::on_delete()
 }
 
 void DecodeTrace::on_channel_selected(int)
+{
+	commit_channels();
+}
+
+void DecodeTrace::on_initial_pin_selected(int)
 {
 	commit_channels();
 }
