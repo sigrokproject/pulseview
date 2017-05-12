@@ -180,6 +180,9 @@ QWidget *Settings::get_about_page(QWidget *parent) const
 	shared_ptr<sigrok::Context> context = device_manager_.context();
 
 	QString s;
+
+	s.append("<style type=\"text/css\"> tr .id { white-space: pre; padding-right: 5px; } </style>");
+
 	s.append("<table>");
 
 	/* Library info */
@@ -198,7 +201,7 @@ QWidget *Settings::get_about_page(QWidget *parent) const
 	s.append("<tr><td colspan=\"2\"><b>" +
 		tr("Supported hardware drivers:") + "</b></td></tr>");
 	for (auto entry : context->drivers()) {
-		s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
+		s.append(QString("<tr><td class=\"id\"><i>%1</i></td><td>%2</td></tr>")
 			.arg(QString::fromUtf8(entry.first.c_str()),
 				QString::fromUtf8(entry.second->long_name().c_str())));
 	}
@@ -206,7 +209,7 @@ QWidget *Settings::get_about_page(QWidget *parent) const
 	s.append("<tr><td colspan=\"2\"><b>" +
 		tr("Supported input formats:") + "</b></td></tr>");
 	for (auto entry : context->input_formats()) {
-		s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
+		s.append(QString("<tr><td class=\"id\"><i>%1</i></td><td>%2</td></tr>")
 			.arg(QString::fromUtf8(entry.first.c_str()),
 				QString::fromUtf8(entry.second->description().c_str())));
 	}
@@ -214,7 +217,7 @@ QWidget *Settings::get_about_page(QWidget *parent) const
 	s.append("<tr><td colspan=\"2\"><b>" +
 		tr("Supported output formats:") + "</b></td></tr>");
 	for (auto entry : context->output_formats()) {
-		s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
+		s.append(QString("<tr><td class=\"id\"><i>%1</i></td><td>%2</td></tr>")
 			.arg(QString::fromUtf8(entry.first.c_str()),
 				QString::fromUtf8(entry.second->description().c_str())));
 	}
@@ -226,7 +229,7 @@ QWidget *Settings::get_about_page(QWidget *parent) const
 	sl = g_slist_sort(sl, sort_pds);
 	for (const GSList *l = sl; l; l = l->next) {
 		dec = (struct srd_decoder *)l->data;
-		s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
+		s.append(QString("<tr><td class=\"id\"><i>%1</i></td><td>%2</td></tr>")
 			.arg(QString::fromUtf8(dec->id),
 				QString::fromUtf8(dec->longname)));
 	}
