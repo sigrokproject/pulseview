@@ -145,6 +145,8 @@ private:
 
 	void logic_mux_proc();
 
+	void query_input_metadata();
+
 	void decode_data(const int64_t abs_start_samplenum, const int64_t sample_count);
 
 	void decode_proc();

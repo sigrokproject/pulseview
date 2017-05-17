@@ -221,13 +221,6 @@ void DecodeSignal::begin_decode()
 		}
 	}
 
-	// TODO Currently we assume all channels have the same sample rate
-	auto any_channel = find_if(channels_.begin(), channels_.end(),
-		[](data::DecodeChannel ch) { return ch.assigned_signal; });
-	shared_ptr<LogicSegment> first_segment =
-			any_channel->assigned_signal->logic_data()->logic_segments().front();
-	samplerate_ = first_segment->samplerate();
-
 	// Free the logic data and its segment(s) if it needs to be updated
 	if (logic_mux_data_invalid_)
 		logic_mux_data_.reset();
@@ -239,12 +232,6 @@ void DecodeSignal::begin_decode()
 		segment_ = make_shared<LogicSegment>(*logic_mux_data_, unit_size, samplerate_);
 		logic_mux_data_->push_segment(segment_);
 	}
-
-	// Update the samplerate and start time
-	start_time_ = segment_->start_time();
-	samplerate_ = segment_->samplerate();
-	if (samplerate_ == 0.0)
-		samplerate_ = 1.0;
 
 	// Make sure the logic output data is complete and up-to-date
 	logic_mux_interrupt_ = false;
@@ -626,6 +613,37 @@ void DecodeSignal::logic_mux_proc()
 	decode_input_cond_.notify_one();
 }
 
+void DecodeSignal::query_input_metadata()
+{
+	// Update the samplerate and start time because we cannot start
+	// the libsrd session without the current samplerate
+
+	// TODO Currently we assume all channels have the same sample rate
+	// and start time
+	bool samplerate_valid = false;
+
+	auto any_channel = find_if(channels_.begin(), channels_.end(),
+		[](data::DecodeChannel ch) { return ch.assigned_signal; });
+
+	shared_ptr<Logic> logic_data =
+		any_channel->assigned_signal->logic_data();
+
+	do {
+		if (!logic_data->logic_segments().empty()) {
+			shared_ptr<LogicSegment> first_segment =
+				any_channel->assigned_signal->logic_data()->logic_segments().front();
+			start_time_ = first_segment->start_time();
+			samplerate_ = first_segment->samplerate();
+			if (samplerate_ > 0)
+				samplerate_valid = true;
+		}
+
+		// Wait until input data is available or an interrupt was requested
+		unique_lock<mutex> input_wait_lock(input_mutex_);
+		decode_input_cond_.wait(input_wait_lock);
+	} while (!samplerate_valid && !decode_interrupt_);
+}
+
 void DecodeSignal::decode_data(
 	const int64_t abs_start_samplenum, const int64_t sample_count)
 {
@@ -647,6 +665,7 @@ void DecodeSignal::decode_data(
 			delete[] chunk;
 			break;
 		}
+
 		delete[] chunk;
 
 		{
@@ -658,6 +677,11 @@ void DecodeSignal::decode_data(
 
 void DecodeSignal::decode_proc()
 {
+	query_input_metadata();
+
+	if (decode_interrupt_)
+		return;
+
 	start_srd_session();
 
 	uint64_t sample_count;
@@ -683,7 +707,7 @@ void DecodeSignal::decode_proc()
 			// Make sure all annotations are known to the frontend
 			new_annotations();
 
-			// Wait for new input data or an interrupt request
+			// Wait for new input data or an interrupt was requested
 			unique_lock<mutex> input_wait_lock(input_mutex_);
 			decode_input_cond_.wait(input_wait_lock);
 		}
@@ -692,37 +716,38 @@ void DecodeSignal::decode_proc()
 
 void DecodeSignal::start_srd_session()
 {
-	if (!srd_session_) {
-		// Create the session
-		srd_session_new(&srd_session_);
-		assert(srd_session_);
+	if (srd_session_)
+		stop_srd_session();
 
-		// Create the decoders
-		srd_decoder_inst *prev_di = nullptr;
-		for (const shared_ptr<decode::Decoder> &dec : stack_) {
-			srd_decoder_inst *const di = dec->create_decoder_inst(srd_session_);
+	// Create the session
+	srd_session_new(&srd_session_);
+	assert(srd_session_);
 
-			if (!di) {
-				error_message_ = tr("Failed to create decoder instance");
-				srd_session_destroy(srd_session_);
-				return;
-			}
+	// Create the decoders
+	srd_decoder_inst *prev_di = nullptr;
+	for (const shared_ptr<decode::Decoder> &dec : stack_) {
+		srd_decoder_inst *const di = dec->create_decoder_inst(srd_session_);
 
-			if (prev_di)
-				srd_inst_stack(srd_session_, prev_di, di);
-
-			prev_di = di;
+		if (!di) {
+			error_message_ = tr("Failed to create decoder instance");
+			srd_session_destroy(srd_session_);
+			return;
 		}
 
-		// Start the session
-		srd_session_metadata_set(srd_session_, SRD_CONF_SAMPLERATE,
-			g_variant_new_uint64(samplerate_));
+		if (prev_di)
+			srd_inst_stack(srd_session_, prev_di, di);
 
-		srd_pd_output_callback_add(srd_session_, SRD_OUTPUT_ANN,
-			DecodeSignal::annotation_callback, this);
-
-		srd_session_start(srd_session_);
+		prev_di = di;
 	}
+
+	// Start the session
+	srd_session_metadata_set(srd_session_, SRD_CONF_SAMPLERATE,
+		g_variant_new_uint64(samplerate_));
+
+	srd_pd_output_callback_add(srd_session_, SRD_OUTPUT_ANN,
+		DecodeSignal::annotation_callback, this);
+
+	srd_session_start(srd_session_);
 }
 
 void DecodeSignal::stop_srd_session()
