@@ -46,7 +46,7 @@ namespace data {
 
 const double DecodeSignal::DecodeMargin = 1.0;
 const double DecodeSignal::DecodeThreshold = 0.2;
-const int64_t DecodeSignal::DecodeChunkLength = 10 * 1024 * 1024;
+const int64_t DecodeSignal::DecodeChunkLength = 256 * 1024;
 
 mutex DecodeSignal::global_srd_mutex_;
 
