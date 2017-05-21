@@ -605,12 +605,12 @@ void DecodeSignal::logic_mux_proc()
 			} while (processed_samples < samples_to_process);
 		}
 
-		if (session_.get_capture_state() != Session::Stopped) {
+		if (samples_to_process == 0) {
 			// Wait for more input
 			unique_lock<mutex> logic_mux_lock(logic_mux_mutex_);
 			logic_mux_cond_.wait(logic_mux_lock);
 		}
-	} while ((session_.get_capture_state() != Session::Stopped) && !logic_mux_interrupt_);
+	} while (!logic_mux_interrupt_);
 
 	// No more input data and session is stopped, let the decode thread
 	// process any pending data, terminate and release the global SRD mutex
@@ -643,9 +643,11 @@ void DecodeSignal::query_input_metadata()
 				samplerate_valid = true;
 		}
 
-		// Wait until input data is available or an interrupt was requested
-		unique_lock<mutex> input_wait_lock(input_mutex_);
-		decode_input_cond_.wait(input_wait_lock);
+		if (!samplerate_valid) {
+			// Wait until input data is available or an interrupt was requested
+			unique_lock<mutex> input_wait_lock(input_mutex_);
+			decode_input_cond_.wait(input_wait_lock);
+		}
 	} while (!samplerate_valid && !decode_interrupt_);
 }
 
