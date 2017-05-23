@@ -171,6 +171,8 @@ public:
 	virtual void restore_settings(QSettings &settings);
 
 private:
+	bool conversion_is_a2l() const;
+
 	uint8_t convert_a2l_threshold(float threshold, float value);
 	uint8_t convert_a2l_schmitt_trigger(float lo_thr, float hi_thr,
 		float value, uint8_t &state);

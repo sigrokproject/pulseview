@@ -185,6 +185,13 @@ void SignalBase::set_conversion_type(ConversionType t)
 
 	conversion_type_ = t;
 
+	// Re-create an empty container
+	// so that the signal is recognized as providing logic data
+	// and thus can be assigned to a decoder
+	if (conversion_is_a2l())
+		if (!converted_data_)
+			converted_data_ = make_shared<Logic>(1);  // Contains only one channel
+
 	start_conversion();
 
 	conversion_type_changed(t);
@@ -229,6 +236,13 @@ uint8_t SignalBase::convert_a2l_schmitt_trigger(float lo_thr, float hi_thr,
 	return state;
 }
 
+bool SignalBase::conversion_is_a2l() const
+{
+	return ((channel_type_ == AnalogChannel) &&
+		((conversion_type_ == A2LConversionByTreshold) ||
+		(conversion_type_ == A2LConversionBySchmittTrigger)));
+}
+
 void SignalBase::conversion_thread_proc(QObject* segment)
 {
 	// TODO Support for multiple segments is missing
@@ -237,19 +251,11 @@ void SignalBase::conversion_thread_proc(QObject* segment)
 	start_sample = end_sample = 0;
 
 	do {
-		if ((channel_type_ == AnalogChannel) &&
-			((conversion_type_ == A2LConversionByTreshold) ||
-			(conversion_type_ == A2LConversionBySchmittTrigger))) {
+		if (conversion_is_a2l()) {
 
 			AnalogSegment *asegment = qobject_cast<AnalogSegment*>(segment);
 
-			// Create the logic data container if needed
-			shared_ptr<Logic> logic_data;
-			if (!converted_data_) {
-				logic_data = make_shared<Logic>(1);  // Contains only one channel
-				converted_data_ = logic_data;
-			} else
-				 logic_data = dynamic_pointer_cast<Logic>(converted_data_);
+			const shared_ptr<Logic> logic_data = dynamic_pointer_cast<Logic>(converted_data_);
 
 			// Create the initial logic data segment if needed
 			if (logic_data->segments().size() == 0) {
@@ -339,10 +345,7 @@ void SignalBase::start_conversion()
 {
 	stop_conversion();
 
-	if ((channel_type_ == AnalogChannel) &&
-		((conversion_type_ == A2LConversionByTreshold) ||
-		(conversion_type_ == A2LConversionBySchmittTrigger))) {
-
+	if (conversion_is_a2l()) {
 		shared_ptr<Analog> analog_data = dynamic_pointer_cast<Analog>(data_);
 
 		if (analog_data->analog_segments().size() > 0) {
