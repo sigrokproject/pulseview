@@ -31,7 +31,6 @@
 #include <QFormLayout>
 #include <QGridLayout>
 #include <QLabel>
-#include <QSpinBox>
 #include <QString>
 
 #include "analogsignal.hpp"
@@ -569,7 +568,7 @@ void AnalogSignal::update_conversion_type()
 		owner_->row_item_appearance_changed(false, true);
 }
 
-void AnalogSignal::perform_autoranging(bool force_update)
+void AnalogSignal::perform_autoranging(bool keep_divs, bool force_update)
 {
 	const deque< shared_ptr<pv::data::AnalogSegment> > &segments =
 		base_->analog_data()->analog_segments();
@@ -592,17 +591,30 @@ void AnalogSignal::perform_autoranging(bool force_update)
 	prev_min = min;
 	prev_max = max;
 
-	// Use all divs for the positive range if there are no negative values
-	if ((min == 0) && (neg_vdivs_ > 0)) {
-		pos_vdivs_ += neg_vdivs_;
-		neg_vdivs_ = 0;
+	// If we're allowed to alter the div assignment...
+	if (!keep_divs) {
+		// Use all divs for the positive range if there are no negative values
+		if ((min == 0) && (neg_vdivs_ > 0)) {
+			pos_vdivs_ += neg_vdivs_;
+			neg_vdivs_ = 0;
+		}
+
+		// Split up the divs if there are negative values but no negative divs
+		if ((min < 0) && (neg_vdivs_ == 0)) {
+			neg_vdivs_ = pos_vdivs_ / 2;
+			pos_vdivs_ -= neg_vdivs_;
+		}
 	}
 
-	// Split up the divs if there are negative values but no negative divs
-	if ((min < 0) && (neg_vdivs_ == 0)) {
-		neg_vdivs_ = pos_vdivs_ / 2;
-		pos_vdivs_ -= neg_vdivs_;
-	}
+ 	// If there is still no positive div when we need it, add one
+	// (this can happen when pos_vdivs==neg_vdivs==0)
+	if ((max > 0) && (pos_vdivs_ == 0))
+		pos_vdivs_ = 1;
+
+	// If there is still no negative div when we need it, add one
+	// (this can happen when pos_vdivs was 0 or 1 when trying to split)
+	if ((min < 0) && (neg_vdivs_ == 0))
+		neg_vdivs_ = 1;
 
 	double min_value_per_div;
 	if ((pos_vdivs_ > 0) && (neg_vdivs_ >  0))
@@ -630,19 +642,19 @@ void AnalogSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
 	QFormLayout *const layout = new QFormLayout;
 
 	// Add the number of vdivs
-	QSpinBox *pvdiv_sb = new QSpinBox(parent);
-	pvdiv_sb->setRange(0, MaximumVDivs);
-	pvdiv_sb->setValue(pos_vdivs_);
-	connect(pvdiv_sb, SIGNAL(valueChanged(int)),
+	pvdiv_sb_ = new QSpinBox(parent);
+	pvdiv_sb_->setRange(0, MaximumVDivs);
+	pvdiv_sb_->setValue(pos_vdivs_);
+	connect(pvdiv_sb_, SIGNAL(valueChanged(int)),
 		this, SLOT(on_pos_vdivs_changed(int)));
-	layout->addRow(tr("Number of pos vertical divs"), pvdiv_sb);
+	layout->addRow(tr("Number of pos vertical divs"), pvdiv_sb_);
 
-	QSpinBox *nvdiv_sb = new QSpinBox(parent);
-	nvdiv_sb->setRange(0, MaximumVDivs);
-	nvdiv_sb->setValue(neg_vdivs_);
-	connect(nvdiv_sb, SIGNAL(valueChanged(int)),
+	nvdiv_sb_ = new QSpinBox(parent);
+	nvdiv_sb_->setRange(0, MaximumVDivs);
+	nvdiv_sb_->setValue(neg_vdivs_);
+	connect(nvdiv_sb_, SIGNAL(valueChanged(int)),
 		this, SLOT(on_neg_vdivs_changed(int)));
-	layout->addRow(tr("Number of neg vertical divs"), nvdiv_sb);
+	layout->addRow(tr("Number of neg vertical divs"), nvdiv_sb_);
 
 	// Add the vertical resolution
 	resolution_cb_ = new QComboBox(parent);
@@ -709,7 +721,7 @@ void AnalogSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
 
 void AnalogSignal::on_samples_added()
 {
-	perform_autoranging();
+	perform_autoranging(false, false);
 
 	if (owner_) {
 		// Call order is important, otherwise the lazy event handler won't work
@@ -720,10 +732,20 @@ void AnalogSignal::on_samples_added()
 
 void AnalogSignal::on_pos_vdivs_changed(int vdivs)
 {
+	if (vdivs == pos_vdivs_)
+		return;
+
 	pos_vdivs_ = vdivs;
 
-	if (autoranging_)
-		perform_autoranging(true);
+	if (autoranging_) {
+		perform_autoranging(true, true);
+
+		// It could be that a positive or negative div was added, so update
+		if (pvdiv_sb_) {
+			pvdiv_sb_->setValue(pos_vdivs_);
+			nvdiv_sb_->setValue(neg_vdivs_);
+		}
+	}
 
 	if (owner_) {
 		// Call order is important, otherwise the lazy event handler won't work
@@ -734,10 +756,20 @@ void AnalogSignal::on_pos_vdivs_changed(int vdivs)
 
 void AnalogSignal::on_neg_vdivs_changed(int vdivs)
 {
+	if (vdivs == neg_vdivs_)
+		return;
+
 	neg_vdivs_ = vdivs;
 
-	if (autoranging_)
-		perform_autoranging(true);
+	if (autoranging_) {
+		perform_autoranging(true, true);
+
+		// It could be that a positive or negative div was added, so update
+		if (pvdiv_sb_) {
+			pvdiv_sb_->setValue(pos_vdivs_);
+			nvdiv_sb_->setValue(neg_vdivs_);
+		}
+	}
 
 	if (owner_) {
 		// Call order is important, otherwise the lazy event handler won't work
@@ -760,7 +792,7 @@ void AnalogSignal::on_autoranging_changed(int state)
 	autoranging_ = (state == Qt::Checked);
 
 	if (autoranging_)
-		perform_autoranging(true);
+		perform_autoranging(false, true);
 
 	if (owner_) {
 		// Call order is important, otherwise the lazy event handler won't work

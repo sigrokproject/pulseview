@@ -25,6 +25,7 @@
 #include <memory>
 
 #include <QComboBox>
+#include <QSpinBox>
 
 using std::pair;
 using std::shared_ptr;
@@ -145,7 +146,7 @@ private:
 
 	void update_conversion_type();
 
-	void perform_autoranging(bool force_update = false);
+	void perform_autoranging(bool keep_divs, bool force_update);
 
 protected:
 	void populate_popup_form(QWidget *parent, QFormLayout *form);
@@ -166,6 +167,7 @@ private Q_SLOTS:
 
 private:
 	QComboBox *resolution_cb_, *conversion_cb_, *display_type_cb_;
+	QSpinBox *pvdiv_sb_, *nvdiv_sb_;
 
 	float scale_;
 	int scale_index_;
