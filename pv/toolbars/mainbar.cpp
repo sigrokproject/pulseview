@@ -599,7 +599,7 @@ void MainBar::export_file(shared_ptr<OutputFormat> format, bool selection_only)
 		if (!trace_view->cursors()->enabled()) {
 			show_session_error(tr("Missing Cursors"), tr("You need to set the " \
 					"cursors before you can save the data enclosed by them " \
-					"to a session file (e.g. using ALT-V - Show Cursors)."));
+					"to a session file (e.g. using the Show Cursors button)."));
 			return;
 		}
 
