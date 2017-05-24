@@ -737,6 +737,13 @@ void AnalogSignal::on_pos_vdivs_changed(int vdivs)
 
 	pos_vdivs_ = vdivs;
 
+	// There has to be at least one div, positive or negative
+	if ((neg_vdivs_ == 0) && (pos_vdivs_ == 0)) {
+		pos_vdivs_ = 1;
+		if (pvdiv_sb_)
+			pvdiv_sb_->setValue(pos_vdivs_);
+	}
+
 	if (autoranging_) {
 		perform_autoranging(true, true);
 
@@ -760,6 +767,13 @@ void AnalogSignal::on_neg_vdivs_changed(int vdivs)
 		return;
 
 	neg_vdivs_ = vdivs;
+
+	// There has to be at least one div, positive or negative
+	if ((neg_vdivs_ == 0) && (pos_vdivs_ == 0)) {
+		pos_vdivs_ = 1;
+		if (pvdiv_sb_)
+			pvdiv_sb_->setValue(pos_vdivs_);
+	}
 
 	if (autoranging_) {
 		perform_autoranging(true, true);
