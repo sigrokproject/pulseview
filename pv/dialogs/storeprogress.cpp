@@ -48,6 +48,19 @@ StoreProgress::StoreProgress(const QString &file_name,
 		this, SLOT(on_progress_updated()));
 	connect(&session_, SIGNAL(store_successful()),
 		&session, SLOT(on_data_saved()));
+
+	// Since we're not setting any progress in case of an error, the dialog
+	// will pop up after the minimumDuration time has been reached - 4000 ms
+	// by default.
+	// We do not want this as it overlaps with the error message box, so we
+	// set the minimumDuration to 0 so that it only appears when we feed it
+	// progress data. Then, call reset() to prevent the progress dialog from
+	// popping up anyway. This would happen in Qt5 because the behavior was
+	// changed in such a way that the duration timer is started by the
+	// constructor. We don't want that and reset() stops the timer, so we
+	// use it.
+	setMinimumDuration(0);
+	reset();
 }
 
 StoreProgress::~StoreProgress()
@@ -71,11 +84,17 @@ void StoreProgress::show_error()
 	msg.setStandardButtons(QMessageBox::Ok);
 	msg.setIcon(QMessageBox::Warning);
 	msg.exec();
+
+	close();
 }
 
 void StoreProgress::closeEvent(QCloseEvent*)
 {
 	session_.cancel();
+
+	// Closing doesn't mean we're going to be destroyed because our parent
+	// still owns our handle. Make sure this stale instance doesn't hang around.
+	deleteLater();
 }
 
 void StoreProgress::on_progress_updated()
