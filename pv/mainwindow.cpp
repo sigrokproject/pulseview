@@ -188,6 +188,7 @@ shared_ptr<views::ViewBase> MainWindow::add_view(const QString &title,
 	dock_main->setCentralWidget(v.get());
 	dock->setWidget(dock_main);
 
+	dock->setContextMenuPolicy(Qt::PreventContextMenu);
 	dock->setFeatures(QDockWidget::DockWidgetMovable |
 		QDockWidget::DockWidgetFloatable | QDockWidget::DockWidgetClosable);
 

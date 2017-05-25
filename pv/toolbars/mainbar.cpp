@@ -114,6 +114,8 @@ MainBar::MainBar(Session &session, QWidget *parent,
 {
 	setObjectName(QString::fromUtf8("MainBar"));
 
+	setContextMenuPolicy(Qt::PreventContextMenu);
+
 	// Actions
 	action_new_view_->setText(tr("New &View"));
 	action_new_view_->setIcon(QIcon::fromTheme("window-new",
