@@ -55,6 +55,7 @@ endif()
 #= Dependencies
 #-------------------------------------------------------------------------------
 
+list(APPEND PKGDEPS glib-2.0>=2.28.0)
 list(APPEND PKGDEPS glibmm-2.4>=2.28.0)
 
 list(APPEND PKGDEPS libsigrokcxx>=0.4.0)
