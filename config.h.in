@@ -35,4 +35,6 @@
 /* Platform properties */
 #cmakedefine HAVE_UNALIGNED_LITTLE_ENDIAN_ACCESS
 
+#define PV_GLIBMM_VERSION "@PV_GLIBMM_VERSION@"
+
 #endif
