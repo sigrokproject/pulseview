@@ -318,6 +318,8 @@ void SignalBase::conversion_thread_proc(QObject* segment, uint64_t start_sample,
 				lsamples.push_back(convert_a2l_threshold(threshold, asamples[j]));
 			lsegment->append_payload(lsamples.data(), lsamples.size());
 			delete[] asamples;
+
+			samples_added(lsegment, start_sample, end_sample);
 		}
 
 		if (conversion_type_ == A2LConversionBySchmittTrigger) {
@@ -343,6 +345,8 @@ void SignalBase::conversion_thread_proc(QObject* segment, uint64_t start_sample,
 				lsamples.push_back(convert_a2l_schmitt_trigger(lo_thr, hi_thr, asamples[j], state));
 			lsegment->append_payload(lsamples.data(), lsamples.size());
 			delete[] asamples;
+
+			samples_added(lsegment, start_sample, end_sample);
 		}
 	}
 }
@@ -351,6 +355,8 @@ void SignalBase::on_samples_cleared()
 {
 	if (converted_data_)
 		converted_data_->clear();
+
+	samples_cleared();
 }
 
 void SignalBase::on_samples_added(QObject* segment, uint64_t start_sample,
@@ -370,6 +376,8 @@ void SignalBase::on_samples_added(QObject* segment, uint64_t start_sample,
 			&SignalBase::conversion_thread_proc, this,
 			segment, start_sample, end_sample);
 	}
+
+	samples_added(segment, start_sample, end_sample);
 }
 
 void SignalBase::on_capture_state_changed(int state)

@@ -176,6 +176,11 @@ Q_SIGNALS:
 
 	void conversion_type_changed(const ConversionType t);
 
+	void samples_cleared();
+
+	void samples_added(QObject* segment, uint64_t start_sample,
+		uint64_t end_sample);
+
 private Q_SLOTS:
 	void on_samples_cleared();
 
