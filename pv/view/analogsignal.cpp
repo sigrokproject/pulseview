@@ -608,13 +608,17 @@ void AnalogSignal::perform_autoranging(bool keep_divs, bool force_update)
 
  	// If there is still no positive div when we need it, add one
 	// (this can happen when pos_vdivs==neg_vdivs==0)
-	if ((max > 0) && (pos_vdivs_ == 0))
+	if ((max > 0) && (pos_vdivs_ == 0)) {
 		pos_vdivs_ = 1;
+		owner_->extents_changed(false, true);
+	}
 
 	// If there is still no negative div when we need it, add one
 	// (this can happen when pos_vdivs was 0 or 1 when trying to split)
-	if ((min < 0) && (neg_vdivs_ == 0))
+	if ((min < 0) && (neg_vdivs_ == 0)) {
 		neg_vdivs_ = 1;
+		owner_->extents_changed(false, true);
+	}
 
 	double min_value_per_div;
 	if ((pos_vdivs_ > 0) && (neg_vdivs_ >  0))
@@ -723,11 +727,8 @@ void AnalogSignal::on_samples_added()
 {
 	perform_autoranging(false, false);
 
-	if (owner_) {
-		// Call order is important, otherwise the lazy event handler won't work
-		owner_->extents_changed(false, true);
+	if (owner_)
 		owner_->row_item_appearance_changed(false, true);
-	}
 }
 
 void AnalogSignal::on_pos_vdivs_changed(int vdivs)
