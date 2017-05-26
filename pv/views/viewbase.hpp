@@ -23,15 +23,17 @@
 
 #include <cstdint>
 #include <memory>
-#include <set>
+#include <unordered_set>
 #include <vector>
 
+#include <QTimer>
 #include <QWidget>
 
 #include <pv/data/signalbase.hpp>
 #include <pv/util.hpp>
 
 using std::shared_ptr;
+using std::unordered_set;
 
 namespace pv {
 
@@ -53,6 +55,9 @@ class ViewBase : public QWidget
 {
 	Q_OBJECT
 
+private:
+	static const int MaxViewAutoUpdateRate;
+
 public:
 	explicit ViewBase(Session &session, bool is_main_view = false, QWidget *parent = nullptr);
 
@@ -60,6 +65,15 @@ public:
 	const Session& session() const;
 
 	virtual void clear_signals();
+
+	/**
+	 * Returns the signal bases contained in this view.
+	 */
+	unordered_set< shared_ptr<data::SignalBase> > signalbases() const;
+
+	virtual void clear_signalbases();
+
+	virtual void add_signalbase(const shared_ptr<data::SignalBase> signalbase);
 
 #ifdef ENABLE_DECODE
 	virtual void clear_decode_signals();
@@ -77,7 +91,10 @@ public Q_SLOTS:
 	virtual void trigger_event(util::Timestamp location);
 	virtual void signals_changed();
 	virtual void capture_state_updated(int state);
-	virtual void data_updated();
+	virtual void perform_delayed_view_update();
+
+private Q_SLOTS:
+	void on_data_updated();
 
 protected:
 	Session &session_;
@@ -85,6 +102,10 @@ protected:
 	const bool is_main_view_;
 
 	util::TimeUnit time_unit_;
+
+	unordered_set< shared_ptr<data::SignalBase> > signalbases_;
+
+	QTimer delayed_view_updater_;
 };
 
 } // namespace views

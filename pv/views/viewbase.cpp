@@ -32,6 +32,8 @@ using std::shared_ptr;
 namespace pv {
 namespace views {
 
+const int ViewBase::MaxViewAutoUpdateRate = 25; // No more than 25 Hz
+
 ViewBase::ViewBase(Session &session, bool is_main_view, QWidget *parent) :
 	session_(session),
 	is_main_view_(is_main_view)
@@ -42,10 +44,11 @@ ViewBase::ViewBase(Session &session, bool is_main_view, QWidget *parent) :
 		this, SLOT(signals_changed()));
 	connect(&session_, SIGNAL(capture_state_changed(int)),
 		this, SLOT(capture_state_updated(int)));
-	connect(&session_, SIGNAL(data_received()),
-		this, SLOT(data_updated()));
-	connect(&session_, SIGNAL(frame_ended()),
-		this, SLOT(data_updated()));
+
+	connect(&delayed_view_updater_, SIGNAL(timeout()),
+		this, SLOT(perform_delayed_view_update()));
+	delayed_view_updater_.setSingleShot(true);
+	delayed_view_updater_.setInterval(1000 / MaxViewAutoUpdateRate);
 }
 
 Session& ViewBase::session()
@@ -60,6 +63,33 @@ const Session& ViewBase::session() const
 
 void ViewBase::clear_signals()
 {
+}
+
+unordered_set< shared_ptr<data::SignalBase> > ViewBase::signalbases() const
+{
+	return signalbases_;
+}
+
+void ViewBase::clear_signalbases()
+{
+	for (shared_ptr<data::SignalBase> signalbase : signalbases_) {
+		disconnect(signalbase.get(), SIGNAL(samples_cleared()),
+			this, SLOT(on_data_updated()));
+		disconnect(signalbase.get(), SIGNAL(samples_added(QObject*, uint64_t, uint64_t)),
+			this, SLOT(on_data_updated()));
+	}
+
+	signalbases_.clear();
+}
+
+void ViewBase::add_signalbase(const shared_ptr<data::SignalBase> signalbase)
+{
+	signalbases_.insert(signalbase);
+
+	connect(signalbase.get(), SIGNAL(samples_cleared()),
+		this, SLOT(on_data_updated()));
+	connect(signalbase.get(), SIGNAL(samples_added(QObject*, uint64_t, uint64_t)),
+		this, SLOT(on_data_updated()));
 }
 
 #ifdef ENABLE_DECODE
@@ -102,8 +132,14 @@ void ViewBase::capture_state_updated(int state)
 	(void)state;
 }
 
-void ViewBase::data_updated()
+void ViewBase::perform_delayed_view_update()
 {
+}
+
+void ViewBase::on_data_updated()
+{
+	if (!delayed_view_updater_.isActive())
+		delayed_view_updater_.start();
 }
 
 }  // namespace views

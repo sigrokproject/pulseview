@@ -726,9 +726,6 @@ void AnalogSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
 void AnalogSignal::on_samples_added()
 {
 	perform_autoranging(false, false);
-
-	if (owner_)
-		owner_->row_item_appearance_changed(false, true);
 }
 
 void AnalogSignal::on_pos_vdivs_changed(int vdivs)

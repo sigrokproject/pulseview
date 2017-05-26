@@ -29,7 +29,6 @@
 
 #include <QAbstractScrollArea>
 #include <QSizeF>
-#include <QTimer>
 
 #include <pv/data/signaldata.hpp>
 #include <pv/util.hpp>
@@ -53,6 +52,10 @@ class ChannelGroup;
 namespace pv {
 
 class Session;
+
+namespace data {
+class Logic;
+}
 
 namespace views {
 
@@ -92,7 +95,6 @@ private:
 	static const pv::util::Timestamp MinScale;
 
 	static const int MaxScrollValue;
-	static const int MaxViewAutoUpdateRate;
 
 	static const int ScaleUnits[3];
 
@@ -109,7 +111,7 @@ public:
 
 	virtual void clear_signals();
 
-	virtual void add_signal(const shared_ptr<Signal> signal);
+	void add_signal(const shared_ptr<Signal> signal);
 
 #ifdef ENABLE_DECODE
 	virtual void clear_decode_signals();
@@ -352,9 +354,8 @@ private Q_SLOTS:
 
 	void signals_changed();
 	void capture_state_updated(int state);
-	void data_updated();
 
-	void perform_delayed_view_update();
+	virtual void perform_delayed_view_update();
 
 	void process_sticky_events();
 
@@ -419,7 +420,6 @@ private:
 	bool sticky_scrolling_;
 	bool coloured_bg_;
 	bool always_zoom_to_fit_;
-	QTimer delayed_view_updater_;
 
 	pv::util::Timestamp tick_period_;
 	pv::util::SIPrefix tick_prefix_;

@@ -38,6 +38,10 @@ class QFormLayout;
 
 namespace pv {
 
+namespace data {
+class SignalBase;
+}
+
 namespace widgets {
 class Popup;
 }
@@ -60,6 +64,11 @@ protected:
 	Trace(shared_ptr<data::SignalBase> channel);
 
 public:
+	/**
+	 * Returns the underlying SignalBase instance.
+	 */
+	shared_ptr<data::SignalBase> base() const;
+
 	/**
 	 * Sets the name of the signal.
 	 */

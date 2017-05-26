@@ -96,7 +96,6 @@ const Timestamp View::MaxScale("1e9");
 const Timestamp View::MinScale("1e-12");
 
 const int View::MaxScrollValue = INT_MAX / 2;
-const int View::MaxViewAutoUpdateRate = 25; // No more than 25 Hz with sticky scrolling
 
 const int View::ScaleUnits[3] = {1, 2, 5};
 
@@ -178,11 +177,6 @@ View::View(Session &session, bool is_main_view, QWidget *parent) :
 		this, SLOT(process_sticky_events()));
 	lazy_event_handler_.setSingleShot(true);
 
-	connect(&delayed_view_updater_, SIGNAL(timeout()),
-		this, SLOT(perform_delayed_view_update()));
-	delayed_view_updater_.setSingleShot(true);
-	delayed_view_updater_.setInterval(1000 / MaxViewAutoUpdateRate);
-
 	/* To let the scroll area fill up the parent QWidget (this), we need a layout */
 	QHBoxLayout *layout = new QHBoxLayout(this);
 	setLayout(layout);
@@ -224,11 +218,13 @@ unordered_set< shared_ptr<Signal> > View::signals() const
 
 void View::clear_signals()
 {
+	ViewBase::clear_signalbases();
 	signals_.clear();
 }
 
 void View::add_signal(const shared_ptr<Signal> signal)
 {
+	ViewBase::add_signalbase(signal->base());
 	signals_.insert(signal);
 }
 
@@ -992,6 +988,7 @@ void View::extents_changed(bool horz, bool vert)
 	sticky_events_ |=
 		(horz ? TraceTreeItemHExtentsChanged : 0) |
 		(vert ? TraceTreeItemVExtentsChanged : 0);
+
 	lazy_event_handler_.start();
 }
 
@@ -1232,19 +1229,6 @@ void View::capture_state_updated(int state)
 			always_zoom_to_fit_ = false;
 			always_zoom_to_fit_changed(always_zoom_to_fit_);
 		}
-	}
-}
-
-void View::data_updated()
-{
-	if (always_zoom_to_fit_ || sticky_scrolling_) {
-		if (!delayed_view_updater_.isActive())
-			delayed_view_updater_.start();
-	} else {
-		determine_time_unit();
-		update_scroll();
-		ruler_->update();
-		viewport_->update();
 	}
 }
 

@@ -59,6 +59,11 @@ Trace::Trace(shared_ptr<data::SignalBase> channel) :
 		this, SLOT(on_colour_changed(const QColor&)));
 }
 
+shared_ptr<data::SignalBase> Trace::base() const
+{
+	return base_;
+}
+
 void Trace::paint_label(QPainter &p, const QRect &rect, bool hover)
 {
 	const int y = get_visual_y();
