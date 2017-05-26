@@ -251,6 +251,7 @@ QWidget *Settings::get_about_page(QWidget *parent) const
 #endif
 
 	/* Set up the supported field */
+	s.append("<tr><td colspan=\"2\"></td></tr>");
 	s.append("<tr><td colspan=\"2\"><b>" +
 		tr("Supported hardware drivers:") + "</b></td></tr>");
 	for (auto entry : context->drivers()) {
@@ -259,6 +260,7 @@ QWidget *Settings::get_about_page(QWidget *parent) const
 				QString::fromUtf8(entry.second->long_name().c_str())));
 	}
 
+	s.append("<tr><td colspan=\"2\"></td></tr>");
 	s.append("<tr><td colspan=\"2\"><b>" +
 		tr("Supported input formats:") + "</b></td></tr>");
 	for (auto entry : context->input_formats()) {
@@ -267,6 +269,7 @@ QWidget *Settings::get_about_page(QWidget *parent) const
 				QString::fromUtf8(entry.second->description().c_str())));
 	}
 
+	s.append("<tr><td colspan=\"2\"></td></tr>");
 	s.append("<tr><td colspan=\"2\"><b>" +
 		tr("Supported output formats:") + "</b></td></tr>");
 	for (auto entry : context->output_formats()) {
@@ -276,6 +279,7 @@ QWidget *Settings::get_about_page(QWidget *parent) const
 	}
 
 #ifdef ENABLE_DECODE
+	s.append("<tr><td colspan=\"2\"></td></tr>");
 	s.append("<tr><td colspan=\"2\"><b>" +
 		tr("Supported protocol decoders:") + "</b></td></tr>");
 	GSList *sl = g_slist_copy((GSList *)srd_decoder_list());
