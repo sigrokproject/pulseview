@@ -17,7 +17,10 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "config.h"
+
 #include <glib.h>
+#include <boost/version.hpp>
 
 #include <QApplication>
 #include <QCheckBox>
@@ -190,10 +193,18 @@ QWidget *Settings::get_about_page(QWidget *parent) const
 	/* Library info */
 	s.append("<tr><td colspan=\"2\"><b>" +
 		tr("Libraries and features:") + "</b></td></tr>");
+
 	s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
 		.arg(QString("Qt"), qVersion()));
-	s.append(QString("<tr><td><i>%1</i></td><td>%2 (lib version %3)</td></tr>")
-		.arg(QString("libsigrok"), sr_package_version_string_get(), sr_lib_version_string_get()));
+	s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
+		.arg(QString("glibmm"), PV_GLIBMM_VERSION));
+	s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
+		.arg(QString("Boost"), BOOST_LIB_VERSION));
+
+	s.append(QString("<tr><td><i>%1</i></td><td>%2/%3 (rt: %4/%5)</td></tr>")
+		.arg(QString("libsigrok"), SR_PACKAGE_VERSION_STRING,
+		SR_LIB_VERSION_STRING, sr_package_version_string_get(),
+		sr_lib_version_string_get()));
 
 	GSList *l_orig = sr_buildinfo_libs_get();
 	for (GSList *l = l_orig; l; l = l->next) {
@@ -217,8 +228,26 @@ QWidget *Settings::get_about_page(QWidget *parent) const
 	g_free(scpi_backends);
 
 #ifdef ENABLE_DECODE
-	s.append(QString("<tr><td><i>%1</i></td><td>%2 (lib version %3)</td></tr>")
-		.arg(QString("libsigrokdecode"), srd_package_version_string_get(), srd_lib_version_string_get()));
+	s.append(QString("<tr><td><i>%1</i></td><td>%2/%3 (rt: %4/%5)</td></tr>")
+		.arg(QString("libsigrokdecode"), SRD_PACKAGE_VERSION_STRING,
+		SRD_LIB_VERSION_STRING, srd_package_version_string_get(),
+		srd_lib_version_string_get()));
+
+	l_orig = srd_buildinfo_libs_get();
+	for (GSList *l = l_orig; l; l = l->next) {
+		GSList *m = (GSList *)l->data;
+		const char *lib = (const char *)m->data;
+		const char *version = (const char *)m->next->data;
+		s.append(QString("<tr><td><i>- %1</i></td><td>%2</td></tr>")
+			.arg(QString(lib), QString(version)));
+		g_slist_free_full(m, g_free);
+	}
+	g_slist_free(l_orig);
+
+	host = srd_buildinfo_host_get();
+	s.append(QString("<tr><td><i>- Host</i></td><td>%1</td></tr>")
+		.arg(QString(host)));
+	g_free(host);
 #endif
 
 	/* Set up the supported field */
