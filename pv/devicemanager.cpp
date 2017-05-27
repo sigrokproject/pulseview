@@ -22,11 +22,16 @@
 
 #include <cassert>
 #include <functional>
+#include <memory>
 #include <sstream>
 #include <stdexcept>
 #include <string>
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
+
+#include <QApplication>
+#include <QObject>
+#include <QProgressDialog>
 
 #include <boost/filesystem.hpp>
 
@@ -39,6 +44,7 @@ using std::placeholders::_1;
 using std::placeholders::_2;
 using std::shared_ptr;
 using std::string;
+using std::unique_ptr;
 
 using Glib::VariantBase;
 
@@ -51,8 +57,24 @@ namespace pv {
 DeviceManager::DeviceManager(shared_ptr<Context> context) :
 	context_(context)
 {
-	for (auto entry : context->drivers())
+	unique_ptr<QProgressDialog> progress(new QProgressDialog("",
+		QObject::tr("Cancel"), 0, context->drivers().size()));
+	progress->setWindowModality(Qt::WindowModal);
+	progress->setMinimumDuration(1);  // To show the dialog immediately
+
+	int entry_num = 1;
+
+	for (auto entry : context->drivers()) {
+		progress->setLabelText(QObject::tr("Scanning for %1...")
+			.arg(QString::fromStdString(entry.first)));
+
 		driver_scan(entry.second, map<const ConfigKey *, VariantBase>());
+
+		progress->setValue(entry_num++);
+		QApplication::processEvents();
+		if (progress->wasCanceled())
+			break;
+	}
 }
 
 const shared_ptr<sigrok::Context>& DeviceManager::context() const
