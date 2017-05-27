@@ -20,6 +20,7 @@
 #include <QFileInfo>
 
 #include <cassert>
+#include <memory>
 #include <mutex>
 #include <stdexcept>
 
@@ -71,6 +72,7 @@ using std::recursive_mutex;
 using std::runtime_error;
 using std::shared_ptr;
 using std::string;
+using std::unique_ptr;
 using std::unordered_set;
 using std::vector;
 
@@ -975,12 +977,15 @@ void Session::feed_in_analog(shared_ptr<Analog> analog)
 	const vector<shared_ptr<Channel>> channels = analog->channels();
 	const unsigned int channel_count = channels.size();
 	const size_t sample_count = analog->num_samples() / channel_count;
-	const float *data = static_cast<const float *>(analog->data_pointer());
 	bool sweep_beginning = false;
+
+	unique_ptr<float> data(new float[analog->num_samples()]);
+	analog->get_data_as_float(data.get());
 
 	if (signalbases_.empty())
 		update_signals();
 
+	float *channel_data = data.get();
 	for (auto channel : channels) {
 		shared_ptr<data::AnalogSegment> segment;
 
@@ -1014,7 +1019,7 @@ void Session::feed_in_analog(shared_ptr<Analog> analog)
 		assert(segment);
 
 		// Append the samples in the segment
-		segment->append_interleaved_samples(data++, sample_count,
+		segment->append_interleaved_samples(channel_data++, sample_count,
 			channel_count);
 	}
 
