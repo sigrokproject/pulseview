@@ -24,6 +24,8 @@
 #include <memory>
 #include <vector>
 
+#include <QObject>
+
 using std::shared_ptr;
 using std::vector;
 
@@ -32,8 +34,10 @@ namespace data {
 
 class Segment;
 
-class SignalData
+class SignalData : public QObject
 {
+	Q_OBJECT
+
 public:
 	SignalData() = default;
 	virtual ~SignalData() = default;

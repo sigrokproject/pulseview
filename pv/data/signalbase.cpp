@@ -125,23 +125,19 @@ QColor SignalBase::bgcolour() const
 
 void SignalBase::set_data(shared_ptr<pv::data::SignalData> data)
 {
-	if (data_ && channel_type_ == AnalogChannel) {
-		shared_ptr<Analog> analog_data = dynamic_pointer_cast<Analog>(data_);
-
-		disconnect(analog_data.get(), SIGNAL(samples_cleared()),
+	if (data_) {
+		disconnect(data.get(), SIGNAL(samples_cleared()),
 			this, SLOT(on_samples_cleared()));
-		disconnect(analog_data.get(), SIGNAL(samples_added(QObject*, uint64_t, uint64_t)),
+		disconnect(data.get(), SIGNAL(samples_added(QObject*, uint64_t, uint64_t)),
 			this, SLOT(on_samples_added(QObject*, uint64_t, uint64_t)));
 	}
 
 	data_ = data;
 
-	if (data_ && channel_type_ == AnalogChannel) {
-		shared_ptr<Analog> analog_data = dynamic_pointer_cast<Analog>(data_);
-
-		connect(analog_data.get(), SIGNAL(samples_cleared()),
+	if (data_) {
+		connect(data.get(), SIGNAL(samples_cleared()),
 			this, SLOT(on_samples_cleared()));
-		connect(analog_data.get(), SIGNAL(samples_added(QObject*, uint64_t, uint64_t)),
+		connect(data.get(), SIGNAL(samples_added(QObject*, uint64_t, uint64_t)),
 			this, SLOT(on_samples_added(QObject*, uint64_t, uint64_t)));
 	}
 }
@@ -362,10 +358,6 @@ void SignalBase::on_samples_cleared()
 void SignalBase::on_samples_added(QObject* segment, uint64_t start_sample,
 	uint64_t end_sample)
 {
-	(void)segment;
-	(void)start_sample;
-	(void)end_sample;
-
 	if (conversion_type_ != NoConversion) {
 
 		// Wait for the currently ongoing conversion to finish

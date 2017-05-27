@@ -36,7 +36,7 @@ namespace data {
 
 class AnalogSegment;
 
-class Analog : public QObject, public SignalData
+class Analog : public SignalData
 {
 	Q_OBJECT
 

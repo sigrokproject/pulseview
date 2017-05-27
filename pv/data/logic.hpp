@@ -35,7 +35,7 @@ namespace data {
 
 class LogicSegment;
 
-class Logic : public QObject, public SignalData
+class Logic : public SignalData
 {
 	Q_OBJECT
 
