@@ -700,7 +700,7 @@ void AnalogSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
 	cur_idx = conversion_cb_->findData(QVariant(conversion_type_));
 	conversion_cb_->setCurrentIndex(cur_idx);
 
-	layout->addRow(tr("Conversion"), conversion_cb_);
+//	layout->addRow(tr("Conversion"), conversion_cb_);
 
 	connect(conversion_cb_, SIGNAL(currentIndexChanged(int)),
 		this, SLOT(on_conversion_changed(int)));
@@ -715,7 +715,7 @@ void AnalogSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
 	cur_idx = display_type_cb_->findData(QVariant(display_type_));
 	display_type_cb_->setCurrentIndex(cur_idx);
 
-	layout->addRow(tr("Traces to show:"), display_type_cb_);
+//	layout->addRow(tr("Traces to show:"), display_type_cb_);
 
 	connect(display_type_cb_, SIGNAL(currentIndexChanged(int)),
 		this, SLOT(on_display_type_changed(int)));
