@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop">
+  <id>org.sigrok.PulseView.desktop</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0+</project_license>
+  <name>PulseView</name>
+  <summary>Logic analyzer, oscilloscope and MSO GUI</summary>
+  <description>
+    <p>PulseView is a Qt based logic analyzer, oscilloscope and MSO GUI for sigrok.</p>
+    <p>Features:</p>
+    <ul>
+      <li>Fast O(log N) signal rendering at all zoom levels</li>
+      <li>Protocol decoder support</li>
+      <li>Trace groups support</li>
+    </ul>
+  </description>
+  <url type="homepage">http://sigrok.org/wiki/PulseView</url>
+  <url type="bugtracker">http://sigrok.org/bugzilla/enter_bug.cgi?format=guided&amp;product=PulseView</url>
+  <url type="faq">http://sigrok.org/wiki/FAQ</url>
+  <screenshots>
+    <screenshot type="default">
+      <image>http://sigrok.org/wimg/e/ee/PulseView_I2C_DS1307_Decode.png</image>
+    </screenshot>
+  </screenshots>
+  <project_group>sigrok</project_group>
+  <provides>
+    <binary>pulseview</binary>
+  </provides>
+</component>
