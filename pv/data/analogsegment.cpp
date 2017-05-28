@@ -23,6 +23,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
+#include <memory>
 
 #include <algorithm>
 
@@ -37,6 +38,7 @@ using std::max_element;
 using std::min;
 using std::min_element;
 using std::pair;
+using std::unique_ptr;
 
 namespace pv {
 namespace data {
@@ -72,10 +74,16 @@ void AnalogSegment::append_interleaved_samples(const float *data,
 
 	uint64_t prev_sample_count = sample_count_;
 
+	// Deinterleave the samples and add them
+	unique_ptr<float> deint_data(new float[sample_count]);
+	float *deint_data_ptr = deint_data.get();
 	for (uint32_t i = 0; i < sample_count; i++) {
-		append_single_sample((void*)data);
+		*deint_data_ptr = (float)(*data);
+		deint_data_ptr++;
 		data += stride;
 	}
+
+	append_samples(deint_data.get(), sample_count);
 
 	// Generate the first mip-map from the data
 	append_payload_to_envelope_levels();
