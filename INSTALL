@@ -22,8 +22,8 @@ Requirements
     - libboost-filesystem
     - libboost-serialization
     - libboost-test (optional, only needed to run the unit tests)
- - libsigrokcxx >= 0.4.0 (libsigrok C++ bindings)
- - libsigrokdecode >= 0.4.0
+ - libsigrokcxx >= 0.5.0 (libsigrok C++ bindings)
+ - libsigrokdecode >= 0.5.0
  - libsigrokandroidutils >= 0.1.0 (optional, only needed on Android)
 
 
