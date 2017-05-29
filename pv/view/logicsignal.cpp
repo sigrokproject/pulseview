@@ -188,6 +188,7 @@ void LogicSignal::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 	const pv::util::Timestamp& start_time = segment->start_time();
 	const int64_t last_sample = segment->get_sample_count() - 1;
 	const double samples_per_pixel = samplerate * pp.scale();
+	const double pixels_per_sample = 1 / samples_per_pixel;
 	const pv::util::Timestamp start = samplerate * (pp.offset() - start_time);
 	const pv::util::Timestamp end = start + samples_per_pixel * pp.width();
 
@@ -200,6 +201,22 @@ void LogicSignal::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 		samples_per_pixel / Oversampling, base_->index());
 	assert(edges.size() >= 2);
 
+	// Check whether we need to paint the sampling points
+	GlobalSettings settings;
+	const bool show_sampling_points =
+		settings.value(GlobalSettings::Key_View_ShowSamplingPoints).toBool() &&
+		(samples_per_pixel < 0.25);
+
+	vector<QRectF> sampling_points;
+	float sampling_point_x = 0.0f;
+	int64_t sampling_point_sample = start_sample;
+	const int w = 2;
+
+	if (show_sampling_points) {
+		sampling_points.reserve(end_sample - start_sample + 1);
+		sampling_point_x = (edges.cbegin()->first / samples_per_pixel - pixels_offset) + pp.left();
+	}
+
 	// Paint the edges
 	const unsigned int edge_count = edges.size() - 2;
 	QLineF *const edge_lines = new QLineF[edge_count];
@@ -209,7 +226,27 @@ void LogicSignal::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 		const float x = ((*i).first / samples_per_pixel -
 			pixels_offset) + pp.left();
 		*line++ = QLineF(x, high_offset, x, low_offset);
+
+		if (show_sampling_points)
+			while (sampling_point_sample < (*i).first) {
+				const float y = (*i).second ? low_offset : high_offset;
+				sampling_points.emplace_back(
+					QRectF(sampling_point_x - (w / 2), y - (w / 2), w, w));
+				sampling_point_sample++;
+				sampling_point_x += pixels_per_sample;
+			};
 	}
+
+	// Calculate the sample points from the last edge to the end of the trace
+	if (show_sampling_points)
+		while ((uint64_t)sampling_point_sample <= end_sample) {
+			// Signal changed after the last edge, so the level is inverted
+			const float y = (edges.cend() - 1)->second ? high_offset : low_offset;
+			sampling_points.emplace_back(
+				QRectF(sampling_point_x - (w / 2), y - (w / 2), w, w));
+			sampling_point_sample++;
+			sampling_point_x += pixels_per_sample;
+		};
 
 	p.setPen(EdgeColour);
 	p.drawLines(edge_lines, edge_count);
@@ -228,29 +265,11 @@ void LogicSignal::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 
 	delete[] cap_lines;
 
-	// Return if we don't need to paint the sampling points
-	GlobalSettings settings;
-	const bool show_sampling_points =
-		settings.value(GlobalSettings::Key_View_ShowSamplingPoints).toBool();
-
-	if (!show_sampling_points || (samples_per_pixel >= 0.25))
-		return;
-
 	// Paint the sampling points
-	const uint64_t sampling_points_count = end_sample - start_sample + 1;
-	QRectF *const sampling_points = new QRectF[sampling_points_count];
-	QRectF *sampling_point = sampling_points;
-
-	const int w = 1;
-	const float y_middle = high_offset - ((high_offset - low_offset) / 2);
-	for (uint64_t i = start_sample; i < end_sample + 1; ++i) {
-		const float x = (i / samples_per_pixel - pixels_offset) + pp.left();
-		*sampling_point++ = QRectF(x - (w / 2), y_middle - (w / 2), w, w);
+	if (show_sampling_points) {
+		p.setPen(SamplingPointColour);
+		p.drawRects(sampling_points.data(), sampling_points.size());
 	}
-
-	p.setPen(SamplingPointColour);
-	p.drawRects(sampling_points, sampling_points_count);
-	delete[] sampling_points;
 }
 
 void LogicSignal::paint_fore(QPainter &p, ViewItemPaintParams &pp)
