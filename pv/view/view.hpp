@@ -444,8 +444,6 @@ private:
 
 	// A nonzero value indicates the v offset to restore. See View::resizeEvent()
 	int saved_v_offset_;
-
-	bool size_finalized_;
 };
 
 } // namespace TraceView

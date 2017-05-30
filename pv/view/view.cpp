@@ -149,8 +149,7 @@ View::View(Session &session, bool is_main_view, QWidget *parent) :
 	trigger_markers_(),
 	hover_point_(-1, -1),
 	scroll_needs_defaults_(false),
-	saved_v_offset_(0),
-	size_finalized_(false)
+	saved_v_offset_(0)
 {
 	GlobalSettings settings;
 	coloured_bg_ = settings.value(GlobalSettings::Key_View_ColouredBG).toBool();
@@ -319,7 +318,7 @@ void View::restore_settings(QSettings &settings)
 		saved_v_offset_ = settings.value("v_offset").toInt();
 		set_v_offset(saved_v_offset_);
 		scroll_needs_defaults_ = false;
-		// Note: see resizeEvent() for additional information
+		// Note: see eventFilter() for additional information
 	}
 }
 
@@ -816,11 +815,6 @@ void View::set_scroll_default()
 	else
 		// Put the first trace at the top, letting the bottom ones overflow
 		set_v_offset(extents.first);
-
-	// If we're not sure whether setting the defaults worked as
-	// the window wasn't set up entirely yet, we want to be called
-	// again later to make sure
-	scroll_needs_defaults_ = !size_finalized_;
 }
 
 void View::update_layout()
@@ -936,6 +930,26 @@ bool View::eventFilter(QObject *object, QEvent *event)
 	} else if (type == QEvent::Leave) {
 		hover_point_ = QPoint(-1, -1);
 		hover_point_changed();
+	} else if (type == QEvent::Show) {
+
+		// This is somewhat of a hack, unfortunately. We cannot use
+		// set_v_offset() from within restore_settings() as the view
+		// at that point is neither visible nor properly sized.
+		// This is the least intrusive workaround I could come up
+		// with: set the vertical offset (or scroll defaults) when
+		// the view is shown, which happens after all widgets were
+		// resized to their final sizes.
+		update_layout();
+
+		if (scroll_needs_defaults_) {
+			set_scroll_default();
+			scroll_needs_defaults_ = false;
+		}
+
+		if (saved_v_offset_) {
+			set_v_offset(saved_v_offset_);
+			saved_v_offset_ = 0;
+		}
 	}
 
 	return QObject::eventFilter(object, event);
@@ -944,27 +958,6 @@ bool View::eventFilter(QObject *object, QEvent *event)
 void View::resizeEvent(QResizeEvent*)
 {
 	update_layout();
-
-	// This is somewhat of a hack, unfortunately. We cannot use
-	// set_v_offset() from within restore_settings() as the view
-	// at that point is neither visible nor properly sized.
-	// This is the least intrusive workaround I could come up
-	// with: set the vertical offset (or scroll defaults) when
-	// the view is visible and resized to its final size.
-	// Resize events that are sent when the view is not visible
-	// must be ignored as they have wrong sizes, potentially
-	// preventing the v offset from being set successfully.
-
-	if (isVisible())
-		size_finalized_ = true;
-
-	if (size_finalized_ && saved_v_offset_) {
-		set_v_offset(saved_v_offset_);
-		saved_v_offset_ = 0;
-	}
-
-	if (size_finalized_ && scroll_needs_defaults_)
-		set_scroll_default();
 }
 
 void View::row_item_appearance_changed(bool label, bool content)
