@@ -315,6 +315,8 @@ private:
 	 */
 	void calculate_tick_spacing();
 
+	void adjust_top_margin();
+
 	void update_scroll();
 
 	void reset_scroll();

@@ -746,6 +746,30 @@ void View::calculate_tick_spacing()
 	set_tick_precision(tick_precision);
 }
 
+void View::adjust_top_margin()
+{
+	assert(viewport_);
+
+	const QSize areaSize = viewport_->size();
+
+	const pair<int, int> extents = v_extents();
+	const int top_margin = owner_visual_v_offset() + extents.first;
+	const int trace_bottom = owner_visual_v_offset() + extents.first + extents.second;
+
+	// Do we have empty space at the top while the last trace goes out of screen?
+	if ((top_margin > 0) && (trace_bottom > areaSize.height())) {
+		const int trace_height = extents.second - extents.first;
+
+		// Center everything vertically if there is enough space
+		if (areaSize.height() >= trace_height)
+			set_v_offset(extents.first -
+				((areaSize.height() - trace_height) / 2));
+		else
+			// Remove the top margin to make as many traces fit on screen as possible
+			set_v_offset(extents.first);
+	}
+}
+
 void View::update_scroll()
 {
 	assert(viewport_);
@@ -955,8 +979,12 @@ bool View::eventFilter(QObject *object, QEvent *event)
 	return QObject::eventFilter(object, event);
 }
 
-void View::resizeEvent(QResizeEvent*)
+void View::resizeEvent(QResizeEvent* event)
 {
+	// Only adjust the top margin if we shrunk vertically
+	if (event->size().height() < event->oldSize().height())
+		adjust_top_margin();
+
 	update_layout();
 }
 
