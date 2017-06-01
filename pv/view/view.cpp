@@ -38,9 +38,9 @@
 #include <QApplication>
 #include <QEvent>
 #include <QFontMetrics>
-#include <QHBoxLayout>
 #include <QMouseEvent>
 #include <QScrollBar>
+#include <QVBoxLayout>
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
 
@@ -100,17 +100,12 @@ const int View::MaxScrollValue = INT_MAX / 2;
 const int View::ScaleUnits[3] = {1, 2, 5};
 
 
-CustomAbstractScrollArea::CustomAbstractScrollArea(QWidget *parent) :
+CustomScrollArea::CustomScrollArea(QWidget *parent) :
 	QAbstractScrollArea(parent)
 {
 }
 
-void CustomAbstractScrollArea::setViewportMargins(int left, int top, int right, int bottom)
-{
-	QAbstractScrollArea::setViewportMargins(left, top, right, bottom);
-}
-
-bool CustomAbstractScrollArea::viewportEvent(QEvent *event)
+bool CustomScrollArea::viewportEvent(QEvent *event)
 {
 	switch (event->type()) {
 	case QEvent::Paint:
@@ -130,10 +125,7 @@ bool CustomAbstractScrollArea::viewportEvent(QEvent *event)
 
 View::View(Session &session, bool is_main_view, QWidget *parent) :
 	ViewBase(session, is_main_view, parent),
-	viewport_(new Viewport(*this)),
-	ruler_(new Ruler(*this)),
-	header_(new Header(*this)),
-	scrollarea_(this),
+	splitter_(new QSplitter()),
 	scale_(1e-3),
 	offset_(0),
 	updating_scroll_(false),
@@ -151,12 +143,55 @@ View::View(Session &session, bool is_main_view, QWidget *parent) :
 	scroll_needs_defaults_(false),
 	saved_v_offset_(0)
 {
+	QVBoxLayout *root_layout = new QVBoxLayout(this);
+	root_layout->setContentsMargins(0, 0, 0, 0);
+	root_layout->addWidget(splitter_);
+
+	viewport_ = new Viewport(*this);
+	scrollarea_ = new CustomScrollArea(splitter_);
+	scrollarea_->setViewport(viewport_);
+	scrollarea_->setFrameShape(QFrame::NoFrame);
+
+	ruler_ = new Ruler(*this);
+
+	header_ = new Header(*this);
+	header_->setMinimumWidth(15);  // So that the arrow tips show at least
+
+	// We put the header into a simple layout so that we can add the top margin,
+	// allowing us to make it line up with the bottom of the ruler
+	QWidget *header_container = new QWidget();
+	header_container->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+	QVBoxLayout *header_layout = new QVBoxLayout(header_container);
+	header_layout->setContentsMargins(0, ruler_->sizeHint().height(), 0, 0);
+	header_layout->addWidget(header_);
+
+	// To let the ruler and scrollarea be on the same split pane, we need a layout
+	QWidget *trace_container = new QWidget();
+	trace_container->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+	QVBoxLayout *trace_layout = new QVBoxLayout(trace_container);
+	trace_layout->setSpacing(0);  // We don't want space between the ruler and scrollarea
+	trace_layout->setContentsMargins(0, 0, 0, 0);
+	trace_layout->addWidget(ruler_);
+	trace_layout->addWidget(scrollarea_);
+
+	splitter_->addWidget(header_container);
+	splitter_->addWidget(trace_container);
+	splitter_->setHandleWidth(1);  // Don't show a visible rubber band
+	splitter_->setCollapsible(0, false);  // Prevent the header from collapsing
+	splitter_->setCollapsible(1, false);  // Prevent the traces from collapsing
+	splitter_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+	viewport_->installEventFilter(this);
+	ruler_->installEventFilter(this);
+	header_->installEventFilter(this);
+
+	// Set up settings and event handlers
 	GlobalSettings settings;
 	coloured_bg_ = settings.value(GlobalSettings::Key_View_ColouredBG).toBool();
 
-	connect(scrollarea_.horizontalScrollBar(), SIGNAL(valueChanged(int)),
+	connect(scrollarea_->horizontalScrollBar(), SIGNAL(valueChanged(int)),
 		this, SLOT(h_scroll_value_changed(int)));
-	connect(scrollarea_.verticalScrollBar(), SIGNAL(valueChanged(int)),
+	connect(scrollarea_->verticalScrollBar(), SIGNAL(valueChanged(int)),
 		this, SLOT(v_scroll_value_changed()));
 
 	connect(header_, SIGNAL(selection_changed()),
@@ -175,18 +210,6 @@ View::View(Session &session, bool is_main_view, QWidget *parent) :
 	connect(&lazy_event_handler_, SIGNAL(timeout()),
 		this, SLOT(process_sticky_events()));
 	lazy_event_handler_.setSingleShot(true);
-
-	/* To let the scroll area fill up the parent QWidget (this), we need a layout */
-	QHBoxLayout *layout = new QHBoxLayout(this);
-	setLayout(layout);
-	layout->setContentsMargins(0, 0, 0, 0);
-	layout->addWidget(&scrollarea_);
-
-	scrollarea_.setViewport(viewport_);
-
-	viewport_->installEventFilter(this);
-	ruler_->installEventFilter(this);
-	header_->installEventFilter(this);
 
 	// Trigger the initial event manually. The default device has signals
 	// which were created before this object came into being
@@ -275,7 +298,7 @@ void View::save_settings(QSettings &settings) const
 {
 	settings.setValue("scale", scale_);
 	settings.setValue("v_offset",
-		scrollarea_.verticalScrollBar()->sliderPosition());
+		scrollarea_->verticalScrollBar()->sliderPosition());
 
 	stringstream ss;
 	boost::archive::text_oarchive oa(ss);
@@ -364,12 +387,12 @@ void View::set_offset(const pv::util::Timestamp& offset)
 
 int View::owner_visual_v_offset() const
 {
-	return -scrollarea_.verticalScrollBar()->sliderPosition();
+	return -scrollarea_->verticalScrollBar()->sliderPosition();
 }
 
 void View::set_v_offset(int offset)
 {
-	scrollarea_.verticalScrollBar()->setSliderPosition(offset);
+	scrollarea_->verticalScrollBar()->setSliderPosition(offset);
 	header_->update();
 	viewport_->update();
 }
@@ -773,8 +796,8 @@ void View::adjust_top_margin()
 void View::update_scroll()
 {
 	assert(viewport_);
-	QScrollBar *hscrollbar = scrollarea_.horizontalScrollBar();
-	QScrollBar *vscrollbar = scrollarea_.verticalScrollBar();
+	QScrollBar *hscrollbar = scrollarea_->horizontalScrollBar();
+	QScrollBar *vscrollbar = scrollarea_->verticalScrollBar();
 
 	const QSize areaSize = viewport_->size();
 
@@ -819,7 +842,7 @@ void View::update_scroll()
 
 void View::reset_scroll()
 {
-	scrollarea_.verticalScrollBar()->setRange(0, 0);
+	scrollarea_->verticalScrollBar()->setRange(0, 0);
 }
 
 void View::set_scroll_default()
@@ -841,15 +864,29 @@ void View::set_scroll_default()
 		set_v_offset(extents.first);
 }
 
+bool View::header_fully_visible() const
+{
+	const int header_pane_width = splitter_->sizes().front();
+	const int header_width = header_->extended_size_hint().width();
+
+	return (header_pane_width >= header_width);
+}
+
 void View::update_layout()
 {
-	scrollarea_.setViewportMargins(
-		header_->sizeHint().width() - Header::BaselineOffset,
-		ruler_->sizeHint().height(), 0, 0);
-	ruler_->setGeometry(viewport_->x(), 0,
-		viewport_->width(), ruler_->extended_size_hint().height());
-	header_->setGeometry(0, viewport_->y(),
-		header_->extended_size_hint().width(), viewport_->height());
+	// Only adjust pane sizes if the header hasn't been partially hidden by the user
+	if (header_fully_visible()) {
+		int splitter_area_width = 0;
+		for (int w : splitter_->sizes())
+			splitter_area_width += w;
+
+		// Make sure the header has enough horizontal space to show all labels fully
+		QList<int> pane_sizes;
+		pane_sizes.push_back(header_->extended_size_hint().width());
+		pane_sizes.push_back(splitter_area_width - header_->extended_size_hint().width());
+		splitter_->setSizes(pane_sizes);
+	}
+
 	update_scroll();
 }
 
@@ -1025,7 +1062,7 @@ void View::h_scroll_value_changed(int value)
 		sticky_scrolling_changed(false);
 	}
 
-	const int range = scrollarea_.horizontalScrollBar()->maximum();
+	const int range = scrollarea_->horizontalScrollBar()->maximum();
 	if (range < MaxScrollValue)
 		set_offset(scale_ * value);
 	else {
@@ -1055,8 +1092,8 @@ void View::signals_changed()
 	// Do we need to set the vertical scrollbar to its default position later?
 	// We do if there are no traces, i.e. the scroll bar has no range set
 	bool reset_scrollbar =
-		(scrollarea_.verticalScrollBar()->minimum() ==
-			scrollarea_.verticalScrollBar()->maximum());
+		(scrollarea_->verticalScrollBar()->minimum() ==
+			scrollarea_->verticalScrollBar()->maximum());
 
 	if (!session_.device()) {
 		reset_scroll();

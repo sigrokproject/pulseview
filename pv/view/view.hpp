@@ -29,6 +29,7 @@
 
 #include <QAbstractScrollArea>
 #include <QSizeF>
+#include <QSplitter>
 
 #include <pv/data/signaldata.hpp>
 #include <pv/util.hpp>
@@ -70,13 +71,12 @@ class Trace;
 class Viewport;
 class TriggerMarker;
 
-class CustomAbstractScrollArea : public QAbstractScrollArea
+class CustomScrollArea : public QAbstractScrollArea
 {
 	Q_OBJECT
 
 public:
-	CustomAbstractScrollArea(QWidget *parent = nullptr);
-	void setViewportMargins(int left, int top, int right, int bottom);
+	CustomScrollArea(QWidget *parent = nullptr);
 	bool viewportEvent(QEvent *event);
 };
 
@@ -323,6 +323,8 @@ private:
 
 	void set_scroll_default();
 
+	bool header_fully_visible() const;
+
 	void update_layout();
 
 	TraceTreeItemOwner* find_prevalent_trace_group(
@@ -400,17 +402,17 @@ private Q_SLOTS:
 	void set_time_unit(pv::util::TimeUnit time_unit);
 
 private:
+	CustomScrollArea *scrollarea_;
 	Viewport *viewport_;
 	Ruler *ruler_;
 	Header *header_;
+	QSplitter *splitter_;
 
 	unordered_set< shared_ptr<Signal> > signals_;
 
 #ifdef ENABLE_DECODE
 	vector< shared_ptr<DecodeTrace> > decode_traces_;
 #endif
-
-	CustomAbstractScrollArea scrollarea_;
 
 	/// The view time scale in seconds per pixel.
 	double scale_;
