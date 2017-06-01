@@ -27,4 +27,7 @@
     <binary>pulseview</binary>
   </provides>
   <launchable type="desktop-id">org.sigrok.PulseView.desktop</launchable>
+  <mimetypes>
+    <mimetype>application/vnd.sigrok.session</mimetype>
+  </mimetypes>
 </component>
