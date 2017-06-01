@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Creative Commons CC0 1.0 Universal (CC0-1.0, Public Domain Dedication). -->
 <component type="desktop">
   <id>org.sigrok.PulseView.desktop</id>
   <metadata_license>CC0-1.0</metadata_license>
