@@ -22,7 +22,6 @@
       <image>http://sigrok.org/wimg/e/ee/PulseView_I2C_DS1307_Decode.png</image>
     </screenshot>
   </screenshots>
-  <project_group>sigrok</project_group>
   <provides>
     <binary>pulseview</binary>
   </provides>
