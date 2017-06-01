@@ -26,6 +26,10 @@
   <provides>
     <binary>pulseview</binary>
   </provides>
+  <suggests>
+    <id>org.sigrok.sigrok-firmware</id>
+    <id>org.sigrok.sigrok-firmware-fx2lafw</id>
+  </suggests>
   <launchable type="desktop-id">org.sigrok.PulseView.desktop</launchable>
   <mimetypes>
     <mimetype>application/vnd.sigrok.session</mimetype>
