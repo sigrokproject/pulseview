@@ -75,21 +75,24 @@ void Trace::paint_label(QPainter &p, const QRect &rect, bool hover)
 
 	const QRectF r = label_rect(rect);
 
+	// When selected, move the arrow to the left so that the border can show
+	const QPointF offs = (selected()) ? QPointF(-2, 0) : QPointF(0, 0);
+
 	// Paint the label
 	const float label_arrow_length = r.height() / 2;
-	const QPointF points[] = {
-		r.topLeft(),
-		QPointF(r.right() - label_arrow_length, r.top()),
-		QPointF(r.right(), y),
-		QPointF(r.right() - label_arrow_length, r.bottom()),
-		r.bottomLeft()
+	QPointF points[] = {
+		offs + r.topLeft(),
+		offs + QPointF(r.right() - label_arrow_length, r.top()),
+		offs + QPointF(r.right(), y),
+		offs + QPointF(r.right() - label_arrow_length, r.bottom()),
+		offs + r.bottomLeft()
 	};
-	const QPointF highlight_points[] = {
-		QPointF(r.left() + 1, r.top() + 1),
-		QPointF(r.right() - label_arrow_length, r.top() + 1),
-		QPointF(r.right() - 1, y),
-		QPointF(r.right() - label_arrow_length, r.bottom() - 1),
-		QPointF(r.left() + 1, r.bottom() - 1)
+	QPointF highlight_points[] = {
+		offs + QPointF(r.left() + 1, r.top() + 1),
+		offs + QPointF(r.right() - label_arrow_length, r.top() + 1),
+		offs + QPointF(r.right() - 1, y),
+		offs + QPointF(r.right() - label_arrow_length, r.bottom() - 1),
+		offs + QPointF(r.left() + 1, r.bottom() - 1)
 	};
 
 	if (selected()) {

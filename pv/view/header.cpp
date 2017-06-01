@@ -50,7 +50,6 @@ namespace views {
 namespace TraceView {
 
 const int Header::Padding = 12;
-const int Header::BaselineOffset = 5;
 
 static bool item_selected(shared_ptr<TraceTreeItem> r)
 {
@@ -70,7 +69,7 @@ QSize Header::sizeHint() const
 	for (auto &i : items)
 		if (i->enabled())
 			max_rect = max_rect.united(i->label_rect(QRect()));
-	return QSize(max_rect.width() + Padding + BaselineOffset, 0);
+	return QSize(max_rect.width() + Padding, 0);
 }
 
 QSize Header::extended_size_hint() const
@@ -87,7 +86,7 @@ vector< shared_ptr<ViewItem> > Header::items()
 
 shared_ptr<ViewItem> Header::get_mouse_over_item(const QPoint &pt)
 {
-	const QRect r(0, 0, width() - BaselineOffset, height());
+	const QRect r(0, 0, width(), height());
 	const vector<shared_ptr<TraceTreeItem>> items(
 		view_.list_by_type<TraceTreeItem>());
 	for (auto i = items.rbegin(); i != items.rend(); i++)
@@ -98,10 +97,7 @@ shared_ptr<ViewItem> Header::get_mouse_over_item(const QPoint &pt)
 
 void Header::paintEvent(QPaintEvent*)
 {
-	// The trace labels are not drawn with the arrows exactly on the
-	// left edge of the widget, because then the selection shadow
-	// would be clipped away.
-	const QRect rect(0, 0, width() - BaselineOffset, height());
+	const QRect rect(0, 0, width(), height());
 
 	vector< shared_ptr<RowItem> > items(view_.list_by_type<RowItem>());
 

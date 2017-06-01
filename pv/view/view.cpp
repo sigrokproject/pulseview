@@ -155,7 +155,7 @@ View::View(Session &session, bool is_main_view, QWidget *parent) :
 	ruler_ = new Ruler(*this);
 
 	header_ = new Header(*this);
-	header_->setMinimumWidth(15);  // So that the arrow tips show at least
+	header_->setMinimumWidth(10);  // So that the arrow tips show at least
 
 	// We put the header into a simple layout so that we can add the top margin,
 	// allowing us to make it line up with the bottom of the ruler

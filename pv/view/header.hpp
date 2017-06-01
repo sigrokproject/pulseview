@@ -56,12 +56,6 @@ public:
 	 */
 	QSize extended_size_hint() const;
 
-	/**
-	 * The horizontal offset, relative to the left edge of the widget,
-	 * where the arrows of the trace labels end.
-	 */
-	static const int BaselineOffset;
-
 private:
 	/**
 	 * Gets the row items.
