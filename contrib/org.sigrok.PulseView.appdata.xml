@@ -26,4 +26,5 @@
   <provides>
     <binary>pulseview</binary>
   </provides>
+  <launchable type="desktop-id">org.sigrok.PulseView.desktop</launchable>
 </component>
