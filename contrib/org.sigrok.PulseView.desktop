@@ -6,3 +6,4 @@ Comment=Control your logic analyzer, oscilloscope, or MSO
 Exec=pulseview
 Icon=sigrok-logo-notext
 Type=Application
+MimeType=application/vnd.sigrok.session
