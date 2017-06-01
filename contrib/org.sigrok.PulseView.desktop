@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=PulseView
 GenericName=Logic analyzer, oscilloscope and MSO GUI
-Categories=Electronics;
+Categories=Development;Electronics;
 Comment=Control your logic analyzer, oscilloscope, or MSO
 Exec=pulseview
 Icon=sigrok-logo-notext
