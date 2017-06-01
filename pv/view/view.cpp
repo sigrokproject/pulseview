@@ -204,6 +204,9 @@ View::View(Session &session, bool is_main_view, QWidget *parent) :
 	connect(ruler_, SIGNAL(selection_changed()),
 		this, SIGNAL(selection_changed()));
 
+	connect(splitter_, SIGNAL(splitterMoved(int, int)),
+		this, SLOT(on_splitter_moved()));
+
 	connect(this, SIGNAL(hover_point_changed()),
 		this, SLOT(on_hover_point_changed()));
 
@@ -874,7 +877,10 @@ bool View::header_fully_visible() const
 	const int header_pane_width = splitter_->sizes().front();
 	const int header_width = header_->extended_size_hint().width();
 
-	return (header_pane_width >= header_width);
+	// Allow for a slight margin of error so that we also accept
+	// slight differences when e.g. a label name change increased
+	// the overall width
+	return (header_pane_width >= (header_width - 10));
 }
 
 void View::update_layout()
@@ -1040,8 +1046,13 @@ void View::row_item_appearance_changed(bool label, bool content)
 
 void View::time_item_appearance_changed(bool label, bool content)
 {
-	if (label)
+	if (label) {
 		ruler_->update();
+
+		// Make sure the header pane width is updated, too
+		update_layout();
+	}
+
 	if (content)
 		viewport_->update();
 }
@@ -1053,6 +1064,15 @@ void View::extents_changed(bool horz, bool vert)
 		(vert ? TraceTreeItemVExtentsChanged : 0);
 
 	lazy_event_handler_.start();
+}
+
+void View::on_splitter_moved()
+{
+	// Setting the maximum width of the header widget doesn't work as
+	// expected because the splitter would allow the user to make the
+	// pane wider than that, creating empty space as a result.
+	// To make this work, we stricly enforce the maximum width by calling
+	update_layout();
 }
 
 void View::h_scroll_value_changed(int value)

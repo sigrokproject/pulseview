@@ -353,6 +353,7 @@ public:
 
 private Q_SLOTS:
 
+	void on_splitter_moved();
 	void h_scroll_value_changed(int value);
 	void v_scroll_value_changed();
 
