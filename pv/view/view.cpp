@@ -300,6 +300,8 @@ void View::save_settings(QSettings &settings) const
 	settings.setValue("v_offset",
 		scrollarea_->verticalScrollBar()->sliderPosition());
 
+	settings.setValue("splitter_state", splitter_->saveState());
+
 	stringstream ss;
 	boost::archive::text_oarchive oa(ss);
 	oa << boost::serialization::make_nvp("offset", offset_);
@@ -330,6 +332,9 @@ void View::restore_settings(QSettings &settings)
 
 		set_offset(offset);
 	}
+
+	if (settings.contains("splitter_state"))
+		splitter_->restoreState(settings.value("splitter_state").toByteArray());
 
 	for (shared_ptr<Signal> signal : signals_) {
 		settings.beginGroup(signal->base()->internal_name());
