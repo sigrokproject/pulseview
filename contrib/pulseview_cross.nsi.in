@@ -30,6 +30,9 @@
 # Include the "Modern UI" header, which gives us the usual Windows look-n-feel.
 !include "MUI2.nsh"
 
+# Include the file association header so that we can register file extensions.
+!include "FileAssociation.nsh"
+
 
 # --- Global stuff ------------------------------------------------------------
 
@@ -74,6 +77,13 @@ RequestExecutionLevel admin
 !define CROSS "@CMAKE_INSTALL_PREFIX@"
 
 
+# --- Functions ---------------------------------------------------------------
+
+Function register_sr_files
+${registerExtension} "$INSTDIR\pulseview.exe" ".sr" "sigrok session file"
+FunctionEnd
+
+
 # --- MUI pages ---------------------------------------------------------------
 
 # Show a nice "Welcome to the ... Setup Wizard" page.
@@ -90,6 +100,14 @@ RequestExecutionLevel admin
 
 # Perform the actual installation, i.e. install the files.
 !insertmacro MUI_PAGE_INSTFILES
+
+# Insert the "Show Readme" button in the finish dialog. We repurpose it for
+# registering the .sr file extension. This way, we don't need to add in-depth
+# modifications to the finish page.
+!define MUI_FINISHPAGE_SHOWREADME ""
+!define MUI_FINISHPAGE_SHOWREADME_CHECKED
+!define MUI_FINISHPAGE_SHOWREADME_TEXT "Register .sr files with PulseView"
+!define MUI_FINISHPAGE_SHOWREADME_FUNCTION register_sr_files
 
 # Show a final "We're done, click Finish to close this wizard" message.
 !insertmacro MUI_PAGE_FINISH
@@ -240,6 +258,9 @@ Section "Uninstall"
 
 	# Delete the registry key(s).
 	DeleteRegKey HKLM "${REGSTR}"
+
+	# Unregister any previously registered file extension(s).
+	${unregisterExtension} ".sr" "sigrok session file"
 
 SectionEnd
 
