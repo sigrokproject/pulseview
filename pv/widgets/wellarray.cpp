@@ -220,7 +220,7 @@ void WellArray::setSelected(int row, int col)
     updateCell(oldRow, oldCol);
     updateCell(selRow, selCol);
     if (row >= 0)
-        Q_EMIT selected(row, col);
+        selected(row, col);
 }
 
 void WellArray::focusInEvent(QFocusEvent*)

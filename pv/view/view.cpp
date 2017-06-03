@@ -376,7 +376,7 @@ void View::set_scale(double scale)
 {
 	if (scale_ != scale) {
 		scale_ = scale;
-		Q_EMIT scale_changed();
+		scale_changed();
 	}
 }
 
@@ -389,7 +389,7 @@ void View::set_offset(const pv::util::Timestamp& offset)
 {
 	if (offset_ != offset) {
 		offset_ = offset;
-		Q_EMIT offset_changed();
+		offset_changed();
 	}
 }
 
@@ -419,7 +419,7 @@ void View::set_tick_prefix(pv::util::SIPrefix tick_prefix)
 {
 	if (tick_prefix_ != tick_prefix) {
 		tick_prefix_ = tick_prefix;
-		Q_EMIT tick_prefix_changed();
+		tick_prefix_changed();
 	}
 }
 
@@ -432,7 +432,7 @@ void View::set_tick_precision(unsigned tick_precision)
 {
 	if (tick_precision_ != tick_precision) {
 		tick_precision_ = tick_precision;
-		Q_EMIT tick_precision_changed();
+		tick_precision_changed();
 	}
 }
 
@@ -445,7 +445,7 @@ void View::set_tick_period(const pv::util::Timestamp& tick_period)
 {
 	if (tick_period_ != tick_period) {
 		tick_period_ = tick_period;
-		Q_EMIT tick_period_changed();
+		tick_period_changed();
 	}
 }
 
@@ -458,7 +458,7 @@ void View::set_time_unit(pv::util::TimeUnit time_unit)
 {
 	if (time_unit_ != time_unit) {
 		time_unit_ = time_unit;
-		Q_EMIT time_unit_changed();
+		time_unit_changed();
 	}
 }
 
