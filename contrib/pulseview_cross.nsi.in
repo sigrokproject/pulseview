@@ -269,6 +269,8 @@ Section "Uninstall"
 	# Unregister any previously registered file extension(s).
 	${unregisterExtension} ".sr" "sigrok session file"
 
+	# Force Windows to update the icon cache so that the icon for .sr files is reset.
+	System::Call 'Shell32::SHChangeNotify(i ${SHCNE_ASSOCCHANGED}, i ${SHCNF_IDLIST}, i 0, i 0)'
 SectionEnd
 
 
