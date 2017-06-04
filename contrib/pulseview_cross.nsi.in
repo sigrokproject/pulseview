@@ -164,10 +164,6 @@ Section "PulseView (required)" Section1
 	# Firmware files.
 	File /r "${CROSS}/share/sigrok-firmware"
 
-	# Example *.sr files.
-	SetOutPath "$INSTDIR\examples"
-	File /r "${CROSS}/share/sigrok-dumps/*"
-
 	# Generate the uninstaller executable.
 	WriteUninstaller "$INSTDIR\Uninstall.exe"
 
@@ -220,6 +216,32 @@ Section "PulseView (required)" Section1
 	WriteRegDWORD HKLM "${REGSTR}" "NoModify" 1
 	WriteRegDWORD HKLM "${REGSTR}" "NoRepair" 1
 
+SectionEnd
+
+Section /o "Example data" Section2
+	# Example *.sr files.
+	SetOutPath "$INSTDIR\examples"
+
+	File "${CROSS}/share/sigrok-dumps/arm_trace/stm32f105/trace_example.sr"
+	File "${CROSS}/share/sigrok-dumps/am230x/am2301/am2301_1mhz.sr"
+	File "${CROSS}/share/sigrok-dumps/avr_isp/atmega88/isp_atmega88_erase_chip.sr"
+	File "${CROSS}/share/sigrok-dumps/can/microchip_mcp2515dm-bm/mcp2515dm-bm-125kbits_msg_222_5bytes.sr"
+	File "${CROSS}/share/sigrok-dumps/dcf77/pollin_dcf1_module/dcf77_120s.sr"
+	File "${CROSS}/share/sigrok-dumps/i2c/eeprom_24xx/microchip_24lc02b/hantek_6022be_powerup.sr"
+	File "${CROSS}/share/sigrok-dumps/i2c/eeprom_24xx/microchip_24lc64/sainsmart_dds120_powerup_scl_sda_analog.sr"
+	File "${CROSS}/share/sigrok-dumps/i2c/potentiometer/analog_devices_ad5258/ad5258_read_once_write_continuously_triangle.sr"
+	File "${CROSS}/share/sigrok-dumps/mdio/lan8720a/lan8720a_read_write_read.sr"
+	File "${CROSS}/share/sigrok-dumps/onewire/owfs/ds28ea00.sr"
+	File "${CROSS}/share/sigrok-dumps/sdcard/sd_mode/rcar-h2/cmd23_cmd18.sr"
+	File "${CROSS}/share/sigrok-dumps/spi/mx25l1605d/mx25l1605d_read.sr"
+	File "${CROSS}/share/sigrok-dumps/uart/gps/mtk3339/mtk3339_8n1_9600.sr"
+	File "${CROSS}/share/sigrok-dumps/usb/hid/mouse/olimex_stm32-h103_usb_hid/olimex_stm32-h103_usb_hid.sr"
+	File "${CROSS}/share/sigrok-dumps/z80/kc85/kc85-20mhz.sr"
+
+	# Create a shortcut for the example data folder.
+	CreateShortCut "$SMPROGRAMS\sigrok\PulseView\Examples.lnk" \
+		"$INSTDIR\examples" "" "$INSTDIR\examples" 0 \
+		SW_SHOWNORMAL "" ""
 SectionEnd
 
 
@@ -276,9 +298,11 @@ SectionEnd
 
 # --- Component selection section descriptions --------------------------------
 
-LangString DESC_Section1 ${LANG_ENGLISH} "This installs the PulseView sigrok GUI, some firmware files, the protocol decoders, some example files, and all required libraries."
+LangString DESC_Section1 ${LANG_ENGLISH} "This installs the PulseView sigrok GUI, some firmware files, the protocol decoders, and all required libraries."
+LangString DESC_Section2 ${LANG_ENGLISH} "This installs some example files that you can use to try out the features sigrok has to offer."
 
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
-!insertmacro MUI_DESCRIPTION_TEXT ${Section1} $(DESC_Section1)
+	!insertmacro MUI_DESCRIPTION_TEXT ${Section1} $(DESC_Section1)
+	!insertmacro MUI_DESCRIPTION_TEXT ${Section2} $(DESC_Section2)
 !insertmacro MUI_FUNCTION_DESCRIPTION_END
 
