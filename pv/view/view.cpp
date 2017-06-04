@@ -872,7 +872,7 @@ void View::set_scroll_default()
 		set_v_offset(extents.first);
 }
 
-bool View::header_fully_visible() const
+bool View::header_was_shrunk() const
 {
 	const int header_pane_width = splitter_->sizes().front();
 	const int header_width = header_->extended_size_hint().width();
@@ -880,24 +880,24 @@ bool View::header_fully_visible() const
 	// Allow for a slight margin of error so that we also accept
 	// slight differences when e.g. a label name change increased
 	// the overall width
-	return (header_pane_width >= (header_width - 10));
+	return (header_pane_width < (header_width - 10));
+}
+
+void View::expand_header_to_fit()
+{
+	int splitter_area_width = 0;
+	for (int w : splitter_->sizes())
+		splitter_area_width += w;
+
+	// Make sure the header has enough horizontal space to show all labels fully
+	QList<int> pane_sizes;
+	pane_sizes.push_back(header_->extended_size_hint().width());
+	pane_sizes.push_back(splitter_area_width - header_->extended_size_hint().width());
+	splitter_->setSizes(pane_sizes);
 }
 
 void View::update_layout()
 {
-	// Only adjust pane sizes if the header hasn't been partially hidden by the user
-	if (header_fully_visible()) {
-		int splitter_area_width = 0;
-		for (int w : splitter_->sizes())
-			splitter_area_width += w;
-
-		// Make sure the header has enough horizontal space to show all labels fully
-		QList<int> pane_sizes;
-		pane_sizes.push_back(header_->extended_size_hint().width());
-		pane_sizes.push_back(splitter_area_width - header_->extended_size_hint().width());
-		splitter_->setSizes(pane_sizes);
-	}
-
 	update_scroll();
 }
 
@@ -1071,8 +1071,12 @@ void View::on_splitter_moved()
 	// Setting the maximum width of the header widget doesn't work as
 	// expected because the splitter would allow the user to make the
 	// pane wider than that, creating empty space as a result.
-	// To make this work, we stricly enforce the maximum width by calling
-	update_layout();
+	// To make this work, we stricly enforce the maximum width by
+	// expanding the header unless the user shrunk it on purpose.
+	// As we're then setting the width of the header pane, we set the
+	// splitter to the maximum allowed position.
+	if (!header_was_shrunk())
+		expand_header_to_fit();
 }
 
 void View::h_scroll_value_changed(int value)
@@ -1269,6 +1273,12 @@ void View::signals_changed()
 		if (item->enabled())
 			offset += extents.second;
 	}
+
+
+	if (!new_top_level_items.empty())
+		// Expand the header pane because the header should become fully
+		// visible when new signals are added
+		expand_header_to_fit();
 
 	update_layout();
 

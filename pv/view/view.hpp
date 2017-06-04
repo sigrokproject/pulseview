@@ -323,7 +323,9 @@ private:
 
 	void set_scroll_default();
 
-	bool header_fully_visible() const;
+	bool header_was_shrunk() const;
+
+	void expand_header_to_fit();
 
 	void update_layout();
 
