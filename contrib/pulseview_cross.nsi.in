@@ -76,11 +76,18 @@ RequestExecutionLevel admin
 # Change this to where-ever you installed libsigrok.a and so on.
 !define CROSS "@CMAKE_INSTALL_PREFIX@"
 
+# Defines for WinAPI SHChangeNotify call.
+!define SHCNE_ASSOCCHANGED 0x8000000
+!define SHCNF_IDLIST 0
+
 
 # --- Functions ---------------------------------------------------------------
 
 Function register_sr_files
-${registerExtension} "$INSTDIR\pulseview.exe" ".sr" "sigrok session file"
+	${registerExtension} "$INSTDIR\pulseview.exe" ".sr" "sigrok session file"
+
+	# Force Windows to update the icon cache so that the icon for .sr files shows up.
+	System::Call 'Shell32::SHChangeNotify(i ${SHCNE_ASSOCCHANGED}, i ${SHCNF_IDLIST}, i 0, i 0)'
 FunctionEnd
 
 
