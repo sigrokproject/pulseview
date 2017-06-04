@@ -280,6 +280,7 @@ Section "Uninstall"
 	Delete "$SMPROGRAMS\sigrok\PulseView\Uninstall PulseView.lnk"
 	Delete "$SMPROGRAMS\sigrok\PulseView\Zadig (PulseView).lnk"
 	Delete "$SMPROGRAMS\sigrok\PulseView\Zadig (PulseView, Win XP).lnk"
+	Delete "$SMPROGRAMS\sigrok\PulseView\Examples.lnk"
 
 	# Delete the sub-directory in the start menu.
 	RMDir "$SMPROGRAMS\sigrok\PulseView"
