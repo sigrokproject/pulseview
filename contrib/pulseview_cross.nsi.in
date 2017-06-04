@@ -239,7 +239,7 @@ Section /o "Example data" Section2
 	File "${CROSS}/share/sigrok-dumps/z80/kc85/kc85-20mhz.sr"
 
 	# Create a shortcut for the example data folder.
-	CreateShortCut "$SMPROGRAMS\sigrok\PulseView\Examples.lnk" \
+	CreateShortCut "$SMPROGRAMS\sigrok\PulseView\Examples (PulseView).lnk" \
 		"$INSTDIR\examples" "" "$INSTDIR\examples" 0 \
 		SW_SHOWNORMAL "" ""
 SectionEnd
@@ -280,7 +280,7 @@ Section "Uninstall"
 	Delete "$SMPROGRAMS\sigrok\PulseView\Uninstall PulseView.lnk"
 	Delete "$SMPROGRAMS\sigrok\PulseView\Zadig (PulseView).lnk"
 	Delete "$SMPROGRAMS\sigrok\PulseView\Zadig (PulseView, Win XP).lnk"
-	Delete "$SMPROGRAMS\sigrok\PulseView\Examples.lnk"
+	Delete "$SMPROGRAMS\sigrok\PulseView\Examples (PulseView).lnk"
 
 	# Delete the sub-directory in the start menu.
 	RMDir "$SMPROGRAMS\sigrok\PulseView"
