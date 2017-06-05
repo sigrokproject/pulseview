@@ -89,8 +89,7 @@ Device::Device(shared_ptr<sigrok::Configurable> configurable) :
 			break;
 
 		case SR_CONF_CAPTURE_RATIO:
-			bind_int(name, "", "%", pair<int64_t, int64_t>(0, 100),
-				get, set);
+			bind_int(name, "", "%", pair<int64_t, int64_t>(0, 100), get, set);
 			break;
 
 		case SR_CONF_PATTERN_MODE:
