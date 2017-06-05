@@ -135,7 +135,6 @@ FunctionEnd
 # --- Default section ---------------------------------------------------------
 
 Section "PulseView (required)" Section1
-
 	# This section is gray (can't be disabled) in the component list.
 	SectionIn RO
 
@@ -215,7 +214,6 @@ Section "PulseView (required)" Section1
 	# Display "Remove" instead of "Modify/Remove" in the control panel.
 	WriteRegDWORD HKLM "${REGSTR}" "NoModify" 1
 	WriteRegDWORD HKLM "${REGSTR}" "NoRepair" 1
-
 SectionEnd
 
 Section /o "Example data" Section2
@@ -248,7 +246,6 @@ SectionEnd
 # --- Uninstaller section -----------------------------------------------------
 
 Section "Uninstall"
-
 	# Always delete the uninstaller first (yes, this really works).
 	Delete "$INSTDIR\Uninstall.exe"
 
