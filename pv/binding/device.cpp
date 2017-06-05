@@ -147,20 +147,26 @@ void Device::bind_enum(const QString &name, const QString &desc,
 	Property::Getter getter,
 	Property::Setter setter, function<QString (Glib::VariantBase)> printer)
 {
-	Glib::VariantBase gvar;
-	vector< pair<Glib::VariantBase, QString> > values;
-
 	assert(configurable_);
 
 	if (!capabilities.count(Capability::LIST))
 		return;
 
-	Glib::VariantIter iter(configurable_->config_list(key));
-	while ((iter.next_value(gvar)))
-		values.push_back(make_pair(gvar, printer(gvar)));
+	try {
+		Glib::VariantContainerBase gvar = configurable_->config_list(key);
+		Glib::VariantIter iter(gvar);
 
-	properties_.push_back(shared_ptr<Property>(new Enum(name, desc, values,
-		getter, setter)));
+		vector< pair<Glib::VariantBase, QString> > values;
+		while ((iter.next_value(gvar)))
+			values.push_back(make_pair(gvar, printer(gvar)));
+
+		properties_.push_back(shared_ptr<Property>(new Enum(name, desc, values,
+			getter, setter)));
+
+	} catch (sigrok::Error& e) {
+		qDebug() << "Error: Listing device key" << name << "failed!";
+		return;
+	}
 }
 
 void Device::bind_int(const QString &name, const QString &desc, QString suffix,
