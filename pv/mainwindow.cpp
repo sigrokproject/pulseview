@@ -724,7 +724,8 @@ void MainWindow::on_tab_close_requested(int index)
 {
 	shared_ptr<Session> session = get_tab_session(index);
 
-	assert(session);
+	if (!session)
+		return;
 
 	if (session->data_saved() || (QMessageBox::question(this, tr("Confirmation"),
 		tr("This session contains unsaved data. Close it anyway?"),
