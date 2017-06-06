@@ -129,6 +129,7 @@ View::View(Session &session, bool is_main_view, QWidget *parent) :
 	scale_(1e-3),
 	offset_(0),
 	updating_scroll_(false),
+	settings_restored_(false),
 	sticky_scrolling_(false), // Default setting is set in MainWindow::setup_ui()
 	always_zoom_to_fit_(false),
 	tick_period_(0),
@@ -351,6 +352,8 @@ void View::restore_settings(QSettings &settings)
 		scroll_needs_defaults_ = false;
 		// Note: see eventFilter() for additional information
 	}
+
+	settings_restored_ = true;
 }
 
 vector< shared_ptr<TimeItem> > View::time_items() const
@@ -1088,7 +1091,9 @@ void View::on_splitter_moved()
 
 void View::on_repeat_splitter_expansion()
 {
-	expand_header_to_fit();
+	// Don't mess with the header if settings were restored in the meanwhile
+	if (!settings_restored_)
+		expand_header_to_fit();
 }
 
 void View::h_scroll_value_changed(int value)

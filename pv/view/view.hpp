@@ -426,6 +426,8 @@ private:
 	pv::util::Timestamp offset_;
 
 	bool updating_scroll_;
+	bool settings_restored_;
+
 	bool sticky_scrolling_;
 	bool coloured_bg_;
 	bool always_zoom_to_fit_;
