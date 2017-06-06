@@ -1,8 +1,8 @@
-.TH PULSEVIEW 1 "March 4, 2017"
+.TH PULSEVIEW 1 "June 6, 2017"
 .SH "NAME"
 PulseView \- Qt-based LA/scope/MSO GUI for sigrok
 .SH "SYNOPSIS"
-.B pulseview \fR[\fBOPTIONS\fR] [\fBfile.sr\fR]
+.B pulseview \fR[\fBOPTIONS\fR] [\fBFILE\fR]
 .SH "DESCRIPTION"
 .B PulseView
 is a cross-platform Qt-based GUI for the
@@ -14,8 +14,9 @@ oscilloscopes, MSOs, and more.
 has very few command line options, as most configuration elements are
 available from the GUI itself.
 .sp
-If the optional \fBfile.sr\fR argument is supplied, PulseView tries to open
-the specified file. It has to be in the "libsigrok session" format (.sr).
+If the optional \fBFILE\fR argument is supplied, PulseView tries to open
+the specified file. It has to be in the "libsigrok session" format (.sr)
+unless -I is used to specify the input file format.
 .TP
 .B "\-l, \-\-loglevel"
 Set the libsigrok and libsigrokdecode loglevel. At the moment PulseView
@@ -48,6 +49,11 @@ file.
 .TP
 .BR "\-I, \-\-input\-format " <format>
 Specifies the format of the input file to be loaded.
+.TP
+.BR "\-c, \-\-clean"
+Prevents the previously used sessions to be restored from settings storage.
+This is useful if you want only a single session with the file given on the
+command line instead of restoring all previously used sessions as well.
 .SH "KEYBOARD SHORTCUTS"
 .TP
 .B "f"
@@ -57,7 +63,8 @@ Zoom-to-fit.
 Zoom 1:1.
 .TP
 .B "s"
-Enable / disable sticky scrolling.
+Enable / disable sticky scrolling. When enabled, the right edge of the screen
+always shows the most recently captured data.
 .TP
 .B "."
 Show / hide sampling points.
