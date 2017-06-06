@@ -849,7 +849,14 @@ void Session::sample_thread_proc(function<void (const QString)> error_handler)
 	set_capture_state(device_->session()->trigger() ?
 		AwaitingTrigger : Running);
 
-	device_->run();
+	try {
+		device_->run();
+	} catch (Error e) {
+		error_handler(e.what());
+		set_capture_state(Stopped);
+		return;
+	}
+
 	set_capture_state(Stopped);
 
 	// Confirm that SR_DF_END was received
