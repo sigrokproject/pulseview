@@ -68,6 +68,7 @@ void usage()
 		"  -l, --loglevel                  Set libsigrok/libsigrokdecode loglevel\n"
 		"  -i, --input-file                Load input from file\n"
 		"  -I, --input-format              Input format\n"
+		"  -c, --clean                     Don't restore previous sessions on startup\n"
 		"\n", PV_BIN_NAME, PV_DESCRIPTION);
 }
 
@@ -76,6 +77,7 @@ int main(int argc, char *argv[])
 	int ret = 0;
 	shared_ptr<sigrok::Context> context;
 	string open_file, open_file_format;
+	bool restore_sessions = true;
 
 	Application a(argc, argv);
 
@@ -93,11 +95,12 @@ int main(int argc, char *argv[])
 			{"loglevel", required_argument, nullptr, 'l'},
 			{"input-file", required_argument, nullptr, 'i'},
 			{"input-format", required_argument, nullptr, 'I'},
+			{"clean", no_argument, nullptr, 'c'},
 			{nullptr, 0, nullptr, 0}
 		};
 
 		const int c = getopt_long(argc, argv,
-			"l:Vh?i:I:", long_options, nullptr);
+			"l:Vhc?i:I:", long_options, nullptr);
 		if (c == -1)
 			break;
 
@@ -136,6 +139,10 @@ int main(int argc, char *argv[])
 		case 'I':
 			open_file_format = optarg;
 			break;
+
+		case 'c':
+			restore_sessions = false;
+			break;
 		}
 	}
 
@@ -170,8 +177,8 @@ int main(int argc, char *argv[])
 			pv::DeviceManager device_manager(context);
 
 			// Initialise the main window
-			pv::MainWindow w(device_manager,
-				open_file, open_file_format);
+			pv::MainWindow w(device_manager, open_file, open_file_format,
+				restore_sessions);
 			w.show();
 
 #ifdef ENABLE_SIGNALS

@@ -72,6 +72,7 @@ public:
 	explicit MainWindow(DeviceManager &device_manager,
 		string open_file_name = string(),
 		string open_file_format = string(),
+		bool restore_sessions = true,
 		QWidget *parent = nullptr);
 
 	~MainWindow();
@@ -92,7 +93,7 @@ private:
 
 	void save_ui_settings();
 
-	void restore_ui_settings();
+	void restore_ui_settings(bool restore_sessions);
 
 	shared_ptr<Session> get_tab_session(int index) const;
 

@@ -70,7 +70,7 @@ const QString MainWindow::WindowTitle = tr("PulseView");
 
 MainWindow::MainWindow(DeviceManager &device_manager,
 	string open_file_name, string open_file_format,
-	QWidget *parent) :
+	bool restore_sessions, QWidget *parent) :
 	QMainWindow(parent),
 	device_manager_(device_manager),
 	session_selector_(this),
@@ -92,7 +92,7 @@ MainWindow::MainWindow(DeviceManager &device_manager,
 		bind(&MainWindow::on_settingViewShowAnalogMinorGrid_changed, this, _1));
 
 	setup_ui();
-	restore_ui_settings();
+	restore_ui_settings(restore_sessions);
 
 	if (!open_file_name.empty()) {
 		shared_ptr<Session> session = add_session();
@@ -455,10 +455,9 @@ void MainWindow::save_ui_settings()
 	settings.setValue("sessions", id);
 }
 
-void MainWindow::restore_ui_settings()
+void MainWindow::restore_ui_settings(bool restore_sessions)
 {
 	QSettings settings;
-	int i, session_count;
 
 	settings.beginGroup("MainWindow");
 
@@ -470,13 +469,17 @@ void MainWindow::restore_ui_settings()
 
 	settings.endGroup();
 
-	session_count = settings.value("sessions", 0).toInt();
+	if (restore_sessions) {
+		int i, session_count;
 
-	for (i = 0; i < session_count; i++) {
-		settings.beginGroup("Session" + QString::number(i));
-		shared_ptr<Session> session = add_session();
-		session->restore_settings(settings);
-		settings.endGroup();
+		session_count = settings.value("sessions", 0).toInt();
+
+		for (i = 0; i < session_count; i++) {
+			settings.beginGroup("Session" + QString::number(i));
+			shared_ptr<Session> session = add_session();
+			session->restore_settings(settings);
+			settings.endGroup();
+		}
 	}
 }
 
