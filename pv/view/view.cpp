@@ -889,6 +889,13 @@ void View::expand_header_to_fit()
 	for (int w : splitter_->sizes())
 		splitter_area_width += w;
 
+	// Workaround for when the header needs resizing but the view
+	// isn't visible yet and thus splitter_->sizes() returns (0, 0)
+	if (splitter_area_width == 0) {
+		QTimer::singleShot(50, this, SLOT(on_repeat_splitter_expansion()));
+		return;
+	}
+
 	// Make sure the header has enough horizontal space to show all labels fully
 	QList<int> pane_sizes;
 	pane_sizes.push_back(header_->extended_size_hint().width());
@@ -1077,6 +1084,11 @@ void View::on_splitter_moved()
 	// splitter to the maximum allowed position.
 	if (!header_was_shrunk())
 		expand_header_to_fit();
+}
+
+void View::on_repeat_splitter_expansion()
+{
+	expand_header_to_fit();
 }
 
 void View::h_scroll_value_changed(int value)
