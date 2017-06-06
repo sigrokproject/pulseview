@@ -756,7 +756,7 @@ void MainBar::on_actionOpen_triggered()
 	// Show the dialog
 	const QString file_name = QFileDialog::getOpenFileName(
 		this, tr("Open File"), dir, tr(
-			"Sigrok Sessions (*.sr);;"
+			"sigrok Sessions (*.sr);;"
 			"All Files (*)"));
 
 	if (!file_name.isEmpty()) {

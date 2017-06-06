@@ -94,7 +94,7 @@ QWidget* Int::get_widget(QWidget *parent, bool auto_commit)
 		assert(false);
 	}
 
-	// @todo Sigrok supports 64-bit quantities, but Qt does not have a
+	// @todo sigrok supports 64-bit quantities, but Qt does not have a
 	// standard widget to allow the values to be modified over the full
 	// 64-bit range on 32-bit machines. To solve the issue we need a
 	// custom widget.
