@@ -626,9 +626,9 @@ void MainBar::export_file(shared_ptr<OutputFormat> format, bool selection_only)
 		QString::fromStdString(format->description()));
 
 	if (exts.empty())
-		filter += "(*.*)";
+		filter += "(*)";
 	else
-		filter += QString("(*.%1);;%2 (*.*)").arg(
+		filter += QString("(*.%1);;%2 (*)").arg(
 			QString::fromStdString(join(exts, ", *.")),
 			tr("All Files"));
 
@@ -679,7 +679,7 @@ void MainBar::import_file(shared_ptr<InputFormat> format)
 	// Show the file dialog
 	const QString file_name = QFileDialog::getOpenFileName(
 		this, tr("Import File"), dir, tr(
-			"%1 files (*.*);;All Files (*.*)").arg(
+			"%1 files (*);;All Files (*)").arg(
 			QString::fromStdString(format->description())));
 
 	if (file_name.isEmpty())
@@ -757,7 +757,7 @@ void MainBar::on_actionOpen_triggered()
 	const QString file_name = QFileDialog::getOpenFileName(
 		this, tr("Open File"), dir, tr(
 			"Sigrok Sessions (*.sr);;"
-			"All Files (*.*)"));
+			"All Files (*)"));
 
 	if (!file_name.isEmpty()) {
 		session_.load_file(file_name);
