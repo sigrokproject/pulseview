@@ -140,7 +140,7 @@ QPolygon Popup::arrow_polygon() const
 	QPolygon poly;
 
 	const QPoint p = mapFromGlobal(point_);
-	const int l = ArrowLength + ArrowOverlap; 
+	const int l = ArrowLength + ArrowOverlap;
 
 	switch (pos_) {
 	case Right:

@@ -422,7 +422,7 @@ BOOST_AUTO_TEST_CASE(LongPulses)
 	BOOST_CHECK_EQUAL(edges[0].second, true);
 	BOOST_CHECK_EQUAL(edges[1].first, 16);
 	BOOST_CHECK_EQUAL(edges[1].second, false);
-	
+
 	for (int i = 1; i < Cycles; i++) {
 		BOOST_CHECK_EQUAL(edges[i+1].first, i * Period);
 		BOOST_CHECK_EQUAL(edges[i+1].second, false);

@@ -70,7 +70,7 @@ InputOutput::InputOutput(
 		const vector<VariantBase> values = opt->values();
 
 		options_[opt->id()] = def_val;
- 
+
 		const Property::Getter get = [&, opt]() {
 			return options_[opt->id()]; };
 		const Property::Setter set = [&, opt](VariantBase value) {

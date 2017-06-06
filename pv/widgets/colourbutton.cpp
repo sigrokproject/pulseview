@@ -61,7 +61,7 @@ void ColourButton::set_colour(QColor colour)
 				popup_.well_array().setSelected(r, c);
 				popup_.well_array().setCurrent(r, c);
 				return;
-			}	
+			}
 }
 
 void ColourButton::set_palette(const QColor *const palette)
