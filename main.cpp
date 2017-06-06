@@ -58,7 +58,7 @@ void usage()
 {
 	fprintf(stdout,
 		"Usage:\n"
-		"  %s [OPTION...] - %s\n"
+		"  %s [OPTIONS] [FILE]\n"
 		"\n"
 		"Help Options:\n"
 		"  -h, -?, --help                  Show help option\n"
@@ -69,7 +69,7 @@ void usage()
 		"  -i, --input-file                Load input from file\n"
 		"  -I, --input-format              Input format\n"
 		"  -c, --clean                     Don't restore previous sessions on startup\n"
-		"\n", PV_BIN_NAME, PV_DESCRIPTION);
+		"\n", PV_BIN_NAME);
 }
 
 int main(int argc, char *argv[])
