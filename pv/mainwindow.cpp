@@ -303,7 +303,17 @@ shared_ptr<Session> MainWindow::add_session()
 
 void MainWindow::remove_session(shared_ptr<Session> session)
 {
+	// Determine the height of the button before it collapses
 	int h = new_session_button_->height();
+
+	// Stop capture while the session still exists so that the UI can be
+	// updated in case we're currently running. If so, this will schedule a
+	// call to our on_capture_state_changed() slot for the next run of the
+	// event loop. We need to have this executed immediately or else it will
+	// be dismissed since the session object will be deleted by the time we
+	// leave this method and the event loop gets a chance to run again.
+	session->stop_capture();
+	QApplication::processEvents();
 
 	for (shared_ptr<views::ViewBase> view : session->views())
 		remove_view(view);
@@ -316,6 +326,7 @@ void MainWindow::remove_session(shared_ptr<Session> session)
 	if (last_focused_session_ == session)
 		last_focused_session_.reset();
 
+	// Remove the session from our list of sessions (which also destroys it)
 	sessions_.remove_if([&](shared_ptr<Session> s) {
 		return s == session; });
 
