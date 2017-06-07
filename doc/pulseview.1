@@ -41,6 +41,12 @@ Show a help text and exit.
 .B "\-V, \-\-version"
 Show version information and exit.
 .TP
+.BR "\-d, \-\-driver " <drivername>
+Specify the capture device to connect to. If the
+.B \-\-driver
+option is not supplied, PulseView attempts to re-connect to the
+most recently used device, or auto-detect available devices.
+.TP
 .BR "\-i, \-\-input\-file " <filename>
 Load input from a file. If the
 .B \-\-input\-format
