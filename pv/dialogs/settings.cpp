@@ -23,7 +23,6 @@
 #include <boost/version.hpp>
 
 #include <QApplication>
-#include <QCheckBox>
 #include <QDialogButtonBox>
 #include <QFormLayout>
 #include <QGroupBox>
@@ -122,9 +121,19 @@ void Settings::create_pages()
 	aboutButton->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
 }
 
-QWidget *Settings::get_view_settings_form(QWidget *parent) const
+QCheckBox *Settings::create_checkbox(const QString& key, const char* slot) const
 {
 	GlobalSettings settings;
+
+	QCheckBox *cb = new QCheckBox();
+	cb->setChecked(settings.value(key).toBool());
+	connect(cb, SIGNAL(stateChanged(int)), this, slot);
+	return cb;
+}
+
+QWidget *Settings::get_view_settings_form(QWidget *parent) const
+{
+	QCheckBox *cb;
 
 	QWidget *form = new QWidget(parent);
 	QVBoxLayout *form_layout = new QVBoxLayout(form);
@@ -136,30 +145,25 @@ QWidget *Settings::get_view_settings_form(QWidget *parent) const
 	QFormLayout *trace_view_layout = new QFormLayout();
 	trace_view_group->setLayout(trace_view_layout);
 
-	QCheckBox *coloured_bg_cb = new QCheckBox();
-	coloured_bg_cb->setChecked(settings.value(GlobalSettings::Key_View_ColouredBG).toBool());
-	connect(coloured_bg_cb, SIGNAL(stateChanged(int)), this, SLOT(on_view_colouredBG_changed(int)));
-	trace_view_layout->addRow(tr("Use coloured trace &background"), coloured_bg_cb);
+	cb = create_checkbox(GlobalSettings::Key_View_ColouredBG,
+		SLOT(on_view_colouredBG_changed(int)));
+	trace_view_layout->addRow(tr("Use coloured trace &background"), cb);
 
-	QCheckBox *always_zoom_to_fit_cb = new QCheckBox();
-	always_zoom_to_fit_cb->setChecked(settings.value(GlobalSettings::Key_View_AlwaysZoomToFit).toBool());
-	connect(always_zoom_to_fit_cb, SIGNAL(stateChanged(int)), this, SLOT(on_view_alwaysZoomToFit_changed(int)));
-	trace_view_layout->addRow(tr("Constantly perform &zoom-to-fit during capture"), always_zoom_to_fit_cb);
+	cb = create_checkbox(GlobalSettings::Key_View_AlwaysZoomToFit,
+		SLOT(on_view_alwaysZoomToFit_changed(int)));
+	trace_view_layout->addRow(tr("Constantly perform &zoom-to-fit during capture"), cb);
 
-	QCheckBox *sticky_scrolling_cb = new QCheckBox();
-	sticky_scrolling_cb->setChecked(settings.value(GlobalSettings::Key_View_StickyScrolling).toBool());
-	connect(sticky_scrolling_cb, SIGNAL(stateChanged(int)), this, SLOT(on_view_stickyScrolling_changed(int)));
-	trace_view_layout->addRow(tr("Always keep &newest samples at the right edge during capture"), sticky_scrolling_cb);
+	cb = create_checkbox(GlobalSettings::Key_View_StickyScrolling,
+		SLOT(on_view_stickyScrolling_changed(int)));
+	trace_view_layout->addRow(tr("Always keep &newest samples at the right edge during capture"), cb);
 
-	QCheckBox *show_sampling_points_cb = new QCheckBox();
-	show_sampling_points_cb->setChecked(settings.value(GlobalSettings::Key_View_ShowSamplingPoints).toBool());
-	connect(show_sampling_points_cb, SIGNAL(stateChanged(int)), this, SLOT(on_view_showSamplingPoints_changed(int)));
-	trace_view_layout->addRow(tr("Show data &sampling points"), show_sampling_points_cb);
+	cb = create_checkbox(GlobalSettings::Key_View_ShowSamplingPoints,
+		SLOT(on_view_showSamplingPoints_changed(int)));
+	trace_view_layout->addRow(tr("Show data &sampling points"), cb);
 
-	QCheckBox *show_analog_minor_grid_cb = new QCheckBox();
-	show_analog_minor_grid_cb->setChecked(settings.value(GlobalSettings::Key_View_ShowAnalogMinorGrid).toBool());
-	connect(show_analog_minor_grid_cb, SIGNAL(stateChanged(int)), this, SLOT(on_view_showAnalogMinorGrid_changed(int)));
-	trace_view_layout->addRow(tr("Show analog minor grid in addition to vdiv grid"), show_analog_minor_grid_cb);
+	cb = create_checkbox(GlobalSettings::Key_View_ShowAnalogMinorGrid,
+		SLOT(on_view_showAnalogMinorGrid_changed(int)));
+	trace_view_layout->addRow(tr("Show analog minor grid in addition to vdiv grid"), cb);
 
 	return form;
 }
@@ -167,7 +171,7 @@ QWidget *Settings::get_view_settings_form(QWidget *parent) const
 QWidget *Settings::get_decoder_settings_form(QWidget *parent) const
 {
 #ifdef ENABLE_DECODE
-	GlobalSettings settings;
+	QCheckBox *cb;
 
 	QWidget *form = new QWidget(parent);
 	QVBoxLayout *form_layout = new QVBoxLayout(form);
@@ -179,10 +183,9 @@ QWidget *Settings::get_decoder_settings_form(QWidget *parent) const
 	QFormLayout *decoder_layout = new QFormLayout();
 	decoder_group->setLayout(decoder_layout);
 
-	QCheckBox *initial_state_configurable_cb = new QCheckBox();
-	initial_state_configurable_cb->setChecked(settings.value(GlobalSettings::Key_Dec_InitialStateConfigurable).toBool());
-	connect(initial_state_configurable_cb, SIGNAL(stateChanged(int)), this, SLOT(on_dec_initialStateConfigurable_changed(int)));
-	decoder_layout->addRow(tr("Allow configuration of &initial signal state"), initial_state_configurable_cb);
+	cb = create_checkbox(GlobalSettings::Key_Dec_InitialStateConfigurable,
+		SLOT(on_dec_initialStateConfigurable_changed(int)));
+	decoder_layout->addRow(tr("Allow configuration of &initial signal state"), cb);
 
 	return form;
 #else

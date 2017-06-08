@@ -20,6 +20,7 @@
 #ifndef PULSEVIEW_PV_SETTINGS_HPP
 #define PULSEVIEW_PV_SETTINGS_HPP
 
+#include <QCheckBox>
 #include <QDialog>
 #include <QListWidget>
 #include <QStackedWidget>
@@ -38,6 +39,7 @@ public:
 	Settings(DeviceManager &device_manager, QWidget *parent = nullptr);
 
 	void create_pages();
+	QCheckBox *create_checkbox(const QString& key, const char* slot) const;
 
 	QWidget *get_view_settings_form(QWidget *parent) const;
 	QWidget *get_decoder_settings_form(QWidget *parent) const;
