@@ -918,7 +918,7 @@ QComboBox* DecodeTrace::create_channel_selector_initial_pin(QWidget *parent,
 
 	selector->addItem("0", qVariantFromValue((int)SRD_INITIAL_PIN_LOW));
 	selector->addItem("1", qVariantFromValue((int)SRD_INITIAL_PIN_HIGH));
-	selector->addItem("?", qVariantFromValue((int)SRD_INITIAL_PIN_SAME_AS_SAMPLE0));
+	selector->addItem("X", qVariantFromValue((int)SRD_INITIAL_PIN_SAME_AS_SAMPLE0));
 
 	// Default to index 2 (SRD_INITIAL_PIN_SAME_AS_SAMPLE0).
 	const int idx = (!dec->initial_pins()) ? 2 : dec->initial_pins()->data[pdch->order];
