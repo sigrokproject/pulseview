@@ -40,6 +40,7 @@ public:
 	void create_pages();
 
 	QWidget *get_view_settings_form(QWidget *parent) const;
+	QWidget *get_decoder_settings_form(QWidget *parent) const;
 	QWidget *get_about_page(QWidget *parent) const;
 
 	void accept();

@@ -101,6 +101,17 @@ void Settings::create_pages()
 	viewButton->setTextAlignment(Qt::AlignHCenter);
 	viewButton->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
 
+#ifdef ENABLE_DECODE
+	// Decoder page
+	pages->addWidget(get_decoder_settings_form(pages));
+
+	QListWidgetItem *decoderButton = new QListWidgetItem(page_list);
+	decoderButton->setIcon(QIcon(":/icons/add-decoder.svg"));
+	decoderButton->setText(tr("Decoders"));
+	decoderButton->setTextAlignment(Qt::AlignHCenter);
+	decoderButton->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+#endif
+
 	// About page
 	pages->addWidget(get_about_page(pages));
 
@@ -151,6 +162,27 @@ QWidget *Settings::get_view_settings_form(QWidget *parent) const
 	trace_view_layout->addRow(tr("Show analog minor grid in addition to vdiv grid"), show_analog_minor_grid_cb);
 
 	return form;
+}
+
+QWidget *Settings::get_decoder_settings_form(QWidget *parent) const
+{
+#ifdef ENABLE_DECODE
+	GlobalSettings settings;
+
+	QWidget *form = new QWidget(parent);
+	QVBoxLayout *form_layout = new QVBoxLayout(form);
+
+	// Decoder settings
+	QGroupBox *decoder_group = new QGroupBox(tr("Decoders"));
+	form_layout->addWidget(decoder_group);
+
+	QFormLayout *decoder_layout = new QFormLayout();
+	decoder_group->setLayout(decoder_layout);
+
+	return form;
+#else
+	(void)parent;
+#endif
 }
 
 #ifdef ENABLE_DECODE
