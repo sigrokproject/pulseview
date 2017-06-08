@@ -53,6 +53,7 @@ private Q_SLOTS:
 	void on_view_stickyScrolling_changed(int state);
 	void on_view_showSamplingPoints_changed(int state);
 	void on_view_showAnalogMinorGrid_changed(int state);
+	void on_dec_initialStateConfigurable_changed(int state);
 
 private:
 	DeviceManager &device_manager_;

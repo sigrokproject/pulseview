@@ -30,6 +30,7 @@ const QString GlobalSettings::Key_View_ColouredBG = "View_ColouredBG";
 const QString GlobalSettings::Key_View_StickyScrolling = "View_StickyScrolling";
 const QString GlobalSettings::Key_View_ShowSamplingPoints = "View_ShowSamplingPoints";
 const QString GlobalSettings::Key_View_ShowAnalogMinorGrid = "View_ShowAnalogMinorGrid";
+const QString GlobalSettings::Key_Dec_InitialStateConfigurable = "Dec_InitialStateConfigurable";
 
 multimap< QString, function<void(QVariant)> > GlobalSettings::callbacks_;
 bool GlobalSettings::tracking_ = false;

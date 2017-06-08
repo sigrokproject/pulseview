@@ -179,6 +179,11 @@ QWidget *Settings::get_decoder_settings_form(QWidget *parent) const
 	QFormLayout *decoder_layout = new QFormLayout();
 	decoder_group->setLayout(decoder_layout);
 
+	QCheckBox *initial_state_configurable_cb = new QCheckBox();
+	initial_state_configurable_cb->setChecked(settings.value(GlobalSettings::Key_Dec_InitialStateConfigurable).toBool());
+	connect(initial_state_configurable_cb, SIGNAL(stateChanged(int)), this, SLOT(on_dec_initialStateConfigurable_changed(int)));
+	decoder_layout->addRow(tr("Allow configuration of &initial signal state"), initial_state_configurable_cb);
+
 	return form;
 #else
 	(void)parent;
@@ -396,6 +401,12 @@ void Settings::on_view_showAnalogMinorGrid_changed(int state)
 {
 	GlobalSettings settings;
 	settings.setValue(GlobalSettings::Key_View_ShowAnalogMinorGrid, state ? true : false);
+}
+
+void Settings::on_dec_initialStateConfigurable_changed(int state)
+{
+	GlobalSettings settings;
+	settings.setValue(GlobalSettings::Key_Dec_InitialStateConfigurable, state ? true : false);
 }
 
 } // namespace dialogs

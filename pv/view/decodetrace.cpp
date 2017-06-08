@@ -40,6 +40,7 @@ extern "C" {
 
 #include "decodetrace.hpp"
 
+#include <pv/globalsettings.hpp>
 #include <pv/data/decode/annotation.hpp>
 #include <pv/data/decode/decoder.hpp>
 #include <pv/data/decoderstack.hpp>
@@ -781,6 +782,7 @@ void DecodeTrace::create_decoder_form(int index,
 	QFormLayout *form)
 {
 	const GSList *l;
+	GlobalSettings settings;
 
 	assert(dec);
 	const srd_decoder *const decoder = dec->decoder();
@@ -825,6 +827,9 @@ void DecodeTrace::create_decoder_form(int index,
 		hlayout->addWidget(combo);
 		hlayout->addWidget(combo_initial_pin);
 
+		if (!settings.value(GlobalSettings::Key_Dec_InitialStateConfigurable).toBool())
+			combo_initial_pin->hide();
+
 		decoder_form->addRow(tr("<b>%1</b> (%2) *")
 			.arg(QString::fromUtf8(pdch->name),
 			     QString::fromUtf8(pdch->desc)), hlayout);
@@ -849,6 +854,9 @@ void DecodeTrace::create_decoder_form(int index,
 		QHBoxLayout *const hlayout = new QHBoxLayout;
 		hlayout->addWidget(combo);
 		hlayout->addWidget(combo_initial_pin);
+
+		if (!settings.value(GlobalSettings::Key_Dec_InitialStateConfigurable).toBool())
+			combo_initial_pin->hide();
 
 		decoder_form->addRow(tr("<b>%1</b> (%2)")
 			.arg(QString::fromUtf8(pdch->name),
