@@ -141,7 +141,7 @@ View::View(Session &session, bool is_main_view, QWidget *parent) :
 	next_flag_text_('A'),
 	trigger_markers_(),
 	hover_point_(-1, -1),
-	scroll_needs_defaults_(false),
+	scroll_needs_defaults_(true),
 	saved_v_offset_(0)
 {
 	QVBoxLayout *root_layout = new QVBoxLayout(this);
