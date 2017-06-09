@@ -70,9 +70,6 @@ private:
 
 public:
 	explicit MainWindow(DeviceManager &device_manager,
-		string open_file_name = string(),
-		string open_file_format = string(),
-		bool restore_sessions = true,
 		QWidget *parent = nullptr);
 
 	~MainWindow();
@@ -88,12 +85,18 @@ public:
 
 	void remove_session(shared_ptr<Session> session);
 
+	void add_session_with_file(string open_file_name, string open_file_format);
+
+	void add_default_session();
+
+	void save_sessions();
+	void restore_sessions();
+
 private:
 	void setup_ui();
 
 	void save_ui_settings();
-
-	void restore_ui_settings(bool restore_sessions);
+	void restore_ui_settings();
 
 	shared_ptr<Session> get_tab_session(int index) const;
 

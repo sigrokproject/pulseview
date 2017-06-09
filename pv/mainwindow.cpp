@@ -68,9 +68,7 @@ using toolbars::MainBar;
 
 const QString MainWindow::WindowTitle = tr("PulseView");
 
-MainWindow::MainWindow(DeviceManager &device_manager,
-	string open_file_name, string open_file_format,
-	bool restore_sessions, QWidget *parent) :
+MainWindow::MainWindow(DeviceManager &device_manager, QWidget *parent) :
 	QMainWindow(parent),
 	device_manager_(device_manager),
 	session_selector_(this),
@@ -92,32 +90,7 @@ MainWindow::MainWindow(DeviceManager &device_manager,
 		bind(&MainWindow::on_settingViewShowAnalogMinorGrid_changed, this, _1));
 
 	setup_ui();
-	restore_ui_settings(restore_sessions);
-
-	if (!open_file_name.empty()) {
-		shared_ptr<Session> session = add_session();
-		session->load_init_file(open_file_name, open_file_format);
-	}
-
-	// Add empty default session if there aren't any sessions
-	if (sessions_.size() == 0) {
-		shared_ptr<Session> session = add_session();
-
-		map<string, string> dev_info;
-		shared_ptr<devices::HardwareDevice> other_device, demo_device;
-
-		// Use any available device that's not demo
-		for (shared_ptr<devices::HardwareDevice> dev : device_manager_.devices()) {
-			if (dev->hardware_device()->driver()->name() == "demo") {
-				demo_device = dev;
-			} else {
-				other_device = dev;
-			}
-		}
-
-		// ...and if there isn't any, just use demo then
-		session->select_device(other_device ? other_device : demo_device);
-	}
+	restore_ui_settings();
 }
 
 MainWindow::~MainWindow()
@@ -347,6 +320,78 @@ void MainWindow::remove_session(shared_ptr<Session> session)
 	}
 }
 
+void MainWindow::add_session_with_file(string open_file_name,
+	string open_file_format)
+{
+	shared_ptr<Session> session = add_session();
+	session->load_init_file(open_file_name, open_file_format);
+}
+
+void MainWindow::add_default_session()
+{
+	// Only add the default session if there would be no session otherwise
+	if (sessions_.size() > 0)
+		return;
+
+	shared_ptr<Session> session = add_session();
+
+	map<string, string> dev_info;
+	shared_ptr<devices::HardwareDevice> other_device, demo_device;
+
+	// Use any available device that's not demo
+	for (shared_ptr<devices::HardwareDevice> dev : device_manager_.devices()) {
+		if (dev->hardware_device()->driver()->name() == "demo") {
+			demo_device = dev;
+		} else {
+			other_device = dev;
+		}
+	}
+
+	// ...and if there isn't any, just use demo then
+	session->select_device(other_device ? other_device : demo_device);
+}
+
+void MainWindow::save_sessions()
+{
+	QSettings settings;
+	int id = 0;
+
+	for (shared_ptr<Session> session : sessions_) {
+		// Ignore sessions using the demo device or no device at all
+		if (session->device()) {
+			shared_ptr<devices::HardwareDevice> device =
+				dynamic_pointer_cast< devices::HardwareDevice >
+				(session->device());
+
+			if (device &&
+				device->hardware_device()->driver()->name() == "demo")
+				continue;
+
+			settings.beginGroup("Session" + QString::number(id++));
+			settings.remove("");  // Remove all keys in this group
+			session->save_settings(settings);
+			settings.endGroup();
+		}
+	}
+
+	settings.setValue("sessions", id);
+}
+
+void MainWindow::restore_sessions()
+{
+	QSettings settings;
+	int i, session_count;
+
+	session_count = settings.value("sessions", 0).toInt();
+
+	for (i = 0; i < session_count; i++) {
+		settings.beginGroup("Session" + QString::number(i));
+		shared_ptr<Session> session = add_session();
+		session->restore_settings(settings);
+		settings.endGroup();
+	}
+}
+
 void MainWindow::setup_ui()
 {
 	setObjectName(QString::fromUtf8("MainWindow"));
@@ -438,35 +483,14 @@ void MainWindow::setup_ui()
 void MainWindow::save_ui_settings()
 {
 	QSettings settings;
-	int id = 0;
 
 	settings.beginGroup("MainWindow");
 	settings.setValue("state", saveState());
 	settings.setValue("geometry", saveGeometry());
 	settings.endGroup();
-
-	for (shared_ptr<Session> session : sessions_) {
-		// Ignore sessions using the demo device or no device at all
-		if (session->device()) {
-			shared_ptr<devices::HardwareDevice> device =
-				dynamic_pointer_cast< devices::HardwareDevice >
-				(session->device());
-
-			if (device &&
-				device->hardware_device()->driver()->name() == "demo")
-				continue;
-
-			settings.beginGroup("Session" + QString::number(id++));
-			settings.remove("");  // Remove all keys in this group
-			session->save_settings(settings);
-			settings.endGroup();
-		}
-	}
-
-	settings.setValue("sessions", id);
 }
 
-void MainWindow::restore_ui_settings(bool restore_sessions)
+void MainWindow::restore_ui_settings()
 {
 	QSettings settings;
 
@@ -479,19 +503,6 @@ void MainWindow::restore_ui_settings(bool restore_sessions)
 		resize(1000, 720);
 
 	settings.endGroup();
-
-	if (restore_sessions) {
-		int i, session_count;
-
-		session_count = settings.value("sessions", 0).toInt();
-
-		for (i = 0; i < session_count; i++) {
-			settings.beginGroup("Session" + QString::number(i));
-			shared_ptr<Session> session = add_session();
-			session->restore_settings(settings);
-			settings.endGroup();
-		}
-	}
 }
 
 shared_ptr<Session> MainWindow::get_tab_session(int index) const
@@ -518,6 +529,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 		event->ignore();
 	} else {
 		save_ui_settings();
+		save_sessions();
 		event->accept();
 	}
 }

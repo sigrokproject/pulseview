@@ -177,9 +177,16 @@ int main(int argc, char *argv[])
 			pv::DeviceManager device_manager(context);
 
 			// Initialise the main window
-			pv::MainWindow w(device_manager, open_file, open_file_format,
-				restore_sessions);
+			pv::MainWindow w(device_manager);
 			w.show();
+
+			if (restore_sessions)
+				w.restore_sessions();
+
+			if (!open_file.empty())
+				w.add_session_with_file(open_file, open_file_format);
+			else
+				w.add_default_session();
 
 #ifdef ENABLE_SIGNALS
 			if (SignalHandler::prepare_signals()) {
