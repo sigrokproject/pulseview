@@ -48,6 +48,8 @@ public:
 public:
 	GlobalSettings();
 
+	void set_defaults_where_needed();
+
 	static void register_change_handler(const QString key,
 		function<void(QVariant)> cb);
 

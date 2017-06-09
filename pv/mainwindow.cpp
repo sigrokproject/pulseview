@@ -89,6 +89,9 @@ MainWindow::MainWindow(DeviceManager &device_manager, QWidget *parent) :
 	GlobalSettings::register_change_handler(GlobalSettings::Key_View_ShowAnalogMinorGrid,
 		bind(&MainWindow::on_settingViewShowAnalogMinorGrid_changed, this, _1));
 
+	GlobalSettings settings;
+	settings.set_defaults_where_needed();
+
 	setup_ui();
 	restore_ui_settings();
 }

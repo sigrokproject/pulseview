@@ -42,6 +42,13 @@ GlobalSettings::GlobalSettings() :
 	beginGroup("Settings");
 }
 
+void GlobalSettings::set_defaults_where_needed()
+{
+	// Enable coloured trace backgrounds by default
+	if (!contains(Key_View_ColouredBG))
+		setValue(Key_View_ColouredBG, true);
+}
+
 void GlobalSettings::register_change_handler(const QString key,
 	function<void(QVariant)> cb)
 {
