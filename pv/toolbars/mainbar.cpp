@@ -87,7 +87,7 @@ const char *MainBar::SettingOpenDirectory = "MainWindow/OpenDirectory";
 const char *MainBar::SettingSaveDirectory = "MainWindow/SaveDirectory";
 
 MainBar::MainBar(Session &session, QWidget *parent,
-		pv::views::TraceView::View *view) :
+		pv::views::trace::View *view) :
 	StandardBar(session, parent, view, false),
 	action_new_view_(new QAction(this)),
 	action_open_(new QAction(this)),
@@ -595,8 +595,8 @@ void MainBar::export_file(shared_ptr<OutputFormat> format, bool selection_only)
 
 	// Selection only? Verify that the cursors are active and fetch their values
 	if (selection_only) {
-		views::TraceView::View *trace_view =
-			qobject_cast<views::TraceView::View*>(session_.main_view().get());
+		views::trace::View *trace_view =
+			qobject_cast<views::trace::View*>(session_.main_view().get());
 
 		if (!trace_view->cursors()->enabled()) {
 			show_session_error(tr("Missing Cursors"), tr("You need to set the " \

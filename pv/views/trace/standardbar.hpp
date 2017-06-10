@@ -36,7 +36,7 @@ class Session;
 
 namespace views {
 
-namespace TraceView {
+namespace trace {
 class View;
 }
 
@@ -48,7 +48,7 @@ class StandardBar : public QToolBar
 
 public:
 	StandardBar(Session &session, QWidget *parent,
-		TraceView::View *view, bool add_default_widgets = true);
+		trace::View *view, bool add_default_widgets = true);
 
 	Session &session() const;
 
@@ -62,7 +62,7 @@ protected:
 	virtual void add_toolbar_widgets();
 
 	Session &session_;
-	TraceView::View *view_;
+	trace::View *view_;
 
 	QAction *const action_view_zoom_in_;
 	QAction *const action_view_zoom_out_;

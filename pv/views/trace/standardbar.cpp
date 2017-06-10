@@ -26,7 +26,7 @@
 
 #include <pv/mainwindow.hpp>
 
-using pv::views::TraceView::View;
+using pv::views::trace::View;
 
 namespace pv {
 namespace views {

@@ -734,22 +734,22 @@ void Session::update_signals()
 
 	// Make the signals list
 	for (shared_ptr<views::ViewBase> viewbase : views_) {
-		views::TraceView::View *trace_view =
-			qobject_cast<views::TraceView::View*>(viewbase.get());
+		views::trace::View *trace_view =
+			qobject_cast<views::trace::View*>(viewbase.get());
 
 		if (trace_view) {
-			unordered_set< shared_ptr<views::TraceView::Signal> >
+			unordered_set< shared_ptr<views::trace::Signal> >
 				prev_sigs(trace_view->signals());
 			trace_view->clear_signals();
 
 			for (auto channel : sr_dev->channels()) {
 				shared_ptr<data::SignalBase> signalbase;
-				shared_ptr<views::TraceView::Signal> signal;
+				shared_ptr<views::trace::Signal> signal;
 
 				// Find the channel in the old signals
 				const auto iter = find_if(
 					prev_sigs.cbegin(), prev_sigs.cend(),
-					[&](const shared_ptr<views::TraceView::Signal> &s) {
+					[&](const shared_ptr<views::trace::Signal> &s) {
 						return s->base()->channel() == channel;
 					});
 				if (iter != prev_sigs.end()) {
@@ -777,8 +777,8 @@ void Session::update_signals()
 								signalbase.get(), SLOT(on_capture_state_changed(int)));
 						}
 
-						signal = shared_ptr<views::TraceView::Signal>(
-							new views::TraceView::LogicSignal(*this,
+						signal = shared_ptr<views::trace::Signal>(
+							new views::trace::LogicSignal(*this,
 								device_, signalbase));
 						trace_view->add_signal(signal);
 						break;
@@ -798,8 +798,8 @@ void Session::update_signals()
 								signalbase.get(), SLOT(on_capture_state_changed(int)));
 						}
 
-						signal = shared_ptr<views::TraceView::Signal>(
-							new views::TraceView::AnalogSignal(
+						signal = shared_ptr<views::trace::Signal>(
+							new views::trace::AnalogSignal(
 								*this, signalbase));
 						trace_view->add_signal(signal);
 						break;

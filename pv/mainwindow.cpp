@@ -152,7 +152,7 @@ shared_ptr<views::ViewBase> MainWindow::add_view(const QString &title,
 
 	if (type == views::ViewTypeTrace)
 		// This view will be the main view if there's no main bar yet
-		v = make_shared<views::TraceView::View>(session,
+		v = make_shared<views::trace::View>(session,
 			(main_bar ? false : true), dock_main);
 
 	if (!v)
@@ -180,8 +180,8 @@ shared_ptr<views::ViewBase> MainWindow::add_view(const QString &title,
 		SLOT(trigger_event(util::Timestamp)));
 
 	if (type == views::ViewTypeTrace) {
-		views::TraceView::View *tv =
-			qobject_cast<views::TraceView::View*>(v.get());
+		views::trace::View *tv =
+			qobject_cast<views::trace::View*>(v.get());
 
 		tv->enable_coloured_bg(settings.value(GlobalSettings::Key_View_ColouredBG).toBool());
 		tv->enable_show_sampling_points(settings.value(GlobalSettings::Key_View_ShowSamplingPoints).toBool());
@@ -799,8 +799,8 @@ void MainWindow::on_settingViewColouredBg_changed(const QVariant new_value)
 		shared_ptr<views::ViewBase> viewbase = entry.second;
 
 		// Only trace views have this setting
-		views::TraceView::View* view =
-				qobject_cast<views::TraceView::View*>(viewbase.get());
+		views::trace::View* view =
+				qobject_cast<views::trace::View*>(viewbase.get());
 		if (view)
 			view->enable_coloured_bg(state);
 	}
@@ -814,8 +814,8 @@ void MainWindow::on_settingViewShowSamplingPoints_changed(const QVariant new_val
 		shared_ptr<views::ViewBase> viewbase = entry.second;
 
 		// Only trace views have this setting
-		views::TraceView::View* view =
-				qobject_cast<views::TraceView::View*>(viewbase.get());
+		views::trace::View* view =
+				qobject_cast<views::trace::View*>(viewbase.get());
 		if (view)
 			view->enable_show_sampling_points(state);
 	}
@@ -829,8 +829,8 @@ void MainWindow::on_settingViewShowAnalogMinorGrid_changed(const QVariant new_va
 		shared_ptr<views::ViewBase> viewbase = entry.second;
 
 		// Only trace views have this setting
-		views::TraceView::View* view =
-				qobject_cast<views::TraceView::View*>(viewbase.get());
+		views::trace::View* view =
+				qobject_cast<views::trace::View*>(viewbase.get());
 		if (view)
 			view->enable_show_analog_minor_grid(state);
 	}

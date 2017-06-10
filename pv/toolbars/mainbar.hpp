@@ -56,7 +56,7 @@ class MainWindow;
 class Session;
 
 namespace views {
-namespace TraceView {
+namespace trace {
 class View;
 }
 }
@@ -86,7 +86,7 @@ private:
 
 public:
 	MainBar(Session &session, QWidget *parent,
-		pv::views::TraceView::View *view);
+		pv::views::trace::View *view);
 
 	void update_device_list();
 
