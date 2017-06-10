@@ -43,11 +43,11 @@
 
 #include "toolbars/mainbar.hpp"
 
-#include "view/analogsignal.hpp"
-#include "view/decodetrace.hpp"
-#include "view/logicsignal.hpp"
-#include "view/signal.hpp"
-#include "view/view.hpp"
+#include "views/trace/analogsignal.hpp"
+#include "views/trace/decodetrace.hpp"
+#include "views/trace/logicsignal.hpp"
+#include "views/trace/signal.hpp"
+#include "views/trace/view.hpp"
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
 

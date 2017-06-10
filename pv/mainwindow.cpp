@@ -45,7 +45,7 @@
 #include "globalsettings.hpp"
 #include "toolbars/mainbar.hpp"
 #include "util.hpp"
-#include "view/view.hpp"
+#include "views/trace/view.hpp"
 #include "views/trace/standardbar.hpp"
 
 #include <libsigrokcxx/libsigrokcxx.hpp>

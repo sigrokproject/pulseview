@@ -30,7 +30,7 @@
 #include <pv/data/signalbase.hpp>
 #include <pv/devices/device.hpp>
 #include <pv/session.hpp>
-#include <pv/view/signal.hpp>
+#include <pv/views/trace/signal.hpp>
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
 

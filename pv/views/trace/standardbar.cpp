@@ -22,9 +22,9 @@
 #include <QMessageBox>
 
 #include "standardbar.hpp"
+#include "view.hpp"
 
 #include <pv/mainwindow.hpp>
-#include <pv/view/view.hpp>
 
 using pv::views::TraceView::View;
 

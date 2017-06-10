@@ -20,7 +20,7 @@
 #include <boost/test/floating_point_comparison.hpp>
 #include <boost/test/unit_test.hpp>
 
-#include "pv/view/ruler.hpp"
+#include "pv/views/trace/ruler.hpp"
 #include "test/test.hpp"
 
 using namespace pv::views::TraceView;

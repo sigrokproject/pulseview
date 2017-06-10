@@ -46,7 +46,7 @@
 #include <pv/popups/channels.hpp>
 #include <pv/popups/deviceoptions.hpp>
 #include <pv/util.hpp>
-#include <pv/view/view.hpp>
+#include <pv/views/trace/view.hpp>
 #include <pv/widgets/exportmenu.hpp>
 #include <pv/widgets/importmenu.hpp>
 #ifdef ENABLE_DECODE

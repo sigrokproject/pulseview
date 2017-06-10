@@ -224,31 +224,31 @@ set(pulseview_SOURCES
 	pv/prop/property.cpp
 	pv/prop/string.cpp
 	pv/toolbars/mainbar.cpp
-	pv/view/analogsignal.cpp
-	pv/view/cursor.cpp
-	pv/view/cursorpair.cpp
-	pv/view/flag.cpp
-	pv/view/header.cpp
-	pv/view/marginwidget.cpp
-	pv/view/logicsignal.cpp
-	pv/view/rowitem.cpp
-	pv/view/ruler.cpp
-	pv/view/signal.cpp
-	pv/view/signalscalehandle.cpp
-	pv/view/timeitem.cpp
-	pv/view/timemarker.cpp
-	pv/view/trace.cpp
-	pv/view/tracegroup.cpp
-	pv/view/tracepalette.cpp
-	pv/view/tracetreeitem.cpp
-	pv/view/tracetreeitemowner.cpp
-	pv/view/triggermarker.cpp
-	pv/view/view.cpp
-	pv/view/viewitem.cpp
-	pv/view/viewitemowner.cpp
-	pv/view/viewitempaintparams.cpp
-	pv/view/viewport.cpp
-	pv/view/viewwidget.cpp
+	pv/views/trace/analogsignal.cpp
+	pv/views/trace/cursor.cpp
+	pv/views/trace/cursorpair.cpp
+	pv/views/trace/flag.cpp
+	pv/views/trace/header.cpp
+	pv/views/trace/marginwidget.cpp
+	pv/views/trace/logicsignal.cpp
+	pv/views/trace/rowitem.cpp
+	pv/views/trace/ruler.cpp
+	pv/views/trace/signal.cpp
+	pv/views/trace/signalscalehandle.cpp
+	pv/views/trace/timeitem.cpp
+	pv/views/trace/timemarker.cpp
+	pv/views/trace/trace.cpp
+	pv/views/trace/tracegroup.cpp
+	pv/views/trace/tracepalette.cpp
+	pv/views/trace/tracetreeitem.cpp
+	pv/views/trace/tracetreeitemowner.cpp
+	pv/views/trace/triggermarker.cpp
+	pv/views/trace/view.cpp
+	pv/views/trace/viewitem.cpp
+	pv/views/trace/viewitemowner.cpp
+	pv/views/trace/viewitempaintparams.cpp
+	pv/views/trace/viewport.cpp
+	pv/views/trace/viewwidget.cpp
 	pv/views/viewbase.cpp
 	pv/views/trace/standardbar.cpp
 	pv/widgets/colourbutton.cpp
@@ -288,26 +288,26 @@ set(pulseview_HEADERS
 	pv/prop/property.hpp
 	pv/prop/string.hpp
 	pv/toolbars/mainbar.hpp
-	pv/view/analogsignal.hpp
-	pv/view/cursor.hpp
-	pv/view/flag.hpp
-	pv/view/header.hpp
-	pv/view/logicsignal.hpp
-	pv/view/marginwidget.hpp
-	pv/view/rowitem.hpp
-	pv/view/ruler.hpp
-	pv/view/signal.hpp
-	pv/view/signalscalehandle.hpp
-	pv/view/timeitem.hpp
-	pv/view/timemarker.hpp
-	pv/view/trace.hpp
-	pv/view/tracegroup.hpp
-	pv/view/tracetreeitem.hpp
-	pv/view/triggermarker.hpp
-	pv/view/view.hpp
-	pv/view/viewitem.hpp
-	pv/view/viewport.hpp
-	pv/view/viewwidget.hpp
+	pv/views/trace/analogsignal.hpp
+	pv/views/trace/cursor.hpp
+	pv/views/trace/flag.hpp
+	pv/views/trace/header.hpp
+	pv/views/trace/logicsignal.hpp
+	pv/views/trace/marginwidget.hpp
+	pv/views/trace/rowitem.hpp
+	pv/views/trace/ruler.hpp
+	pv/views/trace/signal.hpp
+	pv/views/trace/signalscalehandle.hpp
+	pv/views/trace/timeitem.hpp
+	pv/views/trace/timemarker.hpp
+	pv/views/trace/trace.hpp
+	pv/views/trace/tracegroup.hpp
+	pv/views/trace/tracetreeitem.hpp
+	pv/views/trace/triggermarker.hpp
+	pv/views/trace/view.hpp
+	pv/views/trace/viewitem.hpp
+	pv/views/trace/viewport.hpp
+	pv/views/trace/viewwidget.hpp
 	pv/views/viewbase.hpp
 	pv/views/trace/standardbar.hpp
 	pv/widgets/colourbutton.hpp
@@ -339,14 +339,14 @@ if(ENABLE_DECODE)
 		pv/data/decode/decoder.cpp
 		pv/data/decode/row.cpp
 		pv/data/decode/rowdata.cpp
-		pv/view/decodetrace.cpp
+		pv/views/trace/decodetrace.cpp
 		pv/widgets/decodergroupbox.cpp
 		pv/widgets/decodermenu.cpp
 	)
 
 	list(APPEND pulseview_HEADERS
 		pv/data/decoderstack.hpp
-		pv/view/decodetrace.hpp
+		pv/views/trace/decodetrace.hpp
 		pv/widgets/decodergroupbox.hpp
 		pv/widgets/decodermenu.hpp
 	)

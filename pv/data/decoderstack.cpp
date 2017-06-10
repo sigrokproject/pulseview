@@ -30,7 +30,7 @@
 #include <pv/data/logic.hpp>
 #include <pv/data/logicsegment.hpp>
 #include <pv/session.hpp>
-#include <pv/view/logicsignal.hpp>
+#include <pv/views/trace/logicsignal.hpp>
 
 using std::lock_guard;
 using std::mutex;
