@@ -211,7 +211,7 @@ QWidget *Settings::get_about_page(QWidget *parent) const
 #endif
 
 	QLabel *icon = new QLabel();
-	icon->setPixmap(QPixmap(QString::fromUtf8(":/icons/sigrok-logo-notext.svg")));
+	icon->setPixmap(QPixmap(QString::fromUtf8(":/icons/pulseview.svg")));
 
 	/* Setup the version field */
 	QLabel *version_info = new QLabel();
