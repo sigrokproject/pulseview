@@ -468,6 +468,9 @@ install(FILES doc/pulseview.1 DESTINATION ${CMAKE_INSTALL_MANDIR}/man1 COMPONENT
 # Install the desktop file.
 install(FILES contrib/org.sigrok.PulseView.desktop DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/applications)
 
+# Install the AppData/AppStream file.
+install(FILES contrib/org.sigrok.PulseView.appdata.xml DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/metainfo)
+
 # Generate Windows installer script.
 configure_file(contrib/pulseview_cross.nsi.in contrib/pulseview_cross.nsi @ONLY)
 
