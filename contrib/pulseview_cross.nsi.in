@@ -56,7 +56,7 @@ RequestExecutionLevel admin
 # --- MUI interface configuration ---------------------------------------------
 
 # Use the following icon for the installer EXE file.
-!define MUI_ICON "@PROJECT_SOURCE_DIR@/icons/sigrok-logo-notext.ico"
+!define MUI_ICON "@PROJECT_SOURCE_DIR@/icons/pulseview.ico"
 
 # Show a nice image at the top of each installer page.
 !define MUI_HEADERIMAGE
@@ -198,7 +198,7 @@ Section "PulseView (required)" Section1
 		"$\"$INSTDIR\Uninstall.exe$\""
 	WriteRegStr HKLM "${REGSTR}" "InstallLocation" "$\"$INSTDIR$\""
 	WriteRegStr HKLM "${REGSTR}" "DisplayIcon" \
-		"$\"$INSTDIR\sigrok-logo-notext.ico$\""
+		"$\"$INSTDIR\pulseview.ico$\""
 	WriteRegStr HKLM "${REGSTR}" "Publisher" "sigrok"
 	WriteRegStr HKLM "${REGSTR}" "HelpLink" \
 		"http://sigrok.org/wiki/PulseView"
