@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!-- Creative Commons CC0 1.0 Universal (CC0-1.0, Public Domain Dedication). -->
-<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
-  <mime-type type="application/vnd.sigrok.session">
-    <comment>sigrok session</comment>
-    <glob pattern="*.sr"/>
-    <icon name="sigrok-icon-notext"/>
-  </mime-type>
-</mime-info>
