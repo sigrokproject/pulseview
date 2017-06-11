@@ -89,7 +89,7 @@
 				<filter token="bundled_libs" value="${bundled_libs}"/>
 			</filterset>
 		</copy>
-		<copy file="${pulseview-source-path}/icons/sigrok-logo-notext.png"
+		<copy file="${pulseview-source-path}/icons/pulseview.png"
 			tofile="${resource.absolute.dir}/drawable/logo.png"/>
 		<copy todir="${source.absolute.dir}">
 			<fileset dir="${prefix}/src/android/java/src">

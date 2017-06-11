@@ -403,7 +403,7 @@ void MainWindow::setup_ui()
 
 	// Set the window icon
 	QIcon icon;
-	icon.addFile(QString(":/icons/sigrok-logo-notext.png"));
+	icon.addFile(QString(":/icons/pulseview.png"));
 	setWindowIcon(icon);
 
 	view_sticky_scrolling_shortcut_ = new QShortcut(QKeySequence(Qt::Key_S), this, SLOT(on_view_sticky_scrolling_shortcut()));

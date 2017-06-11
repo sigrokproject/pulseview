@@ -5,6 +5,6 @@ GenericName=Logic analyzer, oscilloscope and MSO GUI
 Categories=Development;Electronics;
 Comment=Control your logic analyzer, oscilloscope, or MSO
 Exec=pulseview
-Icon=sigrok-logo-notext
+Icon=pulseview
 Type=Application
 MimeType=application/vnd.sigrok.session
