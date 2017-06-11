@@ -68,20 +68,7 @@ DeviceManager::DeviceManager(shared_ptr<Context> context) :
 		progress->setLabelText(QObject::tr("Scanning for %1...")
 			.arg(QString::fromStdString(entry.first)));
 
-		/**
-		 * We currently only support devices that can deliver
-		 * samples at a fixed samplerate i.e. oscilloscopes and
-		 * logic analysers.
-		 * @todo Add support for non-monotonic devices i.e. DMMs
-		 * and sensors.
-		 */
-		const auto keys = (entry.second)->config_keys();
-
-		bool supported_device = keys.count(ConfigKey::LOGIC_ANALYZER) |
-			keys.count(ConfigKey::OSCILLOSCOPE);
-
-		if (supported_device)
-			driver_scan(entry.second, map<const ConfigKey *, VariantBase>());
+		driver_scan(entry.second, map<const ConfigKey *, VariantBase>());
 
 		progress->setValue(entry_num++);
 		QApplication::processEvents();
@@ -113,6 +100,18 @@ DeviceManager::driver_scan(
 	list< shared_ptr<devices::HardwareDevice> > driver_devices;
 
 	assert(driver);
+
+	/*
+	 * We currently only support devices that can deliver samples at
+	 * a fixed samplerate (i.e. oscilloscopes and logic analysers).
+	 *
+	 * @todo Add support for non-monotonic devices (DMMs, sensors, etc).
+	 */
+	const auto keys = driver->config_keys();
+	bool supported_device = keys.count(ConfigKey::LOGIC_ANALYZER) |
+		keys.count(ConfigKey::OSCILLOSCOPE);
+	if (!supported_device)
+		return driver_devices;
 
 	// Remove any device instances from this driver from the device
 	// list. They will not be valid after the scan.
