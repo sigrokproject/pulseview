@@ -465,6 +465,9 @@ install(TARGETS ${PROJECT_NAME} DESTINATION bin/)
 # Install the manpage.
 install(FILES doc/pulseview.1 DESTINATION ${CMAKE_INSTALL_MANDIR}/man1 COMPONENT doc)
 
+# Install the desktop file.
+install(FILES contrib/org.sigrok.PulseView.desktop DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/applications)
+
 # Generate Windows installer script.
 configure_file(contrib/pulseview_cross.nsi.in contrib/pulseview_cross.nsi @ONLY)
 
