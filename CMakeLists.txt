@@ -471,6 +471,10 @@ install(FILES contrib/org.sigrok.PulseView.desktop DESTINATION ${CMAKE_INSTALL_D
 # Install the AppData/AppStream file.
 install(FILES contrib/org.sigrok.PulseView.appdata.xml DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/metainfo)
 
+# Install the PulseView icons.
+install(FILES icons/pulseview.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/48x48/apps)
+install(FILES icons/pulseview.svg DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/scalable/apps)
+
 # Generate Windows installer script.
 configure_file(contrib/pulseview_cross.nsi.in contrib/pulseview_cross.nsi @ONLY)
 
