@@ -1,3 +1,123 @@
+0.4.0 (2017-06-12)
+------------------
+
+ * Updated build requirements:
+   - A C++ compiler with full C++11 support (g++ >= 4.8.1 or clang++ >= 3.3)
+   - cmake >= 2.8.12
+   - libglib >= 2.28.0
+   - glibmm-2.4 >= 2.28.0
+   - Boost >= 1.55:
+     - New requirement: libboost-serialization.
+     - Dropped requirement: libboost-thread.
+   - libsigrokcxx >= 0.5.0 (libsigrok C++ bindings)
+   - libsigrokdecode >= 0.5.0
+   - Dropped support for Qt4; PulseView now requires Qt5.
+ * Add the concepts of sessions and views to PulseView: 
+   - Sessions represent individual files/device instances.
+     Each session is represented as a tab in PulseView.
+   - Views are different data representations of one specific session.
+     For example, different views of a session can have different zoom levels,
+     can be scrolled to different positions, etc. etc.
+     Each view is a dock window within the respective session's tab.
+   - The view docks can be repositioned, resized and extracted out into their
+     own individual windows.
+   - Sessions and views are partially saved and restored when PulseView
+     exits/starts. Not all information is restored yet, though (e.g. decoders).
+   - Add CTRL-q to close PulseView, CTRL-w to close a session tab (bug #899).
+ * Add support for saving analog data to .sr files.
+ * Analog signal traces:
+   - Add initial implementation of a vertical grid for analog traces.
+   - Add a dropdown for the vertical resolution setting.
+   - Show the vertical resolution info on the right-hand side of the trace.
+   - Make the number of vertical/horizontal divisions configurable.
+   - Add an option to enable autoranging for analog channels.
+ * Add a settings icon which allows access to various PulseView config options.
+ * Settings -> About:
+   - Show the used libraries, versions, and features (bug #912).
+   - Fix word-wrapping of the driver/decoder/module names (bug #111).
+ * The menu bar and "burger menu" have been removed in favor of the
+   global settings menu (plus various buttons/icons and their hotkeys).
+ * UI and usability tweaks:
+   - Try to keep annotation labels within the view if there's enough space.
+   - Annotation labels can now be pushed aside by the row title.
+   - Use natural sort order for decode trace's channel selector drop-down.
+   - Improve icon/theme handling: Don't try to use non-existing theme icons.
+   - Add a pane splitter for the trace names/arrows, allowing horizontal resize.
+   - Show a confirmation dialog when closing sessions with unsaved data.
+   - Add tooltips to various UI elements to increase usability.
+   - Show a progress dialog while scanning for devices.
+ * Connect dialog:
+   - Improve UI to make it easier to use and understand.
+   - Allow for TCP and VXI connections to supported devices (bug #769).
+   - Clarify button label to "Scan for devices using driver above".
+ * Add support for showing the sampling points in traces (bug #485).
+ * Add support for specifying the (assumed) initial pin states before the
+   first sample that is being decoded. This can be set to 0/low, 1/high, or
+   to "use the same value as in the first sample".
+ * Add support for lists of discrete values for probe factor config.
+ * Add the -c option to not restore previous sessions on startup (bug #862).
+ * Performance improvements: 
+   - Improved decoding performance due to larger chunk size.
+   - Increase session saving chunk size for much better performance.
+ * Open to-be-imported files in binary mode (bug #733).
+ * Startup: If last-used device is not available, use other available ones.
+ * Various internal code fixes and improvements found by clang-tidy.
+ * Add a check for explicit linking against libatomic (bug #810).
+ * Import/export/load: Allow file names without dots ("*" vs. "*.*").
+ * Improve support for high-DPI displays and scaling (bug #871).
+ * Improve internal data storage and data handling algorithms.
+ * Remove FSF postal address from boiler plate license text.
+ * Fix a clang build issue related to 'override' (bug #737).
+ * Fix some zoom-dependent annotation block drawing issues (bug #745).
+ * Fix locking issues when trying to run multiple decoders (bug #181).
+ * Fix an exception due to incorrect handling of SR_CONF_FILTER.
+ * Fix an issue with multiple device/session creation upon file imports.
+ * Fix a drawing issue with "use coloured backgrounds" and markers (bug #771).
+ * Fix various issues to better handle re-loading of input files.
+ * Fix a build issue in the PulseView test-suite (bug #808).
+ * Fix a Qt5 bug related to QMainWindow SVG icons via workaround (bug #814).
+ * Fix a Boost-related build issue with gcc 6.2.x (bug #863).
+ * Fix an issue that prevented decoders from being removed (bug #849).
+ * Fix an issue with incorrect sample rate limits (bug #890).
+ * Fix decoding issues due to re-feeding old data (bugs #876, #850).
+ * Fix temporarily non-working 'b' and 's' hotkeys (bugs #907, #908)
+ * Fix an issue with std::roundf() on Android (bug #945).
+ * Fix an issue with negative vertical divisions on channel 0 (bug #940).
+ * Fix an issue when zero vertical divisions were configured (bug #942).
+ * Fix an issue with the file save progressbar remaining open (bug #895).
+ * Fix incorrect values when importing raw analog data (bug #958).
+ * Fix an issue with non-smooth zoom on e.g. some trackpads.
+ * Fix an issue where the horizontal scrollbar couldn't be moved (bug #957).
+ * Fix an issue with the pane positioning when loading files (bug #969).
+ * Fix an issue where the Run button would remain green incorrectly (bug #970).
+ * Fix a crash when input modules were yielding errors (bug #775).
+ * Fix a crash with stacked decoders on Mac OS X.
+ * Fix a crash when no device was found or selected.
+ * Fix a crash with selected but unusable devices (bug #805).
+ * Fix a crash when closing PulseView with active triggers (bug #705).
+ * Fix a crash that occured with certain glibmm versions (bug #777).
+ * Fix a crash when an unusable device is encountered (bug #829).
+ * Fix a negative cursor position "Save Selected Range As" crash (bug #792).
+ * Fix various other unrelated crash conditions.
+ * Add an AppData/AppStream file for PulseView (bug #859).
+   - Install the file to ${CMAKE_INSTALL_DATAROOTDIR}/metainfo.
+ * .desktop file:
+   - Rename to org.sigrok.PulseView.desktop.
+   - Add MimeType=application/vnd.sigrok.session field (bug #858).
+   - Add additional Development category.
+   - Install the file to ${CMAKE_INSTALL_DATAROOTDIR}/applications.
+ * Rename sigrok-logo-notext.{png,svg,ico} icons to pulseview.{png,svg,ico}.
+   - Install the icons to ${CMAKE_INSTALL_DATAROOTDIR}/icons/...
+ * NSIS:
+   - Update to Python 3.4.x. We can't use any higher version for the time
+     being, since 3.4.x is the last version to support Windows XP.
+   - Place the example .sr files in a separate installer section.
+   - Limit example .sr files to a small set to shrink the installer size.
+   - Clarify Start menu links (e.g. "Uninstall") to avoid confusion.
+   - Allow registering the .sr extension with PulseView (bug #964).
+ * manpage: Various updates (e.g. hotkeys, command-line options).
+ * Fix various compiler warnings.
+
 0.3.0 (2016-01-29)
 ------------------
 
