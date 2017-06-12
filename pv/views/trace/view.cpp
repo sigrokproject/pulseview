@@ -180,6 +180,8 @@ View::View(Session &session, bool is_main_view, QWidget *parent) :
 	splitter_->setHandleWidth(1);  // Don't show a visible rubber band
 	splitter_->setCollapsible(0, false);  // Prevent the header from collapsing
 	splitter_->setCollapsible(1, false);  // Prevent the traces from collapsing
+	splitter_->setStretchFactor(0, 0);  // Prevent the panes from being resized
+	splitter_->setStretchFactor(1, 1);  // when the entire view is resized
 	splitter_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
 	viewport_->installEventFilter(this);
