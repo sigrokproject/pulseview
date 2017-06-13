@@ -5,8 +5,9 @@ HACKING
 Coding style
 ------------
 
-This project is programmed using the Linux kernel coding style, see
-http://lxr.linux.no/linux/Documentation/CodingStyle for details.
+This project is programmed using the Linux kernel coding style:
+
+  https://www.kernel.org/doc/html/latest/process/coding-style.html
 
 Please use the same style for any code contributions, thanks!
 
