@@ -22,27 +22,45 @@
 #endif
 
 #include <cstdint>
+#include <fstream>
+#include <getopt.h>
+#include <vector>
+
 #include <libsigrokcxx/libsigrokcxx.hpp>
 
-#include <getopt.h>
-
+#include <QCheckBox>
 #include <QDebug>
+#include <QFile>
+#include <QFileInfo>
+#include <QMessageBox>
 #include <QSettings>
+#include <QTextStream>
+
+#include "config.h"
 
 #ifdef ENABLE_SIGNALS
 #include "signalhandler.hpp"
 #endif
 
+#ifdef ENABLE_STACKTRACE
+#include <signal.h>
+#include <boost/stacktrace.hpp>
+#include <QStandardPaths>
+#endif
+
 #include "pv/application.hpp"
 #include "pv/devicemanager.hpp"
+#include "pv/globalsettings.hpp"
+#include "pv/logging.hpp"
 #include "pv/mainwindow.hpp"
+#include "pv/session.hpp"
+#include "pv/util.hpp"
+
 #ifdef ANDROID
 #include <libsigrokandroidutils/libsigrokandroidutils.h>
 #include "android/assetreader.hpp"
 #include "android/loghandler.hpp"
 #endif
-
-#include "config.h"
 
 #ifdef _WIN32
 #include <QtPlugin>
@@ -51,8 +69,75 @@ Q_IMPORT_PLUGIN(QSvgPlugin)
 #endif
 
 using std::exception;
+using std::ifstream;
+using std::ofstream;
 using std::shared_ptr;
 using std::string;
+
+#if ENABLE_STACKTRACE
+QString stacktrace_filename;
+
+void signal_handler(int signum)
+{
+	::signal(signum, SIG_DFL);
+	boost::stacktrace::safe_dump_to(stacktrace_filename.toLocal8Bit().data());
+	::raise(SIGABRT);
+}
+
+void process_stacktrace(QString temp_path)
+{
+	const QString stacktrace_outfile = temp_path + "/pv_stacktrace.txt";
+
+	ifstream ifs(stacktrace_filename.toLocal8Bit().data());
+	ofstream ofs(stacktrace_outfile.toLocal8Bit().data(),
+		ofstream::out | ofstream::trunc);
+
+	boost::stacktrace::stacktrace st =
+		boost::stacktrace::stacktrace::from_dump(ifs);
+	ofs << st;
+
+	ofs.close();
+	ifs.close();
+
+	QFile f(stacktrace_outfile);
+	f.open(QFile::ReadOnly | QFile::Text);
+	QTextStream fs(&f);
+	QString stacktrace = fs.readAll();
+	stacktrace = stacktrace.trimmed().replace('\n', "<br />");
+
+	qDebug() << QObject::tr("Stack trace of previous crash:");
+	qDebug() << "---------------------------------------------------------";
+	// Note: qDebug() prints quotation marks for QString output, so we feed it char*
+	qDebug() << stacktrace.toLocal8Bit().data();
+	qDebug() << "---------------------------------------------------------";
+
+	f.close();
+
+	// Remove stack trace so we don't process it again the next time we run
+	QFile::remove(stacktrace_filename.toLocal8Bit().data());
+
+	// Show notification dialog if permitted
+	pv::GlobalSettings settings;
+	if (settings.value(pv::GlobalSettings::Key_Log_NotifyOfStacktrace).toBool()) {
+		QCheckBox *cb = new QCheckBox(QObject::tr("Don't show this message again"));
+
+		QMessageBox msgbox;
+		msgbox.setText(QObject::tr("When %1 last crashed, it created a stack trace.\n" \
+			"A human-readable form has been saved to disk and was written to " \
+			"the log. You may access it from the settings dialog.").arg(PV_TITLE));
+		msgbox.setIcon(QMessageBox::Icon::Information);
+		msgbox.addButton(QMessageBox::Ok);
+		msgbox.setCheckBox(cb);
+
+		QObject::connect(cb, &QCheckBox::stateChanged, [](int state){
+			pv::GlobalSettings settings;
+			settings.setValue(pv::GlobalSettings::Key_Log_NotifyOfStacktrace,
+				!state); });
+
+		msgbox.exec();
+	}
+}
+#endif
 
 void usage()
 {
@@ -66,6 +151,8 @@ void usage()
 		"Application Options:\n"
 		"  -V, --version                   Show release version\n"
 		"  -l, --loglevel                  Set libsigrok/libsigrokdecode loglevel\n"
+		"  -d, --driver                    Specify the device driver to use\n"
+		"  -D, --dont-scan                 Don't auto-scan for devices, use -d spec only\n"
 		"  -i, --input-file                Load input from file\n"
 		"  -I, --input-format              Input format\n"
 		"  -c, --clean                     Don't restore previous sessions on startup\n"
@@ -76,8 +163,11 @@ int main(int argc, char *argv[])
 {
 	int ret = 0;
 	shared_ptr<sigrok::Context> context;
-	string open_file, open_file_format;
+	string open_file_format, driver;
+	vector<string> open_files;
 	bool restore_sessions = true;
+	bool do_scan = true;
+	bool show_version = false;
 
 	Application a(argc, argv);
 
@@ -93,14 +183,17 @@ int main(int argc, char *argv[])
 			{"help", no_argument, nullptr, 'h'},
 			{"version", no_argument, nullptr, 'V'},
 			{"loglevel", required_argument, nullptr, 'l'},
+			{"driver", required_argument, nullptr, 'd'},
+			{"dont-scan", no_argument, nullptr, 'D'},
 			{"input-file", required_argument, nullptr, 'i'},
 			{"input-format", required_argument, nullptr, 'I'},
 			{"clean", no_argument, nullptr, 'c'},
+			{"log-to-stdout", no_argument, nullptr, 's'},
 			{nullptr, 0, nullptr, 0}
 		};
 
 		const int c = getopt_long(argc, argv,
-			"l:Vhc?i:I:", long_options, nullptr);
+			"h?VDcl:d:i:I:", long_options, nullptr);
 		if (c == -1)
 			break;
 
@@ -111,13 +204,16 @@ int main(int argc, char *argv[])
 			return 0;
 
 		case 'V':
-			// Print version info
-			fprintf(stdout, "%s %s\n", PV_TITLE, PV_VERSION_STRING);
-			return 0;
+			show_version = true;
+			break;
 
 		case 'l':
 		{
 			const int loglevel = atoi(optarg);
+			if (loglevel < 0 || loglevel > 5) {
+				qDebug() << "ERROR: invalid log level spec.";
+				break;
+			}
 			context->set_log_level(sigrok::LogLevel::get(loglevel));
 
 #ifdef ENABLE_DECODE
@@ -132,8 +228,16 @@ int main(int argc, char *argv[])
 			break;
 		}
 
+		case 'd':
+			driver = optarg;
+			break;
+
+		case 'D':
+			do_scan = false;
+			break;
+
 		case 'i':
-			open_file = optarg;
+			open_files.emplace_back(optarg);
 			break;
 
 		case 'I':
@@ -145,17 +249,40 @@ int main(int argc, char *argv[])
 			break;
 		}
 	}
+	argc -= optind;
+	argv += optind;
 
-	if (argc - optind > 1) {
-		fprintf(stderr, "Only one file can be opened.\n");
-		return 1;
-	}
+	for (int i = 0; i < argc; i++)
+		open_files.emplace_back(argv[i]);
 
-	if (argc - optind == 1)
-		open_file = argv[argc - 1];
+	qRegisterMetaType<pv::util::Timestamp>("util::Timestamp");
+	qRegisterMetaType<uint64_t>("uint64_t");
+
+	// Prepare the global settings since logging needs them early on
+	pv::GlobalSettings settings;
+	settings.save_internal_defaults();
+	settings.set_defaults_where_needed();
+	settings.apply_theme();
+
+	pv::logging.init();
 
 	// Initialise libsigrok
 	context = sigrok::Context::create();
+	pv::Session::sr_context = context;
+
+#if ENABLE_STACKTRACE
+	QString temp_path = QStandardPaths::standardLocations(
+		QStandardPaths::TempLocation).at(0);
+	stacktrace_filename = temp_path + "/pv_stacktrace.dmp";
+	qDebug() << "Stack trace file is" << stacktrace_filename;
+
+	::signal(SIGSEGV, &signal_handler);
+	::signal(SIGABRT, &signal_handler);
+
+	if (QFileInfo::exists(stacktrace_filename))
+		process_stacktrace(temp_path);
+#endif
+
 #ifdef ANDROID
 	context->set_resource_reader(&asset_reader);
 #endif
@@ -172,10 +299,17 @@ int main(int argc, char *argv[])
 		srd_decoder_load_all();
 #endif
 
+#ifndef ENABLE_STACKTRACE
 		try {
-			// Create the device manager, initialise the drivers
-			pv::DeviceManager device_manager(context);
+#endif
 
+		// Create the device manager, initialise the drivers
+		pv::DeviceManager device_manager(context, driver, do_scan);
+
+		a.collect_version_info(context);
+		if (show_version) {
+			a.print_version_info();
+		} else {
 			// Initialise the main window
 			pv::MainWindow w(device_manager);
 			w.show();
@@ -183,33 +317,32 @@ int main(int argc, char *argv[])
 			if (restore_sessions)
 				w.restore_sessions();
 
-			if (!open_file.empty())
-				w.add_session_with_file(open_file, open_file_format);
-			else
+			if (open_files.empty())
 				w.add_default_session();
+			else
+				for (string& open_file : open_files)
+					w.add_session_with_file(open_file, open_file_format);
 
 #ifdef ENABLE_SIGNALS
 			if (SignalHandler::prepare_signals()) {
-				SignalHandler *const handler =
-					new SignalHandler(&w);
-				QObject::connect(handler,
-					SIGNAL(int_received()),
+				SignalHandler *const handler = new SignalHandler(&w);
+				QObject::connect(handler, SIGNAL(int_received()),
 					&w, SLOT(close()));
-				QObject::connect(handler,
-					SIGNAL(term_received()),
+				QObject::connect(handler, SIGNAL(term_received()),
 					&w, SLOT(close()));
-			} else {
-				qWarning() <<
-					"Could not prepare signal handler.";
-			}
+			} else
+				qWarning() << "Could not prepare signal handler.";
 #endif
 
 			// Run the application
 			ret = a.exec();
-
-		} catch (exception e) {
-			qDebug() << e.what();
 		}
+
+#ifndef ENABLE_STACKTRACE
+		} catch (exception& e) {
+			qDebug() << "Exception:" << e.what();
+		}
+#endif
 
 #ifdef ENABLE_DECODE
 		// Destroy libsigrokdecode

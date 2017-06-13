@@ -5,8 +5,9 @@ HACKING
 Coding style
 ------------
 
-This project is programmed using the Linux kernel coding style, see
-http://lxr.linux.no/linux/Documentation/CodingStyle for details.
+This project is programmed using the Linux kernel coding style:
+
+  https://www.kernel.org/doc/html/latest/process/coding-style.html
 
 Please use the same style for any code contributions, thanks!
 
@@ -17,14 +18,15 @@ OK (in order to meet Qt/C++ related guidelines, for example).
 Contributions
 -------------
 
- - Patches should be sent to the development mailinglist at
+ - In order to contribute you should ideally clone the git repository and
+   let us know (preferably via IRC, or via the mailing list) from where to
+   pull/review your changes. You can use github.com, or any other public git
+   hosting site.
+
+ - Alternatively, patches can be sent to the development mailinglist at
    sigrok-devel@lists.sourceforge.net (please subscribe to the list first).
 
    https://lists.sourceforge.net/lists/listinfo/sigrok-devel
-
- - Alternatively, you can also clone the git repository and let us know
-   from where to pull/review your changes. You can use gitorious.org,
-   github.com, or any other public git hosting site.
 
 
 Random notes

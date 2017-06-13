@@ -23,13 +23,13 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <vector>
 
 #include <glib.h>
 
 using std::map;
-using std::set;
-using std::shared_ptr;
 using std::string;
+using std::vector;
 
 struct srd_decoder;
 struct srd_decoder_inst;
@@ -40,6 +40,7 @@ namespace pv {
 
 namespace data {
 
+struct DecodeChannel;
 class Logic;
 class SignalBase;
 
@@ -57,33 +58,28 @@ public:
 	bool shown() const;
 	void show(bool show = true);
 
-	const map<const srd_channel*,
-		shared_ptr<data::SignalBase> >& channels() const;
-	void set_channels(map<const srd_channel*,
-		shared_ptr<data::SignalBase> > channels);
-
-	void set_initial_pins(GArray *initial_pins);
-
-	GArray *initial_pins() const;
+	const vector<data::DecodeChannel*>& channels() const;
+	void set_channels(vector<data::DecodeChannel*> channels);
 
 	const map<string, GVariant*>& options() const;
 
 	void set_option(const char *id, GVariant *value);
 
+	void apply_all_options();
+
 	bool have_required_channels() const;
 
-	srd_decoder_inst* create_decoder_inst(srd_session *session) const;
-
-	set< shared_ptr<pv::data::Logic> > get_data();
+	srd_decoder_inst* create_decoder_inst(srd_session *session);
+	void invalidate_decoder_inst();
 
 private:
 	const srd_decoder *const decoder_;
 
 	bool shown_;
 
-	map<const srd_channel*, shared_ptr<pv::data::SignalBase> > channels_;
-	GArray *initial_pins_;
+	vector<data::DecodeChannel*> channels_;
 	map<string, GVariant*> options_;
+	srd_decoder_inst *decoder_inst_;
 };
 
 } // namespace decode

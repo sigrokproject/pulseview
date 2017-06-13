@@ -19,40 +19,222 @@
 
 #include "globalsettings.hpp"
 
-using std::function;
+#include <QApplication>
+#include <QColor>
+#include <QDebug>
+#include <QFile>
+#include <QFontMetrics>
+#include <QPixmapCache>
+#include <QString>
+#include <QStyle>
+#include <QtGlobal>
+
 using std::map;
-using std::multimap;
+using std::pair;
+using std::string;
+using std::vector;
 
 namespace pv {
 
-const QString GlobalSettings::Key_View_AlwaysZoomToFit = "View_AlwaysZoomToFit";
-const QString GlobalSettings::Key_View_ColouredBG = "View_ColouredBG";
+const vector< pair<QString, QString> > Themes {
+	{"None" , ""},
+	{"QDarkStyleSheet", ":/themes/qdarkstyle/style.qss"},
+	{"DarkStyle", ":/themes/darkstyle/darkstyle.qss"}
+};
+
+const QString GlobalSettings::Key_General_Theme = "General_Theme";
+const QString GlobalSettings::Key_General_Style = "General_Style";
+const QString GlobalSettings::Key_View_ZoomToFitDuringAcq = "View_ZoomToFitDuringAcq";
+const QString GlobalSettings::Key_View_ZoomToFitAfterAcq = "View_ZoomToFitAfterAcq";
+const QString GlobalSettings::Key_View_TriggerIsZeroTime = "View_TriggerIsZeroTime";
+const QString GlobalSettings::Key_View_ColoredBG = "View_ColoredBG";
 const QString GlobalSettings::Key_View_StickyScrolling = "View_StickyScrolling";
 const QString GlobalSettings::Key_View_ShowSamplingPoints = "View_ShowSamplingPoints";
+const QString GlobalSettings::Key_View_FillSignalHighAreas = "View_FillSignalHighAreas";
+const QString GlobalSettings::Key_View_FillSignalHighAreaColor = "View_FillSignalHighAreaColor";
 const QString GlobalSettings::Key_View_ShowAnalogMinorGrid = "View_ShowAnalogMinorGrid";
+const QString GlobalSettings::Key_View_ConversionThresholdDispMode = "View_ConversionThresholdDispMode";
+const QString GlobalSettings::Key_View_DefaultDivHeight = "View_DefaultDivHeight";
+const QString GlobalSettings::Key_View_DefaultLogicHeight = "View_DefaultLogicHeight";
+const QString GlobalSettings::Key_View_ShowHoverMarker = "View_ShowHoverMarker";
+const QString GlobalSettings::Key_View_SnapDistance = "View_SnapDistance";
+const QString GlobalSettings::Key_View_CursorFillColor = "View_CursorFillColor";
 const QString GlobalSettings::Key_Dec_InitialStateConfigurable = "Dec_InitialStateConfigurable";
+const QString GlobalSettings::Key_Dec_ExportFormat = "Dec_ExportFormat";
+const QString GlobalSettings::Key_Log_BufferSize = "Log_BufferSize";
+const QString GlobalSettings::Key_Log_NotifyOfStacktrace = "Log_NotifyOfStacktrace";
 
-multimap< QString, function<void(QVariant)> > GlobalSettings::callbacks_;
+vector<GlobalSettingsInterface*> GlobalSettings::callbacks_;
 bool GlobalSettings::tracking_ = false;
 map<QString, QVariant> GlobalSettings::tracked_changes_;
+QString GlobalSettings::default_style_;
+QPalette GlobalSettings::default_palette_;
 
 GlobalSettings::GlobalSettings() :
-	QSettings()
+	QSettings(),
+	is_dark_theme_(false)
 {
 	beginGroup("Settings");
 }
 
-void GlobalSettings::set_defaults_where_needed()
+void GlobalSettings::save_internal_defaults()
 {
-	// Enable coloured trace backgrounds by default
-	if (!contains(Key_View_ColouredBG))
-		setValue(Key_View_ColouredBG, true);
+	default_style_ = qApp->style()->objectName();
+	if (default_style_.isEmpty())
+		default_style_ = "fusion";
+
+	default_palette_ = QApplication::palette();
 }
 
-void GlobalSettings::register_change_handler(const QString key,
-	function<void(QVariant)> cb)
+void GlobalSettings::set_defaults_where_needed()
 {
-	callbacks_.emplace(key, cb);
+	// Use no theme by default
+	if (!contains(Key_General_Theme))
+		setValue(Key_General_Theme, 0);
+	if (!contains(Key_General_Style))
+		setValue(Key_General_Style, "");
+
+	// Enable zoom-to-fit after acquisition by default
+	if (!contains(Key_View_ZoomToFitAfterAcq))
+		setValue(Key_View_ZoomToFitAfterAcq, true);
+
+	// Enable colored trace backgrounds by default
+	if (!contains(Key_View_ColoredBG))
+		setValue(Key_View_ColoredBG, true);
+
+	// Enable showing sampling points by default
+	if (!contains(Key_View_ShowSamplingPoints))
+		setValue(Key_View_ShowSamplingPoints, true);
+
+	// Enable filling logic signal high areas by default
+	if (!contains(Key_View_FillSignalHighAreas))
+		setValue(Key_View_FillSignalHighAreas, true);
+
+	if (!contains(Key_View_DefaultDivHeight))
+		setValue(Key_View_DefaultDivHeight,
+		3 * QFontMetrics(QApplication::font()).height());
+
+	if (!contains(Key_View_DefaultLogicHeight))
+		setValue(Key_View_DefaultLogicHeight,
+		2 * QFontMetrics(QApplication::font()).height());
+
+	if (!contains(Key_View_ShowHoverMarker))
+		setValue(Key_View_ShowHoverMarker, true);
+
+	if (!contains(Key_View_SnapDistance))
+		setValue(Key_View_SnapDistance, 15);
+
+	if (!contains(Key_Dec_ExportFormat))
+		setValue(Key_Dec_ExportFormat, "%s %d: %c: %1");
+
+	// Default to 500 lines of backlog
+	if (!contains(Key_Log_BufferSize))
+		setValue(Key_Log_BufferSize, 500);
+
+	// Notify user of existing stack trace by default
+	if (!contains(Key_Log_NotifyOfStacktrace))
+		setValue(Key_Log_NotifyOfStacktrace, true);
+
+	// Default theme is bright, so use its color scheme if undefined
+	if (!contains(Key_View_CursorFillColor))
+		set_bright_theme_default_colors();
+}
+
+void GlobalSettings::set_bright_theme_default_colors()
+{
+	setValue(Key_View_FillSignalHighAreaColor,
+		QColor(0, 0, 0, 5 * 256 / 100).rgba());
+
+	setValue(Key_View_CursorFillColor,
+		QColor(220, 231, 243).rgba());
+}
+
+void GlobalSettings::set_dark_theme_default_colors()
+{
+	setValue(Key_View_FillSignalHighAreaColor,
+		QColor(188, 188, 188, 9 * 256 / 100).rgba());
+
+	setValue(Key_View_CursorFillColor,
+		QColor(60, 60, 60).rgba());
+}
+
+bool GlobalSettings::current_theme_is_dark()
+{
+	return is_dark_theme_;
+}
+
+void GlobalSettings::apply_theme()
+{
+	QString theme_name    = Themes.at(value(Key_General_Theme).toInt()).first;
+	QString resource_name = Themes.at(value(Key_General_Theme).toInt()).second;
+
+	if (!resource_name.isEmpty()) {
+		QFile file(resource_name);
+		file.open(QFile::ReadOnly | QFile::Text);
+		qApp->setStyleSheet(file.readAll());
+	} else
+		qApp->setStyleSheet("");
+
+	qApp->setPalette(default_palette_);
+
+	const QString style = value(Key_General_Style).toString();
+	if (style.isEmpty())
+		qApp->setStyle(default_style_);
+	else
+		qApp->setStyle(style);
+
+	is_dark_theme_ = false;
+
+	if (theme_name.compare("QDarkStyleSheet") == 0) {
+		QPalette dark_palette;
+		dark_palette.setColor(QPalette::Window, QColor(53, 53, 53));
+		dark_palette.setColor(QPalette::WindowText, Qt::white);
+		dark_palette.setColor(QPalette::Base, QColor(42, 42, 42));
+		dark_palette.setColor(QPalette::Dark, QColor(35, 35, 35));
+		dark_palette.setColor(QPalette::Highlight, QColor(42, 130, 218));
+		qApp->setPalette(dark_palette);
+		is_dark_theme_ = true;
+	} else if (theme_name.compare("DarkStyle") == 0) {
+		QPalette dark_palette;
+		dark_palette.setColor(QPalette::Window, QColor(53, 53, 53));
+		dark_palette.setColor(QPalette::WindowText, Qt::white);
+		dark_palette.setColor(QPalette::Disabled, QPalette::WindowText, QColor(127, 127, 127));
+		dark_palette.setColor(QPalette::Base, QColor(42, 42, 42));
+		dark_palette.setColor(QPalette::AlternateBase, QColor(66, 66, 66));
+		dark_palette.setColor(QPalette::ToolTipBase, Qt::white);
+		dark_palette.setColor(QPalette::ToolTipText, QColor(53, 53, 53));
+		dark_palette.setColor(QPalette::Text, Qt::white);
+		dark_palette.setColor(QPalette::Disabled, QPalette::Text, QColor(127, 127, 127));
+		dark_palette.setColor(QPalette::Dark, QColor(35, 35, 35));
+		dark_palette.setColor(QPalette::Shadow, QColor(20, 20, 20));
+		dark_palette.setColor(QPalette::Button, QColor(53, 53, 53));
+		dark_palette.setColor(QPalette::ButtonText, Qt::white);
+		dark_palette.setColor(QPalette::Disabled, QPalette::ButtonText, QColor(127, 127, 127));
+		dark_palette.setColor(QPalette::BrightText, Qt::red);
+		dark_palette.setColor(QPalette::Link, QColor(42, 130, 218));
+		dark_palette.setColor(QPalette::Highlight, QColor(42, 130, 218));
+		dark_palette.setColor(QPalette::Disabled, QPalette::Highlight, QColor(80, 80, 80));
+		dark_palette.setColor(QPalette::HighlightedText, Qt::white);
+		dark_palette.setColor(QPalette::Disabled, QPalette::HighlightedText, QColor(127, 127, 127));
+		qApp->setPalette(dark_palette);
+		is_dark_theme_ = true;
+	}
+
+	QPixmapCache::clear();
+}
+
+void GlobalSettings::add_change_handler(GlobalSettingsInterface *cb)
+{
+	callbacks_.push_back(cb);
+}
+
+void GlobalSettings::remove_change_handler(GlobalSettingsInterface *cb)
+{
+	for (auto cb_it = callbacks_.begin(); cb_it != callbacks_.end(); cb_it++)
+		if (*cb_it == cb) {
+			callbacks_.erase(cb_it);
+			break;
+		}
 }
 
 void GlobalSettings::setValue(const QString &key, const QVariant &value)
@@ -64,11 +246,12 @@ void GlobalSettings::setValue(const QString &key, const QVariant &value)
 
 	QSettings::setValue(key, value);
 
-	// Call all registered callbacks for this key
-	auto range = callbacks_.equal_range(key);
+	// TODO Emulate noquote()
+	qDebug() << "Setting" << key << "changed to" << value;
 
-	for (auto it = range.first; it != range.second; it++)
-		it->second(value);
+	// Call all registered callbacks
+	for (GlobalSettingsInterface *cb : callbacks_)
+		cb->on_setting_changed(key, value);
 }
 
 void GlobalSettings::start_tracking()
@@ -87,10 +270,71 @@ void GlobalSettings::undo_tracked_changes()
 {
 	tracking_ = false;
 
-	for (auto entry : tracked_changes_)
+	for (auto& entry : tracked_changes_)
 		setValue(entry.first, entry.second);
 
 	tracked_changes_.clear();
+}
+
+void GlobalSettings::store_gvariant(QSettings &settings, GVariant *v)
+{
+	const GVariantType *var_type = g_variant_get_type(v);
+	char *var_type_str = g_variant_type_dup_string(var_type);
+
+	QByteArray var_data = QByteArray((const char*)g_variant_get_data(v),
+		g_variant_get_size(v));
+
+	settings.setValue("value", var_data);
+	settings.setValue("type", var_type_str);
+
+	g_free(var_type_str);
+}
+
+GVariant* GlobalSettings::restore_gvariant(QSettings &settings)
+{
+	QString raw_type = settings.value("type").toString();
+	GVariantType *var_type = g_variant_type_new(raw_type.toUtf8());
+
+	QByteArray data = settings.value("value").toByteArray();
+
+	gpointer var_data = g_memdup((gconstpointer)data.constData(),
+		(guint)data.size());
+
+	GVariant *value = g_variant_new_from_data(var_type, var_data,
+		data.size(), false, g_free, var_data);
+
+	g_variant_type_free(var_type);
+
+	return value;
+}
+
+void GlobalSettings::store_variantbase(QSettings &settings, Glib::VariantBase v)
+{
+	const QByteArray var_data = QByteArray((const char*)v.get_data(), v.get_size());
+
+	settings.setValue("value", var_data);
+	settings.setValue("type", QString::fromStdString(v.get_type_string()));
+}
+
+Glib::VariantBase GlobalSettings::restore_variantbase(QSettings &settings)
+{
+	QString raw_type = settings.value("type").toString();
+	GVariantType *var_type = g_variant_type_new(raw_type.toUtf8());
+
+	QByteArray data = settings.value("value").toByteArray();
+
+	gpointer var_data = g_memdup((gconstpointer)data.constData(),
+		(guint)data.size());
+
+	GVariant *value = g_variant_new_from_data(var_type, var_data,
+		data.size(), false, g_free, var_data);
+
+	Glib::VariantBase ret_val = Glib::VariantBase(value, true);
+
+	g_variant_type_free(var_type);
+	g_variant_unref(value);
+
+	return ret_val;
 }
 
 } // namespace pv

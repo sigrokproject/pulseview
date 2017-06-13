@@ -75,9 +75,9 @@ public:
 		return (offset_ / scale_).convert_to<double>();
 	}
 
-	bool next_bg_colour_state() {
-		const bool state = bg_colour_state_;
-		bg_colour_state_ = !bg_colour_state_;
+	bool next_bg_color_state() {
+		const bool state = bg_color_state_;
+		bg_color_state_ = !bg_color_state_;
 		return state;
 	}
 
@@ -90,7 +90,7 @@ private:
 	QRect rect_;
 	double scale_;
 	pv::util::Timestamp offset_;
-	bool bg_colour_state_;
+	bool bg_color_state_;
 };
 
 } // namespace trace

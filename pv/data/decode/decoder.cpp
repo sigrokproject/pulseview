@@ -19,16 +19,18 @@
 
 #include <cassert>
 
+#include <QDebug>
+
 #include <libsigrokcxx/libsigrokcxx.hpp>
 #include <libsigrokdecode/libsigrokdecode.h>
 
 #include "decoder.hpp"
 
 #include <pv/data/signalbase.hpp>
+#include <pv/data/decodesignal.hpp>
 
-using std::set;
+using pv::data::DecodeChannel;
 using std::map;
-using std::shared_ptr;
 using std::string;
 
 namespace pv {
@@ -38,7 +40,7 @@ namespace decode {
 Decoder::Decoder(const srd_decoder *const dec) :
 	decoder_(dec),
 	shown_(true),
-	initial_pins_(nullptr)
+	decoder_inst_(nullptr)
 {
 }
 
@@ -63,28 +65,14 @@ void Decoder::show(bool show)
 	shown_ = show;
 }
 
-const map<const srd_channel*, shared_ptr<data::SignalBase> >&
-Decoder::channels() const
+const vector<DecodeChannel*>& Decoder::channels() const
 {
 	return channels_;
 }
 
-void Decoder::set_channels(map<const srd_channel*,
-	shared_ptr<data::SignalBase> > channels)
+void Decoder::set_channels(vector<DecodeChannel*> channels)
 {
 	channels_ = channels;
-}
-
-void Decoder::set_initial_pins(GArray *initial_pins)
-{
-	if (initial_pins_)
-		g_array_free(initial_pins_, TRUE);
-	initial_pins_ = initial_pins;
-}
-
-GArray *Decoder::initial_pins() const
-{
-	return initial_pins_;
 }
 
 const map<string, GVariant*>& Decoder::options() const
@@ -97,33 +85,39 @@ void Decoder::set_option(const char *id, GVariant *value)
 	assert(value);
 	g_variant_ref(value);
 	options_[id] = value;
+
+	// If we have a decoder instance, apply option value immediately
+	apply_all_options();
+}
+
+void Decoder::apply_all_options()
+{
+	if (decoder_inst_) {
+		GHashTable *const opt_hash = g_hash_table_new_full(g_str_hash,
+			g_str_equal, g_free, (GDestroyNotify)g_variant_unref);
+
+		for (const auto& option : options_) {
+			GVariant *const value = option.second;
+			g_variant_ref(value);
+			g_hash_table_replace(opt_hash, (void*)g_strdup(
+				option.first.c_str()), value);
+		}
+
+		srd_inst_option_set(decoder_inst_, opt_hash);
+		g_hash_table_destroy(opt_hash);
+	}
 }
 
 bool Decoder::have_required_channels() const
 {
-	for (GSList *l = decoder_->channels; l; l = l->next) {
-		const srd_channel *const pdch = (const srd_channel*)l->data;
-		assert(pdch);
-		if (channels_.find(pdch) == channels_.end())
+	for (DecodeChannel *ch : channels_)
+		if (!ch->assigned_signal && !ch->is_optional)
 			return false;
-	}
 
 	return true;
 }
 
-set< shared_ptr<pv::data::Logic> > Decoder::get_data()
-{
-	set< shared_ptr<pv::data::Logic> > data;
-	for (const auto& channel : channels_) {
-		shared_ptr<data::SignalBase> b(channel.second);
-		assert(b);
-		data.insert(b->logic_data());
-	}
-
-	return data;
-}
-
-srd_decoder_inst* Decoder::create_decoder_inst(srd_session *session) const
+srd_decoder_inst* Decoder::create_decoder_inst(srd_session *session)
 {
 	GHashTable *const opt_hash = g_hash_table_new_full(g_str_hash,
 		g_str_equal, g_free, (GDestroyNotify)g_variant_unref);
@@ -135,29 +129,47 @@ srd_decoder_inst* Decoder::create_decoder_inst(srd_session *session) const
 			option.first.c_str()), value);
 	}
 
-	srd_decoder_inst *const decoder_inst = srd_inst_new(
-		session, decoder_->id, opt_hash);
+	if (decoder_inst_)
+		qDebug() << "WARNING: previous decoder instance" << decoder_inst_ << "exists";
+
+	decoder_inst_ = srd_inst_new(session, decoder_->id, opt_hash);
 	g_hash_table_destroy(opt_hash);
 
-	if (!decoder_inst)
+	if (!decoder_inst_)
 		return nullptr;
 
 	// Setup the channels
+	GArray *const init_pin_states = g_array_sized_new(false, true,
+		sizeof(uint8_t), channels_.size());
+
+	g_array_set_size(init_pin_states, channels_.size());
+
 	GHashTable *const channels = g_hash_table_new_full(g_str_hash,
 		g_str_equal, g_free, (GDestroyNotify)g_variant_unref);
 
-	for (const auto& channel : channels_) {
-		shared_ptr<data::SignalBase> b(channel.second);
-		GVariant *const gvar = g_variant_new_int32(b->index());
+	for (DecodeChannel *ch : channels_) {
+		if (!ch->assigned_signal)
+			continue;
+
+		init_pin_states->data[ch->id] = ch->initial_pin_state;
+
+		GVariant *const gvar = g_variant_new_int32(ch->bit_id);  // bit_id = bit position
 		g_variant_ref_sink(gvar);
-		g_hash_table_insert(channels, channel.first->id, gvar);
+		// key is channel name (pdch->id), value is bit position in each sample (gvar)
+		g_hash_table_insert(channels, ch->pdch_->id, gvar);
 	}
 
-	srd_inst_channel_set_all(decoder_inst, channels);
+	srd_inst_channel_set_all(decoder_inst_, channels);
 
-	srd_inst_initial_pins_set_all(decoder_inst, initial_pins_);
+	srd_inst_initial_pins_set_all(decoder_inst_, init_pin_states);
+	g_array_free(init_pin_states, true);
 
-	return decoder_inst;
+	return decoder_inst_;
+}
+
+void Decoder::invalidate_decoder_inst()
+{
+	decoder_inst_ = nullptr;
 }
 
 }  // namespace decode

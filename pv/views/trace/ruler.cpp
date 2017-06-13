@@ -21,7 +21,10 @@
 
 #include <QApplication>
 #include <QFontMetrics>
+#include <QMenu>
 #include <QMouseEvent>
+
+#include <pv/globalsettings.hpp>
 
 #include "ruler.hpp"
 #include "view.hpp"
@@ -29,6 +32,8 @@
 using namespace Qt;
 
 using std::function;
+using std::max;
+using std::min;
 using std::shared_ptr;
 using std::vector;
 
@@ -37,7 +42,6 @@ namespace views {
 namespace trace {
 
 const float Ruler::RulerHeight = 2.5f; // x Text Height
-const int Ruler::MinorTickSubdivision = 4;
 
 const float Ruler::HoverArrowSize = 0.5f; // x Text Height
 
@@ -46,8 +50,8 @@ Ruler::Ruler(View &parent) :
 {
 	setMouseTracking(true);
 
-	connect(&view_, SIGNAL(hover_point_changed()),
-		this, SLOT(hover_point_changed()));
+	connect(&view_, SIGNAL(hover_point_changed(const QWidget*, QPoint)),
+		this, SLOT(on_hover_point_changed(const QWidget*, QPoint)));
 	connect(&view_, SIGNAL(offset_changed()),
 		this, SLOT(invalidate_tick_position_cache()));
 	connect(&view_, SIGNAL(scale_changed()),
@@ -110,6 +114,51 @@ QString Ruler::format_time_with_distance(
 		return pv::util::format_time_minutes(t, precision, sign);
 }
 
+pv::util::Timestamp Ruler::get_time_from_x_pos(uint32_t x) const
+{
+	return view_.ruler_offset() + ((double)x + 0.5) * view_.scale();
+}
+
+void Ruler::contextMenuEvent(QContextMenuEvent *event)
+{
+	MarginWidget::contextMenuEvent(event);
+
+	// Don't show a context menu if the MarginWidget found a widget that shows one
+	if (event->isAccepted())
+		return;
+
+	context_menu_x_pos_ = event->pos().x();
+
+	QMenu *const menu = new QMenu(this);
+
+	QAction *const create_marker = new QAction(tr("Create marker here"), this);
+	connect(create_marker, SIGNAL(triggered()), this, SLOT(on_createMarker()));
+	menu->addAction(create_marker);
+
+	QAction *const set_zero_position = new QAction(tr("Set as zero point"), this);
+	connect(set_zero_position, SIGNAL(triggered()), this, SLOT(on_setZeroPosition()));
+	menu->addAction(set_zero_position);
+
+	QAction *const toggle_hover_marker = new QAction(this);
+	connect(toggle_hover_marker, SIGNAL(triggered()), this, SLOT(on_toggleHoverMarker()));
+	menu->addAction(toggle_hover_marker);
+
+	GlobalSettings settings;
+	const bool hover_marker_shown =
+		settings.value(GlobalSettings::Key_View_ShowHoverMarker).toBool();
+	toggle_hover_marker->setText(hover_marker_shown ?
+		tr("Disable mouse hover marker") : tr("Enable mouse hover marker"));
+
+	event->setAccepted(true);
+	menu->popup(event->globalPos());
+}
+
+void Ruler::resizeEvent(QResizeEvent*)
+{
+	// the tick calculation depends on the width of this widget
+	invalidate_tick_position_cache();
+}
+
 vector< shared_ptr<ViewItem> > Ruler::items()
 {
 	const vector< shared_ptr<TimeItem> > time_items(view_.time_items());
@@ -126,6 +175,11 @@ shared_ptr<ViewItem> Ruler::get_mouse_over_item(const QPoint &pt)
 	return nullptr;
 }
 
+void Ruler::mouseDoubleClickEvent(QMouseEvent *event)
+{
+	view_.add_flag(get_time_from_x_pos(event->x()));
+}
+
 void Ruler::paintEvent(QPaintEvent*)
 {
 	if (!tick_position_cache_) {
@@ -140,9 +194,10 @@ void Ruler::paintEvent(QPaintEvent*)
 
 		tick_position_cache_ = calculate_tick_positions(
 			view_.tick_period(),
-			view_.offset(),
+			view_.ruler_offset(),
 			view_.scale(),
 			width(),
+			view_.minor_tick_count(),
 			ffunc);
 	}
 
@@ -159,10 +214,18 @@ void Ruler::paintEvent(QPaintEvent*)
 	p.setPen(palette().color(foregroundRole()));
 
 	for (const auto& tick: tick_position_cache_->major) {
-		p.drawText(tick.first, ValueMargin, 0, text_height,
+		const int leftedge = 0;
+		const int rightedge = width();
+		const int x_tick = tick.first;
+		if ((x_tick > leftedge) && (x_tick < rightedge)) {
+			const int x_left_bound = QFontMetrics(font()).width(tick.second) / 2;
+			const int x_right_bound = rightedge - x_left_bound;
+			const int x_legend = min(max(x_tick, x_left_bound), x_right_bound);
+			p.drawText(x_legend, ValueMargin, 0, text_height,
 				AlignCenter | AlignTop | TextDontClip, tick.second);
-		p.drawLine(QPointF(tick.first, major_tick_y1),
+			p.drawLine(QPointF(x_tick, major_tick_y1),
 			QPointF(tick.first, ruler_height));
+		}
 	}
 
 	for (const auto& tick: tick_position_cache_->minor) {
@@ -187,48 +250,6 @@ void Ruler::paintEvent(QPaintEvent*)
 			i->label_rect(r).contains(mouse_point_);
 		i->paint_label(p, r, highlight);
 	}
-}
-
-Ruler::TickPositions Ruler::calculate_tick_positions(
-	const pv::util::Timestamp& major_period,
-	const pv::util::Timestamp& offset,
-	const double scale,
-	const int width,
-	function<QString(const pv::util::Timestamp&)> format_function)
-{
-	TickPositions tp;
-
-	const pv::util::Timestamp minor_period = major_period / MinorTickSubdivision;
-	const pv::util::Timestamp first_major_division = floor(offset / major_period);
-	const pv::util::Timestamp first_minor_division = ceil(offset / minor_period);
-	const pv::util::Timestamp t0 = first_major_division * major_period;
-
-	int division = (round(first_minor_division -
-		first_major_division * MinorTickSubdivision)).convert_to<int>() - 1;
-
-	double x;
-
-	do {
-		pv::util::Timestamp t = t0 + division * minor_period;
-		x = ((t - offset) / scale).convert_to<double>();
-
-		if (division % MinorTickSubdivision == 0) {
-			// Recalculate 't' without using 'minor_period' which is a fraction
-			t = t0 + division / MinorTickSubdivision * major_period;
-			tp.major.emplace_back(x, format_function(t));
-		} else {
-			tp.minor.emplace_back(x);
-		}
-
-		division++;
-	} while (x < width);
-
-	return tp;
-}
-
-void Ruler::mouseDoubleClickEvent(QMouseEvent *event)
-{
-	view_.add_flag(view_.offset() + ((double)event->x() + 0.5) * view_.scale());
 }
 
 void Ruler::draw_hover_mark(QPainter &p, int text_height)
@@ -256,8 +277,49 @@ int Ruler::calculate_text_height() const
 	return QFontMetrics(font()).ascent();
 }
 
-void Ruler::hover_point_changed()
+TickPositions Ruler::calculate_tick_positions(
+	const pv::util::Timestamp& major_period,
+	const pv::util::Timestamp& offset,
+	const double scale,
+	const int width,
+	const unsigned int minor_tick_count,
+	function<QString(const pv::util::Timestamp&)> format_function)
 {
+	TickPositions tp;
+
+	const pv::util::Timestamp minor_period = major_period / minor_tick_count;
+	const pv::util::Timestamp first_major_division = floor(offset / major_period);
+	const pv::util::Timestamp first_minor_division = ceil(offset / minor_period);
+	const pv::util::Timestamp t0 = first_major_division * major_period;
+
+	int division = (round(first_minor_division -
+		first_major_division * minor_tick_count)).convert_to<int>() - 1;
+
+	double x;
+
+	do {
+		pv::util::Timestamp t = t0 + division * minor_period;
+		x = ((t - offset) / scale).convert_to<double>();
+
+		if (division % minor_tick_count == 0) {
+			// Recalculate 't' without using 'minor_period' which is a fraction
+			t = t0 + division / minor_tick_count * major_period;
+			tp.major.emplace_back(x, format_function(t));
+		} else {
+			tp.minor.emplace_back(x);
+		}
+
+		division++;
+	} while (x < width);
+
+	return tp;
+}
+
+void Ruler::on_hover_point_changed(const QWidget* widget, const QPoint &hp)
+{
+	(void)widget;
+	(void)hp;
+
 	update();
 }
 
@@ -266,10 +328,21 @@ void Ruler::invalidate_tick_position_cache()
 	tick_position_cache_ = boost::none;
 }
 
-void Ruler::resizeEvent(QResizeEvent*)
+void Ruler::on_createMarker()
 {
-	// the tick calculation depends on the width of this widget
-	invalidate_tick_position_cache();
+	view_.add_flag(get_time_from_x_pos(mouse_down_point_.x()));
+}
+
+void Ruler::on_setZeroPosition()
+{
+	view_.set_zero_position(get_time_from_x_pos(mouse_down_point_.x()));
+}
+
+void Ruler::on_toggleHoverMarker()
+{
+	GlobalSettings settings;
+	const bool state = settings.value(GlobalSettings::Key_View_ShowHoverMarker).toBool();
+	settings.setValue(GlobalSettings::Key_View_ShowHoverMarker, !state);
 }
 
 } // namespace trace

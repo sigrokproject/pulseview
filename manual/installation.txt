@@ -1,0 +1,100 @@
+[[installation,Installation]]
+== Installation
+
+PulseView can be run on Linux, Windows, Mac OS X or Android. For some platforms, we provide binary
+packages, for others we provide installers and for others we provide AppImage containers that
+you can run without the need to install anything. Check the https://sigrok.org/wiki/Downloads[sigrok download page]
+to see which option is available for your platform.
+
+=== Linux
+
+On Linux, the usual way to install PulseView is to install the packages provided by your distro's
+package manager. However, sometimes only outdated packages are made available to you. In that case,
+you have two options:
+
+. https://sigrok.org/wiki/Downloads[Download] and use the AppImage which contains all required files and needs no installation:
++
+--
+[listing, subs="normal"]
+chmod u+x PulseView-NIGHTLY-x86_64.AppImage
+./PulseView-NIGHTLY-x86_64.AppImage
+
+Please be aware, however, that the AppImages are built every night, so they always contain
+the latest development changes. While we do try to keep the code base in a working state, it is sometimes
+unavoidable to introduce bugs that show up in the nightly builds. If you encounter something that is
+odd to you, please download and install the latest nightly and check if the issue still exists. If it
+does, feel free to https://sigrok.org/bugzilla/[file a bug].
+
+No system files are changed, so if you decide that you no longer want to use PulseView, simply
+delete the AppImage. If you also want the stored settings gone, delete ~/.config/sigrok as well.
+--
+
+. Uninstall any sigrok packages from your package manager and build PulseView from source:
++
+--
+[listing, subs="normal"]
+_[install dependencies https://sigrok.org/wiki/Linux#Building[as listed on the wiki]]_
+mkdir ~/sr
+cd ~/sr
+wget 'https://sigrok.org/gitweb/?p=sigrok-util.git;a=blob_plain;f=cross-compile/linux/sigrok-cross-linux' -O sigrok-cross-linux
+chmod u+x sigrok-cross-linux
+./sigrok-cross-linux
+export LD_LIBRARY_PATH=~/sr/lib
+~/sr/bin/pulseview
+
+No system files are changed, so if you decide that you no longer want to use PulseView, simply
+delete the ~/sr directory. If you also want the stored settings gone, delete ~/.config/sigrok
+as well.
+--
+
+[WARNING]
+--
+If you don't install the PulseView distro packages (as is the case when using the AppImage or building
+from source), PulseView will not be able to access USB and serial port devices unless it's run as root.
+Since programs shouldn't be run as root unless absolutely necessary, we provide udev configuration files
+that allows PulseView access to those devices without being root.
+
+Here's how you install them:
+[listing, subs="normal"]
+sudo bash
+cd /etc/udev/rules.d/
+wget 'https://sigrok.org/gitweb/?p=libsigrok.git;a=blob_plain;f=contrib/60-libsigrok.rules' -O 60-libsigrok.rules
+wget 'https://sigrok.org/gitweb/?p=libsigrok.git;a=blob_plain;f=contrib/61-libsigrok-plugdev.rules' -O 61-libsigrok-plugdev.rules
+wget 'https://sigrok.org/gitweb/?p=libsigrok.git;a=blob_plain;f=contrib/61-libsigrok-uaccess.rules' -O 61-libsigrok-uaccess.rules
+sudo udevadm control --reload-rules
+--
+
+=== Windows
+
+We offer installers for PulseView that contain everything you need to get started. Simply download
+them from the https://sigrok.org/wiki/Downloads[sigrok download page] and run them as any other Windows
+installer.
+Please be aware, however, that the Windows installers are built every night, so they always contain
+the latest development changes. While we do try to keep the code base in a working state, it is sometimes
+unavoidable to introduce bugs that show up in the nightly builds. If you encounter something that is
+odd to you, please download and install the latest nightly and check if the issue still exists. If it
+does, feel free to https://sigrok.org/bugzilla/[file a bug].
+
+After installation, you will find a program called Zadig in the start menu. By default, certain devices
+recognized by Windows will have drivers installed for them that PulseView cannot use. The purpose of
+Zadig is to let you change the driver Windows uses for a particular device - for most devices you'll need
+to choose WinUSB to use them with PulseView or the original proprietary Windows driver to use it with whatever
+other software you access the device with. More details are available https://sigrok.org/wiki/Windows[in the wiki].
+
+In case your device doesn't show up in PulseView and you can't find it with a scan either (see next
+chapter), check with Zadig whether the correct driver is assigned for the device.
+
+=== Mac OS X
+
+We offer DMG installers for PulseView that contain everything you need to get started. Simply download
+them from the https://sigrok.org/wiki/Downloads[sigrok download page] and run them.
+
+Please be aware, however, that the DMG installers are built every night, so they always contain
+the latest development changes. While we do try to keep the code base in a working state, it is sometimes
+unavoidable to introduce bugs that show up in the nightly builds. If you encounter something that is
+odd to you, please download and install the latest nightly and check if the issue still exists. If it
+does, feel free to https://sigrok.org/bugzilla/[file a bug].
+
+No system files are changed, so if you decide that you no longer want to use PulseView, simply
+delete the DMG file. If you also want the stored settings gone, delete
+~/Library/Preferences/pulseview.plist as well.

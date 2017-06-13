@@ -26,6 +26,8 @@
 
 #include "file.hpp"
 
+#include <QSettings>
+
 using std::atomic;
 using std::ifstream;
 using std::map;
@@ -47,6 +49,15 @@ public:
 		shared_ptr<sigrok::InputFormat> format,
 		const map<string, Glib::VariantBase> &options);
 
+	/**
+	 * Constructor that loads a file using the metadata saved by
+	 * save_meta_to_settings() before.
+	 */
+	InputFile(const shared_ptr<sigrok::Context> &context,
+		QSettings &settings);
+
+	void save_meta_to_settings(QSettings &settings);
+
 	void open();
 
 	void close();
@@ -59,8 +70,8 @@ public:
 
 private:
 	const shared_ptr<sigrok::Context> context_;
-	const shared_ptr<sigrok::InputFormat> format_;
-	const map<string, Glib::VariantBase> options_;
+	shared_ptr<sigrok::InputFormat> format_;
+	map<string, Glib::VariantBase> options_;
 	shared_ptr<sigrok::Input> input_;
 
 	ifstream *f;

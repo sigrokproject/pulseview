@@ -17,6 +17,7 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <QDebug>
 #include <QFileInfo>
 
 #include <cassert>
@@ -27,12 +28,12 @@
 #include <sys/stat.h>
 
 #include "devicemanager.hpp"
+#include "mainwindow.hpp"
 #include "session.hpp"
 
 #include "data/analog.hpp"
 #include "data/analogsegment.hpp"
 #include "data/decode/decoder.hpp"
-#include "data/decoderstack.hpp"
 #include "data/logic.hpp"
 #include "data/logicsegment.hpp"
 #include "data/signalbase.hpp"
@@ -53,6 +54,7 @@
 
 #ifdef ENABLE_DECODE
 #include <libsigrokdecode/libsigrokdecode.h>
+#include "data/decodesignal.hpp"
 #endif
 
 using std::bad_alloc;
@@ -90,6 +92,9 @@ using sigrok::Session;
 using Glib::VariantBase;
 
 namespace pv {
+
+shared_ptr<sigrok::Context> Session::sr_context;
+
 Session::Session(DeviceManager &device_manager, QString name) :
 	device_manager_(device_manager),
 	default_name_(name),
@@ -172,7 +177,7 @@ void Session::save_settings(QSettings &settings) const
 {
 	map<string, string> dev_info;
 	list<string> key_list;
-	int stacks = 0, views = 0;
+	int decode_signals = 0, views = 0;
 
 	if (device_) {
 		shared_ptr<devices::HardwareDevice> hw_device =
@@ -190,7 +195,7 @@ void Session::save_settings(QSettings &settings) const
 
 			dev_info = device_manager_.get_device_info(device_);
 
-			for (string key : key_list) {
+			for (string& key : key_list) {
 				if (dev_info.count(key))
 					settings.setValue(QString::fromUtf8(key.c_str()),
 							QString::fromUtf8(dev_info.at(key).c_str()));
@@ -202,7 +207,7 @@ void Session::save_settings(QSettings &settings) const
 		}
 
 		shared_ptr<devices::SessionFile> sessionfile_device =
-			dynamic_pointer_cast< devices::SessionFile >(device_);
+			dynamic_pointer_cast<devices::SessionFile>(device_);
 
 		if (sessionfile_device) {
 			settings.setValue("device_type", "sessionfile");
@@ -212,18 +217,22 @@ void Session::save_settings(QSettings &settings) const
 			settings.endGroup();
 		}
 
+		shared_ptr<devices::InputFile> inputfile_device =
+			dynamic_pointer_cast<devices::InputFile>(device_);
+
+		if (inputfile_device) {
+			settings.setValue("device_type", "inputfile");
+			settings.beginGroup("device");
+			inputfile_device->save_meta_to_settings(settings);
+			settings.endGroup();
+		}
+
 		// Save channels and decoders
-		for (shared_ptr<data::SignalBase> base : signalbases_) {
+		for (const shared_ptr<data::SignalBase>& base : signalbases_) {
 #ifdef ENABLE_DECODE
 			if (base->is_decode_signal()) {
-				shared_ptr<pv::data::DecoderStack> decoder_stack =
-						base->decoder_stack();
-				shared_ptr<data::decode::Decoder> top_decoder =
-						decoder_stack->stack().front();
-
-				settings.beginGroup("decoder_stack" + QString::number(stacks++));
-				settings.setValue("id", top_decoder->decoder()->id);
-				settings.setValue("name", top_decoder->decoder()->name);
+				settings.beginGroup("decode_signal" + QString::number(decode_signals++));
+				base->save_settings(settings);
 				settings.endGroup();
 			} else
 #endif
@@ -234,7 +243,7 @@ void Session::save_settings(QSettings &settings) const
 			}
 		}
 
-		settings.setValue("decoder_stacks", stacks);
+		settings.setValue("decode_signals", decode_signals);
 
 		// Save view states and their signal settings
 		// Note: main_view must be saved as view0
@@ -242,7 +251,7 @@ void Session::save_settings(QSettings &settings) const
 		main_view_->save_settings(settings);
 		settings.endGroup();
 
-		for (shared_ptr<views::ViewBase> view : views_) {
+		for (const shared_ptr<views::ViewBase>& view : views_) {
 			if (view != main_view_) {
 				settings.beginGroup("view" + QString::number(views++));
 				view->save_settings(settings);
@@ -291,20 +300,34 @@ void Session::restore_settings(QSettings &settings)
 		settings.endGroup();
 	}
 
-	if (device_type == "sessionfile") {
-		settings.beginGroup("device");
-		QString filename = settings.value("filename").toString();
-		settings.endGroup();
+	if ((device_type == "sessionfile") || (device_type == "inputfile")) {
+		if (device_type == "sessionfile") {
+			settings.beginGroup("device");
+			QString filename = settings.value("filename").toString();
+			settings.endGroup();
 
-		if (QFileInfo(filename).isReadable()) {
-			device = make_shared<devices::SessionFile>(device_manager_.context(),
-				filename.toStdString());
+			if (QFileInfo(filename).isReadable()) {
+				device = make_shared<devices::SessionFile>(device_manager_.context(),
+					filename.toStdString());
+			}
+		}
+
+		if (device_type == "inputfile") {
+			settings.beginGroup("device");
+			device = make_shared<devices::InputFile>(device_manager_.context(),
+				settings);
+			settings.endGroup();
+		}
+
+		if (device) {
 			set_device(device);
 
-			// TODO Perform error handling
-			start_capture([](QString infoMessage) { (void)infoMessage; });
+			start_capture([](QString infoMessage) {
+				// TODO Emulate noquote()
+				qDebug() << "Session error:" << infoMessage; });
 
-			set_name(QFileInfo(filename).fileName());
+			set_name(QString::fromStdString(
+				dynamic_pointer_cast<devices::File>(device)->display_name(device_manager_)));
 		}
 	}
 
@@ -318,14 +341,12 @@ void Session::restore_settings(QSettings &settings)
 
 		// Restore decoders
 #ifdef ENABLE_DECODE
-		int stacks = settings.value("decoder_stacks").toInt();
+		int decode_signals = settings.value("decode_signals").toInt();
 
-		for (int i = 0; i < stacks; i++) {
-			settings.beginGroup("decoder_stack" + QString::number(i++));
-
-			QString id = settings.value("id").toString();
-			add_decoder(srd_decoder_get_by_id(id.toStdString().c_str()));
-
+		for (int i = 0; i < decode_signals; i++) {
+			settings.beginGroup("decode_signal" + QString::number(i));
+			shared_ptr<data::DecodeSignal> signal = add_decode_signal();
+			signal->restore_settings(settings);
 			settings.endGroup();
 		}
 #endif
@@ -356,8 +377,7 @@ void Session::select_device(shared_ptr<devices::Device> device)
 		else
 			set_default_device();
 	} catch (const QString &e) {
-		main_bar_->session_error(tr("Failed to Select Device"),
-			tr("Failed to Select Device"));
+		MainWindow::show_session_error(tr("Failed to select device"), e);
 	}
 }
 
@@ -377,20 +397,21 @@ void Session::set_device(shared_ptr<devices::Device> device)
 	name_ = default_name_;
 	name_changed();
 
-	// Remove all stored data
+	// Remove all stored data and reset all views
 	for (shared_ptr<views::ViewBase> view : views_) {
 		view->clear_signals();
 #ifdef ENABLE_DECODE
 		view->clear_decode_signals();
 #endif
+		view->reset_view_state();
 	}
-	for (const shared_ptr<data::SignalData> d : all_signal_data_)
+	for (const shared_ptr<data::SignalData>& d : all_signal_data_)
 		d->clear();
 	all_signal_data_.clear();
 	signalbases_.clear();
 	cur_logic_segment_.reset();
 
-	for (auto entry : cur_analog_segments_) {
+	for (auto& entry : cur_analog_segments_) {
 		shared_ptr<sigrok::Channel>(entry.first).reset();
 		shared_ptr<data::AnalogSegment>(entry.second).reset();
 	}
@@ -405,6 +426,7 @@ void Session::set_device(shared_ptr<devices::Device> device)
 		device_->open();
 	} catch (const QString &e) {
 		device_.reset();
+		MainWindow::show_session_error(tr("Failed to open device"), e);
 	}
 
 	if (device_) {
@@ -430,30 +452,80 @@ void Session::set_default_device()
 	// Try and find the demo device and select that by default
 	const auto iter = find_if(devices.begin(), devices.end(),
 		[] (const shared_ptr<devices::HardwareDevice> &d) {
-			return d->hardware_device()->driver()->name() == "demo";	});
+			return d->hardware_device()->driver()->name() == "demo"; });
 	set_device((iter == devices.end()) ? devices.front() : *iter);
+}
+
+/**
+ * Convert generic options to data types that are specific to InputFormat.
+ *
+ * @param[in] user_spec Vector of tokenized words, string format.
+ * @param[in] fmt_opts Input format's options, result of InputFormat::options().
+ *
+ * @return Map of options suitable for InputFormat::create_input().
+ */
+map<string, Glib::VariantBase>
+Session::input_format_options(vector<string> user_spec,
+		map<string, shared_ptr<Option>> fmt_opts)
+{
+	map<string, Glib::VariantBase> result;
+
+	for (auto& entry : user_spec) {
+		/*
+		 * Split key=value specs. Accept entries without separator
+		 * (for simplified boolean specifications).
+		 */
+		string key, val;
+		size_t pos = entry.find("=");
+		if (pos == std::string::npos) {
+			key = entry;
+			val = "";
+		} else {
+			key = entry.substr(0, pos);
+			val = entry.substr(pos + 1);
+		}
+
+		/*
+		 * Skip user specifications that are not a member of the
+		 * format's set of supported options. Have the text input
+		 * spec converted to the required input format specific
+		 * data type.
+		 */
+		auto found = fmt_opts.find(key);
+		if (found == fmt_opts.end())
+			continue;
+		shared_ptr<Option> opt = found->second;
+		result[key] = opt->parse_string(val);
+	}
+
+	return result;
 }
 
 void Session::load_init_file(const string &file_name, const string &format)
 {
 	shared_ptr<InputFormat> input_format;
+	map<string, Glib::VariantBase> input_opts;
 
 	if (!format.empty()) {
 		const map<string, shared_ptr<InputFormat> > formats =
 			device_manager_.context()->input_formats();
+		auto user_opts = pv::util::split_string(format, ":");
+		string user_name = user_opts.front();
+		user_opts.erase(user_opts.begin());
 		const auto iter = find_if(formats.begin(), formats.end(),
 			[&](const pair<string, shared_ptr<InputFormat> > f) {
-				return f.first == format; });
+				return f.first == user_name; });
 		if (iter == formats.end()) {
-			main_bar_->session_error(tr("Error"),
+			MainWindow::show_session_error(tr("Error"),
 				tr("Unexpected input format: %s").arg(QString::fromStdString(format)));
 			return;
 		}
-
 		input_format = (*iter).second;
+		input_opts = input_format_options(user_opts,
+			input_format->options());
 	}
 
-	load_file(QString::fromStdString(file_name), input_format);
+	load_file(QString::fromStdString(file_name), input_format, input_opts);
 }
 
 void Session::load_file(QString file_name,
@@ -463,6 +535,10 @@ void Session::load_file(QString file_name,
 	const QString errorMessage(
 		QString("Failed to load file %1").arg(file_name));
 
+	// In the absence of a caller's format spec, try to auto detect.
+	// Assume "sigrok session file" upon lookup miss.
+	if (!format)
+		format = device_manager_.context()->input_format_match(file_name.toStdString());
 	try {
 		if (format)
 			set_device(shared_ptr<devices::Device>(
@@ -475,8 +551,8 @@ void Session::load_file(QString file_name,
 				new devices::SessionFile(
 					device_manager_.context(),
 					file_name.toStdString())));
-	} catch (Error e) {
-		main_bar_->session_error(tr("Failed to load ") + file_name, e.what());
+	} catch (Error& e) {
+		MainWindow::show_session_error(tr("Failed to load ") + file_name, e.what());
 		set_default_device();
 		main_bar_->update_device_list();
 		return;
@@ -485,7 +561,7 @@ void Session::load_file(QString file_name,
 	main_bar_->update_device_list();
 
 	start_capture([&, errorMessage](QString infoMessage) {
-		main_bar_->session_error(errorMessage, infoMessage); });
+		MainWindow::show_session_error(errorMessage, infoMessage); });
 
 	set_name(QFileInfo(file_name).fileName());
 }
@@ -518,8 +594,10 @@ void Session::start_capture(function<void (const QString)> error_handler)
 	}
 
 	// Clear signal data
-	for (const shared_ptr<data::SignalData> d : all_signal_data_)
+	for (const shared_ptr<data::SignalData>& d : all_signal_data_)
 		d->clear();
+
+	trigger_list_.clear();
 
 	// Revert name back to default name (e.g. "Session 1") for real devices
 	// as the (possibly saved) data is gone. File devices keep their name.
@@ -554,7 +632,42 @@ void Session::register_view(shared_ptr<views::ViewBase> view)
 
 	views_.push_back(view);
 
+	// Add all device signals
 	update_signals();
+
+	// Add all other signals
+	unordered_set< shared_ptr<data::SignalBase> > view_signalbases =
+		view->signalbases();
+
+	views::trace::View *trace_view =
+		qobject_cast<views::trace::View*>(view.get());
+
+	if (trace_view) {
+		for (const shared_ptr<data::SignalBase>& signalbase : signalbases_) {
+			const int sb_exists = count_if(
+				view_signalbases.cbegin(), view_signalbases.cend(),
+				[&](const shared_ptr<data::SignalBase> &sb) {
+					return sb == signalbase;
+				});
+			// Add the signal to the view as it doesn't have it yet
+			if (!sb_exists)
+				switch (signalbase->type()) {
+				case data::SignalBase::AnalogChannel:
+				case data::SignalBase::LogicChannel:
+				case data::SignalBase::DecodeChannel:
+#ifdef ENABLE_DECODE
+					trace_view->add_decode_signal(
+						dynamic_pointer_cast<data::DecodeSignal>(signalbase));
+#endif
+					break;
+				case data::SignalBase::MathChannel:
+					// TBD
+					break;
+				}
+		}
+	}
+
+	signals_changed();
 }
 
 void Session::deregister_view(shared_ptr<views::ViewBase> view)
@@ -571,7 +684,7 @@ void Session::deregister_view(shared_ptr<views::ViewBase> view)
 
 bool Session::has_view(shared_ptr<views::ViewBase> view)
 {
-	for (shared_ptr<views::ViewBase> v : views_)
+	for (shared_ptr<views::ViewBase>& v : views_)
 		if (v == view)
 			return true;
 
@@ -582,11 +695,11 @@ double Session::get_samplerate() const
 {
 	double samplerate = 0.0;
 
-	for (const shared_ptr<pv::data::SignalData> d : all_signal_data_) {
+	for (const shared_ptr<pv::data::SignalData>& d : all_signal_data_) {
 		assert(d);
 		const vector< shared_ptr<pv::data::Segment> > segments =
 			d->segments();
-		for (const shared_ptr<pv::data::Segment> &s : segments)
+		for (const shared_ptr<pv::data::Segment>& s : segments)
 			samplerate = max(samplerate, s->samplerate());
 	}
 	// If there is no sample rate given we use samples as unit
@@ -596,73 +709,75 @@ double Session::get_samplerate() const
 	return samplerate;
 }
 
+uint32_t Session::get_segment_count() const
+{
+	uint32_t value = 0;
+
+	// Find the highest number of segments
+	for (const shared_ptr<data::SignalData>& data : all_signal_data_)
+		if (data->get_segment_count() > value)
+			value = data->get_segment_count();
+
+	return value;
+}
+
+vector<util::Timestamp> Session::get_triggers(uint32_t segment_id) const
+{
+	vector<util::Timestamp> result;
+
+	for (const pair<uint32_t, util::Timestamp>& entry : trigger_list_)
+		if (entry.first == segment_id)
+			result.push_back(entry.second);
+
+	return result;
+}
+
 const unordered_set< shared_ptr<data::SignalBase> > Session::signalbases() const
 {
 	return signalbases_;
 }
 
-#ifdef ENABLE_DECODE
-bool Session::add_decoder(srd_decoder *const dec)
+bool Session::all_segments_complete(uint32_t segment_id) const
 {
-	if (!dec)
-		return false;
+	bool all_complete = true;
 
-	map<const srd_channel*, shared_ptr<data::SignalBase> > channels;
-	shared_ptr<data::DecoderStack> decoder_stack;
+	for (const shared_ptr<data::SignalBase>& base : signalbases_)
+		if (!base->segment_is_complete(segment_id))
+			all_complete = false;
+
+	return all_complete;
+}
+
+#ifdef ENABLE_DECODE
+shared_ptr<data::DecodeSignal> Session::add_decode_signal()
+{
+	shared_ptr<data::DecodeSignal> signal;
 
 	try {
-		// Create the decoder
-		decoder_stack = make_shared<data::DecoderStack>(*this, dec);
-
-		// Make a list of all the channels
-		vector<const srd_channel*> all_channels;
-		for (const GSList *i = dec->channels; i; i = i->next)
-			all_channels.push_back((const srd_channel*)i->data);
-		for (const GSList *i = dec->opt_channels; i; i = i->next)
-			all_channels.push_back((const srd_channel*)i->data);
-
-		// Auto select the initial channels
-		for (const srd_channel *pdch : all_channels)
-			for (shared_ptr<data::SignalBase> b : signalbases_) {
-				if (b->logic_data()) {
-					if (QString::fromUtf8(pdch->name).toLower().
-						contains(b->name().toLower()))
-						channels[pdch] = b;
-				}
-			}
-
-		assert(decoder_stack);
-		assert(!decoder_stack->stack().empty());
-		assert(decoder_stack->stack().front());
-		decoder_stack->stack().front()->set_channels(channels);
-
 		// Create the decode signal
-		shared_ptr<data::SignalBase> signalbase =
-			make_shared<data::SignalBase>(nullptr, data::SignalBase::DecodeChannel);
+		signal = make_shared<data::DecodeSignal>(*this);
 
-		signalbase->set_decoder_stack(decoder_stack);
-		signalbases_.insert(signalbase);
+		signalbases_.insert(signal);
 
-		for (shared_ptr<views::ViewBase> view : views_)
-			view->add_decode_signal(signalbase);
-	} catch (runtime_error e) {
-		return false;
+		// Add the decode signal to all views
+		for (shared_ptr<views::ViewBase>& view : views_)
+			view->add_decode_signal(signal);
+	} catch (runtime_error& e) {
+		remove_decode_signal(signal);
+		return nullptr;
 	}
 
 	signals_changed();
 
-	// Do an initial decode
-	decoder_stack->begin_decode();
-
-	return true;
+	return signal;
 }
 
-void Session::remove_decode_signal(shared_ptr<data::SignalBase> signalbase)
+void Session::remove_decode_signal(shared_ptr<data::DecodeSignal> signal)
 {
-	signalbases_.erase(signalbase);
+	signalbases_.erase(signal);
 
-	for (shared_ptr<views::ViewBase> view : views_)
-		view->remove_decode_signal(signalbase);
+	for (shared_ptr<views::ViewBase>& view : views_)
+		view->remove_decode_signal(signal);
 
 	signals_changed();
 }
@@ -687,7 +802,7 @@ void Session::update_signals()
 	if (!device_) {
 		signalbases_.clear();
 		logic_data_.reset();
-		for (shared_ptr<views::ViewBase> view : views_) {
+		for (shared_ptr<views::ViewBase>& view : views_) {
 			view->clear_signals();
 #ifdef ENABLE_DECODE
 			view->clear_decode_signals();
@@ -702,7 +817,7 @@ void Session::update_signals()
 	if (!sr_dev) {
 		signalbases_.clear();
 		logic_data_.reset();
-		for (shared_ptr<views::ViewBase> view : views_) {
+		for (shared_ptr<views::ViewBase>& view : views_) {
 			view->clear_signals();
 #ifdef ENABLE_DECODE
 			view->clear_decode_signals();
@@ -733,7 +848,7 @@ void Session::update_signals()
 	}
 
 	// Make the signals list
-	for (shared_ptr<views::ViewBase> viewbase : views_) {
+	for (shared_ptr<views::ViewBase>& viewbase : views_) {
 		views::trace::View *trace_view =
 			qobject_cast<views::trace::View*>(viewbase.get());
 
@@ -759,7 +874,7 @@ void Session::update_signals()
 				} else {
 					// Find the signalbase for this channel if possible
 					signalbase.reset();
-					for (const shared_ptr<data::SignalBase> b : signalbases_)
+					for (const shared_ptr<data::SignalBase>& b : signalbases_)
 						if (b->channel() == channel)
 							signalbase = b;
 
@@ -835,13 +950,25 @@ void Session::sample_thread_proc(function<void (const QString)> error_handler)
 	if (!device_)
 		return;
 
-	cur_samplerate_ = device_->read_config<uint64_t>(ConfigKey::SAMPLERATE);
+	try {
+		cur_samplerate_ = device_->read_config<uint64_t>(ConfigKey::SAMPLERATE);
+	} catch (Error& e) {
+		cur_samplerate_ = 0;
+	}
 
 	out_of_memory_ = false;
 
+	{
+		lock_guard<recursive_mutex> lock(data_mutex_);
+		cur_logic_segment_.reset();
+		cur_analog_segments_.clear();
+	}
+	highest_segment_id_ = -1;
+	frame_began_ = false;
+
 	try {
 		device_->start();
-	} catch (Error e) {
+	} catch (Error& e) {
 		error_handler(e.what());
 		return;
 	}
@@ -851,7 +978,7 @@ void Session::sample_thread_proc(function<void (const QString)> error_handler)
 
 	try {
 		device_->run();
-	} catch (Error e) {
+	} catch (Error& e) {
 		error_handler(e.what());
 		set_capture_state(Stopped);
 		return;
@@ -860,10 +987,8 @@ void Session::sample_thread_proc(function<void (const QString)> error_handler)
 	set_capture_state(Stopped);
 
 	// Confirm that SR_DF_END was received
-	if (cur_logic_segment_) {
-		qDebug("SR_DF_END was not received.");
-		assert(false);
-	}
+	if (cur_logic_segment_)
+		qDebug() << "WARNING: SR_DF_END was not received.";
 
 	// Optimize memory usage
 	free_unused_memory();
@@ -881,34 +1006,79 @@ void Session::sample_thread_proc(function<void (const QString)> error_handler)
 
 void Session::free_unused_memory()
 {
-	for (shared_ptr<data::SignalData> data : all_signal_data_) {
+	for (const shared_ptr<data::SignalData>& data : all_signal_data_) {
 		const vector< shared_ptr<data::Segment> > segments = data->segments();
 
-		for (shared_ptr<data::Segment> segment : segments) {
+		for (const shared_ptr<data::Segment>& segment : segments)
 			segment->free_unused_memory();
+	}
+}
+
+void Session::signal_new_segment()
+{
+	int new_segment_id = 0;
+
+	if ((cur_logic_segment_ != nullptr) || !cur_analog_segments_.empty()) {
+
+		// Determine new frame/segment number, assuming that all
+		// signals have the same number of frames/segments
+		if (cur_logic_segment_) {
+			new_segment_id = logic_data_->get_segment_count() - 1;
+		} else {
+			shared_ptr<sigrok::Channel> any_channel =
+				(*cur_analog_segments_.begin()).first;
+
+			shared_ptr<data::SignalBase> base = signalbase_from_channel(any_channel);
+			assert(base);
+
+			shared_ptr<data::Analog> data(base->analog_data());
+			assert(data);
+
+			new_segment_id = data->get_segment_count() - 1;
 		}
 	}
+
+	if (new_segment_id > highest_segment_id_) {
+		highest_segment_id_ = new_segment_id;
+		new_segment(highest_segment_id_);
+	}
+}
+
+void Session::signal_segment_completed()
+{
+	int segment_id = 0;
+
+	for (const shared_ptr<data::SignalBase>& signalbase : signalbases_) {
+		// We only care about analog and logic channels, not derived ones
+		if (signalbase->type() == data::SignalBase::AnalogChannel) {
+			segment_id = signalbase->analog_data()->get_segment_count() - 1;
+			break;
+		}
+
+		if (signalbase->type() == data::SignalBase::LogicChannel) {
+			segment_id = signalbase->logic_data()->get_segment_count() - 1;
+			break;
+		}
+	}
+
+	if (segment_id >= 0)
+		segment_completed(segment_id);
 }
 
 void Session::feed_in_header()
 {
-	cur_samplerate_ = device_->read_config<uint64_t>(ConfigKey::SAMPLERATE);
+	// Nothing to do here for now
 }
 
 void Session::feed_in_meta(shared_ptr<Meta> meta)
 {
-	for (auto entry : meta->config()) {
+	for (auto& entry : meta->config()) {
 		switch (entry.first->id()) {
 		case SR_CONF_SAMPLERATE:
-			// We can't rely on the header to always contain the sample rate,
-			// so in case it's supplied via a meta packet, we use it.
-			if (!cur_samplerate_)
-				cur_samplerate_ = g_variant_get_uint64(entry.second.gobj());
-
-			/// @todo handle samplerate changes
+			cur_samplerate_ = g_variant_get_uint64(entry.second.gobj());
 			break;
 		default:
-			// Unknown metadata is not an error.
+			qDebug() << "Received meta data key" << entry.first->id() << ", ignoring.";
 			break;
 		}
 	}
@@ -922,7 +1092,7 @@ void Session::feed_in_trigger()
 	uint64_t sample_count = 0;
 
 	{
-		for (const shared_ptr<pv::data::SignalData> d : all_signal_data_) {
+		for (const shared_ptr<pv::data::SignalData>& d : all_signal_data_) {
 			assert(d);
 			uint64_t temp_count = 0;
 
@@ -936,17 +1106,70 @@ void Session::feed_in_trigger()
 		}
 	}
 
-	trigger_event(sample_count / get_samplerate());
+	uint32_t segment_id = 0;  // Default segment when no frames are used
+
+	// If a frame began, we'd ideally be able to use the highest segment ID for
+	// the trigger. However, as new segments are only created when logic or
+	// analog data comes in, this doesn't work if the trigger appears right
+	// after the beginning of the frame, before any sample data.
+	// For this reason, we use highest segment ID + 1 if no sample data came in
+	// yet and the highest segment ID otherwise.
+	if (frame_began_) {
+		segment_id = highest_segment_id_;
+		if (!cur_logic_segment_ && (cur_analog_segments_.size() == 0))
+			segment_id++;
+	}
+
+	// TODO Create timestamp from segment start time + segment's current sample count
+	util::Timestamp timestamp = sample_count / get_samplerate();
+	trigger_list_.emplace_back(segment_id, timestamp);
+	trigger_event(segment_id, timestamp);
 }
 
 void Session::feed_in_frame_begin()
 {
-	if (cur_logic_segment_ || !cur_analog_segments_.empty())
-		frame_began();
+	frame_began_ = true;
+}
+
+void Session::feed_in_frame_end()
+{
+	if (!frame_began_)
+		return;
+
+	{
+		lock_guard<recursive_mutex> lock(data_mutex_);
+
+		if (cur_logic_segment_)
+			cur_logic_segment_->set_complete();
+
+		for (auto& entry : cur_analog_segments_) {
+			shared_ptr<data::AnalogSegment> segment = entry.second;
+			segment->set_complete();
+		}
+
+		cur_logic_segment_.reset();
+		cur_analog_segments_.clear();
+	}
+
+	frame_began_ = false;
+
+	signal_segment_completed();
 }
 
 void Session::feed_in_logic(shared_ptr<Logic> logic)
 {
+	if (logic->data_length() == 0) {
+		qDebug() << "WARNING: Received logic packet with 0 samples.";
+		return;
+	}
+
+	if (!cur_samplerate_)
+		try {
+			cur_samplerate_ = device_->read_config<uint64_t>(ConfigKey::SAMPLERATE);
+		} catch (Error& e) {
+			// Do nothing
+		}
+
 	lock_guard<recursive_mutex> lock(data_mutex_);
 
 	if (!logic_data_) {
@@ -962,14 +1185,11 @@ void Session::feed_in_logic(shared_ptr<Logic> logic)
 
 		// Create a new data segment
 		cur_logic_segment_ = make_shared<data::LogicSegment>(
-			*logic_data_, logic->unit_size(), cur_samplerate_);
+			*logic_data_, logic_data_->get_segment_count(),
+			logic->unit_size(), cur_samplerate_);
 		logic_data_->push_segment(cur_logic_segment_);
 
-		// @todo Putting this here means that only listeners querying
-		// for logic will be notified. Currently the only user of
-		// frame_began is DecoderStack, but in future we need to signal
-		// this after both analog and logic sweeps have begun.
-		frame_began();
+		signal_new_segment();
 	}
 
 	cur_logic_segment_->append_payload(logic);
@@ -979,21 +1199,31 @@ void Session::feed_in_logic(shared_ptr<Logic> logic)
 
 void Session::feed_in_analog(shared_ptr<Analog> analog)
 {
+	if (analog->num_samples() == 0) {
+		qDebug() << "WARNING: Received analog packet with 0 samples.";
+		return;
+	}
+
+	if (!cur_samplerate_)
+		try {
+			cur_samplerate_ = device_->read_config<uint64_t>(ConfigKey::SAMPLERATE);
+		} catch (Error& e) {
+			// Do nothing
+		}
+
 	lock_guard<recursive_mutex> lock(data_mutex_);
 
 	const vector<shared_ptr<Channel>> channels = analog->channels();
-	const unsigned int channel_count = channels.size();
-	const size_t sample_count = analog->num_samples() / channel_count;
 	bool sweep_beginning = false;
 
-	unique_ptr<float> data(new float[analog->num_samples()]);
+	unique_ptr<float[]> data(new float[analog->num_samples() * channels.size()]);
 	analog->get_data_as_float(data.get());
 
 	if (signalbases_.empty())
 		update_signals();
 
 	float *channel_data = data.get();
-	for (auto channel : channels) {
+	for (auto& channel : channels) {
 		shared_ptr<data::AnalogSegment> segment;
 
 		// Try to get the segment of the channel
@@ -1016,18 +1246,20 @@ void Session::feed_in_analog(shared_ptr<Analog> analog)
 
 			// Create a segment, keep it in the maps of channels
 			segment = make_shared<data::AnalogSegment>(
-				*data, cur_samplerate_);
+				*data, data->get_segment_count(), cur_samplerate_);
 			cur_analog_segments_[channel] = segment;
 
 			// Push the segment into the analog data.
 			data->push_segment(segment);
+
+			signal_new_segment();
 		}
 
 		assert(segment);
 
 		// Append the samples in the segment
-		segment->append_interleaved_samples(channel_data++, sample_count,
-			channel_count);
+		segment->append_interleaved_samples(channel_data++, analog->num_samples(),
+			channels.size());
 	}
 
 	if (sweep_beginning) {
@@ -1041,8 +1273,6 @@ void Session::feed_in_analog(shared_ptr<Analog> analog)
 void Session::data_feed_in(shared_ptr<sigrok::Device> device,
 	shared_ptr<Packet> packet)
 {
-	static bool frame_began = false;
-
 	(void)device;
 
 	assert(device);
@@ -1062,15 +1292,10 @@ void Session::data_feed_in(shared_ptr<sigrok::Device> device,
 		feed_in_trigger();
 		break;
 
-	case SR_DF_FRAME_BEGIN:
-		feed_in_frame_begin();
-		frame_began = true;
-		break;
-
 	case SR_DF_LOGIC:
 		try {
 			feed_in_logic(dynamic_pointer_cast<Logic>(packet->payload()));
-		} catch (bad_alloc) {
+		} catch (bad_alloc&) {
 			out_of_memory_ = true;
 			device_->stop();
 		}
@@ -1079,26 +1304,40 @@ void Session::data_feed_in(shared_ptr<sigrok::Device> device,
 	case SR_DF_ANALOG:
 		try {
 			feed_in_analog(dynamic_pointer_cast<Analog>(packet->payload()));
-		} catch (bad_alloc) {
+		} catch (bad_alloc&) {
 			out_of_memory_ = true;
 			device_->stop();
 		}
 		break;
 
+	case SR_DF_FRAME_BEGIN:
+		feed_in_frame_begin();
+		break;
+
 	case SR_DF_FRAME_END:
+		feed_in_frame_end();
+		break;
+
 	case SR_DF_END:
-	{
+		// Strictly speaking, this is performed when a frame end marker was
+		// received, so there's no point doing this again. However, not all
+		// devices use frames, and for those devices, we need to do it here.
 		{
 			lock_guard<recursive_mutex> lock(data_mutex_);
+
+			if (cur_logic_segment_)
+				cur_logic_segment_->set_complete();
+
+			for (auto& entry : cur_analog_segments_) {
+				shared_ptr<data::AnalogSegment> segment = entry.second;
+				segment->set_complete();
+			}
+
 			cur_logic_segment_.reset();
 			cur_analog_segments_.clear();
 		}
-		if (frame_began) {
-			frame_began = false;
-			frame_ended();
-		}
 		break;
-	}
+
 	default:
 		break;
 	}

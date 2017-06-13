@@ -45,9 +45,13 @@ public:
 public:
 	virtual vector< shared_ptr<Segment> > segments() const = 0;
 
+	virtual uint32_t get_segment_count() const = 0;
+
 	virtual void clear() = 0;
 
 	virtual uint64_t max_sample_count() const = 0;
+
+	virtual double get_samplerate() const = 0;
 };
 
 } // namespace data

@@ -46,6 +46,8 @@ private:
 public:
 	SweepTimingWidget(const char *suffix, QWidget *parent = nullptr);
 
+	void allow_user_entered_values(bool value);
+
 	void show_none();
 	void show_min_max_step(uint64_t min, uint64_t max, uint64_t step);
 	void show_list(const uint64_t *vals, size_t count);

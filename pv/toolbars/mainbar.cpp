@@ -35,6 +35,7 @@
 
 #include <boost/algorithm/string/join.hpp>
 
+#include <pv/data/decodesignal.hpp>
 #include <pv/devicemanager.hpp>
 #include <pv/devices/hardwaredevice.hpp>
 #include <pv/devices/inputfile.hpp>
@@ -86,8 +87,7 @@ const uint64_t MainBar::DefaultSampleCount = 1000000;
 const char *MainBar::SettingOpenDirectory = "MainWindow/OpenDirectory";
 const char *MainBar::SettingSaveDirectory = "MainWindow/SaveDirectory";
 
-MainBar::MainBar(Session &session, QWidget *parent,
-		pv::views::trace::View *view) :
+MainBar::MainBar(Session &session, QWidget *parent, pv::views::trace::View *view) :
 	StandardBar(session, parent, view, false),
 	action_new_view_(new QAction(this)),
 	action_open_(new QAction(this)),
@@ -96,8 +96,7 @@ MainBar::MainBar(Session &session, QWidget *parent,
 	action_connect_(new QAction(this)),
 	open_button_(new QToolButton()),
 	save_button_(new QToolButton()),
-	device_selector_(parent, session.device_manager(),
-		action_connect_),
+	device_selector_(parent, session.device_manager(), action_connect_),
 	configure_button_(this),
 	configure_button_action_(nullptr),
 	channels_button_(this),
@@ -147,15 +146,13 @@ MainBar::MainBar(Session &session, QWidget *parent,
 	widgets::ExportMenu *menu_file_export = new widgets::ExportMenu(this,
 		session.device_manager().context());
 	menu_file_export->setTitle(tr("&Export"));
-	connect(menu_file_export,
-		SIGNAL(format_selected(shared_ptr<sigrok::OutputFormat>)),
+	connect(menu_file_export, SIGNAL(format_selected(shared_ptr<sigrok::OutputFormat>)),
 		this, SLOT(export_file(shared_ptr<sigrok::OutputFormat>)));
 
 	widgets::ImportMenu *menu_file_import = new widgets::ImportMenu(this,
 		session.device_manager().context());
 	menu_file_import->setTitle(tr("&Import"));
-	connect(menu_file_import,
-		SIGNAL(format_selected(shared_ptr<sigrok::InputFormat>)),
+	connect(menu_file_import, SIGNAL(format_selected(shared_ptr<sigrok::InputFormat>)),
 		this, SLOT(import_file(shared_ptr<sigrok::InputFormat>)));
 
 	action_connect_->setText(tr("&Connect to Device..."));
@@ -165,27 +162,22 @@ MainBar::MainBar(Session &session, QWidget *parent,
 	// Open button
 	widgets::ImportMenu *import_menu = new widgets::ImportMenu(this,
 		session.device_manager().context(), action_open_);
-	connect(import_menu,
-		SIGNAL(format_selected(shared_ptr<sigrok::InputFormat>)),
-		this,
-		SLOT(import_file(shared_ptr<sigrok::InputFormat>)));
+	connect(import_menu, SIGNAL(format_selected(shared_ptr<sigrok::InputFormat>)),
+		this, SLOT(import_file(shared_ptr<sigrok::InputFormat>)));
 
 	open_button_->setMenu(import_menu);
 	open_button_->setDefaultAction(action_open_);
 	open_button_->setPopupMode(QToolButton::MenuButtonPopup);
 
 	// Save button
-	vector<QAction *> open_actions;
+	vector<QAction*> open_actions;
 	open_actions.push_back(action_save_as_);
 	open_actions.push_back(action_save_selection_as_);
 
 	widgets::ExportMenu *export_menu = new widgets::ExportMenu(this,
-		session.device_manager().context(),
-		open_actions);
-	connect(export_menu,
-		SIGNAL(format_selected(shared_ptr<sigrok::OutputFormat>)),
-		this,
-		SLOT(export_file(shared_ptr<sigrok::OutputFormat>)));
+		session.device_manager().context(), open_actions);
+	connect(export_menu, SIGNAL(format_selected(shared_ptr<sigrok::OutputFormat>)),
+		this, SLOT(export_file(shared_ptr<sigrok::OutputFormat>)));
 
 	save_button_->setMenu(export_menu);
 	save_button_->setDefaultAction(action_save_as_);
@@ -301,8 +293,7 @@ void MainBar::update_sample_rate_selector()
 		return;
 	}
 
-	const shared_ptr<devices::Device> device =
-		device_selector_.selected_device();
+	const shared_ptr<devices::Device> device = device_selector_.selected_device();
 	if (!device)
 		return;
 
@@ -311,8 +302,27 @@ void MainBar::update_sample_rate_selector()
 
 	const shared_ptr<sigrok::Device> sr_dev = device->device();
 
+	sample_rate_.allow_user_entered_values(false);
+	if (sr_dev->config_check(ConfigKey::EXTERNAL_CLOCK, Capability::GET)) {
+		try {
+			auto gvar = sr_dev->config_get(ConfigKey::EXTERNAL_CLOCK);
+			if (gvar.gobj()) {
+				bool value = Glib::VariantBase::cast_dynamic<Glib::Variant<bool>>(
+					gvar).get();
+				sample_rate_.allow_user_entered_values(value);
+			}
+		} catch (Error& error) {
+			// Do nothing
+		}
+	}
+
+
 	if (sr_dev->config_check(ConfigKey::SAMPLERATE, Capability::LIST)) {
-		gvar_dict = sr_dev->config_list(ConfigKey::SAMPLERATE);
+		try {
+			gvar_dict = sr_dev->config_list(ConfigKey::SAMPLERATE);
+		} catch (Error& error) {
+			qDebug() << tr("Failed to get sample rate list:") << error.what();
+		}
 	} else {
 		sample_rate_.show_none();
 		updating_sample_rate_ = false;
@@ -322,7 +332,7 @@ void MainBar::update_sample_rate_selector()
 	if ((gvar_list = g_variant_lookup_value(gvar_dict.gobj(),
 			"samplerate-steps", G_VARIANT_TYPE("at")))) {
 		elements = (const uint64_t *)g_variant_get_fixed_array(
-				gvar_list, &num_elements, sizeof(uint64_t));
+			gvar_list, &num_elements, sizeof(uint64_t));
 
 		const uint64_t min = elements[0];
 		const uint64_t max = elements[1];
@@ -347,7 +357,7 @@ void MainBar::update_sample_rate_selector()
 	} else if ((gvar_list = g_variant_lookup_value(gvar_dict.gobj(),
 			"samplerates", G_VARIANT_TYPE("at")))) {
 		elements = (const uint64_t *)g_variant_get_fixed_array(
-				gvar_list, &num_elements, sizeof(uint64_t));
+			gvar_list, &num_elements, sizeof(uint64_t));
 		sample_rate_.show_list(elements, num_elements);
 		g_variant_unref(gvar_list);
 	}
@@ -361,8 +371,7 @@ void MainBar::update_sample_rate_selector_value()
 	if (updating_sample_rate_)
 		return;
 
-	const shared_ptr<devices::Device> device =
-		device_selector_.selected_device();
+	const shared_ptr<devices::Device> device = device_selector_.selected_device();
 	if (!device)
 		return;
 
@@ -374,9 +383,8 @@ void MainBar::update_sample_rate_selector_value()
 		updating_sample_rate_ = true;
 		sample_rate_.set_value(samplerate);
 		updating_sample_rate_ = false;
-	} catch (Error error) {
-		qDebug() << "WARNING: Failed to get value of sample rate";
-		return;
+	} catch (Error& error) {
+		qDebug() << tr("Failed to get sample rate:") << error.what();
 	}
 }
 
@@ -385,8 +393,7 @@ void MainBar::update_sample_count_selector()
 	if (updating_sample_count_)
 		return;
 
-	const shared_ptr<devices::Device> device =
-		device_selector_.selected_device();
+	const shared_ptr<devices::Device> device = device_selector_.selected_device();
 	if (!device)
 		return;
 
@@ -412,10 +419,14 @@ void MainBar::update_sample_count_selector()
 	}
 
 	if (sr_dev->config_check(ConfigKey::LIMIT_SAMPLES, Capability::LIST)) {
-		auto gvar = sr_dev->config_list(ConfigKey::LIMIT_SAMPLES);
-		if (gvar.gobj())
-			g_variant_get(gvar.gobj(), "(tt)",
-				&min_sample_count, &max_sample_count);
+		try {
+			auto gvar = sr_dev->config_list(ConfigKey::LIMIT_SAMPLES);
+			if (gvar.gobj())
+				g_variant_get(gvar.gobj(), "(tt)",
+					&min_sample_count, &max_sample_count);
+		} catch (Error& error) {
+			qDebug() << tr("Failed to get sample limit list:") << error.what();
+		}
 	}
 
 	min_sample_count = min(max(min_sample_count, MinSampleCount),
@@ -447,8 +458,7 @@ void MainBar::update_device_config_widgets()
 {
 	using namespace pv::popups;
 
-	const shared_ptr<devices::Device> device =
-		device_selector_.selected_device();
+	const shared_ptr<devices::Device> device = device_selector_.selected_device();
 
 	// Hide the widgets if no device is selected
 	channels_button_action_->setVisible(!!device);
@@ -465,8 +475,7 @@ void MainBar::update_device_config_widgets()
 
 	// Update the configure popup
 	DeviceOptions *const opts = new DeviceOptions(sr_dev, this);
-	configure_button_action_->setVisible(
-		!opts->binding().properties().empty());
+	configure_button_action_->setVisible(!opts->binding().properties().empty());
 	configure_button_.set_popup(opts);
 
 	// Update the channels popup
@@ -478,12 +487,6 @@ void MainBar::update_device_config_widgets()
 
 	if (sr_dev->config_check(ConfigKey::LIMIT_SAMPLES, Capability::SET))
 		sample_count_supported_ = true;
-
-	if (sr_dev->config_check(ConfigKey::LIMIT_FRAMES, Capability::SET)) {
-		sr_dev->config_set(ConfigKey::LIMIT_FRAMES,
-			Glib::Variant<guint64>::create(1));
-			on_config_changed();
-	}
 
 	// Add notification of reconfigure events
 	disconnect(this, SLOT(on_config_changed()));
@@ -499,23 +502,20 @@ void MainBar::commit_sample_rate()
 {
 	uint64_t sample_rate = 0;
 
-	const shared_ptr<devices::Device> device =
-		device_selector_.selected_device();
+	const shared_ptr<devices::Device> device = device_selector_.selected_device();
 	if (!device)
 		return;
 
 	const shared_ptr<sigrok::Device> sr_dev = device->device();
 
 	sample_rate = sample_rate_.value();
-	if (sample_rate == 0)
-		return;
 
 	try {
 		sr_dev->config_set(ConfigKey::SAMPLERATE,
 			Glib::Variant<guint64>::create(sample_rate));
 		update_sample_rate_selector();
-	} catch (Error error) {
-		qDebug() << "Failed to configure samplerate.";
+	} catch (Error& error) {
+		qDebug() << tr("Failed to configure samplerate:") << error.what();
 		return;
 	}
 
@@ -529,8 +529,7 @@ void MainBar::commit_sample_count()
 {
 	uint64_t sample_count = 0;
 
-	const shared_ptr<devices::Device> device =
-		device_selector_.selected_device();
+	const shared_ptr<devices::Device> device = device_selector_.selected_device();
 	if (!device)
 		return;
 
@@ -542,8 +541,8 @@ void MainBar::commit_sample_count()
 			sr_dev->config_set(ConfigKey::LIMIT_SAMPLES,
 				Glib::Variant<guint64>::create(sample_count));
 			update_sample_count_selector();
-		} catch (Error error) {
-			qDebug() << "Failed to configure sample count.";
+		} catch (Error& error) {
+			qDebug() << tr("Failed to configure sample count:") << error.what();
 			return;
 		}
 	}
@@ -552,13 +551,6 @@ void MainBar::commit_sample_count()
 	// configurations, so let's check what sample rate the driver
 	// lets us use now.
 	update_sample_rate_selector();
-}
-
-void MainBar::session_error(const QString text, const QString info_text)
-{
-	QMetaObject::invokeMethod(this, "show_session_error",
-		Qt::QueuedConnection, Q_ARG(QString, text),
-		Q_ARG(QString, info_text));
 }
 
 void MainBar::show_session_error(const QString text, const QString info_text)
@@ -575,7 +567,9 @@ void MainBar::add_decoder(srd_decoder *decoder)
 {
 #ifdef ENABLE_DECODE
 	assert(decoder);
-	session_.add_decoder(decoder);
+	shared_ptr<data::DecodeSignal> signal = session_.add_decode_signal();
+	if (signal)
+		signal->stack_decoder(decoder);
 #else
 	(void)decoder;
 #endif
@@ -600,8 +594,8 @@ void MainBar::export_file(shared_ptr<OutputFormat> format, bool selection_only)
 
 		if (!trace_view->cursors()->enabled()) {
 			show_session_error(tr("Missing Cursors"), tr("You need to set the " \
-					"cursors before you can save the data enclosed by them " \
-					"to a session file (e.g. using the Show Cursors button)."));
+				"cursors before you can save the data enclosed by them " \
+				"to a session file (e.g. using the Show Cursors button)."));
 			return;
 		}
 
@@ -611,9 +605,16 @@ void MainBar::export_file(shared_ptr<OutputFormat> format, bool selection_only)
 		const pv::util::Timestamp& end_time = trace_view->cursors()->second()->time();
 
 		const uint64_t start_sample = (uint64_t)max(
-			(double)0, start_time.convert_to<double>() * samplerate);
+			0.0, start_time.convert_to<double>() * samplerate);
 		const uint64_t end_sample = (uint64_t)max(
-			(double)0, end_time.convert_to<double>() * samplerate);
+			0.0, end_time.convert_to<double>() * samplerate);
+
+		if ((start_sample == 0) && (end_sample == 0)) {
+			// Both cursors are negative and were clamped to 0
+			show_session_error(tr("Invalid Range"), tr("The cursors don't " \
+				"define a valid range of samples."));
+			return;
+		}
 
 		sample_range = make_pair(start_sample, end_sample);
 	} else {
@@ -671,16 +672,19 @@ void MainBar::import_file(shared_ptr<InputFormat> format)
 
 	// Construct the filter
 	const vector<string> exts = format->extensions();
-	const QString filter = exts.empty() ? "" :
-		tr("%1 files (*.%2)").arg(
-			QString::fromStdString(format->description()),
-			QString::fromStdString(join(exts, ", *.")));
+	const QString filter_exts = exts.empty() ? "" : QString::fromStdString("%1 (%2)").arg(
+		tr("%1 files").arg(QString::fromStdString(format->description())),
+		QString::fromStdString("*.%1").arg(QString::fromStdString(join(exts, " *."))));
+	const QString filter_all = QString::fromStdString("%1 (%2)").arg(
+		tr("All Files"), QString::fromStdString("*"));
+	const QString filter = QString::fromStdString("%1%2%3").arg(
+		exts.empty() ? "" : filter_exts,
+		exts.empty() ? "" : ";;",
+		filter_all);
 
 	// Show the file dialog
 	const QString file_name = QFileDialog::getOpenFileName(
-		this, tr("Import File"), dir, tr(
-			"%1 files (*);;All Files (*)").arg(
-			QString::fromStdString(format->description())));
+		this, tr("Import File"), dir, filter);
 
 	if (file_name.isEmpty())
 		return;
@@ -706,12 +710,11 @@ void MainBar::import_file(shared_ptr<InputFormat> format)
 void MainBar::on_device_selected()
 {
 	shared_ptr<devices::Device> device = device_selector_.selected_device();
-	if (!device) {
-		reset_device_selector();
-		return;
-	}
 
-	session_.select_device(device);
+	if (device)
+		session_.select_device(device);
+	else
+		reset_device_selector();
 }
 
 void MainBar::on_device_changed()
@@ -739,6 +742,10 @@ void MainBar::on_sample_rate_changed()
 
 void MainBar::on_config_changed()
 {
+	// We want to also call update_sample_rate_selector() here in case
+	// the user changed the SR_CONF_EXTERNAL_CLOCK option. However,
+	// commit_sample_rate() does this already, so we don't call it here
+
 	commit_sample_count();
 	commit_sample_rate();
 }
@@ -816,8 +823,9 @@ void MainBar::add_toolbar_widgets()
 bool MainBar::eventFilter(QObject *watched, QEvent *event)
 {
 	if (sample_count_supported_ && (watched == &sample_count_ ||
-			watched == &sample_rate_) &&
-			(event->type() == QEvent::ToolTip)) {
+		watched == &sample_rate_) &&
+		(event->type() == QEvent::ToolTip)) {
+
 		auto sec = pv::util::Timestamp(sample_count_.value()) / sample_rate_.value();
 		QHelpEvent *help_event = static_cast<QHelpEvent*>(event);
 

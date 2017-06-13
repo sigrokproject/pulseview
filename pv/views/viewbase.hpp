@@ -32,6 +32,10 @@
 #include <pv/data/signalbase.hpp>
 #include <pv/util.hpp>
 
+#ifdef ENABLE_DECODE
+#include <pv/data/decodesignal.hpp>
+#endif
+
 using std::shared_ptr;
 using std::unordered_set;
 
@@ -61,6 +65,12 @@ private:
 public:
 	explicit ViewBase(Session &session, bool is_main_view = false, QWidget *parent = nullptr);
 
+	/**
+	 * Resets the view to its default state after construction. It does however
+	 * not reset the signal bases or any other connections with the session.
+	 */
+	virtual void reset_view_state();
+
 	Session& session();
 	const Session& session() const;
 
@@ -78,9 +88,9 @@ public:
 #ifdef ENABLE_DECODE
 	virtual void clear_decode_signals();
 
-	virtual void add_decode_signal(shared_ptr<data::SignalBase> signalbase);
+	virtual void add_decode_signal(shared_ptr<data::DecodeSignal> signal);
 
-	virtual void remove_decode_signal(shared_ptr<data::SignalBase> signalbase);
+	virtual void remove_decode_signal(shared_ptr<data::DecodeSignal> signal);
 #endif
 
 	virtual void save_settings(QSettings &settings) const;
@@ -88,12 +98,17 @@ public:
 	virtual void restore_settings(QSettings &settings);
 
 public Q_SLOTS:
-	virtual void trigger_event(util::Timestamp location);
+	virtual void trigger_event(int segment_id, util::Timestamp location);
 	virtual void signals_changed();
 	virtual void capture_state_updated(int state);
+	virtual void on_new_segment(int new_segment_id);
+	virtual void on_segment_completed(int new_segment_id);
 	virtual void perform_delayed_view_update();
 
 private Q_SLOTS:
+	void on_samples_added(uint64_t segment_id, uint64_t start_sample,
+		uint64_t end_sample);
+
 	void on_data_updated();
 
 protected:
@@ -101,9 +116,13 @@ protected:
 
 	const bool is_main_view_;
 
+	util::Timestamp ruler_shift_;
 	util::TimeUnit time_unit_;
 
 	unordered_set< shared_ptr<data::SignalBase> > signalbases_;
+
+	/// The ID of the currently displayed segment
+	uint32_t current_segment_;
 
 	QTimer delayed_view_updater_;
 };

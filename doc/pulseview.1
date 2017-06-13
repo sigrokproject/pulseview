@@ -1,4 +1,4 @@
-.TH PULSEVIEW 1 "June 6, 2017"
+.TH PULSEVIEW 1 "March 30, 2018"
 .SH "NAME"
 PulseView \- Qt-based LA/scope/MSO GUI for sigrok
 .SH "SYNOPSIS"
@@ -40,6 +40,20 @@ Show a help text and exit.
 .TP
 .B "\-V, \-\-version"
 Show version information and exit.
+.TP
+.BR "\-d, \-\-driver " <drivername>
+Specify the capture device to connect to. If the
+.B \-\-driver
+option is not supplied, PulseView attempts to re-connect to the
+most recently used device, or auto-detect available devices.
+.TP
+.BR "\-D, \-\-dont\-scan "
+Usually PulseView automatically scans all drivers to find suitable
+devices during program startup. This option disables the auto-scan.
+Users can either specify the
+.B \-\-driver
+option to pick a device at startup, or interactively scan for devices
+after PulseView has finished starting up.
 .TP
 .BR "\-i, \-\-input\-file " <filename>
 Load input from a file. If the

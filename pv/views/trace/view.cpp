@@ -38,6 +38,7 @@
 #include <QApplication>
 #include <QEvent>
 #include <QFontMetrics>
+#include <QMenu>
 #include <QMouseEvent>
 #include <QScrollBar>
 #include <QVBoxLayout>
@@ -73,12 +74,12 @@ using pv::util::Timestamp;
 using std::back_inserter;
 using std::copy_if;
 using std::count_if;
-using std::dynamic_pointer_cast;
 using std::inserter;
 using std::max;
 using std::make_pair;
 using std::make_shared;
 using std::min;
+using std::numeric_limits;
 using std::pair;
 using std::set;
 using std::set_difference;
@@ -125,24 +126,11 @@ bool CustomScrollArea::viewportEvent(QEvent *event)
 
 View::View(Session &session, bool is_main_view, QWidget *parent) :
 	ViewBase(session, is_main_view, parent),
+
+	// Note: Place defaults in View::reset_view_state(), not here
 	splitter_(new QSplitter()),
-	scale_(1e-3),
-	offset_(0),
-	updating_scroll_(false),
-	settings_restored_(false),
-	sticky_scrolling_(false), // Default setting is set in MainWindow::setup_ui()
-	always_zoom_to_fit_(false),
-	tick_period_(0),
-	tick_prefix_(pv::util::SIPrefix::yocto),
-	tick_precision_(0),
-	time_unit_(util::TimeUnit::Time),
-	show_cursors_(false),
-	cursors_(new CursorPair(*this)),
-	next_flag_text_('A'),
-	trigger_markers_(),
-	hover_point_(-1, -1),
-	scroll_needs_defaults_(true),
-	saved_v_offset_(0)
+	header_was_shrunk_(false),  // The splitter remains unchanged after a reset, so this goes here
+	sticky_scrolling_(false)  // Default setting is set in MainWindow::setup_ui()
 {
 	QVBoxLayout *root_layout = new QVBoxLayout(this);
 	root_layout->setContentsMargins(0, 0, 0, 0);
@@ -190,7 +178,10 @@ View::View(Session &session, bool is_main_view, QWidget *parent) :
 
 	// Set up settings and event handlers
 	GlobalSettings settings;
-	coloured_bg_ = settings.value(GlobalSettings::Key_View_ColouredBG).toBool();
+	colored_bg_ = settings.value(GlobalSettings::Key_View_ColoredBG).toBool();
+	snap_distance_ = settings.value(GlobalSettings::Key_View_SnapDistance).toInt();
+
+	GlobalSettings::add_change_handler(this);
 
 	connect(scrollarea_->horizontalScrollBar(), SIGNAL(valueChanged(int)),
 		this, SLOT(h_scroll_value_changed(int)));
@@ -210,9 +201,6 @@ View::View(Session &session, bool is_main_view, QWidget *parent) :
 	connect(splitter_, SIGNAL(splitterMoved(int, int)),
 		this, SLOT(on_splitter_moved()));
 
-	connect(this, SIGNAL(hover_point_changed()),
-		this, SLOT(on_hover_point_changed()));
-
 	connect(&lazy_event_handler_, SIGNAL(timeout()),
 		this, SLOT(process_sticky_events()));
 	lazy_event_handler_.setSingleShot(true);
@@ -225,8 +213,51 @@ View::View(Session &session, bool is_main_view, QWidget *parent) :
 	ruler_->raise();
 	header_->raise();
 
+	reset_view_state();
+}
+
+View::~View()
+{
+	GlobalSettings::remove_change_handler(this);
+}
+
+void View::reset_view_state()
+{
+	ViewBase::reset_view_state();
+
+	segment_display_mode_ = Trace::ShowLastSegmentOnly;
+	segment_selectable_ = false;
+	scale_ = 1e-3;
+	offset_ = 0;
+	ruler_offset_ = 0;
+	updating_scroll_ = false;
+	settings_restored_ = false;
+	always_zoom_to_fit_ = false;
+	tick_period_ = 0;
+	tick_prefix_ = pv::util::SIPrefix::yocto;
+	tick_precision_ = 0;
+	time_unit_ = util::TimeUnit::Time;
+	show_cursors_ = false;
+	cursors_ = make_shared<CursorPair>(*this);
+	next_flag_text_ = 'A';
+	trigger_markers_.clear();
+	hover_widget_ = nullptr;
+	hover_point_ = QPoint(-1, -1);
+	scroll_needs_defaults_ = true;
+	saved_v_offset_ = 0;
+	scale_at_acq_start_ = 0;
+	offset_at_acq_start_ = 0;
+	suppress_zoom_to_fit_after_acq_ = false;
+
+	show_cursors_ = false;
+	cursor_state_changed(show_cursors_);
+	flags_.clear();
+
 	// Update the zoom state
 	calculate_tick_spacing();
+
+	// Make sure the standard bar's segment selector is in sync
+	set_segment_display_mode(segment_display_mode_);
 }
 
 Session& View::session()
@@ -254,6 +285,12 @@ void View::add_signal(const shared_ptr<Signal> signal)
 {
 	ViewBase::add_signalbase(signal->base());
 	signals_.insert(signal);
+
+	signal->set_segment_display_mode(segment_display_mode_);
+	signal->set_current_segment(current_segment_);
+
+	connect(signal->base().get(), SIGNAL(name_changed(const QString&)),
+		this, SLOT(on_signal_name_changed()));
 }
 
 #ifdef ENABLE_DECODE
@@ -262,23 +299,34 @@ void View::clear_decode_signals()
 	decode_traces_.clear();
 }
 
-void View::add_decode_signal(shared_ptr<data::SignalBase> signalbase)
+void View::add_decode_signal(shared_ptr<data::DecodeSignal> signal)
 {
 	shared_ptr<DecodeTrace> d(
-		new DecodeTrace(session_, signalbase, decode_traces_.size()));
+		new DecodeTrace(session_, signal, decode_traces_.size()));
 	decode_traces_.push_back(d);
+
+	d->set_segment_display_mode(segment_display_mode_);
+	d->set_current_segment(current_segment_);
+
+	connect(signal.get(), SIGNAL(name_changed(const QString&)),
+		this, SLOT(on_signal_name_changed()));
 }
 
-void View::remove_decode_signal(shared_ptr<data::SignalBase> signalbase)
+void View::remove_decode_signal(shared_ptr<data::DecodeSignal> signal)
 {
 	for (auto i = decode_traces_.begin(); i != decode_traces_.end(); i++)
-		if ((*i)->base() == signalbase) {
+		if ((*i)->base() == signal) {
 			decode_traces_.erase(i);
 			signals_changed();
 			return;
 		}
 }
 #endif
+
+shared_ptr<Signal> View::get_signal_under_mouse_cursor() const
+{
+	return signal_under_mouse_cursor_;
+}
 
 View* View::view()
 {
@@ -300,6 +348,11 @@ const Viewport* View::viewport() const
 	return viewport_;
 }
 
+const Ruler* View::ruler() const
+{
+	return ruler_;
+}
+
 void View::save_settings(QSettings &settings) const
 {
 	settings.setValue("scale", scale_);
@@ -307,13 +360,22 @@ void View::save_settings(QSettings &settings) const
 		scrollarea_->verticalScrollBar()->sliderPosition());
 
 	settings.setValue("splitter_state", splitter_->saveState());
+	settings.setValue("segment_display_mode", segment_display_mode_);
 
-	stringstream ss;
-	boost::archive::text_oarchive oa(ss);
-	oa << boost::serialization::make_nvp("offset", offset_);
-	settings.setValue("offset", QString::fromStdString(ss.str()));
+	{
+		stringstream ss;
+		boost::archive::text_oarchive oa(ss);
+		oa << boost::serialization::make_nvp("ruler_shift", ruler_shift_);
+		settings.setValue("ruler_shift", QString::fromStdString(ss.str()));
+	}
+	{
+		stringstream ss;
+		boost::archive::text_oarchive oa(ss);
+		oa << boost::serialization::make_nvp("offset", offset_);
+		settings.setValue("offset", QString::fromStdString(ss.str()));
+	}
 
-	for (shared_ptr<Signal> signal : signals_) {
+	for (const shared_ptr<Signal>& signal : signals_) {
 		settings.beginGroup(signal->base()->internal_name());
 		signal->save_settings(settings);
 		settings.endGroup();
@@ -328,19 +390,41 @@ void View::restore_settings(QSettings &settings)
 	if (settings.contains("scale"))
 		set_scale(settings.value("scale").toDouble());
 
+	if (settings.contains("ruler_shift")) {
+		util::Timestamp shift;
+		stringstream ss;
+		ss << settings.value("ruler_shift").toString().toStdString();
+
+		try {
+			boost::archive::text_iarchive ia(ss);
+			ia >> boost::serialization::make_nvp("ruler_shift", shift);
+			ruler_shift_ = shift;
+		} catch (boost::archive::archive_exception&) {
+			qDebug() << "Could not restore the view ruler shift";
+		}
+	}
+
 	if (settings.contains("offset")) {
 		util::Timestamp offset;
 		stringstream ss;
 		ss << settings.value("offset").toString().toStdString();
 
-		boost::archive::text_iarchive ia(ss);
-		ia >> boost::serialization::make_nvp("offset", offset);
-
-		set_offset(offset);
+		try {
+			boost::archive::text_iarchive ia(ss);
+			ia >> boost::serialization::make_nvp("offset", offset);
+			// This also updates ruler_offset_
+			set_offset(offset);
+		} catch (boost::archive::archive_exception&) {
+			qDebug() << "Could not restore the view offset";
+		}
 	}
 
 	if (settings.contains("splitter_state"))
 		splitter_->restoreState(settings.value("splitter_state").toByteArray());
+
+	if (settings.contains("segment_display_mode"))
+		set_segment_display_mode(
+			(Trace::SegmentDisplayMode)(settings.value("segment_display_mode").toInt()));
 
 	for (shared_ptr<Signal> signal : signals_) {
 		settings.beginGroup(signal->base()->internal_name());
@@ -356,17 +440,24 @@ void View::restore_settings(QSettings &settings)
 	}
 
 	settings_restored_ = true;
+	suppress_zoom_to_fit_after_acq_ = true;
+
+	// Update the ruler so that it uses the new scale
+	calculate_tick_spacing();
 }
 
 vector< shared_ptr<TimeItem> > View::time_items() const
 {
 	const vector<shared_ptr<Flag>> f(flags());
 	vector<shared_ptr<TimeItem>> items(f.begin(), f.end());
-	items.push_back(cursors_);
-	items.push_back(cursors_->first());
-	items.push_back(cursors_->second());
 
-	for (auto trigger_marker : trigger_markers_)
+	if (cursors_) {
+		items.push_back(cursors_);
+		items.push_back(cursors_->first());
+		items.push_back(cursors_->second());
+	}
+
+	for (auto& trigger_marker : trigger_markers_)
 		items.push_back(trigger_marker);
 
 	return items;
@@ -385,17 +476,44 @@ void View::set_scale(double scale)
 	}
 }
 
+void View::set_offset(const pv::util::Timestamp& offset, bool force_update)
+{
+	if ((offset_ != offset) || force_update) {
+		offset_ = offset;
+		ruler_offset_ = offset_ + ruler_shift_;
+		offset_changed();
+	}
+}
+
 const Timestamp& View::offset() const
 {
 	return offset_;
 }
 
-void View::set_offset(const pv::util::Timestamp& offset)
+const Timestamp& View::ruler_offset() const
 {
-	if (offset_ != offset) {
-		offset_ = offset;
-		offset_changed();
-	}
+	return ruler_offset_;
+}
+
+void View::set_zero_position(const pv::util::Timestamp& position)
+{
+	// ruler shift is a negative offset and the new zero position is relative
+	// to the current offset. Hence, we adjust the ruler shift only by the
+	// difference.
+	ruler_shift_ = -(position + (-ruler_shift_));
+
+	// Force an immediate update of the offsets
+	set_offset(offset_, true);
+	ruler_->update();
+}
+
+void View::reset_zero_position()
+{
+	ruler_shift_ = 0;
+
+	// Force an immediate update of the offsets
+	set_offset(offset_, true);
+	ruler_->update();
 }
 
 int View::owner_visual_v_offset() const
@@ -413,6 +531,11 @@ void View::set_v_offset(int offset)
 unsigned int View::depth() const
 {
 	return 0;
+}
+
+uint32_t View::current_segment() const
+{
+	return current_segment_;
 }
 
 pv::util::SIPrefix View::tick_prefix() const
@@ -446,6 +569,11 @@ const pv::util::Timestamp& View::tick_period() const
 	return tick_period_;
 }
 
+unsigned int View::minor_tick_count() const
+{
+	return minor_tick_count_;
+}
+
 void View::set_tick_period(const pv::util::Timestamp& tick_period)
 {
 	if (tick_period_ != tick_period) {
@@ -465,6 +593,91 @@ void View::set_time_unit(pv::util::TimeUnit time_unit)
 		time_unit_ = time_unit;
 		time_unit_changed();
 	}
+}
+
+void View::set_current_segment(uint32_t segment_id)
+{
+	current_segment_ = segment_id;
+
+	for (const shared_ptr<Signal>& signal : signals_)
+		signal->set_current_segment(current_segment_);
+#ifdef ENABLE_DECODE
+	for (shared_ptr<DecodeTrace>& dt : decode_traces_)
+		dt->set_current_segment(current_segment_);
+#endif
+
+	vector<util::Timestamp> triggers = session_.get_triggers(current_segment_);
+
+	trigger_markers_.clear();
+	for (util::Timestamp timestamp : triggers)
+		trigger_markers_.push_back(make_shared<TriggerMarker>(*this, timestamp));
+
+	// When enabled, the first trigger for this segment is used as the zero position
+	GlobalSettings settings;
+	bool trigger_is_zero_time = settings.value(GlobalSettings::Key_View_TriggerIsZeroTime).toBool();
+
+	if (trigger_is_zero_time && (triggers.size() > 0))
+		set_zero_position(triggers.front());
+
+	viewport_->update();
+
+	segment_changed(segment_id);
+}
+
+bool View::segment_is_selectable() const
+{
+	return segment_selectable_;
+}
+
+Trace::SegmentDisplayMode View::segment_display_mode() const
+{
+	return segment_display_mode_;
+}
+
+void View::set_segment_display_mode(Trace::SegmentDisplayMode mode)
+{
+	segment_display_mode_ = mode;
+
+	for (const shared_ptr<Signal>& signal : signals_)
+		signal->set_segment_display_mode(mode);
+
+	uint32_t last_segment = session_.get_segment_count() - 1;
+
+	switch (mode) {
+	case Trace::ShowLastSegmentOnly:
+		if (current_segment_ != last_segment)
+			set_current_segment(last_segment);
+		break;
+
+	case Trace::ShowLastCompleteSegmentOnly:
+		// Do nothing if we only have one segment so far
+		if (last_segment > 0) {
+			// If the last segment isn't complete, the previous one must be
+			uint32_t segment_id =
+				(session_.all_segments_complete(last_segment)) ?
+				last_segment : last_segment - 1;
+
+			if (current_segment_ != segment_id)
+				set_current_segment(segment_id);
+		}
+		break;
+
+	case Trace::ShowSingleSegmentOnly:
+	case Trace::ShowAllSegments:
+	case Trace::ShowAccumulatedIntensity:
+	default:
+		// Current segment remains as-is
+		break;
+	}
+
+	segment_selectable_ = true;
+
+	if ((mode == Trace::ShowAllSegments) || (mode == Trace::ShowAccumulatedIntensity))
+		segment_selectable_ = false;
+
+	viewport_->update();
+
+	segment_display_mode_changed((int)mode, segment_selectable_);
 }
 
 void View::zoom(double steps)
@@ -502,23 +715,6 @@ void View::zoom_fit(bool gui_state)
 	set_scale_offset(scale.convert_to<double>(), extents.first);
 }
 
-void View::zoom_one_to_one()
-{
-	using pv::data::SignalData;
-
-	// Make a set of all the visible data objects
-	set< shared_ptr<SignalData> > visible_data = get_visible_data();
-	if (visible_data.empty())
-		return;
-
-	assert(viewport_);
-	const int w = viewport_->width();
-	if (w <= 0)
-		return;
-
-	set_zoom(1.0 / session_.get_samplerate(), w / 2);
-}
-
 void View::set_scale_offset(double scale, const Timestamp& offset)
 {
 	// Disable sticky scrolling / always zoom to fit when acquisition runs
@@ -551,7 +747,7 @@ set< shared_ptr<SignalData> > View::get_visible_data() const
 {
 	// Make a set of all the visible data objects
 	set< shared_ptr<SignalData> > visible_data;
-	for (const shared_ptr<Signal> sig : signals_)
+	for (const shared_ptr<Signal>& sig : signals_)
 		if (sig->enabled())
 			visible_data.insert(sig->data());
 
@@ -562,9 +758,9 @@ pair<Timestamp, Timestamp> View::get_time_extents() const
 {
 	boost::optional<Timestamp> left_time, right_time;
 	const set< shared_ptr<SignalData> > visible_data = get_visible_data();
-	for (const shared_ptr<SignalData> d : visible_data) {
+	for (const shared_ptr<SignalData>& d : visible_data) {
 		const vector< shared_ptr<Segment> > segments = d->segments();
-		for (const shared_ptr<Segment> &s : segments) {
+		for (const shared_ptr<Segment>& s : segments) {
 			double samplerate = s->samplerate();
 			samplerate = (samplerate <= 0.0) ? 1.0 : samplerate;
 
@@ -599,15 +795,15 @@ void View::enable_show_analog_minor_grid(bool state)
 	viewport_->update();
 }
 
-void View::enable_coloured_bg(bool state)
+void View::enable_colored_bg(bool state)
 {
-	coloured_bg_ = state;
+	colored_bg_ = state;
 	viewport_->update();
 }
 
-bool View::coloured_bg() const
+bool View::colored_bg() const
 {
-	return coloured_bg_;
+	return colored_bg_;
 }
 
 bool View::cursors_shown() const
@@ -618,17 +814,21 @@ bool View::cursors_shown() const
 void View::show_cursors(bool show)
 {
 	show_cursors_ = show;
+	cursor_state_changed(show);
 	ruler_->update();
 	viewport_->update();
 }
 
 void View::centre_cursors()
 {
-	const double time_width = scale_ * viewport_->width();
-	cursors_->first()->set_time(offset_ + time_width * 0.4);
-	cursors_->second()->set_time(offset_ + time_width * 0.6);
-	ruler_->update();
-	viewport_->update();
+	if (cursors_) {
+		const double time_width = scale_ * viewport_->width();
+		cursors_->first()->set_time(offset_ + time_width * 0.4);
+		cursors_->second()->set_time(offset_ + time_width * 0.6);
+
+		ruler_->update();
+		viewport_->update();
+	}
 }
 
 shared_ptr<CursorPair> View::cursors() const
@@ -669,6 +869,112 @@ const QPoint& View::hover_point() const
 	return hover_point_;
 }
 
+const QWidget* View::hover_widget() const
+{
+	return hover_widget_;
+}
+
+int64_t View::get_nearest_level_change(const QPoint &p)
+{
+	// Is snapping disabled?
+	if (snap_distance_ == 0)
+		return -1;
+
+	struct entry_t {
+		entry_t(shared_ptr<Signal> s) :
+			signal(s), delta(numeric_limits<int64_t>::max()), sample(-1), is_dense(false) {}
+		shared_ptr<Signal> signal;
+		int64_t delta;
+		int64_t sample;
+		bool is_dense;
+	};
+
+	vector<entry_t> list;
+
+	// Create list of signals to consider
+	if (signal_under_mouse_cursor_)
+		list.emplace_back(signal_under_mouse_cursor_);
+	else
+		for (shared_ptr<Signal> s : signals_) {
+			if (!s->enabled())
+				continue;
+
+			list.emplace_back(s);
+		}
+
+	// Get data for listed signals
+	for (entry_t &e : list) {
+		// Calculate sample number from cursor position
+		const double samples_per_pixel = e.signal->base()->get_samplerate() * scale();
+		const int64_t x_offset = offset().convert_to<double>() / scale();
+		const int64_t sample_num = max(((x_offset + p.x()) * samples_per_pixel), 0.0);
+
+		vector<data::LogicSegment::EdgePair> edges =
+			e.signal->get_nearest_level_changes(sample_num);
+
+		if (edges.empty())
+			continue;
+
+		// Check first edge
+		const int64_t first_sample_delta = abs(sample_num - edges.front().first);
+		const int64_t first_delta = first_sample_delta / samples_per_pixel;
+		e.delta = first_delta;
+		e.sample = edges.front().first;
+
+		// Check second edge if available
+		if (edges.size() == 2) {
+			// Note: -1 because this is usually the right edge and sample points are left-aligned
+			const int64_t second_sample_delta = abs(sample_num - edges.back().first - 1);
+			const int64_t second_delta = second_sample_delta / samples_per_pixel;
+
+			// If both edges are too close, we mark this signal as being dense
+			if ((first_delta + second_delta) <= snap_distance_)
+				e.is_dense = true;
+
+			if (second_delta < first_delta) {
+				e.delta = second_delta;
+				e.sample = edges.back().first;
+			}
+		}
+	}
+
+	// Look for the best match: non-dense first, then dense
+	entry_t *match = nullptr;
+
+	for (entry_t &e : list) {
+		if (e.delta > snap_distance_ || e.is_dense)
+			continue;
+
+		if (match) {
+			if (e.delta < match->delta)
+				match = &e;
+		} else
+			match = &e;
+	}
+
+	if (!match) {
+		for (entry_t &e : list) {
+			if (!e.is_dense)
+				continue;
+
+			if (match) {
+				if (e.delta < match->delta)
+					match = &e;
+			} else
+				match = &e;
+		}
+	}
+
+	if (match) {
+		// Somewhat ugly hack to make TimeItem::drag_by() work
+		signal_under_mouse_cursor_ = match->signal;
+
+		return match->sample;
+	}
+
+	return -1;
+}
+
 void View::restack_all_trace_tree_items()
 {
 	// Make a list of owners that is sorted from deepest first
@@ -691,8 +997,38 @@ void View::restack_all_trace_tree_items()
 		i->animate_to_layout_v_offset();
 }
 
-void View::trigger_event(util::Timestamp location)
+int View::header_width() const
 {
+	 return header_->extended_size_hint().width();
+}
+
+void View::on_setting_changed(const QString &key, const QVariant &value)
+{
+	if (key == GlobalSettings::Key_View_TriggerIsZeroTime)
+		on_settingViewTriggerIsZeroTime_changed(value);
+
+	if (key == GlobalSettings::Key_View_SnapDistance) {
+		GlobalSettings settings;
+		snap_distance_ = settings.value(GlobalSettings::Key_View_SnapDistance).toInt();
+	}
+}
+
+void View::trigger_event(int segment_id, util::Timestamp location)
+{
+	// TODO This doesn't work if we're showing multiple segments at once
+	if ((uint32_t)segment_id != current_segment_)
+		return;
+
+	// Set zero location if the Key_View_TriggerIsZeroTime setting is set and
+	// if this is the first trigger for this segment.
+	GlobalSettings settings;
+	bool trigger_is_zero_time = settings.value(GlobalSettings::Key_View_TriggerIsZeroTime).toBool();
+
+	size_t trigger_count = session_.get_triggers(current_segment_).size();
+
+	if (trigger_is_zero_time && trigger_count == 1)
+		set_zero_position(location);
+
 	trigger_markers_.push_back(make_shared<TriggerMarker>(*this, location));
 }
 
@@ -757,6 +1093,7 @@ void View::calculate_tick_spacing()
 				(ScaleUnits[unit++] + tp_margin);
 		} while (tp_with_margin < min_period && unit < countof(ScaleUnits));
 
+		minor_tick_count_ = (unit == 2) ? 4 : 5;
 		tick_period = order_decimal * ScaleUnits[unit - 1];
 		tick_prefix = static_cast<pv::util::SIPrefix>(
 			(order - pv::util::exponent(pv::util::SIPrefix::yocto)) / 3);
@@ -849,8 +1186,10 @@ void View::update_scroll()
 		vscrollbar->setRange(extents.first - areaSize.height(),
 			extents.second);
 
-	if (scroll_needs_defaults_)
+	if (scroll_needs_defaults_) {
 		set_scroll_default();
+		scroll_needs_defaults_ = false;
+	}
 }
 
 void View::reset_scroll()
@@ -877,21 +1216,29 @@ void View::set_scroll_default()
 		set_v_offset(extents.first);
 }
 
-bool View::header_was_shrunk() const
+void View::determine_if_header_was_shrunk()
 {
-	const int header_pane_width = splitter_->sizes().front();
-	const int header_width = header_->extended_size_hint().width();
+	const int header_pane_width =
+		splitter_->sizes().front();  // clazy:exclude=detaching-temporary
 
 	// Allow for a slight margin of error so that we also accept
 	// slight differences when e.g. a label name change increased
 	// the overall width
-	return (header_pane_width < (header_width - 10));
+	header_was_shrunk_ = (header_pane_width < (header_width() - 10));
 }
 
-void View::expand_header_to_fit()
+void View::resize_header_to_fit()
 {
+	// Setting the maximum width of the header widget doesn't work as
+	// expected because the splitter would allow the user to make the
+	// pane wider than that, creating empty space as a result.
+	// To make this work, we stricly enforce the maximum width by
+	// expanding the header unless the user shrunk it on purpose.
+	// As we're then setting the width of the header pane, we set the
+	// splitter to the maximum allowed position.
+
 	int splitter_area_width = 0;
-	for (int w : splitter_->sizes())
+	for (int w : splitter_->sizes())  // clazy:exclude=range-loop
 		splitter_area_width += w;
 
 	// Make sure the header has enough horizontal space to show all labels fully
@@ -917,8 +1264,8 @@ TraceTreeItemOwner* View::find_prevalent_trace_group(
 	vector<TraceTreeItemOwner*> owner_list;
 
 	// Make a set and a list of all the owners
-	for (const auto &channel : group->channels()) {
-		for (auto entry : signal_map) {
+	for (const auto& channel : group->channels()) {
+		for (auto& entry : signal_map) {
 			if (entry.first->channel() == channel) {
 				TraceTreeItemOwner *const o = (entry.second)->owner();
 				owner_list.push_back(o);
@@ -951,8 +1298,8 @@ vector< shared_ptr<Trace> > View::extract_new_traces_for_channels(
 {
 	vector< shared_ptr<Trace> > filtered_traces;
 
-	for (const auto &channel : channels) {
-		for (auto entry : signal_map) {
+	for (const auto& channel : channels) {
+		for (auto& entry : signal_map) {
 			if (entry.first->channel() == channel) {
 				shared_ptr<Trace> trace = entry.second;
 				const auto list_iter = add_list.find(trace);
@@ -973,7 +1320,7 @@ void View::determine_time_unit()
 	// Check whether we know the sample rate and hence can use time as the unit
 	if (time_unit_ == util::TimeUnit::Samples) {
 		// Check all signals but...
-		for (const shared_ptr<Signal> signal : signals_) {
+		for (const shared_ptr<Signal>& signal : signals_) {
 			const shared_ptr<SignalData> data = signal->data();
 
 			// ...only check first segment of each
@@ -992,21 +1339,24 @@ bool View::eventFilter(QObject *object, QEvent *event)
 	const QEvent::Type type = event->type();
 	if (type == QEvent::MouseMove) {
 
+		if (object)
+			hover_widget_ = qobject_cast<QWidget*>(object);
+
 		const QMouseEvent *const mouse_event = (QMouseEvent*)event;
 		if (object == viewport_)
 			hover_point_ = mouse_event->pos();
 		else if (object == ruler_)
-			hover_point_ = QPoint(mouse_event->x(), 0);
+			hover_point_ = mouse_event->pos();
 		else if (object == header_)
 			hover_point_ = QPoint(0, mouse_event->y());
 		else
 			hover_point_ = QPoint(-1, -1);
 
-		hover_point_changed();
+		update_hover_point();
 
 	} else if (type == QEvent::Leave) {
 		hover_point_ = QPoint(-1, -1);
-		hover_point_changed();
+		update_hover_point();
 	} else if (type == QEvent::Show) {
 
 		// This is somewhat of a hack, unfortunately. We cannot use
@@ -1018,8 +1368,10 @@ bool View::eventFilter(QObject *object, QEvent *event)
 		// resized to their final sizes.
 		update_layout();
 
-		if (!settings_restored_)
-			expand_header_to_fit();
+		if (settings_restored_)
+			determine_if_header_was_shrunk();
+		else
+			resize_header_to_fit();
 
 		if (scroll_needs_defaults_) {
 			set_scroll_default();
@@ -1035,6 +1387,19 @@ bool View::eventFilter(QObject *object, QEvent *event)
 	return QObject::eventFilter(object, event);
 }
 
+void View::contextMenuEvent(QContextMenuEvent *event)
+{
+	QPoint pos = event->pos() - QPoint(0, ruler_->sizeHint().height());
+
+	const shared_ptr<ViewItem> r = viewport_->get_mouse_over_item(pos);
+	if (!r)
+		return;
+
+	QMenu *menu = r->create_view_context_menu(this, pos);
+	if (menu)
+		menu->popup(event->globalPos());
+}
+
 void View::resizeEvent(QResizeEvent* event)
 {
 	// Only adjust the top margin if we shrunk vertically
@@ -1042,6 +1407,31 @@ void View::resizeEvent(QResizeEvent* event)
 		adjust_top_margin();
 
 	update_layout();
+}
+
+void View::update_hover_point()
+{
+	// Determine signal that the mouse cursor is hovering over
+	signal_under_mouse_cursor_.reset();
+	if (hover_widget_ == this) {
+		for (const shared_ptr<Signal>& s : signals_) {
+			const pair<int, int> extents = s->v_extents();
+			const int top = s->get_visual_y() + extents.first;
+			const int btm = s->get_visual_y() + extents.second;
+			if ((hover_point_.y() >= top) && (hover_point_.y() <= btm)
+				&& s->base()->enabled())
+				signal_under_mouse_cursor_ = s;
+		}
+	}
+
+	// Update all trace tree items
+	const vector<shared_ptr<TraceTreeItem>> trace_tree_items(
+		list_by_type<TraceTreeItem>());
+	for (const shared_ptr<TraceTreeItem>& r : trace_tree_items)
+		r->hover_point_changed(hover_point_);
+
+	// Notify any other listeners
+	hover_point_changed(hover_widget_, hover_point_);
 }
 
 void View::row_item_appearance_changed(bool label, bool content)
@@ -1071,20 +1461,23 @@ void View::extents_changed(bool horz, bool vert)
 		(horz ? TraceTreeItemHExtentsChanged : 0) |
 		(vert ? TraceTreeItemVExtentsChanged : 0);
 
+	lazy_event_handler_.stop();
 	lazy_event_handler_.start();
+}
+
+void View::on_signal_name_changed()
+{
+	if (!header_was_shrunk_)
+		resize_header_to_fit();
 }
 
 void View::on_splitter_moved()
 {
-	// Setting the maximum width of the header widget doesn't work as
-	// expected because the splitter would allow the user to make the
-	// pane wider than that, creating empty space as a result.
-	// To make this work, we stricly enforce the maximum width by
-	// expanding the header unless the user shrunk it on purpose.
-	// As we're then setting the width of the header pane, we set the
-	// splitter to the maximum allowed position.
-	if (!header_was_shrunk())
-		expand_header_to_fit();
+	// The header can only shrink when the splitter is moved manually
+	determine_if_header_was_shrunk();
+
+	if (!header_was_shrunk_)
+		resize_header_to_fit();
 }
 
 void View::h_scroll_value_changed(int value)
@@ -1125,6 +1518,7 @@ void View::signals_changed()
 
 	vector< shared_ptr<Channel> > channels;
 	shared_ptr<sigrok::Device> sr_dev;
+	bool signals_added_or_removed = false;
 
 	// Do we need to set the vertical scrollbar to its default position later?
 	// We do if there are no traces, i.e. the scroll bar has no range set
@@ -1168,12 +1562,12 @@ void View::signals_changed()
 	// Make a look-up table of sigrok Channels to pulseview Signals
 	unordered_map<shared_ptr<data::SignalBase>, shared_ptr<Signal> >
 		signal_map;
-	for (const shared_ptr<Signal> &sig : signals_)
+	for (const shared_ptr<Signal>& sig : signals_)
 		signal_map[sig->base()] = sig;
 
 	// Populate channel groups
 	if (sr_dev)
-		for (auto entry : sr_dev->channel_groups()) {
+		for (auto& entry : sr_dev->channel_groups()) {
 			const shared_ptr<sigrok::ChannelGroup> &group = entry.second;
 
 			if (group->channels().size() <= 1)
@@ -1199,7 +1593,7 @@ void View::signals_changed()
 			// Add the traces to the group
 			const pair<int, int> prev_v_extents = owner->v_extents();
 			int offset = prev_v_extents.second - prev_v_extents.first;
-			for (shared_ptr<Trace> trace : new_traces_in_group) {
+			for (const shared_ptr<Trace>& trace : new_traces_in_group) {
 				assert(trace);
 				owner->add_child_item(trace);
 
@@ -1234,7 +1628,7 @@ void View::signals_changed()
 	if (non_grouped_logic_signals.size() > 0) {
 		const shared_ptr<TraceGroup> non_grouped_trace_group(
 			make_shared<TraceGroup>());
-		for (shared_ptr<Trace> trace : non_grouped_logic_signals)
+		for (const shared_ptr<Trace>& trace : non_grouped_logic_signals)
 			non_grouped_trace_group->add_child_item(trace);
 
 		non_grouped_trace_group->restack_items();
@@ -1252,10 +1646,11 @@ void View::signals_changed()
 		add_traces.begin(), add_traces.end());
 
 	// Remove any removed traces
-	for (shared_ptr<Trace> trace : remove_traces) {
+	for (const shared_ptr<Trace>& trace : remove_traces) {
 		TraceTreeItemOwner *const owner = trace->owner();
 		assert(owner);
 		owner->remove_child_item(trace);
+		signals_added_or_removed = true;
 	}
 
 	// Remove any empty trace groups
@@ -1280,13 +1675,12 @@ void View::signals_changed()
 
 		if (item->enabled())
 			offset += extents.second;
+		signals_added_or_removed = true;
 	}
 
 
-	if (!new_top_level_items.empty())
-		// Expand the header pane because the header should become fully
-		// visible when new signals are added
-		expand_header_to_fit();
+	if (signals_added_or_removed && !header_was_shrunk_)
+		resize_header_to_fit();
 
 	update_layout();
 
@@ -1299,16 +1693,20 @@ void View::signals_changed()
 
 void View::capture_state_updated(int state)
 {
+	GlobalSettings settings;
+
 	if (state == Session::Running) {
 		set_time_unit(util::TimeUnit::Samples);
 
 		trigger_markers_.clear();
 
+		scale_at_acq_start_ = scale_;
+		offset_at_acq_start_ = offset_;
+
 		// Activate "always zoom to fit" if the setting is enabled and we're
 		// the main view of this session (other trace views may be used for
 		// zooming and we don't want to mess them up)
-		GlobalSettings settings;
-		bool state = settings.value(GlobalSettings::Key_View_AlwaysZoomToFit).toBool();
+		bool state = settings.value(GlobalSettings::Key_View_ZoomToFitDuringAcq).toBool();
 		if (is_main_view_ && state) {
 			always_zoom_to_fit_ = true;
 			always_zoom_to_fit_changed(always_zoom_to_fit_);
@@ -1316,6 +1714,10 @@ void View::capture_state_updated(int state)
 
 		// Enable sticky scrolling if the setting is enabled
 		sticky_scrolling_ = settings.value(GlobalSettings::Key_View_StickyScrolling).toBool();
+
+		// Reset all traces to segment 0
+		current_segment_ = 0;
+		set_current_segment(current_segment_);
 	}
 
 	if (state == Session::Stopped) {
@@ -1330,7 +1732,62 @@ void View::capture_state_updated(int state)
 			always_zoom_to_fit_ = false;
 			always_zoom_to_fit_changed(always_zoom_to_fit_);
 		}
+
+		bool zoom_to_fit_after_acq =
+			settings.value(GlobalSettings::Key_View_ZoomToFitAfterAcq).toBool();
+
+		// Only perform zoom-to-fit if the user hasn't altered the viewport and
+		// we didn't restore settings in the meanwhile
+		if (zoom_to_fit_after_acq &&
+			!suppress_zoom_to_fit_after_acq_ &&
+			(scale_ == scale_at_acq_start_) &&
+			(offset_ == offset_at_acq_start_))
+			zoom_fit(false);  // We're stopped, so the GUI state doesn't matter
+
+		suppress_zoom_to_fit_after_acq_ = false;
 	}
+}
+
+void View::on_new_segment(int new_segment_id)
+{
+	on_segment_changed(new_segment_id);
+}
+
+void View::on_segment_completed(int segment_id)
+{
+	on_segment_changed(segment_id);
+}
+
+void View::on_segment_changed(int segment)
+{
+	switch (segment_display_mode_) {
+	case Trace::ShowLastSegmentOnly:
+	case Trace::ShowSingleSegmentOnly:
+		set_current_segment(segment);
+		break;
+
+	case Trace::ShowLastCompleteSegmentOnly:
+		// Only update if all segments are complete
+		if (session_.all_segments_complete(segment))
+			set_current_segment(segment);
+		break;
+
+	case Trace::ShowAllSegments:
+	case Trace::ShowAccumulatedIntensity:
+	default:
+		break;
+	}
+}
+
+void View::on_settingViewTriggerIsZeroTime_changed(const QVariant new_value)
+{
+	if (new_value.toBool()) {
+		// The first trigger for this segment is used as the zero position
+		vector<util::Timestamp> triggers = session_.get_triggers(current_segment_);
+		if (triggers.size() > 0)
+			set_zero_position(triggers.front());
+	} else
+		reset_zero_position();
 }
 
 void View::perform_delayed_view_update()
@@ -1366,14 +1823,6 @@ void View::process_sticky_events()
 
 	// Clear the sticky events
 	sticky_events_ = 0;
-}
-
-void View::on_hover_point_changed()
-{
-	const vector<shared_ptr<TraceTreeItem>> trace_tree_items(
-		list_by_type<TraceTreeItem>());
-	for (shared_ptr<TraceTreeItem> r : trace_tree_items)
-		r->hover_point_changed();
 }
 
 } // namespace trace

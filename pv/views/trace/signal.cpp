@@ -36,7 +36,6 @@
 #include "view.hpp"
 
 using std::shared_ptr;
-using std::make_shared;
 
 namespace pv {
 namespace views {
@@ -63,8 +62,6 @@ Signal::Signal(pv::Session &session,
 	shared_ptr<data::SignalBase> channel) :
 	Trace(channel),
 	session_(session),
-	scale_handle_(make_shared<SignalScaleHandle>(*this)),
-	items_({scale_handle_}),
 	name_widget_(nullptr)
 {
 	assert(base_);
@@ -75,7 +72,7 @@ Signal::Signal(pv::Session &session,
 
 void Signal::set_name(QString name)
 {
-	Trace::set_name(name);
+	base_->set_name(name);
 
 	if (name != name_widget_->currentText())
 		name_widget_->setEditText(name);
@@ -99,11 +96,6 @@ void Signal::save_settings(QSettings &settings) const
 void Signal::restore_settings(QSettings &settings)
 {
 	(void)settings;
-}
-
-const ViewItemOwner::item_list& Signal::child_items() const
-{
-	return items_;
 }
 
 void Signal::paint_back(QPainter &p, ViewItemPaintParams &pp)
@@ -135,12 +127,12 @@ void Signal::populate_popup_form(QWidget *parent, QFormLayout *form)
 
 	form->addRow(tr("Name"), name_widget_);
 
-	add_colour_option(parent, form);
+	add_color_option(parent, form);
 }
 
-QMenu* Signal::create_context_menu(QWidget *parent)
+QMenu* Signal::create_header_context_menu(QWidget *parent)
 {
-	QMenu *const menu = Trace::create_context_menu(parent);
+	QMenu *const menu = Trace::create_header_context_menu(parent);
 
 	menu->addSeparator();
 

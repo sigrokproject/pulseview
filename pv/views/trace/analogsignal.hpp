@@ -20,12 +20,13 @@
 #ifndef PULSEVIEW_PV_VIEWS_TRACEVIEW_ANALOGSIGNAL_HPP
 #define PULSEVIEW_PV_VIEWS_TRACEVIEW_ANALOGSIGNAL_HPP
 
-#include "signal.hpp"
-
 #include <memory>
 
+#include <QColor>
 #include <QComboBox>
 #include <QSpinBox>
+
+#include <pv/views/trace/signal.hpp>
 
 using std::pair;
 using std::shared_ptr;
@@ -46,9 +47,17 @@ class AnalogSignal : public Signal
 	Q_OBJECT
 
 private:
-	static const QColor SignalColours[4];
+	static const QPen AxisPen;
+	static const QColor SignalColors[4];
 	static const QColor GridMajorColor, GridMinorColor;
-	static const QColor SamplingPointColour;
+	static const QColor SamplingPointColor;
+	static const QColor SamplingPointColorLo;
+	static const QColor SamplingPointColorNe;
+	static const QColor SamplingPointColorHi;
+	static const QColor ThresholdColor;
+	static const QColor ThresholdColorLo;
+	static const QColor ThresholdColorNe;
+	static const QColor ThresholdColorHi;
 
 	static const int64_t TracePaintBlockSize;
 	static const float EnvelopeThreshold;
@@ -66,8 +75,6 @@ private:
 public:
 	AnalogSignal(pv::Session &session, shared_ptr<data::SignalBase> base);
 
-	virtual ~AnalogSignal() = default;
-
 	shared_ptr<pv::data::SignalData> data() const;
 
 	virtual void save_settings(QSettings &settings) const;
@@ -79,22 +86,6 @@ public:
 	 * @return A pair containing the minimum and maximum y-values.
 	 */
 	pair<int, int> v_extents() const;
-
-	/**
-	 * Returns the offset to show the drag handle.
-	 */
-	int scale_handle_offset() const;
-
-	/**
-	 * Handles the scale handle being dragged to an offset.
-	 * @param offset the offset the scale handle was dragged to.
-	 */
-	void scale_handle_dragged(int offset);
-
-	/**
-	 * @copydoc pv::view::Signal::signal_scale_handle_drag_release()
-	 */
-	void scale_handle_drag_release();
 
 	/**
 	 * Paints the background layer of the signal with a QPainter
@@ -137,6 +128,9 @@ private:
 		bool level, double samples_per_pixel, double pixels_offset,
 		float x_offset, float y_offset);
 
+	shared_ptr<pv::data::AnalogSegment> get_analog_segment_to_paint() const;
+	shared_ptr<pv::data::LogicSegment> get_logic_segment_to_paint() const;
+
 	/**
 	 * Computes the scale factor from the scale index and vdiv settings.
 	 */
@@ -144,42 +138,71 @@ private:
 
 	void update_scale();
 
-	void update_conversion_type();
+	void update_conversion_widgets();
+
+	/**
+	 * Determines the closest level change (i.e. edge) to a given sample, which
+	 * is useful for e.g. the "snap to edge" functionality.
+	 *
+	 * @param sample_pos Sample to use
+	 * @return The changes left and right of the given position
+	 */
+	virtual vector<data::LogicSegment::EdgePair> get_nearest_level_changes(uint64_t sample_pos);
 
 	void perform_autoranging(bool keep_divs, bool force_update);
+
+	void reset_pixel_values();
+	void process_next_sample_value(float x, float value);
 
 protected:
 	void populate_popup_form(QWidget *parent, QFormLayout *form);
 
+	virtual void hover_point_changed(const QPoint &hp);
+
 private Q_SLOTS:
-	void on_samples_added();
+	virtual void on_setting_changed(const QString &key, const QVariant &value);
+
+	void on_min_max_changed(float min, float max);
 
 	void on_pos_vdivs_changed(int vdivs);
 	void on_neg_vdivs_changed(int vdivs);
+	void on_div_height_changed(int height);
 
 	void on_resolution_changed(int index);
 
 	void on_autoranging_changed(int state);
 
 	void on_conversion_changed(int index);
+	void on_conv_threshold_changed(int index=-1);
+	void on_delayed_conversion_starter();
 
 	void on_display_type_changed(int index);
 
 private:
-	QComboBox *resolution_cb_, *conversion_cb_, *display_type_cb_;
-	QSpinBox *pvdiv_sb_, *nvdiv_sb_;
+	QComboBox *resolution_cb_, *conversion_cb_, *conv_threshold_cb_,
+		*display_type_cb_;
+	QSpinBox *pvdiv_sb_, *nvdiv_sb_, *div_height_sb_;
 
 	float scale_;
 	int scale_index_;
-	int scale_index_drag_offset_;
 
 	int div_height_;
 	int pos_vdivs_, neg_vdivs_;  // divs per positive/negative side
-	float resolution_; // e.g. 10 for 10 V/div
+	float resolution_;  // e.g. 10 for 10 V/div
 
-	data::SignalBase::ConversionType conversion_type_;
+	bool show_analog_minor_grid_;
+	QColor high_fill_color_;
+	bool show_sampling_points_, fill_high_areas_;
+
 	DisplayType display_type_;
 	bool autoranging_;
+	int conversion_threshold_disp_mode_;
+
+	vector<float> value_at_pixel_pos_;
+	float value_at_hover_pos_;
+	float prev_value_at_pixel_;  // Only used during lookup table update
+	float min_value_at_pixel_, max_value_at_pixel_;  // Only used during lookup table update
+	int current_pixel_pos_;  // Only used during lookup table update
 };
 
 } // namespace trace

@@ -111,7 +111,7 @@ public:
 	 * Gets the arrow-tip point of the row item marker.
 	 * @param rect the rectangle of the header area.
 	 */
-	QPoint point(const QRect &rect) const;
+	QPoint drag_point(const QRect &rect) const;
 
 	/**
 	 * Computes the vertical extents of the contents of this row item.

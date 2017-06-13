@@ -38,6 +38,7 @@ public:
 
 	QWidget* get_widget(QWidget *parent, bool auto_commit);
 	bool labeled_widget() const;
+	void update_widget();
 
 	void commit();
 

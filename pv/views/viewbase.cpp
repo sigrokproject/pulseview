@@ -26,6 +26,7 @@
 
 #include "pv/session.hpp"
 #include "pv/util.hpp"
+#include "pv/data/segment.hpp"
 
 using std::shared_ptr;
 
@@ -35,6 +36,7 @@ namespace views {
 const int ViewBase::MaxViewAutoUpdateRate = 25; // No more than 25 Hz
 
 ViewBase::ViewBase(Session &session, bool is_main_view, QWidget *parent) :
+	// Note: Place defaults in ViewBase::reset_view_state(), not here
 	session_(session),
 	is_main_view_(is_main_view)
 {
@@ -44,11 +46,19 @@ ViewBase::ViewBase(Session &session, bool is_main_view, QWidget *parent) :
 		this, SLOT(signals_changed()));
 	connect(&session_, SIGNAL(capture_state_changed(int)),
 		this, SLOT(capture_state_updated(int)));
+	connect(&session_, SIGNAL(new_segment(int)),
+		this, SLOT(on_new_segment(int)));
 
 	connect(&delayed_view_updater_, SIGNAL(timeout()),
 		this, SLOT(perform_delayed_view_update()));
 	delayed_view_updater_.setSingleShot(true);
 	delayed_view_updater_.setInterval(1000 / MaxViewAutoUpdateRate);
+}
+
+void ViewBase::reset_view_state()
+{
+	ruler_shift_ = 0;
+	current_segment_ = 0;
 }
 
 Session& ViewBase::session()
@@ -72,11 +82,11 @@ unordered_set< shared_ptr<data::SignalBase> > ViewBase::signalbases() const
 
 void ViewBase::clear_signalbases()
 {
-	for (shared_ptr<data::SignalBase> signalbase : signalbases_) {
+	for (const shared_ptr<data::SignalBase>& signalbase : signalbases_) {
 		disconnect(signalbase.get(), SIGNAL(samples_cleared()),
 			this, SLOT(on_data_updated()));
-		disconnect(signalbase.get(), SIGNAL(samples_added(QObject*, uint64_t, uint64_t)),
-			this, SLOT(on_data_updated()));
+		disconnect(signalbase.get(), SIGNAL(samples_added(uint64_t, uint64_t, uint64_t)),
+			this, SLOT(on_samples_added(uint64_t, uint64_t, uint64_t)));
 	}
 
 	signalbases_.clear();
@@ -88,8 +98,8 @@ void ViewBase::add_signalbase(const shared_ptr<data::SignalBase> signalbase)
 
 	connect(signalbase.get(), SIGNAL(samples_cleared()),
 		this, SLOT(on_data_updated()));
-	connect(signalbase.get(), SIGNAL(samples_added(QObject*, uint64_t, uint64_t)),
-		this, SLOT(on_data_updated()));
+	connect(signalbase.get(), SIGNAL(samples_added(uint64_t, uint64_t, uint64_t)),
+		this, SLOT(on_samples_added(uint64_t, uint64_t, uint64_t)));
 }
 
 #ifdef ENABLE_DECODE
@@ -97,14 +107,14 @@ void ViewBase::clear_decode_signals()
 {
 }
 
-void ViewBase::add_decode_signal(shared_ptr<data::SignalBase> signalbase)
+void ViewBase::add_decode_signal(shared_ptr<data::DecodeSignal> signal)
 {
-	(void)signalbase;
+	(void)signal;
 }
 
-void ViewBase::remove_decode_signal(shared_ptr<data::SignalBase> signalbase)
+void ViewBase::remove_decode_signal(shared_ptr<data::DecodeSignal> signal)
 {
-	(void)signalbase;
+	(void)signal;
 }
 #endif
 
@@ -118,13 +128,24 @@ void ViewBase::restore_settings(QSettings &settings)
 	(void)settings;
 }
 
-void ViewBase::trigger_event(util::Timestamp location)
+void ViewBase::trigger_event(int segment_id, util::Timestamp location)
 {
+	(void)segment_id;
 	(void)location;
 }
 
 void ViewBase::signals_changed()
 {
+}
+
+void ViewBase::on_new_segment(int new_segment_id)
+{
+	(void)new_segment_id;
+}
+
+void ViewBase::on_segment_completed(int new_segment_id)
+{
+	(void)new_segment_id;
 }
 
 void ViewBase::capture_state_updated(int state)
@@ -134,6 +155,19 @@ void ViewBase::capture_state_updated(int state)
 
 void ViewBase::perform_delayed_view_update()
 {
+}
+
+void ViewBase::on_samples_added(uint64_t segment_id, uint64_t start_sample,
+	uint64_t end_sample)
+{
+	(void)start_sample;
+	(void)end_sample;
+
+	if (segment_id != current_segment_)
+		return;
+
+	if (!delayed_view_updater_.isActive())
+		delayed_view_updater_.start();
 }
 
 void ViewBase::on_data_updated()

@@ -133,7 +133,7 @@ void TraceTreeItem::drag_by(const QPoint &delta)
 		owner_->owner_visual_v_offset());
 }
 
-QPoint TraceTreeItem::point(const QRect &rect) const
+QPoint TraceTreeItem::drag_point(const QRect &rect) const
 {
 	return QPoint(rect.right(), get_visual_y());
 }

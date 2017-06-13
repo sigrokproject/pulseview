@@ -37,7 +37,7 @@ using std::abs;
 using std::back_inserter;
 using std::copy;
 using std::dynamic_pointer_cast;
-using std::none_of; // Used in assert()s.
+using std::none_of; // NOLINT. Used in assert()s.
 using std::shared_ptr;
 using std::stable_sort;
 using std::vector;
@@ -64,9 +64,9 @@ shared_ptr<ViewItem> Viewport::get_mouse_over_item(const QPoint &pt)
 	return nullptr;
 }
 
-void Viewport::item_hover(const shared_ptr<ViewItem> &item)
+void Viewport::item_hover(const shared_ptr<ViewItem> &item, QPoint pos)
 {
-	if (item && item->is_draggable())
+	if (item && item->is_draggable(pos))
 		setCursor(dynamic_pointer_cast<RowItem>(item) ?
 			Qt::SizeVerCursor : Qt::SizeHorCursor);
 	else
@@ -165,7 +165,7 @@ void Viewport::paintEvent(QPaintEvent*)
 
 	stable_sort(row_items.begin(), row_items.end(),
 		[](const shared_ptr<RowItem> &a, const shared_ptr<RowItem> &b) {
-			return a->point(QRect()).y() < b->point(QRect()).y(); });
+			return a->drag_point(QRect()).y() < b->drag_point(QRect()).y(); });
 
 	const vector< shared_ptr<TimeItem> > time_items(view_.time_items());
 	assert(none_of(time_items.begin(), time_items.end(),
@@ -177,11 +177,11 @@ void Viewport::paintEvent(QPaintEvent*)
 	for (LayerPaintFunc *paint_func = layer_paint_funcs;
 			*paint_func; paint_func++) {
 		ViewItemPaintParams time_pp(rect(), view_.scale(), view_.offset());
-		for (const shared_ptr<TimeItem> t : time_items)
+		for (const shared_ptr<TimeItem>& t : time_items)
 			(t.get()->*(*paint_func))(p, time_pp);
 
 		ViewItemPaintParams row_pp(rect(), view_.scale(), view_.offset());
-		for (const shared_ptr<RowItem> r : row_items)
+		for (const shared_ptr<RowItem>& r : row_items)
 			(r.get()->*(*paint_func))(p, row_pp);
 	}
 

@@ -32,7 +32,6 @@
 using boost::optional;
 
 using std::function;
-using std::make_pair;
 using std::pair;
 using std::set;
 using std::shared_ptr;
@@ -69,7 +68,7 @@ Device::Device(shared_ptr<sigrok::Configurable> configurable) :
 		string name_str;
 		try {
 			name_str = key->description();
-		} catch (Error e) {
+		} catch (Error& e) {
 			name_str = key->name();
 		}
 
@@ -98,6 +97,8 @@ Device::Device(shared_ptr<sigrok::Configurable> configurable) :
 		case SR_CONF_TRIGGER_SLOPE:
 		case SR_CONF_COUPLING:
 		case SR_CONF_CLOCK_EDGE:
+		case SR_CONF_DATA_SOURCE:
+		case SR_CONF_EXTERNAL_CLOCK_SOURCE:
 			bind_enum(name, "", key, capabilities, get, set);
 			break;
 
@@ -105,6 +106,7 @@ Device::Device(shared_ptr<sigrok::Configurable> configurable) :
 		case SR_CONF_EXTERNAL_CLOCK:
 		case SR_CONF_RLE:
 		case SR_CONF_POWER_OFF:
+		case SR_CONF_AVERAGING:
 			bind_bool(name, "", get, set);
 			break;
 
@@ -125,6 +127,13 @@ Device::Device(shared_ptr<sigrok::Configurable> configurable) :
 				bind_enum(name, "", key, capabilities, get, set, print_probe_factor);
 			else
 				bind_int(name, "", "", pair<int64_t, int64_t>(1, 500), get, set);
+			break;
+
+		case SR_CONF_AVG_SAMPLES:
+			if (capabilities.count(Capability::LIST))
+				bind_enum(name, "", key, capabilities, get, set, print_averages);
+			else
+				bind_int(name, "", "", pair<int64_t, int64_t>(0, INT32_MAX), get, set);
 			break;
 
 		default:
@@ -157,7 +166,7 @@ void Device::bind_enum(const QString &name, const QString &desc,
 
 		vector< pair<Glib::VariantBase, QString> > values;
 		while ((iter.next_value(gvar)))
-			values.push_back(make_pair(gvar, printer(gvar)));
+			values.emplace_back(gvar, printer(gvar));
 
 		properties_.push_back(shared_ptr<Property>(new Enum(name, desc, values,
 			getter, setter)));
@@ -204,6 +213,13 @@ QString Device::print_probe_factor(Glib::VariantBase gvar)
 	uint64_t factor;
 	factor = g_variant_get_uint64(gvar.gobj());
 	return QString("%1x").arg(factor);
+}
+
+QString Device::print_averages(Glib::VariantBase gvar)
+{
+	uint64_t avg;
+	avg = g_variant_get_uint64(gvar.gobj());
+	return QString("%1").arg(avg);
 }
 
 }  // namespace binding

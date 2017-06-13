@@ -44,11 +44,26 @@ is to be interpreted as
  Copyright (C) 2010,2011,2012,2013 Contributor Name
 
 
-Icons authors and licenses
---------------------------
+Resource authors and licenses
+-----------------------------
 
 icons/information.svg: Bobarino
   https://en.wikipedia.org/wiki/File:Information.svg
+  License:
+    GFDL 1.2 or later / CC-BY-SA 3.0
+    https://en.wikipedia.org/wiki/File:Information.svg#Licensing
+
+QDarkStyleSheet: Colin Duquesnoy
+  https://github.com/ColinDuquesnoy/QDarkStyleSheet
+  License:
+    CC-BY 4.0
+    https://github.com/ColinDuquesnoy/QDarkStyleSheet/blob/master/LICENSE.md
+
+DarkStyle: Juergen Skrotzky
+  https://github.com/Jorgen-VikingGod/Qt-Frameless-Window-DarkStyle
+  License:
+    MIT license
+    https://github.com/Jorgen-VikingGod/Qt-Frameless-Window-DarkStyle#licence
 
 
 Mailing list

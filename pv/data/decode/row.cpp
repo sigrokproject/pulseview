@@ -31,7 +31,8 @@ Row::Row() :
 {
 }
 
-Row::Row(const srd_decoder *decoder, const srd_decoder_annotation_row *row) :
+Row::Row(int index, const srd_decoder *decoder, const srd_decoder_annotation_row *row) :
+	index_(index),
 	decoder_(decoder),
 	row_(row)
 {
@@ -58,6 +59,18 @@ const QString Row::title() const
 	if (row_ && row_->desc)
 		return QString::fromUtf8(row_->desc);
 	return QString();
+}
+
+const QString Row::class_name() const
+{
+	if (row_ && row_->desc)
+		return QString::fromUtf8(row_->desc);
+	return QString();
+}
+
+int Row::index() const
+{
+	return index_;
 }
 
 bool Row::operator<(const Row &other) const

@@ -21,6 +21,9 @@
 #define PULSEVIEW_PV_VIEWS_TRACEVIEW_LOGICSIGNAL_HPP
 
 #include <QCache>
+#include <QColor>
+#include <QDebug>
+#include <QSpinBox>
 
 #include "signal.hpp"
 
@@ -57,14 +60,14 @@ class LogicSignal : public Signal
 public:
 	static const float Oversampling;
 
-	static const QColor EdgeColour;
-	static const QColor HighColour;
-	static const QColor LowColour;
-	static const QColor SamplingPointColour;
+	static const QColor EdgeColor;
+	static const QColor HighColor;
+	static const QColor LowColor;
+	static const QColor SamplingPointColor;
 
-	static const QColor SignalColours[10];
+	static const QColor SignalColors[10];
 
-	static QColor TriggerMarkerBackgroundColour;
+	static QColor TriggerMarkerBackgroundColor;
 	static const int TriggerMarkerPadding;
 	static const char* TriggerMarkerIcons[8];
 
@@ -78,22 +81,14 @@ public:
 
 	shared_ptr<pv::data::Logic> logic_data() const;
 
+	virtual void save_settings(QSettings &settings) const;
+	virtual void restore_settings(QSettings &settings);
+
 	/**
 	 * Computes the vertical extents of the contents of this row item.
 	 * @return A pair containing the minimum and maximum y-values.
 	 */
 	pair<int, int> v_extents() const;
-
-	/**
-	 * Returns the offset to show the drag handle.
-	 */
-	int scale_handle_offset() const;
-
-	/**
-	 * Handles the scale handle being dragged to an offset.
-	 * @param offset the offset the scale handle was dragged to.
-	 */
-	void scale_handle_dragged(int offset);
 
 	/**
 	 * Paints the mid-layer of the signal with a QPainter
@@ -109,11 +104,22 @@ public:
 	 */
 	virtual void paint_fore(QPainter &p, ViewItemPaintParams &pp);
 
+	/**
+	 * Determines the closest level change (i.e. edge) to a given sample, which
+	 * is useful for e.g. the "snap to edge" functionality.
+	 *
+	 * @param sample_pos Sample to use
+	 * @return The changes left and right of the given position
+	 */
+	virtual vector<data::LogicSegment::EdgePair> get_nearest_level_changes(uint64_t sample_pos);
+
 private:
 	void paint_caps(QPainter &p, QLineF *const lines,
 		vector< pair<int64_t, bool> > &edges,
 		bool level, double samples_per_pixel, double pixels_offset,
 		float x_offset, float y_offset);
+
+	shared_ptr<pv::data::LogicSegment> get_logic_segment_to_paint() const;
 
 	void init_trigger_actions(QWidget *parent);
 
@@ -128,14 +134,23 @@ private:
 	static const QPixmap* get_pixmap(const char *path);
 
 private Q_SLOTS:
+	void on_setting_changed(const QString &key, const QVariant &value);
+
 	void on_trigger();
+
+	void on_signal_height_changed(int height);
 
 private:
 	int signal_height_;
+	QColor high_fill_color_;
+	bool show_sampling_points_, fill_high_areas_;
 
 	shared_ptr<pv::devices::Device> device_;
 
+	QSpinBox *signal_height_sb_;
+
 	const sigrok::TriggerMatchType *trigger_match_;
+	const vector<int32_t> trigger_types_;
 	QToolBar *trigger_bar_;
 	QAction *trigger_none_;
 	QAction *trigger_rising_;

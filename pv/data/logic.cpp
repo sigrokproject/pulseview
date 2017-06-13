@@ -44,7 +44,7 @@ unsigned int Logic::num_channels() const
 
 void Logic::push_segment(shared_ptr<LogicSegment> &segment)
 {
-	segments_.push_front(segment);
+	segments_.push_back(segment);
 }
 
 const deque< shared_ptr<LogicSegment> >& Logic::logic_segments() const
@@ -57,6 +57,11 @@ vector< shared_ptr<Segment> > Logic::segments() const
 	return vector< shared_ptr<Segment> >(segments_.begin(), segments_.end());
 }
 
+uint32_t Logic::get_segment_count() const
+{
+	return (uint32_t)segments_.size();
+}
+
 void Logic::clear()
 {
 	segments_.clear();
@@ -64,10 +69,18 @@ void Logic::clear()
 	samples_cleared();
 }
 
+double Logic::get_samplerate() const
+{
+	if (segments_.empty())
+		return 1.0;
+
+	return segments_.front()->samplerate();
+}
+
 uint64_t Logic::max_sample_count() const
 {
 	uint64_t l = 0;
-	for (shared_ptr<LogicSegment> s : segments_) {
+	for (const shared_ptr<LogicSegment>& s : segments_) {
 		assert(s);
 		l = max(l, s->get_sample_count());
 	}

@@ -50,3 +50,5 @@ android/src/org/kde/
 # QtCreator cruft
 /CMakeLists.txt.user*
 *.cbp
+
+doxy

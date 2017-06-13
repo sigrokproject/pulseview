@@ -19,6 +19,7 @@
 
 #include <cassert>
 
+#include <QDebug>
 #include <QMessageBox>
 
 #include "pv/session.hpp"
@@ -78,6 +79,8 @@ void StoreProgress::run()
 
 void StoreProgress::show_error()
 {
+	qDebug() << "Error trying to save:" << session_.error();
+
 	QMessageBox msg(parentWidget());
 	msg.setText(tr("Failed to save session."));
 	msg.setInformativeText(session_.error());

@@ -26,33 +26,44 @@
 #include "signalbase.hpp"
 #include "signaldata.hpp"
 
+#include <QDebug>
+
 #include <pv/binding/decoder.hpp>
 #include <pv/session.hpp>
 
 using std::dynamic_pointer_cast;
 using std::make_shared;
+using std::out_of_range;
 using std::shared_ptr;
 using std::tie;
+using std::unique_lock;
 
 namespace pv {
 namespace data {
 
-const int SignalBase::ColourBGAlpha = 8 * 256 / 100;
+const int SignalBase::ColorBGAlpha = 8 * 256 / 100;
+const uint64_t SignalBase::ConversionBlockSize = 4096;
+const uint32_t SignalBase::ConversionDelay = 1000;  // 1 second
 
 SignalBase::SignalBase(shared_ptr<sigrok::Channel> channel, ChannelType channel_type) :
 	channel_(channel),
 	channel_type_(channel_type),
-	conversion_type_(NoConversion)
+	conversion_type_(NoConversion),
+	min_value_(0),
+	max_value_(0)
 {
 	if (channel_)
 		internal_name_ = QString::fromStdString(channel_->name());
+
+	connect(&delayed_conversion_starter_, SIGNAL(timeout()),
+		this, SLOT(on_delayed_conversion_start()));
+	delayed_conversion_starter_.setSingleShot(true);
+	delayed_conversion_starter_.setInterval(ConversionDelay);
 }
 
 SignalBase::~SignalBase()
 {
-	// Wait for the currently ongoing conversion to finish
-	if (conversion_thread_.joinable())
-		conversion_thread_.join();
+	stop_conversion();
 }
 
 shared_ptr<sigrok::Channel> SignalBase::channel() const
@@ -68,6 +79,14 @@ QString SignalBase::name() const
 QString SignalBase::internal_name() const
 {
 	return internal_name_;
+}
+
+QString SignalBase::display_name() const
+{
+	if (name() != internal_name_)
+		return name() + " (" + internal_name_ + ")";
+	else
+		return name();
 }
 
 void SignalBase::set_name(QString name)
@@ -100,27 +119,35 @@ SignalBase::ChannelType SignalBase::type() const
 
 unsigned int SignalBase::index() const
 {
-	return (channel_) ? channel_->index() : (unsigned int)-1;
+	return (channel_) ? channel_->index() : 0;
 }
 
-QColor SignalBase::colour() const
+unsigned int SignalBase::logic_bit_index() const
 {
-	return colour_;
+	if (channel_type_ == LogicChannel)
+		return channel_->index();
+	else
+		return 0;
 }
 
-void SignalBase::set_colour(QColor colour)
+QColor SignalBase::color() const
 {
-	colour_ = colour;
-
-	bgcolour_ = colour;
-	bgcolour_.setAlpha(ColourBGAlpha);
-
-	colour_changed(colour);
+	return color_;
 }
 
-QColor SignalBase::bgcolour() const
+void SignalBase::set_color(QColor color)
 {
-	return bgcolour_;
+	color_ = color;
+
+	bgcolor_ = color;
+	bgcolor_.setAlpha(ColorBGAlpha);
+
+	color_changed(color);
+}
+
+QColor SignalBase::bgcolor() const
+{
+	return bgcolor_;
 }
 
 void SignalBase::set_data(shared_ptr<pv::data::SignalData> data)
@@ -130,6 +157,14 @@ void SignalBase::set_data(shared_ptr<pv::data::SignalData> data)
 			this, SLOT(on_samples_cleared()));
 		disconnect(data.get(), SIGNAL(samples_added(QObject*, uint64_t, uint64_t)),
 			this, SLOT(on_samples_added(QObject*, uint64_t, uint64_t)));
+
+		if (channel_type_ == AnalogChannel) {
+			shared_ptr<Analog> analog = analog_data();
+			assert(analog);
+
+			disconnect(analog.get(), SIGNAL(min_max_changed(float, float)),
+				this, SLOT(on_min_max_changed(float, float)));
+		}
 	}
 
 	data_ = data;
@@ -139,6 +174,14 @@ void SignalBase::set_data(shared_ptr<pv::data::SignalData> data)
 			this, SLOT(on_samples_cleared()));
 		connect(data.get(), SIGNAL(samples_added(QObject*, uint64_t, uint64_t)),
 			this, SLOT(on_samples_added(QObject*, uint64_t, uint64_t)));
+
+		if (channel_type_ == AnalogChannel) {
+			shared_ptr<Analog> analog = analog_data();
+			assert(analog);
+
+			connect(analog.get(), SIGNAL(min_max_changed(float, float)),
+				this, SLOT(on_min_max_changed(float, float)));
+		}
 	}
 }
 
@@ -159,59 +202,247 @@ shared_ptr<data::Logic> SignalBase::logic_data() const
 	if (channel_type_ == LogicChannel)
 		result = dynamic_pointer_cast<Logic>(data_);
 
-	if (((conversion_type_ == A2LConversionByTreshold) ||
+	if (((conversion_type_ == A2LConversionByThreshold) ||
 		(conversion_type_ == A2LConversionBySchmittTrigger)))
 		result = dynamic_pointer_cast<Logic>(converted_data_);
 
 	return result;
 }
 
+bool SignalBase::segment_is_complete(uint32_t segment_id) const
+{
+	bool result = true;
+
+	if (channel_type_ == AnalogChannel)
+	{
+		shared_ptr<Analog> data = dynamic_pointer_cast<Analog>(data_);
+		auto segments = data->analog_segments();
+		try {
+			result = segments.at(segment_id)->is_complete();
+		} catch (out_of_range&) {
+			// Do nothing
+		}
+	}
+
+	if (channel_type_ == LogicChannel)
+	{
+		shared_ptr<Logic> data = dynamic_pointer_cast<Logic>(data_);
+		auto segments = data->logic_segments();
+		try {
+			result = segments.at(segment_id)->is_complete();
+		} catch (out_of_range&) {
+			// Do nothing
+		}
+	}
+
+	return result;
+}
+
+bool SignalBase::has_samples() const
+{
+	bool result = false;
+
+	if (channel_type_ == AnalogChannel)
+	{
+		shared_ptr<Analog> data = dynamic_pointer_cast<Analog>(data_);
+		if (data) {
+			auto segments = data->analog_segments();
+			if ((segments.size() > 0) && (segments.front()->get_sample_count() > 0))
+				result = true;
+		}
+	}
+
+	if (channel_type_ == LogicChannel)
+	{
+		shared_ptr<Logic> data = dynamic_pointer_cast<Logic>(data_);
+		if (data) {
+			auto segments = data->logic_segments();
+			if ((segments.size() > 0) && (segments.front()->get_sample_count() > 0))
+				result = true;
+		}
+	}
+
+	return result;
+}
+
+double SignalBase::get_samplerate() const
+{
+	if (channel_type_ == AnalogChannel)
+	{
+		shared_ptr<Analog> data = dynamic_pointer_cast<Analog>(data_);
+		if (data)
+			return data->get_samplerate();
+	}
+
+	if (channel_type_ == LogicChannel)
+	{
+		shared_ptr<Logic> data = dynamic_pointer_cast<Logic>(data_);
+		if (data)
+			return data->get_samplerate();
+	}
+
+	// Default samplerate is 1 Hz
+	return 1.0;
+}
+
+SignalBase::ConversionType SignalBase::get_conversion_type() const
+{
+	return conversion_type_;
+}
+
 void SignalBase::set_conversion_type(ConversionType t)
 {
 	if (conversion_type_ != NoConversion) {
-		// Wait for the currently ongoing conversion to finish
-		if (conversion_thread_.joinable())
-			conversion_thread_.join();
+		stop_conversion();
 
 		// Discard converted data
 		converted_data_.reset();
+		samples_cleared();
 	}
 
 	conversion_type_ = t;
 
-	if ((channel_type_ == AnalogChannel) &&
-		((conversion_type_ == A2LConversionByTreshold) ||
-		(conversion_type_ == A2LConversionBySchmittTrigger))) {
+	// Re-create an empty container
+	// so that the signal is recognized as providing logic data
+	// and thus can be assigned to a decoder
+	if (conversion_is_a2l())
+		if (!converted_data_)
+			converted_data_ = make_shared<Logic>(1);  // Contains only one channel
 
-		shared_ptr<Analog> analog_data = dynamic_pointer_cast<Analog>(data_);
-
-		if (analog_data->analog_segments().size() > 0) {
-			AnalogSegment *asegment = analog_data->analog_segments().front().get();
-
-			// Begin conversion of existing sample data
-			// TODO Support for multiple segments is missing
-			on_samples_added(asegment, 0, 0);
-		}
-	}
+	start_conversion();
 
 	conversion_type_changed(t);
+}
+
+map<QString, QVariant> SignalBase::get_conversion_options() const
+{
+	return conversion_options_;
+}
+
+bool SignalBase::set_conversion_option(QString key, QVariant value)
+{
+	QVariant old_value;
+
+	auto key_iter = conversion_options_.find(key);
+	if (key_iter != conversion_options_.end())
+		old_value = key_iter->second;
+
+	conversion_options_[key] = value;
+
+	return (value != old_value);
+}
+
+vector<double> SignalBase::get_conversion_thresholds(const ConversionType t,
+	const bool always_custom) const
+{
+	vector<double> result;
+	ConversionType conv_type = t;
+	ConversionPreset preset;
+
+	// Use currently active conversion if no conversion type was supplied
+	if (conv_type == NoConversion)
+		conv_type = conversion_type_;
+
+	if (always_custom)
+		preset = NoPreset;
+	else
+		preset = get_current_conversion_preset();
+
+	if (conv_type == A2LConversionByThreshold) {
+		double thr = 0;
+
+		if (preset == NoPreset) {
+			auto thr_iter = conversion_options_.find("threshold_value");
+			if (thr_iter != conversion_options_.end())
+				thr = (thr_iter->second).toDouble();
+		}
+
+		if (preset == DynamicPreset)
+			thr = (min_value_ + max_value_) * 0.5;  // middle between min and max
+
+		if ((int)preset == 1) thr = 0.9;
+		if ((int)preset == 2) thr = 1.8;
+		if ((int)preset == 3) thr = 2.5;
+		if ((int)preset == 4) thr = 1.5;
+
+		result.push_back(thr);
+	}
+
+	if (conv_type == A2LConversionBySchmittTrigger) {
+		double thr_lo = 0, thr_hi = 0;
+
+		if (preset == NoPreset) {
+			auto thr_lo_iter = conversion_options_.find("threshold_value_low");
+			if (thr_lo_iter != conversion_options_.end())
+				thr_lo = (thr_lo_iter->second).toDouble();
+
+			auto thr_hi_iter = conversion_options_.find("threshold_value_high");
+			if (thr_hi_iter != conversion_options_.end())
+				thr_hi = (thr_hi_iter->second).toDouble();
+		}
+
+		if (preset == DynamicPreset) {
+			const double amplitude = max_value_ - min_value_;
+			const double center = min_value_ + (amplitude / 2);
+			thr_lo = center - (amplitude * 0.15);  // 15% margin
+			thr_hi = center + (amplitude * 0.15);  // 15% margin
+		}
+
+		if ((int)preset == 1) { thr_lo = 0.3; thr_hi = 1.2; }
+		if ((int)preset == 2) { thr_lo = 0.7; thr_hi = 2.5; }
+		if ((int)preset == 3) { thr_lo = 1.3; thr_hi = 3.7; }
+		if ((int)preset == 4) { thr_lo = 0.8; thr_hi = 2.0; }
+
+		result.push_back(thr_lo);
+		result.push_back(thr_hi);
+	}
+
+	return result;
+}
+
+vector< pair<QString, int> > SignalBase::get_conversion_presets() const
+{
+	vector< pair<QString, int> > presets;
+
+	if (conversion_type_ == A2LConversionByThreshold) {
+		// Source: http://www.interfacebus.com/voltage_threshold.html
+		presets.emplace_back(tr("Signal average"), 0);
+		presets.emplace_back(tr("0.9V (for 1.8V CMOS)"), 1);
+		presets.emplace_back(tr("1.8V (for 3.3V CMOS)"), 2);
+		presets.emplace_back(tr("2.5V (for 5.0V CMOS)"), 3);
+		presets.emplace_back(tr("1.5V (for TTL)"), 4);
+	}
+
+	if (conversion_type_ == A2LConversionBySchmittTrigger) {
+		// Source: http://www.interfacebus.com/voltage_threshold.html
+		presets.emplace_back(tr("Signal average +/- 15%"), 0);
+		presets.emplace_back(tr("0.3V/1.2V (for 1.8V CMOS)"), 1);
+		presets.emplace_back(tr("0.7V/2.5V (for 3.3V CMOS)"), 2);
+		presets.emplace_back(tr("1.3V/3.7V (for 5.0V CMOS)"), 3);
+		presets.emplace_back(tr("0.8V/2.0V (for TTL)"), 4);
+	}
+
+	return presets;
+}
+
+SignalBase::ConversionPreset SignalBase::get_current_conversion_preset() const
+{
+	auto preset = conversion_options_.find("preset");
+	if (preset != conversion_options_.end())
+		return (ConversionPreset)((preset->second).toInt());
+
+	return DynamicPreset;
+}
+
+void SignalBase::set_conversion_preset(ConversionPreset id)
+{
+	conversion_options_["preset"] = (int)id;
 }
 
 #ifdef ENABLE_DECODE
 bool SignalBase::is_decode_signal() const
 {
-	return (decoder_stack_ != nullptr);
-}
-
-shared_ptr<pv::data::DecoderStack> SignalBase::decoder_stack() const
-{
-	return decoder_stack_;
-}
-
-void SignalBase::set_decoder_stack(shared_ptr<pv::data::DecoderStack>
-	decoder_stack)
-{
-	decoder_stack_ = decoder_stack;
+	return (channel_type_ == DecodeChannel);
 }
 #endif
 
@@ -219,132 +450,289 @@ void SignalBase::save_settings(QSettings &settings) const
 {
 	settings.setValue("name", name());
 	settings.setValue("enabled", enabled());
-	settings.setValue("colour", colour());
+	settings.setValue("color", color().rgba());
 	settings.setValue("conversion_type", (int)conversion_type_);
+
+	settings.setValue("conv_options", (int)(conversion_options_.size()));
+	int i = 0;
+	for (auto& kvp : conversion_options_) {
+		settings.setValue(QString("conv_option%1_key").arg(i), kvp.first);
+		settings.setValue(QString("conv_option%1_value").arg(i), kvp.second);
+		i++;
+	}
 }
 
 void SignalBase::restore_settings(QSettings &settings)
 {
-	set_name(settings.value("name").toString());
-	set_enabled(settings.value("enabled").toBool());
-	set_colour(settings.value("colour").value<QColor>());
-	set_conversion_type((ConversionType)settings.value("conversion_type").toInt());
-}
+	if (settings.contains("name"))
+		set_name(settings.value("name").toString());
 
-uint8_t SignalBase::convert_a2l_threshold(float threshold, float value)
-{
-	return (value >= threshold) ? 1 : 0;
-}
+	if (settings.contains("enabled"))
+		set_enabled(settings.value("enabled").toBool());
 
-uint8_t SignalBase::convert_a2l_schmitt_trigger(float lo_thr, float hi_thr,
-	float value, uint8_t &state)
-{
-	if (value < lo_thr)
-		state = 0;
-	else if (value > hi_thr)
-		state = 1;
+	if (settings.contains("color")) {
+		QVariant value = settings.value("color");
 
-	return state;
-}
+		// Workaround for Qt QColor serialization bug on OSX
+		if ((QMetaType::Type)(value.type()) == QMetaType::QColor)
+			set_color(value.value<QColor>());
+		else
+			set_color(QColor::fromRgba(value.value<uint32_t>()));
 
-void SignalBase::conversion_thread_proc(QObject* segment, uint64_t start_sample,
-	uint64_t end_sample)
-{
-	const uint64_t block_size = 4096;
+		// A color with an alpha value of 0 makes the signal marker invisible
+		if (color() == QColor(0, 0, 0, 0))
+			set_color(Qt::gray);
+	}
 
-	// TODO Support for multiple segments is missing
+	if (settings.contains("conversion_type"))
+		set_conversion_type((ConversionType)settings.value("conversion_type").toInt());
 
-	if ((channel_type_ == AnalogChannel) &&
-		((conversion_type_ == A2LConversionByTreshold) ||
-		(conversion_type_ == A2LConversionBySchmittTrigger))) {
+	int conv_options = 0;
+	if (settings.contains("conv_options"))
+		conv_options = settings.value("conv_options").toInt();
 
-		AnalogSegment *asegment = qobject_cast<AnalogSegment*>(segment);
+	if (conv_options)
+		for (int i = 0; i < conv_options; i++) {
+			const QString key_id = QString("conv_option%1_key").arg(i);
+			const QString value_id = QString("conv_option%1_value").arg(i);
 
-		// Create the logic data container if needed
-		shared_ptr<Logic> logic_data;
-		if (!converted_data_) {
-			logic_data = make_shared<Logic>(1);  // Contains only one channel
-			converted_data_ = logic_data;
-		} else
-			 logic_data = dynamic_pointer_cast<Logic>(converted_data_);
-
-		// Create the initial logic data segment if needed
-		if (logic_data->segments().size() == 0) {
-			shared_ptr<LogicSegment> lsegment =
-				make_shared<LogicSegment>(*logic_data.get(), 1, asegment->samplerate());
-			logic_data->push_segment(lsegment);
+			if (settings.contains(key_id) && settings.contains(value_id))
+				conversion_options_[settings.value(key_id).toString()] =
+					settings.value(value_id);
 		}
+}
 
-		LogicSegment *lsegment = dynamic_cast<LogicSegment*>(logic_data->segments().front().get());
+bool SignalBase::conversion_is_a2l() const
+{
+	return ((channel_type_ == AnalogChannel) &&
+		((conversion_type_ == A2LConversionByThreshold) ||
+		(conversion_type_ == A2LConversionBySchmittTrigger)));
+}
 
-		// start_sample=end_sample=0 means we need to figure out the unprocessed range
-		if ((start_sample == 0) && (end_sample == 0)) {
-			start_sample = lsegment->get_sample_count();
-			end_sample = asegment->get_sample_count();
-		}
+void SignalBase::convert_single_segment_range(AnalogSegment *asegment,
+	LogicSegment *lsegment, uint64_t start_sample, uint64_t end_sample)
+{
+	if (end_sample > start_sample) {
+		tie(min_value_, max_value_) = asegment->get_min_max();
 
-		if (start_sample == end_sample)
-			return;  // Nothing to do
+		// Create sigrok::Analog instance
+		float *asamples = new float[ConversionBlockSize];
+		uint8_t *lsamples = new uint8_t[ConversionBlockSize];
 
-		float min_v, max_v;
-		tie(min_v, max_v) = asegment->get_min_max();
+		vector<shared_ptr<sigrok::Channel> > channels;
+		channels.push_back(channel_);
 
-		vector<uint8_t> lsamples;
-		lsamples.reserve(block_size);
+		vector<const sigrok::QuantityFlag*> mq_flags;
+		const sigrok::Quantity * const mq = sigrok::Quantity::VOLTAGE;
+		const sigrok::Unit * const unit = sigrok::Unit::VOLT;
 
+		shared_ptr<sigrok::Packet> packet =
+			Session::sr_context->create_analog_packet(channels,
+			asamples, ConversionBlockSize, mq, unit, mq_flags);
+
+		shared_ptr<sigrok::Analog> analog =
+			dynamic_pointer_cast<sigrok::Analog>(packet->payload());
+
+		// Convert
 		uint64_t i = start_sample;
 
-		if (conversion_type_ == A2LConversionByTreshold) {
-			const float threshold = (min_v + max_v) * 0.5;  // middle between min and max
+		if (conversion_type_ == A2LConversionByThreshold) {
+			const double threshold = get_conversion_thresholds()[0];
 
 			// Convert as many sample blocks as we can
-			while ((end_sample - i) > block_size) {
-				const float* asamples = asegment->get_samples(i, i + block_size);
-				for (uint32_t j = 0; j < block_size; j++)
-					lsamples.push_back(convert_a2l_threshold(threshold, asamples[j]));
-				lsegment->append_payload(lsamples.data(), lsamples.size());
-				i += block_size;
-				lsamples.clear();
-				delete[] asamples;
+			while ((end_sample - i) > ConversionBlockSize) {
+				asegment->get_samples(i, i + ConversionBlockSize, asamples);
+
+				shared_ptr<sigrok::Logic> logic =
+					analog->get_logic_via_threshold(threshold, lsamples);
+
+				lsegment->append_payload(logic->data_pointer(), logic->data_length());
+				samples_added(lsegment->segment_id(), i, i + ConversionBlockSize);
+				i += ConversionBlockSize;
 			}
 
-			// Convert remaining samples
-			const float* asamples = asegment->get_samples(i, end_sample);
-			for (uint32_t j = 0; j < (end_sample - i); j++)
-				lsamples.push_back(convert_a2l_threshold(threshold, asamples[j]));
-			lsegment->append_payload(lsamples.data(), lsamples.size());
-			delete[] asamples;
+			// Re-create sigrok::Analog and convert remaining samples
+			packet = Session::sr_context->create_analog_packet(channels,
+				asamples, end_sample - i, mq, unit, mq_flags);
 
-			samples_added(lsegment, start_sample, end_sample);
+			analog = dynamic_pointer_cast<sigrok::Analog>(packet->payload());
+
+			asegment->get_samples(i, end_sample, asamples);
+			shared_ptr<sigrok::Logic> logic =
+				analog->get_logic_via_threshold(threshold, lsamples);
+			lsegment->append_payload(logic->data_pointer(), logic->data_length());
+			samples_added(lsegment->segment_id(), i, end_sample);
 		}
 
 		if (conversion_type_ == A2LConversionBySchmittTrigger) {
-			const float amplitude = max_v - min_v;
-			const float lo_thr = min_v + (amplitude * 0.1);  // 10% above min
-			const float hi_thr = max_v - (amplitude * 0.1);  // 10% below max
+			const vector<double> thresholds = get_conversion_thresholds();
+			const double lo_thr = thresholds[0];
+			const double hi_thr = thresholds[1];
+
 			uint8_t state = 0;  // TODO Use value of logic sample n-1 instead of 0
 
 			// Convert as many sample blocks as we can
-			while ((end_sample - i) > block_size) {
-				const float* asamples = asegment->get_samples(i, i + block_size);
-				for (uint32_t j = 0; j < block_size; j++)
-					lsamples.push_back(convert_a2l_schmitt_trigger(lo_thr, hi_thr, asamples[j], state));
-				lsegment->append_payload(lsamples.data(), lsamples.size());
-				i += block_size;
-				lsamples.clear();
-				delete[] asamples;
+			while ((end_sample - i) > ConversionBlockSize) {
+				asegment->get_samples(i, i + ConversionBlockSize, asamples);
+
+				shared_ptr<sigrok::Logic> logic =
+					analog->get_logic_via_schmitt_trigger(lo_thr, hi_thr,
+						&state, lsamples);
+
+				lsegment->append_payload(logic->data_pointer(), logic->data_length());
+				samples_added(lsegment->segment_id(), i, i + ConversionBlockSize);
+				i += ConversionBlockSize;
 			}
 
-			// Convert remaining samples
-			const float* asamples = asegment->get_samples(i, end_sample);
-			for (uint32_t j = 0; j < (end_sample - i); j++)
-				lsamples.push_back(convert_a2l_schmitt_trigger(lo_thr, hi_thr, asamples[j], state));
-			lsegment->append_payload(lsamples.data(), lsamples.size());
-			delete[] asamples;
+			// Re-create sigrok::Analog and convert remaining samples
+			packet = Session::sr_context->create_analog_packet(channels,
+				asamples, end_sample - i, mq, unit, mq_flags);
 
-			samples_added(lsegment, start_sample, end_sample);
+			analog = dynamic_pointer_cast<sigrok::Analog>(packet->payload());
+
+			asegment->get_samples(i, end_sample, asamples);
+			shared_ptr<sigrok::Logic> logic =
+				analog->get_logic_via_schmitt_trigger(lo_thr, hi_thr,
+					&state, lsamples);
+			lsegment->append_payload(logic->data_pointer(), logic->data_length());
+			samples_added(lsegment->segment_id(), i, end_sample);
 		}
+
+		// If acquisition is ongoing, start-/endsample may have changed
+		end_sample = asegment->get_sample_count();
+
+		delete[] lsamples;
+		delete[] asamples;
 	}
+}
+
+void SignalBase::convert_single_segment(AnalogSegment *asegment, LogicSegment *lsegment)
+{
+	uint64_t start_sample, end_sample, old_end_sample;
+	start_sample = end_sample = 0;
+	bool complete_state, old_complete_state;
+
+	start_sample = lsegment->get_sample_count();
+	end_sample = asegment->get_sample_count();
+	complete_state = asegment->is_complete();
+
+	// Don't do anything if the segment is still being filled and the sample count is too small
+	if ((!complete_state) && (end_sample - start_sample < ConversionBlockSize))
+		return;
+
+	do {
+		convert_single_segment_range(asegment, lsegment, start_sample, end_sample);
+
+		old_end_sample = end_sample;
+		old_complete_state = complete_state;
+
+		start_sample = lsegment->get_sample_count();
+		end_sample = asegment->get_sample_count();
+		complete_state = asegment->is_complete();
+
+		// If the segment has been incomplete when we were called and has been
+		// completed in the meanwhile, we convert the remaining samples as well.
+		// Also, if a sufficient number of samples was added in the meanwhile,
+		// we do another round of sample conversion.
+	} while ((complete_state != old_complete_state) ||
+		(end_sample - old_end_sample >= ConversionBlockSize));
+}
+
+void SignalBase::conversion_thread_proc()
+{
+	shared_ptr<Analog> analog_data;
+
+	if (conversion_is_a2l()) {
+		analog_data = dynamic_pointer_cast<Analog>(data_);
+
+		if (analog_data->analog_segments().size() == 0) {
+			unique_lock<mutex> input_lock(conversion_input_mutex_);
+			conversion_input_cond_.wait(input_lock);
+		}
+
+	} else
+		// Currently, we only handle A2L conversions
+		return;
+
+	// If we had to wait for input data, we may have been notified to terminate
+	if (conversion_interrupt_)
+		return;
+
+	uint32_t segment_id = 0;
+
+	AnalogSegment *asegment = analog_data->analog_segments().front().get();
+	assert(asegment);
+
+	const shared_ptr<Logic> logic_data = dynamic_pointer_cast<Logic>(converted_data_);
+	assert(logic_data);
+
+	// Create the initial logic data segment if needed
+	if (logic_data->logic_segments().size() == 0) {
+		shared_ptr<LogicSegment> new_segment =
+			make_shared<LogicSegment>(*logic_data.get(), 0, 1, asegment->samplerate());
+		logic_data->push_segment(new_segment);
+	}
+
+	LogicSegment *lsegment = logic_data->logic_segments().front().get();
+	assert(lsegment);
+
+	do {
+		convert_single_segment(asegment, lsegment);
+
+		// Only advance to next segment if the current input segment is complete
+		if (asegment->is_complete() &&
+			analog_data->analog_segments().size() > logic_data->logic_segments().size()) {
+			// There are more segments to process
+			segment_id++;
+
+			try {
+				asegment = analog_data->analog_segments().at(segment_id).get();
+			} catch (out_of_range&) {
+				qDebug() << "Conversion error for" << name() << ": no analog segment" \
+					<< segment_id << ", segments size is" << analog_data->analog_segments().size();
+				return;
+			}
+
+			shared_ptr<LogicSegment> new_segment = make_shared<LogicSegment>(
+				*logic_data.get(), segment_id, 1, asegment->samplerate());
+			logic_data->push_segment(new_segment);
+
+			lsegment = logic_data->logic_segments().back().get();
+		} else {
+			// No more samples/segments to process, wait for data or interrupt
+			if (!conversion_interrupt_) {
+				unique_lock<mutex> input_lock(conversion_input_mutex_);
+				conversion_input_cond_.wait(input_lock);
+			}
+		}
+	} while (!conversion_interrupt_);
+}
+
+void SignalBase::start_conversion(bool delayed_start)
+{
+	if (delayed_start) {
+		delayed_conversion_starter_.start();
+		return;
+	}
+
+	stop_conversion();
+
+	if (converted_data_)
+		converted_data_->clear();
+	samples_cleared();
+
+	conversion_interrupt_ = false;
+	conversion_thread_ = std::thread(
+		&SignalBase::conversion_thread_proc, this);
+}
+
+void SignalBase::stop_conversion()
+{
+	// Stop conversion so we can restart it from the beginning
+	conversion_interrupt_ = true;
+	conversion_input_cond_.notify_one();
+	if (conversion_thread_.joinable())
+		conversion_thread_.join();
 }
 
 void SignalBase::on_samples_cleared()
@@ -359,43 +747,42 @@ void SignalBase::on_samples_added(QObject* segment, uint64_t start_sample,
 	uint64_t end_sample)
 {
 	if (conversion_type_ != NoConversion) {
-
-		// Wait for the currently ongoing conversion to finish
-		if (conversion_thread_.joinable())
-			conversion_thread_.join();
-
-		conversion_thread_ = std::thread(
-			&SignalBase::conversion_thread_proc, this,
-			segment, start_sample, end_sample);
+		if (conversion_thread_.joinable()) {
+			// Notify the conversion thread since it's running
+			conversion_input_cond_.notify_one();
+		} else {
+			// Start the conversion thread unless the delay timer is running
+			if (!delayed_conversion_starter_.isActive())
+				start_conversion();
+		}
 	}
 
-	samples_added(segment, start_sample, end_sample);
+	data::Segment* s = qobject_cast<data::Segment*>(segment);
+	samples_added(s->segment_id(), start_sample, end_sample);
+}
+
+void SignalBase::on_min_max_changed(float min, float max)
+{
+	// Restart conversion if one is enabled and uses a calculated threshold
+	if ((conversion_type_ != NoConversion) &&
+		(get_current_conversion_preset() == DynamicPreset))
+		start_conversion(true);
+
+	min_max_changed(min, max);
 }
 
 void SignalBase::on_capture_state_changed(int state)
 {
-	return;
-	if (state == Session::Stopped) {
-		// Make sure that all data is converted
-
-		if ((channel_type_ == AnalogChannel) &&
-			((conversion_type_ == A2LConversionByTreshold) ||
-			(conversion_type_ == A2LConversionBySchmittTrigger))) {
-
-			shared_ptr<Analog> analog_data = dynamic_pointer_cast<Analog>(data_);
-
-			if (analog_data->analog_segments().size() > 0) {
-				// TODO Support for multiple segments is missing
-				AnalogSegment *asegment = analog_data->analog_segments().front().get();
-
-				if (conversion_thread_.joinable())
-					conversion_thread_.join();
-
-				conversion_thread_ = std::thread(
-					&SignalBase::conversion_thread_proc, this, asegment, 0, 0);
-			}
-		}
+	if (state == Session::Running) {
+		// Restart conversion if one is enabled
+		if (conversion_type_ != NoConversion)
+			start_conversion();
 	}
+}
+
+void SignalBase::on_delayed_conversion_start()
+{
+	start_conversion();
 }
 
 } // namespace data

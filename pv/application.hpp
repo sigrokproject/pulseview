@@ -20,14 +20,44 @@
 #ifndef PULSEVIEW_PV_APPLICATION_HPP
 #define PULSEVIEW_PV_APPLICATION_HPP
 
+#include <vector>
+
 #include <QApplication>
+
+#include <libsigrokcxx/libsigrokcxx.hpp>
+
+using std::shared_ptr;
+using std::pair;
+using std::vector;
 
 class Application : public QApplication
 {
+	Q_OBJECT
+
 public:
 	Application(int &argc, char* argv[]);
+
+	void collect_version_info(shared_ptr<sigrok::Context> context);
+	void print_version_info();
+
+	vector< pair<QString, QString> > get_version_info() const;
+	vector<QString> get_fw_path_list() const;
+	vector<QString> get_pd_path_list() const;
+	vector< pair<QString, QString> > get_driver_list() const;
+	vector< pair<QString, QString> > get_input_format_list() const;
+	vector< pair<QString, QString> > get_output_format_list() const;
+	vector< pair<QString, QString> > get_pd_list() const;
+
 private:
 	bool notify(QObject *receiver, QEvent *event);
+
+	vector< pair<QString, QString> > version_info_;
+	vector<QString> fw_path_list_;
+	vector<QString> pd_path_list_;
+	vector< pair<QString, QString> > driver_list_;
+	vector< pair<QString, QString> > input_format_list_;
+	vector< pair<QString, QString> > output_format_list_;
+	vector< pair<QString, QString> > pd_list_;
 };
 
 #endif // PULSEVIEW_PV_APPLICATION_HPP

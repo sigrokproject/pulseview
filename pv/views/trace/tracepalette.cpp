@@ -23,9 +23,9 @@ namespace pv {
 namespace views {
 namespace trace {
 
-const QColor TracePalette::Colours[Cols * Rows] = {
+const QColor TracePalette::Colors[Cols * Rows] = {
 
-	// Light Colours
+	// Light Colors
 	QColor(0xFC, 0xE9, 0x4F),	// Butter
 	QColor(0xFC, 0xAF, 0x3E),	// Orange
 	QColor(0xE9, 0xB9, 0x6E),	// Chocolate
@@ -35,7 +35,7 @@ const QColor TracePalette::Colours[Cols * Rows] = {
 	QColor(0xCF, 0x72, 0xC3),	// Magenta
 	QColor(0xEF, 0x29, 0x29),	// Scarlet Red
 
-	// Mid Colours
+	// Mid Colors
 	QColor(0xED, 0xD4, 0x00),	// Butter
 	QColor(0xF5, 0x79, 0x00),	// Orange
 	QColor(0xC1, 0x7D, 0x11),	// Chocolate
@@ -45,7 +45,7 @@ const QColor TracePalette::Colours[Cols * Rows] = {
 	QColor(0xA3, 0x34, 0x96),	// Magenta
 	QColor(0xCC, 0x00, 0x00),	// Scarlet Red
 
-	// Dark Colours
+	// Dark Colors
 	QColor(0xC4, 0xA0, 0x00),	// Butter
 	QColor(0xCE, 0x5C, 0x00),	// Orange
 	QColor(0x8F, 0x59, 0x02),	// Chocolate

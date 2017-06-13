@@ -24,6 +24,9 @@
 #include <cstdlib>
 #include <cstring>
 
+#include <QDebug>
+
+using std::bad_alloc;
 using std::lock_guard;
 using std::min;
 using std::recursive_mutex;
@@ -33,13 +36,15 @@ namespace data {
 
 const uint64_t Segment::MaxChunkSize = 10 * 1024 * 1024;  /* 10MiB */
 
-Segment::Segment(uint64_t samplerate, unsigned int unit_size) :
+Segment::Segment(uint32_t segment_id, uint64_t samplerate, unsigned int unit_size) :
+	segment_id_(segment_id),
 	sample_count_(0),
 	start_time_(0),
 	samplerate_(samplerate),
 	unit_size_(unit_size),
 	iterator_count_(0),
-	mem_optimization_requested_(false)
+	mem_optimization_requested_(false),
+	is_complete_(false)
 {
 	lock_guard<recursive_mutex> lock(mutex_);
 	assert(unit_size_ > 0);
@@ -49,7 +54,7 @@ Segment::Segment(uint64_t samplerate, unsigned int unit_size) :
 	chunk_size_ = min(MaxChunkSize, (MaxChunkSize / unit_size_) * unit_size_);
 
 	// Create the initial chunk
-	current_chunk_ = new uint8_t[chunk_size_];
+	current_chunk_ = new uint8_t[chunk_size_ + 7];  /* FIXME +7 is workaround for #1284 */
 	data_chunks_.push_back(current_chunk_);
 	used_samples_ = 0;
 	unused_samples_ = chunk_size_ / unit_size_;
@@ -89,6 +94,21 @@ unsigned int Segment::unit_size() const
 	return unit_size_;
 }
 
+uint32_t Segment::segment_id() const
+{
+	return segment_id_;
+}
+
+void Segment::set_complete()
+{
+	is_complete_ = true;
+}
+
+bool Segment::is_complete() const
+{
+	return is_complete_;
+}
+
 void Segment::free_unused_memory()
 {
 	lock_guard<recursive_mutex> lock(mutex_);
@@ -99,15 +119,17 @@ void Segment::free_unused_memory()
 		return;
 	}
 
-	// No more data will come in, so re-create the last chunk accordingly
-	uint8_t* resized_chunk = new uint8_t[used_samples_ * unit_size_];
-	memcpy(resized_chunk, current_chunk_, used_samples_ * unit_size_);
+	if (current_chunk_) {
+		// No more data will come in, so re-create the last chunk accordingly
+		uint8_t* resized_chunk = new uint8_t[used_samples_ * unit_size_ + 7];  /* FIXME +7 is workaround for #1284 */
+		memcpy(resized_chunk, current_chunk_, used_samples_ * unit_size_);
 
-	delete[] current_chunk_;
-	current_chunk_ = resized_chunk;
+		delete[] current_chunk_;
+		current_chunk_ = resized_chunk;
 
-	data_chunks_.pop_back();
-	data_chunks_.push_back(resized_chunk);
+		data_chunks_.pop_back();
+		data_chunks_.push_back(resized_chunk);
+	}
 }
 
 void Segment::append_single_sample(void *data)
@@ -122,7 +144,7 @@ void Segment::append_single_sample(void *data)
 	unused_samples_--;
 
 	if (unused_samples_ == 0) {
-		current_chunk_ = new uint8_t[chunk_size_];
+		current_chunk_ = new uint8_t[chunk_size_ + 7];  /* FIXME +7 is workaround for #1284 */
 		data_chunks_.push_back(current_chunk_);
 		used_samples_ = 0;
 		unused_samples_ = chunk_size_ / unit_size_;
@@ -160,8 +182,26 @@ void Segment::append_samples(void* data, uint64_t samples)
 		data_offset += (copy_count * unit_size_);
 
 		if (unused_samples_ == 0) {
-			// If we're out of memory, this will throw std::bad_alloc
-			current_chunk_ = new uint8_t[chunk_size_];
+			try {
+				// If we're out of memory, allocating a chunk will throw
+				// std::bad_alloc. To give the application some usable memory
+				// to work with in case chunk allocation fails, we allocate
+				// extra memory and throw it away if it all succeeded.
+				// This way, memory allocation will fail early enough to let
+				// PV remain alive. Otherwise, PV will crash in a random
+				// memory-allocating part of the application.
+				current_chunk_ = new uint8_t[chunk_size_ + 7];  /* FIXME +7 is workaround for #1284 */
+
+				const int dummy_size = 2 * chunk_size_;
+				auto dummy_chunk = new uint8_t[dummy_size];
+				memset(dummy_chunk, 0xFF, dummy_size);
+				delete[] dummy_chunk;
+			} catch (bad_alloc&) {
+				delete[] current_chunk_;  // The new may have succeeded
+				current_chunk_ = nullptr;
+				throw;
+			}
+
 			data_chunks_.push_back(current_chunk_);
 			used_samples_ = 0;
 			unused_samples_ = chunk_size_ / unit_size_;
@@ -171,15 +211,16 @@ void Segment::append_samples(void* data, uint64_t samples)
 	sample_count_ += samples;
 }
 
-uint8_t* Segment::get_raw_samples(uint64_t start, uint64_t count) const
+void Segment::get_raw_samples(uint64_t start, uint64_t count,
+	uint8_t* dest) const
 {
 	assert(start < sample_count_);
 	assert(start + count <= sample_count_);
 	assert(count > 0);
+	assert(dest != nullptr);
 
 	lock_guard<recursive_mutex> lock(mutex_);
 
-	uint8_t* dest = new uint8_t[count * unit_size_];
 	uint8_t* dest_ptr = dest;
 
 	uint64_t chunk_num = (start * unit_size_) / chunk_size_;
@@ -199,13 +240,11 @@ uint8_t* Segment::get_raw_samples(uint64_t start, uint64_t count) const
 		chunk_num++;
 		chunk_offs = 0;
 	}
-
-	return dest;
 }
 
-SegmentRawDataIterator* Segment::begin_raw_sample_iteration(uint64_t start)
+SegmentDataIterator* Segment::begin_sample_iteration(uint64_t start)
 {
-	SegmentRawDataIterator* it = new SegmentRawDataIterator;
+	SegmentDataIterator* it = new SegmentDataIterator;
 
 	assert(start < sample_count_);
 
@@ -215,17 +254,12 @@ SegmentRawDataIterator* Segment::begin_raw_sample_iteration(uint64_t start)
 	it->chunk_num = (start * unit_size_) / chunk_size_;
 	it->chunk_offs = (start * unit_size_) % chunk_size_;
 	it->chunk = data_chunks_[it->chunk_num];
-	it->value = it->chunk + it->chunk_offs;
 
 	return it;
 }
 
-void Segment::continue_raw_sample_iteration(SegmentRawDataIterator* it, uint64_t increase)
+void Segment::continue_sample_iteration(SegmentDataIterator* it, uint64_t increase)
 {
-	// Fail gracefully if we are asked to deliver data we don't have
-	if (it->sample_index > sample_count_)
-		return;
-
 	it->sample_index += increase;
 	it->chunk_offs += (increase * unit_size_);
 
@@ -234,11 +268,9 @@ void Segment::continue_raw_sample_iteration(SegmentRawDataIterator* it, uint64_t
 		it->chunk_offs -= chunk_size_;
 		it->chunk = data_chunks_[it->chunk_num];
 	}
-
-	it->value = it->chunk + it->chunk_offs;
 }
 
-void Segment::end_raw_sample_iteration(SegmentRawDataIterator* it)
+void Segment::end_sample_iteration(SegmentDataIterator* it)
 {
 	delete it;
 
@@ -248,6 +280,20 @@ void Segment::end_raw_sample_iteration(SegmentRawDataIterator* it)
 		mem_optimization_requested_ = false;
 		free_unused_memory();
 	}
+}
+
+uint8_t* Segment::get_iterator_value(SegmentDataIterator* it)
+{
+	assert(it->sample_index <= (sample_count_ - 1));
+
+	return (it->chunk + it->chunk_offs);
+}
+
+uint64_t Segment::get_iterator_valid_length(SegmentDataIterator* it)
+{
+	assert(it->sample_index <= (sample_count_ - 1));
+
+	return ((chunk_size_ - it->chunk_offs) / unit_size_);
 }
 
 } // namespace data

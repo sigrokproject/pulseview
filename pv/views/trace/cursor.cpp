@@ -34,17 +34,17 @@
 #include <cstdio>
 #include <limits>
 
-using std::abs; // Force usage of std::abs() instead of C's abs().
+using std::abs; // NOLINT. Force usage of std::abs() instead of C's abs().
 using std::shared_ptr;
 
 namespace pv {
 namespace views {
 namespace trace {
 
-const QColor Cursor::FillColour(52, 101, 164);
+const QColor Cursor::FillColor(52, 101, 164);
 
 Cursor::Cursor(View &view, double time) :
-	TimeMarker(view, FillColour, time)
+	TimeMarker(view, FillColor, time)
 {
 }
 

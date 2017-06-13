@@ -24,14 +24,13 @@
 #include <boost/none_t.hpp>
 
 #include <pv/data/decode/decoder.hpp>
-#include <pv/data/decoderstack.hpp>
+#include <pv/data/decodesignal.hpp>
 #include <pv/prop/double.hpp>
 #include <pv/prop/enum.hpp>
 #include <pv/prop/int.hpp>
 #include <pv/prop/string.hpp>
 
 using boost::none;
-using std::make_pair;
 using std::map;
 using std::pair;
 using std::shared_ptr;
@@ -48,9 +47,9 @@ namespace pv {
 namespace binding {
 
 Decoder::Decoder(
-	shared_ptr<pv::data::DecoderStack> decoder_stack,
+	shared_ptr<pv::data::DecodeSignal> decode_signal,
 	shared_ptr<data::decode::Decoder> decoder) :
-	decoder_stack_(decoder_stack),
+	decode_signal_(decode_signal),
 	decoder_(decoder)
 {
 	assert(decoder_);
@@ -97,7 +96,7 @@ shared_ptr<Property> Decoder::bind_enum(
 	vector< pair<Glib::VariantBase, QString> > values;
 	for (GSList *l = option->values; l; l = l->next) {
 		Glib::VariantBase var = Glib::VariantBase((GVariant*)l->data, true);
-		values.push_back(make_pair(var, print_gvariant(var)));
+		values.emplace_back(var, print_gvariant(var));
 	}
 
 	return shared_ptr<Property>(new Enum(name, desc, values, getter, setter));
@@ -137,8 +136,8 @@ void Decoder::setter(const char *id, Glib::VariantBase value)
 	assert(decoder_);
 	decoder_->set_option(id, value.gobj());
 
-	assert(decoder_stack_);
-	decoder_stack_->begin_decode();
+	assert(decode_signal_);
+	decode_signal_->begin_decode();
 }
 
 }  // namespace binding

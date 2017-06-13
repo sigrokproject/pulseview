@@ -17,14 +17,18 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <algorithm>
+#include <cassert>
+
+#include <QColor>
+#include <QToolTip>
+
 #include "cursorpair.hpp"
 
+#include "pv/globalsettings.hpp"
 #include "pv/util.hpp"
 #include "ruler.hpp"
 #include "view.hpp"
-
-#include <algorithm>
-#include <cassert>
 
 using std::max;
 using std::make_pair;
@@ -37,13 +41,25 @@ namespace views {
 namespace trace {
 
 const int CursorPair::DeltaPadding = 8;
-const QColor CursorPair::ViewportFillColour(220, 231, 243);
 
 CursorPair::CursorPair(View &view) :
 	TimeItem(view),
 	first_(new Cursor(view, 0.0)),
 	second_(new Cursor(view, 1.0))
 {
+	GlobalSettings::add_change_handler(this);
+
+	GlobalSettings settings;
+	fill_color_ = QColor::fromRgba(settings.value(
+		GlobalSettings::Key_View_CursorFillColor).value<uint32_t>());
+
+	connect(&view_, SIGNAL(hover_point_changed(const QWidget*, QPoint)),
+		this, SLOT(on_hover_point_changed(const QWidget*, QPoint)));
+}
+
+CursorPair::~CursorPair()
+{
+	GlobalSettings::remove_change_handler(this);
 }
 
 bool CursorPair::enabled() const
@@ -73,9 +89,9 @@ float CursorPair::get_x() const
 	return (first_->get_x() + second_->get_x()) / 2.0f;
 }
 
-QPoint CursorPair::point(const QRect &rect) const
+QPoint CursorPair::drag_point(const QRect &rect) const
 {
-	return first_->point(rect);
+	return first_->drag_point(rect);
 }
 
 pv::widgets::Popup* CursorPair::create_popup(QWidget *parent)
@@ -110,38 +126,41 @@ void CursorPair::paint_label(QPainter &p, const QRect &rect, bool hover)
 	if (!enabled())
 		return;
 
-	const QColor text_colour =
-		ViewItem::select_text_colour(Cursor::FillColour);
+	const QColor text_color = ViewItem::select_text_color(Cursor::FillColor);
+	p.setPen(text_color);
 
-	p.setPen(text_colour);
-	compute_text_size(p);
+	QString text = format_string();
+	text_size_ = p.boundingRect(QRectF(), 0, text).size();
+
 	QRectF delta_rect(label_rect(rect));
-
 	const int radius = delta_rect.height() / 2;
-	const QRectF text_rect(delta_rect.intersected(
-		rect).adjusted(radius, 0, -radius, 0));
-	if (text_rect.width() >= text_size_.width()) {
-		const int highlight_radius = delta_rect.height() / 2 - 2;
+	QRectF text_rect(delta_rect.intersected(rect).adjusted(radius, 0, -radius, 0));
 
-		if (selected()) {
-			p.setBrush(Qt::transparent);
-			p.setPen(highlight_pen());
-			p.drawRoundedRect(delta_rect, radius, radius);
-		}
+	if (text_rect.width() < text_size_.width()) {
+		text = "...";
+		text_size_ = p.boundingRect(QRectF(), 0, text).size();
+		label_incomplete_ = true;
+	} else
+		label_incomplete_ = false;
 
-		p.setBrush(hover ? Cursor::FillColour.lighter() :
-			Cursor::FillColour);
-		p.setPen(Cursor::FillColour.darker());
+	if (selected()) {
+		p.setBrush(Qt::transparent);
+		p.setPen(highlight_pen());
 		p.drawRoundedRect(delta_rect, radius, radius);
-
-		delta_rect.adjust(1, 1, -1, -1);
-		p.setPen(Cursor::FillColour.lighter());
-		p.drawRoundedRect(delta_rect, highlight_radius, highlight_radius);
-
-		p.setPen(text_colour);
-		p.drawText(text_rect, Qt::AlignCenter | Qt::AlignVCenter,
-			format_string());
 	}
+
+	p.setBrush(hover ? Cursor::FillColor.lighter() : Cursor::FillColor);
+	p.setPen(Cursor::FillColor.darker());
+	p.drawRoundedRect(delta_rect, radius, radius);
+
+	delta_rect.adjust(1, 1, -1, -1);
+	p.setPen(Cursor::FillColor.lighter());
+	const int highlight_radius = delta_rect.height() / 2 - 2;
+	p.drawRoundedRect(delta_rect, highlight_radius, highlight_radius);
+	label_area_ = delta_rect;
+
+	p.setPen(text_color);
+	p.drawText(text_rect, Qt::AlignCenter | Qt::AlignVCenter, text);
 }
 
 void CursorPair::paint_back(QPainter &p, ViewItemPaintParams &pp)
@@ -150,13 +169,11 @@ void CursorPair::paint_back(QPainter &p, ViewItemPaintParams &pp)
 		return;
 
 	p.setPen(Qt::NoPen);
-	p.setBrush(QBrush(ViewportFillColour));
+	p.setBrush(fill_color_);
 
 	const pair<float, float> offsets(get_cursor_offsets());
-	const int l = (int)max(min(
-		offsets.first, offsets.second), 0.0f);
-	const int r = (int)min(max(
-		offsets.first, offsets.second), (float)pp.width());
+	const int l = (int)max(min(offsets.first, offsets.second), 0.0f);
+	const int r = (int)min(max(offsets.first, offsets.second), (float)pp.width());
 
 	p.drawRect(l, pp.top(), r - l, pp.height());
 }
@@ -167,19 +184,11 @@ QString CursorPair::format_string()
 	const pv::util::Timestamp diff = abs(second_->time() - first_->time());
 
 	const QString s1 = Ruler::format_time_with_distance(
-		diff, diff, prefix, view_.time_unit(), view_.tick_precision(), false);
+		diff, diff, prefix, view_.time_unit(), 12, false);  /* Always use 12 precision digits */
 	const QString s2 = util::format_time_si(
 		1 / diff, pv::util::SIPrefix::unspecified, 4, "Hz", false);
 
-	return QString("%1 / %2").arg(s1).arg(s2);
-}
-
-void CursorPair::compute_text_size(QPainter &p)
-{
-	assert(first_);
-	assert(second_);
-
-	text_size_ = p.boundingRect(QRectF(), 0, format_string()).size();
+	return QString("%1 / %2").arg(s1, s2);
 }
 
 pair<float, float> CursorPair::get_cursor_offsets() const
@@ -188,6 +197,26 @@ pair<float, float> CursorPair::get_cursor_offsets() const
 	assert(second_);
 
 	return pair<float, float>(first_->get_x(), second_->get_x());
+}
+
+void CursorPair::on_setting_changed(const QString &key, const QVariant &value)
+{
+	if (key == GlobalSettings::Key_View_CursorFillColor)
+		fill_color_ = QColor::fromRgba(value.value<uint32_t>());
+}
+
+void CursorPair::on_hover_point_changed(const QWidget* widget, const QPoint& hp)
+{
+	if (widget != view_.ruler())
+		return;
+
+	if (!label_incomplete_)
+		return;
+
+	if (label_area_.contains(hp))
+		QToolTip::showText(view_.mapToGlobal(hp), format_string());
+	else
+		QToolTip::hideText();  // TODO Will break other tooltips when there can be others
 }
 
 } // namespace trace

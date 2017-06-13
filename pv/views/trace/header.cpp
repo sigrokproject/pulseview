@@ -103,12 +103,12 @@ void Header::paintEvent(QPaintEvent*)
 
 	stable_sort(items.begin(), items.end(),
 		[](const shared_ptr<RowItem> &a, const shared_ptr<RowItem> &b) {
-			return a->point(QRect()).y() < b->point(QRect()).y(); });
+			return a->drag_point(QRect()).y() < b->drag_point(QRect()).y(); });
 
 	QPainter painter(this);
 	painter.setRenderHint(QPainter::Antialiasing);
 
-	for (const shared_ptr<RowItem> r : items) {
+	for (const shared_ptr<RowItem>& r : items) {
 		assert(r);
 
 		const bool highlight = !item_dragging_ &&
@@ -125,7 +125,7 @@ void Header::contextMenuEvent(QContextMenuEvent *event)
 	if (!r)
 		return;
 
-	QMenu *menu = r->create_context_menu(this);
+	QMenu *menu = r->create_header_context_menu(this);
 	if (!menu)
 		menu = new QMenu(this);
 
@@ -142,7 +142,7 @@ void Header::contextMenuEvent(QContextMenuEvent *event)
 		menu->addAction(group);
 	}
 
-	menu->exec(event->globalPos());
+	menu->popup(event->globalPos());
 }
 
 void Header::keyPressEvent(QKeyEvent *event)
@@ -201,7 +201,7 @@ void Header::on_ungroup()
 		restart = false;
 		const vector< shared_ptr<TraceGroup> > groups(
 			view_.list_by_type<TraceGroup>());
-		for (const shared_ptr<TraceGroup> tg : groups)
+		for (const shared_ptr<TraceGroup>& tg : groups)
 			if (tg->selected()) {
 				tg->ungroup();
 				restart = true;

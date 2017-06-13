@@ -27,7 +27,8 @@
 
 #include <cstdint>
 
-#include "signalscalehandle.hpp"
+#include <pv/data/logicsegment.hpp>
+
 #include "trace.hpp"
 #include "viewitemowner.hpp"
 
@@ -45,6 +46,15 @@ class SignalData;
 namespace views {
 namespace trace {
 
+/**
+ * The Signal class represents a series of numeric values that can be drawn.
+ * This is the main difference to the more generic @ref Trace class.
+ *
+ * It is generally accepted that Signal instances consider themselves to be
+ * individual channels on e.g. an oscilloscope, though it should be kept in
+ * mind that virtual signals (e.g. math) will also be served by the Signal
+ * class.
+ */
 class Signal : public Trace, public ViewItemOwner
 {
 	Q_OBJECT
@@ -61,6 +71,15 @@ public:
 	virtual shared_ptr<pv::data::SignalData> data() const = 0;
 
 	/**
+	 * Determines the closest level change (i.e. edge) to a given sample, which
+	 * is useful for e.g. the "snap to edge" functionality.
+	 *
+	 * @param sample_pos Sample to use
+	 * @return The changes left and right of the given position
+	 */
+	virtual vector<data::LogicSegment::EdgePair> get_nearest_level_changes(uint64_t sample_pos) = 0;
+
+	/**
 	 * Returns true if the trace is visible and enabled.
 	 */
 	bool enabled() const;
@@ -71,34 +90,13 @@ public:
 
 	virtual void restore_settings(QSettings &settings);
 
-	/**
-	 * Returns a list of row items owned by this object.
-	 */
-	const item_list& child_items() const;
-
 	void paint_back(QPainter &p, ViewItemPaintParams &pp);
 
 	virtual void populate_popup_form(QWidget *parent, QFormLayout *form);
 
-	QMenu* create_context_menu(QWidget *parent);
+	QMenu* create_header_context_menu(QWidget *parent);
 
 	void delete_pressed();
-
-	/**
-	 * Returns the offset to show the drag handle.
-	 */
-	virtual int scale_handle_offset() const = 0;
-
-	/**
-	 * Handles the scale handle being dragged to an offset.
-	 * @param offset the offset the scale handle was dragged to.
-	 */
-	virtual void scale_handle_dragged(int offset) = 0;
-
-	/**
-	 * Handles the scale handle being being released.
-	 */
-	virtual void scale_handle_released() {};
 
 protected Q_SLOTS:
 	virtual void on_name_changed(const QString &text);
@@ -109,9 +107,6 @@ protected Q_SLOTS:
 
 protected:
 	pv::Session &session_;
-
-	const shared_ptr<SignalScaleHandle> scale_handle_;
-	const item_list items_;
 
 	QComboBox *name_widget_;
 };

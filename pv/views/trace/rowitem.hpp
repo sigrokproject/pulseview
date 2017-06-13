@@ -31,7 +31,7 @@ class RowItem : public ViewItem
 	Q_OBJECT
 
 public:
-	virtual void hover_point_changed();
+	virtual void hover_point_changed(const QPoint &hp);
 };
 
 } // namespace trace

@@ -1,5 +1,5 @@
 <RCC>
-    <qresource prefix="/" >
+    <qresource prefix="/">
 	<file>icons/add-decoder.svg</file>
 	<file>icons/application-exit.png</file>
 	<file>icons/channels.svg</file>
@@ -9,9 +9,13 @@
 	<file>icons/document-new.png</file>
 	<file>icons/document-open.png</file>
 	<file>icons/document-save-as.png</file>
+	<file>icons/help-browser.png</file>
 	<file>icons/information.svg</file>
+	<file>icons/media-playback-pause.png</file>
+	<file>icons/media-playback-start.png</file>
 	<file>icons/menu.svg</file>
 	<file>icons/preferences-system.png</file>
+	<file>icons/settings-general.png</file>
 	<file>icons/settings-views.svg</file>
 	<file>icons/pulseview.png</file>
 	<file>icons/pulseview.svg</file>
@@ -30,10 +34,84 @@
 	<file>icons/trigger-marker-rising.svg</file>
 	<file>icons/trigger-none.svg</file>
 	<file>icons/trigger-rising.svg</file>
+	<file>icons/view-displaymode-last_complete_segment.svg</file>
+	<file>icons/view-displaymode-last_segment.svg</file>
+	<file>icons/view-displaymode-single_segment.svg</file>
 	<file>icons/window-new.png</file>
 	<file>icons/zoom-fit-best.png</file>
 	<file>icons/zoom-in.png</file>
-	<file>icons/zoom-original.png</file>
 	<file>icons/zoom-out.png</file>
     </qresource>
+
+    <qresource prefix="/">
+	<!-- QDarkStyleSheet -->
+	<file>themes/qdarkstyle/style.qss</file>
+	<file>themes/qdarkstyle/rc/up_arrow_disabled.png</file>
+	<file>themes/qdarkstyle/rc/Hmovetoolbar.png</file>
+	<file>themes/qdarkstyle/rc/stylesheet-branch-end.png</file>
+	<file>themes/qdarkstyle/rc/branch_closed-on.png</file>
+	<file>themes/qdarkstyle/rc/stylesheet-vline.png</file>
+	<file>themes/qdarkstyle/rc/branch_closed.png</file>
+	<file>themes/qdarkstyle/rc/branch_open-on.png</file>
+	<file>themes/qdarkstyle/rc/transparent.png</file>
+	<file>themes/qdarkstyle/rc/right_arrow_disabled.png</file>
+	<file>themes/qdarkstyle/rc/sizegrip.png</file>
+	<file>themes/qdarkstyle/rc/close.png</file>
+	<file>themes/qdarkstyle/rc/close-hover.png</file>
+	<file>themes/qdarkstyle/rc/close-pressed.png</file>
+	<file>themes/qdarkstyle/rc/down_arrow.png</file>
+	<file>themes/qdarkstyle/rc/Vmovetoolbar.png</file>
+	<file>themes/qdarkstyle/rc/left_arrow.png</file>
+	<file>themes/qdarkstyle/rc/stylesheet-branch-more.png</file>
+	<file>themes/qdarkstyle/rc/up_arrow.png</file>
+	<file>themes/qdarkstyle/rc/right_arrow.png</file>
+	<file>themes/qdarkstyle/rc/left_arrow_disabled.png</file>
+	<file>themes/qdarkstyle/rc/Hsepartoolbar.png</file>
+	<file>themes/qdarkstyle/rc/branch_open.png</file>
+	<file>themes/qdarkstyle/rc/Vsepartoolbar.png</file>
+	<file>themes/qdarkstyle/rc/down_arrow_disabled.png</file>
+	<file>themes/qdarkstyle/rc/undock.png</file>
+	<file>themes/qdarkstyle/rc/checkbox_checked_disabled.png</file>
+	<file>themes/qdarkstyle/rc/checkbox_checked_focus.png</file>
+	<file>themes/qdarkstyle/rc/checkbox_checked.png</file>
+	<file>themes/qdarkstyle/rc/checkbox_indeterminate.png</file>
+	<file>themes/qdarkstyle/rc/checkbox_indeterminate_focus.png</file>
+	<file>themes/qdarkstyle/rc/checkbox_unchecked_disabled.png</file>
+	<file>themes/qdarkstyle/rc/checkbox_unchecked_focus.png</file>
+	<file>themes/qdarkstyle/rc/checkbox_unchecked.png</file>
+	<file>themes/qdarkstyle/rc/radio_checked_disabled.png</file>
+	<file>themes/qdarkstyle/rc/radio_checked_focus.png</file>
+	<file>themes/qdarkstyle/rc/radio_checked.png</file>
+	<file>themes/qdarkstyle/rc/radio_unchecked_disabled.png</file>
+	<file>themes/qdarkstyle/rc/radio_unchecked_focus.png</file>
+	<file>themes/qdarkstyle/rc/radio_unchecked.png</file>
+    </qresource>
+
+    <qresource prefix="/">
+	<!-- DarkStyle -->
+	<file>themes/darkstyle/darkstyle.qss</file>
+	<file>themes/darkstyle/icon_close.png</file>
+	<file>themes/darkstyle/icon_restore.png</file>
+	<file>themes/darkstyle/icon_undock.png</file>
+	<file>themes/darkstyle/icon_branch_closed.png</file>
+	<file>themes/darkstyle/icon_branch_end.png</file>
+	<file>themes/darkstyle/icon_branch_more.png</file>
+	<file>themes/darkstyle/icon_branch_open.png</file>
+	<file>themes/darkstyle/icon_vline.png</file>
+	<file>themes/darkstyle/icon_checkbox_checked.png</file>
+	<file>themes/darkstyle/icon_checkbox_indeterminate.png</file>
+	<file>themes/darkstyle/icon_checkbox_unchecked.png</file>
+	<file>themes/darkstyle/icon_checkbox_checked_pressed.png</file>
+	<file>themes/darkstyle/icon_checkbox_indeterminate_pressed.png</file>
+	<file>themes/darkstyle/icon_checkbox_unchecked_pressed.png</file>
+	<file>themes/darkstyle/icon_checkbox_checked_disabled.png</file>
+	<file>themes/darkstyle/icon_checkbox_indeterminate_disabled.png</file>
+	<file>themes/darkstyle/icon_checkbox_unchecked_disabled.png</file>
+	<file>themes/darkstyle/icon_radiobutton_checked.png</file>
+	<file>themes/darkstyle/icon_radiobutton_unchecked.png</file>
+	<file>themes/darkstyle/icon_radiobutton_checked_pressed.png</file>
+	<file>themes/darkstyle/icon_radiobutton_unchecked_pressed.png</file>
+	<file>themes/darkstyle/icon_radiobutton_checked_disabled.png</file>
+	<file>themes/darkstyle/icon_radiobutton_unchecked_disabled.png</file>
+</qresource>
 </RCC>

@@ -24,16 +24,27 @@ include(GNUInstallDirs)
 
 project(pulseview)
 
+# Let AUTOMOC and AUTOUIC process GENERATED files.
+if(POLICY CMP0071)
+	cmake_policy(SET CMP0071 NEW)
+endif()
+
+# Only interpret if() arguments as variables or keywords when unquoted.
+if(POLICY CMP0054)
+	cmake_policy(SET CMP0054 NEW)
+endif()
+
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake")
 
 #===============================================================================
 #= User Options
 #-------------------------------------------------------------------------------
 
-option(DISABLE_WERROR "Build without -Werror" FALSE)
+option(DISABLE_WERROR "Build without -Werror" TRUE)
 option(ENABLE_SIGNALS "Build with UNIX signals" TRUE)
+option(ENABLE_STACKTRACE "Enable stack trace when crashing" FALSE)
 option(ENABLE_DECODE "Build with libsigrokdecode" TRUE)
-option(ENABLE_TESTS "Enable unit tests" TRUE)
+option(ENABLE_TESTS "Enable unit tests" FALSE)
 option(STATIC_PKGDEPS_LIBS "Statically link to (pkg-config) libraries" FALSE)
 
 if(WIN32)
@@ -52,16 +63,23 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 #===============================================================================
+#= Documentation
+#-------------------------------------------------------------------------------
+
+add_subdirectory(manual)
+
+#===============================================================================
 #= Dependencies
 #-------------------------------------------------------------------------------
 
 list(APPEND PKGDEPS glib-2.0>=2.28.0)
 list(APPEND PKGDEPS glibmm-2.4>=2.28.0)
 
-list(APPEND PKGDEPS libsigrokcxx>=0.5.0)
+set(LIBSR_CXX_BINDING "libsigrokcxx>=0.5.1")
+list(APPEND PKGDEPS "${LIBSR_CXX_BINDING}")
 
 if(ENABLE_DECODE)
-	list(APPEND PKGDEPS libsigrokdecode>=0.5.0)
+	list(APPEND PKGDEPS libsigrokdecode>=0.5.2)
 endif()
 
 if(ANDROID)
@@ -69,6 +87,10 @@ if(ANDROID)
 endif()
 
 find_package(PkgConfig)
+pkg_check_modules(LIBSRCXX QUIET ${LIBSR_CXX_BINDING})
+if(NOT LIBSRCXX_FOUND OR NOT LIBSRCXX_VERSION)
+	message(FATAL_ERROR "libsigrok C++ bindings missing, check libsigrok's 'configure' output (missing dependencies?)")
+endif()
 pkg_check_modules(PKGDEPS REQUIRED ${PKGDEPS})
 
 set(CMAKE_AUTOMOC TRUE)
@@ -78,7 +100,10 @@ find_package(Qt5 COMPONENTS Core Gui Widgets Svg REQUIRED)
 if(WIN32)
 	# MXE workaround: Use pkg-config to find Qt5 libs.
 	# https://github.com/mxe/mxe/issues/1642
-	pkg_check_modules(QT5ALL REQUIRED Qt5Widgets Qt5Gui Qt5Svg)
+	# Not required (and doesn't work) on MSYS2.
+	if(NOT DEFINED ENV{MSYSTEM})
+		pkg_check_modules(QT5ALL REQUIRED Qt5Widgets Qt5Gui Qt5Svg)
+	endif()
 endif()
 
 set(QT_LIBRARIES Qt5::Gui Qt5::Widgets Qt5::Svg)
@@ -87,7 +112,12 @@ set(BOOSTCOMPS filesystem serialization system)
 if(ENABLE_TESTS)
 	list(APPEND BOOSTCOMPS unit_test_framework)
 endif()
-find_package(Boost 1.55 COMPONENTS ${BOOSTCOMPS} REQUIRED)
+
+if(ENABLE_STACKTRACE)
+	find_package(Boost 1.65.1 COMPONENTS ${BOOSTCOMPS} REQUIRED)
+else()
+	find_package(Boost 1.55 COMPONENTS ${BOOSTCOMPS} REQUIRED)
+endif()
 
 # Find the platform's thread library (needed for C++11 threads).
 # This will set ${CMAKE_THREAD_LIBS_INIT} to the correct, OS-specific value.
@@ -153,7 +183,7 @@ memaccess_check_unaligned_le(HAVE_UNALIGNED_LITTLE_ENDIAN_ACCESS)
 #-------------------------------------------------------------------------------
 
 set(PV_TITLE PulseView)
-set(PV_VERSION_STRING "0.4.0")
+set(PV_VERSION_STRING "0.5.0")
 
 set(PV_GLIBMM_VERSION ${PKGDEPS_glibmm-2.4_VERSION})
 
@@ -167,6 +197,12 @@ if(NOT PV_TAG_VERSION_STRING)
 		string(SUBSTRING "${PV_HASH}" 0 7 PV_SHORTHASH)
 		set(PV_VERSION_STRING "${PV_VERSION_STRING}-git-${PV_SHORTHASH}")
 	endif()
+
+	# Non-tagged releases use the unstable manual
+	set(PV_MANUAL_VERSION "unstable")
+else()
+	# Tagged releases use a fixed manual version
+	set(PV_MANUAL_VERSION ${PV_VERSION_STRING})
 endif()
 
 if(PV_VERSION_STRING MATCHES "^([0-9]+)\\.([0-9]+)\\.([0-9]+)(-[-0-9a-z]*)?$")
@@ -176,7 +212,7 @@ if(PV_VERSION_STRING MATCHES "^([0-9]+)\\.([0-9]+)\\.([0-9]+)(-[-0-9a-z]*)?$")
 	set(PV_VERSION_SUFFIX ${CMAKE_MATCH_4})
 endif()
 
-message("-- ${PV_TITLE} version: ${PV_VERSION_STRING}")
+message(STATUS "${PV_TITLE} version: ${PV_VERSION_STRING}")
 
 configure_file (
 	${PROJECT_SOURCE_DIR}/config.h.in
@@ -192,6 +228,7 @@ set(pulseview_SOURCES
 	pv/application.cpp
 	pv/devicemanager.cpp
 	pv/globalsettings.cpp
+	pv/logging.cpp
 	pv/mainwindow.cpp
 	pv/session.cpp
 	pv/storesession.cpp
@@ -234,7 +271,6 @@ set(pulseview_SOURCES
 	pv/views/trace/rowitem.cpp
 	pv/views/trace/ruler.cpp
 	pv/views/trace/signal.cpp
-	pv/views/trace/signalscalehandle.cpp
 	pv/views/trace/timeitem.cpp
 	pv/views/trace/timemarker.cpp
 	pv/views/trace/trace.cpp
@@ -251,8 +287,8 @@ set(pulseview_SOURCES
 	pv/views/trace/viewwidget.cpp
 	pv/views/viewbase.cpp
 	pv/views/trace/standardbar.cpp
-	pv/widgets/colourbutton.cpp
-	pv/widgets/colourpopup.cpp
+	pv/widgets/colorbutton.cpp
+	pv/widgets/colorpopup.cpp
 	pv/widgets/devicetoolbutton.cpp
 	pv/widgets/exportmenu.cpp
 	pv/widgets/importmenu.cpp
@@ -265,6 +301,7 @@ set(pulseview_SOURCES
 
 # This list includes only QObject derived class headers.
 set(pulseview_HEADERS
+	pv/logging.hpp
 	pv/globalsettings.hpp
 	pv/mainwindow.hpp
 	pv/session.hpp
@@ -297,7 +334,6 @@ set(pulseview_HEADERS
 	pv/views/trace/rowitem.hpp
 	pv/views/trace/ruler.hpp
 	pv/views/trace/signal.hpp
-	pv/views/trace/signalscalehandle.hpp
 	pv/views/trace/timeitem.hpp
 	pv/views/trace/timemarker.hpp
 	pv/views/trace/trace.hpp
@@ -310,8 +346,8 @@ set(pulseview_HEADERS
 	pv/views/trace/viewwidget.hpp
 	pv/views/viewbase.hpp
 	pv/views/trace/standardbar.hpp
-	pv/widgets/colourbutton.hpp
-	pv/widgets/colourpopup.hpp
+	pv/widgets/colorbutton.hpp
+	pv/widgets/colorpopup.hpp
 	pv/widgets/devicetoolbutton.hpp
 	pv/widgets/exportmenu.hpp
 	pv/widgets/importmenu.hpp
@@ -334,7 +370,7 @@ endif()
 if(ENABLE_DECODE)
 	list(APPEND pulseview_SOURCES
 		pv/binding/decoder.cpp
-		pv/data/decoderstack.cpp
+		pv/data/decodesignal.cpp
 		pv/data/decode/annotation.cpp
 		pv/data/decode/decoder.cpp
 		pv/data/decode/row.cpp
@@ -345,7 +381,7 @@ if(ENABLE_DECODE)
 	)
 
 	list(APPEND pulseview_HEADERS
-		pv/data/decoderstack.hpp
+		pv/data/decodesignal.hpp
 		pv/views/trace/decodetrace.hpp
 		pv/widgets/decodergroupbox.hpp
 		pv/widgets/decodermenu.hpp
@@ -390,6 +426,10 @@ if(ENABLE_SIGNALS)
 	add_definitions(-DENABLE_SIGNALS)
 endif()
 
+if(ENABLE_STACKTRACE)
+	add_definitions(-DENABLE_STACKTRACE)
+endif()
+
 #===============================================================================
 #= Global Include Directories
 #-------------------------------------------------------------------------------
@@ -430,12 +470,20 @@ endif()
 if(WIN32)
 	# On Windows we need to statically link the libqsvg imageformat
 	# plugin (and the QtSvg component) for SVG graphics/icons to work.
-	# We also need QWindowsIntegrationPlugin, Qt5PlatformSupport, and all
-	# Qt libs and their dependencies.
+	# We also need QWindowsIntegrationPlugin, Qt5PlatformSupport (only for
+	# Qt < 5.8.0), and all Qt libs and their dependencies.
 	add_definitions(-DQT_STATICPLUGIN)
 	list(APPEND PULSEVIEW_LINK_LIBS Qt5::QSvgPlugin)
 	list(APPEND PULSEVIEW_LINK_LIBS Qt5::QWindowsIntegrationPlugin)
-	list(APPEND PULSEVIEW_LINK_LIBS -lQt5PlatformSupport ${QT5ALL_LDFLAGS})
+	if(Qt5Gui_VERSION VERSION_LESS 5.8.0)
+		list(APPEND PULSEVIEW_LINK_LIBS -lQt5PlatformSupport)
+	endif()
+	list(APPEND PULSEVIEW_LINK_LIBS ${QT5ALL_LDFLAGS})
+endif()
+
+if(ENABLE_STACKTRACE)
+	# Needed to resolve dladdr.
+	list(APPEND PULSEVIEW_LINK_LIBS "-ldl")
 endif()
 
 if(ANDROID)
@@ -450,7 +498,7 @@ endif()
 
 target_link_libraries(${PROJECT_NAME} ${PULSEVIEW_LINK_LIBS})
 
-if(WIN32)
+if(WIN32 AND NOT ${CMAKE_BUILD_TYPE} STREQUAL "Debug")
 	# Pass -mwindows so that no "DOS box" opens when PulseView is started.
 	set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "-mwindows")
 endif()

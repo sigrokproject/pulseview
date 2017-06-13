@@ -53,9 +53,9 @@ public:
 	const QString& name() const;
 	const QString& desc() const;
 
-	virtual QWidget* get_widget(QWidget *parent,
-		bool auto_commit = false) = 0;
+	virtual QWidget* get_widget(QWidget *parent, bool auto_commit = false) = 0;
 	virtual bool labeled_widget() const;
+	virtual void update_widget() = 0;
 
 	virtual void commit() = 0;
 
@@ -63,7 +63,7 @@ protected:
 	const Getter getter_;
 	const Setter setter_;
 
-private:
+protected:
 	QString name_;
 	QString desc_;
 };

@@ -22,16 +22,22 @@
 
 #include "timeitem.hpp"
 
+#include <QPoint>
+
 namespace pv {
 namespace views {
 namespace trace {
 
+/**
+ * The TriggerMarker class is used to show to the user at what point in time
+ * a trigger occured. It is not editable by the user.
+ */
 class TriggerMarker : public TimeItem
 {
 	Q_OBJECT
 
 public:
-	static const QColor Colour;
+	static const QColor Color;
 
 public:
 	/**
@@ -54,7 +60,7 @@ public:
 	/**
 	  Returns true if the item may be dragged/moved.
 	 */
-	bool is_draggable() const override;
+	bool is_draggable(QPoint pos) const override;
 
 	/**
 	 * Sets the time of the marker.
@@ -67,7 +73,7 @@ public:
 	 * Gets the arrow-tip point of the time marker.
 	 * @param rect the rectangle of the ruler area.
 	 */
-	QPoint point(const QRect &rect) const override;
+	QPoint drag_point(const QRect &rect) const override;
 
 	/**
 	 * Paints the foreground layer of the item with a QPainter

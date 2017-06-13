@@ -23,6 +23,7 @@
 #include <list>
 
 #include <QPen>
+#include <QPoint>
 
 #include "viewitempaintparams.hpp"
 
@@ -52,11 +53,15 @@ public:
 public:
 	ViewItem();
 
-public:
 	/**
 	 * Returns true if the item is visible and enabled.
 	 */
 	virtual bool enabled() const = 0;
+
+	/**
+	 * Returns true if the item may be selected.
+	 */
+	virtual bool is_selectable(QPoint pos) const;
 
 	/**
 	 * Returns true if the item has been selected by the user.
@@ -71,7 +76,7 @@ public:
 	/**
 	 * Returns true if the item may be dragged/moved.
 	 */
-	virtual bool is_draggable() const;
+	virtual bool is_draggable(QPoint pos) const;
 
 	/**
 	 * Returns true if the item is being dragged.
@@ -98,7 +103,7 @@ public:
 	 * Get the drag point.
 	 * @param rect the rectangle of the widget area.
 	 */
-	virtual QPoint point(const QRect &rect) const = 0;
+	virtual QPoint drag_point(const QRect &rect) const = 0;
 
 	/**
 	 * Computes the outline rectangle of a label.
@@ -145,17 +150,18 @@ public:
 	 */
 	virtual void paint_fore(QPainter &p, ViewItemPaintParams &pp);
 
-public:
 	/**
-	 * Gets the text colour.
-	 * @remarks This colour is computed by comparing the lightness
-	 * of the trace colour against a threshold to determine whether
+	 * Gets the text color.
+	 * @remarks This color is computed by comparing the lightness
+	 * of the trace color against a threshold to determine whether
 	 * white or black would be more visible.
 	 */
-	static QColor select_text_colour(QColor background);
+	static QColor select_text_color(QColor background);
 
 public:
-	virtual QMenu* create_context_menu(QWidget *parent);
+	virtual QMenu* create_header_context_menu(QWidget *parent);
+
+	virtual QMenu* create_view_context_menu(QWidget *parent, QPoint &click_pos);
 
 	virtual pv::widgets::Popup* create_popup(QWidget *parent);
 

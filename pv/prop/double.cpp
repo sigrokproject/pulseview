@@ -19,7 +19,10 @@
 
 #include <cassert>
 
+#include <QDebug>
 #include <QDoubleSpinBox>
+
+#include <libsigrokcxx/libsigrokcxx.hpp>
 
 #include "double.hpp"
 
@@ -54,12 +57,14 @@ QWidget* Double::get_widget(QWidget *parent, bool auto_commit)
 	if (!getter_)
 		return nullptr;
 
-	Glib::VariantBase variant = getter_();
-	if (!variant.gobj())
+	try {
+		Glib::VariantBase variant = getter_();
+		if (!variant.gobj())
+			return nullptr;
+	} catch (const sigrok::Error &e) {
+		qWarning() << tr("Querying config key %1 resulted in %2").arg(name_, e.what());
 		return nullptr;
-
-	double value = Glib::VariantBase::cast_dynamic<Glib::Variant<double>>(
-		variant).get();
+	}
 
 	spin_box_ = new QDoubleSpinBox(parent);
 	spin_box_->setDecimals(decimals_);
@@ -69,13 +74,34 @@ QWidget* Double::get_widget(QWidget *parent, bool auto_commit)
 	if (step_)
 		spin_box_->setSingleStep(*step_);
 
-	spin_box_->setValue(value);
+	update_widget();
 
 	if (auto_commit)
 		connect(spin_box_, SIGNAL(valueChanged(double)),
 			this, SLOT(on_value_changed(double)));
 
 	return spin_box_;
+}
+
+void Double::update_widget()
+{
+	if (!spin_box_)
+		return;
+
+	Glib::VariantBase variant;
+
+	try {
+		variant = getter_();
+	} catch (const sigrok::Error &e) {
+		qWarning() << tr("Querying config key %1 resulted in %2").arg(name_, e.what());
+		return;
+	}
+
+	assert(variant.gobj());
+
+	double value = Glib::VariantBase::cast_dynamic<Glib::Variant<double>>(
+		variant).get();
+	spin_box_->setValue(value);
 }
 
 void Double::commit()

@@ -1,0 +1,40 @@
+[[overview,Overview]]
+== Overview
+
+PulseView is a graphical frontend for the libsigrok and libsigrokdecode libraries, permitting
+access to a wide range of devices and protocol decoders to let you record, analyze, process
+and export analog and logic data. It is part of the sigrok suite, just like the libraries that
+it makes use of.
+
+The sigrok suite needs some kind of hardware to interface to the signals you want to examine.
+We found that most people are currently using logic analyzers based on the http://www.cypress.com/products/ez-usb-fx2lp[Cypress FX2 microcontroller].
+With http://sigrok.org/wiki/Fx2lafw[fx2lafw], sigrok's open source runtime firmware, any device
+containing an FX2 can become a powerful streaming logic analyzer.
+A variety of compatible low cost chinese made logic analyzer products are available for as little
+as $5. These can easily be found by searching for _24MHz Logic Analyzer_. There are also barebone
+Cypress FX2 boards such as the Lcsoft Mini Board, which can usually be found by searching for
+_Cypress FX2 Board_ or similar.
+
+In addition, a good set of https://sigrok.org/wiki/Probe_comparison[quality probe hooks] is recommended.
+
+Aside from FX2-based logic analyzers, sigrok also supports FX2-based oscilloscopes such as the
+https://sigrok.org/wiki/Hantek_6022BE[Hantek 6022BE], non-FX2 devices like the
+https://sigrok.org/wiki/Openbench_Logic_Sniffer[Openbench Logic Sniffer] or devices that make use
+of the SCPI protocol, as all reasonably modern oscilloscopes do (Rigol DS1054z, LeCroy WaveRunner,
+Yokogawa DLM and similar).
+
+Please be aware however, that PulseView currently only supports devices that can either work as an
+https://sigrok.org/wiki/Supported_hardware#Oscilloscopes[oscilloscope],
+a https://sigrok.org/wiki/Supported_hardware#Logic_analyzers[logic analyzer] or
+a https://sigrok.org/wiki/Supported_hardware#Mixed-signal_devices[mixed-signal device]. This
+means that multimeters in particular are currently only usable with either https://sigrok.org/wiki/Sigrok-cli[sigrok-cli]
+or https://sigrok.org/wiki/Sigrok-meter[sigrok-meter].
+
+image::pv_after_startup.png[]
+
+The PulseView user interface is geared towards navigation and analysis of captured waveforms, so
+the most space is by default used up by the main trace view. From here, you can access the most
+often used features.
+
+Before we dive deeper into how to accomplish things, let's make PulseView available on your
+system first.

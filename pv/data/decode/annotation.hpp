@@ -20,7 +20,8 @@
 #ifndef PULSEVIEW_PV_VIEW_DECODE_ANNOTATION_HPP
 #define PULSEVIEW_PV_VIEW_DECODE_ANNOTATION_HPP
 
-#include <stdint.h>
+#include <cstdint>
+#include <vector>
 
 #include <QString>
 
@@ -32,21 +33,30 @@ namespace pv {
 namespace data {
 namespace decode {
 
+class Row;
+
 class Annotation
 {
 public:
-	Annotation(const srd_proto_data *const pdata);
+	typedef uint32_t Class;
+
+public:
+	Annotation(const srd_proto_data *const pdata, const Row *row);
 
 	uint64_t start_sample() const;
 	uint64_t end_sample() const;
-	int format() const;
+	Class ann_class() const;
 	const vector<QString>& annotations() const;
+	const Row* row() const;
+
+	bool operator<(const Annotation &other) const;
 
 private:
 	uint64_t start_sample_;
 	uint64_t end_sample_;
-	int format_;
+	Class ann_class_;
 	vector<QString> annotations_;
+	const Row *row_;
 };
 
 } // namespace decode

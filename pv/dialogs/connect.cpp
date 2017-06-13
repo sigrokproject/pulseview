@@ -95,12 +95,18 @@ Connect::Connect(QWidget *parent, pv::DeviceManager &device_manager) :
 	tcp_port_->setRange(1, 65535);
 	tcp_port_->setValue(5555);
 	tcp_config_layout->addWidget(tcp_port_);
-	tcp_use_vxi_ = new QCheckBox();
-	tcp_use_vxi_->setText(tr("Use VXI"));
+
 	tcp_config_layout->addSpacing(30);
-	tcp_config_layout->addWidget(tcp_use_vxi_);
+	tcp_config_layout->addWidget(new QLabel(tr("Protocol:")));
+	tcp_protocol_ = new QComboBox();
+	tcp_protocol_->addItem("Raw TCP", QVariant("tcp-raw/%1/%2"));
+	tcp_protocol_->addItem("VXI", QVariant("vxi/%1/%2"));
+	tcp_config_layout->addWidget(tcp_protocol_);
 	tcp_config_layout->setContentsMargins(0, 0, 0, 0);
 	tcp_config_->setEnabled(false);
+
+	// Let the device list occupy only the minimum space needed
+	device_list_.setMaximumHeight(device_list_.minimumSizeHint().height());
 
 	QVBoxLayout *vbox_if = new QVBoxLayout;
 	vbox_if->addWidget(radiobtn_usb);
@@ -148,7 +154,7 @@ shared_ptr<HardwareDevice> Connect::get_selected_device() const
 
 void Connect::populate_drivers()
 {
-	for (auto entry : device_manager_.context()->drivers()) {
+	for (auto& entry : device_manager_.context()->drivers()) {
 		auto name = entry.first;
 		auto driver = entry.second;
 		/**
@@ -173,7 +179,7 @@ void Connect::populate_drivers()
 void Connect::populate_serials(shared_ptr<Driver> driver)
 {
 	serial_devices_.clear();
-	for (auto serial : device_manager_.context()->serials(driver))
+	for (auto& serial : device_manager_.context()->serials(driver))
 		serial_devices_.addItem(QString("%1 (%2)").arg(
 			serial.first.c_str(), serial.second.c_str()),
 			QString::fromStdString(serial.first));
@@ -215,7 +221,7 @@ void Connect::scan_pressed()
 		const int index = serial_devices_.currentIndex();
 		if (index >= 0 && index < serial_devices_.count() &&
 		    serial_devices_.currentText() == serial_devices_.itemText(index))
-			serial = serial_devices_.itemData(index).value<QString>();
+			serial = serial_devices_.itemData(index).toString();
 		else
 			serial = serial_devices_.currentText();
 		drvopts[ConfigKey::CONN] = Variant<ustring>::create(
@@ -226,11 +232,10 @@ void Connect::scan_pressed()
 		QString host = tcp_host_->text();
 		QString port = tcp_port_->text();
 		if (!host.isEmpty()) {
-			QString conn;
-			if (tcp_use_vxi_->isChecked())
-				conn = QString("vxi/%1/%2").arg(host, port);
-			else
-				conn = QString("tcp-raw/%1/%2").arg(host, port);
+			QString conn =
+				tcp_protocol_->itemData(tcp_protocol_->currentIndex()).toString();
+
+			conn = conn.arg(host, port);
 
 			drvopts[ConfigKey::CONN] = Variant<ustring>::create(
 				conn.toUtf8().constData());
@@ -240,16 +245,13 @@ void Connect::scan_pressed()
 	const list< shared_ptr<HardwareDevice> > devices =
 		device_manager_.driver_scan(driver, drvopts);
 
-	for (shared_ptr<HardwareDevice> device : devices) {
+	for (const shared_ptr<HardwareDevice>& device : devices) {
 		assert(device);
 
-		QString text = QString::fromStdString(
-			device->display_name(device_manager_));
-		text += QString(" with %1 channels").arg(
-			device->device()->channels().size());
+		QString text = QString::fromStdString(device->display_name(device_manager_));
+		text += QString(" with %1 channels").arg(device->device()->channels().size());
 
-		QListWidgetItem *const item = new QListWidgetItem(text,
-			&device_list_);
+		QListWidgetItem *const item = new QListWidgetItem(text, &device_list_);
 		item->setData(Qt::UserRole, qVariantFromValue(device));
 		device_list_.addItem(item);
 	}

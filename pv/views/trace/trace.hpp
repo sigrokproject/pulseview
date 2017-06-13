@@ -30,6 +30,7 @@
 
 #include "tracetreeitem.hpp"
 
+#include <pv/globalsettings.hpp>
 #include "pv/data/signalbase.hpp"
 
 using std::shared_ptr;
@@ -49,19 +50,51 @@ class Popup;
 namespace views {
 namespace trace {
 
-class Trace : public TraceTreeItem
+/**
+ * The Trace class represents a @ref TraceTreeItem which occupies some vertical
+ * space on the canvas and spans across its entire width, essentially showing
+ * a time series of values, events, objects or similar. While easily confused
+ * with @ref Signal, the difference is that Trace may represent anything that
+ * can be drawn, not just numeric values. One example is a @ref DecodeTrace.
+ *
+ * For this reason, Trace is more generic and contains properties and helpers
+ * that benefit any kind of time series items.
+ */
+class Trace : public TraceTreeItem, public GlobalSettingsInterface
 {
 	Q_OBJECT
+
+public:
+	/**
+	 * Allowed values for the multi-segment display mode.
+	 *
+	 * Note: Consider these locations when updating the list:
+	 * *
+	 * @ref View::set_segment_display_mode
+	 * @ref View::on_segment_changed
+	 * @ref AnalogSignal::get_analog_segment_to_paint
+	 * @ref AnalogSignal::get_logic_segment_to_paint
+	 * @ref LogicSignal::get_logic_segment_to_paint
+	 * @ref StandardBar
+	 */
+	enum SegmentDisplayMode {
+		ShowLastSegmentOnly = 1,
+		ShowLastCompleteSegmentOnly,
+		ShowSingleSegmentOnly,
+		ShowAllSegments,
+		ShowAccumulatedIntensity
+	};
 
 private:
 	static const QPen AxisPen;
 	static const int LabelHitPadding;
 
-	static const QColor BrightGrayBGColour;
-	static const QColor DarkGrayBGColour;
+	static const QColor BrightGrayBGColor;
+	static const QColor DarkGrayBGColor;
 
 protected:
 	Trace(shared_ptr<data::SignalBase> channel);
+	~Trace();
 
 public:
 	/**
@@ -70,14 +103,21 @@ public:
 	shared_ptr<data::SignalBase> base() const;
 
 	/**
-	 * Sets the name of the signal.
+	 * Returns true if the item may be selected.
 	 */
-	virtual void set_name(QString name);
+	virtual bool is_selectable(QPoint pos) const;
 
 	/**
-	 * Set the colour of the signal.
+	 * Returns true if the item may be dragged/moved.
 	 */
-	virtual void set_colour(QColor colour);
+	virtual bool is_draggable(QPoint pos) const;
+
+	/**
+	 * Configures the segment display mode to use.
+	 */
+	virtual void set_segment_display_mode(SegmentDisplayMode mode);
+
+	virtual void on_setting_changed(const QString &key, const QVariant &value);
 
 	/**
 	 * Paints the signal label.
@@ -87,7 +127,9 @@ public:
 	 */
 	virtual void paint_label(QPainter &p, const QRect &rect, bool hover);
 
-	virtual QMenu* create_context_menu(QWidget *parent);
+	virtual QMenu* create_header_context_menu(QWidget *parent);
+
+	virtual QMenu* create_view_context_menu(QWidget *parent, QPoint &click_pos);
 
 	pv::widgets::Popup* create_popup(QWidget *parent);
 
@@ -97,6 +139,20 @@ public:
 	 * @return Returns the rectangle of the signal label.
 	 */
 	QRectF label_rect(const QRectF &rect) const;
+
+	/**
+	 * Computes the outline rectangle of the viewport hit-box.
+	 * @param rect the rectangle of the viewport area.
+	 * @return Returns the rectangle of the hit-box.
+	 * @remarks The default implementation returns an empty hit-box.
+	 */
+	virtual QRectF hit_box_rect(const ViewItemPaintParams &pp) const;
+
+	void set_current_segment(const int segment);
+
+	int get_current_segment() const;
+
+	virtual void hover_point_changed(const QPoint &hp);
 
 protected:
 	/**
@@ -114,7 +170,13 @@ protected:
 	 */
 	void paint_axis(QPainter &p, ViewItemPaintParams &pp, int y);
 
-	void add_colour_option(QWidget *parent, QFormLayout *form);
+	/**
+	 * Draw a hover marker under the cursor position.
+	 * @param p The painter to draw into.
+	 */
+	void paint_hover_marker(QPainter &p);
+
+	void add_color_option(QWidget *parent, QFormLayout *form);
 
 	void create_popup_form();
 
@@ -123,17 +185,28 @@ protected:
 protected Q_SLOTS:
 	virtual void on_name_changed(const QString &text);
 
-	virtual void on_colour_changed(const QColor &colour);
+	virtual void on_color_changed(const QColor &color);
 
 	void on_popup_closed();
 
 private Q_SLOTS:
 	void on_nameedit_changed(const QString &name);
 
-	void on_colouredit_changed(const QColor &colour);
+	void on_coloredit_changed(const QColor &color);
+
+	void on_create_marker_here() const;
 
 protected:
 	shared_ptr<data::SignalBase> base_;
+	QPen axis_pen_;
+
+	SegmentDisplayMode segment_display_mode_;
+	bool show_hover_marker_;
+
+	uint32_t context_menu_x_pos_;
+
+	/// The ID of the currently displayed segment
+	int current_segment_;
 
 private:
 	pv::widgets::Popup *popup_;

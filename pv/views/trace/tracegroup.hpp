@@ -37,7 +37,7 @@ private:
 	static const int Padding;
 	static const int Width;
 	static const int LineThickness;
-	static const QColor LineColour;
+	static const QColor LineColor;
 
 public:
 	/**
@@ -102,7 +102,7 @@ public:
 	 */
 	bool pt_in_label_rect(int left, int right, const QPoint &point);
 
-	QMenu* create_context_menu(QWidget *parent);
+	QMenu* create_header_context_menu(QWidget *parent);
 
 	pv::widgets::Popup* create_popup(QWidget *parent);
 
@@ -110,8 +110,6 @@ public:
 	 * Returns the total vertical offset of this trace and all it's owners
 	 */
 	int owner_visual_v_offset() const;
-
-	void restack_items();
 
 	/**
 	 * Returns the number of nested parents that this row item owner has.

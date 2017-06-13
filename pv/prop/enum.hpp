@@ -33,6 +33,8 @@ using std::vector;
 Q_DECLARE_METATYPE(Glib::VariantBase);
 
 class QComboBox;
+class QLabel;
+class QSlider;
 
 namespace pv {
 namespace prop {
@@ -49,16 +51,23 @@ public:
 	virtual ~Enum() = default;
 
 	QWidget* get_widget(QWidget *parent, bool auto_commit);
+	void update_widget();
 
 	void commit();
 
 private Q_SLOTS:
-	void on_current_item_changed(int);
+	void on_current_index_changed(int);
+	void on_value_changed(int);
 
 private:
 	const vector< pair<Glib::VariantBase, QString> > values_;
+	bool is_range_;
 
 	QComboBox *selector_;
+
+	QWidget *slider_layout_widget_;
+	QSlider *slider_;
+	QLabel *slider_label_;
 };
 
 }  // namespace prop

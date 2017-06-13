@@ -50,7 +50,11 @@ public:
 
 	vector< shared_ptr<Segment> > segments() const;
 
+	uint32_t get_segment_count() const;
+
 	void clear();
+
+	double get_samplerate() const;
 
 	uint64_t max_sample_count() const;
 

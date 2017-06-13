@@ -24,7 +24,7 @@ namespace pv {
 namespace views {
 namespace trace {
 
-const QColor TriggerMarker::Colour(0x00, 0x00, 0xB0);
+const QColor TriggerMarker::Color(0x00, 0x00, 0xB0);
 
 TriggerMarker::TriggerMarker(View &view, const pv::util::Timestamp& time) :
 	TimeItem(view),
@@ -43,8 +43,9 @@ bool TriggerMarker::enabled() const
 	return true;
 }
 
-bool TriggerMarker::is_draggable() const
+bool TriggerMarker::is_draggable(QPoint pos) const
 {
+	(void)pos;
 	return false;
 }
 
@@ -60,9 +61,12 @@ float TriggerMarker::get_x() const
 	return ((time_ - view_.offset()) / view_.scale()).convert_to<float>();
 }
 
-QPoint TriggerMarker::point(const QRect &rect) const
+QPoint TriggerMarker::drag_point(const QRect &rect) const
 {
-	return QPoint(get_x(), rect.bottom());
+	(void)rect;
+
+	// The trigger marker cannot be moved, so there is no drag point
+	return QPoint(INT_MIN, INT_MIN);
 }
 
 void TriggerMarker::paint_fore(QPainter &p, ViewItemPaintParams &pp)
@@ -70,7 +74,7 @@ void TriggerMarker::paint_fore(QPainter &p, ViewItemPaintParams &pp)
 	if (!enabled())
 		return;
 
-	QPen pen(Colour);
+	QPen pen(Color);
 	pen.setStyle(Qt::DashLine);
 
 	const float x = get_x();

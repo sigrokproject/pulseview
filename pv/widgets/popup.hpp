@@ -53,7 +53,7 @@ public:
 
 	bool eventFilter(QObject *obj, QEvent *event);
 
-	void show();
+	virtual void show();
 
 private:
 	bool space_for_arrow() const;

@@ -22,6 +22,8 @@
 
 #include <vector>
 
+#include <libsigrokdecode/libsigrokdecode.h>
+
 #include "annotation.hpp"
 
 using std::vector;
@@ -29,6 +31,8 @@ using std::vector;
 namespace pv {
 namespace data {
 namespace decode {
+
+class Row;
 
 class RowData
 {
@@ -39,13 +43,15 @@ public:
 	uint64_t get_max_sample() const;
 
 	/**
-	 * Extracts sorted annotations between two period into a vector.
+	 * Extracts annotations between the given sample range into a vector.
+	 * Note: The annotations are unsorted and only annotations that fully
+	 * fit into the sample range are considered.
 	 */
 	void get_annotation_subset(
 		vector<pv::data::decode::Annotation> &dest,
 		uint64_t start_sample, uint64_t end_sample) const;
 
-	void push_annotation(const Annotation &a);
+	void emplace_annotation(srd_proto_data *pdata, const Row *row);
 
 private:
 	vector<Annotation> annotations_;

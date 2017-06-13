@@ -44,6 +44,8 @@ public:
 
 	pv::binding::Device& binding();
 
+	virtual void show();
+
 private:
 	shared_ptr<sigrok::Device> device_;
 

@@ -1,0 +1,140 @@
+== Decoders
+
+Protocol decoders are one of the key elements of PulseView's functionality. They take
+input data that you acquired and process it in a way that results in a (hopefully) much
+easier to understand representation of that same data.
+
+In its simplest form, a protocol decoder (PD) converts a group of 1-bit signals into a
+stream of n-bit events. This is exactly what the parallel PD does: it takes for example
+8 logic channels and treats them like an 8-bit parallel bus, emitting annotations that
+show the current state of the bus at any point in time.
+
+=== Basic Operation
+
+Another one of the protocol decoders available to you is the I²C decoder. It takes the
+two I²C signals SCL and SDA (serial clock / serial data) and shows you the details of
+the I²C communication without the need to evaluate the signal bit by bit yourself.
+
+As an example, let's have look at one of the sample .sr files we keep around for
+validation of the PD code base: https://sigrok.org/gitweb/?p=sigrok-dumps.git;a=blob_plain;f=i2c/rtc_dallas_ds1307/rtc_ds1307_200khz.sr;hb=HEAD[rtc_ds1307_200khz.sr].
+It contains the capture of an I²C master interacting with a https://www.maximintegrated.com/en/products/digital/real-time-clocks/DS1307.html[Dallas DS1307 I²C Real-Time Clock]
+where the master repeatedly sets and queries the time of day. After loading and using
+"zoom-to-fit", it looks similar to this:
+
+image::pv_decoders_1.png[]
+
+Adding the I²C decoder by clicking on ➊ and selecting I²C from the list adds
+a new decode signal to the view. PulseView tries to match existing signals to the signals
+that the newly added protocol decoder needs to function, which is what happened here -
+SCL and SDA have been automatically assigned and the PD has decoded the communication with
+the default parameters. If you need to change the signal assignment or change the decoding
+parameters, you can click on ➋ to do so.
+
+When you zoom in, you now see that PulseView has decoded the I²C messages and displays
+these annotations as part of the decode signal (note that we have zoomed in so far that
+PulseView shows you the individual samples):
+
+image::pv_decoders_2.png[]
+
+This is already very useful, and a massive improvement over counting out pulses on an
+oscilloscope screen. However, sigrok allows us to go one step further with the use of
+so-called stacked decoders. 
+
+=== Decoder Stacking
+
+To add a stacked decoder we open the settings of the decode signal, go to the _Stack
+Decoder_ menu ➊, and select the DS1307 decoder:
+
+image::pv_decoders_3.png[]
+
+With the stacked decoder added, we can now see that PulseView has decoded the meaning
+of the I²C commands, so that we don't need to bother searching the reference manual.
+In this view, we can see that the I²C packet was a command to read the date and time,
+which was then reported to be 10.03.2013 23:35:30. 
+
+There are all kinds of stacked decoders available, but keep in mind that they're not
+shown in the decoder menu. Stacked decoders require a lower-level decoder first before
+they become stackable. Most of the time, they require either the UART, I²C or SPI decoder.
+
+You can check the https://sigrok.org/wiki/Protocol_decoders[List of Protocol Decoders]
+to see which protocol decoders have been created already.
+
+=== Using Decoders on Analog Signals
+
+If you're capturing data using an oscilloscope or import analog signal data from a file,
+you'll quickly notice that protocol decoders don't give you the option to select analog
+channels as inputs. That is because as of now, decoders only work on logic signals. You
+can however convert analog signals into logic signals by choosing a conversion setting
+from the signal setting popup.
+
+image::pv_conversion_a2l.png[]
+
+Here, A1 has been converted using a threshold (with default settings) and A2 has been
+converted using a Schmitt-Trigger emulation (also with default settings). Additionally,
+the conversion threshold display mode has been set to _Background_ in the _Views_ settings
+dialog. This way, you can tell how PulseView decided to change the logic signal level
+as you can now visually understand where the ranges for high and low are placed.
+
+Aside from the default conversion threshold(s), you can choose from a few common presets
+or enter custom values as well. They take the form "0.0V" and "0.0V/0.0V", respectively.
+
+=== Troubleshooting
+
+In case a protocol decoder doesn't provide the expected result, there are several things
+you can check.
+
+The first check you should perform is whether the time unit in the ruler
+is given as "sa". This is short for "samples" and means that the device didn't provide
+a sample rate and so PulseView has no way of showing a time scale in seconds or
+fractions thereof. While some decoders can run without timing information, or only
+optionally make use of the time scale, others may not be able to interpret the
+input data since timing information is an essential part of the very protocol.
+
+Another issue to remain aware of is that decoders need enough samples per protocol step
+to reliably interpret the information. In typical cases the minimum sample rate should
+be four to five times the rate of the fastest activity in the protocol.
+
+If a protocol decoder runs but shows you annotations that don't seem to make any sense,
+it's worth double-checking the decoder settings. One common source of error is the
+baud rate. For example, the CAN protocol decoder doesn't know what baud rate
+is used on the bus that you captured, so it could be that a different baud rate is used
+than the one you set. Also, if this is still not the reason for the malfunction, it's
+worth checking whether any of the signals have been captured inverted. Again using the
+CAN bus as an example, the decoder will decode the signal just fine if it's inverted but
+it'll show data even when the signal looks "idle".
+
+When a protocol decoder stops execution because of an unmet constraint (required input
+not connected, essential parameter not specified) or a bug in the decoder itself, you
+will be presented a static red message in the protocol decoder's display area.
+In that case, you check the log output in the settings menu. There you'll find the Python
+error description which you can use to either adjust the configuration,
+or debug the decoder (and let us know of the fix) or you can copy that information and
+file a bug report so that we can fix it.
+
+Further helpful knowledge and explanations on logic analyzers can be found in our
+https://sigrok.org/wiki/FAQ#Where_can_I_learn_more_about_logic_analyzers.3F["Learn about logic analyzers" FAQ item].
+
+=== Exporting Annotations
+
+If you want to postprocess annotations that were generated by a protocol decoder, you
+can do so by right-clicking into the area of the decode signal (not on the signal label
+on the left). You are shown several export methods to choose from, with the last one
+being only available if the cursor is enabled.
+
+After you chose a method that suits your needs, you are prompted for a file to export
+the annotations to. The contents of the file very much depend on the option you chose
+but also on the annotation export format string that you can define in the _Decoders_
+menu of the settings dialog. If the default output isn't useful to you, you can
+customize it there.
+
+=== Creating a Protocol Decoder
+
+Protocol decoders are written in Python and can be created using nothing more than a
+text editor. You, too, can write one!
+
+To find out how to go about it, please see our https://sigrok.org/wiki/Protocol_decoder_HOWTO[Protocol Decoder How-To]
+and the https://sigrok.org/wiki/Protocol_decoder_API[Protocol Decoder API Reference].
+
+If you do write one, we'd appreciate if you'd contribute to our project so that everyone
+can benefit from your work.
+

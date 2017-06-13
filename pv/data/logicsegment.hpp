@@ -48,15 +48,18 @@ namespace data {
 
 class Logic;
 
-typedef struct {
-	uint64_t sample_index, chunk_num, chunk_offs;
-	uint8_t* chunk;
-	uint8_t* value;
-} SegmentLogicDataIterator;
-
-class LogicSegment : public QObject, public Segment
+class LogicSegment : public Segment
 {
 	Q_OBJECT
+
+public:
+	typedef pair<int64_t, bool> EdgePair;
+
+	static const unsigned int ScaleStepCount = 10;
+	static const int MipMapScalePower;
+	static const int MipMapScaleFactor;
+	static const float LogMipMapScaleFactor;
+	static const uint64_t MipMapDataUnit;
 
 private:
 	struct MipMapLevel
@@ -66,41 +69,17 @@ private:
 		void *data;
 	};
 
-private:
-	static const unsigned int ScaleStepCount = 10;
-	static const int MipMapScalePower;
-	static const int MipMapScaleFactor;
-	static const float LogMipMapScaleFactor;
-	static const uint64_t MipMapDataUnit;
-
 public:
-	typedef pair<int64_t, bool> EdgePair;
-
-public:
-	LogicSegment(pv::data::Logic& owner, unsigned int unit_size, uint64_t samplerate);
+	LogicSegment(pv::data::Logic& owner, uint32_t segment_id,
+		unsigned int unit_size, uint64_t samplerate);
 
 	virtual ~LogicSegment();
 
 	void append_payload(shared_ptr<sigrok::Logic> logic);
 	void append_payload(void *data, uint64_t data_size);
 
-	const uint8_t* get_samples(int64_t start_sample, int64_t end_sample) const;
+	void get_samples(int64_t start_sample, int64_t end_sample, uint8_t* dest) const;
 
-	SegmentLogicDataIterator* begin_sample_iteration(uint64_t start);
-	void continue_sample_iteration(SegmentLogicDataIterator* it, uint64_t increase);
-	void end_sample_iteration(SegmentLogicDataIterator* it);
-
-private:
-	uint64_t unpack_sample(const uint8_t *ptr) const;
-	void pack_sample(uint8_t *ptr, uint64_t value);
-
-	void reallocate_mipmap_level(MipMapLevel &m);
-
-	void append_payload_to_mipmap();
-
-	uint64_t get_unpacked_sample(uint64_t index) const;
-
-public:
 	/**
 	 * Parses a logic data segment to generate a list of transitions
 	 * in a time interval to a given level of detail.
@@ -113,7 +92,24 @@ public:
 	 */
 	void get_subsampled_edges(vector<EdgePair> &edges,
 		uint64_t start, uint64_t end,
-		float min_length, int sig_index);
+		float min_length, int sig_index, bool first_change_only = false);
+
+	void get_surrounding_edges(vector<EdgePair> &dest,
+		uint64_t origin_sample, float min_length, int sig_index);
+
+private:
+	uint64_t unpack_sample(const uint8_t *ptr) const;
+	void pack_sample(uint8_t *ptr, uint64_t value);
+
+	void reallocate_mipmap_level(MipMapLevel &m);
+
+	void append_payload_to_mipmap();
+
+	uint64_t get_unpacked_sample(uint64_t index) const;
+
+	template <class T> void downsampleTmain(const T*&in, T &acc, T &prev);
+	template <class T> void downsampleT(const uint8_t *in, uint8_t *&out, uint64_t len);
+	void downsampleGeneric(const uint8_t *in, uint8_t *&out, uint64_t len);
 
 private:
 	uint64_t get_subsample(int level, uint64_t offset) const;
@@ -125,6 +121,8 @@ private:
 
 	struct MipMapLevel mip_map_[ScaleStepCount];
 	uint64_t last_append_sample_;
+	uint64_t last_append_accumulator_;
+	uint64_t last_append_extra_;
 
 	friend struct LogicSegmentTest::Pow2;
 	friend struct LogicSegmentTest::Basic;

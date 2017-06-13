@@ -50,9 +50,10 @@ void ViewWidget::clear_selection()
 		i->select(false);
 }
 
-void ViewWidget::item_hover(const shared_ptr<ViewItem> &item)
+void ViewWidget::item_hover(const shared_ptr<ViewItem> &item, QPoint pos)
 {
 	(void)item;
+	(void)pos;
 }
 
 void ViewWidget::item_clicked(const shared_ptr<ViewItem> &item)
@@ -76,7 +77,7 @@ bool ViewWidget::accept_drag() const
 	if (any_row_items_selected && !any_time_items_selected) {
 		// Check all the drag items share a common owner
 		TraceTreeItemOwner *item_owner = nullptr;
-		for (shared_ptr<TraceTreeItem> r : trace_tree_items)
+		for (const shared_ptr<TraceTreeItem>& r : trace_tree_items)
 			if (r->dragging()) {
 				if (!item_owner)
 					item_owner = r->owner();
@@ -106,7 +107,7 @@ void ViewWidget::drag_items(const QPoint &delta)
 	// Drag the row items
 	const vector< shared_ptr<RowItem> > row_items(
 		view_.list_by_type<RowItem>());
-	for (shared_ptr<RowItem> r : row_items)
+	for (const shared_ptr<RowItem>& r : row_items)
 		if (r->dragging()) {
 			r->drag_by(delta);
 
@@ -120,7 +121,7 @@ void ViewWidget::drag_items(const QPoint &delta)
 	TraceTreeItemOwner *item_owner = nullptr;
 	const vector< shared_ptr<TraceTreeItem> > trace_tree_items(
 		view_.list_by_type<TraceTreeItem>());
-	for (shared_ptr<TraceTreeItem> i : trace_tree_items)
+	for (const shared_ptr<TraceTreeItem>& i : trace_tree_items)
 		if (i->dragging())
 			item_owner = i->owner();
 
@@ -169,7 +170,7 @@ void ViewWidget::mouse_left_press_event(QMouseEvent *event)
 		clear_selection();
 
 	// Set the signal selection state if the item has been clicked
-	if (mouse_down_item_) {
+	if (mouse_down_item_ && mouse_down_item_->is_selectable(event->pos())) {
 		if (ctrl_pressed)
 			mouse_down_item_->select(!mouse_down_item_->selected());
 		else
@@ -180,7 +181,7 @@ void ViewWidget::mouse_left_press_event(QMouseEvent *event)
 	bool item_dragged = false;
 	const auto items = this->items();
 	for (auto &i : items)
-		if (i->selected()) {
+		if (i->selected() && i->is_draggable(event->pos())) {
 			item_dragged = true;
 			i->drag();
 		}
@@ -251,17 +252,21 @@ void ViewWidget::mousePressEvent(QMouseEvent *event)
 {
 	assert(event);
 
-	/* Ignore right click events as they will open context menus when
-	 * used on trace labels. Those menus prevent ViewWidget::mouseReleaseEvent()
-	 * to be triggered upon button release, making mouse_down_item_
-	 * hold the last reference to a view item that might have been deleted
-	 * from the context menu, preventing it from being freed as intended.
-	 */
 	if (event->button() & Qt::LeftButton) {
 		mouse_down_point_ = event->pos();
 		mouse_down_item_ = get_mouse_over_item(event->pos());
 		mouse_left_press_event(event);
 	}
+
+	/* Don't forward right click events as they will open context menus when
+	 * used on trace labels. Those menus prevent ViewWidget::mouseReleaseEvent()
+	 * to be triggered upon button release, making mouse_down_item_
+	 * hold the last reference to a view item that might have been deleted
+	 * from the context menu, preventing it from being freed as intended.
+	 * TODO Remove this once context menus are handled separately
+	 */
+	if (event->button() & Qt::RightButton)
+		mouse_down_point_ = event->pos();
 }
 
 void ViewWidget::mouseReleaseEvent(QMouseEvent *event)
@@ -281,7 +286,7 @@ void ViewWidget::mouseMoveEvent(QMouseEvent *event)
 	mouse_point_ = event->pos();
 
 	if (!event->buttons())
-		item_hover(get_mouse_over_item(event->pos()));
+		item_hover(get_mouse_over_item(event->pos()), event->pos());
 	else if (event->buttons() & Qt::LeftButton) {
 		if (!item_dragging_) {
 			if ((event->pos() - mouse_down_point_).manhattanLength() <

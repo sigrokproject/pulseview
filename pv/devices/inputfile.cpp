@@ -19,22 +19,34 @@
 
 #include <cassert>
 #include <fstream>
+#include <vector>
 
+#include <QDebug>
 #include <QString>
+
+#include <pv/globalsettings.hpp>
 
 #include "inputfile.hpp"
 
+using sigrok::InputFormat;
+
 using std::map;
+using std::out_of_range;
+using std::pair;
 using std::shared_ptr;
 using std::streamsize;
 using std::string;
 using std::ifstream;
 using std::ios;
+using std::vector;
 
 namespace pv {
 namespace devices {
 
-const streamsize InputFile::BufferSize = 16384;
+// Use a 4MB chunk size for reading a file into memory. Larger values don't
+// seem to provide any substancial performance improvements, but can cause
+// UI lag and a visually "stuttering" display of the data currently loading.
+const streamsize InputFile::BufferSize = (4 * 1024 * 1024);
 
 InputFile::InputFile(const shared_ptr<sigrok::Context> &context,
 	const string &file_name,
@@ -48,12 +60,65 @@ InputFile::InputFile(const shared_ptr<sigrok::Context> &context,
 {
 }
 
+InputFile::InputFile(const shared_ptr<sigrok::Context> &context,
+	QSettings &settings):
+	File(""),
+	context_(context),
+	interrupt_(false)
+{
+	file_name_ = settings.value("filename").toString().toStdString();
+
+	QString format_name = settings.value("format").toString();
+
+	// Find matching format
+	const map<string, shared_ptr<InputFormat> > formats = context->input_formats();
+
+	try {
+		format_ = formats.at(format_name.toStdString());
+
+		// Restore all saved options
+		int options = settings.value("options").toInt();
+
+		for (int i = 0; i < options; i++) {
+			settings.beginGroup("option" + QString::number(i));
+			QString name = settings.value("name").toString();
+			options_[name.toStdString()] = GlobalSettings::restore_variantbase(settings);
+			settings.endGroup();
+		}
+
+	} catch (out_of_range&) {
+		qWarning() << "Could not find input format" << format_name <<
+			"needed to restore session input file";
+	}
+}
+
+void InputFile::save_meta_to_settings(QSettings &settings)
+{
+	settings.setValue("filename", QString::fromStdString(file_name_));
+
+	settings.setValue("format", QString::fromStdString(format_->name()));
+
+	settings.setValue("options", (int)options_.size());
+
+	int i = 0;
+	for (const pair<string, Glib::VariantBase>& option : options_) {
+		settings.beginGroup("option" + QString::number(i));
+		settings.setValue("name", QString::fromStdString(option.first));
+		GlobalSettings::store_variantbase(settings, option.second);
+		settings.endGroup();
+		i++;
+	}
+}
+
 void InputFile::open()
 {
 	if (session_)
 		close();
 	else
 		session_ = context_->create_session();
+
+	if (!format_)
+		return;
 
 	input_ = format_->create_input(options_);
 
@@ -64,18 +129,20 @@ void InputFile::open()
 	// we can't open the device without sending some data first
 	f = new ifstream(file_name_, ios::binary);
 
-	char buffer[BufferSize];
-	f->read(buffer, BufferSize);
-	const streamsize size = f->gcount();
-	if (size == 0)
-		return;
+	vector<char> buffer(BufferSize);
 
-	input_->send(buffer, size);
+	f->read(buffer.data(), BufferSize);
+	const streamsize size = f->gcount();
+
+	if (size == 0)
+		throw QString("Failed to read file");
+
+	input_->send(buffer.data(), size);
 
 	try {
 		device_ = input_->device();
-	} catch (sigrok::Error) {
-		return;
+	} catch (sigrok::Error& e) {
+		throw e;
 	}
 
 	session_->add_device(device_);
@@ -93,7 +160,8 @@ void InputFile::start()
 
 void InputFile::run()
 {
-	char buffer[BufferSize];
+	if (!input_)
+		return;
 
 	if (!f) {
 		// Previous call to run() processed the entire file already
@@ -101,14 +169,16 @@ void InputFile::run()
 		input_->reset();
 	}
 
+	vector<char> buffer(BufferSize);
+
 	interrupt_ = false;
 	while (!interrupt_ && !f->eof()) {
-		f->read(buffer, BufferSize);
+		f->read(buffer.data(), BufferSize);
 		const streamsize size = f->gcount();
 		if (size == 0)
 			break;
 
-		input_->send(buffer, size);
+		input_->send(buffer.data(), size);
 
 		if (size != BufferSize)
 			break;

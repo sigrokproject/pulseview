@@ -44,9 +44,9 @@ namespace trace {
 const int TimeMarker::ArrowSize = 4;
 
 TimeMarker::TimeMarker(
-	View &view, const QColor &colour, const pv::util::Timestamp& time) :
+	View &view, const QColor &color, const pv::util::Timestamp& time) :
 	TimeItem(view),
-	colour_(colour),
+	color_(color),
 	time_(time),
 	value_action_(nullptr),
 	value_widget_(nullptr),
@@ -78,9 +78,11 @@ float TimeMarker::get_x() const
 	return roundf(((time_ - view_.offset()) / view_.scale()).convert_to<float>()) + 0.5f;
 }
 
-QPoint TimeMarker::point(const QRect &rect) const
+QPoint TimeMarker::drag_point(const QRect &rect) const
 {
-	return QPoint(get_x(), rect.bottom());
+	(void)rect;
+
+	return QPoint(get_x(), view_.mapFromGlobal(QCursor::pos()).y());
 }
 
 QRectF TimeMarker::label_rect(const QRectF &rect) const
@@ -140,18 +142,18 @@ void TimeMarker::paint_label(QPainter &p, const QRect &rect, bool hover)
 	}
 
 	p.setPen(Qt::transparent);
-	p.setBrush(hover ? colour_.lighter() : colour_);
+	p.setBrush(hover ? color_.lighter() : color_);
 	p.drawPolygon(points, countof(points));
 
-	p.setPen(colour_.lighter());
+	p.setPen(color_.lighter());
 	p.setBrush(Qt::transparent);
 	p.drawPolygon(highlight_points, countof(highlight_points));
 
-	p.setPen(colour_.darker());
+	p.setPen(color_.darker());
 	p.setBrush(Qt::transparent);
 	p.drawPolygon(points, countof(points));
 
-	p.setPen(select_text_colour(colour_));
+	p.setPen(select_text_color(color_));
 	p.drawText(r, Qt::AlignCenter | Qt::AlignVCenter, get_text());
 }
 
@@ -161,7 +163,7 @@ void TimeMarker::paint_fore(QPainter &p, ViewItemPaintParams &pp)
 		return;
 
 	const float x = get_x();
-	p.setPen(colour_.darker());
+	p.setPen(color_.darker());
 	p.drawLine(QPointF(x, pp.top()), QPointF(x, pp.bottom()));
 }
 
@@ -171,7 +173,7 @@ pv::widgets::Popup* TimeMarker::create_popup(QWidget *parent)
 
 	Popup *const popup = new Popup(parent);
 	popup->set_position(parent->mapToGlobal(
-		point(parent->rect())), Popup::Bottom);
+		drag_point(parent->rect())), Popup::Bottom);
 
 	QFormLayout *const form = new QFormLayout(popup);
 	popup->setLayout(form);

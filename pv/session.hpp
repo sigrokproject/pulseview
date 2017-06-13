@@ -20,6 +20,7 @@
 #ifndef PULSEVIEW_PV_SESSION_HPP
 #define PULSEVIEW_PV_SESSION_HPP
 
+#include <functional>
 #include <map>
 #include <memory>
 #include <mutex>
@@ -55,10 +56,13 @@ class Device;
 class InputFormat;
 class Logic;
 class Meta;
+class Option;
 class OutputFormat;
 class Packet;
 class Session;
 }  // namespace sigrok
+
+using sigrok::Option;
 
 namespace pv {
 
@@ -67,6 +71,7 @@ class DeviceManager;
 namespace data {
 class Analog;
 class AnalogSegment;
+class DecodeSignal;
 class Logic;
 class LogicSegment;
 class SignalBase;
@@ -95,6 +100,8 @@ public:
 		AwaitingTrigger,
 		Running
 	};
+
+	static shared_ptr<sigrok::Context> sr_context;
 
 public:
 	Session(DeviceManager &device_manager, QString name);
@@ -157,6 +164,10 @@ public:
 
 	double get_samplerate() const;
 
+	uint32_t get_segment_count() const;
+
+	vector<util::Timestamp> get_triggers(uint32_t segment_id) const;
+
 	void register_view(shared_ptr<views::ViewBase> view);
 
 	void deregister_view(shared_ptr<views::ViewBase> view);
@@ -165,10 +176,12 @@ public:
 
 	const unordered_set< shared_ptr<data::SignalBase> > signalbases() const;
 
-#ifdef ENABLE_DECODE
-	bool add_decoder(srd_decoder *const dec);
+	bool all_segments_complete(uint32_t segment_id) const;
 
-	void remove_decode_signal(shared_ptr<data::SignalBase> signalbase);
+#ifdef ENABLE_DECODE
+	shared_ptr<data::DecodeSignal> add_decode_signal();
+
+	void remove_decode_signal(shared_ptr<data::DecodeSignal> signal);
 #endif
 
 private:
@@ -179,10 +192,16 @@ private:
 	shared_ptr<data::SignalBase> signalbase_from_channel(
 		shared_ptr<sigrok::Channel> channel) const;
 
-private:
+	static map<string, Glib::VariantBase> input_format_options(
+		vector<string> user_spec,
+		map<string, shared_ptr<Option>> fmt_opts);
+
 	void sample_thread_proc(function<void (const QString)> error_handler);
 
 	void free_unused_memory();
+
+	void signal_new_segment();
+	void signal_segment_completed();
 
 	void feed_in_header();
 
@@ -191,6 +210,7 @@ private:
 	void feed_in_trigger();
 
 	void feed_in_frame_begin();
+	void feed_in_frame_end();
 
 	void feed_in_logic(shared_ptr<sigrok::Logic> logic);
 
@@ -198,6 +218,27 @@ private:
 
 	void data_feed_in(shared_ptr<sigrok::Device> device,
 		shared_ptr<sigrok::Packet> packet);
+
+Q_SIGNALS:
+	void capture_state_changed(int state);
+	void device_changed();
+
+	void signals_changed();
+
+	void name_changed();
+
+	void trigger_event(int segment_id, util::Timestamp location);
+
+	void new_segment(int new_segment_id);
+	void segment_completed(int segment_id);
+
+	void data_received();
+
+	void add_view(const QString &title, views::ViewType type,
+		Session *session);
+
+public Q_SLOTS:
+	void on_data_saved();
 
 private:
 	DeviceManager &device_manager_;
@@ -215,39 +256,22 @@ private:
 	unordered_set< shared_ptr<data::SignalBase> > signalbases_;
 	unordered_set< shared_ptr<data::SignalData> > all_signal_data_;
 
+	/// trigger_list_ contains pairs of <segment_id, timestamp> values.
+	vector< std::pair<uint32_t, util::Timestamp> > trigger_list_;
+
 	mutable recursive_mutex data_mutex_;
 	shared_ptr<data::Logic> logic_data_;
 	uint64_t cur_samplerate_;
 	shared_ptr<data::LogicSegment> cur_logic_segment_;
 	map< shared_ptr<sigrok::Channel>, shared_ptr<data::AnalogSegment> >
 		cur_analog_segments_;
+	int32_t highest_segment_id_;
 
 	std::thread sampling_thread_;
 
 	bool out_of_memory_;
 	bool data_saved_;
-
-Q_SIGNALS:
-	void capture_state_changed(int state);
-	void device_changed();
-
-	void signals_changed();
-
-	void name_changed();
-
-	void trigger_event(util::Timestamp location);
-
-	void frame_began();
-
-	void data_received();
-
-	void frame_ended();
-
-	void add_view(const QString &title, views::ViewType type,
-		Session *session);
-
-public Q_SLOTS:
-	void on_data_saved();
+	bool frame_began_;
 };
 
 } // namespace pv

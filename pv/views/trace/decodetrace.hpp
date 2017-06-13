@@ -27,9 +27,13 @@
 #include <memory>
 #include <vector>
 
+#include <QColor>
+#include <QComboBox>
 #include <QSignalMapper>
+#include <QTimer>
 
 #include <pv/binding/decoder.hpp>
+#include <pv/data/decode/annotation.hpp>
 #include <pv/data/decode/row.hpp>
 #include <pv/data/signalbase.hpp>
 
@@ -42,22 +46,18 @@ using std::vector;
 struct srd_channel;
 struct srd_decoder;
 
-class QComboBox;
-
 namespace pv {
 
 class Session;
 
 namespace data {
-class DecoderStack;
-class SignalBase;
+struct DecodeChannel;
+class DecodeSignal;
 
 namespace decode {
-class Annotation;
 class Decoder;
-class Row;
 }
-}
+}  // namespace data
 
 namespace widgets {
 class DecoderGroupBox;
@@ -71,34 +71,21 @@ class DecodeTrace : public Trace
 	Q_OBJECT
 
 private:
-	struct ChannelSelector
-	{
-		const QComboBox *combo_;
-		const QComboBox *combo_initial_pin_;
-		const shared_ptr<pv::data::decode::Decoder> decoder_;
-		const srd_channel *pdch_;
-	};
-
-private:
-	static const QColor DecodeColours[4];
-	static const QColor ErrorBgColour;
-	static const QColor NoDecodeColour;
+	static const QColor ErrorBgColor;
+	static const QColor NoDecodeColor;
 
 	static const int ArrowSize;
 	static const double EndCapWidth;
 	static const int RowTitleMargin;
 	static const int DrawPadding;
 
-	static const QColor Colours[16];
-	static const QColor OutlineColours[16];
+	static const int MaxTraceUpdateRate;
 
 public:
 	DecodeTrace(pv::Session &session, shared_ptr<data::SignalBase> signalbase,
 		int index);
 
 	bool enabled() const;
-
-	const shared_ptr<pv::data::DecoderStack>& decoder() const;
 
 	shared_ptr<data::SignalBase> base() const;
 
@@ -131,27 +118,30 @@ public:
 
 	void populate_popup_form(QWidget *parent, QFormLayout *form);
 
-	QMenu* create_context_menu(QWidget *parent);
+	QMenu* create_header_context_menu(QWidget *parent);
+
+	virtual QMenu* create_view_context_menu(QWidget *parent, QPoint &click_pos);
 
 	void delete_pressed();
 
 private:
 	void draw_annotations(vector<pv::data::decode::Annotation> annotations,
 		QPainter &p, int h, const ViewItemPaintParams &pp, int y,
-		size_t base_colour, int row_title_width);
+		QColor row_color, int row_title_width);
 
 	void draw_annotation(const pv::data::decode::Annotation &a, QPainter &p,
 		int h, const ViewItemPaintParams &pp, int y,
-		size_t base_colour, int row_title_width) const;
+		QColor row_color, int row_title_width) const;
 
-	void draw_annotation_block(vector<pv::data::decode::Annotation> annotations,
-		QPainter &p, int h, int y, size_t base_colour) const;
+	void draw_annotation_block(qreal start, qreal end,
+		pv::data::decode::Annotation::Class ann_class, bool use_ann_format,
+		QPainter &p, int h, int y, QColor row_color) const;
 
 	void draw_instant(const pv::data::decode::Annotation &a, QPainter &p,
-		int h, double x, int y) const;
+		int h, qreal x, int y) const;
 
 	void draw_range(const pv::data::decode::Annotation &a, QPainter &p,
-		int h, double start, double end, int y, const ViewItemPaintParams &pp,
+		int h, qreal start, qreal end, int y, const ViewItemPaintParams &pp,
 		int row_title_width) const;
 
 	void draw_error(QPainter &p, const QString &message,
@@ -169,7 +159,10 @@ private:
 	 * @return Returns a pair containing the start sample and the end
 	 * 	sample that correspond to the start and end coordinates.
 	 */
-	pair<uint64_t, uint64_t> get_sample_range(int x_start, int x_end) const;
+	pair<uint64_t, uint64_t> get_view_sample_range(int x_start, int x_end) const;
+
+	QColor get_row_color(int row_index) const;
+	QColor get_annotation_color(QColor row_color, int annotation_index) const;
 
 	int get_row_at_point(const QPoint &point);
 
@@ -180,28 +173,29 @@ private:
 		QWidget *parent, QFormLayout *form);
 
 	QComboBox* create_channel_selector(QWidget *parent,
-		const shared_ptr<pv::data::decode::Decoder> &dec,
-		const srd_channel *const pdch);
+		const data::DecodeChannel *ch);
+	QComboBox* create_channel_selector_init_state(QWidget *parent,
+		const data::DecodeChannel *ch);
 
-	QComboBox* create_channel_selector_initial_pin(QWidget *parent,
-		const shared_ptr<pv::data::decode::Decoder> &dec,
-		const srd_channel *const pdch);
-
-	void commit_decoder_channels(shared_ptr<data::decode::Decoder> &dec);
-
-	void commit_channels();
+	void export_annotations(vector<data::decode::Annotation> *annotations) const;
 
 public:
-	void hover_point_changed();
+	virtual void hover_point_changed(const QPoint &hp);
 
 private Q_SLOTS:
-	void on_new_decode_data();
+	void on_new_annotations();
+	void on_delayed_trace_update();
+	void on_decode_reset();
+	void on_decode_finished();
+	void on_pause_decode();
 
 	void on_delete();
 
 	void on_channel_selected(int);
 
-	void on_initial_pin_selected(int);
+	void on_channels_updated();
+
+	void on_init_state_changed(int);
 
 	void on_stack_decoder(srd_decoder *decoder);
 
@@ -209,15 +203,26 @@ private Q_SLOTS:
 
 	void on_show_hide_decoder(int index);
 
+	void on_export_row();
+	void on_export_all_rows();
+	void on_export_row_with_cursor();
+	void on_export_all_rows_with_cursor();
+	void on_export_row_from_here();
+	void on_export_all_rows_from_here();
+
 private:
 	pv::Session &session_;
+	shared_ptr<data::DecodeSignal> decode_signal_;
 
 	vector<data::decode::Row> visible_rows_;
-	uint64_t decode_start_, decode_end_;
 
+	map<QComboBox*, uint16_t> channel_id_map_;  // channel selector -> decode channel ID
+	map<QComboBox*, uint16_t> init_state_map_;  // init state selector -> decode channel ID
 	list< shared_ptr<pv::binding::Decoder> > bindings_;
 
-	list<ChannelSelector> channel_selectors_;
+	data::decode::Row *selected_row_;
+	pair<uint64_t, uint64_t> selected_sample_range_;
+
 	vector<pv::widgets::DecoderGroupBox*> decoder_forms_;
 
 	map<data::decode::Row, int> row_title_widths_;
@@ -226,6 +231,8 @@ private:
 	int min_useful_label_width_;
 
 	QSignalMapper delete_mapper_, show_hide_mapper_;
+
+	QTimer delayed_trace_updater_;
 };
 
 } // namespace trace

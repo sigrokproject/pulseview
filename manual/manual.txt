@@ -1,0 +1,28 @@
+PulseView User Manual
+=====================
+unreleased development snapshot, dated 2018-10-29
+:doctype: book
+:imagesdir: ./images
+:sectnums:
+:toc:
+:toclevels: 2
+:icons: font
+:figure-caption: Image
+
+ifdef::ebook-format[:leveloffset: -1]
+
+include::license.txt[]
+
+include::overview.txt[]
+
+include::installation.txt[]
+
+include::acquisition.txt[]
+
+include::analysis.txt[]
+
+include::decoders.txt[]
+
+include::import_export.txt[]
+
+include::cli.txt[]

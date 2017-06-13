@@ -36,7 +36,7 @@ protected:
 
 public:
 	/**
-	 * Builds the full name. It only contains all the fields.
+	 * Builds the full name. It contains all the fields.
 	 */
 	string full_name() const;
 
@@ -46,7 +46,7 @@ public:
 	string display_name(const DeviceManager&) const;
 
 protected:
-	const string file_name_;
+	string file_name_;
 };
 
 } // namespace devices

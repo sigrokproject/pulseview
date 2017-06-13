@@ -27,6 +27,8 @@
 #include <thread>
 #include <vector>
 
+#include <QObject>
+
 using std::recursive_mutex;
 using std::vector;
 
@@ -49,16 +51,17 @@ namespace data {
 typedef struct {
 	uint64_t sample_index, chunk_num, chunk_offs;
 	uint8_t* chunk;
-	uint8_t* value;
-} SegmentRawDataIterator;
+} SegmentDataIterator;
 
-class Segment
+class Segment : public QObject
 {
+	Q_OBJECT
+
 private:
 	static const uint64_t MaxChunkSize;
 
 public:
-	Segment(uint64_t samplerate, unsigned int unit_size);
+	Segment(uint32_t segment_id, uint64_t samplerate, unsigned int unit_size);
 
 	virtual ~Segment();
 
@@ -71,17 +74,25 @@ public:
 
 	unsigned int unit_size() const;
 
+	uint32_t segment_id() const;
+
+	void set_complete();
+	bool is_complete() const;
+
 	void free_unused_memory();
 
 protected:
 	void append_single_sample(void *data);
 	void append_samples(void *data, uint64_t samples);
-	uint8_t* get_raw_samples(uint64_t start, uint64_t count) const;
+	void get_raw_samples(uint64_t start, uint64_t count, uint8_t *dest) const;
 
-	SegmentRawDataIterator* begin_raw_sample_iteration(uint64_t start);
-	void continue_raw_sample_iteration(SegmentRawDataIterator* it, uint64_t increase);
-	void end_raw_sample_iteration(SegmentRawDataIterator* it);
+	SegmentDataIterator* begin_sample_iteration(uint64_t start);
+	void continue_sample_iteration(SegmentDataIterator* it, uint64_t increase);
+	void end_sample_iteration(SegmentDataIterator* it);
+	uint8_t* get_iterator_value(SegmentDataIterator* it);
+	uint64_t get_iterator_valid_length(SegmentDataIterator* it);
 
+	uint32_t segment_id_;
 	mutable recursive_mutex mutex_;
 	vector<uint8_t*> data_chunks_;
 	uint8_t* current_chunk_;
@@ -93,6 +104,7 @@ protected:
 	unsigned int unit_size_;
 	int iterator_count_;
 	bool mem_optimization_requested_;
+	bool is_complete_;
 
 	friend struct SegmentTest::SmallSize8Single;
 	friend struct SegmentTest::MediumSize8Single;

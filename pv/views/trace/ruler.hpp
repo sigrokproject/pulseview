@@ -46,6 +46,17 @@ namespace trace {
 class TimeItem;
 class ViewItem;
 
+struct TickPositions
+{
+	vector<pair<double, QString>> major;
+	vector<double> minor;
+};
+
+/**
+ * The Ruler class manages and displays the time scale above the trace canvas.
+ * It may also contain @ref TimeItem instances used to identify or highlight
+ * time-related information.
+ */
 class Ruler : public MarginWidget
 {
 	Q_OBJECT
@@ -58,15 +69,12 @@ private:
 	/// Height of the ruler in multipes of the text height
 	static const float RulerHeight;
 
-	static const int MinorTickSubdivision;
-
 	/// Height of the hover arrow in multiples of the text height
 	static const float HoverArrowSize;
 
 public:
 	Ruler(View &parent);
 
-public:
 	QSize sizeHint() const override;
 
 	/**
@@ -109,6 +117,12 @@ public:
 		unsigned precision = 0,
 		bool sign = true);
 
+	pv::util::Timestamp get_time_from_x_pos(uint32_t x) const;
+
+protected:
+	virtual void contextMenuEvent(QContextMenuEvent *event) override;
+	void resizeEvent(QResizeEvent*) override;
+
 private:
 	/**
 	 * Gets the time items.
@@ -123,9 +137,9 @@ private:
 	 */
 	shared_ptr<ViewItem> get_mouse_over_item(const QPoint &pt) override;
 
-	void paintEvent(QPaintEvent *event) override;
-
 	void mouseDoubleClickEvent(QMouseEvent *event) override;
+
+	void paintEvent(QPaintEvent *event) override;
 
 	/**
 	 * Draw a hover arrow under the cursor position.
@@ -136,23 +150,11 @@ private:
 
 	int calculate_text_height() const;
 
-	struct TickPositions
-	{
-		vector<pair<double, QString>> major;
-		vector<double> minor;
-	};
-
-	/**
-	 * Holds the tick positions so that they don't have to be recalculated on
-	 * every redraw. Set by 'paintEvent()' when needed.
-	 */
-	boost::optional<TickPositions> tick_position_cache_;
-
 	/**
 	 * Calculates the major and minor tick positions.
 	 *
 	 * @param major_period The period between the major ticks.
-	 * @param offset The time at the left border of the ruler.
+	 * @param offset The virtual time at the left border of the ruler.
 	 * @param scale The scale in seconds per pixel.
 	 * @param width the Width of the ruler.
 	 * @param format_function A function used to format the major tick times.
@@ -165,16 +167,26 @@ private:
 		const pv::util::Timestamp& offset,
 		const double scale,
 		const int width,
+		const unsigned int minor_tick_count,
 		function<QString(const pv::util::Timestamp&)> format_function);
 
-protected:
-	void resizeEvent(QResizeEvent*) override;
-
 private Q_SLOTS:
-	void hover_point_changed();
+	void on_hover_point_changed(const QWidget* widget, const QPoint &hp);
 
-	// Resets the 'tick_position_cache_'.
 	void invalidate_tick_position_cache();
+
+	void on_createMarker();
+	void on_setZeroPosition();
+	void on_toggleHoverMarker();
+
+private:
+	/**
+	 * Holds the tick positions so that they don't have to be recalculated on
+	 * every redraw. Set by 'paintEvent()' when needed.
+	 */
+	boost::optional<TickPositions> tick_position_cache_;
+
+	uint32_t context_menu_x_pos_;
 };
 
 } // namespace trace

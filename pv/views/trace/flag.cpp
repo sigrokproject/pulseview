@@ -36,16 +36,16 @@ namespace pv {
 namespace views {
 namespace trace {
 
-const QColor Flag::FillColour(0x73, 0xD2, 0x16);
+const QColor Flag::FillColor(0x73, 0xD2, 0x16);
 
 Flag::Flag(View &view, const pv::util::Timestamp& time, const QString &text) :
-	TimeMarker(view, FillColour, time),
+	TimeMarker(view, FillColor, time),
 	text_(text)
 {
 }
 
 Flag::Flag(const Flag &flag) :
-	TimeMarker(flag.view_, FillColour, flag.time_),
+	TimeMarker(flag.view_, FillColor, flag.time_),
 	enable_shared_from_this<Flag>(flag)
 {
 }
@@ -66,7 +66,7 @@ pv::widgets::Popup* Flag::create_popup(QWidget *parent)
 
 	Popup *const popup = TimeMarker::create_popup(parent);
 	popup->set_position(parent->mapToGlobal(
-		point(parent->rect())), Popup::Bottom);
+		drag_point(parent->rect())), Popup::Bottom);
 
 	QFormLayout *const form = (QFormLayout*)popup->layout();
 
@@ -81,7 +81,7 @@ pv::widgets::Popup* Flag::create_popup(QWidget *parent)
 	return popup;
 }
 
-QMenu* Flag::create_context_menu(QWidget *parent)
+QMenu* Flag::create_header_context_menu(QWidget *parent)
 {
 	QMenu *const menu = new QMenu(parent);
 

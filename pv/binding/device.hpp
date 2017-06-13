@@ -20,6 +20,8 @@
 #ifndef PULSEVIEW_PV_BINDING_DEVICE_HPP
 #define PULSEVIEW_PV_BINDING_DEVICE_HPP
 
+#include <functional>
+
 #include <boost/optional.hpp>
 
 #include <QObject>
@@ -40,7 +42,7 @@ namespace pv {
 
 namespace binding {
 
-class Device : public QObject, public Binding
+class Device : public Binding
 {
 	Q_OBJECT
 
@@ -66,6 +68,7 @@ private:
 	static QString print_vdiv(Glib::VariantBase gvar);
 	static QString print_voltage_threshold(Glib::VariantBase gvar);
 	static QString print_probe_factor(Glib::VariantBase gvar);
+	static QString print_averages(Glib::VariantBase gvar);
 
 protected:
 	shared_ptr<sigrok::Configurable> configurable_;

@@ -24,10 +24,14 @@
 #include <cstdint>
 
 #include <QAction>
+#include <QSpinBox>
 #include <QToolBar>
+#include <QToolButton>
 #include <QWidget>
 
 #include <pv/session.hpp>
+
+#include "trace.hpp"
 
 namespace pv {
 
@@ -55,11 +59,12 @@ public:
 	QAction* action_view_zoom_in() const;
 	QAction* action_view_zoom_out() const;
 	QAction* action_view_zoom_fit() const;
-	QAction* action_view_zoom_one_to_one() const;
 	QAction* action_view_show_cursors() const;
 
 protected:
 	virtual void add_toolbar_widgets();
+
+	virtual void show_multi_segment_ui(const bool state);
 
 	Session &session_;
 	trace::View *view_;
@@ -67,8 +72,17 @@ protected:
 	QAction *const action_view_zoom_in_;
 	QAction *const action_view_zoom_out_;
 	QAction *const action_view_zoom_fit_;
-	QAction *const action_view_zoom_one_to_one_;
 	QAction *const action_view_show_cursors_;
+
+	QToolButton *segment_display_mode_selector_;
+	QAction *const action_sdm_last_;
+	QAction *const action_sdm_last_complete_;
+	QAction *const action_sdm_single_;
+
+	QSpinBox *segment_selector_;
+
+Q_SIGNALS:
+	void segment_selected(int segment_id);
 
 protected Q_SLOTS:
 	void on_actionViewZoomIn_triggered();
@@ -77,11 +91,22 @@ protected Q_SLOTS:
 
 	void on_actionViewZoomFit_triggered(bool checked);
 
-	void on_actionViewZoomOneToOne_triggered();
-
 	void on_actionViewShowCursors_triggered();
+	void on_cursor_state_changed(bool show);
+
+	void on_actionSDMLast_triggered();
+	void on_actionSDMLastComplete_triggered();
+	void on_actionSDMSingle_triggered();
 
 	void on_always_zoom_to_fit_changed(bool state);
+
+	void on_new_segment(int new_segment_id);
+	void on_segment_changed(int segment_id);
+	void on_segment_selected(int ui_segment_id);
+	void on_segment_display_mode_changed(int mode, bool segment_selectable);
+
+private:
+	vector<QAction*> multi_segment_actions_;
 };
 
 } // namespace trace

@@ -33,7 +33,7 @@ ViewItemPaintParams::ViewItemPaintParams(
 	rect_(rect),
 	scale_(scale),
 	offset_(offset),
-	bg_colour_state_(false)
+	bg_color_state_(false)
 {
 	assert(scale > 0.0);
 }

@@ -30,6 +30,7 @@
 #include <QAction>
 #include <QApplication>
 #include <QCloseEvent>
+#include <QDebug>
 #include <QDockWidget>
 #include <QHBoxLayout>
 #include <QMessageBox>
@@ -50,11 +51,8 @@
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
 
-using std::bind;
 using std::dynamic_pointer_cast;
 using std::make_shared;
-using std::map;
-using std::placeholders::_1;
 using std::shared_ptr;
 using std::string;
 
@@ -77,20 +75,7 @@ MainWindow::MainWindow(DeviceManager &device_manager, QWidget *parent) :
 	icon_green_(":/icons/status-green.svg"),
 	icon_grey_(":/icons/status-grey.svg")
 {
-	qRegisterMetaType<util::Timestamp>("util::Timestamp");
-	qRegisterMetaType<uint64_t>("uint64_t");
-
-	GlobalSettings::register_change_handler(GlobalSettings::Key_View_ColouredBG,
-		bind(&MainWindow::on_settingViewColouredBg_changed, this, _1));
-
-	GlobalSettings::register_change_handler(GlobalSettings::Key_View_ShowSamplingPoints,
-		bind(&MainWindow::on_settingViewShowSamplingPoints_changed, this, _1));
-
-	GlobalSettings::register_change_handler(GlobalSettings::Key_View_ShowAnalogMinorGrid,
-		bind(&MainWindow::on_settingViewShowAnalogMinorGrid_changed, this, _1));
-
-	GlobalSettings settings;
-	settings.set_defaults_where_needed();
+	GlobalSettings::add_change_handler(this);
 
 	setup_ui();
 	restore_ui_settings();
@@ -98,8 +83,23 @@ MainWindow::MainWindow(DeviceManager &device_manager, QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
+	GlobalSettings::remove_change_handler(this);
+
 	while (!sessions_.empty())
 		remove_session(sessions_.front());
+}
+
+void MainWindow::show_session_error(const QString text, const QString info_text)
+{
+	// TODO Emulate noquote()
+	qDebug() << "Notifying user of session error:" << info_text;
+
+	QMessageBox msg;
+	msg.setText(text);
+	msg.setInformativeText(info_text);
+	msg.setStandardButtons(QMessageBox::Ok);
+	msg.setIcon(QMessageBox::Warning);
+	msg.exec();
 }
 
 shared_ptr<views::ViewBase> MainWindow::get_active_view() const
@@ -120,7 +120,7 @@ shared_ptr<views::ViewBase> MainWindow::get_active_view() const
 	}
 
 	// Get the view contained in the dock widget
-	for (auto entry : view_docks_)
+	for (auto& entry : view_docks_)
 		if (entry.first == dock)
 			return entry.second;
 
@@ -134,7 +134,7 @@ shared_ptr<views::ViewBase> MainWindow::add_view(const QString &title,
 	shared_ptr<views::ViewBase> v;
 
 	QMainWindow *main_window = nullptr;
-	for (auto entry : session_windows_)
+	for (auto& entry : session_windows_)
 		if (entry.first.get() == &session)
 			main_window = entry.second;
 
@@ -169,21 +169,21 @@ shared_ptr<views::ViewBase> MainWindow::add_view(const QString &title,
 		QDockWidget::DockWidgetFloatable | QDockWidget::DockWidgetClosable);
 
 	QAbstractButton *close_btn =
-		dock->findChildren<QAbstractButton*>
-			("qt_dockwidget_closebutton").front();
+		dock->findChildren<QAbstractButton*>("qt_dockwidget_closebutton")  // clazy:exclude=detaching-temporary
+			.front();
 
 	connect(close_btn, SIGNAL(clicked(bool)),
 		this, SLOT(on_view_close_clicked()));
 
-	connect(&session, SIGNAL(trigger_event(util::Timestamp)),
+	connect(&session, SIGNAL(trigger_event(int, util::Timestamp)),
 		qobject_cast<views::ViewBase*>(v.get()),
-		SLOT(trigger_event(util::Timestamp)));
+		SLOT(trigger_event(int, util::Timestamp)));
 
 	if (type == views::ViewTypeTrace) {
 		views::trace::View *tv =
 			qobject_cast<views::trace::View*>(v.get());
 
-		tv->enable_coloured_bg(settings.value(GlobalSettings::Key_View_ColouredBG).toBool());
+		tv->enable_colored_bg(settings.value(GlobalSettings::Key_View_ColoredBG).toBool());
 		tv->enable_show_sampling_points(settings.value(GlobalSettings::Key_View_ShowSamplingPoints).toBool());
 		tv->enable_show_analog_minor_grid(settings.value(GlobalSettings::Key_View_ShowAnalogMinorGrid).toBool());
 
@@ -223,7 +223,7 @@ void MainWindow::remove_view(shared_ptr<views::ViewBase> view)
 			continue;
 
 		// Find the dock the view is contained in and remove it
-		for (auto entry : view_docks_)
+		for (auto& entry : view_docks_)
 			if (entry.second == view) {
 				// Remove the view from the session
 				session->deregister_view(view);
@@ -291,7 +291,7 @@ void MainWindow::remove_session(shared_ptr<Session> session)
 	session->stop_capture();
 	QApplication::processEvents();
 
-	for (shared_ptr<views::ViewBase> view : session->views())
+	for (const shared_ptr<views::ViewBase>& view : session->views())
 		remove_view(view);
 
 	QMainWindow *window = session_windows_.at(session);
@@ -310,7 +310,7 @@ void MainWindow::remove_session(shared_ptr<Session> session)
 		// When there are no more tabs, the height of the QTabWidget
 		// drops to zero. We must prevent this to keep the static
 		// widgets visible
-		for (QWidget *w : static_tab_widget_->findChildren<QWidget*>())
+		for (QWidget *w : static_tab_widget_->findChildren<QWidget*>())  // clazy:exclude=range-loop
 			w->setMinimumHeight(h);
 
 		int margin = static_tab_widget_->layout()->contentsMargins().bottom();
@@ -338,20 +338,26 @@ void MainWindow::add_default_session()
 
 	shared_ptr<Session> session = add_session();
 
-	map<string, string> dev_info;
-	shared_ptr<devices::HardwareDevice> other_device, demo_device;
-
-	// Use any available device that's not demo
-	for (shared_ptr<devices::HardwareDevice> dev : device_manager_.devices()) {
-		if (dev->hardware_device()->driver()->name() == "demo") {
+	// Check the list of available devices. Prefer the one that was
+	// found with user supplied scan specs (if applicable). Then try
+	// one of the auto detected devices that are not the demo device.
+	// Pick demo in the absence of "genuine" hardware devices.
+	shared_ptr<devices::HardwareDevice> user_device, other_device, demo_device;
+	for (const shared_ptr<devices::HardwareDevice>& dev : device_manager_.devices()) {
+		if (dev == device_manager_.user_spec_device()) {
+			user_device = dev;
+		} else if (dev->hardware_device()->driver()->name() == "demo") {
 			demo_device = dev;
 		} else {
 			other_device = dev;
 		}
 	}
-
-	// ...and if there isn't any, just use demo then
-	session->select_device(other_device ? other_device : demo_device);
+	if (user_device)
+		session->select_device(user_device);
+	else if (other_device)
+		session->select_device(other_device);
+	else
+		session->select_device(demo_device);
 }
 
 void MainWindow::save_sessions()
@@ -359,7 +365,7 @@ void MainWindow::save_sessions()
 	QSettings settings;
 	int id = 0;
 
-	for (shared_ptr<Session> session : sessions_) {
+	for (shared_ptr<Session>& session : sessions_) {
 		// Ignore sessions using the demo device or no device at all
 		if (session->device()) {
 			shared_ptr<devices::HardwareDevice> device =
@@ -395,6 +401,18 @@ void MainWindow::restore_sessions()
 	}
 }
 
+void MainWindow::on_setting_changed(const QString &key, const QVariant &value)
+{
+	if (key == GlobalSettings::Key_View_ColoredBG)
+		on_settingViewColoredBg_changed(value);
+
+	if (key == GlobalSettings::Key_View_ShowSamplingPoints)
+		on_settingViewShowSamplingPoints_changed(value);
+
+	if (key == GlobalSettings::Key_View_ShowAnalogMinorGrid)
+		on_settingViewShowAnalogMinorGrid_changed(value);
+}
+
 void MainWindow::setup_ui()
 {
 	setObjectName(QString::fromUtf8("MainWindow"));
@@ -415,8 +433,8 @@ void MainWindow::setup_ui()
 	view_show_analog_minor_grid_shortcut_ = new QShortcut(QKeySequence(Qt::Key_G), this, SLOT(on_view_show_analog_minor_grid_shortcut()));
 	view_show_analog_minor_grid_shortcut_->setAutoRepeat(false);
 
-	view_coloured_bg_shortcut_ = new QShortcut(QKeySequence(Qt::Key_B), this, SLOT(on_view_coloured_bg_shortcut()));
-	view_coloured_bg_shortcut_->setAutoRepeat(false);
+	view_colored_bg_shortcut_ = new QShortcut(QKeySequence(Qt::Key_B), this, SLOT(on_view_colored_bg_shortcut()));
+	view_colored_bg_shortcut_->setAutoRepeat(false);
 
 	// Set up the tab area
 	new_session_button_ = new QToolButton();
@@ -511,7 +529,7 @@ void MainWindow::restore_ui_settings()
 shared_ptr<Session> MainWindow::get_tab_session(int index) const
 {
 	// Find the session that belongs to the tab's main window
-	for (auto entry : session_windows_)
+	for (auto& entry : session_windows_)
 		if (entry.second == session_selector_.widget(index))
 			return entry.first;
 
@@ -522,7 +540,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 {
 	bool data_saved = true;
 
-	for (auto entry : session_windows_)
+	for (auto& entry : session_windows_)
 		if (!entry.first->data_saved())
 			data_saved = false;
 
@@ -553,28 +571,11 @@ bool MainWindow::restoreState(const QByteArray &state, int version)
 	return false;
 }
 
-void MainWindow::session_error(const QString text, const QString info_text)
-{
-	QMetaObject::invokeMethod(this, "show_session_error",
-		Qt::QueuedConnection, Q_ARG(QString, text),
-		Q_ARG(QString, info_text));
-}
-
-void MainWindow::show_session_error(const QString text, const QString info_text)
-{
-	QMessageBox msg(this);
-	msg.setText(text);
-	msg.setInformativeText(info_text);
-	msg.setStandardButtons(QMessageBox::Ok);
-	msg.setIcon(QMessageBox::Warning);
-	msg.exec();
-}
-
 void MainWindow::on_add_view(const QString &title, views::ViewType type,
 	Session *session)
 {
 	// We get a pointer and need a reference
-	for (shared_ptr<Session> s : sessions_)
+	for (shared_ptr<Session>& s : sessions_)
 		if (s.get() == session)
 			add_view(title, type, *s);
 }
@@ -631,7 +632,7 @@ void MainWindow::on_run_stop_clicked()
 	switch (session->get_capture_state()) {
 	case Session::Stopped:
 		session->start_capture([&](QString message) {
-			session_error("Capture failed", message); });
+			show_session_error("Capture failed", message); });
 		break;
 	case Session::AwaitingTrigger:
 	case Session::Running:
@@ -652,9 +653,9 @@ void MainWindow::on_session_name_changed()
 	Session *session = qobject_cast<Session*>(QObject::sender());
 	assert(session);
 
-	for (shared_ptr<views::ViewBase> view : session->views()) {
+	for (const shared_ptr<views::ViewBase>& view : session->views()) {
 		// Get the dock that contains the view
-		for (auto entry : view_docks_)
+		for (auto& entry : view_docks_)
 			if (entry.second == view) {
 				entry.first->setObjectName(session->name());
 				entry.first->setWindowTitle(session->name());
@@ -662,7 +663,7 @@ void MainWindow::on_session_name_changed()
 	}
 
 	// Update the tab widget by finding the main window and the tab from that
-	for (auto entry : session_windows_)
+	for (auto& entry : session_windows_)
 		if (entry.first.get() == session) {
 			QMainWindow *window = entry.second;
 			const int index = session_selector_.indexOf(window);
@@ -694,7 +695,7 @@ void MainWindow::on_capture_state_changed(QObject *obj)
 void MainWindow::on_new_view(Session *session)
 {
 	// We get a pointer and need a reference
-	for (shared_ptr<Session> s : sessions_)
+	for (shared_ptr<Session>& s : sessions_)
 		if (s.get() == session)
 			add_view(session->name(), views::ViewTypeTrace, *s);
 }
@@ -715,7 +716,7 @@ void MainWindow::on_view_close_clicked()
 	// Get the view contained in the dock widget
 	shared_ptr<views::ViewBase> view;
 
-	for (auto entry : view_docks_)
+	for (auto& entry : view_docks_)
 		if (entry.first == dock)
 			view = entry.second;
 
@@ -759,12 +760,12 @@ void MainWindow::on_tab_close_requested(int index)
 		remove_session(session);
 }
 
-void MainWindow::on_view_coloured_bg_shortcut()
+void MainWindow::on_view_colored_bg_shortcut()
 {
 	GlobalSettings settings;
 
-	bool state = settings.value(GlobalSettings::Key_View_ColouredBG).toBool();
-	settings.setValue(GlobalSettings::Key_View_ColouredBG, !state);
+	bool state = settings.value(GlobalSettings::Key_View_ColoredBG).toBool();
+	settings.setValue(GlobalSettings::Key_View_ColoredBG, !state);
 }
 
 void MainWindow::on_view_sticky_scrolling_shortcut()
@@ -791,18 +792,18 @@ void MainWindow::on_view_show_analog_minor_grid_shortcut()
 	settings.setValue(GlobalSettings::Key_View_ShowAnalogMinorGrid, !state);
 }
 
-void MainWindow::on_settingViewColouredBg_changed(const QVariant new_value)
+void MainWindow::on_settingViewColoredBg_changed(const QVariant new_value)
 {
 	bool state = new_value.toBool();
 
-	for (auto entry : view_docks_) {
+	for (auto& entry : view_docks_) {
 		shared_ptr<views::ViewBase> viewbase = entry.second;
 
 		// Only trace views have this setting
 		views::trace::View* view =
 				qobject_cast<views::trace::View*>(viewbase.get());
 		if (view)
-			view->enable_coloured_bg(state);
+			view->enable_colored_bg(state);
 	}
 }
 
@@ -810,7 +811,7 @@ void MainWindow::on_settingViewShowSamplingPoints_changed(const QVariant new_val
 {
 	bool state = new_value.toBool();
 
-	for (auto entry : view_docks_) {
+	for (auto& entry : view_docks_) {
 		shared_ptr<views::ViewBase> viewbase = entry.second;
 
 		// Only trace views have this setting
@@ -825,7 +826,7 @@ void MainWindow::on_settingViewShowAnalogMinorGrid_changed(const QVariant new_va
 {
 	bool state = new_value.toBool();
 
-	for (auto entry : view_docks_) {
+	for (auto& entry : view_docks_) {
 		shared_ptr<views::ViewBase> viewbase = entry.second;
 
 		// Only trace views have this setting

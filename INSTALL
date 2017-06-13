@@ -22,9 +22,12 @@ Requirements
     - libboost-filesystem
     - libboost-serialization
     - libboost-test (optional, only needed to run the unit tests)
- - libsigrokcxx >= 0.5.0 (libsigrok C++ bindings)
- - libsigrokdecode >= 0.5.0
+    - libboost-stacktrace (optional, only needed for debugging)
+ - libsigrokcxx >= 0.5.1 (libsigrok C++ bindings)
+ - libsigrokdecode >= 0.5.2
  - libsigrokandroidutils >= 0.1.0 (optional, only needed on Android)
+ - asciidoctor (optional, only needed to build the HTML manual)
+ - asciidoctor-pdf (optional, only needed to build the PDF manual)
 
 
 Building and installing
@@ -56,3 +59,21 @@ In order to build a source package begin with an unconfigured source tree.
  $ cmake ..
  $ make package_source
 
+
+Generating the manual
+---------------------
+
+To generate the HTML manual, you only need Asciidoctor. If you also want
+to generate the PDF manual, you need to install asciidoctor-pdf as well
+and make it available for execution:
+
+ $ gem install --pre asciidoctor-pdf
+ $ export PATH=~/.gem/ruby/2.3.0/bin:$PATH
+
+Then, to build the PulseView manual, run:
+
+ $ make manual
+
+Note: The stylesheet used is a lightly modified version of "Read The Docs"
+from the Asciidoctor stylesheet factory:
+https://asciidoctor.org/docs/user-manual/#stylesheet-factory

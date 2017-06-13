@@ -39,6 +39,12 @@ ViewItem::ViewItem() :
 {
 }
 
+bool ViewItem::is_selectable(QPoint pos) const
+{
+	(void)pos;
+	return true;
+}
+
 bool ViewItem::selected() const
 {
 	return selected_;
@@ -49,8 +55,9 @@ void ViewItem::select(bool select)
 	selected_ = select;
 }
 
-bool ViewItem::is_draggable() const
+bool ViewItem::is_draggable(QPoint pos) const
 {
+	(void)pos;
 	return true;
 }
 
@@ -61,8 +68,7 @@ bool ViewItem::dragging() const
 
 void ViewItem::drag()
 {
-	if (is_draggable())
-		drag_point_ = point(QRect());
+	drag_point_ = drag_point(QRect());
 }
 
 void ViewItem::drag_release()
@@ -82,10 +88,17 @@ QRectF ViewItem::hit_box_rect(const ViewItemPaintParams &pp) const
 	return QRectF();
 }
 
-QMenu* ViewItem::create_context_menu(QWidget *parent)
+QMenu* ViewItem::create_header_context_menu(QWidget *parent)
 {
 	context_parent_ = parent;
 	return new QMenu(parent);
+}
+
+QMenu* ViewItem::create_view_context_menu(QWidget *parent, QPoint &click_pos)
+{
+	(void)parent;
+	(void)click_pos;
+	return nullptr;
 }
 
 widgets::Popup* ViewItem::create_popup(QWidget *parent)
@@ -130,7 +143,7 @@ void ViewItem::paint_fore(QPainter &p, ViewItemPaintParams &pp)
 	(void)pp;
 }
 
-QColor ViewItem::select_text_colour(QColor background)
+QColor ViewItem::select_text_color(QColor background)
 {
 	return (background.lightness() > 110) ? Qt::black : Qt::white;
 }

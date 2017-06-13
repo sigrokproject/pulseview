@@ -35,7 +35,6 @@
 
 using boost::none;
 
-using std::make_pair;
 using std::map;
 using std::pair;
 using std::shared_ptr;
@@ -60,12 +59,13 @@ namespace binding {
 InputOutput::InputOutput(
 	const map<string, shared_ptr<Option>> &options)
 {
-	for (pair<string, shared_ptr<Option>> o : options) {
+	for (const pair<string, shared_ptr<Option>>& o : options) {
 		const shared_ptr<Option> &opt = o.second;
 		assert(opt);
 
 		const QString name = QString::fromStdString(opt->name());
 		const QString desc = QString::fromStdString(opt->description());
+
 		const VariantBase def_val = opt->default_value();
 		const vector<VariantBase> values = opt->values();
 
@@ -111,7 +111,7 @@ shared_ptr<Property> InputOutput::bind_enum(
 {
 	vector< pair<VariantBase, QString> > enum_vals;
 	for (VariantBase var : values)
-		enum_vals.push_back(make_pair(var, print_gvariant(var)));
+		enum_vals.emplace_back(var, print_gvariant(var));
 	return shared_ptr<Property>(new Enum(name, desc, enum_vals, getter, setter));
 }
 

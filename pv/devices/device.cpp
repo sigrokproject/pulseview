@@ -18,11 +18,17 @@
  */
 
 #include <cassert>
+#include <type_traits>
+
+#include <QApplication>
+#include <QDebug>
+#include <QString>
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
 
 #include "device.hpp"
 
+using std::is_same;
 using std::shared_ptr;
 
 using sigrok::ConfigKey;
@@ -50,9 +56,7 @@ shared_ptr<sigrok::Device> Device::device() const
 	return device_;
 }
 
-template
-uint64_t Device::read_config(const sigrok::ConfigKey*,
-	const uint64_t);
+template uint64_t Device::read_config(const sigrok::ConfigKey*, const uint64_t);
 
 template<typename T>
 T Device::read_config(const ConfigKey *key, const T default_value)
@@ -62,11 +66,33 @@ T Device::read_config(const ConfigKey *key, const T default_value)
 	if (!device_)
 		return default_value;
 
-	if (!device_->config_check(key, Capability::GET))
+	if (!device_->config_check(key, Capability::GET)) {
+		qWarning() << QApplication::tr("Querying config key %1 is not allowed")
+			.arg(QString::fromStdString(key->identifier()));
 		return default_value;
+	}
 
-	return VariantBase::cast_dynamic<Glib::Variant<guint64>>(
-		device_->config_get(ConfigKey::SAMPLERATE)).get();
+	VariantBase value;
+	try {
+		value = device_->config_get(key);
+	} catch (const sigrok::Error &e) {
+		qWarning() << QApplication::tr("Querying config key %1 resulted in %2")
+			.arg(QString::fromStdString(key->identifier()), e.what());
+		return default_value;
+	}
+
+	if (is_same<T, uint32_t>::value)
+		return VariantBase::cast_dynamic<Glib::Variant<guint32>>(value).get();
+	if (is_same<T, int32_t>::value)
+		return VariantBase::cast_dynamic<Glib::Variant<gint32>>(value).get();
+	if (is_same<T, uint64_t>::value)
+		return VariantBase::cast_dynamic<Glib::Variant<guint64>>(value).get();
+	if (is_same<T, int64_t>::value)
+		return VariantBase::cast_dynamic<Glib::Variant<gint64>>(value).get();
+
+	qWarning() << QApplication::tr("Unknown type supplied when attempting to query %1")
+		.arg(QString::fromStdString(key->identifier()));
+	return default_value;
 }
 
 void Device::start()

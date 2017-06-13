@@ -31,7 +31,7 @@ class TracePalette
 public:
 	static const unsigned int Cols = 8;
 	static const unsigned int Rows = 4;
-	static const QColor Colours[Cols * Rows];
+	static const QColor Colors[Cols * Rows];
 };
 
 } // namespace trace

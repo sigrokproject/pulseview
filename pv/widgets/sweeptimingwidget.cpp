@@ -47,6 +47,9 @@ SweepTimingWidget::SweepTimingWidget(const char *suffix,
 
 	connect(&list_, SIGNAL(currentIndexChanged(int)),
 		this, SIGNAL(value_changed()));
+	connect(&list_, SIGNAL(editTextChanged(const QString&)),
+		this, SIGNAL(value_changed()));
+
 	connect(&value_, SIGNAL(editingFinished()),
 		this, SIGNAL(value_changed()));
 
@@ -56,6 +59,11 @@ SweepTimingWidget::SweepTimingWidget(const char *suffix,
 	layout_.addWidget(&value_);
 
 	show_none();
+}
+
+void SweepTimingWidget::allow_user_entered_values(bool value)
+{
+	list_.setEditable(value);
 }
 
 void SweepTimingWidget::show_none()
@@ -144,9 +152,14 @@ uint64_t SweepTimingWidget::value() const
 		return (uint64_t)value_.value();
 	case List:
 	{
+		if (list_.isEditable()) {
+			uint64_t value;
+			sr_parse_sizestring(list_.currentText().toUtf8().data(), &value);
+			return value;
+		}
+
 		const int index = list_.currentIndex();
-		return (index >= 0) ? list_.itemData(
-			index).value<uint64_t>() : 0;
+		return (index >= 0) ? list_.itemData(index).value<uint64_t>() : 0;
 	}
 	default:
 		// Unexpected value type
@@ -159,19 +172,25 @@ void SweepTimingWidget::set_value(uint64_t value)
 {
 	value_.setValue(value);
 
-	int best_match = list_.count() - 1;
-	int64_t best_variance = INT64_MAX;
+	if (list_.isEditable()) {
+		char *const s = sr_si_string_u64(value, suffix_);
+		list_.lineEdit()->setText(QString::fromUtf8(s));
+		g_free(s);
+	} else {
+		int best_match = list_.count() - 1;
+		int64_t best_variance = INT64_MAX;
 
-	for (int i = 0; i < list_.count(); i++) {
-		const int64_t this_variance = abs(
-			(int64_t)value - list_.itemData(i).value<int64_t>());
-		if (this_variance < best_variance) {
-			best_variance = this_variance;
-			best_match = i;
+		for (int i = 0; i < list_.count(); i++) {
+			const int64_t this_variance = abs(
+				(int64_t)value - list_.itemData(i).value<int64_t>());
+			if (this_variance < best_variance) {
+				best_variance = this_variance;
+				best_match = i;
+			}
 		}
-	}
 
-	list_.setCurrentIndex(best_match);
+		list_.setCurrentIndex(best_match);
+	}
 }
 
 }  // namespace widgets
