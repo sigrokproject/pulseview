@@ -36,13 +36,16 @@ using pv::data::decode::Row;
 namespace pv {
 namespace data {
 
-DecodeSignal::DecodeSignal(shared_ptr<pv::data::DecoderStack> decoder_stack) :
+DecodeSignal::DecodeSignal(shared_ptr<pv::data::DecoderStack> decoder_stack,
+	const unordered_set< shared_ptr<data::SignalBase> > &all_signals) :
 	SignalBase(nullptr, SignalBase::DecodeChannel),
-	decoder_stack_(decoder_stack)
+	decoder_stack_(decoder_stack),
+	all_signals_(all_signals)
 {
 	set_name(QString::fromUtf8(decoder_stack_->stack().front()->decoder()->name));
 
 	update_channel_list();
+	auto_assign_signals();
 
 	connect(decoder_stack_.get(), SIGNAL(new_annotations()),
 		this, SLOT(on_new_annotations()));
@@ -72,7 +75,11 @@ void DecodeSignal::stack_decoder(srd_decoder *decoder)
 	assert(decoder);
 	assert(decoder_stack);
 	decoder_stack_->push(make_shared<data::decode::Decoder>(decoder));
+
+	// Include the newly created decode channels in the channel list
 	update_channel_list();
+
+	auto_assign_signals();
 	decoder_stack_->begin_decode();
 }
 
@@ -111,6 +118,19 @@ QString DecodeSignal::error_message() const
 const list<data::DecodeChannel> DecodeSignal::get_channels() const
 {
 	return channels_;
+}
+
+void DecodeSignal::auto_assign_signals()
+{
+	// Try to auto-select channels that don't have signals assigned yet
+	for (data::DecodeChannel &ch : channels_) {
+		if (ch.assigned_signal)
+			continue;
+
+		for (shared_ptr<data::SignalBase> s : all_signals_)
+			if (s->logic_data() && (ch.name.toLower().contains(s->name().toLower())))
+				ch.assigned_signal = s.get();
+	}
 }
 
 void DecodeSignal::assign_signal(const uint16_t channel_id, const SignalBase *signal)

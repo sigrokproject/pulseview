@@ -665,23 +665,6 @@ bool Session::add_decoder(srd_decoder *const dec)
 		// Create the decoder
 		decoder_stack = make_shared<data::DecoderStack>(*this, dec);
 
-		// Make a list of all the channels
-		vector<const srd_channel*> all_channels;
-		for (const GSList *i = dec->channels; i; i = i->next)
-			all_channels.push_back((const srd_channel*)i->data);
-		for (const GSList *i = dec->opt_channels; i; i = i->next)
-			all_channels.push_back((const srd_channel*)i->data);
-
-		// Auto select the initial channels
-		for (const srd_channel *pdch : all_channels)
-			for (shared_ptr<data::SignalBase> b : signalbases_) {
-				if (b->logic_data()) {
-					if (QString::fromUtf8(pdch->name).toLower().
-						contains(b->name().toLower()))
-						channels[pdch] = b;
-				}
-			}
-
 		assert(decoder_stack);
 		assert(!decoder_stack->stack().empty());
 		assert(decoder_stack->stack().front());
@@ -689,7 +672,7 @@ bool Session::add_decoder(srd_decoder *const dec)
 
 		// Create the decode signal
 		shared_ptr<data::DecodeSignal> signal =
-			make_shared<data::DecodeSignal>(decoder_stack);
+			make_shared<data::DecodeSignal>(decoder_stack, signalbases_);
 
 		signalbases_.insert(signal);
 

@@ -20,6 +20,7 @@
 #ifndef PULSEVIEW_PV_DATA_DECODESIGNAL_HPP
 #define PULSEVIEW_PV_DATA_DECODESIGNAL_HPP
 
+#include <unordered_set>
 #include <vector>
 
 #include <QString>
@@ -29,6 +30,7 @@
 #include <pv/data/signalbase.hpp>
 
 using std::list;
+using std::unordered_set;
 using std::vector;
 using std::shared_ptr;
 
@@ -62,7 +64,8 @@ class DecodeSignal : public SignalBase
 	Q_OBJECT
 
 public:
-	DecodeSignal(shared_ptr<pv::data::DecoderStack> decoder_stack);
+	DecodeSignal(shared_ptr<pv::data::DecoderStack> decoder_stack,
+		const unordered_set< shared_ptr<data::SignalBase> > &all_signals);
 	virtual ~DecodeSignal();
 
 	bool is_decode_signal() const;
@@ -76,6 +79,7 @@ public:
 	QString error_message() const;
 
 	const list<data::DecodeChannel> get_channels() const;
+	void auto_assign_signals();
 	void assign_signal(const uint16_t channel_id, const SignalBase *signal);
 
 	void set_initial_pin_state(const uint16_t channel_id, const int init_state);
@@ -102,6 +106,7 @@ private Q_SLOTS:
 
 private:
 	shared_ptr<pv::data::DecoderStack> decoder_stack_;
+	const unordered_set< shared_ptr<data::SignalBase> > &all_signals_;
 	list<data::DecodeChannel> channels_;
 };
 
