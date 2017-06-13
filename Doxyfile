@@ -6,7 +6,7 @@
 
 DOXYFILE_ENCODING      = UTF-8
 PROJECT_NAME           = "PulseView"
-PROJECT_NUMBER         = "unreleased development snapshot"
+PROJECT_NUMBER         = "0.4.0"
 PROJECT_BRIEF          = "A Qt-based sigrok GUI"
 PROJECT_LOGO           = icons/pulseview.png
 OUTPUT_DIRECTORY       = doxy
