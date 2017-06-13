@@ -265,11 +265,16 @@ void DecodeSignal::auto_assign_signals()
 		if (ch.assigned_signal)
 			continue;
 
-		for (shared_ptr<data::SignalBase> s : session_.signalbases())
-			if (s->logic_data() && (ch.name.toLower().contains(s->name().toLower()))) {
+		for (shared_ptr<data::SignalBase> s : session_.signalbases()) {
+			const QString ch_name = ch.name.toLower();
+			const QString s_name = s->name().toLower();
+
+			if (s->logic_data() &&
+				((ch_name.contains(s_name)) || (s_name.contains(ch_name)))) {
 				ch.assigned_signal = s.get();
 				new_assignment = true;
 			}
+		}
 	}
 
 	if (new_assignment) {
