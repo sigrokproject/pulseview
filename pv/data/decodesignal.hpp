@@ -20,22 +20,35 @@
 #ifndef PULSEVIEW_PV_DATA_DECODESIGNAL_HPP
 #define PULSEVIEW_PV_DATA_DECODESIGNAL_HPP
 
+#include <atomic>
+#include <condition_variable>
 #include <unordered_set>
 #include <vector>
 
+#include <boost/optional.hpp>
+
+#include <QSettings>
 #include <QString>
 
 #include <libsigrokdecode/libsigrokdecode.h>
 
+#include <pv/data/decode/row.hpp>
+#include <pv/data/decode/rowdata.hpp>
 #include <pv/data/signalbase.hpp>
 #include <pv/util.hpp>
 
-using std::list;
+using std::atomic;
+using std::condition_variable;
+using std::map;
+using std::mutex;
+using std::pair;
 using std::unordered_set;
 using std::vector;
 using std::shared_ptr;
 
 namespace pv {
+class Session;
+
 namespace data {
 
 namespace decode {
@@ -44,8 +57,8 @@ class Decoder;
 class Row;
 }
 
-class DecoderStack;
 class Logic;
+class LogicSegment;
 class SignalBase;
 class SignalData;
 
@@ -64,23 +77,28 @@ class DecodeSignal : public SignalBase
 {
 	Q_OBJECT
 
+private:
+	static const double DecodeMargin;
+	static const double DecodeThreshold;
+	static const int64_t DecodeChunkLength;
+	static const unsigned int DecodeNotifyPeriod;
+
 public:
-	DecodeSignal(shared_ptr<pv::data::DecoderStack> decoder_stack,
-		const unordered_set< shared_ptr<data::SignalBase> > &all_signals);
+	DecodeSignal(pv::Session &session);
 	virtual ~DecodeSignal();
 
 	bool is_decode_signal() const;
-	shared_ptr<data::DecoderStack> decoder_stack() const;
-	const list< shared_ptr<data::decode::Decoder> >& decoder_stack_list() const;
+	const vector< shared_ptr<data::decode::Decoder> >& decoder_stack() const;
 
 	void stack_decoder(srd_decoder *decoder);
 	void remove_decoder(int index);
 	bool toggle_decoder_visibility(int index);
 
+	void reset_decode();
 	void begin_decode();
 	QString error_message() const;
 
-	const list<data::DecodeChannel> get_channels() const;
+	const vector<data::DecodeChannel> get_channels() const;
 	void auto_assign_signals();
 	void assign_signal(const uint16_t channel_id, const SignalBase *signal);
 
@@ -108,20 +126,74 @@ public:
 		const decode::Row &row, uint64_t start_sample,
 		uint64_t end_sample) const;
 
+	virtual void save_settings(QSettings &settings) const;
+
+	virtual void restore_settings(QSettings &settings);
+
+	/**
+	 * Helper function for static annotation_callback(),
+	 * must be public so the function can access it.
+	 * Don't use from outside this class.
+	 */
+	uint64_t inc_annotation_count();
+
 private:
 	void update_channel_list();
+
+	void logic_mux_proc();
+
+	boost::optional<int64_t> wait_for_data() const;
+
+	void decode_data(const int64_t abs_start_samplenum, const int64_t sample_count,
+		srd_session *const session);
+
+	void decode_proc();
+
+	static void annotation_callback(srd_proto_data *pdata, void *decode_signal);
 
 Q_SIGNALS:
 	void new_annotations();
 	void channels_updated();
 
 private Q_SLOTS:
-	void on_new_annotations();
+	void on_capture_state_changed(int state);
+	void on_data_received();
+	void on_frame_ended();
 
 private:
-	shared_ptr<pv::data::DecoderStack> decoder_stack_;
-	const unordered_set< shared_ptr<data::SignalBase> > &all_signals_;
-	list<data::DecodeChannel> channels_;
+	pv::Session &session_;
+
+	vector<data::DecodeChannel> channels_;
+
+	shared_ptr<Logic> logic_mux_data_;
+	shared_ptr<LogicSegment> segment_;
+	bool logic_mux_data_invalid_;
+
+	pv::util::Timestamp start_time_;
+	double samplerate_;
+
+	int64_t sample_count_, annotation_count_, samples_decoded_;
+
+	vector< shared_ptr<decode::Decoder> > stack_;
+	map<const decode::Row, decode::RowData> rows_;
+	map<pair<const srd_decoder*, int>, decode::Row> class_rows_;
+
+	/**
+	 * This mutex prevents more than one thread from accessing
+	 * libsigrokdecode concurrently.
+	 * @todo A proper solution should be implemented to allow multiple
+	 * decode operations in parallel.
+	 */
+	static mutex global_srd_mutex_;
+
+	mutable mutex input_mutex_, output_mutex_;
+	mutable condition_variable decode_input_cond_, logic_mux_cond_;
+	bool frame_complete_;
+
+	std::thread decode_thread_, logic_mux_thread_;
+	atomic<bool> decode_interrupt_, logic_mux_interrupt_;
+
+	QString error_message_;
 };
 
 } // namespace data

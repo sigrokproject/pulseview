@@ -148,14 +148,12 @@ public:
 	void set_conversion_type(ConversionType t);
 
 #ifdef ENABLE_DECODE
-	virtual bool is_decode_signal() const;
-
-	virtual shared_ptr<pv::data::DecoderStack> decoder_stack() const;
+	bool is_decode_signal() const;
 #endif
 
-	void save_settings(QSettings &settings) const;
+	virtual void save_settings(QSettings &settings) const;
 
-	void restore_settings(QSettings &settings);
+	virtual void restore_settings(QSettings &settings);
 
 private:
 	uint8_t convert_a2l_threshold(float threshold, float value);

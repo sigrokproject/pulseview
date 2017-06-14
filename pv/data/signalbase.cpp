@@ -200,14 +200,7 @@ void SignalBase::set_conversion_type(ConversionType t)
 #ifdef ENABLE_DECODE
 bool SignalBase::is_decode_signal() const
 {
-	// DecodeSignal class overrides this method, all others shall return false
-	return false;
-}
-
-shared_ptr<pv::data::DecoderStack> SignalBase::decoder_stack() const
-{
-	// DecodeSignal class overrides this method, all others shall return nothing
-	return nullptr;
+	return (channel_type_ == DecodeChannel);
 }
 #endif
 

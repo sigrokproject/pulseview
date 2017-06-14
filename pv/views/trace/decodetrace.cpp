@@ -54,10 +54,8 @@ extern "C" {
 #include <pv/widgets/decodermenu.hpp>
 
 using std::all_of;
-using std::list;
 using std::make_pair;
 using std::max;
-using std::make_pair;
 using std::map;
 using std::min;
 using std::out_of_range;
@@ -304,8 +302,7 @@ void DecodeTrace::populate_popup_form(QWidget *parent, QFormLayout *form)
 	init_state_map_.clear();
 	decoder_forms_.clear();
 
-	const list< shared_ptr<Decoder> > &stack =
-		decode_signal_->decoder_stack_list();
+	const vector< shared_ptr<Decoder> > &stack = decode_signal_->decoder_stack();
 
 	if (stack.empty()) {
 		QLabel *const l = new QLabel(
@@ -776,7 +773,7 @@ void DecodeTrace::create_decoder_form(int index,
 	QFormLayout *const decoder_form = new QFormLayout;
 	group->add_layout(decoder_form);
 
-	const list<DecodeChannel> channels = decode_signal_->get_channels();
+	const vector<DecodeChannel> channels = decode_signal_->get_channels();
 
 	// Add the channels
 	for (DecodeChannel ch : channels) {

@@ -17,6 +17,7 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <QDebug>
 #include <QFileInfo>
 
 #include <cassert>
@@ -32,7 +33,6 @@
 #include "data/analog.hpp"
 #include "data/analogsegment.hpp"
 #include "data/decode/decoder.hpp"
-#include "data/decoderstack.hpp"
 #include "data/logic.hpp"
 #include "data/logicsegment.hpp"
 #include "data/signalbase.hpp"
@@ -173,7 +173,7 @@ void Session::save_settings(QSettings &settings) const
 {
 	map<string, string> dev_info;
 	list<string> key_list;
-	int stacks = 0, views = 0;
+	int decode_signals = 0, views = 0;
 
 	if (device_) {
 		shared_ptr<devices::HardwareDevice> hw_device =
@@ -217,14 +217,8 @@ void Session::save_settings(QSettings &settings) const
 		for (shared_ptr<data::SignalBase> base : signalbases_) {
 #ifdef ENABLE_DECODE
 			if (base->is_decode_signal()) {
-				shared_ptr<pv::data::DecoderStack> decoder_stack =
-						base->decoder_stack();
-				shared_ptr<data::decode::Decoder> top_decoder =
-						decoder_stack->stack().front();
-
-				settings.beginGroup("decoder_stack" + QString::number(stacks++));
-				settings.setValue("id", top_decoder->decoder()->id);
-				settings.setValue("name", top_decoder->decoder()->name);
+				settings.beginGroup("decode_signal" + QString::number(decode_signals++));
+				base->save_settings(settings);
 				settings.endGroup();
 			} else
 #endif
@@ -235,7 +229,7 @@ void Session::save_settings(QSettings &settings) const
 			}
 		}
 
-		settings.setValue("decoder_stacks", stacks);
+		settings.setValue("decode_signals", decode_signals);
 
 		// Save view states and their signal settings
 		// Note: main_view must be saved as view0
@@ -319,14 +313,12 @@ void Session::restore_settings(QSettings &settings)
 
 		// Restore decoders
 #ifdef ENABLE_DECODE
-		int stacks = settings.value("decoder_stacks").toInt();
+		int decode_signals = settings.value("decode_signals").toInt();
 
-		for (int i = 0; i < stacks; i++) {
-			settings.beginGroup("decoder_stack" + QString::number(i++));
-
-			QString id = settings.value("id").toString();
-			add_decoder(srd_decoder_get_by_id(id.toStdString().c_str()));
-
+		for (int i = 0; i < decode_signals; i++) {
+			settings.beginGroup("decode_signal" + QString::number(i++));
+			// TODO Split up add_decoder() into add_decode_signal() and add_decoder(),
+			// then call add_decode_signal() and signal->restore_settings() here
 			settings.endGroup();
 		}
 #endif
@@ -658,34 +650,24 @@ bool Session::add_decoder(srd_decoder *const dec)
 	if (!dec)
 		return false;
 
-	map<const srd_channel*, shared_ptr<data::SignalBase> > channels;
-	shared_ptr<data::DecoderStack> decoder_stack;
-
 	try {
-		// Create the decoder
-		decoder_stack = make_shared<data::DecoderStack>(*this, dec);
-
-		assert(decoder_stack);
-		assert(!decoder_stack->stack().empty());
-		assert(decoder_stack->stack().front());
-		decoder_stack->stack().front()->set_channels(channels);
-
 		// Create the decode signal
 		shared_ptr<data::DecodeSignal> signal =
-			make_shared<data::DecodeSignal>(decoder_stack, signalbases_);
+			make_shared<data::DecodeSignal>(*this);
 
 		signalbases_.insert(signal);
 
+		// Add the decode signal to all views
 		for (shared_ptr<views::ViewBase> view : views_)
 			view->add_decode_signal(signal);
+
+		// Add decoder
+		signal->stack_decoder(dec);
 	} catch (runtime_error e) {
 		return false;
 	}
 
 	signals_changed();
-
-	// Do an initial decode
-	decoder_stack->begin_decode();
 
 	return true;
 }
