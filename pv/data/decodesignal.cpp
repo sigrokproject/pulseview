@@ -181,6 +181,13 @@ void DecodeSignal::begin_decode()
 		return;
 	}
 
+	// Make sure that all assigned channels still provide logic data
+	// (can happen when a converted signal was assigned but the
+	// conversion removed in the meanwhile)
+	for (data::DecodeChannel &ch : channels_)
+		if (ch.assigned_signal && !(ch.assigned_signal->logic_data() != nullptr))
+			ch.assigned_signal = nullptr;
+
 	// Check that all decoders have the required channels
 	for (const shared_ptr<decode::Decoder> &dec : stack_)
 		if (!dec->have_required_channels()) {
