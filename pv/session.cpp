@@ -597,7 +597,44 @@ void Session::register_view(shared_ptr<views::ViewBase> view)
 
 	views_.push_back(view);
 
+	// Add all device signals
 	update_signals();
+
+	// Add all other signals
+	unordered_set< shared_ptr<data::SignalBase> > view_signalbases =
+		view->signalbases();
+
+	views::trace::View *trace_view =
+		qobject_cast<views::trace::View*>(view.get());
+
+	if (trace_view) {
+		for (shared_ptr<data::SignalBase> signalbase : signalbases_) {
+			const int sb_exists = count_if(
+				view_signalbases.cbegin(), view_signalbases.cend(),
+				[&](const shared_ptr<data::SignalBase> &sb) {
+					return sb == signalbase;
+				});
+			// Add the signal to the view as it doesn't have it yet
+			if (!sb_exists)
+				switch (signalbase->type()) {
+				case data::SignalBase::AnalogChannel:
+				case data::SignalBase::LogicChannel:
+				case data::SignalBase::A2LChannel:
+					break;
+				case data::SignalBase::DecodeChannel:
+#ifdef ENABLE_DECODE
+					trace_view->add_decode_signal(
+						dynamic_pointer_cast<data::DecodeSignal>(signalbase));
+#endif
+					break;
+				case data::SignalBase::MathChannel:
+					// TBD
+					break;
+				}
+		}
+	}
+
+	signals_changed();
 }
 
 void Session::deregister_view(shared_ptr<views::ViewBase> view)
