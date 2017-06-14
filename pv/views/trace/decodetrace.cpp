@@ -583,7 +583,7 @@ void DecodeTrace::draw_error(QPainter &p, const QString &message,
 	p.setBrush(ErrorBgColour);
 
 	const QRectF bounding_rect =
-		QRectF(pp.width(), INT_MIN / 2 + y, pp.width(), INT_MAX);
+		QRectF(pp.left(), INT_MIN / 2 + y, pp.right(), INT_MAX);
 	const QRectF text_rect = p.boundingRect(bounding_rect,
 		Qt::AlignCenter, message);
 	const float r = text_rect.height() / 4;
