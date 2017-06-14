@@ -21,6 +21,8 @@
 #ifndef PULSEVIEW_PV_DATA_SIGNALBASE_HPP
 #define PULSEVIEW_PV_DATA_SIGNALBASE_HPP
 
+#include <atomic>
+#include <condition_variable>
 #include <thread>
 
 #include <QColor>
@@ -30,6 +32,9 @@
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
 
+using std::atomic;
+using std::condition_variable;
+using std::mutex;
 using std::shared_ptr;
 
 namespace sigrok {
@@ -94,9 +99,18 @@ public:
 	ChannelType type() const;
 
 	/**
-	 * Gets the index number of this channel.
+	 * Gets the index number of this channel, i.e. a unique ID assigned by
+	 * the device driver.
 	 */
 	unsigned int index() const;
+
+	/**
+	 * Returns which bit of a given sample for this signal represents the
+	 * signal itself. This is relevant for compound signals like logic,
+	 * rather meaningless for everything else but provided in case there
+	 * is a conversion active that provides a digital signal using bit #0.
+	 */
+	unsigned int logic_bit_index() const;
 
 	/**
 	 * Gets the name of this signal.
@@ -161,8 +175,10 @@ private:
 	uint8_t convert_a2l_schmitt_trigger(float lo_thr, float hi_thr,
 		float value, uint8_t &state);
 
-	void conversion_thread_proc(QObject* segment, uint64_t start_sample,
-		uint64_t end_sample);
+	void conversion_thread_proc(QObject* segment);
+
+	void start_conversion();
+	void stop_conversion();
 
 Q_SIGNALS:
 	void enabled_changed(const bool &value);
@@ -194,6 +210,9 @@ protected:
 	int conversion_type_;
 
 	std::thread conversion_thread_;
+	atomic<bool> conversion_interrupt_;
+	mutex conversion_input_mutex_;
+	condition_variable conversion_input_cond_;
 
 	QString internal_name_, name_;
 	QColor colour_, bgcolour_;

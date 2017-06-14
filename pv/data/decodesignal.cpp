@@ -31,7 +31,6 @@
 #include <pv/data/decode/row.hpp>
 #include <pv/session.hpp>
 
-using boost::optional;
 using std::lock_guard;
 using std::make_pair;
 using std::make_shared;
@@ -59,7 +58,6 @@ DecodeSignal::DecodeSignal(pv::Session &session) :
 	logic_mux_data_invalid_(false),
 	start_time_(0),
 	samplerate_(0),
-	sample_count_(0),
 	annotation_count_(0),
 	samples_decoded_(0),
 	frame_complete_(false)
@@ -103,10 +101,11 @@ void DecodeSignal::stack_decoder(srd_decoder *decoder)
 	if (stack_.size() == 1)
 		set_name(QString::fromUtf8(decoder->name));
 
-	// Include the newly created decode channels in the channel list
+	// Include the newly created decode channels in the channel lists
 	update_channel_list();
 
 	auto_assign_signals();
+	commit_decoder_channels();
 	begin_decode();
 }
 
@@ -148,7 +147,6 @@ bool DecodeSignal::toggle_decoder_visibility(int index)
 
 void DecodeSignal::reset_decode()
 {
-	sample_count_ = 0;
 	annotation_count_ = 0;
 	frame_complete_ = false;
 	samples_decoded_ = 0;
@@ -172,6 +170,18 @@ void DecodeSignal::begin_decode()
 	}
 
 	reset_decode();
+
+	if (stack_.size() == 0) {
+		error_message_ = tr("No decoders");
+		return;
+	}
+
+	assert(channels_.size() > 0);
+
+	if (get_assigned_signal_count() == 0) {
+		error_message_ = tr("There are no channels assigned to this decoder");
+		return;
+	}
 
 	// Check that all decoders have the required channels
 	for (const shared_ptr<decode::Decoder> &dec : stack_)
@@ -210,8 +220,24 @@ void DecodeSignal::begin_decode()
 		}
 	}
 
-	// Make sure the logic output data is complete and up-to-date
-	logic_mux_thread_ = std::thread(&DecodeSignal::logic_mux_proc, this);
+	// TODO Currently we assume all channels have the same sample rate
+	auto any_channel = find_if(channels_.begin(), channels_.end(),
+		[](data::DecodeChannel ch) { return ch.assigned_signal; });
+	shared_ptr<LogicSegment> first_segment =
+			any_channel->assigned_signal->logic_data()->logic_segments().front();
+	samplerate_ = first_segment->samplerate();
+
+	// Free the logic data and its segment(s) if it needs to be updated
+	if (logic_mux_data_invalid_)
+		logic_mux_data_.reset();
+
+	if (!logic_mux_data_) {
+		const int64_t ch_count = get_assigned_signal_count();
+		const int64_t unit_size = (ch_count + 7) / 8;
+		logic_mux_data_ = make_shared<Logic>(ch_count);
+		segment_ = make_shared<LogicSegment>(*logic_mux_data_, unit_size, samplerate_);
+		logic_mux_data_->push_segment(segment_);
+	}
 
 	// Update the samplerate and start time
 	start_time_ = segment_->start_time();
@@ -219,6 +245,11 @@ void DecodeSignal::begin_decode()
 	if (samplerate_ == 0.0)
 		samplerate_ = 1.0;
 
+	// Make sure the logic output data is complete and up-to-date
+	logic_mux_interrupt_ = false;
+	logic_mux_thread_ = std::thread(&DecodeSignal::logic_mux_proc, this);
+
+	// Decode the muxed logic data
 	decode_interrupt_ = false;
 	decode_thread_ = std::thread(&DecodeSignal::decode_proc, this);
 }
@@ -252,6 +283,7 @@ void DecodeSignal::auto_assign_signals()
 
 	if (new_assignment) {
 		logic_mux_data_invalid_ = true;
+		commit_decoder_channels();
 		channels_updated();
 	}
 }
@@ -264,9 +296,16 @@ void DecodeSignal::assign_signal(const uint16_t channel_id, const SignalBase *si
 			logic_mux_data_invalid_ = true;
 		}
 
+	commit_decoder_channels();
 	channels_updated();
-
 	begin_decode();
+}
+
+int DecodeSignal::get_assigned_signal_count() const
+{
+	// Count all channels that have a signal assigned to them
+	return count_if(channels_.begin(), channels_.end(),
+		[](data::DecodeChannel ch) { return ch.assigned_signal; });
 }
 
 void DecodeSignal::set_initial_pin_state(const uint16_t channel_id, const int init_state)
@@ -466,39 +505,130 @@ void DecodeSignal::update_channel_list()
 	channels_updated();
 }
 
-void DecodeSignal::logic_mux_proc()
+void DecodeSignal::commit_decoder_channels()
 {
+	// Submit channel list to every decoder, containing only the relevant channels
+	for (shared_ptr<decode::Decoder> dec : stack_) {
+		vector<data::DecodeChannel*> channel_list;
 
+		for (data::DecodeChannel &ch : channels_)
+			if (ch.decoder_ == dec)
+				channel_list.push_back(&ch);
+
+		dec->set_channels(channel_list);
+	}
 }
 
-optional<int64_t> DecodeSignal::wait_for_data() const
+void DecodeSignal::mux_logic_samples(const int64_t start, const int64_t end)
 {
-	unique_lock<mutex> input_lock(input_mutex_);
+	// Enforce end to be greater than start
+	if (end <= start)
+		return;
 
-	// Do wait if we decoded all samples but we're still capturing
-	// Do not wait if we're done capturing
-	while (!decode_interrupt_ && !frame_complete_ &&
-		(samples_decoded_ >= sample_count_) &&
-		(session_.get_capture_state() != Session::Stopped)) {
+	// Fetch all segments and their data
+	// TODO Currently, we assume only a single segment exists
+	vector<shared_ptr<LogicSegment> > segments;
+	vector<const uint8_t*> signal_data;
+	vector<uint8_t> signal_in_bytepos;
+	vector<uint8_t> signal_in_bitpos;
 
-		decode_input_cond_.wait(input_lock);
+	for (data::DecodeChannel &ch : channels_)
+		if (ch.assigned_signal) {
+			const shared_ptr<Logic> logic_data = ch.assigned_signal->logic_data();
+			const shared_ptr<LogicSegment> segment = logic_data->logic_segments().front();
+			segments.push_back(segment);
+			signal_data.push_back(segment->get_samples(start, end));
+
+			const int bitpos = ch.assigned_signal->logic_bit_index();
+			signal_in_bytepos.push_back(bitpos / 8);
+			signal_in_bitpos.push_back(bitpos % 8);
+		}
+
+	// Perform the muxing of signal data into the output data
+	uint8_t* output = new uint8_t[(end - start) * segment_->unit_size()];
+	unsigned int signal_count = signal_data.size();
+
+	for (int64_t sample_cnt = 0; sample_cnt < (end - start); sample_cnt++) {
+		int bitpos = 0;
+		uint8_t bytepos = 0;
+
+		const int out_sample_pos = sample_cnt * segment_->unit_size();
+		for (unsigned int i = 0; i < segment_->unit_size(); i++)
+			output[out_sample_pos + i] = 0;
+
+		for (unsigned int i = 0; i < signal_count; i++) {
+			const int in_sample_pos = sample_cnt * segments[i]->unit_size();
+			const uint8_t in_sample = 1 &
+				((signal_data[i][in_sample_pos + signal_in_bytepos[i]]) >> (signal_in_bitpos[i]));
+
+			const uint8_t out_sample = output[out_sample_pos + bytepos];
+
+			output[out_sample_pos + bytepos] = out_sample | (in_sample << bitpos);
+
+			bitpos++;
+			if (bitpos > 7) {
+				bitpos = 0;
+				bytepos++;
+			}
+		}
 	}
 
-	// Return value is valid if we're not aborting the decode,
-	return boost::make_optional(!decode_interrupt_ &&
-		// and there's more work to do...
-		(samples_decoded_ < sample_count_ || !frame_complete_) &&
-		// and if the end of the data hasn't been reached yet
-		(!((samples_decoded_ >= sample_count_) && (session_.get_capture_state() == Session::Stopped))),
-		sample_count_);
+	segment_->append_payload(output, (end - start) * segment_->unit_size());
+	delete[] output;
+
+	for (const uint8_t* data : signal_data)
+		delete[] data;
+}
+
+void DecodeSignal::logic_mux_proc()
+{
+	do {
+
+		const uint64_t input_sample_count = get_working_sample_count();
+		const uint64_t output_sample_count = segment_->get_sample_count();
+
+		const uint64_t samples_to_process =
+			(input_sample_count > output_sample_count) ?
+			(input_sample_count - output_sample_count) : 0;
+
+		// Process the samples if necessary...
+		if (samples_to_process > 0) {
+			const uint64_t unit_size = segment_->unit_size();
+			const uint64_t chunk_sample_count = DecodeChunkLength / unit_size;
+
+			uint64_t processed_samples = 0;
+			do {
+				const uint64_t start_sample = output_sample_count + processed_samples;
+				const uint64_t sample_count =
+					min(samples_to_process - processed_samples,	chunk_sample_count);
+
+				mux_logic_samples(start_sample, start_sample + sample_count);
+				processed_samples += sample_count;
+
+				// ...and process the newly muxed logic data
+				decode_input_cond_.notify_one();
+			} while (processed_samples < samples_to_process);
+		}
+
+		if (session_.get_capture_state() != Session::Stopped) {
+			// Wait for more input
+			unique_lock<mutex> logic_mux_lock(logic_mux_mutex_);
+			logic_mux_cond_.wait(logic_mux_lock);
+		}
+	} while ((session_.get_capture_state() != Session::Stopped) && !logic_mux_interrupt_);
+
+	// No more input data and session is stopped, let the decode thread
+	// process any pending data, terminate and release the global SRD mutex
+	// in order to let other decoders run
+	decode_input_cond_.notify_one();
 }
 
 void DecodeSignal::decode_data(
 	const int64_t abs_start_samplenum, const int64_t sample_count,
 	srd_session *const session)
 {
-	const unsigned int unit_size = segment_->unit_size();
-	const unsigned int chunk_sample_count = DecodeChunkLength / unit_size;
+	const int64_t unit_size = segment_->unit_size();
+	const int64_t chunk_sample_count = DecodeChunkLength / unit_size;
 
 	for (int64_t i = abs_start_samplenum;
 		!decode_interrupt_ && (i < (abs_start_samplenum + sample_count));
@@ -526,7 +656,6 @@ void DecodeSignal::decode_data(
 
 void DecodeSignal::decode_proc()
 {
-	optional<int64_t> sample_count;
 	srd_session *session;
 	srd_decoder_inst *prev_di = nullptr;
 
@@ -553,12 +682,6 @@ void DecodeSignal::decode_proc()
 		prev_di = di;
 	}
 
-	// Get the initial sample count
-	{
-		unique_lock<mutex> input_lock(input_mutex_);
-		sample_count = sample_count_ = get_working_sample_count();
-	}
-
 	// Start the session
 	srd_session_metadata_set(session, SRD_CONF_SAMPLERATE,
 		g_variant_new_uint64(samplerate_));
@@ -568,11 +691,32 @@ void DecodeSignal::decode_proc()
 
 	srd_session_start(session);
 
-	int64_t abs_start_samplenum = 0;
+	uint64_t sample_count;
+	uint64_t abs_start_samplenum = 0;
 	do {
-		decode_data(abs_start_samplenum, *sample_count, session);
-		abs_start_samplenum = *sample_count;
-	} while (error_message_.isEmpty() && (sample_count = wait_for_data()));
+		// Keep processing new samples until we exhaust the input data
+		do {
+			{
+				lock_guard<mutex> input_lock(input_mutex_);
+				sample_count = segment_->get_sample_count() - abs_start_samplenum;
+			}
+
+			if (sample_count > 0) {
+				decode_data(abs_start_samplenum, sample_count, session);
+				abs_start_samplenum += sample_count;
+			}
+		} while (error_message_.isEmpty() && (sample_count > 0));
+
+		// Terminate if we exhausted the input data
+		if ((int64_t)segment_->get_sample_count() == get_working_sample_count())
+			break;
+
+		if (error_message_.isEmpty()) {
+			// Wait for new input data or an interrupt request
+			unique_lock<mutex> input_wait_lock(input_mutex_);
+			decode_input_cond_.wait(input_wait_lock);
+		}
+	} while (error_message_.isEmpty() && !decode_interrupt_);
 
 	// Make sure all annotations are known to the frontend
 	new_annotations();

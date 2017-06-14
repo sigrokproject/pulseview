@@ -25,8 +25,6 @@
 #include <unordered_set>
 #include <vector>
 
-#include <boost/optional.hpp>
-
 #include <QSettings>
 #include <QString>
 
@@ -101,6 +99,7 @@ public:
 	const vector<data::DecodeChannel> get_channels() const;
 	void auto_assign_signals();
 	void assign_signal(const uint16_t channel_id, const SignalBase *signal);
+	int get_assigned_signal_count() const;
 
 	void set_initial_pin_state(const uint16_t channel_id, const int init_state);
 
@@ -140,9 +139,11 @@ public:
 private:
 	void update_channel_list();
 
-	void logic_mux_proc();
+	void commit_decoder_channels();
 
-	boost::optional<int64_t> wait_for_data() const;
+	void mux_logic_samples(const int64_t start, const int64_t end);
+
+	void logic_mux_proc();
 
 	void decode_data(const int64_t abs_start_samplenum, const int64_t sample_count,
 		srd_session *const session);
@@ -172,7 +173,7 @@ private:
 	pv::util::Timestamp start_time_;
 	double samplerate_;
 
-	int64_t sample_count_, annotation_count_, samples_decoded_;
+	int64_t annotation_count_, samples_decoded_;
 
 	vector< shared_ptr<decode::Decoder> > stack_;
 	map<const decode::Row, decode::RowData> rows_;
@@ -186,7 +187,7 @@ private:
 	 */
 	static mutex global_srd_mutex_;
 
-	mutable mutex input_mutex_, output_mutex_;
+	mutable mutex input_mutex_, output_mutex_, logic_mux_mutex_;
 	mutable condition_variable decode_input_cond_, logic_mux_cond_;
 	bool frame_complete_;
 

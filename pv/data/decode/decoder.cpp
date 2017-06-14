@@ -25,7 +25,9 @@
 #include "decoder.hpp"
 
 #include <pv/data/signalbase.hpp>
+#include <pv/data/decodesignal.hpp>
 
+using pv::data::DecodeChannel;
 using std::set;
 using std::map;
 using std::shared_ptr;
@@ -62,14 +64,12 @@ void Decoder::show(bool show)
 	shown_ = show;
 }
 
-const map<const srd_channel*, shared_ptr<data::SignalBase> >&
-Decoder::channels() const
+const vector<DecodeChannel*>& Decoder::channels() const
 {
 	return channels_;
 }
 
-void Decoder::set_channels(map<const srd_channel*,
-	shared_ptr<data::SignalBase> > channels)
+void Decoder::set_channels(vector<DecodeChannel*> channels)
 {
 	channels_ = channels;
 }
@@ -88,26 +88,11 @@ void Decoder::set_option(const char *id, GVariant *value)
 
 bool Decoder::have_required_channels() const
 {
-	for (GSList *l = decoder_->channels; l; l = l->next) {
-		const srd_channel *const pdch = (const srd_channel*)l->data;
-		assert(pdch);
-		if (channels_.find(pdch) == channels_.end())
+	for (DecodeChannel *ch : channels_)
+		if (!ch->assigned_signal && !ch->is_optional)
 			return false;
-	}
 
 	return true;
-}
-
-set< shared_ptr<pv::data::Logic> > Decoder::get_data()
-{
-	set< shared_ptr<pv::data::Logic> > data;
-	for (const auto& channel : channels_) {
-		shared_ptr<data::SignalBase> b(channel.second);
-		assert(b);
-		data.insert(b->logic_data());
-	}
-
-	return data;
 }
 
 srd_decoder_inst* Decoder::create_decoder_inst(srd_session *session) const
@@ -138,20 +123,18 @@ srd_decoder_inst* Decoder::create_decoder_inst(srd_session *session) const
 	GHashTable *const channels = g_hash_table_new_full(g_str_hash,
 		g_str_equal, g_free, (GDestroyNotify)g_variant_unref);
 
-	for (const auto& channel : channels_) {
-		shared_ptr<data::SignalBase> b(channel.second);
+	for (DecodeChannel *ch : channels_) {
+		init_pin_states->data[ch->id] = ch->initial_pin_state;
 
-//		init_pin_states->data[pdch->order] =
-//			channel.initial_pin_state;
-
-		GVariant *const gvar = g_variant_new_int32(b->index());
+		GVariant *const gvar = g_variant_new_int32(ch->id);  // id = bit position
 		g_variant_ref_sink(gvar);
-		g_hash_table_insert(channels, channel.first->id, gvar);
+		// key is channel name, value is bit position in each sample
+		g_hash_table_insert(channels, ch->pdch_->id, gvar);
 	}
 
 	srd_inst_channel_set_all(decoder_inst, channels);
 
-//	srd_inst_initial_pins_set_all(decoder_inst, initial_pin_states);
+	srd_inst_initial_pins_set_all(decoder_inst, init_pin_states);
 	g_array_free(init_pin_states, TRUE);
 
 	return decoder_inst;
