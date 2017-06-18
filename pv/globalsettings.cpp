@@ -47,6 +47,10 @@ void GlobalSettings::set_defaults_where_needed()
 	// Enable coloured trace backgrounds by default
 	if (!contains(Key_View_ColouredBG))
 		setValue(Key_View_ColouredBG, true);
+
+	// Enable showing sampling points by default
+	if (!contains(Key_View_ShowSamplingPoints))
+		setValue(Key_View_ShowSamplingPoints, true);
 }
 
 void GlobalSettings::register_change_handler(const QString key,
