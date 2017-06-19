@@ -25,7 +25,7 @@ using std::multimap;
 
 namespace pv {
 
-const QString GlobalSettings::Key_View_AlwaysZoomToFit = "View_AlwaysZoomToFit";
+const QString GlobalSettings::Key_View_ZoomToFitDuringAcq = "View_ZoomToFitDuringAcq";
 const QString GlobalSettings::Key_View_ZoomToFitAfterAcq = "View_ZoomToFitAfterAcq";
 const QString GlobalSettings::Key_View_ColouredBG = "View_ColouredBG";
 const QString GlobalSettings::Key_View_StickyScrolling = "View_StickyScrolling";

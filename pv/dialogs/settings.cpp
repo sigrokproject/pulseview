@@ -149,9 +149,9 @@ QWidget *Settings::get_view_settings_form(QWidget *parent) const
 		SLOT(on_view_colouredBG_changed(int)));
 	trace_view_layout->addRow(tr("Use coloured trace &background"), cb);
 
-	cb = create_checkbox(GlobalSettings::Key_View_AlwaysZoomToFit,
-		SLOT(on_view_alwaysZoomToFit_changed(int)));
-	trace_view_layout->addRow(tr("Constantly perform &zoom-to-fit during capture"), cb);
+	cb = create_checkbox(GlobalSettings::Key_View_ZoomToFitDuringAcq,
+		SLOT(on_view_zoomToFitDuringAcq_changed(int)));
+	trace_view_layout->addRow(tr("Constantly perform &zoom-to-fit during acquisition"), cb);
 
 	cb = create_checkbox(GlobalSettings::Key_View_ZoomToFitAfterAcq,
 		SLOT(on_view_zoomToFitAfterAcq_changed(int)));
@@ -380,10 +380,10 @@ void Settings::on_page_changed(QListWidgetItem *current, QListWidgetItem *previo
 	pages->setCurrentIndex(page_list->row(current));
 }
 
-void Settings::on_view_alwaysZoomToFit_changed(int state)
+void Settings::on_view_zoomToFitDuringAcq_changed(int state)
 {
 	GlobalSettings settings;
-	settings.setValue(GlobalSettings::Key_View_AlwaysZoomToFit, state ? true : false);
+	settings.setValue(GlobalSettings::Key_View_ZoomToFitDuringAcq, state ? true : false);
 }
 
 void Settings::on_view_zoomToFitAfterAcq_changed(int state)
