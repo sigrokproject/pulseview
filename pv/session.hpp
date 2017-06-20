@@ -170,7 +170,7 @@ public:
 	const unordered_set< shared_ptr<data::SignalBase> > signalbases() const;
 
 #ifdef ENABLE_DECODE
-	bool add_decoder(srd_decoder *const dec);
+	shared_ptr<data::DecodeSignal> add_decode_signal();
 
 	void remove_decode_signal(shared_ptr<data::DecodeSignal> signal);
 #endif

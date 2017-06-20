@@ -682,31 +682,27 @@ const unordered_set< shared_ptr<data::SignalBase> > Session::signalbases() const
 }
 
 #ifdef ENABLE_DECODE
-bool Session::add_decoder(srd_decoder *const dec)
+shared_ptr<data::DecodeSignal> Session::add_decode_signal()
 {
-	if (!dec)
-		return false;
+	shared_ptr<data::DecodeSignal> signal;
 
 	try {
 		// Create the decode signal
-		shared_ptr<data::DecodeSignal> signal =
-			make_shared<data::DecodeSignal>(*this);
+		signal = make_shared<data::DecodeSignal>(*this);
 
 		signalbases_.insert(signal);
 
 		// Add the decode signal to all views
 		for (shared_ptr<views::ViewBase> view : views_)
 			view->add_decode_signal(signal);
-
-		// Add decoder
-		signal->stack_decoder(dec);
 	} catch (runtime_error e) {
-		return false;
+		remove_decode_signal(signal);
+		return nullptr;
 	}
 
 	signals_changed();
 
-	return true;
+	return signal;
 }
 
 void Session::remove_decode_signal(shared_ptr<data::DecodeSignal> signal)

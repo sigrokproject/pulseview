@@ -35,6 +35,7 @@
 
 #include <boost/algorithm/string/join.hpp>
 
+#include <pv/data/decodesignal.hpp>
 #include <pv/devicemanager.hpp>
 #include <pv/devices/hardwaredevice.hpp>
 #include <pv/devices/inputfile.hpp>
@@ -575,7 +576,9 @@ void MainBar::add_decoder(srd_decoder *decoder)
 {
 #ifdef ENABLE_DECODE
 	assert(decoder);
-	session_.add_decoder(decoder);
+	shared_ptr<data::DecodeSignal> signal = session_.add_decode_signal();
+	if (signal)
+		signal->stack_decoder(decoder);
 #else
 	(void)decoder;
 #endif
