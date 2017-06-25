@@ -66,6 +66,7 @@ void usage()
 		"Application Options:\n"
 		"  -V, --version                   Show release version\n"
 		"  -l, --loglevel                  Set libsigrok/libsigrokdecode loglevel\n"
+		"  -d, --driver                    Specify the device driver to use\n"
 		"  -i, --input-file                Load input from file\n"
 		"  -I, --input-format              Input format\n"
 		"  -c, --clean                     Don't restore previous sessions on startup\n"
@@ -76,7 +77,7 @@ int main(int argc, char *argv[])
 {
 	int ret = 0;
 	shared_ptr<sigrok::Context> context;
-	string open_file, open_file_format;
+	string open_file, open_file_format, driver;
 	bool restore_sessions = true;
 
 	Application a(argc, argv);
@@ -93,6 +94,7 @@ int main(int argc, char *argv[])
 			{"help", no_argument, nullptr, 'h'},
 			{"version", no_argument, nullptr, 'V'},
 			{"loglevel", required_argument, nullptr, 'l'},
+			{"driver", required_argument, nullptr, 'd'},
 			{"input-file", required_argument, nullptr, 'i'},
 			{"input-format", required_argument, nullptr, 'I'},
 			{"clean", no_argument, nullptr, 'c'},
@@ -100,7 +102,7 @@ int main(int argc, char *argv[])
 		};
 
 		const int c = getopt_long(argc, argv,
-			"l:Vhc?i:I:", long_options, nullptr);
+			"l:Vhc?d:i:I:", long_options, nullptr);
 		if (c == -1)
 			break;
 
@@ -131,6 +133,10 @@ int main(int argc, char *argv[])
 			}
 			break;
 		}
+
+		case 'd':
+			driver = optarg;
+			break;
 
 		case 'i':
 			open_file = optarg;
@@ -174,7 +180,7 @@ int main(int argc, char *argv[])
 
 		try {
 			// Create the device manager, initialise the drivers
-			pv::DeviceManager device_manager(context);
+			pv::DeviceManager device_manager(context, driver);
 
 			// Initialise the main window
 			pv::MainWindow w(device_manager);

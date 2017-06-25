@@ -36,6 +36,7 @@
 #include <boost/filesystem.hpp>
 
 #include <pv/devices/hardwaredevice.hpp>
+#include <pv/util.hpp>
 
 using std::bind;
 using std::list;
@@ -45,7 +46,10 @@ using std::placeholders::_2;
 using std::shared_ptr;
 using std::string;
 using std::unique_ptr;
+using std::vector;
 
+using Glib::ustring;
+using Glib::Variant;
 using Glib::VariantBase;
 
 using sigrok::ConfigKey;
@@ -54,20 +58,39 @@ using sigrok::Driver;
 
 namespace pv {
 
-DeviceManager::DeviceManager(shared_ptr<Context> context) :
+DeviceManager::DeviceManager(shared_ptr<Context> context, std::string driver) :
 	context_(context)
 {
 	unique_ptr<QProgressDialog> progress(new QProgressDialog("",
-		QObject::tr("Cancel"), 0, context->drivers().size()));
+		QObject::tr("Cancel"), 0, context->drivers().size() + 1));
 	progress->setWindowModality(Qt::WindowModal);
 	progress->setMinimumDuration(1);  // To show the dialog immediately
 
 	int entry_num = 1;
 
+	/*
+	 * Check the presence of an optional user spec for device scans.
+	 * Determine the driver name and options (in generic format) when
+	 * applicable.
+	 */
+	std::string user_name;
+	vector<std::string> user_opts;
+	if (!driver.empty()) {
+		user_opts = pv::util::split_string(driver, ":");
+		user_name = user_opts.front();
+		user_opts.erase(user_opts.begin());
+	}
+
+	/*
+	 * Scan for devices. No specific options apply here, this is
+	 * best effort auto detection.
+	 */
 	for (auto entry : context->drivers()) {
 		progress->setLabelText(QObject::tr("Scanning for %1...")
 			.arg(QString::fromStdString(entry.first)));
 
+		if (entry.first == user_name)
+			continue;
 		driver_scan(entry.second, map<const ConfigKey *, VariantBase>());
 
 		progress->setValue(entry_num++);
@@ -75,6 +98,48 @@ DeviceManager::DeviceManager(shared_ptr<Context> context) :
 		if (progress->wasCanceled())
 			break;
 	}
+
+	/*
+	 * Optionally run another scan with potentially more specific
+	 * options when requested by the user. This is motivated by
+	 * several different uses: It can find devices that are not
+	 * covered by the above auto detection (UART, TCP). It can
+	 * prefer one out of multiple found devices, and have this
+	 * device pre-selected for new sessions upon user's request.
+	 */
+	user_spec_device_.reset();
+	if (!driver.empty()) {
+		shared_ptr<sigrok::Driver> scan_drv;
+		map<const ConfigKey *, VariantBase> scan_opts;
+
+		/*
+		 * Lookup the device driver name.
+		 */
+		map<string, shared_ptr<Driver>> drivers = context->drivers();
+		auto entry = drivers.find(user_name);
+		scan_drv = (entry != drivers.end()) ? entry->second : nullptr;
+
+		/*
+		 * Convert generic string representation of options
+		 * to the driver specific data types.
+		 */
+		if (scan_drv && !user_opts.empty()) {
+			auto drv_opts = scan_drv->scan_options();
+			scan_opts = drive_scan_options(user_opts, drv_opts);
+		}
+
+		/*
+		 * Run another scan for the specified driver, passing
+		 * user provided scan options this time.
+		 */
+		list< shared_ptr<devices::HardwareDevice> > found;
+		if (scan_drv) {
+			found = driver_scan(scan_drv, scan_opts);
+			if (!found.empty())
+				user_spec_device_ = found.front();
+		}
+	}
+	progress->setValue(entry_num++);
 }
 
 const shared_ptr<sigrok::Context>& DeviceManager::context() const
@@ -91,6 +156,65 @@ const list< shared_ptr<devices::HardwareDevice> >&
 DeviceManager::devices() const
 {
 	return devices_;
+}
+
+/**
+ * Get the device that was detected with user provided scan options.
+ */
+shared_ptr<devices::HardwareDevice>
+DeviceManager::user_spec_device() const
+{
+	return user_spec_device_;
+}
+
+/**
+ * Convert generic options to data types that are specific to Driver::scan().
+ *
+ * @param[in] user_spec vector of tokenized words, string format
+ * @param[in] driver_opts driver's scan options, result of Driver::scan_options()
+ *
+ * @return map of options suitable for Driver::scan()
+ */
+map<const ConfigKey *, Glib::VariantBase>
+DeviceManager::drive_scan_options(vector<string> user_spec,
+	set<const ConfigKey *> driver_opts)
+{
+	map<const ConfigKey *, Glib::VariantBase> result;
+
+	for (auto entry : user_spec) {
+		/*
+		 * Split key=value specs. Accept entries without separator
+		 * (for simplified boolean specifications).
+		 */
+		string key, val;
+		size_t pos = entry.find("=");
+		if (pos == std::string::npos) {
+			key = entry;
+			val = "";
+		} else {
+			key = entry.substr(0, pos);
+			val = entry.substr(pos + 1);
+		}
+
+		/*
+		 * Skip user specifications that are not a member of the
+		 * driver's set of supported options. Have the text format
+		 * input spec converted to the required driver specific type.
+		 */
+		const ConfigKey *cfg;
+		try {
+			cfg = ConfigKey::get_by_identifier(key);
+			if (!cfg)
+				continue;
+			if (driver_opts.find(cfg) == driver_opts.end())
+				continue;
+		} catch (...) {
+			continue;
+		}
+		result[cfg] = cfg->parse_string(val);
+	}
+
+	return result;
 }
 
 list< shared_ptr<devices::HardwareDevice> >

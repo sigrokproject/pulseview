@@ -23,12 +23,16 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
+#include <vector>
 
 using std::list;
 using std::map;
+using std::set;
 using std::shared_ptr;
 using std::string;
+using std::vector;
 
 namespace Glib {
 class VariantBase;
@@ -39,6 +43,8 @@ class ConfigKey;
 class Context;
 class Driver;
 }
+
+using sigrok::ConfigKey;
 
 namespace pv {
 
@@ -52,7 +58,7 @@ class Session;
 class DeviceManager
 {
 public:
-	DeviceManager(shared_ptr<sigrok::Context> context);
+	DeviceManager(shared_ptr<sigrok::Context> context, std::string driver);
 
 	~DeviceManager() = default;
 
@@ -61,6 +67,7 @@ public:
 	shared_ptr<sigrok::Context> context();
 
 	const list< shared_ptr<devices::HardwareDevice> >& devices() const;
+	shared_ptr<devices::HardwareDevice> user_spec_device() const;
 
 	list< shared_ptr<devices::HardwareDevice> > driver_scan(
 		shared_ptr<sigrok::Driver> driver,
@@ -76,9 +83,14 @@ private:
 	bool compare_devices(shared_ptr<devices::Device> a,
 		shared_ptr<devices::Device> b);
 
+	static map<const ConfigKey *, Glib::VariantBase>
+	drive_scan_options(vector<string> user_spec,
+		set<const ConfigKey *> driver_opts);
+
 protected:
 	shared_ptr<sigrok::Context> context_;
 	list< shared_ptr<devices::HardwareDevice> > devices_;
+	shared_ptr<devices::HardwareDevice> user_spec_device_;
 };
 
 } // namespace pv
