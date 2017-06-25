@@ -21,6 +21,8 @@
 #define PULSEVIEW_UTIL_HPP
 
 #include <cmath>
+#include <string>
+#include <vector>
 
 #ifndef Q_MOC_RUN
 #include <boost/multiprecision/cpp_dec_float.hpp>
@@ -28,6 +30,9 @@
 
 #include <QMetaType>
 #include <QString>
+
+using std::string;
+using std::vector;
 
 namespace pv {
 namespace util {
@@ -111,6 +116,8 @@ QString format_time_si_adjusted(const Timestamp& t, SIPrefix prefix,
  */
 QString format_time_minutes(const Timestamp& t, signed precision = 0,
 	bool sign = true);
+
+vector<string> split_string(string text, string separator);
 
 } // namespace util
 } // namespace pv

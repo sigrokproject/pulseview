@@ -224,5 +224,27 @@ QString format_time_minutes(const Timestamp& t, signed precision, bool sign)
 	return s;
 }
 
+/**
+ * Split a string into tokens at occurances of the separator.
+ *
+ * @param[in] text the input string to split
+ * @param[in] separator the delimiter between tokens
+ *
+ * @return a vector of broken down tokens
+ */
+vector<string> split_string(string text, string separator)
+{
+	vector<string> result;
+	size_t pos;
+
+	while ((pos = text.find(separator)) != std::string::npos) {
+		result.push_back(text.substr(0, pos));
+		text = text.substr(pos + separator.length());
+	}
+	result.push_back(text);
+
+	return result;
+}
+
 } // namespace util
 } // namespace pv
