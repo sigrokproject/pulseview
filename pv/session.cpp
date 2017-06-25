@@ -434,26 +434,76 @@ void Session::set_default_device()
 	set_device((iter == devices.end()) ? devices.front() : *iter);
 }
 
+/**
+ * Convert generic options to data types that are specific to InputFormat.
+ *
+ * @param[in] user_spec vector of tokenized words, string format
+ * @param[in] fmt_opts input format's options, result of InputFormat::options()
+ *
+ * @return map of options suitable for InputFormat::create_input()
+ */
+map<string, Glib::VariantBase>
+Session::input_format_options(vector<string> user_spec,
+		map<string, shared_ptr<Option>> fmt_opts)
+{
+	map<string, Glib::VariantBase> result;
+
+	for (auto entry : user_spec) {
+		/*
+		 * Split key=value specs. Accept entries without separator
+		 * (for simplified boolean specifications).
+		 */
+		string key, val;
+		size_t pos = entry.find("=");
+		if (pos == std::string::npos) {
+			key = entry;
+			val = "";
+		} else {
+			key = entry.substr(0, pos);
+			val = entry.substr(pos + 1);
+		}
+
+		/*
+		 * Skip user specifications that are not a member of the
+		 * format's set of supported options. Have the text input
+		 * spec converted to the required input format specific
+		 * data type.
+		 */
+		auto found = fmt_opts.find(key);
+		if (found == fmt_opts.end())
+			continue;
+		shared_ptr<Option> opt = found->second;
+		result[key] = opt->parse_string(val);
+	}
+
+	return result;
+}
+
 void Session::load_init_file(const string &file_name, const string &format)
 {
 	shared_ptr<InputFormat> input_format;
+	map<string, Glib::VariantBase> input_opts;
 
 	if (!format.empty()) {
 		const map<string, shared_ptr<InputFormat> > formats =
 			device_manager_.context()->input_formats();
+		auto user_opts = pv::util::split_string(format, ":");
+		string user_name = user_opts.front();
+		user_opts.erase(user_opts.begin());
 		const auto iter = find_if(formats.begin(), formats.end(),
 			[&](const pair<string, shared_ptr<InputFormat> > f) {
-				return f.first == format; });
+				return f.first == user_name; });
 		if (iter == formats.end()) {
 			main_bar_->session_error(tr("Error"),
 				tr("Unexpected input format: %s").arg(QString::fromStdString(format)));
 			return;
 		}
-
 		input_format = (*iter).second;
+		input_opts = input_format_options(user_opts,
+			input_format->options());
 	}
 
-	load_file(QString::fromStdString(file_name), input_format);
+	load_file(QString::fromStdString(file_name), input_format, input_opts);
 }
 
 void Session::load_file(QString file_name,

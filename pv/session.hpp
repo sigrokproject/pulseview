@@ -55,10 +55,13 @@ class Device;
 class InputFormat;
 class Logic;
 class Meta;
+class Option;
 class OutputFormat;
 class Packet;
 class Session;
 }  // namespace sigrok
+
+using sigrok::Option;
 
 namespace pv {
 
@@ -178,6 +181,10 @@ private:
 
 	shared_ptr<data::SignalBase> signalbase_from_channel(
 		shared_ptr<sigrok::Channel> channel) const;
+
+	static map<string, Glib::VariantBase> input_format_options(
+		vector<string> user_spec,
+		map<string, shared_ptr<Option>> fmt_opts);
 
 private:
 	void sample_thread_proc(function<void (const QString)> error_handler);
