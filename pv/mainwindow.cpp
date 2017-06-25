@@ -338,20 +338,26 @@ void MainWindow::add_default_session()
 
 	shared_ptr<Session> session = add_session();
 
-	map<string, string> dev_info;
-	shared_ptr<devices::HardwareDevice> other_device, demo_device;
-
-	// Use any available device that's not demo
+	// Check the list of available devices. Prefer the one that was
+	// found with user supplied scan specs (if applicable). Then try
+	// one of the auto detected devices that are not the demo device.
+	// Pick demo in the absence of "genuine" hardware devices.
+	shared_ptr<devices::HardwareDevice> user_device, other_device, demo_device;
 	for (shared_ptr<devices::HardwareDevice> dev : device_manager_.devices()) {
-		if (dev->hardware_device()->driver()->name() == "demo") {
+		if (dev == device_manager_.user_spec_device()) {
+			user_device = dev;
+		} else if (dev->hardware_device()->driver()->name() == "demo") {
 			demo_device = dev;
 		} else {
 			other_device = dev;
 		}
 	}
-
-	// ...and if there isn't any, just use demo then
-	session->select_device(other_device ? other_device : demo_device);
+	if (user_device)
+		session->select_device(user_device);
+	else if (other_device)
+		session->select_device(other_device);
+	else
+		session->select_device(demo_device);
 }
 
 void MainWindow::save_sessions()
