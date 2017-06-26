@@ -225,12 +225,12 @@ QString format_time_minutes(const Timestamp& t, signed precision, bool sign)
 }
 
 /**
- * Split a string into tokens at occurances of the separator.
+ * Split a string into tokens at occurences of the separator.
  *
- * @param[in] text the input string to split
- * @param[in] separator the delimiter between tokens
+ * @param[in] text The input string to split.
+ * @param[in] separator The delimiter between tokens.
  *
- * @return a vector of broken down tokens
+ * @return A vector of broken down tokens.
  */
 vector<string> split_string(string text, string separator)
 {

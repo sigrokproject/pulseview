@@ -170,10 +170,10 @@ DeviceManager::user_spec_device() const
 /**
  * Convert generic options to data types that are specific to Driver::scan().
  *
- * @param[in] user_spec vector of tokenized words, string format
- * @param[in] driver_opts driver's scan options, result of Driver::scan_options()
+ * @param[in] user_spec Vector of tokenized words, string format.
+ * @param[in] driver_opts Driver's scan options, result of Driver::scan_options().
  *
- * @return map of options suitable for Driver::scan()
+ * @return Map of options suitable for Driver::scan().
  */
 map<const ConfigKey *, Glib::VariantBase>
 DeviceManager::drive_scan_options(vector<string> user_spec,

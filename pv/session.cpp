@@ -437,10 +437,10 @@ void Session::set_default_device()
 /**
  * Convert generic options to data types that are specific to InputFormat.
  *
- * @param[in] user_spec vector of tokenized words, string format
- * @param[in] fmt_opts input format's options, result of InputFormat::options()
+ * @param[in] user_spec Vector of tokenized words, string format.
+ * @param[in] fmt_opts Input format's options, result of InputFormat::options().
  *
- * @return map of options suitable for InputFormat::create_input()
+ * @return Map of options suitable for InputFormat::create_input().
  */
 map<string, Glib::VariantBase>
 Session::input_format_options(vector<string> user_spec,
