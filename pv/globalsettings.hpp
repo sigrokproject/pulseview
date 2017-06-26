@@ -23,6 +23,8 @@
 #include <functional>
 #include <map>
 
+#include <glib.h>
+
 #include <QSettings>
 #include <QString>
 #include <QVariant>
@@ -73,6 +75,10 @@ public:
 	 * change tracking began.
 	 */
 	void undo_tracked_changes();
+
+	static void store_gvariant(QSettings &settings, GVariant *v);
+
+	static GVariant* restore_gvariant(QSettings &settings);
 
 private:
 	static multimap< QString, function<void(QVariant)> > callbacks_;

@@ -29,6 +29,7 @@
 #include <pv/binding/decoder.hpp>
 #include <pv/data/decode/decoder.hpp>
 #include <pv/data/decode/row.hpp>
+#include <pv/globalsettings.hpp>
 #include <pv/session.hpp>
 
 using std::lock_guard;
@@ -422,6 +423,22 @@ void DecodeSignal::save_settings(QSettings &settings) const
 
 		settings.setValue("id", decoder->decoder()->id);
 
+		// Save decoder options
+		const map<string, GVariant*>& options = decoder->options();
+
+		settings.setValue("options", (int)options.size());
+
+		// Note: decode::Decoder::options() returns only the options
+		// that differ from the default. See binding::Decoder::getter()
+		int i = 0;
+		for (auto option : options) {
+			settings.beginGroup("option" + QString::number(i));
+			settings.setValue("name", QString::fromStdString(option.first));
+			GlobalSettings::store_gvariant(settings, option.second);
+			settings.endGroup();
+			i++;
+		}
+
 		settings.endGroup();
 	}
 
@@ -447,8 +464,6 @@ void DecodeSignal::save_settings(QSettings &settings) const
 
 		settings.endGroup();
 	}
-
-	// TODO Save decoder options
 }
 
 void DecodeSignal::restore_settings(QSettings &settings)
@@ -471,7 +486,21 @@ void DecodeSignal::restore_settings(QSettings &settings)
 				continue;
 
 			if (QString::fromUtf8(dec->id) == id) {
-				stack_.push_back(make_shared<decode::Decoder>(dec));
+				shared_ptr<decode::Decoder> decoder =
+					make_shared<decode::Decoder>(dec);
+
+				stack_.push_back(decoder);
+
+				// Restore decoder options that differ from their default
+				int options = settings.value("options").toInt();
+
+				for (int i = 0; i < options; i++) {
+					settings.beginGroup("option" + QString::number(i));
+					QString name = settings.value("name").toString();
+					GVariant *value = GlobalSettings::restore_gvariant(settings);
+					decoder->set_option(name.toUtf8(), value);
+					settings.endGroup();
+				}
 
 				// Include the newly created decode channels in the channel lists
 				update_channel_list();
@@ -511,8 +540,6 @@ void DecodeSignal::restore_settings(QSettings &settings)
 	}
 
 	begin_decode();
-
-	// TODO Restore decoder options
 }
 
 void DecodeSignal::update_channel_list()

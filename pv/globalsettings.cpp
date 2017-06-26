@@ -19,6 +19,9 @@
 
 #include "globalsettings.hpp"
 
+#include <QByteArray>
+#include <QString>
+
 using std::function;
 using std::map;
 using std::multimap;
@@ -101,5 +104,38 @@ void GlobalSettings::undo_tracked_changes()
 
 	tracked_changes_.clear();
 }
+
+void GlobalSettings::store_gvariant(QSettings &settings, GVariant *v)
+{
+	const GVariantType *var_type = g_variant_get_type(v);
+	char *var_type_str = g_variant_type_dup_string(var_type);
+
+	QByteArray var_data = QByteArray((const char*)g_variant_get_data(v),
+		g_variant_get_size(v));
+
+	settings.setValue("value", var_data);
+	settings.setValue("type", var_type_str);
+
+	g_free(var_type_str);
+}
+
+GVariant* GlobalSettings::restore_gvariant(QSettings &settings)
+{
+	QString raw_type = settings.value("type").toString();
+	GVariantType *var_type = g_variant_type_new(raw_type.toUtf8());
+
+	QByteArray data = settings.value("value").toByteArray();
+
+	gpointer var_data = g_memdup((gconstpointer)data.constData(),
+		(guint)data.size());
+
+	GVariant *value = g_variant_new_from_data(var_type, var_data,
+		data.size(), false, g_free, var_data);
+
+	g_variant_type_free(var_type);
+
+	return value;
+}
+
 
 } // namespace pv
