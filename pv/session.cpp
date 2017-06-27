@@ -317,8 +317,8 @@ void Session::restore_settings(QSettings &settings)
 
 		for (int i = 0; i < decode_signals; i++) {
 			settings.beginGroup("decode_signal" + QString::number(i++));
-			// TODO Split up add_decoder() into add_decode_signal() and add_decoder(),
-			// then call add_decode_signal() and signal->restore_settings() here
+			shared_ptr<data::DecodeSignal> signal = add_decode_signal();
+			signal->restore_settings(settings);
 			settings.endGroup();
 		}
 #endif

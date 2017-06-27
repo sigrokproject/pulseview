@@ -77,7 +77,7 @@ const vector< shared_ptr<Decoder> >& DecodeSignal::decoder_stack() const
 	return stack_;
 }
 
-void DecodeSignal::stack_decoder(srd_decoder *decoder)
+void DecodeSignal::stack_decoder(const srd_decoder *decoder)
 {
 	assert(decoder);
 	stack_.push_back(make_shared<decode::Decoder>(decoder));
@@ -413,14 +413,51 @@ void DecodeSignal::save_settings(QSettings &settings) const
 {
 	SignalBase::save_settings(settings);
 
-	// TODO Save decoder stack, channel mapping and decoder options
+	settings.setValue("decoders", (int)(stack_.size()));
+
+	int decoder_idx = 0;
+	for (shared_ptr<decode::Decoder> decoder : stack_) {
+		settings.beginGroup("decoder" + QString::number(decoder_idx++));
+
+		settings.setValue("id", decoder->decoder()->id);
+
+		settings.endGroup();
+	}
+
+	// TODO Save channel mapping and decoder options
 }
 
 void DecodeSignal::restore_settings(QSettings &settings)
 {
 	SignalBase::restore_settings(settings);
 
-	// TODO Restore decoder stack, channel mapping and decoder options
+	GSList *dec_list = g_slist_copy((GSList*)srd_decoder_list());
+
+	int decoders = settings.value("decoders").toInt();
+
+	for (int decoder_idx = 0; decoder_idx < decoders; decoder_idx++) {
+		settings.beginGroup("decoder" + QString::number(decoder_idx));
+
+		QString id = settings.value("id").toString();
+
+		for (GSList *entry = dec_list; entry; entry = entry->next) {
+			const srd_decoder *dec = (srd_decoder*)entry->data;
+			if (!dec)
+				continue;
+
+			if (QString::fromUtf8(dec->id) == id) {
+				stack_.push_back(make_shared<decode::Decoder>(dec));
+
+				// Include the newly created decode channels in the channel lists
+				update_channel_list();
+				break;
+			}
+		}
+
+		settings.endGroup();
+	}
+
+	// TODO Restore channel mapping and decoder options
 }
 
 void DecodeSignal::update_channel_list()

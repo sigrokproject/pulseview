@@ -87,7 +87,7 @@ public:
 	bool is_decode_signal() const;
 	const vector< shared_ptr<data::decode::Decoder> >& decoder_stack() const;
 
-	void stack_decoder(srd_decoder *decoder);
+	void stack_decoder(const srd_decoder *decoder);
 	void remove_decoder(int index);
 	bool toggle_decoder_visibility(int index);
 
