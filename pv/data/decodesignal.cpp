@@ -415,6 +415,7 @@ void DecodeSignal::save_settings(QSettings &settings) const
 
 	settings.setValue("decoders", (int)(stack_.size()));
 
+	// Save decoder stack
 	int decoder_idx = 0;
 	for (shared_ptr<decode::Decoder> decoder : stack_) {
 		settings.beginGroup("decoder" + QString::number(decoder_idx++));
@@ -424,13 +425,37 @@ void DecodeSignal::save_settings(QSettings &settings) const
 		settings.endGroup();
 	}
 
-	// TODO Save channel mapping and decoder options
+	// Save channel mapping
+	settings.setValue("channels", (int)channels_.size());
+
+	for (unsigned int channel_id = 0; channel_id < channels_.size(); channel_id++) {
+		auto channel = find_if(channels_.begin(), channels_.end(),
+			[&](data::DecodeChannel ch) { return ch.id == channel_id; });
+
+		if (channel == channels_.end()) {
+			qDebug() << "ERROR: Gap in channel index:" << channel_id;
+			continue;
+		}
+
+		settings.beginGroup("channel" + QString::number(channel_id));
+
+		settings.setValue("name", channel->name);  // Useful for debugging
+		settings.setValue("initial_pin_state", channel->initial_pin_state);
+
+		if (channel->assigned_signal)
+			settings.setValue("assigned_signal_name", channel->assigned_signal->name());
+
+		settings.endGroup();
+	}
+
+	// TODO Save decoder options
 }
 
 void DecodeSignal::restore_settings(QSettings &settings)
 {
 	SignalBase::restore_settings(settings);
 
+	// Restore decoder stack
 	GSList *dec_list = g_slist_copy((GSList*)srd_decoder_list());
 
 	int decoders = settings.value("decoders").toInt();
@@ -457,7 +482,37 @@ void DecodeSignal::restore_settings(QSettings &settings)
 		settings.endGroup();
 	}
 
-	// TODO Restore channel mapping and decoder options
+	// Restore channel mapping
+	unsigned int channels = settings.value("channels").toInt();
+
+	const unordered_set< shared_ptr<data::SignalBase> > signalbases =
+		session_.signalbases();
+
+	for (unsigned int channel_id = 0; channel_id < channels; channel_id++) {
+		auto channel = find_if(channels_.begin(), channels_.end(),
+			[&](data::DecodeChannel ch) { return ch.id == channel_id; });
+
+		if (channel == channels_.end()) {
+			qDebug() << "ERROR: Non-existant channel index:" << channel_id;
+			continue;
+		}
+
+		settings.beginGroup("channel" + QString::number(channel_id));
+
+		QString assigned_signal_name = settings.value("assigned_signal_name").toString();
+
+		for (shared_ptr<data::SignalBase> signal : signalbases)
+			if (signal->name() == assigned_signal_name)
+				channel->assigned_signal = signal.get();
+
+		channel->initial_pin_state = settings.value("initial_pin_state").toInt();
+
+		settings.endGroup();
+	}
+
+	begin_decode();
+
+	// TODO Restore decoder options
 }
 
 void DecodeSignal::update_channel_list()
