@@ -152,10 +152,12 @@ private:
 
 Q_SIGNALS:
 	void new_annotations();
+	void decode_finished();
 	void channels_updated();
 
 private Q_SLOTS:
 	void on_capture_state_changed(int state);
+	void on_data_cleared();
 	void on_data_received();
 
 private:

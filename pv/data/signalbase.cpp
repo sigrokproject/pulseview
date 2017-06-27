@@ -181,6 +181,7 @@ void SignalBase::set_conversion_type(ConversionType t)
 
 		// Discard converted data
 		converted_data_.reset();
+		samples_cleared();
 	}
 
 	conversion_type_ = t;

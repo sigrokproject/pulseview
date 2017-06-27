@@ -184,6 +184,7 @@ public:
 private Q_SLOTS:
 	void on_new_annotations();
 	void on_delayed_trace_update();
+	void on_decode_finished();
 
 	void on_delete();
 

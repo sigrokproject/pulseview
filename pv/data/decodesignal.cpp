@@ -69,19 +69,7 @@ DecodeSignal::DecodeSignal(pv::Session &session) :
 
 DecodeSignal::~DecodeSignal()
 {
-	if (decode_thread_.joinable()) {
-		decode_interrupt_ = true;
-		decode_input_cond_.notify_one();
-		decode_thread_.join();
-	}
-
-	if (logic_mux_thread_.joinable()) {
-		logic_mux_interrupt_ = true;
-		logic_mux_cond_.notify_one();
-		logic_mux_thread_.join();
-	}
-
-	stop_srd_session();
+	reset_decode();
 }
 
 const vector< shared_ptr<Decoder> >& DecodeSignal::decoder_stack() const
@@ -144,13 +132,29 @@ bool DecodeSignal::toggle_decoder_visibility(int index)
 
 void DecodeSignal::reset_decode()
 {
+	if (decode_thread_.joinable()) {
+		decode_interrupt_ = true;
+		decode_input_cond_.notify_one();
+		decode_thread_.join();
+	}
+
+	if (logic_mux_thread_.joinable()) {
+		logic_mux_interrupt_ = true;
+		logic_mux_cond_.notify_one();
+		logic_mux_thread_.join();
+	}
+
 	stop_srd_session();
 
 	frame_complete_ = false;
 	samples_decoded_ = 0;
 	error_message_ = QString();
+
 	rows_.clear();
 	class_rows_.clear();
+
+	logic_mux_data_.reset();
+	logic_mux_data_invalid_ = true;
 }
 
 void DecodeSignal::begin_decode()
@@ -674,14 +678,14 @@ void DecodeSignal::decode_data(
 
 		delete[] chunk;
 
-		// Notify the frontend that we processed some data and
-		// possibly have new annotations as well
-		new_annotations();
-
 		{
 			lock_guard<mutex> lock(output_mutex_);
 			samples_decoded_ = chunk_end;
 		}
+
+		// Notify the frontend that we processed some data and
+		// possibly have new annotations as well
+		new_annotations();
 	}
 }
 
@@ -711,9 +715,12 @@ void DecodeSignal::decode_proc()
 				decode_data(abs_start_samplenum, sample_count);
 				abs_start_samplenum += sample_count;
 			}
-		} while (error_message_.isEmpty() && (sample_count > 0));
+		} while (error_message_.isEmpty() && (sample_count > 0) && !decode_interrupt_);
 
-		if (error_message_.isEmpty()) {
+		if (error_message_.isEmpty() && !decode_interrupt_) {
+			if (sample_count == 0)
+				decode_finished();
+
 			// Wait for new input data or an interrupt was requested
 			unique_lock<mutex> input_wait_lock(input_mutex_);
 			decode_input_cond_.wait(input_wait_lock);
@@ -769,6 +776,7 @@ void DecodeSignal::stop_srd_session()
 void DecodeSignal::connect_input_notifiers()
 {
 	// Disconnect the notification slot from the previous set of signals
+	disconnect(this, SLOT(on_data_cleared()));
 	disconnect(this, SLOT(on_data_received()));
 
 	// Connect the currently used signals to our slot
@@ -776,8 +784,10 @@ void DecodeSignal::connect_input_notifiers()
 		if (!ch.assigned_signal)
 			continue;
 
-		shared_ptr<Logic> logic_data = ch.assigned_signal->logic_data();
-		connect(logic_data.get(), SIGNAL(samples_added(QObject*, uint64_t, uint64_t)),
+		const data::SignalBase *signal = ch.assigned_signal;
+		connect(signal, SIGNAL(samples_cleared()),
+			this, SLOT(on_data_cleared()));
+		connect(signal, SIGNAL(samples_added(QObject*, uint64_t, uint64_t)),
 			this, SLOT(on_data_received()));
 	}
 }
@@ -830,9 +840,17 @@ void DecodeSignal::on_capture_state_changed(int state)
 		begin_decode();
 }
 
+void DecodeSignal::on_data_cleared()
+{
+	reset_decode();
+}
+
 void DecodeSignal::on_data_received()
 {
-	logic_mux_cond_.notify_one();
+	if (!logic_mux_thread_.joinable())
+		begin_decode();
+	else
+		logic_mux_cond_.notify_one();
 }
 
 } // namespace data
