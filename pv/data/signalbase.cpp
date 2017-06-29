@@ -310,8 +310,9 @@ void SignalBase::conversion_thread_proc(QObject* segment)
 
 				if (conversion_type_ == A2LConversionBySchmittTrigger) {
 					const float amplitude = max_v - min_v;
-					const float lo_thr = min_v + (amplitude * 0.1);  // 10% above min
-					const float hi_thr = max_v - (amplitude * 0.1);  // 10% below max
+					const float center = min_v + (amplitude / 2);
+					const float lo_thr = center - (amplitude * 0.15); // 15% margin
+					const float hi_thr = center + (amplitude * 0.15); // 15% margin
 					uint8_t state = 0;  // TODO Use value of logic sample n-1 instead of 0
 
 					// Convert as many sample blocks as we can
