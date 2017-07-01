@@ -91,6 +91,9 @@ using sigrok::Session;
 using Glib::VariantBase;
 
 namespace pv {
+
+shared_ptr<sigrok::Context> Session::sr_context;
+
 Session::Session(DeviceManager &device_manager, QString name) :
 	device_manager_(device_manager),
 	default_name_(name),

@@ -100,6 +100,8 @@ public:
 		Running
 	};
 
+	static shared_ptr<sigrok::Context> sr_context;
+
 public:
 	Session(DeviceManager &device_manager, QString name);
 

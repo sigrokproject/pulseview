@@ -36,6 +36,7 @@
 #include "pv/application.hpp"
 #include "pv/devicemanager.hpp"
 #include "pv/mainwindow.hpp"
+#include "pv/session.hpp"
 #ifdef ANDROID
 #include <libsigrokandroidutils/libsigrokandroidutils.h>
 #include "android/assetreader.hpp"
@@ -162,6 +163,8 @@ int main(int argc, char *argv[])
 
 	// Initialise libsigrok
 	context = sigrok::Context::create();
+	pv::Session::sr_context = context;
+
 #ifdef ANDROID
 	context->set_resource_reader(&asset_reader);
 #endif
