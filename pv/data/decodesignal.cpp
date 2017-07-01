@@ -749,12 +749,24 @@ void DecodeSignal::query_input_metadata()
 	// TODO Currently we assume all channels have the same sample rate
 	// and start time
 	bool samplerate_valid = false;
+	data::DecodeChannel *any_channel;
+	shared_ptr<Logic> logic_data;
 
-	auto any_channel = find_if(channels_.begin(), channels_.end(),
-		[](data::DecodeChannel ch) { return ch.assigned_signal; });
+	do {
+		any_channel = &(*find_if(channels_.begin(), channels_.end(),
+			[](data::DecodeChannel ch) { return ch.assigned_signal; }));
 
-	shared_ptr<Logic> logic_data =
-		any_channel->assigned_signal->logic_data();
+		logic_data = any_channel->assigned_signal->logic_data();
+
+		if (!logic_data) {
+			// Wait until input data is available or an interrupt was requested
+			unique_lock<mutex> input_wait_lock(input_mutex_);
+			decode_input_cond_.wait(input_wait_lock);
+		}
+	} while (!logic_data && !decode_interrupt_);
+
+	if (decode_interrupt_)
+		return;
 
 	do {
 		if (!logic_data->logic_segments().empty()) {
