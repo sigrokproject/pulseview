@@ -180,14 +180,6 @@ private:
 	map<const decode::Row, decode::RowData> rows_;
 	map<pair<const srd_decoder*, int>, decode::Row> class_rows_;
 
-	/**
-	 * This mutex prevents more than one thread from accessing
-	 * libsigrokdecode concurrently.
-	 * @todo A proper solution should be implemented to allow multiple
-	 * decode operations in parallel.
-	 */
-	static mutex global_srd_mutex_;
-
 	mutable mutex input_mutex_, output_mutex_, logic_mux_mutex_;
 	mutable condition_variable decode_input_cond_, logic_mux_cond_;
 	bool frame_complete_;

@@ -49,8 +49,6 @@ const double DecodeSignal::DecodeMargin = 1.0;
 const double DecodeSignal::DecodeThreshold = 0.2;
 const int64_t DecodeSignal::DecodeChunkLength = 256 * 1024;
 
-mutex DecodeSignal::global_srd_mutex_;
-
 
 DecodeSignal::DecodeSignal(pv::Session &session) :
 	SignalBase(nullptr, SignalBase::DecodeChannel),
@@ -822,13 +820,8 @@ void DecodeSignal::decode_proc()
 	do {
 		// Keep processing new samples until we exhaust the input data
 		do {
-			// Prevent any other decode threads from accessing libsigrokdecode
-			lock_guard<mutex> srd_lock(global_srd_mutex_);
-
-			{
-				lock_guard<mutex> input_lock(input_mutex_);
-				sample_count = segment_->get_sample_count() - abs_start_samplenum;
-			}
+			lock_guard<mutex> input_lock(input_mutex_);
+			sample_count = segment_->get_sample_count() - abs_start_samplenum;
 
 			if (sample_count > 0) {
 				decode_data(abs_start_samplenum, sample_count);
