@@ -240,8 +240,8 @@ void StoreSession::store_proc(vector< shared_ptr<data::SignalBase> > achannel_li
 				shared_ptr<sigrok::Channel> achannel = (achannel_list.at(i))->channel();
 				shared_ptr<data::AnalogSegment> asegment = asegment_list.at(i);
 
-				const float *adata =
-					asegment->get_samples(start_sample_, start_sample_ + packet_len);
+				float *adata = new float[packet_len];
+				asegment->get_samples(start_sample_, start_sample_ + packet_len, adata);
 
 				auto analog = context->create_analog_packet(
 					vector<shared_ptr<sigrok::Channel> >{achannel},
@@ -257,11 +257,11 @@ void StoreSession::store_proc(vector< shared_ptr<data::SignalBase> > achannel_li
 			}
 
 			if (lsegment) {
-				const uint8_t* ldata =
-					lsegment->get_samples(start_sample_, start_sample_ + packet_len);
+				const size_t data_size = packet_len * lunit_size;
+				uint8_t* ldata = new uint8_t[data_size];
+				lsegment->get_samples(start_sample_, start_sample_ + packet_len, ldata);
 
-				const size_t length = packet_len * lunit_size;
-				auto logic = context->create_logic_packet((void*)ldata, length, lunit_size);
+				auto logic = context->create_logic_packet((void*)ldata, data_size, lunit_size);
 				const string ldata_str = output_->receive(logic);
 
 				if (output_stream_.is_open())

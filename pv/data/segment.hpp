@@ -76,7 +76,7 @@ public:
 protected:
 	void append_single_sample(void *data);
 	void append_samples(void *data, uint64_t samples);
-	uint8_t* get_raw_samples(uint64_t start, uint64_t count) const;
+	void get_raw_samples(uint64_t start, uint64_t count, uint8_t *dest) const;
 
 	SegmentRawDataIterator* begin_raw_sample_iteration(uint64_t start);
 	void continue_raw_sample_iteration(SegmentRawDataIterator* it, uint64_t increase);

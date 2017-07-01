@@ -274,6 +274,7 @@ void SignalBase::conversion_thread_proc(QObject* segment)
 				float min_v, max_v;
 				tie(min_v, max_v) = asegment->get_min_max();
 
+				float* asamples = new float[ConversionBlockSize];
 				vector<uint8_t> lsamples;
 				lsamples.reserve(ConversionBlockSize);
 
@@ -284,23 +285,21 @@ void SignalBase::conversion_thread_proc(QObject* segment)
 
 					// Convert as many sample blocks as we can
 					while ((end_sample - i) > ConversionBlockSize) {
-						const float* asamples = asegment->get_samples(i, i + ConversionBlockSize);
+						asegment->get_samples(i, i + ConversionBlockSize, asamples);
 						for (uint32_t j = 0; j < ConversionBlockSize; j++)
 							lsamples.push_back(convert_a2l_threshold(threshold, asamples[j]));
 						lsegment->append_payload(lsamples.data(), lsamples.size());
 						samples_added(lsegment, i, i + ConversionBlockSize);
 						i += ConversionBlockSize;
 						lsamples.clear();
-						delete[] asamples;
 					}
 
 					// Convert remaining samples
-					const float* asamples = asegment->get_samples(i, end_sample);
+					asegment->get_samples(i, end_sample, asamples);
 					for (uint32_t j = 0; j < (end_sample - i); j++)
 						lsamples.push_back(convert_a2l_threshold(threshold, asamples[j]));
 					lsegment->append_payload(lsamples.data(), lsamples.size());
 					samples_added(lsegment, i, end_sample);
-					delete[] asamples;
 				}
 
 				if (conversion_type_ == A2LConversionBySchmittTrigger) {
@@ -311,27 +310,27 @@ void SignalBase::conversion_thread_proc(QObject* segment)
 
 					// Convert as many sample blocks as we can
 					while ((end_sample - i) > ConversionBlockSize) {
-						const float* asamples = asegment->get_samples(i, i + ConversionBlockSize);
+						asegment->get_samples(i, i + ConversionBlockSize, asamples);
 						for (uint32_t j = 0; j < ConversionBlockSize; j++)
 							lsamples.push_back(convert_a2l_schmitt_trigger(lo_thr, hi_thr, asamples[j], state));
 						lsegment->append_payload(lsamples.data(), lsamples.size());
 						samples_added(lsegment, i, i + ConversionBlockSize);
 						i += ConversionBlockSize;
 						lsamples.clear();
-						delete[] asamples;
 					}
 
 					// Convert remaining samples
-					const float* asamples = asegment->get_samples(i, end_sample);
+					asegment->get_samples(i, end_sample, asamples);
 					for (uint32_t j = 0; j < (end_sample - i); j++)
 						lsamples.push_back(convert_a2l_schmitt_trigger(lo_thr, hi_thr, asamples[j], state));
 					lsegment->append_payload(lsamples.data(), lsamples.size());
 					samples_added(lsegment, i, end_sample);
-					delete[] asamples;
 				}
 
 				// If acquisition is ongoing, start-/endsample may have changed
 				end_sample = asegment->get_sample_count();
+
+				delete[] asamples;
 			}
 		}
 

@@ -341,16 +341,16 @@ void AnalogSignal::paint_trace(QPainter &p,
 
 	int64_t sample_count = min(points_count, TracePaintBlockSize);
 	int64_t block_sample = 0;
-	const float *sample_block = segment->get_samples(start, start + sample_count);
+	float *sample_block = new float[TracePaintBlockSize];
+	segment->get_samples(start, start + sample_count, sample_block);
 
 	const int w = 2;
 	for (int64_t sample = start; sample != end; sample++, block_sample++) {
 
 		if (block_sample == TracePaintBlockSize) {
 			block_sample = 0;
-			delete[] sample_block;
 			sample_count = min(points_count - sample, TracePaintBlockSize);
-			sample_block = segment->get_samples(sample, sample + sample_count);
+			segment->get_samples(sample, sample + sample_count, sample_block);
 		}
 
 		const float x = (sample / samples_per_pixel -

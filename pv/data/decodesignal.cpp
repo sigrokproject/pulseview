@@ -653,7 +653,10 @@ void DecodeSignal::mux_logic_samples(const int64_t start, const int64_t end)
 			const shared_ptr<Logic> logic_data = ch.assigned_signal->logic_data();
 			const shared_ptr<LogicSegment> segment = logic_data->logic_segments().front();
 			segments.push_back(segment);
-			signal_data.push_back(segment->get_samples(start, end));
+
+			uint8_t* data = new uint8_t[(end - start) * segment->unit_size()];
+			segment->get_samples(start, end, data);
+			signal_data.push_back(data);
 
 			const int bitpos = ch.assigned_signal->logic_bit_index();
 			signal_in_bytepos.push_back(bitpos / 8);
@@ -784,10 +787,12 @@ void DecodeSignal::decode_data(
 		const int64_t chunk_end = min(i + chunk_sample_count,
 			abs_start_samplenum + sample_count);
 
-		const uint8_t* chunk = segment_->get_samples(i, chunk_end);
+		int64_t data_size = (chunk_end - i) * unit_size;
+		uint8_t* chunk = new uint8_t[data_size];
+		segment_->get_samples(i, chunk_end, chunk);
 
 		if (srd_session_send(srd_session_, i, chunk_end, chunk,
-				(chunk_end - i) * unit_size, unit_size) != SRD_OK) {
+				data_size, unit_size) != SRD_OK) {
 			error_message_ = tr("Decoder reported an error");
 			delete[] chunk;
 			break;

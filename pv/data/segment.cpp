@@ -171,15 +171,16 @@ void Segment::append_samples(void* data, uint64_t samples)
 	sample_count_ += samples;
 }
 
-uint8_t* Segment::get_raw_samples(uint64_t start, uint64_t count) const
+void Segment::get_raw_samples(uint64_t start, uint64_t count,
+	uint8_t* dest) const
 {
 	assert(start < sample_count_);
 	assert(start + count <= sample_count_);
 	assert(count > 0);
+	assert(dest != nullptr);
 
 	lock_guard<recursive_mutex> lock(mutex_);
 
-	uint8_t* dest = new uint8_t[count * unit_size_];
 	uint8_t* dest_ptr = dest;
 
 	uint64_t chunk_num = (start * unit_size_) / chunk_size_;
@@ -199,8 +200,6 @@ uint8_t* Segment::get_raw_samples(uint64_t start, uint64_t count) const
 		chunk_num++;
 		chunk_offs = 0;
 	}
-
-	return dest;
 }
 
 SegmentRawDataIterator* Segment::begin_raw_sample_iteration(uint64_t start)

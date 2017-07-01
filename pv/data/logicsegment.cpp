@@ -166,18 +166,19 @@ void LogicSegment::append_payload(void *data, uint64_t data_size)
 			prev_sample_count + 1);
 }
 
-const uint8_t* LogicSegment::get_samples(int64_t start_sample,
-	int64_t end_sample) const
+void LogicSegment::get_samples(int64_t start_sample,
+	int64_t end_sample,	uint8_t* dest) const
 {
 	assert(start_sample >= 0);
 	assert(start_sample <= (int64_t)sample_count_);
 	assert(end_sample >= 0);
 	assert(end_sample <= (int64_t)sample_count_);
 	assert(start_sample <= end_sample);
+	assert(dest != nullptr);
 
 	lock_guard<recursive_mutex> lock(mutex_);
 
-	return get_raw_samples(start_sample, (end_sample - start_sample));
+	get_raw_samples(start_sample, (end_sample - start_sample), dest);
 }
 
 SegmentLogicDataIterator* LogicSegment::begin_sample_iteration(uint64_t start)
@@ -295,7 +296,8 @@ uint64_t LogicSegment::get_unpacked_sample(uint64_t index) const
 {
 	assert(index < sample_count_);
 
-	const uint8_t* data = get_raw_samples(index, 1);
+	uint8_t* data = new uint8_t[unit_size_];
+	get_raw_samples(index, 1, data);
 	uint64_t sample = unpack_sample(data);
 	delete[] data;
 

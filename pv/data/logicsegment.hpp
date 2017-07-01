@@ -84,7 +84,7 @@ public:
 	void append_payload(shared_ptr<sigrok::Logic> logic);
 	void append_payload(void *data, uint64_t data_size);
 
-	const uint8_t* get_samples(int64_t start_sample, int64_t end_sample) const;
+	void get_samples(int64_t start_sample, int64_t end_sample, uint8_t* dest) const;
 
 	SegmentLogicDataIterator* begin_sample_iteration(uint64_t start);
 	void continue_sample_iteration(SegmentLogicDataIterator* it, uint64_t increase);
