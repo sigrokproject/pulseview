@@ -43,7 +43,19 @@ class Row;
 
 class DecoderStack;
 class Logic;
+class SignalBase;
 class SignalData;
+
+struct DecodeChannel
+{
+	uint16_t id;  // Also tells which bit within a sample represents this channel
+	const bool is_optional;
+	const pv::data::SignalBase *assigned_signal;
+	const QString name, desc;
+	int initial_pin_state;
+	const shared_ptr<pv::data::decode::Decoder> decoder_;
+	const srd_channel *pdch_;
+};
 
 class DecodeSignal : public SignalBase
 {
@@ -63,6 +75,11 @@ public:
 
 	QString error_message() const;
 
+	const list<data::DecodeChannel> get_channels() const;
+	void assign_signal(const uint16_t channel_id, const SignalBase *signal);
+
+	void set_initial_pin_state(const uint16_t channel_id, const int init_state);
+
 	vector<decode::Row> visible_rows() const;
 
 	/**
@@ -73,14 +90,19 @@ public:
 		const decode::Row &row, uint64_t start_sample,
 		uint64_t end_sample) const;
 
+private:
+	void update_channel_list();
+
 Q_SIGNALS:
 	void new_annotations();
+	void channels_updated();
 
 private Q_SLOTS:
 	void on_new_annotations();
 
 private:
 	shared_ptr<pv::data::DecoderStack> decoder_stack_;
+	list<data::DecodeChannel> channels_;
 };
 
 } // namespace data

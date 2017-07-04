@@ -62,10 +62,6 @@ public:
 	void set_channels(map<const srd_channel*,
 		shared_ptr<data::SignalBase> > channels);
 
-	void set_initial_pins(GArray *initial_pins);
-
-	GArray *initial_pins() const;
-
 	const map<string, GVariant*>& options() const;
 
 	void set_option(const char *id, GVariant *value);
@@ -82,7 +78,6 @@ private:
 	bool shown_;
 
 	map<const srd_channel*, shared_ptr<pv::data::SignalBase> > channels_;
-	GArray *initial_pins_;
 	map<string, GVariant*> options_;
 };
 

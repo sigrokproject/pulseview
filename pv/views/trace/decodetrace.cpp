@@ -71,6 +71,8 @@ using std::vector;
 
 using pv::data::decode::Annotation;
 using pv::data::decode::Row;
+using pv::data::DecodeChannel;
+using pv::data::DecodeSignal;
 
 namespace pv {
 namespace views {
@@ -148,6 +150,9 @@ DecodeTrace::DecodeTrace(pv::Session &session,
 
 	connect(decode_signal_.get(), SIGNAL(new_annotations()),
 		this, SLOT(on_new_annotations()));
+	connect(decode_signal_.get(), SIGNAL(channels_updated()),
+		this, SLOT(on_channels_updated()));
+
 	connect(&delete_mapper_, SIGNAL(mapped(int)),
 		this, SLOT(on_delete_decoder(int)));
 	connect(&show_hide_mapper_, SIGNAL(mapped(int)),
@@ -296,7 +301,8 @@ void DecodeTrace::populate_popup_form(QWidget *parent, QFormLayout *form)
 
 	// Add the decoder options
 	bindings_.clear();
-	channel_selectors_.clear();
+	channel_id_map_.clear();
+	init_state_map_.clear();
 	decoder_forms_.clear();
 
 	const list< shared_ptr<Decoder> >& stack =
@@ -774,7 +780,6 @@ void DecodeTrace::create_decoder_form(int index,
 	shared_ptr<data::decode::Decoder> &dec, QWidget *parent,
 	QFormLayout *form)
 {
-	const GSList *l;
 	GlobalSettings settings;
 
 	assert(dec);
@@ -803,60 +808,35 @@ void DecodeTrace::create_decoder_form(int index,
 	QFormLayout *const decoder_form = new QFormLayout;
 	group->add_layout(decoder_form);
 
-	// Add the mandatory channels
-	for (l = decoder->channels; l; l = l->next) {
-		const struct srd_channel *const pdch =
-			(struct srd_channel *)l->data;
+	const list<DecodeChannel> channels = decode_signal_->get_channels();
 
-		QComboBox *const combo = create_channel_selector(parent, dec, pdch);
-		QComboBox *const combo_initial_pin = create_channel_selector_initial_pin(parent, dec, pdch);
+	// Add the channels
+	for (DecodeChannel ch : channels) {
+		// Ignore channels not part of the decoder we create the form for
+		if (ch.decoder_ != dec)
+			continue;
 
-		connect(combo, SIGNAL(currentIndexChanged(int)),
-			this, SLOT(on_channel_selected(int)));
-		connect(combo_initial_pin, SIGNAL(currentIndexChanged(int)),
-			this, SLOT(on_initial_pin_selected(int)));
+		QComboBox *const combo = create_channel_selector(parent, &ch);
+		QComboBox *const combo_init_state = create_channel_selector_init_state(parent, &ch);
 
-		QHBoxLayout *const hlayout = new QHBoxLayout;
-		hlayout->addWidget(combo);
-		hlayout->addWidget(combo_initial_pin);
-
-		if (!settings.value(GlobalSettings::Key_Dec_InitialStateConfigurable).toBool())
-			combo_initial_pin->hide();
-
-		decoder_form->addRow(tr("<b>%1</b> (%2) *")
-			.arg(QString::fromUtf8(pdch->name),
-			     QString::fromUtf8(pdch->desc)), hlayout);
-
-		const ChannelSelector s = {combo, combo_initial_pin, dec, pdch};
-		channel_selectors_.push_back(s);
-	}
-
-	// Add the optional channels
-	for (l = decoder->opt_channels; l; l = l->next) {
-		const struct srd_channel *const pdch =
-			(struct srd_channel *)l->data;
-
-		QComboBox *const combo = create_channel_selector(parent, dec, pdch);
-		QComboBox *const combo_initial_pin = create_channel_selector_initial_pin(parent, dec, pdch);
+		channel_id_map_[combo] = ch.id;
+		init_state_map_[combo_init_state] = ch.id;
 
 		connect(combo, SIGNAL(currentIndexChanged(int)),
 			this, SLOT(on_channel_selected(int)));
-		connect(combo_initial_pin, SIGNAL(currentIndexChanged(int)),
-			this, SLOT(on_initial_pin_selected(int)));
+		connect(combo_init_state, SIGNAL(currentIndexChanged(int)),
+			this, SLOT(on_init_state_changed(int)));
 
 		QHBoxLayout *const hlayout = new QHBoxLayout;
 		hlayout->addWidget(combo);
-		hlayout->addWidget(combo_initial_pin);
+		hlayout->addWidget(combo_init_state);
 
 		if (!settings.value(GlobalSettings::Key_Dec_InitialStateConfigurable).toBool())
-			combo_initial_pin->hide();
+			combo_init_state->hide();
 
-		decoder_form->addRow(tr("<b>%1</b> (%2)")
-			.arg(QString::fromUtf8(pdch->name),
-			     QString::fromUtf8(pdch->desc)), hlayout);
-
-		const ChannelSelector s = {combo, combo_initial_pin, dec, pdch};
-		channel_selectors_.push_back(s);
+		const QString required_flag = ch.is_optional ? QString() : QString("*");
+		decoder_form->addRow(tr("<b>%1</b> (%2) %3")
+			.arg(ch.name, ch.desc, required_flag), hlayout);
 	}
 
 	shared_ptr<pv::data::DecoderStack> decoder_stack = base_->decoder_stack();
@@ -872,14 +852,11 @@ void DecodeTrace::create_decoder_form(int index,
 	decoder_forms_.push_back(group);
 }
 
-QComboBox* DecodeTrace::create_channel_selector(
-	QWidget *parent, const shared_ptr<data::decode::Decoder> &dec,
-	const srd_channel *const pdch)
+QComboBox* DecodeTrace::create_channel_selector(QWidget *parent, const DecodeChannel *ch)
 {
-	assert(dec);
-
 	const auto sigs(session_.signalbases());
 
+	// Sort signals in natural order
 	vector< shared_ptr<data::SignalBase> > sig_list(sigs.begin(), sigs.end());
 	sort(sig_list.begin(), sig_list.end(),
 		[](const shared_ptr<data::SignalBase> &a,
@@ -887,13 +864,11 @@ QComboBox* DecodeTrace::create_channel_selector(
 			return strnatcasecmp(a->name().toStdString(),
 				b->name().toStdString()) < 0; });
 
-	const auto channel_iter = dec->channels().find(pdch);
-
 	QComboBox *selector = new QComboBox(parent);
 
 	selector->addItem("-", qVariantFromValue((void*)nullptr));
 
-	if (channel_iter == dec->channels().end())
+	if (!ch->assigned_signal)
 		selector->setCurrentIndex(0);
 
 	for (const shared_ptr<data::SignalBase> &b : sig_list) {
@@ -902,18 +877,16 @@ QComboBox* DecodeTrace::create_channel_selector(
 			selector->addItem(b->name(),
 				qVariantFromValue((void*)b.get()));
 
-			if (channel_iter != dec->channels().end() &&
-				(*channel_iter).second == b)
-				selector->setCurrentIndex(
-					selector->count() - 1);
+			if (ch->assigned_signal == b.get())
+				selector->setCurrentIndex(selector->count() - 1);
 		}
 	}
 
 	return selector;
 }
 
-QComboBox* DecodeTrace::create_channel_selector_initial_pin(QWidget *parent,
-	const shared_ptr<data::decode::Decoder> &dec, const srd_channel *const pdch)
+QComboBox* DecodeTrace::create_channel_selector_init_state(QWidget *parent,
+	const DecodeChannel *ch)
 {
 	QComboBox *selector = new QComboBox(parent);
 
@@ -921,61 +894,11 @@ QComboBox* DecodeTrace::create_channel_selector_initial_pin(QWidget *parent,
 	selector->addItem("1", qVariantFromValue((int)SRD_INITIAL_PIN_HIGH));
 	selector->addItem("X", qVariantFromValue((int)SRD_INITIAL_PIN_SAME_AS_SAMPLE0));
 
-	// Default to index 2 (SRD_INITIAL_PIN_SAME_AS_SAMPLE0).
-	const int idx = (!dec->initial_pins()) ? 2 : dec->initial_pins()->data[pdch->order];
-	selector->setCurrentIndex(idx);
+	selector->setCurrentIndex(ch->initial_pin_state);
 
 	selector->setToolTip("Initial (assumed) pin value before the first sample");
 
 	return selector;
-}
-
-void DecodeTrace::commit_decoder_channels(shared_ptr<data::decode::Decoder> &dec)
-{
-	assert(dec);
-
-	map<const srd_channel*, shared_ptr<data::SignalBase> > channel_map;
-
-	const unordered_set< shared_ptr<data::SignalBase> >
-		sigs(session_.signalbases());
-
-	GArray *const initial_pins = g_array_sized_new(FALSE, TRUE,
-		sizeof(uint8_t), channel_selectors_.size());
-	g_array_set_size(initial_pins, channel_selectors_.size());
-
-	for (const ChannelSelector &s : channel_selectors_) {
-		if (s.decoder_ != dec)
-			break;
-
-		const data::SignalBase *const selection =
-			(data::SignalBase*)s.combo_->itemData(
-				s.combo_->currentIndex()).value<void*>();
-
-		for (shared_ptr<data::SignalBase> sig : sigs)
-			if (sig.get() == selection) {
-				channel_map[s.pdch_] = sig;
-				break;
-			}
-
-		int selection_initial_pin = s.combo_initial_pin_->itemData(
-			s.combo_initial_pin_->currentIndex()).value<int>();
-
-		initial_pins->data[s.pdch_->order] = selection_initial_pin;
-	}
-
-	dec->set_channels(channel_map);
-	dec->set_initial_pins(initial_pins);
-}
-
-void DecodeTrace::commit_channels()
-{
-	shared_ptr<pv::data::DecoderStack> decoder_stack = base_->decoder_stack();
-
-	assert(decoder_stack);
-	for (shared_ptr<data::decode::Decoder> dec : decoder_stack->stack())
-		commit_decoder_channels(dec);
-
-	decoder_stack->begin_decode();
 }
 
 void DecodeTrace::on_new_annotations()
@@ -996,12 +919,35 @@ void DecodeTrace::on_delete()
 
 void DecodeTrace::on_channel_selected(int)
 {
-	commit_channels();
+	QComboBox *cb = qobject_cast<QComboBox*>(QObject::sender());
+
+	// Determine signal that was selected
+	const data::SignalBase *signal =
+		(data::SignalBase*)cb->itemData(cb->currentIndex()).value<void*>();
+
+	// Determine decode channel ID this combo box is the channel selector for
+	const uint16_t id = channel_id_map_.at(cb);
+
+	decode_signal_->assign_signal(id, signal);
 }
 
-void DecodeTrace::on_initial_pin_selected(int)
+void DecodeTrace::on_channels_updated()
 {
-	commit_channels();
+	if (owner_)
+		owner_->row_item_appearance_changed(false, true);
+}
+
+void DecodeTrace::on_init_state_changed(int)
+{
+	QComboBox *cb = qobject_cast<QComboBox*>(QObject::sender());
+
+	// Determine inital pin state that was selected
+	int init_state = cb->itemData(cb->currentIndex()).value<int>();
+
+	// Determine decode channel ID this combo box is the channel selector for
+	const uint16_t id = init_state_map_.at(cb);
+
+	decode_signal_->set_initial_pin_state(id, init_state);
 }
 
 void DecodeTrace::on_stack_decoder(srd_decoder *decoder)

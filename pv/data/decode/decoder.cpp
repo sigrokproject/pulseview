@@ -37,8 +37,7 @@ namespace decode {
 
 Decoder::Decoder(const srd_decoder *const dec) :
 	decoder_(dec),
-	shown_(true),
-	initial_pins_(nullptr)
+	shown_(true)
 {
 }
 
@@ -73,18 +72,6 @@ void Decoder::set_channels(map<const srd_channel*,
 	shared_ptr<data::SignalBase> > channels)
 {
 	channels_ = channels;
-}
-
-void Decoder::set_initial_pins(GArray *initial_pins)
-{
-	if (initial_pins_)
-		g_array_free(initial_pins_, TRUE);
-	initial_pins_ = initial_pins;
-}
-
-GArray *Decoder::initial_pins() const
-{
-	return initial_pins_;
 }
 
 const map<string, GVariant*>& Decoder::options() const
@@ -143,11 +130,20 @@ srd_decoder_inst* Decoder::create_decoder_inst(srd_session *session) const
 		return nullptr;
 
 	// Setup the channels
+	GArray *const init_pin_states = g_array_sized_new(FALSE, TRUE,
+		sizeof(uint8_t), channels_.size());
+
+	g_array_set_size(init_pin_states, channels_.size());
+
 	GHashTable *const channels = g_hash_table_new_full(g_str_hash,
 		g_str_equal, g_free, (GDestroyNotify)g_variant_unref);
 
 	for (const auto& channel : channels_) {
 		shared_ptr<data::SignalBase> b(channel.second);
+
+//		init_pin_states->data[pdch->order] =
+//			channel.initial_pin_state;
+
 		GVariant *const gvar = g_variant_new_int32(b->index());
 		g_variant_ref_sink(gvar);
 		g_hash_table_insert(channels, channel.first->id, gvar);
@@ -155,7 +151,8 @@ srd_decoder_inst* Decoder::create_decoder_inst(srd_session *session) const
 
 	srd_inst_channel_set_all(decoder_inst, channels);
 
-	srd_inst_initial_pins_set_all(decoder_inst, initial_pins_);
+//	srd_inst_initial_pins_set_all(decoder_inst, initial_pin_states);
+	g_array_free(init_pin_states, TRUE);
 
 	return decoder_inst;
 }

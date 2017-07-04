@@ -27,6 +27,7 @@
 #include <memory>
 #include <vector>
 
+#include <QComboBox>
 #include <QSignalMapper>
 
 #include <pv/binding/decoder.hpp>
@@ -51,6 +52,7 @@ class Session;
 namespace data {
 class DecoderStack;
 class SignalBase;
+struct DecodeChannel;
 class DecodeSignal;
 
 namespace decode {
@@ -72,15 +74,6 @@ class DecodeTrace : public Trace
 	Q_OBJECT
 
 private:
-	struct ChannelSelector
-	{
-		const QComboBox *combo_;
-		const QComboBox *combo_initial_pin_;
-		const shared_ptr<pv::data::decode::Decoder> decoder_;
-		const srd_channel *pdch_;
-	};
-
-private:
 	static const QColor DecodeColours[4];
 	static const QColor ErrorBgColour;
 	static const QColor NoDecodeColour;
@@ -98,8 +91,6 @@ public:
 		int index);
 
 	bool enabled() const;
-
-	const shared_ptr<pv::data::DecoderStack>& decoder() const;
 
 	shared_ptr<data::SignalBase> base() const;
 
@@ -181,16 +172,9 @@ private:
 		QWidget *parent, QFormLayout *form);
 
 	QComboBox* create_channel_selector(QWidget *parent,
-		const shared_ptr<pv::data::decode::Decoder> &dec,
-		const srd_channel *const pdch);
-
-	QComboBox* create_channel_selector_initial_pin(QWidget *parent,
-		const shared_ptr<pv::data::decode::Decoder> &dec,
-		const srd_channel *const pdch);
-
-	void commit_decoder_channels(shared_ptr<data::decode::Decoder> &dec);
-
-	void commit_channels();
+		const data::DecodeChannel *ch);
+	QComboBox* create_channel_selector_init_state(QWidget *parent,
+		const data::DecodeChannel *ch);
 
 public:
 	void hover_point_changed();
@@ -202,7 +186,9 @@ private Q_SLOTS:
 
 	void on_channel_selected(int);
 
-	void on_initial_pin_selected(int);
+	void on_channels_updated();
+
+	void on_init_state_changed(int);
 
 	void on_stack_decoder(srd_decoder *decoder);
 
@@ -217,9 +203,10 @@ private:
 	vector<data::decode::Row> visible_rows_;
 	uint64_t decode_start_, decode_end_;
 
+	map<QComboBox*, uint16_t> channel_id_map_;  // channel selector -> decode channel ID
+	map<QComboBox*, uint16_t> init_state_map_;  // init state selector -> decode channel ID
 	list< shared_ptr<pv::binding::Decoder> > bindings_;
 
-	list<ChannelSelector> channel_selectors_;
 	vector<pv::widgets::DecoderGroupBox*> decoder_forms_;
 
 	map<data::decode::Row, int> row_title_widths_;
