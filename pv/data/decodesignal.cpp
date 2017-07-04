@@ -47,7 +47,6 @@ namespace data {
 const double DecodeSignal::DecodeMargin = 1.0;
 const double DecodeSignal::DecodeThreshold = 0.2;
 const int64_t DecodeSignal::DecodeChunkLength = 10 * 1024 * 1024;
-const unsigned int DecodeSignal::DecodeNotifyPeriod = 1024;
 
 mutex DecodeSignal::global_srd_mutex_;
 
@@ -59,7 +58,6 @@ DecodeSignal::DecodeSignal(pv::Session &session) :
 	logic_mux_data_invalid_(false),
 	start_time_(0),
 	samplerate_(0),
-	annotation_count_(0),
 	samples_decoded_(0),
 	frame_complete_(false)
 {
@@ -148,7 +146,6 @@ void DecodeSignal::reset_decode()
 {
 	stop_srd_session();
 
-	annotation_count_ = 0;
 	frame_complete_ = false;
 	samples_decoded_ = 0;
 	error_message_ = QString();
@@ -415,11 +412,6 @@ void DecodeSignal::restore_settings(QSettings &settings)
 	// TODO Restore decoder stack, channel mapping and decoder options
 }
 
-uint64_t DecodeSignal::inc_annotation_count()
-{
-	return (annotation_count_++);
-}
-
 void DecodeSignal::update_channel_list()
 {
 	vector<data::DecodeChannel> prev_channels = channels_;
@@ -675,6 +667,10 @@ void DecodeSignal::decode_data(
 
 		delete[] chunk;
 
+		// Notify the frontend that we processed some data and
+		// possibly have new annotations as well
+		new_annotations();
+
 		{
 			lock_guard<mutex> lock(output_mutex_);
 			samples_decoded_ = chunk_end;
@@ -711,9 +707,6 @@ void DecodeSignal::decode_proc()
 		} while (error_message_.isEmpty() && (sample_count > 0));
 
 		if (error_message_.isEmpty()) {
-			// Make sure all annotations are known to the frontend
-			new_annotations();
-
 			// Wait for new input data or an interrupt was requested
 			unique_lock<mutex> input_wait_lock(input_mutex_);
 			decode_input_cond_.wait(input_wait_lock);
@@ -821,10 +814,6 @@ void DecodeSignal::annotation_callback(srd_proto_data *pdata, void *decode_signa
 
 	// Add the annotation
 	(*row_iter).second.push_annotation(a);
-
-	// Notify the frontend every DecodeNotifyPeriod annotations
-	if (ds->inc_annotation_count() % DecodeNotifyPeriod == 0)
-		ds->new_annotations();
 }
 
 void DecodeSignal::on_capture_state_changed(int state)

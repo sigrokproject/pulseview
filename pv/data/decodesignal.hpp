@@ -79,7 +79,6 @@ private:
 	static const double DecodeMargin;
 	static const double DecodeThreshold;
 	static const int64_t DecodeChunkLength;
-	static const unsigned int DecodeNotifyPeriod;
 
 public:
 	DecodeSignal(pv::Session &session);
@@ -129,13 +128,6 @@ public:
 
 	virtual void restore_settings(QSettings &settings);
 
-	/**
-	 * Helper function for static annotation_callback(),
-	 * must be public so the function can access it.
-	 * Don't use from outside this class.
-	 */
-	uint64_t inc_annotation_count();
-
 private:
 	void update_channel_list();
 
@@ -180,7 +172,7 @@ private:
 	pv::util::Timestamp start_time_;
 	double samplerate_;
 
-	int64_t annotation_count_, samples_decoded_;
+	int64_t samples_decoded_;
 
 	vector< shared_ptr<decode::Decoder> > stack_;
 	map<const decode::Row, decode::RowData> rows_;

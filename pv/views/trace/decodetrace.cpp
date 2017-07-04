@@ -90,6 +90,8 @@ const double DecodeTrace::EndCapWidth = 5;
 const int DecodeTrace::RowTitleMargin = 10;
 const int DecodeTrace::DrawPadding = 100;
 
+const int DecodeTrace::MaxTraceUpdateRate = 1; // No more than 1 Hz
+
 const QColor DecodeTrace::Colours[16] = {
 	QColor(0xEF, 0x29, 0x29),
 	QColor(0xF6, 0x6A, 0x32),
@@ -154,6 +156,11 @@ DecodeTrace::DecodeTrace(pv::Session &session,
 		this, SLOT(on_delete_decoder(int)));
 	connect(&show_hide_mapper_, SIGNAL(mapped(int)),
 		this, SLOT(on_show_hide_decoder(int)));
+
+	connect(&delayed_trace_updater_, SIGNAL(timeout()),
+		this, SLOT(on_delayed_trace_update()));
+	delayed_trace_updater_.setSingleShot(true);
+	delayed_trace_updater_.setInterval(1000 / MaxTraceUpdateRate);
 }
 
 bool DecodeTrace::enabled() const
@@ -865,6 +872,12 @@ QComboBox* DecodeTrace::create_channel_selector_init_state(QWidget *parent,
 }
 
 void DecodeTrace::on_new_annotations()
+{
+	if (!delayed_trace_updater_.isActive())
+		delayed_trace_updater_.start();
+}
+
+void DecodeTrace::on_delayed_trace_update()
 {
 	if (owner_)
 		owner_->row_item_appearance_changed(false, true);

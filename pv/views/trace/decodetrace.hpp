@@ -29,6 +29,7 @@
 
 #include <QComboBox>
 #include <QSignalMapper>
+#include <QTimer>
 
 #include <pv/binding/decoder.hpp>
 #include <pv/data/decode/row.hpp>
@@ -81,6 +82,8 @@ private:
 	static const double EndCapWidth;
 	static const int RowTitleMargin;
 	static const int DrawPadding;
+
+	static const int MaxTraceUpdateRate;
 
 	static const QColor Colours[16];
 	static const QColor OutlineColours[16];
@@ -180,6 +183,7 @@ public:
 
 private Q_SLOTS:
 	void on_new_annotations();
+	void on_delayed_trace_update();
 
 	void on_delete();
 
@@ -214,6 +218,8 @@ private:
 	int min_useful_label_width_;
 
 	QSignalMapper delete_mapper_, show_hide_mapper_;
+
+	QTimer delayed_trace_updater_;
 };
 
 } // namespace trace
