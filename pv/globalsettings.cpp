@@ -26,6 +26,7 @@ using std::multimap;
 namespace pv {
 
 const QString GlobalSettings::Key_View_AlwaysZoomToFit = "View_AlwaysZoomToFit";
+const QString GlobalSettings::Key_View_ZoomToFitAfterAcq = "View_ZoomToFitAfterAcq";
 const QString GlobalSettings::Key_View_ColouredBG = "View_ColouredBG";
 const QString GlobalSettings::Key_View_StickyScrolling = "View_StickyScrolling";
 const QString GlobalSettings::Key_View_ShowSamplingPoints = "View_ShowSamplingPoints";
@@ -44,6 +45,10 @@ GlobalSettings::GlobalSettings() :
 
 void GlobalSettings::set_defaults_where_needed()
 {
+	// Enable zoom-to-fit after acquisition by default
+	if (!contains(Key_View_ZoomToFitAfterAcq))
+		setValue(Key_View_ZoomToFitAfterAcq, true);
+
 	// Enable coloured trace backgrounds by default
 	if (!contains(Key_View_ColouredBG))
 		setValue(Key_View_ColouredBG, true);

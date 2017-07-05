@@ -142,7 +142,10 @@ View::View(Session &session, bool is_main_view, QWidget *parent) :
 	trigger_markers_(),
 	hover_point_(-1, -1),
 	scroll_needs_defaults_(true),
-	saved_v_offset_(0)
+	saved_v_offset_(0),
+	scale_at_acq_start_(0),
+	offset_at_acq_start_(0),
+	suppress_zoom_to_fit_after_acq_(false)
 {
 	QVBoxLayout *root_layout = new QVBoxLayout(this);
 	root_layout->setContentsMargins(0, 0, 0, 0);
@@ -356,6 +359,7 @@ void View::restore_settings(QSettings &settings)
 	}
 
 	settings_restored_ = true;
+	suppress_zoom_to_fit_after_acq_ = true;
 }
 
 vector< shared_ptr<TimeItem> > View::time_items() const
@@ -1299,15 +1303,19 @@ void View::signals_changed()
 
 void View::capture_state_updated(int state)
 {
+	GlobalSettings settings;
+
 	if (state == Session::Running) {
 		set_time_unit(util::TimeUnit::Samples);
 
 		trigger_markers_.clear();
 
+		scale_at_acq_start_ = scale_;
+		offset_at_acq_start_ = offset_;
+
 		// Activate "always zoom to fit" if the setting is enabled and we're
 		// the main view of this session (other trace views may be used for
 		// zooming and we don't want to mess them up)
-		GlobalSettings settings;
 		bool state = settings.value(GlobalSettings::Key_View_AlwaysZoomToFit).toBool();
 		if (is_main_view_ && state) {
 			always_zoom_to_fit_ = true;
@@ -1330,6 +1338,19 @@ void View::capture_state_updated(int state)
 			always_zoom_to_fit_ = false;
 			always_zoom_to_fit_changed(always_zoom_to_fit_);
 		}
+
+		bool zoom_to_fit_after_acq =
+			settings.value(GlobalSettings::Key_View_ZoomToFitAfterAcq).toBool();
+
+		// Only perform zoom-to-fit if the user hasn't altered the viewport and
+		// we didn't restore settings in the meanwhile
+		if (zoom_to_fit_after_acq &&
+			!suppress_zoom_to_fit_after_acq_ &&
+			(scale_ == scale_at_acq_start_) &&
+			(offset_ == offset_at_acq_start_))
+			zoom_fit(false);  // We're stopped, so the GUI state doesn't matter
+
+		suppress_zoom_to_fit_after_acq_ = false;
 	}
 }
 

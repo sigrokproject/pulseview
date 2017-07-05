@@ -454,6 +454,16 @@ private:
 
 	// A nonzero value indicates the v offset to restore. See View::resizeEvent()
 	int saved_v_offset_;
+
+	// These are used to determine whether the view was altered after acq started
+	double scale_at_acq_start_;
+	pv::util::Timestamp offset_at_acq_start_;
+
+	// Used to suppress performing a "zoom to fit" when the session stops. This
+	// is needed when the view's settings are restored before acquisition ends.
+	// In that case we want to keep the restored settings, not have a "zoom to fit"
+	// mess them up.
+	bool suppress_zoom_to_fit_after_acq_;
 };
 
 } // namespace trace
