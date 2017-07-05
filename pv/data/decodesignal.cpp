@@ -79,7 +79,9 @@ const vector< shared_ptr<Decoder> >& DecodeSignal::decoder_stack() const
 void DecodeSignal::stack_decoder(const srd_decoder *decoder)
 {
 	assert(decoder);
-	stack_.push_back(make_shared<decode::Decoder>(decoder));
+	const shared_ptr<Decoder> dec = make_shared<decode::Decoder>(decoder);
+
+	stack_.push_back(dec);
 
 	// Set name if this decoder is the first in the list
 	if (stack_.size() == 1)
@@ -88,7 +90,7 @@ void DecodeSignal::stack_decoder(const srd_decoder *decoder)
 	// Include the newly created decode channels in the channel lists
 	update_channel_list();
 
-	auto_assign_signals();
+	auto_assign_signals(dec);
 	commit_decoder_channels();
 	begin_decode();
 }
@@ -263,12 +265,16 @@ const vector<data::DecodeChannel> DecodeSignal::get_channels() const
 	return channels_;
 }
 
-void DecodeSignal::auto_assign_signals()
+void DecodeSignal::auto_assign_signals(const shared_ptr<Decoder> dec)
 {
 	bool new_assignment = false;
 
 	// Try to auto-select channels that don't have signals assigned yet
 	for (data::DecodeChannel &ch : channels_) {
+		// If a decoder is given, auto-assign only its channels
+		if (dec && (ch.decoder_ != dec))
+			continue;
+
 		if (ch.assigned_signal)
 			continue;
 

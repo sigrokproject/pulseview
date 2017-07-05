@@ -96,7 +96,7 @@ public:
 	QString error_message() const;
 
 	const vector<data::DecodeChannel> get_channels() const;
-	void auto_assign_signals();
+	void auto_assign_signals(const shared_ptr<pv::data::decode::Decoder> dec);
 	void assign_signal(const uint16_t channel_id, const SignalBase *signal);
 	int get_assigned_signal_count() const;
 
