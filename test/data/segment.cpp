@@ -47,11 +47,12 @@ BOOST_AUTO_TEST_CASE(SmallSize8Single)
 
 	BOOST_CHECK(s.get_sample_count() == num_samples);
 
+	uint8_t *sample_data = new uint8_t[1];
 	for (uint32_t i = 0; i < num_samples; i++) {
-		uint8_t* sample_data = s.get_raw_samples(i, 1);
+		s.get_raw_samples(i, 1, sample_data);
 		BOOST_CHECK_EQUAL(*sample_data, i);
-		delete[] sample_data;
 	}
+	delete[] sample_data;
 } */
 
 /* --- For debugging only
@@ -70,11 +71,12 @@ BOOST_AUTO_TEST_CASE(MediumSize8Single)
 
 	BOOST_CHECK(s.get_sample_count() == num_samples);
 
+	uint8_t *sample_data = new uint8_t[1];
 	for (uint32_t i = 0; i < num_samples; i++) {
-		uint8_t* sample_data = s.get_raw_samples(i, 1);
+		s.get_raw_samples(i, 1, sample_data);
 		BOOST_CHECK_EQUAL(*sample_data, i % 256);
-		delete[] sample_data;
 	}
+	delete[] sample_data;
 } */
 
 /* --- For debugging only
@@ -95,11 +97,12 @@ BOOST_AUTO_TEST_CASE(MaxSize8Single)
 
 	BOOST_CHECK(s.get_sample_count() == num_samples);
 
+	uint8_t *sample_data = new uint8_t[1];
 	for (uint32_t i = 0; i < num_samples; i++) {
-		uint8_t* sample_data = s.get_raw_samples(i, 1);
+		s.get_raw_samples(i, 1, sample_data);
 		BOOST_CHECK_EQUAL(*sample_data, i % 256);
-		delete[] sample_data;
 	}
+	delete[] sample_data;
 } */
 
 /* --- For debugging only
@@ -120,13 +123,14 @@ BOOST_AUTO_TEST_CASE(MediumSize24Single)
 
 	BOOST_CHECK(s.get_sample_count() == num_samples);
 
+	uint8_t *sample_data = new uint8_t[3];
 	for (uint32_t i = 0; i < num_samples; i++) {
-		uint8_t* sample_data = s.get_raw_samples(i, 1);
+		s.get_raw_samples(i, 1, sample_data);
 		BOOST_CHECK_EQUAL(*((uint8_t*)sample_data),      3*i    % 256);
 		BOOST_CHECK_EQUAL(*((uint8_t*)(sample_data+1)), (3*i+1) % 256);
 		BOOST_CHECK_EQUAL(*((uint8_t*)(sample_data+2)), (3*i+2) % 256);
-		delete[] sample_data;
 	}
+	delete[] sample_data;
 } */
 
 /* --- For debugging only
@@ -147,11 +151,12 @@ BOOST_AUTO_TEST_CASE(MediumSize32Single)
 
 	BOOST_CHECK(s.get_sample_count() == num_samples);
 
+	uint8_t *sample_data = new uint8_t[sizeof(uint32_t)];
 	for (uint32_t i = 0; i < num_samples; i++) {
-		uint8_t* sample_data = s.get_raw_samples(i, 1);
+		s.get_raw_samples(i, 1, sample_data);
 		BOOST_CHECK_EQUAL(*((uint32_t*)sample_data), i);
-		delete[] sample_data;
 	}
+	delete[] sample_data;
 } */
 
 /* --- For debugging only
@@ -173,11 +178,12 @@ BOOST_AUTO_TEST_CASE(MaxSize32Single)
 
 	BOOST_CHECK(s.get_sample_count() == num_samples);
 
+	uint8_t *sample_data = new uint8_t[sizeof(uint32_t)];
 	for (uint32_t i = 0; i < num_samples; i++) {
-		uint8_t* sample_data = s.get_raw_samples(i, 1);
+		s.get_raw_samples(i, 1, sample_data);
 		BOOST_CHECK_EQUAL(*((uint32_t*)sample_data), i);
-		delete[] sample_data;
 	}
+	delete[] sample_data;
 } */
 
 /* --- For debugging only
@@ -197,11 +203,12 @@ BOOST_AUTO_TEST_CASE(MediumSize32Multi)
 
 	BOOST_CHECK(s.get_sample_count() == num_samples);
 
+	uint8_t *sample_data = new uint8_t[sizeof(uint32_t)];
 	for (uint32_t i = 0; i < num_samples; i++) {
-		uint8_t* sample_data = s.get_raw_samples(i, 1);
+		s.get_raw_samples(i, 1, sample_data);
 		BOOST_CHECK_EQUAL(*((uint32_t*)sample_data), i);
-		delete[] sample_data;
 	}
+	delete[] sample_data;
 } */
 
 BOOST_AUTO_TEST_CASE(MaxSize32Multi)
@@ -220,13 +227,13 @@ BOOST_AUTO_TEST_CASE(MaxSize32Multi)
 
 	BOOST_CHECK(s.get_sample_count() == num_samples);
 
+	uint8_t *sample_data = new uint8_t[sizeof(uint32_t) * num_samples];
 	for (uint32_t i = 0; i < num_samples; i++) {
-		uint8_t* sample_data = s.get_raw_samples(i, 1);
+		s.get_raw_samples(i, 1, sample_data);
 		BOOST_CHECK_EQUAL(*((uint32_t*)sample_data), i);
-		delete[] sample_data;
 	}
 
-	uint8_t* sample_data = s.get_raw_samples(0, num_samples);
+	s.get_raw_samples(0, num_samples, sample_data);
 	for (uint32_t i = 0; i < num_samples; i++) {
 		BOOST_CHECK_EQUAL(*((uint32_t*)(sample_data + i * sizeof(uint32_t))), i);
 	}
@@ -250,13 +257,13 @@ BOOST_AUTO_TEST_CASE(MaxSize32MultiAtOnce)
 
 	BOOST_CHECK(s.get_sample_count() == num_samples);
 
+	uint8_t *sample_data = new uint8_t[sizeof(uint32_t) * num_samples];
 	for (uint32_t i = 0; i < num_samples; i++) {
-		uint8_t* sample_data = s.get_raw_samples(i, 1);
+		s.get_raw_samples(i, 1, sample_data);
 		BOOST_CHECK_EQUAL(*((uint32_t*)sample_data), i);
-		delete[] sample_data;
 	}
 
-	uint8_t* sample_data = s.get_raw_samples(0, num_samples);
+	s.get_raw_samples(0, num_samples, sample_data);
 	for (uint32_t i = 0; i < num_samples; i++) {
 		BOOST_CHECK_EQUAL(*((uint32_t*)(sample_data + i * sizeof(uint32_t))), i);
 	}
