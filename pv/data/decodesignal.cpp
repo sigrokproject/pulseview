@@ -508,11 +508,13 @@ void DecodeSignal::restore_settings(QSettings &settings)
 
 				// Include the newly created decode channels in the channel lists
 				update_channel_list();
+				commit_decoder_channels();
 				break;
 			}
 		}
 
 		settings.endGroup();
+		channels_updated();
 	}
 
 	// Restore channel mapping
