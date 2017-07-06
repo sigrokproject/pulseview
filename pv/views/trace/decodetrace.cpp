@@ -56,14 +56,11 @@ extern "C" {
 using std::all_of;
 using std::make_pair;
 using std::max;
-using std::map;
 using std::min;
 using std::out_of_range;
 using std::pair;
 using std::shared_ptr;
-using std::make_shared;
 using std::tie;
-using std::unordered_set;
 using std::vector;
 
 using pv::data::decode::Annotation;

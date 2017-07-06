@@ -34,7 +34,7 @@
 #include <cstdio>
 #include <limits>
 
-using std::abs; // Force usage of std::abs() instead of C's abs().
+using std::abs; // NOLINT. Force usage of std::abs() instead of C's abs().
 using std::shared_ptr;
 
 namespace pv {

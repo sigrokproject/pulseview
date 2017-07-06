@@ -35,7 +35,6 @@
 
 using boost::none;
 
-using std::make_pair;
 using std::map;
 using std::pair;
 using std::shared_ptr;
@@ -111,7 +110,7 @@ shared_ptr<Property> InputOutput::bind_enum(
 {
 	vector< pair<VariantBase, QString> > enum_vals;
 	for (VariantBase var : values)
-		enum_vals.push_back(make_pair(var, print_gvariant(var)));
+		enum_vals.emplace_back(var, print_gvariant(var));
 	return shared_ptr<Property>(new Enum(name, desc, enum_vals, getter, setter));
 }
 

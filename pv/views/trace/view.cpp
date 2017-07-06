@@ -73,7 +73,6 @@ using pv::util::Timestamp;
 using std::back_inserter;
 using std::copy_if;
 using std::count_if;
-using std::dynamic_pointer_cast;
 using std::inserter;
 using std::max;
 using std::make_pair;

@@ -60,7 +60,7 @@ class Annotation;
 class Decoder;
 class Row;
 }
-}
+}  // namespace data
 
 namespace widgets {
 class DecoderGroupBox;

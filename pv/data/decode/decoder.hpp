@@ -28,8 +28,6 @@
 #include <glib.h>
 
 using std::map;
-using std::set;
-using std::shared_ptr;
 using std::string;
 using std::vector;
 

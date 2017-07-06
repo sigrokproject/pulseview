@@ -28,9 +28,7 @@
 #include <pv/data/decodesignal.hpp>
 
 using pv::data::DecodeChannel;
-using std::set;
 using std::map;
-using std::shared_ptr;
 using std::string;
 
 namespace pv {

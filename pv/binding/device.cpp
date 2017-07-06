@@ -32,7 +32,6 @@
 using boost::optional;
 
 using std::function;
-using std::make_pair;
 using std::pair;
 using std::set;
 using std::shared_ptr;
@@ -157,7 +156,7 @@ void Device::bind_enum(const QString &name, const QString &desc,
 
 		vector< pair<Glib::VariantBase, QString> > values;
 		while ((iter.next_value(gvar)))
-			values.push_back(make_pair(gvar, printer(gvar)));
+			values.emplace_back(gvar, printer(gvar));
 
 		properties_.push_back(shared_ptr<Property>(new Enum(name, desc, values,
 			getter, setter)));

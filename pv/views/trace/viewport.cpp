@@ -37,7 +37,7 @@ using std::abs;
 using std::back_inserter;
 using std::copy;
 using std::dynamic_pointer_cast;
-using std::none_of; // Used in assert()s.
+using std::none_of; // NOLINT. Used in assert()s.
 using std::shared_ptr;
 using std::stable_sort;
 using std::vector;

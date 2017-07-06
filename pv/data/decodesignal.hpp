@@ -40,7 +40,6 @@ using std::condition_variable;
 using std::map;
 using std::mutex;
 using std::pair;
-using std::unordered_set;
 using std::vector;
 using std::shared_ptr;
 

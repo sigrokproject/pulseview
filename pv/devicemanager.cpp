@@ -48,8 +48,6 @@ using std::string;
 using std::unique_ptr;
 using std::vector;
 
-using Glib::ustring;
-using Glib::Variant;
 using Glib::VariantBase;
 
 using sigrok::ConfigKey;

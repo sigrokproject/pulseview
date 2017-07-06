@@ -31,7 +31,6 @@
 #include <pv/prop/string.hpp>
 
 using boost::none;
-using std::make_pair;
 using std::map;
 using std::pair;
 using std::shared_ptr;
@@ -97,7 +96,7 @@ shared_ptr<Property> Decoder::bind_enum(
 	vector< pair<Glib::VariantBase, QString> > values;
 	for (GSList *l = option->values; l; l = l->next) {
 		Glib::VariantBase var = Glib::VariantBase((GVariant*)l->data, true);
-		values.push_back(make_pair(var, print_gvariant(var)));
+		values.emplace_back(var, print_gvariant(var));
 	}
 
 	return shared_ptr<Property>(new Enum(name, desc, values, getter, setter));
