@@ -930,7 +930,7 @@ void DecodeSignal::connect_input_notifiers()
 void DecodeSignal::annotation_callback(srd_proto_data *pdata, void *decode_signal)
 {
 	assert(pdata);
-	assert(decoder);
+	assert(decode_signal);
 
 	DecodeSignal *const ds = (DecodeSignal*)decode_signal;
 	assert(ds);

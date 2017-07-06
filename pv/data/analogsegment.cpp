@@ -102,7 +102,7 @@ void AnalogSegment::get_samples(int64_t start_sample, int64_t end_sample,
 	assert(start_sample >= 0);
 	assert(start_sample < (int64_t)sample_count_);
 	assert(end_sample >= 0);
-	assert(end_sample < (int64_t)sample_count_);
+	assert(end_sample <= (int64_t)sample_count_);
 	assert(start_sample <= end_sample);
 	assert(dest != nullptr);
 
