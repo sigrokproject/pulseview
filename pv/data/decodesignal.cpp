@@ -62,8 +62,6 @@ DecodeSignal::DecodeSignal(pv::Session &session) :
 {
 	connect(&session_, SIGNAL(capture_state_changed(int)),
 		this, SLOT(on_capture_state_changed(int)));
-
-	set_name(tr("Empty decoder signal"));
 }
 
 DecodeSignal::~DecodeSignal()
