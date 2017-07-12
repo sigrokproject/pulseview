@@ -716,6 +716,12 @@ void DecodeTrace::hover_point_changed()
 	assert(view);
 
 	QPoint hp = view->hover_point();
+
+	if (hp.x() == 0) {
+		QToolTip::hideText();
+		return;
+	}
+
 	QString ann = get_annotation_at_point(hp);
 
 	assert(view);
