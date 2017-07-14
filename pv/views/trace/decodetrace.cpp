@@ -950,6 +950,10 @@ void DecodeTrace::on_delete_decoder(int index)
 {
 	decode_signal_->remove_decoder(index);
 
+	// Force re-calculation of the trace height, see paint_mid()
+	max_visible_rows_ = 0;
+	owner_->extents_changed(false, true);
+
 	// Update the popup
 	create_popup_form();
 }
@@ -960,6 +964,12 @@ void DecodeTrace::on_show_hide_decoder(int index)
 
 	assert(index < (int)decoder_forms_.size());
 	decoder_forms_[index]->set_decoder_visible(state);
+
+	if (!state) {
+		// Force re-calculation of the trace height, see paint_mid()
+		max_visible_rows_ = 0;
+		owner_->extents_changed(false, true);
+	}
 
 	if (owner_)
 		owner_->row_item_appearance_changed(false, true);
