@@ -248,11 +248,13 @@ void DecodeTrace::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 	// Draw the hatching
 	draw_unresolved_period(p, annotation_height, pp.left(), pp.right());
 
-	if ((int)visible_rows_.size() > max_visible_rows_)
-		owner_->extents_changed(false, true);
+	if ((int)visible_rows_.size() > max_visible_rows_) {
+		max_visible_rows_ = (int)visible_rows_.size();
 
-	// Update the maximum row count if needed
-	max_visible_rows_ = max(max_visible_rows_, (int)visible_rows_.size());
+		// Call order is important, otherwise the lazy event handler won't work
+		owner_->extents_changed(false, true);
+		owner_->row_item_appearance_changed(false, true);
+	}
 }
 
 void DecodeTrace::paint_fore(QPainter &p, ViewItemPaintParams &pp)
