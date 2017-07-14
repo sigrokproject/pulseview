@@ -111,8 +111,6 @@ public:
 	 */
 	int owner_visual_v_offset() const;
 
-	void restack_items();
-
 	/**
 	 * Returns the number of nested parents that this row item owner has.
 	 */
