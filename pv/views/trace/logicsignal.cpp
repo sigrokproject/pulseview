@@ -101,7 +101,6 @@ LogicSignal::LogicSignal(
 	shared_ptr<devices::Device> device,
 	shared_ptr<data::SignalBase> base) :
 	Signal(session, base),
-	signal_height_(QFontMetrics(QApplication::font()).height() * 2),
 	device_(device),
 	trigger_none_(nullptr),
 	trigger_rising_(nullptr),
@@ -113,6 +112,9 @@ LogicSignal::LogicSignal(
 	shared_ptr<Trigger> trigger;
 
 	base_->set_colour(SignalColours[base->index() % countof(SignalColours)]);
+
+	GlobalSettings gs;
+	signal_height_ = gs.value(GlobalSettings::Key_View_DefaultLogicHeight).toInt();
 
 	/* Populate this channel's trigger setting with whatever we
 	 * find in the current session trigger, if anything. */
@@ -132,6 +134,25 @@ shared_ptr<pv::data::SignalData> LogicSignal::data() const
 shared_ptr<pv::data::Logic> LogicSignal::logic_data() const
 {
 	return base_->logic_data();
+}
+
+void LogicSignal::save_settings(QSettings &settings) const
+{
+	settings.setValue("trace_height", signal_height_);
+}
+
+void LogicSignal::restore_settings(QSettings &settings)
+{
+	if (settings.contains("trace_height")) {
+		const int old_height = signal_height_;
+		signal_height_ = settings.value("trace_height").toInt();
+
+		if ((signal_height_ != old_height) && owner_) {
+			// Call order is important, otherwise the lazy event handler won't work
+			owner_->extents_changed(false, true);
+			owner_->row_item_appearance_changed(false, true);
+		}
+	}
 }
 
 pair<int, int> LogicSignal::v_extents() const
@@ -439,6 +460,16 @@ void LogicSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
 {
 	Signal::populate_popup_form(parent, form);
 
+	signal_height_sb_ = new QSpinBox(parent);
+	signal_height_sb_->setRange(5, 1000);
+	signal_height_sb_->setSingleStep(5);
+	signal_height_sb_->setSuffix(tr(" pixels"));
+	signal_height_sb_->setValue(signal_height_);
+	connect(signal_height_sb_, SIGNAL(valueChanged(int)),
+		this, SLOT(on_signal_height_changed(int)));
+	form->addRow(tr("Trace height"), signal_height_sb_);
+
+	// Trigger settings
 	const vector<int32_t> trig_types = get_trigger_types();
 
 	if (!trig_types.empty()) {
@@ -529,6 +560,17 @@ void LogicSignal::on_trigger()
 	trigger_match_ = trigger_type_from_action(action);
 
 	modify_trigger();
+}
+
+void LogicSignal::on_signal_height_changed(int height)
+{
+	signal_height_ = height;
+
+	if (owner_) {
+		// Call order is important, otherwise the lazy event handler won't work
+		owner_->extents_changed(false, true);
+		owner_->row_item_appearance_changed(false, true);
+	}
 }
 
 } // namespace trace

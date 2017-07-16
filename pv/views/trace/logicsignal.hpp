@@ -21,6 +21,7 @@
 #define PULSEVIEW_PV_VIEWS_TRACEVIEW_LOGICSIGNAL_HPP
 
 #include <QCache>
+#include <QSpinBox>
 
 #include "signal.hpp"
 
@@ -78,6 +79,9 @@ public:
 
 	shared_ptr<pv::data::Logic> logic_data() const;
 
+	virtual void save_settings(QSettings &settings) const;
+	virtual void restore_settings(QSettings &settings);
+
 	/**
 	 * Computes the vertical extents of the contents of this row item.
 	 * @return A pair containing the minimum and maximum y-values.
@@ -130,10 +134,14 @@ private:
 private Q_SLOTS:
 	void on_trigger();
 
+	void on_signal_height_changed(int height);
+
 private:
 	int signal_height_;
 
 	shared_ptr<pv::devices::Device> device_;
+
+	QSpinBox *signal_height_sb_;
 
 	const sigrok::TriggerMatchType *trigger_match_;
 	QToolBar *trigger_bar_;
