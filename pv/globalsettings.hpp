@@ -47,6 +47,7 @@ public:
 	static const QString Key_View_ShowSamplingPoints;
 	static const QString Key_View_ShowAnalogMinorGrid;
 	static const QString Key_View_DefaultDivHeight;
+	static const QString Key_View_DefaultLogicHeight;
 	static const QString Key_Dec_InitialStateConfigurable;
 
 public:

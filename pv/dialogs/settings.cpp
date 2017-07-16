@@ -180,6 +180,15 @@ QWidget *Settings::get_view_settings_form(QWidget *parent) const
 		SLOT(on_view_defaultDivHeight_changed(int)));
 	trace_view_layout->addRow(tr("Default analog trace div height"), default_div_height_sb);
 
+	QSpinBox *default_logic_height_sb = new QSpinBox();
+	default_logic_height_sb->setRange(5, 1000);
+	default_logic_height_sb->setSuffix(tr(" pixels"));
+	default_logic_height_sb->setValue(
+		settings.value(GlobalSettings::Key_View_DefaultLogicHeight).toInt());
+	connect(default_logic_height_sb, SIGNAL(valueChanged(int)), this,
+		SLOT(on_view_defaultLogicHeight_changed(int)));
+	trace_view_layout->addRow(tr("Default logic trace height"), default_logic_height_sb);
+
 	return form;
 }
 
@@ -431,6 +440,12 @@ void Settings::on_view_defaultDivHeight_changed(int value)
 {
 	GlobalSettings settings;
 	settings.setValue(GlobalSettings::Key_View_DefaultDivHeight, value);
+}
+
+void Settings::on_view_defaultLogicHeight_changed(int value)
+{
+	GlobalSettings settings;
+	settings.setValue(GlobalSettings::Key_View_DefaultLogicHeight, value);
 }
 
 void Settings::on_dec_initialStateConfigurable_changed(int state)

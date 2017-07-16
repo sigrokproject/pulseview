@@ -37,6 +37,7 @@ const QString GlobalSettings::Key_View_StickyScrolling = "View_StickyScrolling";
 const QString GlobalSettings::Key_View_ShowSamplingPoints = "View_ShowSamplingPoints";
 const QString GlobalSettings::Key_View_ShowAnalogMinorGrid = "View_ShowAnalogMinorGrid";
 const QString GlobalSettings::Key_View_DefaultDivHeight = "View_DefaultDivHeight";
+const QString GlobalSettings::Key_View_DefaultLogicHeight = "View_DefaultLogicHeight";
 const QString GlobalSettings::Key_Dec_InitialStateConfigurable = "Dec_InitialStateConfigurable";
 
 multimap< QString, function<void(QVariant)> > GlobalSettings::callbacks_;
@@ -66,6 +67,10 @@ void GlobalSettings::set_defaults_where_needed()
 	if (!contains(Key_View_DefaultDivHeight))
 		setValue(Key_View_DefaultDivHeight,
 		3 * QFontMetrics(QApplication::font()).height());
+
+	if (!contains(Key_View_DefaultLogicHeight))
+		setValue(Key_View_DefaultLogicHeight,
+		2 * QFontMetrics(QApplication::font()).height());
 }
 
 void GlobalSettings::register_change_handler(const QString key,
