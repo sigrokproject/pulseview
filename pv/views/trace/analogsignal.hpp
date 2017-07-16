@@ -156,6 +156,7 @@ private Q_SLOTS:
 
 	void on_pos_vdivs_changed(int vdivs);
 	void on_neg_vdivs_changed(int vdivs);
+	void on_div_height_changed(int height);
 
 	void on_resolution_changed(int index);
 
@@ -167,7 +168,7 @@ private Q_SLOTS:
 
 private:
 	QComboBox *resolution_cb_, *conversion_cb_, *display_type_cb_;
-	QSpinBox *pvdiv_sb_, *nvdiv_sb_;
+	QSpinBox *pvdiv_sb_, *nvdiv_sb_, *div_height_sb_;
 
 	float scale_;
 	int scale_index_;

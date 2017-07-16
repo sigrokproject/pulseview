@@ -89,7 +89,6 @@ AnalogSignal::AnalogSignal(
 	Signal(session, base),
 	scale_index_(4), // 20 per div
 	scale_index_drag_offset_(0),
-	div_height_(3 * QFontMetrics(QApplication::font()).height()),
 	pos_vdivs_(1),
 	neg_vdivs_(1),
 	resolution_(0),
@@ -102,6 +101,9 @@ AnalogSignal::AnalogSignal(
 
 	connect(analog_data, SIGNAL(samples_added(QObject*, uint64_t, uint64_t)),
 		this, SLOT(on_samples_added()));
+
+	GlobalSettings gs;
+	div_height_ = gs.value(GlobalSettings::Key_View_DefaultDivHeight).toInt();
 
 	base_->set_colour(SignalColours[base_->index() % countof(SignalColours)]);
 	update_scale();
@@ -120,6 +122,7 @@ void AnalogSignal::save_settings(QSettings &settings) const
 	settings.setValue("conversion_type", conversion_type_);
 	settings.setValue("display_type", display_type_);
 	settings.setValue("autoranging", autoranging_);
+	settings.setValue("div_height", div_height_);
 }
 
 void AnalogSignal::restore_settings(QSettings &settings)
@@ -145,6 +148,17 @@ void AnalogSignal::restore_settings(QSettings &settings)
 
 	if (settings.contains("autoranging"))
 		autoranging_ = settings.value("autoranging").toBool();
+
+	if (settings.contains("div_height")) {
+		const int old_height = div_height_;
+		div_height_ = settings.value("div_height").toInt();
+
+		if ((div_height_ != old_height) && owner_) {
+			// Call order is important, otherwise the lazy event handler won't work
+			owner_->extents_changed(false, true);
+			owner_->row_item_appearance_changed(false, true);
+		}
+	}
 }
 
 pair<int, int> AnalogSignal::v_extents() const
@@ -665,7 +679,7 @@ void AnalogSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
 
 	QFormLayout *const layout = new QFormLayout;
 
-	// Add the number of vdivs
+	// Add div-related settings
 	pvdiv_sb_ = new QSpinBox(parent);
 	pvdiv_sb_->setRange(0, MaximumVDivs);
 	pvdiv_sb_->setValue(pos_vdivs_);
@@ -679,6 +693,15 @@ void AnalogSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
 	connect(nvdiv_sb_, SIGNAL(valueChanged(int)),
 		this, SLOT(on_neg_vdivs_changed(int)));
 	layout->addRow(tr("Number of neg vertical divs"), nvdiv_sb_);
+
+	div_height_sb_ = new QSpinBox(parent);
+	div_height_sb_->setRange(20, 1000);
+	div_height_sb_->setSingleStep(5);
+	div_height_sb_->setSuffix(tr(" pixels"));
+	div_height_sb_->setValue(div_height_);
+	connect(div_height_sb_, SIGNAL(valueChanged(int)),
+		this, SLOT(on_div_height_changed(int)));
+	layout->addRow(tr("Div height"), div_height_sb_);
 
 	// Add the vertical resolution
 	resolution_cb_ = new QComboBox(parent);
@@ -802,6 +825,18 @@ void AnalogSignal::on_neg_vdivs_changed(int vdivs)
 			nvdiv_sb_->setValue(neg_vdivs_);
 		}
 	}
+
+	if (owner_) {
+		// Call order is important, otherwise the lazy event handler won't work
+		owner_->extents_changed(false, true);
+		owner_->row_item_appearance_changed(false, true);
+	}
+}
+
+void AnalogSignal::on_div_height_changed(int height)
+{
+	div_height_ = height;
+	update_scale();
 
 	if (owner_) {
 		// Call order is important, otherwise the lazy event handler won't work
