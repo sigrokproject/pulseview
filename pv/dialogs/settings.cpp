@@ -28,6 +28,7 @@
 #include <QGroupBox>
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QSpinBox>
 #include <QString>
 #include <QTextBrowser>
 #include <QTextDocument>
@@ -133,6 +134,7 @@ QCheckBox *Settings::create_checkbox(const QString& key, const char* slot) const
 
 QWidget *Settings::get_view_settings_form(QWidget *parent) const
 {
+	GlobalSettings settings;
 	QCheckBox *cb;
 
 	QWidget *form = new QWidget(parent);
@@ -168,6 +170,15 @@ QWidget *Settings::get_view_settings_form(QWidget *parent) const
 	cb = create_checkbox(GlobalSettings::Key_View_ShowAnalogMinorGrid,
 		SLOT(on_view_showAnalogMinorGrid_changed(int)));
 	trace_view_layout->addRow(tr("Show analog minor grid in addition to vdiv grid"), cb);
+
+	QSpinBox *default_div_height_sb = new QSpinBox();
+	default_div_height_sb->setRange(20, 1000);
+	default_div_height_sb->setSuffix(tr(" pixels"));
+	default_div_height_sb->setValue(
+		settings.value(GlobalSettings::Key_View_DefaultDivHeight).toInt());
+	connect(default_div_height_sb, SIGNAL(valueChanged(int)), this,
+		SLOT(on_view_defaultDivHeight_changed(int)));
+	trace_view_layout->addRow(tr("Default analog trace div height"), default_div_height_sb);
 
 	return form;
 }
@@ -414,6 +425,12 @@ void Settings::on_view_showAnalogMinorGrid_changed(int state)
 {
 	GlobalSettings settings;
 	settings.setValue(GlobalSettings::Key_View_ShowAnalogMinorGrid, state ? true : false);
+}
+
+void Settings::on_view_defaultDivHeight_changed(int value)
+{
+	GlobalSettings settings;
+	settings.setValue(GlobalSettings::Key_View_DefaultDivHeight, value);
 }
 
 void Settings::on_dec_initialStateConfigurable_changed(int state)

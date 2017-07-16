@@ -19,7 +19,9 @@
 
 #include "globalsettings.hpp"
 
+#include <QApplication>
 #include <QByteArray>
+#include <QFontMetrics>
 #include <QString>
 
 using std::function;
@@ -34,6 +36,7 @@ const QString GlobalSettings::Key_View_ColouredBG = "View_ColouredBG";
 const QString GlobalSettings::Key_View_StickyScrolling = "View_StickyScrolling";
 const QString GlobalSettings::Key_View_ShowSamplingPoints = "View_ShowSamplingPoints";
 const QString GlobalSettings::Key_View_ShowAnalogMinorGrid = "View_ShowAnalogMinorGrid";
+const QString GlobalSettings::Key_View_DefaultDivHeight = "View_DefaultDivHeight";
 const QString GlobalSettings::Key_Dec_InitialStateConfigurable = "Dec_InitialStateConfigurable";
 
 multimap< QString, function<void(QVariant)> > GlobalSettings::callbacks_;
@@ -59,6 +62,10 @@ void GlobalSettings::set_defaults_where_needed()
 	// Enable showing sampling points by default
 	if (!contains(Key_View_ShowSamplingPoints))
 		setValue(Key_View_ShowSamplingPoints, true);
+
+	if (!contains(Key_View_DefaultDivHeight))
+		setValue(Key_View_DefaultDivHeight,
+		3 * QFontMetrics(QApplication::font()).height());
 }
 
 void GlobalSettings::register_change_handler(const QString key,
