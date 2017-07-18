@@ -71,7 +71,7 @@ public:
 
 	float get_x() const override;
 
-	QPoint point(const QRect &rect) const override;
+	QPoint drag_point(const QRect &rect) const override;
 
 	pv::widgets::Popup* create_popup(QWidget *parent) override;
 

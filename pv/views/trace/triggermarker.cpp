@@ -60,7 +60,7 @@ float TriggerMarker::get_x() const
 	return ((time_ - view_.offset()) / view_.scale()).convert_to<float>();
 }
 
-QPoint TriggerMarker::point(const QRect &rect) const
+QPoint TriggerMarker::drag_point(const QRect &rect) const
 {
 	return QPoint(get_x(), rect.bottom());
 }

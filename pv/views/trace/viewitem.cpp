@@ -62,7 +62,7 @@ bool ViewItem::dragging() const
 void ViewItem::drag()
 {
 	if (is_draggable())
-		drag_point_ = point(QRect());
+		drag_point_ = drag_point(QRect());
 }
 
 void ViewItem::drag_release()

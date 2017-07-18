@@ -98,7 +98,7 @@ public:
 	 * Get the drag point.
 	 * @param rect the rectangle of the widget area.
 	 */
-	virtual QPoint point(const QRect &rect) const = 0;
+	virtual QPoint drag_point(const QRect &rect) const = 0;
 
 	/**
 	 * Computes the outline rectangle of a label.

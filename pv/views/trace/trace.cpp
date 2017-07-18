@@ -134,7 +134,7 @@ pv::widgets::Popup* Trace::create_popup(QWidget *parent)
 
 	popup_ = new Popup(parent);
 	popup_->set_position(parent->mapToGlobal(
-		point(parent->rect())), Popup::Right);
+		drag_point(parent->rect())), Popup::Right);
 
 	create_popup_form();
 

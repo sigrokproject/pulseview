@@ -165,7 +165,7 @@ void Viewport::paintEvent(QPaintEvent*)
 
 	stable_sort(row_items.begin(), row_items.end(),
 		[](const shared_ptr<RowItem> &a, const shared_ptr<RowItem> &b) {
-			return a->point(QRect()).y() < b->point(QRect()).y(); });
+			return a->drag_point(QRect()).y() < b->drag_point(QRect()).y(); });
 
 	const vector< shared_ptr<TimeItem> > time_items(view_.time_items());
 	assert(none_of(time_items.begin(), time_items.end(),

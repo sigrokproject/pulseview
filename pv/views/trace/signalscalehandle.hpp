@@ -67,7 +67,7 @@ public:
 	 * Get the drag point.
 	 * @param rect the rectangle of the widget area.
 	 */
-	QPoint point(const QRect &rect) const;
+	QPoint drag_point(const QRect &rect) const;
 
 	/**
 	 * Computes the outline rectangle of the viewport hit-box.

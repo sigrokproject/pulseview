@@ -66,7 +66,7 @@ pv::widgets::Popup* Flag::create_popup(QWidget *parent)
 
 	Popup *const popup = TimeMarker::create_popup(parent);
 	popup->set_position(parent->mapToGlobal(
-		point(parent->rect())), Popup::Bottom);
+		drag_point(parent->rect())), Popup::Bottom);
 
 	QFormLayout *const form = (QFormLayout*)popup->layout();
 

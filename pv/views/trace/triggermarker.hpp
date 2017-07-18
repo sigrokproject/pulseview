@@ -67,7 +67,7 @@ public:
 	 * Gets the arrow-tip point of the time marker.
 	 * @param rect the rectangle of the ruler area.
 	 */
-	QPoint point(const QRect &rect) const override;
+	QPoint drag_point(const QRect &rect) const override;
 
 	/**
 	 * Paints the foreground layer of the item with a QPainter

@@ -62,9 +62,9 @@ void SignalScaleHandle::drag_by(const QPoint &delta)
 	owner_.owner()->row_item_appearance_changed(true, true);
 }
 
-QPoint SignalScaleHandle::point(const QRect &rect) const
+QPoint SignalScaleHandle::drag_point(const QRect &rect) const
 {
-	return owner_.point(rect) + QPoint(0, owner_.scale_handle_offset());
+	return owner_.drag_point(rect) + QPoint(0, owner_.scale_handle_offset());
 }
 
 QRectF SignalScaleHandle::hit_box_rect(const ViewItemPaintParams &pp) const

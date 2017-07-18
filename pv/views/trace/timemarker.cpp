@@ -78,7 +78,7 @@ float TimeMarker::get_x() const
 	return roundf(((time_ - view_.offset()) / view_.scale()).convert_to<float>()) + 0.5f;
 }
 
-QPoint TimeMarker::point(const QRect &rect) const
+QPoint TimeMarker::drag_point(const QRect &rect) const
 {
 	return QPoint(get_x(), rect.bottom());
 }
@@ -171,7 +171,7 @@ pv::widgets::Popup* TimeMarker::create_popup(QWidget *parent)
 
 	Popup *const popup = new Popup(parent);
 	popup->set_position(parent->mapToGlobal(
-		point(parent->rect())), Popup::Bottom);
+		drag_point(parent->rect())), Popup::Bottom);
 
 	QFormLayout *const form = new QFormLayout(popup);
 	popup->setLayout(form);
