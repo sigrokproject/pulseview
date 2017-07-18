@@ -62,7 +62,10 @@ float TriggerMarker::get_x() const
 
 QPoint TriggerMarker::drag_point(const QRect &rect) const
 {
-	return QPoint(get_x(), rect.bottom());
+	(void)rect;
+
+	// The trigger marker cannot be moved, so there is no drag point
+	return QPoint(INT_MIN, INT_MIN);
 }
 
 void TriggerMarker::paint_fore(QPainter &p, ViewItemPaintParams &pp)
