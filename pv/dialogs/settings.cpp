@@ -214,6 +214,7 @@ QWidget *Settings::get_decoder_settings_form(QWidget *parent) const
 	return form;
 #else
 	(void)parent;
+	return nullptr;
 #endif
 }
 
