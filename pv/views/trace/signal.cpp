@@ -63,8 +63,6 @@ Signal::Signal(pv::Session &session,
 	shared_ptr<data::SignalBase> channel) :
 	Trace(channel),
 	session_(session),
-	scale_handle_(make_shared<SignalScaleHandle>(*this)),
-	items_({scale_handle_}),
 	name_widget_(nullptr)
 {
 	assert(base_);
@@ -99,11 +97,6 @@ void Signal::save_settings(QSettings &settings) const
 void Signal::restore_settings(QSettings &settings)
 {
 	(void)settings;
-}
-
-const ViewItemOwner::item_list& Signal::child_items() const
-{
-	return items_;
 }
 
 void Signal::paint_back(QPainter &p, ViewItemPaintParams &pp)

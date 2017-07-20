@@ -61,7 +61,6 @@ set(pulseview_TEST_SOURCES
 	${PROJECT_SOURCE_DIR}/pv/views/trace/rowitem.cpp
 	${PROJECT_SOURCE_DIR}/pv/views/trace/ruler.cpp
 	${PROJECT_SOURCE_DIR}/pv/views/trace/signal.cpp
-	${PROJECT_SOURCE_DIR}/pv/views/trace/signalscalehandle.cpp
 	${PROJECT_SOURCE_DIR}/pv/views/trace/timeitem.cpp
 	${PROJECT_SOURCE_DIR}/pv/views/trace/timemarker.cpp
 	${PROJECT_SOURCE_DIR}/pv/views/trace/trace.cpp
@@ -129,7 +128,6 @@ set(pulseview_TEST_HEADERS
 	${PROJECT_SOURCE_DIR}/pv/views/trace/rowitem.hpp
 	${PROJECT_SOURCE_DIR}/pv/views/trace/ruler.hpp
 	${PROJECT_SOURCE_DIR}/pv/views/trace/signal.hpp
-	${PROJECT_SOURCE_DIR}/pv/views/trace/signalscalehandle.hpp
 	${PROJECT_SOURCE_DIR}/pv/views/trace/timeitem.hpp
 	${PROJECT_SOURCE_DIR}/pv/views/trace/timemarker.hpp
 	${PROJECT_SOURCE_DIR}/pv/views/trace/trace.hpp

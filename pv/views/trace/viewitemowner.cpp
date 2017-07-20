@@ -27,6 +27,11 @@ namespace pv {
 namespace views {
 namespace trace {
 
+const ViewItemOwner::item_list& ViewItemOwner::child_items() const
+{
+	return items_;
+}
+
 ViewItemOwner::iterator ViewItemOwner::begin()
 {
 	return iterator(this, items_.begin());

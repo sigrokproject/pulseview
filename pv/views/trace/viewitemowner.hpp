@@ -50,7 +50,7 @@ public:
 	/**
 	 * Returns a list of row items owned by this object.
 	 */
-	virtual const item_list& child_items() const = 0;
+	virtual const item_list& child_items() const;
 
 	/**
 	 * Returns a depth-first iterator at the beginning of the child ViewItem

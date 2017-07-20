@@ -27,7 +27,6 @@
 
 #include <cstdint>
 
-#include "signalscalehandle.hpp"
 #include "trace.hpp"
 #include "viewitemowner.hpp"
 
@@ -71,11 +70,6 @@ public:
 
 	virtual void restore_settings(QSettings &settings);
 
-	/**
-	 * Returns a list of row items owned by this object.
-	 */
-	const item_list& child_items() const;
-
 	void paint_back(QPainter &p, ViewItemPaintParams &pp);
 
 	virtual void populate_popup_form(QWidget *parent, QFormLayout *form);
@@ -83,22 +77,6 @@ public:
 	QMenu* create_context_menu(QWidget *parent);
 
 	void delete_pressed();
-
-	/**
-	 * Returns the offset to show the drag handle.
-	 */
-	virtual int scale_handle_offset() const = 0;
-
-	/**
-	 * Handles the scale handle being dragged to an offset.
-	 * @param offset the offset the scale handle was dragged to.
-	 */
-	virtual void scale_handle_dragged(int offset) = 0;
-
-	/**
-	 * Handles the scale handle being being released.
-	 */
-	virtual void scale_handle_released() {};
 
 protected Q_SLOTS:
 	virtual void on_name_changed(const QString &text);
@@ -109,9 +87,6 @@ protected Q_SLOTS:
 
 protected:
 	pv::Session &session_;
-
-	const shared_ptr<SignalScaleHandle> scale_handle_;
-	const item_list items_;
 
 	QComboBox *name_widget_;
 };
