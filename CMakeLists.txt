@@ -58,7 +58,7 @@ endif()
 list(APPEND PKGDEPS glib-2.0>=2.28.0)
 list(APPEND PKGDEPS glibmm-2.4>=2.28.0)
 
-list(APPEND PKGDEPS libsigrokcxx>=0.5.0)
+list(APPEND PKGDEPS libsigrokcxx>=0.6.0)
 
 if(ENABLE_DECODE)
 	list(APPEND PKGDEPS libsigrokdecode>=0.5.0)
