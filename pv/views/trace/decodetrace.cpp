@@ -710,14 +710,12 @@ const QString DecodeTrace::get_annotation_at_point(const QPoint &point)
 		QString() : annotations[0].annotations().front();
 }
 
-void DecodeTrace::hover_point_changed()
+void DecodeTrace::hover_point_changed(const QPoint &hp)
 {
 	assert(owner_);
 
 	const View *const view = owner_->view();
 	assert(view);
-
-	QPoint hp = view->hover_point();
 
 	if (hp.x() == 0) {
 		QToolTip::hideText();
@@ -746,13 +744,14 @@ void DecodeTrace::hover_point_changed()
 	// If it did, the tool tip would constantly hide and re-appear.
 	// We also push it up by one row so that it appears above the
 	// decode trace, not below.
-	hp.setX(hp.x() - (text_size.width() / 2) - padding);
+	QPoint p = hp;
+	p.setX(hp.x() - (text_size.width() / 2) - padding);
 
-	hp.setY(get_visual_y() - (row_height_ / 2) +
+	p.setY(get_visual_y() - (row_height_ / 2) +
 		(hover_row * row_height_) -
 		row_height_ - text_size.height() - padding);
 
-	QToolTip::showText(view->viewport()->mapToGlobal(hp), ann);
+	QToolTip::showText(view->viewport()->mapToGlobal(p), ann);
 }
 
 void DecodeTrace::create_decoder_form(int index,

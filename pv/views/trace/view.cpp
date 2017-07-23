@@ -212,9 +212,6 @@ View::View(Session &session, bool is_main_view, QWidget *parent) :
 	connect(splitter_, SIGNAL(splitterMoved(int, int)),
 		this, SLOT(on_splitter_moved()));
 
-	connect(this, SIGNAL(hover_point_changed()),
-		this, SLOT(on_hover_point_changed()));
-
 	connect(&lazy_event_handler_, SIGNAL(timeout()),
 		this, SLOT(process_sticky_events()));
 	lazy_event_handler_.setSingleShot(true);
@@ -1005,11 +1002,11 @@ bool View::eventFilter(QObject *object, QEvent *event)
 		else
 			hover_point_ = QPoint(-1, -1);
 
-		hover_point_changed();
+		update_hover_point();
 
 	} else if (type == QEvent::Leave) {
 		hover_point_ = QPoint(-1, -1);
-		hover_point_changed();
+		update_hover_point();
 	} else if (type == QEvent::Show) {
 
 		// This is somewhat of a hack, unfortunately. We cannot use
@@ -1045,6 +1042,16 @@ void View::resizeEvent(QResizeEvent* event)
 		adjust_top_margin();
 
 	update_layout();
+}
+
+void View::update_hover_point()
+{
+	const vector<shared_ptr<TraceTreeItem>> trace_tree_items(
+		list_by_type<TraceTreeItem>());
+	for (shared_ptr<TraceTreeItem> r : trace_tree_items)
+		r->hover_point_changed(hover_point_);
+
+	hover_point_changed(hover_point_);
 }
 
 void View::row_item_appearance_changed(bool label, bool content)
@@ -1386,14 +1393,6 @@ void View::process_sticky_events()
 
 	// Clear the sticky events
 	sticky_events_ = 0;
-}
-
-void View::on_hover_point_changed()
-{
-	const vector<shared_ptr<TraceTreeItem>> trace_tree_items(
-		list_by_type<TraceTreeItem>());
-	for (shared_ptr<TraceTreeItem> r : trace_tree_items)
-		r->hover_point_changed();
 }
 
 } // namespace trace

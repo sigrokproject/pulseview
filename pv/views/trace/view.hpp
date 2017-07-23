@@ -269,7 +269,7 @@ public:
 	void restack_all_trace_tree_items();
 
 Q_SIGNALS:
-	void hover_point_changed();
+	void hover_point_changed(const QPoint &hp);
 
 	void selection_changed();
 
@@ -347,6 +347,8 @@ private:
 
 	void resizeEvent(QResizeEvent *event);
 
+	void update_hover_point();
+
 public:
 	void row_item_appearance_changed(bool label, bool content);
 	void time_item_appearance_changed(bool label, bool content);
@@ -366,8 +368,6 @@ private Q_SLOTS:
 	virtual void perform_delayed_view_update();
 
 	void process_sticky_events();
-
-	void on_hover_point_changed();
 
 	/**
 	 * Sets the 'offset_' member and emits the 'offset_changed'

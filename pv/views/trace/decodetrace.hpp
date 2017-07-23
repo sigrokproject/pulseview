@@ -179,7 +179,7 @@ private:
 		const data::DecodeChannel *ch);
 
 public:
-	void hover_point_changed();
+	void hover_point_changed(const QPoint &hp);
 
 private Q_SLOTS:
 	void on_new_annotations();

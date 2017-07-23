@@ -23,8 +23,9 @@ namespace pv {
 namespace views {
 namespace trace {
 
-void RowItem::hover_point_changed()
+void RowItem::hover_point_changed(const QPoint &hp)
 {
+	(void)hp;
 }
 
 } // namespace trace

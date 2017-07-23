@@ -171,7 +171,7 @@ protected:
 	void resizeEvent(QResizeEvent*) override;
 
 private Q_SLOTS:
-	void hover_point_changed();
+	void hover_point_changed(const QPoint &hp);
 
 	// Resets the 'tick_position_cache_'.
 	void invalidate_tick_position_cache();

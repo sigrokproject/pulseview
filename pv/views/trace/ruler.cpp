@@ -46,8 +46,8 @@ Ruler::Ruler(View &parent) :
 {
 	setMouseTracking(true);
 
-	connect(&view_, SIGNAL(hover_point_changed()),
-		this, SLOT(hover_point_changed()));
+	connect(&view_, SIGNAL(hover_point_changed(QPoint)),
+		this, SLOT(hover_point_changed(QPoint)));
 	connect(&view_, SIGNAL(offset_changed()),
 		this, SLOT(invalidate_tick_position_cache()));
 	connect(&view_, SIGNAL(scale_changed()),
@@ -256,8 +256,10 @@ int Ruler::calculate_text_height() const
 	return QFontMetrics(font()).ascent();
 }
 
-void Ruler::hover_point_changed()
+void Ruler::hover_point_changed(const QPoint &hp)
 {
+	(void)hp;
+
 	update();
 }
 
