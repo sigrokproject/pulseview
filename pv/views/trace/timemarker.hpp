@@ -41,6 +41,10 @@ namespace trace {
 
 class View;
 
+/**
+ * The TimeMarker class represents items on the @ref Ruler that highlight a
+ * single point in time to the user. Aside from this, it is generic in nature.
+ */
 class TimeMarker : public TimeItem
 {
 	Q_OBJECT

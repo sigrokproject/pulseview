@@ -28,6 +28,10 @@ namespace trace {
 
 class View;
 
+/**
+ * The TimeItem class represents items on the @ref Ruler. It is generic in
+ * nature, not making assumptions about the kind of item shown.
+ */
 class TimeItem : public ViewItem
 
 {

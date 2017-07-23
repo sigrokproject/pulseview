@@ -37,6 +37,12 @@ class TraceTreeItem;
 class View;
 class ViewItem;
 
+/**
+ * The Header class provides an area for @ref Trace labels to be shown,
+ * trace-related settings to be edited, trace groups to be shown and similar.
+ * Essentially, it is the main management area of the @ref View itself and
+ * shown on the left-hand side of the trace area.
+ */
 class Header : public MarginWidget
 {
 	Q_OBJECT

@@ -44,6 +44,15 @@ class SignalData;
 namespace views {
 namespace trace {
 
+/**
+ * The Signal class represents a series of numeric values that can be drawn.
+ * This is the main difference to the more generic @ref Trace class.
+ *
+ * It is generally accepted that Signal instances consider themselves to be
+ * individual channels on e.g. an oscilloscope, though it should be kept in
+ * mind that virtual signals (e.g. math) will also be served by the Signal
+ * class.
+ */
 class Signal : public Trace, public ViewItemOwner
 {
 	Q_OBJECT

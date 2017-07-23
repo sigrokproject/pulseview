@@ -49,6 +49,16 @@ class Popup;
 namespace views {
 namespace trace {
 
+/**
+ * The Trace class represents a @ref TraceTreeItem which occupies some vertical
+ * space on the canvas and spans across its entire width, essentially showing
+ * a time series of values, events, objects or similar. While easily confused
+ * with @ref Signal, the difference is that Trace may represent anything that
+ * can be drawn, not just numeric values. One example is a @ref DecodeTrace.
+ *
+ * For this reason, Trace is more generic and contains properties and helpers
+ * that benefit any kind of time series items.
+ */
 class Trace : public TraceTreeItem
 {
 	Q_OBJECT

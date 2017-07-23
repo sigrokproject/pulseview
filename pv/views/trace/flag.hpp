@@ -32,6 +32,10 @@ namespace pv {
 namespace views {
 namespace trace {
 
+/**
+ * The Flag class represents items on the @ref Ruler that mark important
+ * events on the timeline to the user. They are editable and thus non-static.
+ */
 class Flag : public TimeMarker, public enable_shared_from_this<Flag>
 {
 	Q_OBJECT

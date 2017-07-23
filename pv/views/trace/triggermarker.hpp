@@ -26,6 +26,10 @@ namespace pv {
 namespace views {
 namespace trace {
 
+/**
+ * The TriggerMarker class is used to show to the user at what point in time
+ * a trigger occured. It is not editable by the user.
+ */
 class TriggerMarker : public TimeItem
 {
 	Q_OBJECT

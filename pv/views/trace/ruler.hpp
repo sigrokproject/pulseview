@@ -46,6 +46,11 @@ namespace trace {
 class TimeItem;
 class ViewItem;
 
+/**
+ * The Ruler class manages and displays the time scale above the trace canvas.
+ * It may also contain @ref TimeItem instances used to identify or highlight
+ * time-related information.
+ */
 class Ruler : public MarginWidget
 {
 	Q_OBJECT
