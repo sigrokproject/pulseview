@@ -158,6 +158,11 @@ public:
 	shared_ptr<pv::data::Logic> logic_data() const;
 
 	/**
+	 * Queries the kind of conversion performed on this channel.
+	 */
+	ConversionType get_conversion_type() const;
+
+	/**
 	 * Changes the kind of conversion performed on this channel.
 	 */
 	void set_conversion_type(ConversionType t);
@@ -209,7 +214,7 @@ protected:
 	ChannelType channel_type_;
 	shared_ptr<pv::data::SignalData> data_;
 	shared_ptr<pv::data::SignalData> converted_data_;
-	int conversion_type_;
+	ConversionType conversion_type_;
 
 	std::thread conversion_thread_;
 	atomic<bool> conversion_interrupt_;

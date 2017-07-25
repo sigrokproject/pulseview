@@ -144,8 +144,6 @@ private:
 
 	void update_scale();
 
-	void update_conversion_type();
-
 	void perform_autoranging(bool keep_divs, bool force_update);
 
 protected:
@@ -178,7 +176,6 @@ private:
 	int pos_vdivs_, neg_vdivs_;  // divs per positive/negative side
 	float resolution_; // e.g. 10 for 10 V/div
 
-	data::SignalBase::ConversionType conversion_type_;
 	DisplayType display_type_;
 	bool autoranging_;
 };

@@ -174,6 +174,11 @@ shared_ptr<data::Logic> SignalBase::logic_data() const
 	return result;
 }
 
+SignalBase::ConversionType SignalBase::get_conversion_type() const
+{
+	return conversion_type_;
+}
+
 void SignalBase::set_conversion_type(ConversionType t)
 {
 	if (conversion_type_ != NoConversion) {

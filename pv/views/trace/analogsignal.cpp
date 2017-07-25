@@ -92,7 +92,6 @@ AnalogSignal::AnalogSignal(
 	pos_vdivs_(1),
 	neg_vdivs_(1),
 	resolution_(0),
-	conversion_type_(data::SignalBase::NoConversion),
 	display_type_(DisplayBoth),
 	autoranging_(true)
 {
@@ -119,7 +118,6 @@ void AnalogSignal::save_settings(QSettings &settings) const
 	settings.setValue("pos_vdivs", pos_vdivs_);
 	settings.setValue("neg_vdivs", neg_vdivs_);
 	settings.setValue("scale_index", scale_index_);
-	settings.setValue("conversion_type", conversion_type_);
 	settings.setValue("display_type", display_type_);
 	settings.setValue("autoranging", autoranging_);
 	settings.setValue("div_height", div_height_);
@@ -136,11 +134,6 @@ void AnalogSignal::restore_settings(QSettings &settings)
 	if (settings.contains("scale_index")) {
 		scale_index_ = settings.value("scale_index").toInt();
 		update_scale();
-	}
-
-	if (settings.contains("conversion_type")) {
-		conversion_type_ = (data::SignalBase::ConversionType)(settings.value("conversion_type").toInt());
-		update_conversion_type();
 	}
 
 	if (settings.contains("display_type"))
@@ -243,8 +236,11 @@ void AnalogSignal::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 	}
 
 	if ((display_type_ == DisplayConverted) || (display_type_ == DisplayBoth)) {
-		if (((conversion_type_ == data::SignalBase::A2LConversionByTreshold) ||
-			(conversion_type_ == data::SignalBase::A2LConversionBySchmittTrigger))) {
+		const data::SignalBase::ConversionType conv_type =
+			base_->get_conversion_type();
+
+		if (((conv_type == data::SignalBase::A2LConversionByTreshold) ||
+			(conv_type == data::SignalBase::A2LConversionBySchmittTrigger))) {
 
 			paint_logic_mid(p, pp);
 		}
@@ -594,14 +590,6 @@ void AnalogSignal::update_scale()
 	scale_ = div_height_ / resolution_;
 }
 
-void AnalogSignal::update_conversion_type()
-{
-	base_->set_conversion_type(conversion_type_);
-
-	if (owner_)
-		owner_->row_item_appearance_changed(false, true);
-}
-
 void AnalogSignal::perform_autoranging(bool keep_divs, bool force_update)
 {
 	const deque< shared_ptr<pv::data::AnalogSegment> > &segments =
@@ -740,7 +728,7 @@ void AnalogSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
 	conversion_cb_->addItem("to logic via threshold", data::SignalBase::A2LConversionByTreshold);
 	conversion_cb_->addItem("to logic via schmitt-trigger", data::SignalBase::A2LConversionBySchmittTrigger);
 
-	cur_idx = conversion_cb_->findData(QVariant(conversion_type_));
+	cur_idx = conversion_cb_->findData(QVariant(base_->get_conversion_type()));
 	conversion_cb_->setCurrentIndex(cur_idx);
 
 	layout->addRow(tr("Conversion"), conversion_cb_);
@@ -870,13 +858,17 @@ void AnalogSignal::on_autoranging_changed(int state)
 
 void AnalogSignal::on_conversion_changed(int index)
 {
-	data::SignalBase::ConversionType old_conv_type = conversion_type_;
+	data::SignalBase::ConversionType old_conv_type =
+		base_->get_conversion_type();
 
-	conversion_type_ = (data::SignalBase::ConversionType)(conversion_cb_->itemData(index).toInt());
+	data::SignalBase::ConversionType conv_type =
+		(data::SignalBase::ConversionType)(conversion_cb_->itemData(index).toInt());
 
-	if (conversion_type_ != old_conv_type) {
-		base_->set_conversion_type(conversion_type_);
-		update_conversion_type();
+	if (conv_type != old_conv_type) {
+		base_->set_conversion_type(conv_type);
+
+		if (owner_)
+			owner_->row_item_appearance_changed(false, true);
 	}
 }
 
