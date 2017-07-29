@@ -801,14 +801,14 @@ void AnalogSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
 	// Add the display type dropdown
 	display_type_cb_ = new QComboBox();
 
-	display_type_cb_->addItem(tr("Analog"), DisplayAnalog);
-	display_type_cb_->addItem(tr("Converted"), DisplayConverted);
-	display_type_cb_->addItem(tr("Analog+Converted"), DisplayBoth);
+	display_type_cb_->addItem(tr("analog"), DisplayAnalog);
+	display_type_cb_->addItem(tr("converted"), DisplayConverted);
+	display_type_cb_->addItem(tr("analog+converted"), DisplayBoth);
 
 	cur_idx = display_type_cb_->findData(QVariant(display_type_));
 	display_type_cb_->setCurrentIndex(cur_idx);
 
-	layout->addRow(tr("Traces to show:"), display_type_cb_);
+	layout->addRow(tr("Show traces for"), display_type_cb_);
 
 	connect(display_type_cb_, SIGNAL(currentIndexChanged(int)),
 		this, SLOT(on_display_type_changed(int)));
