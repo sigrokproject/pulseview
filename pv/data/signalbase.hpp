@@ -69,7 +69,7 @@ public:
 
 	enum ConversionType {
 		NoConversion = 0,
-		A2LConversionByTreshold = 1,
+		A2LConversionByThreshold = 1,
 		A2LConversionBySchmittTrigger = 2
 	};
 

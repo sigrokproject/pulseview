@@ -169,7 +169,7 @@ shared_ptr<data::Logic> SignalBase::logic_data() const
 	if (channel_type_ == LogicChannel)
 		result = dynamic_pointer_cast<Logic>(data_);
 
-	if (((conversion_type_ == A2LConversionByTreshold) ||
+	if (((conversion_type_ == A2LConversionByThreshold) ||
 		(conversion_type_ == A2LConversionBySchmittTrigger)))
 		result = dynamic_pointer_cast<Logic>(converted_data_);
 
@@ -239,7 +239,7 @@ vector<double> SignalBase::get_conversion_thresholds(const ConversionType t,
 	else
 		preset = get_current_conversion_preset();
 
-	if (conv_type == A2LConversionByTreshold) {
+	if (conv_type == A2LConversionByThreshold) {
 		double thr = 0;
 
 		if (preset == -1) {
@@ -295,7 +295,7 @@ vector< pair<QString, int> > SignalBase::get_conversion_presets() const
 {
 	vector< pair<QString, int> > presets;
 
-	if (conversion_type_ == A2LConversionByTreshold) {
+	if (conversion_type_ == A2LConversionByThreshold) {
 		// Source: http://www.interfacebus.com/voltage_threshold.html
 		presets.emplace_back(tr("Signal average"), 0);
 		presets.emplace_back(tr("0.9V (for 1.8V CMOS)"), 1);
@@ -373,7 +373,7 @@ void SignalBase::restore_settings(QSettings &settings)
 bool SignalBase::conversion_is_a2l() const
 {
 	return ((channel_type_ == AnalogChannel) &&
-		((conversion_type_ == A2LConversionByTreshold) ||
+		((conversion_type_ == A2LConversionByThreshold) ||
 		(conversion_type_ == A2LConversionBySchmittTrigger)));
 }
 
@@ -427,7 +427,7 @@ void SignalBase::conversion_thread_proc(QObject* segment)
 				// Convert
 				uint64_t i = start_sample;
 
-				if (conversion_type_ == A2LConversionByTreshold) {
+				if (conversion_type_ == A2LConversionByThreshold) {
 					const double threshold = get_conversion_thresholds()[0];
 
 					// Convert as many sample blocks as we can

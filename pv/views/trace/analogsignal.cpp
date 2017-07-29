@@ -245,7 +245,7 @@ void AnalogSignal::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 	if ((display_type_ == DisplayConverted) || (display_type_ == DisplayBoth)) {
 		const SignalBase::ConversionType conv_type = base_->get_conversion_type();
 
-		if (((conv_type == SignalBase::A2LConversionByTreshold) ||
+		if (((conv_type == SignalBase::A2LConversionByThreshold) ||
 			(conv_type == SignalBase::A2LConversionBySchmittTrigger)))
 			paint_logic_mid(p, pp);
 	}
@@ -616,9 +616,9 @@ void AnalogSignal::update_conversion_widgets()
 
 	map < QString, QVariant > options = base_->get_conversion_options();
 
-	if (conv_type == SignalBase::A2LConversionByTreshold) {
+	if (conv_type == SignalBase::A2LConversionByThreshold) {
 		const vector<double> thresholds = base_->get_conversion_thresholds(
-				SignalBase::A2LConversionByTreshold, true);
+				SignalBase::A2LConversionByThreshold, true);
 		conv_threshold_cb_->addItem(
 				QString("%1V").arg(QString::number(thresholds[0], 'f', 1)), -1);
 	}
@@ -775,7 +775,7 @@ void AnalogSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
 	conversion_cb_->addItem(tr("none"),
 		SignalBase::NoConversion);
 	conversion_cb_->addItem(tr("to logic via threshold"),
-		SignalBase::A2LConversionByTreshold);
+		SignalBase::A2LConversionByThreshold);
 	conversion_cb_->addItem(tr("to logic via schmitt-trigger"),
 		SignalBase::A2LConversionBySchmittTrigger);
 
@@ -953,7 +953,7 @@ void AnalogSignal::on_conv_threshold_changed(int index)
 
 	const bool use_custom_thr = (index == -1) || (user_data == -1);
 
-	if (conv_type == SignalBase::A2LConversionByTreshold && use_custom_thr) {
+	if (conv_type == SignalBase::A2LConversionByThreshold && use_custom_thr) {
 		// Not one of the preset values, try to parse the combo box text
 		// Note: Regex loosely based on
 		// https://txt2re.com/index-c++.php3?s=0.1V&1&-13
