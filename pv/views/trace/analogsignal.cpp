@@ -57,6 +57,8 @@ using std::pair;
 using std::shared_ptr;
 using std::vector;
 
+using pv::data::SignalBase;
+
 namespace pv {
 namespace views {
 namespace trace {
@@ -241,14 +243,11 @@ void AnalogSignal::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 	}
 
 	if ((display_type_ == DisplayConverted) || (display_type_ == DisplayBoth)) {
-		const data::SignalBase::ConversionType conv_type =
-			base_->get_conversion_type();
+		const SignalBase::ConversionType conv_type = base_->get_conversion_type();
 
-		if (((conv_type == data::SignalBase::A2LConversionByTreshold) ||
-			(conv_type == data::SignalBase::A2LConversionBySchmittTrigger))) {
-
+		if (((conv_type == SignalBase::A2LConversionByTreshold) ||
+			(conv_type == SignalBase::A2LConversionBySchmittTrigger)))
 			paint_logic_mid(p, pp);
-		}
 	}
 }
 
@@ -597,11 +596,11 @@ void AnalogSignal::update_scale()
 
 void AnalogSignal::update_conversion_widgets()
 {
-	data::SignalBase::ConversionType conv_type = base_->get_conversion_type();
+	SignalBase::ConversionType conv_type = base_->get_conversion_type();
 
 	// Enable or disable widgets depending on conversion state
-	conv_threshold_cb_->setEnabled(conv_type != data::SignalBase::NoConversion);
-	display_type_cb_->setEnabled(conv_type != data::SignalBase::NoConversion);
+	conv_threshold_cb_->setEnabled(conv_type != SignalBase::NoConversion);
+	display_type_cb_->setEnabled(conv_type != SignalBase::NoConversion);
 
 	conv_threshold_cb_->clear();
 
@@ -617,16 +616,16 @@ void AnalogSignal::update_conversion_widgets()
 
 	map < QString, QVariant > options = base_->get_conversion_options();
 
-	if (conv_type == data::SignalBase::A2LConversionByTreshold) {
+	if (conv_type == SignalBase::A2LConversionByTreshold) {
 		const vector<double> thresholds = base_->get_conversion_thresholds(
-				data::SignalBase::A2LConversionByTreshold, true);
+				SignalBase::A2LConversionByTreshold, true);
 		conv_threshold_cb_->addItem(
 				QString("%1V").arg(QString::number(thresholds[0], 'f', 1)), -1);
 	}
 
-	if (conv_type == data::SignalBase::A2LConversionBySchmittTrigger) {
+	if (conv_type == SignalBase::A2LConversionBySchmittTrigger) {
 		const vector<double> thresholds = base_->get_conversion_thresholds(
-				data::SignalBase::A2LConversionBySchmittTrigger, true);
+				SignalBase::A2LConversionBySchmittTrigger, true);
 		conv_threshold_cb_->addItem(QString("%1V/%2V").arg(
 				QString::number(thresholds[0], 'f', 1),
 				QString::number(thresholds[1], 'f', 1)), -1);
@@ -773,9 +772,12 @@ void AnalogSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
 	// Add the conversion type dropdown
 	conversion_cb_ = new QComboBox();
 
-	conversion_cb_->addItem("none", data::SignalBase::NoConversion);
-	conversion_cb_->addItem("to logic via threshold", data::SignalBase::A2LConversionByTreshold);
-	conversion_cb_->addItem("to logic via schmitt-trigger", data::SignalBase::A2LConversionBySchmittTrigger);
+	conversion_cb_->addItem(tr("none"),
+		SignalBase::NoConversion);
+	conversion_cb_->addItem(tr("to logic via threshold"),
+		SignalBase::A2LConversionByTreshold);
+	conversion_cb_->addItem(tr("to logic via schmitt-trigger"),
+		SignalBase::A2LConversionBySchmittTrigger);
 
 	cur_idx = conversion_cb_->findData(QVariant(base_->get_conversion_type()));
 	conversion_cb_->setCurrentIndex(cur_idx);
@@ -921,11 +923,10 @@ void AnalogSignal::on_autoranging_changed(int state)
 
 void AnalogSignal::on_conversion_changed(int index)
 {
-	data::SignalBase::ConversionType old_conv_type =
-		base_->get_conversion_type();
+	SignalBase::ConversionType old_conv_type = base_->get_conversion_type();
 
-	data::SignalBase::ConversionType conv_type =
-		(data::SignalBase::ConversionType)(conversion_cb_->itemData(index).toInt());
+	SignalBase::ConversionType conv_type =
+		(SignalBase::ConversionType)(conversion_cb_->itemData(index).toInt());
 
 	if (conv_type != old_conv_type) {
 		base_->set_conversion_type(conv_type);
@@ -938,7 +939,7 @@ void AnalogSignal::on_conversion_changed(int index)
 
 void AnalogSignal::on_conv_threshold_changed(int index)
 {
-	data::SignalBase::ConversionType conv_type = base_->get_conversion_type();
+	SignalBase::ConversionType conv_type = base_->get_conversion_type();
 
 	// Note: index is set to -1 if the text in the combo box matches none of
 	// the entries in the combo box
@@ -952,7 +953,7 @@ void AnalogSignal::on_conv_threshold_changed(int index)
 
 	const bool use_custom_thr = (index == -1) || (user_data == -1);
 
-	if (conv_type == data::SignalBase::A2LConversionByTreshold && use_custom_thr) {
+	if (conv_type == SignalBase::A2LConversionByTreshold && use_custom_thr) {
 		// Not one of the preset values, try to parse the combo box text
 		// Note: Regex loosely based on
 		// https://txt2re.com/index-c++.php3?s=0.1V&1&-13
@@ -974,7 +975,7 @@ void AnalogSignal::on_conv_threshold_changed(int index)
 			delayed_conversion_starter_.start();
 	}
 
-	if (conv_type == data::SignalBase::A2LConversionBySchmittTrigger && use_custom_thr) {
+	if (conv_type == SignalBase::A2LConversionBySchmittTrigger && use_custom_thr) {
 		// Not one of the preset values, try to parse the combo box text
 		// Note: Regex loosely based on
 		// https://txt2re.com/index-c++.php3?s=0.1V/0.2V&2&14&-22&3&15
