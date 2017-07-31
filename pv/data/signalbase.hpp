@@ -24,18 +24,23 @@
 #include <atomic>
 #include <condition_variable>
 #include <thread>
+#include <vector>
 
 #include <QColor>
 #include <QObject>
 #include <QSettings>
 #include <QString>
+#include <QVariant>
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
 
 using std::atomic;
 using std::condition_variable;
+using std::map;
 using std::mutex;
+using std::pair;
 using std::shared_ptr;
+using std::vector;
 
 namespace sigrok {
 class Channel;
@@ -164,8 +169,74 @@ public:
 
 	/**
 	 * Changes the kind of conversion performed on this channel.
+	 *
+	 * Restarts the conversion.
 	 */
 	void set_conversion_type(ConversionType t);
+
+	/**
+	 * Returns all currently known conversion options
+	 */
+	map<QString, QVariant> get_conversion_options() const;
+
+	/**
+	 * Sets the value of a particular conversion option
+	 * Note: it is not checked whether the option is valid for the
+	 * currently conversion. If it's not, it will be silently ignored.
+	 *
+	 * Does not restart the conversion.
+	 *
+	 * @return true if the value is different from before, false otherwise
+	 */
+	bool set_conversion_option(QString key, QVariant value);
+
+	/**
+	 * Returns the threshold(s) used for conversions, if applicable.
+	 * The resulting thresholds are given for the chosen conversion, so you
+	 * can query thresholds also for conversions which aren't currently active.
+	 *
+	 * If you want the thresholds for the currently active conversion,
+	 * call it either with NoConversion or no parameter.
+	 *
+	 * @param t the type of conversion to obtain the thresholds for, leave
+	 *          empty or use NoConversion if you want to query the currently
+	 *          used conversion
+	 *
+	 * @param always_custom ignore the currently selected preset and always
+	 *        return the custom values for this conversion, using 0 if those
+	 *        aren't set
+	 *
+	 * @return a list of threshold(s) used by the chosen conversion
+	 */
+	vector<double> get_conversion_thresholds(
+		const ConversionType t = NoConversion, const bool always_custom=false) const;
+
+	/**
+	 * Provides all conversion presets available for the currently active
+	 * conversion.
+	 *
+	 * @return a list of description/ID pairs for each preset
+	 */
+	vector<pair<QString, int> > get_conversion_presets() const;
+
+	/**
+	 * Determines the ID of the currently used conversion preset, which is only
+	 * valid for the currently available conversion presets. It is therefore
+	 * suggested to call @ref get_conversion_presets right before calling this.
+	 *
+	 * @return the ID of the currently used conversion preset. -1 if no preset
+	 *         is used. In that case, a user setting is used instead.
+	 */
+	int get_current_conversion_preset() const;
+
+	/**
+	 * Sets the conversion preset to be used.
+	 *
+	 * Does not restart the conversion.
+	 *
+	 * @param id the id of the preset to use
+	 */
+	void set_conversion_preset(int id);
 
 #ifdef ENABLE_DECODE
 	bool is_decode_signal() const;
@@ -174,6 +245,8 @@ public:
 	virtual void save_settings(QSettings &settings) const;
 
 	virtual void restore_settings(QSettings &settings);
+
+	void start_conversion();
 
 private:
 	bool conversion_is_a2l() const;
@@ -184,7 +257,6 @@ private:
 
 	void conversion_thread_proc(QObject* segment);
 
-	void start_conversion();
 	void stop_conversion();
 
 Q_SIGNALS:
@@ -215,6 +287,9 @@ protected:
 	shared_ptr<pv::data::SignalData> data_;
 	shared_ptr<pv::data::SignalData> converted_data_;
 	ConversionType conversion_type_;
+	map<QString, QVariant> conversion_options_;
+
+	float min_value_, max_value_;
 
 	std::thread conversion_thread_;
 	atomic<bool> conversion_interrupt_;

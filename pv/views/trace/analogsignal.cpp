@@ -101,6 +101,11 @@ AnalogSignal::AnalogSignal(
 	connect(analog_data, SIGNAL(samples_added(QObject*, uint64_t, uint64_t)),
 		this, SLOT(on_samples_added()));
 
+	connect(&delayed_conversion_starter_, SIGNAL(timeout()),
+		this, SLOT(on_delayed_conversion_starter()));
+	delayed_conversion_starter_.setSingleShot(true);
+	delayed_conversion_starter_.setInterval(1000);  // 1s timeout
+
 	GlobalSettings gs;
 	div_height_ = gs.value(GlobalSettings::Key_View_DefaultDivHeight).toInt();
 
@@ -590,6 +595,50 @@ void AnalogSignal::update_scale()
 	scale_ = div_height_ / resolution_;
 }
 
+void AnalogSignal::update_conversion_widgets()
+{
+	data::SignalBase::ConversionType conv_type = base_->get_conversion_type();
+
+	// Enable or disable widgets depending on conversion state
+	conv_threshold_cb_->setEnabled(conv_type != data::SignalBase::NoConversion);
+	display_type_cb_->setEnabled(conv_type != data::SignalBase::NoConversion);
+
+	conv_threshold_cb_->clear();
+
+	vector < pair<QString, int> > presets = base_->get_conversion_presets();
+
+	// Prevent the combo box from firing the "edit text changed" signal
+	// as that would involuntarily select the first entry
+	conv_threshold_cb_->blockSignals(true);
+
+	// Set available options depending on chosen conversion
+	for (pair<QString, int> preset : presets)
+		conv_threshold_cb_->addItem(preset.first, preset.second);
+
+	map < QString, QVariant > options = base_->get_conversion_options();
+
+	if (conv_type == data::SignalBase::A2LConversionByTreshold) {
+		const vector<double> thresholds = base_->get_conversion_thresholds(
+				data::SignalBase::A2LConversionByTreshold, true);
+		conv_threshold_cb_->addItem(
+				QString("%1V").arg(QString::number(thresholds[0], 'f', 1)), -1);
+	}
+
+	if (conv_type == data::SignalBase::A2LConversionBySchmittTrigger) {
+		const vector<double> thresholds = base_->get_conversion_thresholds(
+				data::SignalBase::A2LConversionBySchmittTrigger, true);
+		conv_threshold_cb_->addItem(QString("%1V/%2V").arg(
+				QString::number(thresholds[0], 'f', 1),
+				QString::number(thresholds[1], 'f', 1)), -1);
+	}
+
+	int preset_id = base_->get_current_conversion_preset();
+	conv_threshold_cb_->setCurrentIndex(
+			conv_threshold_cb_->findData(preset_id));
+
+	conv_threshold_cb_->blockSignals(false);
+}
+
 void AnalogSignal::perform_autoranging(bool keep_divs, bool force_update)
 {
 	const deque< shared_ptr<pv::data::AnalogSegment> > &segments =
@@ -736,12 +785,23 @@ void AnalogSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
 	connect(conversion_cb_, SIGNAL(currentIndexChanged(int)),
 		this, SLOT(on_conversion_changed(int)));
 
+    // Add the conversion threshold settings
+    conv_threshold_cb_ = new QComboBox();
+    conv_threshold_cb_->setEditable(true);
+
+    layout->addRow(tr("Conversion threshold(s)"), conv_threshold_cb_);
+
+    connect(conv_threshold_cb_, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(on_conv_threshold_changed(int)));
+    connect(conv_threshold_cb_, SIGNAL(editTextChanged(const QString)),
+            this, SLOT(on_conv_threshold_changed()));  // index will be -1
+
 	// Add the display type dropdown
 	display_type_cb_ = new QComboBox();
 
 	display_type_cb_->addItem(tr("Analog"), DisplayAnalog);
 	display_type_cb_->addItem(tr("Converted"), DisplayConverted);
-	display_type_cb_->addItem(tr("Both"), DisplayBoth);
+	display_type_cb_->addItem(tr("Analog+Converted"), DisplayBoth);
 
 	cur_idx = display_type_cb_->findData(QVariant(display_type_));
 	display_type_cb_->setCurrentIndex(cur_idx);
@@ -750,6 +810,9 @@ void AnalogSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
 
 	connect(display_type_cb_, SIGNAL(currentIndexChanged(int)),
 		this, SLOT(on_display_type_changed(int)));
+
+	// Update the conversion widget contents and states
+	update_conversion_widgets();
 
 	form->addRow(layout);
 }
@@ -866,10 +929,89 @@ void AnalogSignal::on_conversion_changed(int index)
 
 	if (conv_type != old_conv_type) {
 		base_->set_conversion_type(conv_type);
+		update_conversion_widgets();
 
 		if (owner_)
 			owner_->row_item_appearance_changed(false, true);
 	}
+}
+
+void AnalogSignal::on_conv_threshold_changed(int index)
+{
+	data::SignalBase::ConversionType conv_type = base_->get_conversion_type();
+
+	// Note: index is set to -1 if the text in the combo box matches none of
+	// the entries in the combo box
+
+	if ((index == -1) && (conv_threshold_cb_->currentText().length() == 0))
+		return;
+
+	// The combo box entry with the custom value has user_data set to -1
+	const int user_data = conv_threshold_cb_->findText(
+			conv_threshold_cb_->currentText());
+
+	const bool use_custom_thr = (index == -1) || (user_data == -1);
+
+	if (conv_type == data::SignalBase::A2LConversionByTreshold && use_custom_thr) {
+		// Not one of the preset values, try to parse the combo box text
+		// Note: Regex loosely based on
+		// https://txt2re.com/index-c++.php3?s=0.1V&1&-13
+		QString re1 = "([+-]?\\d*[\\.,]?\\d*)"; // Float value
+		QString re2 = "([a-zA-Z]*)"; // SI unit
+		QRegExp regex(re1 + re2);
+
+		const QString text = conv_threshold_cb_->currentText();
+		if (!regex.exactMatch(text))
+			return;  // String doesn't match the regex
+
+		QStringList tokens = regex.capturedTexts();
+
+		// For now, we simply assume that the unit is volt without modifiers
+		const double thr = tokens.at(1).toDouble();
+
+		// Only restart the conversion if the threshold was updated
+		if (base_->set_conversion_option("threshold_value", thr))
+			delayed_conversion_starter_.start();
+	}
+
+	if (conv_type == data::SignalBase::A2LConversionBySchmittTrigger && use_custom_thr) {
+		// Not one of the preset values, try to parse the combo box text
+		// Note: Regex loosely based on
+		// https://txt2re.com/index-c++.php3?s=0.1V/0.2V&2&14&-22&3&15
+		QString re1 = "([+-]?\\d*[\\.,]?\\d*)"; // Float value
+		QString re2 = "([a-zA-Z]*)"; // SI unit
+		QString re3 = "\\/"; // Forward slash, not captured
+		QString re4 = "([+-]?\\d*[\\.,]?\\d*)"; // Float value
+		QString re5 = "([a-zA-Z]*)"; // SI unit
+		QRegExp regex(re1 + re2 + re3 + re4 + re5);
+
+		const QString text = conv_threshold_cb_->currentText();
+		if (!regex.exactMatch(text))
+			return;  // String doesn't match the regex
+
+		QStringList tokens = regex.capturedTexts();
+
+		// For now, we simply assume that the unit is volt without modifiers
+		const double low_thr = tokens.at(1).toDouble();
+		const double high_thr = tokens.at(3).toDouble();
+
+		// Only restart the conversion if one of the options was updated
+		bool o1 = base_->set_conversion_option("threshold_value_low", low_thr);
+		bool o2 = base_->set_conversion_option("threshold_value_high", high_thr);
+		if (o1 || o2)
+			delayed_conversion_starter_.start();
+	}
+
+	base_->set_conversion_preset(index);
+
+	// Immediately start the conversion if we're not asking for a delayed reaction
+	if (!delayed_conversion_starter_.isActive())
+		base_->start_conversion();
+}
+
+void AnalogSignal::on_delayed_conversion_starter()
+{
+	base_->start_conversion();
 }
 
 void AnalogSignal::on_display_type_changed(int index)

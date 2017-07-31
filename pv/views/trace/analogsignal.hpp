@@ -26,6 +26,7 @@
 
 #include <QComboBox>
 #include <QSpinBox>
+#include <QTimer>
 
 using std::pair;
 using std::shared_ptr;
@@ -144,6 +145,8 @@ private:
 
 	void update_scale();
 
+	void update_conversion_widgets();
+
 	void perform_autoranging(bool keep_divs, bool force_update);
 
 protected:
@@ -161,12 +164,17 @@ private Q_SLOTS:
 	void on_autoranging_changed(int state);
 
 	void on_conversion_changed(int index);
+	void on_conv_threshold_changed(int index=-1);
+	void on_delayed_conversion_starter();
 
 	void on_display_type_changed(int index);
 
 private:
-	QComboBox *resolution_cb_, *conversion_cb_, *display_type_cb_;
+	QComboBox *resolution_cb_, *conversion_cb_, *conv_threshold_cb_,
+		*display_type_cb_;
 	QSpinBox *pvdiv_sb_, *nvdiv_sb_, *div_height_sb_;
+
+	QTimer delayed_conversion_starter_;
 
 	float scale_;
 	int scale_index_;

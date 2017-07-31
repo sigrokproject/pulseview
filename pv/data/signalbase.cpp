@@ -44,7 +44,9 @@ const uint64_t SignalBase::ConversionBlockSize = 4096;
 SignalBase::SignalBase(shared_ptr<sigrok::Channel> channel, ChannelType channel_type) :
 	channel_(channel),
 	channel_type_(channel_type),
-	conversion_type_(NoConversion)
+	conversion_type_(NoConversion),
+	min_value_(0),
+	max_value_(0)
 {
 	if (channel_)
 		internal_name_ = QString::fromStdString(channel_->name());
@@ -203,6 +205,131 @@ void SignalBase::set_conversion_type(ConversionType t)
 	conversion_type_changed(t);
 }
 
+map<QString, QVariant> SignalBase::get_conversion_options() const
+{
+	return conversion_options_;
+}
+
+bool SignalBase::set_conversion_option(QString key, QVariant value)
+{
+	QVariant old_value;
+
+	auto key_iter = conversion_options_.find(key);
+	if (key_iter != conversion_options_.end())
+		old_value = key_iter->second;
+
+	conversion_options_[key] = value;
+
+	return (value != old_value);
+}
+
+vector<double> SignalBase::get_conversion_thresholds(const ConversionType t,
+	const bool always_custom) const
+{
+	vector<double> result;
+	ConversionType conv_type = t;
+	int preset;
+
+	// Use currently active conversion if no conversion type was supplied
+	if (conv_type == NoConversion)
+		conv_type = conversion_type_;
+
+	if (always_custom)
+		preset = -1;
+	else
+		preset = get_current_conversion_preset();
+
+	if (conv_type == A2LConversionByTreshold) {
+		double thr = 0;
+
+		if (preset == -1) {
+			auto thr_iter = conversion_options_.find("threshold_value");
+			if (thr_iter != conversion_options_.end())
+				thr = (thr_iter->second).toDouble();
+		}
+
+		if (preset == 0)
+			thr = (min_value_ + max_value_) * 0.5;  // middle between min and max
+
+		if (preset == 1) thr = 0.9;
+		if (preset == 2) thr = 1.8;
+		if (preset == 3) thr = 2.5;
+		if (preset == 4) thr = 1.5;
+
+		result.push_back(thr);
+	}
+
+	if (conv_type == A2LConversionBySchmittTrigger) {
+		double thr_lo = 0, thr_hi = 0;
+
+		if (preset == -1) {
+			auto thr_lo_iter = conversion_options_.find("threshold_value_low");
+			if (thr_lo_iter != conversion_options_.end())
+				thr_lo = (thr_lo_iter->second).toDouble();
+
+			auto thr_hi_iter = conversion_options_.find("threshold_value_high");
+			if (thr_hi_iter != conversion_options_.end())
+				thr_hi = (thr_hi_iter->second).toDouble();
+		}
+
+		if (preset == 0) {
+			const double amplitude = max_value_ - min_value_;
+			const double center = min_value_ + (amplitude / 2);
+			thr_lo = center - (amplitude * 0.15);  // 15% margin
+			thr_hi = center + (amplitude * 0.15);  // 15% margin
+		}
+
+		if (preset == 1) { thr_lo = 0.3; thr_hi = 1.2; }
+		if (preset == 2) { thr_lo = 0.7; thr_hi = 2.5; }
+		if (preset == 3) { thr_lo = 1.3; thr_hi = 3.7; }
+		if (preset == 4) { thr_lo = 0.8; thr_hi = 2.0; }
+
+		result.push_back(thr_lo);
+		result.push_back(thr_hi);
+	}
+
+	return result;
+}
+
+vector< pair<QString, int> > SignalBase::get_conversion_presets() const
+{
+	vector< pair<QString, int> > presets;
+
+	if (conversion_type_ == A2LConversionByTreshold) {
+		// Source: http://www.interfacebus.com/voltage_threshold.html
+		presets.emplace_back(tr("Signal average"), 0);
+		presets.emplace_back(tr("0.9V (for 1.8V CMOS)"), 1);
+		presets.emplace_back(tr("1.8V (for 3.3V CMOS)"), 2);
+		presets.emplace_back(tr("2.5V (for 5.0V CMOS)"), 3);
+		presets.emplace_back(tr("1.5V (for TTL)"), 4);
+	}
+
+	if (conversion_type_ == A2LConversionBySchmittTrigger) {
+		// Source: http://www.interfacebus.com/voltage_threshold.html
+		presets.emplace_back(tr("Signal average +/- 15%"), 0);
+		presets.emplace_back(tr("0.3V/1.2V (for 1.8V CMOS)"), 1);
+		presets.emplace_back(tr("0.7V/2.5V (for 3.3V CMOS)"), 2);
+		presets.emplace_back(tr("1.3V/3.7V (for 5.0V CMOS)"), 3);
+		presets.emplace_back(tr("0.8V/2.0V (for TTL)"), 4);
+	}
+
+	return presets;
+}
+
+int SignalBase::get_current_conversion_preset() const
+{
+	auto preset = conversion_options_.find("preset");
+	if (preset != conversion_options_.end())
+		return (preset->second).toInt();
+
+	return -1;
+}
+
+void SignalBase::set_conversion_preset(int id)
+{
+	conversion_options_["preset"] = id;
+}
+
 #ifdef ENABLE_DECODE
 bool SignalBase::is_decode_signal() const
 {
@@ -216,6 +343,14 @@ void SignalBase::save_settings(QSettings &settings) const
 	settings.setValue("enabled", enabled());
 	settings.setValue("colour", colour());
 	settings.setValue("conversion_type", (int)conversion_type_);
+
+	settings.setValue("conv_options", (int)(conversion_options_.size()));
+	int i = 0;
+	for (auto kvp : conversion_options_) {
+		settings.setValue(QString("conv_option%1_key").arg(i), kvp.first);
+		settings.setValue(QString("conv_option%1_value").arg(i), kvp.second);
+		i++;
+	}
 }
 
 void SignalBase::restore_settings(QSettings &settings)
@@ -224,6 +359,15 @@ void SignalBase::restore_settings(QSettings &settings)
 	set_enabled(settings.value("enabled").toBool());
 	set_colour(settings.value("colour").value<QColor>());
 	set_conversion_type((ConversionType)settings.value("conversion_type").toInt());
+
+	int conv_options = settings.value("conv_options").toInt();
+
+	if (conv_options)
+		for (int i = 0; i < conv_options; i++) {
+			QString key = settings.value(QString("conv_option%1_key").arg(i)).toString();
+			QVariant value = settings.value(QString("conv_option%1_value").arg(i));
+			conversion_options_[key] = value;
+		}
 }
 
 bool SignalBase::conversion_is_a2l() const
@@ -260,8 +404,7 @@ void SignalBase::conversion_thread_proc(QObject* segment)
 			end_sample = asegment->get_sample_count();
 
 			if (end_sample > start_sample) {
-				float min_v, max_v;
-				tie(min_v, max_v) = asegment->get_min_max();
+				tie(min_value_, max_value_) = asegment->get_min_max();
 
 				// Create sigrok::Analog instance
 				float *asamples = new float[ConversionBlockSize];
@@ -285,7 +428,7 @@ void SignalBase::conversion_thread_proc(QObject* segment)
 				uint64_t i = start_sample;
 
 				if (conversion_type_ == A2LConversionByTreshold) {
-					const float threshold = (min_v + max_v) * 0.5;  // middle between min and max
+					const double threshold = get_conversion_thresholds()[0];
 
 					// Convert as many sample blocks as we can
 					while ((end_sample - i) > ConversionBlockSize) {
@@ -314,10 +457,10 @@ void SignalBase::conversion_thread_proc(QObject* segment)
 				}
 
 				if (conversion_type_ == A2LConversionBySchmittTrigger) {
-					const float amplitude = max_v - min_v;
-					const float center = min_v + (amplitude / 2);
-					const float lo_thr = center - (amplitude * 0.15); // 15% margin
-					const float hi_thr = center + (amplitude * 0.15); // 15% margin
+					const vector<double> thresholds = get_conversion_thresholds();
+					const double lo_thr = thresholds[0];
+					const double hi_thr = thresholds[1];
+
 					uint8_t state = 0;  // TODO Use value of logic sample n-1 instead of 0
 
 					// Convert as many sample blocks as we can
@@ -366,6 +509,9 @@ void SignalBase::conversion_thread_proc(QObject* segment)
 void SignalBase::start_conversion()
 {
 	stop_conversion();
+
+	if (converted_data_)
+		converted_data_->clear();
 
 	if (conversion_is_a2l()) {
 		shared_ptr<Analog> analog_data = dynamic_pointer_cast<Analog>(data_);
