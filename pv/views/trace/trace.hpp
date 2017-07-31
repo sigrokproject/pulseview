@@ -144,6 +144,7 @@ private Q_SLOTS:
 
 protected:
 	shared_ptr<data::SignalBase> base_;
+	QPen axis_pen_;
 
 private:
 	pv::widgets::Popup *popup_;

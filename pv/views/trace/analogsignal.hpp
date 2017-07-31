@@ -47,6 +47,7 @@ class AnalogSignal : public Signal
 	Q_OBJECT
 
 private:
+	static const QPen AxisPen;
 	static const QColor SignalColours[4];
 	static const QColor GridMajorColor, GridMinorColor;
 	static const QColor SamplingPointColour;

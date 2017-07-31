@@ -50,6 +50,7 @@ const QColor Trace::DarkGrayBGColour = QColor(0, 0, 0, 15 * 255 / 100);
 
 Trace::Trace(shared_ptr<data::SignalBase> channel) :
 	base_(channel),
+	axis_pen_(AxisPen),
 	popup_(nullptr),
 	popup_form_(nullptr)
 {
@@ -180,7 +181,7 @@ void Trace::paint_axis(QPainter &p, ViewItemPaintParams &pp, int y)
 {
 	p.setRenderHint(QPainter::Antialiasing, false);
 
-	p.setPen(AxisPen);
+	p.setPen(axis_pen_);
 	p.drawLine(QPointF(pp.left(), y), QPointF(pp.right(), y));
 
 	p.setRenderHint(QPainter::Antialiasing, true);

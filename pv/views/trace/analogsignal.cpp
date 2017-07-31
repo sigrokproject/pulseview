@@ -70,6 +70,7 @@ const QColor AnalogSignal::SignalColours[4] = {
 	QColor(0x4E, 0x9A, 0x06)	// Green
 };
 
+const QPen AnalogSignal::AxisPen(QColor(0, 0, 0, 30 * 256 / 100), 2);
 const QColor AnalogSignal::GridMajorColor = QColor(0, 0, 0, 40 * 256 / 100);
 const QColor AnalogSignal::GridMinorColor = QColor(0, 0, 0, 20 * 256 / 100);
 
@@ -99,6 +100,8 @@ AnalogSignal::AnalogSignal(
 	display_type_(DisplayBoth),
 	autoranging_(true)
 {
+	axis_pen_ = AxisPen;
+
 	pv::data::Analog* analog_data =
 		dynamic_cast<pv::data::Analog*>(data().get());
 
