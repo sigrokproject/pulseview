@@ -75,6 +75,8 @@ const QColor AnalogSignal::GridMinorColor = QColor(0, 0, 0, 20 * 256 / 100);
 
 const QColor AnalogSignal::SamplingPointColour(0x77, 0x77, 0x77);
 
+const QColor AnalogSignal::ThresholdColor = QColor(0, 0, 0, 30 * 256 / 100);
+
 const int64_t AnalogSignal::TracePaintBlockSize = 1024 * 1024;  // 4 MiB (due to float)
 const float AnalogSignal::EnvelopeThreshold = 64.0f;
 
@@ -242,11 +244,15 @@ void AnalogSignal::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 				pixels_offset, samples_per_pixel);
 	}
 
-	if ((display_type_ == DisplayConverted) || (display_type_ == DisplayBoth)) {
-		const SignalBase::ConversionType conv_type = base_->get_conversion_type();
+	const SignalBase::ConversionType conv_type = base_->get_conversion_type();
 
-		if (((conv_type == SignalBase::A2LConversionByThreshold) ||
-			(conv_type == SignalBase::A2LConversionBySchmittTrigger)))
+	if (((conv_type == SignalBase::A2LConversionByThreshold) ||
+		(conv_type == SignalBase::A2LConversionBySchmittTrigger))) {
+
+		if ((display_type_ == DisplayAnalog) || (display_type_ == DisplayBoth))
+			paint_conversion_thresholds(p, pp);
+
+		if ((display_type_ == DisplayConverted) || (display_type_ == DisplayBoth))
 			paint_logic_mid(p, pp);
 	}
 }
@@ -432,6 +438,44 @@ void AnalogSignal::paint_envelope(QPainter &p,
 
 	delete[] rects;
 	delete[] e.samples;
+}
+
+void AnalogSignal::paint_conversion_thresholds(QPainter &p,
+	ViewItemPaintParams &pp)
+{
+	if (!base_->enabled() || !base_->logic_data())
+		return;
+
+	// TODO Register a change handler instead of querying this with every repaint
+	GlobalSettings settings;
+	const bool show_conversion_thresholds =
+		settings.value(GlobalSettings::Key_View_ShowConversionThresholds).toBool();
+
+	if (!show_conversion_thresholds)
+		return;
+
+	const vector<double> thresholds = base_->get_conversion_thresholds();
+	const int y = get_visual_y();
+
+	p.setRenderHint(QPainter::Antialiasing, false);
+
+	p.setPen(ThresholdColor);
+
+	if (thresholds.size() == 2) {
+		// Draw as hatched block because two thresholds denote lower/upper level
+		const double thr_y0 = y - thresholds[0] * scale_;
+		const double thr_y1 = y - thresholds[1] * scale_;
+		p.fillRect(QRect(pp.left(), thr_y0, pp.right(), thr_y1 - thr_y0),
+			QBrush(ThresholdColor, Qt::BDiagPattern));
+	} else {
+		// Draw as individual lines
+		for (const double thr : thresholds) {
+			const double thr_y = y - thr * scale_;
+			p.drawLine(QPointF(pp.left(), thr_y), QPointF(pp.right(), thr_y));
+		}
+	}
+
+	p.setRenderHint(QPainter::Antialiasing, true);
 }
 
 void AnalogSignal::paint_logic_mid(QPainter &p, ViewItemPaintParams &pp)

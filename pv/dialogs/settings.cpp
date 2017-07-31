@@ -171,6 +171,10 @@ QWidget *Settings::get_view_settings_form(QWidget *parent) const
 		SLOT(on_view_showAnalogMinorGrid_changed(int)));
 	trace_view_layout->addRow(tr("Show analog minor grid in addition to vdiv grid"), cb);
 
+	cb = create_checkbox(GlobalSettings::Key_View_ShowConversionThresholds,
+		SLOT(on_view_showConversionThresholds_changed(int)));
+	trace_view_layout->addRow(tr("Show conversion thresholds in analog traces"), cb);
+
 	QSpinBox *default_div_height_sb = new QSpinBox();
 	default_div_height_sb->setRange(20, 1000);
 	default_div_height_sb->setSuffix(tr(" pixels"));
@@ -435,6 +439,12 @@ void Settings::on_view_showAnalogMinorGrid_changed(int state)
 {
 	GlobalSettings settings;
 	settings.setValue(GlobalSettings::Key_View_ShowAnalogMinorGrid, state ? true : false);
+}
+
+void Settings::on_view_showConversionThresholds_changed(int state)
+{
+	GlobalSettings settings;
+	settings.setValue(GlobalSettings::Key_View_ShowConversionThresholds, state ? true : false);
 }
 
 void Settings::on_view_defaultDivHeight_changed(int value)
