@@ -23,7 +23,7 @@
 
 #include <android/log.h>
 
-#include <stdint.h>
+#include <cstdint>
 #include <libsigrok/libsigrok.h>
 
 #include "android/loghandler.hpp"

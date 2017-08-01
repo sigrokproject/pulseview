@@ -36,7 +36,6 @@
 #include "view.hpp"
 
 using std::shared_ptr;
-using std::make_shared;
 
 namespace pv {
 namespace views {

@@ -20,7 +20,8 @@
 #ifndef PULSEVIEW_PV_VIEW_DECODE_ANNOTATION_HPP
 #define PULSEVIEW_PV_VIEW_DECODE_ANNOTATION_HPP
 
-#include <stdint.h>
+#include <cstdint>
+#include <vector>
 
 #include <QString>
 

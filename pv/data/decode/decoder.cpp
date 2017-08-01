@@ -113,7 +113,7 @@ srd_decoder_inst* Decoder::create_decoder_inst(srd_session *session) const
 		return nullptr;
 
 	// Setup the channels
-	GArray *const init_pin_states = g_array_sized_new(FALSE, TRUE,
+	GArray *const init_pin_states = g_array_sized_new(false, true,
 		sizeof(uint8_t), channels_.size());
 
 	g_array_set_size(init_pin_states, channels_.size());
@@ -133,7 +133,7 @@ srd_decoder_inst* Decoder::create_decoder_inst(srd_session *session) const
 	srd_inst_channel_set_all(decoder_inst, channels);
 
 	srd_inst_initial_pins_set_all(decoder_inst, init_pin_states);
-	g_array_free(init_pin_states, TRUE);
+	g_array_free(init_pin_states, true);
 
 	return decoder_inst;
 }
