@@ -73,6 +73,16 @@ public:
 		A2LConversionBySchmittTrigger = 2
 	};
 
+	/**
+	 * Conversion presets range from -1 to n, where 1..n are dependent on
+	 * the conversion these presets apply to. -1 and 0 have fixed meanings,
+	 * however.
+	 */
+	enum ConversionPreset {
+		NoPreset = -1,     ///< Conversion uses custom values
+		DynamicPreset = 0  ///< Conversion uses calculated values
+	};
+
 private:
 	static const int ColourBGAlpha;
 	static const uint64_t ConversionBlockSize;
@@ -227,7 +237,7 @@ public:
 	 * @return the ID of the currently used conversion preset. -1 if no preset
 	 *         is used. In that case, a user setting is used instead.
 	 */
-	int get_current_conversion_preset() const;
+	ConversionPreset get_current_conversion_preset() const;
 
 	/**
 	 * Sets the conversion preset to be used.
@@ -236,7 +246,7 @@ public:
 	 *
 	 * @param id the id of the preset to use
 	 */
-	void set_conversion_preset(int id);
+	void set_conversion_preset(ConversionPreset id);
 
 #ifdef ENABLE_DECODE
 	bool is_decode_signal() const;

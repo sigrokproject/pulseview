@@ -1050,7 +1050,7 @@ void AnalogSignal::on_conv_threshold_changed(int index)
 			delayed_conversion_starter_.start();
 	}
 
-	base_->set_conversion_preset(index);
+	base_->set_conversion_preset((SignalBase::ConversionPreset)index);
 
 	// Immediately start the conversion if we're not asking for a delayed reaction
 	if (!delayed_conversion_starter_.isActive())

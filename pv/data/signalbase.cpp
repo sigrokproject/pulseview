@@ -244,33 +244,33 @@ vector<double> SignalBase::get_conversion_thresholds(const ConversionType t,
 {
 	vector<double> result;
 	ConversionType conv_type = t;
-	int preset;
+	ConversionPreset preset;
 
 	// Use currently active conversion if no conversion type was supplied
 	if (conv_type == NoConversion)
 		conv_type = conversion_type_;
 
 	if (always_custom)
-		preset = -1;
+		preset = NoPreset;
 	else
 		preset = get_current_conversion_preset();
 
 	if (conv_type == A2LConversionByThreshold) {
 		double thr = 0;
 
-		if (preset == -1) {
+		if (preset == NoPreset) {
 			auto thr_iter = conversion_options_.find("threshold_value");
 			if (thr_iter != conversion_options_.end())
 				thr = (thr_iter->second).toDouble();
 		}
 
-		if (preset == 0)
+		if (preset == DynamicPreset)
 			thr = (min_value_ + max_value_) * 0.5;  // middle between min and max
 
-		if (preset == 1) thr = 0.9;
-		if (preset == 2) thr = 1.8;
-		if (preset == 3) thr = 2.5;
-		if (preset == 4) thr = 1.5;
+		if ((int)preset == 1) thr = 0.9;
+		if ((int)preset == 2) thr = 1.8;
+		if ((int)preset == 3) thr = 2.5;
+		if ((int)preset == 4) thr = 1.5;
 
 		result.push_back(thr);
 	}
@@ -278,7 +278,7 @@ vector<double> SignalBase::get_conversion_thresholds(const ConversionType t,
 	if (conv_type == A2LConversionBySchmittTrigger) {
 		double thr_lo = 0, thr_hi = 0;
 
-		if (preset == -1) {
+		if (preset == NoPreset) {
 			auto thr_lo_iter = conversion_options_.find("threshold_value_low");
 			if (thr_lo_iter != conversion_options_.end())
 				thr_lo = (thr_lo_iter->second).toDouble();
@@ -288,17 +288,17 @@ vector<double> SignalBase::get_conversion_thresholds(const ConversionType t,
 				thr_hi = (thr_hi_iter->second).toDouble();
 		}
 
-		if (preset == 0) {
+		if (preset == DynamicPreset) {
 			const double amplitude = max_value_ - min_value_;
 			const double center = min_value_ + (amplitude / 2);
 			thr_lo = center - (amplitude * 0.15);  // 15% margin
 			thr_hi = center + (amplitude * 0.15);  // 15% margin
 		}
 
-		if (preset == 1) { thr_lo = 0.3; thr_hi = 1.2; }
-		if (preset == 2) { thr_lo = 0.7; thr_hi = 2.5; }
-		if (preset == 3) { thr_lo = 1.3; thr_hi = 3.7; }
-		if (preset == 4) { thr_lo = 0.8; thr_hi = 2.0; }
+		if ((int)preset == 1) { thr_lo = 0.3; thr_hi = 1.2; }
+		if ((int)preset == 2) { thr_lo = 0.7; thr_hi = 2.5; }
+		if ((int)preset == 3) { thr_lo = 1.3; thr_hi = 3.7; }
+		if ((int)preset == 4) { thr_lo = 0.8; thr_hi = 2.0; }
 
 		result.push_back(thr_lo);
 		result.push_back(thr_hi);
@@ -332,18 +332,18 @@ vector< pair<QString, int> > SignalBase::get_conversion_presets() const
 	return presets;
 }
 
-int SignalBase::get_current_conversion_preset() const
+SignalBase::ConversionPreset SignalBase::get_current_conversion_preset() const
 {
 	auto preset = conversion_options_.find("preset");
 	if (preset != conversion_options_.end())
-		return (preset->second).toInt();
+		return (ConversionPreset)((preset->second).toInt());
 
-	return -1;
+	return NoPreset;
 }
 
-void SignalBase::set_conversion_preset(int id)
+void SignalBase::set_conversion_preset(ConversionPreset id)
 {
-	conversion_options_["preset"] = id;
+	conversion_options_["preset"] = (int)id;
 }
 
 #ifdef ENABLE_DECODE
@@ -581,9 +581,9 @@ void SignalBase::on_min_max_changed(float min, float max)
 	(void)min;
 	(void)max;
 
-	// Restart conversion if one is enabled and uses an automatic threshold
+	// Restart conversion if one is enabled and uses a calculated threshold
 	if ((conversion_type_ != NoConversion) &&
-		(get_current_conversion_preset() == 0))
+		(get_current_conversion_preset() == DynamicPreset))
 		start_conversion();
 }
 
