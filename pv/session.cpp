@@ -622,8 +622,6 @@ void Session::register_view(shared_ptr<views::ViewBase> view)
 				switch (signalbase->type()) {
 				case data::SignalBase::AnalogChannel:
 				case data::SignalBase::LogicChannel:
-				case data::SignalBase::A2LChannel:
-					break;
 				case data::SignalBase::DecodeChannel:
 #ifdef ENABLE_DECODE
 					trace_view->add_decode_signal(
