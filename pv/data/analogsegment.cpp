@@ -178,6 +178,7 @@ void AnalogSegment::append_payload_to_envelope_levels()
 	e0.length = sample_count_ / EnvelopeScaleFactor;
 
 	// Calculate min/max values in case we have too few samples for an envelope
+	const float old_min_value = min_value_, old_max_value = max_value_;
 	if (sample_count_ < EnvelopeScaleFactor) {
 		it = begin_raw_sample_iteration(0);
 		for (uint64_t i = 0; i < sample_count_; i++) {
@@ -257,6 +258,10 @@ void AnalogSegment::append_payload_to_envelope_levels()
 			*dest_ptr = sub_sample;
 		}
 	}
+
+	// Notify if the min or max value changed
+	if ((old_min_value != min_value_) || (old_max_value != max_value_))
+		owner_.min_max_changed(min_value_, max_value_);
 }
 
 } // namespace data

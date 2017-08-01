@@ -74,5 +74,10 @@ void Analog::notify_samples_added(QObject* segment, uint64_t start_sample,
 	samples_added(segment, start_sample, end_sample);
 }
 
+void Analog::notify_min_max_changed(float min, float max)
+{
+	min_max_changed(min, max);
+}
+
 } // namespace data
 } // namespace pv

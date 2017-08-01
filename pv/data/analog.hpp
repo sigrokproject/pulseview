@@ -56,11 +56,15 @@ public:
 	void notify_samples_added(QObject* segment, uint64_t start_sample,
 		uint64_t end_sample);
 
+	void notify_min_max_changed(float min, float max);
+
 Q_SIGNALS:
 	void samples_cleared();
 
 	void samples_added(QObject* segment, uint64_t start_sample,
 		uint64_t end_sample);
+
+	void min_max_changed(float min, float max);
 
 private:
 	deque< shared_ptr<AnalogSegment> > segments_;

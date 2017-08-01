@@ -140,6 +140,14 @@ void SignalBase::set_data(shared_ptr<pv::data::SignalData> data)
 			this, SLOT(on_samples_cleared()));
 		disconnect(data.get(), SIGNAL(samples_added(QObject*, uint64_t, uint64_t)),
 			this, SLOT(on_samples_added(QObject*, uint64_t, uint64_t)));
+
+		if (channel_type_ == AnalogChannel) {
+			shared_ptr<Analog> analog = analog_data();
+			assert(analog);
+
+			disconnect(analog.get(), SIGNAL(min_max_changed(float, float)),
+				this, SLOT(on_min_max_changed(float, float)));
+		}
 	}
 
 	data_ = data;
@@ -149,6 +157,14 @@ void SignalBase::set_data(shared_ptr<pv::data::SignalData> data)
 			this, SLOT(on_samples_cleared()));
 		connect(data.get(), SIGNAL(samples_added(QObject*, uint64_t, uint64_t)),
 			this, SLOT(on_samples_added(QObject*, uint64_t, uint64_t)));
+
+		if (channel_type_ == AnalogChannel) {
+			shared_ptr<Analog> analog = analog_data();
+			assert(analog);
+
+			connect(analog.get(), SIGNAL(min_max_changed(float, float)),
+				this, SLOT(on_min_max_changed(float, float)));
+		}
 	}
 }
 
@@ -560,14 +576,23 @@ void SignalBase::on_samples_added(QObject* segment, uint64_t start_sample,
 	samples_added(segment, start_sample, end_sample);
 }
 
+void SignalBase::on_min_max_changed(float min, float max)
+{
+	(void)min;
+	(void)max;
+
+	// Restart conversion if one is enabled and uses an automatic threshold
+	if ((conversion_type_ != NoConversion) &&
+		(get_current_conversion_preset() == 0))
+		start_conversion();
+}
+
 void SignalBase::on_capture_state_changed(int state)
 {
 	if (state == Session::Running) {
-		if (conversion_type_ != NoConversion) {
-			// Restart conversion
-			stop_conversion();
+		// Restart conversion if one is enabled
+		if (conversion_type_ != NoConversion)
 			start_conversion();
-		}
 	}
 }
 
