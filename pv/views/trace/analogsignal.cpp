@@ -105,8 +105,8 @@ AnalogSignal::AnalogSignal(
 	pv::data::Analog* analog_data =
 		dynamic_cast<pv::data::Analog*>(data().get());
 
-	connect(analog_data, SIGNAL(samples_added(QObject*, uint64_t, uint64_t)),
-		this, SLOT(on_samples_added()));
+	connect(analog_data, SIGNAL(min_max_changed(float, float)),
+		this, SLOT(on_min_max_changed(float, float)));
 
 	GlobalSettings gs;
 	div_height_ = gs.value(GlobalSettings::Key_View_DefaultDivHeight).toInt();
@@ -861,9 +861,13 @@ void AnalogSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
 	form->addRow(layout);
 }
 
-void AnalogSignal::on_samples_added()
+void AnalogSignal::on_min_max_changed(float min, float max)
 {
-	perform_autoranging(false, false);
+	(void)min;
+	(void)max;
+
+	if (autoranging_)
+		perform_autoranging(false, false);
 }
 
 void AnalogSignal::on_pos_vdivs_changed(int vdivs)

@@ -284,6 +284,8 @@ Q_SIGNALS:
 	void samples_added(QObject* segment, uint64_t start_sample,
 		uint64_t end_sample);
 
+	void min_max_changed(float min, float max);
+
 private Q_SLOTS:
 	void on_samples_cleared();
 

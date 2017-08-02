@@ -590,13 +590,12 @@ void SignalBase::on_samples_added(QObject* segment, uint64_t start_sample,
 
 void SignalBase::on_min_max_changed(float min, float max)
 {
-	(void)min;
-	(void)max;
-
 	// Restart conversion if one is enabled and uses a calculated threshold
 	if ((conversion_type_ != NoConversion) &&
 		(get_current_conversion_preset() == DynamicPreset))
 		start_conversion(true);
+
+	min_max_changed(min, max);
 }
 
 void SignalBase::on_capture_state_changed(int state)
