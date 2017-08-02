@@ -940,18 +940,21 @@ void DecodeSignal::annotation_callback(srd_proto_data *pdata, void *decode_signa
 
 	lock_guard<mutex> lock(ds->output_mutex_);
 
-	const decode::Annotation a(pdata);
-
 	// Find the row
 	assert(pdata->pdo);
 	assert(pdata->pdo->di);
 	const srd_decoder *const decc = pdata->pdo->di->decoder;
 	assert(decc);
 
+	const srd_proto_data_annotation *const pda =
+		(const srd_proto_data_annotation*)pdata->data;
+	assert(pda);
+
 	auto row_iter = ds->rows_.end();
 
 	// Try looking up the sub-row of this class
-	const auto r = ds->class_rows_.find(make_pair(decc, a.format()));
+	const auto format = pda->ann_class;
+	const auto r = ds->class_rows_.find(make_pair(decc, format));
 	if (r != ds->class_rows_.end())
 		row_iter = ds->rows_.find((*r).second);
 	else {
@@ -962,13 +965,13 @@ void DecodeSignal::annotation_callback(srd_proto_data *pdata, void *decode_signa
 	assert(row_iter != ds->rows_.end());
 	if (row_iter == ds->rows_.end()) {
 		qDebug() << "Unexpected annotation: decoder = " << decc <<
-			", format = " << a.format();
+			", format = " << format;
 		assert(false);
 		return;
 	}
 
 	// Add the annotation
-	(*row_iter).second.push_annotation(a);
+	(*row_iter).second.emplace_annotation(pdata);
 }
 
 void DecodeSignal::on_capture_state_changed(int state)

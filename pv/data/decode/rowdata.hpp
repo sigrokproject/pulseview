@@ -22,6 +22,8 @@
 
 #include <vector>
 
+#include <libsigrokdecode/libsigrokdecode.h>
+
 #include "annotation.hpp"
 
 using std::vector;
@@ -45,7 +47,7 @@ public:
 		vector<pv::data::decode::Annotation> &dest,
 		uint64_t start_sample, uint64_t end_sample) const;
 
-	void push_annotation(const Annotation &a);
+	void emplace_annotation(srd_proto_data *pdata);
 
 private:
 	vector<Annotation> annotations_;
