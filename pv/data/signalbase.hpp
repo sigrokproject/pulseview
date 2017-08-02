@@ -30,6 +30,7 @@
 #include <QObject>
 #include <QSettings>
 #include <QString>
+#include <QTimer>
 #include <QVariant>
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
@@ -85,6 +86,7 @@ public:
 private:
 	static const int ColourBGAlpha;
 	static const uint64_t ConversionBlockSize;
+	static const uint32_t ConversionDelay;
 
 public:
 	SignalBase(shared_ptr<sigrok::Channel> channel, ChannelType channel_type);
@@ -255,7 +257,7 @@ public:
 
 	virtual void restore_settings(QSettings &settings);
 
-	void start_conversion();
+	void start_conversion(bool delayed_start=false);
 
 private:
 	bool conversion_is_a2l() const;
@@ -292,6 +294,8 @@ private Q_SLOTS:
 
 	void on_capture_state_changed(int state);
 
+	void on_delayed_conversion_start();
+
 protected:
 	shared_ptr<sigrok::Channel> channel_;
 	ChannelType channel_type_;
@@ -306,6 +310,7 @@ protected:
 	atomic<bool> conversion_interrupt_;
 	mutex conversion_input_mutex_;
 	condition_variable conversion_input_cond_;
+	QTimer delayed_conversion_starter_;
 
 	QString internal_name_, name_;
 	QColor colour_, bgcolour_;

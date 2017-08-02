@@ -40,6 +40,7 @@ namespace data {
 
 const int SignalBase::ColourBGAlpha = 8 * 256 / 100;
 const uint64_t SignalBase::ConversionBlockSize = 4096;
+const uint32_t SignalBase::ConversionDelay = 1000;  // 1 second
 
 SignalBase::SignalBase(shared_ptr<sigrok::Channel> channel, ChannelType channel_type) :
 	channel_(channel),
@@ -50,6 +51,11 @@ SignalBase::SignalBase(shared_ptr<sigrok::Channel> channel, ChannelType channel_
 {
 	if (channel_)
 		internal_name_ = QString::fromStdString(channel_->name());
+
+	connect(&delayed_conversion_starter_, SIGNAL(timeout()),
+		this, SLOT(on_delayed_conversion_start()));
+	delayed_conversion_starter_.setSingleShot(true);
+	delayed_conversion_starter_.setInterval(ConversionDelay);
 }
 
 SignalBase::~SignalBase()
@@ -522,8 +528,13 @@ void SignalBase::conversion_thread_proc(QObject* segment)
 	} while (!conversion_interrupt_);
 }
 
-void SignalBase::start_conversion()
+void SignalBase::start_conversion(bool delayed_start)
 {
+	if (delayed_start) {
+		delayed_conversion_starter_.start();
+		return;
+	}
+
 	stop_conversion();
 
 	if (converted_data_)
@@ -568,8 +579,9 @@ void SignalBase::on_samples_added(QObject* segment, uint64_t start_sample,
 			// Notify the conversion thread since it's running
 			conversion_input_cond_.notify_one();
 		} else {
-			// Start the conversion thread
-			start_conversion();
+			// Start the conversion thread unless the delay timer is running
+			if (!delayed_conversion_starter_.isActive())
+				start_conversion();
 		}
 	}
 
@@ -584,7 +596,7 @@ void SignalBase::on_min_max_changed(float min, float max)
 	// Restart conversion if one is enabled and uses a calculated threshold
 	if ((conversion_type_ != NoConversion) &&
 		(get_current_conversion_preset() == DynamicPreset))
-		start_conversion();
+		start_conversion(true);
 }
 
 void SignalBase::on_capture_state_changed(int state)
@@ -594,6 +606,11 @@ void SignalBase::on_capture_state_changed(int state)
 		if (conversion_type_ != NoConversion)
 			start_conversion();
 	}
+}
+
+void SignalBase::on_delayed_conversion_start()
+{
+	start_conversion();
 }
 
 } // namespace data

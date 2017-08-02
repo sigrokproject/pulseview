@@ -26,7 +26,6 @@
 
 #include <QComboBox>
 #include <QSpinBox>
-#include <QTimer>
 
 using std::pair;
 using std::shared_ptr;
@@ -177,8 +176,6 @@ private:
 	QComboBox *resolution_cb_, *conversion_cb_, *conv_threshold_cb_,
 		*display_type_cb_;
 	QSpinBox *pvdiv_sb_, *nvdiv_sb_, *div_height_sb_;
-
-	QTimer delayed_conversion_starter_;
 
 	float scale_;
 	int scale_index_;

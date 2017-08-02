@@ -108,11 +108,6 @@ AnalogSignal::AnalogSignal(
 	connect(analog_data, SIGNAL(samples_added(QObject*, uint64_t, uint64_t)),
 		this, SLOT(on_samples_added()));
 
-	connect(&delayed_conversion_starter_, SIGNAL(timeout()),
-		this, SLOT(on_delayed_conversion_starter()));
-	delayed_conversion_starter_.setSingleShot(true);
-	delayed_conversion_starter_.setInterval(1000);  // 1s timeout
-
 	GlobalSettings gs;
 	div_height_ = gs.value(GlobalSettings::Key_View_DefaultDivHeight).toInt();
 
@@ -1017,9 +1012,11 @@ void AnalogSignal::on_conv_threshold_changed(int index)
 		// For now, we simply assume that the unit is volt without modifiers
 		const double thr = tokens.at(1).toDouble();
 
-		// Only restart the conversion if the threshold was updated
+		// Only restart the conversion if the threshold was updated.
+		// We're starting a delayed conversion because the user may still be
+		// typing and the UI would lag if we kept on restarting it immediately
 		if (base_->set_conversion_option("threshold_value", thr))
-			delayed_conversion_starter_.start();
+			base_->start_conversion(true);
 	}
 
 	if (conv_type == SignalBase::A2LConversionBySchmittTrigger && use_custom_thr) {
@@ -1043,17 +1040,20 @@ void AnalogSignal::on_conv_threshold_changed(int index)
 		const double low_thr = tokens.at(1).toDouble();
 		const double high_thr = tokens.at(3).toDouble();
 
-		// Only restart the conversion if one of the options was updated
+		// Only restart the conversion if one of the options was updated.
+		// We're starting a delayed conversion because the user may still be
+		// typing and the UI would lag if we kept on restarting it immediately
 		bool o1 = base_->set_conversion_option("threshold_value_low", low_thr);
 		bool o2 = base_->set_conversion_option("threshold_value_high", high_thr);
 		if (o1 || o2)
-			delayed_conversion_starter_.start();
+			base_->start_conversion(true);  // Start delayed conversion
 	}
 
 	base_->set_conversion_preset((SignalBase::ConversionPreset)index);
 
-	// Immediately start the conversion if we're not asking for a delayed reaction
-	if (!delayed_conversion_starter_.isActive())
+	// Immediately start the conversion if we're not using custom values
+	// (i.e. we're using one of the presets)
+	if (!use_custom_thr)
 		base_->start_conversion();
 }
 
