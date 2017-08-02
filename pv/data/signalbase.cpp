@@ -344,7 +344,7 @@ SignalBase::ConversionPreset SignalBase::get_current_conversion_preset() const
 	if (preset != conversion_options_.end())
 		return (ConversionPreset)((preset->second).toInt());
 
-	return NoPreset;
+	return DynamicPreset;
 }
 
 void SignalBase::set_conversion_preset(ConversionPreset id)
