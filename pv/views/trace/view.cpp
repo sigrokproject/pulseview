@@ -356,6 +356,9 @@ void View::restore_settings(QSettings &settings)
 
 	settings_restored_ = true;
 	suppress_zoom_to_fit_after_acq_ = true;
+
+	// Update the ruler so that it uses the new scale
+	calculate_tick_spacing();
 }
 
 vector< shared_ptr<TimeItem> > View::time_items() const
