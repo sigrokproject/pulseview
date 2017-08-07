@@ -51,6 +51,9 @@ private:
 	static const QColor GridMajorColor, GridMinorColor;
 	static const QColor SamplingPointColour;
 	static const QColor ThresholdColor;
+	static const QColor ThresholdColorLo;
+	static const QColor ThresholdColorNe;
+	static const QColor ThresholdColorHi;
 
 	static const int64_t TracePaintBlockSize;
 	static const float EnvelopeThreshold;
@@ -131,8 +134,6 @@ private:
 		const shared_ptr<pv::data::AnalogSegment> &segment,
 		int y, int left, const int64_t start, const int64_t end,
 		const double pixels_offset, const double samples_per_pixel);
-
-	void paint_conversion_thresholds(QPainter &p, ViewItemPaintParams &pp);
 
 	void paint_logic_mid(QPainter &p, ViewItemPaintParams &pp);
 
