@@ -173,6 +173,8 @@ private Q_SLOTS:
 
 	void on_display_type_changed(int index);
 
+	void on_settingViewShowConversionThresholds_changed(const QVariant new_value);
+
 private:
 	QComboBox *resolution_cb_, *conversion_cb_, *conv_threshold_cb_,
 		*display_type_cb_;
@@ -188,6 +190,7 @@ private:
 
 	DisplayType display_type_;
 	bool autoranging_;
+	bool show_conversion_thresholds_;
 };
 
 } // namespace trace

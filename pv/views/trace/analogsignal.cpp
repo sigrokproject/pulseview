@@ -46,6 +46,7 @@
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
 
+using std::bind;
 using std::deque;
 using std::div;
 using std::div_t;
@@ -54,6 +55,7 @@ using std::make_pair;
 using std::min;
 using std::numeric_limits;
 using std::pair;
+using std::placeholders::_1;
 using std::shared_ptr;
 using std::vector;
 
@@ -111,7 +113,13 @@ AnalogSignal::AnalogSignal(
 	connect(analog_data, SIGNAL(min_max_changed(float, float)),
 		this, SLOT(on_min_max_changed(float, float)));
 
+	GlobalSettings::register_change_handler(GlobalSettings::Key_View_ShowConversionThresholds,
+		bind(&AnalogSignal::on_settingViewShowConversionThresholds_changed, this, _1));
+
 	GlobalSettings gs;
+	show_conversion_thresholds_ =
+		gs.value(GlobalSettings::Key_View_ShowConversionThresholds).toBool();
+
 	div_height_ = gs.value(GlobalSettings::Key_View_DefaultDivHeight).toInt();
 
 	base_->set_colour(SignalColours[base_->index() % countof(SignalColours)]);
@@ -198,15 +206,10 @@ void AnalogSignal::paint_back(QPainter &p, ViewItemPaintParams &pp)
 	if (!base_->enabled())
 		return;
 
-	// TODO Register a change handler instead of querying this with every repaint
-	GlobalSettings settings;
-	const bool show_conversion_thresholds =
-		settings.value(GlobalSettings::Key_View_ShowConversionThresholds).toBool();
-
 	const vector<double> thresholds = base_->get_conversion_thresholds();
 
 	// Only display thresholds if we have some and we show analog samples
-	if ((thresholds.size() > 0) && show_conversion_thresholds &&
+	if ((thresholds.size() > 0) && show_conversion_thresholds_ &&
 		((display_type_ == DisplayAnalog) || (display_type_ == DisplayBoth))) {
 
 		const int visual_y = get_visual_y();
@@ -1065,6 +1068,14 @@ void AnalogSignal::on_delayed_conversion_starter()
 void AnalogSignal::on_display_type_changed(int index)
 {
 	display_type_ = (DisplayType)(display_type_cb_->itemData(index).toInt());
+
+	if (owner_)
+		owner_->row_item_appearance_changed(false, true);
+}
+
+void AnalogSignal::on_settingViewShowConversionThresholds_changed(const QVariant new_value)
+{
+	show_conversion_thresholds_ = new_value.toBool();
 
 	if (owner_)
 		owner_->row_item_appearance_changed(false, true);
