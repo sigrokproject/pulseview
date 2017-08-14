@@ -990,8 +990,24 @@ void Session::feed_in_trigger()
 
 void Session::feed_in_frame_begin()
 {
+	frame_began_ = true;
+
 	if (cur_logic_segment_ || !cur_analog_segments_.empty())
 		frame_began();
+}
+
+void Session::feed_in_frame_end()
+{
+	{
+		lock_guard<recursive_mutex> lock(data_mutex_);
+		cur_logic_segment_.reset();
+		cur_analog_segments_.clear();
+	}
+
+	if (frame_began_) {
+		frame_began_ = false;
+		frame_ended();
+	}
 }
 
 void Session::feed_in_logic(shared_ptr<Logic> logic)
@@ -1090,8 +1106,6 @@ void Session::feed_in_analog(shared_ptr<Analog> analog)
 void Session::data_feed_in(shared_ptr<sigrok::Device> device,
 	shared_ptr<Packet> packet)
 {
-	static bool frame_began = false;
-
 	(void)device;
 
 	assert(device);
@@ -1109,11 +1123,6 @@ void Session::data_feed_in(shared_ptr<sigrok::Device> device,
 
 	case SR_DF_TRIGGER:
 		feed_in_trigger();
-		break;
-
-	case SR_DF_FRAME_BEGIN:
-		feed_in_frame_begin();
-		frame_began = true;
 		break;
 
 	case SR_DF_LOGIC:
@@ -1134,20 +1143,25 @@ void Session::data_feed_in(shared_ptr<sigrok::Device> device,
 		}
 		break;
 
+	case SR_DF_FRAME_BEGIN:
+		feed_in_frame_begin();
+		break;
+
 	case SR_DF_FRAME_END:
+		feed_in_frame_end();
+		break;
+
 	case SR_DF_END:
-	{
+		// Strictly speaking, this is performed when a frame end marker was
+		// received, so there's no point doing this again. However, not all
+		// devices use frames, and for those devices, we need to do it here.
 		{
 			lock_guard<recursive_mutex> lock(data_mutex_);
 			cur_logic_segment_.reset();
 			cur_analog_segments_.clear();
 		}
-		if (frame_began) {
-			frame_began = false;
-			frame_ended();
-		}
 		break;
-	}
+
 	default:
 		break;
 	}

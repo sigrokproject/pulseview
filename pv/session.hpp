@@ -201,6 +201,7 @@ private:
 	void feed_in_trigger();
 
 	void feed_in_frame_begin();
+	void feed_in_frame_end();
 
 	void feed_in_logic(shared_ptr<sigrok::Logic> logic);
 
@@ -236,6 +237,7 @@ private:
 
 	bool out_of_memory_;
 	bool data_saved_;
+	bool frame_began_;
 
 Q_SIGNALS:
 	void capture_state_changed(int state);
