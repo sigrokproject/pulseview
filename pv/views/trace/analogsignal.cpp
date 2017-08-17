@@ -80,7 +80,7 @@ const QColor AnalogSignal::SamplingPointColour(0x77, 0x77, 0x77);
 
 const QColor AnalogSignal::ThresholdColor = QColor(0, 0, 0, 30 * 256 / 100);
 const QColor AnalogSignal::ThresholdColorLo = QColor(255, 0, 0, 8 * 256 / 100);
-const QColor AnalogSignal::ThresholdColorNe = QColor(0,   0, 0, 6 * 256 / 100);
+const QColor AnalogSignal::ThresholdColorNe = QColor(0,   0, 0, 10 * 256 / 100);
 const QColor AnalogSignal::ThresholdColorHi = QColor(0, 255, 0, 8 * 256 / 100);
 
 const int64_t AnalogSignal::TracePaintBlockSize = 1024 * 1024;  // 4 MiB (due to float)
