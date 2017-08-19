@@ -77,6 +77,9 @@ const QColor AnalogSignal::GridMajorColor = QColor(0, 0, 0, 40 * 256 / 100);
 const QColor AnalogSignal::GridMinorColor = QColor(0, 0, 0, 20 * 256 / 100);
 
 const QColor AnalogSignal::SamplingPointColour(0x77, 0x77, 0x77);
+const QColor AnalogSignal::SamplingPointColourLo = QColor(200, 0, 0, 80 * 256 / 100);
+const QColor AnalogSignal::SamplingPointColourNe = QColor(0,   0, 0, 80 * 256 / 100);
+const QColor AnalogSignal::SamplingPointColourHi = QColor(0, 200, 0, 80 * 256 / 100);
 
 const QColor AnalogSignal::ThresholdColor = QColor(0, 0, 0, 30 * 256 / 100);
 const QColor AnalogSignal::ThresholdColorLo = QColor(255, 0, 0, 8 * 256 / 100);
@@ -379,11 +382,19 @@ void AnalogSignal::paint_trace(QPainter &p,
 	if (end <= start)
 		return;
 
+	bool paint_thr_dots =
+		(base_->get_conversion_type() != data::SignalBase::NoConversion) &&
+		(conversion_threshold_disp_mode_ == GlobalSettings::ConvThrDispMode_Dots);
+
+	vector<double> thresholds;
+	if (paint_thr_dots)
+		thresholds = base_->get_conversion_thresholds();
+
 	// Calculate and paint the sampling points if enabled and useful
 	GlobalSettings settings;
 	const bool show_sampling_points =
-		settings.value(GlobalSettings::Key_View_ShowSamplingPoints).toBool() &&
-		(samples_per_pixel < 0.25);
+		(settings.value(GlobalSettings::Key_View_ShowSamplingPoints).toBool() ||
+		paint_thr_dots) && (samples_per_pixel < 0.25);
 
 	p.setPen(base_->colour());
 
@@ -392,10 +403,7 @@ void AnalogSignal::paint_trace(QPainter &p,
 	QPointF *points = new QPointF[points_count];
 	QPointF *point = points;
 
-	QRectF *sampling_points = nullptr;
-	if (show_sampling_points)
-		 sampling_points = new QRectF[points_count];
-	QRectF *sampling_point = sampling_points;
+	vector<QRectF> sampling_points[3];
 
 	int64_t sample_count = min(points_count, TracePaintBlockSize);
 	int64_t block_sample = 0;
@@ -416,18 +424,40 @@ void AnalogSignal::paint_trace(QPainter &p,
 
 		*point++ = QPointF(x, y - sample_block[block_sample] * scale_);
 
-		if (show_sampling_points)
-			*sampling_point++ =
-				QRectF(x - (w / 2), y - sample_block[block_sample] * scale_ - (w / 2), w, w);
+		if (show_sampling_points) {
+			int idx = 0;  // Neutral
+
+			if (paint_thr_dots) {
+				if (thresholds.size() == 1)
+					idx = (sample_block[block_sample] >= thresholds[0]) ? 2 : 1;
+				else if (thresholds.size() == 2) {
+					if (sample_block[block_sample] > thresholds[1])
+						idx = 2;  // High
+					else if (sample_block[block_sample] < thresholds[0])
+						idx = 1;  // Low
+				}
+			}
+
+			sampling_points[idx].push_back(
+				QRectF(x - (w / 2), y - sample_block[block_sample] * scale_ - (w / 2), w, w));
+		}
 	}
 	delete[] sample_block;
 
 	p.drawPolyline(points, points_count);
 
 	if (show_sampling_points) {
-		p.setPen(SamplingPointColour);
-		p.drawRects(sampling_points, points_count);
-		delete[] sampling_points;
+		if (paint_thr_dots) {
+			p.setPen(SamplingPointColourNe);
+			p.drawRects(sampling_points[0].data(), sampling_points[0].size());
+			p.setPen(SamplingPointColourLo);
+			p.drawRects(sampling_points[1].data(), sampling_points[1].size());
+			p.setPen(SamplingPointColourHi);
+			p.drawRects(sampling_points[2].data(), sampling_points[2].size());
+		} else {
+			p.setPen(SamplingPointColour);
+			p.drawRects(sampling_points[0].data(), sampling_points[0].size());
+		}
 	}
 
 	delete[] points;
