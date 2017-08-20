@@ -23,6 +23,7 @@
 #include <boost/version.hpp>
 
 #include <QApplication>
+#include <QComboBox>
 #include <QDialogButtonBox>
 #include <QFormLayout>
 #include <QGroupBox>
@@ -169,11 +170,17 @@ QWidget *Settings::get_view_settings_form(QWidget *parent) const
 
 	cb = create_checkbox(GlobalSettings::Key_View_ShowAnalogMinorGrid,
 		SLOT(on_view_showAnalogMinorGrid_changed(int)));
-	trace_view_layout->addRow(tr("Show analog minor grid in addition to vdiv grid"), cb);
+	trace_view_layout->addRow(tr("Show analog minor grid in addition to div grid"), cb);
 
-	cb = create_checkbox(GlobalSettings::Key_View_ShowConversionThresholds,
-		SLOT(on_view_showConversionThresholds_changed(int)));
-	trace_view_layout->addRow(tr("Show conversion thresholds in analog traces"), cb);
+	QComboBox *thr_disp_mode_cb = new QComboBox();
+	thr_disp_mode_cb->addItem(tr("None"), GlobalSettings::ConvThrDispMode_None);
+	thr_disp_mode_cb->addItem(tr("Background"), GlobalSettings::ConvThrDispMode_Background);
+	thr_disp_mode_cb->addItem(tr("Dots"), GlobalSettings::ConvThrDispMode_Dots);
+	thr_disp_mode_cb->setCurrentIndex(
+		settings.value(GlobalSettings::Key_View_ConversionThresholdDispMode).toInt());
+	connect(thr_disp_mode_cb, SIGNAL(currentIndexChanged(int)),
+		this, SLOT(on_view_conversionThresholdDispMode_changed(int)));
+	trace_view_layout->addRow(tr("Conversion threshold display mode (analog traces only)"), thr_disp_mode_cb);
 
 	QSpinBox *default_div_height_sb = new QSpinBox();
 	default_div_height_sb->setRange(20, 1000);
@@ -441,10 +448,10 @@ void Settings::on_view_showAnalogMinorGrid_changed(int state)
 	settings.setValue(GlobalSettings::Key_View_ShowAnalogMinorGrid, state ? true : false);
 }
 
-void Settings::on_view_showConversionThresholds_changed(int state)
+void Settings::on_view_conversionThresholdDispMode_changed(int state)
 {
 	GlobalSettings settings;
-	settings.setValue(GlobalSettings::Key_View_ShowConversionThresholds, state ? true : false);
+	settings.setValue(GlobalSettings::Key_View_ConversionThresholdDispMode, state);
 }
 
 void Settings::on_view_defaultDivHeight_changed(int value)

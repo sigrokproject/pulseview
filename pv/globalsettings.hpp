@@ -46,10 +46,16 @@ public:
 	static const QString Key_View_StickyScrolling;
 	static const QString Key_View_ShowSamplingPoints;
 	static const QString Key_View_ShowAnalogMinorGrid;
-	static const QString Key_View_ShowConversionThresholds;
+	static const QString Key_View_ConversionThresholdDispMode;
 	static const QString Key_View_DefaultDivHeight;
 	static const QString Key_View_DefaultLogicHeight;
 	static const QString Key_Dec_InitialStateConfigurable;
+
+	enum ConvThrDispMode {
+		ConvThrDispMode_None = 0,
+		ConvThrDispMode_Background,
+		ConvThrDispMode_Dots
+	};
 
 public:
 	GlobalSettings();

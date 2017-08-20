@@ -113,12 +113,12 @@ AnalogSignal::AnalogSignal(
 	connect(analog_data, SIGNAL(min_max_changed(float, float)),
 		this, SLOT(on_min_max_changed(float, float)));
 
-	GlobalSettings::register_change_handler(GlobalSettings::Key_View_ShowConversionThresholds,
-		bind(&AnalogSignal::on_settingViewShowConversionThresholds_changed, this, _1));
+	GlobalSettings::register_change_handler(GlobalSettings::Key_View_ConversionThresholdDispMode,
+		bind(&AnalogSignal::on_settingViewConversionThresholdDispMode_changed, this, _1));
 
 	GlobalSettings gs;
-	show_conversion_thresholds_ =
-		gs.value(GlobalSettings::Key_View_ShowConversionThresholds).toBool();
+	conversion_threshold_disp_mode_ =
+		gs.value(GlobalSettings::Key_View_ConversionThresholdDispMode).toInt();
 
 	div_height_ = gs.value(GlobalSettings::Key_View_DefaultDivHeight).toInt();
 
@@ -206,10 +206,13 @@ void AnalogSignal::paint_back(QPainter &p, ViewItemPaintParams &pp)
 	if (!base_->enabled())
 		return;
 
+	bool paint_thr_bg =
+		conversion_threshold_disp_mode_ == GlobalSettings::ConvThrDispMode_Background;
+
 	const vector<double> thresholds = base_->get_conversion_thresholds();
 
 	// Only display thresholds if we have some and we show analog samples
-	if ((thresholds.size() > 0) && show_conversion_thresholds_ &&
+	if ((thresholds.size() > 0) && paint_thr_bg &&
 		((display_type_ == DisplayAnalog) || (display_type_ == DisplayBoth))) {
 
 		const int visual_y = get_visual_y();
@@ -1073,9 +1076,9 @@ void AnalogSignal::on_display_type_changed(int index)
 		owner_->row_item_appearance_changed(false, true);
 }
 
-void AnalogSignal::on_settingViewShowConversionThresholds_changed(const QVariant new_value)
+void AnalogSignal::on_settingViewConversionThresholdDispMode_changed(const QVariant new_value)
 {
-	show_conversion_thresholds_ = new_value.toBool();
+	conversion_threshold_disp_mode_ = new_value.toInt();
 
 	if (owner_)
 		owner_->row_item_appearance_changed(false, true);
