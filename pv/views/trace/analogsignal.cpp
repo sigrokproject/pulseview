@@ -225,8 +225,10 @@ void AnalogSignal::paint_back(QPainter &p, ViewItemPaintParams &pp)
 
 		// Draw high/neutral/low areas
 		if (thresholds.size() == 2) {
-			const double thr_lo = visual_y - thresholds[0] * scale_;
-			const double thr_hi = visual_y - thresholds[1] * scale_;
+			int thr_lo = visual_y - thresholds[0] * scale_;
+			int thr_hi = visual_y - thresholds[1] * scale_;
+			thr_lo = min(max(thr_lo, top), btm);
+			thr_hi = min(max(thr_hi, top), btm);
 
 			p.fillRect(QRectF(pp.left(), top, pp.width(), thr_hi - top),
 				QBrush(ThresholdColorHi));
@@ -235,7 +237,8 @@ void AnalogSignal::paint_back(QPainter &p, ViewItemPaintParams &pp)
 			p.fillRect(QRectF(pp.left(), thr_lo, pp.width(), btm - thr_lo),
 				QBrush(ThresholdColorLo));
 		} else {
-			const double thr = visual_y - thresholds[0] * scale_;
+			int thr = visual_y - thresholds[0] * scale_;
+			thr = min(max(thr, top), btm);
 
 			p.fillRect(QRectF(pp.left(), top, pp.width(), thr - top),
 				QBrush(ThresholdColorHi));
