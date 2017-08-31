@@ -86,8 +86,11 @@ StandardBar::StandardBar(Session &session, QWidget *parent,
 	action_view_show_cursors_->setText(tr("Show &Cursors"));
 
 	segment_selector_->setMinimum(1);
+	segment_selector_->hide();
 	connect(&session_, SIGNAL(frame_ended()),
 		this, SLOT(on_segment_added()));
+	connect(segment_selector_, SIGNAL(valueChanged(int)),
+		view_, SLOT(on_segment_changed(int)));
 
 	connect(view_, SIGNAL(always_zoom_to_fit_changed(bool)),
 		this, SLOT(on_always_zoom_to_fit_changed(bool)));

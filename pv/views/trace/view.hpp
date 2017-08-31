@@ -365,6 +365,8 @@ private Q_SLOTS:
 	void signals_changed();
 	void capture_state_updated(int state);
 
+	void on_segment_changed(int segment);
+
 	virtual void perform_delayed_view_update();
 
 	void process_sticky_events();
@@ -417,6 +419,9 @@ private:
 #ifdef ENABLE_DECODE
 	vector< shared_ptr<DecodeTrace> > decode_traces_;
 #endif
+
+	/// The ID of the currently displayed segment
+	int current_segment_;
 
 	/// The view time scale in seconds per pixel.
 	double scale_;

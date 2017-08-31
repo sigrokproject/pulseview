@@ -1363,6 +1363,16 @@ void View::capture_state_updated(int state)
 	}
 }
 
+void View::on_segment_changed(int segment)
+{
+	current_segment_ = segment - 1;
+
+	for (shared_ptr<Signal> signal : signals_)
+		signal->set_current_segment(current_segment_);
+
+	viewport_->update();
+}
+
 void View::perform_delayed_view_update()
 {
 	if (always_zoom_to_fit_) {

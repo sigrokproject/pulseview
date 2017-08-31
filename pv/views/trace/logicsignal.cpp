@@ -46,6 +46,7 @@ using std::max;
 using std::make_pair;
 using std::min;
 using std::none_of;
+using std::out_of_range;
 using std::pair;
 using std::shared_ptr;
 using std::vector;
@@ -196,7 +197,13 @@ void LogicSignal::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 	if (segments.empty())
 		return;
 
-	const shared_ptr<pv::data::LogicSegment> &segment = segments.front();
+	shared_ptr<pv::data::LogicSegment> segment;
+	try {
+		segment = segments.at(current_segment_);
+	} catch (out_of_range) {
+		qDebug() << "Current logic segment out of range for signal" << base_->name();
+		return;
+	}
 
 	double samplerate = segment->samplerate();
 

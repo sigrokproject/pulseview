@@ -28,6 +28,7 @@
 #include <QApplication>
 #include <QCheckBox>
 #include <QComboBox>
+#include <QDebug>
 #include <QFormLayout>
 #include <QGridLayout>
 #include <QLabel>
@@ -54,6 +55,7 @@ using std::max;
 using std::make_pair;
 using std::min;
 using std::numeric_limits;
+using std::out_of_range;
 using std::pair;
 using std::placeholders::_1;
 using std::shared_ptr;
@@ -271,8 +273,13 @@ void AnalogSignal::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 		if (segments.empty())
 			return;
 
-		const shared_ptr<pv::data::AnalogSegment> &segment =
-			segments.front();
+		shared_ptr<pv::data::AnalogSegment> segment;
+		try {
+			segment = segments.at(current_segment_);
+		} catch (out_of_range) {
+			qDebug() << "Current analog segment out of range for signal" << base_->name();
+			return;
+		}
 
 		const double pixels_offset = pp.pixels_offset();
 		const double samplerate = max(1.0, segment->samplerate());
@@ -538,8 +545,13 @@ void AnalogSignal::paint_logic_mid(QPainter &p, ViewItemPaintParams &pp)
 	if (segments.empty())
 		return;
 
-	const shared_ptr<pv::data::LogicSegment> &segment =
-		segments.front();
+	shared_ptr<pv::data::LogicSegment> segment;
+	try {
+		segment = segments.at(current_segment_);
+	} catch (out_of_range) {
+		qDebug() << "Current logic segment out of range for signal" << base_->name();
+		return;
+	}
 
 	double samplerate = segment->samplerate();
 

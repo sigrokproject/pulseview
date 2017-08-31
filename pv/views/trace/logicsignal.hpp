@@ -21,6 +21,7 @@
 #define PULSEVIEW_PV_VIEWS_TRACEVIEW_LOGICSIGNAL_HPP
 
 #include <QCache>
+#include <QDebug>
 #include <QSpinBox>
 
 #include "signal.hpp"
