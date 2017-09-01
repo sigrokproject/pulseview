@@ -168,7 +168,7 @@ private:
 	struct srd_session *srd_session_;
 
 	shared_ptr<Logic> logic_mux_data_;
-	shared_ptr<LogicSegment> segment_;
+	shared_ptr<LogicSegment> logic_mux_segment_;
 	bool logic_mux_data_invalid_;
 
 	pv::util::Timestamp start_time_;

@@ -236,8 +236,8 @@ void DecodeSignal::begin_decode()
 		const int64_t ch_count = get_assigned_signal_count();
 		const int64_t unit_size = (ch_count + 7) / 8;
 		logic_mux_data_ = make_shared<Logic>(ch_count);
-		segment_ = make_shared<LogicSegment>(*logic_mux_data_, unit_size, samplerate_);
-		logic_mux_data_->push_segment(segment_);
+		logic_mux_segment_ = make_shared<LogicSegment>(*logic_mux_data_, unit_size, samplerate_);
+		logic_mux_data_->push_segment(logic_mux_segment_);
 	}
 
 	// Make sure the logic output data is complete and up-to-date
@@ -673,15 +673,15 @@ void DecodeSignal::mux_logic_samples(const int64_t start, const int64_t end)
 		}
 
 	// Perform the muxing of signal data into the output data
-	uint8_t* output = new uint8_t[(end - start) * segment_->unit_size()];
+	uint8_t* output = new uint8_t[(end - start) * logic_mux_segment_->unit_size()];
 	unsigned int signal_count = signal_data.size();
 
 	for (int64_t sample_cnt = 0; sample_cnt < (end - start); sample_cnt++) {
 		int bitpos = 0;
 		uint8_t bytepos = 0;
 
-		const int out_sample_pos = sample_cnt * segment_->unit_size();
-		for (unsigned int i = 0; i < segment_->unit_size(); i++)
+		const int out_sample_pos = sample_cnt * logic_mux_segment_->unit_size();
+		for (unsigned int i = 0; i < logic_mux_segment_->unit_size(); i++)
 			output[out_sample_pos + i] = 0;
 
 		for (unsigned int i = 0; i < signal_count; i++) {
@@ -701,7 +701,7 @@ void DecodeSignal::mux_logic_samples(const int64_t start, const int64_t end)
 		}
 	}
 
-	segment_->append_payload(output, (end - start) * segment_->unit_size());
+	logic_mux_segment_->append_payload(output, (end - start) * logic_mux_segment_->unit_size());
 	delete[] output;
 
 	for (const uint8_t* data : signal_data)
@@ -712,7 +712,7 @@ void DecodeSignal::logic_mux_proc()
 {
 	do {
 		const uint64_t input_sample_count = get_working_sample_count();
-		const uint64_t output_sample_count = segment_->get_sample_count();
+		const uint64_t output_sample_count = logic_mux_segment_->get_sample_count();
 
 		const uint64_t samples_to_process =
 			(input_sample_count > output_sample_count) ?
@@ -720,7 +720,7 @@ void DecodeSignal::logic_mux_proc()
 
 		// Process the samples if necessary...
 		if (samples_to_process > 0) {
-			const uint64_t unit_size = segment_->unit_size();
+			const uint64_t unit_size = logic_mux_segment_->unit_size();
 			const uint64_t chunk_sample_count = DecodeChunkLength / unit_size;
 
 			uint64_t processed_samples = 0;
@@ -798,7 +798,7 @@ void DecodeSignal::query_input_metadata()
 void DecodeSignal::decode_data(
 	const int64_t abs_start_samplenum, const int64_t sample_count)
 {
-	const int64_t unit_size = segment_->unit_size();
+	const int64_t unit_size = logic_mux_segment_->unit_size();
 	const int64_t chunk_sample_count = DecodeChunkLength / unit_size;
 
 	for (int64_t i = abs_start_samplenum;
@@ -810,7 +810,7 @@ void DecodeSignal::decode_data(
 
 		int64_t data_size = (chunk_end - i) * unit_size;
 		uint8_t* chunk = new uint8_t[data_size];
-		segment_->get_samples(i, chunk_end, chunk);
+		logic_mux_segment_->get_samples(i, chunk_end, chunk);
 
 		if (srd_session_send(srd_session_, i, chunk_end, chunk,
 				data_size, unit_size) != SRD_OK) {
@@ -847,7 +847,7 @@ void DecodeSignal::decode_proc()
 		// Keep processing new samples until we exhaust the input data
 		do {
 			lock_guard<mutex> input_lock(input_mutex_);
-			sample_count = segment_->get_sample_count() - abs_start_samplenum;
+			sample_count = logic_mux_segment_->get_sample_count() - abs_start_samplenum;
 
 			if (sample_count > 0) {
 				decode_data(abs_start_samplenum, sample_count);
