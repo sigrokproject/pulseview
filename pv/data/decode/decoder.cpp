@@ -122,11 +122,14 @@ srd_decoder_inst* Decoder::create_decoder_inst(srd_session *session) const
 		g_str_equal, g_free, (GDestroyNotify)g_variant_unref);
 
 	for (DecodeChannel *ch : channels_) {
+		if (!ch->assigned_signal)
+			continue;
+
 		init_pin_states->data[ch->id] = ch->initial_pin_state;
 
-		GVariant *const gvar = g_variant_new_int32(ch->id);  // id = bit position
+		GVariant *const gvar = g_variant_new_int32(ch->bit_id);  // bit_id = bit position
 		g_variant_ref_sink(gvar);
-		// key is channel name, value is bit position in each sample
+		// key is channel name (pdch->id), value is bit position in each sample (gvar)
 		g_hash_table_insert(channels, ch->pdch_->id, gvar);
 	}
 

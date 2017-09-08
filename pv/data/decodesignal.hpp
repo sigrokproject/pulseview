@@ -61,7 +61,8 @@ class SignalData;
 
 struct DecodeChannel
 {
-	uint16_t id;  // Also tells which bit within a sample represents this channel
+	uint16_t id;     ///< Global numerical ID for the decode channels in the stack
+	uint16_t bit_id; ///< Tells which bit within a sample represents this channel
 	const bool is_optional;
 	const pv::data::SignalBase *assigned_signal;
 	const QString name, desc;

@@ -574,7 +574,7 @@ void DecodeSignal::update_channel_list()
 
 			if (!ch_added) {
 				// Create new entry without a mapped signal
-				data::DecodeChannel ch = {id++, false, nullptr,
+				data::DecodeChannel ch = {id++, 0, false, nullptr,
 					QString::fromUtf8(pdch->name), QString::fromUtf8(pdch->desc),
 					SRD_INITIAL_PIN_SAME_AS_SAMPLE0, decoder, pdch};
 				channels_.push_back(ch);
@@ -597,7 +597,7 @@ void DecodeSignal::update_channel_list()
 
 			if (!ch_added) {
 				// Create new entry without a mapped signal
-				data::DecodeChannel ch = {id++, true, nullptr,
+				data::DecodeChannel ch = {id++, 0, true, nullptr,
 					QString::fromUtf8(pdch->name), QString::fromUtf8(pdch->desc),
 					SRD_INITIAL_PIN_SAME_AS_SAMPLE0, decoder, pdch};
 				channels_.push_back(ch);
@@ -654,8 +654,11 @@ void DecodeSignal::mux_logic_samples(const int64_t start, const int64_t end)
 	vector<uint8_t> signal_in_bytepos;
 	vector<uint8_t> signal_in_bitpos;
 
+	int id = 0;
 	for (data::DecodeChannel &ch : channels_)
 		if (ch.assigned_signal) {
+			ch.bit_id = id++;
+
 			const shared_ptr<Logic> logic_data = ch.assigned_signal->logic_data();
 			const shared_ptr<LogicSegment> segment = logic_data->logic_segments().front();
 			segments.push_back(segment);
