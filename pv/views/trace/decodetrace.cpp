@@ -146,6 +146,8 @@ DecodeTrace::DecodeTrace(pv::Session &session,
 
 	connect(decode_signal_.get(), SIGNAL(new_annotations()),
 		this, SLOT(on_new_annotations()));
+	connect(decode_signal_.get(), SIGNAL(decode_reset()),
+		this, SLOT(on_decode_reset()));
 	connect(decode_signal_.get(), SIGNAL(decode_finished()),
 		this, SLOT(on_decode_finished()));
 	connect(decode_signal_.get(), SIGNAL(channels_updated()),
@@ -885,6 +887,15 @@ void DecodeTrace::on_new_annotations()
 
 void DecodeTrace::on_delayed_trace_update()
 {
+	if (owner_)
+		owner_->row_item_appearance_changed(false, true);
+}
+
+void DecodeTrace::on_decode_reset()
+{
+	visible_rows_.clear();
+	max_visible_rows_ = 0;
+
 	if (owner_)
 		owner_->row_item_appearance_changed(false, true);
 }

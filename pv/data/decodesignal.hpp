@@ -153,6 +153,7 @@ private:
 
 Q_SIGNALS:
 	void new_annotations();
+	void decode_reset();
 	void decode_finished();
 	void channels_updated();
 

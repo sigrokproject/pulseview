@@ -155,6 +155,8 @@ void DecodeSignal::reset_decode()
 
 	logic_mux_data_.reset();
 	logic_mux_data_invalid_ = true;
+
+	decode_reset();
 }
 
 void DecodeSignal::begin_decode()
