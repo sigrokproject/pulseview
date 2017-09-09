@@ -150,6 +150,7 @@ void DecodeSignal::reset_decode()
 	error_message_ = QString();
 
 	rows_.clear();
+	current_rows_= nullptr;
 	class_rows_.clear();
 
 	logic_mux_data_.reset();
@@ -199,17 +200,12 @@ void DecodeSignal::begin_decode()
 			return;
 		}
 
-	// Add annotation classes
+	// Map out all the annotation classes
 	for (const shared_ptr<decode::Decoder> &dec : stack_) {
 		assert(dec);
 		const srd_decoder *const decc = dec->decoder();
 		assert(dec->decoder());
 
-		// Add a row for the decoder if it doesn't have a row list
-		if (!decc->annotation_rows)
-			rows_[Row(decc)] = decode::RowData();
-
-		// Add the decoder rows
 		for (const GSList *l = decc->annotation_rows; l; l = l->next) {
 			const srd_decoder_annotation_row *const ann_row =
 				(srd_decoder_annotation_row *)l->data;
@@ -217,16 +213,14 @@ void DecodeSignal::begin_decode()
 
 			const Row row(decc, ann_row);
 
-			// Add a new empty row data object
-			rows_[row] = decode::RowData();
-
-			// Map out all the classes
 			for (const GSList *ll = ann_row->ann_classes;
 				ll; ll = ll->next)
 				class_rows_[make_pair(decc,
 					GPOINTER_TO_INT(ll->data))] = row;
 		}
 	}
+
+	prepare_annotation_segment();
 
 	// Free the logic data and its segment(s) if it needs to be updated
 	if (logic_mux_data_invalid_)
@@ -406,8 +400,13 @@ void DecodeSignal::get_annotation_subset(
 {
 	lock_guard<mutex> lock(output_mutex_);
 
-	const auto iter = rows_.find(row);
-	if (iter != rows_.end())
+	if (!current_rows_)
+		return;
+
+	// TODO Instead of current_rows_, use rows_ and the ID of the segment
+
+	const auto iter = current_rows_->find(row);
+	if (iter != current_rows_->end())
 		(*iter).second.get_annotation_subset(dest,
 			start_sample, end_sample);
 }
@@ -930,6 +929,36 @@ void DecodeSignal::connect_input_notifiers()
 	}
 }
 
+void DecodeSignal::prepare_annotation_segment()
+{
+	// TODO Won't work for multiple segments
+	rows_.emplace_back(map<const decode::Row, decode::RowData>());
+	current_rows_ = &(rows_.back());
+
+	// Add annotation classes
+	for (const shared_ptr<decode::Decoder> &dec : stack_) {
+		assert(dec);
+		const srd_decoder *const decc = dec->decoder();
+		assert(dec->decoder());
+
+		// Add a row for the decoder if it doesn't have a row list
+		if (!decc->annotation_rows)
+			(*current_rows_)[Row(decc)] = decode::RowData();
+
+		// Add the decoder rows
+		for (const GSList *l = decc->annotation_rows; l; l = l->next) {
+			const srd_decoder_annotation_row *const ann_row =
+				(srd_decoder_annotation_row *)l->data;
+			assert(ann_row);
+
+			const Row row(decc, ann_row);
+
+			// Add a new empty row data object
+			(*current_rows_)[row] = decode::RowData();
+		}
+	}
+}
+
 void DecodeSignal::annotation_callback(srd_proto_data *pdata, void *decode_signal)
 {
 	assert(pdata);
@@ -945,25 +974,25 @@ void DecodeSignal::annotation_callback(srd_proto_data *pdata, void *decode_signa
 	assert(pdata->pdo->di);
 	const srd_decoder *const decc = pdata->pdo->di->decoder;
 	assert(decc);
+	assert(ds->current_rows_);
 
 	const srd_proto_data_annotation *const pda =
 		(const srd_proto_data_annotation*)pdata->data;
 	assert(pda);
 
-	auto row_iter = ds->rows_.end();
+	auto row_iter = ds->current_rows_->end();
 
 	// Try looking up the sub-row of this class
 	const auto format = pda->ann_class;
 	const auto r = ds->class_rows_.find(make_pair(decc, format));
 	if (r != ds->class_rows_.end())
-		row_iter = ds->rows_.find((*r).second);
+		row_iter = ds->current_rows_->find((*r).second);
 	else {
 		// Failing that, use the decoder as a key
-		row_iter = ds->rows_.find(Row(decc));
+		row_iter = ds->current_rows_->find(Row(decc));
 	}
 
-	assert(row_iter != ds->rows_.end());
-	if (row_iter == ds->rows_.end()) {
+	if (row_iter == ds->current_rows_->end()) {
 		qDebug() << "Unexpected annotation: decoder = " << decc <<
 			", format = " << format;
 		assert(false);
