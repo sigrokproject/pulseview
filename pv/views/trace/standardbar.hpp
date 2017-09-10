@@ -24,6 +24,7 @@
 #include <cstdint>
 
 #include <QAction>
+#include <QSpinBox>
 #include <QToolBar>
 #include <QWidget>
 
@@ -61,6 +62,8 @@ public:
 protected:
 	virtual void add_toolbar_widgets();
 
+	virtual void show_multi_segment_ui(const bool state);
+
 	Session &session_;
 	trace::View *view_;
 
@@ -69,6 +72,8 @@ protected:
 	QAction *const action_view_zoom_fit_;
 	QAction *const action_view_zoom_one_to_one_;
 	QAction *const action_view_show_cursors_;
+
+	QSpinBox *segment_selector_;
 
 protected Q_SLOTS:
 	void on_actionViewZoomIn_triggered();
@@ -82,6 +87,11 @@ protected Q_SLOTS:
 	void on_actionViewShowCursors_triggered();
 
 	void on_always_zoom_to_fit_changed(bool state);
+
+	void on_segment_added();
+
+private:
+	vector<QAction*> multi_segment_actions_;
 };
 
 } // namespace trace

@@ -677,6 +677,17 @@ double Session::get_samplerate() const
 	return samplerate;
 }
 
+int Session::get_segment_count() const
+{
+	int min_val = INT_MAX;
+
+	for (shared_ptr<data::SignalData> data : all_signal_data_)
+		if (data->get_segment_count() < min_val)
+			min_val = data->get_segment_count();
+
+	return min_val;
+}
+
 const unordered_set< shared_ptr<data::SignalBase> > Session::signalbases() const
 {
 	return signalbases_;

@@ -49,6 +49,8 @@ public:
 
 	vector< shared_ptr<Segment> > segments() const;
 
+	int get_segment_count() const;
+
 	void clear();
 
 	uint64_t max_sample_count() const;

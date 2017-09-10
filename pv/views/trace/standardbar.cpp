@@ -42,7 +42,8 @@ StandardBar::StandardBar(Session &session, QWidget *parent,
 	action_view_zoom_out_(new QAction(this)),
 	action_view_zoom_fit_(new QAction(this)),
 	action_view_zoom_one_to_one_(new QAction(this)),
-	action_view_show_cursors_(new QAction(this))
+	action_view_show_cursors_(new QAction(this)),
+	segment_selector_(new QSpinBox(this))
 {
 	setObjectName(QString::fromUtf8("StandardBar"));
 
@@ -84,6 +85,10 @@ StandardBar::StandardBar(Session &session, QWidget *parent,
 		this, SLOT(on_actionViewShowCursors_triggered()));
 	action_view_show_cursors_->setText(tr("Show &Cursors"));
 
+	segment_selector_->setMinimum(1);
+	connect(&session_, SIGNAL(frame_ended()),
+		this, SLOT(on_segment_added()));
+
 	connect(view_, SIGNAL(always_zoom_to_fit_changed(bool)),
 		this, SLOT(on_always_zoom_to_fit_changed(bool)));
 
@@ -105,6 +110,18 @@ void StandardBar::add_toolbar_widgets()
 	addAction(action_view_zoom_one_to_one_);
 	addSeparator();
 	addAction(action_view_show_cursors_);
+	multi_segment_actions_.push_back(addSeparator());
+	multi_segment_actions_.push_back(addWidget(segment_selector_));
+	addSeparator();
+
+	// Hide the multi-segment UI until we know that there are multiple segments
+	show_multi_segment_ui(false);
+}
+
+void StandardBar::show_multi_segment_ui(const bool state)
+{
+	for (QAction* action : multi_segment_actions_)
+		action->setVisible(state);
 }
 
 QAction* StandardBar::action_view_zoom_in() const
@@ -164,6 +181,17 @@ void StandardBar::on_actionViewShowCursors_triggered()
 void StandardBar::on_always_zoom_to_fit_changed(bool state)
 {
 	action_view_zoom_fit_->setChecked(state);
+}
+
+void StandardBar::on_segment_added()
+{
+	const int segment_count = session_.get_segment_count();
+
+	if (segment_count > 1) {
+		show_multi_segment_ui(true);
+		segment_selector_->setMaximum(segment_count);
+	} else
+		show_multi_segment_ui(false);
 }
 
 } // namespace trace
