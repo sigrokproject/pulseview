@@ -899,6 +899,14 @@ bool View::header_was_shrunk() const
 
 void View::expand_header_to_fit()
 {
+	// Setting the maximum width of the header widget doesn't work as
+	// expected because the splitter would allow the user to make the
+	// pane wider than that, creating empty space as a result.
+	// To make this work, we stricly enforce the maximum width by
+	// expanding the header unless the user shrunk it on purpose.
+	// As we're then setting the width of the header pane, we set the
+	// splitter to the maximum allowed position.
+
 	int splitter_area_width = 0;
 	for (int w : splitter_->sizes())
 		splitter_area_width += w;
@@ -1101,13 +1109,6 @@ void View::on_signal_name_changed()
 
 void View::on_splitter_moved()
 {
-	// Setting the maximum width of the header widget doesn't work as
-	// expected because the splitter would allow the user to make the
-	// pane wider than that, creating empty space as a result.
-	// To make this work, we stricly enforce the maximum width by
-	// expanding the header unless the user shrunk it on purpose.
-	// As we're then setting the width of the header pane, we set the
-	// splitter to the maximum allowed position.
 	if (!header_was_shrunk())
 		expand_header_to_fit();
 }
