@@ -253,6 +253,9 @@ void View::add_signal(const shared_ptr<Signal> signal)
 {
 	ViewBase::add_signalbase(signal->base());
 	signals_.insert(signal);
+
+	connect(signal->base().get(), SIGNAL(name_changed(const QString&)),
+		this, SLOT(on_signal_name_changed()));
 }
 
 #ifdef ENABLE_DECODE
@@ -266,6 +269,9 @@ void View::add_decode_signal(shared_ptr<data::DecodeSignal> signal)
 	shared_ptr<DecodeTrace> d(
 		new DecodeTrace(session_, signal, decode_traces_.size()));
 	decode_traces_.push_back(d);
+
+	connect(signal.get(), SIGNAL(name_changed(const QString&)),
+		this, SLOT(on_signal_name_changed()));
 }
 
 void View::remove_decode_signal(shared_ptr<data::DecodeSignal> signal)
@@ -1085,6 +1091,12 @@ void View::extents_changed(bool horz, bool vert)
 		(vert ? TraceTreeItemVExtentsChanged : 0);
 
 	lazy_event_handler_.start();
+}
+
+void View::on_signal_name_changed()
+{
+	if (!header_was_shrunk())
+		expand_header_to_fit();
 }
 
 void View::on_splitter_moved()

@@ -357,6 +357,7 @@ public:
 
 private Q_SLOTS:
 
+	void on_signal_name_changed();
 	void on_splitter_moved();
 
 	void h_scroll_value_changed(int value);
