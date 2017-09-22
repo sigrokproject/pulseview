@@ -539,6 +539,7 @@ void SignalBase::start_conversion(bool delayed_start)
 
 	if (converted_data_)
 		converted_data_->clear();
+	samples_cleared();
 
 	if (conversion_is_a2l()) {
 		shared_ptr<Analog> analog_data = dynamic_pointer_cast<Analog>(data_);
