@@ -325,7 +325,7 @@ private:
 
 	void determine_if_header_was_shrunk();
 
-	void expand_header_to_fit();
+	void resize_header_to_fit();
 
 	void update_layout();
 

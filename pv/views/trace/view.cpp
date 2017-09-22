@@ -898,7 +898,7 @@ void View::determine_if_header_was_shrunk()
 	header_was_shrunk_ = (header_pane_width < (header_width - 10));
 }
 
-void View::expand_header_to_fit()
+void View::resize_header_to_fit()
 {
 	// Setting the maximum width of the header widget doesn't work as
 	// expected because the splitter would allow the user to make the
@@ -1036,8 +1036,10 @@ bool View::eventFilter(QObject *object, QEvent *event)
 		// resized to their final sizes.
 		update_layout();
 
-		if (!settings_restored_)
-			expand_header_to_fit();
+		if (settings_restored_)
+			determine_if_header_was_shrunk();
+		else
+			resize_header_to_fit();
 
 		if (scroll_needs_defaults_) {
 			set_scroll_default();
@@ -1105,7 +1107,7 @@ void View::extents_changed(bool horz, bool vert)
 void View::on_signal_name_changed()
 {
 	if (!header_was_shrunk_)
-		expand_header_to_fit();
+		resize_header_to_fit();
 }
 
 void View::on_splitter_moved()
@@ -1114,7 +1116,7 @@ void View::on_splitter_moved()
 	determine_if_header_was_shrunk();
 
 	if (!header_was_shrunk_)
-		expand_header_to_fit();
+		resize_header_to_fit();
 }
 
 void View::h_scroll_value_changed(int value)
@@ -1155,6 +1157,7 @@ void View::signals_changed()
 
 	vector< shared_ptr<Channel> > channels;
 	shared_ptr<sigrok::Device> sr_dev;
+	bool signals_added_or_removed = false;
 
 	// Do we need to set the vertical scrollbar to its default position later?
 	// We do if there are no traces, i.e. the scroll bar has no range set
@@ -1286,6 +1289,7 @@ void View::signals_changed()
 		TraceTreeItemOwner *const owner = trace->owner();
 		assert(owner);
 		owner->remove_child_item(trace);
+		signals_added_or_removed = true;
 	}
 
 	// Remove any empty trace groups
@@ -1310,13 +1314,12 @@ void View::signals_changed()
 
 		if (item->enabled())
 			offset += extents.second;
+		signals_added_or_removed = true;
 	}
 
 
-	if (!new_top_level_items.empty())
-		// Expand the header pane because the header should become fully
-		// visible when new signals are added
-		expand_header_to_fit();
+	if (signals_added_or_removed && !header_was_shrunk_)
+		resize_header_to_fit();
 
 	update_layout();
 
