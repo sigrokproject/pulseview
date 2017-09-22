@@ -129,6 +129,7 @@ View::View(Session &session, bool is_main_view, QWidget *parent) :
 	offset_(0),
 	updating_scroll_(false),
 	settings_restored_(false),
+	header_was_shrunk_(false),
 	sticky_scrolling_(false), // Default setting is set in MainWindow::setup_ui()
 	always_zoom_to_fit_(false),
 	tick_period_(0),
@@ -886,7 +887,7 @@ void View::set_scroll_default()
 		set_v_offset(extents.first);
 }
 
-bool View::header_was_shrunk() const
+void View::determine_if_header_was_shrunk()
 {
 	const int header_pane_width = splitter_->sizes().front();
 	const int header_width = header_->extended_size_hint().width();
@@ -894,7 +895,7 @@ bool View::header_was_shrunk() const
 	// Allow for a slight margin of error so that we also accept
 	// slight differences when e.g. a label name change increased
 	// the overall width
-	return (header_pane_width < (header_width - 10));
+	header_was_shrunk_ = (header_pane_width < (header_width - 10));
 }
 
 void View::expand_header_to_fit()
@@ -1103,13 +1104,16 @@ void View::extents_changed(bool horz, bool vert)
 
 void View::on_signal_name_changed()
 {
-	if (!header_was_shrunk())
+	if (!header_was_shrunk_)
 		expand_header_to_fit();
 }
 
 void View::on_splitter_moved()
 {
-	if (!header_was_shrunk())
+	// The header can only shrink when the splitter is moved manually
+	determine_if_header_was_shrunk();
+
+	if (!header_was_shrunk_)
 		expand_header_to_fit();
 }
 

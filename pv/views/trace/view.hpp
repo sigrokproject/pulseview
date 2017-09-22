@@ -323,7 +323,7 @@ private:
 
 	void set_scroll_default();
 
-	bool header_was_shrunk() const;
+	void determine_if_header_was_shrunk();
 
 	void expand_header_to_fit();
 
@@ -432,6 +432,7 @@ private:
 
 	bool updating_scroll_;
 	bool settings_restored_;
+	bool header_was_shrunk_;
 
 	bool sticky_scrolling_;
 	bool coloured_bg_;
