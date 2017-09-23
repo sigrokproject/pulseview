@@ -744,11 +744,6 @@ void DecodeSignal::logic_mux_proc()
 			logic_mux_cond_.wait(logic_mux_lock);
 		}
 	} while (!logic_mux_interrupt_);
-
-	// No more input data and session is stopped, let the decode thread
-	// process any pending data, terminate and release the global SRD mutex
-	// in order to let other decoders run
-	decode_input_cond_.notify_one();
 }
 
 void DecodeSignal::query_input_metadata()
