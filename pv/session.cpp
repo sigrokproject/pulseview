@@ -952,7 +952,7 @@ void Session::free_unused_memory()
 
 void Session::feed_in_header()
 {
-	cur_samplerate_ = device_->read_config<uint64_t>(ConfigKey::SAMPLERATE);
+	// Nothing to do here for now
 }
 
 void Session::feed_in_meta(shared_ptr<Meta> meta)
@@ -1023,6 +1023,9 @@ void Session::feed_in_frame_end()
 
 void Session::feed_in_logic(shared_ptr<Logic> logic)
 {
+	if (!cur_samplerate_)
+		cur_samplerate_ = device_->read_config<uint64_t>(ConfigKey::SAMPLERATE);
+
 	lock_guard<recursive_mutex> lock(data_mutex_);
 
 	if (!logic_data_) {
@@ -1055,6 +1058,9 @@ void Session::feed_in_logic(shared_ptr<Logic> logic)
 
 void Session::feed_in_analog(shared_ptr<Analog> analog)
 {
+	if (!cur_samplerate_)
+		cur_samplerate_ = device_->read_config<uint64_t>(ConfigKey::SAMPLERATE);
+
 	lock_guard<recursive_mutex> lock(data_mutex_);
 
 	const vector<shared_ptr<Channel>> channels = analog->channels();
