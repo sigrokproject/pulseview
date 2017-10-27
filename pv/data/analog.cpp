@@ -37,7 +37,7 @@ Analog::Analog() :
 
 void Analog::push_segment(shared_ptr<AnalogSegment> &segment)
 {
-	segments_.push_front(segment);
+	segments_.push_back(segment);
 }
 
 const deque< shared_ptr<AnalogSegment> >& Analog::analog_segments() const
