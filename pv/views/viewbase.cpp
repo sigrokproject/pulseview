@@ -44,6 +44,8 @@ ViewBase::ViewBase(Session &session, bool is_main_view, QWidget *parent) :
 		this, SLOT(signals_changed()));
 	connect(&session_, SIGNAL(capture_state_changed(int)),
 		this, SLOT(capture_state_updated(int)));
+	connect(&session_, SIGNAL(new_segment(int)),
+		this, SLOT(on_new_segment(int)));
 
 	connect(&delayed_view_updater_, SIGNAL(timeout()),
 		this, SLOT(perform_delayed_view_update()));
@@ -125,6 +127,11 @@ void ViewBase::trigger_event(util::Timestamp location)
 
 void ViewBase::signals_changed()
 {
+}
+
+void ViewBase::on_new_segment(int new_segment_id)
+{
+	(void)new_segment_id;
 }
 
 void ViewBase::capture_state_updated(int state)

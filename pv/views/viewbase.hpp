@@ -95,6 +95,7 @@ public Q_SLOTS:
 	virtual void trigger_event(util::Timestamp location);
 	virtual void signals_changed();
 	virtual void capture_state_updated(int state);
+	virtual void on_new_segment(int new_segment_id);
 	virtual void perform_delayed_view_update();
 
 private Q_SLOTS:

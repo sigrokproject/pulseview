@@ -366,6 +366,7 @@ private Q_SLOTS:
 	void signals_changed();
 	void capture_state_updated(int state);
 
+	void on_new_segment(int new_segment_id);
 	void on_segment_changed(int segment);
 
 	virtual void perform_delayed_view_update();

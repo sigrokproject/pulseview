@@ -196,6 +196,8 @@ private:
 
 	void free_unused_memory();
 
+	void signal_new_segment();
+
 	void feed_in_header();
 
 	void feed_in_meta(shared_ptr<sigrok::Meta> meta);
@@ -234,6 +236,7 @@ private:
 	shared_ptr<data::LogicSegment> cur_logic_segment_;
 	map< shared_ptr<sigrok::Channel>, shared_ptr<data::AnalogSegment> >
 		cur_analog_segments_;
+	int32_t highest_segment_id_;
 
 	std::thread sampling_thread_;
 
@@ -251,11 +254,9 @@ Q_SIGNALS:
 
 	void trigger_event(util::Timestamp location);
 
-	void frame_began();
+	void new_segment(int new_frame_id);
 
 	void data_received();
-
-	void frame_ended();
 
 	void add_view(const QString &title, views::ViewType type,
 		Session *session);

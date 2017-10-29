@@ -88,7 +88,7 @@ protected Q_SLOTS:
 
 	void on_always_zoom_to_fit_changed(bool state);
 
-	void on_segment_added();
+	void on_new_segment(int new_segment_id);
 
 private:
 	vector<QAction*> multi_segment_actions_;

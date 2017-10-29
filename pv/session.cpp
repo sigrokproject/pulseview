@@ -681,11 +681,12 @@ int Session::get_segment_count() const
 {
 	int min_val = INT_MAX;
 
+	// Find the lowest common number of segments
 	for (shared_ptr<data::SignalData> data : all_signal_data_)
 		if (data->get_segment_count() < min_val)
 			min_val = data->get_segment_count();
 
-	return min_val;
+	return (min_val != INT_MAX) ? min_val : 0;
 }
 
 const unordered_set< shared_ptr<data::SignalBase> > Session::signalbases() const
@@ -899,6 +900,13 @@ void Session::sample_thread_proc(function<void (const QString)> error_handler)
 
 	out_of_memory_ = false;
 
+	{
+		lock_guard<recursive_mutex> lock(data_mutex_);
+		cur_logic_segment_.reset();
+		cur_analog_segments_.clear();
+	}
+	highest_segment_id_ = -1;
+
 	try {
 		device_->start();
 	} catch (Error e) {
@@ -947,6 +955,36 @@ void Session::free_unused_memory()
 		for (shared_ptr<data::Segment> segment : segments) {
 			segment->free_unused_memory();
 		}
+	}
+}
+
+void Session::signal_new_segment()
+{
+	int new_segment_id = 1;
+
+	if ((cur_logic_segment_ != nullptr) || !cur_analog_segments_.empty()) {
+
+		// Determine new frame/segment number, assuming that all
+		// signals have the same number of frames/segments
+		if (cur_logic_segment_) {
+			new_segment_id = logic_data_->get_segment_count();
+		} else {
+			shared_ptr<sigrok::Channel> any_channel =
+				(*cur_analog_segments_.begin()).first;
+
+			shared_ptr<data::SignalBase> base = signalbase_from_channel(any_channel);
+			assert(base);
+
+			shared_ptr<data::Analog> data(base->analog_data());
+			assert(data);
+
+			new_segment_id = data->get_segment_count();
+		}
+	}
+
+	if (new_segment_id > highest_segment_id_) {
+		highest_segment_id_ = new_segment_id;
+		new_segment(highest_segment_id_);
 	}
 }
 
@@ -1002,9 +1040,6 @@ void Session::feed_in_trigger()
 void Session::feed_in_frame_begin()
 {
 	frame_began_ = true;
-
-	if (cur_logic_segment_ || !cur_analog_segments_.empty())
-		frame_began();
 }
 
 void Session::feed_in_frame_end()
@@ -1015,10 +1050,8 @@ void Session::feed_in_frame_end()
 		cur_analog_segments_.clear();
 	}
 
-	if (frame_began_) {
+	if (frame_began_)
 		frame_began_ = false;
-		frame_ended();
-	}
 }
 
 void Session::feed_in_logic(shared_ptr<Logic> logic)
@@ -1044,11 +1077,7 @@ void Session::feed_in_logic(shared_ptr<Logic> logic)
 			*logic_data_, logic->unit_size(), cur_samplerate_);
 		logic_data_->push_segment(cur_logic_segment_);
 
-		// @todo Putting this here means that only listeners querying
-		// for logic will be notified. Currently the only user of
-		// frame_began is DecoderStack, but in future we need to signal
-		// this after both analog and logic sweeps have begun.
-		frame_began();
+		signal_new_segment();
 	}
 
 	cur_logic_segment_->append_payload(logic);
@@ -1103,6 +1132,8 @@ void Session::feed_in_analog(shared_ptr<Analog> analog)
 
 			// Push the segment into the analog data.
 			data->push_segment(segment);
+
+			signal_new_segment();
 		}
 
 		assert(segment);

@@ -1383,6 +1383,11 @@ void View::capture_state_updated(int state)
 	}
 }
 
+void View::on_new_segment(int new_segment_id)
+{
+	on_segment_changed(new_segment_id);
+}
+
 void View::on_segment_changed(int segment)
 {
 	current_segment_ = segment - 1;
