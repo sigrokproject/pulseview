@@ -268,18 +268,9 @@ void AnalogSignal::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 	if ((display_type_ == DisplayAnalog) || (display_type_ == DisplayBoth)) {
 		paint_grid(p, y, pp.left(), pp.right());
 
-		const deque< shared_ptr<pv::data::AnalogSegment> > &segments =
-			base_->analog_data()->analog_segments();
-		if (segments.empty())
+		shared_ptr<pv::data::AnalogSegment> segment = get_analog_segment_to_paint();
+		if (!segment)
 			return;
-
-		shared_ptr<pv::data::AnalogSegment> segment;
-		try {
-			segment = segments.at(current_segment_);
-		} catch (out_of_range) {
-			qDebug() << "Current analog segment out of range for signal" << base_->name();
-			return;
-		}
 
 		const double pixels_offset = pp.pixels_offset();
 		const double samplerate = max(1.0, segment->samplerate());
@@ -539,19 +530,9 @@ void AnalogSignal::paint_logic_mid(QPainter &p, ViewItemPaintParams &pp)
 	const float high_offset = y - ph + signal_margin + 0.5f;
 	const float low_offset = y + nh - signal_margin - 0.5f;
 
-	const deque< shared_ptr<pv::data::LogicSegment> > &segments =
-		base_->logic_data()->logic_segments();
-
-	if (segments.empty())
+	shared_ptr<pv::data::LogicSegment> segment = get_logic_segment_to_paint();
+	if (!segment)
 		return;
-
-	shared_ptr<pv::data::LogicSegment> segment;
-	try {
-		segment = segments.at(current_segment_);
-	} catch (out_of_range) {
-		qDebug() << "Current logic segment out of range for signal" << base_->name();
-		return;
-	}
 
 	double samplerate = segment->samplerate();
 
@@ -664,6 +645,52 @@ void AnalogSignal::paint_logic_caps(QPainter &p, QLineF *const lines,
 		}
 
 	p.drawLines(lines, line - lines);
+}
+
+shared_ptr<pv::data::AnalogSegment> AnalogSignal::get_analog_segment_to_paint() const
+{
+	shared_ptr<pv::data::AnalogSegment> segment;
+
+	const deque< shared_ptr<pv::data::AnalogSegment> > &segments =
+		base_->analog_data()->analog_segments();
+
+	if (!segments.empty()) {
+		if (segment_display_mode_ == ShowLastSegmentOnly)
+			segment = segments.back();
+
+		if (segment_display_mode_ == ShowSingleSegmentOnly) {
+			try {
+				segment = segments.at(current_segment_);
+			} catch (out_of_range) {
+				qDebug() << "Current analog segment out of range for signal" << base_->name();
+			}
+		}
+	}
+
+	return segment;
+}
+
+shared_ptr<pv::data::LogicSegment> AnalogSignal::get_logic_segment_to_paint() const
+{
+	shared_ptr<pv::data::LogicSegment> segment;
+
+	const deque< shared_ptr<pv::data::LogicSegment> > &segments =
+		base_->logic_data()->logic_segments();
+
+	if (!segments.empty()) {
+		if (segment_display_mode_ == ShowLastSegmentOnly)
+			segment = segments.back();
+
+		if (segment_display_mode_ == ShowSingleSegmentOnly) {
+			try {
+				segment = segments.at(current_segment_);
+			} catch (out_of_range) {
+				qDebug() << "Current logic segment out of range for signal" << base_->name();
+			}
+		}
+	}
+
+	return segment;
 }
 
 float AnalogSignal::get_resolution(int scale_index)

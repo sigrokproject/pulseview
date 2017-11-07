@@ -120,6 +120,8 @@ private:
 		bool level, double samples_per_pixel, double pixels_offset,
 		float x_offset, float y_offset);
 
+	shared_ptr<pv::data::LogicSegment> get_logic_segment_to_paint() const;
+
 	void init_trigger_actions(QWidget *parent);
 
 	const vector<int32_t> get_trigger_types() const;

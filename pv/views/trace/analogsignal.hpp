@@ -145,6 +145,9 @@ private:
 		bool level, double samples_per_pixel, double pixels_offset,
 		float x_offset, float y_offset);
 
+	shared_ptr<pv::data::AnalogSegment> get_analog_segment_to_paint() const;
+	shared_ptr<pv::data::LogicSegment> get_logic_segment_to_paint() const;
+
 	/**
 	 * Computes the scale factor from the scale index and vdiv settings.
 	 */

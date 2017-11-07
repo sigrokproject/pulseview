@@ -192,18 +192,9 @@ void LogicSignal::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 	const float high_offset = y - signal_height_ + 0.5f;
 	const float low_offset = y + 0.5f;
 
-	const deque< shared_ptr<pv::data::LogicSegment> > &segments =
-		base_->logic_data()->logic_segments();
-	if (segments.empty())
+	shared_ptr<pv::data::LogicSegment> segment = get_logic_segment_to_paint();
+	if (!segment)
 		return;
-
-	shared_ptr<pv::data::LogicSegment> segment;
-	try {
-		segment = segments.at(current_segment_);
-	} catch (out_of_range) {
-		qDebug() << "Current logic segment out of range for signal" << base_->name();
-		return;
-	}
 
 	double samplerate = segment->samplerate();
 
@@ -353,6 +344,30 @@ void LogicSignal::paint_caps(QPainter &p, QLineF *const lines,
 		}
 
 	p.drawLines(lines, line - lines);
+}
+
+shared_ptr<pv::data::LogicSegment> LogicSignal::get_logic_segment_to_paint() const
+{
+	shared_ptr<pv::data::LogicSegment> segment;
+
+	const deque< shared_ptr<pv::data::LogicSegment> > &segments =
+		base_->logic_data()->logic_segments();
+
+	if (!segments.empty()) {
+		if (segment_display_mode_ == ShowLastSegmentOnly) {
+			segment = segments.back();
+		}
+
+		if (segment_display_mode_ == ShowSingleSegmentOnly) {
+			try {
+				segment = segments.at(current_segment_);
+			} catch (out_of_range) {
+				qDebug() << "Current logic segment out of range for signal" << base_->name();
+			}
+		}
+	}
+
+	return segment;
 }
 
 void LogicSignal::init_trigger_actions(QWidget *parent)

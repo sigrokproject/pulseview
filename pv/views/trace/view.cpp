@@ -125,6 +125,8 @@ bool CustomScrollArea::viewportEvent(QEvent *event)
 View::View(Session &session, bool is_main_view, QWidget *parent) :
 	ViewBase(session, is_main_view, parent),
 	splitter_(new QSplitter()),
+	segment_display_mode_(Trace::ShowLastSegmentOnly),
+	segment_selectable_(false),
 	scale_(1e-3),
 	offset_(0),
 	updating_scroll_(false),
@@ -255,6 +257,8 @@ void View::add_signal(const shared_ptr<Signal> signal)
 	ViewBase::add_signalbase(signal->base());
 	signals_.insert(signal);
 
+	signal->set_segment_display_mode(segment_display_mode_);
+
 	connect(signal->base().get(), SIGNAL(name_changed(const QString&)),
 		this, SLOT(on_signal_name_changed()));
 }
@@ -270,6 +274,8 @@ void View::add_decode_signal(shared_ptr<data::DecodeSignal> signal)
 	shared_ptr<DecodeTrace> d(
 		new DecodeTrace(session_, signal, decode_traces_.size()));
 	decode_traces_.push_back(d);
+
+	d->set_segment_display_mode(segment_display_mode_);
 
 	connect(signal.get(), SIGNAL(name_changed(const QString&)),
 		this, SLOT(on_signal_name_changed()));
@@ -475,6 +481,26 @@ void View::set_time_unit(pv::util::TimeUnit time_unit)
 		time_unit_ = time_unit;
 		time_unit_changed();
 	}
+}
+
+bool View::segment_is_selectable() const
+{
+	return segment_selectable_;
+}
+
+void View::set_segment_display_mode(Trace::SegmentDisplayMode mode)
+{
+	for (shared_ptr<Signal> signal : signals_)
+		signal->set_segment_display_mode(mode);
+
+	viewport_->update();
+
+	segment_selectable_ = true;
+
+	if (mode == Trace::ShowSingleSegmentOnly)
+		segment_selectable_ = false;
+
+	segment_display_mode_changed(segment_selectable_);
 }
 
 void View::zoom(double steps)
@@ -1386,16 +1412,25 @@ void View::capture_state_updated(int state)
 void View::on_new_segment(int new_segment_id)
 {
 	on_segment_changed(new_segment_id);
+	segment_changed(new_segment_id);
 }
 
 void View::on_segment_changed(int segment)
 {
-	current_segment_ = segment - 1;
+	switch (segment_display_mode_) {
+	case Trace::ShowLastSegmentOnly:
+	case Trace::ShowSingleSegmentOnly:
+		current_segment_ = segment - 1;
+		for (shared_ptr<Signal> signal : signals_)
+			signal->set_current_segment(current_segment_);
+		viewport_->update();
+		break;
 
-	for (shared_ptr<Signal> signal : signals_)
-		signal->set_current_segment(current_segment_);
-
-	viewport_->update();
+	case Trace::ShowAllSegments:
+	case Trace::ShowAccumulatedIntensity:
+	default:
+		break;
+	}
 }
 
 void View::perform_delayed_view_update()

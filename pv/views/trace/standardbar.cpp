@@ -91,6 +91,10 @@ StandardBar::StandardBar(Session &session, QWidget *parent,
 		this, SLOT(on_new_segment(int)));
 	connect(segment_selector_, SIGNAL(valueChanged(int)),
 		view_, SLOT(on_segment_changed(int)));
+	connect(view_, SIGNAL(segment_changed(int)),
+		this, SLOT(on_segment_changed(int)));
+	connect(view_, SIGNAL(segment_display_mode_changed(bool)),
+		this, SLOT(on_segment_display_mode_changed(bool)));
 
 	connect(view_, SIGNAL(always_zoom_to_fit_changed(bool)),
 		this, SLOT(on_always_zoom_to_fit_changed(bool)));
@@ -125,6 +129,8 @@ void StandardBar::show_multi_segment_ui(const bool state)
 {
 	for (QAction* action : multi_segment_actions_)
 		action->setVisible(state);
+
+	on_segment_display_mode_changed(view_->segment_is_selectable());
 }
 
 QAction* StandardBar::action_view_zoom_in() const
@@ -193,6 +199,18 @@ void StandardBar::on_new_segment(int new_segment_id)
 		segment_selector_->setMaximum(new_segment_id);
 	} else
 		show_multi_segment_ui(false);
+}
+
+void StandardBar::on_segment_changed(int segment_id)
+{
+	// This is called when the current segment was changed
+	// by other parts of the UI, e.g. the view itself
+	segment_selector_->setValue(segment_id);
+}
+
+void StandardBar::on_segment_display_mode_changed(bool segment_selectable)
+{
+	segment_selector_->setReadOnly(!segment_selectable);
 }
 
 } // namespace trace

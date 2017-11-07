@@ -63,6 +63,19 @@ class Trace : public TraceTreeItem
 {
 	Q_OBJECT
 
+public:
+	/**
+	 * Allowed values for the multi-segment display mode.
+	 *
+	 * Note: Consider @ref View::set_segment_display_mode when updating the list.
+	 */
+	enum SegmentDisplayMode {
+		ShowLastSegmentOnly = 1,
+		ShowSingleSegmentOnly,
+		ShowAllSegments,
+		ShowAccumulatedIntensity
+	};
+
 private:
 	static const QPen AxisPen;
 	static const int LabelHitPadding;
@@ -88,6 +101,11 @@ public:
 	 * Set the colour of the signal.
 	 */
 	virtual void set_colour(QColor colour);
+
+	/**
+	 * Configures the segment display mode to use.
+	 */
+	virtual void set_segment_display_mode(SegmentDisplayMode mode);
 
 	/**
 	 * Paints the signal label.
@@ -145,6 +163,8 @@ private Q_SLOTS:
 protected:
 	shared_ptr<data::SignalBase> base_;
 	QPen axis_pen_;
+
+	SegmentDisplayMode segment_display_mode_;
 
 private:
 	pv::widgets::Popup *popup_;

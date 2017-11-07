@@ -51,6 +51,7 @@ const QColor Trace::DarkGrayBGColour = QColor(0, 0, 0, 15 * 255 / 100);
 Trace::Trace(shared_ptr<data::SignalBase> channel) :
 	base_(channel),
 	axis_pen_(AxisPen),
+	segment_display_mode_(ShowLastSegmentOnly),  // Will be overwritten by View
 	popup_(nullptr),
 	popup_form_(nullptr)
 {
@@ -240,6 +241,14 @@ void Trace::set_name(QString name)
 void Trace::set_colour(QColor colour)
 {
 	base_->set_colour(colour);
+}
+
+void Trace::set_segment_display_mode(SegmentDisplayMode mode)
+{
+	segment_display_mode_ = mode;
+
+	if (owner_)
+		owner_->row_item_appearance_changed(true, true);
 }
 
 void Trace::on_name_changed(const QString &text)
