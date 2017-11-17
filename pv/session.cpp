@@ -1097,7 +1097,7 @@ void Session::feed_in_analog(shared_ptr<Analog> analog)
 	const size_t sample_count = analog->num_samples() / channel_count;
 	bool sweep_beginning = false;
 
-	unique_ptr<float> data(new float[analog->num_samples()]);
+	unique_ptr<float[]> data(new float[analog->num_samples()]);
 	analog->get_data_as_float(data.get());
 
 	if (signalbases_.empty())
