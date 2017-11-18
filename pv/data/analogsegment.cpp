@@ -75,7 +75,7 @@ void AnalogSegment::append_interleaved_samples(const float *data,
 	uint64_t prev_sample_count = sample_count_;
 
 	// Deinterleave the samples and add them
-	unique_ptr<float> deint_data(new float[sample_count]);
+	unique_ptr<float[]> deint_data(new float[sample_count]);
 	float *deint_data_ptr = deint_data.get();
 	for (uint32_t i = 0; i < sample_count; i++) {
 		*deint_data_ptr = (float)(*data);
