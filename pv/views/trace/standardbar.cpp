@@ -89,10 +89,15 @@ StandardBar::StandardBar(Session &session, QWidget *parent,
 	segment_selector_->hide();
 	connect(&session_, SIGNAL(new_segment(int)),
 		this, SLOT(on_new_segment(int)));
+
 	connect(segment_selector_, SIGNAL(valueChanged(int)),
-		view_, SLOT(on_segment_changed(int)));
+		this, SLOT(on_segment_selected(int)));
 	connect(view_, SIGNAL(segment_changed(int)),
 		this, SLOT(on_segment_changed(int)));
+
+	connect(this, SIGNAL(segment_selected(int)),
+		view_, SLOT(on_segment_changed(int)));
+
 	connect(view_, SIGNAL(segment_display_mode_changed(bool)),
 		this, SLOT(on_segment_display_mode_changed(bool)));
 
@@ -196,7 +201,7 @@ void StandardBar::on_new_segment(int new_segment_id)
 {
 	if (new_segment_id > 1) {
 		show_multi_segment_ui(true);
-		segment_selector_->setMaximum(new_segment_id);
+		segment_selector_->setMaximum(new_segment_id + 1);
 	} else
 		show_multi_segment_ui(false);
 }
@@ -205,7 +210,21 @@ void StandardBar::on_segment_changed(int segment_id)
 {
 	// This is called when the current segment was changed
 	// by other parts of the UI, e.g. the view itself
-	segment_selector_->setValue(segment_id);
+
+	// We need to adjust the value by 1 because internally, segments
+	// start at 0 while they start with 1 for the spinbox
+	segment_selector_->setValue(segment_id + 1);
+
+	segment_selected(segment_id);
+}
+
+void StandardBar::on_segment_selected(int ui_segment_id)
+{
+	// This is called when the user selected a segment using the spin box
+
+	// We need to adjust the value by 1 because internally, segments
+	// start at 0 while they start with 1 for the spinbox
+	segment_selected(ui_segment_id - 1);
 }
 
 void StandardBar::on_segment_display_mode_changed(bool segment_selectable)

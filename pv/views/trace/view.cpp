@@ -1420,7 +1420,7 @@ void View::on_segment_changed(int segment)
 	switch (segment_display_mode_) {
 	case Trace::ShowLastSegmentOnly:
 	case Trace::ShowSingleSegmentOnly:
-		current_segment_ = segment - 1;
+		current_segment_ = segment;
 		for (shared_ptr<Signal> signal : signals_)
 			signal->set_current_segment(current_segment_);
 		viewport_->update();

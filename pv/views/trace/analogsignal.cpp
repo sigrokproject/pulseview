@@ -662,7 +662,7 @@ shared_ptr<pv::data::AnalogSegment> AnalogSignal::get_analog_segment_to_paint() 
 			try {
 				segment = segments.at(current_segment_);
 			} catch (out_of_range) {
-				qDebug() << "Current analog segment out of range for signal" << base_->name();
+				qDebug() << "Current analog segment out of range for signal" << base_->name() << ":" << current_segment_;
 			}
 		}
 	}
@@ -685,7 +685,7 @@ shared_ptr<pv::data::LogicSegment> AnalogSignal::get_logic_segment_to_paint() co
 			try {
 				segment = segments.at(current_segment_);
 			} catch (out_of_range) {
-				qDebug() << "Current logic segment out of range for signal" << base_->name();
+				qDebug() << "Current logic segment out of range for signal" << base_->name() << ":" << current_segment_;
 			}
 		}
 	}

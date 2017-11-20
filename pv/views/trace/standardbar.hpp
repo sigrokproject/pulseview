@@ -75,6 +75,9 @@ protected:
 
 	QSpinBox *segment_selector_;
 
+Q_SIGNALS:
+	void segment_selected(int segment_id);
+
 protected Q_SLOTS:
 	void on_actionViewZoomIn_triggered();
 
@@ -90,6 +93,7 @@ protected Q_SLOTS:
 
 	void on_new_segment(int new_segment_id);
 	void on_segment_changed(int segment_id);
+	void on_segment_selected(int ui_segment_id);
 	void on_segment_display_mode_changed(bool segment_selectable);
 
 private:

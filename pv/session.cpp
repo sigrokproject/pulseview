@@ -960,14 +960,14 @@ void Session::free_unused_memory()
 
 void Session::signal_new_segment()
 {
-	int new_segment_id = 1;
+	int new_segment_id = 0;
 
 	if ((cur_logic_segment_ != nullptr) || !cur_analog_segments_.empty()) {
 
 		// Determine new frame/segment number, assuming that all
 		// signals have the same number of frames/segments
 		if (cur_logic_segment_) {
-			new_segment_id = logic_data_->get_segment_count();
+			new_segment_id = logic_data_->get_segment_count() - 1;
 		} else {
 			shared_ptr<sigrok::Channel> any_channel =
 				(*cur_analog_segments_.begin()).first;
@@ -978,7 +978,7 @@ void Session::signal_new_segment()
 			shared_ptr<data::Analog> data(base->analog_data());
 			assert(data);
 
-			new_segment_id = data->get_segment_count();
+			new_segment_id = data->get_segment_count() - 1;
 		}
 	}
 

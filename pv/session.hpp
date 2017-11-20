@@ -254,7 +254,7 @@ Q_SIGNALS:
 
 	void trigger_event(util::Timestamp location);
 
-	void new_segment(int new_frame_id);
+	void new_segment(int new_segment_id);
 
 	void data_received();
 
