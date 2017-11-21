@@ -126,6 +126,10 @@ public:
 	 */
 	QRectF label_rect(const QRectF &rect) const;
 
+	void set_current_segment(const int segment);
+
+	int get_current_segment() const;
+
 protected:
 	/**
 	 * Paints the background layer of the signal with a QPainter.
@@ -165,6 +169,9 @@ protected:
 	QPen axis_pen_;
 
 	SegmentDisplayMode segment_display_mode_;
+
+	/// The ID of the currently displayed segment
+	int current_segment_;
 
 private:
 	pv::widgets::Popup *popup_;

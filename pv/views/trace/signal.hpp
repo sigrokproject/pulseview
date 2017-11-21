@@ -75,10 +75,6 @@ public:
 
 	shared_ptr<data::SignalBase> base() const;
 
-	void set_current_segment(const int segment);
-
-	int get_current_segment() const;
-
 	virtual void save_settings(QSettings &settings) const;
 
 	virtual void restore_settings(QSettings &settings);
@@ -102,9 +98,6 @@ protected:
 	pv::Session &session_;
 
 	QComboBox *name_widget_;
-
-	/// The ID of the currently displayed segment
-	int current_segment_;
 };
 
 } // namespace trace

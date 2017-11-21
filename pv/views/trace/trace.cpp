@@ -52,6 +52,7 @@ Trace::Trace(shared_ptr<data::SignalBase> channel) :
 	base_(channel),
 	axis_pen_(AxisPen),
 	segment_display_mode_(ShowLastSegmentOnly),  // Will be overwritten by View
+	current_segment_(0),
 	popup_(nullptr),
 	popup_form_(nullptr)
 {
@@ -159,6 +160,16 @@ QRectF Trace::label_rect(const QRectF &rect) const
 		get_visual_y() + 0.5f - half_height,
 		label_size.width() + half_height,
 		label_size.height());
+}
+
+void Trace::set_current_segment(const int segment)
+{
+	current_segment_ = segment;
+}
+
+int Trace::get_current_segment() const
+{
+	return current_segment_;
 }
 
 void Trace::paint_back(QPainter &p, ViewItemPaintParams &pp)

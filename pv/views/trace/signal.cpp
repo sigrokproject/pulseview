@@ -62,8 +62,7 @@ Signal::Signal(pv::Session &session,
 	shared_ptr<data::SignalBase> channel) :
 	Trace(channel),
 	session_(session),
-	name_widget_(nullptr),
-	current_segment_(0)
+	name_widget_(nullptr)
 {
 	assert(base_);
 
@@ -87,16 +86,6 @@ bool Signal::enabled() const
 shared_ptr<data::SignalBase> Signal::base() const
 {
 	return base_;
-}
-
-void Signal::set_current_segment(const int segment)
-{
-	current_segment_ = segment;
-}
-
-int Signal::get_current_segment() const
-{
-	return current_segment_;
 }
 
 void Signal::save_settings(QSettings &settings) const
