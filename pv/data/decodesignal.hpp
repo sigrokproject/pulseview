@@ -110,9 +110,9 @@ public:
 	 * i.e. the number of samples where samples are available
 	 * for all connected channels.
 	 */
-	int64_t get_working_sample_count() const;
+	int64_t get_working_sample_count(uint32_t segment_id) const;
 
-	int64_t get_decoded_sample_count() const;
+	int64_t get_decoded_sample_count(uint32_t segment_id) const;
 
 	vector<decode::Row> visible_rows() const;
 
@@ -152,7 +152,7 @@ private:
 	static void annotation_callback(srd_proto_data *pdata, void *decode_signal);
 
 Q_SIGNALS:
-	void new_annotations();
+	void new_annotations(); // TODO Supply segment for which they belong to
 	void decode_reset();
 	void decode_finished();
 	void channels_updated();
@@ -177,6 +177,7 @@ private:
 	double samplerate_;
 
 	int64_t samples_decoded_;
+	uint32_t currently_processed_segment_;
 
 	vector< shared_ptr<decode::Decoder> > stack_;
 	map<pair<const srd_decoder*, int>, decode::Row> class_rows_;
@@ -185,7 +186,7 @@ private:
 	vector< map<const decode::Row, decode::RowData>> rows_;
 
 	/// Set of annotations for current segment
-	map<const decode::Row, decode::RowData> *current_rows_;
+	map<const decode::Row, decode::RowData> *current_rows_; // TODO Multiple segment support
 
 	mutable mutex input_mutex_, output_mutex_, logic_mux_mutex_;
 	mutable condition_variable decode_input_cond_, logic_mux_cond_;

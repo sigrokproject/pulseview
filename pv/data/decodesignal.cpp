@@ -36,6 +36,7 @@ using std::lock_guard;
 using std::make_pair;
 using std::make_shared;
 using std::min;
+using std::out_of_range;
 using std::shared_ptr;
 using std::unique_lock;
 using pv::data::decode::Annotation;
@@ -147,6 +148,7 @@ void DecodeSignal::reset_decode()
 
 	frame_complete_ = false;
 	samples_decoded_ = 0;
+	currently_processed_segment_ = 0;
 	error_message_ = QString();
 
 	rows_.clear();
@@ -332,14 +334,12 @@ const pv::util::Timestamp& DecodeSignal::start_time() const
 	return start_time_;
 }
 
-int64_t DecodeSignal::get_working_sample_count() const
+int64_t DecodeSignal::get_working_sample_count(uint32_t segment_id) const
 {
 	// The working sample count is the highest sample number for
 	// which all used signals have data available, so go through
 	// all channels and use the lowest overall sample count of the
 	// current segment
-
-	// TODO Currently, we assume only a single segment exists
 
 	int64_t count = std::numeric_limits<int64_t>::max();
 	bool no_signals_assigned = true;
@@ -352,17 +352,34 @@ int64_t DecodeSignal::get_working_sample_count() const
 			if (!logic_data || logic_data->logic_segments().empty())
 				return 0;
 
-			const shared_ptr<LogicSegment> segment = logic_data->logic_segments().front();
-			count = min(count, (int64_t)segment->get_sample_count());
+			try {
+				const shared_ptr<LogicSegment> segment = logic_data->logic_segments().at(segment_id);
+				count = min(count, (int64_t)segment->get_sample_count());
+			} catch (out_of_range) {
+				return 0;
+			}
 		}
 
 	return (no_signals_assigned ? 0 : count);
 }
 
-int64_t DecodeSignal::get_decoded_sample_count() const
+int64_t DecodeSignal::get_decoded_sample_count(uint32_t segment_id) const
 {
 	lock_guard<mutex> decode_lock(output_mutex_);
-	return samples_decoded_;
+
+	int64_t result = 0;
+
+	if (segment_id == currently_processed_segment_)
+		result = samples_decoded_;
+	else
+		if (segment_id < currently_processed_segment_)
+			// Segment was already decoded fully
+			result = get_working_sample_count(segment_id);
+		else
+			// Segment wasn't decoded at all yet
+			result = 0;
+
+	return result;
 }
 
 vector<Row> DecodeSignal::visible_rows() const
@@ -718,7 +735,7 @@ void DecodeSignal::mux_logic_samples(const int64_t start, const int64_t end)
 void DecodeSignal::logic_mux_proc()
 {
 	do {
-		const uint64_t input_sample_count = get_working_sample_count();
+		const uint64_t input_sample_count = get_working_sample_count(currently_processed_segment_);
 		const uint64_t output_sample_count = logic_mux_segment_->get_sample_count();
 
 		const uint64_t samples_to_process =
