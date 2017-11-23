@@ -151,7 +151,7 @@ void DecodeSignal::reset_decode()
 	currently_processed_segment_ = 0;
 	error_message_ = QString();
 
-	rows_.clear();
+	segmented_rows_.clear();
 	current_rows_= nullptr;
 	class_rows_.clear();
 
@@ -224,7 +224,9 @@ void DecodeSignal::begin_decode()
 		}
 	}
 
-	prepare_annotation_segment();
+	create_new_annotation_segment();
+
+	// TODO Allow logic_mux_data and logic_mux_segment to work with multiple segments
 
 	// Free the logic data and its segment(s) if it needs to be updated
 	if (logic_mux_data_invalid_)
@@ -422,7 +424,7 @@ void DecodeSignal::get_annotation_subset(
 	if (!current_rows_)
 		return;
 
-	// TODO Instead of current_rows_, use rows_ and the ID of the segment
+	// TODO Instead of current_rows_, use segmented_rows_ and the ID of the segment
 
 	const auto iter = current_rows_->find(row);
 	if (iter != current_rows_->end())
@@ -949,11 +951,10 @@ void DecodeSignal::connect_input_notifiers()
 	}
 }
 
-void DecodeSignal::prepare_annotation_segment()
+void DecodeSignal::create_new_annotation_segment()
 {
-	// TODO Won't work for multiple segments
-	rows_.emplace_back(map<const decode::Row, decode::RowData>());
-	current_rows_ = &(rows_.back());
+	segmented_rows_.emplace_back(map<const decode::Row, decode::RowData>());
+	current_rows_ = &(segmented_rows_.back());
 
 	// Add annotation classes
 	for (const shared_ptr<decode::Decoder> &dec : stack_) {

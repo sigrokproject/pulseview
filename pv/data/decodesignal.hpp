@@ -148,7 +148,7 @@ private:
 
 	void connect_input_notifiers();
 
-	void prepare_annotation_segment();
+	void create_new_annotation_segment();
 	static void annotation_callback(srd_proto_data *pdata, void *decode_signal);
 
 Q_SIGNALS:
@@ -183,10 +183,10 @@ private:
 	map<pair<const srd_decoder*, int>, decode::Row> class_rows_;
 
 	/// Annotations for all segments
-	vector< map<const decode::Row, decode::RowData>> rows_;
+	vector< map<const decode::Row, decode::RowData>> segmented_rows_;
 
 	/// Set of annotations for current segment
-	map<const decode::Row, decode::RowData> *current_rows_; // TODO Multiple segment support
+	map<const decode::Row, decode::RowData> *current_rows_;
 
 	mutable mutex input_mutex_, output_mutex_, logic_mux_mutex_;
 	mutable condition_variable decode_input_cond_, logic_mux_cond_;
