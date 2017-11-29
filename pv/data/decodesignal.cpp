@@ -56,10 +56,8 @@ DecodeSignal::DecodeSignal(pv::Session &session) :
 	session_(session),
 	srd_session_(nullptr),
 	logic_mux_data_invalid_(false),
-	start_time_(0),
-	samplerate_(0),
-	samples_decoded_(0),
-	frame_complete_(false)
+	current_segment_id_(0),
+	current_segment_(nullptr)
 {
 	connect(&session_, SIGNAL(capture_state_changed(int)),
 		this, SLOT(on_capture_state_changed(int)));
@@ -146,17 +144,15 @@ void DecodeSignal::reset_decode()
 
 	stop_srd_session();
 
-	frame_complete_ = false;
-	samples_decoded_ = 0;
-	currently_processed_segment_ = 0;
-	error_message_ = QString();
-
-	segmented_rows_.clear();
-	current_rows_= nullptr;
 	class_rows_.clear();
+	currently_processed_segment_ = 0;
+	current_segment_ = nullptr;
+	segments_.clear();
 
 	logic_mux_data_.reset();
 	logic_mux_data_invalid_ = true;
+
+	error_message_ = QString();
 
 	decode_reset();
 }
@@ -224,21 +220,17 @@ void DecodeSignal::begin_decode()
 		}
 	}
 
-	create_new_annotation_segment();
-
-	// TODO Allow logic_mux_data and logic_mux_segment to work with multiple segments
-
 	// Free the logic data and its segment(s) if it needs to be updated
 	if (logic_mux_data_invalid_)
 		logic_mux_data_.reset();
 
 	if (!logic_mux_data_) {
-		const int64_t ch_count = get_assigned_signal_count();
-		const int64_t unit_size = (ch_count + 7) / 8;
+		const uint32_t ch_count = get_assigned_signal_count();
+		logic_unit_size_ = (ch_count + 7) / 8;
 		logic_mux_data_ = make_shared<Logic>(ch_count);
-		logic_mux_segment_ = make_shared<LogicSegment>(*logic_mux_data_, unit_size, samplerate_);
-		logic_mux_data_->push_segment(logic_mux_segment_);
 	}
+
+	create_new_segment();
 
 	// Make sure the logic output data is complete and up-to-date
 	logic_mux_interrupt_ = false;
@@ -328,12 +320,32 @@ void DecodeSignal::set_initial_pin_state(const uint16_t channel_id, const int in
 
 double DecodeSignal::samplerate() const
 {
-	return samplerate_;
+	double result = 0;
+
+	// TODO For now, we simply return the first samplerate that we have
+	try {
+		const DecodeSegment *segment = &(segments_.at(0));
+		result = segment->samplerate;
+	} catch (out_of_range) {
+		// Do nothing
+	}
+
+	return result;
 }
 
-const pv::util::Timestamp& DecodeSignal::start_time() const
+const pv::util::Timestamp DecodeSignal::start_time() const
 {
-	return start_time_;
+	pv::util::Timestamp result;
+
+	// TODO For now, we simply return the first start time that we have
+	try {
+		const DecodeSegment *segment = &(segments_.at(0));
+		result = segment->start_time;
+	} catch (out_of_range) {
+		// Do nothing
+	}
+
+	return result;
 }
 
 int64_t DecodeSignal::get_working_sample_count(uint32_t segment_id) const
@@ -371,15 +383,12 @@ int64_t DecodeSignal::get_decoded_sample_count(uint32_t segment_id) const
 
 	int64_t result = 0;
 
-	if (segment_id == currently_processed_segment_)
-		result = samples_decoded_;
-	else
-		if (segment_id < currently_processed_segment_)
-			// Segment was already decoded fully
-			result = get_working_sample_count(segment_id);
-		else
-			// Segment wasn't decoded at all yet
-			result = 0;
+	try {
+		const DecodeSegment *segment = &(segments_.at(segment_id));
+		result = segment->samples_decoded;
+	} catch (out_of_range) {
+		// Do nothing
+	}
 
 	return result;
 }
@@ -416,20 +425,23 @@ vector<Row> DecodeSignal::visible_rows() const
 
 void DecodeSignal::get_annotation_subset(
 	vector<pv::data::decode::Annotation> &dest,
-	const decode::Row &row, uint64_t start_sample,
+	const decode::Row &row, uint32_t segment_id, uint64_t start_sample,
 	uint64_t end_sample) const
 {
 	lock_guard<mutex> lock(output_mutex_);
 
-	if (!current_rows_)
-		return;
+	try {
+		const DecodeSegment *segment = &(segments_.at(segment_id));
+		const map<const decode::Row, decode::RowData> *rows =
+			&(segment->annotation_rows);
 
-	// TODO Instead of current_rows_, use segmented_rows_ and the ID of the segment
-
-	const auto iter = current_rows_->find(row);
-	if (iter != current_rows_->end())
-		(*iter).second.get_annotation_subset(dest,
-			start_sample, end_sample);
+		const auto iter = rows->find(row);
+		if (iter != rows->end())
+			(*iter).second.get_annotation_subset(dest,
+				start_sample, end_sample);
+	} catch (out_of_range) {
+		// Do nothing
+	}
 }
 
 void DecodeSignal::save_settings(QSettings &settings) const
@@ -784,6 +796,8 @@ void DecodeSignal::query_input_metadata()
 	data::DecodeChannel *any_channel;
 	shared_ptr<Logic> logic_data;
 
+	assert(current_segment_);
+
 	do {
 		any_channel = &(*find_if(channels_.begin(), channels_.end(),
 			[](data::DecodeChannel ch) { return ch.assigned_signal; }));
@@ -804,9 +818,10 @@ void DecodeSignal::query_input_metadata()
 		if (!logic_data->logic_segments().empty()) {
 			shared_ptr<LogicSegment> first_segment =
 				any_channel->assigned_signal->logic_data()->logic_segments().front();
-			start_time_ = first_segment->start_time();
-			samplerate_ = first_segment->samplerate();
-			if (samplerate_ > 0)
+
+			current_segment_->start_time = first_segment->start_time();
+			current_segment_->samplerate = first_segment->samplerate();
+			if (current_segment_->samplerate > 0)
 				samplerate_valid = true;
 		}
 
@@ -821,6 +836,8 @@ void DecodeSignal::query_input_metadata()
 void DecodeSignal::decode_data(
 	const int64_t abs_start_samplenum, const int64_t sample_count)
 {
+	assert(current_segment_);
+
 	const int64_t unit_size = logic_mux_segment_->unit_size();
 	const int64_t chunk_sample_count = DecodeChunkLength / unit_size;
 
@@ -846,7 +863,7 @@ void DecodeSignal::decode_data(
 
 		{
 			lock_guard<mutex> lock(output_mutex_);
-			samples_decoded_ = chunk_end;
+			current_segment_->samples_decoded = chunk_end;
 		}
 
 		// Notify the frontend that we processed some data and
@@ -894,6 +911,8 @@ void DecodeSignal::start_srd_session()
 	if (srd_session_)
 		stop_srd_session();
 
+	assert(current_segment_);
+
 	// Create the session
 	srd_session_new(&srd_session_);
 	assert(srd_session_);
@@ -917,7 +936,7 @@ void DecodeSignal::start_srd_session()
 
 	// Start the session
 	srd_session_metadata_set(srd_session_, SRD_CONF_SAMPLERATE,
-		g_variant_new_uint64(samplerate_));
+		g_variant_new_uint64(current_segment_->samplerate));
 
 	srd_pd_output_callback_add(srd_session_, SRD_OUTPUT_ANN,
 		DecodeSignal::annotation_callback, this);
@@ -953,10 +972,24 @@ void DecodeSignal::connect_input_notifiers()
 	}
 }
 
-void DecodeSignal::create_new_annotation_segment()
+void DecodeSignal::create_new_segment()
 {
-	segmented_rows_.emplace_back(map<const decode::Row, decode::RowData>());
-	current_rows_ = &(segmented_rows_.back());
+	// Create logic mux segment if we're recreating the muxed data
+	if (logic_mux_data_invalid_) {
+		const double samplerate =
+			(current_segment_) ? current_segment_->samplerate : 0;
+
+		logic_mux_segment_ = make_shared<LogicSegment>(*logic_mux_data_,
+			logic_unit_size_, samplerate);
+		logic_mux_data_->push_segment(logic_mux_segment_);
+	}
+
+	// Create annotation segment
+	segments_.emplace_back(DecodeSegment());
+	current_segment_ = &(segments_.back());
+
+	// TODO Currently we assume there's only one sample rate
+	current_segment_->samplerate = segments_.front().samplerate;
 
 	// Add annotation classes
 	for (const shared_ptr<decode::Decoder> &dec : stack_) {
@@ -966,7 +999,7 @@ void DecodeSignal::create_new_annotation_segment()
 
 		// Add a row for the decoder if it doesn't have a row list
 		if (!decc->annotation_rows)
-			(*current_rows_)[Row(decc)] = decode::RowData();
+			(current_segment_->annotation_rows)[Row(decc)] = decode::RowData();
 
 		// Add the decoder rows
 		for (const GSList *l = decc->annotation_rows; l; l = l->next) {
@@ -977,7 +1010,7 @@ void DecodeSignal::create_new_annotation_segment()
 			const Row row(decc, ann_row);
 
 			// Add a new empty row data object
-			(*current_rows_)[row] = decode::RowData();
+			(current_segment_->annotation_rows)[row] = decode::RowData();
 		}
 	}
 }
@@ -997,25 +1030,25 @@ void DecodeSignal::annotation_callback(srd_proto_data *pdata, void *decode_signa
 	assert(pdata->pdo->di);
 	const srd_decoder *const decc = pdata->pdo->di->decoder;
 	assert(decc);
-	assert(ds->current_rows_);
+	assert(ds->current_segment_);
 
 	const srd_proto_data_annotation *const pda =
 		(const srd_proto_data_annotation*)pdata->data;
 	assert(pda);
 
-	auto row_iter = ds->current_rows_->end();
+	auto row_iter = ds->current_segment_->annotation_rows.end();
 
 	// Try looking up the sub-row of this class
 	const auto format = pda->ann_class;
 	const auto r = ds->class_rows_.find(make_pair(decc, format));
 	if (r != ds->class_rows_.end())
-		row_iter = ds->current_rows_->find((*r).second);
+		row_iter = ds->current_segment_->annotation_rows.find((*r).second);
 	else {
 		// Failing that, use the decoder as a key
-		row_iter = ds->current_rows_->find(Row(decc));
+		row_iter = ds->current_segment_->annotation_rows.find(Row(decc));
 	}
 
-	if (row_iter == ds->current_rows_->end()) {
+	if (row_iter == ds->current_segment_->annotation_rows.end()) {
 		qDebug() << "Unexpected annotation: decoder = " << decc <<
 			", format = " << format;
 		assert(false);

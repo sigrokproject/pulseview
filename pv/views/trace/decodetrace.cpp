@@ -236,7 +236,7 @@ void DecodeTrace::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 
 		vector<Annotation> annotations;
 		decode_signal_->get_annotation_subset(annotations, row,
-			sample_range.first, sample_range.second);
+			current_segment_, sample_range.first, sample_range.second);
 		if (!annotations.empty()) {
 			draw_annotations(annotations, p, annotation_height, pp, y,
 				base_colour, row_title_width);
@@ -706,7 +706,7 @@ const QString DecodeTrace::get_annotation_at_point(const QPoint &point)
 	vector<pv::data::decode::Annotation> annotations;
 
 	decode_signal_->get_annotation_subset(annotations, visible_rows_[row],
-		sample_range.first, sample_range.second);
+		current_segment_, sample_range.first, sample_range.second);
 
 	return (annotations.empty()) ?
 		QString() : annotations[0].annotations().front();

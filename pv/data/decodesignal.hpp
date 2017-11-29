@@ -71,6 +71,14 @@ struct DecodeChannel
 	const srd_channel *pdch_;
 };
 
+struct DecodeSegment
+{
+	map<const decode::Row, decode::RowData> annotation_rows;
+	pv::util::Timestamp start_time;
+	double samplerate;
+	int64_t samples_decoded;
+};
+
 class DecodeSignal : public SignalBase
 {
 	Q_OBJECT
@@ -103,7 +111,7 @@ public:
 	void set_initial_pin_state(const uint16_t channel_id, const int init_state);
 
 	double samplerate() const;
-	const pv::util::Timestamp& start_time() const;
+	const pv::util::Timestamp start_time() const;
 
 	/**
 	 * Returns the number of samples that can be worked on,
@@ -121,7 +129,7 @@ public:
 	 */
 	void get_annotation_subset(
 		vector<pv::data::decode::Annotation> &dest,
-		const decode::Row &row, uint64_t start_sample,
+		const decode::Row &row, uint32_t segment_id, uint64_t start_sample,
 		uint64_t end_sample) const;
 
 	virtual void save_settings(QSettings &settings) const;
@@ -148,7 +156,8 @@ private:
 
 	void connect_input_notifiers();
 
-	void create_new_annotation_segment();
+	void create_new_segment();
+
 	static void annotation_callback(srd_proto_data *pdata, void *decode_signal);
 
 Q_SIGNALS:
@@ -171,26 +180,20 @@ private:
 
 	shared_ptr<Logic> logic_mux_data_;
 	shared_ptr<LogicSegment> logic_mux_segment_;
+	uint32_t logic_unit_size_;
 	bool logic_mux_data_invalid_;
 
-	pv::util::Timestamp start_time_;
-	double samplerate_;
-
-	int64_t samples_decoded_;
 	uint32_t currently_processed_segment_;
 
 	vector< shared_ptr<decode::Decoder> > stack_;
 	map<pair<const srd_decoder*, int>, decode::Row> class_rows_;
 
-	/// Annotations for all segments
-	vector< map<const decode::Row, decode::RowData>> segmented_rows_;
-
-	/// Set of annotations for current segment
-	map<const decode::Row, decode::RowData> *current_rows_;
+	vector<DecodeSegment> segments_;
+	uint32_t current_segment_id_;
+	DecodeSegment *current_segment_;
 
 	mutable mutex input_mutex_, output_mutex_, logic_mux_mutex_;
 	mutable condition_variable decode_input_cond_, logic_mux_cond_;
-	bool frame_complete_;
 
 	std::thread decode_thread_, logic_mux_thread_;
 	atomic<bool> decode_interrupt_, logic_mux_interrupt_;
