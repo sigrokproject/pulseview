@@ -507,7 +507,6 @@ void DecodeSignal::restore_settings(QSettings &settings)
 
 				// Include the newly created decode channels in the channel lists
 				update_channel_list();
-				commit_decoder_channels();
 				break;
 			}
 		}
@@ -543,6 +542,10 @@ void DecodeSignal::restore_settings(QSettings &settings)
 
 		settings.endGroup();
 	}
+
+	// Update the internal structures
+	update_channel_list();
+	commit_decoder_channels();
 
 	begin_decode();
 }
@@ -640,6 +643,12 @@ void DecodeSignal::commit_decoder_channels()
 
 		dec->set_channels(channel_list);
 	}
+
+	// Channel bit IDs must be in sync with the channel's apperance in channels_
+	int id = 0;
+	for (data::DecodeChannel &ch : channels_)
+		if (ch.assigned_signal)
+			ch.bit_id = id++;
 }
 
 void DecodeSignal::mux_logic_samples(const int64_t start, const int64_t end)
@@ -655,11 +664,8 @@ void DecodeSignal::mux_logic_samples(const int64_t start, const int64_t end)
 	vector<uint8_t> signal_in_bytepos;
 	vector<uint8_t> signal_in_bitpos;
 
-	int id = 0;
 	for (data::DecodeChannel &ch : channels_)
 		if (ch.assigned_signal) {
-			ch.bit_id = id++;
-
 			const shared_ptr<Logic> logic_data = ch.assigned_signal->logic_data();
 			const shared_ptr<LogicSegment> segment = logic_data->logic_segments().front();
 			segments.push_back(segment);
