@@ -229,6 +229,9 @@ View::View(Session &session, bool is_main_view, QWidget *parent) :
 
 	// Update the zoom state
 	calculate_tick_spacing();
+
+	// Make sure the standard bar's segment selector is in sync
+	set_segment_display_mode(segment_display_mode_);
 }
 
 Session& View::session()
@@ -497,7 +500,7 @@ void View::set_segment_display_mode(Trace::SegmentDisplayMode mode)
 
 	segment_selectable_ = true;
 
-	if (mode == Trace::ShowSingleSegmentOnly)
+	if (mode == Trace::ShowLastSegmentOnly)
 		segment_selectable_ = false;
 
 	segment_display_mode_changed(segment_selectable_);
@@ -1423,6 +1426,8 @@ void View::on_segment_changed(int segment)
 		current_segment_ = segment;
 		for (shared_ptr<Signal> signal : signals_)
 			signal->set_current_segment(current_segment_);
+		for (shared_ptr<DecodeTrace> dt : decode_traces_)
+			dt->set_current_segment(current_segment_);
 		viewport_->update();
 		break;
 
