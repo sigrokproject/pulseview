@@ -480,12 +480,6 @@ void MainBar::update_device_config_widgets()
 	if (sr_dev->config_check(ConfigKey::LIMIT_SAMPLES, Capability::SET))
 		sample_count_supported_ = true;
 
-	if (sr_dev->config_check(ConfigKey::LIMIT_FRAMES, Capability::SET)) {
-		sr_dev->config_set(ConfigKey::LIMIT_FRAMES,
-			Glib::Variant<guint64>::create(1));
-			on_config_changed();
-	}
-
 	// Add notification of reconfigure events
 	disconnect(this, SLOT(on_config_changed()));
 	connect(&opts->binding(), SIGNAL(config_changed()),
