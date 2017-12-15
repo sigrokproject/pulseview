@@ -113,6 +113,8 @@ public:
 	double samplerate() const;
 	const pv::util::Timestamp start_time() const;
 
+	uint32_t get_input_segment_count() const;
+
 	/**
 	 * Returns the number of samples that can be worked on,
 	 * i.e. the number of samples where samples are available
@@ -141,7 +143,7 @@ private:
 
 	void commit_decoder_channels();
 
-	void mux_logic_samples(const int64_t start, const int64_t end);
+	void mux_logic_samples(uint32_t segment_id, const int64_t start, const int64_t end);
 
 	void logic_mux_proc();
 
@@ -180,7 +182,7 @@ private:
 
 	shared_ptr<Logic> logic_mux_data_;
 	shared_ptr<LogicSegment> logic_mux_segment_;
-	uint32_t logic_unit_size_;
+	uint32_t logic_mux_unit_size_;
 	bool logic_mux_data_invalid_;
 
 	uint32_t currently_processed_segment_;

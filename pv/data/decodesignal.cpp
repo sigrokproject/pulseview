@@ -226,11 +226,22 @@ void DecodeSignal::begin_decode()
 
 	if (!logic_mux_data_) {
 		const uint32_t ch_count = get_assigned_signal_count();
-		logic_unit_size_ = (ch_count + 7) / 8;
+		logic_mux_unit_size_ = (ch_count + 7) / 8;
 		logic_mux_data_ = make_shared<Logic>(ch_count);
 	}
 
-	create_new_segment();
+	// Receive notifications when new sample data is available
+	connect_input_notifiers();
+
+	const uint32_t segment_count = get_input_segment_count();
+
+	if (segment_count == 0) {
+		error_message_ = tr("No input data");
+		return;
+	}
+
+	for (uint32_t i = 0; i < segment_count; i++)
+		create_new_segment();
 
 	// Make sure the logic output data is complete and up-to-date
 	logic_mux_interrupt_ = false;
@@ -239,9 +250,6 @@ void DecodeSignal::begin_decode()
 	// Decode the muxed logic data
 	decode_interrupt_ = false;
 	decode_thread_ = std::thread(&DecodeSignal::decode_proc, this);
-
-	// Receive notifications when new sample data is available
-	connect_input_notifiers();
 }
 
 QString DecodeSignal::error_message() const
@@ -348,12 +356,32 @@ const pv::util::Timestamp DecodeSignal::start_time() const
 	return result;
 }
 
+uint32_t DecodeSignal::get_input_segment_count() const
+{
+	uint64_t count = std::numeric_limits<uint64_t>::max();
+	bool no_signals_assigned = true;
+
+	for (const data::DecodeChannel &ch : channels_)
+		if (ch.assigned_signal) {
+			no_signals_assigned = false;
+
+			const shared_ptr<Logic> logic_data = ch.assigned_signal->logic_data();
+			if (!logic_data || logic_data->logic_segments().empty())
+				return 0;
+
+			// Find the min value of all segment counts
+			if ((uint64_t)(logic_data->logic_segments().size()) < count)
+				count = logic_data->logic_segments().size();
+		}
+
+	return (no_signals_assigned ? 0 : count);
+}
+
 int64_t DecodeSignal::get_working_sample_count(uint32_t segment_id) const
 {
 	// The working sample count is the highest sample number for
-	// which all used signals have data available, so go through
-	// all channels and use the lowest overall sample count of the
-	// current segment
+	// which all used signals have data available, so go through all
+	// channels and use the lowest overall sample count of the segment
 
 	int64_t count = std::numeric_limits<int64_t>::max();
 	bool no_signals_assigned = true;
@@ -682,14 +710,13 @@ void DecodeSignal::commit_decoder_channels()
 			ch.bit_id = id++;
 }
 
-void DecodeSignal::mux_logic_samples(const int64_t start, const int64_t end)
+void DecodeSignal::mux_logic_samples(uint32_t segment_id, const int64_t start, const int64_t end)
 {
 	// Enforce end to be greater than start
 	if (end <= start)
 		return;
 
-	// Fetch all segments and their data
-	// TODO Currently, we assume only a single segment exists
+	// Fetch the channel segments and their data
 	vector<shared_ptr<LogicSegment> > segments;
 	vector<const uint8_t*> signal_data;
 	vector<uint8_t> signal_in_bytepos;
@@ -698,7 +725,15 @@ void DecodeSignal::mux_logic_samples(const int64_t start, const int64_t end)
 	for (data::DecodeChannel &ch : channels_)
 		if (ch.assigned_signal) {
 			const shared_ptr<Logic> logic_data = ch.assigned_signal->logic_data();
-			const shared_ptr<LogicSegment> segment = logic_data->logic_segments().front();
+
+			shared_ptr<LogicSegment> segment;
+			try {
+				segment = logic_data->logic_segments().at(segment_id);
+			} catch (out_of_range) {
+				qDebug() << "Muxer error for" << name() << ":" << ch.assigned_signal->name() \
+					<< "has no logic segment" << segment_id;
+				return;
+			}
 			segments.push_back(segment);
 
 			uint8_t* data = new uint8_t[(end - start) * segment->unit_size()];
@@ -709,6 +744,17 @@ void DecodeSignal::mux_logic_samples(const int64_t start, const int64_t end)
 			signal_in_bytepos.push_back(bitpos / 8);
 			signal_in_bitpos.push_back(bitpos % 8);
 		}
+
+
+	shared_ptr<LogicSegment> output_segment;
+	try {
+		output_segment = logic_mux_data_->logic_segments().at(segment_id);
+	} catch (out_of_range) {
+		qDebug() << "Muxer error for" << name() << ": no logic mux segment" \
+			<< segment_id << "in mux_logic_samples(), mux segments size is" \
+			<< logic_mux_data_->logic_segments().size();
+		return;
+	}
 
 	// Perform the muxing of signal data into the output data
 	uint8_t* output = new uint8_t[(end - start) * logic_mux_segment_->unit_size()];
@@ -748,8 +794,17 @@ void DecodeSignal::mux_logic_samples(const int64_t start, const int64_t end)
 
 void DecodeSignal::logic_mux_proc()
 {
+	uint32_t segment_id = 0;
+
+	try {
+		logic_mux_segment_ = logic_mux_data_->logic_segments().front();
+	} catch (out_of_range) {
+		qDebug() << "Muxer error for" << name() << ": no logic mux segments";
+		return;
+	}
+
 	do {
-		const uint64_t input_sample_count = get_working_sample_count(currently_processed_segment_);
+		const uint64_t input_sample_count = get_working_sample_count(segment_id);
 		const uint64_t output_sample_count = logic_mux_segment_->get_sample_count();
 
 		const uint64_t samples_to_process =
@@ -767,7 +822,7 @@ void DecodeSignal::logic_mux_proc()
 				const uint64_t sample_count =
 					min(samples_to_process - processed_samples,	chunk_sample_count);
 
-				mux_logic_samples(start_sample, start_sample + sample_count);
+				mux_logic_samples(segment_id, start_sample, start_sample + sample_count);
 				processed_samples += sample_count;
 
 				// ...and process the newly muxed logic data
@@ -776,11 +831,29 @@ void DecodeSignal::logic_mux_proc()
 		}
 
 		if (samples_to_process == 0) {
-			logic_mux_data_invalid_ = false;
+			// TODO Optimize this by caching the input segment count and only
+			// querying it when the cached value was reached
+			if (segment_id < get_input_segment_count() - 1) {
+				// Process next segment
+				segment_id++;
 
-			// Wait for more input
-			unique_lock<mutex> logic_mux_lock(logic_mux_mutex_);
-			logic_mux_cond_.wait(logic_mux_lock);
+				try {
+					logic_mux_segment_ = logic_mux_data_->logic_segments().at(segment_id);
+				} catch (out_of_range) {
+					qDebug() << "Muxer error for" << name() << ": no logic mux segment" \
+						<< segment_id << "in logic_mux_proc(), mux segments size is" \
+						<< logic_mux_data_->logic_segments().size();
+					return;
+				}
+
+			} else {
+				// All segments have been processed
+				logic_mux_data_invalid_ = false;
+
+				// Wait for more input
+				unique_lock<mutex> logic_mux_lock(logic_mux_mutex_);
+				logic_mux_cond_.wait(logic_mux_lock);
+			}
 		}
 	} while (!logic_mux_interrupt_);
 }
@@ -980,7 +1053,7 @@ void DecodeSignal::create_new_segment()
 			(current_segment_) ? current_segment_->samplerate : 0;
 
 		logic_mux_segment_ = make_shared<LogicSegment>(*logic_mux_data_,
-			logic_unit_size_, samplerate);
+			logic_mux_unit_size_, samplerate);
 		logic_mux_data_->push_segment(logic_mux_segment_);
 	}
 
