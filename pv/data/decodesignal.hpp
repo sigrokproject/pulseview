@@ -113,8 +113,6 @@ public:
 	double samplerate() const;
 	const pv::util::Timestamp start_time() const;
 
-	uint32_t get_input_segment_count() const;
-
 	/**
 	 * Returns the number of samples that can be worked on,
 	 * i.e. the number of samples where samples are available
@@ -139,6 +137,10 @@ public:
 	virtual void restore_settings(QSettings &settings);
 
 private:
+	uint32_t get_input_segment_count() const;
+
+	uint32_t get_input_samplerate(uint32_t segment_id) const;
+
 	void update_channel_list();
 
 	void commit_decoder_channels();
@@ -149,7 +151,8 @@ private:
 
 	void query_input_metadata();
 
-	void decode_data(const int64_t abs_start_samplenum, const int64_t sample_count);
+	void decode_data(const int64_t abs_start_samplenum, const int64_t sample_count,
+		const shared_ptr<LogicSegment> input_segment);
 
 	void decode_proc();
 
@@ -158,7 +161,7 @@ private:
 
 	void connect_input_notifiers();
 
-	void create_new_segment();
+	void create_segments();
 
 	static void annotation_callback(srd_proto_data *pdata, void *decode_signal);
 
@@ -181,18 +184,14 @@ private:
 	struct srd_session *srd_session_;
 
 	shared_ptr<Logic> logic_mux_data_;
-	shared_ptr<LogicSegment> logic_mux_segment_;
 	uint32_t logic_mux_unit_size_;
 	bool logic_mux_data_invalid_;
-
-	uint32_t currently_processed_segment_;
 
 	vector< shared_ptr<decode::Decoder> > stack_;
 	map<pair<const srd_decoder*, int>, decode::Row> class_rows_;
 
 	vector<DecodeSegment> segments_;
 	uint32_t current_segment_id_;
-	DecodeSegment *current_segment_;
 
 	mutable mutex input_mutex_, output_mutex_, logic_mux_mutex_;
 	mutable condition_variable decode_input_cond_, logic_mux_cond_;

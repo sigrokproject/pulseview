@@ -261,6 +261,7 @@ void View::add_signal(const shared_ptr<Signal> signal)
 	signals_.insert(signal);
 
 	signal->set_segment_display_mode(segment_display_mode_);
+	signal->set_current_segment(current_segment_);
 
 	connect(signal->base().get(), SIGNAL(name_changed(const QString&)),
 		this, SLOT(on_signal_name_changed()));
@@ -279,6 +280,7 @@ void View::add_decode_signal(shared_ptr<data::DecodeSignal> signal)
 	decode_traces_.push_back(d);
 
 	d->set_segment_display_mode(segment_display_mode_);
+	d->set_current_segment(current_segment_);
 
 	connect(signal.get(), SIGNAL(name_changed(const QString&)),
 		this, SLOT(on_signal_name_changed()));
