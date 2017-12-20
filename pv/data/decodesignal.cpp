@@ -764,6 +764,8 @@ void DecodeSignal::logic_mux_proc()
 		}
 
 		if (samples_to_process == 0) {
+			logic_mux_data_invalid_ = false;
+
 			// Wait for more input
 			unique_lock<mutex> logic_mux_lock(logic_mux_mutex_);
 			logic_mux_cond_.wait(logic_mux_lock);
@@ -1027,8 +1029,10 @@ void DecodeSignal::annotation_callback(srd_proto_data *pdata, void *decode_signa
 void DecodeSignal::on_capture_state_changed(int state)
 {
 	// If a new acquisition was started, we need to start decoding from scratch
-	if (state == Session::Running)
+	if (state == Session::Running) {
+		logic_mux_data_invalid_ = true;
 		begin_decode();
+	}
 }
 
 void DecodeSignal::on_data_cleared()
