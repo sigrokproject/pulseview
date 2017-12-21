@@ -51,8 +51,10 @@ namespace pv {
 namespace data {
 
 class Analog;
+class AnalogSegment;
 class DecoderStack;
 class Logic;
+class LogicSegment;
 class SignalData;
 
 class SignalBase : public QObject
@@ -266,7 +268,9 @@ private:
 	uint8_t convert_a2l_schmitt_trigger(float lo_thr, float hi_thr,
 		float value, uint8_t &state);
 
-	void conversion_thread_proc(QObject* segment);
+	void convert_single_segment(pv::data::AnalogSegment *asegment,
+		pv::data::LogicSegment *lsegment);
+	void conversion_thread_proc();
 
 	void stop_conversion();
 

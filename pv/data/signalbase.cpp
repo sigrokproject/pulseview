@@ -26,11 +26,14 @@
 #include "signalbase.hpp"
 #include "signaldata.hpp"
 
+#include <QDebug>
+
 #include <pv/binding/decoder.hpp>
 #include <pv/session.hpp>
 
 using std::dynamic_pointer_cast;
 using std::make_shared;
+using std::out_of_range;
 using std::shared_ptr;
 using std::tie;
 using std::unique_lock;
@@ -399,131 +402,168 @@ bool SignalBase::conversion_is_a2l() const
 		(conversion_type_ == A2LConversionBySchmittTrigger)));
 }
 
-void SignalBase::conversion_thread_proc(QObject* segment)
+void SignalBase::convert_single_segment(AnalogSegment *asegment, LogicSegment *lsegment)
 {
-	// TODO Support for multiple segments is missing
-
 	uint64_t start_sample, end_sample;
 	start_sample = end_sample = 0;
 
-	do {
-		if (conversion_is_a2l()) {
+	start_sample = lsegment->get_sample_count();
+	end_sample = asegment->get_sample_count();
 
-			AnalogSegment *asegment = qobject_cast<AnalogSegment*>(segment);
+	if (end_sample > start_sample) {
+		tie(min_value_, max_value_) = asegment->get_min_max();
 
-			const shared_ptr<Logic> logic_data = dynamic_pointer_cast<Logic>(converted_data_);
+		// Create sigrok::Analog instance
+		float *asamples = new float[ConversionBlockSize];
+		uint8_t *lsamples = new uint8_t[ConversionBlockSize];
 
-			// Create the initial logic data segment if needed
-			if (logic_data->segments().size() == 0) {
-				shared_ptr<LogicSegment> lsegment =
-					make_shared<LogicSegment>(*logic_data.get(), 1, asegment->samplerate());
-				logic_data->push_segment(lsegment);
+		vector<shared_ptr<sigrok::Channel> > channels;
+		channels.push_back(channel_);
+
+		vector<const sigrok::QuantityFlag*> mq_flags;
+		const sigrok::Quantity * const mq = sigrok::Quantity::VOLTAGE;
+		const sigrok::Unit * const unit = sigrok::Unit::VOLT;
+
+		shared_ptr<sigrok::Packet> packet =
+			Session::sr_context->create_analog_packet(channels,
+			asamples, ConversionBlockSize, mq, unit, mq_flags);
+
+		shared_ptr<sigrok::Analog> analog =
+			dynamic_pointer_cast<sigrok::Analog>(packet->payload());
+
+		// Convert
+		uint64_t i = start_sample;
+
+		if (conversion_type_ == A2LConversionByThreshold) {
+			const double threshold = get_conversion_thresholds()[0];
+
+			// Convert as many sample blocks as we can
+			while ((end_sample - i) > ConversionBlockSize) {
+				asegment->get_samples(i, i + ConversionBlockSize, asamples);
+
+				shared_ptr<sigrok::Logic> logic =
+					analog->get_logic_via_threshold(threshold, lsamples);
+
+				lsegment->append_payload(logic->data_pointer(), logic->data_length());
+
+				samples_added(lsegment, i, i + ConversionBlockSize);
+				i += ConversionBlockSize;
 			}
 
-			LogicSegment *lsegment = dynamic_cast<LogicSegment*>(logic_data->segments().front().get());
+			// Re-create sigrok::Analog and convert remaining samples
+			packet = Session::sr_context->create_analog_packet(channels,
+				asamples, end_sample - i, mq, unit, mq_flags);
 
-			start_sample = lsegment->get_sample_count();
-			end_sample = asegment->get_sample_count();
+			analog = dynamic_pointer_cast<sigrok::Analog>(packet->payload());
 
-			if (end_sample > start_sample) {
-				tie(min_value_, max_value_) = asegment->get_min_max();
-
-				// Create sigrok::Analog instance
-				float *asamples = new float[ConversionBlockSize];
-				uint8_t *lsamples = new uint8_t[ConversionBlockSize];
-
-				vector<shared_ptr<sigrok::Channel> > channels;
-				channels.push_back(channel_);
-
-				vector<const sigrok::QuantityFlag*> mq_flags;
-				const sigrok::Quantity * const mq = sigrok::Quantity::VOLTAGE;
-				const sigrok::Unit * const unit = sigrok::Unit::VOLT;
-
-				shared_ptr<sigrok::Packet> packet =
-					Session::sr_context->create_analog_packet(channels,
-					asamples, ConversionBlockSize, mq, unit, mq_flags);
-
-				shared_ptr<sigrok::Analog> analog =
-					dynamic_pointer_cast<sigrok::Analog>(packet->payload());
-
-				// Convert
-				uint64_t i = start_sample;
-
-				if (conversion_type_ == A2LConversionByThreshold) {
-					const double threshold = get_conversion_thresholds()[0];
-
-					// Convert as many sample blocks as we can
-					while ((end_sample - i) > ConversionBlockSize) {
-						asegment->get_samples(i, i + ConversionBlockSize, asamples);
-
-						shared_ptr<sigrok::Logic> logic =
-							analog->get_logic_via_threshold(threshold, lsamples);
-
-						lsegment->append_payload(logic->data_pointer(), logic->data_length());
-
-						samples_added(lsegment, i, i + ConversionBlockSize);
-						i += ConversionBlockSize;
-					}
-
-					// Re-create sigrok::Analog and convert remaining samples
-					packet = Session::sr_context->create_analog_packet(channels,
-						asamples, end_sample - i, mq, unit, mq_flags);
-
-					analog = dynamic_pointer_cast<sigrok::Analog>(packet->payload());
-
-					asegment->get_samples(i, end_sample, asamples);
-					shared_ptr<sigrok::Logic> logic =
-						analog->get_logic_via_threshold(threshold, lsamples);
-					lsegment->append_payload(logic->data_pointer(), logic->data_length());
-					samples_added(lsegment, i, end_sample);
-				}
-
-				if (conversion_type_ == A2LConversionBySchmittTrigger) {
-					const vector<double> thresholds = get_conversion_thresholds();
-					const double lo_thr = thresholds[0];
-					const double hi_thr = thresholds[1];
-
-					uint8_t state = 0;  // TODO Use value of logic sample n-1 instead of 0
-
-					// Convert as many sample blocks as we can
-					while ((end_sample - i) > ConversionBlockSize) {
-						asegment->get_samples(i, i + ConversionBlockSize, asamples);
-
-						shared_ptr<sigrok::Logic> logic =
-							analog->get_logic_via_schmitt_trigger(lo_thr, hi_thr,
-								&state, lsamples);
-
-						lsegment->append_payload(logic->data_pointer(), logic->data_length());
-
-						samples_added(lsegment, i, i + ConversionBlockSize);
-						i += ConversionBlockSize;
-					}
-
-					// Re-create sigrok::Analog and convert remaining samples
-					packet = Session::sr_context->create_analog_packet(channels,
-						asamples, end_sample - i, mq, unit, mq_flags);
-
-					analog = dynamic_pointer_cast<sigrok::Analog>(packet->payload());
-
-					asegment->get_samples(i, end_sample, asamples);
-					shared_ptr<sigrok::Logic> logic =
-						analog->get_logic_via_schmitt_trigger(lo_thr, hi_thr,
-							&state, lsamples);
-					lsegment->append_payload(logic->data_pointer(), logic->data_length());
-					samples_added(lsegment, i, end_sample);
-				}
-
-				// If acquisition is ongoing, start-/endsample may have changed
-				end_sample = asegment->get_sample_count();
-
-				delete[] lsamples;
-				delete[] asamples;
-			}
+			asegment->get_samples(i, end_sample, asamples);
+			shared_ptr<sigrok::Logic> logic =
+				analog->get_logic_via_threshold(threshold, lsamples);
+			lsegment->append_payload(logic->data_pointer(), logic->data_length());
+			samples_added(lsegment, i, end_sample);
 		}
 
-		if (!conversion_interrupt_ && (start_sample == end_sample)) {
-			unique_lock<mutex> input_lock(conversion_input_mutex_);
-			conversion_input_cond_.wait(input_lock);
+		if (conversion_type_ == A2LConversionBySchmittTrigger) {
+			const vector<double> thresholds = get_conversion_thresholds();
+			const double lo_thr = thresholds[0];
+			const double hi_thr = thresholds[1];
+
+			uint8_t state = 0;  // TODO Use value of logic sample n-1 instead of 0
+
+			// Convert as many sample blocks as we can
+			while ((end_sample - i) > ConversionBlockSize) {
+				asegment->get_samples(i, i + ConversionBlockSize, asamples);
+
+				shared_ptr<sigrok::Logic> logic =
+					analog->get_logic_via_schmitt_trigger(lo_thr, hi_thr,
+						&state, lsamples);
+
+				lsegment->append_payload(logic->data_pointer(), logic->data_length());
+
+				samples_added(lsegment, i, i + ConversionBlockSize);
+				i += ConversionBlockSize;
+			}
+
+			// Re-create sigrok::Analog and convert remaining samples
+			packet = Session::sr_context->create_analog_packet(channels,
+				asamples, end_sample - i, mq, unit, mq_flags);
+
+			analog = dynamic_pointer_cast<sigrok::Analog>(packet->payload());
+
+			asegment->get_samples(i, end_sample, asamples);
+			shared_ptr<sigrok::Logic> logic =
+				analog->get_logic_via_schmitt_trigger(lo_thr, hi_thr,
+					&state, lsamples);
+			lsegment->append_payload(logic->data_pointer(), logic->data_length());
+			samples_added(lsegment, i, end_sample);
+		}
+
+		// If acquisition is ongoing, start-/endsample may have changed
+		end_sample = asegment->get_sample_count();
+
+		delete[] lsamples;
+		delete[] asamples;
+	}
+}
+
+void SignalBase::conversion_thread_proc()
+{
+	shared_ptr<Analog> analog_data;
+
+	if (conversion_is_a2l()) {
+		analog_data = dynamic_pointer_cast<Analog>(data_);
+
+		if (analog_data->analog_segments().size() == 0)
+			return;
+
+	} else
+		// Currently, we only handle A2L conversions
+		return;
+
+	uint32_t segment_id = 0;
+
+	AnalogSegment *asegment = analog_data->analog_segments().front().get();
+	assert(asegment);
+
+	const shared_ptr<Logic> logic_data = dynamic_pointer_cast<Logic>(converted_data_);
+	assert(logic_data);
+
+	// Create the initial logic data segment if needed
+	if (logic_data->logic_segments().size() == 0) {
+		shared_ptr<LogicSegment> new_segment =
+			make_shared<LogicSegment>(*logic_data.get(), 1, asegment->samplerate());
+		logic_data->push_segment(new_segment);
+	}
+
+	LogicSegment *lsegment = logic_data->logic_segments().front().get();
+	assert(lsegment);
+
+	do {
+		convert_single_segment(asegment, lsegment);
+
+		if (analog_data->analog_segments().size() > logic_data->logic_segments().size()) {
+			// There are more segments to process
+			segment_id++;
+
+			try {
+				asegment = analog_data->analog_segments().at(segment_id).get();
+			} catch (out_of_range) {
+				qDebug() << "Conversion error for" << name() << ": no analog segment" \
+					<< segment_id << ", segments size is" << analog_data->analog_segments().size();
+				return;
+			}
+
+			shared_ptr<LogicSegment> new_segment =
+				make_shared<LogicSegment>(*logic_data.get(), 1, asegment->samplerate());
+			logic_data->push_segment(new_segment);
+
+			lsegment = logic_data->logic_segments().back().get();
+		} else {
+			// No more segments to process, wait for data or interrupt
+			if (!conversion_interrupt_) {
+				unique_lock<mutex> input_lock(conversion_input_mutex_);
+				conversion_input_cond_.wait(input_lock);
+			}
 		}
 	} while (!conversion_interrupt_);
 }
@@ -541,18 +581,9 @@ void SignalBase::start_conversion(bool delayed_start)
 		converted_data_->clear();
 	samples_cleared();
 
-	if (conversion_is_a2l()) {
-		shared_ptr<Analog> analog_data = dynamic_pointer_cast<Analog>(data_);
-
-		if (analog_data->analog_segments().size() > 0) {
-			// TODO Support for multiple segments is missing
-			AnalogSegment *asegment = analog_data->analog_segments().front().get();
-
-			conversion_interrupt_ = false;
-			conversion_thread_ = std::thread(
-				&SignalBase::conversion_thread_proc, this, asegment);
-		}
-	}
+	conversion_interrupt_ = false;
+	conversion_thread_ = std::thread(
+		&SignalBase::conversion_thread_proc, this);
 }
 
 void SignalBase::stop_conversion()
