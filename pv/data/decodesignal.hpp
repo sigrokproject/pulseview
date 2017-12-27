@@ -149,8 +149,6 @@ private:
 
 	void logic_mux_proc();
 
-	void query_input_metadata();
-
 	void decode_data(const int64_t abs_start_samplenum, const int64_t sample_count,
 		const shared_ptr<LogicSegment> input_segment);
 
@@ -161,7 +159,7 @@ private:
 
 	void connect_input_notifiers();
 
-	void create_segments();
+	void create_decode_segment();
 
 	static void annotation_callback(srd_proto_data *pdata, void *decode_signal);
 

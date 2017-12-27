@@ -236,8 +236,6 @@ void DecodeSignal::begin_decode()
 		return;
 	}
 
-	create_segments();
-
 	// Make sure the logic output data is complete and up-to-date
 	logic_mux_interrupt_ = false;
 	logic_mux_thread_ = std::thread(&DecodeSignal::logic_mux_proc, this);
@@ -807,8 +805,10 @@ void DecodeSignal::logic_mux_proc()
 
 	assert(logic_mux_data_);
 
-	shared_ptr<LogicSegment> output_segment = logic_mux_data_->logic_segments().front();
-	assert(output_segment);
+	// Create initial logic mux segment
+	shared_ptr<LogicSegment> output_segment =
+		make_shared<LogicSegment>(*logic_mux_data_, logic_mux_unit_size_, 0);
+	logic_mux_data_->push_segment(output_segment);
 
 	output_segment->set_samplerate(get_input_samplerate(0));
 
@@ -846,14 +846,9 @@ void DecodeSignal::logic_mux_proc()
 				// Process next segment
 				segment_id++;
 
-				try {
-					output_segment = logic_mux_data_->logic_segments().at(segment_id);
-				} catch (out_of_range) {
-					qDebug() << "Muxer error for" << name() << ": no logic mux segment" \
-						<< segment_id << "in logic_mux_proc(), mux segments size is" \
-						<< logic_mux_data_->logic_segments().size();
-					return;
-				}
+				output_segment =
+					make_shared<LogicSegment>(*logic_mux_data_, logic_mux_unit_size_, 0);
+				logic_mux_data_->push_segment(output_segment);
 
 				output_segment->set_samplerate(get_input_samplerate(segment_id));
 
@@ -867,55 +862,6 @@ void DecodeSignal::logic_mux_proc()
 			}
 		}
 	} while (!logic_mux_interrupt_);
-}
-
-void DecodeSignal::query_input_metadata()
-{
-	// Update the samplerate and start time because we cannot start
-	// the libsrd session without the current samplerate
-
-	// TODO Currently we assume all channels have the same sample rate
-	// and start time
-	bool samplerate_valid = false;
-	data::DecodeChannel *any_channel;
-	shared_ptr<Logic> logic_data;
-
-	do {
-		any_channel = &(*find_if(channels_.begin(), channels_.end(),
-			[](data::DecodeChannel ch) { return ch.assigned_signal; }));
-
-		logic_data = any_channel->assigned_signal->logic_data();
-
-		if (!logic_data) {
-			// Wait until input data is available or an interrupt was requested
-			unique_lock<mutex> input_wait_lock(input_mutex_);
-			decode_input_cond_.wait(input_wait_lock);
-		}
-	} while (!logic_data && !decode_interrupt_);
-
-	if (decode_interrupt_)
-		return;
-
-	do {
-		if (!logic_data->logic_segments().empty()) {
-			shared_ptr<LogicSegment> first_segment =
-				any_channel->assigned_signal->logic_data()->logic_segments().front();
-
-			// We only need valid metadata in the first decode segment
-			// so that start_srd_session() can use it
-			segments_.at(current_segment_id_).start_time = first_segment->start_time();
-			segments_.at(current_segment_id_).samplerate = first_segment->samplerate();
-
-			if (segments_.at(current_segment_id_).samplerate > 0)
-				samplerate_valid = true;
-		}
-
-		if (!samplerate_valid) {
-			// Wait until input data is available or an interrupt was requested
-			unique_lock<mutex> input_wait_lock(input_mutex_);
-			decode_input_cond_.wait(input_wait_lock);
-		}
-	} while (!samplerate_valid && !decode_interrupt_);
 }
 
 void DecodeSignal::decode_data(
@@ -958,20 +904,28 @@ void DecodeSignal::decode_data(
 
 void DecodeSignal::decode_proc()
 {
-	query_input_metadata();
+	current_segment_id_ = 0;
+
+	// If there is no input data available yet, wait until it is or we're interrupted
+	if (logic_mux_data_->logic_segments().size() == 0) {
+		unique_lock<mutex> input_wait_lock(input_mutex_);
+		decode_input_cond_.wait(input_wait_lock);
+	}
 
 	if (decode_interrupt_)
 		return;
 
+	shared_ptr<LogicSegment> input_segment = logic_mux_data_->logic_segments().front();
+	assert(input_segment);
+
+	// Create the initial segment and set its sample rate so that we can pass it to SRD
+	create_decode_segment();
+	segments_.at(current_segment_id_).samplerate = input_segment->samplerate();
+	segments_.at(current_segment_id_).start_time = input_segment->start_time();
+
 	start_srd_session();
 
-	current_segment_id_ = 0;
-	shared_ptr<LogicSegment> input_segment = logic_mux_data_->logic_segments().front();
-
-	assert(input_segment);
-	segments_.at(current_segment_id_).samplerate = input_segment->samplerate();
-
-	uint64_t sample_count;
+	uint64_t sample_count = 0;
 	uint64_t abs_start_samplenum = 0;
 	do {
 		// Keep processing new samples until we exhaust the input data
@@ -1000,7 +954,10 @@ void DecodeSignal::decode_proc()
 				}
 				abs_start_samplenum = 0;
 
+				// Create the next segment and set its metadata
+				create_decode_segment();
 				segments_.at(current_segment_id_).samplerate = input_segment->samplerate();
+				segments_.at(current_segment_id_).start_time = input_segment->start_time();
 
 				// Reset decoder state
 				stop_srd_session();
@@ -1081,44 +1038,33 @@ void DecodeSignal::connect_input_notifiers()
 	}
 }
 
-void DecodeSignal::create_segments()
+void DecodeSignal::create_decode_segment()
 {
-	// Make sure we have as many segments as we need
-	const uint32_t input_segment_count = get_input_segment_count();
+	// Create annotation segment
+	segments_.emplace_back(DecodeSegment());
 
-	for (uint32_t i = logic_mux_data_->logic_segments().size(); i < input_segment_count; i++) {
-		shared_ptr<LogicSegment> segment =
-			make_shared<LogicSegment>(*logic_mux_data_, logic_mux_unit_size_, 0);
-		logic_mux_data_->push_segment(segment);
-	}
+	// Add annotation classes
+	for (const shared_ptr<decode::Decoder> &dec : stack_) {
+		assert(dec);
+		const srd_decoder *const decc = dec->decoder();
+		assert(dec->decoder());
 
-	for (uint32_t i = segments_.size(); i < input_segment_count; i++) {
-		// Create annotation segment
-		segments_.emplace_back(DecodeSegment());
+		// Add a row for the decoder if it doesn't have a row list
+		if (!decc->annotation_rows)
+			(segments_.back().annotation_rows)[Row(decc)] =
+				decode::RowData();
 
-		// Add annotation classes
-		for (const shared_ptr<decode::Decoder> &dec : stack_) {
-			assert(dec);
-			const srd_decoder *const decc = dec->decoder();
-			assert(dec->decoder());
+		// Add the decoder rows
+		for (const GSList *l = decc->annotation_rows; l; l = l->next) {
+			const srd_decoder_annotation_row *const ann_row =
+				(srd_decoder_annotation_row *)l->data;
+			assert(ann_row);
 
-			// Add a row for the decoder if it doesn't have a row list
-			if (!decc->annotation_rows)
-				(segments_.back().annotation_rows)[Row(decc)] =
-					decode::RowData();
+			const Row row(decc, ann_row);
 
-			// Add the decoder rows
-			for (const GSList *l = decc->annotation_rows; l; l = l->next) {
-				const srd_decoder_annotation_row *const ann_row =
-					(srd_decoder_annotation_row *)l->data;
-				assert(ann_row);
-
-				const Row row(decc, ann_row);
-
-				// Add a new empty row data object
-				(segments_.back().annotation_rows)[row] =
-					decode::RowData();
-			}
+			// Add a new empty row data object
+			(segments_.back().annotation_rows)[row] =
+				decode::RowData();
 		}
 	}
 }
@@ -1182,8 +1128,6 @@ void DecodeSignal::on_data_cleared()
 
 void DecodeSignal::on_data_received()
 {
-	create_segments();
-
 	if (!logic_mux_thread_.joinable())
 		begin_decode();
 	else
