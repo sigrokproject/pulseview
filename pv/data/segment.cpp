@@ -39,7 +39,8 @@ Segment::Segment(uint64_t samplerate, unsigned int unit_size) :
 	samplerate_(samplerate),
 	unit_size_(unit_size),
 	iterator_count_(0),
-	mem_optimization_requested_(false)
+	mem_optimization_requested_(false),
+	is_complete_(false)
 {
 	lock_guard<recursive_mutex> lock(mutex_);
 	assert(unit_size_ > 0);
@@ -87,6 +88,16 @@ void Segment::set_samplerate(double samplerate)
 unsigned int Segment::unit_size() const
 {
 	return unit_size_;
+}
+
+void Segment::set_complete()
+{
+	is_complete_ = true;
+}
+
+bool Segment::is_complete() const
+{
+	return is_complete_;
 }
 
 void Segment::free_unused_memory()

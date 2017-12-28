@@ -382,6 +382,7 @@ private Q_SLOTS:
 	void capture_state_updated(int state);
 
 	void on_new_segment(int new_segment_id);
+	void on_segment_completed(int new_segment_id);
 	void on_segment_changed(int segment);
 
 	virtual void perform_delayed_view_update();
@@ -423,6 +424,11 @@ private Q_SLOTS:
 	 * signal if needed.
 	 */
 	void set_time_unit(pv::util::TimeUnit time_unit);
+
+	/**
+	 * Sets the current segment with the first segment starting at 0.
+	 */
+	void set_current_segment(uint32_t segment_id);
 
 private:
 	CustomScrollArea *scrollarea_;

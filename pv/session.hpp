@@ -197,6 +197,7 @@ private:
 	void free_unused_memory();
 
 	void signal_new_segment();
+	void signal_segment_completed();
 
 	void feed_in_header();
 
@@ -255,6 +256,7 @@ Q_SIGNALS:
 	void trigger_event(util::Timestamp location);
 
 	void new_segment(int new_segment_id);
+	void segment_completed(int segment_id);
 
 	void data_received();
 

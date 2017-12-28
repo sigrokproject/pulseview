@@ -358,7 +358,8 @@ shared_ptr<pv::data::LogicSegment> LogicSignal::get_logic_segment_to_paint() con
 			segment = segments.back();
 		}
 
-		if (segment_display_mode_ == ShowSingleSegmentOnly) {
+	if ((segment_display_mode_ == ShowSingleSegmentOnly) ||
+		(segment_display_mode_ == ShowLastCompleteSegmentOnly)) {
 			try {
 				segment = segments.at(current_segment_);
 			} catch (out_of_range) {

@@ -658,7 +658,8 @@ shared_ptr<pv::data::AnalogSegment> AnalogSignal::get_analog_segment_to_paint() 
 		if (segment_display_mode_ == ShowLastSegmentOnly)
 			segment = segments.back();
 
-		if (segment_display_mode_ == ShowSingleSegmentOnly) {
+		if ((segment_display_mode_ == ShowSingleSegmentOnly) ||
+				(segment_display_mode_ == ShowLastCompleteSegmentOnly)) {
 			try {
 				segment = segments.at(current_segment_);
 			} catch (out_of_range) {
@@ -681,7 +682,8 @@ shared_ptr<pv::data::LogicSegment> AnalogSignal::get_logic_segment_to_paint() co
 		if (segment_display_mode_ == ShowLastSegmentOnly)
 			segment = segments.back();
 
-		if (segment_display_mode_ == ShowSingleSegmentOnly) {
+		if ((segment_display_mode_ == ShowSingleSegmentOnly) ||
+				(segment_display_mode_ == ShowLastCompleteSegmentOnly)) {
 			try {
 				segment = segments.at(current_segment_);
 			} catch (out_of_range) {

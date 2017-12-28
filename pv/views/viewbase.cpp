@@ -134,6 +134,11 @@ void ViewBase::on_new_segment(int new_segment_id)
 	(void)new_segment_id;
 }
 
+void ViewBase::on_segment_completed(int new_segment_id)
+{
+	(void)new_segment_id;
+}
+
 void ViewBase::capture_state_updated(int state)
 {
 	(void)state;

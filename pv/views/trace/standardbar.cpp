@@ -90,6 +90,9 @@ StandardBar::StandardBar(Session &session, QWidget *parent,
 	connect(&session_, SIGNAL(new_segment(int)),
 		this, SLOT(on_new_segment(int)));
 
+	connect(&session_, SIGNAL(segment_completed(int)),
+		view_, SLOT(on_segment_completed(int)));
+
 	connect(segment_selector_, SIGNAL(valueChanged(int)),
 		this, SLOT(on_segment_selected(int)));
 	connect(view_, SIGNAL(segment_changed(int)),
@@ -199,7 +202,7 @@ void StandardBar::on_always_zoom_to_fit_changed(bool state)
 
 void StandardBar::on_new_segment(int new_segment_id)
 {
-	if (new_segment_id > 1) {
+	if (new_segment_id > 0) {
 		show_multi_segment_ui(true);
 		segment_selector_->setMaximum(new_segment_id + 1);
 	} else

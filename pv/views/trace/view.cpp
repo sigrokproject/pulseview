@@ -488,6 +488,18 @@ void View::set_time_unit(pv::util::TimeUnit time_unit)
 	}
 }
 
+void View::set_current_segment(uint32_t segment_id)
+{
+	current_segment_ = segment_id;
+
+	for (shared_ptr<Signal> signal : signals_)
+		signal->set_current_segment(current_segment_);
+	for (shared_ptr<DecodeTrace> dt : decode_traces_)
+		dt->set_current_segment(current_segment_);
+
+	viewport_->update();
+}
+
 bool View::segment_is_selectable() const
 {
 	return segment_selectable_;
@@ -1384,6 +1396,10 @@ void View::capture_state_updated(int state)
 
 		// Enable sticky scrolling if the setting is enabled
 		sticky_scrolling_ = settings.value(GlobalSettings::Key_View_StickyScrolling).toBool();
+
+		// Reset all traces to segment 0
+		current_segment_ = 0;
+		set_current_segment(current_segment_);
 	}
 
 	if (state == Session::Stopped) {
@@ -1420,17 +1436,32 @@ void View::on_new_segment(int new_segment_id)
 	segment_changed(new_segment_id);
 }
 
+void View::on_segment_completed(int segment_id)
+{
+	on_segment_changed(segment_id);
+	segment_changed(segment_id);
+}
+
 void View::on_segment_changed(int segment)
 {
 	switch (segment_display_mode_) {
 	case Trace::ShowLastSegmentOnly:
 	case Trace::ShowSingleSegmentOnly:
-		current_segment_ = segment;
-		for (shared_ptr<Signal> signal : signals_)
-			signal->set_current_segment(current_segment_);
-		for (shared_ptr<DecodeTrace> dt : decode_traces_)
-			dt->set_current_segment(current_segment_);
-		viewport_->update();
+		set_current_segment(segment);
+		break;
+
+	case Trace::ShowLastCompleteSegmentOnly:
+		{
+			// Only update if all segments are complete
+			bool all_complete = true;
+
+			for (shared_ptr<Signal> signal : signals_)
+				if (!signal->base()->segment_is_complete(segment))
+					all_complete = false;
+
+			if (all_complete)
+				set_current_segment(segment);
+		}
 		break;
 
 	case Trace::ShowAllSegments:

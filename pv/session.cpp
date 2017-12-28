@@ -988,6 +988,27 @@ void Session::signal_new_segment()
 	}
 }
 
+void Session::signal_segment_completed()
+{
+	int segment_id = 0;
+
+	for (shared_ptr<data::SignalBase> signalbase : signalbases_) {
+		// We only care about analog and logic channels, not derived ones
+		if (signalbase->type() == data::SignalBase::AnalogChannel) {
+			segment_id = signalbase->analog_data()->get_segment_count() - 1;
+			break;
+		}
+
+		if (signalbase->type() == data::SignalBase::LogicChannel) {
+			segment_id = signalbase->logic_data()->get_segment_count() - 1;
+			break;
+		}
+	}
+
+	if (segment_id >= 0)
+		segment_completed(segment_id);
+}
+
 void Session::feed_in_header()
 {
 	// Nothing to do here for now
@@ -1044,14 +1065,28 @@ void Session::feed_in_frame_begin()
 
 void Session::feed_in_frame_end()
 {
+	if (!frame_began_)
+		return;
+
 	{
 		lock_guard<recursive_mutex> lock(data_mutex_);
+
+		if (cur_logic_segment_)
+			cur_logic_segment_->set_complete();
+
+		for (auto entry : cur_analog_segments_) {
+			shared_ptr<data::AnalogSegment> segment = entry.second;
+			segment->set_complete();
+		}
+
 		cur_logic_segment_.reset();
 		cur_analog_segments_.clear();
 	}
 
 	if (frame_began_)
 		frame_began_ = false;
+
+	signal_segment_completed();
 }
 
 void Session::feed_in_logic(shared_ptr<Logic> logic)

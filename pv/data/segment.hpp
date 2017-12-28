@@ -71,6 +71,9 @@ public:
 
 	unsigned int unit_size() const;
 
+	void set_complete();
+	bool is_complete() const;
+
 	void free_unused_memory();
 
 protected:
@@ -93,6 +96,7 @@ protected:
 	unsigned int unit_size_;
 	int iterator_count_;
 	bool mem_optimization_requested_;
+	bool is_complete_;
 
 	friend struct SegmentTest::SmallSize8Single;
 	friend struct SegmentTest::MediumSize8Single;

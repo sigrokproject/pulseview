@@ -176,6 +176,12 @@ public:
 	shared_ptr<pv::data::Logic> logic_data() const;
 
 	/**
+	 * Determines whether a given segment is complete (i.e. end-of-frame has
+	 * been seen). It only considers the original data, not the converted data.
+	 */
+	bool segment_is_complete(uint32_t segment_id) const;
+
+	/**
 	 * Queries the kind of conversion performed on this channel.
 	 */
 	ConversionType get_conversion_type() const;

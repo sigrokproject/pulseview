@@ -67,10 +67,16 @@ public:
 	/**
 	 * Allowed values for the multi-segment display mode.
 	 *
-	 * Note: Consider @ref View::set_segment_display_mode when updating the list.
+	 * Note: Consider these locations when updating the list:
+	 * *
+	 * @ref View::set_segment_display_mode
+	 * @ref AnalogSignal::get_analog_segment_to_paint
+	 * @ref AnalogSignal::get_logic_segment_to_paint
+	 * @ref LogicSignal::get_logic_segment_to_paint
 	 */
 	enum SegmentDisplayMode {
 		ShowLastSegmentOnly = 1,
+		ShowLastCompleteSegmentOnly,
 		ShowSingleSegmentOnly,
 		ShowAllSegments,
 		ShowAccumulatedIntensity

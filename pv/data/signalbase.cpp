@@ -201,6 +201,35 @@ shared_ptr<data::Logic> SignalBase::logic_data() const
 	return result;
 }
 
+bool SignalBase::segment_is_complete(uint32_t segment_id) const
+{
+	bool result = true;
+
+	if (channel_type_ == AnalogChannel)
+	{
+		shared_ptr<Analog> data = dynamic_pointer_cast<Analog>(data_);
+		auto segments = data->analog_segments();
+		try {
+			result = segments.at(segment_id)->is_complete();
+		} catch (out_of_range) {
+			// Do nothing
+		}
+	}
+
+	if (channel_type_ == LogicChannel)
+	{
+		shared_ptr<Logic> data = dynamic_pointer_cast<Logic>(data_);
+		auto segments = data->logic_segments();
+		try {
+			result = segments.at(segment_id)->is_complete();
+		} catch (out_of_range) {
+			// Do nothing
+		}
+	}
+
+	return result;
+}
+
 SignalBase::ConversionType SignalBase::get_conversion_type() const
 {
 	return conversion_type_;
