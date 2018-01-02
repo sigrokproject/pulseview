@@ -121,6 +121,10 @@ int main(int argc, char *argv[])
 		case 'l':
 		{
 			const int loglevel = atoi(optarg);
+			if (loglevel < 0 || loglevel > 5) {
+				qDebug() << "ERROR: invalid log level spec.";
+				break;
+			}
 			context->set_log_level(sigrok::LogLevel::get(loglevel));
 
 #ifdef ENABLE_DECODE
