@@ -993,6 +993,7 @@ void DecodeSignal::start_srd_session()
 		if (!di) {
 			error_message_ = tr("Failed to create decoder instance");
 			srd_session_destroy(srd_session_);
+			srd_session_ = nullptr;
 			return;
 		}
 
