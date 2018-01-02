@@ -542,11 +542,17 @@ void SignalBase::conversion_thread_proc()
 	if (conversion_is_a2l()) {
 		analog_data = dynamic_pointer_cast<Analog>(data_);
 
-		if (analog_data->analog_segments().size() == 0)
-			return;
+		if (analog_data->analog_segments().size() == 0) {
+			unique_lock<mutex> input_lock(conversion_input_mutex_);
+			conversion_input_cond_.wait(input_lock);
+		}
 
 	} else
 		// Currently, we only handle A2L conversions
+		return;
+
+	// If we had to wait for input data, we may have been notified to terminate
+	if (conversion_interrupt_)
 		return;
 
 	uint32_t segment_id = 0;
