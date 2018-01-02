@@ -155,6 +155,7 @@ private:
 	void decode_proc();
 
 	void start_srd_session();
+	void terminate_srd_session();
 	void stop_srd_session();
 
 	void connect_input_notifiers();

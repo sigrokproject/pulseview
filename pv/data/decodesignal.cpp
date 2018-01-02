@@ -129,6 +129,8 @@ bool DecodeSignal::toggle_decoder_visibility(int index)
 
 void DecodeSignal::reset_decode()
 {
+	terminate_srd_session();
+
 	if (decode_thread_.joinable()) {
 		decode_interrupt_ = true;
 		decode_input_cond_.notify_one();
@@ -157,6 +159,8 @@ void DecodeSignal::reset_decode()
 
 void DecodeSignal::begin_decode()
 {
+	terminate_srd_session();
+
 	if (decode_thread_.joinable()) {
 		decode_interrupt_ = true;
 		decode_input_cond_.notify_one();
@@ -974,14 +978,34 @@ void DecodeSignal::decode_proc()
 			}
 		}
 	} while (error_message_.isEmpty() && !decode_interrupt_);
+
+	// Potentially reap decoders when the application no longer is
+	// interested in their (pending) results.
+	if (decode_interrupt_)
+		terminate_srd_session();
 }
 
 void DecodeSignal::start_srd_session()
 {
 	uint64_t samplerate;
 
-	if (srd_session_)
-		stop_srd_session();
+	if (srd_session_) {
+		// When a decoder stack was created before, re-use it
+		// for the next stream of input data, after terminating
+		// potentially still executing operations, and resetting
+		// internal state. Skip the rather expensive (teardown
+		// and) construction of another decoder stack.
+
+		// TODO Reduce redundancy, use a common code path for
+		// the meta/cb/start sequence?
+		terminate_srd_session();
+		srd_session_metadata_set(srd_session_, SRD_CONF_SAMPLERATE,
+			g_variant_new_uint64(segments_.at(current_segment_id_).samplerate));
+		srd_pd_output_callback_add(srd_session_, SRD_OUTPUT_ANN,
+			DecodeSignal::annotation_callback, this);
+		srd_session_start(srd_session_);
+		return;
+	}
 
 	// Create the session
 	srd_session_new(&srd_session_);
@@ -1015,6 +1039,17 @@ void DecodeSignal::start_srd_session()
 		DecodeSignal::annotation_callback, this);
 
 	srd_session_start(srd_session_);
+}
+
+void DecodeSignal::terminate_srd_session()
+{
+	// Call the "terminate and reset" routine for the decoder stack
+	// (if available). This does not harm those stacks which already
+	// have completed their operation, and reduces response time for
+	// those stacks which still are processing data while the
+	// application no longer wants them to.
+	if (srd_session_)
+		srd_session_terminate_reset(srd_session_);
 }
 
 void DecodeSignal::stop_srd_session()
