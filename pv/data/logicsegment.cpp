@@ -296,10 +296,11 @@ uint64_t LogicSegment::get_unpacked_sample(uint64_t index) const
 {
 	assert(index < sample_count_);
 
-	uint8_t* data = new uint8_t[unit_size_];
+	assert(unit_size_ <= 8);  // 8 * 8 = 64 channels
+	uint8_t data[8];
+
 	get_raw_samples(index, 1, data);
 	uint64_t sample = unpack_sample(data);
-	delete[] data;
 
 	return sample;
 }
