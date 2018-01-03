@@ -314,13 +314,16 @@ void LogicSegment::get_subsampled_edges(
 	bool last_sample;
 	bool fast_forward;
 
-	assert(end <= get_sample_count());
 	assert(start <= end);
 	assert(min_length > 0);
 	assert(sig_index >= 0);
 	assert(sig_index < 64);
 
 	lock_guard<recursive_mutex> lock(mutex_);
+
+	// Make sure we only process as many samples as we have
+	if (end > get_sample_count())
+		end = get_sample_count();
 
 	const uint64_t block_length = (uint64_t)max(min_length, 1.0f);
 	const unsigned int min_level = max((int)floorf(logf(min_length) /
