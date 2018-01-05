@@ -77,7 +77,8 @@ public:
 	typedef pair<int64_t, bool> EdgePair;
 
 public:
-	LogicSegment(pv::data::Logic& owner, unsigned int unit_size, uint64_t samplerate);
+	LogicSegment(pv::data::Logic& owner, uint32_t segment_id,
+		unsigned int unit_size, uint64_t samplerate);
 
 	virtual ~LogicSegment();
 

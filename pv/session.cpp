@@ -1109,7 +1109,8 @@ void Session::feed_in_logic(shared_ptr<Logic> logic)
 
 		// Create a new data segment
 		cur_logic_segment_ = make_shared<data::LogicSegment>(
-			*logic_data_, logic->unit_size(), cur_samplerate_);
+			*logic_data_, logic_data_->get_segment_count(),
+			logic->unit_size(), cur_samplerate_);
 		logic_data_->push_segment(cur_logic_segment_);
 
 		signal_new_segment();
@@ -1162,7 +1163,7 @@ void Session::feed_in_analog(shared_ptr<Analog> analog)
 
 			// Create a segment, keep it in the maps of channels
 			segment = make_shared<data::AnalogSegment>(
-				*data, cur_samplerate_);
+				*data, data->get_segment_count(), cur_samplerate_);
 			cur_analog_segments_[channel] = segment;
 
 			// Push the segment into the analog data.

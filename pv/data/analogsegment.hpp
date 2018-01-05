@@ -79,7 +79,7 @@ private:
 	static const uint64_t EnvelopeDataUnit;
 
 public:
-	AnalogSegment(Analog& owner, uint64_t samplerate);
+	AnalogSegment(Analog& owner, uint32_t segment_id, uint64_t samplerate);
 
 	virtual ~AnalogSegment();
 

@@ -33,7 +33,8 @@ namespace data {
 
 const uint64_t Segment::MaxChunkSize = 10 * 1024 * 1024;  /* 10MiB */
 
-Segment::Segment(uint64_t samplerate, unsigned int unit_size) :
+Segment::Segment(uint32_t segment_id, uint64_t samplerate, unsigned int unit_size) :
+	segment_id_(segment_id),
 	sample_count_(0),
 	start_time_(0),
 	samplerate_(samplerate),
@@ -88,6 +89,11 @@ void Segment::set_samplerate(double samplerate)
 unsigned int Segment::unit_size() const
 {
 	return unit_size_;
+}
+
+uint32_t Segment::segment_id() const
+{
+	return segment_id_;
 }
 
 void Segment::set_complete()

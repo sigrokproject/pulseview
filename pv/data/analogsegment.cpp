@@ -48,8 +48,8 @@ const int AnalogSegment::EnvelopeScaleFactor = 1 << EnvelopeScalePower;
 const float AnalogSegment::LogEnvelopeScaleFactor = logf(EnvelopeScaleFactor);
 const uint64_t AnalogSegment::EnvelopeDataUnit = 64 * 1024;	// bytes
 
-AnalogSegment::AnalogSegment(Analog& owner, uint64_t samplerate) :
-	Segment(samplerate, sizeof(float)),
+AnalogSegment::AnalogSegment(Analog& owner, uint32_t segment_id, uint64_t samplerate) :
+	Segment(segment_id, samplerate, sizeof(float)),
 	owner_(owner),
 	min_value_(0),
 	max_value_(0)

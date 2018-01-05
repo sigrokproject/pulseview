@@ -566,7 +566,7 @@ void SignalBase::conversion_thread_proc()
 	// Create the initial logic data segment if needed
 	if (logic_data->logic_segments().size() == 0) {
 		shared_ptr<LogicSegment> new_segment =
-			make_shared<LogicSegment>(*logic_data.get(), 1, asegment->samplerate());
+			make_shared<LogicSegment>(*logic_data.get(), 0, 1, asegment->samplerate());
 		logic_data->push_segment(new_segment);
 	}
 
@@ -588,8 +588,8 @@ void SignalBase::conversion_thread_proc()
 				return;
 			}
 
-			shared_ptr<LogicSegment> new_segment =
-				make_shared<LogicSegment>(*logic_data.get(), 1, asegment->samplerate());
+			shared_ptr<LogicSegment> new_segment = make_shared<LogicSegment>(
+				*logic_data.get(), segment_id, 1, asegment->samplerate());
 			logic_data->push_segment(new_segment);
 
 			lsegment = logic_data->logic_segments().back().get();

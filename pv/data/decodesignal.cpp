@@ -807,7 +807,8 @@ void DecodeSignal::logic_mux_proc()
 
 	// Create initial logic mux segment
 	shared_ptr<LogicSegment> output_segment =
-		make_shared<LogicSegment>(*logic_mux_data_, logic_mux_unit_size_, 0);
+		make_shared<LogicSegment>(*logic_mux_data_, segment_id,
+			logic_mux_unit_size_, 0);
 	logic_mux_data_->push_segment(output_segment);
 
 	output_segment->set_samplerate(get_input_samplerate(0));
@@ -847,7 +848,8 @@ void DecodeSignal::logic_mux_proc()
 				segment_id++;
 
 				output_segment =
-					make_shared<LogicSegment>(*logic_mux_data_, logic_mux_unit_size_, 0);
+					make_shared<LogicSegment>(*logic_mux_data_, segment_id,
+						logic_mux_unit_size_, 0);
 				logic_mux_data_->push_segment(output_segment);
 
 				output_segment->set_samplerate(get_input_samplerate(segment_id));

@@ -58,7 +58,7 @@ private:
 	static const uint64_t MaxChunkSize;
 
 public:
-	Segment(uint64_t samplerate, unsigned int unit_size);
+	Segment(uint32_t segment_id, uint64_t samplerate, unsigned int unit_size);
 
 	virtual ~Segment();
 
@@ -70,6 +70,8 @@ public:
 	void set_samplerate(double samplerate);
 
 	unsigned int unit_size() const;
+
+	uint32_t segment_id() const;
 
 	void set_complete();
 	bool is_complete() const;
@@ -85,6 +87,7 @@ protected:
 	void continue_raw_sample_iteration(SegmentRawDataIterator* it, uint64_t increase);
 	void end_raw_sample_iteration(SegmentRawDataIterator* it);
 
+	uint32_t segment_id_;
 	mutable recursive_mutex mutex_;
 	vector<uint8_t*> data_chunks_;
 	uint8_t* current_chunk_;
