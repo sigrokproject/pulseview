@@ -100,6 +100,9 @@ public Q_SLOTS:
 	virtual void perform_delayed_view_update();
 
 private Q_SLOTS:
+	void on_samples_added(QObject* segment, uint64_t start_sample,
+		uint64_t end_sample);
+
 	void on_data_updated();
 
 protected:
@@ -110,6 +113,9 @@ protected:
 	util::TimeUnit time_unit_;
 
 	unordered_set< shared_ptr<data::SignalBase> > signalbases_;
+
+	/// The ID of the currently displayed segment
+	uint32_t current_segment_;
 
 	QTimer delayed_view_updater_;
 };

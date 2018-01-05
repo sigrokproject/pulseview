@@ -443,8 +443,6 @@ private:
 	vector< shared_ptr<DecodeTrace> > decode_traces_;
 #endif
 
-	/// The ID of the currently displayed segment
-	int current_segment_;
 	Trace::SegmentDisplayMode segment_display_mode_;
 
 	/// Signals whether the user can change the currently shown segment.

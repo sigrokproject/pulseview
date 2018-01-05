@@ -54,7 +54,7 @@ typedef struct {
 	uint8_t* value;
 } SegmentLogicDataIterator;
 
-class LogicSegment : public QObject, public Segment
+class LogicSegment : public Segment
 {
 	Q_OBJECT
 

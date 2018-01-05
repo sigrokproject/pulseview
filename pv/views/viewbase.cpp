@@ -26,6 +26,7 @@
 
 #include "pv/session.hpp"
 #include "pv/util.hpp"
+#include "pv/data/segment.hpp"
 
 using std::shared_ptr;
 
@@ -36,7 +37,8 @@ const int ViewBase::MaxViewAutoUpdateRate = 25; // No more than 25 Hz
 
 ViewBase::ViewBase(Session &session, bool is_main_view, QWidget *parent) :
 	session_(session),
-	is_main_view_(is_main_view)
+	is_main_view_(is_main_view),
+	current_segment_(0)
 {
 	(void)parent;
 
@@ -78,7 +80,7 @@ void ViewBase::clear_signalbases()
 		disconnect(signalbase.get(), SIGNAL(samples_cleared()),
 			this, SLOT(on_data_updated()));
 		disconnect(signalbase.get(), SIGNAL(samples_added(QObject*, uint64_t, uint64_t)),
-			this, SLOT(on_data_updated()));
+			this, SLOT(on_samples_added(QObject*, uint64_t, uint64_t)));
 	}
 
 	signalbases_.clear();
@@ -91,7 +93,7 @@ void ViewBase::add_signalbase(const shared_ptr<data::SignalBase> signalbase)
 	connect(signalbase.get(), SIGNAL(samples_cleared()),
 		this, SLOT(on_data_updated()));
 	connect(signalbase.get(), SIGNAL(samples_added(QObject*, uint64_t, uint64_t)),
-		this, SLOT(on_data_updated()));
+		this, SLOT(on_samples_added(QObject*, uint64_t, uint64_t)));
 }
 
 #ifdef ENABLE_DECODE
@@ -146,6 +148,21 @@ void ViewBase::capture_state_updated(int state)
 
 void ViewBase::perform_delayed_view_update()
 {
+}
+
+void ViewBase::on_samples_added(QObject* segment, uint64_t start_sample,
+	uint64_t end_sample)
+{
+	(void)start_sample;
+	(void)end_sample;
+
+	data::Segment* s = qobject_cast<data::Segment*>(segment);
+
+	if (s->segment_id() != current_segment_)
+		return;
+
+	if (!delayed_view_updater_.isActive())
+		delayed_view_updater_.start();
 }
 
 void ViewBase::on_data_updated()

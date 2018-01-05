@@ -27,6 +27,8 @@
 #include <thread>
 #include <vector>
 
+#include <QObject>
+
 using std::recursive_mutex;
 using std::vector;
 
@@ -52,8 +54,10 @@ typedef struct {
 	uint8_t* value;
 } SegmentRawDataIterator;
 
-class Segment
+class Segment : public QObject
 {
+	Q_OBJECT
+
 private:
 	static const uint64_t MaxChunkSize;
 

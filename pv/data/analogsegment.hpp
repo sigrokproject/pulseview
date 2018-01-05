@@ -44,7 +44,7 @@ typedef struct {
 	float* value;
 } SegmentAnalogDataIterator;
 
-class AnalogSegment : public QObject, public Segment
+class AnalogSegment : public Segment
 {
 	Q_OBJECT
 
