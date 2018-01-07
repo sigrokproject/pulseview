@@ -34,7 +34,7 @@ BOOST_AUTO_TEST_SUITE(SegmentTest)
 /* --- For debugging only
 BOOST_AUTO_TEST_CASE(SmallSize8Single)
 {
-	Segment s(1, sizeof(uint8_t));
+	Segment s(0, 1, sizeof(uint8_t));
 	uint32_t num_samples = 10;
 
 	//----- Chunk size << pv::data::Segment::MaxChunkSize @ 8bit, added in 1 call ----//
@@ -58,7 +58,7 @@ BOOST_AUTO_TEST_CASE(SmallSize8Single)
 /* --- For debugging only
 BOOST_AUTO_TEST_CASE(MediumSize8Single)
 {
-	Segment s(1, sizeof(uint8_t));
+	Segment s(0, 1, sizeof(uint8_t));
 	uint32_t num_samples = pv::data::Segment::MaxChunkSize;
 
 	//----- Chunk size == pv::data::Segment::MaxChunkSize @ 8bit, added in 1 call ----//
@@ -82,7 +82,7 @@ BOOST_AUTO_TEST_CASE(MediumSize8Single)
 /* --- For debugging only
 BOOST_AUTO_TEST_CASE(MaxSize8Single)
 {
-	Segment s(1, sizeof(uint8_t));
+	Segment s(0, 1, sizeof(uint8_t));
 
 	// We want to see proper behavior across chunk boundaries
 	uint32_t num_samples = 2*pv::data::Segment::MaxChunkSize;
@@ -108,7 +108,7 @@ BOOST_AUTO_TEST_CASE(MaxSize8Single)
 /* --- For debugging only
 BOOST_AUTO_TEST_CASE(MediumSize24Single)
 {
-	Segment s(1, 3);
+	Segment s(0, 1, 3);
 
 	// Chunk size is num*unit_size, so with pv::data::Segment::MaxChunkSize/unit_size, we reach the maximum size
 	uint32_t num_samples = pv::data::Segment::MaxChunkSize / 3;
@@ -136,7 +136,7 @@ BOOST_AUTO_TEST_CASE(MediumSize24Single)
 /* --- For debugging only
 BOOST_AUTO_TEST_CASE(MediumSize32Single)
 {
-	Segment s(1, sizeof(uint32_t));
+	Segment s(0, 1, sizeof(uint32_t));
 
 	// Chunk size is num*unit_size, so with pv::data::Segment::MaxChunkSize/unit_size, we reach the maximum size
 	uint32_t num_samples = pv::data::Segment::MaxChunkSize / sizeof(uint32_t);
@@ -162,7 +162,7 @@ BOOST_AUTO_TEST_CASE(MediumSize32Single)
 /* --- For debugging only
 BOOST_AUTO_TEST_CASE(MaxSize32Single)
 {
-	Segment s(1, sizeof(uint32_t));
+	Segment s(0, 1, sizeof(uint32_t));
 
 	// Chunk size is num*unit_size, so with pv::data::Segment::MaxChunkSize/unit_size, we reach the maximum size
 	// Also, we want to see proper behavior across chunk boundaries
@@ -189,7 +189,7 @@ BOOST_AUTO_TEST_CASE(MaxSize32Single)
 /* --- For debugging only
 BOOST_AUTO_TEST_CASE(MediumSize32Multi)
 {
-	Segment s(1, sizeof(uint32_t));
+	Segment s(0, 1, sizeof(uint32_t));
 
 	// Chunk size is num*unit_size, so with pv::data::Segment::MaxChunkSize/unit_size, we reach the maximum size
 	uint32_t num_samples = pv::data::Segment::MaxChunkSize / sizeof(uint32_t);
@@ -213,7 +213,7 @@ BOOST_AUTO_TEST_CASE(MediumSize32Multi)
 
 BOOST_AUTO_TEST_CASE(MaxSize32Multi)
 {
-	Segment s(1, sizeof(uint32_t));
+	Segment s(0, 1, sizeof(uint32_t));
 
 	// Chunk size is num*unit_size, so with pv::data::Segment::MaxChunkSize/unit_size, we reach the maximum size
 	uint32_t num_samples = 2*(pv::data::Segment::MaxChunkSize / sizeof(uint32_t));
@@ -242,7 +242,7 @@ BOOST_AUTO_TEST_CASE(MaxSize32Multi)
 
 BOOST_AUTO_TEST_CASE(MaxSize32MultiAtOnce)
 {
-	Segment s(1, sizeof(uint32_t));
+	Segment s(0, 1, sizeof(uint32_t));
 
 	// Chunk size is num*unit_size, so with pv::data::Segment::MaxChunkSize/unit_size, we reach the maximum size
 	uint32_t num_samples = 3*(pv::data::Segment::MaxChunkSize / sizeof(uint32_t));
@@ -272,7 +272,7 @@ BOOST_AUTO_TEST_CASE(MaxSize32MultiAtOnce)
 
 BOOST_AUTO_TEST_CASE(MaxSize32MultiIterated)
 {
-	Segment s(1, sizeof(uint32_t));
+	Segment s(0, 1, sizeof(uint32_t));
 
 	// Chunk size is num*unit_size, so with pv::data::Segment::MaxChunkSize/unit_size, we reach the maximum size
 	uint32_t num_samples = 2*(pv::data::Segment::MaxChunkSize / sizeof(uint32_t));
