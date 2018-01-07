@@ -30,6 +30,9 @@
 	<file>icons/trigger-marker-rising.svg</file>
 	<file>icons/trigger-none.svg</file>
 	<file>icons/trigger-rising.svg</file>
+	<file>icons/view-displaymode-last_complete_segment.svg</file>
+	<file>icons/view-displaymode-last_segment.svg</file>
+	<file>icons/view-displaymode-single_segment.svg</file>
 	<file>icons/window-new.png</file>
 	<file>icons/zoom-fit-best.png</file>
 	<file>icons/zoom-in.png</file>
