@@ -694,6 +694,17 @@ const unordered_set< shared_ptr<data::SignalBase> > Session::signalbases() const
 	return signalbases_;
 }
 
+bool Session::all_segments_complete(uint32_t segment_id) const
+{
+	bool all_complete = true;
+
+	for (shared_ptr<data::SignalBase> base : signalbases_)
+		if (!base->segment_is_complete(segment_id))
+			all_complete = false;
+
+	return all_complete;
+}
+
 #ifdef ENABLE_DECODE
 shared_ptr<data::DecodeSignal> Session::add_decode_signal()
 {

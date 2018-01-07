@@ -324,6 +324,7 @@ void View::save_settings(QSettings &settings) const
 		scrollarea_->verticalScrollBar()->sliderPosition());
 
 	settings.setValue("splitter_state", splitter_->saveState());
+	settings.setValue("segment_display_mode", segment_display_mode_);
 
 	stringstream ss;
 	boost::archive::text_oarchive oa(ss);
@@ -358,6 +359,10 @@ void View::restore_settings(QSettings &settings)
 
 	if (settings.contains("splitter_state"))
 		splitter_->restoreState(settings.value("splitter_state").toByteArray());
+
+	if (settings.contains("segment_display_mode"))
+		set_segment_display_mode(
+			(Trace::SegmentDisplayMode)(settings.value("segment_display_mode").toInt()));
 
 	for (shared_ptr<Signal> signal : signals_) {
 		settings.beginGroup(signal->base()->internal_name());
@@ -436,6 +441,11 @@ unsigned int View::depth() const
 	return 0;
 }
 
+uint32_t View::current_segment() const
+{
+	return current_segment_;
+}
+
 pv::util::SIPrefix View::tick_prefix() const
 {
 	return tick_prefix_;
@@ -498,6 +508,8 @@ void View::set_current_segment(uint32_t segment_id)
 		dt->set_current_segment(current_segment_);
 
 	viewport_->update();
+
+	segment_changed(segment_id);
 }
 
 bool View::segment_is_selectable() const
@@ -505,19 +517,55 @@ bool View::segment_is_selectable() const
 	return segment_selectable_;
 }
 
+Trace::SegmentDisplayMode View::segment_display_mode() const
+{
+	return segment_display_mode_;
+}
+
 void View::set_segment_display_mode(Trace::SegmentDisplayMode mode)
 {
+	segment_display_mode_ = mode;
+
 	for (shared_ptr<Signal> signal : signals_)
 		signal->set_segment_display_mode(mode);
 
-	viewport_->update();
+	uint32_t last_segment = session_.get_segment_count() - 1;
+
+	switch (mode) {
+	case Trace::ShowLastSegmentOnly:
+		if (current_segment_ != last_segment)
+			set_current_segment(last_segment);
+		break;
+
+	case Trace::ShowLastCompleteSegmentOnly:
+		// Do nothing if we only have one segment so far
+		if (last_segment > 0) {
+			// If the last segment isn't complete, the previous one must be
+			uint32_t segment_id =
+				(session_.all_segments_complete(last_segment)) ?
+				last_segment : last_segment - 1;
+
+			if (current_segment_ != segment_id)
+				set_current_segment(segment_id);
+		}
+		break;
+
+	case Trace::ShowSingleSegmentOnly:
+	case Trace::ShowAllSegments:
+	case Trace::ShowAccumulatedIntensity:
+	default:
+		// Current segment remains as-is
+		break;
+	}
 
 	segment_selectable_ = true;
 
-	if (mode == Trace::ShowLastSegmentOnly)
+	if ((mode == Trace::ShowAllSegments) || (mode == Trace::ShowAccumulatedIntensity))
 		segment_selectable_ = false;
 
-	segment_display_mode_changed(segment_selectable_);
+	viewport_->update();
+
+	segment_display_mode_changed((int)mode, segment_selectable_);
 }
 
 void View::zoom(double steps)
@@ -1433,13 +1481,11 @@ void View::capture_state_updated(int state)
 void View::on_new_segment(int new_segment_id)
 {
 	on_segment_changed(new_segment_id);
-	segment_changed(new_segment_id);
 }
 
 void View::on_segment_completed(int segment_id)
 {
 	on_segment_changed(segment_id);
-	segment_changed(segment_id);
 }
 
 void View::on_segment_changed(int segment)
@@ -1451,17 +1497,9 @@ void View::on_segment_changed(int segment)
 		break;
 
 	case Trace::ShowLastCompleteSegmentOnly:
-		{
-			// Only update if all segments are complete
-			bool all_complete = true;
-
-			for (shared_ptr<Signal> signal : signals_)
-				if (!signal->base()->segment_is_complete(segment))
-					all_complete = false;
-
-			if (all_complete)
-				set_current_segment(segment);
-		}
+		// Only update if all segments are complete
+		if (session_.all_segments_complete(segment))
+			set_current_segment(segment);
 		break;
 
 	case Trace::ShowAllSegments:

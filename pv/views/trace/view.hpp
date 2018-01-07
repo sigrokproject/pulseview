@@ -192,11 +192,17 @@ public:
 	unsigned int depth() const;
 
 	/**
+	 * Returns the currently displayed segment, starting at 0.
+	 */
+	uint32_t current_segment() const;
+
+	/**
 	 * Returns whether the currently shown segment can be influenced
 	 * (selected) or not.
 	 */
 	bool segment_is_selectable() const;
 
+	Trace::SegmentDisplayMode segment_display_mode() const;
 	void set_segment_display_mode(Trace::SegmentDisplayMode mode);
 
 	void zoom(double steps);
@@ -308,7 +314,8 @@ Q_SIGNALS:
 	void segment_changed(int segment_id);
 
 	/// Emitted when the multi-segment display mode changed
-	void segment_display_mode_changed(bool segment_selectable);
+	/// @param mode is a value of Trace::SegmentDisplayMode
+	void segment_display_mode_changed(int mode, bool segment_selectable);
 
 public Q_SLOTS:
 	void trigger_event(util::Timestamp location);

@@ -173,6 +173,8 @@ public:
 
 	const unordered_set< shared_ptr<data::SignalBase> > signalbases() const;
 
+	bool all_segments_complete(uint32_t segment_id) const;
+
 #ifdef ENABLE_DECODE
 	shared_ptr<data::DecodeSignal> add_decode_signal();
 

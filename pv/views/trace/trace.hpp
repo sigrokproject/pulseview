@@ -70,9 +70,11 @@ public:
 	 * Note: Consider these locations when updating the list:
 	 * *
 	 * @ref View::set_segment_display_mode
+	 * @ref View::on_segment_changed
 	 * @ref AnalogSignal::get_analog_segment_to_paint
 	 * @ref AnalogSignal::get_logic_segment_to_paint
 	 * @ref LogicSignal::get_logic_segment_to_paint
+	 * @ref StandardBar
 	 */
 	enum SegmentDisplayMode {
 		ShowLastSegmentOnly = 1,
