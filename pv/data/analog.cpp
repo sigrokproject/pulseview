@@ -51,9 +51,9 @@ vector< shared_ptr<Segment> > Analog::segments() const
 		segments_.begin(), segments_.end());
 }
 
-int Analog::get_segment_count() const
+uint32_t Analog::get_segment_count() const
 {
-	return segments_.size();
+	return (uint32_t)segments_.size();
 }
 
 void Analog::clear()

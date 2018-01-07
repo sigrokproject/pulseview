@@ -50,7 +50,7 @@ public:
 
 	vector< shared_ptr<Segment> > segments() const;
 
-	int get_segment_count() const;
+	uint32_t get_segment_count() const;
 
 	void clear();
 

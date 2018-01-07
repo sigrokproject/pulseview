@@ -163,7 +163,7 @@ public:
 
 	double get_samplerate() const;
 
-	int get_segment_count() const;
+	uint32_t get_segment_count() const;
 
 	void register_view(shared_ptr<views::ViewBase> view);
 

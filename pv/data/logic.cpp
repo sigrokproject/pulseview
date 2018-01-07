@@ -57,9 +57,9 @@ vector< shared_ptr<Segment> > Logic::segments() const
 	return vector< shared_ptr<Segment> >(segments_.begin(), segments_.end());
 }
 
-int Logic::get_segment_count() const
+uint32_t Logic::get_segment_count() const
 {
-	return segments_.size();
+	return (uint32_t)segments_.size();
 }
 
 void Logic::clear()

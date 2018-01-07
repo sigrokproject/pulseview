@@ -45,7 +45,7 @@ public:
 public:
 	virtual vector< shared_ptr<Segment> > segments() const = 0;
 
-	virtual int get_segment_count() const = 0;
+	virtual uint32_t get_segment_count() const = 0;
 
 	virtual void clear() = 0;
 
