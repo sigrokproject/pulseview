@@ -506,6 +506,11 @@ const pv::util::Timestamp& View::tick_period() const
 	return tick_period_;
 }
 
+unsigned int View::minor_tick_count() const
+{
+	return minor_tick_count_;
+}
+
 void View::set_tick_period(const pv::util::Timestamp& tick_period)
 {
 	if (tick_period_ != tick_period) {
@@ -896,6 +901,7 @@ void View::calculate_tick_spacing()
 				(ScaleUnits[unit++] + tp_margin);
 		} while (tp_with_margin < min_period && unit < countof(ScaleUnits));
 
+		minor_tick_count_ = (unit == 2) ? (4) : (5);
 		tick_period = order_decimal * ScaleUnits[unit - 1];
 		tick_prefix = static_cast<pv::util::SIPrefix>(
 			(order - pv::util::exponent(pv::util::SIPrefix::yocto)) / 3);

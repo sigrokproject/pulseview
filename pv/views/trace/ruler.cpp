@@ -37,7 +37,6 @@ namespace views {
 namespace trace {
 
 const float Ruler::RulerHeight = 2.5f; // x Text Height
-const int Ruler::MinorTickSubdivision = 4;
 
 const float Ruler::HoverArrowSize = 0.5f; // x Text Height
 
@@ -143,6 +142,7 @@ void Ruler::paintEvent(QPaintEvent*)
 			view_.ruler_offset(),
 			view_.scale(),
 			width(),
+			view_.minor_tick_count(),
 			ffunc);
 	}
 
@@ -194,17 +194,18 @@ Ruler::TickPositions Ruler::calculate_tick_positions(
 	const pv::util::Timestamp& offset,
 	const double scale,
 	const int width,
+	const unsigned int minor_tick_count,
 	function<QString(const pv::util::Timestamp&)> format_function)
 {
 	TickPositions tp;
 
-	const pv::util::Timestamp minor_period = major_period / MinorTickSubdivision;
+	const pv::util::Timestamp minor_period = major_period / minor_tick_count;
 	const pv::util::Timestamp first_major_division = floor(offset / major_period);
 	const pv::util::Timestamp first_minor_division = ceil(offset / minor_period);
 	const pv::util::Timestamp t0 = first_major_division * major_period;
 
 	int division = (round(first_minor_division -
-		first_major_division * MinorTickSubdivision)).convert_to<int>() - 1;
+		first_major_division * minor_tick_count)).convert_to<int>() - 1;
 
 	double x;
 
@@ -212,9 +213,9 @@ Ruler::TickPositions Ruler::calculate_tick_positions(
 		pv::util::Timestamp t = t0 + division * minor_period;
 		x = ((t - offset) / scale).convert_to<double>();
 
-		if (division % MinorTickSubdivision == 0) {
+		if (division % minor_tick_count == 0) {
 			// Recalculate 't' without using 'minor_period' which is a fraction
-			t = t0 + division / MinorTickSubdivision * major_period;
+			t = t0 + division / minor_tick_count * major_period;
 			tp.major.emplace_back(x, format_function(t));
 		} else {
 			tp.minor.emplace_back(x);

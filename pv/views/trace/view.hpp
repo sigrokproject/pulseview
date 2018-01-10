@@ -188,6 +188,11 @@ public:
 	const pv::util::Timestamp& tick_period() const;
 
 	/**
+	 * Returns number of minor division ticks per time marking.
+	 */
+	unsigned int minor_tick_count() const;
+
+	/**
 	 * Returns the unit of time currently used.
 	 */
 	util::TimeUnit time_unit() const;
@@ -479,6 +484,7 @@ private:
 
 	pv::util::Timestamp tick_period_;
 	pv::util::SIPrefix tick_prefix_;
+	unsigned int minor_tick_count_;
 	unsigned int tick_precision_;
 	util::TimeUnit time_unit_;
 

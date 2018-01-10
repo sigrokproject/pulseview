@@ -63,8 +63,6 @@ private:
 	/// Height of the ruler in multipes of the text height
 	static const float RulerHeight;
 
-	static const int MinorTickSubdivision;
-
 	/// Height of the hover arrow in multiples of the text height
 	static const float HoverArrowSize;
 
@@ -170,6 +168,7 @@ private:
 		const pv::util::Timestamp& offset,
 		const double scale,
 		const int width,
+		const unsigned int minor_tick_count,
 		function<QString(const pv::util::Timestamp&)> format_function);
 
 protected:
