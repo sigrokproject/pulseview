@@ -129,6 +129,7 @@ View::View(Session &session, bool is_main_view, QWidget *parent) :
 	segment_selectable_(false),
 	scale_(1e-3),
 	offset_(0),
+	ruler_offset_(0),
 	updating_scroll_(false),
 	settings_restored_(false),
 	header_was_shrunk_(false),
@@ -326,10 +327,18 @@ void View::save_settings(QSettings &settings) const
 	settings.setValue("splitter_state", splitter_->saveState());
 	settings.setValue("segment_display_mode", segment_display_mode_);
 
-	stringstream ss;
-	boost::archive::text_oarchive oa(ss);
-	oa << boost::serialization::make_nvp("offset", offset_);
-	settings.setValue("offset", QString::fromStdString(ss.str()));
+	{
+		stringstream ss;
+		boost::archive::text_oarchive oa(ss);
+		oa << boost::serialization::make_nvp("ruler_shift", ruler_shift_);
+		settings.setValue("ruler_shift", QString::fromStdString(ss.str()));
+	}
+	{
+		stringstream ss;
+		boost::archive::text_oarchive oa(ss);
+		oa << boost::serialization::make_nvp("offset", offset_);
+		settings.setValue("offset", QString::fromStdString(ss.str()));
+	}
 
 	for (shared_ptr<Signal> signal : signals_) {
 		settings.beginGroup(signal->base()->internal_name());
@@ -346,6 +355,17 @@ void View::restore_settings(QSettings &settings)
 	if (settings.contains("scale"))
 		set_scale(settings.value("scale").toDouble());
 
+	if (settings.contains("ruler_shift")) {
+		util::Timestamp shift;
+		stringstream ss;
+		ss << settings.value("ruler_shift").toString().toStdString();
+
+		boost::archive::text_iarchive ia(ss);
+		ia >> boost::serialization::make_nvp("ruler_shift", shift);
+
+		ruler_shift_ = shift;
+	}
+
 	if (settings.contains("offset")) {
 		util::Timestamp offset;
 		stringstream ss;
@@ -354,6 +374,7 @@ void View::restore_settings(QSettings &settings)
 		boost::archive::text_iarchive ia(ss);
 		ia >> boost::serialization::make_nvp("offset", offset);
 
+		// This also updates ruler_offset_
 		set_offset(offset);
 	}
 
@@ -411,17 +432,25 @@ void View::set_scale(double scale)
 	}
 }
 
+void View::set_offset(const pv::util::Timestamp& offset)
+{
+	if (offset_ != offset) {
+		offset_ = offset;
+		ruler_offset_ = offset_ + ruler_shift_;
+		offset_changed();
+	}
+}
+
+// Returns the internal version of the time offset
 const Timestamp& View::offset() const
 {
 	return offset_;
 }
 
-void View::set_offset(const pv::util::Timestamp& offset)
+// Returns the ruler version of the time offset
+const Timestamp& View::ruler_offset() const
 {
-	if (offset_ != offset) {
-		offset_ = offset;
-		offset_changed();
-	}
+	return ruler_offset_;
 }
 
 int View::owner_visual_v_offset() const
@@ -794,6 +823,15 @@ void View::restack_all_trace_tree_items()
 
 void View::trigger_event(util::Timestamp location)
 {
+	// Set up ruler_shift if the Key_View_TriggerIsZeroTime option is set.
+	GlobalSettings settings;
+	bool trigger_is_zero_time = settings.value(GlobalSettings::Key_View_TriggerIsZeroTime).toBool();
+
+	ruler_shift_ = (trigger_is_zero_time) ? (-location) : (0);
+	// Force an immediate update of both offsets
+	offset_ -= 0.001;
+	set_offset(offset_ + 0.001);
+
 	trigger_markers_.push_back(make_shared<TriggerMarker>(*this, location));
 }
 

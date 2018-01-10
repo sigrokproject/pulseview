@@ -42,6 +42,7 @@ class GlobalSettings : public QSettings
 public:
 	static const QString Key_View_ZoomToFitDuringAcq;
 	static const QString Key_View_ZoomToFitAfterAcq;
+	static const QString Key_View_TriggerIsZeroTime;
 	static const QString Key_View_ColouredBG;
 	static const QString Key_View_StickyScrolling;
 	static const QString Key_View_ShowSamplingPoints;

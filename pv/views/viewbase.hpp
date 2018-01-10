@@ -110,6 +110,7 @@ protected:
 
 	const bool is_main_view_;
 
+	util::Timestamp ruler_shift_;
 	util::TimeUnit time_unit_;
 
 	unordered_set< shared_ptr<data::SignalBase> > signalbases_;

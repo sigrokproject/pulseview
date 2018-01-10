@@ -157,7 +157,7 @@ private:
 	 * Calculates the major and minor tick positions.
 	 *
 	 * @param major_period The period between the major ticks.
-	 * @param offset The time at the left border of the ruler.
+	 * @param offset The virtual time at the left border of the ruler.
 	 * @param scale The scale in seconds per pixel.
 	 * @param width the Width of the ruler.
 	 * @param format_function A function used to format the major tick times.

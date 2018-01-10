@@ -151,10 +151,16 @@ public:
 	double scale() const;
 
 	/**
-	 * Returns the time offset of the left edge of the view in
-	 * seconds.
+	 * Returns the internal view version of the time offset of the left edge
+	 * of the view in seconds.
 	 */
 	const pv::util::Timestamp& offset() const;
+
+	/**
+	 * Returns the ruler version of the time offset of the left edge
+	 * of the view in seconds.
+	 */
+	const pv::util::Timestamp& ruler_offset() const;
 
 	/**
 	 * Returns the vertical scroll offset.
@@ -397,7 +403,7 @@ private Q_SLOTS:
 	void process_sticky_events();
 
 	/**
-	 * Sets the 'offset_' member and emits the 'offset_changed'
+	 * Sets the 'offset_' and ruler_offset_ members and emits the 'offset_changed'
 	 * signal if needed.
 	 */
 	void set_offset(const pv::util::Timestamp& offset);
@@ -458,8 +464,10 @@ private:
 	/// The view time scale in seconds per pixel.
 	double scale_;
 
-	/// The view time offset in seconds.
+	/// The internal view version of the time offset in seconds.
 	pv::util::Timestamp offset_;
+	/// The ruler version of the time offset in seconds.
+	pv::util::Timestamp ruler_offset_;
 
 	bool updating_scroll_;
 	bool settings_restored_;

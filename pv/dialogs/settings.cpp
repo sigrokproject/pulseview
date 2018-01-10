@@ -160,6 +160,10 @@ QWidget *Settings::get_view_settings_form(QWidget *parent) const
 		SLOT(on_view_zoomToFitAfterAcq_changed(int)));
 	trace_view_layout->addRow(tr("Perform a zoom-to-&fit when acquisition stops"), cb);
 
+	cb = create_checkbox(GlobalSettings::Key_View_TriggerIsZeroTime,
+		SLOT(on_view_triggerIsZero_changed(int)));
+	trace_view_layout->addRow(tr("Show time zero at the trigger"), cb);
+
 	cb = create_checkbox(GlobalSettings::Key_View_StickyScrolling,
 		SLOT(on_view_stickyScrolling_changed(int)));
 	trace_view_layout->addRow(tr("Always keep &newest samples at the right edge during capture"), cb);
@@ -422,6 +426,12 @@ void Settings::on_view_zoomToFitAfterAcq_changed(int state)
 {
 	GlobalSettings settings;
 	settings.setValue(GlobalSettings::Key_View_ZoomToFitAfterAcq, state ? true : false);
+}
+
+void Settings::on_view_triggerIsZero_changed(int state)
+{
+	GlobalSettings settings;
+	settings.setValue(GlobalSettings::Key_View_TriggerIsZeroTime, state ? true : false);
 }
 
 void Settings::on_view_colouredBG_changed(int state)

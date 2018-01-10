@@ -140,7 +140,7 @@ void Ruler::paintEvent(QPaintEvent*)
 
 		tick_position_cache_ = calculate_tick_positions(
 			view_.tick_period(),
-			view_.offset(),
+			view_.ruler_offset(),
 			view_.scale(),
 			width(),
 			ffunc);
@@ -228,7 +228,7 @@ Ruler::TickPositions Ruler::calculate_tick_positions(
 
 void Ruler::mouseDoubleClickEvent(QMouseEvent *event)
 {
-	view_.add_flag(view_.offset() + ((double)event->x() + 0.5) * view_.scale());
+	view_.add_flag(view_.ruler_offset() + ((double)event->x() + 0.5) * view_.scale());
 }
 
 void Ruler::draw_hover_mark(QPainter &p, int text_height)
