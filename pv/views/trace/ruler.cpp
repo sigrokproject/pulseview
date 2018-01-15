@@ -29,6 +29,8 @@
 using namespace Qt;
 
 using std::function;
+using std::max;
+using std::min;
 using std::shared_ptr;
 using std::vector;
 
@@ -159,10 +161,18 @@ void Ruler::paintEvent(QPaintEvent*)
 	p.setPen(palette().color(foregroundRole()));
 
 	for (const auto& tick: tick_position_cache_->major) {
-		p.drawText(tick.first, ValueMargin, 0, text_height,
+		const int leftedge = 0;
+		const int rightedge = width();
+		const int x_tick = tick.first;
+		if ((x_tick > leftedge) && (x_tick < rightedge)) {
+			const int x_left_bound = QFontMetrics(font()).width(tick.second) / 2;
+			const int x_right_bound = rightedge - x_left_bound;
+			const int x_legend = min(max(x_tick, x_left_bound), x_right_bound);
+			p.drawText(x_legend, ValueMargin, 0, text_height,
 				AlignCenter | AlignTop | TextDontClip, tick.second);
-		p.drawLine(QPointF(tick.first, major_tick_y1),
+			p.drawLine(QPointF(x_tick, major_tick_y1),
 			QPointF(tick.first, ruler_height));
+		}
 	}
 
 	for (const auto& tick: tick_position_cache_->minor) {
