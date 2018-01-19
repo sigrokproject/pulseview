@@ -162,6 +162,10 @@ public:
 	 */
 	const pv::util::Timestamp& ruler_offset() const;
 
+	void set_zero_position(pv::util::Timestamp& position);
+
+	void reset_zero_position();
+
 	/**
 	 * Returns the vertical scroll offset.
 	 */
@@ -403,6 +407,8 @@ private Q_SLOTS:
 	void on_segment_completed(int new_segment_id);
 	void on_segment_changed(int segment);
 
+	void on_settingViewTriggerIsZeroTime_changed(const QVariant new_value);
+
 	virtual void perform_delayed_view_update();
 
 	void process_sticky_events();
@@ -411,7 +417,7 @@ private Q_SLOTS:
 	 * Sets the 'offset_' and ruler_offset_ members and emits the 'offset_changed'
 	 * signal if needed.
 	 */
-	void set_offset(const pv::util::Timestamp& offset);
+	void set_offset(const pv::util::Timestamp& offset, bool force_update = false);
 
 	/**
 	 * Sets the 'scale_' member and emits the 'scale_changed'

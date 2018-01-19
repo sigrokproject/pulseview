@@ -79,6 +79,7 @@ using std::make_pair;
 using std::make_shared;
 using std::min;
 using std::pair;
+using std::placeholders::_1;
 using std::set;
 using std::set_difference;
 using std::shared_ptr;
@@ -197,6 +198,9 @@ View::View(Session &session, bool is_main_view, QWidget *parent) :
 	// Set up settings and event handlers
 	GlobalSettings settings;
 	coloured_bg_ = settings.value(GlobalSettings::Key_View_ColouredBG).toBool();
+
+	GlobalSettings::register_change_handler(GlobalSettings::Key_View_TriggerIsZeroTime,
+		bind(&View::on_settingViewTriggerIsZeroTime_changed, this, _1));
 
 	connect(scrollarea_->horizontalScrollBar(), SIGNAL(valueChanged(int)),
 		this, SLOT(h_scroll_value_changed(int)));
@@ -432,25 +436,41 @@ void View::set_scale(double scale)
 	}
 }
 
-void View::set_offset(const pv::util::Timestamp& offset)
+void View::set_offset(const pv::util::Timestamp& offset, bool force_update)
 {
-	if (offset_ != offset) {
+	if ((offset_ != offset) || force_update) {
 		offset_ = offset;
 		ruler_offset_ = offset_ + ruler_shift_;
 		offset_changed();
 	}
 }
 
-// Returns the internal version of the time offset
 const Timestamp& View::offset() const
 {
 	return offset_;
 }
 
-// Returns the ruler version of the time offset
 const Timestamp& View::ruler_offset() const
 {
 	return ruler_offset_;
+}
+
+void View::set_zero_position(pv::util::Timestamp& position)
+{
+	ruler_shift_ = -position;
+
+	// Force an immediate update of the offsets
+	set_offset(offset_, true);
+	ruler_->update();
+}
+
+void View::reset_zero_position()
+{
+	ruler_shift_ = 0;
+
+	// Force an immediate update of the offsets
+	set_offset(offset_, true);
+	ruler_->update();
 }
 
 int View::owner_visual_v_offset() const
@@ -541,9 +561,18 @@ void View::set_current_segment(uint32_t segment_id)
 	for (shared_ptr<DecodeTrace> dt : decode_traces_)
 		dt->set_current_segment(current_segment_);
 
+	vector<util::Timestamp> triggers = session_.get_triggers(current_segment_);
+
 	trigger_markers_.clear();
-	for (util::Timestamp timestamp : session_.get_triggers(segment_id))
+	for (util::Timestamp timestamp : triggers)
 		trigger_markers_.push_back(make_shared<TriggerMarker>(*this, timestamp));
+
+	// When enabled, the first trigger for this segment is used as the zero position
+	GlobalSettings settings;
+	bool trigger_is_zero_time = settings.value(GlobalSettings::Key_View_TriggerIsZeroTime).toBool();
+
+	if (trigger_is_zero_time && (triggers.size() > 0))
+		set_zero_position(triggers.front());
 
 	viewport_->update();
 
@@ -838,14 +867,15 @@ void View::trigger_event(int segment_id, util::Timestamp location)
 	if ((uint32_t)segment_id != current_segment_)
 		return;
 
-	// Set up ruler_shift if the Key_View_TriggerIsZeroTime option is set.
+	// Set zero location if the Key_View_TriggerIsZeroTime setting is set and
+	// if this is the first trigger for this segment.
 	GlobalSettings settings;
 	bool trigger_is_zero_time = settings.value(GlobalSettings::Key_View_TriggerIsZeroTime).toBool();
 
-	ruler_shift_ = (trigger_is_zero_time) ? (-location) : (0);
-	// Force an immediate update of both offsets
-	offset_ -= 0.001;
-	set_offset(offset_ + 0.001);
+	size_t trigger_count = session_.get_triggers(current_segment_).size();
+
+	if (trigger_is_zero_time && trigger_count == 1)
+		set_zero_position(location);
 
 	trigger_markers_.push_back(make_shared<TriggerMarker>(*this, location));
 }
@@ -1561,6 +1591,17 @@ void View::on_segment_changed(int segment)
 	default:
 		break;
 	}
+}
+
+void View::on_settingViewTriggerIsZeroTime_changed(const QVariant new_value)
+{
+	if (new_value.toBool()) {
+		// The first trigger for this segment is used as the zero position
+		vector<util::Timestamp> triggers = session_.get_triggers(current_segment_);
+		if (triggers.size() > 0)
+			set_zero_position(triggers.front());
+	} else
+		reset_zero_position();
 }
 
 void View::perform_delayed_view_update()
