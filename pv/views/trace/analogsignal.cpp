@@ -118,8 +118,7 @@ AnalogSignal::AnalogSignal(
 	connect(analog_data, SIGNAL(min_max_changed(float, float)),
 		this, SLOT(on_min_max_changed(float, float)));
 
-	GlobalSettings::register_change_handler(GlobalSettings::Key_View_ConversionThresholdDispMode,
-		bind(&AnalogSignal::on_settingViewConversionThresholdDispMode_changed, this, _1));
+	GlobalSettings::add_change_handler(this);
 
 	GlobalSettings gs;
 	conversion_threshold_disp_mode_ =
@@ -129,6 +128,11 @@ AnalogSignal::AnalogSignal(
 
 	base_->set_colour(SignalColours[base_->index() % countof(SignalColours)]);
 	update_scale();
+}
+
+AnalogSignal::~AnalogSignal()
+{
+	GlobalSettings::remove_change_handler(this);
 }
 
 shared_ptr<pv::data::SignalData> AnalogSignal::data() const
@@ -204,6 +208,12 @@ void AnalogSignal::scale_handle_drag_release()
 {
 	scale_index_drag_offset_ = scale_index_;
 	update_scale();
+}
+
+void AnalogSignal::on_setting_changed(const QString &key, const QVariant &value)
+{
+	if (key == GlobalSettings::Key_View_ConversionThresholdDispMode)
+		on_settingViewConversionThresholdDispMode_changed(value);
 }
 
 void AnalogSignal::paint_back(QPainter &p, ViewItemPaintParams &pp)

@@ -199,8 +199,7 @@ View::View(Session &session, bool is_main_view, QWidget *parent) :
 	GlobalSettings settings;
 	coloured_bg_ = settings.value(GlobalSettings::Key_View_ColouredBG).toBool();
 
-	GlobalSettings::register_change_handler(GlobalSettings::Key_View_TriggerIsZeroTime,
-		bind(&View::on_settingViewTriggerIsZeroTime_changed, this, _1));
+	GlobalSettings::add_change_handler(this);
 
 	connect(scrollarea_->horizontalScrollBar(), SIGNAL(valueChanged(int)),
 		this, SLOT(h_scroll_value_changed(int)));
@@ -237,6 +236,11 @@ View::View(Session &session, bool is_main_view, QWidget *parent) :
 
 	// Make sure the standard bar's segment selector is in sync
 	set_segment_display_mode(segment_display_mode_);
+}
+
+View::~View()
+{
+	GlobalSettings::remove_change_handler(this);
 }
 
 Session& View::session()
@@ -859,6 +863,12 @@ void View::restack_all_trace_tree_items()
 	// Animate the items to their destination
 	for (const auto &i : items)
 		i->animate_to_layout_v_offset();
+}
+
+void View::on_setting_changed(const QString &key, const QVariant &value)
+{
+	if (key == GlobalSettings::Key_View_TriggerIsZeroTime)
+		on_settingViewTriggerIsZeroTime_changed(value);
 }
 
 void View::trigger_event(int segment_id, util::Timestamp location)

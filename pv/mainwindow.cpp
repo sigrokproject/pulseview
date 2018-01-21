@@ -79,14 +79,7 @@ MainWindow::MainWindow(DeviceManager &device_manager, QWidget *parent) :
 	qRegisterMetaType<util::Timestamp>("util::Timestamp");
 	qRegisterMetaType<uint64_t>("uint64_t");
 
-	GlobalSettings::register_change_handler(GlobalSettings::Key_View_ColouredBG,
-		bind(&MainWindow::on_settingViewColouredBg_changed, this, _1));
-
-	GlobalSettings::register_change_handler(GlobalSettings::Key_View_ShowSamplingPoints,
-		bind(&MainWindow::on_settingViewShowSamplingPoints_changed, this, _1));
-
-	GlobalSettings::register_change_handler(GlobalSettings::Key_View_ShowAnalogMinorGrid,
-		bind(&MainWindow::on_settingViewShowAnalogMinorGrid_changed, this, _1));
+	GlobalSettings::add_change_handler(this);
 
 	GlobalSettings settings;
 	settings.set_defaults_where_needed();
@@ -97,6 +90,8 @@ MainWindow::MainWindow(DeviceManager &device_manager, QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
+	GlobalSettings::remove_change_handler(this);
+
 	while (!sessions_.empty())
 		remove_session(sessions_.front());
 }
@@ -398,6 +393,18 @@ void MainWindow::restore_sessions()
 		session->restore_settings(settings);
 		settings.endGroup();
 	}
+}
+
+void MainWindow::on_setting_changed(const QString &key, const QVariant &value)
+{
+	if (key == GlobalSettings::Key_View_ColouredBG)
+		on_settingViewColouredBg_changed(value);
+
+	if (key == GlobalSettings::Key_View_ShowSamplingPoints)
+		on_settingViewShowSamplingPoints_changed(value);
+
+	if (key == GlobalSettings::Key_View_ShowAnalogMinorGrid)
+		on_settingViewShowAnalogMinorGrid_changed(value);
 }
 
 void MainWindow::setup_ui()

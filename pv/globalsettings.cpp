@@ -20,13 +20,11 @@
 #include "globalsettings.hpp"
 
 #include <QApplication>
-#include <QByteArray>
 #include <QFontMetrics>
 #include <QString>
 
-using std::function;
 using std::map;
-using std::multimap;
+using std::vector;
 
 namespace pv {
 
@@ -42,7 +40,7 @@ const QString GlobalSettings::Key_View_DefaultDivHeight = "View_DefaultDivHeight
 const QString GlobalSettings::Key_View_DefaultLogicHeight = "View_DefaultLogicHeight";
 const QString GlobalSettings::Key_Dec_InitialStateConfigurable = "Dec_InitialStateConfigurable";
 
-multimap< QString, function<void(QVariant)> > GlobalSettings::callbacks_;
+vector<GlobalSettingsInterface*> GlobalSettings::callbacks_;
 bool GlobalSettings::tracking_ = false;
 map<QString, QVariant> GlobalSettings::tracked_changes_;
 
@@ -75,10 +73,18 @@ void GlobalSettings::set_defaults_where_needed()
 		2 * QFontMetrics(QApplication::font()).height());
 }
 
-void GlobalSettings::register_change_handler(const QString key,
-	function<void(QVariant)> cb)
+void GlobalSettings::add_change_handler(GlobalSettingsInterface *cb)
 {
-	callbacks_.emplace(key, cb);
+	callbacks_.push_back(cb);
+}
+
+void GlobalSettings::remove_change_handler(GlobalSettingsInterface *cb)
+{
+	for (auto cb_it = callbacks_.begin(); cb_it != callbacks_.end(); cb_it++)
+		if (*cb_it == cb) {
+			callbacks_.erase(cb_it);
+			break;
+		}
 }
 
 void GlobalSettings::setValue(const QString &key, const QVariant &value)
@@ -90,11 +96,9 @@ void GlobalSettings::setValue(const QString &key, const QVariant &value)
 
 	QSettings::setValue(key, value);
 
-	// Call all registered callbacks for this key
-	auto range = callbacks_.equal_range(key);
-
-	for (auto it = range.first; it != range.second; it++)
-		it->second(value);
+	// Call all registered callbacks
+	for (GlobalSettingsInterface *cb : callbacks_)
+		cb->on_setting_changed(key, value);
 }
 
 void GlobalSettings::start_tracking()

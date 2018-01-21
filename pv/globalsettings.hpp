@@ -20,7 +20,6 @@
 #ifndef PULSEVIEW_GLOBALSETTINGS_HPP
 #define PULSEVIEW_GLOBALSETTINGS_HPP
 
-#include <functional>
 #include <map>
 
 #include <glib.h>
@@ -31,9 +30,16 @@
 
 using std::function;
 using std::map;
-using std::multimap;
+using std::vector;
 
 namespace pv {
+
+class GlobalSettingsInterface
+{
+public:
+	virtual void on_setting_changed(const QString &key, const QVariant &value) = 0;
+};
+
 
 class GlobalSettings : public QSettings
 {
@@ -63,8 +69,8 @@ public:
 
 	void set_defaults_where_needed();
 
-	static void register_change_handler(const QString key,
-		function<void(QVariant)> cb);
+	static void add_change_handler(GlobalSettingsInterface *cb);
+	static void remove_change_handler(GlobalSettingsInterface *cb);
 
 	void setValue(const QString& key, const QVariant& value);
 
@@ -91,7 +97,7 @@ public:
 	static GVariant* restore_gvariant(QSettings &settings);
 
 private:
-	static multimap< QString, function<void(QVariant)> > callbacks_;
+	static vector<GlobalSettingsInterface*> callbacks_;
 
 	static bool tracking_;
 	static map<QString, QVariant> tracked_changes_;

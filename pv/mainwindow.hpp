@@ -30,6 +30,7 @@
 #include <QTabWidget>
 #include <QToolButton>
 
+#include "globalsettings.hpp"
 #include "session.hpp"
 #include "views/viewbase.hpp"
 
@@ -61,7 +62,7 @@ class DecoderMenu;
 #endif
 }
 
-class MainWindow : public QMainWindow
+class MainWindow : public QMainWindow, public GlobalSettingsInterface
 {
 	Q_OBJECT
 
@@ -91,6 +92,8 @@ public:
 
 	void save_sessions();
 	void restore_sessions();
+
+	void on_setting_changed(const QString &key, const QVariant &value);
 
 private:
 	void setup_ui();

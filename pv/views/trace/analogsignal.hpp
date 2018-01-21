@@ -20,12 +20,13 @@
 #ifndef PULSEVIEW_PV_VIEWS_TRACEVIEW_ANALOGSIGNAL_HPP
 #define PULSEVIEW_PV_VIEWS_TRACEVIEW_ANALOGSIGNAL_HPP
 
-#include "signal.hpp"
-
 #include <memory>
 
 #include <QComboBox>
 #include <QSpinBox>
+
+#include <pv/globalsettings.hpp>
+#include <pv/views/trace/signal.hpp>
 
 using std::pair;
 using std::shared_ptr;
@@ -41,7 +42,7 @@ class SignalBase;
 namespace views {
 namespace trace {
 
-class AnalogSignal : public Signal
+class AnalogSignal : public Signal, public GlobalSettingsInterface
 {
 	Q_OBJECT
 
@@ -74,7 +75,7 @@ private:
 public:
 	AnalogSignal(pv::Session &session, shared_ptr<data::SignalBase> base);
 
-	virtual ~AnalogSignal() = default;
+	~AnalogSignal();
 
 	shared_ptr<pv::data::SignalData> data() const;
 
@@ -103,6 +104,8 @@ public:
 	 * @copydoc pv::view::Signal::signal_scale_handle_drag_release()
 	 */
 	void scale_handle_drag_release();
+
+	void on_setting_changed(const QString &key, const QVariant &value);
 
 	/**
 	 * Paints the background layer of the signal with a QPainter

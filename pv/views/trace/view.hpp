@@ -31,8 +31,9 @@
 #include <QSizeF>
 #include <QSplitter>
 
-#include <pv/data/signaldata.hpp>
+#include <pv/globalsettings.hpp>
 #include <pv/util.hpp>
+#include <pv/data/signaldata.hpp>
 #include <pv/views/viewbase.hpp>
 
 #include "cursorpair.hpp"
@@ -81,7 +82,7 @@ public:
 	bool viewportEvent(QEvent *event);
 };
 
-class View : public ViewBase, public TraceTreeItemOwner
+class View : public ViewBase, public TraceTreeItemOwner, public GlobalSettingsInterface
 {
 	Q_OBJECT
 
@@ -101,6 +102,8 @@ private:
 
 public:
 	explicit View(Session &session, bool is_main_view=false, QWidget *parent = nullptr);
+
+	~View();
 
 	Session& session();
 	const Session& session() const;
@@ -297,6 +300,8 @@ public:
 	const QPoint& hover_point() const;
 
 	void restack_all_trace_tree_items();
+
+	void on_setting_changed(const QString &key, const QVariant &value);
 
 Q_SIGNALS:
 	void hover_point_changed(const QPoint &hp);
