@@ -193,7 +193,6 @@ private:
 		vector<string> user_spec,
 		map<string, shared_ptr<Option>> fmt_opts);
 
-private:
 	void sample_thread_proc(function<void (const QString)> error_handler);
 
 	void free_unused_memory();
@@ -216,6 +215,27 @@ private:
 
 	void data_feed_in(shared_ptr<sigrok::Device> device,
 		shared_ptr<sigrok::Packet> packet);
+
+Q_SIGNALS:
+	void capture_state_changed(int state);
+	void device_changed();
+
+	void signals_changed();
+
+	void name_changed();
+
+	void trigger_event(util::Timestamp location);
+
+	void new_segment(int new_segment_id);
+	void segment_completed(int segment_id);
+
+	void data_received();
+
+	void add_view(const QString &title, views::ViewType type,
+		Session *session);
+
+public Q_SLOTS:
+	void on_data_saved();
 
 private:
 	DeviceManager &device_manager_;
@@ -246,27 +266,6 @@ private:
 	bool out_of_memory_;
 	bool data_saved_;
 	bool frame_began_;
-
-Q_SIGNALS:
-	void capture_state_changed(int state);
-	void device_changed();
-
-	void signals_changed();
-
-	void name_changed();
-
-	void trigger_event(util::Timestamp location);
-
-	void new_segment(int new_segment_id);
-	void segment_completed(int segment_id);
-
-	void data_received();
-
-	void add_view(const QString &title, views::ViewType type,
-		Session *session);
-
-public Q_SLOTS:
-	void on_data_saved();
 };
 
 } // namespace pv
