@@ -68,6 +68,7 @@ void usage()
 		"  -V, --version                   Show release version\n"
 		"  -l, --loglevel                  Set libsigrok/libsigrokdecode loglevel\n"
 		"  -d, --driver                    Specify the device driver to use\n"
+		"  -D, --no-scan                   Don't auto-scan for devices, use -d spec only\n"
 		"  -i, --input-file                Load input from file\n"
 		"  -I, --input-format              Input format\n"
 		"  -c, --clean                     Don't restore previous sessions on startup\n"
@@ -80,6 +81,7 @@ int main(int argc, char *argv[])
 	shared_ptr<sigrok::Context> context;
 	string open_file, open_file_format, driver;
 	bool restore_sessions = true;
+	bool do_scan = true;
 
 	Application a(argc, argv);
 
@@ -103,7 +105,7 @@ int main(int argc, char *argv[])
 		};
 
 		const int c = getopt_long(argc, argv,
-			"l:Vhc?d:i:I:", long_options, nullptr);
+			"l:Vhc?d:Di:I:", long_options, nullptr);
 		if (c == -1)
 			break;
 
@@ -141,6 +143,10 @@ int main(int argc, char *argv[])
 
 		case 'd':
 			driver = optarg;
+			break;
+
+		case 'D':
+			do_scan = false;
 			break;
 
 		case 'i':
@@ -187,7 +193,7 @@ int main(int argc, char *argv[])
 
 		try {
 			// Create the device manager, initialise the drivers
-			pv::DeviceManager device_manager(context, driver);
+			pv::DeviceManager device_manager(context, driver, do_scan);
 
 			// Initialise the main window
 			pv::MainWindow w(device_manager);

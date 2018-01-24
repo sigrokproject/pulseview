@@ -56,7 +56,8 @@ using sigrok::Driver;
 
 namespace pv {
 
-DeviceManager::DeviceManager(shared_ptr<Context> context, std::string driver) :
+DeviceManager::DeviceManager(shared_ptr<Context> context,
+	std::string driver, bool do_scan) :
 	context_(context)
 {
 	unique_ptr<QProgressDialog> progress(new QProgressDialog("",
@@ -84,6 +85,8 @@ DeviceManager::DeviceManager(shared_ptr<Context> context, std::string driver) :
 	 * best effort auto detection.
 	 */
 	for (auto entry : context->drivers()) {
+		if (!do_scan)
+			break;
 		progress->setLabelText(QObject::tr("Scanning for %1...")
 			.arg(QString::fromStdString(entry.first)));
 

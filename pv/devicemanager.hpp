@@ -58,7 +58,8 @@ class Session;
 class DeviceManager
 {
 public:
-	DeviceManager(shared_ptr<sigrok::Context> context, std::string driver);
+	DeviceManager(shared_ptr<sigrok::Context> context,
+		std::string driver, bool do_scan);
 
 	~DeviceManager() = default;
 
