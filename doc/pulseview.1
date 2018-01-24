@@ -47,6 +47,14 @@ Specify the capture device to connect to. If the
 option is not supplied, PulseView attempts to re-connect to the
 most recently used device, or auto-detect available devices.
 .TP
+.BR "\-D, \-\-no\-scan "
+Usually PulseView automatically scans all drivers to find suitable
+devices during program startup. This option disables the auto-scan.
+Users can either specify the
+.B \-\-driver
+option to pick a device at startup, or interactively scan for devices
+after PulseView has finished starting up.
+.TP
 .BR "\-i, \-\-input\-file " <filename>
 Load input from a file. If the
 .B \-\-input\-format
