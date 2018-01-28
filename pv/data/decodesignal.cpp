@@ -978,6 +978,8 @@ void DecodeSignal::decode_proc()
 
 void DecodeSignal::start_srd_session()
 {
+	uint64_t samplerate;
+
 	if (srd_session_)
 		stop_srd_session();
 
@@ -1004,8 +1006,10 @@ void DecodeSignal::start_srd_session()
 	}
 
 	// Start the session
-	srd_session_metadata_set(srd_session_, SRD_CONF_SAMPLERATE,
-		g_variant_new_uint64(segments_.at(current_segment_id_).samplerate));
+	samplerate = segments_.at(current_segment_id_).samplerate;
+	if (samplerate)
+		srd_session_metadata_set(srd_session_, SRD_CONF_SAMPLERATE,
+			g_variant_new_uint64(samplerate));
 
 	srd_pd_output_callback_add(srd_session_, SRD_OUTPUT_ANN,
 		DecodeSignal::annotation_callback, this);
