@@ -562,8 +562,10 @@ void View::set_current_segment(uint32_t segment_id)
 
 	for (shared_ptr<Signal> signal : signals_)
 		signal->set_current_segment(current_segment_);
+#ifdef ENABLE_DECODE
 	for (shared_ptr<DecodeTrace> dt : decode_traces_)
 		dt->set_current_segment(current_segment_);
+#endif
 
 	vector<util::Timestamp> triggers = session_.get_triggers(current_segment_);
 
