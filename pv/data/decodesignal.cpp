@@ -56,6 +56,7 @@ DecodeSignal::DecodeSignal(pv::Session &session) :
 	session_(session),
 	srd_session_(nullptr),
 	logic_mux_data_invalid_(false),
+	stack_config_changed_(true),
 	current_segment_id_(0)
 {
 	connect(&session_, SIGNAL(capture_state_changed(int)),
@@ -86,6 +87,7 @@ void DecodeSignal::stack_decoder(const srd_decoder *decoder)
 	// Include the newly created decode channels in the channel lists
 	update_channel_list();
 
+	stack_config_changed_ = true;
 	auto_assign_signals(dec);
 	commit_decoder_channels();
 	begin_decode();
@@ -105,6 +107,7 @@ void DecodeSignal::remove_decoder(int index)
 	stack_.erase(iter);
 
 	// Update channels and decoded data
+	stack_config_changed_ = true;
 	update_channel_list();
 	begin_decode();
 }
@@ -129,7 +132,10 @@ bool DecodeSignal::toggle_decoder_visibility(int index)
 
 void DecodeSignal::reset_decode()
 {
-	terminate_srd_session();
+	if (stack_config_changed_)
+		stop_srd_session();
+	else
+		terminate_srd_session();
 
 	if (decode_thread_.joinable()) {
 		decode_interrupt_ = true;
@@ -142,8 +148,6 @@ void DecodeSignal::reset_decode()
 		logic_mux_cond_.notify_one();
 		logic_mux_thread_.join();
 	}
-
-	stop_srd_session();
 
 	class_rows_.clear();
 	current_segment_id_ = 0;
@@ -159,8 +163,6 @@ void DecodeSignal::reset_decode()
 
 void DecodeSignal::begin_decode()
 {
-	terminate_srd_session();
-
 	if (decode_thread_.joinable()) {
 		decode_interrupt_ = true;
 		decode_input_cond_.notify_one();
@@ -287,6 +289,7 @@ void DecodeSignal::auto_assign_signals(const shared_ptr<Decoder> dec)
 
 	if (new_assignment) {
 		logic_mux_data_invalid_ = true;
+		stack_config_changed_ = true;
 		commit_decoder_channels();
 		channels_updated();
 	}
@@ -300,6 +303,7 @@ void DecodeSignal::assign_signal(const uint16_t channel_id, const SignalBase *si
 			logic_mux_data_invalid_ = true;
 		}
 
+	stack_config_changed_ = true;
 	commit_decoder_channels();
 	channels_updated();
 	begin_decode();
@@ -318,8 +322,8 @@ void DecodeSignal::set_initial_pin_state(const uint16_t channel_id, const int in
 		if (ch.id == channel_id)
 			ch.initial_pin_state = init_state;
 
+	stack_config_changed_ = true;
 	channels_updated();
-
 	begin_decode();
 }
 
@@ -571,6 +575,7 @@ void DecodeSignal::restore_settings(QSettings &settings)
 	}
 
 	// Update the internal structures
+	stack_config_changed_ = true;
 	update_channel_list();
 	commit_decoder_channels();
 
@@ -1039,6 +1044,9 @@ void DecodeSignal::start_srd_session()
 		DecodeSignal::annotation_callback, this);
 
 	srd_session_start(srd_session_);
+
+	// We just recreated the srd session, so all stack changes are applied now
+	stack_config_changed_ = false;
 }
 
 void DecodeSignal::terminate_srd_session()

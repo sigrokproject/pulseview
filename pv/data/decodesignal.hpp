@@ -187,6 +187,7 @@ private:
 	bool logic_mux_data_invalid_;
 
 	vector< shared_ptr<decode::Decoder> > stack_;
+	bool stack_config_changed_;
 	map<pair<const srd_decoder*, int>, decode::Row> class_rows_;
 
 	vector<DecodeSegment> segments_;
