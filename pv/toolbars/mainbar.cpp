@@ -668,16 +668,19 @@ void MainBar::import_file(shared_ptr<InputFormat> format)
 
 	// Construct the filter
 	const vector<string> exts = format->extensions();
-	const QString filter = exts.empty() ? "" :
-		tr("%1 files (*.%2)").arg(
-			QString::fromStdString(format->description()),
-			QString::fromStdString(join(exts, ", *.")));
+	const QString filter_exts = exts.empty() ? "" : QString::fromStdString("%1 (%2)").arg(
+		tr("%1 files").arg(QString::fromStdString(format->description())),
+		QString::fromStdString("*.%1").arg(QString::fromStdString(join(exts, " *."))));
+	const QString filter_all = QString::fromStdString("%1 (%2)").arg(
+		tr("All Files"), QString::fromStdString("*"));
+	const QString filter = QString::fromStdString("%1%2%3").arg(
+		exts.empty() ? "" : filter_exts,
+		exts.empty() ? "" : ";;",
+		filter_all);
 
 	// Show the file dialog
 	const QString file_name = QFileDialog::getOpenFileName(
-		this, tr("Import File"), dir, tr(
-			"%1 files (*);;All Files (*)").arg(
-			QString::fromStdString(format->description())));
+		this, tr("Import File"), dir, filter);
 
 	if (file_name.isEmpty())
 		return;
