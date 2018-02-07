@@ -165,6 +165,8 @@ public:
 
 	uint32_t get_segment_count() const;
 
+	vector<util::Timestamp> get_triggers(uint32_t segment_id) const;
+
 	void register_view(shared_ptr<views::ViewBase> view);
 
 	void deregister_view(shared_ptr<views::ViewBase> view);
@@ -224,7 +226,7 @@ Q_SIGNALS:
 
 	void name_changed();
 
-	void trigger_event(util::Timestamp location);
+	void trigger_event(int segment_id, util::Timestamp location);
 
 	void new_segment(int new_segment_id);
 	void segment_completed(int segment_id);
@@ -252,6 +254,9 @@ private:
 
 	unordered_set< shared_ptr<data::SignalBase> > signalbases_;
 	unordered_set< shared_ptr<data::SignalData> > all_signal_data_;
+
+	/// trigger_list_ contains pairs of <segment_id, timestamp> values.
+	vector< std::pair<uint32_t, util::Timestamp> > trigger_list_;
 
 	mutable recursive_mutex data_mutex_;
 	shared_ptr<data::Logic> logic_data_;

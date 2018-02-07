@@ -541,6 +541,10 @@ void View::set_current_segment(uint32_t segment_id)
 	for (shared_ptr<DecodeTrace> dt : decode_traces_)
 		dt->set_current_segment(current_segment_);
 
+	trigger_markers_.clear();
+	for (util::Timestamp timestamp : session_.get_triggers(segment_id))
+		trigger_markers_.push_back(make_shared<TriggerMarker>(*this, timestamp));
+
 	viewport_->update();
 
 	segment_changed(segment_id);
@@ -558,6 +562,8 @@ Trace::SegmentDisplayMode View::segment_display_mode() const
 
 void View::set_segment_display_mode(Trace::SegmentDisplayMode mode)
 {
+	trigger_markers_.clear();
+
 	segment_display_mode_ = mode;
 
 	for (shared_ptr<Signal> signal : signals_)
@@ -826,8 +832,12 @@ void View::restack_all_trace_tree_items()
 		i->animate_to_layout_v_offset();
 }
 
-void View::trigger_event(util::Timestamp location)
+void View::trigger_event(int segment_id, util::Timestamp location)
 {
+	// TODO This doesn't work if we're showing multiple segments at once
+	if ((uint32_t)segment_id != current_segment_)
+		return;
+
 	// Set up ruler_shift if the Key_View_TriggerIsZeroTime option is set.
 	GlobalSettings settings;
 	bool trigger_is_zero_time = settings.value(GlobalSettings::Key_View_TriggerIsZeroTime).toBool();

@@ -174,9 +174,9 @@ shared_ptr<views::ViewBase> MainWindow::add_view(const QString &title,
 	connect(close_btn, SIGNAL(clicked(bool)),
 		this, SLOT(on_view_close_clicked()));
 
-	connect(&session, SIGNAL(trigger_event(util::Timestamp)),
+	connect(&session, SIGNAL(trigger_event(int, util::Timestamp)),
 		qobject_cast<views::ViewBase*>(v.get()),
-		SLOT(trigger_event(util::Timestamp)));
+		SLOT(trigger_event(int, util::Timestamp)));
 
 	if (type == views::ViewTypeTrace) {
 		views::trace::View *tv =

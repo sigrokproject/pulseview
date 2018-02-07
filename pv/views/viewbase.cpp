@@ -123,8 +123,9 @@ void ViewBase::restore_settings(QSettings &settings)
 	(void)settings;
 }
 
-void ViewBase::trigger_event(util::Timestamp location)
+void ViewBase::trigger_event(int segment_id, util::Timestamp location)
 {
+	(void)segment_id;
 	(void)location;
 }
 

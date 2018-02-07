@@ -567,6 +567,8 @@ void Session::start_capture(function<void (const QString)> error_handler)
 	for (const shared_ptr<data::SignalData> d : all_signal_data_)
 		d->clear();
 
+	trigger_list_.clear();
+
 	// Revert name back to default name (e.g. "Session 1") for real devices
 	// as the (possibly saved) data is gone. File devices keep their name.
 	shared_ptr<devices::HardwareDevice> hw_device =
@@ -687,6 +689,17 @@ uint32_t Session::get_segment_count() const
 			value = data->get_segment_count();
 
 	return value;
+}
+
+vector<util::Timestamp> Session::get_triggers(uint32_t segment_id) const
+{
+	vector<util::Timestamp> result;
+
+	for (pair<uint32_t, util::Timestamp> entry : trigger_list_)
+		if (entry.first == segment_id)
+			result.push_back(entry.second);
+
+	return result;
 }
 
 const unordered_set< shared_ptr<data::SignalBase> > Session::signalbases() const
@@ -917,6 +930,7 @@ void Session::sample_thread_proc(function<void (const QString)> error_handler)
 		cur_analog_segments_.clear();
 	}
 	highest_segment_id_ = -1;
+	frame_began_ = false;
 
 	try {
 		device_->start();
@@ -1066,7 +1080,13 @@ void Session::feed_in_trigger()
 		}
 	}
 
-	trigger_event(sample_count / get_samplerate());
+	// If no frame began then this is a trigger for a new segment
+	const uint32_t segment_id =
+		(frame_began_) ? highest_segment_id_ : (highest_segment_id_ + 1);
+
+	util::Timestamp timestamp = sample_count / get_samplerate();
+	trigger_list_.emplace_back(segment_id, timestamp);
+	trigger_event(segment_id, timestamp);
 }
 
 void Session::feed_in_frame_begin()
@@ -1094,8 +1114,7 @@ void Session::feed_in_frame_end()
 		cur_analog_segments_.clear();
 	}
 
-	if (frame_began_)
-		frame_began_ = false;
+	frame_began_ = false;
 
 	signal_segment_completed();
 }

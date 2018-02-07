@@ -329,7 +329,7 @@ Q_SIGNALS:
 	void segment_display_mode_changed(int mode, bool segment_selectable);
 
 public Q_SLOTS:
-	void trigger_event(util::Timestamp location);
+	void trigger_event(int segment_id, util::Timestamp location);
 
 private:
 	void get_scroll_layout(double &length, pv::util::Timestamp &offset) const;
