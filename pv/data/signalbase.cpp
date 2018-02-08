@@ -81,6 +81,14 @@ QString SignalBase::internal_name() const
 	return internal_name_;
 }
 
+QString SignalBase::display_name() const
+{
+	if (name() != internal_name_)
+		return name() + " (" + internal_name_ + ")";
+	else
+		return name();
+}
+
 void SignalBase::set_name(QString name)
 {
 	if (channel_)

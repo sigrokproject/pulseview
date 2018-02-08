@@ -141,6 +141,12 @@ public:
 	QString internal_name() const;
 
 	/**
+	 * Produces a string for this signal that can be used for display,
+	 * i.e. it contains one or both of the signal/internal names.
+	 */
+	QString display_name() const;
+
+	/**
 	 * Sets the name of the signal.
 	 */
 	virtual void set_name(QString name);

@@ -26,19 +26,15 @@
 
 #include "channels.hpp"
 
+#include <pv/session.hpp>
 #include <pv/binding/device.hpp>
 #include <pv/data/signalbase.hpp>
 #include <pv/devices/device.hpp>
-#include <pv/session.hpp>
-#include <pv/views/trace/signal.hpp>
 
-#include <libsigrokcxx/libsigrokcxx.hpp>
-
-using namespace Qt;
-
-using std::map;
-using std::shared_ptr;
 using std::make_shared;
+using std::map;
+using std::out_of_range;
+using std::shared_ptr;
 using std::unordered_set;
 using std::vector;
 
@@ -77,9 +73,8 @@ Channels::Channels(Session &session, QWidget *parent) :
 
 	// Populate channel groups
 	for (auto entry : device->channel_groups()) {
-		shared_ptr<ChannelGroup> group = entry.second;
-		// Make a set of signals, and removed this signals from the
-		// signal map.
+		const shared_ptr<ChannelGroup> group = entry.second;
+		// Make a set of signals and remove these signals from the signal map
 		vector< shared_ptr<SignalBase> > group_sigs;
 		for (auto channel : group->channels()) {
 			const auto iter = signal_map.find(channel);
@@ -130,14 +125,13 @@ void Channels::set_all_channels(bool set)
 {
 	updating_channels_ = true;
 
-	for (map<QCheckBox*, shared_ptr<SignalBase> >::const_iterator i =
-			check_box_signal_map_.begin();
-			i != check_box_signal_map_.end(); i++) {
-		const shared_ptr<SignalBase> sig = (*i).second;
+	for (auto entry : check_box_signal_map_) {
+		QCheckBox *cb = entry.first;
+		const shared_ptr<SignalBase> sig = entry.second;
 		assert(sig);
 
 		sig->set_enabled(set);
-		(*i).first->setChecked(set);
+		cb->setChecked(set);
 	}
 
 	updating_channels_ = false;
@@ -156,10 +150,13 @@ void Channels::populate_group(shared_ptr<ChannelGroup> group,
 		binding = make_shared<Device>(group);
 
 	// Create a title if the group is going to have any content
-	if ((!sigs.empty() || (binding && !binding->properties().empty())) &&
-		group)
-		layout_.addRow(new QLabel(
-			QString("<h3>%1</h3>").arg(group->name().c_str())));
+	if ((!sigs.empty() || (binding && !binding->properties().empty())) && group)
+	{
+		QLabel *label = new QLabel(
+			QString("<h3>%1</h3>").arg(group->name().c_str()));
+		layout_.addRow(label);
+		group_label_map_[group] = label;
+	}
 
 	// Create the channel group grid
 	QGridLayout *const channel_grid = create_channel_group_grid(sigs);
@@ -181,7 +178,7 @@ QGridLayout* Channels::create_channel_group_grid(
 	for (const shared_ptr<SignalBase>& sig : sigs) {
 		assert(sig);
 
-		QCheckBox *const checkbox = new QCheckBox(sig->name());
+		QCheckBox *const checkbox = new QCheckBox(sig->display_name());
 		check_box_mapper_.setMapping(checkbox, checkbox);
 		connect(checkbox, SIGNAL(toggled(bool)),
 			&check_box_mapper_, SLOT(map()));
@@ -201,15 +198,31 @@ void Channels::showEvent(QShowEvent *event)
 {
 	pv::widgets::Popup::showEvent(event);
 
+	const shared_ptr<sigrok::Device> device = session_.device()->device();
+	assert(device);
+
+	// Update group labels
+	for (auto entry : device->channel_groups()) {
+		const shared_ptr<ChannelGroup> group = entry.second;
+
+		try {
+			QLabel* label = group_label_map_.at(group);
+			label->setText(QString("<h3>%1</h3>").arg(group->name().c_str()));
+		} catch (out_of_range) {
+			// Do nothing
+		}
+	}
+
 	updating_channels_ = true;
 
-	for (map<QCheckBox*, shared_ptr<SignalBase> >::const_iterator i =
-			check_box_signal_map_.begin();
-			i != check_box_signal_map_.end(); i++) {
-		const shared_ptr<SignalBase> sig = (*i).second;
+	for (auto entry : check_box_signal_map_) {
+		QCheckBox *cb = entry.first;
+		const shared_ptr<SignalBase> sig = entry.second;
 		assert(sig);
 
-		(*i).first->setChecked(sig->enabled());
+		// Update the check box
+		cb->setChecked(sig->enabled());
+		cb->setText(sig->display_name());
 	}
 
 	updating_channels_ = false;

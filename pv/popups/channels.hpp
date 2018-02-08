@@ -95,6 +95,7 @@ private:
 	vector< shared_ptr<pv::binding::Device> > group_bindings_;
 	map< QCheckBox*, shared_ptr<pv::data::SignalBase> >
 		check_box_signal_map_;
+	map< shared_ptr<sigrok::ChannelGroup>, QLabel*> group_label_map_;
 
 	QHBoxLayout buttons_bar_;
 	QPushButton enable_all_channels_;
