@@ -20,6 +20,7 @@
 #ifndef PULSEVIEW_GLOBALSETTINGS_HPP
 #define PULSEVIEW_GLOBALSETTINGS_HPP
 
+#include <functional>
 #include <map>
 
 #include <glib.h>

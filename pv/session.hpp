@@ -20,6 +20,7 @@
 #ifndef PULSEVIEW_PV_SESSION_HPP
 #define PULSEVIEW_PV_SESSION_HPP
 
+#include <functional>
 #include <map>
 #include <memory>
 #include <mutex>

@@ -20,6 +20,8 @@
 #ifndef PULSEVIEW_PV_BINDING_DEVICE_HPP
 #define PULSEVIEW_PV_BINDING_DEVICE_HPP
 
+#include <functional>
+
 #include <boost/optional.hpp>
 
 #include <QObject>
