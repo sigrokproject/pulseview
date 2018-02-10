@@ -145,6 +145,7 @@ bool StoreSession::start()
 	uint64_t end_sample;
 
 	if (sample_range_.first == sample_range_.second) {
+		// No sample range specified, save everything we have
 		start_sample_ = 0;
 		sample_count_ =	any_segment->get_sample_count();
 	} else {
@@ -157,6 +158,12 @@ bool StoreSession::start()
 			end_sample = min(sample_range_.second, any_segment->get_sample_count());
 			sample_count_ = end_sample - start_sample_;
 		}
+	}
+
+	// Make sure the sample range is valid
+	if (start_sample_ > any_segment->get_sample_count()) {
+		error_ = tr("Can't save range without sample data.");
+		return false;
 	}
 
 	// Begin storing

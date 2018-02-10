@@ -612,6 +612,13 @@ void MainBar::export_file(shared_ptr<OutputFormat> format, bool selection_only)
 		const uint64_t end_sample = (uint64_t)max(
 			(double)0, end_time.convert_to<double>() * samplerate);
 
+		if ((start_sample == 0) && (end_sample == 0)) {
+			// Both cursors are negative and were clamped to 0
+			show_session_error(tr("Invalid Range"), tr("The cursors don't " \
+					"define a valid range of samples."));
+			return;
+		}
+
 		sample_range = make_pair(start_sample, end_sample);
 	} else {
 		sample_range = make_pair(0, 0);
