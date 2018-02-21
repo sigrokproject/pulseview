@@ -426,7 +426,7 @@ void Session::set_default_device()
 	// Try and find the demo device and select that by default
 	const auto iter = find_if(devices.begin(), devices.end(),
 		[] (const shared_ptr<devices::HardwareDevice> &d) {
-			return d->hardware_device()->driver()->name() == "demo";	});
+			return d->hardware_device()->driver()->name() == "demo"; });
 	set_device((iter == devices.end()) ? devices.front() : *iter);
 }
 
