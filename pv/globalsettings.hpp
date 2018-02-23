@@ -20,7 +20,6 @@
 #ifndef PULSEVIEW_GLOBALSETTINGS_HPP
 #define PULSEVIEW_GLOBALSETTINGS_HPP
 
-#include <functional>
 #include <map>
 
 #include <glib.h>
@@ -29,7 +28,6 @@
 #include <QString>
 #include <QVariant>
 
-using std::function;
 using std::map;
 using std::vector;
 
