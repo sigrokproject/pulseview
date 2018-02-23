@@ -352,8 +352,7 @@ void Session::select_device(shared_ptr<devices::Device> device)
 		else
 			set_default_device();
 	} catch (const QString &e) {
-		main_bar_->session_error(tr("Failed to Select Device"),
-			tr("Failed to Select Device"));
+		main_bar_->session_error(tr("Failed to select device"), e);
 	}
 }
 
@@ -401,6 +400,7 @@ void Session::set_device(shared_ptr<devices::Device> device)
 		device_->open();
 	} catch (const QString &e) {
 		device_.reset();
+		main_bar_->session_error(tr("Failed to open device"), e);
 	}
 
 	if (device_) {
