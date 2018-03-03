@@ -1080,10 +1080,21 @@ void Session::feed_in_trigger()
 		}
 	}
 
-	// If no frame began then this is a trigger for a new segment
-	const uint32_t segment_id =
-		(frame_began_) ? highest_segment_id_ : (highest_segment_id_ + 1);
+	uint32_t segment_id = 0;  // Default segment when no frames are used
 
+	// If a frame began, we'd ideally be able to use the highest segment ID for
+	// the trigger. However, as new segments are only created when logic or
+	// analog data comes in, this doesn't work if the trigger appears right
+	// after the beginning of the frame, before any sample data.
+	// For this reason, we use highest segment ID + 1 if no sample data came in
+	// yet and the highest segment ID otherwise.
+	if (frame_began_) {
+		segment_id = highest_segment_id_;
+		if (!cur_logic_segment_ && (cur_analog_segments_.size() == 0))
+			segment_id++;
+	}
+
+	// TODO Create timestamp from segment start time + segment's current sample count
 	util::Timestamp timestamp = sample_count / get_samplerate();
 	trigger_list_.emplace_back(segment_id, timestamp);
 	trigger_event(segment_id, timestamp);
