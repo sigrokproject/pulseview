@@ -297,7 +297,7 @@ Q_SIGNALS:
 
 	void samples_cleared();
 
-	void samples_added(QObject* segment, uint64_t start_sample,
+	void samples_added(uint64_t segment_id, uint64_t start_sample,
 		uint64_t end_sample);
 
 	void min_max_changed(float min, float max);

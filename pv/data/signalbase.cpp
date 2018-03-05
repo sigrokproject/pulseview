@@ -482,8 +482,7 @@ void SignalBase::convert_single_segment(AnalogSegment *asegment, LogicSegment *l
 					analog->get_logic_via_threshold(threshold, lsamples);
 
 				lsegment->append_payload(logic->data_pointer(), logic->data_length());
-
-				samples_added(lsegment, i, i + ConversionBlockSize);
+				samples_added(lsegment->segment_id(), i, i + ConversionBlockSize);
 				i += ConversionBlockSize;
 			}
 
@@ -497,7 +496,7 @@ void SignalBase::convert_single_segment(AnalogSegment *asegment, LogicSegment *l
 			shared_ptr<sigrok::Logic> logic =
 				analog->get_logic_via_threshold(threshold, lsamples);
 			lsegment->append_payload(logic->data_pointer(), logic->data_length());
-			samples_added(lsegment, i, end_sample);
+			samples_added(lsegment->segment_id(), i, end_sample);
 		}
 
 		if (conversion_type_ == A2LConversionBySchmittTrigger) {
@@ -516,8 +515,7 @@ void SignalBase::convert_single_segment(AnalogSegment *asegment, LogicSegment *l
 						&state, lsamples);
 
 				lsegment->append_payload(logic->data_pointer(), logic->data_length());
-
-				samples_added(lsegment, i, i + ConversionBlockSize);
+				samples_added(lsegment->segment_id(), i, i + ConversionBlockSize);
 				i += ConversionBlockSize;
 			}
 
@@ -532,7 +530,7 @@ void SignalBase::convert_single_segment(AnalogSegment *asegment, LogicSegment *l
 				analog->get_logic_via_schmitt_trigger(lo_thr, hi_thr,
 					&state, lsamples);
 			lsegment->append_payload(logic->data_pointer(), logic->data_length());
-			samples_added(lsegment, i, end_sample);
+			samples_added(lsegment->segment_id(), i, end_sample);
 		}
 
 		// If acquisition is ongoing, start-/endsample may have changed
@@ -660,7 +658,8 @@ void SignalBase::on_samples_added(QObject* segment, uint64_t start_sample,
 		}
 	}
 
-	samples_added(segment, start_sample, end_sample);
+	data::Segment* s = qobject_cast<data::Segment*>(segment);
+	samples_added(s->segment_id(), start_sample, end_sample);
 }
 
 void SignalBase::on_min_max_changed(float min, float max)

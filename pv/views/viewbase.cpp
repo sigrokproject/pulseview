@@ -80,8 +80,8 @@ void ViewBase::clear_signalbases()
 	for (shared_ptr<data::SignalBase> signalbase : signalbases_) {
 		disconnect(signalbase.get(), SIGNAL(samples_cleared()),
 			this, SLOT(on_data_updated()));
-		disconnect(signalbase.get(), SIGNAL(samples_added(QObject*, uint64_t, uint64_t)),
-			this, SLOT(on_samples_added(QObject*, uint64_t, uint64_t)));
+		disconnect(signalbase.get(), SIGNAL(samples_added(uint64_t, uint64_t, uint64_t)),
+			this, SLOT(on_samples_added(uint64_t, uint64_t, uint64_t)));
 	}
 
 	signalbases_.clear();
@@ -93,8 +93,8 @@ void ViewBase::add_signalbase(const shared_ptr<data::SignalBase> signalbase)
 
 	connect(signalbase.get(), SIGNAL(samples_cleared()),
 		this, SLOT(on_data_updated()));
-	connect(signalbase.get(), SIGNAL(samples_added(QObject*, uint64_t, uint64_t)),
-		this, SLOT(on_samples_added(QObject*, uint64_t, uint64_t)));
+	connect(signalbase.get(), SIGNAL(samples_added(uint64_t, uint64_t, uint64_t)),
+		this, SLOT(on_samples_added(uint64_t, uint64_t, uint64_t)));
 }
 
 #ifdef ENABLE_DECODE
@@ -152,15 +152,13 @@ void ViewBase::perform_delayed_view_update()
 {
 }
 
-void ViewBase::on_samples_added(QObject* segment, uint64_t start_sample,
+void ViewBase::on_samples_added(uint64_t segment_id, uint64_t start_sample,
 	uint64_t end_sample)
 {
 	(void)start_sample;
 	(void)end_sample;
 
-	data::Segment* s = qobject_cast<data::Segment*>(segment);
-
-	if (s->segment_id() != current_segment_)
+	if (segment_id != current_segment_)
 		return;
 
 	if (!delayed_view_updater_.isActive())

@@ -100,7 +100,7 @@ public Q_SLOTS:
 	virtual void perform_delayed_view_update();
 
 private Q_SLOTS:
-	void on_samples_added(QObject* segment, uint64_t start_sample,
+	void on_samples_added(uint64_t segment_id, uint64_t start_sample,
 		uint64_t end_sample);
 
 	void on_data_updated();
