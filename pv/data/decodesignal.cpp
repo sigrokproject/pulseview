@@ -1040,7 +1040,7 @@ void DecodeSignal::connect_input_notifiers()
 		const data::SignalBase *signal = ch.assigned_signal;
 		connect(signal, SIGNAL(samples_cleared()),
 			this, SLOT(on_data_cleared()));
-		connect(signal, SIGNAL(samples_added(QObject*, uint64_t, uint64_t)),
+		connect(signal, SIGNAL(samples_added(uint64_t, uint64_t, uint64_t)),
 			this, SLOT(on_data_received()));
 	}
 }
