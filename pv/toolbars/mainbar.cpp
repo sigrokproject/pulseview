@@ -313,7 +313,11 @@ void MainBar::update_sample_rate_selector()
 	const shared_ptr<sigrok::Device> sr_dev = device->device();
 
 	if (sr_dev->config_check(ConfigKey::SAMPLERATE, Capability::LIST)) {
-		gvar_dict = sr_dev->config_list(ConfigKey::SAMPLERATE);
+		try {
+			gvar_dict = sr_dev->config_list(ConfigKey::SAMPLERATE);
+		} catch (Error error) {
+			qDebug() << tr("Failed to get sample rate list:") << error.what();
+		}
 	} else {
 		sample_rate_.show_none();
 		updating_sample_rate_ = false;
@@ -413,10 +417,14 @@ void MainBar::update_sample_count_selector()
 	}
 
 	if (sr_dev->config_check(ConfigKey::LIMIT_SAMPLES, Capability::LIST)) {
-		auto gvar = sr_dev->config_list(ConfigKey::LIMIT_SAMPLES);
-		if (gvar.gobj())
-			g_variant_get(gvar.gobj(), "(tt)",
-				&min_sample_count, &max_sample_count);
+		try {
+			auto gvar = sr_dev->config_list(ConfigKey::LIMIT_SAMPLES);
+			if (gvar.gobj())
+				g_variant_get(gvar.gobj(), "(tt)",
+					&min_sample_count, &max_sample_count);
+		} catch (Error error) {
+			qDebug() << tr("Failed to get sample limit list:") << error.what();
+		}
 	}
 
 	min_sample_count = min(max(min_sample_count, MinSampleCount),
