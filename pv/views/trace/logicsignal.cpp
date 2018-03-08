@@ -204,7 +204,7 @@ void LogicSignal::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 
 	const double pixels_offset = pp.pixels_offset();
 	const pv::util::Timestamp& start_time = segment->start_time();
-	const int64_t last_sample = segment->get_sample_count() - 1;
+	const int64_t last_sample = (int64_t)segment->get_sample_count() - 1;
 	const double samples_per_pixel = samplerate * pp.scale();
 	const double pixels_per_sample = 1 / samples_per_pixel;
 	const pv::util::Timestamp start = samplerate * (pp.offset() - start_time);
