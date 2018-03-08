@@ -79,7 +79,6 @@ using std::make_pair;
 using std::make_shared;
 using std::min;
 using std::pair;
-using std::placeholders::_1;
 using std::set;
 using std::set_difference;
 using std::shared_ptr;

@@ -47,7 +47,6 @@
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
 
-using std::bind;
 using std::deque;
 using std::div;
 using std::div_t;
@@ -57,7 +56,6 @@ using std::min;
 using std::numeric_limits;
 using std::out_of_range;
 using std::pair;
-using std::placeholders::_1;
 using std::shared_ptr;
 using std::vector;
 
@@ -449,8 +447,7 @@ void AnalogSignal::paint_trace(QPainter &p,
 				}
 			}
 
-			sampling_points[idx].push_back(
-				QRectF(x - (w / 2), y - sample_block[block_sample] * scale_ - (w / 2), w, w));
+			sampling_points[idx].emplace_back(x - (w / 2), y - sample_block[block_sample] * scale_ - (w / 2), w, w);
 		}
 	}
 	delete[] sample_block;

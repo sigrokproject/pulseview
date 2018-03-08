@@ -50,10 +50,8 @@
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
 
-using std::bind;
 using std::dynamic_pointer_cast;
 using std::make_shared;
-using std::placeholders::_1;
 using std::shared_ptr;
 using std::string;
 
