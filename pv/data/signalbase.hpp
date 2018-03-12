@@ -280,6 +280,8 @@ private:
 	uint8_t convert_a2l_schmitt_trigger(float lo_thr, float hi_thr,
 		float value, uint8_t &state);
 
+	void convert_single_segment_range(AnalogSegment *asegment,
+		LogicSegment *lsegment, uint64_t start_sample, uint64_t end_sample);
 	void convert_single_segment(pv::data::AnalogSegment *asegment,
 		pv::data::LogicSegment *lsegment);
 	void conversion_thread_proc();

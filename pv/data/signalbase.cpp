@@ -439,14 +439,9 @@ bool SignalBase::conversion_is_a2l() const
 		(conversion_type_ == A2LConversionBySchmittTrigger)));
 }
 
-void SignalBase::convert_single_segment(AnalogSegment *asegment, LogicSegment *lsegment)
+void SignalBase::convert_single_segment_range(AnalogSegment *asegment,
+	LogicSegment *lsegment, uint64_t start_sample, uint64_t end_sample)
 {
-	uint64_t start_sample, end_sample;
-	start_sample = end_sample = 0;
-
-	start_sample = lsegment->get_sample_count();
-	end_sample = asegment->get_sample_count();
-
 	if (end_sample > start_sample) {
 		tie(min_value_, max_value_) = asegment->get_min_max();
 
@@ -541,6 +536,38 @@ void SignalBase::convert_single_segment(AnalogSegment *asegment, LogicSegment *l
 	}
 }
 
+void SignalBase::convert_single_segment(AnalogSegment *asegment, LogicSegment *lsegment)
+{
+	uint64_t start_sample, end_sample, old_end_sample;
+	start_sample = end_sample = 0;
+	bool complete_state, old_complete_state;
+
+	start_sample = lsegment->get_sample_count();
+	end_sample = asegment->get_sample_count();
+	complete_state = asegment->is_complete();
+
+	// Don't do anything if the segment is still being filled and the sample count is too small
+	if ((!complete_state) && (end_sample - start_sample < ConversionBlockSize))
+		return;
+
+	do {
+		convert_single_segment_range(asegment, lsegment, start_sample, end_sample);
+
+		old_end_sample = end_sample;
+		old_complete_state = complete_state;
+
+		start_sample = lsegment->get_sample_count();
+		end_sample = asegment->get_sample_count();
+		complete_state = asegment->is_complete();
+
+		// If the segment has been incomplete when we were called and has been
+		// completed in the meanwhile, we convert the remaining samples as well.
+		// Also, if a sufficient number of samples was added in the meanwhile,
+		// we do another round of sample conversion.
+	} while ((complete_state != old_complete_state) ||
+		(end_sample - old_end_sample >= ConversionBlockSize));
+}
+
 void SignalBase::conversion_thread_proc()
 {
 	shared_ptr<Analog> analog_data;
@@ -582,7 +609,9 @@ void SignalBase::conversion_thread_proc()
 	do {
 		convert_single_segment(asegment, lsegment);
 
-		if (analog_data->analog_segments().size() > logic_data->logic_segments().size()) {
+		// Only advance to next segment if the current input segment is complete
+		if (asegment->is_complete() &&
+			analog_data->analog_segments().size() > logic_data->logic_segments().size()) {
 			// There are more segments to process
 			segment_id++;
 
@@ -600,7 +629,7 @@ void SignalBase::conversion_thread_proc()
 
 			lsegment = logic_data->logic_segments().back().get();
 		} else {
-			// No more segments to process, wait for data or interrupt
+			// No more samples/segments to process, wait for data or interrupt
 			if (!conversion_interrupt_) {
 				unique_lock<mutex> input_lock(conversion_input_mutex_);
 				conversion_input_cond_.wait(input_lock);
