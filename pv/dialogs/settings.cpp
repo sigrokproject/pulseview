@@ -330,6 +330,28 @@ QWidget *Settings::get_about_page(QWidget *parent) const
 	g_free(host);
 #endif
 
+	s.append("<tr><td colspan=\"2\"></td></tr>");
+	s.append("<tr><td colspan=\"2\"><b>" +
+		tr("Firmware search paths:") + "</b></td></tr>");
+
+	l_orig = sr_resourcepaths_get(SR_RESOURCE_FIRMWARE);
+	for (GSList *l = l_orig; l; l = l->next)
+		s.append(QString("<tr><td colspan=\"2\">%1</td></tr>").arg(
+			QString((char*)l->data)));
+	g_slist_free_full(l_orig, g_free);
+
+#ifdef ENABLE_DECODE
+	s.append("<tr><td colspan=\"2\"></td></tr>");
+	s.append("<tr><td colspan=\"2\"><b>" +
+		tr("Protocol decoder search paths:") + "</b></td></tr>");
+
+	l_orig = srd_searchpaths_get();
+	for (GSList *l = l_orig; l; l = l->next)
+		s.append(QString("<tr><td colspan=\"2\">%1</td></tr>").arg(
+			QString((char*)l->data)));
+	g_slist_free_full(l_orig, g_free);
+#endif
+
 	/* Set up the supported field */
 	s.append("<tr><td colspan=\"2\"></td></tr>");
 	s.append("<tr><td colspan=\"2\"><b>" +
