@@ -521,7 +521,7 @@ void Session::load_file(QString file_name,
 				new devices::SessionFile(
 					device_manager_.context(),
 					file_name.toStdString())));
-	} catch (Error e) {
+	} catch (Error& e) {
 		main_bar_->session_error(tr("Failed to load ") + file_name, e.what());
 		set_default_device();
 		main_bar_->update_device_list();
@@ -732,7 +732,7 @@ shared_ptr<data::DecodeSignal> Session::add_decode_signal()
 		// Add the decode signal to all views
 		for (shared_ptr<views::ViewBase> view : views_)
 			view->add_decode_signal(signal);
-	} catch (runtime_error e) {
+	} catch (runtime_error& e) {
 		remove_decode_signal(signal);
 		return nullptr;
 	}
@@ -934,7 +934,7 @@ void Session::sample_thread_proc(function<void (const QString)> error_handler)
 
 	try {
 		device_->start();
-	} catch (Error e) {
+	} catch (Error& e) {
 		error_handler(e.what());
 		return;
 	}
@@ -944,7 +944,7 @@ void Session::sample_thread_proc(function<void (const QString)> error_handler)
 
 	try {
 		device_->run();
-	} catch (Error e) {
+	} catch (Error& e) {
 		error_handler(e.what());
 		set_capture_state(Stopped);
 		return;
@@ -1253,7 +1253,7 @@ void Session::data_feed_in(shared_ptr<sigrok::Device> device,
 	case SR_DF_LOGIC:
 		try {
 			feed_in_logic(dynamic_pointer_cast<Logic>(packet->payload()));
-		} catch (bad_alloc) {
+		} catch (bad_alloc&) {
 			out_of_memory_ = true;
 			device_->stop();
 		}
@@ -1262,7 +1262,7 @@ void Session::data_feed_in(shared_ptr<sigrok::Device> device,
 	case SR_DF_ANALOG:
 		try {
 			feed_in_analog(dynamic_pointer_cast<Analog>(packet->payload()));
-		} catch (bad_alloc) {
+		} catch (bad_alloc&) {
 			out_of_memory_ = true;
 			device_->stop();
 		}

@@ -74,7 +74,7 @@ void InputFile::open()
 
 	try {
 		device_ = input_->device();
-	} catch (sigrok::Error) {
+	} catch (sigrok::Error&) {
 		return;
 	}
 

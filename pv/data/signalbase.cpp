@@ -219,7 +219,7 @@ bool SignalBase::segment_is_complete(uint32_t segment_id) const
 		auto segments = data->analog_segments();
 		try {
 			result = segments.at(segment_id)->is_complete();
-		} catch (out_of_range) {
+		} catch (out_of_range&) {
 			// Do nothing
 		}
 	}
@@ -230,7 +230,7 @@ bool SignalBase::segment_is_complete(uint32_t segment_id) const
 		auto segments = data->logic_segments();
 		try {
 			result = segments.at(segment_id)->is_complete();
-		} catch (out_of_range) {
+		} catch (out_of_range&) {
 			// Do nothing
 		}
 	}
@@ -617,7 +617,7 @@ void SignalBase::conversion_thread_proc()
 
 			try {
 				asegment = analog_data->analog_segments().at(segment_id).get();
-			} catch (out_of_range) {
+			} catch (out_of_range&) {
 				qDebug() << "Conversion error for" << name() << ": no analog segment" \
 					<< segment_id << ", segments size is" << analog_data->analog_segments().size();
 				return;

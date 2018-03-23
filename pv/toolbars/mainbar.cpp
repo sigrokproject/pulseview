@@ -305,7 +305,7 @@ void MainBar::update_sample_rate_selector()
 	if (sr_dev->config_check(ConfigKey::SAMPLERATE, Capability::LIST)) {
 		try {
 			gvar_dict = sr_dev->config_list(ConfigKey::SAMPLERATE);
-		} catch (Error error) {
+		} catch (Error& error) {
 			qDebug() << tr("Failed to get sample rate list:") << error.what();
 		}
 	} else {
@@ -368,7 +368,7 @@ void MainBar::update_sample_rate_selector_value()
 		updating_sample_rate_ = true;
 		sample_rate_.set_value(samplerate);
 		updating_sample_rate_ = false;
-	} catch (Error error) {
+	} catch (Error& error) {
 		qDebug() << tr("Failed to get value of sample rate:") << error.what();
 	}
 }
@@ -409,7 +409,7 @@ void MainBar::update_sample_count_selector()
 			if (gvar.gobj())
 				g_variant_get(gvar.gobj(), "(tt)",
 					&min_sample_count, &max_sample_count);
-		} catch (Error error) {
+		} catch (Error& error) {
 			qDebug() << tr("Failed to get sample limit list:") << error.what();
 		}
 	}
@@ -501,7 +501,7 @@ void MainBar::commit_sample_rate()
 		sr_dev->config_set(ConfigKey::SAMPLERATE,
 			Glib::Variant<guint64>::create(sample_rate));
 		update_sample_rate_selector();
-	} catch (Error error) {
+	} catch (Error& error) {
 		qDebug() << tr("Failed to configure samplerate:") << error.what();
 		return;
 	}
@@ -528,7 +528,7 @@ void MainBar::commit_sample_count()
 			sr_dev->config_set(ConfigKey::LIMIT_SAMPLES,
 				Glib::Variant<guint64>::create(sample_count));
 			update_sample_count_selector();
-		} catch (Error error) {
+		} catch (Error& error) {
 			qDebug() << tr("Failed to configure sample count:") << error.what();
 			return;
 		}

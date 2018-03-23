@@ -208,7 +208,7 @@ void Channels::showEvent(QShowEvent *event)
 		try {
 			QLabel* label = group_label_map_.at(group);
 			label->setText(QString("<h3>%1</h3>").arg(group->name().c_str()));
-		} catch (out_of_range) {
+		} catch (out_of_range&) {
 			// Do nothing
 		}
 	}

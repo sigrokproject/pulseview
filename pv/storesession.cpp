@@ -182,7 +182,7 @@ bool StoreSession::start()
 			{{ConfigKey::SAMPLERATE, Glib::Variant<guint64>::create(
 				any_segment->samplerate())}});
 		output_->receive(meta);
-	} catch (Error error) {
+	} catch (Error& error) {
 		error_ = tr("Error while saving: ") + error.what();
 		return false;
 	}
@@ -276,7 +276,7 @@ void StoreSession::store_proc(vector< shared_ptr<data::SignalBase> > achannel_li
 
 				delete[] ldata;
 			}
-		} catch (Error error) {
+		} catch (Error& error) {
 			error_ = tr("Error while saving: ") + error.what();
 			break;
 		}

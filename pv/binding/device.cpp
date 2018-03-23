@@ -68,7 +68,7 @@ Device::Device(shared_ptr<sigrok::Configurable> configurable) :
 		string name_str;
 		try {
 			name_str = key->description();
-		} catch (Error e) {
+		} catch (Error& e) {
 			name_str = key->name();
 		}
 

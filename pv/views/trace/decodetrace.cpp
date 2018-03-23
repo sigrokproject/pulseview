@@ -220,7 +220,7 @@ void DecodeTrace::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 		int row_title_width;
 		try {
 			row_title_width = row_title_widths_.at(row);
-		} catch (out_of_range) {
+		} catch (out_of_range&) {
 			const int w = p.boundingRect(QRectF(), 0, row.title()).width() +
 				RowTitleMargin;
 			row_title_widths_[row] = w;

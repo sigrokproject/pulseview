@@ -362,7 +362,7 @@ shared_ptr<pv::data::LogicSegment> LogicSignal::get_logic_segment_to_paint() con
 		(segment_display_mode_ == ShowLastCompleteSegmentOnly)) {
 			try {
 				segment = segments.at(current_segment_);
-			} catch (out_of_range) {
+			} catch (out_of_range&) {
 				qDebug() << "Current logic segment out of range for signal" << base_->name() << ":" << current_segment_;
 			}
 		}

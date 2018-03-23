@@ -226,7 +226,7 @@ int main(int argc, char *argv[])
 			// Run the application
 			ret = a.exec();
 
-		} catch (exception e) {
+		} catch (exception& e) {
 			qDebug() << e.what();
 		}
 

@@ -361,7 +361,7 @@ int64_t DecodeSignal::get_working_sample_count(uint32_t segment_id) const
 			try {
 				const shared_ptr<LogicSegment> segment = logic_data->logic_segments().at(segment_id);
 				count = min(count, (int64_t)segment->get_sample_count());
-			} catch (out_of_range) {
+			} catch (out_of_range&) {
 				return 0;
 			}
 		}
@@ -378,7 +378,7 @@ int64_t DecodeSignal::get_decoded_sample_count(uint32_t segment_id) const
 	try {
 		const DecodeSegment *segment = &(segments_.at(segment_id));
 		result = segment->samples_decoded;
-	} catch (out_of_range) {
+	} catch (out_of_range&) {
 		// Do nothing
 	}
 
@@ -431,7 +431,7 @@ void DecodeSignal::get_annotation_subset(
 		if (iter != rows->end())
 			(*iter).second.get_annotation_subset(dest,
 				start_sample, end_sample);
-	} catch (out_of_range) {
+	} catch (out_of_range&) {
 		// Do nothing
 	}
 }
@@ -607,7 +607,7 @@ uint32_t DecodeSignal::get_input_samplerate(uint32_t segment_id) const
 			try {
 				const shared_ptr<LogicSegment> segment = logic_data->logic_segments().at(segment_id);
 				samplerate = segment->samplerate();
-			} catch (out_of_range) {
+			} catch (out_of_range&) {
 				// Do nothing
 			}
 			break;
@@ -736,7 +736,7 @@ void DecodeSignal::mux_logic_samples(uint32_t segment_id, const int64_t start, c
 			shared_ptr<LogicSegment> segment;
 			try {
 				segment = logic_data->logic_segments().at(segment_id);
-			} catch (out_of_range) {
+			} catch (out_of_range&) {
 				qDebug() << "Muxer error for" << name() << ":" << ch.assigned_signal->name() \
 					<< "has no logic segment" << segment_id;
 				return;
@@ -756,7 +756,7 @@ void DecodeSignal::mux_logic_samples(uint32_t segment_id, const int64_t start, c
 	shared_ptr<LogicSegment> output_segment;
 	try {
 		output_segment = logic_mux_data_->logic_segments().at(segment_id);
-	} catch (out_of_range) {
+	} catch (out_of_range&) {
 		qDebug() << "Muxer error for" << name() << ": no logic mux segment" \
 			<< segment_id << "in mux_logic_samples(), mux segments size is" \
 			<< logic_mux_data_->logic_segments().size();
@@ -948,7 +948,7 @@ void DecodeSignal::decode_proc()
 
 				try {
 					input_segment = logic_mux_data_->logic_segments().at(current_segment_id_);
-				} catch (out_of_range) {
+				} catch (out_of_range&) {
 					qDebug() << "Decode error for" << name() << ": no logic mux segment" \
 						<< current_segment_id_ << "in decode_proc(), mux segments size is" \
 						<< logic_mux_data_->logic_segments().size();
