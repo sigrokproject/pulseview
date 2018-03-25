@@ -78,7 +78,10 @@ find_package(Qt5 COMPONENTS Core Gui Widgets Svg REQUIRED)
 if(WIN32)
 	# MXE workaround: Use pkg-config to find Qt5 libs.
 	# https://github.com/mxe/mxe/issues/1642
-	pkg_check_modules(QT5ALL REQUIRED Qt5Widgets Qt5Gui Qt5Svg)
+	# Not required (and doesn't work) on MSYS2.
+	if(NOT DEFINED ENV{MSYSTEM})
+		pkg_check_modules(QT5ALL REQUIRED Qt5Widgets Qt5Gui Qt5Svg)
+	endif()
 endif()
 
 set(QT_LIBRARIES Qt5::Gui Qt5::Widgets Qt5::Svg)
