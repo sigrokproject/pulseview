@@ -428,12 +428,15 @@ endif()
 if(WIN32)
 	# On Windows we need to statically link the libqsvg imageformat
 	# plugin (and the QtSvg component) for SVG graphics/icons to work.
-	# We also need QWindowsIntegrationPlugin, Qt5PlatformSupport, and all
-	# Qt libs and their dependencies.
+	# We also need QWindowsIntegrationPlugin, Qt5PlatformSupport (only for
+	# Qt < 5.8.0), and all Qt libs and their dependencies.
 	add_definitions(-DQT_STATICPLUGIN)
 	list(APPEND PULSEVIEW_LINK_LIBS Qt5::QSvgPlugin)
 	list(APPEND PULSEVIEW_LINK_LIBS Qt5::QWindowsIntegrationPlugin)
-	list(APPEND PULSEVIEW_LINK_LIBS -lQt5PlatformSupport ${QT5ALL_LDFLAGS})
+	if(Qt5Gui_VERSION VERSION_LESS 5.8.0)
+		list(APPEND PULSEVIEW_LINK_LIBS -lQt5PlatformSupport)
+	endif()
+	list(APPEND PULSEVIEW_LINK_LIBS ${QT5ALL_LDFLAGS})
 endif()
 
 if(ANDROID)
