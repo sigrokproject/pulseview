@@ -33,10 +33,17 @@
 #include "signalhandler.hpp"
 #endif
 
+#ifdef ENABLE_STACKTRACE
+#include <signal.h>
+#include <boost/stacktrace.hpp>
+#include <QStandardPaths>
+#endif
+
 #include "pv/application.hpp"
 #include "pv/devicemanager.hpp"
 #include "pv/mainwindow.hpp"
 #include "pv/session.hpp"
+
 #ifdef ANDROID
 #include <libsigrokandroidutils/libsigrokandroidutils.h>
 #include "android/assetreader.hpp"
@@ -54,6 +61,17 @@ Q_IMPORT_PLUGIN(QSvgPlugin)
 using std::exception;
 using std::shared_ptr;
 using std::string;
+
+#if ENABLE_STACKTRACE
+QString stacktrace_filename;
+
+void signal_handler(int signum)
+{
+	::signal(signum, SIG_DFL);
+	boost::stacktrace::safe_dump_to(stacktrace_filename.toLocal8Bit().data());
+	::raise(SIGABRT);
+}
+#endif
 
 void usage()
 {
@@ -175,6 +193,16 @@ int main(int argc, char *argv[])
 	context = sigrok::Context::create();
 	pv::Session::sr_context = context;
 
+#if ENABLE_STACKTRACE
+	QString temp_path = QStandardPaths::standardLocations(
+		QStandardPaths::TempLocation).at(0);
+	stacktrace_filename = temp_path + "/pv_stacktrace.dmp";
+	qDebug() << "Stack trace file is" << stacktrace_filename;
+
+	::signal(SIGSEGV, &signal_handler);
+	::signal(SIGABRT, &signal_handler);
+#endif
+
 #ifdef ANDROID
 	context->set_resource_reader(&asset_reader);
 #endif
@@ -191,44 +219,44 @@ int main(int argc, char *argv[])
 		srd_decoder_load_all();
 #endif
 
+#ifndef ENABLE_STACKTRACE
 		try {
-			// Create the device manager, initialise the drivers
-			pv::DeviceManager device_manager(context, driver, do_scan);
-
-			// Initialise the main window
-			pv::MainWindow w(device_manager);
-			w.show();
-
-			if (restore_sessions)
-				w.restore_sessions();
-
-			if (!open_file.empty())
-				w.add_session_with_file(open_file, open_file_format);
-			else
-				w.add_default_session();
-
-#ifdef ENABLE_SIGNALS
-			if (SignalHandler::prepare_signals()) {
-				SignalHandler *const handler =
-					new SignalHandler(&w);
-				QObject::connect(handler,
-					SIGNAL(int_received()),
-					&w, SLOT(close()));
-				QObject::connect(handler,
-					SIGNAL(term_received()),
-					&w, SLOT(close()));
-			} else {
-				qWarning() <<
-					"Could not prepare signal handler.";
-			}
 #endif
 
-			// Run the application
-			ret = a.exec();
+		// Create the device manager, initialise the drivers
+		pv::DeviceManager device_manager(context, driver, do_scan);
 
+		// Initialise the main window
+		pv::MainWindow w(device_manager);
+		w.show();
+
+		if (restore_sessions)
+			w.restore_sessions();
+
+		if (!open_file.empty())
+			w.add_session_with_file(open_file, open_file_format);
+		else
+			w.add_default_session();
+
+#ifdef ENABLE_SIGNALS
+		if (SignalHandler::prepare_signals()) {
+			SignalHandler *const handler = new SignalHandler(&w);
+			QObject::connect(handler, SIGNAL(int_received()),
+				&w, SLOT(close()));
+			QObject::connect(handler, SIGNAL(term_received()),
+				&w, SLOT(close()));
+		} else
+			qWarning() << "Could not prepare signal handler.";
+#endif
+
+		// Run the application
+		ret = a.exec();
+
+#ifndef ENABLE_STACKTRACE
 		} catch (exception& e) {
-			qDebug() << e.what();
+			qDebug() << "Exception:" << e.what();
 		}
+#endif
 
 #ifdef ENABLE_DECODE
 		// Destroy libsigrokdecode

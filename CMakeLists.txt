@@ -32,6 +32,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake")
 
 option(DISABLE_WERROR "Build without -Werror" FALSE)
 option(ENABLE_SIGNALS "Build with UNIX signals" TRUE)
+option(ENABLE_STACKTRACE "Enable stack trace when crashing" FALSE)
 option(ENABLE_DECODE "Build with libsigrokdecode" TRUE)
 option(ENABLE_TESTS "Enable unit tests" TRUE)
 option(STATIC_PKGDEPS_LIBS "Statically link to (pkg-config) libraries" FALSE)
@@ -90,7 +91,12 @@ set(BOOSTCOMPS filesystem serialization system)
 if(ENABLE_TESTS)
 	list(APPEND BOOSTCOMPS unit_test_framework)
 endif()
-find_package(Boost 1.55 COMPONENTS ${BOOSTCOMPS} REQUIRED)
+
+if(ENABLE_STACKTRACE)
+	find_package(Boost 1.65.1 COMPONENTS ${BOOSTCOMPS} REQUIRED)
+else()
+	find_package(Boost 1.55 COMPONENTS ${BOOSTCOMPS} REQUIRED)
+endif()
 
 # Find the platform's thread library (needed for C++11 threads).
 # This will set ${CMAKE_THREAD_LIBS_INIT} to the correct, OS-specific value.
@@ -391,6 +397,10 @@ if(ENABLE_SIGNALS)
 	add_definitions(-DENABLE_SIGNALS)
 endif()
 
+if(ENABLE_STACKTRACE)
+	add_definitions(-DENABLE_STACKTRACE)
+endif()
+
 #===============================================================================
 #= Global Include Directories
 #-------------------------------------------------------------------------------
@@ -440,6 +450,11 @@ if(WIN32)
 		list(APPEND PULSEVIEW_LINK_LIBS -lQt5PlatformSupport)
 	endif()
 	list(APPEND PULSEVIEW_LINK_LIBS ${QT5ALL_LDFLAGS})
+endif()
+
+if(ENABLE_STACKTRACE)
+	# Needed to resolve dladdr.
+	list(APPEND PULSEVIEW_LINK_LIBS "-ldl")
 endif()
 
 if(ANDROID)

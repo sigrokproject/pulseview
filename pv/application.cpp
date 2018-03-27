@@ -20,10 +20,14 @@
 #include "application.hpp"
 #include "config.h"
 
-#include <iostream>
+#include <typeinfo>
 
-using std::cerr;
-using std::endl;
+#include <QDebug>
+
+#ifdef ENABLE_STACKTRACE
+#include <boost/stacktrace.hpp>
+#endif
+
 using std::exception;
 
 Application::Application(int &argc, char* argv[]) :
@@ -40,8 +44,13 @@ bool Application::notify(QObject *receiver, QEvent *event)
 	try {
 		return QApplication::notify(receiver, event);
 	} catch (exception& e) {
-		cerr << "Caught exception: " << e.what() << endl;
+		qDebug().nospace() << "Caught exception of type " << \
+			typeid(e).name() << " (" << e.what() << ")";
+#ifdef ENABLE_STACKTRACE
+		throw e;
+#else
 		exit(1);
+#endif
 		return false;
 	}
 }
