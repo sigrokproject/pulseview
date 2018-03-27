@@ -39,6 +39,7 @@ const QString GlobalSettings::Key_View_ConversionThresholdDispMode = "View_Conve
 const QString GlobalSettings::Key_View_DefaultDivHeight = "View_DefaultDivHeight";
 const QString GlobalSettings::Key_View_DefaultLogicHeight = "View_DefaultLogicHeight";
 const QString GlobalSettings::Key_Dec_InitialStateConfigurable = "Dec_InitialStateConfigurable";
+const QString GlobalSettings::Key_Log_BufferSize = "Log_BufferSize";
 
 vector<GlobalSettingsInterface*> GlobalSettings::callbacks_;
 bool GlobalSettings::tracking_ = false;
@@ -71,6 +72,10 @@ void GlobalSettings::set_defaults_where_needed()
 	if (!contains(Key_View_DefaultLogicHeight))
 		setValue(Key_View_DefaultLogicHeight,
 		2 * QFontMetrics(QApplication::font()).height());
+
+	// Default to 500 lines of backlog
+	if (!contains(Key_Log_BufferSize))
+		setValue(Key_Log_BufferSize, 500);
 }
 
 void GlobalSettings::add_change_handler(GlobalSettingsInterface *cb)

@@ -41,6 +41,8 @@
 
 #include "pv/application.hpp"
 #include "pv/devicemanager.hpp"
+#include "pv/globalsettings.hpp"
+#include "pv/logging.hpp"
 #include "pv/mainwindow.hpp"
 #include "pv/session.hpp"
 
@@ -188,6 +190,12 @@ int main(int argc, char *argv[])
 
 	if (argc - optind == 1)
 		open_file = argv[argc - 1];
+
+	// Prepare the global settings since logging needs them early on
+	pv::GlobalSettings settings;
+	settings.set_defaults_where_needed();
+
+	pv::logging.init();
 
 	// Initialise libsigrok
 	context = sigrok::Context::create();

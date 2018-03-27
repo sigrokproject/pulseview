@@ -23,6 +23,7 @@
 #include <QCheckBox>
 #include <QDialog>
 #include <QListWidget>
+#include <QPlainTextEdit>
 #include <QStackedWidget>
 
 namespace pv {
@@ -40,10 +41,12 @@ public:
 
 	void create_pages();
 	QCheckBox *create_checkbox(const QString& key, const char* slot) const;
+	QPlainTextEdit *create_log_view() const;
 
 	QWidget *get_view_settings_form(QWidget *parent) const;
 	QWidget *get_decoder_settings_form(QWidget *parent) const;
 	QWidget *get_about_page(QWidget *parent) const;
+	QWidget *get_logging_page(QWidget *parent) const;
 
 	void accept();
 	void reject();
@@ -61,11 +64,17 @@ private Q_SLOTS:
 	void on_view_defaultDivHeight_changed(int value);
 	void on_view_defaultLogicHeight_changed(int value);
 	void on_dec_initialStateConfigurable_changed(int state);
+	void on_log_logLevel_changed(int value);
+	void on_log_bufferSize_changed(int value);
+	void on_log_saveToFile_clicked(bool checked);
+	void on_log_popOut_clicked(bool checked);
 
 private:
 	DeviceManager &device_manager_;
 	QListWidget *page_list;
 	QStackedWidget *pages;
+
+	QPlainTextEdit *log_view_;
 };
 
 } // namespace dialogs

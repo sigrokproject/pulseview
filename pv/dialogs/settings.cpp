@@ -25,20 +25,26 @@
 #include <QApplication>
 #include <QComboBox>
 #include <QDialogButtonBox>
+#include <QFileDialog>
 #include <QFormLayout>
 #include <QGroupBox>
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QMainWindow>
+#include <QMessageBox>
+#include <QPushButton>
 #include <QSpinBox>
 #include <QString>
 #include <QTextBrowser>
 #include <QTextDocument>
+#include <QTextStream>
 #include <QVBoxLayout>
 
 #include "settings.hpp"
 
 #include "pv/devicemanager.hpp"
 #include "pv/globalsettings.hpp"
+#include "pv/logging.hpp"
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
 
@@ -59,6 +65,10 @@ Settings::Settings(DeviceManager &device_manager, QWidget *parent) :
 
 	resize(600, 400);
 
+	// Create log view
+	log_view_ = create_log_view();
+
+	// Create pages
 	page_list = new QListWidget;
 	page_list->setViewMode(QListView::IconMode);
 	page_list->setIconSize(QSize(icon_size, icon_size));
@@ -121,6 +131,15 @@ void Settings::create_pages()
 	aboutButton->setText(tr("About"));
 	aboutButton->setTextAlignment(Qt::AlignHCenter);
 	aboutButton->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+
+	// Logging page
+	pages->addWidget(get_logging_page(pages));
+
+	QListWidgetItem *loggingButton = new QListWidgetItem(page_list);
+	loggingButton->setIcon(QIcon(":/icons/information.svg"));
+	loggingButton->setText(tr("Logging"));
+	loggingButton->setTextAlignment(Qt::AlignHCenter);
+	loggingButton->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
 }
 
 QCheckBox *Settings::create_checkbox(const QString& key, const char* slot) const
@@ -131,6 +150,23 @@ QCheckBox *Settings::create_checkbox(const QString& key, const char* slot) const
 	cb->setChecked(settings.value(key).toBool());
 	connect(cb, SIGNAL(stateChanged(int)), this, slot);
 	return cb;
+}
+
+QPlainTextEdit *Settings::create_log_view() const
+{
+	GlobalSettings settings;
+
+	QPlainTextEdit *log_view = new QPlainTextEdit();
+
+	log_view->setReadOnly(true);
+	log_view->setWordWrapMode(QTextOption::NoWrap);
+	log_view->setCenterOnScroll(true);
+
+	log_view->appendHtml(logging.get_log());
+	connect(&logging, SIGNAL(logged_text(QString)),
+		log_view, SLOT(appendHtml(QString)));
+
+	return log_view;
 }
 
 QWidget *Settings::get_view_settings_form(QWidget *parent) const
@@ -414,6 +450,64 @@ QWidget *Settings::get_about_page(QWidget *parent) const
 	return page;
 }
 
+QWidget *Settings::get_logging_page(QWidget *parent) const
+{
+	GlobalSettings settings;
+
+	// Log level
+	QSpinBox *loglevel_sb = new QSpinBox();
+	loglevel_sb->setMaximum(SR_LOG_SPEW);
+	loglevel_sb->setValue(logging.get_log_level());
+	connect(loglevel_sb, SIGNAL(valueChanged(int)), this,
+		SLOT(on_log_logLevel_changed(int)));
+
+	QHBoxLayout *loglevel_layout = new QHBoxLayout();
+	loglevel_layout->addWidget(new QLabel(tr("Log level:")));
+	loglevel_layout->addWidget(loglevel_sb);
+
+	// Background buffer size
+	QSpinBox *buffersize_sb = new QSpinBox();
+	buffersize_sb->setSuffix(tr(" lines"));
+	buffersize_sb->setMaximum(Logging::MAX_BUFFER_SIZE);
+	buffersize_sb->setValue(
+		settings.value(GlobalSettings::Key_Log_BufferSize).toInt());
+	connect(buffersize_sb, SIGNAL(valueChanged(int)), this,
+		SLOT(on_log_bufferSize_changed(int)));
+
+	QHBoxLayout *buffersize_layout = new QHBoxLayout();
+	buffersize_layout->addWidget(new QLabel(tr("Length of background buffer:")));
+	buffersize_layout->addWidget(buffersize_sb);
+
+	// Save to file
+	QPushButton *save_log_pb = new QPushButton(
+		QIcon::fromTheme("document-save-as", QIcon(":/icons/document-save-as.png")),
+		tr("&Save to File"));
+	connect(save_log_pb, SIGNAL(clicked(bool)),
+		this, SLOT(on_log_saveToFile_clicked(bool)));
+
+	// Pop out
+	QPushButton *pop_out_pb = new QPushButton(
+		QIcon::fromTheme("window-new", QIcon(":/icons/window-new.png")),
+		tr("&Pop out"));
+	connect(pop_out_pb, SIGNAL(clicked(bool)),
+		this, SLOT(on_log_popOut_clicked(bool)));
+
+	QHBoxLayout *control_layout = new QHBoxLayout();
+	control_layout->addLayout(loglevel_layout);
+	control_layout->addLayout(buffersize_layout);
+	control_layout->addWidget(save_log_pb);
+	control_layout->addWidget(pop_out_pb);
+
+	QVBoxLayout *root_layout = new QVBoxLayout();
+	root_layout->addLayout(control_layout);
+	root_layout->addWidget(log_view_);
+
+	QWidget *page = new QWidget(parent);
+	page->setLayout(root_layout);
+
+	return page;
+}
+
 void Settings::accept()
 {
 	GlobalSettings settings;
@@ -502,6 +596,69 @@ void Settings::on_dec_initialStateConfigurable_changed(int state)
 {
 	GlobalSettings settings;
 	settings.setValue(GlobalSettings::Key_Dec_InitialStateConfigurable, state ? true : false);
+}
+
+void Settings::on_log_logLevel_changed(int value)
+{
+	logging.set_log_level(value);
+}
+
+void Settings::on_log_bufferSize_changed(int value)
+{
+	GlobalSettings settings;
+	settings.setValue(GlobalSettings::Key_Log_BufferSize, value);
+}
+
+void Settings::on_log_saveToFile_clicked(bool checked)
+{
+	(void)checked;
+
+	const QString file_name = QFileDialog::getSaveFileName(
+		this, tr("Save Log"), "", tr("Log Files (*.txt *.log);;All Files (*)"));
+
+	if (file_name.isEmpty())
+		return;
+
+	QFile file(file_name);
+	if (file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
+		QTextStream out_stream(&file);
+		out_stream << log_view_->toPlainText();
+
+		if (out_stream.status() == QTextStream::Ok) {
+			QMessageBox msg(this);
+			msg.setText(tr("Success"));
+			msg.setInformativeText(tr("Log saved to %1.").arg(file_name));
+			msg.setStandardButtons(QMessageBox::Ok);
+			msg.setIcon(QMessageBox::Information);
+			msg.exec();
+
+			return;
+		}
+	}
+
+	QMessageBox msg(this);
+	msg.setText(tr("Error"));
+	msg.setInformativeText(tr("File %1 could not be written to.").arg(file_name));
+	msg.setStandardButtons(QMessageBox::Ok);
+	msg.setIcon(QMessageBox::Warning);
+	msg.exec();
+}
+
+void Settings::on_log_popOut_clicked(bool checked)
+{
+	(void)checked;
+
+	// Create the window as a sub-window so it closes when the main window closes
+	QMainWindow *window = new QMainWindow(0, Qt::SubWindow);
+
+	window->setObjectName(QString::fromUtf8("Log Window"));
+	window->setWindowTitle(tr("%1 Log").arg(PV_TITLE));
+
+	// Use same width/height as the settings dialog
+	window->resize(width(), height());
+
+	window->setCentralWidget(create_log_view());
+	window->show();
 }
 
 } // namespace dialogs

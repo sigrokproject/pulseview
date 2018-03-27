@@ -79,9 +79,6 @@ MainWindow::MainWindow(DeviceManager &device_manager, QWidget *parent) :
 
 	GlobalSettings::add_change_handler(this);
 
-	GlobalSettings settings;
-	settings.set_defaults_where_needed();
-
 	setup_ui();
 	restore_ui_settings();
 }

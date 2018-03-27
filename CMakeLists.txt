@@ -201,6 +201,7 @@ set(pulseview_SOURCES
 	pv/application.cpp
 	pv/devicemanager.cpp
 	pv/globalsettings.cpp
+	pv/logging.cpp
 	pv/mainwindow.cpp
 	pv/session.cpp
 	pv/storesession.cpp
@@ -273,6 +274,7 @@ set(pulseview_SOURCES
 
 # This list includes only QObject derived class headers.
 set(pulseview_HEADERS
+	pv/logging.hpp
 	pv/globalsettings.hpp
 	pv/mainwindow.hpp
 	pv/session.hpp

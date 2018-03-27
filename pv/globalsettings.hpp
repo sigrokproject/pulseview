@@ -56,6 +56,7 @@ public:
 	static const QString Key_View_DefaultDivHeight;
 	static const QString Key_View_DefaultLogicHeight;
 	static const QString Key_Dec_InitialStateConfigurable;
+	static const QString Key_Log_BufferSize;
 
 	enum ConvThrDispMode {
 		ConvThrDispMode_None = 0,
