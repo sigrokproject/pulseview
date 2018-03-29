@@ -33,6 +33,7 @@
 #include <QMainWindow>
 #include <QMessageBox>
 #include <QPushButton>
+#include <QScrollBar>
 #include <QSpinBox>
 #include <QString>
 #include <QTextBrowser>
@@ -57,29 +58,49 @@ using std::shared_ptr;
 namespace pv {
 namespace dialogs {
 
+/**
+ * Special version of a QListView that has the width of the first column as minimum size.
+ *
+ * @note Inspired by https://github.com/qt-creator/qt-creator/blob/master/src/plugins/coreplugin/dialogs/settingsdialog.cpp
+ */
+class PageListWidget: public QListWidget
+{
+public:
+	PageListWidget() :
+		QListWidget()
+	{
+		setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Expanding);
+	}
+
+	QSize sizeHint() const final
+	{
+		int width = sizeHintForColumn(0) + frameWidth() * 2 + 5;
+		if (verticalScrollBar()->isVisible())
+			width += verticalScrollBar()->width();
+		return QSize(width, 100);
+	}
+};
+
 Settings::Settings(DeviceManager &device_manager, QWidget *parent) :
 	QDialog(parent, nullptr),
 	device_manager_(device_manager)
 {
-	const int icon_size = 64;
-
 	resize(600, 400);
 
 	// Create log view
 	log_view_ = create_log_view();
 
 	// Create pages
-	page_list = new QListWidget;
-	page_list->setViewMode(QListView::IconMode);
-	page_list->setIconSize(QSize(icon_size, icon_size));
+	page_list = new PageListWidget();
+	page_list->setViewMode(QListView::ListMode);
 	page_list->setMovement(QListView::Static);
-	page_list->setMaximumWidth(icon_size + (icon_size / 2));
-	page_list->setSpacing(12);
+	page_list->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
 	pages = new QStackedWidget;
 	create_pages();
 	page_list->setCurrentIndex(page_list->model()->index(0, 0));
 
+	// Create the rest of the dialog
 	QHBoxLayout *tab_layout = new QHBoxLayout;
 	tab_layout->addWidget(page_list);
 	tab_layout->addWidget(pages, Qt::AlignLeft);
@@ -109,7 +130,7 @@ void Settings::create_pages()
 	QListWidgetItem *viewButton = new QListWidgetItem(page_list);
 	viewButton->setIcon(QIcon(":/icons/settings-views.svg"));
 	viewButton->setText(tr("Views"));
-	viewButton->setTextAlignment(Qt::AlignHCenter);
+	viewButton->setTextAlignment(Qt::AlignVCenter);
 	viewButton->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
 
 #ifdef ENABLE_DECODE
@@ -119,7 +140,7 @@ void Settings::create_pages()
 	QListWidgetItem *decoderButton = new QListWidgetItem(page_list);
 	decoderButton->setIcon(QIcon(":/icons/add-decoder.svg"));
 	decoderButton->setText(tr("Decoders"));
-	decoderButton->setTextAlignment(Qt::AlignHCenter);
+	decoderButton->setTextAlignment(Qt::AlignVCenter);
 	decoderButton->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
 #endif
 
@@ -129,7 +150,7 @@ void Settings::create_pages()
 	QListWidgetItem *aboutButton = new QListWidgetItem(page_list);
 	aboutButton->setIcon(QIcon(":/icons/information.svg"));
 	aboutButton->setText(tr("About"));
-	aboutButton->setTextAlignment(Qt::AlignHCenter);
+	aboutButton->setTextAlignment(Qt::AlignVCenter);
 	aboutButton->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
 
 	// Logging page
@@ -138,7 +159,7 @@ void Settings::create_pages()
 	QListWidgetItem *loggingButton = new QListWidgetItem(page_list);
 	loggingButton->setIcon(QIcon(":/icons/information.svg"));
 	loggingButton->setText(tr("Logging"));
-	loggingButton->setTextAlignment(Qt::AlignHCenter);
+	loggingButton->setTextAlignment(Qt::AlignVCenter);
 	loggingButton->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
 }
 

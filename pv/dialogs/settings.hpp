@@ -32,6 +32,8 @@ class DeviceManager;
 
 namespace dialogs {
 
+class PageListWidget;
+
 class Settings : public QDialog
 {
 	Q_OBJECT
@@ -71,7 +73,7 @@ private Q_SLOTS:
 
 private:
 	DeviceManager &device_manager_;
-	QListWidget *page_list;
+	PageListWidget *page_list;
 	QStackedWidget *pages;
 
 	QPlainTextEdit *log_view_;
