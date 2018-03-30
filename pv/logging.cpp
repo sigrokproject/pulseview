@@ -55,9 +55,9 @@ void Logging::init()
 	buffer_.reserve(buffer_size_);
 
 	qInstallMessageHandler(log_pv);
-	sr_log_callback_set(log_libsigrok, nullptr);
+	sr_log_callback_set(log_sr, nullptr);
 #ifdef ENABLE_DECODE
-	srd_log_callback_set(log_libsrd, nullptr);
+	srd_log_callback_set(log_srd, nullptr);
 #endif
 
 	GlobalSettings::add_change_handler(this);
@@ -129,7 +129,7 @@ void Logging::log_pv(QtMsgType type, const QMessageLogContext &context, const QS
 	logging.log(msg, LogSource_pv);
 }
 
-int Logging::log_libsigrok(void *cb_data, int loglevel, const char *format, va_list args)
+int Logging::log_sr(void *cb_data, int loglevel, const char *format, va_list args)
 {
 	(void)cb_data;
 	(void)loglevel;
@@ -142,7 +142,7 @@ int Logging::log_libsigrok(void *cb_data, int loglevel, const char *format, va_l
 }
 
 #ifdef ENABLE_DECODE
-int Logging::log_libsrd(void *cb_data, int loglevel, const char *format, va_list args)
+int Logging::log_srd(void *cb_data, int loglevel, const char *format, va_list args)
 {
 	(void)cb_data;
 	(void)loglevel;

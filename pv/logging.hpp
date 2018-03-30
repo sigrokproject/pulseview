@@ -55,10 +55,10 @@ public:
 
 	static void log_pv(QtMsgType type, const QMessageLogContext &context, const QString &msg);
 
-	static int log_libsigrok(void *cb_data, int loglevel, const char *format, va_list args);
+	static int log_sr(void *cb_data, int loglevel, const char *format, va_list args);
 
 #ifdef ENABLE_DECODE
-	static int log_libsrd(void *cb_data, int loglevel, const char *format, va_list args);
+	static int log_srd(void *cb_data, int loglevel, const char *format, va_list args);
 #endif
 
 private:
