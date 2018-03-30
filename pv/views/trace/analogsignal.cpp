@@ -277,7 +277,7 @@ void AnalogSignal::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 		paint_grid(p, y, pp.left(), pp.right());
 
 		shared_ptr<pv::data::AnalogSegment> segment = get_analog_segment_to_paint();
-		if (!segment)
+		if (!segment || (segment->get_sample_count() == 0))
 			return;
 
 		const double pixels_offset = pp.pixels_offset();
@@ -538,7 +538,7 @@ void AnalogSignal::paint_logic_mid(QPainter &p, ViewItemPaintParams &pp)
 	const float low_offset = y + nh - signal_margin - 0.5f;
 
 	shared_ptr<pv::data::LogicSegment> segment = get_logic_segment_to_paint();
-	if (!segment)
+	if (!segment || (segment->get_sample_count() == 0))
 		return;
 
 	double samplerate = segment->samplerate();
