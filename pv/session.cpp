@@ -1282,6 +1282,15 @@ void Session::data_feed_in(shared_ptr<sigrok::Device> device,
 		// devices use frames, and for those devices, we need to do it here.
 		{
 			lock_guard<recursive_mutex> lock(data_mutex_);
+
+			if (cur_logic_segment_)
+				cur_logic_segment_->set_complete();
+
+			for (auto entry : cur_analog_segments_) {
+				shared_ptr<data::AnalogSegment> segment = entry.second;
+				segment->set_complete();
+			}
+
 			cur_logic_segment_.reset();
 			cur_analog_segments_.clear();
 		}
