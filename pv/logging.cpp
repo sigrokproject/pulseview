@@ -105,7 +105,7 @@ void Logging::log(const QString &text, int source)
 		s = QString("<font color=\"blue\">sr: %1</font>").arg(text);
 		break;
 	case LogSource_srd:
-		s = QString("<font color=\"brown\">srd: %1</font>").arg(text);
+		s = QString("<font color=\"olive\">srd: %1</font>").arg(text);
 		break;
 	default:
 		s = text;
