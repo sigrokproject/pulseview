@@ -17,8 +17,8 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SIGNALHANDLER_HPP
-#define SIGNALHANDLER_HPP
+#ifndef PULSEVIEW_PV_SIGNALHANDLER_HPP
+#define PULSEVIEW_PV_SIGNALHANDLER_HPP
 
 #include <QObject>
 
@@ -51,4 +51,4 @@ private:
 	static int sockets_[2];
 };
 
-#endif // SIGNALHANDLER_HPP
+#endif // PULSEVIEW_PV_SIGNALHANDLER_HPP
