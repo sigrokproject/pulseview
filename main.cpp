@@ -120,6 +120,7 @@ int main(int argc, char *argv[])
 			{"version", no_argument, nullptr, 'V'},
 			{"loglevel", required_argument, nullptr, 'l'},
 			{"driver", required_argument, nullptr, 'd'},
+			{"no-scan", no_argument, nullptr, 'D'},
 			{"input-file", required_argument, nullptr, 'i'},
 			{"input-format", required_argument, nullptr, 'I'},
 			{"clean", no_argument, nullptr, 'c'},
