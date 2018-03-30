@@ -20,6 +20,7 @@
 #include "globalsettings.hpp"
 
 #include <QApplication>
+#include <QDebug>
 #include <QFontMetrics>
 #include <QString>
 
@@ -105,6 +106,8 @@ void GlobalSettings::setValue(const QString &key, const QVariant &value)
 		tracked_changes_.emplace(key, QSettings::value(key));
 
 	QSettings::setValue(key, value);
+
+	qDebug() << "Setting" << key << "changed to" << value;
 
 	// Call all registered callbacks
 	for (GlobalSettingsInterface *cb : callbacks_)
