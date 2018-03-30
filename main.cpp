@@ -22,12 +22,18 @@
 #endif
 
 #include <cstdint>
-#include <libsigrokcxx/libsigrokcxx.hpp>
-
+#include <fstream>
 #include <getopt.h>
 
+#include <libsigrokcxx/libsigrokcxx.hpp>
+
+#include <QCheckBox>
 #include <QDebug>
+#include <QFile>
+#include <QFileInfo>
+#include <QMessageBox>
 #include <QSettings>
+#include <QTextStream>
 
 #ifdef ENABLE_SIGNALS
 #include "signalhandler.hpp"
@@ -61,6 +67,8 @@ Q_IMPORT_PLUGIN(QSvgPlugin)
 #endif
 
 using std::exception;
+using std::ifstream;
+using std::ofstream;
 using std::shared_ptr;
 using std::string;
 
@@ -72,6 +80,60 @@ void signal_handler(int signum)
 	::signal(signum, SIG_DFL);
 	boost::stacktrace::safe_dump_to(stacktrace_filename.toLocal8Bit().data());
 	::raise(SIGABRT);
+}
+
+void process_stacktrace(QString temp_path)
+{
+	const QString stacktrace_outfile = temp_path + "/pv_stacktrace.txt";
+
+	ifstream ifs(stacktrace_filename.toLocal8Bit().data());
+	ofstream ofs(stacktrace_outfile.toLocal8Bit().data(),
+		ofstream::out | ofstream::trunc);
+
+	boost::stacktrace::stacktrace st =
+		boost::stacktrace::stacktrace::from_dump(ifs);
+	ofs << st;
+
+	ofs.close();
+	ifs.close();
+
+	QFile f(stacktrace_outfile);
+	f.open(QFile::ReadOnly | QFile::Text);
+	QTextStream fs(&f);
+	QString stacktrace = fs.readAll();
+	stacktrace = stacktrace.trimmed().replace('\n', "<br />");
+
+	qDebug() << QObject::tr("Stack trace of previous crash:");
+	qDebug() << "---------------------------------------------------------";
+	// Note: qDebug() prints quotation marks for QString output, so we feed it char*
+	qDebug() << stacktrace.toLocal8Bit().data();
+	qDebug() << "---------------------------------------------------------";
+
+	f.close();
+
+	// Remove stack trace so we don't process it again the next time we run
+	QFile::remove(stacktrace_filename.toLocal8Bit().data());
+
+	// Show notification dialog if permitted
+	pv::GlobalSettings settings;
+	if (settings.value(pv::GlobalSettings::Key_Log_NotifyOfStacktrace).toBool()) {
+		QCheckBox *cb = new QCheckBox(QObject::tr("Don't show this message again"));
+
+		QMessageBox msgbox;
+		msgbox.setText(QObject::tr("When %1 last crashed, it created a stack trace.\n" \
+			"A human-readable form has been saved to disk and was written to " \
+			"the log. You may access it from the settings dialog.").arg(PV_TITLE));
+		msgbox.setIcon(QMessageBox::Icon::Information);
+		msgbox.addButton(QMessageBox::Ok);
+		msgbox.setCheckBox(cb);
+
+		QObject::connect(cb, &QCheckBox::stateChanged, [](int state){
+			pv::GlobalSettings settings;
+			settings.setValue(pv::GlobalSettings::Key_Log_NotifyOfStacktrace,
+				!state); });
+
+		msgbox.exec();
+	}
 }
 #endif
 
@@ -218,6 +280,9 @@ int main(int argc, char *argv[])
 
 	::signal(SIGSEGV, &signal_handler);
 	::signal(SIGABRT, &signal_handler);
+
+	if (QFileInfo::exists(stacktrace_filename))
+		process_stacktrace(temp_path);
 #endif
 
 #ifdef ANDROID

@@ -40,6 +40,7 @@ const QString GlobalSettings::Key_View_DefaultDivHeight = "View_DefaultDivHeight
 const QString GlobalSettings::Key_View_DefaultLogicHeight = "View_DefaultLogicHeight";
 const QString GlobalSettings::Key_Dec_InitialStateConfigurable = "Dec_InitialStateConfigurable";
 const QString GlobalSettings::Key_Log_BufferSize = "Log_BufferSize";
+const QString GlobalSettings::Key_Log_NotifyOfStacktrace = "Log_NotifyOfStacktrace";
 
 vector<GlobalSettingsInterface*> GlobalSettings::callbacks_;
 bool GlobalSettings::tracking_ = false;
@@ -76,6 +77,10 @@ void GlobalSettings::set_defaults_where_needed()
 	// Default to 500 lines of backlog
 	if (!contains(Key_Log_BufferSize))
 		setValue(Key_Log_BufferSize, 500);
+
+	// Notify user of existing stack trace by default
+	if (!contains(Key_Log_NotifyOfStacktrace))
+		setValue(Key_Log_NotifyOfStacktrace, true);
 }
 
 void GlobalSettings::add_change_handler(GlobalSettingsInterface *cb)
