@@ -24,6 +24,11 @@ include(GNUInstallDirs)
 
 project(pulseview)
 
+# Let AUTOMOC and AUTOUIC process GENERATED files.
+if(POLICY CMP0071)
+	cmake_policy(SET CMP0071 NEW)
+endif()
+
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake")
 
 #===============================================================================
