@@ -670,7 +670,7 @@ void Settings::on_log_popOut_clicked(bool checked)
 	(void)checked;
 
 	// Create the window as a sub-window so it closes when the main window closes
-	QMainWindow *window = new QMainWindow(0, Qt::SubWindow);
+	QMainWindow *window = new QMainWindow(nullptr, Qt::SubWindow);
 
 	window->setObjectName(QString::fromUtf8("Log Window"));
 	window->setWindowTitle(tr("%1 Log").arg(PV_TITLE));

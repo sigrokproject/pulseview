@@ -36,7 +36,7 @@ const int Logging::MAX_BUFFER_SIZE = 50000;
 
 Logging::~Logging()
 {
-	qInstallMessageHandler(0);
+	qInstallMessageHandler(nullptr);
 	sr_log_callback_set_default();
 #ifdef ENABLE_DECODE
 	srd_log_callback_set_default();
