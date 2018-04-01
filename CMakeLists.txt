@@ -29,6 +29,11 @@ if(POLICY CMP0071)
 	cmake_policy(SET CMP0071 NEW)
 endif()
 
+# Only interpret if() arguments as variables or keywords when unquoted.
+if(POLICY CMP0054)
+	cmake_policy(SET CMP0054 NEW)
+endif()
+
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake")
 
 #===============================================================================
