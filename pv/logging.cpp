@@ -72,7 +72,9 @@ int Logging::get_log_level() const
 void Logging::set_log_level(int level)
 {
 	sr_log_loglevel_set(level);
+#ifdef ENABLE_DECODE
 	srd_log_loglevel_set(level);
+#endif
 }
 
 QString Logging::get_log() const
