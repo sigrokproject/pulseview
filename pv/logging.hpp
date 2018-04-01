@@ -22,10 +22,14 @@
 
 #include "globalsettings.hpp"
 
+#include <mutex>
+
 #include <QtGlobal>
 #include <QObject>
 #include <QString>
 #include <QStringList>
+
+using std::mutex;
 
 namespace pv {
 
@@ -70,6 +74,7 @@ Q_SIGNALS:
 private:
 	int buffer_size_;
 	QStringList buffer_;
+	mutable mutex log_mutex_;
 };
 
 extern Logging logging;

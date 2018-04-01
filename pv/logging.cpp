@@ -28,6 +28,8 @@
 
 #include <QApplication>
 
+using std::lock_guard;
+
 namespace pv {
 
 Logging logging;
@@ -84,6 +86,8 @@ QString Logging::get_log() const
 
 void Logging::log(const QString &text, int source)
 {
+	lock_guard<mutex> log_lock(log_mutex_);
+
 	if (buffer_.size() >= buffer_size_)
 		buffer_.removeFirst();
 
