@@ -156,7 +156,10 @@ void DecodeSignal::reset_decode()
 	logic_mux_data_.reset();
 	logic_mux_data_invalid_ = true;
 
-	error_message_ = QString();
+	if (!error_message_.isEmpty()) {
+		error_message_ = QString();
+		qDebug().noquote().nospace() << name() << ": Error cleared";
+	}
 
 	decode_reset();
 }
@@ -178,14 +181,14 @@ void DecodeSignal::begin_decode()
 	reset_decode();
 
 	if (stack_.size() == 0) {
-		error_message_ = tr("No decoders");
+		set_error_message(tr("No decoders"));
 		return;
 	}
 
 	assert(channels_.size() > 0);
 
 	if (get_assigned_signal_count() == 0) {
-		error_message_ = tr("There are no channels assigned to this decoder");
+		set_error_message(tr("There are no channels assigned to this decoder"));
 		return;
 	}
 
@@ -199,8 +202,8 @@ void DecodeSignal::begin_decode()
 	// Check that all decoders have the required channels
 	for (const shared_ptr<decode::Decoder> &dec : stack_)
 		if (!dec->have_required_channels()) {
-			error_message_ = tr("One or more required channels "
-				"have not been specified");
+			set_error_message(tr("One or more required channels "
+				"have not been specified"));
 			return;
 		}
 
@@ -238,7 +241,7 @@ void DecodeSignal::begin_decode()
 	connect_input_notifiers();
 
 	if (get_input_segment_count() == 0) {
-		error_message_ = tr("No input data");
+		set_error_message(tr("No input data"));
 		return;
 	}
 
@@ -582,6 +585,12 @@ void DecodeSignal::restore_settings(QSettings &settings)
 	begin_decode();
 }
 
+void DecodeSignal::set_error_message(QString msg)
+{
+	error_message_ = msg;
+	qDebug().noquote().nospace() << name() << ": " << msg;
+}
+
 uint32_t DecodeSignal::get_input_segment_count() const
 {
 	uint64_t count = std::numeric_limits<uint64_t>::max();
@@ -895,7 +904,7 @@ void DecodeSignal::decode_data(
 
 		if (srd_session_send(srd_session_, i, chunk_end, chunk,
 				data_size, unit_size) != SRD_OK) {
-			error_message_ = tr("Decoder reported an error");
+			set_error_message(tr("Decoder reported an error"));
 			delete[] chunk;
 			break;
 		}
@@ -1022,7 +1031,7 @@ void DecodeSignal::start_srd_session()
 		srd_decoder_inst *const di = dec->create_decoder_inst(srd_session_);
 
 		if (!di) {
-			error_message_ = tr("Failed to create decoder instance");
+			set_error_message(tr("Failed to create decoder instance"));
 			srd_session_destroy(srd_session_);
 			srd_session_ = nullptr;
 			return;

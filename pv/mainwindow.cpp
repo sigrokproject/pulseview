@@ -30,6 +30,7 @@
 #include <QAction>
 #include <QApplication>
 #include <QCloseEvent>
+#include <QDebug>
 #include <QDockWidget>
 #include <QHBoxLayout>
 #include <QMessageBox>
@@ -562,6 +563,8 @@ bool MainWindow::restoreState(const QByteArray &state, int version)
 
 void MainWindow::session_error(const QString text, const QString info_text)
 {
+	qDebug().noquote() << "Notifying user of session error:" << info_text;
+
 	QMetaObject::invokeMethod(this, "show_session_error",
 		Qt::QueuedConnection, Q_ARG(QString, text),
 		Q_ARG(QString, info_text));

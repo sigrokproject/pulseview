@@ -299,8 +299,8 @@ void Session::restore_settings(QSettings &settings)
 				filename.toStdString());
 			set_device(device);
 
-			// TODO Perform error handling
-			start_capture([](QString infoMessage) { (void)infoMessage; });
+			start_capture([](QString infoMessage) {
+				qDebug().noquote() << "Session error:" << infoMessage; });
 
 			set_name(QFileInfo(filename).fileName());
 		}
@@ -953,10 +953,8 @@ void Session::sample_thread_proc(function<void (const QString)> error_handler)
 	set_capture_state(Stopped);
 
 	// Confirm that SR_DF_END was received
-	if (cur_logic_segment_) {
-		qDebug("SR_DF_END was not received.");
-		assert(false);
-	}
+	if (cur_logic_segment_)
+		qDebug() << "WARNING: SR_DF_END was not received.";
 
 	// Optimize memory usage
 	free_unused_memory();
