@@ -99,7 +99,7 @@ public:
 	void remove_decoder(int index);
 	bool toggle_decoder_visibility(int index);
 
-	void reset_decode();
+	void reset_decode(bool shutting_down = false);
 	void begin_decode();
 	QString error_message() const;
 

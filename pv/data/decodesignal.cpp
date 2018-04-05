@@ -65,7 +65,7 @@ DecodeSignal::DecodeSignal(pv::Session &session) :
 
 DecodeSignal::~DecodeSignal()
 {
-	reset_decode();
+	reset_decode(true);
 }
 
 const vector< shared_ptr<Decoder> >& DecodeSignal::decoder_stack() const
@@ -130,9 +130,9 @@ bool DecodeSignal::toggle_decoder_visibility(int index)
 	return state;
 }
 
-void DecodeSignal::reset_decode()
+void DecodeSignal::reset_decode(bool shutting_down)
 {
-	if (stack_config_changed_)
+	if (stack_config_changed_ || shutting_down)
 		stop_srd_session();
 	else
 		terminate_srd_session();
@@ -1003,6 +1003,8 @@ void DecodeSignal::start_srd_session()
 {
 	uint64_t samplerate;
 
+	// If there were stack changes, the session has been destroyed by now, so if
+	// it hasn't been destroyed, we can just reset and re-use it
 	if (srd_session_) {
 		// When a decoder stack was created before, re-use it
 		// for the next stream of input data, after terminating
@@ -1075,6 +1077,10 @@ void DecodeSignal::stop_srd_session()
 		// Destroy the session
 		srd_session_destroy(srd_session_);
 		srd_session_ = nullptr;
+
+		// Mark the decoder instances as non-existant since they were deleted
+		for (const shared_ptr<decode::Decoder> &dec : stack_)
+			dec->invalidate_decoder_inst();
 	}
 }
 

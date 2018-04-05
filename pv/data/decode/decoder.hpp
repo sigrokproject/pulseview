@@ -67,7 +67,8 @@ public:
 
 	bool have_required_channels() const;
 
-	srd_decoder_inst* create_decoder_inst(srd_session *session) const;
+	srd_decoder_inst* create_decoder_inst(srd_session *session);
+	void invalidate_decoder_inst();
 
 private:
 	const srd_decoder *const decoder_;
@@ -76,6 +77,7 @@ private:
 
 	vector<data::DecodeChannel*> channels_;
 	map<string, GVariant*> options_;
+	srd_decoder_inst *decoder_inst_;
 };
 
 } // namespace decode

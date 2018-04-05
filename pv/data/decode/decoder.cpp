@@ -19,6 +19,8 @@
 
 #include <cassert>
 
+#include <QDebug>
+
 #include <libsigrokcxx/libsigrokcxx.hpp>
 #include <libsigrokdecode/libsigrokdecode.h>
 
@@ -37,7 +39,8 @@ namespace decode {
 
 Decoder::Decoder(const srd_decoder *const dec) :
 	decoder_(dec),
-	shown_(true)
+	shown_(true),
+	decoder_inst_(nullptr)
 {
 }
 
@@ -82,6 +85,18 @@ void Decoder::set_option(const char *id, GVariant *value)
 	assert(value);
 	g_variant_ref(value);
 	options_[id] = value;
+
+	// If we have a decoder instance, apply option value immediately
+	if (decoder_inst_) {
+		GHashTable *const opt_hash = g_hash_table_new_full(g_str_hash,
+			g_str_equal, g_free, (GDestroyNotify)g_variant_unref);
+
+		g_variant_ref(value);
+		g_hash_table_insert(opt_hash, (void*)g_strdup(id), value);
+
+		srd_inst_option_set(decoder_inst_, opt_hash);
+		g_hash_table_destroy(opt_hash);
+	}
 }
 
 bool Decoder::have_required_channels() const
@@ -93,7 +108,7 @@ bool Decoder::have_required_channels() const
 	return true;
 }
 
-srd_decoder_inst* Decoder::create_decoder_inst(srd_session *session) const
+srd_decoder_inst* Decoder::create_decoder_inst(srd_session *session)
 {
 	GHashTable *const opt_hash = g_hash_table_new_full(g_str_hash,
 		g_str_equal, g_free, (GDestroyNotify)g_variant_unref);
@@ -105,11 +120,13 @@ srd_decoder_inst* Decoder::create_decoder_inst(srd_session *session) const
 			option.first.c_str()), value);
 	}
 
-	srd_decoder_inst *const decoder_inst = srd_inst_new(
-		session, decoder_->id, opt_hash);
+	if (decoder_inst_)
+		qDebug() << "WARNING: previous decoder instance" << decoder_inst_ << "exists";
+
+	decoder_inst_ = srd_inst_new(session, decoder_->id, opt_hash);
 	g_hash_table_destroy(opt_hash);
 
-	if (!decoder_inst)
+	if (!decoder_inst_)
 		return nullptr;
 
 	// Setup the channels
@@ -133,12 +150,17 @@ srd_decoder_inst* Decoder::create_decoder_inst(srd_session *session) const
 		g_hash_table_insert(channels, ch->pdch_->id, gvar);
 	}
 
-	srd_inst_channel_set_all(decoder_inst, channels);
+	srd_inst_channel_set_all(decoder_inst_, channels);
 
-	srd_inst_initial_pins_set_all(decoder_inst, init_pin_states);
+	srd_inst_initial_pins_set_all(decoder_inst_, init_pin_states);
 	g_array_free(init_pin_states, true);
 
-	return decoder_inst;
+	return decoder_inst_;
+}
+
+void Decoder::invalidate_decoder_inst()
+{
+	decoder_inst_ = nullptr;
 }
 
 }  // namespace decode
