@@ -28,6 +28,8 @@
 
 #include <pv/session.hpp>
 #include <pv/binding/device.hpp>
+#include <pv/data/logic.hpp>
+#include <pv/data/logicsegment.hpp>
 #include <pv/data/signalbase.hpp>
 #include <pv/devices/device.hpp>
 
@@ -39,6 +41,8 @@ using std::unordered_set;
 using std::vector;
 
 using pv::data::SignalBase;
+using pv::data::Logic;
+using pv::data::LogicSegment;
 
 using sigrok::Channel;
 using sigrok::ChannelGroup;
@@ -53,6 +57,10 @@ Channels::Channels(Session &session, QWidget *parent) :
 	updating_channels_(false),
 	enable_all_channels_(tr("Enable All"), this),
 	disable_all_channels_(tr("Disable All"), this),
+	enable_all_logic_channels_(tr("Enable only logic"), this),
+	enable_all_analog_channels_(tr("Enable only analog"), this),
+	enable_all_named_channels_(tr("Enable only named"), this),
+	enable_all_changing_channels_(tr("Enable only changing"), this),
 	check_box_mapper_(this)
 {
 	// Create the layout
@@ -102,16 +110,27 @@ Channels::Channels(Session &session, QWidget *parent) :
 	populate_group(nullptr, global_sigs);
 
 	// Create the enable/disable all buttons
-	connect(&enable_all_channels_, SIGNAL(clicked()),
-		this, SLOT(enable_all_channels()));
-	connect(&disable_all_channels_, SIGNAL(clicked()),
-		this, SLOT(disable_all_channels()));
+	connect(&enable_all_channels_, SIGNAL(clicked()), this, SLOT(enable_all_channels()));
+	connect(&disable_all_channels_, SIGNAL(clicked()), this, SLOT(disable_all_channels()));
+	connect(&enable_all_logic_channels_, SIGNAL(clicked()), this, SLOT(enable_all_logic_channels()));
+	connect(&enable_all_analog_channels_, SIGNAL(clicked()), this, SLOT(enable_all_analog_channels()));
+	connect(&enable_all_named_channels_, SIGNAL(clicked()), this, SLOT(enable_all_named_channels()));
+	connect(&enable_all_changing_channels_, SIGNAL(clicked()),
+		this, SLOT(enable_all_changing_channels()));
 
 	enable_all_channels_.setFlat(true);
 	disable_all_channels_.setFlat(true);
+	enable_all_logic_channels_.setFlat(true);
+	enable_all_analog_channels_.setFlat(true);
+	enable_all_named_channels_.setFlat(true);
+	enable_all_changing_channels_.setFlat(true);
 
 	buttons_bar_.addWidget(&enable_all_channels_);
 	buttons_bar_.addWidget(&disable_all_channels_);
+	buttons_bar_.addWidget(&enable_all_logic_channels_);
+	buttons_bar_.addWidget(&enable_all_analog_channels_);
+	buttons_bar_.addWidget(&enable_all_named_channels_);
+	buttons_bar_.addWidget(&enable_all_changing_channels_);
 	buttons_bar_.addStretch(1);
 
 	layout_.addRow(&buttons_bar_);
@@ -132,6 +151,24 @@ void Channels::set_all_channels(bool set)
 
 		sig->set_enabled(set);
 		cb->setChecked(set);
+	}
+
+	updating_channels_ = false;
+}
+
+void Channels::set_all_channels_conditionally(
+	function<bool (const shared_ptr<data::SignalBase>)> cond_func)
+{
+	updating_channels_ = true;
+
+	for (auto entry : check_box_signal_map_) {
+		QCheckBox *cb = entry.first;
+		const shared_ptr<SignalBase> sig = entry.second;
+		assert(sig);
+
+		const bool state = cond_func(sig);
+		sig->set_enabled(state);
+		cb->setChecked(state);
 	}
 
 	updating_channels_ = false;
@@ -255,6 +292,53 @@ void Channels::enable_all_channels()
 void Channels::disable_all_channels()
 {
 	set_all_channels(false);
+}
+
+void Channels::enable_all_logic_channels()
+{
+	set_all_channels_conditionally([](const shared_ptr<SignalBase> signal)
+		{ return signal->type() == SignalBase::LogicChannel; });
+}
+
+void Channels::enable_all_analog_channels()
+{
+	set_all_channels_conditionally([](const shared_ptr<SignalBase> signal)
+		{ return signal->type() == SignalBase::AnalogChannel; });
+}
+
+void Channels::enable_all_named_channels()
+{
+	set_all_channels_conditionally([](const shared_ptr<SignalBase> signal)
+		{ return signal->name() != signal->internal_name(); });
+}
+
+void Channels::enable_all_changing_channels()
+{
+	set_all_channels_conditionally([](const shared_ptr<SignalBase> signal)
+		{
+			// Non-logic channels are considered to always have a signal
+			if (signal->type() != SignalBase::LogicChannel)
+				return true;
+
+			const shared_ptr<Logic> logic = signal->logic_data();
+			assert(logic);
+
+			// If any of the segments has edges, enable this channel
+			for (shared_ptr<LogicSegment> segment : logic->logic_segments()) {
+				vector<LogicSegment::EdgePair> edges;
+
+				segment->get_subsampled_edges(edges,
+					0, segment->get_sample_count() - 1,
+					LogicSegment::MipMapScaleFactor,
+					signal->index());
+
+				if (edges.size() > 2)
+					return true;
+			}
+
+			// No edges detected in any of the segments
+			return false;
+		});
 }
 
 }  // namespace popups

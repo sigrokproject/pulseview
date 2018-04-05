@@ -20,6 +20,7 @@
 #ifndef PULSEVIEW_PV_POPUPS_CHANNELS_HPP
 #define PULSEVIEW_PV_POPUPS_CHANNELS_HPP
 
+#include <functional>
 #include <map>
 #include <memory>
 #include <vector>
@@ -31,6 +32,7 @@
 
 #include <pv/widgets/popup.hpp>
 
+using std::function;
 using std::map;
 using std::shared_ptr;
 using std::vector;
@@ -69,6 +71,8 @@ public:
 
 private:
 	void set_all_channels(bool set);
+	void set_all_channels_conditionally(
+		function<bool (const shared_ptr<data::SignalBase>)> cond_func);
 
 	void populate_group(shared_ptr<sigrok::ChannelGroup> group,
 		const vector< shared_ptr<pv::data::SignalBase> > sigs);
@@ -84,6 +88,10 @@ private Q_SLOTS:
 
 	void enable_all_channels();
 	void disable_all_channels();
+	void enable_all_logic_channels();
+	void enable_all_analog_channels();
+	void enable_all_named_channels();
+	void enable_all_changing_channels();
 
 private:
 	pv::Session &session_;
@@ -98,8 +106,9 @@ private:
 	map< shared_ptr<sigrok::ChannelGroup>, QLabel*> group_label_map_;
 
 	QHBoxLayout buttons_bar_;
-	QPushButton enable_all_channels_;
-	QPushButton disable_all_channels_;
+	QPushButton enable_all_channels_, disable_all_channels_;
+	QPushButton enable_all_logic_channels_, enable_all_analog_channels_;
+	QPushButton enable_all_named_channels_, enable_all_changing_channels_;
 
 	QSignalMapper check_box_mapper_;
 };

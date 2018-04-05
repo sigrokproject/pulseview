@@ -58,6 +58,15 @@ class LogicSegment : public Segment
 {
 	Q_OBJECT
 
+public:
+	typedef pair<int64_t, bool> EdgePair;
+
+	static const unsigned int ScaleStepCount = 10;
+	static const int MipMapScalePower;
+	static const int MipMapScaleFactor;
+	static const float LogMipMapScaleFactor;
+	static const uint64_t MipMapDataUnit;
+
 private:
 	struct MipMapLevel
 	{
@@ -65,16 +74,6 @@ private:
 		uint64_t data_length;
 		void *data;
 	};
-
-private:
-	static const unsigned int ScaleStepCount = 10;
-	static const int MipMapScalePower;
-	static const int MipMapScaleFactor;
-	static const float LogMipMapScaleFactor;
-	static const uint64_t MipMapDataUnit;
-
-public:
-	typedef pair<int64_t, bool> EdgePair;
 
 public:
 	LogicSegment(pv::data::Logic& owner, uint32_t segment_id,
