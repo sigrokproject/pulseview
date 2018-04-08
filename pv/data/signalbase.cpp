@@ -238,6 +238,33 @@ bool SignalBase::segment_is_complete(uint32_t segment_id) const
 	return result;
 }
 
+bool SignalBase::has_samples() const
+{
+	bool result = false;
+
+	if (channel_type_ == AnalogChannel)
+	{
+		shared_ptr<Analog> data = dynamic_pointer_cast<Analog>(data_);
+		if (data) {
+			auto segments = data->analog_segments();
+			if ((segments.size() > 0) && (segments.front()->get_sample_count() > 0))
+				result = true;
+		}
+	}
+
+	if (channel_type_ == LogicChannel)
+	{
+		shared_ptr<Logic> data = dynamic_pointer_cast<Logic>(data_);
+		if (data) {
+			auto segments = data->logic_segments();
+			if ((segments.size() > 0) && (segments.front()->get_sample_count() > 0))
+				result = true;
+		}
+	}
+
+	return result;
+}
+
 SignalBase::ConversionType SignalBase::get_conversion_type() const
 {
 	return conversion_type_;

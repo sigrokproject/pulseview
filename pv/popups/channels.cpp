@@ -311,6 +311,10 @@ void Channels::enable_all_changing_channels()
 {
 	set_all_channels_conditionally([](const shared_ptr<SignalBase> signal)
 		{
+			// Never enable channels without sample data
+			if (!signal->has_samples())
+				return false;
+
 			// Non-logic channels are considered to always have a signal
 			if (signal->type() != SignalBase::LogicChannel)
 				return true;

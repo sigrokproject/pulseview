@@ -188,6 +188,11 @@ public:
 	bool segment_is_complete(uint32_t segment_id) const;
 
 	/**
+	 * Determines whether this signal has any sample data at all.
+	 */
+	bool has_samples() const;
+
+	/**
 	 * Queries the kind of conversion performed on this channel.
 	 */
 	ConversionType get_conversion_type() const;
