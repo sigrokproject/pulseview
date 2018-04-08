@@ -1130,6 +1130,11 @@ void Session::feed_in_frame_end()
 
 void Session::feed_in_logic(shared_ptr<Logic> logic)
 {
+	if (logic->data_length() == 0) {
+		qDebug() << "WARNING: Received logic packet with 0 samples.";
+		return;
+	}
+
 	if (!cur_samplerate_)
 		cur_samplerate_ = device_->read_config<uint64_t>(ConfigKey::SAMPLERATE);
 
@@ -1162,6 +1167,11 @@ void Session::feed_in_logic(shared_ptr<Logic> logic)
 
 void Session::feed_in_analog(shared_ptr<Analog> analog)
 {
+	if (analog->num_samples() == 0) {
+		qDebug() << "WARNING: Received analog packet with 0 samples.";
+		return;
+	}
+
 	if (!cur_samplerate_)
 		cur_samplerate_ = device_->read_config<uint64_t>(ConfigKey::SAMPLERATE);
 
