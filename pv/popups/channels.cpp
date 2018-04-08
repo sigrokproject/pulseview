@@ -19,7 +19,9 @@
 
 #include <map>
 
+#include <QApplication>
 #include <QCheckBox>
+#include <QFontMetrics>
 #include <QFormLayout>
 #include <QGridLayout>
 #include <QLabel>
@@ -118,19 +120,13 @@ Channels::Channels(Session &session, QWidget *parent) :
 	connect(&enable_all_changing_channels_, SIGNAL(clicked()),
 		this, SLOT(enable_all_changing_channels()));
 
-	enable_all_channels_.setFlat(true);
-	disable_all_channels_.setFlat(true);
-	enable_all_logic_channels_.setFlat(true);
-	enable_all_analog_channels_.setFlat(true);
-	enable_all_named_channels_.setFlat(true);
-	enable_all_changing_channels_.setFlat(true);
-
-	buttons_bar_.addWidget(&enable_all_channels_, 0, 0);
-	buttons_bar_.addWidget(&disable_all_channels_, 0, 1);
-	buttons_bar_.addWidget(&enable_all_logic_channels_, 1, 0);
-	buttons_bar_.addWidget(&enable_all_analog_channels_, 1, 1);
-	buttons_bar_.addWidget(&enable_all_named_channels_, 1, 2);
-	buttons_bar_.addWidget(&enable_all_changing_channels_, 1, 3);
+	buttons_bar_.setRowMinimumHeight(0, 2 * QFontMetrics(QApplication::font()).height());
+	buttons_bar_.addWidget(&enable_all_channels_, 1, 0);
+	buttons_bar_.addWidget(&disable_all_channels_, 1, 1);
+	buttons_bar_.addWidget(&enable_all_logic_channels_, 2, 0);
+	buttons_bar_.addWidget(&enable_all_analog_channels_, 2, 1);
+	buttons_bar_.addWidget(&enable_all_named_channels_, 2, 2);
+	buttons_bar_.addWidget(&enable_all_changing_channels_, 2, 3);
 
 	layout_.addRow(&buttons_bar_);
 
