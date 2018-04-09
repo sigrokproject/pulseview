@@ -70,6 +70,8 @@ public:
 	const list< shared_ptr<devices::HardwareDevice> >& devices() const;
 	shared_ptr<devices::HardwareDevice> user_spec_device() const;
 
+	bool driver_supported(shared_ptr<sigrok::Driver> driver) const;
+
 	list< shared_ptr<devices::HardwareDevice> > driver_scan(
 		shared_ptr<sigrok::Driver> driver,
 		map<const sigrok::ConfigKey *, Glib::VariantBase> drvopts);
