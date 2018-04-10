@@ -65,7 +65,7 @@ namespace pv {
 namespace views {
 namespace trace {
 
-const QColor AnalogSignal::SignalColours[4] = {
+const QColor AnalogSignal::SignalColors[4] = {
 	QColor(0xC4, 0xA0, 0x00),	// Yellow
 	QColor(0x87, 0x20, 0x7A),	// Magenta
 	QColor(0x20, 0x4A, 0x87),	// Blue
@@ -76,10 +76,10 @@ const QPen AnalogSignal::AxisPen(QColor(0, 0, 0, 30 * 256 / 100), 2);
 const QColor AnalogSignal::GridMajorColor = QColor(0, 0, 0, 40 * 256 / 100);
 const QColor AnalogSignal::GridMinorColor = QColor(0, 0, 0, 20 * 256 / 100);
 
-const QColor AnalogSignal::SamplingPointColour(0x77, 0x77, 0x77);
-const QColor AnalogSignal::SamplingPointColourLo = QColor(200, 0, 0, 80 * 256 / 100);
-const QColor AnalogSignal::SamplingPointColourNe = QColor(0,   0, 0, 80 * 256 / 100);
-const QColor AnalogSignal::SamplingPointColourHi = QColor(0, 200, 0, 80 * 256 / 100);
+const QColor AnalogSignal::SamplingPointColor(0x77, 0x77, 0x77);
+const QColor AnalogSignal::SamplingPointColorLo = QColor(200, 0, 0, 80 * 256 / 100);
+const QColor AnalogSignal::SamplingPointColorNe = QColor(0,   0, 0, 80 * 256 / 100);
+const QColor AnalogSignal::SamplingPointColorHi = QColor(0, 200, 0, 80 * 256 / 100);
 
 const QColor AnalogSignal::ThresholdColor = QColor(0, 0, 0, 30 * 256 / 100);
 const QColor AnalogSignal::ThresholdColorLo = QColor(255, 0, 0, 8 * 256 / 100);
@@ -124,7 +124,7 @@ AnalogSignal::AnalogSignal(
 
 	div_height_ = gs.value(GlobalSettings::Key_View_DefaultDivHeight).toInt();
 
-	base_->set_colour(SignalColours[base_->index() % countof(SignalColours)]);
+	base_->set_color(SignalColors[base_->index() % countof(SignalColors)]);
 	update_scale();
 }
 
@@ -318,7 +318,7 @@ void AnalogSignal::paint_fore(QPainter &p, ViewItemPaintParams &pp)
 		// Show the info section on the right side of the trace
 		const QString infotext = QString("%1 V/div").arg(resolution_);
 
-		p.setPen(base_->colour());
+		p.setPen(base_->color());
 		p.setFont(QApplication::font());
 
 		const QRectF bounding_rect = QRectF(pp.left(),
@@ -405,7 +405,7 @@ void AnalogSignal::paint_trace(QPainter &p,
 		(settings.value(GlobalSettings::Key_View_ShowSamplingPoints).toBool() ||
 		paint_thr_dots) && (samples_per_pixel < 0.25);
 
-	p.setPen(base_->colour());
+	p.setPen(base_->color());
 
 	const int64_t points_count = end - start;
 
@@ -456,14 +456,14 @@ void AnalogSignal::paint_trace(QPainter &p,
 
 	if (show_sampling_points) {
 		if (paint_thr_dots) {
-			p.setPen(SamplingPointColourNe);
+			p.setPen(SamplingPointColorNe);
 			p.drawRects(sampling_points[0].data(), sampling_points[0].size());
-			p.setPen(SamplingPointColourLo);
+			p.setPen(SamplingPointColorLo);
 			p.drawRects(sampling_points[1].data(), sampling_points[1].size());
-			p.setPen(SamplingPointColourHi);
+			p.setPen(SamplingPointColorHi);
 			p.drawRects(sampling_points[2].data(), sampling_points[2].size());
 		} else {
-			p.setPen(SamplingPointColour);
+			p.setPen(SamplingPointColor);
 			p.drawRects(sampling_points[0].data(), sampling_points[0].size());
 		}
 	}
@@ -485,7 +485,7 @@ void AnalogSignal::paint_envelope(QPainter &p,
 		return;
 
 	p.setPen(QPen(Qt::NoPen));
-	p.setBrush(base_->colour());
+	p.setBrush(base_->color());
 
 	QRectF *const rects = new QRectF[e.length];
 	QRectF *rect = rects;
@@ -611,7 +611,7 @@ void AnalogSignal::paint_logic_mid(QPainter &p, ViewItemPaintParams &pp)
 			sampling_point_x += pixels_per_sample;
 		};
 
-	p.setPen(LogicSignal::EdgeColour);
+	p.setPen(LogicSignal::EdgeColor);
 	p.drawLines(edge_lines, edge_count);
 	delete[] edge_lines;
 
@@ -619,10 +619,10 @@ void AnalogSignal::paint_logic_mid(QPainter &p, ViewItemPaintParams &pp)
 	const unsigned int max_cap_line_count = edges.size();
 	QLineF *const cap_lines = new QLineF[max_cap_line_count];
 
-	p.setPen(LogicSignal::HighColour);
+	p.setPen(LogicSignal::HighColor);
 	paint_logic_caps(p, cap_lines, edges, true, samples_per_pixel,
 		pixels_offset, pp.left(), high_offset);
-	p.setPen(LogicSignal::LowColour);
+	p.setPen(LogicSignal::LowColor);
 	paint_logic_caps(p, cap_lines, edges, false, samples_per_pixel,
 		pixels_offset, pp.left(), low_offset);
 
@@ -630,7 +630,7 @@ void AnalogSignal::paint_logic_mid(QPainter &p, ViewItemPaintParams &pp)
 
 	// Paint the sampling points
 	if (show_sampling_points) {
-		p.setPen(SamplingPointColour);
+		p.setPen(SamplingPointColor);
 		p.drawRects(sampling_points.data(), sampling_points.size());
 	}
 }

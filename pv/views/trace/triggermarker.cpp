@@ -24,7 +24,7 @@ namespace pv {
 namespace views {
 namespace trace {
 
-const QColor TriggerMarker::Colour(0x00, 0x00, 0xB0);
+const QColor TriggerMarker::Color(0x00, 0x00, 0xB0);
 
 TriggerMarker::TriggerMarker(View &view, const pv::util::Timestamp& time) :
 	TimeItem(view),
@@ -73,7 +73,7 @@ void TriggerMarker::paint_fore(QPainter &p, ViewItemPaintParams &pp)
 	if (!enabled())
 		return;
 
-	QPen pen(Colour);
+	QPen pen(Color);
 	pen.setStyle(Qt::DashLine);
 
 	const float x = get_x();

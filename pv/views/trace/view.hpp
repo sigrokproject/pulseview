@@ -242,15 +242,15 @@ public:
 	pair<pv::util::Timestamp, pv::util::Timestamp> get_time_extents() const;
 
 	/**
-	 * Enables or disables coloured trace backgrounds. If they're not
-	 * coloured then they will use alternating colors.
+	 * Enables or disables colored trace backgrounds. If they're not
+	 * colored then they will use alternating colors.
 	 */
-	void enable_coloured_bg(bool state);
+	void enable_colored_bg(bool state);
 
 	/**
-	 * Returns true if the trace background should be drawn with a coloured background.
+	 * Returns true if the trace background should be drawn with a colored background.
 	 */
-	bool coloured_bg() const;
+	bool colored_bg() const;
 
 	/**
 	 * Enable or disable showing sampling points.
@@ -490,7 +490,7 @@ private:
 	bool header_was_shrunk_;
 
 	bool sticky_scrolling_;
-	bool coloured_bg_;
+	bool colored_bg_;
 	bool always_zoom_to_fit_;
 
 	pv::util::Timestamp tick_period_;

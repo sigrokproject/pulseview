@@ -185,7 +185,7 @@ shared_ptr<views::ViewBase> MainWindow::add_view(const QString &title,
 		views::trace::View *tv =
 			qobject_cast<views::trace::View*>(v.get());
 
-		tv->enable_coloured_bg(settings.value(GlobalSettings::Key_View_ColouredBG).toBool());
+		tv->enable_colored_bg(settings.value(GlobalSettings::Key_View_ColoredBG).toBool());
 		tv->enable_show_sampling_points(settings.value(GlobalSettings::Key_View_ShowSamplingPoints).toBool());
 		tv->enable_show_analog_minor_grid(settings.value(GlobalSettings::Key_View_ShowAnalogMinorGrid).toBool());
 
@@ -405,8 +405,8 @@ void MainWindow::restore_sessions()
 
 void MainWindow::on_setting_changed(const QString &key, const QVariant &value)
 {
-	if (key == GlobalSettings::Key_View_ColouredBG)
-		on_settingViewColouredBg_changed(value);
+	if (key == GlobalSettings::Key_View_ColoredBG)
+		on_settingViewColoredBg_changed(value);
 
 	if (key == GlobalSettings::Key_View_ShowSamplingPoints)
 		on_settingViewShowSamplingPoints_changed(value);
@@ -435,8 +435,8 @@ void MainWindow::setup_ui()
 	view_show_analog_minor_grid_shortcut_ = new QShortcut(QKeySequence(Qt::Key_G), this, SLOT(on_view_show_analog_minor_grid_shortcut()));
 	view_show_analog_minor_grid_shortcut_->setAutoRepeat(false);
 
-	view_coloured_bg_shortcut_ = new QShortcut(QKeySequence(Qt::Key_B), this, SLOT(on_view_coloured_bg_shortcut()));
-	view_coloured_bg_shortcut_->setAutoRepeat(false);
+	view_colored_bg_shortcut_ = new QShortcut(QKeySequence(Qt::Key_B), this, SLOT(on_view_colored_bg_shortcut()));
+	view_colored_bg_shortcut_->setAutoRepeat(false);
 
 	// Set up the tab area
 	new_session_button_ = new QToolButton();
@@ -762,12 +762,12 @@ void MainWindow::on_tab_close_requested(int index)
 		remove_session(session);
 }
 
-void MainWindow::on_view_coloured_bg_shortcut()
+void MainWindow::on_view_colored_bg_shortcut()
 {
 	GlobalSettings settings;
 
-	bool state = settings.value(GlobalSettings::Key_View_ColouredBG).toBool();
-	settings.setValue(GlobalSettings::Key_View_ColouredBG, !state);
+	bool state = settings.value(GlobalSettings::Key_View_ColoredBG).toBool();
+	settings.setValue(GlobalSettings::Key_View_ColoredBG, !state);
 }
 
 void MainWindow::on_view_sticky_scrolling_shortcut()
@@ -794,7 +794,7 @@ void MainWindow::on_view_show_analog_minor_grid_shortcut()
 	settings.setValue(GlobalSettings::Key_View_ShowAnalogMinorGrid, !state);
 }
 
-void MainWindow::on_settingViewColouredBg_changed(const QVariant new_value)
+void MainWindow::on_settingViewColoredBg_changed(const QVariant new_value)
 {
 	bool state = new_value.toBool();
 
@@ -805,7 +805,7 @@ void MainWindow::on_settingViewColouredBg_changed(const QVariant new_value)
 		views::trace::View* view =
 				qobject_cast<views::trace::View*>(viewbase.get());
 		if (view)
-			view->enable_coloured_bg(state);
+			view->enable_colored_bg(state);
 	}
 }
 

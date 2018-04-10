@@ -72,15 +72,15 @@ namespace pv {
 namespace views {
 namespace trace {
 
-const QColor DecodeTrace::DecodeColours[4] = {
+const QColor DecodeTrace::DecodeColors[4] = {
 	QColor(0xEF, 0x29, 0x29),	// Red
 	QColor(0xFC, 0xE9, 0x4F),	// Yellow
 	QColor(0x8A, 0xE2, 0x34),	// Green
 	QColor(0x72, 0x9F, 0xCF)	// Blue
 };
 
-const QColor DecodeTrace::ErrorBgColour = QColor(0xEF, 0x29, 0x29);
-const QColor DecodeTrace::NoDecodeColour = QColor(0x88, 0x8A, 0x85);
+const QColor DecodeTrace::ErrorBgColor = QColor(0xEF, 0x29, 0x29);
+const QColor DecodeTrace::NoDecodeColor = QColor(0x88, 0x8A, 0x85);
 
 const int DecodeTrace::ArrowSize = 4;
 const double DecodeTrace::EndCapWidth = 5;
@@ -89,7 +89,7 @@ const int DecodeTrace::DrawPadding = 100;
 
 const int DecodeTrace::MaxTraceUpdateRate = 1; // No more than 1 Hz
 
-const QColor DecodeTrace::Colours[16] = {
+const QColor DecodeTrace::Colors[16] = {
 	QColor(0xEF, 0x29, 0x29),
 	QColor(0xF6, 0x6A, 0x32),
 	QColor(0xFC, 0xAE, 0x3E),
@@ -108,7 +108,7 @@ const QColor DecodeTrace::Colours[16] = {
 	QColor(0xD7, 0x47, 0x6F)
 };
 
-const QColor DecodeTrace::OutlineColours[16] = {
+const QColor DecodeTrace::OutlineColors[16] = {
 	QColor(0x77, 0x14, 0x14),
 	QColor(0x7B, 0x35, 0x19),
 	QColor(0x7E, 0x57, 0x1F),
@@ -142,7 +142,7 @@ DecodeTrace::DecodeTrace(pv::Session &session,
 	QFontMetrics m(QApplication::font());
 	min_useful_label_width_ = m.width("XX"); // e.g. two hex characters
 
-	base_->set_colour(DecodeColours[index % countof(DecodeColours)]);
+	base_->set_color(DecodeColors[index % countof(DecodeColors)]);
 
 	connect(decode_signal_.get(), SIGNAL(new_annotations()),
 		this, SLOT(on_new_annotations()));
@@ -228,18 +228,18 @@ void DecodeTrace::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 		}
 
 		// Determine the row's color
-		size_t base_colour = 0x13579BDF;
-		boost::hash_combine(base_colour, this);
-		boost::hash_combine(base_colour, row.decoder());
-		boost::hash_combine(base_colour, row.row());
-		base_colour >>= 16;
+		size_t base_color = 0x13579BDF;
+		boost::hash_combine(base_color, this);
+		boost::hash_combine(base_color, row.decoder());
+		boost::hash_combine(base_color, row.row());
+		base_color >>= 16;
 
 		vector<Annotation> annotations;
 		decode_signal_->get_annotation_subset(annotations, row,
 			current_segment_, sample_range.first, sample_range.second);
 		if (!annotations.empty()) {
 			draw_annotations(annotations, p, annotation_height, pp, y,
-				base_colour, row_title_width);
+				base_color, row_title_width);
 
 			y += row_height_;
 
@@ -362,7 +362,7 @@ QMenu* DecodeTrace::create_context_menu(QWidget *parent)
 
 void DecodeTrace::draw_annotations(vector<pv::data::decode::Annotation> annotations,
 		QPainter &p, int h, const ViewItemPaintParams &pp, int y,
-		size_t base_colour, int row_title_width)
+		size_t base_color, int row_title_width)
 {
 	using namespace pv::data::decode;
 
@@ -406,17 +406,17 @@ void DecodeTrace::draw_annotations(vector<pv::data::decode::Annotation> annotati
 		if ((abs(delta) > 1) || a_is_separate) {
 			// Block was broken, draw annotations that form the current block
 			if (a_block.size() == 1) {
-				draw_annotation(a_block.front(), p, h, pp, y, base_colour,
+				draw_annotation(a_block.front(), p, h, pp, y, base_color,
 					row_title_width);
 			}
 			else
-				draw_annotation_block(a_block, p, h, y, base_colour);
+				draw_annotation_block(a_block, p, h, y, base_color);
 
 			a_block.clear();
 		}
 
 		if (a_is_separate) {
-			draw_annotation(a, p, h, pp, y, base_colour, row_title_width);
+			draw_annotation(a, p, h, pp, y, base_color, row_title_width);
 			// Next annotation must start a new block. delta will be > 1
 			// because we set p_end to INT_MIN but that's okay since
 			// a_block will be empty, so nothing will be drawn
@@ -428,15 +428,15 @@ void DecodeTrace::draw_annotations(vector<pv::data::decode::Annotation> annotati
 	}
 
 	if (a_block.size() == 1)
-		draw_annotation(a_block.front(), p, h, pp, y, base_colour,
+		draw_annotation(a_block.front(), p, h, pp, y, base_color,
 			row_title_width);
 	else
-		draw_annotation_block(a_block, p, h, y, base_colour);
+		draw_annotation_block(a_block, p, h, y, base_color);
 }
 
 void DecodeTrace::draw_annotation(const pv::data::decode::Annotation &a,
 	QPainter &p, int h, const ViewItemPaintParams &pp, int y,
-	size_t base_colour, int row_title_width) const
+	size_t base_color, int row_title_width) const
 {
 	double samples_per_pixel, pixels_offset;
 	tie(pixels_offset, samples_per_pixel) =
@@ -446,9 +446,9 @@ void DecodeTrace::draw_annotation(const pv::data::decode::Annotation &a,
 		pixels_offset;
 	const double end = a.end_sample() / samples_per_pixel - pixels_offset;
 
-	const size_t colour = (base_colour + a.format()) % countof(Colours);
-	p.setPen(OutlineColours[colour]);
-	p.setBrush(Colours[colour]);
+	const size_t color = (base_color + a.format()) % countof(Colors);
+	p.setPen(OutlineColors[color]);
+	p.setBrush(Colors[color]);
 
 	if (start > pp.right() + DrawPadding || end < pp.left() - DrawPadding)
 		return;
@@ -461,7 +461,7 @@ void DecodeTrace::draw_annotation(const pv::data::decode::Annotation &a,
 
 void DecodeTrace::draw_annotation_block(
 	vector<pv::data::decode::Annotation> annotations, QPainter &p, int h,
-	int y, size_t base_colour) const
+	int y, size_t base_color) const
 {
 	using namespace pv::data::decode;
 
@@ -480,8 +480,8 @@ void DecodeTrace::draw_annotation_block(
 	const double top = y + .5 - h / 2;
 	const double bottom = y + .5 + h / 2;
 
-	const size_t colour = (base_colour + annotations.front().format()) %
-		countof(Colours);
+	const size_t color = (base_color + annotations.front().format()) %
+		countof(Colors);
 
 	// Check if all annotations are of the same type (i.e. we can use one color)
 	// or if we should use a neutral color (i.e. gray)
@@ -497,8 +497,8 @@ void DecodeTrace::draw_annotation_block(
 	p.setBrush(Qt::white);
 	p.drawRoundedRect(rect, r, r);
 
-	p.setPen((single_format ? OutlineColours[colour] : Qt::gray));
-	p.setBrush(QBrush((single_format ? Colours[colour] : Qt::gray),
+	p.setPen((single_format ? OutlineColors[color] : Qt::gray));
+	p.setBrush(QBrush((single_format ? Colors[color] : Qt::gray),
 		Qt::Dense4Pattern));
 	p.drawRoundedRect(rect, r, r);
 }
@@ -584,8 +584,8 @@ void DecodeTrace::draw_error(QPainter &p, const QString &message,
 {
 	const int y = get_visual_y();
 
-	p.setPen(ErrorBgColour.darker());
-	p.setBrush(ErrorBgColour);
+	p.setPen(ErrorBgColor.darker());
+	p.setBrush(ErrorBgColor);
 
 	const QRectF bounding_rect =
 		QRectF(pp.left(), INT_MIN / 2 + y, pp.right(), INT_MAX);
@@ -629,8 +629,8 @@ void DecodeTrace::draw_unresolved_period(QPainter &p, int h, int left, int right
 	p.setBrush(Qt::white);
 	p.drawRect(no_decode_rect);
 
-	p.setPen(NoDecodeColour);
-	p.setBrush(QBrush(NoDecodeColour, Qt::Dense6Pattern));
+	p.setPen(NoDecodeColor);
+	p.setBrush(QBrush(NoDecodeColor, Qt::Dense6Pattern));
 	p.drawRect(no_decode_rect);
 }
 

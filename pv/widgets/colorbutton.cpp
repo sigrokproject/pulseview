@@ -17,7 +17,7 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "colourbutton.hpp"
+#include "colorbutton.hpp"
 
 #include <cassert>
 
@@ -27,9 +27,9 @@
 namespace pv {
 namespace widgets {
 
-const int ColourButton::SwatchMargin = 7;
+const int ColorButton::SwatchMargin = 7;
 
-ColourButton::ColourButton(int rows, int cols, QWidget *parent) :
+ColorButton::ColorButton(int rows, int cols, QWidget *parent) :
 	QPushButton("", parent),
 	popup_(rows, cols, this)
 {
@@ -38,33 +38,33 @@ ColourButton::ColourButton(int rows, int cols, QWidget *parent) :
 		this, SLOT(on_selected(int, int)));
 }
 
-ColourPopup& ColourButton::popup()
+ColorPopup& ColorButton::popup()
 {
 	return popup_;
 }
 
-const QColor& ColourButton::colour() const
+const QColor& ColorButton::color() const
 {
-	return cur_colour_;
+	return cur_color_;
 }
 
-void ColourButton::set_colour(QColor colour)
+void ColorButton::set_color(QColor color)
 {
-	cur_colour_ = colour;
+	cur_color_ = color;
 
 	const unsigned int rows = popup_.well_array().numRows();
 	const unsigned int cols = popup_.well_array().numCols();
 
 	for (unsigned int r = 0; r < rows; r++)
 		for (unsigned int c = 0; c < cols; c++)
-			if (popup_.well_array().cellBrush(r, c).color() == colour) {
+			if (popup_.well_array().cellBrush(r, c).color() == color) {
 				popup_.well_array().setSelected(r, c);
 				popup_.well_array().setCurrent(r, c);
 				return;
 			}
 }
 
-void ColourButton::set_palette(const QColor *const palette)
+void ColorButton::set_palette(const QColor *const palette)
 {
 	assert(palette);
 
@@ -77,19 +77,19 @@ void ColourButton::set_palette(const QColor *const palette)
 				QBrush(palette[r * cols + c]));
 }
 
-void ColourButton::on_clicked(bool)
+void ColorButton::on_clicked(bool)
 {
 	popup_.set_position(mapToGlobal(rect().center()), Popup::Bottom);
 	popup_.show();
 }
 
-void ColourButton::on_selected(int row, int col)
+void ColorButton::on_selected(int row, int col)
 {
-	cur_colour_ = popup_.well_array().cellBrush(row, col).color();
-	selected(cur_colour_);
+	cur_color_ = popup_.well_array().cellBrush(row, col).color();
+	selected(cur_color_);
 }
 
-void ColourButton::paintEvent(QPaintEvent *event)
+void ColorButton::paintEvent(QPaintEvent *event)
 {
 	QPushButton::paintEvent(event);
 
@@ -98,7 +98,7 @@ void ColourButton::paintEvent(QPaintEvent *event)
 	const QRect r = rect().adjusted(SwatchMargin, SwatchMargin,
 		-SwatchMargin, -SwatchMargin);
 	p.setPen(QApplication::palette().color(QPalette::Dark));
-	p.setBrush(QBrush(cur_colour_));
+	p.setBrush(QBrush(cur_color_));
 	p.drawRect(r);
 }
 

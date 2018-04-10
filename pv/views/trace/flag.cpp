@@ -36,16 +36,16 @@ namespace pv {
 namespace views {
 namespace trace {
 
-const QColor Flag::FillColour(0x73, 0xD2, 0x16);
+const QColor Flag::FillColor(0x73, 0xD2, 0x16);
 
 Flag::Flag(View &view, const pv::util::Timestamp& time, const QString &text) :
-	TimeMarker(view, FillColour, time),
+	TimeMarker(view, FillColor, time),
 	text_(text)
 {
 }
 
 Flag::Flag(const Flag &flag) :
-	TimeMarker(flag.view_, FillColour, flag.time_),
+	TimeMarker(flag.view_, FillColor, flag.time_),
 	enable_shared_from_this<Flag>(flag)
 {
 }

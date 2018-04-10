@@ -17,34 +17,38 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "colourpopup.hpp"
+#ifndef PULSEVIEW_PV_WIDGETS_COLORPOPUP_HPP
+#define PULSEVIEW_PV_WIDGETS_COLORPOPUP_HPP
+
+#include "popup.hpp"
+#include "wellarray.hpp"
+
+#include <QVBoxLayout>
 
 namespace pv {
 namespace widgets {
 
-ColourPopup::ColourPopup(int rows, int cols, QWidget *parent) :
-	Popup(parent),
-	well_array_(rows, cols, this),
-	layout_(this)
+class ColorPopup : public Popup
 {
-	layout_.addWidget(&well_array_);
-	setLayout(&layout_);
+	Q_OBJECT
 
-	connect(&well_array_, SIGNAL(selected(int, int)),
-		this, SIGNAL(selected(int, int)));
-	connect(&well_array_, SIGNAL(selected(int, int)),
-		this, SLOT(colour_selected(int, int)));
-}
+public:
+	ColorPopup(int rows, int cols, QWidget *parent);
 
-WellArray& ColourPopup::well_array()
-{
-	return well_array_;
-}
+	WellArray& well_array();
 
-void ColourPopup::colour_selected(int, int)
-{
-	close();
-}
+Q_SIGNALS:
+	void selected(int row, int col);
+
+private Q_SLOTS:
+	void color_selected(int, int);
+
+private:
+	WellArray well_array_;
+	QVBoxLayout layout_;
+};
 
 }  // namespace widgets
 }  // namespace pv
+
+#endif // PULSEVIEW_PV_WIDGETS_COLORPOPUP_HPP

@@ -35,7 +35,7 @@ class TriggerMarker : public TimeItem
 	Q_OBJECT
 
 public:
-	static const QColor Colour;
+	static const QColor Color;
 
 public:
 	/**

@@ -196,7 +196,7 @@ View::View(Session &session, bool is_main_view, QWidget *parent) :
 
 	// Set up settings and event handlers
 	GlobalSettings settings;
-	coloured_bg_ = settings.value(GlobalSettings::Key_View_ColouredBG).toBool();
+	colored_bg_ = settings.value(GlobalSettings::Key_View_ColoredBG).toBool();
 
 	GlobalSettings::add_change_handler(this);
 
@@ -774,15 +774,15 @@ void View::enable_show_analog_minor_grid(bool state)
 	viewport_->update();
 }
 
-void View::enable_coloured_bg(bool state)
+void View::enable_colored_bg(bool state)
 {
-	coloured_bg_ = state;
+	colored_bg_ = state;
 	viewport_->update();
 }
 
-bool View::coloured_bg() const
+bool View::colored_bg() const
 {
-	return coloured_bg_;
+	return colored_bg_;
 }
 
 bool View::cursors_shown() const

@@ -80,8 +80,8 @@ set(pulseview_TEST_SOURCES
 	${PROJECT_SOURCE_DIR}/pv/views/trace/viewwidget.cpp
 	${PROJECT_SOURCE_DIR}/pv/views/viewbase.cpp
 	${PROJECT_SOURCE_DIR}/pv/views/trace/standardbar.cpp
-	${PROJECT_SOURCE_DIR}/pv/widgets/colourbutton.cpp
-	${PROJECT_SOURCE_DIR}/pv/widgets/colourpopup.cpp
+	${PROJECT_SOURCE_DIR}/pv/widgets/colorbutton.cpp
+	${PROJECT_SOURCE_DIR}/pv/widgets/colorpopup.cpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/devicetoolbutton.cpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/exportmenu.cpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/importmenu.cpp
@@ -147,8 +147,8 @@ set(pulseview_TEST_HEADERS
 	${PROJECT_SOURCE_DIR}/pv/views/trace/viewwidget.hpp
 	${PROJECT_SOURCE_DIR}/pv/views/viewbase.hpp
 	${PROJECT_SOURCE_DIR}/pv/views/trace/standardbar.hpp
-	${PROJECT_SOURCE_DIR}/pv/widgets/colourbutton.hpp
-	${PROJECT_SOURCE_DIR}/pv/widgets/colourpopup.hpp
+	${PROJECT_SOURCE_DIR}/pv/widgets/colorbutton.hpp
+	${PROJECT_SOURCE_DIR}/pv/widgets/colorpopup.hpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/devicetoolbutton.hpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/exportmenu.hpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/importmenu.hpp

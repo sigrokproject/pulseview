@@ -59,14 +59,14 @@ class LogicSignal : public Signal
 public:
 	static const float Oversampling;
 
-	static const QColor EdgeColour;
-	static const QColor HighColour;
-	static const QColor LowColour;
-	static const QColor SamplingPointColour;
+	static const QColor EdgeColor;
+	static const QColor HighColor;
+	static const QColor LowColor;
+	static const QColor SamplingPointColor;
 
-	static const QColor SignalColours[10];
+	static const QColor SignalColors[10];
 
-	static QColor TriggerMarkerBackgroundColour;
+	static QColor TriggerMarkerBackgroundColor;
 	static const int TriggerMarkerPadding;
 	static const char* TriggerMarkerIcons[8];
 

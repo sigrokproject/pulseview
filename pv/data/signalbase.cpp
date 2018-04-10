@@ -41,7 +41,7 @@ using std::unique_lock;
 namespace pv {
 namespace data {
 
-const int SignalBase::ColourBGAlpha = 8 * 256 / 100;
+const int SignalBase::ColorBGAlpha = 8 * 256 / 100;
 const uint64_t SignalBase::ConversionBlockSize = 4096;
 const uint32_t SignalBase::ConversionDelay = 1000;  // 1 second
 
@@ -130,24 +130,24 @@ unsigned int SignalBase::logic_bit_index() const
 		return 0;
 }
 
-QColor SignalBase::colour() const
+QColor SignalBase::color() const
 {
-	return colour_;
+	return color_;
 }
 
-void SignalBase::set_colour(QColor colour)
+void SignalBase::set_color(QColor color)
 {
-	colour_ = colour;
+	color_ = color;
 
-	bgcolour_ = colour;
-	bgcolour_.setAlpha(ColourBGAlpha);
+	bgcolor_ = color;
+	bgcolor_.setAlpha(ColorBGAlpha);
 
-	colour_changed(colour);
+	color_changed(color);
 }
 
-QColor SignalBase::bgcolour() const
+QColor SignalBase::bgcolor() const
 {
-	return bgcolour_;
+	return bgcolor_;
 }
 
 void SignalBase::set_data(shared_ptr<pv::data::SignalData> data)
@@ -430,7 +430,7 @@ void SignalBase::save_settings(QSettings &settings) const
 {
 	settings.setValue("name", name());
 	settings.setValue("enabled", enabled());
-	settings.setValue("colour", colour());
+	settings.setValue("color", color());
 	settings.setValue("conversion_type", (int)conversion_type_);
 
 	settings.setValue("conv_options", (int)(conversion_options_.size()));
@@ -446,7 +446,7 @@ void SignalBase::restore_settings(QSettings &settings)
 {
 	set_name(settings.value("name").toString());
 	set_enabled(settings.value("enabled").toBool());
-	set_colour(settings.value("colour").value<QColor>());
+	set_color(settings.value("color").value<QColor>());
 	set_conversion_type((ConversionType)settings.value("conversion_type").toInt());
 
 	int conv_options = settings.value("conv_options").toInt();

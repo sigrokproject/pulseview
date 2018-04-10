@@ -17,38 +17,51 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PULSEVIEW_PV_WIDGETS_COLOURPOPUP_HPP
-#define PULSEVIEW_PV_WIDGETS_COLOURPOPUP_HPP
+#ifndef PULSEVIEW_PV_WIDGETS_COLORBUTTON_HPP
+#define PULSEVIEW_PV_WIDGETS_COLORBUTTON_HPP
 
-#include "popup.hpp"
-#include "wellarray.hpp"
+#include <QPushButton>
 
-#include <QVBoxLayout>
+#include "colorpopup.hpp"
 
 namespace pv {
 namespace widgets {
 
-class ColourPopup : public Popup
+class ColorButton : public QPushButton
 {
-	Q_OBJECT
-
-public:
-	ColourPopup(int rows, int cols, QWidget *parent);
-
-	WellArray& well_array();
-
-Q_SIGNALS:
-	void selected(int row, int col);
-
-private Q_SLOTS:
-	void colour_selected(int, int);
+	Q_OBJECT;
 
 private:
-	WellArray well_array_;
-	QVBoxLayout layout_;
+	static const int SwatchMargin;
+
+public:
+	ColorButton(int rows, int cols, QWidget *parent);
+
+	ColorPopup& popup();
+
+	const QColor& color() const;
+
+	void set_color(QColor color);
+
+	void set_palette(const QColor *const palette);
+
+private:
+	void paintEvent(QPaintEvent *event);
+
+private Q_SLOTS:
+	void on_clicked(bool);
+
+	void on_selected(int row, int col);
+
+Q_SIGNALS:
+	void selected(const QColor &color);
+
+private:
+	ColorPopup popup_;
+	QColor cur_color_;
 };
 
 }  // namespace widgets
 }  // namespace pv
 
-#endif // PULSEVIEW_PV_WIDGETS_COLOURPOPUP_HPP
+#endif // PULSEVIEW_PV_WIDGETS_COLORBUTTON_HPP

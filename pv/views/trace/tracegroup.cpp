@@ -39,7 +39,7 @@ namespace trace {
 const int TraceGroup::Padding = 8;
 const int TraceGroup::Width = 12;
 const int TraceGroup::LineThickness = 5;
-const QColor TraceGroup::LineColour(QColor(0x55, 0x57, 0x53));
+const QColor TraceGroup::LineColor(QColor(0x55, 0x57, 0x53));
 
 TraceGroup::~TraceGroup()
 {
@@ -104,10 +104,10 @@ void TraceGroup::paint_label(QPainter &p, const QRect &rect, bool hover)
 		p.drawPolyline(points, countof(points));
 	}
 
-	p.setPen(QPen(QBrush(LineColour.darker()), LineThickness,
+	p.setPen(QPen(QBrush(LineColor.darker()), LineThickness,
 		Qt::SolidLine, Qt::SquareCap, Qt::RoundJoin));
 	p.drawPolyline(points, countof(points));
-	p.setPen(QPen(QBrush(hover ? LineColour.lighter() : LineColour),
+	p.setPen(QPen(QBrush(hover ? LineColor.lighter() : LineColor),
 		LineThickness - 2, Qt::SolidLine, Qt::SquareCap,
 		Qt::RoundJoin));
 	p.drawPolyline(points, countof(points));

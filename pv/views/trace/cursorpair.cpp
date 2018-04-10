@@ -37,7 +37,7 @@ namespace views {
 namespace trace {
 
 const int CursorPair::DeltaPadding = 8;
-const QColor CursorPair::ViewportFillColour(220, 231, 243);
+const QColor CursorPair::ViewportFillColor(220, 231, 243);
 
 CursorPair::CursorPair(View &view) :
 	TimeItem(view),
@@ -110,10 +110,10 @@ void CursorPair::paint_label(QPainter &p, const QRect &rect, bool hover)
 	if (!enabled())
 		return;
 
-	const QColor text_colour =
-		ViewItem::select_text_colour(Cursor::FillColour);
+	const QColor text_color =
+		ViewItem::select_text_color(Cursor::FillColor);
 
-	p.setPen(text_colour);
+	p.setPen(text_color);
 	compute_text_size(p);
 	QRectF delta_rect(label_rect(rect));
 
@@ -129,16 +129,16 @@ void CursorPair::paint_label(QPainter &p, const QRect &rect, bool hover)
 			p.drawRoundedRect(delta_rect, radius, radius);
 		}
 
-		p.setBrush(hover ? Cursor::FillColour.lighter() :
-			Cursor::FillColour);
-		p.setPen(Cursor::FillColour.darker());
+		p.setBrush(hover ? Cursor::FillColor.lighter() :
+			Cursor::FillColor);
+		p.setPen(Cursor::FillColor.darker());
 		p.drawRoundedRect(delta_rect, radius, radius);
 
 		delta_rect.adjust(1, 1, -1, -1);
-		p.setPen(Cursor::FillColour.lighter());
+		p.setPen(Cursor::FillColor.lighter());
 		p.drawRoundedRect(delta_rect, highlight_radius, highlight_radius);
 
-		p.setPen(text_colour);
+		p.setPen(text_color);
 		p.drawText(text_rect, Qt::AlignCenter | Qt::AlignVCenter,
 			format_string());
 	}
@@ -150,7 +150,7 @@ void CursorPair::paint_back(QPainter &p, ViewItemPaintParams &pp)
 		return;
 
 	p.setPen(Qt::NoPen);
-	p.setBrush(QBrush(ViewportFillColour));
+	p.setBrush(QBrush(ViewportFillColor));
 
 	const pair<float, float> offsets(get_cursor_offsets());
 	const int l = (int)max(min(

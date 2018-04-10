@@ -39,7 +39,7 @@ class CursorPair : public TimeItem
 {
 private:
 	static const int DeltaPadding;
-	static const QColor ViewportFillColour;
+	static const QColor ViewportFillColor;
 
 public:
 	/**

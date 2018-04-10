@@ -74,9 +74,9 @@ class DecodeTrace : public Trace
 	Q_OBJECT
 
 private:
-	static const QColor DecodeColours[4];
-	static const QColor ErrorBgColour;
-	static const QColor NoDecodeColour;
+	static const QColor DecodeColors[4];
+	static const QColor ErrorBgColor;
+	static const QColor NoDecodeColor;
 
 	static const int ArrowSize;
 	static const double EndCapWidth;
@@ -85,8 +85,8 @@ private:
 
 	static const int MaxTraceUpdateRate;
 
-	static const QColor Colours[16];
-	static const QColor OutlineColours[16];
+	static const QColor Colors[16];
+	static const QColor OutlineColors[16];
 
 public:
 	DecodeTrace(pv::Session &session, shared_ptr<data::SignalBase> signalbase,
@@ -132,14 +132,14 @@ public:
 private:
 	void draw_annotations(vector<pv::data::decode::Annotation> annotations,
 		QPainter &p, int h, const ViewItemPaintParams &pp, int y,
-		size_t base_colour, int row_title_width);
+		size_t base_color, int row_title_width);
 
 	void draw_annotation(const pv::data::decode::Annotation &a, QPainter &p,
 		int h, const ViewItemPaintParams &pp, int y,
-		size_t base_colour, int row_title_width) const;
+		size_t base_color, int row_title_width) const;
 
 	void draw_annotation_block(vector<pv::data::decode::Annotation> annotations,
-		QPainter &p, int h, int y, size_t base_colour) const;
+		QPainter &p, int h, int y, size_t base_color) const;
 
 	void draw_instant(const pv::data::decode::Annotation &a, QPainter &p,
 		int h, double x, int y) const;

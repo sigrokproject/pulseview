@@ -58,7 +58,7 @@ private Q_SLOTS:
 	void on_view_zoomToFitDuringAcq_changed(int state);
 	void on_view_zoomToFitAfterAcq_changed(int state);
 	void on_view_triggerIsZero_changed(int state);
-	void on_view_colouredBG_changed(int state);
+	void on_view_coloredBG_changed(int state);
 	void on_view_stickyScrolling_changed(int state);
 	void on_view_showSamplingPoints_changed(int state);
 	void on_view_showAnalogMinorGrid_changed(int state);

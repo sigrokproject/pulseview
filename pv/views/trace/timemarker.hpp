@@ -56,10 +56,10 @@ protected:
 	/**
 	 * Constructor.
 	 * @param view A reference to the view that owns this marker.
-	 * @param colour A reference to the colour of this cursor.
+	 * @param color A reference to the color of this cursor.
 	 * @param time The time to set the flag to.
 	 */
-	TimeMarker(View &view, const QColor &colour, const pv::util::Timestamp& time);
+	TimeMarker(View &view, const QColor &color, const pv::util::Timestamp& time);
 
 public:
 	/**
@@ -120,7 +120,7 @@ private Q_SLOTS:
 	void on_value_changed(const pv::util::Timestamp& value);
 
 protected:
-	const QColor &colour_;
+	const QColor &color_;
 
 	pv::util::Timestamp time_;
 

@@ -86,7 +86,7 @@ public:
 	};
 
 private:
-	static const int ColourBGAlpha;
+	static const int ColorBGAlpha;
 	static const uint64_t ConversionBlockSize;
 	static const uint32_t ConversionDelay;
 
@@ -152,19 +152,19 @@ public:
 	virtual void set_name(QString name);
 
 	/**
-	 * Get the colour of the signal.
+	 * Get the color of the signal.
 	 */
-	QColor colour() const;
+	QColor color() const;
 
 	/**
-	 * Set the colour of the signal.
+	 * Set the color of the signal.
 	 */
-	void set_colour(QColor colour);
+	void set_color(QColor color);
 
 	/**
-	 * Get the background colour of the signal.
+	 * Get the background color of the signal.
 	 */
-	QColor bgcolour() const;
+	QColor bgcolor() const;
 
 	/**
 	 * Sets the internal data object.
@@ -298,7 +298,7 @@ Q_SIGNALS:
 
 	void name_changed(const QString &name);
 
-	void colour_changed(const QColor &colour);
+	void color_changed(const QColor &color);
 
 	void conversion_type_changed(const ConversionType t);
 
@@ -338,7 +338,7 @@ protected:
 	QTimer delayed_conversion_starter_;
 
 	QString internal_name_, name_;
-	QColor colour_, bgcolour_;
+	QColor color_, bgcolor_;
 };
 
 } // namespace data

@@ -37,7 +37,7 @@ private:
 	static const int Padding;
 	static const int Width;
 	static const int LineThickness;
-	static const QColor LineColour;
+	static const QColor LineColor;
 
 public:
 	/**

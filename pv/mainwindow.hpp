@@ -131,12 +131,12 @@ private Q_SLOTS:
 	void on_tab_changed(int index);
 	void on_tab_close_requested(int index);
 
-	void on_view_coloured_bg_shortcut();
+	void on_view_colored_bg_shortcut();
 	void on_view_sticky_scrolling_shortcut();
 	void on_view_show_sampling_points_shortcut();
 	void on_view_show_analog_minor_grid_shortcut();
 
-	void on_settingViewColouredBg_changed(const QVariant new_value);
+	void on_settingViewColoredBg_changed(const QVariant new_value);
 	void on_settingViewShowSamplingPoints_changed(const QVariant new_value);
 	void on_settingViewShowAnalogMinorGrid_changed(const QVariant new_value);
 
@@ -164,7 +164,7 @@ private:
 	QShortcut *view_sticky_scrolling_shortcut_;
 	QShortcut *view_show_sampling_points_shortcut_;
 	QShortcut *view_show_analog_minor_grid_shortcut_;
-	QShortcut *view_coloured_bg_shortcut_;
+	QShortcut *view_colored_bg_shortcut_;
 	QShortcut *run_stop_shortcut_;
 	QShortcut *close_application_shortcut_;
 	QShortcut *close_current_tab_shortcut_;

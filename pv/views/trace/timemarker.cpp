@@ -44,9 +44,9 @@ namespace trace {
 const int TimeMarker::ArrowSize = 4;
 
 TimeMarker::TimeMarker(
-	View &view, const QColor &colour, const pv::util::Timestamp& time) :
+	View &view, const QColor &color, const pv::util::Timestamp& time) :
 	TimeItem(view),
-	colour_(colour),
+	color_(color),
 	time_(time),
 	value_action_(nullptr),
 	value_widget_(nullptr),
@@ -140,18 +140,18 @@ void TimeMarker::paint_label(QPainter &p, const QRect &rect, bool hover)
 	}
 
 	p.setPen(Qt::transparent);
-	p.setBrush(hover ? colour_.lighter() : colour_);
+	p.setBrush(hover ? color_.lighter() : color_);
 	p.drawPolygon(points, countof(points));
 
-	p.setPen(colour_.lighter());
+	p.setPen(color_.lighter());
 	p.setBrush(Qt::transparent);
 	p.drawPolygon(highlight_points, countof(highlight_points));
 
-	p.setPen(colour_.darker());
+	p.setPen(color_.darker());
 	p.setBrush(Qt::transparent);
 	p.drawPolygon(points, countof(points));
 
-	p.setPen(select_text_colour(colour_));
+	p.setPen(select_text_color(color_));
 	p.drawText(r, Qt::AlignCenter | Qt::AlignVCenter, get_text());
 }
 
@@ -161,7 +161,7 @@ void TimeMarker::paint_fore(QPainter &p, ViewItemPaintParams &pp)
 		return;
 
 	const float x = get_x();
-	p.setPen(colour_.darker());
+	p.setPen(color_.darker());
 	p.drawLine(QPointF(x, pp.top()), QPointF(x, pp.bottom()));
 }
 

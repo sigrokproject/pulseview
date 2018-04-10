@@ -48,12 +48,12 @@ class AnalogSignal : public Signal, public GlobalSettingsInterface
 
 private:
 	static const QPen AxisPen;
-	static const QColor SignalColours[4];
+	static const QColor SignalColors[4];
 	static const QColor GridMajorColor, GridMinorColor;
-	static const QColor SamplingPointColour;
-	static const QColor SamplingPointColourLo;
-	static const QColor SamplingPointColourNe;
-	static const QColor SamplingPointColourHi;
+	static const QColor SamplingPointColor;
+	static const QColor SamplingPointColorLo;
+	static const QColor SamplingPointColorNe;
+	static const QColor SamplingPointColorHi;
 	static const QColor ThresholdColor;
 	static const QColor ThresholdColorLo;
 	static const QColor ThresholdColorNe;

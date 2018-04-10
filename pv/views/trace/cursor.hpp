@@ -39,7 +39,7 @@ class Cursor : public TimeMarker
 	Q_OBJECT
 
 public:
-	static const QColor FillColour;
+	static const QColor FillColor;
 
 public:
 	/**

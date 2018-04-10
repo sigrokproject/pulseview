@@ -63,12 +63,12 @@ namespace trace {
 
 const float LogicSignal::Oversampling = 2.0f;
 
-const QColor LogicSignal::EdgeColour(0x80, 0x80, 0x80);
-const QColor LogicSignal::HighColour(0x00, 0xC0, 0x00);
-const QColor LogicSignal::LowColour(0xC0, 0x00, 0x00);
-const QColor LogicSignal::SamplingPointColour(0x77, 0x77, 0x77);
+const QColor LogicSignal::EdgeColor(0x80, 0x80, 0x80);
+const QColor LogicSignal::HighColor(0x00, 0xC0, 0x00);
+const QColor LogicSignal::LowColor(0xC0, 0x00, 0x00);
+const QColor LogicSignal::SamplingPointColor(0x77, 0x77, 0x77);
 
-const QColor LogicSignal::SignalColours[10] = {
+const QColor LogicSignal::SignalColors[10] = {
 	QColor(0x16, 0x19, 0x1A),	// Black
 	QColor(0x8F, 0x52, 0x02),	// Brown
 	QColor(0xCC, 0x00, 0x00),	// Red
@@ -81,7 +81,7 @@ const QColor LogicSignal::SignalColours[10] = {
 	QColor(0xEE, 0xEE, 0xEC),	// White
 };
 
-QColor LogicSignal::TriggerMarkerBackgroundColour = QColor(0xED, 0xD4, 0x00);
+QColor LogicSignal::TriggerMarkerBackgroundColor = QColor(0xED, 0xD4, 0x00);
 const int LogicSignal::TriggerMarkerPadding = 2;
 const char* LogicSignal::TriggerMarkerIcons[8] = {
 	nullptr,
@@ -112,7 +112,7 @@ LogicSignal::LogicSignal(
 {
 	shared_ptr<Trigger> trigger;
 
-	base_->set_colour(SignalColours[base->index() % countof(SignalColours)]);
+	base_->set_color(SignalColors[base->index() % countof(SignalColors)]);
 
 	GlobalSettings gs;
 	signal_height_ = gs.value(GlobalSettings::Key_View_DefaultLogicHeight).toInt();
@@ -266,7 +266,7 @@ void LogicSignal::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 			sampling_point_x += pixels_per_sample;
 		};
 
-	p.setPen(EdgeColour);
+	p.setPen(EdgeColor);
 	p.drawLines(edge_lines, edge_count);
 	delete[] edge_lines;
 
@@ -274,10 +274,10 @@ void LogicSignal::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 	const unsigned int max_cap_line_count = edges.size();
 	QLineF *const cap_lines = new QLineF[max_cap_line_count];
 
-	p.setPen(HighColour);
+	p.setPen(HighColor);
 	paint_caps(p, cap_lines, edges, true, samples_per_pixel,
 		pixels_offset, pp.left(), high_offset);
-	p.setPen(LowColour);
+	p.setPen(LowColor);
 	paint_caps(p, cap_lines, edges, false, samples_per_pixel,
 		pixels_offset, pp.left(), low_offset);
 
@@ -285,7 +285,7 @@ void LogicSignal::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 
 	// Paint the sampling points
 	if (show_sampling_points) {
-		p.setPen(SamplingPointColour);
+		p.setPen(SamplingPointColor);
 		p.drawRects(sampling_points.data(), sampling_points.size());
 	}
 }
@@ -317,8 +317,8 @@ void LogicSignal::paint_fore(QPainter &p, ViewItemPaintParams &pp)
 			pp.right() - size.width() - pad * 2,
 			y - (signal_height_ + size.height()) / 2);
 
-		p.setPen(QPen(TriggerMarkerBackgroundColour.darker()));
-		p.setBrush(TriggerMarkerBackgroundColour);
+		p.setPen(QPen(TriggerMarkerBackgroundColor.darker()));
+		p.setBrush(TriggerMarkerBackgroundColor);
 		p.drawRoundedRect(QRectF(point, size).adjusted(
 			-pad, -pad, pad, pad), pad, pad);
 		p.drawPixmap(point, *pixmap);

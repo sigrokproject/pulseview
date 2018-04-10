@@ -32,7 +32,7 @@ namespace pv {
 const QString GlobalSettings::Key_View_ZoomToFitDuringAcq = "View_ZoomToFitDuringAcq";
 const QString GlobalSettings::Key_View_ZoomToFitAfterAcq = "View_ZoomToFitAfterAcq";
 const QString GlobalSettings::Key_View_TriggerIsZeroTime = "View_TriggerIsZeroTime";
-const QString GlobalSettings::Key_View_ColouredBG = "View_ColouredBG";
+const QString GlobalSettings::Key_View_ColoredBG = "View_ColoredBG";
 const QString GlobalSettings::Key_View_StickyScrolling = "View_StickyScrolling";
 const QString GlobalSettings::Key_View_ShowSamplingPoints = "View_ShowSamplingPoints";
 const QString GlobalSettings::Key_View_ShowAnalogMinorGrid = "View_ShowAnalogMinorGrid";
@@ -59,9 +59,9 @@ void GlobalSettings::set_defaults_where_needed()
 	if (!contains(Key_View_ZoomToFitAfterAcq))
 		setValue(Key_View_ZoomToFitAfterAcq, true);
 
-	// Enable coloured trace backgrounds by default
-	if (!contains(Key_View_ColouredBG))
-		setValue(Key_View_ColouredBG, true);
+	// Enable colored trace backgrounds by default
+	if (!contains(Key_View_ColoredBG))
+		setValue(Key_View_ColoredBG, true);
 
 	// Enable showing sampling points by default
 	if (!contains(Key_View_ShowSamplingPoints))

@@ -41,7 +41,7 @@ class Flag : public TimeMarker, public enable_shared_from_this<Flag>
 	Q_OBJECT
 
 public:
-	static const QColor FillColour;
+	static const QColor FillColor;
 
 public:
 	/**
