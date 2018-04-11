@@ -444,18 +444,30 @@ void SignalBase::save_settings(QSettings &settings) const
 
 void SignalBase::restore_settings(QSettings &settings)
 {
-	set_name(settings.value("name").toString());
-	set_enabled(settings.value("enabled").toBool());
-	set_color(settings.value("color").value<QColor>());
-	set_conversion_type((ConversionType)settings.value("conversion_type").toInt());
+	if (settings.contains("name"))
+		set_name(settings.value("name").toString());
 
-	int conv_options = settings.value("conv_options").toInt();
+	if (settings.contains("enabled"))
+		set_enabled(settings.value("enabled").toBool());
+
+	if (settings.contains("color"))
+		set_color(settings.value("color").value<QColor>());
+
+	if (settings.contains("conversion_type"))
+		set_conversion_type((ConversionType)settings.value("conversion_type").toInt());
+
+	int conv_options = 0;
+	if (settings.contains("conv_options"))
+		conv_options = settings.value("conv_options").toInt();
 
 	if (conv_options)
 		for (int i = 0; i < conv_options; i++) {
-			QString key = settings.value(QString("conv_option%1_key").arg(i)).toString();
-			QVariant value = settings.value(QString("conv_option%1_value").arg(i));
-			conversion_options_[key] = value;
+			const QString key_id = QString("conv_option%1_key").arg(i);
+			const QString value_id = QString("conv_option%1_value").arg(i);
+
+			if (settings.contains(key_id) && settings.contains(value_id))
+				conversion_options_[settings.value(key_id).toString()] =
+					settings.value(value_id);
 		}
 }
 
