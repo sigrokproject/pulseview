@@ -72,12 +72,9 @@ namespace pv {
 namespace views {
 namespace trace {
 
-const QColor DecodeTrace::DecodeColors[4] = {
-	QColor(0xEF, 0x29, 0x29),	// Red
-	QColor(0xFC, 0xE9, 0x4F),	// Yellow
-	QColor(0x8A, 0xE2, 0x34),	// Green
-	QColor(0x72, 0x9F, 0xCF)	// Blue
-};
+
+#define DECODETRACE_COLOR_SATURATION (180) /* 0-255 */
+#define DECODETRACE_COLOR_VALUE (170) /* 0-255 */
 
 const QColor DecodeTrace::ErrorBgColor = QColor(0xEF, 0x29, 0x29);
 const QColor DecodeTrace::NoDecodeColor = QColor(0x88, 0x8A, 0x85);
@@ -88,44 +85,6 @@ const int DecodeTrace::RowTitleMargin = 10;
 const int DecodeTrace::DrawPadding = 100;
 
 const int DecodeTrace::MaxTraceUpdateRate = 1; // No more than 1 Hz
-
-const QColor DecodeTrace::Colors[16] = {
-	QColor(0xEF, 0x29, 0x29),
-	QColor(0xF6, 0x6A, 0x32),
-	QColor(0xFC, 0xAE, 0x3E),
-	QColor(0xFB, 0xCA, 0x47),
-	QColor(0xFC, 0xE9, 0x4F),
-	QColor(0xCD, 0xF0, 0x40),
-	QColor(0x8A, 0xE2, 0x34),
-	QColor(0x4E, 0xDC, 0x44),
-	QColor(0x55, 0xD7, 0x95),
-	QColor(0x64, 0xD1, 0xD2),
-	QColor(0x72, 0x9F, 0xCF),
-	QColor(0xD4, 0x76, 0xC4),
-	QColor(0x9D, 0x79, 0xB9),
-	QColor(0xAD, 0x7F, 0xA8),
-	QColor(0xC2, 0x62, 0x9B),
-	QColor(0xD7, 0x47, 0x6F)
-};
-
-const QColor DecodeTrace::OutlineColors[16] = {
-	QColor(0x77, 0x14, 0x14),
-	QColor(0x7B, 0x35, 0x19),
-	QColor(0x7E, 0x57, 0x1F),
-	QColor(0x7D, 0x65, 0x23),
-	QColor(0x7E, 0x74, 0x27),
-	QColor(0x66, 0x78, 0x20),
-	QColor(0x45, 0x71, 0x1A),
-	QColor(0x27, 0x6E, 0x22),
-	QColor(0x2A, 0x6B, 0x4A),
-	QColor(0x32, 0x68, 0x69),
-	QColor(0x39, 0x4F, 0x67),
-	QColor(0x6A, 0x3B, 0x62),
-	QColor(0x4E, 0x3C, 0x5C),
-	QColor(0x56, 0x3F, 0x54),
-	QColor(0x61, 0x31, 0x4D),
-	QColor(0x6B, 0x23, 0x37)
-};
 
 DecodeTrace::DecodeTrace(pv::Session &session,
 	shared_ptr<data::SignalBase> signalbase, int index) :
@@ -142,7 +101,16 @@ DecodeTrace::DecodeTrace(pv::Session &session,
 	QFontMetrics m(QApplication::font());
 	min_useful_label_width_ = m.width("XX"); // e.g. two hex characters
 
-	base_->set_color(DecodeColors[index % countof(DecodeColors)]);
+	// For the base color, we want to start at a very different color for
+	// every decoder stack, so multiply the index with a number that is
+	// rather close to 180 degrees of the color circle but not a dividend of 360
+	// Note: The offset equals the color of the first annotation
+	QColor color;
+	const int h = (120 + 160 * index) % 360;
+	const int s = DECODETRACE_COLOR_SATURATION;
+	const int v = DECODETRACE_COLOR_VALUE;
+	color.setHsv(h, s, v);
+	base_->set_color(color);
 
 	connect(decode_signal_.get(), SIGNAL(new_annotations()),
 		this, SLOT(on_new_annotations()));
@@ -227,19 +195,12 @@ void DecodeTrace::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 			row_title_width = w;
 		}
 
-		// Determine the row's color
-		size_t base_color = 0x13579BDF;
-		boost::hash_combine(base_color, this);
-		boost::hash_combine(base_color, row.decoder());
-		boost::hash_combine(base_color, row.row());
-		base_color >>= 16;
-
 		vector<Annotation> annotations;
 		decode_signal_->get_annotation_subset(annotations, row,
 			current_segment_, sample_range.first, sample_range.second);
 		if (!annotations.empty()) {
 			draw_annotations(annotations, p, annotation_height, pp, y,
-				base_color, row_title_width);
+				get_row_color(visible_rows_.size()), row_title_width);
 
 			y += row_height_;
 
@@ -362,7 +323,7 @@ QMenu* DecodeTrace::create_context_menu(QWidget *parent)
 
 void DecodeTrace::draw_annotations(vector<pv::data::decode::Annotation> annotations,
 		QPainter &p, int h, const ViewItemPaintParams &pp, int y,
-		size_t base_color, int row_title_width)
+		QColor row_color, int row_title_width)
 {
 	using namespace pv::data::decode;
 
@@ -406,17 +367,17 @@ void DecodeTrace::draw_annotations(vector<pv::data::decode::Annotation> annotati
 		if ((abs(delta) > 1) || a_is_separate) {
 			// Block was broken, draw annotations that form the current block
 			if (a_block.size() == 1) {
-				draw_annotation(a_block.front(), p, h, pp, y, base_color,
+				draw_annotation(a_block.front(), p, h, pp, y, row_color,
 					row_title_width);
 			}
 			else
-				draw_annotation_block(a_block, p, h, y, base_color);
+				draw_annotation_block(a_block, p, h, y, row_color);
 
 			a_block.clear();
 		}
 
 		if (a_is_separate) {
-			draw_annotation(a, p, h, pp, y, base_color, row_title_width);
+			draw_annotation(a, p, h, pp, y, row_color, row_title_width);
 			// Next annotation must start a new block. delta will be > 1
 			// because we set p_end to INT_MIN but that's okay since
 			// a_block will be empty, so nothing will be drawn
@@ -428,15 +389,14 @@ void DecodeTrace::draw_annotations(vector<pv::data::decode::Annotation> annotati
 	}
 
 	if (a_block.size() == 1)
-		draw_annotation(a_block.front(), p, h, pp, y, base_color,
-			row_title_width);
+		draw_annotation(a_block.front(), p, h, pp, y, row_color, row_title_width);
 	else
-		draw_annotation_block(a_block, p, h, y, base_color);
+		draw_annotation_block(a_block, p, h, y, row_color);
 }
 
 void DecodeTrace::draw_annotation(const pv::data::decode::Annotation &a,
 	QPainter &p, int h, const ViewItemPaintParams &pp, int y,
-	size_t base_color, int row_title_width) const
+	QColor row_color, int row_title_width) const
 {
 	double samples_per_pixel, pixels_offset;
 	tie(pixels_offset, samples_per_pixel) =
@@ -446,9 +406,9 @@ void DecodeTrace::draw_annotation(const pv::data::decode::Annotation &a,
 		pixels_offset;
 	const double end = a.end_sample() / samples_per_pixel - pixels_offset;
 
-	const size_t color = (base_color + a.format()) % countof(Colors);
-	p.setPen(OutlineColors[color]);
-	p.setBrush(Colors[color]);
+	QColor color = get_annotation_color(row_color, a.format());
+	p.setPen(color.darker());
+	p.setBrush(color);
 
 	if (start > pp.right() + DrawPadding || end < pp.left() - DrawPadding)
 		return;
@@ -461,7 +421,7 @@ void DecodeTrace::draw_annotation(const pv::data::decode::Annotation &a,
 
 void DecodeTrace::draw_annotation_block(
 	vector<pv::data::decode::Annotation> annotations, QPainter &p, int h,
-	int y, size_t base_color) const
+	int y, QColor row_color) const
 {
 	using namespace pv::data::decode;
 
@@ -480,8 +440,7 @@ void DecodeTrace::draw_annotation_block(
 	const double top = y + .5 - h / 2;
 	const double bottom = y + .5 + h / 2;
 
-	const size_t color = (base_color + annotations.front().format()) %
-		countof(Colors);
+	QColor color = get_annotation_color(row_color, annotations.front().format());
 
 	// Check if all annotations are of the same type (i.e. we can use one color)
 	// or if we should use a neutral color (i.e. gray)
@@ -497,9 +456,8 @@ void DecodeTrace::draw_annotation_block(
 	p.setBrush(Qt::white);
 	p.drawRoundedRect(rect, r, r);
 
-	p.setPen((single_format ? OutlineColors[color] : Qt::gray));
-	p.setBrush(QBrush((single_format ? Colors[color] : Qt::gray),
-		Qt::Dense4Pattern));
+	p.setPen((single_format ? color.darker() : Qt::gray));
+	p.setBrush(QBrush((single_format ? color : Qt::gray), Qt::Dense4Pattern));
 	p.drawRoundedRect(rect, r, r);
 }
 
@@ -669,6 +627,34 @@ pair<uint64_t, uint64_t> DecodeTrace::get_sample_range(
 		(x_end + pixels_offset) * samples_per_pixel, 0.0);
 
 	return make_pair(start, end);
+}
+
+QColor DecodeTrace::get_row_color(int row_index) const
+{
+	// For each row color, use the base color hue and add an offset that's
+	// not a dividend of 360
+
+	QColor color;
+	const int h = (base_->color().toHsv().hue() + 20 * row_index) % 360;
+	const int s = DECODETRACE_COLOR_SATURATION;
+	const int v = DECODETRACE_COLOR_VALUE;
+	color.setHsl(h, s, v);
+
+	return color;
+}
+
+QColor DecodeTrace::get_annotation_color(QColor row_color, int annotation_index) const
+{
+	// For each row color, use the base color hue and add an offset that's
+	// not a dividend of 360 and not a multiple of the row offset
+
+	QColor color(row_color);
+	const int h = (color.toHsv().hue() + 55 * annotation_index) % 360;
+	const int s = DECODETRACE_COLOR_SATURATION;
+	const int v = DECODETRACE_COLOR_VALUE;
+	color.setHsl(h, s, v);
+
+	return color;
 }
 
 int DecodeTrace::get_row_at_point(const QPoint &point)
