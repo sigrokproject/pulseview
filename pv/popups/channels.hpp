@@ -28,6 +28,7 @@
 #include <QCheckBox>
 #include <QFormLayout>
 #include <QGridLayout>
+#include <QLabel>
 #include <QPushButton>
 #include <QSignalMapper>
 
