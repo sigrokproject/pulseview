@@ -101,16 +101,6 @@ public:
 	shared_ptr<data::SignalBase> base() const;
 
 	/**
-	 * Sets the name of the signal.
-	 */
-	virtual void set_name(QString name);
-
-	/**
-	 * Set the color of the signal.
-	 */
-	virtual void set_color(QColor color);
-
-	/**
 	 * Configures the segment display mode to use.
 	 */
 	virtual void set_segment_display_mode(SegmentDisplayMode mode);

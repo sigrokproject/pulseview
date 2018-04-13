@@ -244,16 +244,6 @@ void Trace::populate_popup_form(QWidget *parent, QFormLayout *form)
 	add_color_option(parent, form);
 }
 
-void Trace::set_name(QString name)
-{
-	base_->set_name(name);
-}
-
-void Trace::set_color(QColor color)
-{
-	base_->set_color(color);
-}
-
 void Trace::set_segment_display_mode(SegmentDisplayMode mode)
 {
 	segment_display_mode_ = mode;
@@ -291,13 +281,13 @@ void Trace::on_popup_closed()
 void Trace::on_nameedit_changed(const QString &name)
 {
 	/* This event handler notifies SignalBase that the name changed */
-	set_name(name);
+	base_->set_name(name);
 }
 
 void Trace::on_coloredit_changed(const QColor &color)
 {
 	/* This event handler notifies SignalBase that the color changed */
-	set_color(color);
+	base_->set_color(color);
 }
 
 } // namespace trace

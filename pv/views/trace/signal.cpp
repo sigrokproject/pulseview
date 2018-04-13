@@ -72,7 +72,7 @@ Signal::Signal(pv::Session &session,
 
 void Signal::set_name(QString name)
 {
-	Trace::set_name(name);
+	base_->set_name(name);
 
 	if (name != name_widget_->currentText())
 		name_widget_->setEditText(name);
