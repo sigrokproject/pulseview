@@ -540,13 +540,6 @@ void MainBar::commit_sample_count()
 	update_sample_rate_selector();
 }
 
-void MainBar::session_error(const QString text, const QString info_text)
-{
-	QMetaObject::invokeMethod(this, "show_session_error",
-		Qt::QueuedConnection, Q_ARG(QString, text),
-		Q_ARG(QString, info_text));
-}
-
 void MainBar::show_session_error(const QString text, const QString info_text)
 {
 	QMessageBox msg(this);

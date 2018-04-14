@@ -92,6 +92,18 @@ MainWindow::~MainWindow()
 		remove_session(sessions_.front());
 }
 
+void MainWindow::show_session_error(const QString text, const QString info_text)
+{
+	qDebug().noquote() << "Notifying user of session error:" << info_text;
+
+	QMessageBox msg;
+	msg.setText(text);
+	msg.setInformativeText(info_text);
+	msg.setStandardButtons(QMessageBox::Ok);
+	msg.setIcon(QMessageBox::Warning);
+	msg.exec();
+}
+
 shared_ptr<views::ViewBase> MainWindow::get_active_view() const
 {
 	// If there's only one view, use it...
@@ -561,25 +573,6 @@ bool MainWindow::restoreState(const QByteArray &state, int version)
 	return false;
 }
 
-void MainWindow::session_error(const QString text, const QString info_text)
-{
-	qDebug().noquote() << "Notifying user of session error:" << info_text;
-
-	QMetaObject::invokeMethod(this, "show_session_error",
-		Qt::QueuedConnection, Q_ARG(QString, text),
-		Q_ARG(QString, info_text));
-}
-
-void MainWindow::show_session_error(const QString text, const QString info_text)
-{
-	QMessageBox msg(this);
-	msg.setText(text);
-	msg.setInformativeText(info_text);
-	msg.setStandardButtons(QMessageBox::Ok);
-	msg.setIcon(QMessageBox::Warning);
-	msg.exec();
-}
-
 void MainWindow::on_add_view(const QString &title, views::ViewType type,
 	Session *session)
 {
@@ -641,7 +634,7 @@ void MainWindow::on_run_stop_clicked()
 	switch (session->get_capture_state()) {
 	case Session::Stopped:
 		session->start_capture([&](QString message) {
-			session_error("Capture failed", message); });
+			show_session_error("Capture failed", message); });
 		break;
 	case Session::AwaitingTrigger:
 	case Session::Running:

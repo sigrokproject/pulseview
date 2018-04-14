@@ -28,6 +28,7 @@
 #include <sys/stat.h>
 
 #include "devicemanager.hpp"
+#include "mainwindow.hpp"
 #include "session.hpp"
 
 #include "data/analog.hpp"
@@ -352,7 +353,7 @@ void Session::select_device(shared_ptr<devices::Device> device)
 		else
 			set_default_device();
 	} catch (const QString &e) {
-		main_bar_->session_error(tr("Failed to select device"), e);
+		MainWindow::show_session_error(tr("Failed to select device"), e);
 	}
 }
 
@@ -400,7 +401,7 @@ void Session::set_device(shared_ptr<devices::Device> device)
 		device_->open();
 	} catch (const QString &e) {
 		device_.reset();
-		main_bar_->session_error(tr("Failed to open device"), e);
+		MainWindow::show_session_error(tr("Failed to open device"), e);
 	}
 
 	if (device_) {
@@ -490,7 +491,7 @@ void Session::load_init_file(const string &file_name, const string &format)
 			[&](const pair<string, shared_ptr<InputFormat> > f) {
 				return f.first == user_name; });
 		if (iter == formats.end()) {
-			main_bar_->session_error(tr("Error"),
+			MainWindow::show_session_error(tr("Error"),
 				tr("Unexpected input format: %s").arg(QString::fromStdString(format)));
 			return;
 		}
@@ -522,7 +523,7 @@ void Session::load_file(QString file_name,
 					device_manager_.context(),
 					file_name.toStdString())));
 	} catch (Error& e) {
-		main_bar_->session_error(tr("Failed to load ") + file_name, e.what());
+		MainWindow::show_session_error(tr("Failed to load ") + file_name, e.what());
 		set_default_device();
 		main_bar_->update_device_list();
 		return;
@@ -531,7 +532,7 @@ void Session::load_file(QString file_name,
 	main_bar_->update_device_list();
 
 	start_capture([&, errorMessage](QString infoMessage) {
-		main_bar_->session_error(errorMessage, infoMessage); });
+		MainWindow::show_session_error(errorMessage, infoMessage); });
 
 	set_name(QFileInfo(file_name).fileName());
 }
