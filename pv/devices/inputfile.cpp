@@ -36,7 +36,10 @@ using std::vector;
 namespace pv {
 namespace devices {
 
-const streamsize InputFile::BufferSize = 16384;
+// Use a 4MB chunk size for reading a file into memory. Larger values don't
+// seem to provide any substancial performance improvements, but can cause
+// UI lag and a visually "stuttering" display of the data currently loading.
+const streamsize InputFile::BufferSize = (4 * 1024 * 1024);
 
 InputFile::InputFile(const shared_ptr<sigrok::Context> &context,
 	const string &file_name,
