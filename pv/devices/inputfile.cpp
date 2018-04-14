@@ -19,6 +19,7 @@
 
 #include <cassert>
 #include <fstream>
+#include <vector>
 
 #include <QString>
 
@@ -30,6 +31,7 @@ using std::streamsize;
 using std::string;
 using std::ifstream;
 using std::ios;
+using std::vector;
 
 namespace pv {
 namespace devices {
@@ -64,13 +66,14 @@ void InputFile::open()
 	// we can't open the device without sending some data first
 	f = new ifstream(file_name_, ios::binary);
 
-	char buffer[BufferSize];
-	f->read(buffer, BufferSize);
+	vector<char> buffer(BufferSize);
+
+	f->read(buffer.data(), BufferSize);
 	const streamsize size = f->gcount();
 	if (size == 0)
 		return;
 
-	input_->send(buffer, size);
+	input_->send(buffer.data(), size);
 
 	try {
 		device_ = input_->device();
@@ -93,22 +96,22 @@ void InputFile::start()
 
 void InputFile::run()
 {
-	char buffer[BufferSize];
-
 	if (!f) {
 		// Previous call to run() processed the entire file already
 		f = new ifstream(file_name_, ios::binary);
 		input_->reset();
 	}
 
+	vector<char> buffer(BufferSize);
+
 	interrupt_ = false;
 	while (!interrupt_ && !f->eof()) {
-		f->read(buffer, BufferSize);
+		f->read(buffer.data(), BufferSize);
 		const streamsize size = f->gcount();
 		if (size == 0)
 			break;
 
-		input_->send(buffer, size);
+		input_->send(buffer.data(), size);
 
 		if (size != BufferSize)
 			break;
