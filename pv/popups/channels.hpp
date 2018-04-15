@@ -28,6 +28,7 @@
 #include <QCheckBox>
 #include <QFormLayout>
 #include <QGridLayout>
+#include <QHBoxLayout>
 #include <QLabel>
 #include <QPushButton>
 #include <QSignalMapper>
@@ -104,7 +105,7 @@ private:
 		check_box_signal_map_;
 	map< shared_ptr<sigrok::ChannelGroup>, QLabel*> group_label_map_;
 
-	QGridLayout buttons_bar_;
+	QHBoxLayout buttons_bar_;
 	QPushButton enable_all_channels_, disable_all_channels_;
 	QPushButton enable_all_logic_channels_, enable_all_analog_channels_;
 	QPushButton enable_all_named_channels_, enable_all_changing_channels_;

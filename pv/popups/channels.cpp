@@ -24,6 +24,7 @@
 #include <QFontMetrics>
 #include <QFormLayout>
 #include <QGridLayout>
+#include <QHBoxLayout>
 #include <QLabel>
 
 #include "channels.hpp"
@@ -57,12 +58,12 @@ Channels::Channels(Session &session, QWidget *parent) :
 	Popup(parent),
 	session_(session),
 	updating_channels_(false),
-	enable_all_channels_(tr("Enable All"), this),
-	disable_all_channels_(tr("Disable All"), this),
-	enable_all_logic_channels_(tr("Enable only logic"), this),
-	enable_all_analog_channels_(tr("Enable only analog"), this),
-	enable_all_named_channels_(tr("Enable only named"), this),
-	enable_all_changing_channels_(tr("Enable only changing"), this),
+	enable_all_channels_(tr("All"), this),
+	disable_all_channels_(tr("All"), this),
+	enable_all_logic_channels_(tr("Logic"), this),
+	enable_all_analog_channels_(tr("Analog"), this),
+	enable_all_named_channels_(tr("Named"), this),
+	enable_all_changing_channels_(tr("Changing"), this),
 	check_box_mapper_(this)
 {
 	// Create the layout
@@ -127,13 +128,17 @@ Channels::Channels(Session &session, QWidget *parent) :
 	connect(&enable_all_changing_channels_, SIGNAL(clicked()),
 		this, SLOT(enable_all_changing_channels()));
 
-	buttons_bar_.setRowMinimumHeight(0, 2 * QFontMetrics(QApplication::font()).height());
-	buttons_bar_.addWidget(&enable_all_channels_, 1, 0);
-	buttons_bar_.addWidget(&disable_all_channels_, 1, 1);
-	buttons_bar_.addWidget(&enable_all_logic_channels_, 2, 0);
-	buttons_bar_.addWidget(&enable_all_analog_channels_, 2, 1);
-	buttons_bar_.addWidget(&enable_all_named_channels_, 2, 2);
-	buttons_bar_.addWidget(&enable_all_changing_channels_, 2, 3);
+	QLabel *label1 = new QLabel(tr("Disable: "));
+	buttons_bar_.addWidget(label1);
+	buttons_bar_.addWidget(&disable_all_channels_);
+	QLabel *label2 = new QLabel(tr("Enable: "));
+	buttons_bar_.addWidget(label2);
+	buttons_bar_.addWidget(&enable_all_channels_);
+	buttons_bar_.addWidget(&enable_all_logic_channels_);
+	buttons_bar_.addWidget(&enable_all_analog_channels_);
+	buttons_bar_.addWidget(&enable_all_named_channels_);
+	buttons_bar_.addWidget(&enable_all_changing_channels_);
+	buttons_bar_.addStretch();
 
 	layout_.addRow(&buttons_bar_);
 
