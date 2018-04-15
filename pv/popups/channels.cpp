@@ -100,16 +100,23 @@ Channels::Channels(Session &session, QWidget *parent) :
 	}
 
 	// Make a vector of the remaining channels
-	vector< shared_ptr<SignalBase> > global_sigs;
+	vector< shared_ptr<SignalBase> > global_analog_sigs, global_logic_sigs;
 	for (auto channel : device->channels()) {
 		const map<shared_ptr<Channel>, shared_ptr<SignalBase> >::
 			const_iterator iter = signal_map.find(channel);
-		if (iter != signal_map.end())
-			global_sigs.push_back((*iter).second);
+
+		if (iter != signal_map.end()) {
+			const shared_ptr<SignalBase> signal = (*iter).second;
+			if (signal->type() == SignalBase::AnalogChannel)
+				global_analog_sigs.push_back(signal);
+			else
+				global_logic_sigs.push_back(signal);
+		}
 	}
 
-	// Create a group
-	populate_group(nullptr, global_sigs);
+	// Create the groups for the ungrouped channels
+	populate_group(nullptr, global_logic_sigs);
+	populate_group(nullptr, global_analog_sigs);
 
 	// Create the enable/disable all buttons
 	connect(&enable_all_channels_, SIGNAL(clicked()), this, SLOT(enable_all_channels()));
