@@ -91,8 +91,12 @@ void Decoder::set_option(const char *id, GVariant *value)
 		GHashTable *const opt_hash = g_hash_table_new_full(g_str_hash,
 			g_str_equal, g_free, (GDestroyNotify)g_variant_unref);
 
-		g_variant_ref(value);
-		g_hash_table_insert(opt_hash, (void*)g_strdup(id), value);
+		for (const auto& option : options_) {
+			GVariant *const value = option.second;
+			g_variant_ref(value);
+			g_hash_table_replace(opt_hash, (void*)g_strdup(
+				option.first.c_str()), value);
+		}
 
 		srd_inst_option_set(decoder_inst_, opt_hash);
 		g_hash_table_destroy(opt_hash);
