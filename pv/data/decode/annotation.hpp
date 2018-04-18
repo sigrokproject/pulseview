@@ -36,17 +36,20 @@ namespace decode {
 class Annotation
 {
 public:
+	typedef uint32_t Class;
+
+public:
 	Annotation(const srd_proto_data *const pdata);
 
 	uint64_t start_sample() const;
 	uint64_t end_sample() const;
-	int format() const;
+	Class ann_class() const;
 	const vector<QString>& annotations() const;
 
 private:
 	uint64_t start_sample_;
 	uint64_t end_sample_;
-	int format_;
+	Class ann_class_;
 	vector<QString> annotations_;
 };
 

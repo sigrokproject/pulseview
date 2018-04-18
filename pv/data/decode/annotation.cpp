@@ -41,7 +41,7 @@ Annotation::Annotation(const srd_proto_data *const pdata) :
 		(const srd_proto_data_annotation*)pdata->data;
 	assert(pda);
 
-	format_ = pda->ann_class;
+	ann_class_ = (Class)(pda->ann_class);
 
 	const char *const *annotations = (char**)pda->ann_text;
 	while (*annotations) {
@@ -60,9 +60,9 @@ uint64_t Annotation::end_sample() const
 	return end_sample_;
 }
 
-int Annotation::format() const
+Annotation::Class Annotation::ann_class() const
 {
-	return format_;
+	return ann_class_;
 }
 
 const vector<QString>& Annotation::annotations() const

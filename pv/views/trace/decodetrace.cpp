@@ -406,7 +406,7 @@ void DecodeTrace::draw_annotation(const pv::data::decode::Annotation &a,
 		pixels_offset;
 	const double end = a.end_sample() / samples_per_pixel - pixels_offset;
 
-	QColor color = get_annotation_color(row_color, a.format());
+	QColor color = get_annotation_color(row_color, a.ann_class());
 	p.setPen(color.darker());
 	p.setBrush(color);
 
@@ -440,14 +440,14 @@ void DecodeTrace::draw_annotation_block(
 	const double top = y + .5 - h / 2;
 	const double bottom = y + .5 + h / 2;
 
-	QColor color = get_annotation_color(row_color, annotations.front().format());
+	QColor color = get_annotation_color(row_color, annotations.front().ann_class());
 
 	// Check if all annotations are of the same type (i.e. we can use one color)
 	// or if we should use a neutral color (i.e. gray)
-	const int format = annotations.front().format();
-	const bool single_format = all_of(
+	const Annotation::Class ann_class = annotations.front().ann_class();
+	const bool single_class = all_of(
 		annotations.begin(), annotations.end(),
-		[&](const Annotation &a) { return a.format() == format; });
+		[&](const Annotation &a) { return a.ann_class() == ann_class; });
 
 	const QRectF rect(start, top, end - start, bottom - top);
 	const int r = h / 4;
@@ -456,8 +456,8 @@ void DecodeTrace::draw_annotation_block(
 	p.setBrush(Qt::white);
 	p.drawRoundedRect(rect, r, r);
 
-	p.setPen((single_format ? color.darker() : Qt::gray));
-	p.setBrush(QBrush((single_format ? color : Qt::gray), Qt::Dense4Pattern));
+	p.setPen((single_class ? color.darker() : Qt::gray));
+	p.setBrush(QBrush((single_class ? color : Qt::gray), Qt::Dense4Pattern));
 	p.drawRoundedRect(rect, r, r);
 }
 

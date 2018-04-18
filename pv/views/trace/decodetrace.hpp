@@ -50,14 +50,11 @@ namespace pv {
 class Session;
 
 namespace data {
-class SignalBase;
 struct DecodeChannel;
 class DecodeSignal;
 
 namespace decode {
-class Annotation;
 class Decoder;
-class Row;
 }
 }  // namespace data
 
