@@ -301,7 +301,8 @@ void Session::restore_settings(QSettings &settings)
 			set_device(device);
 
 			start_capture([](QString infoMessage) {
-				qDebug().noquote() << "Session error:" << infoMessage; });
+				// TODO Emulate noquote()
+				qDebug() << "Session error:" << infoMessage; });
 
 			set_name(QFileInfo(filename).fileName());
 		}

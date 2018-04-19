@@ -107,7 +107,8 @@ void GlobalSettings::setValue(const QString &key, const QVariant &value)
 
 	QSettings::setValue(key, value);
 
-	qDebug().noquote() << "Setting" << key << "changed to" << value;
+	// TODO Emulate noquote()
+	qDebug() << "Setting" << key << "changed to" << value;
 
 	// Call all registered callbacks
 	for (GlobalSettingsInterface *cb : callbacks_)

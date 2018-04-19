@@ -94,7 +94,8 @@ MainWindow::~MainWindow()
 
 void MainWindow::show_session_error(const QString text, const QString info_text)
 {
-	qDebug().noquote() << "Notifying user of session error:" << info_text;
+	// TODO Emulate noquote()
+	qDebug() << "Notifying user of session error:" << info_text;
 
 	QMessageBox msg;
 	msg.setText(text);

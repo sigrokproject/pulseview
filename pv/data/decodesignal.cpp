@@ -158,7 +158,8 @@ void DecodeSignal::reset_decode(bool shutting_down)
 
 	if (!error_message_.isEmpty()) {
 		error_message_ = QString();
-		qDebug().noquote().nospace() << name() << ": Error cleared";
+		// TODO Emulate noquote()
+		qDebug().nospace() << name() << ": Error cleared";
 	}
 
 	decode_reset();
@@ -588,7 +589,8 @@ void DecodeSignal::restore_settings(QSettings &settings)
 void DecodeSignal::set_error_message(QString msg)
 {
 	error_message_ = msg;
-	qDebug().noquote().nospace() << name() << ": " << msg;
+	// TODO Emulate noquote()
+	qDebug().nospace() << name() << ": " << msg;
 }
 
 uint32_t DecodeSignal::get_input_segment_count() const
