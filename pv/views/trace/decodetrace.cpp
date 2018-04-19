@@ -327,8 +327,15 @@ void DecodeTrace::draw_annotations(vector<pv::data::decode::Annotation> annotati
 {
 	using namespace pv::data::decode;
 
-	vector<Annotation> a_block;
-	int p_end = INT_MIN;
+	Annotation::Class block_class = 0;
+	bool block_class_uniform = true;
+	int block_start = 0;
+	int block_ann_count = 0;
+
+	const Annotation *prev_ann;
+	int prev_end = INT_MIN;
+
+	int a_end;
 
 	double samples_per_pixel, pixels_offset;
 	tie(pixels_offset, samples_per_pixel) =
@@ -343,11 +350,14 @@ void DecodeTrace::draw_annotations(vector<pv::data::decode::Annotation> annotati
 	// Gather all annotations that form a visual "block" and draw them as such
 	for (const Annotation &a : annotations) {
 
-		const int a_start = a.start_sample() / samples_per_pixel - pixels_offset;
-		const int a_end = a.end_sample() / samples_per_pixel - pixels_offset;
-		const int a_width = a_end - a_start;
+		const int abs_a_start = a.start_sample() / samples_per_pixel;
+		const int abs_a_end   = a.end_sample() / samples_per_pixel;
 
-		const int delta = a_end - p_end;
+		const int a_start = abs_a_start - pixels_offset;
+		a_end = abs_a_end - pixels_offset;
+
+		const int a_width = a_end - a_start;
+		const int delta = a_end - prev_end;
 
 		bool a_is_separate = false;
 
@@ -366,32 +376,43 @@ void DecodeTrace::draw_annotations(vector<pv::data::decode::Annotation> annotati
 		// Were the previous and this annotation more than a pixel apart?
 		if ((abs(delta) > 1) || a_is_separate) {
 			// Block was broken, draw annotations that form the current block
-			if (a_block.size() == 1) {
-				draw_annotation(a_block.front(), p, h, pp, y, row_color,
+			if (block_ann_count == 1)
+				draw_annotation(*prev_ann, p, h, pp, y, row_color,
 					row_title_width);
-			}
-			else
-				draw_annotation_block(a_block, p, h, y, row_color);
+			else if (block_ann_count > 0)
+				draw_annotation_block(block_start, prev_end, block_class,
+					block_class_uniform, p, h, y, row_color);
 
-			a_block.clear();
+			block_ann_count = 0;
 		}
 
 		if (a_is_separate) {
 			draw_annotation(a, p, h, pp, y, row_color, row_title_width);
 			// Next annotation must start a new block. delta will be > 1
-			// because we set p_end to INT_MIN but that's okay since
-			// a_block will be empty, so nothing will be drawn
-			p_end = INT_MIN;
+			// because we set prev_end to INT_MIN but that's okay since
+			// block_ann_count will be 0 and nothing will be drawn
+			prev_end = INT_MIN;
 		} else {
-			a_block.push_back(a);
-			p_end = a_end;
+			prev_end = a_end;
+			prev_ann = &a;
+
+			if (block_ann_count == 0) {
+				block_start = a_start;
+				block_class = a.ann_class();
+				block_class_uniform = true;
+			} else
+				if (a.ann_class() != block_class)
+					block_class_uniform = false;
+
+			block_ann_count++;
 		}
 	}
 
-	if (a_block.size() == 1)
-		draw_annotation(a_block.front(), p, h, pp, y, row_color, row_title_width);
-	else
-		draw_annotation_block(a_block, p, h, y, row_color);
+	if (block_ann_count == 1)
+		draw_annotation(*prev_ann, p, h, pp, y, row_color, row_title_width);
+	else if (block_ann_count > 0)
+		draw_annotation_block(block_start, prev_end, block_class,
+			block_class_uniform, p, h, y, row_color);
 }
 
 void DecodeTrace::draw_annotation(const pv::data::decode::Annotation &a,
@@ -419,35 +440,12 @@ void DecodeTrace::draw_annotation(const pv::data::decode::Annotation &a,
 		draw_range(a, p, h, start, end, y, pp, row_title_width);
 }
 
-void DecodeTrace::draw_annotation_block(
-	vector<pv::data::decode::Annotation> annotations, QPainter &p, int h,
+void DecodeTrace::draw_annotation_block(int start, int end,
+	Annotation::Class ann_class, bool use_ann_format, QPainter &p, int h,
 	int y, QColor row_color) const
 {
-	using namespace pv::data::decode;
-
-	if (annotations.empty())
-		return;
-
-	double samples_per_pixel, pixels_offset;
-	tie(pixels_offset, samples_per_pixel) =
-		get_pixels_offset_samples_per_pixel();
-
-	const double start = annotations.front().start_sample() /
-		samples_per_pixel - pixels_offset;
-	const double end = annotations.back().end_sample() /
-		samples_per_pixel - pixels_offset;
-
 	const double top = y + .5 - h / 2;
 	const double bottom = y + .5 + h / 2;
-
-	QColor color = get_annotation_color(row_color, annotations.front().ann_class());
-
-	// Check if all annotations are of the same type (i.e. we can use one color)
-	// or if we should use a neutral color (i.e. gray)
-	const Annotation::Class ann_class = annotations.front().ann_class();
-	const bool single_class = all_of(
-		annotations.begin(), annotations.end(),
-		[&](const Annotation &a) { return a.ann_class() == ann_class; });
 
 	const QRectF rect(start, top, end - start, bottom - top);
 	const int r = h / 4;
@@ -456,8 +454,18 @@ void DecodeTrace::draw_annotation_block(
 	p.setBrush(Qt::white);
 	p.drawRoundedRect(rect, r, r);
 
-	p.setPen((single_class ? color.darker() : Qt::gray));
-	p.setBrush(QBrush((single_class ? color : Qt::gray), Qt::Dense4Pattern));
+	// If all annotations in this block are of the same type, we can use the
+	// one format that all of these annotations have. Otherwise, we should use
+	// a neutral color (i.e. gray)
+	if (use_ann_format) {
+		const QColor color = get_annotation_color(row_color, ann_class);
+		p.setPen(color.darker());
+		p.setBrush(QBrush(color, Qt::Dense4Pattern));
+	} else {
+		p.setPen(Qt::gray);
+		p.setBrush(QBrush(Qt::gray, Qt::Dense4Pattern));
+	}
+
 	p.drawRoundedRect(rect, r, r);
 }
 

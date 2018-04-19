@@ -33,6 +33,7 @@
 #include <QTimer>
 
 #include <pv/binding/decoder.hpp>
+#include <pv/data/decode/annotation.hpp>
 #include <pv/data/decode/row.hpp>
 #include <pv/data/signalbase.hpp>
 
@@ -130,7 +131,8 @@ private:
 		int h, const ViewItemPaintParams &pp, int y,
 		QColor row_color, int row_title_width) const;
 
-	void draw_annotation_block(vector<pv::data::decode::Annotation> annotations,
+	void draw_annotation_block(int start, int end,
+		pv::data::decode::Annotation::Class ann_class, bool use_ann_format,
 		QPainter &p, int h, int y, QColor row_color) const;
 
 	void draw_instant(const pv::data::decode::Annotation &a, QPainter &p,
