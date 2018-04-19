@@ -22,10 +22,9 @@ extern "C" {
 }
 
 #include <mutex>
+#include <tuple>
 
 #include <extdef.h>
-
-#include <tuple>
 
 #include <boost/functional/hash.hpp>
 
@@ -53,6 +52,7 @@ extern "C" {
 #include <pv/widgets/decodergroupbox.hpp>
 #include <pv/widgets/decodermenu.hpp>
 
+using std::abs;
 using std::all_of;
 using std::make_pair;
 using std::max;
@@ -329,13 +329,13 @@ void DecodeTrace::draw_annotations(vector<pv::data::decode::Annotation> annotati
 
 	Annotation::Class block_class = 0;
 	bool block_class_uniform = true;
-	int block_start = 0;
+	qreal block_start = 0;
 	int block_ann_count = 0;
 
 	const Annotation *prev_ann;
-	int prev_end = INT_MIN;
+	qreal prev_end = INT_MIN;
 
-	int a_end;
+	qreal a_end;
 
 	double samples_per_pixel, pixels_offset;
 	tie(pixels_offset, samples_per_pixel) =
@@ -350,21 +350,21 @@ void DecodeTrace::draw_annotations(vector<pv::data::decode::Annotation> annotati
 	// Gather all annotations that form a visual "block" and draw them as such
 	for (const Annotation &a : annotations) {
 
-		const int abs_a_start = a.start_sample() / samples_per_pixel;
-		const int abs_a_end   = a.end_sample() / samples_per_pixel;
+		const qreal abs_a_start = a.start_sample() / samples_per_pixel;
+		const qreal abs_a_end   = a.end_sample() / samples_per_pixel;
 
-		const int a_start = abs_a_start - pixels_offset;
+		const qreal a_start = abs_a_start - pixels_offset;
 		a_end = abs_a_end - pixels_offset;
 
-		const int a_width = a_end - a_start;
-		const int delta = a_end - prev_end;
+		const qreal a_width = a_end - a_start;
+		const qreal delta = a_end - prev_end;
 
 		bool a_is_separate = false;
 
 		// Annotation wider than the threshold for a useful label width?
 		if (a_width >= min_useful_label_width_) {
 			for (const QString &ann_text : a.annotations()) {
-				const int w = p.boundingRect(QRectF(), 0, ann_text).width();
+				const qreal w = p.boundingRect(QRectF(), 0, ann_text).width();
 				// Annotation wide enough to fit a label? Don't put it in a block then
 				if (w <= a_width) {
 					a_is_separate = true;
@@ -392,6 +392,7 @@ void DecodeTrace::draw_annotations(vector<pv::data::decode::Annotation> annotati
 			// because we set prev_end to INT_MIN but that's okay since
 			// block_ann_count will be 0 and nothing will be drawn
 			prev_end = INT_MIN;
+			block_ann_count = 0;
 		} else {
 			prev_end = a_end;
 			prev_ann = &a;
@@ -440,7 +441,7 @@ void DecodeTrace::draw_annotation(const pv::data::decode::Annotation &a,
 		draw_range(a, p, h, start, end, y, pp, row_title_width);
 }
 
-void DecodeTrace::draw_annotation_block(int start, int end,
+void DecodeTrace::draw_annotation_block(qreal start, qreal end,
 	Annotation::Class ann_class, bool use_ann_format, QPainter &p, int h,
 	int y, QColor row_color) const
 {
@@ -470,11 +471,11 @@ void DecodeTrace::draw_annotation_block(int start, int end,
 }
 
 void DecodeTrace::draw_instant(const pv::data::decode::Annotation &a, QPainter &p,
-	int h, double x, int y) const
+	int h, qreal x, int y) const
 {
 	const QString text = a.annotations().empty() ?
 		QString() : a.annotations().back();
-	const double w = min((double)p.boundingRect(QRectF(), 0, text).width(),
+	const qreal w = min((qreal)p.boundingRect(QRectF(), 0, text).width(),
 		0.0) + h;
 	const QRectF rect(x - w / 2, y - h / 2, w, h);
 
@@ -485,11 +486,11 @@ void DecodeTrace::draw_instant(const pv::data::decode::Annotation &a, QPainter &
 }
 
 void DecodeTrace::draw_range(const pv::data::decode::Annotation &a, QPainter &p,
-	int h, double start, double end, int y, const ViewItemPaintParams &pp,
+	int h, qreal start, qreal end, int y, const ViewItemPaintParams &pp,
 	int row_title_width) const
 {
-	const double top = y + .5 - h / 2;
-	const double bottom = y + .5 + h / 2;
+	const qreal top = y + .5 - h / 2;
+	const qreal bottom = y + .5 + h / 2;
 	const vector<QString> annotations = a.annotations();
 
 	// If the two ends are within 1 pixel, draw a vertical line
@@ -498,7 +499,7 @@ void DecodeTrace::draw_range(const pv::data::decode::Annotation &a, QPainter &p,
 		return;
 	}
 
-	const double cap_width = min((end - start) / 4, EndCapWidth);
+	const qreal cap_width = min((end - start) / 4, EndCapWidth);
 
 	QPointF pts[] = {
 		QPointF(start, y + .5f),
@@ -557,7 +558,7 @@ void DecodeTrace::draw_error(QPainter &p, const QString &message,
 		QRectF(pp.left(), INT_MIN / 2 + y, pp.right(), INT_MAX);
 	const QRectF text_rect = p.boundingRect(bounding_rect,
 		Qt::AlignCenter, message);
-	const float r = text_rect.height() / 4;
+	const qreal r = text_rect.height() / 4;
 
 	p.drawRoundedRect(text_rect.adjusted(-r, -r, r, r), r, r,
 		Qt::AbsoluteSize);

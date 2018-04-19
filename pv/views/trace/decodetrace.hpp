@@ -131,15 +131,15 @@ private:
 		int h, const ViewItemPaintParams &pp, int y,
 		QColor row_color, int row_title_width) const;
 
-	void draw_annotation_block(int start, int end,
+	void draw_annotation_block(qreal start, qreal end,
 		pv::data::decode::Annotation::Class ann_class, bool use_ann_format,
 		QPainter &p, int h, int y, QColor row_color) const;
 
 	void draw_instant(const pv::data::decode::Annotation &a, QPainter &p,
-		int h, double x, int y) const;
+		int h, qreal x, int y) const;
 
 	void draw_range(const pv::data::decode::Annotation &a, QPainter &p,
-		int h, double start, double end, int y, const ViewItemPaintParams &pp,
+		int h, qreal start, qreal end, int y, const ViewItemPaintParams &pp,
 		int row_title_width) const;
 
 	void draw_error(QPainter &p, const QString &message,
