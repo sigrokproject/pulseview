@@ -787,7 +787,9 @@ void DecodeSignal::mux_logic_samples(uint32_t segment_id, const int64_t start, c
 	uint8_t* output = new uint8_t[(end - start) * output_segment->unit_size()];
 	unsigned int signal_count = signal_data.size();
 
-	for (int64_t sample_cnt = 0; sample_cnt < (end - start); sample_cnt++) {
+	for (int64_t sample_cnt = 0; !logic_mux_interrupt_ && (sample_cnt < (end - start));
+		sample_cnt++) {
+
 		int bitpos = 0;
 		uint8_t bytepos = 0;
 
@@ -857,7 +859,7 @@ void DecodeSignal::logic_mux_proc()
 
 				// ...and process the newly muxed logic data
 				decode_input_cond_.notify_one();
-			} while (processed_samples < samples_to_process);
+			} while (!logic_mux_interrupt_ && (processed_samples < samples_to_process));
 		}
 
 		if (samples_to_process == 0) {
@@ -1142,6 +1144,9 @@ void DecodeSignal::annotation_callback(srd_proto_data *pdata, void *decode_signa
 
 	DecodeSignal *const ds = (DecodeSignal*)decode_signal;
 	assert(ds);
+
+	if (ds->decode_interrupt_)
+		return;
 
 	lock_guard<mutex> lock(ds->output_mutex_);
 
