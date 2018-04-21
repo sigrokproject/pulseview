@@ -1199,6 +1199,12 @@ void DecodeSignal::on_data_cleared()
 
 void DecodeSignal::on_data_received()
 {
+	// If we detected a lack of input data when trying to start decoding,
+	// we have set an error message. Only try again if we now have data
+	// to work with
+	if ((!error_message_.isEmpty()) && (get_input_segment_count() == 0))
+		return;
+
 	if (!logic_mux_thread_.joinable())
 		begin_decode();
 	else
