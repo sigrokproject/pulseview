@@ -201,7 +201,6 @@ private:
 	shared_ptr<data::DecodeSignal> decode_signal_;
 
 	vector<data::decode::Row> visible_rows_;
-	uint64_t decode_start_, decode_end_;
 
 	map<QComboBox*, uint16_t> channel_id_map_;  // channel selector -> decode channel ID
 	map<QComboBox*, uint16_t> init_state_map_;  // init state selector -> decode channel ID
