@@ -902,6 +902,13 @@ void DecodeSignal::decode_data(
 		const int64_t chunk_end = min(i + chunk_sample_count,
 			abs_start_samplenum + sample_count);
 
+		// Report this chunk as already decoded so that annotations don't
+		// appear in an area that we claim to not having been been decoded yet
+		{
+			lock_guard<mutex> lock(output_mutex_);
+			segments_.at(current_segment_id_).samples_decoded = chunk_end;
+		}
+
 		int64_t data_size = (chunk_end - i) * unit_size;
 		uint8_t* chunk = new uint8_t[data_size];
 		input_segment->get_samples(i, chunk_end, chunk);
@@ -914,11 +921,6 @@ void DecodeSignal::decode_data(
 		}
 
 		delete[] chunk;
-
-		{
-			lock_guard<mutex> lock(output_mutex_);
-			segments_.at(current_segment_id_).samples_decoded = chunk_end;
-		}
 
 		// Notify the frontend that we processed some data and
 		// possibly have new annotations as well

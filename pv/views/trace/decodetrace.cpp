@@ -581,7 +581,7 @@ void DecodeTrace::draw_unresolved_period(QPainter &p, int h, int left, int right
 		samples_per_pixel - pixels_offset, left - 1.0);
 	const double end = min(sample_count / samples_per_pixel -
 		pixels_offset, right + 1.0);
-	const QRectF no_decode_rect(start, y - (h / 2) + 0.5, end - start, h);
+	const QRectF no_decode_rect(start, y - (h / 2) - 0.5, end - start, h);
 
 	p.setPen(QPen(Qt::NoPen));
 	p.setBrush(Qt::white);
