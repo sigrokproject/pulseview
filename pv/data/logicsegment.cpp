@@ -340,20 +340,19 @@ void LogicSegment::get_subsampled_edges(
 		level = min_level;
 
 		// We cannot fast-forward if there is no mip-map data at
-		// at the minimum level.
+		// the minimum level.
 		fast_forward = (mip_map_[level].data != nullptr);
 
 		if (min_length < MipMapScaleFactor) {
 			// Search individual samples up to the beginning of
 			// the next first level mip map block
-			const uint64_t final_index = min(end,
-				pow2_ceil(index, MipMapScalePower));
+			const uint64_t final_index = min(end, pow2_ceil(index, MipMapScalePower));
 
 			for (; index < final_index &&
 					(index & ~((uint64_t)(~0) << MipMapScalePower)) != 0;
 					index++) {
-				const bool sample =
-					(get_unpacked_sample(index) & sig_mask) != 0;
+
+				const bool sample = (get_unpacked_sample(index) & sig_mask) != 0;
 
 				// If there was a change we cannot fast forward
 				if (sample != last_sample) {
@@ -365,15 +364,13 @@ void LogicSegment::get_subsampled_edges(
 			// If resolution is less than a mip map block,
 			// round up to the beginning of the mip-map block
 			// for this level of detail
-			const int min_level_scale_power =
-				(level + 1) * MipMapScalePower;
+			const int min_level_scale_power = (level + 1) * MipMapScalePower;
 			index = pow2_ceil(index, min_level_scale_power);
 			if (index >= end)
 				break;
 
 			// We can fast forward only if there was no change
-			const bool sample =
-				(get_unpacked_sample(index) & sig_mask) != 0;
+			const bool sample = (get_unpacked_sample(index) & sig_mask) != 0;
 			if (last_sample != sample)
 				fast_forward = false;
 		}
@@ -388,32 +385,27 @@ void LogicSegment::get_subsampled_edges(
 			// Slide right and zoom out at the beginnings of mip-map
 			// blocks until we encounter a change
 			while (true) {
-				const int level_scale_power =
-					(level + 1) * MipMapScalePower;
-				const uint64_t offset =
-					index >> level_scale_power;
+				const int level_scale_power = (level + 1) * MipMapScalePower;
+				const uint64_t offset = index >> level_scale_power;
 
 				// Check if we reached the last block at this
 				// level, or if there was a change in this block
 				if (offset >= mip_map_[level].length ||
-					(get_subsample(level, offset) &
-						sig_mask))
+					(get_subsample(level, offset) &	sig_mask))
 					break;
 
 				if ((offset & ~((uint64_t)(~0) << MipMapScalePower)) == 0) {
 					// If we are now at the beginning of a
 					// higher level mip-map block ascend one
 					// level
-					if (level + 1 >= ScaleStepCount ||
-						!mip_map_[level + 1].data)
+					if ((level + 1 >= ScaleStepCount) || (!mip_map_[level + 1].data))
 						break;
 
 					level++;
 				} else {
 					// Slide right to the beginning of the
 					// next mip map block
-					index = pow2_ceil(index + 1,
-						level_scale_power);
+					index = pow2_ceil(index + 1, level_scale_power);
 				}
 			}
 
@@ -422,16 +414,13 @@ void LogicSegment::get_subsampled_edges(
 			while (true) {
 				assert(mip_map_[level].data);
 
-				const int level_scale_power =
-					(level + 1) * MipMapScalePower;
-				const uint64_t offset =
-					index >> level_scale_power;
+				const int level_scale_power = (level + 1) * MipMapScalePower;
+				const uint64_t offset = index >> level_scale_power;
 
 				// Check if we reached the last block at this
 				// level, or if there was a change in this block
 				if (offset >= mip_map_[level].length ||
-						(get_subsample(level, offset) &
-						sig_mask)) {
+						(get_subsample(level, offset) & sig_mask)) {
 					// Zoom in unless we reached the minimum
 					// zoom
 					if (level == min_level)
@@ -441,8 +430,7 @@ void LogicSegment::get_subsampled_edges(
 				} else {
 					// Slide right to the beginning of the
 					// next mip map block
-					index = pow2_ceil(index + 1,
-						level_scale_power);
+					index = pow2_ceil(index + 1, level_scale_power);
 				}
 			}
 
@@ -451,8 +439,7 @@ void LogicSegment::get_subsampled_edges(
 			// block
 			if (min_length < MipMapScaleFactor) {
 				for (; index < end; index++) {
-					const bool sample = (get_unpacked_sample(index) &
-						sig_mask) != 0;
+					const bool sample = (get_unpacked_sample(index) & sig_mask) != 0;
 					if (sample != last_sample)
 						break;
 				}
@@ -467,8 +454,7 @@ void LogicSegment::get_subsampled_edges(
 			break;
 
 		// Store the final state
-		const bool final_sample =
-			(get_unpacked_sample(final_index - 1) & sig_mask) != 0;
+		const bool final_sample = (get_unpacked_sample(final_index - 1) & sig_mask) != 0;
 		edges.emplace_back(index, final_sample);
 
 		index = final_index;
