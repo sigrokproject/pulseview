@@ -65,6 +65,8 @@ public:
 
 	void set_option(const char *id, GVariant *value);
 
+	void apply_all_options();
+
 	bool have_required_channels() const;
 
 	srd_decoder_inst* create_decoder_inst(srd_session *session);

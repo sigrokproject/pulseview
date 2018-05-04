@@ -87,6 +87,11 @@ void Decoder::set_option(const char *id, GVariant *value)
 	options_[id] = value;
 
 	// If we have a decoder instance, apply option value immediately
+	apply_all_options();
+}
+
+void Decoder::apply_all_options()
+{
 	if (decoder_inst_) {
 		GHashTable *const opt_hash = g_hash_table_new_full(g_str_hash,
 			g_str_equal, g_free, (GDestroyNotify)g_variant_unref);

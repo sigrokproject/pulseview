@@ -1006,8 +1006,6 @@ void DecodeSignal::decode_proc()
 
 void DecodeSignal::start_srd_session()
 {
-	uint64_t samplerate;
-
 	// If there were stack changes, the session has been destroyed by now, so if
 	// it hasn't been destroyed, we can just reset and re-use it
 	if (srd_session_) {
@@ -1018,13 +1016,16 @@ void DecodeSignal::start_srd_session()
 		// and) construction of another decoder stack.
 
 		// TODO Reduce redundancy, use a common code path for
-		// the meta/cb/start sequence?
+		// the meta/start sequence?
 		terminate_srd_session();
+
+		// Metadata is cleared also, so re-set it
 		srd_session_metadata_set(srd_session_, SRD_CONF_SAMPLERATE,
 			g_variant_new_uint64(segments_.at(current_segment_id_).samplerate));
-		srd_pd_output_callback_add(srd_session_, SRD_OUTPUT_ANN,
-			DecodeSignal::annotation_callback, this);
+		for (const shared_ptr<decode::Decoder> &dec : stack_)
+			dec->apply_all_options();
 		srd_session_start(srd_session_);
+
 		return;
 	}
 
@@ -1051,10 +1052,8 @@ void DecodeSignal::start_srd_session()
 	}
 
 	// Start the session
-	samplerate = segments_.at(current_segment_id_).samplerate;
-	if (samplerate)
-		srd_session_metadata_set(srd_session_, SRD_CONF_SAMPLERATE,
-			g_variant_new_uint64(samplerate));
+	srd_session_metadata_set(srd_session_, SRD_CONF_SAMPLERATE,
+		g_variant_new_uint64(segments_.at(current_segment_id_).samplerate));
 
 	srd_pd_output_callback_add(srd_session_, SRD_OUTPUT_ANN,
 		DecodeSignal::annotation_callback, this);
@@ -1072,8 +1071,15 @@ void DecodeSignal::terminate_srd_session()
 	// have completed their operation, and reduces response time for
 	// those stacks which still are processing data while the
 	// application no longer wants them to.
-	if (srd_session_)
+	if (srd_session_) {
 		srd_session_terminate_reset(srd_session_);
+
+		// Metadata is cleared also, so re-set it
+		srd_session_metadata_set(srd_session_, SRD_CONF_SAMPLERATE,
+			g_variant_new_uint64(segments_.at(current_segment_id_).samplerate));
+		for (const shared_ptr<decode::Decoder> &dec : stack_)
+			dec->apply_all_options();
+	}
 }
 
 void DecodeSignal::stop_srd_session()
