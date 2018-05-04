@@ -1020,8 +1020,9 @@ void DecodeSignal::start_srd_session()
 		terminate_srd_session();
 
 		// Metadata is cleared also, so re-set it
-		srd_session_metadata_set(srd_session_, SRD_CONF_SAMPLERATE,
-			g_variant_new_uint64(segments_.at(current_segment_id_).samplerate));
+		if (segments_.size() > 0)
+			srd_session_metadata_set(srd_session_, SRD_CONF_SAMPLERATE,
+				g_variant_new_uint64(segments_.at(current_segment_id_).samplerate));
 		for (const shared_ptr<decode::Decoder> &dec : stack_)
 			dec->apply_all_options();
 		srd_session_start(srd_session_);
@@ -1052,8 +1053,9 @@ void DecodeSignal::start_srd_session()
 	}
 
 	// Start the session
-	srd_session_metadata_set(srd_session_, SRD_CONF_SAMPLERATE,
-		g_variant_new_uint64(segments_.at(current_segment_id_).samplerate));
+	if (segments_.size() > 0)
+		srd_session_metadata_set(srd_session_, SRD_CONF_SAMPLERATE,
+			g_variant_new_uint64(segments_.at(current_segment_id_).samplerate));
 
 	srd_pd_output_callback_add(srd_session_, SRD_OUTPUT_ANN,
 		DecodeSignal::annotation_callback, this);
@@ -1075,8 +1077,9 @@ void DecodeSignal::terminate_srd_session()
 		srd_session_terminate_reset(srd_session_);
 
 		// Metadata is cleared also, so re-set it
-		srd_session_metadata_set(srd_session_, SRD_CONF_SAMPLERATE,
-			g_variant_new_uint64(segments_.at(current_segment_id_).samplerate));
+		if (segments_.size() > 0)
+			srd_session_metadata_set(srd_session_, SRD_CONF_SAMPLERATE,
+				g_variant_new_uint64(segments_.at(current_segment_id_).samplerate));
 		for (const shared_ptr<decode::Decoder> &dec : stack_)
 			dec->apply_all_options();
 	}
