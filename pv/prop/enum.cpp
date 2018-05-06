@@ -18,11 +18,14 @@
  */
 
 #include <cassert>
+#include <cfloat>
+#include <cmath>
 
 #include <QComboBox>
 
 #include "enum.hpp"
 
+using std::abs;
 using std::pair;
 using std::vector;
 
@@ -75,8 +78,29 @@ void Enum::update_widget()
 
 	for (unsigned int i = 0; i < values_.size(); i++) {
 		const pair<Glib::VariantBase, QString> &v = values_[i];
-		if (v.first.equal(variant))
-			selector_->setCurrentIndex(i);
+
+		// g_variant_equal() doesn't handle floating point properly
+		if (v.first.is_of_type(Glib::VariantType("d"))) {
+			gdouble a, b;
+			g_variant_get(variant.gobj(), "d", &a);
+			g_variant_get((GVariant*)(v.first.gobj()), "d", &b);
+			if (abs(a - b) <= 2 * DBL_EPSILON)
+				selector_->setCurrentIndex(i);
+		} else {
+			// Check for "(dd)" type and handle it if it's found
+			if (v.first.is_of_type(Glib::VariantType("(dd)"))) {
+				gdouble a1, a2, b1, b2;
+				g_variant_get(variant.gobj(), "(dd)", &a1, &a2);
+				g_variant_get((GVariant*)(v.first.gobj()), "(dd)", &b1, &b2);
+				if ((abs(a1 - b1) <= 2 * DBL_EPSILON) && \
+					(abs(a2 - b2) <= 2 * DBL_EPSILON))
+					selector_->setCurrentIndex(i);
+
+			} else
+				// Handle all other types
+				if (v.first.equal(variant))
+					selector_->setCurrentIndex(i);
+		}
 	}
 }
 
