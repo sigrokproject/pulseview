@@ -58,6 +58,8 @@ public:
 	QWidget* get_property_form(QWidget *parent,
 		bool auto_commit = false) const;
 
+	void update_property_widgets();
+
 	static QString print_gvariant(Glib::VariantBase gvar);
 
 protected:

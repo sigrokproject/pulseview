@@ -47,7 +47,7 @@ Int::Int(QString name,
 
 QWidget* Int::get_widget(QWidget *parent, bool auto_commit)
 {
-	int64_t int_val = 0, range_min = 0;
+	int64_t range_min = 0;
 	uint64_t range_max = 0;
 
 	if (spin_box_)
@@ -69,25 +69,18 @@ QWidget* Int::get_widget(QWidget *parent, bool auto_commit)
 	assert(type);
 
 	if (g_variant_type_equal(type, G_VARIANT_TYPE_BYTE)) {
-		int_val = g_variant_get_byte(value);
 		range_min = 0, range_max = UINT8_MAX;
 	} else if (g_variant_type_equal(type, G_VARIANT_TYPE_INT16)) {
-		int_val = g_variant_get_int16(value);
 		range_min = INT16_MIN, range_max = INT16_MAX;
 	} else if (g_variant_type_equal(type, G_VARIANT_TYPE_UINT16)) {
-		int_val = g_variant_get_uint16(value);
 		range_min = 0, range_max = UINT16_MAX;
 	} else if (g_variant_type_equal(type, G_VARIANT_TYPE_INT32)) {
-		int_val = g_variant_get_int32(value);
 		range_min = INT32_MIN, range_max = INT32_MAX;
 	} else if (g_variant_type_equal(type, G_VARIANT_TYPE_UINT32)) {
-		int_val = g_variant_get_uint32(value);
 		range_min = 0, range_max = UINT32_MAX;
 	} else if (g_variant_type_equal(type, G_VARIANT_TYPE_INT64)) {
-		int_val = g_variant_get_int64(value);
 		range_min = INT64_MIN, range_max = INT64_MAX;
 	} else if (g_variant_type_equal(type, G_VARIANT_TYPE_UINT64)) {
-		int_val = g_variant_get_uint64(value);
 		range_min = 0, range_max = UINT64_MAX;
 	} else {
 		// Unexpected value type.
@@ -107,13 +100,49 @@ QWidget* Int::get_widget(QWidget *parent, bool auto_commit)
 	else
 		spin_box_->setRange((int)range_min, (int)range_max);
 
-	spin_box_->setValue((int)int_val);
+	update_widget();
 
 	if (auto_commit)
 		connect(spin_box_, SIGNAL(valueChanged(int)),
 			this, SLOT(on_value_changed(int)));
 
 	return spin_box_;
+}
+
+void Int::update_widget()
+{
+	if (!spin_box_)
+		return;
+
+	value_ = getter_();
+	GVariant *value = value_.gobj();
+	assert(value);
+
+	const GVariantType *const type = g_variant_get_type(value);
+	assert(type);
+
+	int64_t int_val = 0;
+
+	if (g_variant_type_equal(type, G_VARIANT_TYPE_BYTE)) {
+		int_val = g_variant_get_byte(value);
+	} else if (g_variant_type_equal(type, G_VARIANT_TYPE_INT16)) {
+		int_val = g_variant_get_int16(value);
+	} else if (g_variant_type_equal(type, G_VARIANT_TYPE_UINT16)) {
+		int_val = g_variant_get_uint16(value);
+	} else if (g_variant_type_equal(type, G_VARIANT_TYPE_INT32)) {
+		int_val = g_variant_get_int32(value);
+	} else if (g_variant_type_equal(type, G_VARIANT_TYPE_UINT32)) {
+		int_val = g_variant_get_uint32(value);
+	} else if (g_variant_type_equal(type, G_VARIANT_TYPE_INT64)) {
+		int_val = g_variant_get_int64(value);
+	} else if (g_variant_type_equal(type, G_VARIANT_TYPE_UINT64)) {
+		int_val = g_variant_get_uint64(value);
+	} else {
+		// Unexpected value type.
+		assert(false);
+	}
+
+	spin_box_->setValue((int)int_val);
 }
 
 void Int::commit()

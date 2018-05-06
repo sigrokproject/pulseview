@@ -52,17 +52,29 @@ QWidget* String::get_widget(QWidget *parent, bool auto_commit)
 	if (!variant.gobj())
 		return nullptr;
 
-	string value = Glib::VariantBase::cast_dynamic<Glib::Variant<ustring>>(
-		variant).get();
-
 	line_edit_ = new QLineEdit(parent);
-	line_edit_->setText(QString::fromStdString(value));
+
+	update_widget();
 
 	if (auto_commit)
 		connect(line_edit_, SIGNAL(textEdited(const QString&)),
 			this, SLOT(on_text_edited(const QString&)));
 
 	return line_edit_;
+}
+
+void String::update_widget()
+{
+	if (!line_edit_)
+		return;
+
+	Glib::VariantBase variant = getter_();
+	assert(variant.gobj());
+
+	string value = Glib::VariantBase::cast_dynamic<Glib::Variant<ustring>>(
+		variant).get();
+
+	line_edit_->setText(QString::fromStdString(value));
 }
 
 void String::commit()

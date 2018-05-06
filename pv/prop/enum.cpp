@@ -54,15 +54,30 @@ QWidget* Enum::get_widget(QWidget *parent, bool auto_commit)
 	for (unsigned int i = 0; i < values_.size(); i++) {
 		const pair<Glib::VariantBase, QString> &v = values_[i];
 		selector_->addItem(v.second, qVariantFromValue(v.first));
-		if (v.first.equal(variant))
-			selector_->setCurrentIndex(i);
 	}
+
+	update_widget();
 
 	if (auto_commit)
 		connect(selector_, SIGNAL(currentIndexChanged(int)),
 			this, SLOT(on_current_item_changed(int)));
 
 	return selector_;
+}
+
+void Enum::update_widget()
+{
+	if (!selector_)
+		return;
+
+	Glib::VariantBase variant = getter_();
+	assert(variant.gobj());
+
+	for (unsigned int i = 0; i < values_.size(); i++) {
+		const pair<Glib::VariantBase, QString> &v = values_[i];
+		if (v.first.equal(variant))
+			selector_->setCurrentIndex(i);
+	}
 }
 
 void Enum::commit()

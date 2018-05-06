@@ -44,12 +44,10 @@ QWidget* Bool::get_widget(QWidget *parent, bool auto_commit)
 	if (!variant.gobj())
 		return nullptr;
 
-	bool value = Glib::VariantBase::cast_dynamic<Glib::Variant<bool>>(
-		variant).get();
-
 	check_box_ = new QCheckBox(name(), parent);
 	check_box_->setToolTip(desc());
-	check_box_->setCheckState(value ? Qt::Checked : Qt::Unchecked);
+
+	update_widget();
 
 	if (auto_commit)
 		connect(check_box_, SIGNAL(stateChanged(int)),
@@ -61,6 +59,20 @@ QWidget* Bool::get_widget(QWidget *parent, bool auto_commit)
 bool Bool::labeled_widget() const
 {
 	return true;
+}
+
+void Bool::update_widget()
+{
+	if (!check_box_)
+		return;
+
+	Glib::VariantBase variant = getter_();
+	assert(variant.gobj());
+
+	bool value = Glib::VariantBase::cast_dynamic<Glib::Variant<bool>>(
+		variant).get();
+
+	check_box_->setCheckState(value ? Qt::Checked : Qt::Unchecked);
 }
 
 void Bool::commit()

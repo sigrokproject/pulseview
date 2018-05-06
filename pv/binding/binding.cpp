@@ -54,8 +54,7 @@ void Binding::add_properties_to_form(QFormLayout *layout,
 	for (shared_ptr<pv::prop::Property> p : properties_) {
 		assert(p);
 
-		QWidget *const widget = p->get_widget(layout->parentWidget(),
-			auto_commit);
+		QWidget *const widget = p->get_widget(layout->parentWidget(), auto_commit);
 		if (p->labeled_widget()) {
 			layout->addRow(widget);
 		} else {
@@ -76,6 +75,14 @@ QWidget* Binding::get_property_form(QWidget *parent,
 	return form;
 }
 
+void Binding::update_property_widgets()
+{
+	for (shared_ptr<pv::prop::Property> p : properties_) {
+		assert(p);
+		p->update_widget();
+	}
+}
+
 QString Binding::print_gvariant(Glib::VariantBase gvar)
 {
 	QString s;
@@ -84,8 +91,7 @@ QString Binding::print_gvariant(Glib::VariantBase gvar)
 		s = QString::fromStdString("(null)");
 	else if (gvar.is_of_type(Glib::VariantType("s")))
 		s = QString::fromStdString(
-			Glib::VariantBase::cast_dynamic<Glib::Variant<string>>(
-				gvar).get());
+			Glib::VariantBase::cast_dynamic<Glib::Variant<string>>(gvar).get());
 	else
 		s = QString::fromStdString(gvar.print());
 

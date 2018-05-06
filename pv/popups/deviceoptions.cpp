@@ -49,5 +49,14 @@ pv::binding::Device& DeviceOptions::binding()
 	return binding_;
 }
 
+void DeviceOptions::show()
+{
+	// Update device config widgets with the current values supplied by the
+	// driver before actually showing the popup dialog
+	binding_.update_property_widgets();
+
+	Popup::show();
+}
+
 } // namespace popups
 } // namespace pv

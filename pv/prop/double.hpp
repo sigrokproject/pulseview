@@ -47,6 +47,7 @@ public:
 	virtual ~Double() = default;
 
 	QWidget* get_widget(QWidget *parent, bool auto_commit);
+	void update_widget();
 
 	void commit();
 
