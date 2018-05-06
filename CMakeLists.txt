@@ -195,7 +195,7 @@ if(PV_VERSION_STRING MATCHES "^([0-9]+)\\.([0-9]+)\\.([0-9]+)(-[-0-9a-z]*)?$")
 	set(PV_VERSION_SUFFIX ${CMAKE_MATCH_4})
 endif()
 
-message("-- ${PV_TITLE} version: ${PV_VERSION_STRING}")
+message(STATUS "${PV_TITLE} version: ${PV_VERSION_STRING}")
 
 configure_file (
 	${PROJECT_SOURCE_DIR}/config.h.in
