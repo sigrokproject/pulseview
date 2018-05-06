@@ -74,6 +74,13 @@ add_subdirectory(manual)
 #= Dependencies
 #-------------------------------------------------------------------------------
 
+include(CheckCSourceCompiles)
+include(CheckCXXSourceCompiles)
+include(CMakePushCheckState)
+include(memaccess)
+
+find_package(PkgConfig)
+
 list(APPEND PKGDEPS glib-2.0>=2.28.0)
 list(APPEND PKGDEPS glibmm-2.4>=2.28.0)
 
@@ -93,7 +100,6 @@ if(ANDROID)
 	list(APPEND PKGDEPS libsigrokandroidutils>=0.1.0)
 endif()
 
-find_package(PkgConfig)
 pkg_check_modules(LIBSRCXX ${LIBSR_CXX_BINDING})
 if(NOT LIBSRCXX_FOUND OR NOT LIBSRCXX_VERSION)
 	message(FATAL_ERROR "libsigrok C++ bindings missing, check libsigrok's 'configure' output (missing dependencies?)")
@@ -151,8 +157,6 @@ find_package(Threads REQUIRED)
 
 # Helper for checking for atomics
 function(check_working_cxx_atomics varname additional_lib)
-	include(CheckCXXSourceCompiles)
-	include(CMakePushCheckState)
 	cmake_push_check_state()
 	set(CMAKE_REQUIRED_FLAGS "-std=c++11")
 	set(CMAKE_REQUIRED_LIBRARIES "${additional_lib}")
@@ -191,8 +195,6 @@ endif()
 # Check availability of features which depend on library versions.
 # TODO Ideally use check_symbol_exists() instead, reduce boilerplate.
 if(ENABLE_DECODE)
-	include(CheckCSourceCompiles)
-	include(CMakePushCheckState)
 	cmake_push_check_state()
 	set(CMAKE_REQUIRED_INCLUDES "${PKGDEPS_INCLUDE_DIRS}")
 	set(CMAKE_REQUIRED_LIBRARIES "sigrokdecode")
@@ -215,7 +217,6 @@ endif()
 #= System Introspection
 #-------------------------------------------------------------------------------
 
-include(memaccess)
 memaccess_check_unaligned_le(HAVE_UNALIGNED_LITTLE_ENDIAN_ACCESS)
 
 #===============================================================================
