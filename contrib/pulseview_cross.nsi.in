@@ -177,6 +177,12 @@ Section "PulseView (required)" Section1
 		0 SW_SHOWNORMAL \
 		"" "Open-source, portable sigrok GUI"
 
+	# Create a shortcut for the PulseView application running in debug mode.
+	CreateShortCut "$SMPROGRAMS\sigrok\PulseView\PulseView (Debug).lnk" \
+		"$INSTDIR\pulseview.exe" "-l 5" "$INSTDIR\pulseview.exe" \
+		0 SW_SHOWNORMAL \
+		"" "Open-source, portable sigrok GUI (debug log level)"
+
 	# Create a shortcut for the uninstaller.
 	CreateShortCut "$SMPROGRAMS\sigrok\PulseView\Uninstall PulseView.lnk" \
 		"$INSTDIR\Uninstall.exe" "" "$INSTDIR\Uninstall.exe" 0 \
