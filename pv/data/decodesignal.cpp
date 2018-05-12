@@ -1020,9 +1020,12 @@ void DecodeSignal::start_srd_session()
 		terminate_srd_session();
 
 		// Metadata is cleared also, so re-set it
+		uint64_t samplerate = 0;
 		if (segments_.size() > 0)
+			samplerate = segments_.at(current_segment_id_).samplerate;
+		if (samplerate)
 			srd_session_metadata_set(srd_session_, SRD_CONF_SAMPLERATE,
-				g_variant_new_uint64(segments_.at(current_segment_id_).samplerate));
+				g_variant_new_uint64(samplerate));
 		for (const shared_ptr<decode::Decoder> &dec : stack_)
 			dec->apply_all_options();
 		srd_session_start(srd_session_);
@@ -1077,9 +1080,12 @@ void DecodeSignal::terminate_srd_session()
 		srd_session_terminate_reset(srd_session_);
 
 		// Metadata is cleared also, so re-set it
+		uint64_t samplerate = 0;
 		if (segments_.size() > 0)
+			samplerate = segments_.at(current_segment_id_).samplerate;
+		if (samplerate)
 			srd_session_metadata_set(srd_session_, SRD_CONF_SAMPLERATE,
-				g_variant_new_uint64(segments_.at(current_segment_id_).samplerate));
+				g_variant_new_uint64(samplerate));
 		for (const shared_ptr<decode::Decoder> &dec : stack_)
 			dec->apply_all_options();
 	}
