@@ -483,6 +483,7 @@ void Session::load_init_file(const string &file_name, const string &format)
 	map<string, Glib::VariantBase> input_opts;
 
 	if (!format.empty()) {
+		// Got a user provided input format spec.
 		const map<string, shared_ptr<InputFormat> > formats =
 			device_manager_.context()->input_formats();
 		auto user_opts = pv::util::split_string(format, ":");
@@ -499,6 +500,11 @@ void Session::load_init_file(const string &file_name, const string &format)
 		input_format = (*iter).second;
 		input_opts = input_format_options(user_opts,
 			input_format->options());
+	} else {
+		// (Try to) auto detect the input format. Lookup failure
+		// is not fatal, when no input module claimed responsibility,
+		// then a session file gets loaded.
+		input_format = device_manager_.context()->input_format_match(file_name);
 	}
 
 	load_file(QString::fromStdString(file_name), input_format, input_opts);
