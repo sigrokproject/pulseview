@@ -85,6 +85,14 @@ using sigrok::Option;
 
 namespace pv {
 
+// TODO rename to?
+// - repeat_mode
+// - rearm_mode
+enum capture_mode {
+	Single,
+	Repetitive
+};
+
 class DeviceManager;
 
 namespace data {
@@ -120,7 +128,8 @@ public:
 	enum capture_state {
 		Stopped,
 		AwaitingTrigger,
-		Running
+		Running,
+		AwaitingRearm,
 	};
 
 	static shared_ptr<sigrok::Context> sr_context;
@@ -212,6 +221,11 @@ public:
 
 	MetadataObjManager* metadata_obj_manager();
 
+	capture_mode get_capture_mode();
+	void set_capture_mode(capture_mode);
+	int get_repetitive_rearm_time();
+	void set_repetitive_rearm_time(int);
+
 private:
 	void set_capture_state(capture_state state);
 
@@ -248,6 +262,16 @@ private:
 	void data_feed_in(shared_ptr<sigrok::Device> device,
 		shared_ptr<sigrok::Packet> packet);
 
+	capture_mode const DefaultCaptureMode = Single;
+	int const DefaultRearmTime = 5000; // mSec
+
+	bool repetitive_rearm_permitted_;
+	capture_mode capture_mode_;
+	int repetitive_rearm_time_; // in mSec
+	QTimer repetitive_rearm_timer_;
+	void start_sampling_thread(function<void (const QString)> error_handler);
+	void stop_sampling_thread();
+
 Q_SIGNALS:
 	void capture_state_changed(int state);
 	void device_changed();
@@ -264,9 +288,13 @@ Q_SIGNALS:
 	void data_received();
 
 	void add_view(ViewType type, Session *session);
+	void repetitive_rearm();
 
 public Q_SLOTS:
 	void on_data_saved();
+
+	void on_repetitive_rearm_timeout();
+	void on_repetitive_rearm();
 
 #ifdef ENABLE_DECODE
 	void on_new_decoders_selected(vector<const srd_decoder*> decoders);

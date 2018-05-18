@@ -74,6 +74,7 @@ MainWindow::MainWindow(DeviceManager &device_manager, QWidget *parent) :
 	device_manager_(device_manager),
 	session_selector_(this),
 	icon_red_(":/icons/status-red.svg"),
+	icon_yellow_(":/icons/status-yellow.svg"),
 	icon_green_(":/icons/status-green.svg"),
 	icon_grey_(":/icons/status-grey.svg")
 {
@@ -583,7 +584,7 @@ void MainWindow::update_acq_button(Session *session)
 		run_caption = tr("Run");
 	}
 
-	const QIcon *icons[] = {&icon_grey_, &icon_red_, &icon_green_};
+	const QIcon *icons[] = {&icon_grey_, &icon_red_, &icon_green_, &icon_yellow_};
 	run_stop_button_->setIcon(*icons[state]);
 	run_stop_button_->setText((state == pv::Session::Stopped) ?
 		run_caption : tr("Stop"));
@@ -681,6 +682,7 @@ void MainWindow::on_run_stop_clicked()
 		bool any_running = any_of(hw_sessions.begin(), hw_sessions.end(),
 				[](const shared_ptr<Session> &s)
 				{ return (s->get_capture_state() == Session::AwaitingTrigger) ||
+					(s->get_capture_state() == Session::AwaitingRearm) ||
 						(s->get_capture_state() == Session::Running); });
 
 		for (shared_ptr<Session> s : hw_sessions)
@@ -701,6 +703,7 @@ void MainWindow::on_run_stop_clicked()
 			session->start_capture([&](QString message) {
 				show_session_error("Capture failed", message); });
 			break;
+		case Session::AwaitingRearm:
 		case Session::AwaitingTrigger:
 		case Session::Running:
 			session->stop_capture();

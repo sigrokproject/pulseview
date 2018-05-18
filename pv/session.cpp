@@ -118,6 +118,10 @@ namespace pv {
 shared_ptr<sigrok::Context> Session::sr_context;
 
 Session::Session(DeviceManager &device_manager, QString name) :
+	repetitive_rearm_permitted_(false),
+	capture_mode_(DefaultCaptureMode),
+	repetitive_rearm_time_(DefaultRearmTime),
+	repetitive_rearm_timer_(),
 	shutting_down_(false),
 	device_manager_(device_manager),
 	default_name_(name),
@@ -128,10 +132,24 @@ Session::Session(DeviceManager &device_manager, QString name) :
 {
 	// Use this name also for the QObject instance
 	setObjectName(name_);
+
+	qRegisterMetaType<util::Timestamp>("util::Timestamp");
+	qRegisterMetaType<uint64_t>("uint64_t");
+
+	repetitive_rearm_timer_.stop();
+	repetitive_rearm_timer_.setSingleShot(true);
+	repetitive_rearm_timer_.setInterval(repetitive_rearm_time_);
+
+	connect(&repetitive_rearm_timer_, SIGNAL(timeout()),
+		this, SLOT(on_repetitive_rearm_timeout()));
+	connect(this, SIGNAL(repetitive_rearm()),
+			this, SLOT(on_repetitive_rearm()));
 }
 
 Session::~Session()
 {
+	repetitive_rearm_timer_.stop();
+
 	shutting_down_ = true;
 
 	// Stop and join to the thread
@@ -829,11 +847,30 @@ void Session::start_capture(function<void (const QString)> error_handler)
 		name_changed();
 	}
 
+	repetitive_rearm_permitted_ = true;
+
+	start_sampling_thread(error_handler);
+}
+
+void Session::start_sampling_thread(function<void (const QString)> error_handler)
+{
+	stop_sampling_thread();
+
 	// Begin the session
 	sampling_thread_ = std::thread(&Session::sample_thread_proc, this, error_handler);
 }
 
 void Session::stop_capture()
+{
+	repetitive_rearm_timer_.stop();
+	repetitive_rearm_permitted_ = false;
+
+	stop_sampling_thread();
+
+	set_capture_state(Stopped);
+}
+
+void Session::stop_sampling_thread()
 {
 	if (get_capture_state() != Stopped)
 		device_->stop();
@@ -841,6 +878,7 @@ void Session::stop_capture()
 	// Check that sampling stopped
 	if (sampling_thread_.joinable())
 		sampling_thread_.join();
+
 }
 
 void Session::register_view(shared_ptr<views::ViewBase> view)
@@ -1052,8 +1090,12 @@ void Session::set_capture_state(capture_state state)
 
 	if (state == Running)
 		acq_time_.restart();
-	if (state == Stopped)
+	if (state == Stopped || state == AwaitingRearm)
 		qDebug("Acquisition took %.2f s", acq_time_.elapsed() / 1000.);
+
+	if (state == AwaitingRearm) {
+		repetitive_rearm();
+	}
 
 	{
 		lock_guard<mutex> lock(sampling_mutex_);
@@ -1290,7 +1332,11 @@ void Session::sample_thread_proc(function<void (const QString)> error_handler)
 		return;
 	}
 
-	set_capture_state(Stopped);
+	if (repetitive_rearm_permitted_ && capture_mode_ == Repetitive) {
+		set_capture_state(AwaitingRearm);
+	} else {
+		set_capture_state(Stopped);
+	}
 
 	// Confirm that SR_DF_END was received
 	if (cur_logic_segment_)
@@ -1722,5 +1768,44 @@ void Session::on_new_decoders_selected(vector<const srd_decoder*> decoders)
 		}
 }
 #endif
+
+void Session::on_repetitive_rearm_timeout()
+{
+	repetitive_rearm_timer_.stop();
+	if (capture_mode_ == Repetitive)
+		start_sampling_thread([&](QString message) {
+			// TODO Emulate noquote()
+			qDebug() << "Capture failed:" << message; });
+}
+
+void Session::on_repetitive_rearm()
+{
+	repetitive_rearm_timer_.setInterval(repetitive_rearm_time_);
+	repetitive_rearm_timer_.start();
+}
+
+capture_mode Session::get_capture_mode()
+{
+	return capture_mode_;
+}
+
+void Session::set_capture_mode(capture_mode mode)
+{
+	capture_mode_ = mode;
+	if (capture_mode_ == Single) {
+		repetitive_rearm_permitted_ = false;
+		repetitive_rearm_timer_.stop();
+	}
+}
+
+int Session::get_repetitive_rearm_time()
+{
+	return repetitive_rearm_time_;
+}
+
+void Session::set_repetitive_rearm_time(int repetitive_rearm_time)
+{
+	repetitive_rearm_time_ = repetitive_rearm_time;
+}
 
 } // namespace pv

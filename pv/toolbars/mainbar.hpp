@@ -146,6 +146,7 @@ private Q_SLOTS:
 
 	void on_add_decoder_clicked();
 	void on_add_math_signal_clicked();
+	void on_triggermode_clicked();
 
 protected:
 	void add_toolbar_widgets();
@@ -166,7 +167,7 @@ private:
 	QAction *const action_save_setup_;
 	QAction *const action_connect_;
 
-	QToolButton *new_view_button_, *open_button_, *save_button_;
+	QToolButton *new_view_button_, *open_button_, *save_button_, *triggermode_button_;
 
 	pv::widgets::DeviceToolButton device_selector_;
 
