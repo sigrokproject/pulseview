@@ -176,8 +176,13 @@ void DecodeTrace::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 
 	// Iterate through the rows
 	int y = get_visual_y();
-	pair<uint64_t, uint64_t> sample_range = get_sample_range(
-		pp.left(), pp.right());
+	pair<uint64_t, uint64_t> sample_range = get_sample_range(pp.left(), pp.right());
+
+	// Just because the view says we see a certain sample range it
+	// doesn't mean we have this many decoded samples, too, so crop
+	// the range to what has been decoded already
+	sample_range.second = min((int64_t)sample_range.second,
+		decode_signal_->get_decoded_sample_count(current_segment_, false));
 
 	const vector<Row> rows = decode_signal_->visible_rows();
 
@@ -580,7 +585,7 @@ void DecodeTrace::draw_unresolved_period(QPainter &p, int h, int left, int right
 	if (sample_count == 0)
 		return;
 
-	const int64_t samples_decoded = decode_signal_->get_decoded_sample_count(current_segment_);
+	const int64_t samples_decoded = decode_signal_->get_decoded_sample_count(current_segment_, true);
 	if (sample_count == samples_decoded)
 		return;
 

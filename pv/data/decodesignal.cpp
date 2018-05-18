@@ -398,7 +398,8 @@ int64_t DecodeSignal::get_working_sample_count(uint32_t segment_id) const
 	return (no_signals_assigned ? 0 : count);
 }
 
-int64_t DecodeSignal::get_decoded_sample_count(uint32_t segment_id) const
+int64_t DecodeSignal::get_decoded_sample_count(uint32_t segment_id,
+	bool include_processing) const
 {
 	lock_guard<mutex> decode_lock(output_mutex_);
 
@@ -406,7 +407,10 @@ int64_t DecodeSignal::get_decoded_sample_count(uint32_t segment_id) const
 
 	try {
 		const DecodeSegment *segment = &(segments_.at(segment_id));
-		result = segment->samples_decoded;
+		if (include_processing)
+			result = segment->samples_decoded_incl;
+		else
+			result = segment->samples_decoded_excl;
 	} catch (out_of_range&) {
 		// Do nothing
 	}
@@ -919,11 +923,10 @@ void DecodeSignal::decode_data(
 		const int64_t chunk_end = min(i + chunk_sample_count,
 			abs_start_samplenum + sample_count);
 
-		// Report this chunk as already decoded so that annotations don't
-		// appear in an area that we claim to not having been been decoded yet
 		{
 			lock_guard<mutex> lock(output_mutex_);
-			segments_.at(current_segment_id_).samples_decoded = chunk_end;
+			// Update the sample count showing the samples including currently processed ones
+			segments_.at(current_segment_id_).samples_decoded_incl = chunk_end;
 		}
 
 		int64_t data_size = (chunk_end - i) * unit_size;
@@ -938,6 +941,12 @@ void DecodeSignal::decode_data(
 		}
 
 		delete[] chunk;
+
+		{
+			lock_guard<mutex> lock(output_mutex_);
+			// Now that all samples are processed, the exclusive sample count catches up
+			segments_.at(current_segment_id_).samples_decoded_excl = chunk_end;
+		}
 
 		// Notify the frontend that we processed some data and
 		// possibly have new annotations as well

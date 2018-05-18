@@ -76,7 +76,7 @@ struct DecodeSegment
 	map<const decode::Row, decode::RowData> annotation_rows;
 	pv::util::Timestamp start_time;
 	double samplerate;
-	int64_t samples_decoded;
+	int64_t samples_decoded_incl, samples_decoded_excl;
 };
 
 class DecodeSignal : public SignalBase
@@ -120,7 +120,16 @@ public:
 	 */
 	int64_t get_working_sample_count(uint32_t segment_id) const;
 
-	int64_t get_decoded_sample_count(uint32_t segment_id) const;
+	/**
+	 * Returns the number of processed samples. Newly generated annotations will
+	 * have sample numbers greater than this.
+	 *
+	 * If include_processing is true, this number will include the ones being
+	 * currently processed (in case the decoder stack is running). In this case,
+	 * newly generated annotations will have sample numbers smaller than this.
+	 */
+	int64_t get_decoded_sample_count(uint32_t segment_id,
+		bool include_processing) const;
 
 	vector<decode::Row> visible_rows() const;
 
