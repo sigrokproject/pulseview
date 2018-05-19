@@ -171,7 +171,7 @@ QString CursorPair::format_string()
 	const QString s2 = util::format_time_si(
 		1 / diff, pv::util::SIPrefix::unspecified, 4, "Hz", false);
 
-	return QString("%1 / %2").arg(s1).arg(s2);
+	return QString("%1 / %2").arg(s1, s2);
 }
 
 void CursorPair::compute_text_size(QPainter &p)
