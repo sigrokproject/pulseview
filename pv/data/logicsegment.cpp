@@ -17,6 +17,8 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "config.h" // For HAVE_UNALIGNED_LITTLE_ENDIAN_ACCESS
+
 #include <extdef.h>
 
 #include <cassert>
