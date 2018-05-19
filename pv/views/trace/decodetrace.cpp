@@ -53,7 +53,6 @@ extern "C" {
 #include <pv/widgets/decodermenu.hpp>
 
 using std::abs;
-using std::all_of;
 using std::make_pair;
 using std::max;
 using std::min;
