@@ -64,7 +64,7 @@ LogicSegment::~LogicSegment()
 		free(l.data);
 }
 
-uint64_t LogicSegment::unpack_sample(const uint8_t *ptr) const
+inline uint64_t LogicSegment::unpack_sample(const uint8_t *ptr) const
 {
 #ifdef HAVE_UNALIGNED_LITTLE_ENDIAN_ACCESS
 	return *(uint64_t*)ptr;
@@ -102,7 +102,7 @@ uint64_t LogicSegment::unpack_sample(const uint8_t *ptr) const
 #endif
 }
 
-void LogicSegment::pack_sample(uint8_t *ptr, uint64_t value)
+inline void LogicSegment::pack_sample(uint8_t *ptr, uint64_t value)
 {
 #ifdef HAVE_UNALIGNED_LITTLE_ENDIAN_ACCESS
 	*(uint64_t*)ptr = value;
