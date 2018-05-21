@@ -153,8 +153,8 @@ void LogicSegment::append_payload(void *data, uint64_t data_size)
 
 	lock_guard<recursive_mutex> lock(mutex_);
 
-	uint64_t prev_sample_count = sample_count_;
-	uint64_t sample_count = data_size / unit_size_;
+	const uint64_t prev_sample_count = sample_count_;
+	const uint64_t sample_count = data_size / unit_size_;
 
 	append_samples(data, sample_count);
 
@@ -237,8 +237,8 @@ void LogicSegment::append_payload_to_mipmap()
 	dest_ptr = (uint8_t*)m0.data + prev_length * unit_size_;
 
 	// Iterate through the samples to populate the first level mipmap
-	uint64_t start_sample = prev_length * MipMapScaleFactor;
-	uint64_t end_sample = m0.length * MipMapScaleFactor;
+	const uint64_t start_sample = prev_length * MipMapScaleFactor;
+	const uint64_t end_sample = m0.length * MipMapScaleFactor;
 
 	it = begin_raw_sample_iteration(start_sample);
 	for (uint64_t i = start_sample; i < end_sample;) {
@@ -303,9 +303,8 @@ uint64_t LogicSegment::get_unpacked_sample(uint64_t index) const
 	uint8_t data[8];
 
 	get_raw_samples(index, 1, data);
-	uint64_t sample = unpack_sample(data);
 
-	return sample;
+	return unpack_sample(data);
 }
 
 void LogicSegment::get_subsampled_edges(
