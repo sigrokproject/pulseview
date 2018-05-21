@@ -85,8 +85,8 @@ pair<int, int> TraceGroup::v_extents() const
 void TraceGroup::paint_label(QPainter &p, const QRect &rect, bool hover)
 {
 	const QRectF r = label_rect(rect).adjusted(
-		LineThickness / 2, LineThickness / 2,
-		-LineThickness / 2, -LineThickness / 2);
+		LineThickness / 2.0, LineThickness / 2.0,
+		-LineThickness / 2.0, -LineThickness / 2.0);
 
 	// Paint the label
 	const QPointF points[] = {
