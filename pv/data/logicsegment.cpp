@@ -25,6 +25,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
+#include <cstdint>
 
 #include "logic.hpp"
 #include "logicsegment.hpp"
@@ -480,7 +481,7 @@ uint64_t LogicSegment::get_subsample(int level, uint64_t offset) const
 
 uint64_t LogicSegment::pow2_ceil(uint64_t x, unsigned int power)
 {
-	const uint64_t p = 1 << power;
+	const uint64_t p = UINT64_C(1) << power;
 	return (x + p - 1) / p * p;
 }
 
