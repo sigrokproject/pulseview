@@ -23,6 +23,7 @@
 #include <map>
 
 #include <glib.h>
+#include <glibmm/variant.h>
 
 #include <QSettings>
 #include <QString>
@@ -96,6 +97,10 @@ public:
 	static void store_gvariant(QSettings &settings, GVariant *v);
 
 	static GVariant* restore_gvariant(QSettings &settings);
+
+	static void store_variantbase(QSettings &settings, Glib::VariantBase v);
+
+	static Glib::VariantBase restore_variantbase(QSettings &settings);
 
 private:
 	static vector<GlobalSettingsInterface*> callbacks_;

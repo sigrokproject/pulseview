@@ -25,6 +25,7 @@
 #include <QString>
 
 using std::map;
+using std::string;
 using std::vector;
 
 namespace pv {
@@ -169,5 +170,33 @@ GVariant* GlobalSettings::restore_gvariant(QSettings &settings)
 	return value;
 }
 
+void GlobalSettings::store_variantbase(QSettings &settings, Glib::VariantBase v)
+{
+	const QByteArray var_data = QByteArray((const char*)v.get_data(), v.get_size());
+
+	settings.setValue("value", var_data);
+	settings.setValue("type", QString::fromStdString(v.get_type_string()));
+}
+
+Glib::VariantBase GlobalSettings::restore_variantbase(QSettings &settings)
+{
+	QString raw_type = settings.value("type").toString();
+	GVariantType *var_type = g_variant_type_new(raw_type.toUtf8());
+
+	QByteArray data = settings.value("value").toByteArray();
+
+	gpointer var_data = g_memdup((gconstpointer)data.constData(),
+		(guint)data.size());
+
+	GVariant *value = g_variant_new_from_data(var_type, var_data,
+		data.size(), false, g_free, var_data);
+
+	Glib::VariantBase ret_val = Glib::VariantBase(value, true);
+
+	g_variant_type_free(var_type);
+	g_variant_unref(value);
+
+	return ret_val;
+}
 
 } // namespace pv

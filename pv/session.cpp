@@ -207,13 +207,23 @@ void Session::save_settings(QSettings &settings) const
 		}
 
 		shared_ptr<devices::SessionFile> sessionfile_device =
-			dynamic_pointer_cast< devices::SessionFile >(device_);
+			dynamic_pointer_cast<devices::SessionFile>(device_);
 
 		if (sessionfile_device) {
 			settings.setValue("device_type", "sessionfile");
 			settings.beginGroup("device");
 			settings.setValue("filename", QString::fromStdString(
 				sessionfile_device->full_name()));
+			settings.endGroup();
+		}
+
+		shared_ptr<devices::InputFile> inputfile_device =
+			dynamic_pointer_cast<devices::InputFile>(device_);
+
+		if (inputfile_device) {
+			settings.setValue("device_type", "inputfile");
+			settings.beginGroup("device");
+			inputfile_device->save_meta_to_settings(settings);
 			settings.endGroup();
 		}
 
@@ -290,21 +300,34 @@ void Session::restore_settings(QSettings &settings)
 		settings.endGroup();
 	}
 
-	if (device_type == "sessionfile") {
-		settings.beginGroup("device");
-		QString filename = settings.value("filename").toString();
-		settings.endGroup();
+	if ((device_type == "sessionfile") || (device_type == "inputfile")) {
+		if (device_type == "sessionfile") {
+			settings.beginGroup("device");
+			QString filename = settings.value("filename").toString();
+			settings.endGroup();
 
-		if (QFileInfo(filename).isReadable()) {
-			device = make_shared<devices::SessionFile>(device_manager_.context(),
-				filename.toStdString());
+			if (QFileInfo(filename).isReadable()) {
+				device = make_shared<devices::SessionFile>(device_manager_.context(),
+					filename.toStdString());
+			}
+		}
+
+		if (device_type == "inputfile") {
+			settings.beginGroup("device");
+			device = make_shared<devices::InputFile>(device_manager_.context(),
+				settings);
+			settings.endGroup();
+		}
+
+		if (device) {
 			set_device(device);
 
 			start_capture([](QString infoMessage) {
 				// TODO Emulate noquote()
 				qDebug() << "Session error:" << infoMessage; });
 
-			set_name(QFileInfo(filename).fileName());
+			set_name(QString::fromStdString(
+				dynamic_pointer_cast<devices::File>(device)->display_name(device_manager_)));
 		}
 	}
 
