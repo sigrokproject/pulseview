@@ -367,10 +367,13 @@ void View::restore_settings(QSettings &settings)
 		stringstream ss;
 		ss << settings.value("ruler_shift").toString().toStdString();
 
-		boost::archive::text_iarchive ia(ss);
-		ia >> boost::serialization::make_nvp("ruler_shift", shift);
-
-		ruler_shift_ = shift;
+		try {
+			boost::archive::text_iarchive ia(ss);
+			ia >> boost::serialization::make_nvp("ruler_shift", shift);
+			ruler_shift_ = shift;
+		} catch (boost::archive::archive_exception) {
+			qDebug() << "Could not restore the view ruler shift";
+		}
 	}
 
 	if (settings.contains("offset")) {
@@ -378,11 +381,14 @@ void View::restore_settings(QSettings &settings)
 		stringstream ss;
 		ss << settings.value("offset").toString().toStdString();
 
-		boost::archive::text_iarchive ia(ss);
-		ia >> boost::serialization::make_nvp("offset", offset);
-
-		// This also updates ruler_offset_
-		set_offset(offset);
+		try {
+			boost::archive::text_iarchive ia(ss);
+			ia >> boost::serialization::make_nvp("offset", offset);
+			// This also updates ruler_offset_
+			set_offset(offset);
+		} catch (boost::archive::archive_exception) {
+			qDebug() << "Could not restore the view offset";
+		}
 	}
 
 	if (settings.contains("splitter_state"))
