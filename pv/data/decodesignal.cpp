@@ -280,6 +280,9 @@ void DecodeSignal::auto_assign_signals(const shared_ptr<Decoder> dec)
 			continue;
 
 		for (shared_ptr<data::SignalBase> s : session_.signalbases()) {
+			if (!s->enabled())
+				continue;
+
 			const QString ch_name = ch.name.toLower();
 			const QString s_name = s->name().toLower();
 
