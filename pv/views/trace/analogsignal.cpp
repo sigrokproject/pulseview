@@ -407,7 +407,7 @@ void AnalogSignal::paint_trace(QPainter &p,
 
 	p.setPen(base_->color());
 
-	const int64_t points_count = end - start;
+	const int64_t points_count = end - start + 1;
 
 	QPointF *points = new QPointF[points_count];
 	QPointF *point = points;
@@ -420,7 +420,7 @@ void AnalogSignal::paint_trace(QPainter &p,
 	segment->get_samples(start, start + sample_count, sample_block);
 
 	const int w = 2;
-	for (int64_t sample = start; sample != end; sample++, block_sample++) {
+	for (int64_t sample = start; sample <= end; sample++, block_sample++) {
 
 		if (block_sample == TracePaintBlockSize) {
 			block_sample = 0;
@@ -428,8 +428,7 @@ void AnalogSignal::paint_trace(QPainter &p,
 			segment->get_samples(sample, sample + sample_count, sample_block);
 		}
 
-		const float x = (sample / samples_per_pixel -
-			pixels_offset) + left;
+		const float x = left + (sample / samples_per_pixel - pixels_offset);
 
 		*point++ = QPointF(x, y - sample_block[block_sample] * scale_);
 
