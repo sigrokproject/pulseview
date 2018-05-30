@@ -105,6 +105,12 @@ public:
 
 	~View();
 
+	/**
+	 * Resets the view to its default state after construction. It does however
+	 * not reset the signal bases or any other connections with the session.
+	 */
+	virtual void reset_view_state();
+
 	Session& session();
 	const Session& session() const;
 

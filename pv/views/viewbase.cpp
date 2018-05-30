@@ -36,10 +36,9 @@ namespace views {
 const int ViewBase::MaxViewAutoUpdateRate = 25; // No more than 25 Hz
 
 ViewBase::ViewBase(Session &session, bool is_main_view, QWidget *parent) :
+	// Note: Place defaults in ViewBase::reset_view_state(), not here
 	session_(session),
-	is_main_view_(is_main_view),
-	ruler_shift_(0),
-	current_segment_(0)
+	is_main_view_(is_main_view)
 {
 	(void)parent;
 
@@ -54,6 +53,12 @@ ViewBase::ViewBase(Session &session, bool is_main_view, QWidget *parent) :
 		this, SLOT(perform_delayed_view_update()));
 	delayed_view_updater_.setSingleShot(true);
 	delayed_view_updater_.setInterval(1000 / MaxViewAutoUpdateRate);
+}
+
+void ViewBase::reset_view_state()
+{
+	ruler_shift_ = 0;
+	current_segment_ = 0;
 }
 
 Session& ViewBase::session()

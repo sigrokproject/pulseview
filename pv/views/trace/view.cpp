@@ -124,31 +124,11 @@ bool CustomScrollArea::viewportEvent(QEvent *event)
 
 View::View(Session &session, bool is_main_view, QWidget *parent) :
 	ViewBase(session, is_main_view, parent),
+
+	// Note: Place defaults in View::reset_view_state(), not here
 	splitter_(new QSplitter()),
-	segment_display_mode_(Trace::ShowLastSegmentOnly),
-	segment_selectable_(false),
-	scale_(1e-3),
-	offset_(0),
-	ruler_offset_(0),
-	updating_scroll_(false),
-	settings_restored_(false),
-	header_was_shrunk_(false),
-	sticky_scrolling_(false), // Default setting is set in MainWindow::setup_ui()
-	always_zoom_to_fit_(false),
-	tick_period_(0),
-	tick_prefix_(pv::util::SIPrefix::yocto),
-	tick_precision_(0),
-	time_unit_(util::TimeUnit::Time),
-	show_cursors_(false),
-	cursors_(new CursorPair(*this)),
-	next_flag_text_('A'),
-	trigger_markers_(),
-	hover_point_(-1, -1),
-	scroll_needs_defaults_(true),
-	saved_v_offset_(0),
-	scale_at_acq_start_(0),
-	offset_at_acq_start_(0),
-	suppress_zoom_to_fit_after_acq_(false)
+	header_was_shrunk_(false),  // The splitter remains unchanged after a reset, so this goes here
+	sticky_scrolling_(false)  // Default setting is set in MainWindow::setup_ui()
 {
 	QVBoxLayout *root_layout = new QVBoxLayout(this);
 	root_layout->setContentsMargins(0, 0, 0, 0);
@@ -230,16 +210,50 @@ View::View(Session &session, bool is_main_view, QWidget *parent) :
 	ruler_->raise();
 	header_->raise();
 
-	// Update the zoom state
-	calculate_tick_spacing();
-
-	// Make sure the standard bar's segment selector is in sync
-	set_segment_display_mode(segment_display_mode_);
+	reset_view_state();
 }
 
 View::~View()
 {
 	GlobalSettings::remove_change_handler(this);
+}
+
+void View::reset_view_state()
+{
+	ViewBase::reset_view_state();
+
+	segment_display_mode_ = Trace::ShowLastSegmentOnly;
+	segment_selectable_ = false;
+	scale_ = 1e-3;
+	offset_ = 0;
+	ruler_offset_ = 0;
+	updating_scroll_ = false;
+	settings_restored_ = false;
+	always_zoom_to_fit_ = false;
+	tick_period_ = 0;
+	tick_prefix_ = pv::util::SIPrefix::yocto;
+	tick_precision_ = 0;
+	time_unit_ = util::TimeUnit::Time;
+	show_cursors_ = false;
+	cursors_ = make_shared<CursorPair>(*this);
+	next_flag_text_ = 'A';
+	trigger_markers_.clear();
+	hover_point_ = QPoint(-1, -1);
+	scroll_needs_defaults_ = true;
+	saved_v_offset_ = 0;
+	scale_at_acq_start_ = 0;
+	offset_at_acq_start_ = 0;
+	suppress_zoom_to_fit_after_acq_ = false;
+
+	show_cursors_ = false;
+	cursors_.reset();
+	flags_.clear();
+
+	// Update the zoom state
+	calculate_tick_spacing();
+
+	// Make sure the standard bar's segment selector is in sync
+	set_segment_display_mode(segment_display_mode_);
 }
 
 Session& View::session()
@@ -422,9 +436,12 @@ vector< shared_ptr<TimeItem> > View::time_items() const
 {
 	const vector<shared_ptr<Flag>> f(flags());
 	vector<shared_ptr<TimeItem>> items(f.begin(), f.end());
-	items.push_back(cursors_);
-	items.push_back(cursors_->first());
-	items.push_back(cursors_->second());
+
+	if (cursors_) {
+		items.push_back(cursors_);
+		items.push_back(cursors_->first());
+		items.push_back(cursors_->second());
+	}
 
 	for (auto trigger_marker : trigger_markers_)
 		items.push_back(trigger_marker);
@@ -805,11 +822,14 @@ void View::show_cursors(bool show)
 
 void View::centre_cursors()
 {
-	const double time_width = scale_ * viewport_->width();
-	cursors_->first()->set_time(offset_ + time_width * 0.4);
-	cursors_->second()->set_time(offset_ + time_width * 0.6);
-	ruler_->update();
-	viewport_->update();
+	if (cursors_) {
+		const double time_width = scale_ * viewport_->width();
+		cursors_->first()->set_time(offset_ + time_width * 0.4);
+		cursors_->second()->set_time(offset_ + time_width * 0.6);
+
+		ruler_->update();
+		viewport_->update();
+	}
 }
 
 shared_ptr<CursorPair> View::cursors() const

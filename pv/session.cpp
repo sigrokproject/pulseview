@@ -397,12 +397,13 @@ void Session::set_device(shared_ptr<devices::Device> device)
 	name_ = default_name_;
 	name_changed();
 
-	// Remove all stored data
+	// Remove all stored data and reset all views
 	for (shared_ptr<views::ViewBase> view : views_) {
 		view->clear_signals();
 #ifdef ENABLE_DECODE
 		view->clear_decode_signals();
 #endif
+		view->reset_view_state();
 	}
 	for (const shared_ptr<data::SignalData> d : all_signal_data_)
 		d->clear();
