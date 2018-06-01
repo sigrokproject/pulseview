@@ -246,7 +246,6 @@ void View::reset_view_state()
 	suppress_zoom_to_fit_after_acq_ = false;
 
 	show_cursors_ = false;
-	cursors_.reset();
 	flags_.clear();
 
 	// Update the zoom state
