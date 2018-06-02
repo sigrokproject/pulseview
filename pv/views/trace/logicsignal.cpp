@@ -508,6 +508,12 @@ void LogicSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
 			trigger_bar_->addAction(action);
 			action->setChecked(trigger_match_ == type);
 		}
+
+		// Only allow triggers to be changed when we're stopped
+		if (session_.get_capture_state() != Session::Stopped)
+			for (QAction* action : trigger_bar_->findChildren<QAction*>())
+				action->setEnabled(false);
+
 		form->addRow(tr("Trigger"), trigger_bar_);
 	}
 }
