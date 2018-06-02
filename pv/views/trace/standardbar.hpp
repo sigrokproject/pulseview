@@ -96,6 +96,7 @@ protected Q_SLOTS:
 	void on_actionViewZoomOneToOne_triggered();
 
 	void on_actionViewShowCursors_triggered();
+	void on_cursor_state_changed(bool show);
 
 	void on_actionSDMLast_triggered();
 	void on_actionSDMLastComplete_triggered();

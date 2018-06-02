@@ -133,6 +133,9 @@ StandardBar::StandardBar(Session &session, QWidget *parent,
 	connect(view_, SIGNAL(always_zoom_to_fit_changed(bool)),
 		this, SLOT(on_always_zoom_to_fit_changed(bool)));
 
+	connect(view_, SIGNAL(cursor_state_changed(bool)),
+		this, SLOT(on_cursor_state_changed(bool)));
+
 	if (add_default_widgets)
 		add_toolbar_widgets();
 }
@@ -216,7 +219,8 @@ void StandardBar::on_actionViewZoomOneToOne_triggered()
 
 void StandardBar::on_actionViewShowCursors_triggered()
 {
-	const bool show = !view_->cursors_shown();
+	const bool show = action_view_show_cursors_->isChecked();
+
 	if (show)
 		view_->centre_cursors();
 
@@ -306,6 +310,11 @@ void StandardBar::on_segment_display_mode_changed(int mode, bool segment_selecta
 	default:
 		break;
 	}
+}
+
+void StandardBar::on_cursor_state_changed(bool show)
+{
+	action_view_show_cursors_->setChecked(show);
 }
 
 } // namespace trace

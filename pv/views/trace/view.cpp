@@ -246,6 +246,7 @@ void View::reset_view_state()
 	suppress_zoom_to_fit_after_acq_ = false;
 
 	show_cursors_ = false;
+	cursor_state_changed(show_cursors_);
 	flags_.clear();
 
 	// Update the zoom state
@@ -815,6 +816,7 @@ bool View::cursors_shown() const
 void View::show_cursors(bool show)
 {
 	show_cursors_ = show;
+	cursor_state_changed(show);
 	ruler_->update();
 	viewport_->update();
 }

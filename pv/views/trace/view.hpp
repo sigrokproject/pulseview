@@ -343,6 +343,9 @@ Q_SIGNALS:
 	/// @param mode is a value of Trace::SegmentDisplayMode
 	void segment_display_mode_changed(int mode, bool segment_selectable);
 
+	/// Emitted when the cursors are shown/hidden
+	void cursor_state_changed(bool show);
+
 public Q_SLOTS:
 	void trigger_event(int segment_id, util::Timestamp location);
 
