@@ -234,8 +234,6 @@ public:
 
 	void zoom_fit(bool gui_state);
 
-	void zoom_one_to_one();
-
 	/**
 	 * Sets the scale and offset.
 	 * @param scale The new view scale in seconds per pixel.

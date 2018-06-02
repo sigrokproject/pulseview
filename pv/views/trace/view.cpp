@@ -700,23 +700,6 @@ void View::zoom_fit(bool gui_state)
 	set_scale_offset(scale.convert_to<double>(), extents.first);
 }
 
-void View::zoom_one_to_one()
-{
-	using pv::data::SignalData;
-
-	// Make a set of all the visible data objects
-	set< shared_ptr<SignalData> > visible_data = get_visible_data();
-	if (visible_data.empty())
-		return;
-
-	assert(viewport_);
-	const int w = viewport_->width();
-	if (w <= 0)
-		return;
-
-	set_zoom(1.0 / session_.get_samplerate(), w / 2);
-}
-
 void View::set_scale_offset(double scale, const Timestamp& offset)
 {
 	// Disable sticky scrolling / always zoom to fit when acquisition runs

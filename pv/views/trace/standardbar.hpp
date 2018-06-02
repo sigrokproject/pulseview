@@ -59,7 +59,6 @@ public:
 	QAction* action_view_zoom_in() const;
 	QAction* action_view_zoom_out() const;
 	QAction* action_view_zoom_fit() const;
-	QAction* action_view_zoom_one_to_one() const;
 	QAction* action_view_show_cursors() const;
 
 protected:
@@ -73,7 +72,6 @@ protected:
 	QAction *const action_view_zoom_in_;
 	QAction *const action_view_zoom_out_;
 	QAction *const action_view_zoom_fit_;
-	QAction *const action_view_zoom_one_to_one_;
 	QAction *const action_view_show_cursors_;
 
 	QToolButton *segment_display_mode_selector_;
@@ -92,8 +90,6 @@ protected Q_SLOTS:
 	void on_actionViewZoomOut_triggered();
 
 	void on_actionViewZoomFit_triggered(bool checked);
-
-	void on_actionViewZoomOneToOne_triggered();
 
 	void on_actionViewShowCursors_triggered();
 	void on_cursor_state_changed(bool show);
