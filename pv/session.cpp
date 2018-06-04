@@ -950,7 +950,11 @@ void Session::sample_thread_proc(function<void (const QString)> error_handler)
 	if (!device_)
 		return;
 
-	cur_samplerate_ = device_->read_config<uint64_t>(ConfigKey::SAMPLERATE);
+	try {
+		cur_samplerate_ = device_->read_config<uint64_t>(ConfigKey::SAMPLERATE);
+	} catch (Error& e) {
+		cur_samplerate_ = 0;
+	}
 
 	out_of_memory_ = false;
 
@@ -1161,7 +1165,11 @@ void Session::feed_in_logic(shared_ptr<Logic> logic)
 	}
 
 	if (!cur_samplerate_)
-		cur_samplerate_ = device_->read_config<uint64_t>(ConfigKey::SAMPLERATE);
+		try {
+			cur_samplerate_ = device_->read_config<uint64_t>(ConfigKey::SAMPLERATE);
+		} catch (Error& e) {
+			// Do nothing
+		}
 
 	lock_guard<recursive_mutex> lock(data_mutex_);
 
@@ -1198,7 +1206,11 @@ void Session::feed_in_analog(shared_ptr<Analog> analog)
 	}
 
 	if (!cur_samplerate_)
-		cur_samplerate_ = device_->read_config<uint64_t>(ConfigKey::SAMPLERATE);
+		try {
+			cur_samplerate_ = device_->read_config<uint64_t>(ConfigKey::SAMPLERATE);
+		} catch (Error& e) {
+			// Do nothing
+		}
 
 	lock_guard<recursive_mutex> lock(data_mutex_);
 
