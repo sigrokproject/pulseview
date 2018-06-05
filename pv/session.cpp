@@ -1215,11 +1215,9 @@ void Session::feed_in_analog(shared_ptr<Analog> analog)
 	lock_guard<recursive_mutex> lock(data_mutex_);
 
 	const vector<shared_ptr<Channel>> channels = analog->channels();
-	const unsigned int channel_count = channels.size();
-	const size_t sample_count = analog->num_samples() / channel_count;
 	bool sweep_beginning = false;
 
-	unique_ptr<float[]> data(new float[analog->num_samples()]);
+	unique_ptr<float[]> data(new float[analog->num_samples() * channels.size()]);
 	analog->get_data_as_float(data.get());
 
 	if (signalbases_.empty())
@@ -1261,8 +1259,8 @@ void Session::feed_in_analog(shared_ptr<Analog> analog)
 		assert(segment);
 
 		// Append the samples in the segment
-		segment->append_interleaved_samples(channel_data++, sample_count,
-			channel_count);
+		segment->append_interleaved_samples(channel_data++, analog->num_samples(),
+			channels.size());
 	}
 
 	if (sweep_beginning) {
