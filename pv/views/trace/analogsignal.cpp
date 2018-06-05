@@ -116,8 +116,6 @@ AnalogSignal::AnalogSignal(
 	connect(analog_data, SIGNAL(min_max_changed(float, float)),
 		this, SLOT(on_min_max_changed(float, float)));
 
-	GlobalSettings::add_change_handler(this);
-
 	GlobalSettings gs;
 	conversion_threshold_disp_mode_ =
 		gs.value(GlobalSettings::Key_View_ConversionThresholdDispMode).toInt();
@@ -210,6 +208,8 @@ void AnalogSignal::scale_handle_drag_release()
 
 void AnalogSignal::on_setting_changed(const QString &key, const QVariant &value)
 {
+	Signal::on_setting_changed(key, value);
+
 	if (key == GlobalSettings::Key_View_ConversionThresholdDispMode)
 		on_settingViewConversionThresholdDispMode_changed(value);
 }
@@ -328,6 +328,9 @@ void AnalogSignal::paint_fore(QPainter &p, ViewItemPaintParams &pp)
 
 		p.drawText(bounding_rect, Qt::AlignRight | Qt::AlignBottom, infotext);
 	}
+
+	if (show_hover_marker_)
+		paint_hover_marker(p);
 }
 
 void AnalogSignal::paint_grid(QPainter &p, int y, int left, int right)

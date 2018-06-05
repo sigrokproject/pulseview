@@ -56,6 +56,7 @@ public:
 	static const QString Key_View_ConversionThresholdDispMode;
 	static const QString Key_View_DefaultDivHeight;
 	static const QString Key_View_DefaultLogicHeight;
+	static const QString Key_View_ShowHoverMarker;
 	static const QString Key_Dec_InitialStateConfigurable;
 	static const QString Key_Log_BufferSize;
 	static const QString Key_Log_NotifyOfStacktrace;

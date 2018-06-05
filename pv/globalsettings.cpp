@@ -40,6 +40,7 @@ const QString GlobalSettings::Key_View_ShowAnalogMinorGrid = "View_ShowAnalogMin
 const QString GlobalSettings::Key_View_ConversionThresholdDispMode = "View_ConversionThresholdDispMode";
 const QString GlobalSettings::Key_View_DefaultDivHeight = "View_DefaultDivHeight";
 const QString GlobalSettings::Key_View_DefaultLogicHeight = "View_DefaultLogicHeight";
+const QString GlobalSettings::Key_View_ShowHoverMarker = "View_ShowHoverMarker";
 const QString GlobalSettings::Key_Dec_InitialStateConfigurable = "Dec_InitialStateConfigurable";
 const QString GlobalSettings::Key_Log_BufferSize = "Log_BufferSize";
 const QString GlobalSettings::Key_Log_NotifyOfStacktrace = "Log_NotifyOfStacktrace";

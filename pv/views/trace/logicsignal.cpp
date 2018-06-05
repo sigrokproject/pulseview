@@ -293,38 +293,41 @@ void LogicSignal::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 void LogicSignal::paint_fore(QPainter &p, ViewItemPaintParams &pp)
 {
 	// Draw the trigger marker
-	if (!trigger_match_ || !base_->enabled())
-		return;
+	if (base_->enabled() && trigger_match_) {
+		const int y = get_visual_y();
+		const vector<int32_t> trig_types = get_trigger_types();
 
-	const int y = get_visual_y();
-	const vector<int32_t> trig_types = get_trigger_types();
-	for (int32_t type_id : trig_types) {
-		const TriggerMatchType *const type =
-			TriggerMatchType::get(type_id);
-		if (trigger_match_ != type || type_id < 0 ||
-			(size_t)type_id >= countof(TriggerMarkerIcons) ||
-			!TriggerMarkerIcons[type_id])
-			continue;
+		for (int32_t type_id : trig_types) {
+			const TriggerMatchType *const type =
+				TriggerMatchType::get(type_id);
+			if (trigger_match_ != type || type_id < 0 ||
+				(size_t)type_id >= countof(TriggerMarkerIcons) ||
+				!TriggerMarkerIcons[type_id])
+				continue;
 
-		const QPixmap *const pixmap = get_pixmap(
-			TriggerMarkerIcons[type_id]);
-		if (!pixmap)
-			continue;
+			const QPixmap *const pixmap = get_pixmap(
+				TriggerMarkerIcons[type_id]);
+			if (!pixmap)
+				continue;
 
-		const float pad = TriggerMarkerPadding - 0.5f;
-		const QSize size = pixmap->size();
-		const QPoint point(
-			pp.right() - size.width() - pad * 2,
-			y - (signal_height_ + size.height()) / 2);
+			const float pad = TriggerMarkerPadding - 0.5f;
+			const QSize size = pixmap->size();
+			const QPoint point(
+				pp.right() - size.width() - pad * 2,
+				y - (signal_height_ + size.height()) / 2);
 
-		p.setPen(QPen(TriggerMarkerBackgroundColor.darker()));
-		p.setBrush(TriggerMarkerBackgroundColor);
-		p.drawRoundedRect(QRectF(point, size).adjusted(
-			-pad, -pad, pad, pad), pad, pad);
-		p.drawPixmap(point, *pixmap);
+			p.setPen(QPen(TriggerMarkerBackgroundColor.darker()));
+			p.setBrush(TriggerMarkerBackgroundColor);
+			p.drawRoundedRect(QRectF(point, size).adjusted(
+				-pad, -pad, pad, pad), pad, pad);
+			p.drawPixmap(point, *pixmap);
 
-		break;
+			break;
+		}
 	}
+
+	if (show_hover_marker_)
+		paint_hover_marker(p);
 }
 
 void LogicSignal::paint_caps(QPainter &p, QLineF *const lines,

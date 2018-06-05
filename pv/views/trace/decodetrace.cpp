@@ -255,6 +255,9 @@ void DecodeTrace::paint_fore(QPainter &p, ViewItemPaintParams &pp)
 		p.setPen(QApplication::palette().color(QPalette::WindowText));
 		p.drawText(r, f, h);
 	}
+
+	if (show_hover_marker_)
+		paint_hover_marker(p);
 }
 
 void DecodeTrace::populate_popup_form(QWidget *parent, QFormLayout *form)

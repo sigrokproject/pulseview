@@ -25,7 +25,6 @@
 #include <QComboBox>
 #include <QSpinBox>
 
-#include <pv/globalsettings.hpp>
 #include <pv/views/trace/signal.hpp>
 
 using std::pair;
@@ -42,7 +41,7 @@ class SignalBase;
 namespace views {
 namespace trace {
 
-class AnalogSignal : public Signal, public GlobalSettingsInterface
+class AnalogSignal : public Signal
 {
 	Q_OBJECT
 
@@ -105,7 +104,7 @@ public:
 	 */
 	void scale_handle_drag_release();
 
-	void on_setting_changed(const QString &key, const QVariant &value);
+	virtual void on_setting_changed(const QString &key, const QVariant &value);
 
 	/**
 	 * Paints the background layer of the signal with a QPainter

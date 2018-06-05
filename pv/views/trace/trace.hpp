@@ -30,6 +30,7 @@
 
 #include "tracetreeitem.hpp"
 
+#include <pv/globalsettings.hpp>
 #include "pv/data/signalbase.hpp"
 
 using std::shared_ptr;
@@ -59,7 +60,7 @@ namespace trace {
  * For this reason, Trace is more generic and contains properties and helpers
  * that benefit any kind of time series items.
  */
-class Trace : public TraceTreeItem
+class Trace : public TraceTreeItem, public GlobalSettingsInterface
 {
 	Q_OBJECT
 
@@ -105,6 +106,8 @@ public:
 	 */
 	virtual void set_segment_display_mode(SegmentDisplayMode mode);
 
+	virtual void on_setting_changed(const QString &key, const QVariant &value);
+
 	/**
 	 * Paints the signal label.
 	 * @param p the QPainter to paint into.
@@ -128,6 +131,8 @@ public:
 
 	int get_current_segment() const;
 
+	virtual void hover_point_changed(const QPoint &hp);
+
 protected:
 	/**
 	 * Paints the background layer of the signal with a QPainter.
@@ -143,6 +148,12 @@ protected:
 	 * @param y the y-offset of the axis.
 	 */
 	void paint_axis(QPainter &p, ViewItemPaintParams &pp, int y);
+
+	/**
+	 * Draw a hover marker under the cursor position.
+	 * @param p The painter to draw into.
+	 */
+	void paint_hover_marker(QPainter &p);
 
 	void add_color_option(QWidget *parent, QFormLayout *form);
 
@@ -167,6 +178,7 @@ protected:
 	QPen axis_pen_;
 
 	SegmentDisplayMode segment_display_mode_;
+	bool show_hover_marker_;
 
 	/// The ID of the currently displayed segment
 	int current_segment_;

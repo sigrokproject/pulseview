@@ -60,11 +60,31 @@ Trace::Trace(shared_ptr<data::SignalBase> channel) :
 		this, SLOT(on_name_changed(const QString&)));
 	connect(channel.get(), SIGNAL(color_changed(const QColor&)),
 		this, SLOT(on_color_changed(const QColor&)));
+
+	GlobalSettings::add_change_handler(this);
+
+	GlobalSettings settings;
+	show_hover_marker_ =
+		settings.value(GlobalSettings::Key_View_ShowHoverMarker).toBool();
 }
 
 shared_ptr<data::SignalBase> Trace::base() const
 {
 	return base_;
+}
+
+void Trace::set_segment_display_mode(SegmentDisplayMode mode)
+{
+	segment_display_mode_ = mode;
+
+	if (owner_)
+		owner_->row_item_appearance_changed(true, true);
+}
+
+void Trace::on_setting_changed(const QString &key, const QVariant &value)
+{
+	if (key == GlobalSettings::Key_View_ShowHoverMarker)
+		show_hover_marker_ = value.toBool();
 }
 
 void Trace::paint_label(QPainter &p, const QRect &rect, bool hover)
@@ -172,6 +192,14 @@ int Trace::get_current_segment() const
 	return current_segment_;
 }
 
+void Trace::hover_point_changed(const QPoint &hp)
+{
+	(void)hp;
+
+	if (owner_)
+		owner_->row_item_appearance_changed(false, true);
+}
+
 void Trace::paint_back(QPainter &p, ViewItemPaintParams &pp)
 {
 	const View *view = owner_->view();
@@ -213,6 +241,26 @@ void Trace::add_color_option(QWidget *parent, QFormLayout *form)
 	form->addRow(tr("Color"), color_button);
 }
 
+void Trace::paint_hover_marker(QPainter &p)
+{
+	const View *view = owner_->view();
+	assert(view);
+
+	const int x = view->hover_point().x();
+
+	if (x == -1)
+		return;
+
+	p.setPen(QPen(QColor(Qt::lightGray)));
+
+	const pair<int, int> extents = v_extents();
+
+	p.setRenderHint(QPainter::Antialiasing, false);
+	p.drawLine(x, get_visual_y() + extents.first,
+		x, get_visual_y() + extents.second);
+	p.setRenderHint(QPainter::Antialiasing, true);
+}
+
 void Trace::create_popup_form()
 {
 	// Clear the layout
@@ -242,14 +290,6 @@ void Trace::populate_popup_form(QWidget *parent, QFormLayout *form)
 	form->addRow(tr("Name"), name_edit);
 
 	add_color_option(parent, form);
-}
-
-void Trace::set_segment_display_mode(SegmentDisplayMode mode)
-{
-	segment_display_mode_ = mode;
-
-	if (owner_)
-		owner_->row_item_appearance_changed(true, true);
 }
 
 void Trace::on_name_changed(const QString &text)

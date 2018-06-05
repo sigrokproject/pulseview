@@ -233,6 +233,10 @@ QWidget *Settings::get_view_settings_form(QWidget *parent) const
 		SLOT(on_view_showAnalogMinorGrid_changed(int)));
 	trace_view_layout->addRow(tr("Show analog minor grid in addition to div grid"), cb);
 
+	cb = create_checkbox(GlobalSettings::Key_View_ShowHoverMarker,
+		SLOT(on_view_showHoverMarker_changed(int)));
+	trace_view_layout->addRow(tr("Highlight mouse cursor using a vertical marker line"), cb);
+
 	QComboBox *thr_disp_mode_cb = new QComboBox();
 	thr_disp_mode_cb->addItem(tr("None"), GlobalSettings::ConvThrDispMode_None);
 	thr_disp_mode_cb->addItem(tr("Background"), GlobalSettings::ConvThrDispMode_Background);
@@ -593,6 +597,12 @@ void Settings::on_view_showAnalogMinorGrid_changed(int state)
 {
 	GlobalSettings settings;
 	settings.setValue(GlobalSettings::Key_View_ShowAnalogMinorGrid, state ? true : false);
+}
+
+void Settings::on_view_showHoverMarker_changed(int state)
+{
+	GlobalSettings settings;
+	settings.setValue(GlobalSettings::Key_View_ShowHoverMarker, state ? true : false);
 }
 
 void Settings::on_view_conversionThresholdDispMode_changed(int state)
