@@ -24,6 +24,7 @@
 #include <cstdint>
 #include <fstream>
 #include <getopt.h>
+#include <vector>
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
 
@@ -162,7 +163,8 @@ int main(int argc, char *argv[])
 {
 	int ret = 0;
 	shared_ptr<sigrok::Context> context;
-	string open_file, open_file_format, driver;
+	string open_file_format, driver;
+	vector<string> open_files;
 	bool restore_sessions = true;
 	bool do_scan = true;
 	bool do_logging = true;
@@ -236,7 +238,7 @@ int main(int argc, char *argv[])
 			break;
 
 		case 'i':
-			open_file = optarg;
+			open_files.push_back(optarg);
 			break;
 
 		case 'I':
@@ -253,13 +255,10 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	if (argc - optind > 1) {
-		fprintf(stderr, "Only one file can be opened.\n");
-		return 1;
+	while (argc - optind > 0) {
+		open_files.push_back(argv[optind]);
+		optind++;
 	}
-
-	if (argc - optind == 1)
-		open_file = argv[argc - 1];
 
 	// Prepare the global settings since logging needs them early on
 	pv::GlobalSettings settings;
@@ -315,10 +314,11 @@ int main(int argc, char *argv[])
 		if (restore_sessions)
 			w.restore_sessions();
 
-		if (!open_file.empty())
-			w.add_session_with_file(open_file, open_file_format);
-		else
+		if (open_files.empty())
 			w.add_default_session();
+		else
+			for (string open_file : open_files)
+				w.add_session_with_file(open_file, open_file_format);
 
 #ifdef ENABLE_SIGNALS
 		if (SignalHandler::prepare_signals()) {
