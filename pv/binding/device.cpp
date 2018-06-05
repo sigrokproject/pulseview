@@ -98,6 +98,7 @@ Device::Device(shared_ptr<sigrok::Configurable> configurable) :
 		case SR_CONF_COUPLING:
 		case SR_CONF_CLOCK_EDGE:
 		case SR_CONF_DATA_SOURCE:
+		case SR_CONF_EXTERNAL_CLOCK_SOURCE:
 			bind_enum(name, "", key, capabilities, get, set);
 			break;
 
