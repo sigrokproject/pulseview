@@ -254,11 +254,11 @@ int main(int argc, char *argv[])
 			break;
 		}
 	}
+	argc -= optind;
+	argv += optind;
 
-	while (argc - optind > 0) {
-		open_files.push_back(argv[optind]);
-		optind++;
-	}
+	for (int i = 0; i < argc; i++)
+		open_files.push_back(argv[i]);
 
 	// Prepare the global settings since logging needs them early on
 	pv::GlobalSettings settings;
