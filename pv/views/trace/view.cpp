@@ -619,8 +619,6 @@ Trace::SegmentDisplayMode View::segment_display_mode() const
 
 void View::set_segment_display_mode(Trace::SegmentDisplayMode mode)
 {
-	trigger_markers_.clear();
-
 	segment_display_mode_ = mode;
 
 	for (shared_ptr<Signal> signal : signals_)
