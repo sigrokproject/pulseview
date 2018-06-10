@@ -103,6 +103,7 @@ LogicSignal::LogicSignal(
 	shared_ptr<data::SignalBase> base) :
 	Signal(session, base),
 	device_(device),
+	trigger_types_(get_trigger_types()),
 	trigger_none_(nullptr),
 	trigger_rising_(nullptr),
 	trigger_high_(nullptr),
@@ -295,9 +296,8 @@ void LogicSignal::paint_fore(QPainter &p, ViewItemPaintParams &pp)
 	// Draw the trigger marker
 	if (base_->enabled() && trigger_match_) {
 		const int y = get_visual_y();
-		const vector<int32_t> trig_types = get_trigger_types();
 
-		for (int32_t type_id : trig_types) {
+		for (int32_t type_id : trigger_types_) {
 			const TriggerMatchType *const type =
 				TriggerMatchType::get(type_id);
 			if (trigger_match_ != type || type_id < 0 ||

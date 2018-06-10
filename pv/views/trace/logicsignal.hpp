@@ -147,6 +147,7 @@ private:
 	QSpinBox *signal_height_sb_;
 
 	const sigrok::TriggerMatchType *trigger_match_;
+	const vector<int32_t> trigger_types_;
 	QToolBar *trigger_bar_;
 	QAction *trigger_none_;
 	QAction *trigger_rising_;
