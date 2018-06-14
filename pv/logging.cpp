@@ -34,6 +34,7 @@ namespace pv {
 
 Logging logging;
 
+const int Logging::MIN_BUFFER_SIZE = 10;
 const int Logging::MAX_BUFFER_SIZE = 50000;
 
 Logging::~Logging()

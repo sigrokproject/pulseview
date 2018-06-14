@@ -44,6 +44,7 @@ public:
 		LogSource_srd
 	};
 
+	static const int MIN_BUFFER_SIZE;
 	static const int MAX_BUFFER_SIZE;
 
 public:

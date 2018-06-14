@@ -493,6 +493,7 @@ QWidget *Settings::get_logging_page(QWidget *parent) const
 	// Background buffer size
 	QSpinBox *buffersize_sb = new QSpinBox();
 	buffersize_sb->setSuffix(tr(" lines"));
+	buffersize_sb->setMinimum(Logging::MIN_BUFFER_SIZE);
 	buffersize_sb->setMaximum(Logging::MAX_BUFFER_SIZE);
 	buffersize_sb->setValue(
 		settings.value(GlobalSettings::Key_Log_BufferSize).toInt());
