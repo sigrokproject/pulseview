@@ -74,8 +74,6 @@ private:
 public:
 	AnalogSignal(pv::Session &session, shared_ptr<data::SignalBase> base);
 
-	~AnalogSignal();
-
 	shared_ptr<pv::data::SignalData> data() const;
 
 	virtual void save_settings(QSettings &settings) const;

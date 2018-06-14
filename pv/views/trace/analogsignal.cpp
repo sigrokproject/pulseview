@@ -129,11 +129,6 @@ AnalogSignal::AnalogSignal(
 	update_scale();
 }
 
-AnalogSignal::~AnalogSignal()
-{
-	GlobalSettings::remove_change_handler(this);
-}
-
 shared_ptr<pv::data::SignalData> AnalogSignal::data() const
 {
 	return base_->analog_data();

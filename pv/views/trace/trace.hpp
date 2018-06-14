@@ -94,6 +94,7 @@ private:
 
 protected:
 	Trace(shared_ptr<data::SignalBase> channel);
+	~Trace();
 
 public:
 	/**

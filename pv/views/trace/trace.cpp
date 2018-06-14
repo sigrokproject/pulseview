@@ -68,6 +68,11 @@ Trace::Trace(shared_ptr<data::SignalBase> channel) :
 		settings.value(GlobalSettings::Key_View_ShowHoverMarker).toBool();
 }
 
+Trace::~Trace()
+{
+	GlobalSettings::remove_change_handler(this);
+}
+
 shared_ptr<data::SignalBase> Trace::base() const
 {
 	return base_;
