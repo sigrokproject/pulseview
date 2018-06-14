@@ -38,6 +38,7 @@
 #include "logicsignal.hpp"
 #include "view.hpp"
 
+#include "pv/util.hpp"
 #include "pv/data/analog.hpp"
 #include "pv/data/analogsegment.hpp"
 #include "pv/data/logic.hpp"
@@ -50,6 +51,7 @@
 using std::deque;
 using std::div;
 using std::div_t;
+using std::isnan;
 using std::max;
 using std::make_pair;
 using std::min;
@@ -60,6 +62,7 @@ using std::shared_ptr;
 using std::vector;
 
 using pv::data::SignalBase;
+using pv::util::SIPrefix;
 
 namespace pv {
 namespace views {
@@ -294,12 +297,10 @@ void AnalogSignal::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 			(int64_t)0), last_sample);
 
 		if (samples_per_pixel < EnvelopeThreshold)
-			paint_trace(p, segment, y, pp.left(),
-				start_sample, end_sample,
+			paint_trace(p, segment, y, pp.left(), start_sample, end_sample,
 				pixels_offset, samples_per_pixel);
 		else
-			paint_envelope(p, segment, y, pp.left(),
-				start_sample, end_sample,
+			paint_envelope(p, segment, y, pp.left(), start_sample, end_sample,
 				pixels_offset, samples_per_pixel);
 	}
 
@@ -315,8 +316,17 @@ void AnalogSignal::paint_fore(QPainter &p, ViewItemPaintParams &pp)
 	if ((display_type_ == DisplayAnalog) || (display_type_ == DisplayBoth)) {
 		const int y = get_visual_y();
 
-		// Show the info section on the right side of the trace
-		const QString infotext = QString("%1 V/div").arg(resolution_);
+		QString infotext;
+
+		// Show the info section on the right side of the trace, including
+		// the value at the hover point when the hover marker is enabled
+		// and we have corresponding data available
+		if (show_hover_marker_ && !isnan(value_at_hover_pos_)) {
+			infotext = QString("[%1] %2 V/div")
+				.arg(format_value_si(value_at_hover_pos_, SIPrefix::unspecified, 0, "V", false))
+				.arg(resolution_);
+		} else
+			infotext = QString("%1 V/div").arg(resolution_);
 
 		p.setPen(base_->color());
 		p.setFont(QApplication::font());
@@ -422,19 +432,29 @@ void AnalogSignal::paint_trace(QPainter &p,
 	float *sample_block = new float[TracePaintBlockSize];
 	segment->get_samples(start, start + sample_count, sample_block);
 
+	if (show_hover_marker_)
+		reset_pixel_values();
+
 	const int w = 2;
 	for (int64_t sample = start; sample <= end; sample++, block_sample++) {
 
+		// Fetch next block of samples if we finished the current one
 		if (block_sample == TracePaintBlockSize) {
 			block_sample = 0;
 			sample_count = min(points_count - sample, TracePaintBlockSize);
 			segment->get_samples(sample, sample + sample_count, sample_block);
 		}
 
-		const float x = left + (sample / samples_per_pixel - pixels_offset);
+		const float abs_x = sample / samples_per_pixel - pixels_offset;
+		const float x = left + abs_x;
 
 		*point++ = QPointF(x, y - sample_block[block_sample] * scale_);
 
+		// Generate the pixel<->value lookup table for the mouse hover
+		if (show_hover_marker_)
+			process_next_sample_value(abs_x, sample_block[block_sample]);
+
+		// Create the sampling points if needed
 		if (show_sampling_points) {
 			int idx = 0;  // Neutral
 
@@ -480,6 +500,10 @@ void AnalogSignal::paint_envelope(QPainter &p,
 {
 	using pv::data::AnalogSegment;
 
+	// Note: Envelope painting currently doesn't generate a pixel<->value lookup table
+	if (show_hover_marker_)
+		reset_pixel_values();
+
 	AnalogSegment::EnvelopeSection e;
 	segment->get_envelope_section(e, start, end, samples_per_pixel);
 
@@ -495,8 +519,8 @@ void AnalogSignal::paint_envelope(QPainter &p,
 	for (uint64_t sample = 0; sample < e.length - 1; sample++) {
 		const float x = ((e.scale * sample + e.start) /
 			samples_per_pixel - pixels_offset) + left;
-		const AnalogSegment::EnvelopeSample *const s =
-			e.samples + sample;
+
+		const AnalogSegment::EnvelopeSample *const s = e.samples + sample;
 
 		// We overlap this sample with the next so that vertical
 		// gaps do not appear during steep rising or falling edges
@@ -835,6 +859,64 @@ void AnalogSignal::perform_autoranging(bool keep_divs, bool force_update)
 	update_scale();
 }
 
+void AnalogSignal::reset_pixel_values()
+{
+	value_at_pixel_pos_.clear();
+	current_pixel_pos_ = -1;
+	prev_value_at_pixel_ = std::numeric_limits<float>::quiet_NaN();
+}
+
+void AnalogSignal::process_next_sample_value(float x, float value)
+{
+	// Note: NAN is used to indicate the non-existance of a value at this pixel
+
+	if (isnan(prev_value_at_pixel_)) {
+		if (x < 0) {
+			min_value_at_pixel_ = value;
+			max_value_at_pixel_ = value;
+			prev_value_at_pixel_ = value;
+			current_pixel_pos_ = x;
+		} else
+			prev_value_at_pixel_ = std::numeric_limits<float>::quiet_NaN();
+	}
+
+	const int pixel_pos = (int)(x + 0.5);
+
+	if (pixel_pos > current_pixel_pos_) {
+		if (pixel_pos - current_pixel_pos_ == 1) {
+			if (isnan(prev_value_at_pixel_)) {
+				value_at_pixel_pos_.push_back(prev_value_at_pixel_);
+			} else {
+				// Average the min/max range to create one value for the previous pixel
+				const float avg = (min_value_at_pixel_ + max_value_at_pixel_) / 2;
+				value_at_pixel_pos_.push_back(avg);
+			}
+		} else {
+			// Interpolate values to create values for the intermediate pixels
+			const float start_value = prev_value_at_pixel_;
+			const float end_value = value;
+			const int steps = fabs(pixel_pos - current_pixel_pos_);
+			const double gradient = (end_value - start_value) / steps;
+			for (int i = 0; i < steps; i++) {
+				if (current_pixel_pos_ + i < 0)
+					continue;
+				value_at_pixel_pos_.push_back(start_value + i * gradient);
+			}
+		}
+
+		min_value_at_pixel_ = value;
+		max_value_at_pixel_ = value;
+		prev_value_at_pixel_ = value;
+		current_pixel_pos_ = pixel_pos;
+	} else {
+		// Another sample for the same pixel
+		if (value < min_value_at_pixel_)
+			min_value_at_pixel_ = value;
+		if (value > max_value_at_pixel_)
+			max_value_at_pixel_ = value;
+	}
+}
+
 void AnalogSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
 {
 	// Add the standard options
@@ -944,6 +1026,24 @@ void AnalogSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
 	update_conversion_widgets();
 
 	form->addRow(layout);
+}
+
+void AnalogSignal::hover_point_changed(const QPoint &hp)
+{
+	Signal::hover_point_changed(hp);
+
+	// Note: Even though the view area begins at 0, we exclude 0 because
+	// that's also the value given when the cursor is over the header to the
+	// left of the trace paint area
+	if (hp.x() <= 0) {
+		value_at_hover_pos_ = std::numeric_limits<float>::quiet_NaN();
+	} else {
+		try {
+			value_at_hover_pos_ = value_at_pixel_pos_.at(hp.x());
+		} catch (out_of_range) {
+			value_at_hover_pos_ = std::numeric_limits<float>::quiet_NaN();
+		}
+	}
 }
 
 void AnalogSignal::on_min_max_changed(float min, float max)

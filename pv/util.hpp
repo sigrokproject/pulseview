@@ -84,6 +84,24 @@ QString format_time_si(const Timestamp& v,
 	QString unit = "s", bool sign = true);
 
 /**
+ * Formats a given value into a representation using SI units.
+ *
+ * If 'prefix' is left 'unspecified', the function chooses a prefix so that
+ * the value in front of the decimal point is between 1 and 999.
+ *
+ * @param value The value to format.
+ * @param prefix The SI prefix to use.
+ * @param precision The number of digits after the decimal separator.
+ * @param unit The unit of quantity.
+ * @param sign Whether or not to add a sign also for positive numbers.
+ *
+ * @return The formatted value.
+ */
+QString format_value_si(double v,
+	SIPrefix prefix = SIPrefix::unspecified, unsigned precision = 0,
+	QString unit = "", bool sign = true);
+
+/**
  * Wrapper around 'format_time_si()' that interprets the given 'precision'
  * value as the number of decimal places if the timestamp would be formatted
  * without a SI prefix (using 'SIPrefix::none') and adjusts the precision to

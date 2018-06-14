@@ -161,8 +161,13 @@ private:
 
 	void perform_autoranging(bool keep_divs, bool force_update);
 
+	void reset_pixel_values();
+	void process_next_sample_value(float x, float value);
+
 protected:
 	void populate_popup_form(QWidget *parent, QFormLayout *form);
+
+	virtual void hover_point_changed(const QPoint &hp);
 
 private Q_SLOTS:
 	void on_min_max_changed(float min, float max);
@@ -199,6 +204,12 @@ private:
 	DisplayType display_type_;
 	bool autoranging_;
 	int conversion_threshold_disp_mode_;
+
+	vector<float> value_at_pixel_pos_;
+	float value_at_hover_pos_;
+	float prev_value_at_pixel_;  // Only used during lookup table update
+	float min_value_at_pixel_, max_value_at_pixel_;  // Only used during lookup table update
+	int current_pixel_pos_;  // Only used during lookup table update
 };
 
 } // namespace trace

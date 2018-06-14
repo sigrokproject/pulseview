@@ -144,6 +144,41 @@ QString format_time_si(const Timestamp& v, SIPrefix prefix,
 	return s;
 }
 
+QString format_value_si(double v, SIPrefix prefix, unsigned precision,
+	QString unit, bool sign)
+{
+	if (prefix == SIPrefix::unspecified) {
+		// No prefix given, calculate it
+
+		if (v == 0) {
+			prefix = SIPrefix::none;
+		} else {
+			int exp = exponent(SIPrefix::yotta);
+			prefix = SIPrefix::yocto;
+			while ((fabs(v) * pow(Timestamp(10), exp)) > 999 &&
+					prefix < SIPrefix::yotta) {
+				prefix = successor(prefix);
+				exp -= 3;
+			}
+		}
+	}
+
+	assert(prefix >= SIPrefix::yocto);
+	assert(prefix <= SIPrefix::yotta);
+
+	const double multiplier = pow(10.0, -exponent(prefix));
+
+	QString s;
+	QTextStream ts(&s);
+	if (sign && (v != 0))
+		ts << forcesign;
+	ts.setRealNumberNotation(QTextStream::FixedNotation);
+	ts.setRealNumberPrecision(precision);
+	ts << (v * multiplier) << ' ' << prefix << unit;
+
+	return s;
+}
+
 QString format_time_si_adjusted(const Timestamp& t, SIPrefix prefix,
 	unsigned precision, QString unit, bool sign)
 {

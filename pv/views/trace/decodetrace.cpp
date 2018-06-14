@@ -711,6 +711,8 @@ const QString DecodeTrace::get_annotation_at_point(const QPoint &point)
 
 void DecodeTrace::hover_point_changed(const QPoint &hp)
 {
+	Trace::hover_point_changed(hp);
+
 	assert(owner_);
 
 	const View *const view = owner_->view();
