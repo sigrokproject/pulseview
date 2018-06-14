@@ -125,7 +125,9 @@ public:
 	vector<decode::Row> visible_rows() const;
 
 	/**
-	 * Extracts sorted annotations between two period into a vector.
+	 * Extracts annotations between the given sample range into a vector.
+	 * Note: The annotations are unsorted and only annotations that fully
+	 * fit into the sample range are considered.
 	 */
 	void get_annotation_subset(
 		vector<pv::data::decode::Annotation> &dest,
