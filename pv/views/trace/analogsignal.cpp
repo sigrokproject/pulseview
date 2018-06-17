@@ -51,7 +51,8 @@
 using std::deque;
 using std::div;
 using std::div_t;
-using std::isnan;
+// Note that "using std::isnan;" is _not_ put here since that would break
+// compilation on some platforms. Use "std::isnan()" instead in checks below.
 using std::max;
 using std::make_pair;
 using std::min;
@@ -316,7 +317,7 @@ void AnalogSignal::paint_fore(QPainter &p, ViewItemPaintParams &pp)
 		// Show the info section on the right side of the trace, including
 		// the value at the hover point when the hover marker is enabled
 		// and we have corresponding data available
-		if (show_hover_marker_ && !isnan(value_at_hover_pos_)) {
+		if (show_hover_marker_ && !std::isnan(value_at_hover_pos_)) {
 			infotext = QString("[%1] %2 V/div")
 				.arg(format_value_si(value_at_hover_pos_, SIPrefix::unspecified, 0, "V", false))
 				.arg(resolution_);
@@ -865,7 +866,7 @@ void AnalogSignal::process_next_sample_value(float x, float value)
 {
 	// Note: NAN is used to indicate the non-existance of a value at this pixel
 
-	if (isnan(prev_value_at_pixel_)) {
+	if (std::isnan(prev_value_at_pixel_)) {
 		if (x < 0) {
 			min_value_at_pixel_ = value;
 			max_value_at_pixel_ = value;
@@ -879,7 +880,7 @@ void AnalogSignal::process_next_sample_value(float x, float value)
 
 	if (pixel_pos > current_pixel_pos_) {
 		if (pixel_pos - current_pixel_pos_ == 1) {
-			if (isnan(prev_value_at_pixel_)) {
+			if (std::isnan(prev_value_at_pixel_)) {
 				value_at_pixel_pos_.push_back(prev_value_at_pixel_);
 			} else {
 				// Average the min/max range to create one value for the previous pixel
