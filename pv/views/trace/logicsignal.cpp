@@ -320,6 +320,51 @@ void LogicSignal::paint_fore(QPainter &p, ViewItemPaintParams &pp)
 	}
 }
 
+void LogicSignal::hover_point_changed(const QPoint &hp)
+{
+	Signal::hover_point_changed(hp);
+
+	assert(base_);
+	assert(owner_);
+
+	if ((!base_->enabled()) || (hp.x() == 0))
+		return;
+
+	// Ignore if mouse cursor is not hovering over this trace
+	const int y = get_visual_y();
+	const pair<int, int> extents = v_extents();
+	if ((hp.y() < (y + extents.first)) || ((hp.y() > (y + extents.second))))
+		return;
+
+	shared_ptr<pv::data::LogicSegment> segment = get_logic_segment_to_paint();
+	if (!segment || (segment->get_sample_count() == 0))
+		return;
+
+	double samplerate = segment->samplerate();
+
+	// Show sample rate as 1Hz when it is unknown
+	if (samplerate == 0.0)
+		samplerate = 1.0;
+
+	const View *view = owner_->view();
+	assert(view);
+	const double scale = view->scale();
+	const double pixels_offset =
+		((view->offset() - segment->start_time()) / scale).convert_to<double>();
+	const double samples_per_pixel = samplerate * scale;
+
+	const uint64_t sample_pos = (uint64_t)max(
+		(hp.x() + pixels_offset) * samples_per_pixel, 0.0);
+
+	vector<data::LogicSegment::EdgePair> edges;
+
+	segment->get_surrounding_edges(edges, sample_pos,
+		samples_per_pixel / Oversampling, base_->index());
+
+	if (edges.empty())
+		return;
+}
+
 void LogicSignal::paint_caps(QPainter &p, QLineF *const lines,
 	vector< pair<int64_t, bool> > &edges, bool level,
 	double samples_per_pixel, double pixels_offset, float x_offset,

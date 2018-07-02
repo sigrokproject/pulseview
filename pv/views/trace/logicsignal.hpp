@@ -103,6 +103,8 @@ public:
 	 */
 	virtual void paint_fore(QPainter &p, ViewItemPaintParams &pp);
 
+	virtual void hover_point_changed(const QPoint &hp);
+
 private:
 	void paint_caps(QPainter &p, QLineF *const lines,
 		vector< pair<int64_t, bool> > &edges,

@@ -90,17 +90,6 @@ public:
 	void continue_sample_iteration(SegmentLogicDataIterator* it, uint64_t increase);
 	void end_sample_iteration(SegmentLogicDataIterator* it);
 
-private:
-	uint64_t unpack_sample(const uint8_t *ptr) const;
-	void pack_sample(uint8_t *ptr, uint64_t value);
-
-	void reallocate_mipmap_level(MipMapLevel &m);
-
-	void append_payload_to_mipmap();
-
-	uint64_t get_unpacked_sample(uint64_t index) const;
-
-public:
 	/**
 	 * Parses a logic data segment to generate a list of transitions
 	 * in a time interval to a given level of detail.
@@ -113,7 +102,20 @@ public:
 	 */
 	void get_subsampled_edges(vector<EdgePair> &edges,
 		uint64_t start, uint64_t end,
-		float min_length, int sig_index);
+		float min_length, int sig_index, bool first_change_only = false);
+
+	void get_surrounding_edges(vector<EdgePair> &dest,
+		uint64_t origin_sample, float min_length, int sig_index);
+
+private:
+	uint64_t unpack_sample(const uint8_t *ptr) const;
+	void pack_sample(uint8_t *ptr, uint64_t value);
+
+	void reallocate_mipmap_level(MipMapLevel &m);
+
+	void append_payload_to_mipmap();
+
+	uint64_t get_unpacked_sample(uint64_t index) const;
 
 private:
 	uint64_t get_subsample(int level, uint64_t offset) const;
