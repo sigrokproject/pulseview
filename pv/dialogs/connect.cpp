@@ -102,6 +102,9 @@ Connect::Connect(QWidget *parent, pv::DeviceManager &device_manager) :
 	tcp_config_layout->setContentsMargins(0, 0, 0, 0);
 	tcp_config_->setEnabled(false);
 
+	// Let the device list occupy only the minimum space needed
+	device_list_.setMaximumHeight(device_list_.minimumSizeHint().height());
+
 	QVBoxLayout *vbox_if = new QVBoxLayout;
 	vbox_if->addWidget(radiobtn_usb);
 	vbox_if->addWidget(radiobtn_serial);
@@ -243,13 +246,10 @@ void Connect::scan_pressed()
 	for (shared_ptr<HardwareDevice> device : devices) {
 		assert(device);
 
-		QString text = QString::fromStdString(
-			device->display_name(device_manager_));
-		text += QString(" with %1 channels").arg(
-			device->device()->channels().size());
+		QString text = QString::fromStdString(device->display_name(device_manager_));
+		text += QString(" with %1 channels").arg(device->device()->channels().size());
 
-		QListWidgetItem *const item = new QListWidgetItem(text,
-			&device_list_);
+		QListWidgetItem *const item = new QListWidgetItem(text, &device_list_);
 		item->setData(Qt::UserRole, qVariantFromValue(device));
 		device_list_.addItem(item);
 	}
