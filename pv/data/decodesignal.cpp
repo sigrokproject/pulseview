@@ -906,6 +906,7 @@ void DecodeSignal::logic_mux_proc()
 				logic_mux_cond_.wait(logic_mux_lock);
 			}
 		}
+
 	} while (!logic_mux_interrupt_);
 }
 
@@ -917,7 +918,8 @@ void DecodeSignal::decode_data(
 	const int64_t chunk_sample_count = DecodeChunkLength / unit_size;
 
 	for (int64_t i = abs_start_samplenum;
-		!decode_interrupt_ && (i < (abs_start_samplenum + sample_count));
+		error_message_.isEmpty() && !decode_interrupt_ &&
+			(i < (abs_start_samplenum + sample_count));
 		i += chunk_sample_count) {
 
 		const int64_t chunk_end = min(i + chunk_sample_count,
@@ -934,11 +936,8 @@ void DecodeSignal::decode_data(
 		input_segment->get_samples(i, chunk_end, chunk);
 
 		if (srd_session_send(srd_session_, i, chunk_end, chunk,
-				data_size, unit_size) != SRD_OK) {
+				data_size, unit_size) != SRD_OK)
 			set_error_message(tr("Decoder reported an error"));
-			delete[] chunk;
-			break;
-		}
 
 		delete[] chunk;
 

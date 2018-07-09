@@ -163,14 +163,6 @@ void DecodeTrace::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 	row_height_ = (text_height * 6) / 4;
 	const int annotation_height = (text_height * 5) / 4;
 
-	const QString err = decode_signal_->error_message();
-	if (!err.isEmpty()) {
-		draw_unresolved_period(
-			p, annotation_height, pp.left(), pp.right());
-		draw_error(p, err, pp);
-		return;
-	}
-
 	// Set default pen to allow for text width calculation
 	p.setPen(Qt::black);
 
@@ -207,12 +199,10 @@ void DecodeTrace::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 				get_row_color(visible_rows_.size()), row_title_width);
 
 			y += row_height_;
-
 			visible_rows_.push_back(row);
 		}
 	}
 
-	// Draw the hatching
 	draw_unresolved_period(p, annotation_height, pp.left(), pp.right());
 
 	if ((int)visible_rows_.size() > max_visible_rows_) {
@@ -222,6 +212,10 @@ void DecodeTrace::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 		owner_->extents_changed(false, true);
 		owner_->row_item_appearance_changed(false, true);
 	}
+
+	const QString err = decode_signal_->error_message();
+	if (!err.isEmpty())
+		draw_error(p, err, pp);
 }
 
 void DecodeTrace::paint_fore(QPainter &p, ViewItemPaintParams &pp)
@@ -558,17 +552,18 @@ void DecodeTrace::draw_error(QPainter &p, const QString &message,
 {
 	const int y = get_visual_y();
 
+	double samples_per_pixel, pixels_offset;
+	tie(pixels_offset, samples_per_pixel) = get_pixels_offset_samples_per_pixel();
+
 	p.setPen(ErrorBgColor.darker());
 	p.setBrush(ErrorBgColor);
 
-	const QRectF bounding_rect =
-		QRectF(pp.left(), INT_MIN / 2 + y, pp.right(), INT_MAX);
-	const QRectF text_rect = p.boundingRect(bounding_rect,
-		Qt::AlignCenter, message);
+	const QRectF bounding_rect = QRectF(pp.left(), INT_MIN / 2 + y, pp.right(), INT_MAX);
+
+	const QRectF text_rect = p.boundingRect(bounding_rect, Qt::AlignCenter, message);
 	const qreal r = text_rect.height() / 4;
 
-	p.drawRoundedRect(text_rect.adjusted(-r, -r, r, r), r, r,
-		Qt::AbsoluteSize);
+	p.drawRoundedRect(text_rect.adjusted(-r, -r, r, r), r, r, Qt::AbsoluteSize);
 
 	p.setPen(Qt::black);
 	p.drawText(text_rect, message);
