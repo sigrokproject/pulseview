@@ -302,6 +302,17 @@ void MainBar::update_sample_rate_selector()
 
 	const shared_ptr<sigrok::Device> sr_dev = device->device();
 
+	try {
+		auto gvar = sr_dev->config_get(ConfigKey::EXTERNAL_CLOCK);
+		if (gvar.gobj()) {
+			bool value = Glib::VariantBase::cast_dynamic<Glib::Variant<bool>>(
+				gvar).get();
+			sample_rate_.allow_user_entered_values(value);
+		}
+	} catch (Error& error) {
+		// Do nothing
+	}
+
 	if (sr_dev->config_check(ConfigKey::SAMPLERATE, Capability::LIST)) {
 		try {
 			gvar_dict = sr_dev->config_list(ConfigKey::SAMPLERATE);
@@ -729,6 +740,10 @@ void MainBar::on_sample_rate_changed()
 
 void MainBar::on_config_changed()
 {
+	// We want to also call update_sample_rate_selector() here in case
+	// the user changed the SR_CONF_EXTERNAL_CLOCK option. However,
+	// commit_sample_rate() does this already, so we don't call it here
+
 	commit_sample_count();
 	commit_sample_rate();
 }

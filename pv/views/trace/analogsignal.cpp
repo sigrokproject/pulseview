@@ -1000,7 +1000,7 @@ void AnalogSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
 
     connect(conv_threshold_cb_, SIGNAL(currentIndexChanged(int)),
             this, SLOT(on_conv_threshold_changed(int)));
-    connect(conv_threshold_cb_, SIGNAL(editTextChanged(const QString)),
+    connect(conv_threshold_cb_, SIGNAL(editTextChanged(const QString&)),
             this, SLOT(on_conv_threshold_changed()));  // index will be -1
 
 	// Add the display type dropdown
