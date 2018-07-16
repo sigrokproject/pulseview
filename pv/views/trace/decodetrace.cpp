@@ -196,8 +196,7 @@ void DecodeTrace::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 			current_segment_, sample_range.first, sample_range.second);
 		if (!annotations.empty()) {
 			draw_annotations(annotations, p, annotation_height, pp, y,
-				get_row_color(visible_rows_.size()), row_title_width);
-
+				get_row_color(row.index()), row_title_width);
 			y += row_height_;
 			visible_rows_.push_back(row);
 		}
