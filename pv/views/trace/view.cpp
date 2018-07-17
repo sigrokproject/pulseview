@@ -1053,8 +1053,10 @@ void View::update_scroll()
 		vscrollbar->setRange(extents.first - areaSize.height(),
 			extents.second);
 
-	if (scroll_needs_defaults_)
+	if (scroll_needs_defaults_) {
 		set_scroll_default();
+		scroll_needs_defaults_ = false;
+	}
 }
 
 void View::reset_scroll()
