@@ -71,7 +71,7 @@ public:
 
 private:
 	void set_all_channels(bool set);
-	void set_all_channels_conditionally(
+	void enable_channels_conditionally(
 		function<bool (const shared_ptr<data::SignalBase>)> cond_func);
 
 	void populate_group(shared_ptr<sigrok::ChannelGroup> group,

@@ -163,7 +163,7 @@ void Channels::set_all_channels(bool set)
 	updating_channels_ = false;
 }
 
-void Channels::set_all_channels_conditionally(
+void Channels::enable_channels_conditionally(
 	function<bool (const shared_ptr<data::SignalBase>)> cond_func)
 {
 	updating_channels_ = true;
@@ -174,8 +174,10 @@ void Channels::set_all_channels_conditionally(
 		assert(sig);
 
 		const bool state = cond_func(sig);
-		sig->set_enabled(state);
-		cb->setChecked(state);
+		if (state) {
+			sig->set_enabled(state);
+			cb->setChecked(state);
+		}
 	}
 
 	updating_channels_ = false;
@@ -303,25 +305,25 @@ void Channels::disable_all_channels()
 
 void Channels::enable_all_logic_channels()
 {
-	set_all_channels_conditionally([](const shared_ptr<SignalBase> signal)
+	enable_channels_conditionally([](const shared_ptr<SignalBase> signal)
 		{ return signal->type() == SignalBase::LogicChannel; });
 }
 
 void Channels::enable_all_analog_channels()
 {
-	set_all_channels_conditionally([](const shared_ptr<SignalBase> signal)
+	enable_channels_conditionally([](const shared_ptr<SignalBase> signal)
 		{ return signal->type() == SignalBase::AnalogChannel; });
 }
 
 void Channels::enable_all_named_channels()
 {
-	set_all_channels_conditionally([](const shared_ptr<SignalBase> signal)
+	enable_channels_conditionally([](const shared_ptr<SignalBase> signal)
 		{ return signal->name() != signal->internal_name(); });
 }
 
 void Channels::enable_all_changing_channels()
 {
-	set_all_channels_conditionally([](const shared_ptr<SignalBase> signal)
+	enable_channels_conditionally([](const shared_ptr<SignalBase> signal)
 		{
 			// Never enable channels without sample data
 			if (!signal->has_samples())
