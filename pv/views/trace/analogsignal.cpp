@@ -105,7 +105,6 @@ AnalogSignal::AnalogSignal(
 	shared_ptr<data::SignalBase> base) :
 	Signal(session, base),
 	scale_index_(4), // 20 per div
-	scale_index_drag_offset_(0),
 	pos_vdivs_(1),
 	neg_vdivs_(1),
 	resolution_(0),
@@ -181,28 +180,6 @@ pair<int, int> AnalogSignal::v_extents() const
 	const int ph = pos_vdivs_ * div_height_;
 	const int nh = neg_vdivs_ * div_height_;
 	return make_pair(-ph, nh);
-}
-
-int AnalogSignal::scale_handle_offset() const
-{
-	const int h = (pos_vdivs_ + neg_vdivs_) * div_height_;
-
-	return ((scale_index_drag_offset_ - scale_index_) * h / 4) - h / 2;
-}
-
-void AnalogSignal::scale_handle_dragged(int offset)
-{
-	const int h = (pos_vdivs_ + neg_vdivs_) * div_height_;
-
-	scale_index_ = scale_index_drag_offset_ - (offset + h / 2) / (h / 4);
-
-	update_scale();
-}
-
-void AnalogSignal::scale_handle_drag_release()
-{
-	scale_index_drag_offset_ = scale_index_;
-	update_scale();
 }
 
 void AnalogSignal::on_setting_changed(const QString &key, const QVariant &value)

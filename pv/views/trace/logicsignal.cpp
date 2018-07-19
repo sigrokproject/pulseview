@@ -164,18 +164,6 @@ pair<int, int> LogicSignal::v_extents() const
 	return make_pair(-signal_height_ - signal_margin, signal_margin);
 }
 
-int LogicSignal::scale_handle_offset() const
-{
-	return -signal_height_;
-}
-
-void LogicSignal::scale_handle_dragged(int offset)
-{
-	const int font_height = QFontMetrics(QApplication::font()).height();
-	const int units = (-offset / font_height);
-	signal_height_ = ((units < 1) ? 1 : units) * font_height;
-}
-
 void LogicSignal::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 {
 	QLineF *line;

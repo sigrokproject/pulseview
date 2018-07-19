@@ -90,17 +90,6 @@ public:
 	pair<int, int> v_extents() const;
 
 	/**
-	 * Returns the offset to show the drag handle.
-	 */
-	int scale_handle_offset() const;
-
-	/**
-	 * Handles the scale handle being dragged to an offset.
-	 * @param offset the offset the scale handle was dragged to.
-	 */
-	void scale_handle_dragged(int offset);
-
-	/**
 	 * Paints the mid-layer of the signal with a QPainter
 	 * @param p the QPainter to paint into.
 	 * @param pp the painting parameters object to paint with..

@@ -86,22 +86,6 @@ public:
 	 */
 	pair<int, int> v_extents() const;
 
-	/**
-	 * Returns the offset to show the drag handle.
-	 */
-	int scale_handle_offset() const;
-
-	/**
-	 * Handles the scale handle being dragged to an offset.
-	 * @param offset the offset the scale handle was dragged to.
-	 */
-	void scale_handle_dragged(int offset);
-
-	/**
-	 * @copydoc pv::view::Signal::signal_scale_handle_drag_release()
-	 */
-	void scale_handle_drag_release();
-
 	virtual void on_setting_changed(const QString &key, const QVariant &value);
 
 	/**
@@ -193,7 +177,6 @@ private:
 
 	float scale_;
 	int scale_index_;
-	int scale_index_drag_offset_;
 
 	int div_height_;
 	int pos_vdivs_, neg_vdivs_;  // divs per positive/negative side
