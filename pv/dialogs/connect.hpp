@@ -94,7 +94,7 @@ private:
 	QWidget *tcp_config_;
 	QLineEdit *tcp_host_;
 	QSpinBox *tcp_port_;
-	QCheckBox *tcp_use_vxi_;
+	QComboBox *tcp_protocol_;
 
 	QPushButton scan_button_;
 	QListWidget device_list_;
