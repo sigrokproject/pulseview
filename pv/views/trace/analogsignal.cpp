@@ -1013,7 +1013,7 @@ void AnalogSignal::hover_point_changed(const QPoint &hp)
 	} else {
 		try {
 			value_at_hover_pos_ = value_at_pixel_pos_.at(hp.x());
-		} catch (out_of_range) {
+		} catch (out_of_range&) {
 			value_at_hover_pos_ = std::numeric_limits<float>::quiet_NaN();
 		}
 	}

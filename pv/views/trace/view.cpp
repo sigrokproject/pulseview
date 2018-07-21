@@ -385,7 +385,7 @@ void View::restore_settings(QSettings &settings)
 			boost::archive::text_iarchive ia(ss);
 			ia >> boost::serialization::make_nvp("ruler_shift", shift);
 			ruler_shift_ = shift;
-		} catch (boost::archive::archive_exception) {
+		} catch (boost::archive::archive_exception&) {
 			qDebug() << "Could not restore the view ruler shift";
 		}
 	}
@@ -400,7 +400,7 @@ void View::restore_settings(QSettings &settings)
 			ia >> boost::serialization::make_nvp("offset", offset);
 			// This also updates ruler_offset_
 			set_offset(offset);
-		} catch (boost::archive::archive_exception) {
+		} catch (boost::archive::archive_exception&) {
 			qDebug() << "Could not restore the view offset";
 		}
 	}

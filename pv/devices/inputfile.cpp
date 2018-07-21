@@ -86,7 +86,7 @@ InputFile::InputFile(const shared_ptr<sigrok::Context> &context,
 			settings.endGroup();
 		}
 
-	} catch (out_of_range) {
+	} catch (out_of_range&) {
 		qWarning() << "Could not find input format" << format_name <<
 			"needed to restore session input file";
 	}
