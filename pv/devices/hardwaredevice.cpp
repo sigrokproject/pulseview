@@ -55,7 +55,9 @@ HardwareDevice::~HardwareDevice()
 string HardwareDevice::full_name() const
 {
 	vector<string> parts = {device_->vendor(), device_->model(),
-		device_->version(), device_->serial_number()};
+		device_->version()};
+	if (device_->serial_number().length() > 0)
+		parts.push_back("[S/N: " + device_->serial_number() + "]");
 	if (device_->connection_id().length() > 0)
 		parts.push_back("(" + device_->connection_id() + ")");
 	return join(parts, " ");
@@ -88,7 +90,7 @@ string HardwareDevice::display_name(
 
 	if (multiple_dev) {
 		parts.push_back(device_->version());
-		parts.push_back(device_->serial_number());
+		parts.push_back("[S/N: " + device_->serial_number() + "]");
 
 		if ((device_->serial_number().length() == 0) &&
 			(device_->connection_id().length() > 0))
