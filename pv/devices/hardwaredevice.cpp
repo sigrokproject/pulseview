@@ -54,8 +54,13 @@ HardwareDevice::~HardwareDevice()
 
 string HardwareDevice::full_name() const
 {
-	vector<string> parts = {device_->vendor(), device_->model(),
-		device_->version()};
+	vector<string> parts = {};
+	if (device_->vendor().length() > 0)
+		parts.push_back(device_->vendor());
+	if (device_->model().length() > 0)
+		parts.push_back(device_->model());
+	if (device_->version().length() > 0)
+		parts.push_back(device_->version());
 	if (device_->serial_number().length() > 0)
 		parts.push_back("[S/N: " + device_->serial_number() + "]");
 	if (device_->connection_id().length() > 0)
@@ -86,11 +91,17 @@ string HardwareDevice::display_name(
 				dev->device_ != device_;
 		});
 
-	vector<string> parts = {device_->vendor(), device_->model()};
+	vector<string> parts = {};
+	if (device_->vendor().length() > 0)
+		parts.push_back(device_->vendor());
+	if (device_->model().length() > 0)
+		parts.push_back(device_->model());
 
 	if (multiple_dev) {
-		parts.push_back(device_->version());
-		parts.push_back("[S/N: " + device_->serial_number() + "]");
+		if (device_->version().length() > 0)
+			parts.push_back(device_->version());
+		if (device_->serial_number().length() > 0)
+			parts.push_back("[S/N: " + device_->serial_number() + "]");
 
 		if ((device_->serial_number().length() == 0) &&
 			(device_->connection_id().length() > 0))
