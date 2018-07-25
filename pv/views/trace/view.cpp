@@ -1297,6 +1297,7 @@ void View::extents_changed(bool horz, bool vert)
 		(horz ? TraceTreeItemHExtentsChanged : 0) |
 		(vert ? TraceTreeItemVExtentsChanged : 0);
 
+	lazy_event_handler_.stop();
 	lazy_event_handler_.start();
 }
 
