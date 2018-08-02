@@ -133,7 +133,7 @@ bool TraceGroup::pt_in_label_rect(int left, int right, const QPoint &point)
 	return false;
 }
 
-QMenu* TraceGroup::create_context_menu(QWidget *parent)
+QMenu* TraceGroup::create_header_context_menu(QWidget *parent)
 {
 	QMenu *const menu = new QMenu(parent);
 

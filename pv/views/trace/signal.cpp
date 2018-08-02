@@ -130,9 +130,9 @@ void Signal::populate_popup_form(QWidget *parent, QFormLayout *form)
 	add_color_option(parent, form);
 }
 
-QMenu* Signal::create_context_menu(QWidget *parent)
+QMenu* Signal::create_header_context_menu(QWidget *parent)
 {
-	QMenu *const menu = Trace::create_context_menu(parent);
+	QMenu *const menu = Trace::create_header_context_menu(parent);
 
 	menu->addSeparator();
 

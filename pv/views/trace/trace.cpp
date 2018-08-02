@@ -149,9 +149,9 @@ void Trace::paint_label(QPainter &p, const QRect &rect, bool hover)
 		Qt::AlignCenter | Qt::AlignVCenter, base_->name());
 }
 
-QMenu* Trace::create_context_menu(QWidget *parent)
+QMenu* Trace::create_header_context_menu(QWidget *parent)
 {
-	QMenu *const menu = ViewItem::create_context_menu(parent);
+	QMenu *const menu = ViewItem::create_header_context_menu(parent);
 
 	return menu;
 }

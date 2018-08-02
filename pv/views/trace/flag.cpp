@@ -81,7 +81,7 @@ pv::widgets::Popup* Flag::create_popup(QWidget *parent)
 	return popup;
 }
 
-QMenu* Flag::create_context_menu(QWidget *parent)
+QMenu* Flag::create_header_context_menu(QWidget *parent)
 {
 	QMenu *const menu = new QMenu(parent);
 

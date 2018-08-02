@@ -83,7 +83,7 @@ public:
 
 	virtual void populate_popup_form(QWidget *parent, QFormLayout *form);
 
-	QMenu* create_context_menu(QWidget *parent);
+	QMenu* create_header_context_menu(QWidget *parent);
 
 	void delete_pressed();
 

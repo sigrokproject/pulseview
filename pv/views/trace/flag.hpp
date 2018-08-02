@@ -69,7 +69,7 @@ public:
 
 	pv::widgets::Popup* create_popup(QWidget *parent);
 
-	QMenu* create_context_menu(QWidget *parent);
+	QMenu* create_header_context_menu(QWidget *parent);
 
 	void delete_pressed();
 

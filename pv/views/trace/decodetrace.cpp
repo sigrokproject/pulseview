@@ -307,9 +307,9 @@ void DecodeTrace::populate_popup_form(QWidget *parent, QFormLayout *form)
 	form->addRow(stack_button_box);
 }
 
-QMenu* DecodeTrace::create_context_menu(QWidget *parent)
+QMenu* DecodeTrace::create_header_context_menu(QWidget *parent)
 {
-	QMenu *const menu = Trace::create_context_menu(parent);
+	QMenu *const menu = Trace::create_header_context_menu(parent);
 
 	menu->addSeparator();
 

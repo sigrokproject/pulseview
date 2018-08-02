@@ -155,7 +155,7 @@ public:
 	static QColor select_text_color(QColor background);
 
 public:
-	virtual QMenu* create_context_menu(QWidget *parent);
+	virtual QMenu* create_header_context_menu(QWidget *parent);
 
 	virtual QMenu* create_view_context_menu(QWidget *parent);
 

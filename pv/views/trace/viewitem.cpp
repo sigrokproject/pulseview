@@ -82,7 +82,7 @@ QRectF ViewItem::hit_box_rect(const ViewItemPaintParams &pp) const
 	return QRectF();
 }
 
-QMenu* ViewItem::create_context_menu(QWidget *parent)
+QMenu* ViewItem::create_header_context_menu(QWidget *parent)
 {
 	context_parent_ = parent;
 	return new QMenu(parent);

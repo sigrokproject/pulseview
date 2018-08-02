@@ -57,7 +57,7 @@ void MarginWidget::contextMenuEvent(QContextMenuEvent *event)
 	if (!r)
 		return;
 
-	QMenu *menu = r->create_context_menu(this);
+	QMenu *menu = r->create_header_context_menu(this);
 	if (menu)
 		menu->exec(event->globalPos());
 }

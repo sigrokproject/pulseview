@@ -102,7 +102,7 @@ public:
 	 */
 	bool pt_in_label_rect(int left, int right, const QPoint &point);
 
-	QMenu* create_context_menu(QWidget *parent);
+	QMenu* create_header_context_menu(QWidget *parent);
 
 	pv::widgets::Popup* create_popup(QWidget *parent);
 
