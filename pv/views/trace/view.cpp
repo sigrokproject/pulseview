@@ -38,6 +38,7 @@
 #include <QApplication>
 #include <QEvent>
 #include <QFontMetrics>
+#include <QMenu>
 #include <QMouseEvent>
 #include <QScrollBar>
 #include <QVBoxLayout>
@@ -1249,6 +1250,17 @@ bool View::eventFilter(QObject *object, QEvent *event)
 	}
 
 	return QObject::eventFilter(object, event);
+}
+
+void View::contextMenuEvent(QContextMenuEvent *event)
+{
+	const shared_ptr<ViewItem> r = viewport_->get_mouse_over_item(event->pos());
+	if (!r)
+		return;
+
+	QMenu *menu = r->create_view_context_menu(this);
+	if (menu)
+		menu->exec(event->globalPos());
 }
 
 void View::resizeEvent(QResizeEvent* event)

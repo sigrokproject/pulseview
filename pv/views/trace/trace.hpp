@@ -128,6 +128,14 @@ public:
 	 */
 	QRectF label_rect(const QRectF &rect) const;
 
+	/**
+	 * Computes the outline rectangle of the viewport hit-box.
+	 * @param rect the rectangle of the viewport area.
+	 * @return Returns the rectangle of the hit-box.
+	 * @remarks The default implementation returns an empty hit-box.
+	 */
+	virtual QRectF hit_box_rect(const ViewItemPaintParams &pp) const;
+
 	void set_current_segment(const int segment);
 
 	int get_current_segment() const;

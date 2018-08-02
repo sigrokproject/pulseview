@@ -48,14 +48,6 @@ class Viewport : public ViewWidget
 public:
 	explicit Viewport(View &parent);
 
-private:
-	/**
-	 * Indicates when a view item is being hovered over.
-	 * @param item The item that is being hovered over, or @c nullptr
-	 * if no view item is being hovered over.
-	 */
-	void item_hover(const shared_ptr<ViewItem> &item);
-
 	/**
 	 * Gets the first view item which has a hit-box that contains @c pt .
 	 * @param pt the point to search with.
@@ -63,6 +55,14 @@ private:
 	 *   @c shared_ptr if no item was found.
 	 */
 	shared_ptr<ViewItem> get_mouse_over_item(const QPoint &pt);
+
+private:
+	/**
+	 * Indicates when a view item is being hovered over.
+	 * @param item The item that is being hovered over, or @c nullptr
+	 * if no view item is being hovered over.
+	 */
+	void item_hover(const shared_ptr<ViewItem> &item);
 
 	/**
 	 * Sets this item into the dragged state.

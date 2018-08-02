@@ -187,6 +187,14 @@ QRectF Trace::label_rect(const QRectF &rect) const
 		label_size.height());
 }
 
+QRectF Trace::hit_box_rect(const ViewItemPaintParams &pp) const
+{
+	pair<int, int> extents = v_extents();
+	const int top = pp.top() + get_visual_y() + extents.first;
+	const int height = extents.second - extents.first;
+	return QRectF(pp.left(), top, pp.width(), height);
+}
+
 void Trace::set_current_segment(const int segment)
 {
 	current_segment_ = segment;

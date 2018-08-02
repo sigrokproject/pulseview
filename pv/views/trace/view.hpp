@@ -394,6 +394,8 @@ private:
 
 	bool eventFilter(QObject *object, QEvent *event);
 
+	virtual void contextMenuEvent(QContextMenuEvent *event);
+
 	void resizeEvent(QResizeEvent *event);
 
 	void update_hover_point();

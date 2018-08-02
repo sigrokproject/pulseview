@@ -88,6 +88,12 @@ QMenu* ViewItem::create_context_menu(QWidget *parent)
 	return new QMenu(parent);
 }
 
+QMenu* ViewItem::create_view_context_menu(QWidget *parent)
+{
+	(void)parent;
+	return nullptr;
+}
+
 widgets::Popup* ViewItem::create_popup(QWidget *parent)
 {
 	(void)parent;
