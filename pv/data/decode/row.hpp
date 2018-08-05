@@ -43,6 +43,7 @@ public:
 	const srd_decoder_annotation_row* row() const;
 
 	const QString title() const;
+	const QString class_name() const;
 	int index() const;
 
 	bool operator<(const Row &other) const;

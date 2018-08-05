@@ -268,9 +268,10 @@ QWidget *Settings::get_view_settings_form(QWidget *parent) const
 	return form;
 }
 
-QWidget *Settings::get_decoder_settings_form(QWidget *parent) const
+QWidget *Settings::get_decoder_settings_form(QWidget *parent)
 {
 #ifdef ENABLE_DECODE
+	GlobalSettings settings;
 	QCheckBox *cb;
 
 	QWidget *form = new QWidget(parent);
@@ -286,6 +287,20 @@ QWidget *Settings::get_decoder_settings_form(QWidget *parent) const
 	cb = create_checkbox(GlobalSettings::Key_Dec_InitialStateConfigurable,
 		SLOT(on_dec_initialStateConfigurable_changed(int)));
 	decoder_layout->addRow(tr("Allow configuration of &initial signal state"), cb);
+
+	// Annotation export settings
+	ann_export_format_ = new QLineEdit();
+	ann_export_format_->setText(
+		settings.value(GlobalSettings::Key_Dec_ExportFormat).toString());
+	connect(ann_export_format_, SIGNAL(textChanged(const QString&)),
+		this, SLOT(on_dec_exportFormat_changed(const QString&)));
+	decoder_layout->addRow(tr("Annotation export format"), ann_export_format_);
+	QLabel *description_1 = new QLabel(tr("%s = sample range; %d: decoder name; %c: row name; %q: use quotes for ann text"));
+	description_1->setAlignment(Qt::AlignRight);
+	decoder_layout->addRow(description_1);
+	QLabel *description_2 = new QLabel(tr("%1: longest annotation text; %a: all annotation texts"));
+	description_2->setAlignment(Qt::AlignRight);
+	decoder_layout->addRow(description_2);
 
 	return form;
 #else
@@ -629,11 +644,19 @@ void Settings::on_view_defaultLogicHeight_changed(int value)
 	settings.setValue(GlobalSettings::Key_View_DefaultLogicHeight, value);
 }
 
+#ifdef ENABLE_DECODE
 void Settings::on_dec_initialStateConfigurable_changed(int state)
 {
 	GlobalSettings settings;
 	settings.setValue(GlobalSettings::Key_Dec_InitialStateConfigurable, state ? true : false);
 }
+
+void Settings::on_dec_exportFormat_changed(const QString &text)
+{
+	GlobalSettings settings;
+	settings.setValue(GlobalSettings::Key_Dec_ExportFormat, text);
+}
+#endif
 
 void Settings::on_log_logLevel_changed(int value)
 {

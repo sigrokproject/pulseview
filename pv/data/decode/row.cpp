@@ -61,6 +61,13 @@ const QString Row::title() const
 	return QString();
 }
 
+const QString Row::class_name() const
+{
+	if (row_ && row_->desc)
+		return QString::fromUtf8(row_->desc);
+	return QString();
+}
+
 int Row::index() const
 {
 	return index_;

@@ -1041,8 +1041,8 @@ void DecodeTrace::on_export_row_from_here()
 	if (annotations.empty())
 		return;
 
-	QSettings settings;
-	const QString dir = settings.value(SettingSaveDirectory).toString();
+	GlobalSettings settings;
+	const QString dir = settings.value("MainWindow/SaveDirectory").toString();
 
 	const QString file_name = QFileDialog::getSaveFileName(
 		owner_->view(), tr("Export annotations"), dir, tr("Text Files (*.txt);;All Files (*)"));
@@ -1050,12 +1050,33 @@ void DecodeTrace::on_export_row_from_here()
 	if (file_name.isEmpty())
 		return;
 
+	const QString format = settings.value(GlobalSettings::Key_Dec_ExportFormat).toString();
+	const QString quote = format.contains("%q") ? "\"" : "";
+	const QString class_name = selected_row_->class_name();
+
 	QFile file(file_name);
 	if (file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
 		QTextStream out_stream(&file);
 
-		for (Annotation &ann : annotations)
-			out_stream << ann.annotations().front() << '\n';
+		for (Annotation &ann : annotations) {
+			const QString sample_range = QString("%1-%2").arg(ann.start_sample()).arg(
+				ann.end_sample());
+
+			QString all_ann_text;
+			for (const QString &s : ann.annotations())
+				all_ann_text = all_ann_text + quote + s + quote + ",";
+			all_ann_text.chop(1);
+
+			const QString first_ann_text = quote + ann.annotations().front() + quote;
+
+			QString out_text = format;
+			out_text = out_text.replace("%s", sample_range);
+			out_text = out_text.replace("%d", decode_signal_->name());
+			out_text = out_text.replace("%c", class_name);
+			out_text = out_text.replace("%1", first_ann_text);
+			out_text = out_text.replace("%a", all_ann_text);
+			out_stream << out_text << '\n';
+		}
 
 		if (out_stream.status() == QTextStream::Ok)
 			return;
