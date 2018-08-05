@@ -21,6 +21,7 @@ extern "C" {
 #include <libsigrokdecode/libsigrokdecode.h>
 }
 
+#include <climits>
 #include <mutex>
 #include <tuple>
 
@@ -31,10 +32,13 @@ extern "C" {
 #include <QAction>
 #include <QApplication>
 #include <QComboBox>
+#include <QFileDialog>
 #include <QFormLayout>
 #include <QLabel>
 #include <QMenu>
+#include <QMessageBox>
 #include <QPushButton>
+#include <QTextStream>
 #include <QToolTip>
 
 #include "decodetrace.hpp"
@@ -317,6 +321,39 @@ QMenu* DecodeTrace::create_header_context_menu(QWidget *parent)
 	del->setShortcuts(QKeySequence::Delete);
 	connect(del, SIGNAL(triggered()), this, SLOT(on_delete()));
 	menu->addAction(del);
+
+	return menu;
+}
+
+QMenu* DecodeTrace::create_view_context_menu(QWidget *parent, QPoint &click_pos)
+{
+	try {
+		selected_row_ = &visible_rows_[get_row_at_point(click_pos)];
+	} catch (out_of_range&) {
+		selected_row_ = nullptr;
+	}
+
+	const pair<uint64_t, uint64_t> sample_range =
+		get_sample_range(click_pos.x(), click_pos.x() + 1);
+	selected_samplepos_ = sample_range.first;
+
+	QMenu *const menu = new QMenu(parent);
+
+	QAction *const export_row =
+			new QAction(tr("Export all annotations for this row"), this);
+	export_row->setIcon(QIcon::fromTheme("document-save-as",
+		QIcon(":/icons/document-save-as.png")));
+	connect(export_row, SIGNAL(triggered()),
+		this, SLOT(on_export_row()));
+	menu->addAction(export_row);
+
+	QAction *const export_row_from_here =
+		new QAction(tr("Export annotations for this row, starting here"), this);
+	export_row_from_here->setIcon(QIcon::fromTheme("document-save-as",
+		QIcon(":/icons/document-save-as.png")));
+	connect(export_row_from_here, SIGNAL(triggered()),
+		this, SLOT(on_export_row_from_here()));
+	menu->addAction(export_row_from_here);
 
 	return menu;
 }
@@ -699,7 +736,7 @@ const QString DecodeTrace::get_annotation_at_point(const QPoint &point)
 	if (row < 0)
 		return QString();
 
-	vector<pv::data::decode::Annotation> annotations;
+	vector<Annotation> annotations;
 
 	decode_signal_->get_annotation_subset(annotations, visible_rows_[row],
 		current_segment_, sample_range.first, sample_range.second);
@@ -981,6 +1018,55 @@ void DecodeTrace::on_show_hide_decoder(int index)
 
 	if (owner_)
 		owner_->row_item_appearance_changed(false, true);
+}
+
+void DecodeTrace::on_export_row()
+{
+	selected_samplepos_ = 0;
+	on_export_row_from_here();
+}
+
+void DecodeTrace::on_export_row_from_here()
+{
+	using namespace pv::data::decode;
+
+	if (!selected_row_)
+		return;
+
+	vector<Annotation> annotations;
+
+	decode_signal_->get_annotation_subset(annotations, *selected_row_,
+		current_segment_, selected_samplepos_, ULLONG_MAX);
+
+	if (annotations.empty())
+		return;
+
+	QSettings settings;
+	const QString dir = settings.value(SettingSaveDirectory).toString();
+
+	const QString file_name = QFileDialog::getSaveFileName(
+		owner_->view(), tr("Export annotations"), dir, tr("Text Files (*.txt);;All Files (*)"));
+
+	if (file_name.isEmpty())
+		return;
+
+	QFile file(file_name);
+	if (file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
+		QTextStream out_stream(&file);
+
+		for (Annotation &ann : annotations)
+			out_stream << ann.annotations().front() << '\n';
+
+		if (out_stream.status() == QTextStream::Ok)
+			return;
+	}
+
+	QMessageBox msg(owner_->view());
+	msg.setText(tr("Error"));
+	msg.setInformativeText(tr("File %1 could not be written to.").arg(file_name));
+	msg.setStandardButtons(QMessageBox::Ok);
+	msg.setIcon(QMessageBox::Warning);
+	msg.exec();
 }
 
 } // namespace trace

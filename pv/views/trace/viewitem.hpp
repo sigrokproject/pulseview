@@ -23,6 +23,7 @@
 #include <list>
 
 #include <QPen>
+#include <QPoint>
 
 #include "viewitempaintparams.hpp"
 
@@ -157,7 +158,7 @@ public:
 public:
 	virtual QMenu* create_header_context_menu(QWidget *parent);
 
-	virtual QMenu* create_view_context_menu(QWidget *parent);
+	virtual QMenu* create_view_context_menu(QWidget *parent, QPoint &click_pos);
 
 	virtual pv::widgets::Popup* create_popup(QWidget *parent);
 

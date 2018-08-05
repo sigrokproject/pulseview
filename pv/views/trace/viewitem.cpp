@@ -88,9 +88,10 @@ QMenu* ViewItem::create_header_context_menu(QWidget *parent)
 	return new QMenu(parent);
 }
 
-QMenu* ViewItem::create_view_context_menu(QWidget *parent)
+QMenu* ViewItem::create_view_context_menu(QWidget *parent, QPoint &click_pos)
 {
 	(void)parent;
+	(void)click_pos;
 	return nullptr;
 }
 

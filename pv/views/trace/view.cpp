@@ -1254,11 +1254,13 @@ bool View::eventFilter(QObject *object, QEvent *event)
 
 void View::contextMenuEvent(QContextMenuEvent *event)
 {
-	const shared_ptr<ViewItem> r = viewport_->get_mouse_over_item(event->pos());
+	QPoint pos = event->pos() - QPoint(0, ruler_->sizeHint().height());
+
+	const shared_ptr<ViewItem> r = viewport_->get_mouse_over_item(pos);
 	if (!r)
 		return;
 
-	QMenu *menu = r->create_view_context_menu(this);
+	QMenu *menu = r->create_view_context_menu(this, pos);
 	if (menu)
 		menu->exec(event->globalPos());
 }

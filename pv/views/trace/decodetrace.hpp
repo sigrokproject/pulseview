@@ -120,6 +120,8 @@ public:
 
 	QMenu* create_header_context_menu(QWidget *parent);
 
+	virtual QMenu* create_view_context_menu(QWidget *parent, QPoint &click_pos);
+
 	void delete_pressed();
 
 private:
@@ -198,6 +200,9 @@ private Q_SLOTS:
 
 	void on_show_hide_decoder(int index);
 
+	void on_export_row();
+	void on_export_row_from_here();
+
 private:
 	pv::Session &session_;
 	shared_ptr<data::DecodeSignal> decode_signal_;
@@ -207,6 +212,9 @@ private:
 	map<QComboBox*, uint16_t> channel_id_map_;  // channel selector -> decode channel ID
 	map<QComboBox*, uint16_t> init_state_map_;  // init state selector -> decode channel ID
 	list< shared_ptr<pv::binding::Decoder> > bindings_;
+
+	data::decode::Row *selected_row_;
+	uint64_t selected_samplepos_;
 
 	vector<pv::widgets::DecoderGroupBox*> decoder_forms_;
 
