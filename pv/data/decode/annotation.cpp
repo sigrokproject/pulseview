@@ -32,9 +32,10 @@ namespace pv {
 namespace data {
 namespace decode {
 
-Annotation::Annotation(const srd_proto_data *const pdata) :
+Annotation::Annotation(const srd_proto_data *const pdata, const Row *row) :
 	start_sample_(pdata->start_sample),
-	end_sample_(pdata->end_sample)
+	end_sample_(pdata->end_sample),
+	row_(row)
 {
 	assert(pdata);
 	const srd_proto_data_annotation *const pda =
@@ -68,6 +69,16 @@ Annotation::Class Annotation::ann_class() const
 const vector<QString>& Annotation::annotations() const
 {
 	return annotations_;
+}
+
+const Row* Annotation::row() const
+{
+	return row_;
+}
+
+bool Annotation::operator<(const Annotation &other) const
+{
+	return (start_sample_ < other.start_sample_);
 }
 
 } // namespace decode

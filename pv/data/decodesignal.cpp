@@ -17,6 +17,7 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <forward_list>
 #include <limits>
 
 #include <QDebug>
@@ -32,6 +33,7 @@
 #include <pv/globalsettings.hpp>
 #include <pv/session.hpp>
 
+using std::forward_list;
 using std::lock_guard;
 using std::make_pair;
 using std::make_shared;
@@ -469,6 +471,33 @@ void DecodeSignal::get_annotation_subset(
 	} catch (out_of_range&) {
 		// Do nothing
 	}
+}
+
+void DecodeSignal::get_annotation_subset(
+	vector<pv::data::decode::Annotation> &dest,
+	uint32_t segment_id, uint64_t start_sample, uint64_t end_sample) const
+{
+	// Note: We put all vectors and lists on the heap, not the stack
+
+	const vector<Row> rows = visible_rows();
+
+	// Use forward_lists for faster merging
+	forward_list<Annotation> *all_ann_list = new forward_list<Annotation>();
+
+	for (const Row& row : rows) {
+		vector<Annotation> *ann_vector = new vector<Annotation>();
+		get_annotation_subset(*ann_vector, row, segment_id, start_sample, end_sample);
+
+		forward_list<Annotation> *ann_list =
+			new forward_list<Annotation>(ann_vector->begin(), ann_vector->end());
+		delete ann_vector;
+
+		all_ann_list->merge(*ann_list);
+		delete ann_list;
+	}
+
+	move(all_ann_list->begin(), all_ann_list->end(), back_inserter(dest));
+	delete all_ann_list;
 }
 
 void DecodeSignal::save_settings(QSettings &settings) const
@@ -1225,7 +1254,7 @@ void DecodeSignal::annotation_callback(srd_proto_data *pdata, void *decode_signa
 	}
 
 	// Add the annotation
-	(*row_iter).second.emplace_annotation(pdata);
+	(*row_iter).second.emplace_annotation(pdata, &((*row_iter).first));
 }
 
 void DecodeSignal::on_capture_state_changed(int state)

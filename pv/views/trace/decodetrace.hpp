@@ -177,6 +177,8 @@ private:
 	QComboBox* create_channel_selector_init_state(QWidget *parent,
 		const data::DecodeChannel *ch);
 
+	void export_annotations(vector<data::decode::Annotation> *annotations) const;
+
 public:
 	virtual void hover_point_changed(const QPoint &hp);
 
@@ -201,7 +203,9 @@ private Q_SLOTS:
 	void on_show_hide_decoder(int index);
 
 	void on_export_row();
+	void on_export_all_rows();
 	void on_export_row_from_here();
+	void on_export_all_rows_from_here();
 
 private:
 	pv::Session &session_;

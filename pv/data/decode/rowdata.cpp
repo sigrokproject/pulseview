@@ -42,9 +42,9 @@ void RowData::get_annotation_subset(
 			dest.push_back(annotation);
 }
 
-void RowData::emplace_annotation(srd_proto_data *pdata)
+void RowData::emplace_annotation(srd_proto_data *pdata, const Row *row)
 {
-	annotations_.emplace_back(pdata);
+	annotations_.emplace_back(pdata, row);
 }
 
 }  // namespace decode

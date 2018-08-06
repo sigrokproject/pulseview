@@ -134,14 +134,23 @@ public:
 	vector<decode::Row> visible_rows() const;
 
 	/**
-	 * Extracts annotations between the given sample range into a vector.
-	 * Note: The annotations are unsorted and only annotations that fully
+	 * Extracts annotations from a single row into a vector.
+	 * Note: The annotations may be unsorted and only annotations that fully
 	 * fit into the sample range are considered.
 	 */
 	void get_annotation_subset(
 		vector<pv::data::decode::Annotation> &dest,
 		const decode::Row &row, uint32_t segment_id, uint64_t start_sample,
 		uint64_t end_sample) const;
+
+	/**
+	 * Extracts annotations from all rows into a vector.
+	 * Note: The annotations may be unsorted and only annotations that fully
+	 * fit into the sample range are considered.
+	 */
+	void get_annotation_subset(
+		vector<pv::data::decode::Annotation> &dest,
+		uint32_t segment_id, uint64_t start_sample, uint64_t end_sample) const;
 
 	virtual void save_settings(QSettings &settings) const;
 

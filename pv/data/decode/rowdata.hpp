@@ -32,6 +32,8 @@ namespace pv {
 namespace data {
 namespace decode {
 
+class Row;
+
 class RowData
 {
 public:
@@ -49,7 +51,7 @@ public:
 		vector<pv::data::decode::Annotation> &dest,
 		uint64_t start_sample, uint64_t end_sample) const;
 
-	void emplace_annotation(srd_proto_data *pdata);
+	void emplace_annotation(srd_proto_data *pdata, const Row *row);
 
 private:
 	vector<Annotation> annotations_;

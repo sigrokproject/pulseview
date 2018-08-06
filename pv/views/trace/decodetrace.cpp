@@ -339,20 +339,34 @@ QMenu* DecodeTrace::create_view_context_menu(QWidget *parent, QPoint &click_pos)
 
 	QMenu *const menu = new QMenu(parent);
 
+	QAction *const export_all_rows =
+			new QAction(tr("Export all annotations"), this);
+	export_all_rows->setIcon(QIcon::fromTheme("document-save-as",
+		QIcon(":/icons/document-save-as.png")));
+	connect(export_all_rows, SIGNAL(triggered()), this, SLOT(on_export_all_rows()));
+	menu->addAction(export_all_rows);
+
 	QAction *const export_row =
 			new QAction(tr("Export all annotations for this row"), this);
 	export_row->setIcon(QIcon::fromTheme("document-save-as",
 		QIcon(":/icons/document-save-as.png")));
-	connect(export_row, SIGNAL(triggered()),
-		this, SLOT(on_export_row()));
+	connect(export_row, SIGNAL(triggered()), this, SLOT(on_export_row()));
 	menu->addAction(export_row);
+
+	menu->addSeparator();
+
+	QAction *const export_all_rows_from_here =
+		new QAction(tr("Export all annotations, starting here"), this);
+	export_all_rows_from_here->setIcon(QIcon::fromTheme("document-save-as",
+		QIcon(":/icons/document-save-as.png")));
+	connect(export_all_rows_from_here, SIGNAL(triggered()), this, SLOT(on_export_all_rows_from_here()));
+	menu->addAction(export_all_rows_from_here);
 
 	QAction *const export_row_from_here =
 		new QAction(tr("Export annotations for this row, starting here"), this);
 	export_row_from_here->setIcon(QIcon::fromTheme("document-save-as",
 		QIcon(":/icons/document-save-as.png")));
-	connect(export_row_from_here, SIGNAL(triggered()),
-		this, SLOT(on_export_row_from_here()));
+	connect(export_row_from_here, SIGNAL(triggered()), this, SLOT(on_export_row_from_here()));
 	menu->addAction(export_row_from_here);
 
 	return menu;
@@ -914,6 +928,62 @@ QComboBox* DecodeTrace::create_channel_selector_init_state(QWidget *parent,
 	return selector;
 }
 
+void DecodeTrace::export_annotations(vector<Annotation> *annotations) const
+{
+	using namespace pv::data::decode;
+
+	GlobalSettings settings;
+	const QString dir = settings.value("MainWindow/SaveDirectory").toString();
+
+	const QString file_name = QFileDialog::getSaveFileName(
+		owner_->view(), tr("Export annotations"), dir, tr("Text Files (*.txt);;All Files (*)"));
+
+	if (file_name.isEmpty())
+		return;
+
+	QString format = settings.value(GlobalSettings::Key_Dec_ExportFormat).toString();
+	const QString quote = format.contains("%q") ? "\"" : "";
+	format = format.remove("%q");
+
+	QFile file(file_name);
+	if (file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
+		QTextStream out_stream(&file);
+
+		for (Annotation &ann : *annotations) {
+			const QString sample_range = QString("%1-%2") \
+				.arg(QString::number(ann.start_sample()), QString::number(ann.end_sample()));
+
+			const QString class_name = quote + ann.row()->class_name() + quote;
+
+			QString all_ann_text;
+			for (const QString &s : ann.annotations())
+				all_ann_text = all_ann_text + quote + s + quote + ",";
+			all_ann_text.chop(1);
+
+			const QString first_ann_text = quote + ann.annotations().front() + quote;
+
+			QString out_text = format;
+			out_text = out_text.replace("%s", sample_range);
+			out_text = out_text.replace("%d",
+				quote + QString::fromUtf8(ann.row()->decoder()->name) + quote);
+			out_text = out_text.replace("%c", class_name);
+			out_text = out_text.replace("%1", first_ann_text);
+			out_text = out_text.replace("%a", all_ann_text);
+			out_stream << out_text << '\n';
+		}
+
+		if (out_stream.status() == QTextStream::Ok)
+			return;
+	}
+
+	QMessageBox msg(owner_->view());
+	msg.setText(tr("Error"));
+	msg.setInformativeText(tr("File %1 could not be written to.").arg(file_name));
+	msg.setStandardButtons(QMessageBox::Ok);
+	msg.setIcon(QMessageBox::Warning);
+	msg.exec();
+}
+
 void DecodeTrace::on_new_annotations()
 {
 	if (!delayed_trace_updater_.isActive())
@@ -1026,6 +1096,12 @@ void DecodeTrace::on_export_row()
 	on_export_row_from_here();
 }
 
+void DecodeTrace::on_export_all_rows()
+{
+	selected_samplepos_ = 0;
+	on_export_all_rows_from_here();
+}
+
 void DecodeTrace::on_export_row_from_here()
 {
 	using namespace pv::data::decode;
@@ -1033,61 +1109,31 @@ void DecodeTrace::on_export_row_from_here()
 	if (!selected_row_)
 		return;
 
-	vector<Annotation> annotations;
+	vector<Annotation> *annotations = new vector<Annotation>();
 
-	decode_signal_->get_annotation_subset(annotations, *selected_row_,
+	decode_signal_->get_annotation_subset(*annotations, *selected_row_,
 		current_segment_, selected_samplepos_, ULLONG_MAX);
 
-	if (annotations.empty())
+	if (annotations->empty())
 		return;
 
-	GlobalSettings settings;
-	const QString dir = settings.value("MainWindow/SaveDirectory").toString();
+	export_annotations(annotations);
+	delete annotations;
+}
 
-	const QString file_name = QFileDialog::getSaveFileName(
-		owner_->view(), tr("Export annotations"), dir, tr("Text Files (*.txt);;All Files (*)"));
+void DecodeTrace::on_export_all_rows_from_here()
+{
+	using namespace pv::data::decode;
 
-	if (file_name.isEmpty())
-		return;
+	vector<Annotation> *annotations = new vector<Annotation>();
 
-	const QString format = settings.value(GlobalSettings::Key_Dec_ExportFormat).toString();
-	const QString quote = format.contains("%q") ? "\"" : "";
-	const QString class_name = selected_row_->class_name();
+	decode_signal_->get_annotation_subset(*annotations, current_segment_,
+		selected_samplepos_, ULLONG_MAX);
 
-	QFile file(file_name);
-	if (file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
-		QTextStream out_stream(&file);
+	if (!annotations->empty())
+		export_annotations(annotations);
 
-		for (Annotation &ann : annotations) {
-			const QString sample_range = QString("%1-%2").arg(ann.start_sample()).arg(
-				ann.end_sample());
-
-			QString all_ann_text;
-			for (const QString &s : ann.annotations())
-				all_ann_text = all_ann_text + quote + s + quote + ",";
-			all_ann_text.chop(1);
-
-			const QString first_ann_text = quote + ann.annotations().front() + quote;
-
-			QString out_text = format;
-			out_text = out_text.replace("%s", sample_range);
-			out_text = out_text.replace("%d", decode_signal_->name());
-			out_text = out_text.replace("%c", class_name);
-			out_text = out_text.replace("%1", first_ann_text);
-			out_text = out_text.replace("%a", all_ann_text);
-			out_stream << out_text << '\n';
-		}
-
-		if (out_stream.status() == QTextStream::Ok)
-			return;
-	}
-
-	QMessageBox msg(owner_->view());
-	msg.setText(tr("Error"));
-	msg.setInformativeText(tr("File %1 could not be written to.").arg(file_name));
-	msg.setStandardButtons(QMessageBox::Ok);
-	msg.setIcon(QMessageBox::Warning);
-	msg.exec();
+	delete annotations;
 }
 
 } // namespace trace
