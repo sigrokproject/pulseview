@@ -194,7 +194,7 @@ void Segment::append_samples(void* data, uint64_t samples)
 				auto dummy_chunk = new uint8_t[dummy_size];
 				memset(dummy_chunk, 0xFF, dummy_size);
 				delete[] dummy_chunk;
-			} catch (bad_alloc) {
+			} catch (bad_alloc&) {
 				delete[] current_chunk_;  // The new may have succeeded
 				current_chunk_ = nullptr;
 				throw;
