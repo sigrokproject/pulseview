@@ -21,7 +21,7 @@ extern "C" {
 #include <libsigrokdecode/libsigrokdecode.h>
 }
 
-#include <climits>
+#include <limits>
 #include <mutex>
 #include <tuple>
 
@@ -60,6 +60,7 @@ using std::abs;
 using std::make_pair;
 using std::max;
 using std::min;
+using std::numeric_limits;
 using std::out_of_range;
 using std::pair;
 using std::shared_ptr;
@@ -333,9 +334,10 @@ QMenu* DecodeTrace::create_view_context_menu(QWidget *parent, QPoint &click_pos)
 		selected_row_ = nullptr;
 	}
 
+	// Default sample range is "from here"
 	const pair<uint64_t, uint64_t> sample_range =
 		get_sample_range(click_pos.x(), click_pos.x() + 1);
-	selected_samplepos_ = sample_range.first;
+	selected_sample_range_ = make_pair(sample_range.first, numeric_limits<uint64_t>::max());
 
 	QMenu *const menu = new QMenu(parent);
 
@@ -368,6 +370,30 @@ QMenu* DecodeTrace::create_view_context_menu(QWidget *parent, QPoint &click_pos)
 		QIcon(":/icons/document-save-as.png")));
 	connect(export_row_from_here, SIGNAL(triggered()), this, SLOT(on_export_row_from_here()));
 	menu->addAction(export_row_from_here);
+
+	menu->addSeparator();
+
+	QAction *const export_all_rows_with_cursor =
+		new QAction(tr("Export all annotations within cursor range"), this);
+	export_all_rows_with_cursor->setIcon(QIcon::fromTheme("document-save-as",
+		QIcon(":/icons/document-save-as.png")));
+	connect(export_all_rows_with_cursor, SIGNAL(triggered()), this, SLOT(on_export_all_rows_with_cursor()));
+	menu->addAction(export_all_rows_with_cursor);
+
+	QAction *const export_row_with_cursor =
+		new QAction(tr("Export annotations for this row within cursor range"), this);
+	export_row_with_cursor->setIcon(QIcon::fromTheme("document-save-as",
+		QIcon(":/icons/document-save-as.png")));
+	connect(export_row_with_cursor, SIGNAL(triggered()), this, SLOT(on_export_row_with_cursor()));
+	menu->addAction(export_row_with_cursor);
+
+	const View *view = owner_->view();
+	assert(view);
+
+	if (!view->cursors()->enabled()) {
+		export_all_rows_with_cursor->setEnabled(false);
+		export_row_with_cursor->setEnabled(false);
+	}
 
 	return menu;
 }
@@ -1092,13 +1118,65 @@ void DecodeTrace::on_show_hide_decoder(int index)
 
 void DecodeTrace::on_export_row()
 {
-	selected_samplepos_ = 0;
+	selected_sample_range_ = make_pair(0, numeric_limits<uint64_t>::max());
 	on_export_row_from_here();
 }
 
 void DecodeTrace::on_export_all_rows()
 {
-	selected_samplepos_ = 0;
+	selected_sample_range_ = make_pair(0, numeric_limits<uint64_t>::max());
+	on_export_all_rows_from_here();
+}
+
+void DecodeTrace::on_export_row_with_cursor()
+{
+	const View *view = owner_->view();
+	assert(view);
+
+	if (!view->cursors()->enabled())
+		return;
+
+	const double samplerate = session_.get_samplerate();
+
+	const pv::util::Timestamp& start_time = view->cursors()->first()->time();
+	const pv::util::Timestamp& end_time = view->cursors()->second()->time();
+
+	const uint64_t start_sample = (uint64_t)max(
+		(double)0, start_time.convert_to<double>() * samplerate);
+	const uint64_t end_sample = (uint64_t)max(
+		(double)0, end_time.convert_to<double>() * samplerate);
+
+	// Are both cursors negative and thus were clamped to 0?
+	if ((start_sample == 0) && (end_sample == 0))
+		return;
+
+	selected_sample_range_ = make_pair(start_sample, end_sample);
+	on_export_row_from_here();
+}
+
+void DecodeTrace::on_export_all_rows_with_cursor()
+{
+	const View *view = owner_->view();
+	assert(view);
+
+	if (!view->cursors()->enabled())
+		return;
+
+	const double samplerate = session_.get_samplerate();
+
+	const pv::util::Timestamp& start_time = view->cursors()->first()->time();
+	const pv::util::Timestamp& end_time = view->cursors()->second()->time();
+
+	const uint64_t start_sample = (uint64_t)max(
+		(double)0, start_time.convert_to<double>() * samplerate);
+	const uint64_t end_sample = (uint64_t)max(
+		(double)0, end_time.convert_to<double>() * samplerate);
+
+	// Are both cursors negative and thus were clamped to 0?
+	if ((start_sample == 0) && (end_sample == 0))
+		return;
+
+	selected_sample_range_ = make_pair(start_sample, end_sample);
 	on_export_all_rows_from_here();
 }
 
@@ -1112,7 +1190,7 @@ void DecodeTrace::on_export_row_from_here()
 	vector<Annotation> *annotations = new vector<Annotation>();
 
 	decode_signal_->get_annotation_subset(*annotations, *selected_row_,
-		current_segment_, selected_samplepos_, ULLONG_MAX);
+		current_segment_, selected_sample_range_.first, selected_sample_range_.second);
 
 	if (annotations->empty())
 		return;
@@ -1128,7 +1206,7 @@ void DecodeTrace::on_export_all_rows_from_here()
 	vector<Annotation> *annotations = new vector<Annotation>();
 
 	decode_signal_->get_annotation_subset(*annotations, current_segment_,
-		selected_samplepos_, ULLONG_MAX);
+			selected_sample_range_.first, selected_sample_range_.second);
 
 	if (!annotations->empty())
 		export_annotations(annotations);

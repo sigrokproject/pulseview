@@ -204,6 +204,8 @@ private Q_SLOTS:
 
 	void on_export_row();
 	void on_export_all_rows();
+	void on_export_row_with_cursor();
+	void on_export_all_rows_with_cursor();
 	void on_export_row_from_here();
 	void on_export_all_rows_from_here();
 
@@ -218,7 +220,7 @@ private:
 	list< shared_ptr<pv::binding::Decoder> > bindings_;
 
 	data::decode::Row *selected_row_;
-	uint64_t selected_samplepos_;
+	pair<uint64_t, uint64_t> selected_sample_range_;
 
 	vector<pv::widgets::DecoderGroupBox*> decoder_forms_;
 
