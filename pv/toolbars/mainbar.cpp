@@ -302,16 +302,19 @@ void MainBar::update_sample_rate_selector()
 
 	const shared_ptr<sigrok::Device> sr_dev = device->device();
 
-	try {
-		auto gvar = sr_dev->config_get(ConfigKey::EXTERNAL_CLOCK);
-		if (gvar.gobj()) {
-			bool value = Glib::VariantBase::cast_dynamic<Glib::Variant<bool>>(
-				gvar).get();
-			sample_rate_.allow_user_entered_values(value);
+	if (sr_dev->config_check(ConfigKey::EXTERNAL_CLOCK, Capability::GET)) {
+		try {
+			auto gvar = sr_dev->config_get(ConfigKey::EXTERNAL_CLOCK);
+			if (gvar.gobj()) {
+				bool value = Glib::VariantBase::cast_dynamic<Glib::Variant<bool>>(
+					gvar).get();
+				sample_rate_.allow_user_entered_values(value);
+			}
+		} catch (Error& error) {
+			// Do nothing
 		}
-	} catch (Error& error) {
-		// Do nothing
 	}
+
 
 	if (sr_dev->config_check(ConfigKey::SAMPLERATE, Capability::LIST)) {
 		try {
