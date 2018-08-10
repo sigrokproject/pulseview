@@ -302,6 +302,7 @@ void MainBar::update_sample_rate_selector()
 
 	const shared_ptr<sigrok::Device> sr_dev = device->device();
 
+	sample_rate_.allow_user_entered_values(false);
 	if (sr_dev->config_check(ConfigKey::EXTERNAL_CLOCK, Capability::GET)) {
 		try {
 			auto gvar = sr_dev->config_get(ConfigKey::EXTERNAL_CLOCK);
