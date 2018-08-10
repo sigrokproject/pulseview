@@ -169,7 +169,7 @@ void ViewWidget::mouse_left_press_event(QMouseEvent *event)
 		clear_selection();
 
 	// Set the signal selection state if the item has been clicked
-	if (mouse_down_item_) {
+	if (mouse_down_item_ && mouse_down_item_->is_selectable(event->pos())) {
 		if (ctrl_pressed)
 			mouse_down_item_->select(!mouse_down_item_->selected());
 		else

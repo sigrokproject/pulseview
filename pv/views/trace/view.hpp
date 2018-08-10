@@ -64,12 +64,10 @@ namespace views {
 
 namespace trace {
 
-class CursorHeader;
 class DecodeTrace;
 class Header;
 class Ruler;
 class Signal;
-class Trace;
 class Viewport;
 class TriggerMarker;
 
@@ -304,6 +302,8 @@ public:
 	const QPoint& hover_point() const;
 
 	void restack_all_trace_tree_items();
+
+	int header_width() const;
 
 	void on_setting_changed(const QString &key, const QVariant &value);
 

@@ -78,6 +78,22 @@ shared_ptr<data::SignalBase> Trace::base() const
 	return base_;
 }
 
+bool Trace::is_selectable(QPoint pos) const
+{
+	// True if the header was clicked, false if the trace area was clicked
+	const View *view = owner_->view();
+	assert(view);
+
+	return (pos.x() <= view->header_width());
+}
+
+bool Trace::is_draggable() const
+{
+	// While the header label that belongs to this trace is draggable,
+	// the trace itself shall not be
+	return false;
+}
+
 void Trace::set_segment_display_mode(SegmentDisplayMode mode)
 {
 	segment_display_mode_ = mode;
@@ -189,10 +205,16 @@ QRectF Trace::label_rect(const QRectF &rect) const
 
 QRectF Trace::hit_box_rect(const ViewItemPaintParams &pp) const
 {
+	// This one is only for the trace itself, excluding the header area
+	const View *view = owner_->view();
+	assert(view);
+
 	pair<int, int> extents = v_extents();
 	const int top = pp.top() + get_visual_y() + extents.first;
 	const int height = extents.second - extents.first;
-	return QRectF(pp.left(), top, pp.width(), height);
+
+	return QRectF(pp.left() + view->header_width(), top,
+		pp.width() - view->header_width(), height);
 }
 
 void Trace::set_current_segment(const int segment)

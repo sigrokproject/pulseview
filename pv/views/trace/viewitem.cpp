@@ -39,6 +39,12 @@ ViewItem::ViewItem() :
 {
 }
 
+bool ViewItem::is_selectable(QPoint pos) const
+{
+	(void)pos;
+	return true;
+}
+
 bool ViewItem::selected() const
 {
 	return selected_;

@@ -875,6 +875,11 @@ void View::restack_all_trace_tree_items()
 		i->animate_to_layout_v_offset();
 }
 
+int View::header_width() const
+{
+	 return header_->extended_size_hint().width();
+}
+
 void View::on_setting_changed(const QString &key, const QVariant &value)
 {
 	if (key == GlobalSettings::Key_View_TriggerIsZeroTime)
@@ -1087,12 +1092,11 @@ void View::set_scroll_default()
 void View::determine_if_header_was_shrunk()
 {
 	const int header_pane_width = splitter_->sizes().front();
-	const int header_width = header_->extended_size_hint().width();
 
 	// Allow for a slight margin of error so that we also accept
 	// slight differences when e.g. a label name change increased
 	// the overall width
-	header_was_shrunk_ = (header_pane_width < (header_width - 10));
+	header_was_shrunk_ = (header_pane_width < (header_width() - 10));
 }
 
 void View::resize_header_to_fit()

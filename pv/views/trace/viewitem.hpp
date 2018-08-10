@@ -60,6 +60,11 @@ public:
 	virtual bool enabled() const = 0;
 
 	/**
+	 * Returns true if the item may be selected.
+	 */
+	virtual bool is_selectable(QPoint pos) const;
+
+	/**
 	 * Returns true if the item has been selected by the user.
 	 */
 	bool selected() const;

@@ -103,6 +103,16 @@ public:
 	shared_ptr<data::SignalBase> base() const;
 
 	/**
+	 * Returns true if the item may be selected.
+	 */
+	virtual bool is_selectable(QPoint pos) const;
+
+	/**
+	 * Returns true if the item may be dragged/moved.
+	 */
+	virtual bool is_draggable() const;
+
+	/**
 	 * Configures the segment display mode to use.
 	 */
 	virtual void set_segment_display_mode(SegmentDisplayMode mode);
