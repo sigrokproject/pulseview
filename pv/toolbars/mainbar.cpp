@@ -509,8 +509,8 @@ void MainBar::commit_sample_rate()
 	const shared_ptr<sigrok::Device> sr_dev = device->device();
 
 	sample_rate = sample_rate_.value();
-	if (sample_rate == 0)
-		return;
+	if (sample_rate < 0)
+		sample_rate_.set_value(0);
 
 	try {
 		sr_dev->config_set(ConfigKey::SAMPLERATE,
