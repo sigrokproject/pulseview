@@ -155,7 +155,6 @@ void usage()
 		"  -i, --input-file                Load input from file\n"
 		"  -I, --input-format              Input format\n"
 		"  -c, --clean                     Don't restore previous sessions on startup\n"
-		"  -s, --log-to-stdout             Don't use logging, output to stdout instead\n"
 		"\n", PV_BIN_NAME);
 }
 
@@ -167,7 +166,6 @@ int main(int argc, char *argv[])
 	vector<string> open_files;
 	bool restore_sessions = true;
 	bool do_scan = true;
-	bool do_logging = true;
 
 	Application a(argc, argv);
 
@@ -193,7 +191,7 @@ int main(int argc, char *argv[])
 		};
 
 		const int c = getopt_long(argc, argv,
-			"h?VDcsl:d:i:I:", long_options, nullptr);
+			"h?VDcl:d:i:I:", long_options, nullptr);
 		if (c == -1)
 			break;
 
@@ -248,10 +246,6 @@ int main(int argc, char *argv[])
 		case 'c':
 			restore_sessions = false;
 			break;
-
-		case 's':
-			do_logging = false;
-			break;
 		}
 	}
 	argc -= optind;
@@ -264,8 +258,7 @@ int main(int argc, char *argv[])
 	pv::GlobalSettings settings;
 	settings.set_defaults_where_needed();
 
-	if (do_logging)
-		pv::logging.init();
+	pv::logging.init();
 
 	// Initialise libsigrok
 	context = sigrok::Context::create();

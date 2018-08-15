@@ -37,12 +37,24 @@ Logging logging;
 const int Logging::MIN_BUFFER_SIZE = 10;
 const int Logging::MAX_BUFFER_SIZE = 50000;
 
+static sr_log_callback prev_sr_log_cb;
+static void *prev_sr_log_cb_data;
+
+#ifdef ENABLE_DECODE
+static srd_log_callback prev_srd_log_cb;
+static void *prev_srd_log_cb_data;
+#endif
+
 Logging::~Logging()
 {
 	qInstallMessageHandler(nullptr);
-	sr_log_callback_set_default();
+	sr_log_callback_set(prev_sr_log_cb, prev_sr_log_cb_data);
+	prev_sr_log_cb = NULL;
+	prev_sr_log_cb_data = NULL;
 #ifdef ENABLE_DECODE
-	srd_log_callback_set_default();
+	srd_log_callback_set(prev_srd_log_cb, prev_srd_log_cb_data);
+	prev_srd_log_cb = NULL;
+	prev_srd_log_cb_data = NULL;
 #endif
 
 	GlobalSettings::remove_change_handler(this);
@@ -58,8 +70,10 @@ void Logging::init()
 	buffer_.reserve(buffer_size_);
 
 	qInstallMessageHandler(log_pv);
+	sr_log_callback_get(&prev_sr_log_cb, &prev_sr_log_cb_data);
 	sr_log_callback_set(log_sr, nullptr);
 #ifdef ENABLE_DECODE
+	srd_log_callback_get(&prev_srd_log_cb, &prev_srd_log_cb_data);
 	srd_log_callback_set(log_srd, nullptr);
 #endif
 
@@ -138,8 +152,14 @@ void Logging::log_pv(QtMsgType type, const QMessageLogContext &context, const QS
 
 int Logging::log_sr(void *cb_data, int loglevel, const char *format, va_list args)
 {
+	va_list args2;
+
 	(void)cb_data;
-	(void)loglevel;
+
+	va_copy(args2, args);
+	if (prev_sr_log_cb)
+		prev_sr_log_cb(prev_sr_log_cb_data, loglevel, format, args2);
+	va_end(args2);
 
 	char *text = g_strdup_vprintf(format, args);
 	logging.log(QString::fromUtf8(text), LogSource_sr);
@@ -151,8 +171,14 @@ int Logging::log_sr(void *cb_data, int loglevel, const char *format, va_list arg
 #ifdef ENABLE_DECODE
 int Logging::log_srd(void *cb_data, int loglevel, const char *format, va_list args)
 {
+	va_list args2;
+
 	(void)cb_data;
-	(void)loglevel;
+
+	va_copy(args2, args);
+	if (prev_srd_log_cb)
+		prev_srd_log_cb(prev_srd_log_cb_data, loglevel, format, args2);
+	va_end(args2);
 
 	char *text = g_strdup_vprintf(format, args);
 	logging.log(QString::fromUtf8(text), LogSource_srd);
