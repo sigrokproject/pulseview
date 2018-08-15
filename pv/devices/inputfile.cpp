@@ -133,15 +133,16 @@ void InputFile::open()
 
 	f->read(buffer.data(), BufferSize);
 	const streamsize size = f->gcount();
+
 	if (size == 0)
-		return;
+		throw QString("Failed to read file");
 
 	input_->send(buffer.data(), size);
 
 	try {
 		device_ = input_->device();
-	} catch (sigrok::Error&) {
-		return;
+	} catch (sigrok::Error& e) {
+		throw e;
 	}
 
 	session_->add_device(device_);
