@@ -314,14 +314,12 @@ QWidget *Settings::get_about_page(QWidget *parent) const
 	QLabel *icon = new QLabel();
 	icon->setPixmap(QPixmap(QString::fromUtf8(":/icons/pulseview.svg")));
 
-	/* Setup the version field */
-	QLabel *version_info = new QLabel();
-	version_info->setText(tr("%1 %2<br />%3<br /><a href=\"http://%4\">%4</a>")
-		.arg(QApplication::applicationName(),
-		QApplication::applicationVersion(),
+	/* Setup the license field, with the project homepage link. */
+	QLabel *gpl_home_info = new QLabel();
+	gpl_home_info->setText(tr("%1<br /><a href=\"http://%2\">%2</a>").arg(
 		tr("GNU GPL, version 3 or later"),
 		QApplication::organizationDomain()));
-	version_info->setOpenExternalLinks(true);
+	gpl_home_info->setOpenExternalLinks(true);
 
 	shared_ptr<sigrok::Context> context = device_manager_.context();
 
@@ -331,7 +329,16 @@ QWidget *Settings::get_about_page(QWidget *parent) const
 
 	s.append("<table>");
 
+	/* Application info */
+	s.append("<tr><td colspan=\"2\"><b>" +
+		tr("Application:") + "</b></td></tr>");
+
+	s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
+		.arg(QApplication::applicationName(),
+		QApplication::applicationVersion()));
+
 	/* Library info */
+	s.append("<tr><td colspan=\"2\"></td></tr>");
 	s.append("<tr><td colspan=\"2\"><b>" +
 		tr("Libraries and features:") + "</b></td></tr>");
 
@@ -466,7 +473,7 @@ QWidget *Settings::get_about_page(QWidget *parent) const
 
 	QGridLayout *layout = new QGridLayout();
 	layout->addWidget(icon, 0, 0, 1, 1);
-	layout->addWidget(version_info, 0, 1, 1, 1);
+	layout->addWidget(gpl_home_info, 0, 1, 1, 1);
 	layout->addWidget(support_list, 1, 1, 1, 1);
 
 	QWidget *page = new QWidget(parent);
