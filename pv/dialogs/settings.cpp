@@ -465,10 +465,14 @@ QWidget *Settings::get_about_page(QWidget *parent) const
 	QTextBrowser *support_list = new QTextBrowser();
 	support_list->setDocument(supported_doc);
 
-	QGridLayout *layout = new QGridLayout();
-	layout->addWidget(icon, 0, 0, 1, 1);
-	layout->addWidget(gpl_home_info, 0, 1, 1, 1);
-	layout->addWidget(support_list, 1, 1, 1, 1);
+	QHBoxLayout *h_layout = new QHBoxLayout();
+	h_layout->setAlignment(Qt::AlignLeft);
+	h_layout->addWidget(icon);
+	h_layout->addWidget(gpl_home_info);
+
+	QVBoxLayout *layout = new QVBoxLayout();
+	layout->addLayout(h_layout);
+	layout->addWidget(support_list);
 
 	QWidget *page = new QWidget(parent);
 	page->setLayout(layout);
