@@ -329,19 +329,13 @@ QWidget *Settings::get_about_page(QWidget *parent) const
 
 	s.append("<table>");
 
-	/* Application info */
+	/* Version, library, and feature info */
 	s.append("<tr><td colspan=\"2\"><b>" +
-		tr("Application:") + "</b></td></tr>");
+		tr("Versions, libraries and features:") + "</b></td></tr>");
 
 	s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
 		.arg(QApplication::applicationName(),
 		QApplication::applicationVersion()));
-
-	/* Library info */
-	s.append("<tr><td colspan=\"2\"></td></tr>");
-	s.append("<tr><td colspan=\"2\"><b>" +
-		tr("Libraries and features:") + "</b></td></tr>");
-
 	s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
 		.arg(QString("Qt"), qVersion()));
 	s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
