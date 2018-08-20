@@ -109,7 +109,8 @@ AnalogSignal::AnalogSignal(
 	neg_vdivs_(1),
 	resolution_(0),
 	display_type_(DisplayBoth),
-	autoranging_(true)
+	autoranging_(true),
+	value_at_hover_pos_(std::numeric_limits<float>::quiet_NaN())
 {
 	axis_pen_ = AxisPen;
 
