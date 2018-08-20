@@ -607,9 +607,9 @@ void MainBar::export_file(shared_ptr<OutputFormat> format, bool selection_only)
 		const pv::util::Timestamp& end_time = trace_view->cursors()->second()->time();
 
 		const uint64_t start_sample = (uint64_t)max(
-			(double)0, start_time.convert_to<double>() * samplerate);
+			0.0, start_time.convert_to<double>() * samplerate);
 		const uint64_t end_sample = (uint64_t)max(
-			(double)0, end_time.convert_to<double>() * samplerate);
+			0.0, end_time.convert_to<double>() * samplerate);
 
 		if ((start_sample == 0) && (end_sample == 0)) {
 			// Both cursors are negative and were clamped to 0

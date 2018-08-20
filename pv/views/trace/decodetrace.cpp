@@ -1142,9 +1142,9 @@ void DecodeTrace::on_export_row_with_cursor()
 	const pv::util::Timestamp& end_time = view->cursors()->second()->time();
 
 	const uint64_t start_sample = (uint64_t)max(
-		(double)0, start_time.convert_to<double>() * samplerate);
+		0.0, start_time.convert_to<double>() * samplerate);
 	const uint64_t end_sample = (uint64_t)max(
-		(double)0, end_time.convert_to<double>() * samplerate);
+		0.0, end_time.convert_to<double>() * samplerate);
 
 	// Are both cursors negative and thus were clamped to 0?
 	if ((start_sample == 0) && (end_sample == 0))
@@ -1168,9 +1168,9 @@ void DecodeTrace::on_export_all_rows_with_cursor()
 	const pv::util::Timestamp& end_time = view->cursors()->second()->time();
 
 	const uint64_t start_sample = (uint64_t)max(
-		(double)0, start_time.convert_to<double>() * samplerate);
+		0.0, start_time.convert_to<double>() * samplerate);
 	const uint64_t end_sample = (uint64_t)max(
-		(double)0, end_time.convert_to<double>() * samplerate);
+		0.0, end_time.convert_to<double>() * samplerate);
 
 	// Are both cursors negative and thus were clamped to 0?
 	if ((start_sample == 0) && (end_sample == 0))
