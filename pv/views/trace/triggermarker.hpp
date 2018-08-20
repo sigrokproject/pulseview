@@ -22,6 +22,8 @@
 
 #include "timeitem.hpp"
 
+#include <QPoint>
+
 namespace pv {
 namespace views {
 namespace trace {
@@ -58,7 +60,7 @@ public:
 	/**
 	  Returns true if the item may be dragged/moved.
 	 */
-	bool is_draggable() const override;
+	bool is_draggable(QPoint pos) const override;
 
 	/**
 	 * Sets the time of the marker.

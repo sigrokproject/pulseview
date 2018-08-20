@@ -43,8 +43,9 @@ bool TriggerMarker::enabled() const
 	return true;
 }
 
-bool TriggerMarker::is_draggable() const
+bool TriggerMarker::is_draggable(QPoint pos) const
 {
+	(void)pos;
 	return false;
 }
 

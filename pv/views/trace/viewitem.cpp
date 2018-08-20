@@ -55,8 +55,9 @@ void ViewItem::select(bool select)
 	selected_ = select;
 }
 
-bool ViewItem::is_draggable() const
+bool ViewItem::is_draggable(QPoint pos) const
 {
+	(void)pos;
 	return true;
 }
 
@@ -67,8 +68,7 @@ bool ViewItem::dragging() const
 
 void ViewItem::drag()
 {
-	if (is_draggable())
-		drag_point_ = drag_point(QRect());
+	drag_point_ = drag_point(QRect());
 }
 
 void ViewItem::drag_release()

@@ -87,11 +87,15 @@ bool Trace::is_selectable(QPoint pos) const
 	return (pos.x() <= view->header_width());
 }
 
-bool Trace::is_draggable() const
+bool Trace::is_draggable(QPoint pos) const
 {
 	// While the header label that belongs to this trace is draggable,
-	// the trace itself shall not be
-	return false;
+	// the trace itself shall not be. Hence we return true if the header
+	// was clicked and false if the trace area was clicked
+	const View *view = owner_->view();
+	assert(view);
+
+	return (pos.x() <= view->header_width());
 }
 
 void Trace::set_segment_display_mode(SegmentDisplayMode mode)

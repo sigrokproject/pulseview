@@ -77,7 +77,7 @@ public:
 	/**
 	 * Returns true if the item may be dragged/moved.
 	 */
-	virtual bool is_draggable() const;
+	virtual bool is_draggable(QPoint pos) const;
 
 	/**
 	 * Returns true if the item is being dragged.

@@ -22,6 +22,7 @@
 
 #include <boost/optional.hpp>
 
+#include <QPoint>
 #include <QTimer>
 #include <QTouchEvent>
 
@@ -62,7 +63,7 @@ private:
 	 * @param item The item that is being hovered over, or @c nullptr
 	 * if no view item is being hovered over.
 	 */
-	void item_hover(const shared_ptr<ViewItem> &item);
+	void item_hover(const shared_ptr<ViewItem> &item, QPoint pos);
 
 	/**
 	 * Sets this item into the dragged state.

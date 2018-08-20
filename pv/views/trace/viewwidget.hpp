@@ -22,6 +22,7 @@
 
 #include <memory>
 
+#include <QPoint>
 #include <QWidget>
 
 using std::shared_ptr;
@@ -49,7 +50,7 @@ protected:
 	 * if no view item is being hovered over.
 	 * @remarks the default implementation does nothing.
 	 */
-	virtual void item_hover(const shared_ptr<ViewItem> &item);
+	virtual void item_hover(const shared_ptr<ViewItem> &item, QPoint pos);
 
 	/**
 	 * Indicates the event an a view item has been clicked.

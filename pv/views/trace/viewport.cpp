@@ -64,9 +64,9 @@ shared_ptr<ViewItem> Viewport::get_mouse_over_item(const QPoint &pt)
 	return nullptr;
 }
 
-void Viewport::item_hover(const shared_ptr<ViewItem> &item)
+void Viewport::item_hover(const shared_ptr<ViewItem> &item, QPoint pos)
 {
-	if (item && item->is_draggable())
+	if (item && item->is_draggable(pos))
 		setCursor(dynamic_pointer_cast<RowItem>(item) ?
 			Qt::SizeVerCursor : Qt::SizeHorCursor);
 	else
