@@ -30,6 +30,14 @@
 
 namespace pv {
 
+static sr_log_callback prev_sr_log_cb;
+static void *prev_sr_log_cb_data;
+
+#ifdef ENABLE_DECODE
+static srd_log_callback prev_srd_log_cb;
+static void *prev_srd_log_cb_data;
+#endif
+
 int AndroidLogHandler::sr_callback(void *cb_data, int loglevel, const char *format, va_list args)
 {
 	static const int prio[] = {
@@ -40,10 +48,17 @@ int AndroidLogHandler::sr_callback(void *cb_data, int loglevel, const char *form
 		[SR_LOG_DBG] = ANDROID_LOG_DEBUG,
 		[SR_LOG_SPEW] = ANDROID_LOG_VERBOSE,
 	};
+	va_list args2;
 	int ret;
 
 	/* This specific log callback doesn't need the void pointer data. */
 	(void)cb_data;
+
+	/* Call the previously registered log callback (library's default). */
+	va_copy(args2, args);
+	if (prev_sr_log_cb)
+		prev_sr_log_cb(prev_sr_log_cb_data, loglevel, format, args2);
+	va_end(args2);
 
 	/* Only output messages of at least the selected loglevel(s). */
 	if (loglevel > sr_log_loglevel_get())
@@ -70,10 +85,17 @@ int AndroidLogHandler::srd_callback(void *cb_data, int loglevel, const char *for
 		[SRD_LOG_DBG] = ANDROID_LOG_DEBUG,
 		[SRD_LOG_SPEW] = ANDROID_LOG_VERBOSE,
 	};
+	va_list args2;
 	int ret;
 
 	/* This specific log callback doesn't need the void pointer data. */
 	(void)cb_data;
+
+	/* Call the previously registered log callback (library's default). */
+	va_copy(args2, args);
+	if (prev_srd_log_cb)
+		prev_srd_log_cb(prev_srd_log_cb_data, loglevel, format, args2);
+	va_end(args2);
 
 	/* Only output messages of at least the selected loglevel(s). */
 	if (loglevel > srd_log_loglevel_get())
@@ -94,8 +116,10 @@ int AndroidLogHandler::srd_callback(void *cb_data, int loglevel, const char *for
 
 void AndroidLogHandler::install_callbacks()
 {
+	sr_log_callback_get(&prev_sr_log_cb, &prev_sr_log_cb_data);
 	sr_log_callback_set(sr_callback, nullptr);
 #ifdef ENABLE_DECODE
+	srd_log_callback_get(&prev_srd_log_cb, &prev_srd_log_cb_data);
 	srd_log_callback_set(srd_callback, nullptr);
 #endif
 }
