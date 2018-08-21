@@ -56,7 +56,7 @@ Enum::Enum(QString name, QString desc,
 	// std_gvar_min_max_step_thresholds()
 
 	vector<double> deltas;
-	double prev_value;
+	double prev_value = 0;
 
 	for (const pair<Glib::VariantBase, QString> &v : values_) {
 		gdouble value;
