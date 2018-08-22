@@ -187,6 +187,7 @@ private Q_SLOTS:
 	void on_delayed_trace_update();
 	void on_decode_reset();
 	void on_decode_finished();
+	void on_pause_decode();
 
 	void on_delete();
 

@@ -151,6 +151,9 @@ void DecodeSignal::reset_decode(bool shutting_down)
 		logic_mux_thread_.join();
 	}
 
+	decode_pause_mutex_.unlock();
+	decode_paused_ = false;
+
 	class_rows_.clear();
 	current_segment_id_ = 0;
 	segments_.clear();
@@ -256,6 +259,25 @@ void DecodeSignal::begin_decode()
 	// Decode the muxed logic data
 	decode_interrupt_ = false;
 	decode_thread_ = std::thread(&DecodeSignal::decode_proc, this);
+}
+
+void DecodeSignal::pause_decode()
+{
+	decode_paused_ = true;
+}
+
+void DecodeSignal::resume_decode()
+{
+	// Manual unlocking is done before notifying, to avoid waking up the
+	// waiting thread only to block again (see notify_one for details)
+	decode_pause_mutex_.unlock();
+	decode_pause_cond_.notify_one();
+	decode_paused_ = false;
+}
+
+bool DecodeSignal::is_paused() const
+{
+	return decode_paused_;
 }
 
 QString DecodeSignal::error_message() const
@@ -981,6 +1003,11 @@ void DecodeSignal::decode_data(
 		// Notify the frontend that we processed some data and
 		// possibly have new annotations as well
 		new_annotations();
+
+		if (decode_paused_) {
+			unique_lock<mutex> pause_wait_lock(decode_pause_mutex_);
+			decode_pause_cond_.wait(pause_wait_lock);
+		}
 	}
 }
 

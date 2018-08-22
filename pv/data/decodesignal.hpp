@@ -101,6 +101,9 @@ public:
 
 	void reset_decode(bool shutting_down = false);
 	void begin_decode();
+	void pause_decode();
+	void resume_decode();
+	bool is_paused() const;
 	QString error_message() const;
 
 	const vector<data::DecodeChannel> get_channels() const;
@@ -215,11 +218,14 @@ private:
 	vector<DecodeSegment> segments_;
 	uint32_t current_segment_id_;
 
-	mutable mutex input_mutex_, output_mutex_, logic_mux_mutex_;
-	mutable condition_variable decode_input_cond_, logic_mux_cond_;
+	mutable mutex input_mutex_, output_mutex_, decode_pause_mutex_, logic_mux_mutex_;
+	mutable condition_variable decode_input_cond_, decode_pause_cond_,
+		logic_mux_cond_;
 
 	std::thread decode_thread_, logic_mux_thread_;
 	atomic<bool> decode_interrupt_, logic_mux_interrupt_;
+
+	bool decode_paused_;
 
 	QString error_message_;
 };

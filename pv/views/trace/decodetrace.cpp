@@ -341,15 +341,33 @@ QMenu* DecodeTrace::create_view_context_menu(QWidget *parent, QPoint &click_pos)
 
 	QMenu *const menu = new QMenu(parent);
 
+	if (decode_signal_->is_paused()) {
+		QAction *const resume =
+			new QAction(tr("Resume decoding"), this);
+		resume->setIcon(QIcon::fromTheme("media-playback-start",
+			QIcon(":/icons/media-playback-start.png")));
+		connect(resume, SIGNAL(triggered()), this, SLOT(on_pause_decode()));
+		menu->addAction(resume);
+	} else {
+		QAction *const pause =
+			new QAction(tr("Pause decoding"), this);
+		pause->setIcon(QIcon::fromTheme("media-playback-pause",
+			QIcon(":/icons/media-playback-pause.png")));
+		connect(pause, SIGNAL(triggered()), this, SLOT(on_pause_decode()));
+		menu->addAction(pause);
+	}
+
+	menu->addSeparator();
+
 	QAction *const export_all_rows =
-			new QAction(tr("Export all annotations"), this);
+		new QAction(tr("Export all annotations"), this);
 	export_all_rows->setIcon(QIcon::fromTheme("document-save-as",
 		QIcon(":/icons/document-save-as.png")));
 	connect(export_all_rows, SIGNAL(triggered()), this, SLOT(on_export_all_rows()));
 	menu->addAction(export_all_rows);
 
 	QAction *const export_row =
-			new QAction(tr("Export all annotations for this row"), this);
+		new QAction(tr("Export all annotations for this row"), this);
 	export_row->setIcon(QIcon::fromTheme("document-save-as",
 		QIcon(":/icons/document-save-as.png")));
 	connect(export_row, SIGNAL(triggered()), this, SLOT(on_export_row()));
@@ -1035,6 +1053,14 @@ void DecodeTrace::on_decode_finished()
 {
 	if (owner_)
 		owner_->row_item_appearance_changed(false, true);
+}
+
+void DecodeTrace::on_pause_decode()
+{
+	if (decode_signal_->is_paused())
+		decode_signal_->resume_decode();
+	else
+		decode_signal_->pause_decode();
 }
 
 void DecodeTrace::delete_pressed()
