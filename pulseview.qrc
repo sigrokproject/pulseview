@@ -10,6 +10,8 @@
 	<file>icons/document-open.png</file>
 	<file>icons/document-save-as.png</file>
 	<file>icons/information.svg</file>
+	<file>icons/media-playback-pause.png</file>
+	<file>icons/media-playback-start.png</file>
 	<file>icons/menu.svg</file>
 	<file>icons/preferences-system.png</file>
 	<file>icons/settings-views.svg</file>
