@@ -151,8 +151,7 @@ void DecodeSignal::reset_decode(bool shutting_down)
 		logic_mux_thread_.join();
 	}
 
-	decode_pause_mutex_.unlock();
-	decode_paused_ = false;
+	resume_decode();  // Make sure the decode thread isn't blocked by pausing
 
 	class_rows_.clear();
 	current_segment_id_ = 0;
