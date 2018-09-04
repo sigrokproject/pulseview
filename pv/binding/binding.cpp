@@ -20,7 +20,10 @@
 #include <cassert>
 
 #include <QFormLayout>
+#include <QHBoxLayout>
+#include <QIcon>
 #include <QLabel>
+#include <QPushButton>
 
 #include <pv/prop/property.hpp>
 
@@ -46,27 +49,56 @@ void Binding::commit()
 	}
 }
 
-void Binding::add_properties_to_form(QFormLayout *layout,
-	bool auto_commit) const
+void Binding::add_properties_to_form(QFormLayout *layout, bool auto_commit)
 {
 	assert(layout);
+
+	help_labels_.clear();
 
 	for (shared_ptr<pv::prop::Property> p : properties_) {
 		assert(p);
 
-		QWidget *const widget = p->get_widget(layout->parentWidget(), auto_commit);
+		QWidget *widget;
+		QLabel *help_lbl = nullptr;
+
+		if (p->desc().isEmpty()) {
+			widget = p->get_widget(layout->parentWidget(), auto_commit);
+		} else {
+			QPushButton *help_btn = new QPushButton();
+			help_btn->setFlat(true);
+			help_btn->setIcon(QIcon(":/icons/help-browser.png"));
+			help_btn->setToolTip(p->desc());
+			connect(help_btn, SIGNAL(clicked(bool)),
+				this, SLOT(on_help_clicked()));
+
+			QHBoxLayout *layout = new QHBoxLayout();
+			layout->setContentsMargins(0, 0, 0, 0);
+			layout->addWidget(p->get_widget(layout->parentWidget(), auto_commit));
+			layout->addWidget(help_btn, 0, Qt::AlignRight);
+
+			widget = new QWidget();
+			widget->setLayout(layout);
+
+			help_lbl = new QLabel(p->desc());
+			help_lbl->setVisible(false);
+			help_lbl->setWordWrap(true);
+			help_labels_[help_btn] = help_lbl;
+		}
+
 		if (p->labeled_widget()) {
 			layout->addRow(widget);
 		} else {
 			auto *lbl = new QLabel(p->name());
-			lbl->setToolTip(p->desc());
+			lbl->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 			layout->addRow(lbl, widget);
 		}
+
+		if (help_lbl)
+			layout->addRow(help_lbl);
 	}
 }
 
-QWidget* Binding::get_property_form(QWidget *parent,
-	bool auto_commit) const
+QWidget* Binding::get_property_form(QWidget *parent, bool auto_commit)
 {
 	QWidget *const form = new QWidget(parent);
 	QFormLayout *const layout = new QFormLayout(form);
@@ -96,6 +128,15 @@ QString Binding::print_gvariant(Glib::VariantBase gvar)
 		s = QString::fromStdString(gvar.print());
 
 	return s;
+}
+
+void Binding::on_help_clicked()
+{
+	QPushButton *btn = qobject_cast<QPushButton*>(QObject::sender());
+	assert(btn);
+
+	QLabel *lbl = help_labels_.at(btn);
+	lbl->setVisible(!lbl->isVisible());
 }
 
 }  // namespace binding

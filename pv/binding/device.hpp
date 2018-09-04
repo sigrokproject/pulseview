@@ -42,7 +42,7 @@ namespace pv {
 
 namespace binding {
 
-class Device : public QObject, public Binding
+class Device : public Binding
 {
 	Q_OBJECT
 

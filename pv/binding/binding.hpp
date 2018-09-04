@@ -26,15 +26,19 @@ G_GNUC_BEGIN_IGNORE_DEPRECATIONS
 #include <glibmm.h>
 G_GNUC_END_IGNORE_DEPRECATIONS
 
+#include <map>
 #include <memory>
 #include <vector>
 
+#include <QObject>
 #include <QString>
 
+using std::map;
 using std::shared_ptr;
 using std::vector;
 
 class QFormLayout;
+class QLabel;
 class QWidget;
 
 namespace pv {
@@ -45,25 +49,29 @@ class Property;
 
 namespace binding {
 
-class Binding
+class Binding: public QObject
 {
+	Q_OBJECT
+
 public:
 	const vector< shared_ptr<prop::Property> >& properties();
 
 	void commit();
 
-	void add_properties_to_form(QFormLayout *layout,
-		bool auto_commit = false) const;
+	void add_properties_to_form(QFormLayout *layout, bool auto_commit = false);
 
-	QWidget* get_property_form(QWidget *parent,
-		bool auto_commit = false) const;
+	QWidget* get_property_form(QWidget *parent, bool auto_commit = false);
 
 	void update_property_widgets();
 
 	static QString print_gvariant(Glib::VariantBase gvar);
 
+protected Q_SLOTS:
+	void on_help_clicked();
+
 protected:
 	vector< shared_ptr<prop::Property> > properties_;
+	map<QWidget*, QLabel*> help_labels_;
 };
 
 }  // namespace binding

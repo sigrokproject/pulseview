@@ -65,6 +65,7 @@ InputOutput::InputOutput(
 
 		const QString name = QString::fromStdString(opt->name());
 		const QString desc = QString::fromStdString(opt->description());
+
 		const VariantBase def_val = opt->default_value();
 		const vector<VariantBase> values = opt->values();
 

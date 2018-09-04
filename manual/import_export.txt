@@ -24,8 +24,9 @@ For example, the VCD import will ask you for these:
 * Number of logic channels: The number of (logic) channels in the data (default 0)
 * Skip samples until timestamp: Skip samples until the specified timestamp; < 0: Skip until first timestamp listed; 0: Don't skip (default -1)
 
-
-A click on _Ok_ then loads the data from the selected file and you can work with it.
+The detailed description of each item can also be seen when clicking on the help icon on the right
+or hovering your mouse over it. A click on _OK_ then loads the data from the selected file and you
+can work with it.
 
 === Export
 
