@@ -1,0 +1,33 @@
+== Data Import/Export
+
+In order to facilitate versatile use of the sigrok suite, libsigrok allows users to import
+and export data from files in various formats - some of them as generic as possible, others
+very specific. For a list and details, make sure to check https://sigrok.org/wiki/Input_output_formats[the wiki].
+
+=== Import
+
+The first step to importing data from a file is to know what format the data in the file is
+encoded in. There are common, not-so-common and outright exotic ways to represent data and sigrok
+tries to suit as many needs as it can. To see which formats your version of PulseView supports,
+just click on the small arrow next to the _Open_ button:
+
+image::pv_import.png[]
+
+After choosing the format that you want to use, PulseView will ask for the file name to open.
+Once you picked the file, you may be asked to specify the details of the format, if the input
+module requires them.
+
+For example, the VCD import will ask you for these:
+
+* Compress idle periods: Compress idle periods longer than the specified value (default 0)
+* Downsampling factor: Downsample, i.e. divide the samplerate by the specified factor (default 1)
+* Number of logic channels: The number of (logic) channels in the data (default 0)
+* Skip samples until timestamp: Skip samples until the specified timestamp; < 0: Skip until first timestamp listed; 0: Don't skip (default -1)
+
+
+A click on _Ok_ then loads the data from the selected file and you can work with it.
+
+=== Export
+
+Export works just the same as the import: clicking on the small arrow next to the _Save_ button
+brings up the export menu. Simply choose the format you want to use and proceed.

@@ -25,6 +25,7 @@ Requirements
  - libsigrokcxx >= 0.6.0 (libsigrok C++ bindings)
  - libsigrokdecode >= 0.6.0
  - libsigrokandroidutils >= 0.1.0 (optional, only needed on Android)
+ - Asciidoctor (optional, only needed to build the manual)
 
 
 Building and installing
@@ -56,3 +57,22 @@ In order to build a source package begin with an unconfigured source tree.
  $ cmake ..
  $ make package_source
 
+
+Generating the manual
+---------------------
+
+To generate the HTML manual, you only need Asciidoctor. If you also want
+to generate the PDF manual, you need to install asciidoctor-pdf as well
+and make it available for execution:
+
+ $ gem install --pre asciidoctor-pdf
+ $ export PATH=~/.gem/ruby/2.3.0/bin:$PATH
+
+Then, to build the PulseView manual, run:
+
+ $ cd manual
+ $ ./generate
+
+Note: The stylesheet used is a lightly modified version of "Read The Docs"
+from the Asciidoctor stylesheet factory:
+https://asciidoctor.org/docs/user-manual/#stylesheet-factory

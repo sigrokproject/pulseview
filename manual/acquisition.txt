@@ -1,0 +1,120 @@
+== Data Acquisition
+
+Working with PulseView follows a pattern:
+
+image::pv_nodevice.png[]
+<1> Open a new session
+<2> Select the device you want to work with:
+<3> Click "Run" to acquire signal data (waiting for a trigger first if you set one)
+
+When you start PulseView and no sessions are restored from the last time you used it, it will
+come up with a session that has the demo device selected. That way, you can get to know the
+program even when you don't have any hardware to use it with.
+
+=== Device Selection
+
+The device selector offers two methods to choose the device to use. If you click on the small
+arrow on the side, you see a list of devices PulseView has recognized. If the device you want
+to use it listed, you can just select it here to use it.
+
+image::device_selector_dropdown.png[]
+
+If it's not listed, you'll need to scan for it first. Since most serial port and Ethernet
+devices can't be auto-detected, this is usually required for those.
+To do so, either choose the "Connect to Device" option from the list or click on the button
+itself. You will see the following dialog:
+
+image::device_selector_scan.png[]
+
+First, you'll need to pick a driver that you want to use. In order to do this, you'll need
+to know which driver is used to talk to the device. If you're unsure, you can either try the
+driver which you think may fit best or you can check the wiki. For every supported device there's
+a wiki page, showing you which driver is used.
+
+Once the driver has been chosen, you need to select the interface. Please be aware that USB
+is only usable for devices that directly communicate over USB. Devices that use USB to emulate
+a serial port (like the OpenBench Logic Sniffer) will have their serial port listed in the
+serial port drop-down.
+
+In case your device connects via Ethernet, you must supply the IP address and port. You are
+also given the option to choose between raw TCP access and using the VXI protocol. VXI is an
+industry standard which is mainly used in professional equipment and the device will most
+likely let you know that it supports VXI. If your device however is more of a hobbyist grade
+device, it's more likely that using raw TCP will be the correct choice.
+
+After you selected the appropriate options, clicking the scan button will make PulseView try
+to connect to the device with the given settings. If successful, any device(s) found will be
+shown in the list box.
+
+[NOTE]
+When a session uses a USB device and you close Pulseview, a session with that same device
+is re-opened when you start Pulseview again. Currently, this is however not the case for non-USB
+devices, such as ones that connect via serial port or Ethernet.
+
+[NOTE]
+To avoid having to manually enter the device configuration for a serial port or Ethernet
+device every time you want to use it and then having to scan for it, you can also use the
+command line parameter -d to have PulseView scan for it on startup.
+
+=== Device Configuration
+
+In PulseView, the device configuration is done using these buttons:
+
+image::pv_device_config.png[]
+<1> Device-specific settings
+<2> Channel-specific settings
+<3> Number of samples to capture
+<4> Sample rate at which to capture the samples
+<5> Per-channel trigger setting (see below)
+
+The values offered for those four elements depend on your device. Which settings you should choose
+depends on several factors: the needs of your measurement, the device you use to capture the data
+and the capabilities of your computer.
+
+The sample rate you choose must at least be twice that of the highest frequency you want to
+capture - ideally 3 to 5 times as much so that you have some margin. That way, a jittering signal
+won't ruin your measurements.
+
+[NOTE]
+If you're using a device with a Cypress FX2 (most 8 channel / 24 MHz logic analyzers do) then you should
+be aware that the 24 MHz sampling rate (12 MHz for 16 channels) can only be sustained under perfect
+conditions. Usually, those devices are shipped with low-quality USB cables, impairing USB transfers as
+USB traffic increases. Therefore, you can try a different USB cable if you're facing issues at higher
+sample rates. If they persist, it's worth trying a different USB port as well.
+
+=== Triggers
+
+The signal labels on the left side of the view (D0, D1 and so on in the picture above) allow you to
+configure certain aspects of these signals. If the device supports it then the trigger that will be
+used for this signal will be among them.
+
+As of now, the trigger system is awaiting extension for advanced and complex trigger types, meaning
+that the only triggers available to you are:
+
+* Trigger when the signal has a "low" level
+* Trigger when the signal has a "high" level
+* Trigger when the signal switches from "low" to "high" level (rising edge)
+* Trigger when the signal switches from "hig" to "low" level (falling edge)
+* Trigger when the signal changes level in any way (any edge)
+
+Once you choose a trigger, the icon for the type you chose becomes visible on the right side of the
+trace view.
+
+When you click "Run" with a trigger configured, PulseView will wait for the device to trigger and
+send data before it can show anything. There is currently no frame limit, so if the device driver
+supports it, PulseView will continue arming the trigger and collecting data until you either click
+"Stop" or it runs out of memory.
+
+=== Channel Groups
+
+Some devices share certain settings between a group of channels, which is why PulseView may show
+the channels your device offers in groups. You can see which channels are grouped by looking at the
+dark gray bar on the left. If there is none, no channels are grouped.
+
+Currently, the grouping is only done for your convenience and there's no direct functional impact.
+This means that you're free to ungroup and group channels as you please. To do so, right-click
+on the dark gray bar and select "Ungroup".
+If you want to create a new group, select the signals you want to group by holding down CTRL
+and clicking on the signal labels. Once you have selected the ones you want to be grouped,
+right-click on one of the labels you selected and choose "Group".
+
