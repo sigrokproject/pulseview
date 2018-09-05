@@ -20,6 +20,8 @@
 #include "logging.hpp"
 #include "globalsettings.hpp"
 
+#include <iostream>
+
 #ifdef ENABLE_DECODE
 #include <libsigrokdecode/libsigrokdecode.h> /* First, so we avoid a _POSIX_C_SOURCE warning. */
 #endif
@@ -28,6 +30,8 @@
 
 #include <QApplication>
 
+using std::cout;
+using std::endl;
 using std::lock_guard;
 
 namespace pv {
@@ -148,6 +152,8 @@ void Logging::log_pv(QtMsgType type, const QMessageLogContext &context, const QS
 	(void)context;
 
 	logging.log(msg, LogSource_pv);
+
+	cout << msg.toUtf8().data() << endl;
 }
 
 int Logging::log_sr(void *cb_data, int loglevel, const char *format, va_list args)
