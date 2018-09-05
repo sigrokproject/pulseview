@@ -129,6 +129,10 @@ Device::Device(shared_ptr<sigrok::Configurable> configurable) :
 				bind_int(name, "", "", pair<int64_t, int64_t>(1, 500), get, set);
 			break;
 
+		case SR_CONF_AVG_SAMPLES:
+			bind_int(name, "", "", pair<int64_t, int64_t>(0, INT32_MAX), get, set);
+			break;
+
 		default:
 			break;
 		}
