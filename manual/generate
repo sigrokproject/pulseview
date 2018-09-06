@@ -23,6 +23,6 @@ asciidoctor -a stylesheet=readthedocs.css -a stylesdir=asciidoctor-stylesheet-fa
 echo " --> pulseview_manual.html OK"
 
 # Run asciidoctor-pdf only if it can be found in $PATH
-#echo "Trying to generate PDF output..."
-#type asciidoctor-pdf && asciidoctor-pdf -a stylesheet=readthedocs.css -a stylesdir=asciidoctor-stylesheet-factory/stylesheets pulseview_manual.txt || exit
-#echo " --> pulseview_manual.pdf OK"
+echo "Trying to generate PDF output..."
+type asciidoctor-pdf && asciidoctor-pdf -a stylesheet=readthedocs.css -a stylesdir=asciidoctor-stylesheet-factory/stylesheets pulseview_manual.txt || exit
+echo " --> pulseview_manual.pdf OK"
