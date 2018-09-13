@@ -159,7 +159,7 @@ private:
 	 * @return Returns a pair containing the start sample and the end
 	 * 	sample that correspond to the start and end coordinates.
 	 */
-	pair<uint64_t, uint64_t> get_sample_range(int x_start, int x_end) const;
+	pair<uint64_t, uint64_t> get_view_sample_range(int x_start, int x_end) const;
 
 	QColor get_row_color(int row_index) const;
 	QColor get_annotation_color(QColor row_color, int annotation_index) const;

@@ -173,7 +173,7 @@ void DecodeTrace::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 
 	// Iterate through the rows
 	int y = get_visual_y();
-	pair<uint64_t, uint64_t> sample_range = get_sample_range(pp.left(), pp.right());
+	pair<uint64_t, uint64_t> sample_range = get_view_sample_range(pp.left(), pp.right());
 
 	// Just because the view says we see a certain sample range it
 	// doesn't mean we have this many decoded samples, too, so crop
@@ -336,7 +336,7 @@ QMenu* DecodeTrace::create_view_context_menu(QWidget *parent, QPoint &click_pos)
 
 	// Default sample range is "from here"
 	const pair<uint64_t, uint64_t> sample_range =
-		get_sample_range(click_pos.x(), click_pos.x() + 1);
+		get_view_sample_range(click_pos.x(), click_pos.x() + 1);
 	selected_sample_range_ = make_pair(sample_range.first, numeric_limits<uint64_t>::max());
 
 	QMenu *const menu = new QMenu(parent);
@@ -719,7 +719,7 @@ pair<double, double> DecodeTrace::get_pixels_offset_samples_per_pixel() const
 	return make_pair(pixels_offset, samplerate * scale);
 }
 
-pair<uint64_t, uint64_t> DecodeTrace::get_sample_range(
+pair<uint64_t, uint64_t> DecodeTrace::get_view_sample_range(
 	int x_start, int x_end) const
 {
 	double samples_per_pixel, pixels_offset;
@@ -789,7 +789,7 @@ const QString DecodeTrace::get_annotation_at_point(const QPoint &point)
 		return QString();
 
 	const pair<uint64_t, uint64_t> sample_range =
-		get_sample_range(point.x(), point.x() + 1);
+		get_view_sample_range(point.x(), point.x() + 1);
 	const int row = get_row_at_point(point);
 	if (row < 0)
 		return QString();
