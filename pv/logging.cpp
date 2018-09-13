@@ -53,12 +53,12 @@ Logging::~Logging()
 {
 	qInstallMessageHandler(nullptr);
 	sr_log_callback_set(prev_sr_log_cb, prev_sr_log_cb_data);
-	prev_sr_log_cb = NULL;
-	prev_sr_log_cb_data = NULL;
+	prev_sr_log_cb = nullptr;
+	prev_sr_log_cb_data = nullptr;
 #ifdef ENABLE_DECODE
 	srd_log_callback_set(prev_srd_log_cb, prev_srd_log_cb_data);
-	prev_srd_log_cb = NULL;
-	prev_srd_log_cb_data = NULL;
+	prev_srd_log_cb = nullptr;
+	prev_srd_log_cb_data = nullptr;
 #endif
 
 	GlobalSettings::remove_change_handler(this);

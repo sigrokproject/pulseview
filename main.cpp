@@ -236,7 +236,7 @@ int main(int argc, char *argv[])
 			break;
 
 		case 'i':
-			open_files.push_back(optarg);
+			open_files.emplace_back(optarg);
 			break;
 
 		case 'I':
@@ -252,7 +252,7 @@ int main(int argc, char *argv[])
 	argv += optind;
 
 	for (int i = 0; i < argc; i++)
-		open_files.push_back(argv[i]);
+		open_files.emplace_back(argv[i]);
 
 	// Prepare the global settings since logging needs them early on
 	pv::GlobalSettings settings;
