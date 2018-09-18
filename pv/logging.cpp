@@ -52,11 +52,13 @@ static void *prev_srd_log_cb_data;
 Logging::~Logging()
 {
 	qInstallMessageHandler(nullptr);
-	sr_log_callback_set(prev_sr_log_cb, prev_sr_log_cb_data);
+	if (prev_sr_log_cb)
+		sr_log_callback_set(prev_sr_log_cb, prev_sr_log_cb_data);
 	prev_sr_log_cb = nullptr;
 	prev_sr_log_cb_data = nullptr;
 #ifdef ENABLE_DECODE
-	srd_log_callback_set(prev_srd_log_cb, prev_srd_log_cb_data);
+	if (prev_srd_log_cb)
+		srd_log_callback_set(prev_srd_log_cb, prev_srd_log_cb_data);
 	prev_srd_log_cb = nullptr;
 	prev_srd_log_cb_data = nullptr;
 #endif
