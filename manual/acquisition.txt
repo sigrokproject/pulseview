@@ -56,6 +56,20 @@ To avoid having to manually enter the device configuration for a serial port or 
 device every time you want to use it and then having to scan for it, you can also use the
 command line parameter -d to have PulseView scan for it on startup.
 
+You may then change the device configuration and/or start the data acquisition by clicking
+the "Run" button on the top left.
+
+When you run the acquisition, you'll notice that the newly captured data goes off-screen.
+This is to improve performance and let PulseView acquire the data without bogging down your
+CPU too much. If you find this inconvenient because you'd like to see what kind of data is
+coming in, you have three options:
+
+* Enable "always perform zoom-to-fit" temporarily (see chapter "Data Analysis")
+* Enable "constantly perform zoom-to-fit during acquisition" in the options
+* Enable "always keep newest samples at the right edge during capture" in the options
+
+Which method suits you best is up for you to decide.
+
 === Device Configuration
 
 In PulseView, the device configuration is done using these buttons:
