@@ -41,6 +41,7 @@ const QString GlobalSettings::Key_View_ConversionThresholdDispMode = "View_Conve
 const QString GlobalSettings::Key_View_DefaultDivHeight = "View_DefaultDivHeight";
 const QString GlobalSettings::Key_View_DefaultLogicHeight = "View_DefaultLogicHeight";
 const QString GlobalSettings::Key_View_ShowHoverMarker = "View_ShowHoverMarker";
+const QString GlobalSettings::Key_View_SnapDistance = "View_SnapDistance";
 const QString GlobalSettings::Key_Dec_InitialStateConfigurable = "Dec_InitialStateConfigurable";
 const QString GlobalSettings::Key_Dec_ExportFormat = "Dec_ExportFormat";
 const QString GlobalSettings::Key_Log_BufferSize = "Log_BufferSize";
@@ -77,6 +78,9 @@ void GlobalSettings::set_defaults_where_needed()
 	if (!contains(Key_View_DefaultLogicHeight))
 		setValue(Key_View_DefaultLogicHeight,
 		2 * QFontMetrics(QApplication::font()).height());
+
+	if (!contains(Key_View_SnapDistance))
+		setValue(Key_View_SnapDistance, 15);
 
 	if (!contains(Key_Dec_ExportFormat))
 		setValue(Key_Dec_ExportFormat, "%s %d: %c: %1");

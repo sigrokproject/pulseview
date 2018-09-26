@@ -237,6 +237,15 @@ QWidget *Settings::get_view_settings_form(QWidget *parent) const
 		SLOT(on_view_showHoverMarker_changed(int)));
 	trace_view_layout->addRow(tr("Highlight mouse cursor using a vertical marker line"), cb);
 
+	QSpinBox *snap_distance_sb = new QSpinBox();
+	snap_distance_sb->setRange(0, 1000);
+	snap_distance_sb->setSuffix(tr(" pixels"));
+	snap_distance_sb->setValue(
+		settings.value(GlobalSettings::Key_View_SnapDistance).toInt());
+	connect(snap_distance_sb, SIGNAL(valueChanged(int)), this,
+		SLOT(on_view_snapDistance_changed(int)));
+	trace_view_layout->addRow(tr("Maximum distance from edges before cursors snap to them"), snap_distance_sb);
+
 	QComboBox *thr_disp_mode_cb = new QComboBox();
 	thr_disp_mode_cb->addItem(tr("None"), GlobalSettings::ConvThrDispMode_None);
 	thr_disp_mode_cb->addItem(tr("Background"), GlobalSettings::ConvThrDispMode_Background);
@@ -624,6 +633,12 @@ void Settings::on_view_showHoverMarker_changed(int state)
 {
 	GlobalSettings settings;
 	settings.setValue(GlobalSettings::Key_View_ShowHoverMarker, state ? true : false);
+}
+
+void Settings::on_view_snapDistance_changed(int value)
+{
+	GlobalSettings settings;
+	settings.setValue(GlobalSettings::Key_View_SnapDistance, value);
 }
 
 void Settings::on_view_conversionThresholdDispMode_changed(int state)

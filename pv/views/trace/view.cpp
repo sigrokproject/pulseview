@@ -178,6 +178,7 @@ View::View(Session &session, bool is_main_view, QWidget *parent) :
 	// Set up settings and event handlers
 	GlobalSettings settings;
 	colored_bg_ = settings.value(GlobalSettings::Key_View_ColoredBG).toBool();
+	snap_distance_ = settings.value(GlobalSettings::Key_View_SnapDistance).toInt();
 
 	GlobalSettings::add_change_handler(this);
 
@@ -860,6 +861,9 @@ const QPoint& View::hover_point() const
 
 int64_t View::get_nearest_level_change(const QPoint &p) const
 {
+	if (snap_distance_ == 0)
+		return -1;
+
 	shared_ptr<Signal> signal = signal_under_mouse_cursor_;
 
 	if (!signal)
@@ -887,9 +891,9 @@ int64_t View::get_nearest_level_change(const QPoint &p) const
 	int64_t nearest = -1;
 
 	// Only use closest left or right edge if they're close to the cursor
-	if ((left_delta < right_delta) && (left_delta < 15))
+	if ((left_delta < right_delta) && (left_delta < snap_distance_))
 		nearest = edges.front().first;
-	if ((left_delta >= right_delta) && (right_delta < 15))
+	if ((left_delta >= right_delta) && (right_delta < snap_distance_))
 		nearest = edges.back().first;
 
 	return nearest;
@@ -926,6 +930,11 @@ void View::on_setting_changed(const QString &key, const QVariant &value)
 {
 	if (key == GlobalSettings::Key_View_TriggerIsZeroTime)
 		on_settingViewTriggerIsZeroTime_changed(value);
+
+	if (key == GlobalSettings::Key_View_SnapDistance) {
+		GlobalSettings settings;
+		snap_distance_ = settings.value(GlobalSettings::Key_View_SnapDistance).toInt();
+	}
 }
 
 void View::trigger_event(int segment_id, util::Timestamp location)

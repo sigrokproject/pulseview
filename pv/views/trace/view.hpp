@@ -529,6 +529,7 @@ private:
 
 	QPoint hover_point_;
 	shared_ptr<Signal> signal_under_mouse_cursor_;
+	uint16_t snap_distance_;
 
 	unsigned int sticky_events_;
 	QTimer lazy_event_handler_;
