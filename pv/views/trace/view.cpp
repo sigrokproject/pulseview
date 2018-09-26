@@ -320,6 +320,11 @@ void View::remove_decode_signal(shared_ptr<data::DecodeSignal> signal)
 }
 #endif
 
+shared_ptr<Signal> View::get_signal_under_mouse_cursor() const
+{
+	return signal_under_mouse_cursor_;
+}
+
 View* View::view()
 {
 	return this;
@@ -853,6 +858,43 @@ const QPoint& View::hover_point() const
 	return hover_point_;
 }
 
+int64_t View::get_nearest_level_change(const QPoint &p) const
+{
+	shared_ptr<Signal> signal = signal_under_mouse_cursor_;
+
+	if (!signal)
+		return -1;
+
+	// Calculate sample number from cursor position
+	const double samples_per_pixel = signal->base()->get_samplerate() * scale();
+	const int64_t x_offset = offset().convert_to<double>() / scale();
+	const int64_t sample_num = max(((x_offset + p.x()) * samples_per_pixel), 0.0);
+
+	// Query for nearest level changes
+	vector<data::LogicSegment::EdgePair> edges =
+		signal->get_nearest_level_changes(sample_num);
+
+	if (edges.size() != 2)
+		return -1;
+
+	// We received absolute sample numbers, make them relative
+	const int64_t left_sample_delta = sample_num - edges.front().first;
+	const int64_t right_sample_delta = edges.back().first - sample_num - 1;
+
+	const int64_t left_delta = left_sample_delta / samples_per_pixel;
+	const int64_t right_delta = right_sample_delta / samples_per_pixel;
+
+	int64_t nearest = -1;
+
+	// Only use closest left or right edge if they're close to the cursor
+	if ((left_delta < right_delta) && (left_delta < 15))
+		nearest = edges.front().first;
+	if ((left_delta >= right_delta) && (right_delta < 15))
+		nearest = edges.back().first;
+
+	return nearest;
+}
+
 void View::restack_all_trace_tree_items()
 {
 	// Make a list of owners that is sorted from deepest first
@@ -1280,11 +1322,24 @@ void View::resizeEvent(QResizeEvent* event)
 
 void View::update_hover_point()
 {
+	// Determine signal that the mouse cursor is hovering over
+	signal_under_mouse_cursor_.reset();
+	for (shared_ptr<Signal> s : signals_) {
+		const pair<int, int> extents = s->v_extents();
+		const int top = s->get_visual_y() + extents.first;
+		const int btm = s->get_visual_y() + extents.second;
+		if ((hover_point_.y() >= top) && (hover_point_.y() <= btm)
+			&& s->base()->enabled())
+			signal_under_mouse_cursor_ = s;
+	}
+
+	// Update all trace tree items
 	const vector<shared_ptr<TraceTreeItem>> trace_tree_items(
 		list_by_type<TraceTreeItem>());
 	for (shared_ptr<TraceTreeItem> r : trace_tree_items)
 		r->hover_point_changed(hover_point_);
 
+	// Notify any other listeners
 	hover_point_changed(hover_point_);
 }
 

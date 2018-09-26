@@ -57,6 +57,8 @@ using sigrok::Trigger;
 using sigrok::TriggerMatch;
 using sigrok::TriggerMatchType;
 
+using pv::data::LogicSegment;
+
 namespace pv {
 namespace views {
 namespace trace {
@@ -181,7 +183,7 @@ void LogicSignal::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 	const float high_offset = y - signal_height_ + 0.5f;
 	const float low_offset = y + 0.5f;
 
-	shared_ptr<pv::data::LogicSegment> segment = get_logic_segment_to_paint();
+	shared_ptr<LogicSegment> segment = get_logic_segment_to_paint();
 	if (!segment || (segment->get_sample_count() == 0))
 		return;
 
@@ -320,49 +322,31 @@ void LogicSignal::paint_fore(QPainter &p, ViewItemPaintParams &pp)
 	}
 }
 
-void LogicSignal::hover_point_changed(const QPoint &hp)
+vector<LogicSegment::EdgePair> LogicSignal::get_nearest_level_changes(uint64_t sample_pos)
 {
-	Signal::hover_point_changed(hp);
-
 	assert(base_);
 	assert(owner_);
 
-	if ((!base_->enabled()) || (hp.x() == 0))
-		return;
+	if (sample_pos == 0)
+		return vector<LogicSegment::EdgePair>();
 
-	// Ignore if mouse cursor is not hovering over this trace
-	const int y = get_visual_y();
-	const pair<int, int> extents = v_extents();
-	if ((hp.y() < (y + extents.first)) || ((hp.y() > (y + extents.second))))
-		return;
-
-	shared_ptr<pv::data::LogicSegment> segment = get_logic_segment_to_paint();
+	shared_ptr<LogicSegment> segment = get_logic_segment_to_paint();
 	if (!segment || (segment->get_sample_count() == 0))
-		return;
-
-	double samplerate = segment->samplerate();
-
-	// Show sample rate as 1Hz when it is unknown
-	if (samplerate == 0.0)
-		samplerate = 1.0;
+		return vector<LogicSegment::EdgePair>();
 
 	const View *view = owner_->view();
 	assert(view);
-	const double scale = view->scale();
-	const double pixels_offset =
-		((view->offset() - segment->start_time()) / scale).convert_to<double>();
-	const double samples_per_pixel = samplerate * scale;
+	const double samples_per_pixel = base_->get_samplerate() * view->scale();
 
-	const uint64_t sample_pos = (uint64_t)max(
-		(hp.x() + pixels_offset) * samples_per_pixel, 0.0);
-
-	vector<data::LogicSegment::EdgePair> edges;
+	vector<LogicSegment::EdgePair> edges;
 
 	segment->get_surrounding_edges(edges, sample_pos,
 		samples_per_pixel / Oversampling, base_->index());
 
 	if (edges.empty())
-		return;
+		return vector<LogicSegment::EdgePair>();
+
+	return edges;
 }
 
 void LogicSignal::paint_caps(QPainter &p, QLineF *const lines,

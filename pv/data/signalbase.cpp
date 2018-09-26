@@ -265,6 +265,26 @@ bool SignalBase::has_samples() const
 	return result;
 }
 
+double SignalBase::get_samplerate() const
+{
+	if (channel_type_ == AnalogChannel)
+	{
+		shared_ptr<Analog> data = dynamic_pointer_cast<Analog>(data_);
+		if (data)
+			return data->get_samplerate();
+	}
+
+	if (channel_type_ == LogicChannel)
+	{
+		shared_ptr<Logic> data = dynamic_pointer_cast<Logic>(data_);
+		if (data)
+			return data->get_samplerate();
+	}
+
+	// Default samplerate is 1 Hz
+	return 1.0;
+}
+
 SignalBase::ConversionType SignalBase::get_conversion_type() const
 {
 	return conversion_type_;

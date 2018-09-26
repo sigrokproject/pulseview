@@ -69,6 +69,14 @@ void Logic::clear()
 	samples_cleared();
 }
 
+double Logic::get_samplerate() const
+{
+	if (segments_.empty())
+		return 1.0;
+
+	return segments_.front()->samplerate();
+}
+
 uint64_t Logic::max_sample_count() const
 {
 	uint64_t l = 0;

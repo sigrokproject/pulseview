@@ -53,6 +53,8 @@ public:
 
 	void clear();
 
+	double get_samplerate() const;
+
 	uint64_t max_sample_count() const;
 
 	void notify_samples_added(QObject* segment, uint64_t start_sample,

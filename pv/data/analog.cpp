@@ -63,6 +63,14 @@ void Analog::clear()
 	samples_cleared();
 }
 
+double Analog::get_samplerate() const
+{
+	if (segments_.empty())
+		return 1.0;
+
+	return segments_.front()->samplerate();
+}
+
 uint64_t Analog::max_sample_count() const
 {
 	uint64_t l = 0;

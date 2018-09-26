@@ -50,6 +50,8 @@ public:
 	virtual void clear() = 0;
 
 	virtual uint64_t max_sample_count() const = 0;
+
+	virtual double get_samplerate() const = 0;
 };
 
 } // namespace data

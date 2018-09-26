@@ -103,7 +103,14 @@ public:
 	 */
 	virtual void paint_fore(QPainter &p, ViewItemPaintParams &pp);
 
-	virtual void hover_point_changed(const QPoint &hp);
+	/**
+	 * Determines the closest level change (i.e. edge) to a given sample, which
+	 * is useful for e.g. the "snap to edge" functionality.
+	 *
+	 * @param sample_pos Sample to use
+	 * @return The changes left and right of the given position
+	 */
+	virtual vector<data::LogicSegment::EdgePair> get_nearest_level_changes(uint64_t sample_pos);
 
 private:
 	void paint_caps(QPainter &p, QLineF *const lines,

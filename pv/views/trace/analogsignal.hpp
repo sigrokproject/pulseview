@@ -141,6 +141,15 @@ private:
 
 	void update_conversion_widgets();
 
+	/**
+	 * Determines the closest level change (i.e. edge) to a given sample, which
+	 * is useful for e.g. the "snap to edge" functionality.
+	 *
+	 * @param sample_pos Sample to use
+	 * @return The changes left and right of the given position
+	 */
+	virtual vector<data::LogicSegment::EdgePair> get_nearest_level_changes(uint64_t sample_pos);
+
 	void perform_autoranging(bool keep_divs, bool force_update);
 
 	void reset_pixel_values();

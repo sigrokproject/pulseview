@@ -193,6 +193,11 @@ public:
 	bool has_samples() const;
 
 	/**
+	 * Returns the sample rate for this signal.
+	 */
+	double get_samplerate() const;
+
+	/**
 	 * Queries the kind of conversion performed on this channel.
 	 */
 	ConversionType get_conversion_type() const;

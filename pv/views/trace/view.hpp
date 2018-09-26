@@ -129,6 +129,8 @@ public:
 	virtual void remove_decode_signal(shared_ptr<data::DecodeSignal> signal);
 #endif
 
+	shared_ptr<Signal> get_signal_under_mouse_cursor() const;
+
 	/**
 	 * Returns the view of the owner.
 	 */
@@ -300,6 +302,15 @@ public:
 	vector< shared_ptr<Flag> > flags() const;
 
 	const QPoint& hover_point() const;
+
+	/**
+	 * Determines the closest level change (i.e. edge) to a given point, which
+	 * is useful for e.g. the "snap to edge" functionality.
+	 *
+	 * @param p The current position of the mouse cursor
+	 * @return The sample number of the nearest level change or -1 if none
+	 */
+	int64_t get_nearest_level_change(const QPoint &p) const;
 
 	void restack_all_trace_tree_items();
 
@@ -517,6 +528,7 @@ private:
 	vector< shared_ptr<TriggerMarker> > trigger_markers_;
 
 	QPoint hover_point_;
+	shared_ptr<Signal> signal_under_mouse_cursor_;
 
 	unsigned int sticky_events_;
 	QTimer lazy_event_handler_;

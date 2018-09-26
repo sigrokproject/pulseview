@@ -80,7 +80,9 @@ float TimeMarker::get_x() const
 
 QPoint TimeMarker::drag_point(const QRect &rect) const
 {
-	return QPoint(get_x(), rect.bottom());
+	(void)rect;
+
+	return QPoint(get_x(), view_.mapFromGlobal(QCursor::pos()).y());
 }
 
 QRectF TimeMarker::label_rect(const QRectF &rect) const
