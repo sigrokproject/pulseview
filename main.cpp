@@ -36,6 +36,8 @@
 #include <QSettings>
 #include <QTextStream>
 
+#include "config.h"
+
 #ifdef ENABLE_SIGNALS
 #include "signalhandler.hpp"
 #endif
@@ -58,8 +60,6 @@
 #include "android/assetreader.hpp"
 #include "android/loghandler.hpp"
 #endif
-
-#include "config.h"
 
 #ifdef _WIN32
 #include <QtPlugin>
@@ -166,6 +166,7 @@ int main(int argc, char *argv[])
 	vector<string> open_files;
 	bool restore_sessions = true;
 	bool do_scan = true;
+	bool show_version = false;
 
 	Application a(argc, argv);
 
@@ -202,9 +203,8 @@ int main(int argc, char *argv[])
 			return 0;
 
 		case 'V':
-			// Print version info
-			fprintf(stdout, "%s %s\n", PV_TITLE, PV_VERSION_STRING);
-			return 0;
+			show_version = true;
+			break;
 
 		case 'l':
 		{
@@ -300,32 +300,37 @@ int main(int argc, char *argv[])
 		// Create the device manager, initialise the drivers
 		pv::DeviceManager device_manager(context, driver, do_scan);
 
-		// Initialise the main window
-		pv::MainWindow w(device_manager);
-		w.show();
+		a.collect_version_info(context);
+		if (show_version) {
+			a.print_version_info();
+		} else {
+			// Initialise the main window
+			pv::MainWindow w(device_manager);
+			w.show();
 
-		if (restore_sessions)
-			w.restore_sessions();
+			if (restore_sessions)
+				w.restore_sessions();
 
-		if (open_files.empty())
-			w.add_default_session();
-		else
-			for (string open_file : open_files)
-				w.add_session_with_file(open_file, open_file_format);
+			if (open_files.empty())
+				w.add_default_session();
+			else
+				for (string open_file : open_files)
+					w.add_session_with_file(open_file, open_file_format);
 
 #ifdef ENABLE_SIGNALS
-		if (SignalHandler::prepare_signals()) {
-			SignalHandler *const handler = new SignalHandler(&w);
-			QObject::connect(handler, SIGNAL(int_received()),
-				&w, SLOT(close()));
-			QObject::connect(handler, SIGNAL(term_received()),
-				&w, SLOT(close()));
-		} else
-			qWarning() << "Could not prepare signal handler.";
+			if (SignalHandler::prepare_signals()) {
+				SignalHandler *const handler = new SignalHandler(&w);
+				QObject::connect(handler, SIGNAL(int_received()),
+					&w, SLOT(close()));
+				QObject::connect(handler, SIGNAL(term_received()),
+					&w, SLOT(close()));
+			} else
+				qWarning() << "Could not prepare signal handler.";
 #endif
 
-		// Run the application
-		ret = a.exec();
+			// Run the application
+			ret = a.exec();
+		}
 
 #ifndef ENABLE_STACKTRACE
 		} catch (exception& e) {

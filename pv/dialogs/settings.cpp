@@ -20,7 +20,6 @@
 #include "config.h"
 
 #include <glib.h>
-#include <boost/version.hpp>
 
 #include <QApplication>
 #include <QComboBox>
@@ -43,6 +42,7 @@
 
 #include "settings.hpp"
 
+#include "pv/application.hpp"
 #include "pv/devicemanager.hpp"
 #include "pv/globalsettings.hpp"
 #include "pv/logging.hpp"
@@ -318,34 +318,19 @@ QWidget *Settings::get_decoder_settings_form(QWidget *parent)
 #endif
 }
 
-#ifdef ENABLE_DECODE
-static gint sort_pds(gconstpointer a, gconstpointer b)
-{
-	const struct srd_decoder *sda, *sdb;
-
-	sda = (const struct srd_decoder *)a;
-	sdb = (const struct srd_decoder *)b;
-	return strcmp(sda->id, sdb->id);
-}
-#endif
-
 QWidget *Settings::get_about_page(QWidget *parent) const
 {
-#ifdef ENABLE_DECODE
-	struct srd_decoder *dec;
-#endif
+	Application* a = qobject_cast<Application*>(QApplication::instance());
 
 	QLabel *icon = new QLabel();
 	icon->setPixmap(QPixmap(QString::fromUtf8(":/icons/pulseview.svg")));
 
-	/* Setup the license field, with the project homepage link. */
+	// Setup the license field with the project homepage link
 	QLabel *gpl_home_info = new QLabel();
 	gpl_home_info->setText(tr("%1<br /><a href=\"http://%2\">%2</a>").arg(
 		tr("GNU GPL, version 3 or later"),
 		QApplication::organizationDomain()));
 	gpl_home_info->setOpenExternalLinks(true);
-
-	shared_ptr<sigrok::Context> context = device_manager_.context();
 
 	QString s;
 
@@ -353,132 +338,54 @@ QWidget *Settings::get_about_page(QWidget *parent) const
 
 	s.append("<table>");
 
-	/* Version, library, and feature info */
 	s.append("<tr><td colspan=\"2\"><b>" +
 		tr("Versions, libraries and features:") + "</b></td></tr>");
-
-	s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
-		.arg(QApplication::applicationName(),
-		QApplication::applicationVersion()));
-	s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
-		.arg(QString("Qt"), qVersion()));
-	s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
-		.arg(QString("glibmm"), PV_GLIBMM_VERSION));
-	s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
-		.arg(QString("Boost"), BOOST_LIB_VERSION));
-
-	s.append(QString("<tr><td><i>%1</i></td><td>%2/%3 (rt: %4/%5)</td></tr>")
-		.arg(QString("libsigrok"), SR_PACKAGE_VERSION_STRING,
-		SR_LIB_VERSION_STRING, sr_package_version_string_get(),
-		sr_lib_version_string_get()));
-
-	GSList *l_orig = sr_buildinfo_libs_get();
-	for (GSList *l = l_orig; l; l = l->next) {
-		GSList *m = (GSList *)l->data;
-		const char *lib = (const char *)m->data;
-		const char *version = (const char *)m->next->data;
-		s.append(QString("<tr><td><i>- %1</i></td><td>%2</td></tr>")
-			.arg(QString(lib), QString(version)));
-		g_slist_free_full(m, g_free);
-	}
-	g_slist_free(l_orig);
-
-	char *host = sr_buildinfo_host_get();
-	s.append(QString("<tr><td><i>- Host</i></td><td>%1</td></tr>")
-		.arg(QString(host)));
-	g_free(host);
-
-	char *scpi_backends = sr_buildinfo_scpi_backends_get();
-	s.append(QString("<tr><td><i>- SCPI backends</i></td><td>%1</td></tr>")
-		.arg(QString(scpi_backends)));
-	g_free(scpi_backends);
-
-#ifdef ENABLE_DECODE
-	s.append(QString("<tr><td><i>%1</i></td><td>%2/%3 (rt: %4/%5)</td></tr>")
-		.arg(QString("libsigrokdecode"), SRD_PACKAGE_VERSION_STRING,
-		SRD_LIB_VERSION_STRING, srd_package_version_string_get(),
-		srd_lib_version_string_get()));
-
-	l_orig = srd_buildinfo_libs_get();
-	for (GSList *l = l_orig; l; l = l->next) {
-		GSList *m = (GSList *)l->data;
-		const char *lib = (const char *)m->data;
-		const char *version = (const char *)m->next->data;
-		s.append(QString("<tr><td><i>- %1</i></td><td>%2</td></tr>")
-			.arg(QString(lib), QString(version)));
-		g_slist_free_full(m, g_free);
-	}
-	g_slist_free(l_orig);
-
-	host = srd_buildinfo_host_get();
-	s.append(QString("<tr><td><i>- Host</i></td><td>%1</td></tr>")
-		.arg(QString(host)));
-	g_free(host);
-#endif
+	for (pair<QString, QString> &entry : a->get_version_info())
+		s.append(QString("<tr><td><i>%1</i></td><td>%2</td></tr>")
+			.arg(entry.first, entry.second));
 
 	s.append("<tr><td colspan=\"2\"></td></tr>");
 	s.append("<tr><td colspan=\"2\"><b>" +
 		tr("Firmware search paths:") + "</b></td></tr>");
-
-	l_orig = sr_resourcepaths_get(SR_RESOURCE_FIRMWARE);
-	for (GSList *l = l_orig; l; l = l->next)
-		s.append(QString("<tr><td colspan=\"2\">%1</td></tr>").arg(
-			QString((char*)l->data)));
-	g_slist_free_full(l_orig, g_free);
+	for (QString &entry : a->get_fw_path_list())
+		s.append(QString("<tr><td colspan=\"2\">%1</td></tr>").arg(entry));
 
 #ifdef ENABLE_DECODE
 	s.append("<tr><td colspan=\"2\"></td></tr>");
 	s.append("<tr><td colspan=\"2\"><b>" +
 		tr("Protocol decoder search paths:") + "</b></td></tr>");
-
-	l_orig = srd_searchpaths_get();
-	for (GSList *l = l_orig; l; l = l->next)
-		s.append(QString("<tr><td colspan=\"2\">%1</td></tr>").arg(
-			QString((char*)l->data)));
-	g_slist_free_full(l_orig, g_free);
+	for (QString &entry : a->get_pd_path_list())
+		s.append(QString("<tr><td colspan=\"2\">%1</td></tr>").arg(entry));
 #endif
 
-	/* Set up the supported field */
 	s.append("<tr><td colspan=\"2\"></td></tr>");
 	s.append("<tr><td colspan=\"2\"><b>" +
 		tr("Supported hardware drivers:") + "</b></td></tr>");
-	for (auto entry : context->drivers()) {
+	for (pair<QString, QString> &entry : a->get_driver_list())
 		s.append(QString("<tr><td class=\"id\"><i>%1</i></td><td>%2</td></tr>")
-			.arg(QString::fromUtf8(entry.first.c_str()),
-				QString::fromUtf8(entry.second->long_name().c_str())));
-	}
+			.arg(entry.first, entry.second));
 
 	s.append("<tr><td colspan=\"2\"></td></tr>");
 	s.append("<tr><td colspan=\"2\"><b>" +
 		tr("Supported input formats:") + "</b></td></tr>");
-	for (auto entry : context->input_formats()) {
+	for (pair<QString, QString> &entry : a->get_input_format_list())
 		s.append(QString("<tr><td class=\"id\"><i>%1</i></td><td>%2</td></tr>")
-			.arg(QString::fromUtf8(entry.first.c_str()),
-				QString::fromUtf8(entry.second->description().c_str())));
-	}
+			.arg(entry.first, entry.second));
 
 	s.append("<tr><td colspan=\"2\"></td></tr>");
 	s.append("<tr><td colspan=\"2\"><b>" +
 		tr("Supported output formats:") + "</b></td></tr>");
-	for (auto entry : context->output_formats()) {
+	for (pair<QString, QString> &entry : a->get_output_format_list())
 		s.append(QString("<tr><td class=\"id\"><i>%1</i></td><td>%2</td></tr>")
-			.arg(QString::fromUtf8(entry.first.c_str()),
-				QString::fromUtf8(entry.second->description().c_str())));
-	}
+			.arg(entry.first, entry.second));
 
 #ifdef ENABLE_DECODE
 	s.append("<tr><td colspan=\"2\"></td></tr>");
 	s.append("<tr><td colspan=\"2\"><b>" +
 		tr("Supported protocol decoders:") + "</b></td></tr>");
-	GSList *sl = g_slist_copy((GSList *)srd_decoder_list());
-	sl = g_slist_sort(sl, sort_pds);
-	for (const GSList *l = sl; l; l = l->next) {
-		dec = (struct srd_decoder *)l->data;
+	for (pair<QString, QString> &entry : a->get_pd_list())
 		s.append(QString("<tr><td class=\"id\"><i>%1</i></td><td>%2</td></tr>")
-			.arg(QString::fromUtf8(dec->id),
-				QString::fromUtf8(dec->longname)));
-	}
-	g_slist_free(sl);
+			.arg(entry.first, entry.second));
 #endif
 
 	s.append("</table>");
