@@ -156,7 +156,7 @@ void Application::collect_version_info(shared_ptr<sigrok::Context> context)
 
 void Application::print_version_info()
 {
-	cout << PV_TITLE << PV_VERSION_STRING << endl;
+	cout << PV_TITLE << " " << PV_VERSION_STRING << endl;
 
 	cout << endl << "Libraries and features:" << endl;
 	for (pair<QString, QString> &entry : version_info_)
@@ -191,8 +191,6 @@ void Application::print_version_info()
 		cout << "  " << entry.first.leftJustified(21, ' ').toStdString() <<
 		entry.second.toStdString() << endl;
 #endif
-
-	cout << endl;
 }
 
 vector< pair<QString, QString> > Application::get_version_info() const
