@@ -19,6 +19,7 @@
 ##
 
 set(pulseview_TEST_SOURCES
+	${PROJECT_SOURCE_DIR}/pv/application.cpp
 	${PROJECT_SOURCE_DIR}/pv/devicemanager.cpp
 	${PROJECT_SOURCE_DIR}/pv/globalsettings.cpp
 	${PROJECT_SOURCE_DIR}/pv/logging.cpp
@@ -100,6 +101,7 @@ set(pulseview_TEST_SOURCES
 
 # This list includes only QObject derived class headers.
 set(pulseview_TEST_HEADERS
+	${PROJECT_SOURCE_DIR}/pv/application.hpp
 	${PROJECT_SOURCE_DIR}/pv/devicemanager.hpp
 	${PROJECT_SOURCE_DIR}/pv/globalsettings.hpp
 	${PROJECT_SOURCE_DIR}/pv/logging.hpp
