@@ -1266,7 +1266,10 @@ bool View::eventFilter(QObject *object, QEvent *event)
 		if (object == viewport_)
 			hover_point_ = mouse_event->pos();
 		else if (object == ruler_)
-			hover_point_ = QPoint(mouse_event->x(), 0);
+			// Adjust the hover point's y coordinate so that it's relative to
+			// the top of the viewport. The result may be negative.
+			hover_point_ = QPoint(mouse_event->pos().x(),
+				mouse_event->pos().y() - ruler_->sizeHint().height());
 		else if (object == header_)
 			hover_point_ = QPoint(0, mouse_event->y());
 		else
