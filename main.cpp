@@ -151,7 +151,7 @@ void usage()
 		"  -V, --version                   Show release version\n"
 		"  -l, --loglevel                  Set libsigrok/libsigrokdecode loglevel\n"
 		"  -d, --driver                    Specify the device driver to use\n"
-		"  -D, --no-scan                   Don't auto-scan for devices, use -d spec only\n"
+		"  -D, --dont-scan                 Don't auto-scan for devices, use -d spec only\n"
 		"  -i, --input-file                Load input from file\n"
 		"  -I, --input-format              Input format\n"
 		"  -c, --clean                     Don't restore previous sessions on startup\n"
@@ -183,7 +183,7 @@ int main(int argc, char *argv[])
 			{"version", no_argument, nullptr, 'V'},
 			{"loglevel", required_argument, nullptr, 'l'},
 			{"driver", required_argument, nullptr, 'd'},
-			{"no-scan", no_argument, nullptr, 'D'},
+			{"dont-scan", no_argument, nullptr, 'D'},
 			{"input-file", required_argument, nullptr, 'i'},
 			{"input-format", required_argument, nullptr, 'I'},
 			{"clean", no_argument, nullptr, 'c'},

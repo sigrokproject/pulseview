@@ -21,22 +21,22 @@ a file on startup. Without -I, it is assumed that the file is in the native sigr
 You can also specify more than one file but they are all expected to be in the same format then.
 Example:
 
-	pulseview -i data.vcd -I vcd
+	pulseview -i data.csv -I csv:samplerate=3000000
 
 The remaining parameters are mostly for debug purposes:
 
 	-V / --version		Shows the release version
 	-l / --loglevel		Sets the libsigrok/libsigrokdecode log level (max is 5)
-	-D / --no-scan		Don't auto-scan 
+	-D / --dont-scan	Don't auto-scan for devices
 	-c / --clean		Don't restore previous sessions on startup
 
-Of these, -D can be useful when PulseView gets stuck during the startup device scan. No such
-scan will be performed then, allowing the program to start up but you'll have to scan for your
-acquisition device(s) manually before you can use them then.
+Of these, -D / --dont-scan can be useful when PulseView gets stuck during the startup device scan.
+No such scan will be performed then, allowing the program to start up but you'll have to scan for
+your acquisition device(s) manually before you can use them.
 
-Another potentially useful option is -c, which can be used when PulseView doesn't start up and
-you don't know what could cause this.
+Another potentially useful option is -c / --clean, which can be used when PulseView doesn't start
+up and you don't know what could cause this.
 
 Thus, the combination of both parameters can be seen as some kind of "safe mode" for PulseView:
 
-	pulseview -D -c
+	pulseview -c -D
