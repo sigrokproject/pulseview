@@ -86,6 +86,15 @@ chapter), check with Zadig whether the correct driver is assigned for the device
 
 === Mac OS X
 
-(Some Mac user needs to fill this chapter)
+We offer DMG installers for PulseView that contain everything you need to get started. Simply download
+them from the https://sigrok.org/wiki/Downloads[sigrok download page] and run them.
 
+Please be aware, however, that the DMG installers are built every night, so they always contain
+the latest development changes. While we do try to keep the code base in a working state, it is sometimes
+unavoidable to introduce bugs that show up in the nightly builds. If you encounter something that is
+odd to you, please download and install the latest nightly and check if the issue still exists. If it
+does, feel free to https://sigrok.org/bugzilla/[file a bug].
 
+No system files are changed, so if you decide that you no longer want to use PulseView, simply
+delete the DMG file. If you also want the stored settings gone, delete
+~/Library/Preferences/pulseview.plist as well.
