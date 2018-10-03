@@ -12,11 +12,10 @@ On Linux, the usual way to install PulseView is to install the packages provided
 package manager. However, sometimes only outdated packages are made available to you. In that case,
 you have two options:
 
-. Use the AppImage which contains all required files and needs no installation:
+. https://sigrok.org/wiki/Downloads[Download] and use the AppImage which contains all required files and needs no installation:
 +
 --
 [listing, subs="normal"]
-wget https://sigrok.org/jenkins/job/sigrok-native-appimage/platform=native-x86_64-appimage/lastSuccessfulBuild/artifact/cross-compile/appimage/out/PulseView-NIGHTLY-x86_64.AppImage
 chmod u+x PulseView-NIGHTLY-x86_64.AppImage
 ./PulseView-NIGHTLY-x86_64.AppImage
 
@@ -37,11 +36,11 @@ delete the AppImage. If you also want the stored settings gone, delete ~/.config
 _[install dependencies https://sigrok.org/wiki/Linux#Building[as listed on the wiki]]_
 mkdir ~/sr
 cd ~/sr
-wget https://sigrok.org/gitweb/?p=sigrok-util.git;a=blob_plain;f=cross-compile/linux/sigrok-cross-linux
+wget 'https://sigrok.org/gitweb/?p=sigrok-util.git;a=blob_plain;f=cross-compile/linux/sigrok-cross-linux' -O sigrok-cross-linux
 chmod u+x sigrok-cross-linux
 ./sigrok-cross-linux
-export LD_LIBRARY_PATH=~/sr
-build/bin/pulseview
+export LD_LIBRARY_PATH=~/sr/lib
+~/sr/bin/pulseview
 
 No system files are changed, so if you decide that you no longer want to use PulseView, simply
 delete the ~/sr directory. If you also want the stored settings gone, delete ~/.config/sigrok
@@ -59,9 +58,9 @@ Here's how you install them:
 [listing, subs="normal"]
 sudo bash
 cd /etc/udev/rules.d/
-wget https://sigrok.org/gitweb/?p=libsigrok.git;a=blob_plain;f=contrib/60-libsigrok.rules
-wget https://sigrok.org/gitweb/?p=libsigrok.git;a=blob_plain;f=contrib/61-libsigrok-plugdev.rules
-wget https://sigrok.org/gitweb/?p=libsigrok.git;a=blob_plain;f=contrib/61-libsigrok-uaccess.rules
+wget 'https://sigrok.org/gitweb/?p=libsigrok.git;a=blob_plain;f=contrib/60-libsigrok.rules' -O 60-libsigrok.rules
+wget 'https://sigrok.org/gitweb/?p=libsigrok.git;a=blob_plain;f=contrib/61-libsigrok-plugdev.rules' -O 61-libsigrok-plugdev.rules
+wget 'https://sigrok.org/gitweb/?p=libsigrok.git;a=blob_plain;f=contrib/61-libsigrok-uaccess.rules' -O 61-libsigrok-uaccess.rules
 sudo udevadm control --reload-rules
 --
 

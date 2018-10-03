@@ -1,6 +1,6 @@
 PulseView User Manual
 =====================
-v0.5, dated 2018-09-22
+unreleased development snapshot, dated 2018-10-03
 :doctype: book
 :imagesdir: ./images
 :sectnums:
