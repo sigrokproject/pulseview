@@ -891,17 +891,14 @@ int64_t View::get_nearest_level_change(const QPoint &p)
 		const int64_t right_delta = right_sample_delta / samples_per_pixel;
 
 		// Only use closest left or right edge if they're close to the cursor
-		if ((left_delta < right_delta) && (left_delta < snap_distance_))
+		if ((left_delta < right_delta) && (left_delta <= snap_distance_))
 			nearest_sample = nearest_edges.front().first;
-		if ((left_delta >= right_delta) && (right_delta < snap_distance_))
+		if ((left_delta >= right_delta) && (right_delta <= snap_distance_))
 			nearest_sample = nearest_edges.back().first;
 	} else {
 		// Determine nearest edge from all signals
 
-		int64_t nearest_left_delta = numeric_limits<int64_t>::max();
-		int64_t nearest_right_delta = numeric_limits<int64_t>::max();
-		bool edges_found = false;
-
+		int64_t nearest_delta = numeric_limits<int64_t>::max();
 		for (shared_ptr<Signal> s : signals_) {
 			if (!s->enabled())
 				continue;
@@ -916,8 +913,6 @@ int64_t View::get_nearest_level_change(const QPoint &p)
 
 			if (edges.size() != 2)
 				continue;
-			else
-				edges_found = true;
 
 			// We received absolute sample numbers, make them relative
 			const int64_t left_sample_delta = sample_num - edges.front().first;
@@ -926,26 +921,17 @@ int64_t View::get_nearest_level_change(const QPoint &p)
 			const int64_t left_delta = left_sample_delta / samples_per_pixel;
 			const int64_t right_delta = right_sample_delta / samples_per_pixel;
 
-			if ((left_delta < nearest_left_delta) || (right_delta < nearest_right_delta)) {
-				nearest_edges = edges;
-				nearest_left_delta = left_delta;
-				nearest_right_delta = right_delta;
+			if ((left_delta < nearest_delta) || (right_delta < nearest_delta)) {
+				nearest_delta = min(left_delta, right_delta);
+
+				if (nearest_delta <= snap_distance_)
+					nearest_sample = (nearest_delta == left_delta) ?
+						edges.front().first : edges.back().first;
 
 				// Somewhat ugly hack to make TimeItem::drag_by() work
 				signal_under_mouse_cursor_ = s;
 			}
 		}
-
-		if (!edges_found)
-			return -1;
-
-		if ((nearest_left_delta < nearest_right_delta) &&
-			(nearest_left_delta < snap_distance_))
-			nearest_sample = nearest_edges.front().first;
-
-		if ((nearest_left_delta >= nearest_right_delta) &&
-			(nearest_right_delta < snap_distance_))
-			nearest_sample = nearest_edges.back().first;
 	}
 
 	return nearest_sample;
