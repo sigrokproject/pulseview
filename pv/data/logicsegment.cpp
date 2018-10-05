@@ -375,6 +375,7 @@ void LogicSegment::get_surrounding_edges(vector<EdgePair> &dest,
 	// use a get_subsampled_edges() implementation that searches backwards
 	vector<EdgePair>* edges = new vector<EdgePair>;
 
+	// Get all edges to the left of origin_sample
 	get_subsampled_edges(*edges, 0, origin_sample, min_length, sig_index, false);
 
 	// If we don't specify "first only", the first and last edge are the states
@@ -390,6 +391,7 @@ void LogicSegment::get_surrounding_edges(vector<EdgePair> &dest,
 	dest.push_back(edges->back());
 	edges->clear();
 
+	// Get first edge to the right of origin_sample
 	get_subsampled_edges(*edges, origin_sample, sample_count_, min_length, sig_index, true);
 
 	// "first only" is specified, so nothing needs to be dismissed

@@ -862,79 +862,103 @@ const QPoint& View::hover_point() const
 
 int64_t View::get_nearest_level_change(const QPoint &p)
 {
+	// Is snapping disabled?
 	if (snap_distance_ == 0)
 		return -1;
 
-	shared_ptr<Signal> signal = signal_under_mouse_cursor_;
+	struct entry_t {
+		entry_t(shared_ptr<Signal> s) :
+			signal(s), delta(numeric_limits<int64_t>::max()), sample(-1), is_dense(false) {}
+		shared_ptr<Signal> signal;
+		int64_t delta;
+		int64_t sample;
+		bool is_dense;
+	};
 
-	vector<data::LogicSegment::EdgePair> nearest_edges;
-	int64_t nearest_sample = -1;
+	vector<entry_t> list;
 
-	if (signal) {
-		// Determine nearest edge from specific signal
-
-		// Calculate sample number from cursor position
-		const double samples_per_pixel = signal->base()->get_samplerate() * scale();
-		const int64_t x_offset = offset().convert_to<double>() / scale();
-		const int64_t sample_num = max(((x_offset + p.x()) * samples_per_pixel), 0.0);
-
-		nearest_edges = signal->get_nearest_level_changes(sample_num);
-
-		if (nearest_edges.size() != 2)
-			return -1;
-
-		// We received absolute sample numbers, make them relative
-		const int64_t left_sample_delta = sample_num - nearest_edges.front().first;
-		const int64_t right_sample_delta = nearest_edges.back().first - sample_num - 1;
-
-		const int64_t left_delta = left_sample_delta / samples_per_pixel;
-		const int64_t right_delta = right_sample_delta / samples_per_pixel;
-
-		// Only use closest left or right edge if they're close to the cursor
-		if ((left_delta < right_delta) && (left_delta <= snap_distance_))
-			nearest_sample = nearest_edges.front().first;
-		if ((left_delta >= right_delta) && (right_delta <= snap_distance_))
-			nearest_sample = nearest_edges.back().first;
-	} else {
-		// Determine nearest edge from all signals
-
-		int64_t nearest_delta = numeric_limits<int64_t>::max();
+	// Create list of signals to consider
+	if (signal_under_mouse_cursor_)
+		list.emplace_back(signal_under_mouse_cursor_);
+	else
 		for (shared_ptr<Signal> s : signals_) {
 			if (!s->enabled())
 				continue;
 
-			// Calculate sample number from cursor position
-			const double samples_per_pixel = s->base()->get_samplerate() * scale();
-			const int64_t x_offset = offset().convert_to<double>() / scale();
-			const int64_t sample_num = max(((x_offset + p.x()) * samples_per_pixel), 0.0);
+			list.emplace_back(s);
+		}
 
-			vector<data::LogicSegment::EdgePair> edges =
-				s->get_nearest_level_changes(sample_num);
+	// Get data for listed signals
+	for (entry_t &e : list) {
+		// Calculate sample number from cursor position
+		const double samples_per_pixel = e.signal->base()->get_samplerate() * scale();
+		const int64_t x_offset = offset().convert_to<double>() / scale();
+		const int64_t sample_num = max(((x_offset + p.x()) * samples_per_pixel), 0.0);
 
-			if (edges.size() != 2)
-				continue;
+		vector<data::LogicSegment::EdgePair> edges =
+			e.signal->get_nearest_level_changes(sample_num);
 
-			// We received absolute sample numbers, make them relative
-			const int64_t left_sample_delta = sample_num - edges.front().first;
-			const int64_t right_sample_delta = edges.back().first - sample_num - 1;
+		if (edges.empty())
+			continue;
 
-			const int64_t left_delta = left_sample_delta / samples_per_pixel;
-			const int64_t right_delta = right_sample_delta / samples_per_pixel;
+		// Check first edge
+		const int64_t first_sample_delta = abs(sample_num - edges.front().first);
+		const int64_t first_delta = first_sample_delta / samples_per_pixel;
+		e.delta = first_delta;
+		e.sample = edges.front().first;
 
-			if ((left_delta < nearest_delta) || (right_delta < nearest_delta)) {
-				nearest_delta = min(left_delta, right_delta);
+		// Check second edge if available
+		if (edges.size() == 2) {
+			// Note: -1 because this is usually the right edge and sample points are left-aligned
+			const int64_t second_sample_delta = abs(sample_num - edges.back().first - 1);
+			const int64_t second_delta = second_sample_delta / samples_per_pixel;
 
-				if (nearest_delta <= snap_distance_)
-					nearest_sample = (nearest_delta == left_delta) ?
-						edges.front().first : edges.back().first;
+			// If both edges are too close, we mark this signal as being dense
+			if ((first_delta + second_delta) <= snap_distance_)
+				e.is_dense = true;
 
-				// Somewhat ugly hack to make TimeItem::drag_by() work
-				signal_under_mouse_cursor_ = s;
+			if (second_delta < first_delta) {
+				e.delta = second_delta;
+				e.sample = edges.back().first;
 			}
 		}
 	}
 
-	return nearest_sample;
+	// Look for the best match: non-dense first, then dense
+	entry_t *match = nullptr;
+
+	for (entry_t &e : list) {
+		if (e.delta > snap_distance_ || e.is_dense)
+			continue;
+
+		if (match) {
+			if (e.delta < match->delta)
+				match = &e;
+		} else
+			match = &e;
+	}
+
+	if (!match) {
+		for (entry_t &e : list) {
+			if (!e.is_dense)
+				continue;
+
+			if (match) {
+				if (e.delta < match->delta)
+					match = &e;
+			} else
+				match = &e;
+		}
+	}
+
+	if (match) {
+		// Somewhat ugly hack to make TimeItem::drag_by() work
+		signal_under_mouse_cursor_ = match->signal;
+
+		return match->sample;
+	}
+
+	return -1;
 }
 
 void View::restack_all_trace_tree_items()
