@@ -9,7 +9,7 @@ image::pv_analysis.png[]
 <1> Zoom-to-Fit button
 <2> Zoom in/zoom out buttons
 <3> Cursors
-<4> Time scale (used to set up and show time markers, see below)
+<4> Time scale (used to set up and show markers, see below)
 
 If you have located an area of interest (maybe with the help of decoders, more about
 that later), you can zoom in on it using the _zoom in_/_zoom out_ buttons, using the
@@ -19,12 +19,14 @@ scroll wheel of your mouse or the pinch/expand gestures on your touch panel.
 When a data capture is ongoing, the Zoom-to-Fit button stays active if you click it,
 meaning that PulseView automatically fits all data to the views until either the
 capture is finished or the Zoom-to-Fit button is clicked again.
+If you want this feature but don't want to always have to click the button, you
+can enable the "Always Zoom-to-Fit" option in the settings.
 
-=== Cursors and Time Markers
+=== Cursors and Markers
 
 Just looking at the signal data however is usually not sufficient. A lot of times,
 you'll want to make sure that timings are honored and the bit times are like what
-you'd expect. To do so, you'll want to use cursors and time markers.
+you'd expect. To do so, you'll want to use cursors and markers.
 
 In the picture above, you can enable the cursor by clicking on the cursor button.
 You can move both of its boundaries around by clicking on the blue flags in the
@@ -37,19 +39,19 @@ image::pv_cursors_markers.png[]
 
 <1> Cursors button, showing enabled state
 <2> Cursor
-<3> Time Marker
+<3> Marker
 
-Time markers are static markers that you can create wherever you like on the
+Markers are movable indicators that you can create wherever you like on the
 time scale - just double-click on it and it'll create one for you where your
 mouse cursor is at the time. You can click on its label and you'll have the
-option to change its name.
+option to change its name, or drag it to reposition it.
 
 [NOTE]
 For timing comparison purposes, you can also enable a vertical marker line that
 follows your mouse cursor: _Settings_ -> _Views_ -> _Highlight mouse cursor_
 
 [NOTE]
-There is also a special kind of time marker that appears for each time the data
+There is also a special kind of marker that appears for each time the data
 acquisition device has triggered. It cannot be moved and appears as a vertical
 dashed line.
 
@@ -66,3 +68,15 @@ Their names are:
 * Jitter - determines the jitter (variance) of a signal
 * Timing - shows the time passing between the chosen signal edges
 
+=== Other Features
+
+Trace Views also allow you to maximize the viewing area by minimizing the area
+occupied by the label area on the left. To do this, simply position the mouse
+cursor at the right edge of the label area (or left edge of the viewing area).
+Your mouse cursor will change shape and you now can drag the border.
+
+This way, you can give signals long, expressive names without clogging up the
+view area.
+
+Also, you can create multiple views by clicking on the "New View" button on
+the very left of the toolbar. Those can be rearranged as you wish.
