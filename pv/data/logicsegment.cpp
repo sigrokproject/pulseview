@@ -371,6 +371,9 @@ void LogicSegment::get_subsampled_edges(
 void LogicSegment::get_surrounding_edges(vector<EdgePair> &dest,
 	uint64_t origin_sample, float min_length, int sig_index)
 {
+	if (origin_sample >= sample_count_)
+		return;
+
 	// Put the edges vector on the heap, it can become quite big until we can
 	// use a get_subsampled_edges() implementation that searches backwards
 	vector<EdgePair>* edges = new vector<EdgePair>;
