@@ -51,8 +51,7 @@ namespace data {
 typedef struct {
 	uint64_t sample_index, chunk_num, chunk_offs;
 	uint8_t* chunk;
-	uint8_t* value;
-} SegmentRawDataIterator;
+} SegmentDataIterator;
 
 class Segment : public QObject
 {
@@ -87,9 +86,10 @@ protected:
 	void append_samples(void *data, uint64_t samples);
 	void get_raw_samples(uint64_t start, uint64_t count, uint8_t *dest) const;
 
-	SegmentRawDataIterator* begin_raw_sample_iteration(uint64_t start);
-	void continue_raw_sample_iteration(SegmentRawDataIterator* it, uint64_t increase);
-	void end_raw_sample_iteration(SegmentRawDataIterator* it);
+	SegmentDataIterator* begin_sample_iteration(uint64_t start);
+	void continue_sample_iteration(SegmentDataIterator* it, uint64_t increase);
+	void end_sample_iteration(SegmentDataIterator* it);
+	uint8_t* get_iterator_value(SegmentDataIterator* it);
 
 	uint32_t segment_id_;
 	mutable recursive_mutex mutex_;

@@ -48,12 +48,6 @@ namespace data {
 
 class Logic;
 
-typedef struct {
-	uint64_t sample_index, chunk_num, chunk_offs;
-	uint8_t* chunk;
-	uint8_t* value;
-} SegmentLogicDataIterator;
-
 class LogicSegment : public Segment
 {
 	Q_OBJECT
@@ -85,10 +79,6 @@ public:
 	void append_payload(void *data, uint64_t data_size);
 
 	void get_samples(int64_t start_sample, int64_t end_sample, uint8_t* dest) const;
-
-	SegmentLogicDataIterator* begin_sample_iteration(uint64_t start);
-	void continue_sample_iteration(SegmentLogicDataIterator* it, uint64_t increase);
-	void end_sample_iteration(SegmentLogicDataIterator* it);
 
 	/**
 	 * Parses a logic data segment to generate a list of transitions

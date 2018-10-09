@@ -24,6 +24,8 @@
 #include <cstdlib>
 #include <cstring>
 
+#include <QDebug>
+
 using std::bad_alloc;
 using std::lock_guard;
 using std::min;
@@ -240,9 +242,9 @@ void Segment::get_raw_samples(uint64_t start, uint64_t count,
 	}
 }
 
-SegmentRawDataIterator* Segment::begin_raw_sample_iteration(uint64_t start)
+SegmentDataIterator* Segment::begin_sample_iteration(uint64_t start)
 {
-	SegmentRawDataIterator* it = new SegmentRawDataIterator;
+	SegmentDataIterator* it = new SegmentDataIterator;
 
 	assert(start < sample_count_);
 
@@ -252,17 +254,12 @@ SegmentRawDataIterator* Segment::begin_raw_sample_iteration(uint64_t start)
 	it->chunk_num = (start * unit_size_) / chunk_size_;
 	it->chunk_offs = (start * unit_size_) % chunk_size_;
 	it->chunk = data_chunks_[it->chunk_num];
-	it->value = it->chunk + it->chunk_offs;
 
 	return it;
 }
 
-void Segment::continue_raw_sample_iteration(SegmentRawDataIterator* it, uint64_t increase)
+void Segment::continue_sample_iteration(SegmentDataIterator* it, uint64_t increase)
 {
-	// Fail gracefully if we are asked to deliver data we don't have
-	if (it->sample_index > sample_count_)
-		return;
-
 	it->sample_index += increase;
 	it->chunk_offs += (increase * unit_size_);
 
@@ -271,11 +268,9 @@ void Segment::continue_raw_sample_iteration(SegmentRawDataIterator* it, uint64_t
 		it->chunk_offs -= chunk_size_;
 		it->chunk = data_chunks_[it->chunk_num];
 	}
-
-	it->value = it->chunk + it->chunk_offs;
 }
 
-void Segment::end_raw_sample_iteration(SegmentRawDataIterator* it)
+void Segment::end_sample_iteration(SegmentDataIterator* it)
 {
 	delete it;
 
@@ -285,6 +280,13 @@ void Segment::end_raw_sample_iteration(SegmentRawDataIterator* it)
 		mem_optimization_requested_ = false;
 		free_unused_memory();
 	}
+}
+
+uint8_t* Segment::get_iterator_value(SegmentDataIterator* it)
+{
+	assert(it->sample_index <= (sample_count_ - 1));
+
+	return (it->chunk + it->chunk_offs);
 }
 
 } // namespace data

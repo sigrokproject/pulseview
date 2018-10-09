@@ -184,21 +184,6 @@ void LogicSegment::get_samples(int64_t start_sample,
 	get_raw_samples(start_sample, (end_sample - start_sample), dest);
 }
 
-SegmentLogicDataIterator* LogicSegment::begin_sample_iteration(uint64_t start)
-{
-	return (SegmentLogicDataIterator*)begin_raw_sample_iteration(start);
-}
-
-void LogicSegment::continue_sample_iteration(SegmentLogicDataIterator* it, uint64_t increase)
-{
-	Segment::continue_raw_sample_iteration((SegmentRawDataIterator*)it, increase);
-}
-
-void LogicSegment::end_sample_iteration(SegmentLogicDataIterator* it)
-{
-	Segment::end_raw_sample_iteration((SegmentRawDataIterator*)it);
-}
-
 void LogicSegment::get_subsampled_edges(
 	vector<EdgePair> &edges,
 	uint64_t start, uint64_t end,
@@ -429,7 +414,7 @@ void LogicSegment::append_payload_to_mipmap()
 	MipMapLevel &m0 = mip_map_[0];
 	uint64_t prev_length;
 	uint8_t *dest_ptr;
-	SegmentRawDataIterator* it;
+	SegmentDataIterator* it;
 	uint64_t accumulator;
 	unsigned int diff_counter;
 
@@ -449,23 +434,23 @@ void LogicSegment::append_payload_to_mipmap()
 	const uint64_t start_sample = prev_length * MipMapScaleFactor;
 	const uint64_t end_sample = m0.length * MipMapScaleFactor;
 
-	it = begin_raw_sample_iteration(start_sample);
+	it = begin_sample_iteration(start_sample);
 	for (uint64_t i = start_sample; i < end_sample;) {
 		// Accumulate transitions which have occurred in this sample
 		accumulator = 0;
 		diff_counter = MipMapScaleFactor;
 		while (diff_counter-- > 0) {
-			const uint64_t sample = unpack_sample(it->value);
+			const uint64_t sample = unpack_sample(get_iterator_value(it));
 			accumulator |= last_append_sample_ ^ sample;
 			last_append_sample_ = sample;
-			continue_raw_sample_iteration(it, 1);
+			continue_sample_iteration(it, 1);
 			i++;
 		}
 
 		pack_sample(dest_ptr, accumulator);
 		dest_ptr += unit_size_;
 	}
-	end_raw_sample_iteration(it);
+	end_sample_iteration(it);
 
 	// Compute higher level mipmaps
 	for (unsigned int level = 1; level < ScaleStepCount; level++) {

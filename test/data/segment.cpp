@@ -286,15 +286,14 @@ BOOST_AUTO_TEST_CASE(MaxSize32MultiIterated)
 
 	BOOST_CHECK(s.get_sample_count() == num_samples);
 
-	pv::data::SegmentRawDataIterator* it = s.begin_raw_sample_iteration(0);
+	pv::data::SegmentDataIterator* it = s.begin_sample_iteration(0);
 
 	for (uint32_t i = 0; i < num_samples; i++) {
-		uint8_t* sample_data = it->value;
-		BOOST_CHECK_EQUAL(*((uint32_t*)sample_data), i);
-		s.continue_raw_sample_iteration(it, 1);
+		BOOST_CHECK_EQUAL(*((uint32_t*)s.get_iterator_value(it)), i);
+		s.continue_sample_iteration(it, 1);
 	}
 
-	s.end_raw_sample_iteration(it);
+	s.end_sample_iteration(it);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
