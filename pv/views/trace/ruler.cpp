@@ -24,6 +24,8 @@
 #include <QMenu>
 #include <QMouseEvent>
 
+#include <pv/globalsettings.hpp>
+
 #include "ruler.hpp"
 #include "view.hpp"
 
@@ -126,6 +128,16 @@ void Ruler::contextMenuEvent(QContextMenuEvent *event)
 	QAction *const create_marker = new QAction(tr("Create marker here"), this);
 	connect(create_marker, SIGNAL(triggered()), this, SLOT(on_createMarker()));
 	menu->addAction(create_marker);
+
+	QAction *const toggle_hover_marker = new QAction(this);
+	connect(toggle_hover_marker, SIGNAL(triggered()), this, SLOT(on_toggleHoverMarker()));
+	menu->addAction(toggle_hover_marker);
+
+	GlobalSettings settings;
+	const bool hover_marker_shown =
+		settings.value(GlobalSettings::Key_View_ShowHoverMarker).toBool();
+	toggle_hover_marker->setText(hover_marker_shown ?
+		tr("Disable mouse hover marker") : tr("Enable mouse hover marker"));
 
 	menu->popup(event->globalPos());
 }
@@ -307,6 +319,13 @@ void Ruler::invalidate_tick_position_cache()
 void Ruler::on_createMarker()
 {
 	view_.add_flag(get_time_from_x_pos(context_menu_x_pos_));
+}
+
+void Ruler::on_toggleHoverMarker()
+{
+	GlobalSettings settings;
+	const bool state = settings.value(GlobalSettings::Key_View_ShowHoverMarker).toBool();
+	settings.setValue(GlobalSettings::Key_View_ShowHoverMarker, !state);
 }
 
 } // namespace trace
