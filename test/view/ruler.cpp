@@ -44,7 +44,7 @@ BOOST_AUTO_TEST_CASE(tick_position_test_0)
 	const int width(500);
 	const unsigned int minor_tick_count(4);
 
-	const Ruler::TickPositions ts = Ruler::calculate_tick_positions(
+	const TickPositions ts = Ruler::calculate_tick_positions(
 		major_period, offset, scale, width, minor_tick_count, format);
 
 	BOOST_REQUIRE_EQUAL(ts.major.size(), 6);
@@ -91,7 +91,7 @@ BOOST_AUTO_TEST_CASE(tick_position_test_1)
 	const int width(500);
 	const unsigned int minor_tick_count(4);
 
-	const Ruler::TickPositions ts = Ruler::calculate_tick_positions(
+	const TickPositions ts = Ruler::calculate_tick_positions(
 		major_period, offset, scale, width, minor_tick_count, format);
 
 	BOOST_REQUIRE_EQUAL(ts.major.size(), 5);
@@ -136,7 +136,7 @@ BOOST_AUTO_TEST_CASE(tick_position_test_2)
 	const int width(580);
 	const unsigned int minor_tick_count(4);
 
-	const Ruler::TickPositions ts = Ruler::calculate_tick_positions(
+	const TickPositions ts = Ruler::calculate_tick_positions(
 		major_period, offset, scale, width, minor_tick_count, format);
 
 	const double mp = 5;

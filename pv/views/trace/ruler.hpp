@@ -46,6 +46,12 @@ namespace trace {
 class TimeItem;
 class ViewItem;
 
+struct TickPositions
+{
+	vector<pair<double, QString>> major;
+	vector<double> minor;
+};
+
 /**
  * The Ruler class manages and displays the time scale above the trace canvas.
  * It may also contain @ref TimeItem instances used to identify or highlight
@@ -69,7 +75,6 @@ private:
 public:
 	Ruler(View &parent);
 
-public:
 	QSize sizeHint() const override;
 
 	/**
@@ -112,6 +117,12 @@ public:
 		unsigned precision = 0,
 		bool sign = true);
 
+	pv::util::Timestamp get_time_from_x_pos(uint32_t x);
+
+protected:
+	virtual void contextMenuEvent(QContextMenuEvent *event) override;
+	void resizeEvent(QResizeEvent*) override;
+
 private:
 	/**
 	 * Gets the time items.
@@ -126,9 +137,9 @@ private:
 	 */
 	shared_ptr<ViewItem> get_mouse_over_item(const QPoint &pt) override;
 
-	void paintEvent(QPaintEvent *event) override;
-
 	void mouseDoubleClickEvent(QMouseEvent *event) override;
+
+	void paintEvent(QPaintEvent *event) override;
 
 	/**
 	 * Draw a hover arrow under the cursor position.
@@ -138,18 +149,6 @@ private:
 	void draw_hover_mark(QPainter &p, int text_height);
 
 	int calculate_text_height() const;
-
-	struct TickPositions
-	{
-		vector<pair<double, QString>> major;
-		vector<double> minor;
-	};
-
-	/**
-	 * Holds the tick positions so that they don't have to be recalculated on
-	 * every redraw. Set by 'paintEvent()' when needed.
-	 */
-	boost::optional<TickPositions> tick_position_cache_;
 
 	/**
 	 * Calculates the major and minor tick positions.
@@ -171,14 +170,21 @@ private:
 		const unsigned int minor_tick_count,
 		function<QString(const pv::util::Timestamp&)> format_function);
 
-protected:
-	void resizeEvent(QResizeEvent*) override;
-
 private Q_SLOTS:
 	void hover_point_changed(const QPoint &hp);
 
-	// Resets the 'tick_position_cache_'.
 	void invalidate_tick_position_cache();
+
+	void on_createMarker();
+
+private:
+	/**
+	 * Holds the tick positions so that they don't have to be recalculated on
+	 * every redraw. Set by 'paintEvent()' when needed.
+	 */
+	boost::optional<TickPositions> tick_position_cache_;
+
+	uint32_t context_menu_x_pos_;
 };
 
 } // namespace trace

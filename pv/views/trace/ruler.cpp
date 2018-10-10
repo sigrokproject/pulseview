@@ -21,6 +21,7 @@
 
 #include <QApplication>
 #include <QFontMetrics>
+#include <QMenu>
 #include <QMouseEvent>
 
 #include "ruler.hpp"
@@ -111,6 +112,30 @@ QString Ruler::format_time_with_distance(
 		return pv::util::format_time_minutes(t, precision, sign);
 }
 
+pv::util::Timestamp Ruler::get_time_from_x_pos(uint32_t x)
+{
+	return view_.ruler_offset() + ((double)x + 0.5) * view_.scale();
+}
+
+void Ruler::contextMenuEvent(QContextMenuEvent *event)
+{
+	context_menu_x_pos_ = event->pos().x();
+
+	QMenu *const menu = new QMenu(this);
+
+	QAction *const create_marker = new QAction(tr("Create marker here"), this);
+	connect(create_marker, SIGNAL(triggered()), this, SLOT(on_createMarker()));
+	menu->addAction(create_marker);
+
+	menu->popup(event->globalPos());
+}
+
+void Ruler::resizeEvent(QResizeEvent*)
+{
+	// the tick calculation depends on the width of this widget
+	invalidate_tick_position_cache();
+}
+
 vector< shared_ptr<ViewItem> > Ruler::items()
 {
 	const vector< shared_ptr<TimeItem> > time_items(view_.time_items());
@@ -125,6 +150,11 @@ shared_ptr<ViewItem> Ruler::get_mouse_over_item(const QPoint &pt)
 		if ((*i)->enabled() && (*i)->label_rect(rect()).contains(pt))
 			return *i;
 	return nullptr;
+}
+
+void Ruler::mouseDoubleClickEvent(QMouseEvent *event)
+{
+	view_.add_flag(get_time_from_x_pos(event->x()));
 }
 
 void Ruler::paintEvent(QPaintEvent*)
@@ -199,7 +229,32 @@ void Ruler::paintEvent(QPaintEvent*)
 	}
 }
 
-Ruler::TickPositions Ruler::calculate_tick_positions(
+void Ruler::draw_hover_mark(QPainter &p, int text_height)
+{
+	const int x = view_.hover_point().x();
+
+	if (x == -1)
+		return;
+
+	p.setPen(QPen(Qt::NoPen));
+	p.setBrush(QBrush(palette().color(foregroundRole())));
+
+	const int b = RulerHeight * text_height;
+	const float hover_arrow_size = HoverArrowSize * text_height;
+	const QPointF points[] = {
+		QPointF(x, b),
+		QPointF(x - hover_arrow_size, b - hover_arrow_size),
+		QPointF(x + hover_arrow_size, b - hover_arrow_size)
+	};
+	p.drawPolygon(points, countof(points));
+}
+
+int Ruler::calculate_text_height() const
+{
+	return QFontMetrics(font()).ascent();
+}
+
+TickPositions Ruler::calculate_tick_positions(
 	const pv::util::Timestamp& major_period,
 	const pv::util::Timestamp& offset,
 	const double scale,
@@ -237,36 +292,6 @@ Ruler::TickPositions Ruler::calculate_tick_positions(
 	return tp;
 }
 
-void Ruler::mouseDoubleClickEvent(QMouseEvent *event)
-{
-	view_.add_flag(view_.ruler_offset() + ((double)event->x() + 0.5) * view_.scale());
-}
-
-void Ruler::draw_hover_mark(QPainter &p, int text_height)
-{
-	const int x = view_.hover_point().x();
-
-	if (x == -1)
-		return;
-
-	p.setPen(QPen(Qt::NoPen));
-	p.setBrush(QBrush(palette().color(foregroundRole())));
-
-	const int b = RulerHeight * text_height;
-	const float hover_arrow_size = HoverArrowSize * text_height;
-	const QPointF points[] = {
-		QPointF(x, b),
-		QPointF(x - hover_arrow_size, b - hover_arrow_size),
-		QPointF(x + hover_arrow_size, b - hover_arrow_size)
-	};
-	p.drawPolygon(points, countof(points));
-}
-
-int Ruler::calculate_text_height() const
-{
-	return QFontMetrics(font()).ascent();
-}
-
 void Ruler::hover_point_changed(const QPoint &hp)
 {
 	(void)hp;
@@ -279,10 +304,9 @@ void Ruler::invalidate_tick_position_cache()
 	tick_position_cache_ = boost::none;
 }
 
-void Ruler::resizeEvent(QResizeEvent*)
+void Ruler::on_createMarker()
 {
-	// the tick calculation depends on the width of this widget
-	invalidate_tick_position_cache();
+	view_.add_flag(get_time_from_x_pos(context_menu_x_pos_));
 }
 
 } // namespace trace
