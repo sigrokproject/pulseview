@@ -289,5 +289,13 @@ uint8_t* Segment::get_iterator_value(SegmentDataIterator* it)
 	return (it->chunk + it->chunk_offs);
 }
 
+uint64_t Segment::get_iterator_valid_length(SegmentDataIterator* it)
+{
+	assert(it->sample_index <= (sample_count_ - 1));
+
+	return ((chunk_size_ - it->chunk_offs) / unit_size_);
+}
+
+
 } // namespace data
 } // namespace pv
