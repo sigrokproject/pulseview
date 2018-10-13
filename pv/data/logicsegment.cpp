@@ -49,6 +49,28 @@ const int LogicSegment::MipMapScaleFactor = 1 << MipMapScalePower;
 const float LogicSegment::LogMipMapScaleFactor = logf(MipMapScaleFactor);
 const uint64_t LogicSegment::MipMapDataUnit = 64 * 1024; // bytes
 
+template <class T, uint64_t N>
+void downsampleTbyN(const uint8_t *in_, uint8_t *out_, uint64_t len, uint64_t &last_sample)
+{
+	const T *in = (const T*)in_;
+	T *out = (T*)out_;
+	T prev = last_sample;
+	T acc;
+
+	while(len > 0) {
+		uint64_t count = std::min(N, len);
+		acc = 0;
+		for(uint64_t i=0; i<count; i++) {
+			T sample = *in++;
+			acc |= prev ^ sample;
+			prev = sample;
+		}
+		len -= count;
+		*out++ = acc;
+	}
+	last_sample = prev;
+}
+
 LogicSegment::LogicSegment(pv::data::Logic& owner, uint32_t segment_id,
 	unsigned int unit_size,	uint64_t samplerate) :
 	Segment(segment_id, samplerate, unit_size),
@@ -450,20 +472,31 @@ void LogicSegment::append_payload_to_mipmap()
 	const uint64_t end_sample = m0.length * MipMapScaleFactor;
 
 	it = begin_raw_sample_iteration(start_sample);
-	for (uint64_t i = start_sample; i < end_sample;) {
-		// Accumulate transitions which have occurred in this sample
-		accumulator = 0;
-		diff_counter = MipMapScaleFactor;
-		while (diff_counter-- > 0) {
-			const uint64_t sample = unpack_sample(it->value);
-			accumulator |= last_append_sample_ ^ sample;
-			last_append_sample_ = sample;
-			continue_raw_sample_iteration(it, 1);
-			i++;
-		}
+	const uint64_t len_sample = end_sample - start_sample;
+	if (unit_size_ == 1) {
+		downsampleTbyN<uint8_t, MipMapScaleFactor>(it->value, dest_ptr, len_sample, last_append_sample_);
+	} else if (unit_size_ == 2) {
+		downsampleTbyN<uint16_t, MipMapScaleFactor>(it->value, dest_ptr, len_sample, last_append_sample_);
+	} else if (unit_size_ == 4) {
+		downsampleTbyN<uint32_t, MipMapScaleFactor>(it->value, dest_ptr, len_sample, last_append_sample_);
+	} else if (unit_size_ == 8) {
+		downsampleTbyN<uint64_t, MipMapScaleFactor>(it->value, dest_ptr, len_sample, last_append_sample_);
+	} else {
+		for (uint64_t i = start_sample; i < end_sample;) {
+			// Accumulate transitions which have occurred in this sample
+			accumulator = 0;
+			diff_counter = MipMapScaleFactor;
+			while (diff_counter-- > 0) {
+				const uint64_t sample = unpack_sample(it->value);
+				accumulator |= last_append_sample_ ^ sample;
+				last_append_sample_ = sample;
+				continue_raw_sample_iteration(it, 1);
+				i++;
+			}
 
-		pack_sample(dest_ptr, accumulator);
-		dest_ptr += unit_size_;
+			pack_sample(dest_ptr, accumulator);
+			dest_ptr += unit_size_;
+		}
 	}
 	end_raw_sample_iteration(it);
 
