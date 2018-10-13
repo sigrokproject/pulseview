@@ -54,7 +54,7 @@ Segment::Segment(uint32_t segment_id, uint64_t samplerate, unsigned int unit_siz
 	chunk_size_ = min(MaxChunkSize, (MaxChunkSize / unit_size_) * unit_size_);
 
 	// Create the initial chunk
-	current_chunk_ = new uint8_t[chunk_size_];
+	current_chunk_ = new uint8_t[chunk_size_ + 7];  /* FIXME +7 is workaround for #1284 */
 	data_chunks_.push_back(current_chunk_);
 	used_samples_ = 0;
 	unused_samples_ = chunk_size_ / unit_size_;
@@ -121,7 +121,7 @@ void Segment::free_unused_memory()
 
 	if (current_chunk_) {
 		// No more data will come in, so re-create the last chunk accordingly
-		uint8_t* resized_chunk = new uint8_t[used_samples_ * unit_size_];
+		uint8_t* resized_chunk = new uint8_t[used_samples_ * unit_size_ + 7];  /* FIXME +7 is workaround for #1284 */
 		memcpy(resized_chunk, current_chunk_, used_samples_ * unit_size_);
 
 		delete[] current_chunk_;
@@ -144,7 +144,7 @@ void Segment::append_single_sample(void *data)
 	unused_samples_--;
 
 	if (unused_samples_ == 0) {
-		current_chunk_ = new uint8_t[chunk_size_];
+		current_chunk_ = new uint8_t[chunk_size_ + 7];  /* FIXME +7 is workaround for #1284 */
 		data_chunks_.push_back(current_chunk_);
 		used_samples_ = 0;
 		unused_samples_ = chunk_size_ / unit_size_;
@@ -190,7 +190,7 @@ void Segment::append_samples(void* data, uint64_t samples)
 				// This way, memory allocation will fail early enough to let
 				// PV remain alive. Otherwise, PV will crash in a random
 				// memory-allocating part of the application.
-				current_chunk_ = new uint8_t[chunk_size_];
+				current_chunk_ = new uint8_t[chunk_size_ + 7];  /* FIXME +7 is workaround for #1284 */
 
 				const int dummy_size = 2 * chunk_size_;
 				auto dummy_chunk = new uint8_t[dummy_size];
