@@ -20,6 +20,7 @@
 #include "globalsettings.hpp"
 
 #include <QApplication>
+#include <QColor>
 #include <QDebug>
 #include <QFontMetrics>
 #include <QString>
@@ -36,6 +37,8 @@ const QString GlobalSettings::Key_View_TriggerIsZeroTime = "View_TriggerIsZeroTi
 const QString GlobalSettings::Key_View_ColoredBG = "View_ColoredBG";
 const QString GlobalSettings::Key_View_StickyScrolling = "View_StickyScrolling";
 const QString GlobalSettings::Key_View_ShowSamplingPoints = "View_ShowSamplingPoints";
+const QString GlobalSettings::Key_View_FillSignalHighAreas = "View_FillSignalHighAreas";
+const QString GlobalSettings::Key_View_FillSignalHighAreaColor = "View_FillSignalHighAreaColor";
 const QString GlobalSettings::Key_View_ShowAnalogMinorGrid = "View_ShowAnalogMinorGrid";
 const QString GlobalSettings::Key_View_ConversionThresholdDispMode = "View_ConversionThresholdDispMode";
 const QString GlobalSettings::Key_View_DefaultDivHeight = "View_DefaultDivHeight";
@@ -70,6 +73,13 @@ void GlobalSettings::set_defaults_where_needed()
 	// Enable showing sampling points by default
 	if (!contains(Key_View_ShowSamplingPoints))
 		setValue(Key_View_ShowSamplingPoints, true);
+
+	// Enable filling logic signal high areas by default
+	if (!contains(Key_View_FillSignalHighAreas))
+		setValue(Key_View_FillSignalHighAreas, true);
+	if (!contains(Key_View_FillSignalHighAreaColor))
+		setValue(Key_View_FillSignalHighAreaColor,
+			QColor(0, 0, 0, 5 * 256 / 100).rgba());
 
 	if (!contains(Key_View_DefaultDivHeight))
 		setValue(Key_View_DefaultDivHeight,

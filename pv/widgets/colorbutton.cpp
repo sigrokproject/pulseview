@@ -22,6 +22,7 @@
 #include <cassert>
 
 #include <QApplication>
+#include <QColorDialog>
 #include <QPainter>
 
 namespace pv {
@@ -29,16 +30,23 @@ namespace widgets {
 
 const int ColorButton::SwatchMargin = 7;
 
-ColorButton::ColorButton(int rows, int cols, QWidget *parent) :
+ColorButton::ColorButton(QWidget *parent) :
 	QPushButton("", parent),
-	popup_(rows, cols, this)
+	popup_(nullptr)
 {
 	connect(this, SIGNAL(clicked(bool)), this, SLOT(on_clicked(bool)));
-	connect(&popup_, SIGNAL(selected(int, int)),
+}
+
+ColorButton::ColorButton(int rows, int cols, QWidget *parent) :
+	QPushButton("", parent),
+	popup_(new ColorPopup(rows, cols, this))
+{
+	connect(this, SIGNAL(clicked(bool)), this, SLOT(on_clicked(bool)));
+	connect(popup_, SIGNAL(selected(int, int)),
 		this, SLOT(on_selected(int, int)));
 }
 
-ColorPopup& ColorButton::popup()
+ColorPopup* ColorButton::popup()
 {
 	return popup_;
 }
@@ -52,40 +60,60 @@ void ColorButton::set_color(QColor color)
 {
 	cur_color_ = color;
 
-	const unsigned int rows = popup_.well_array().numRows();
-	const unsigned int cols = popup_.well_array().numCols();
+	if (popup_) {
+		const unsigned int rows = popup_->well_array().numRows();
+		const unsigned int cols = popup_->well_array().numCols();
 
-	for (unsigned int r = 0; r < rows; r++)
-		for (unsigned int c = 0; c < cols; c++)
-			if (popup_.well_array().cellBrush(r, c).color() == color) {
-				popup_.well_array().setSelected(r, c);
-				popup_.well_array().setCurrent(r, c);
-				return;
-			}
+		for (unsigned int r = 0; r < rows; r++)
+			for (unsigned int c = 0; c < cols; c++)
+				if (popup_->well_array().cellBrush(r, c).color() == color) {
+					popup_->well_array().setSelected(r, c);
+					popup_->well_array().setCurrent(r, c);
+					return;
+				}
+	}
 }
 
 void ColorButton::set_palette(const QColor *const palette)
 {
 	assert(palette);
+	assert(popup_);
 
-	const unsigned int rows = popup_.well_array().numRows();
-	const unsigned int cols = popup_.well_array().numCols();
+	const unsigned int rows = popup_->well_array().numRows();
+	const unsigned int cols = popup_->well_array().numCols();
 
 	for (unsigned int r = 0; r < rows; r++)
 		for (unsigned int c = 0; c < cols; c++)
-			popup_.well_array().setCellBrush(r, c,
-				QBrush(palette[r * cols + c]));
+			popup_->well_array().setCellBrush(r, c, QBrush(palette[r * cols + c]));
 }
 
 void ColorButton::on_clicked(bool)
 {
-	popup_.set_position(mapToGlobal(rect().center()), Popup::Bottom);
-	popup_.show();
+	if (popup_) {
+		popup_->set_position(mapToGlobal(rect().center()), Popup::Bottom);
+		popup_->show();
+	} else {
+		QColorDialog dlg(this);
+		dlg.setOption(QColorDialog::ShowAlphaChannel);
+		dlg.setOption(QColorDialog::DontUseNativeDialog);
+		connect(&dlg, SIGNAL(colorSelected(const QColor)),
+			this, SLOT(on_color_selected(const QColor)));
+		dlg.setCurrentColor(cur_color_);
+		dlg.exec();
+	}
 }
 
 void ColorButton::on_selected(int row, int col)
 {
-	cur_color_ = popup_.well_array().cellBrush(row, col).color();
+	assert(popup_);
+
+	cur_color_ = popup_->well_array().cellBrush(row, col).color();
+	selected(cur_color_);
+}
+
+void ColorButton::on_color_selected(const QColor& color)
+{
+	cur_color_ = color;
 	selected(cur_color_);
 }
 

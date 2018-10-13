@@ -46,6 +46,7 @@
 #include "pv/devicemanager.hpp"
 #include "pv/globalsettings.hpp"
 #include "pv/logging.hpp"
+#include "pv/widgets/colorbutton.hpp"
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
 
@@ -54,6 +55,7 @@
 #endif
 
 using std::shared_ptr;
+using pv::widgets::ColorButton;
 
 namespace pv {
 namespace dialogs {
@@ -228,6 +230,17 @@ QWidget *Settings::get_view_settings_form(QWidget *parent) const
 	cb = create_checkbox(GlobalSettings::Key_View_ShowSamplingPoints,
 		SLOT(on_view_showSamplingPoints_changed(int)));
 	trace_view_layout->addRow(tr("Show data &sampling points"), cb);
+
+	cb = create_checkbox(GlobalSettings::Key_View_FillSignalHighAreas,
+		SLOT(on_view_fillSignalHighAreas_changed(int)));
+	trace_view_layout->addRow(tr("Fill high areas of logic signals"), cb);
+
+	ColorButton* high_fill_cb = new ColorButton(parent);
+	high_fill_cb->set_color(QColor::fromRgba(
+		settings.value(GlobalSettings::Key_View_FillSignalHighAreaColor).value<uint32_t>()));
+	connect(high_fill_cb, SIGNAL(selected(QColor)),
+		this, SLOT(on_view_fillSignalHighAreaColor_changed(QColor)));
+	trace_view_layout->addRow(tr("Fill high areas of logic signals"), high_fill_cb);
 
 	cb = create_checkbox(GlobalSettings::Key_View_ShowAnalogMinorGrid,
 		SLOT(on_view_showAnalogMinorGrid_changed(int)));
@@ -528,6 +541,18 @@ void Settings::on_view_showSamplingPoints_changed(int state)
 {
 	GlobalSettings settings;
 	settings.setValue(GlobalSettings::Key_View_ShowSamplingPoints, state ? true : false);
+}
+
+void Settings::on_view_fillSignalHighAreas_changed(int state)
+{
+	GlobalSettings settings;
+	settings.setValue(GlobalSettings::Key_View_FillSignalHighAreas, state ? true : false);
+}
+
+void Settings::on_view_fillSignalHighAreaColor_changed(QColor color)
+{
+	GlobalSettings settings;
+	settings.setValue(GlobalSettings::Key_View_FillSignalHighAreaColor, color.rgba());
 }
 
 void Settings::on_view_showAnalogMinorGrid_changed(int state)

@@ -21,6 +21,7 @@
 #define PULSEVIEW_PV_SETTINGS_HPP
 
 #include <QCheckBox>
+#include <QColor>
 #include <QDialog>
 #include <QListWidget>
 #include <QPlainTextEdit>
@@ -62,6 +63,8 @@ private Q_SLOTS:
 	void on_view_coloredBG_changed(int state);
 	void on_view_stickyScrolling_changed(int state);
 	void on_view_showSamplingPoints_changed(int state);
+	void on_view_fillSignalHighAreas_changed(int state);
+	void on_view_fillSignalHighAreaColor_changed(QColor color);
 	void on_view_showAnalogMinorGrid_changed(int state);
 	void on_view_showHoverMarker_changed(int state);
 	void on_view_snapDistance_changed(int value);

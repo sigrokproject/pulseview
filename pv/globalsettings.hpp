@@ -52,6 +52,8 @@ public:
 	static const QString Key_View_ColoredBG;
 	static const QString Key_View_StickyScrolling;
 	static const QString Key_View_ShowSamplingPoints;
+	static const QString Key_View_FillSignalHighAreas;
+	static const QString Key_View_FillSignalHighAreaColor;
 	static const QString Key_View_ShowAnalogMinorGrid;
 	static const QString Key_View_ConversionThresholdDispMode;
 	static const QString Key_View_DefaultDivHeight;

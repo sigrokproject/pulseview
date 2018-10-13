@@ -35,9 +35,17 @@ private:
 	static const int SwatchMargin;
 
 public:
+	/**
+	 * Construct a ColorButton instance that uses a QColorDialog
+	 */
+	ColorButton(QWidget *parent);
+
+	/**
+	 * Construct a ColorButton instance that uses a ColorPopup
+	 */
 	ColorButton(int rows, int cols, QWidget *parent);
 
-	ColorPopup& popup();
+	ColorPopup* popup();
 
 	const QColor& color() const;
 
@@ -50,14 +58,14 @@ private:
 
 private Q_SLOTS:
 	void on_clicked(bool);
-
 	void on_selected(int row, int col);
+	void on_color_selected(const QColor& color);
 
 Q_SIGNALS:
 	void selected(const QColor &color);
 
 private:
-	ColorPopup popup_;
+	ColorPopup* popup_;
 	QColor cur_color_;
 };
 
