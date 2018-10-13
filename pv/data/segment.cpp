@@ -296,6 +296,5 @@ uint64_t Segment::get_iterator_valid_length(SegmentDataIterator* it)
 	return ((chunk_size_ - it->chunk_offs) / unit_size_);
 }
 
-
 } // namespace data
 } // namespace pv

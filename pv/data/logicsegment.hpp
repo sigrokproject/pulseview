@@ -124,7 +124,6 @@ private:
 	uint64_t last_append_accumulator_;
 	uint64_t last_append_extra_;
 
-
 	friend struct LogicSegmentTest::Pow2;
 	friend struct LogicSegmentTest::Basic;
 	friend struct LogicSegmentTest::LargeData;

@@ -56,7 +56,6 @@ LogicSegment::LogicSegment(pv::data::Logic& owner, uint32_t segment_id,
 	last_append_sample_(0),
 	last_append_accumulator_(0),
 	last_append_extra_(0)
-
 {
 	memset(mip_map_, 0, sizeof(mip_map_));
 }
