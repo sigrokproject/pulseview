@@ -59,7 +59,7 @@ void MarginWidget::contextMenuEvent(QContextMenuEvent *event)
 
 	QMenu *menu = r->create_header_context_menu(this);
 	if (menu)
-		menu->exec(event->globalPos());
+		menu->popup(event->globalPos());
 }
 
 void MarginWidget::keyPressEvent(QKeyEvent *event)

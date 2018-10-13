@@ -1382,7 +1382,7 @@ void View::contextMenuEvent(QContextMenuEvent *event)
 
 	QMenu *menu = r->create_view_context_menu(this, pos);
 	if (menu)
-		menu->exec(event->globalPos());
+		menu->popup(event->globalPos());
 }
 
 void View::resizeEvent(QResizeEvent* event)
