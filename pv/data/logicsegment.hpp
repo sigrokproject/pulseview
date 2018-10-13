@@ -107,6 +107,10 @@ private:
 
 	uint64_t get_unpacked_sample(uint64_t index) const;
 
+	template <class T> void downsampleTmain(const T*&in, T &acc, T &prev);
+	template <class T> void downsampleT(const uint8_t *in, uint8_t *&out, uint64_t len);
+	void downsampleGeneric(const uint8_t *in, uint8_t *&out, uint64_t len);
+
 private:
 	uint64_t get_subsample(int level, uint64_t offset) const;
 
@@ -117,6 +121,9 @@ private:
 
 	struct MipMapLevel mip_map_[ScaleStepCount];
 	uint64_t last_append_sample_;
+	uint64_t last_append_accumulator_;
+	uint64_t last_append_extra_;
+
 
 	friend struct LogicSegmentTest::Pow2;
 	friend struct LogicSegmentTest::Basic;
