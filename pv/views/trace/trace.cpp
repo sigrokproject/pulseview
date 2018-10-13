@@ -110,6 +110,10 @@ void Trace::on_setting_changed(const QString &key, const QVariant &value)
 {
 	if (key == GlobalSettings::Key_View_ShowHoverMarker)
 		show_hover_marker_ = value.toBool();
+
+	// Force a repaint since many options alter the way traces look
+	if (owner_)
+		owner_->row_item_appearance_changed(false, true);
 }
 
 void Trace::paint_label(QPainter &p, const QRect &rect, bool hover)
