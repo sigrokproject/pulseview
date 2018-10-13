@@ -89,6 +89,9 @@ void GlobalSettings::set_defaults_where_needed()
 		setValue(Key_View_DefaultLogicHeight,
 		2 * QFontMetrics(QApplication::font()).height());
 
+	if (!contains(Key_View_ShowHoverMarker))
+		setValue(Key_View_ShowHoverMarker, true);
+
 	if (!contains(Key_View_SnapDistance))
 		setValue(Key_View_SnapDistance, 15);
 
