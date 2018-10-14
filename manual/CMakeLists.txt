@@ -17,15 +17,22 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
+# External dependencies, required and optional tools.
 find_program(ASCIIDOCTOR_EXECUTABLE NAMES asciidoctor)
 find_program(ASCIIDOCTOR_PDF_EXECUTABLE NAMES asciidoctor-pdf)
 
+# Tunables.
 set(STYLES_DIR "asciidoctor-stylesheet-factory/stylesheets")
 set(STYLE_SHEET "readthedocs.css")
+
+# Input files.
 set(MANUAL_SRC "${CMAKE_CURRENT_SOURCE_DIR}/pulseview_manual.txt")
+
+# Output files, conversion results.
 set(MANUAL_OUT_HTML "${CMAKE_CURRENT_BINARY_DIR}/pulseview_manual.html")
 set(MANUAL_OUT_PDF "${CMAKE_CURRENT_BINARY_DIR}/pulseview_manual.pdf")
 
+# Manual related make(1) targets.
 add_custom_target(manual-html
 	COMMAND ${ASCIIDOCTOR_EXECUTABLE}
 		-a stylesheet=${STYLE_SHEET}
