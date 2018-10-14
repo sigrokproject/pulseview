@@ -54,7 +54,6 @@
 #include <libsigrokdecode/libsigrokdecode.h>
 #endif
 
-using std::shared_ptr;
 using pv::widgets::ColorButton;
 
 namespace pv {

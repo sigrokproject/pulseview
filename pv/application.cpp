@@ -115,14 +115,14 @@ void Application::collect_version_info(shared_ptr<sigrok::Context> context)
 	// Firmware paths
 	l_orig = sr_resourcepaths_get(SR_RESOURCE_FIRMWARE);
 	for (GSList *l = l_orig; l; l = l->next)
-		fw_path_list_.push_back(QString((char*)l->data));
+		fw_path_list_.emplace_back((char*)l->data);
 	g_slist_free_full(l_orig, g_free);
 
 	// PD paths
 #ifdef ENABLE_DECODE
 	l_orig = srd_searchpaths_get();
 	for (GSList *l = l_orig; l; l = l->next)
-		pd_path_list_.push_back(QString((char*)l->data));
+		pd_path_list_.emplace_back((char*)l->data);
 	g_slist_free_full(l_orig, g_free);
 #endif
 
