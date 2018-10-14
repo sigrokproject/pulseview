@@ -51,3 +51,10 @@ add_custom_target(manual-pdf
 )
 add_custom_target(manual)
 add_dependencies(manual manual-html manual-pdf)
+
+install(
+	FILES ${MANUAL_OUT_HTML} ${MANUAL_OUT_PDF}
+	DESTINATION "share/doc/pulseview"
+	PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
+	OPTIONAL
+)
