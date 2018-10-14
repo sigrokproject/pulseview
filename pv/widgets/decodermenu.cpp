@@ -30,9 +30,9 @@ DecoderMenu::DecoderMenu(QWidget *parent, bool first_level_decoder) :
 	QMenu(parent),
 	mapper_(this)
 {
-	GSList *l = g_slist_sort(g_slist_copy(
+	GSList *li = g_slist_sort(g_slist_copy(
 		(GSList*)srd_decoder_list()), decoder_name_cmp);
-	for (; l; l = l->next) {
+	for (GSList *l = li; l; l = l->next) {
 		const srd_decoder *const d = (srd_decoder*)l->data;
 		assert(d);
 
@@ -46,7 +46,7 @@ DecoderMenu::DecoderMenu(QWidget *parent, bool first_level_decoder) :
 				&mapper_, SLOT(map()));
 		}
 	}
-	g_slist_free(l);
+	g_slist_free(li);
 
 	connect(&mapper_, SIGNAL(mapped(QObject*)),
 		this, SLOT(on_action(QObject*)));
