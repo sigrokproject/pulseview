@@ -20,7 +20,7 @@
 find_program(ASCIIDOCTOR_EXECUTABLE NAMES asciidoctor)
 find_program(ASCIIDOCTOR_PDF_EXECUTABLE NAMES asciidoctor-pdf)
 
-set(STYLES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/asciidoctor-stylesheet-factory/stylesheets")
+set(STYLES_DIR "asciidoctor-stylesheet-factory/stylesheets")
 set(STYLE_SHEET "readthedocs.css")
 set(MANUAL_SRC "${CMAKE_CURRENT_SOURCE_DIR}/pulseview_manual.txt")
 set(MANUAL_OUT_HTML "${CMAKE_CURRENT_BINARY_DIR}/pulseview_manual.html")
@@ -29,7 +29,7 @@ set(MANUAL_OUT_PDF "${CMAKE_CURRENT_BINARY_DIR}/pulseview_manual.pdf")
 add_custom_target(manual-html
 	COMMAND ${ASCIIDOCTOR_EXECUTABLE}
 		-a stylesheet=${STYLE_SHEET}
-		-a stylesdir=${STYLES_DIR}
+		-a stylesdir=${CMAKE_CURRENT_SOURCE_DIR}/${STYLES_DIR}
 		-a toc=left
 		--destination-dir=${CMAKE_CURRENT_BINARY_DIR}
 		${MANUAL_SRC}
@@ -42,7 +42,7 @@ if (ASCIIDOCTOR_PDF_EXECUTABLE)
 	add_custom_target(manual-pdf
 		COMMAND ${ASCIIDOCTOR_PDF_EXECUTABLE}
 			-a stylesheet=${STYLE_SHEET}
-			-a stylesdir=${STYLES_DIR}
+			-a stylesdir=${CMAKE_CURRENT_SOURCE_DIR}/${STYLES_DIR}
 			--destination-dir=${CMAKE_CURRENT_BINARY_DIR}
 			${MANUAL_SRC}
 		BYPRODUCTS ${MANUAL_OUT_PDF}
@@ -61,9 +61,18 @@ endif ()
 add_custom_target(manual)
 add_dependencies(manual manual-html manual-pdf)
 
+set(MANUAL_INST_SUBDIR "share/doc/pulseview")
 install(
 	FILES ${MANUAL_OUT_HTML} ${MANUAL_OUT_PDF}
-	DESTINATION "share/doc/pulseview"
+	DESTINATION ${MANUAL_INST_SUBDIR}
 	PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
 	OPTIONAL
 )
+if (ASCIIDOCTOR_EXECUTABLE)
+	install(
+		DIRECTORY images
+		DESTINATION ${MANUAL_INST_SUBDIR}
+		FILE_PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
+		PATTERN "*.xcf" EXCLUDE
+	)
+endif ()
