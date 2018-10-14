@@ -256,7 +256,9 @@ int main(int argc, char *argv[])
 
 	// Prepare the global settings since logging needs them early on
 	pv::GlobalSettings settings;
+	settings.save_default_palette();
 	settings.set_defaults_where_needed();
+	settings.apply_theme();
 
 	pv::logging.init();
 

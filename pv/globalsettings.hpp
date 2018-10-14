@@ -25,14 +25,19 @@
 #include <glib.h>
 #include <glibmm/variant.h>
 
+#include <QPalette>
 #include <QSettings>
 #include <QString>
 #include <QVariant>
 
 using std::map;
+using std::pair;
 using std::vector;
 
 namespace pv {
+
+extern const vector< pair<QString, QString> > Themes;
+
 
 class GlobalSettingsInterface
 {
@@ -46,6 +51,7 @@ class GlobalSettings : public QSettings
 	Q_OBJECT
 
 public:
+	static const QString Key_General_Theme;
 	static const QString Key_View_ZoomToFitDuringAcq;
 	static const QString Key_View_ZoomToFitAfterAcq;
 	static const QString Key_View_TriggerIsZeroTime;
@@ -75,6 +81,9 @@ public:
 	GlobalSettings();
 
 	void set_defaults_where_needed();
+
+	void save_default_palette();
+	void apply_theme();
 
 	static void add_change_handler(GlobalSettingsInterface *cb);
 	static void remove_change_handler(GlobalSettingsInterface *cb);
@@ -112,6 +121,8 @@ private:
 
 	static bool tracking_;
 	static map<QString, QVariant> tracked_changes_;
+
+	static QPalette default_palette_;
 };
 
 } // namespace pv

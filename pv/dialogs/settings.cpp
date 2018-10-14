@@ -126,6 +126,15 @@ Settings::Settings(DeviceManager &device_manager, QWidget *parent) :
 
 void Settings::create_pages()
 {
+	// General page
+	pages->addWidget(get_general_settings_form(pages));
+
+	QListWidgetItem *generalButton = new QListWidgetItem(page_list);
+	generalButton->setIcon(QIcon(":/icons/settings-general.png"));
+	generalButton->setText(tr("General"));
+	generalButton->setTextAlignment(Qt::AlignVCenter);
+	generalButton->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+
 	// View page
 	pages->addWidget(get_view_settings_form(pages));
 
@@ -190,6 +199,37 @@ QPlainTextEdit *Settings::create_log_view() const
 		log_view, SLOT(appendHtml(QString)));
 
 	return log_view;
+}
+
+QWidget *Settings::get_general_settings_form(QWidget *parent) const
+{
+	GlobalSettings settings;
+
+	QWidget *form = new QWidget(parent);
+	QVBoxLayout *form_layout = new QVBoxLayout(form);
+
+	// General settings
+	QGroupBox *general_group = new QGroupBox(tr("General"));
+	form_layout->addWidget(general_group);
+
+	QFormLayout *general_layout = new QFormLayout();
+	general_group->setLayout(general_layout);
+
+	QComboBox *theme_cb = new QComboBox();
+	for (pair<QString, QString> entry : Themes)
+		theme_cb->addItem(entry.first, entry.second);
+
+	theme_cb->setCurrentIndex(
+		settings.value(GlobalSettings::Key_General_Theme).toInt());
+	connect(theme_cb, SIGNAL(currentIndexChanged(int)),
+		this, SLOT(on_general_theme_changed_changed(int)));
+	general_layout->addRow(tr("User interface theme"), theme_cb);
+
+	QLabel *description_1 = new QLabel(tr("(You may need to restart PulseView for all UI elements to update)"));
+	description_1->setAlignment(Qt::AlignRight);
+	general_layout->addRow(description_1);
+
+	return form;
 }
 
 QWidget *Settings::get_view_settings_form(QWidget *parent) const
@@ -505,6 +545,13 @@ void Settings::on_page_changed(QListWidgetItem *current, QListWidgetItem *previo
 		current = previous;
 
 	pages->setCurrentIndex(page_list->row(current));
+}
+
+void Settings::on_general_theme_changed_changed(int state)
+{
+	GlobalSettings settings;
+	settings.setValue(GlobalSettings::Key_General_Theme, state);
+	settings.apply_theme();
 }
 
 void Settings::on_view_zoomToFitDuringAcq_changed(int state)

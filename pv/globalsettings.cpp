@@ -22,15 +22,25 @@
 #include <QApplication>
 #include <QColor>
 #include <QDebug>
+#include <QFile>
 #include <QFontMetrics>
+#include <QPixmapCache>
 #include <QString>
 
 using std::map;
+using std::pair;
 using std::string;
 using std::vector;
 
 namespace pv {
 
+const vector< pair<QString, QString> > Themes {
+	{"None" , ""},
+	{"QDarkStyleSheet", ":/themes/qdarkstyle/style.qss"},
+	{"DarkStyle", ":/themes/darkstyle/darkstyle.qss"}
+};
+
+const QString GlobalSettings::Key_General_Theme = "General_Theme";
 const QString GlobalSettings::Key_View_ZoomToFitDuringAcq = "View_ZoomToFitDuringAcq";
 const QString GlobalSettings::Key_View_ZoomToFitAfterAcq = "View_ZoomToFitAfterAcq";
 const QString GlobalSettings::Key_View_TriggerIsZeroTime = "View_TriggerIsZeroTime";
@@ -53,6 +63,7 @@ const QString GlobalSettings::Key_Log_NotifyOfStacktrace = "Log_NotifyOfStacktra
 vector<GlobalSettingsInterface*> GlobalSettings::callbacks_;
 bool GlobalSettings::tracking_ = false;
 map<QString, QVariant> GlobalSettings::tracked_changes_;
+QPalette GlobalSettings::default_palette_;
 
 GlobalSettings::GlobalSettings() :
 	QSettings()
@@ -62,6 +73,10 @@ GlobalSettings::GlobalSettings() :
 
 void GlobalSettings::set_defaults_where_needed()
 {
+	// Use no theme by default
+	if (!contains(Key_General_Theme))
+		setValue(Key_General_Theme, 0);
+
 	// Enable zoom-to-fit after acquisition by default
 	if (!contains(Key_View_ZoomToFitAfterAcq))
 		setValue(Key_View_ZoomToFitAfterAcq, true);
@@ -105,6 +120,61 @@ void GlobalSettings::set_defaults_where_needed()
 	// Notify user of existing stack trace by default
 	if (!contains(Key_Log_NotifyOfStacktrace))
 		setValue(Key_Log_NotifyOfStacktrace, true);
+}
+
+void GlobalSettings::save_default_palette()
+{
+	default_palette_ = QApplication::palette();
+}
+
+void GlobalSettings::apply_theme()
+{
+	QString theme_name    = Themes.at(value(Key_General_Theme).toInt()).first;
+	QString resource_name = Themes.at(value(Key_General_Theme).toInt()).second;
+
+	if (!resource_name.isEmpty()) {
+		QFile file(resource_name);
+		file.open(QFile::ReadOnly | QFile::Text);
+		qApp->setStyleSheet(file.readAll());
+	} else
+		qApp->setStyleSheet("");
+
+	qApp->setPalette(default_palette_);
+
+	if (theme_name.compare("QDarkStyleSheet") == 0) {
+		QPalette dark_palette;
+		dark_palette.setColor(QPalette::Window, QColor(53, 53, 53));
+		dark_palette.setColor(QPalette::WindowText, Qt::white);
+		dark_palette.setColor(QPalette::Base, QColor(42, 42, 42));
+		dark_palette.setColor(QPalette::Dark, QColor(35, 35, 35));
+		dark_palette.setColor(QPalette::Highlight, QColor(42, 130, 218));
+		qApp->setPalette(dark_palette);
+	} else if (theme_name.compare("DarkStyle") == 0) {
+		QPalette dark_palette;
+		dark_palette.setColor(QPalette::Window, QColor(53, 53, 53));
+		dark_palette.setColor(QPalette::WindowText, Qt::white);
+		dark_palette.setColor(QPalette::Disabled, QPalette::WindowText, QColor(127, 127, 127));
+		dark_palette.setColor(QPalette::Base, QColor(42, 42, 42));
+		dark_palette.setColor(QPalette::AlternateBase, QColor(66, 66, 66));
+		dark_palette.setColor(QPalette::ToolTipBase, Qt::white);
+		dark_palette.setColor(QPalette::ToolTipText, QColor(53, 53, 53));
+		dark_palette.setColor(QPalette::Text, Qt::white);
+		dark_palette.setColor(QPalette::Disabled, QPalette::Text, QColor(127, 127, 127));
+		dark_palette.setColor(QPalette::Dark, QColor(35, 35, 35));
+		dark_palette.setColor(QPalette::Shadow, QColor(20, 20, 20));
+		dark_palette.setColor(QPalette::Button, QColor(53, 53, 53));
+		dark_palette.setColor(QPalette::ButtonText, Qt::white);
+		dark_palette.setColor(QPalette::Disabled, QPalette::ButtonText, QColor(127, 127, 127));
+		dark_palette.setColor(QPalette::BrightText, Qt::red);
+		dark_palette.setColor(QPalette::Link, QColor(42, 130, 218));
+		dark_palette.setColor(QPalette::Highlight, QColor(42, 130, 218));
+		dark_palette.setColor(QPalette::Disabled, QPalette::Highlight, QColor(80, 80, 80));
+		dark_palette.setColor(QPalette::HighlightedText, Qt::white);
+		dark_palette.setColor(QPalette::Disabled, QPalette::HighlightedText, QColor(127, 127, 127));
+		qApp->setPalette(dark_palette);
+	}
+
+	QPixmapCache::clear();
 }
 
 void GlobalSettings::add_change_handler(GlobalSettingsInterface *cb)

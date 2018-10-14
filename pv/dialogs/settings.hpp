@@ -47,6 +47,7 @@ public:
 	QCheckBox *create_checkbox(const QString& key, const char* slot) const;
 	QPlainTextEdit *create_log_view() const;
 
+	QWidget *get_general_settings_form(QWidget *parent) const;
 	QWidget *get_view_settings_form(QWidget *parent) const;
 	QWidget *get_decoder_settings_form(QWidget *parent);
 	QWidget *get_about_page(QWidget *parent) const;
@@ -57,6 +58,7 @@ public:
 
 private Q_SLOTS:
 	void on_page_changed(QListWidgetItem *current, QListWidgetItem *previous);
+	void on_general_theme_changed_changed(int state);
 	void on_view_zoomToFitDuringAcq_changed(int state);
 	void on_view_zoomToFitAfterAcq_changed(int state);
 	void on_view_triggerIsZero_changed(int state);
