@@ -38,17 +38,26 @@ add_custom_target(manual-html
 	WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 	COMMENT "Generating manual, HTML output"
 )
-add_custom_target(manual-pdf
-	COMMAND ${ASCIIDOCTOR_PDF_EXECUTABLE}
-		-a stylesheet=${STYLE_SHEET}
-		-a stylesdir=${STYLES_DIR}
-		--destination-dir=${CMAKE_CURRENT_BINARY_DIR}
-		${MANUAL_SRC}
-	BYPRODUCTS ${MANUAL_OUT_PDF}
-	DEPENDS ${MANUAL_SRC}
-	WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-	COMMENT "Generating manual, HTML output"
-)
+if (ASCIIDOCTOR_PDF_EXECUTABLE)
+	add_custom_target(manual-pdf
+		COMMAND ${ASCIIDOCTOR_PDF_EXECUTABLE}
+			-a stylesheet=${STYLE_SHEET}
+			-a stylesdir=${STYLES_DIR}
+			--destination-dir=${CMAKE_CURRENT_BINARY_DIR}
+			${MANUAL_SRC}
+		BYPRODUCTS ${MANUAL_OUT_PDF}
+		DEPENDS ${MANUAL_SRC}
+		WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+		COMMENT "Generating manual, HTML output"
+	)
+else ()
+	add_custom_target(manual-pdf
+		COMMAND ${CMAKE_COMMAND} -E echo
+			"asciidoctor-pdf executable is missing, NOT generating HTML output"
+		DEPENDS ${MANUAL_SRC}
+		WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+	)
+endif ()
 add_custom_target(manual)
 add_dependencies(manual manual-html manual-pdf)
 
