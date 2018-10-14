@@ -588,25 +588,44 @@ void AnalogSignal::paint_logic_mid(QPainter &p, ViewItemPaintParams &pp)
 	// Check whether we need to fill the high areas
 	const bool fill_high_areas =
 		settings.value(GlobalSettings::Key_View_FillSignalHighAreas).toBool();
-	float high_start_x;
 	vector<QRectF> high_rects;
+	float rising_edge_x;
+	bool rising_edge_seen = false;
 
 	// Paint the edges
 	const unsigned int edge_count = edges.size() - 2;
 	QLineF *const edge_lines = new QLineF[edge_count];
 	line = edge_lines;
 
+	if (edges.front().second) {
+		// Beginning of trace is high
+		rising_edge_x = first_sample_x;
+		rising_edge_seen = true;
+	}
+
 	for (auto i = edges.cbegin() + 1; i != edges.cend() - 1; i++) {
-		const float x = ((*i).first / samples_per_pixel -
-			pixels_offset) + pp.left();
+		// Note: multiple edges occupying a single pixel are represented by an edge
+		// with undefined logic level. This means that only the first falling edge
+		// after a rising edge corresponds to said rising edge - and vice versa. If
+		// more edges with the same logic level follow, they denote multiple edges.
+
+		const float x = pp.left() + ((*i).first / samples_per_pixel - pixels_offset);
 		*line++ = QLineF(x, high_offset, x, low_offset);
 
 		if (fill_high_areas) {
-			if ((*i).second)
-				high_start_x = x;
-			else
-				high_rects.emplace_back(high_start_x, high_offset,
-					x - high_start_x, signal_height);
+			// Any edge terminates a high area
+			const int width = x - rising_edge_x;
+			if (rising_edge_seen && (width > 0)) {
+				high_rects.emplace_back(rising_edge_x, high_offset,
+					width, signal_height);
+				rising_edge_seen = false;
+			}
+
+			// Only rising edges start high areas
+			if ((*i).second) {
+				rising_edge_x = x;
+				rising_edge_seen = true;
+			}
 		}
 
 		if (show_sampling_points)
@@ -631,10 +650,10 @@ void AnalogSignal::paint_logic_mid(QPainter &p, ViewItemPaintParams &pp)
 		};
 
 	if (fill_high_areas) {
-		// Add last high rectangle if the signal is still high at the end of the view
-		if ((edges.cend() - 1)->second)
-			high_rects.emplace_back(high_start_x, high_offset,
-				last_sample_x - high_start_x, signal_height);
+		// Add last high rectangle if the signal is still high at the end of the trace
+		if (rising_edge_seen && (edges.cend() - 1)->second)
+			high_rects.emplace_back(rising_edge_x, high_offset,
+				last_sample_x - rising_edge_x, signal_height);
 
 		const QColor fill_color = QColor::fromRgba(settings.value(
 			GlobalSettings::Key_View_FillSignalHighAreaColor).value<uint32_t>());
