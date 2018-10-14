@@ -71,7 +71,7 @@ template <class T>
 void LogicSegment::downsampleTmain(const T*&in, T &acc, T &prev)
 {
 	// Accumulate one sample at a time
-	for(uint64_t i=0; i<MipMapScaleFactor; i++) {
+	for (uint64_t i = 0; i < MipMapScaleFactor; i++) {
 		T sample = *in++;
 		acc |= prev ^ sample;
 		prev = sample;
@@ -85,7 +85,7 @@ void LogicSegment::downsampleTmain<uint8_t>(const uint8_t*&in, uint8_t &acc, uin
 	uint32_t prev32 = prev | prev << 8 | prev << 16 | prev << 24;
 	uint32_t acc32 = acc;
 	const uint32_t *in32 = (const uint32_t*)in;
-	for(uint64_t i=0; i<MipMapScaleFactor; i+=4) {
+	for (uint64_t i = 0; i < MipMapScaleFactor; i+=4) {
 		uint32_t sample32 = *in32++;
 		acc32 |= prev32 ^ sample32;
 		prev32 = sample32;
@@ -112,7 +112,7 @@ void LogicSegment::downsampleTmain<uint16_t>(const uint16_t*&in, uint16_t &acc, 
 	uint32_t prev32 = prev | prev << 16;
 	uint32_t acc32 = acc;
 	const uint32_t *in32 = (const uint32_t*)in;
-	for(uint64_t i=0; i<MipMapScaleFactor; i+=2) {
+	for (uint64_t i = 0; i < MipMapScaleFactor; i+=2) {
 		uint32_t sample32 = *in32++;
 		acc32 |= prev32 ^ sample32;
 		prev32 = sample32;
@@ -140,7 +140,7 @@ void LogicSegment::downsampleT(const uint8_t *in_, uint8_t *&out_, uint64_t len)
 
 	// Try to complete the previous downsample
 	if (last_append_extra_) {
-		while(last_append_extra_<MipMapScaleFactor && len>0) {
+		while (last_append_extra_ < MipMapScaleFactor && len > 0) {
 			T sample = *in++;
 			acc |= prev ^ sample;
 			prev = sample;
@@ -160,7 +160,7 @@ void LogicSegment::downsampleT(const uint8_t *in_, uint8_t *&out_, uint64_t len)
 	}
 
 	// Handle complete blocks of MipMapScaleFactor samples
-	while(len >= MipMapScaleFactor) {
+	while (len >= MipMapScaleFactor) {
 		downsampleTmain<T>(in, acc, prev);
 		len -= MipMapScaleFactor;
 		// Output downsample
@@ -169,7 +169,7 @@ void LogicSegment::downsampleT(const uint8_t *in_, uint8_t *&out_, uint64_t len)
 	}
 
 	// Process remainder, not enough for a complete sample
-	while(len > 0) {
+	while (len > 0) {
 		T sample = *in++;
 		acc |= prev ^ sample;
 		prev = sample;
@@ -192,7 +192,7 @@ void LogicSegment::downsampleGeneric(const uint8_t *in, uint8_t *&out, uint64_t 
 
 	// Try to complete the previous downsample
 	if (last_append_extra_) {
-		while(last_append_extra_<MipMapScaleFactor && len>0) {
+		while (last_append_extra_ < MipMapScaleFactor && len > 0) {
 			const uint64_t sample = unpack_sample(in);
 			in += unit_size_;
 			acc |= prev ^ sample;
@@ -214,9 +214,9 @@ void LogicSegment::downsampleGeneric(const uint8_t *in, uint8_t *&out, uint64_t 
 	}
 
 	// Handle complete blocks of MipMapScaleFactor samples
-	while(len >= MipMapScaleFactor) {
+	while (len >= MipMapScaleFactor) {
 		// Accumulate one sample at a time
-		for(uint64_t i=0; i<MipMapScaleFactor; i++) {
+		for (uint64_t i = 0; i < MipMapScaleFactor; i++) {
 			const uint64_t sample = unpack_sample(in);
 			in += unit_size_;
 			acc |= prev ^ sample;
@@ -230,7 +230,7 @@ void LogicSegment::downsampleGeneric(const uint8_t *in, uint8_t *&out, uint64_t 
 	}
 
 	// Process remainder, not enough for a complete sample
-	while(len > 0) {
+	while (len > 0) {
 		const uint64_t sample = unpack_sample(in);
 		in += unit_size_;
 		acc |= prev ^ sample;
@@ -614,7 +614,7 @@ void LogicSegment::append_payload_to_mipmap()
 	const uint64_t end_sample = m0.length * MipMapScaleFactor;
 	uint64_t len_sample = end_sample - start_sample;
 	it = begin_sample_iteration(start_sample);
-	while(len_sample > 0) {
+	while (len_sample > 0) {
 		// Number of samples available in this chunk
 		uint64_t count = get_iterator_valid_length(it);
 		// Reduce if less than asked for
