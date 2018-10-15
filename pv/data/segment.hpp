@@ -90,6 +90,7 @@ protected:
 	void continue_sample_iteration(SegmentDataIterator* it, uint64_t increase);
 	void end_sample_iteration(SegmentDataIterator* it);
 	uint8_t* get_iterator_value(SegmentDataIterator* it);
+	uint64_t get_iterator_valid_length(SegmentDataIterator* it);
 
 	uint32_t segment_id_;
 	mutable recursive_mutex mutex_;

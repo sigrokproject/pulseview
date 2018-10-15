@@ -53,7 +53,9 @@ LogicSegment::LogicSegment(pv::data::Logic& owner, uint32_t segment_id,
 	unsigned int unit_size,	uint64_t samplerate) :
 	Segment(segment_id, samplerate, unit_size),
 	owner_(owner),
-	last_append_sample_(0)
+	last_append_sample_(0),
+	last_append_accumulator_(0),
+	last_append_extra_(0)
 {
 	memset(mip_map_, 0, sizeof(mip_map_));
 }
@@ -63,6 +65,183 @@ LogicSegment::~LogicSegment()
 	lock_guard<recursive_mutex> lock(mutex_);
 	for (MipMapLevel &l : mip_map_)
 		free(l.data);
+}
+
+template <class T>
+void LogicSegment::downsampleTmain(const T*&in, T &acc, T &prev)
+{
+	// Accumulate one sample at a time
+	for (uint64_t i = 0; i < MipMapScaleFactor; i++) {
+		T sample = *in++;
+		acc |= prev ^ sample;
+		prev = sample;
+	}
+}
+
+template <>
+void LogicSegment::downsampleTmain<uint8_t>(const uint8_t*&in, uint8_t &acc, uint8_t &prev)
+{
+	// Handle 8 bit samples in 32 bit steps
+	uint32_t prev32 = prev | prev << 8 | prev << 16 | prev << 24;
+	uint32_t acc32 = acc;
+	const uint32_t *in32 = (const uint32_t*)in;
+	for (uint64_t i = 0; i < MipMapScaleFactor; i+=4) {
+		uint32_t sample32 = *in32++;
+		acc32 |= prev32 ^ sample32;
+		prev32 = sample32;
+	}
+	// Reduce result back to uint8_t
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+	prev = (prev32 >> 24) & 0xff; // MSB is last
+#elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+	prev = prev32 & 0xff; // LSB is last
+#else
+#error Endian unknown
+#endif
+	acc |= acc32 & 0xff;
+	acc |= (acc32 >> 8) & 0xff;
+	acc |= (acc32 >> 16) & 0xff;
+	acc |= (acc32 >> 24) & 0xff;
+	in = (const uint8_t*)in32;
+}
+
+template <>
+void LogicSegment::downsampleTmain<uint16_t>(const uint16_t*&in, uint16_t &acc, uint16_t &prev)
+{
+	// Handle 16 bit samples in 32 bit steps
+	uint32_t prev32 = prev | prev << 16;
+	uint32_t acc32 = acc;
+	const uint32_t *in32 = (const uint32_t*)in;
+	for (uint64_t i = 0; i < MipMapScaleFactor; i+=2) {
+		uint32_t sample32 = *in32++;
+		acc32 |= prev32 ^ sample32;
+		prev32 = sample32;
+	}
+	// Reduce result back to uint16_t
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+	prev = (prev32 >> 16) & 0xffff; // MSB is last
+#elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+	prev = prev32 & 0xffff; // LSB is last
+#else
+#error Endian unknown
+#endif
+	acc |= acc32 & 0xffff;
+	acc |= (acc32 >> 16) & 0xffff;
+	in = (const uint16_t*)in32;
+}
+
+template <class T>
+void LogicSegment::downsampleT(const uint8_t *in_, uint8_t *&out_, uint64_t len)
+{
+	const T *in = (const T*)in_;
+	T *out = (T*)out_;
+	T prev = last_append_sample_;
+	T acc = last_append_accumulator_;
+
+	// Try to complete the previous downsample
+	if (last_append_extra_) {
+		while (last_append_extra_ < MipMapScaleFactor && len > 0) {
+			T sample = *in++;
+			acc |= prev ^ sample;
+			prev = sample;
+			last_append_extra_++;
+			len--;
+		}
+		if (!len) {
+			// Not enough samples available to complete downsample
+			last_append_sample_ = prev;
+			last_append_accumulator_ = acc;
+			return;
+		}
+		// We have a complete downsample
+		*out++ = acc;
+		acc = 0;
+		last_append_extra_ = 0;
+	}
+
+	// Handle complete blocks of MipMapScaleFactor samples
+	while (len >= MipMapScaleFactor) {
+		downsampleTmain<T>(in, acc, prev);
+		len -= MipMapScaleFactor;
+		// Output downsample
+		*out++ = acc;
+		acc = 0;
+	}
+
+	// Process remainder, not enough for a complete sample
+	while (len > 0) {
+		T sample = *in++;
+		acc |= prev ^ sample;
+		prev = sample;
+		last_append_extra_++;
+		len--;
+	}
+
+	// Update context
+	last_append_sample_ = prev;
+	last_append_accumulator_ = acc;
+	out_ = (uint8_t *)out;
+}
+
+void LogicSegment::downsampleGeneric(const uint8_t *in, uint8_t *&out, uint64_t len)
+{
+	// Downsample using the generic unpack_sample()
+	// which can handle any width between 1 and 8 bytes
+	uint64_t prev = last_append_sample_;
+	uint64_t acc = last_append_accumulator_;
+
+	// Try to complete the previous downsample
+	if (last_append_extra_) {
+		while (last_append_extra_ < MipMapScaleFactor && len > 0) {
+			const uint64_t sample = unpack_sample(in);
+			in += unit_size_;
+			acc |= prev ^ sample;
+			prev = sample;
+			last_append_extra_++;
+			len--;
+		}
+		if (!len) {
+			// Not enough samples available to complete downsample
+			last_append_sample_ = prev;
+			last_append_accumulator_ = acc;
+			return;
+		}
+		// We have a complete downsample
+		pack_sample(out, acc);
+		out += unit_size_;
+		acc = 0;
+		last_append_extra_ = 0;
+	}
+
+	// Handle complete blocks of MipMapScaleFactor samples
+	while (len >= MipMapScaleFactor) {
+		// Accumulate one sample at a time
+		for (uint64_t i = 0; i < MipMapScaleFactor; i++) {
+			const uint64_t sample = unpack_sample(in);
+			in += unit_size_;
+			acc |= prev ^ sample;
+			prev = sample;
+		}
+		len -= MipMapScaleFactor;
+		// Output downsample
+		pack_sample(out, acc);
+		out += unit_size_;
+		acc = 0;
+	}
+
+	// Process remainder, not enough for a complete sample
+	while (len > 0) {
+		const uint64_t sample = unpack_sample(in);
+		in += unit_size_;
+		acc |= prev ^ sample;
+		prev = sample;
+		last_append_extra_++;
+		len--;
+	}
+
+	// Update context
+	last_append_sample_ = prev;
+	last_append_accumulator_ = acc;
 }
 
 inline uint64_t LogicSegment::unpack_sample(const uint8_t *ptr) const
@@ -433,22 +612,28 @@ void LogicSegment::append_payload_to_mipmap()
 	// Iterate through the samples to populate the first level mipmap
 	const uint64_t start_sample = prev_length * MipMapScaleFactor;
 	const uint64_t end_sample = m0.length * MipMapScaleFactor;
-
+	uint64_t len_sample = end_sample - start_sample;
 	it = begin_sample_iteration(start_sample);
-	for (uint64_t i = start_sample; i < end_sample;) {
-		// Accumulate transitions which have occurred in this sample
-		accumulator = 0;
-		diff_counter = MipMapScaleFactor;
-		while (diff_counter-- > 0) {
-			const uint64_t sample = unpack_sample(get_iterator_value(it));
-			accumulator |= last_append_sample_ ^ sample;
-			last_append_sample_ = sample;
-			continue_sample_iteration(it, 1);
-			i++;
-		}
-
-		pack_sample(dest_ptr, accumulator);
-		dest_ptr += unit_size_;
+	while (len_sample > 0) {
+		// Number of samples available in this chunk
+		uint64_t count = get_iterator_valid_length(it);
+		// Reduce if less than asked for
+		count = std::min(count, len_sample);
+		uint8_t *src_ptr = get_iterator_value(it);
+		// Submit these contiguous samples to downsampling in bulk
+		if (unit_size_ == 1)
+			downsampleT<uint8_t>(src_ptr, dest_ptr, count);
+		else if (unit_size_ == 2)
+			downsampleT<uint16_t>(src_ptr, dest_ptr, count);
+		else if (unit_size_ == 4)
+			downsampleT<uint32_t>(src_ptr, dest_ptr, count);
+		else if (unit_size_ == 8)
+			downsampleT<uint8_t>(src_ptr, dest_ptr, count);
+		else
+			downsampleGeneric(src_ptr, dest_ptr, count);
+		len_sample -= count;
+		// Advance iterator, should move to start of next chunk
+		continue_sample_iteration(it, count);
 	}
 	end_sample_iteration(it);
 
