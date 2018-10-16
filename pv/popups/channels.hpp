@@ -28,7 +28,6 @@
 #include <QCheckBox>
 #include <QFormLayout>
 #include <QGridLayout>
-#include <QHBoxLayout>
 #include <QLabel>
 #include <QPushButton>
 #include <QSignalMapper>
@@ -71,7 +70,10 @@ public:
 
 private:
 	void set_all_channels(bool set);
+
 	void enable_channels_conditionally(
+		function<bool (const shared_ptr<data::SignalBase>)> cond_func);
+	void disable_channels_conditionally(
 		function<bool (const shared_ptr<data::SignalBase>)> cond_func);
 
 	void populate_group(shared_ptr<sigrok::ChannelGroup> group,
@@ -80,7 +82,6 @@ private:
 	QGridLayout* create_channel_group_grid(
 		const vector< shared_ptr<pv::data::SignalBase> > sigs);
 
-private:
 	void showEvent(QShowEvent *event);
 
 private Q_SLOTS:
@@ -89,9 +90,13 @@ private Q_SLOTS:
 	void enable_all_channels();
 	void disable_all_channels();
 	void enable_all_logic_channels();
+	void disable_all_logic_channels();
 	void enable_all_analog_channels();
+	void disable_all_analog_channels();
 	void enable_all_named_channels();
+	void disable_all_unnamed_channels();
 	void enable_all_changing_channels();
+	void disable_all_non_changing_channels();
 
 private:
 	pv::Session &session_;
@@ -105,10 +110,12 @@ private:
 		check_box_signal_map_;
 	map< shared_ptr<sigrok::ChannelGroup>, QLabel*> group_label_map_;
 
-	QHBoxLayout buttons_bar_;
+	QGridLayout filter_buttons_bar_;
 	QPushButton enable_all_channels_, disable_all_channels_;
-	QPushButton enable_all_logic_channels_, enable_all_analog_channels_;
-	QPushButton enable_all_named_channels_, enable_all_changing_channels_;
+	QPushButton enable_all_logic_channels_, disable_all_logic_channels_;
+	QPushButton enable_all_analog_channels_, disable_all_analog_channels_;
+	QPushButton enable_all_named_channels_, disable_all_unnamed_channels_;
+	QPushButton enable_all_changing_channels_, disable_all_non_changing_channels_;
 
 	QSignalMapper check_box_mapper_;
 };

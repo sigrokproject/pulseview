@@ -61,9 +61,13 @@ Channels::Channels(Session &session, QWidget *parent) :
 	enable_all_channels_(tr("All"), this),
 	disable_all_channels_(tr("All"), this),
 	enable_all_logic_channels_(tr("Logic"), this),
+	disable_all_logic_channels_(tr("Logic"), this),
 	enable_all_analog_channels_(tr("Analog"), this),
+	disable_all_analog_channels_(tr("Analog"), this),
 	enable_all_named_channels_(tr("Named"), this),
+	disable_all_unnamed_channels_(tr("Unnamed"), this),
 	enable_all_changing_channels_(tr("Changing"), this),
+	disable_all_non_changing_channels_(tr("Non-changing"), this),
 	check_box_mapper_(this)
 {
 	// Create the layout
@@ -123,24 +127,34 @@ Channels::Channels(Session &session, QWidget *parent) :
 	connect(&enable_all_channels_, SIGNAL(clicked()), this, SLOT(enable_all_channels()));
 	connect(&disable_all_channels_, SIGNAL(clicked()), this, SLOT(disable_all_channels()));
 	connect(&enable_all_logic_channels_, SIGNAL(clicked()), this, SLOT(enable_all_logic_channels()));
+	connect(&disable_all_logic_channels_, SIGNAL(clicked()), this, SLOT(disable_all_logic_channels()));
 	connect(&enable_all_analog_channels_, SIGNAL(clicked()), this, SLOT(enable_all_analog_channels()));
+	connect(&disable_all_analog_channels_, SIGNAL(clicked()), this, SLOT(disable_all_analog_channels()));
 	connect(&enable_all_named_channels_, SIGNAL(clicked()), this, SLOT(enable_all_named_channels()));
+	connect(&disable_all_unnamed_channels_, SIGNAL(clicked()), this, SLOT(disable_all_unnamed_channels()));
 	connect(&enable_all_changing_channels_, SIGNAL(clicked()),
 		this, SLOT(enable_all_changing_channels()));
+	connect(&disable_all_non_changing_channels_, SIGNAL(clicked()),
+		this, SLOT(disable_all_non_changing_channels()));
 
 	QLabel *label1 = new QLabel(tr("Disable: "));
-	buttons_bar_.addWidget(label1);
-	buttons_bar_.addWidget(&disable_all_channels_);
-	QLabel *label2 = new QLabel(tr("Enable: "));
-	buttons_bar_.addWidget(label2);
-	buttons_bar_.addWidget(&enable_all_channels_);
-	buttons_bar_.addWidget(&enable_all_logic_channels_);
-	buttons_bar_.addWidget(&enable_all_analog_channels_);
-	buttons_bar_.addWidget(&enable_all_named_channels_);
-	buttons_bar_.addWidget(&enable_all_changing_channels_);
-	buttons_bar_.addStretch();
+	filter_buttons_bar_.addWidget(label1, 0, 0);
+	filter_buttons_bar_.addWidget(&disable_all_channels_, 0, 1);
+	filter_buttons_bar_.addWidget(&disable_all_logic_channels_, 0, 2);
+	filter_buttons_bar_.addWidget(&disable_all_analog_channels_, 0, 3);
+	filter_buttons_bar_.addWidget(&disable_all_unnamed_channels_, 0, 4);
+	filter_buttons_bar_.addWidget(&disable_all_non_changing_channels_, 0, 5);
 
-	layout_.addRow(&buttons_bar_);
+	QLabel *label2 = new QLabel(tr("Enable: "));
+	filter_buttons_bar_.addWidget(label2, 1, 0);
+	filter_buttons_bar_.addWidget(&enable_all_channels_, 1, 1);
+	filter_buttons_bar_.addWidget(&enable_all_logic_channels_, 1, 2);
+	filter_buttons_bar_.addWidget(&enable_all_analog_channels_, 1, 3);
+	filter_buttons_bar_.addWidget(&enable_all_named_channels_, 1, 4);
+	filter_buttons_bar_.addWidget(&enable_all_changing_channels_, 1, 5);
+
+	layout_.addItem(new QSpacerItem(0, 15, QSizePolicy::Expanding, QSizePolicy::Expanding));
+	layout_.addRow(&filter_buttons_bar_);
 
 	// Connect the check-box signal mapper
 	connect(&check_box_mapper_, SIGNAL(mapped(QWidget*)),
@@ -173,10 +187,28 @@ void Channels::enable_channels_conditionally(
 		const shared_ptr<SignalBase> sig = entry.second;
 		assert(sig);
 
-		const bool state = cond_func(sig);
-		if (state) {
-			sig->set_enabled(state);
-			cb->setChecked(state);
+		if (cond_func(sig)) {
+			sig->set_enabled(true);
+			cb->setChecked(true);
+		}
+	}
+
+	updating_channels_ = false;
+}
+
+void Channels::disable_channels_conditionally(
+	function<bool (const shared_ptr<data::SignalBase>)> cond_func)
+{
+	updating_channels_ = true;
+
+	for (auto entry : check_box_signal_map_) {
+		QCheckBox *cb = entry.first;
+		const shared_ptr<SignalBase> sig = entry.second;
+		assert(sig);
+
+		if (cond_func(sig)) {
+			sig->set_enabled(false);
+			cb->setChecked(false);
 		}
 	}
 
@@ -309,9 +341,21 @@ void Channels::enable_all_logic_channels()
 		{ return signal->type() == SignalBase::LogicChannel; });
 }
 
+void Channels::disable_all_logic_channels()
+{
+	disable_channels_conditionally([](const shared_ptr<SignalBase> signal)
+		{ return signal->type() == SignalBase::LogicChannel; });
+}
+
 void Channels::enable_all_analog_channels()
 {
 	enable_channels_conditionally([](const shared_ptr<SignalBase> signal)
+		{ return signal->type() == SignalBase::AnalogChannel; });
+}
+
+void Channels::disable_all_analog_channels()
+{
+	disable_channels_conditionally([](const shared_ptr<SignalBase> signal)
 		{ return signal->type() == SignalBase::AnalogChannel; });
 }
 
@@ -319,6 +363,12 @@ void Channels::enable_all_named_channels()
 {
 	enable_channels_conditionally([](const shared_ptr<SignalBase> signal)
 		{ return signal->name() != signal->internal_name(); });
+}
+
+void Channels::disable_all_unnamed_channels()
+{
+	disable_channels_conditionally([](const shared_ptr<SignalBase> signal)
+		{ return signal->name() == signal->internal_name(); });
 }
 
 void Channels::enable_all_changing_channels()
@@ -351,6 +401,39 @@ void Channels::enable_all_changing_channels()
 
 			// No edges detected in any of the segments
 			return false;
+		});
+}
+
+void Channels::disable_all_non_changing_channels()
+{
+	disable_channels_conditionally([](const shared_ptr<SignalBase> signal)
+		{
+			// Always disable channels without sample data
+			if (!signal->has_samples())
+				return true;
+
+			// Non-logic channels are considered to always have a signal
+			if (signal->type() != SignalBase::LogicChannel)
+				return false;
+
+			const shared_ptr<Logic> logic = signal->logic_data();
+			assert(logic);
+
+			// If any of the segments has edges, leave this channel enabled
+			for (shared_ptr<LogicSegment> segment : logic->logic_segments()) {
+				vector<LogicSegment::EdgePair> edges;
+
+				segment->get_subsampled_edges(edges,
+					0, segment->get_sample_count() - 1,
+					LogicSegment::MipMapScaleFactor,
+					signal->index());
+
+				if (edges.size() > 2)
+					return false;
+			}
+
+			// No edges detected in any of the segments
+			return true;
 		});
 }
 
