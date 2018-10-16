@@ -129,6 +129,8 @@ public:
 
 	virtual QMenu* create_header_context_menu(QWidget *parent);
 
+	virtual QMenu* create_view_context_menu(QWidget *parent, QPoint &click_pos);
+
 	pv::widgets::Popup* create_popup(QWidget *parent);
 
 	/**
@@ -192,12 +194,16 @@ private Q_SLOTS:
 
 	void on_coloredit_changed(const QColor &color);
 
+	void on_create_marker_here() const;
+
 protected:
 	shared_ptr<data::SignalBase> base_;
 	QPen axis_pen_;
 
 	SegmentDisplayMode segment_display_mode_;
 	bool show_hover_marker_;
+
+	uint32_t context_menu_x_pos_;
 
 	/// The ID of the currently displayed segment
 	int current_segment_;

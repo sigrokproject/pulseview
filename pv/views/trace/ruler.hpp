@@ -117,7 +117,7 @@ public:
 		unsigned precision = 0,
 		bool sign = true);
 
-	pv::util::Timestamp get_time_from_x_pos(uint32_t x);
+	pv::util::Timestamp get_time_from_x_pos(uint32_t x) const;
 
 protected:
 	virtual void contextMenuEvent(QContextMenuEvent *event) override;

@@ -328,6 +328,23 @@ QMenu* DecodeTrace::create_header_context_menu(QWidget *parent)
 
 QMenu* DecodeTrace::create_view_context_menu(QWidget *parent, QPoint &click_pos)
 {
+	// Get entries from default menu before adding our own
+	QMenu *const menu = new QMenu(parent);
+
+	QMenu* default_menu = Trace::create_view_context_menu(parent, click_pos);
+	if (default_menu) {
+		for (QAction *action : default_menu->actions()) {
+			menu->addAction(action);
+			if (action->parent() == default_menu)
+				action->setParent(menu);
+		}
+		delete default_menu;
+
+		// Add separator if needed
+		if (menu->actions().length() > 0)
+			menu->addSeparator();
+	}
+
 	try {
 		selected_row_ = &visible_rows_[get_row_at_point(click_pos)];
 	} catch (out_of_range&) {
@@ -338,8 +355,6 @@ QMenu* DecodeTrace::create_view_context_menu(QWidget *parent, QPoint &click_pos)
 	const pair<uint64_t, uint64_t> sample_range =
 		get_view_sample_range(click_pos.x(), click_pos.x() + 1);
 	selected_sample_range_ = make_pair(sample_range.first, numeric_limits<uint64_t>::max());
-
-	QMenu *const menu = new QMenu(parent);
 
 	if (decode_signal_->is_paused()) {
 		QAction *const resume =

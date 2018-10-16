@@ -114,7 +114,7 @@ QString Ruler::format_time_with_distance(
 		return pv::util::format_time_minutes(t, precision, sign);
 }
 
-pv::util::Timestamp Ruler::get_time_from_x_pos(uint32_t x)
+pv::util::Timestamp Ruler::get_time_from_x_pos(uint32_t x) const
 {
 	return view_.ruler_offset() + ((double)x + 0.5) * view_.scale();
 }
@@ -318,7 +318,7 @@ void Ruler::invalidate_tick_position_cache()
 
 void Ruler::on_createMarker()
 {
-	view_.add_flag(get_time_from_x_pos(context_menu_x_pos_));
+	view_.add_flag(get_time_from_x_pos(mouse_down_point_.x()));
 }
 
 void Ruler::on_toggleHoverMarker()

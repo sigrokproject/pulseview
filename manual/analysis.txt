@@ -43,7 +43,8 @@ image::pv_cursors_markers.png[]
 
 Markers are movable indicators that you can create wherever you like on the
 time scale - just double-click on it and it'll create one for you where your
-mouse cursor is at the time, or use the context menu when right-clicking.
+mouse cursor is at the time, or use the context menu when right-clicking on
+the ruler or a signal trace.
 You can click on its label and you'll have the option to change its name, or
 drag it to reposition it.
 

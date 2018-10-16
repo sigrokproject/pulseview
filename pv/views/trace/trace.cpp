@@ -26,7 +26,9 @@
 #include <QFormLayout>
 #include <QKeyEvent>
 #include <QLineEdit>
+#include <QMenu>
 
+#include "ruler.hpp"
 #include "trace.hpp"
 #include "tracepalette.hpp"
 #include "view.hpp"
@@ -176,6 +178,34 @@ void Trace::paint_label(QPainter &p, const QRect &rect, bool hover)
 QMenu* Trace::create_header_context_menu(QWidget *parent)
 {
 	QMenu *const menu = ViewItem::create_header_context_menu(parent);
+
+	return menu;
+}
+
+QMenu* Trace::create_view_context_menu(QWidget *parent, QPoint &click_pos)
+{
+	context_menu_x_pos_ = click_pos.x();
+
+	// Get entries from default menu before adding our own
+	QMenu *const menu = new QMenu(parent);
+
+	QMenu* default_menu = TraceTreeItem::create_view_context_menu(parent, click_pos);
+	if (default_menu) {
+		for (QAction *action : default_menu->actions()) {
+			menu->addAction(action);
+			if (action->parent() == default_menu)
+				action->setParent(menu);
+		}
+		delete default_menu;
+
+		// Add separator if needed
+		if (menu->actions().length() > 0)
+			menu->addSeparator();
+	}
+
+	QAction *const create_marker_here = new QAction(tr("Create marker here"), this);
+	connect(create_marker_here, SIGNAL(triggered()), this, SLOT(on_create_marker_here()));
+	menu->addAction(create_marker_here);
 
 	return menu;
 }
@@ -371,6 +401,17 @@ void Trace::on_coloredit_changed(const QColor &color)
 {
 	/* This event handler notifies SignalBase that the color changed */
 	base_->set_color(color);
+}
+
+void Trace::on_create_marker_here() const
+{
+	View *view = owner_->view();
+	assert(view);
+
+	const Ruler *ruler = view->ruler();
+	QPoint p = ruler->mapFrom(view, QPoint(context_menu_x_pos_, 0));
+
+	view->add_flag(ruler->get_time_from_x_pos(p.x()));
 }
 
 } // namespace trace

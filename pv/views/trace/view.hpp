@@ -145,6 +145,8 @@ public:
 
 	const Viewport* viewport() const;
 
+	const Ruler* ruler() const;
+
 	virtual void save_settings(QSettings &settings) const;
 
 	virtual void restore_settings(QSettings &settings);

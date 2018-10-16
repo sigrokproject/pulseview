@@ -347,6 +347,11 @@ const Viewport* View::viewport() const
 	return viewport_;
 }
 
+const Ruler* View::ruler() const
+{
+	return ruler_;
+}
+
 void View::save_settings(QSettings &settings) const
 {
 	settings.setValue("scale", scale_);
