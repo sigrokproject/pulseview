@@ -126,10 +126,10 @@ void Logging::log(const QString &text, int source)
 
 	switch (source) {
 	case LogSource_pv:
-		s = QString("pv: ") + text;  // black is default color
+		s = QString("<font color=\"darkMagenta\">pv: %1</font>").arg(text);
 		break;
 	case LogSource_sr:
-		s = QString("<font color=\"blue\">sr: %1</font>").arg(text);
+		s = QString("<font color=\"darkGreen\">sr: %1</font>").arg(text);
 		break;
 	case LogSource_srd:
 		s = QString("<font color=\"olive\">srd: %1</font>").arg(text);
