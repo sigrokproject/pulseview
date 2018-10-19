@@ -171,7 +171,7 @@ private:
 		function<QString(const pv::util::Timestamp&)> format_function);
 
 private Q_SLOTS:
-	void hover_point_changed(const QPoint &hp);
+	void on_hover_point_changed(const QWidget* widget, const QPoint &hp);
 
 	void invalidate_tick_position_cache();
 

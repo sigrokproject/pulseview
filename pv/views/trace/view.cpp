@@ -241,6 +241,7 @@ void View::reset_view_state()
 	cursors_ = make_shared<CursorPair>(*this);
 	next_flag_text_ = 'A';
 	trigger_markers_.clear();
+	hover_widget_ = nullptr;
 	hover_point_ = QPoint(-1, -1);
 	scroll_needs_defaults_ = true;
 	saved_v_offset_ = 0;
@@ -865,6 +866,11 @@ const QPoint& View::hover_point() const
 	return hover_point_;
 }
 
+const QWidget* View::hover_widget() const
+{
+	return hover_widget_;
+}
+
 int64_t View::get_nearest_level_change(const QPoint &p)
 {
 	// Is snapping disabled?
@@ -1329,14 +1335,14 @@ bool View::eventFilter(QObject *object, QEvent *event)
 	const QEvent::Type type = event->type();
 	if (type == QEvent::MouseMove) {
 
+		if (object)
+			hover_widget_ = qobject_cast<QWidget*>(object);
+
 		const QMouseEvent *const mouse_event = (QMouseEvent*)event;
 		if (object == viewport_)
 			hover_point_ = mouse_event->pos();
 		else if (object == ruler_)
-			// Adjust the hover point's y coordinate so that it's relative to
-			// the top of the viewport. The result may be negative.
-			hover_point_ = QPoint(mouse_event->pos().x(),
-				mouse_event->pos().y() - ruler_->sizeHint().height());
+			hover_point_ = mouse_event->pos();
 		else if (object == header_)
 			hover_point_ = QPoint(0, mouse_event->y());
 		else
@@ -1403,13 +1409,15 @@ void View::update_hover_point()
 {
 	// Determine signal that the mouse cursor is hovering over
 	signal_under_mouse_cursor_.reset();
-	for (shared_ptr<Signal> s : signals_) {
-		const pair<int, int> extents = s->v_extents();
-		const int top = s->get_visual_y() + extents.first;
-		const int btm = s->get_visual_y() + extents.second;
-		if ((hover_point_.y() >= top) && (hover_point_.y() <= btm)
-			&& s->base()->enabled())
-			signal_under_mouse_cursor_ = s;
+	if (hover_widget_ == this) {
+		for (shared_ptr<Signal> s : signals_) {
+			const pair<int, int> extents = s->v_extents();
+			const int top = s->get_visual_y() + extents.first;
+			const int btm = s->get_visual_y() + extents.second;
+			if ((hover_point_.y() >= top) && (hover_point_.y() <= btm)
+				&& s->base()->enabled())
+				signal_under_mouse_cursor_ = s;
+		}
 	}
 
 	// Update all trace tree items
@@ -1419,7 +1427,7 @@ void View::update_hover_point()
 		r->hover_point_changed(hover_point_);
 
 	// Notify any other listeners
-	hover_point_changed(hover_point_);
+	hover_point_changed(hover_widget_, hover_point_);
 }
 
 void View::row_item_appearance_changed(bool label, bool content)

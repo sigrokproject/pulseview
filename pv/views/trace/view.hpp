@@ -304,6 +304,7 @@ public:
 	vector< shared_ptr<Flag> > flags() const;
 
 	const QPoint& hover_point() const;
+	const QWidget* hover_widget() const;
 
 	/**
 	 * Determines the closest level change (i.e. edge) to a given point, which
@@ -321,7 +322,7 @@ public:
 	void on_setting_changed(const QString &key, const QVariant &value);
 
 Q_SIGNALS:
-	void hover_point_changed(const QPoint &hp);
+	void hover_point_changed(const QWidget* widget, const QPoint &hp);
 
 	void selection_changed();
 
@@ -529,6 +530,7 @@ private:
 
 	vector< shared_ptr<TriggerMarker> > trigger_markers_;
 
+	QWidget* hover_widget_;
 	QPoint hover_point_;
 	shared_ptr<Signal> signal_under_mouse_cursor_;
 	uint16_t snap_distance_;

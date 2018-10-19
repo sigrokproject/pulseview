@@ -50,8 +50,8 @@ Ruler::Ruler(View &parent) :
 {
 	setMouseTracking(true);
 
-	connect(&view_, SIGNAL(hover_point_changed(QPoint)),
-		this, SLOT(hover_point_changed(QPoint)));
+	connect(&view_, SIGNAL(hover_point_changed(const QWidget*, QPoint)),
+		this, SLOT(on_hover_point_changed(const QWidget*, QPoint)));
 	connect(&view_, SIGNAL(offset_changed()),
 		this, SLOT(invalidate_tick_position_cache()));
 	connect(&view_, SIGNAL(scale_changed()),
@@ -304,8 +304,9 @@ TickPositions Ruler::calculate_tick_positions(
 	return tp;
 }
 
-void Ruler::hover_point_changed(const QPoint &hp)
+void Ruler::on_hover_point_changed(const QWidget* widget, const QPoint &hp)
 {
+	(void)widget;
 	(void)hp;
 
 	update();

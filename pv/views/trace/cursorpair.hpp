@@ -25,6 +25,7 @@
 #include <memory>
 
 #include <QPainter>
+#include <QRect>
 
 using std::pair;
 using std::shared_ptr;
@@ -35,8 +36,12 @@ namespace pv {
 namespace views {
 namespace trace {
 
+class View;
+
 class CursorPair : public TimeItem
 {
+	Q_OBJECT
+
 private:
 	static const int DeltaPadding;
 	static const QColor ViewportFillColor;
@@ -48,7 +53,6 @@ public:
 	 */
 	CursorPair(View &view);
 
-public:
 	/**
 	 * Returns true if the item is visible and enabled.
 	 */
@@ -98,14 +102,17 @@ public:
 	 */
 	QString format_string();
 
-	void compute_text_size(QPainter &p);
-
 	pair<float, float> get_cursor_offsets() const;
+
+public Q_SLOTS:
+	void on_hover_point_changed(const QWidget* widget, const QPoint &hp);
 
 private:
 	shared_ptr<Cursor> first_, second_;
 
 	QSizeF text_size_;
+	QRectF label_area_;
+	bool label_incomplete_;
 };
 
 } // namespace trace
