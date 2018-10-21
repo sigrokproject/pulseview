@@ -1215,7 +1215,8 @@ void View::set_scroll_default()
 
 void View::determine_if_header_was_shrunk()
 {
-	const int header_pane_width = splitter_->sizes().front();
+	const int header_pane_width =
+		splitter_->sizes().front();  // clazy:exclude=detaching-temporary
 
 	// Allow for a slight margin of error so that we also accept
 	// slight differences when e.g. a label name change increased
@@ -1234,7 +1235,7 @@ void View::resize_header_to_fit()
 	// splitter to the maximum allowed position.
 
 	int splitter_area_width = 0;
-	for (int w : splitter_->sizes())
+	for (int w : splitter_->sizes())  // clazy:exclude=range-loop
 		splitter_area_width += w;
 
 	// Make sure the header has enough horizontal space to show all labels fully

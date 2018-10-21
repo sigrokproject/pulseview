@@ -221,7 +221,7 @@ void Connect::scan_pressed()
 		const int index = serial_devices_.currentIndex();
 		if (index >= 0 && index < serial_devices_.count() &&
 		    serial_devices_.currentText() == serial_devices_.itemText(index))
-			serial = serial_devices_.itemData(index).value<QString>();
+			serial = serial_devices_.itemData(index).toString();
 		else
 			serial = serial_devices_.currentText();
 		drvopts[ConfigKey::CONN] = Variant<ustring>::create(

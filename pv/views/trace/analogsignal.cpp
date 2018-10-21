@@ -236,7 +236,7 @@ void AnalogSignal::paint_back(QPainter &p, ViewItemPaintParams &pp)
 
 		paint_axis(p, pp, get_visual_y());
 	} else {
-		Trace::paint_back(p, pp);
+		Signal::paint_back(p, pp);
 		paint_axis(p, pp, get_visual_y());
 	}
 }
