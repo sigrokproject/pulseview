@@ -19,8 +19,11 @@
 
 #include <cassert>
 
+#include <QDebug>
 #include <QLineEdit>
 #include <QSpinBox>
+
+#include <libsigrokcxx/libsigrokcxx.hpp>
 
 #include "string.hpp"
 
@@ -48,9 +51,14 @@ QWidget* String::get_widget(QWidget *parent, bool auto_commit)
 	if (!getter_)
 		return nullptr;
 
-	Glib::VariantBase variant = getter_();
-	if (!variant.gobj())
+	try {
+		Glib::VariantBase variant = getter_();
+		if (!variant.gobj())
+			return nullptr;
+	} catch (const sigrok::Error &e) {
+		qWarning() << tr("Querying config key %1 resulted in %2").arg(name_, e.what());
 		return nullptr;
+	}
 
 	line_edit_ = new QLineEdit(parent);
 
@@ -68,7 +76,15 @@ void String::update_widget()
 	if (!line_edit_)
 		return;
 
-	Glib::VariantBase variant = getter_();
+	Glib::VariantBase variant;
+
+	try {
+		variant = getter_();
+	} catch (const sigrok::Error &e) {
+		qWarning() << tr("Querying config key %1 resulted in %2").arg(name_, e.what());
+		return;
+	}
+
 	assert(variant.gobj());
 
 	string value = Glib::VariantBase::cast_dynamic<Glib::Variant<ustring>>(

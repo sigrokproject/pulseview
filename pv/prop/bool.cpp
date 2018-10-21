@@ -20,6 +20,9 @@
 #include <cassert>
 
 #include <QCheckBox>
+#include <QDebug>
+
+#include <libsigrokcxx/libsigrokcxx.hpp>
 
 #include "bool.hpp"
 
@@ -40,9 +43,14 @@ QWidget* Bool::get_widget(QWidget *parent, bool auto_commit)
 	if (!getter_)
 		return nullptr;
 
-	Glib::VariantBase variant = getter_();
-	if (!variant.gobj())
+	try {
+		Glib::VariantBase variant = getter_();
+		if (!variant.gobj())
+			return nullptr;
+	} catch (const sigrok::Error &e) {
+		qWarning() << tr("Querying config key %1 resulted in %2").arg(name_, e.what());
 		return nullptr;
+	}
 
 	check_box_ = new QCheckBox(name(), parent);
 	check_box_->setToolTip(desc());
@@ -66,9 +74,16 @@ void Bool::update_widget()
 	if (!check_box_)
 		return;
 
-	Glib::VariantBase variant = getter_();
-	assert(variant.gobj());
+	Glib::VariantBase variant;
 
+	try {
+		variant = getter_();
+	} catch (const sigrok::Error &e) {
+		qWarning() << tr("Querying config key %1 resulted in %2").arg(name_, e.what());
+		return;
+	}
+
+	assert(variant.gobj());
 	bool value = Glib::VariantBase::cast_dynamic<Glib::Variant<bool>>(
 		variant).get();
 
@@ -82,8 +97,7 @@ void Bool::commit()
 	if (!check_box_)
 		return;
 
-	setter_(Glib::Variant<bool>::create(
-		check_box_->checkState() == Qt::Checked));
+	setter_(Glib::Variant<bool>::create(check_box_->checkState() == Qt::Checked));
 }
 
 void Bool::on_state_changed(int)

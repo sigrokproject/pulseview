@@ -20,7 +20,10 @@
 #include <cassert>
 #include <cstdint>
 
+#include <QDebug>
 #include <QSpinBox>
+
+#include <libsigrokcxx/libsigrokcxx.hpp>
 
 #include "int.hpp"
 
@@ -56,7 +59,12 @@ QWidget* Int::get_widget(QWidget *parent, bool auto_commit)
 	if (!getter_)
 		return nullptr;
 
-	value_ = getter_();
+	try {
+		value_ = getter_();
+	} catch (const sigrok::Error &e) {
+		qWarning() << tr("Querying config key %1 resulted in %2").arg(name_, e.what());
+		return nullptr;
+	}
 
 	GVariant *value = value_.gobj();
 	if (!value)
@@ -114,7 +122,13 @@ void Int::update_widget()
 	if (!spin_box_)
 		return;
 
-	value_ = getter_();
+	try {
+		value_ = getter_();
+	} catch (const sigrok::Error &e) {
+		qWarning() << tr("Querying config key %1 resulted in %2").arg(name_, e.what());
+		return;
+	}
+
 	GVariant *value = value_.gobj();
 	assert(value);
 

@@ -29,6 +29,8 @@
 #include <QLabel>
 #include <QSlider>
 
+#include <libsigrokcxx/libsigrokcxx.hpp>
+
 #include "enum.hpp"
 
 using std::abs;
@@ -103,7 +105,15 @@ QWidget* Enum::get_widget(QWidget *parent, bool auto_commit)
 	if (!getter_)
 		return nullptr;
 
-	Glib::VariantBase variant = getter_();
+	Glib::VariantBase variant;
+
+	try {
+		 variant = getter_();
+	} catch (const sigrok::Error &e) {
+		qWarning() << tr("Querying config key %1 resulted in %2").arg(name_, e.what());
+		return nullptr;
+	}
+
 	if (!variant.gobj())
 		return nullptr;
 
@@ -158,7 +168,15 @@ QWidget* Enum::get_widget(QWidget *parent, bool auto_commit)
 
 void Enum::update_widget()
 {
-	Glib::VariantBase variant = getter_();
+	Glib::VariantBase variant;
+
+	try {
+		variant = getter_();
+	} catch (const sigrok::Error &e) {
+		qWarning() << tr("Querying config key %1 resulted in %2").arg(name_, e.what());
+		return;
+	}
+
 	assert(variant.gobj());
 
 	if (is_range_) {

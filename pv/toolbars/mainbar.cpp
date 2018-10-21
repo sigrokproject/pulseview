@@ -384,7 +384,7 @@ void MainBar::update_sample_rate_selector_value()
 		sample_rate_.set_value(samplerate);
 		updating_sample_rate_ = false;
 	} catch (Error& error) {
-		qDebug() << tr("Failed to get value of sample rate:") << error.what();
+		qDebug() << tr("Failed to get sample rate:") << error.what();
 	}
 }
 

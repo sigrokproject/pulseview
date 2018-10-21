@@ -63,7 +63,7 @@ protected:
 	const Getter getter_;
 	const Setter setter_;
 
-private:
+protected:
 	QString name_;
 	QString desc_;
 };
