@@ -583,8 +583,8 @@ void LogicSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
 
 		// Only allow triggers to be changed when we're stopped
 		if (session_.get_capture_state() != Session::Stopped)
-			for (QAction* action : trigger_bar_->findChildren<QAction*>())
-				action->setEnabled(false);  // clazy:exclude=range-loop
+			for (QAction* action : trigger_bar_->findChildren<QAction*>())  // clazy:exclude=range-loop
+				action->setEnabled(false);
 
 		form->addRow(tr("Trigger"), trigger_bar_);
 	}

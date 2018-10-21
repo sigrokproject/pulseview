@@ -333,7 +333,7 @@ QMenu* DecodeTrace::create_view_context_menu(QWidget *parent, QPoint &click_pos)
 
 	QMenu* default_menu = Trace::create_view_context_menu(parent, click_pos);
 	if (default_menu) {
-		for (QAction *action : default_menu->actions()) {
+		for (QAction *action : default_menu->actions()) {  // clazy:exclude=range-loop
 			menu->addAction(action);
 			if (action->parent() == default_menu)
 				action->setParent(menu);
@@ -899,7 +899,7 @@ void DecodeTrace::create_decoder_form(int index,
 	const vector<DecodeChannel> channels = decode_signal_->get_channels();
 
 	// Add the channels
-	for (DecodeChannel ch : channels) {
+	for (const DecodeChannel& ch : channels) {
 		// Ignore channels not part of the decoder we create the form for
 		if (ch.decoder_ != dec)
 			continue;

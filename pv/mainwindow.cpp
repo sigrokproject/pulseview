@@ -172,8 +172,8 @@ shared_ptr<views::ViewBase> MainWindow::add_view(const QString &title,
 		QDockWidget::DockWidgetFloatable | QDockWidget::DockWidgetClosable);
 
 	QAbstractButton *close_btn =
-		dock->findChildren<QAbstractButton*>("qt_dockwidget_closebutton")
-			.front();  // clazy:exclude=detaching-temporary
+		dock->findChildren<QAbstractButton*>("qt_dockwidget_closebutton")  // clazy:exclude=detaching-temporary
+			.front();
 
 	connect(close_btn, SIGNAL(clicked(bool)),
 		this, SLOT(on_view_close_clicked()));
@@ -313,8 +313,8 @@ void MainWindow::remove_session(shared_ptr<Session> session)
 		// When there are no more tabs, the height of the QTabWidget
 		// drops to zero. We must prevent this to keep the static
 		// widgets visible
-		for (QWidget *w : static_tab_widget_->findChildren<QWidget*>())
-			w->setMinimumHeight(h);  // clazy:exclude=range-loop
+		for (QWidget *w : static_tab_widget_->findChildren<QWidget*>())  // clazy:exclude=range-loop
+			w->setMinimumHeight(h);
 
 		int margin = static_tab_widget_->layout()->contentsMargins().bottom();
 		static_tab_widget_->setMinimumHeight(h + 2 * margin);

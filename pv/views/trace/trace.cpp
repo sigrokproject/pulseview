@@ -191,7 +191,7 @@ QMenu* Trace::create_view_context_menu(QWidget *parent, QPoint &click_pos)
 
 	QMenu* default_menu = TraceTreeItem::create_view_context_menu(parent, click_pos);
 	if (default_menu) {
-		for (QAction *action : default_menu->actions()) {
+		for (QAction *action : default_menu->actions()) {  // clazy:exclude=range-loop
 			menu->addAction(action);
 			if (action->parent() == default_menu)
 				action->setParent(menu);
