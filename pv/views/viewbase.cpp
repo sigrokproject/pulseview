@@ -82,7 +82,7 @@ unordered_set< shared_ptr<data::SignalBase> > ViewBase::signalbases() const
 
 void ViewBase::clear_signalbases()
 {
-	for (shared_ptr<data::SignalBase> signalbase : signalbases_) {
+	for (const shared_ptr<data::SignalBase>& signalbase : signalbases_) {
 		disconnect(signalbase.get(), SIGNAL(samples_cleared()),
 			this, SLOT(on_data_updated()));
 		disconnect(signalbase.get(), SIGNAL(samples_added(uint64_t, uint64_t, uint64_t)),

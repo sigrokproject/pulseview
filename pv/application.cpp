@@ -127,17 +127,17 @@ void Application::collect_version_info(shared_ptr<sigrok::Context> context)
 #endif
 
 	// Device drivers
-	for (auto entry : context->drivers())
+	for (auto& entry : context->drivers())
 		driver_list_.emplace_back(QString::fromUtf8(entry.first.c_str()),
 			QString::fromUtf8(entry.second->long_name().c_str()));
 
 	// Input formats
-	for (auto entry : context->input_formats())
+	for (auto& entry : context->input_formats())
 		input_format_list_.emplace_back(QString::fromUtf8(entry.first.c_str()),
 			QString::fromUtf8(entry.second->description().c_str()));
 
 	// Output formats
-	for (auto entry : context->output_formats())
+	for (auto& entry : context->output_formats())
 		output_format_list_.emplace_back(QString::fromUtf8(entry.first.c_str()),
 			QString::fromUtf8(entry.second->description().c_str()));
 
@@ -159,35 +159,35 @@ void Application::print_version_info()
 	cout << PV_TITLE << " " << PV_VERSION_STRING << endl;
 
 	cout << endl << "Libraries and features:" << endl;
-	for (pair<QString, QString> &entry : version_info_)
+	for (pair<QString, QString>& entry : version_info_)
 		cout << "  " << entry.first.toStdString() << " " << entry.second.toStdString() << endl;
 
 	cout << endl << "Firmware search paths:" << endl;
-	for (QString &entry : fw_path_list_)
+	for (QString& entry : fw_path_list_)
 		cout << "  " << entry.toStdString() << endl;
 
 	cout << endl << "Protocol decoder search paths:" << endl;
-	for (QString &entry : pd_path_list_)
+	for (QString& entry : pd_path_list_)
 		cout << "  " << entry.toStdString() << endl;
 
 	cout << endl << "Supported hardware drivers:" << endl;
-	for (pair<QString, QString> &entry : driver_list_)
+	for (pair<QString, QString>& entry : driver_list_)
 		cout << "  " << entry.first.leftJustified(21, ' ').toStdString() <<
 		entry.second.toStdString() << endl;
 
 	cout << endl << "Supported input formats:" << endl;
-	for (pair<QString, QString> &entry : input_format_list_)
+	for (pair<QString, QString>& entry : input_format_list_)
 		cout << "  " << entry.first.leftJustified(21, ' ').toStdString() <<
 		entry.second.toStdString() << endl;
 
 	cout << endl << "Supported output formats:" << endl;
-	for (pair<QString, QString> &entry : output_format_list_)
+	for (pair<QString, QString>& entry : output_format_list_)
 		cout << "  " << entry.first.leftJustified(21, ' ').toStdString() <<
 		entry.second.toStdString() << endl;
 
 #ifdef ENABLE_DECODE
 	cout << endl << "Supported protocol decoders:" << endl;
-	for (pair<QString, QString> &entry : pd_list_)
+	for (pair<QString, QString>& entry : pd_list_)
 		cout << "  " << entry.first.leftJustified(21, ' ').toStdString() <<
 		entry.second.toStdString() << endl;
 #endif

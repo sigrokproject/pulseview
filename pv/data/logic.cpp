@@ -80,7 +80,7 @@ double Logic::get_samplerate() const
 uint64_t Logic::max_sample_count() const
 {
 	uint64_t l = 0;
-	for (shared_ptr<LogicSegment> s : segments_) {
+	for (const shared_ptr<LogicSegment>& s : segments_) {
 		assert(s);
 		l = max(l, s->get_sample_count());
 	}

@@ -224,7 +224,7 @@ void GlobalSettings::undo_tracked_changes()
 {
 	tracking_ = false;
 
-	for (auto entry : tracked_changes_)
+	for (auto& entry : tracked_changes_)
 		setValue(entry.first, entry.second);
 
 	tracked_changes_.clear();

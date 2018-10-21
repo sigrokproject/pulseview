@@ -108,7 +108,7 @@ void Header::paintEvent(QPaintEvent*)
 	QPainter painter(this);
 	painter.setRenderHint(QPainter::Antialiasing);
 
-	for (const shared_ptr<RowItem> r : items) {
+	for (const shared_ptr<RowItem>& r : items) {
 		assert(r);
 
 		const bool highlight = !item_dragging_ &&
@@ -201,7 +201,7 @@ void Header::on_ungroup()
 		restart = false;
 		const vector< shared_ptr<TraceGroup> > groups(
 			view_.list_by_type<TraceGroup>());
-		for (const shared_ptr<TraceGroup> tg : groups)
+		for (const shared_ptr<TraceGroup>& tg : groups)
 			if (tg->selected()) {
 				tg->ungroup();
 				restart = true;

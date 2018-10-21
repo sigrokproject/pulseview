@@ -74,7 +74,7 @@ double Analog::get_samplerate() const
 uint64_t Analog::max_sample_count() const
 {
 	uint64_t l = 0;
-	for (const shared_ptr<AnalogSegment> s : segments_) {
+	for (const shared_ptr<AnalogSegment>& s : segments_) {
 		assert(s);
 		l = max(l, s->get_sample_count());
 	}

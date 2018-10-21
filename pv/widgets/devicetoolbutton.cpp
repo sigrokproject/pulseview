@@ -91,7 +91,7 @@ void DeviceToolButton::update_device_list()
 	menu_.setDefaultAction(connect_action_);
 	menu_.addSeparator();
 
-	for (weak_ptr<Device> dev_weak_ptr : devices_) {
+	for (weak_ptr<Device>& dev_weak_ptr : devices_) {
 		shared_ptr<Device> dev(dev_weak_ptr.lock());
 		if (!dev)
 			continue;
@@ -117,7 +117,7 @@ void DeviceToolButton::on_action(QObject *action)
 	selected_device_.reset();
 
 	Device *const dev = (Device*)((QAction*)action)->data().value<void*>();
-	for (weak_ptr<Device> dev_weak_ptr : devices_) {
+	for (weak_ptr<Device>& dev_weak_ptr : devices_) {
 		shared_ptr<Device> dev_ptr(dev_weak_ptr);
 		if (dev_ptr.get() == dev) {
 			selected_device_ = shared_ptr<Device>(dev_ptr);

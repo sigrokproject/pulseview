@@ -195,7 +195,7 @@ void Session::save_settings(QSettings &settings) const
 
 			dev_info = device_manager_.get_device_info(device_);
 
-			for (string key : key_list) {
+			for (string& key : key_list) {
 				if (dev_info.count(key))
 					settings.setValue(QString::fromUtf8(key.c_str()),
 							QString::fromUtf8(dev_info.at(key).c_str()));
@@ -228,7 +228,7 @@ void Session::save_settings(QSettings &settings) const
 		}
 
 		// Save channels and decoders
-		for (shared_ptr<data::SignalBase> base : signalbases_) {
+		for (const shared_ptr<data::SignalBase>& base : signalbases_) {
 #ifdef ENABLE_DECODE
 			if (base->is_decode_signal()) {
 				settings.beginGroup("decode_signal" + QString::number(decode_signals++));
@@ -251,7 +251,7 @@ void Session::save_settings(QSettings &settings) const
 		main_view_->save_settings(settings);
 		settings.endGroup();
 
-		for (shared_ptr<views::ViewBase> view : views_) {
+		for (const shared_ptr<views::ViewBase>& view : views_) {
 			if (view != main_view_) {
 				settings.beginGroup("view" + QString::number(views++));
 				view->save_settings(settings);
@@ -405,13 +405,13 @@ void Session::set_device(shared_ptr<devices::Device> device)
 #endif
 		view->reset_view_state();
 	}
-	for (const shared_ptr<data::SignalData> d : all_signal_data_)
+	for (const shared_ptr<data::SignalData>& d : all_signal_data_)
 		d->clear();
 	all_signal_data_.clear();
 	signalbases_.clear();
 	cur_logic_segment_.reset();
 
-	for (auto entry : cur_analog_segments_) {
+	for (auto& entry : cur_analog_segments_) {
 		shared_ptr<sigrok::Channel>(entry.first).reset();
 		shared_ptr<data::AnalogSegment>(entry.second).reset();
 	}
@@ -470,7 +470,7 @@ Session::input_format_options(vector<string> user_spec,
 {
 	map<string, Glib::VariantBase> result;
 
-	for (auto entry : user_spec) {
+	for (auto& entry : user_spec) {
 		/*
 		 * Split key=value specs. Accept entries without separator
 		 * (for simplified boolean specifications).
@@ -594,7 +594,7 @@ void Session::start_capture(function<void (const QString)> error_handler)
 	}
 
 	// Clear signal data
-	for (const shared_ptr<data::SignalData> d : all_signal_data_)
+	for (const shared_ptr<data::SignalData>& d : all_signal_data_)
 		d->clear();
 
 	trigger_list_.clear();
@@ -643,7 +643,7 @@ void Session::register_view(shared_ptr<views::ViewBase> view)
 		qobject_cast<views::trace::View*>(view.get());
 
 	if (trace_view) {
-		for (shared_ptr<data::SignalBase> signalbase : signalbases_) {
+		for (const shared_ptr<data::SignalBase>& signalbase : signalbases_) {
 			const int sb_exists = count_if(
 				view_signalbases.cbegin(), view_signalbases.cend(),
 				[&](const shared_ptr<data::SignalBase> &sb) {
@@ -684,7 +684,7 @@ void Session::deregister_view(shared_ptr<views::ViewBase> view)
 
 bool Session::has_view(shared_ptr<views::ViewBase> view)
 {
-	for (shared_ptr<views::ViewBase> v : views_)
+	for (shared_ptr<views::ViewBase>& v : views_)
 		if (v == view)
 			return true;
 
@@ -695,11 +695,11 @@ double Session::get_samplerate() const
 {
 	double samplerate = 0.0;
 
-	for (const shared_ptr<pv::data::SignalData> d : all_signal_data_) {
+	for (const shared_ptr<pv::data::SignalData>& d : all_signal_data_) {
 		assert(d);
 		const vector< shared_ptr<pv::data::Segment> > segments =
 			d->segments();
-		for (const shared_ptr<pv::data::Segment> &s : segments)
+		for (const shared_ptr<pv::data::Segment>& s : segments)
 			samplerate = max(samplerate, s->samplerate());
 	}
 	// If there is no sample rate given we use samples as unit
@@ -714,7 +714,7 @@ uint32_t Session::get_segment_count() const
 	uint32_t value = 0;
 
 	// Find the highest number of segments
-	for (shared_ptr<data::SignalData> data : all_signal_data_)
+	for (const shared_ptr<data::SignalData>& data : all_signal_data_)
 		if (data->get_segment_count() > value)
 			value = data->get_segment_count();
 
@@ -725,7 +725,7 @@ vector<util::Timestamp> Session::get_triggers(uint32_t segment_id) const
 {
 	vector<util::Timestamp> result;
 
-	for (pair<uint32_t, util::Timestamp> entry : trigger_list_)
+	for (const pair<uint32_t, util::Timestamp>& entry : trigger_list_)
 		if (entry.first == segment_id)
 			result.push_back(entry.second);
 
@@ -741,7 +741,7 @@ bool Session::all_segments_complete(uint32_t segment_id) const
 {
 	bool all_complete = true;
 
-	for (shared_ptr<data::SignalBase> base : signalbases_)
+	for (const shared_ptr<data::SignalBase>& base : signalbases_)
 		if (!base->segment_is_complete(segment_id))
 			all_complete = false;
 
@@ -760,7 +760,7 @@ shared_ptr<data::DecodeSignal> Session::add_decode_signal()
 		signalbases_.insert(signal);
 
 		// Add the decode signal to all views
-		for (shared_ptr<views::ViewBase> view : views_)
+		for (shared_ptr<views::ViewBase>& view : views_)
 			view->add_decode_signal(signal);
 	} catch (runtime_error& e) {
 		remove_decode_signal(signal);
@@ -776,7 +776,7 @@ void Session::remove_decode_signal(shared_ptr<data::DecodeSignal> signal)
 {
 	signalbases_.erase(signal);
 
-	for (shared_ptr<views::ViewBase> view : views_)
+	for (shared_ptr<views::ViewBase>& view : views_)
 		view->remove_decode_signal(signal);
 
 	signals_changed();
@@ -802,7 +802,7 @@ void Session::update_signals()
 	if (!device_) {
 		signalbases_.clear();
 		logic_data_.reset();
-		for (shared_ptr<views::ViewBase> view : views_) {
+		for (shared_ptr<views::ViewBase>& view : views_) {
 			view->clear_signals();
 #ifdef ENABLE_DECODE
 			view->clear_decode_signals();
@@ -817,7 +817,7 @@ void Session::update_signals()
 	if (!sr_dev) {
 		signalbases_.clear();
 		logic_data_.reset();
-		for (shared_ptr<views::ViewBase> view : views_) {
+		for (shared_ptr<views::ViewBase>& view : views_) {
 			view->clear_signals();
 #ifdef ENABLE_DECODE
 			view->clear_decode_signals();
@@ -848,7 +848,7 @@ void Session::update_signals()
 	}
 
 	// Make the signals list
-	for (shared_ptr<views::ViewBase> viewbase : views_) {
+	for (shared_ptr<views::ViewBase>& viewbase : views_) {
 		views::trace::View *trace_view =
 			qobject_cast<views::trace::View*>(viewbase.get());
 
@@ -874,7 +874,7 @@ void Session::update_signals()
 				} else {
 					// Find the signalbase for this channel if possible
 					signalbase.reset();
-					for (const shared_ptr<data::SignalBase> b : signalbases_)
+					for (const shared_ptr<data::SignalBase>& b : signalbases_)
 						if (b->channel() == channel)
 							signalbase = b;
 
@@ -1006,12 +1006,11 @@ void Session::sample_thread_proc(function<void (const QString)> error_handler)
 
 void Session::free_unused_memory()
 {
-	for (shared_ptr<data::SignalData> data : all_signal_data_) {
+	for (const shared_ptr<data::SignalData>& data : all_signal_data_) {
 		const vector< shared_ptr<data::Segment> > segments = data->segments();
 
-		for (shared_ptr<data::Segment> segment : segments) {
+		for (const shared_ptr<data::Segment>& segment : segments)
 			segment->free_unused_memory();
-		}
 	}
 }
 
@@ -1049,7 +1048,7 @@ void Session::signal_segment_completed()
 {
 	int segment_id = 0;
 
-	for (shared_ptr<data::SignalBase> signalbase : signalbases_) {
+	for (const shared_ptr<data::SignalBase>& signalbase : signalbases_) {
 		// We only care about analog and logic channels, not derived ones
 		if (signalbase->type() == data::SignalBase::AnalogChannel) {
 			segment_id = signalbase->analog_data()->get_segment_count() - 1;
@@ -1073,7 +1072,7 @@ void Session::feed_in_header()
 
 void Session::feed_in_meta(shared_ptr<Meta> meta)
 {
-	for (auto entry : meta->config()) {
+	for (auto& entry : meta->config()) {
 		switch (entry.first->id()) {
 		case SR_CONF_SAMPLERATE:
 			cur_samplerate_ = g_variant_get_uint64(entry.second.gobj());
@@ -1093,7 +1092,7 @@ void Session::feed_in_trigger()
 	uint64_t sample_count = 0;
 
 	{
-		for (const shared_ptr<pv::data::SignalData> d : all_signal_data_) {
+		for (const shared_ptr<pv::data::SignalData>& d : all_signal_data_) {
 			assert(d);
 			uint64_t temp_count = 0;
 
@@ -1143,7 +1142,7 @@ void Session::feed_in_frame_end()
 		if (cur_logic_segment_)
 			cur_logic_segment_->set_complete();
 
-		for (auto entry : cur_analog_segments_) {
+		for (auto& entry : cur_analog_segments_) {
 			shared_ptr<data::AnalogSegment> segment = entry.second;
 			segment->set_complete();
 		}
@@ -1224,7 +1223,7 @@ void Session::feed_in_analog(shared_ptr<Analog> analog)
 		update_signals();
 
 	float *channel_data = data.get();
-	for (auto channel : channels) {
+	for (auto& channel : channels) {
 		shared_ptr<data::AnalogSegment> segment;
 
 		// Try to get the segment of the channel
@@ -1329,7 +1328,7 @@ void Session::data_feed_in(shared_ptr<sigrok::Device> device,
 			if (cur_logic_segment_)
 				cur_logic_segment_->set_complete();
 
-			for (auto entry : cur_analog_segments_) {
+			for (auto& entry : cur_analog_segments_) {
 				shared_ptr<data::AnalogSegment> segment = entry.second;
 				segment->set_complete();
 			}

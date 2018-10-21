@@ -77,7 +77,7 @@ bool ViewWidget::accept_drag() const
 	if (any_row_items_selected && !any_time_items_selected) {
 		// Check all the drag items share a common owner
 		TraceTreeItemOwner *item_owner = nullptr;
-		for (shared_ptr<TraceTreeItem> r : trace_tree_items)
+		for (const shared_ptr<TraceTreeItem>& r : trace_tree_items)
 			if (r->dragging()) {
 				if (!item_owner)
 					item_owner = r->owner();
@@ -107,7 +107,7 @@ void ViewWidget::drag_items(const QPoint &delta)
 	// Drag the row items
 	const vector< shared_ptr<RowItem> > row_items(
 		view_.list_by_type<RowItem>());
-	for (shared_ptr<RowItem> r : row_items)
+	for (const shared_ptr<RowItem>& r : row_items)
 		if (r->dragging()) {
 			r->drag_by(delta);
 
@@ -121,7 +121,7 @@ void ViewWidget::drag_items(const QPoint &delta)
 	TraceTreeItemOwner *item_owner = nullptr;
 	const vector< shared_ptr<TraceTreeItem> > trace_tree_items(
 		view_.list_by_type<TraceTreeItem>());
-	for (shared_ptr<TraceTreeItem> i : trace_tree_items)
+	for (const shared_ptr<TraceTreeItem>& i : trace_tree_items)
 		if (i->dragging())
 			item_owner = i->owner();
 

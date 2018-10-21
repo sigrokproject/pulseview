@@ -97,7 +97,7 @@ bool StoreSession::start()
 	vector< shared_ptr<data::SignalBase> > achannel_list;
 	vector< shared_ptr<data::AnalogSegment> > asegment_list;
 
-	for (shared_ptr<data::SignalBase> signal : sigs) {
+	for (const shared_ptr<data::SignalBase>& signal : sigs) {
 		if (!signal->enabled())
 			continue;
 

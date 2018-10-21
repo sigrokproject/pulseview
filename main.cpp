@@ -316,7 +316,7 @@ int main(int argc, char *argv[])
 			if (open_files.empty())
 				w.add_default_session();
 			else
-				for (string open_file : open_files)
+				for (string& open_file : open_files)
 					w.add_session_with_file(open_file, open_file_format);
 
 #ifdef ENABLE_SIGNALS

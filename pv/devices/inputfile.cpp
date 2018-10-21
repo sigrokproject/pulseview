@@ -101,7 +101,7 @@ void InputFile::save_meta_to_settings(QSettings &settings)
 	settings.setValue("options", (int)options_.size());
 
 	int i = 0;
-	for (pair<string, Glib::VariantBase> option : options_) {
+	for (const pair<string, Glib::VariantBase>& option : options_) {
 		settings.beginGroup("option" + QString::number(i));
 		settings.setValue("name", QString::fromStdString(option.first));
 		GlobalSettings::store_variantbase(settings, option.second);

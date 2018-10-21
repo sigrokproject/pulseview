@@ -84,7 +84,7 @@ DeviceManager::DeviceManager(shared_ptr<Context> context,
 	 * Scan for devices. No specific options apply here, this is
 	 * best effort auto detection.
 	 */
-	for (auto entry : context->drivers()) {
+	for (auto& entry : context->drivers()) {
 		if (!do_scan)
 			break;
 
@@ -187,7 +187,7 @@ DeviceManager::drive_scan_options(vector<string> user_spec,
 {
 	map<const ConfigKey *, Glib::VariantBase> result;
 
-	for (auto entry : user_spec) {
+	for (auto& entry : user_spec) {
 		/*
 		 * Split key=value specs. Accept entries without separator
 		 * (for simplified boolean specifications).
@@ -256,7 +256,7 @@ DeviceManager::driver_scan(
 	auto devices = driver->scan(drvopts);
 
 	// Add the scanned devices to the main list, set display names and sort.
-	for (shared_ptr<sigrok::HardwareDevice> device : devices) {
+	for (shared_ptr<sigrok::HardwareDevice>& device : devices) {
 		const shared_ptr<devices::HardwareDevice> d(
 			new devices::HardwareDevice(context_, device));
 		driver_devices.push_back(d);

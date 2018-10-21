@@ -375,7 +375,7 @@ void View::save_settings(QSettings &settings) const
 		settings.setValue("offset", QString::fromStdString(ss.str()));
 	}
 
-	for (shared_ptr<Signal> signal : signals_) {
+	for (const shared_ptr<Signal>& signal : signals_) {
 		settings.beginGroup(signal->base()->internal_name());
 		signal->save_settings(settings);
 		settings.endGroup();
@@ -457,7 +457,7 @@ vector< shared_ptr<TimeItem> > View::time_items() const
 		items.push_back(cursors_->second());
 	}
 
-	for (auto trigger_marker : trigger_markers_)
+	for (auto& trigger_marker : trigger_markers_)
 		items.push_back(trigger_marker);
 
 	return items;
@@ -596,10 +596,10 @@ void View::set_current_segment(uint32_t segment_id)
 {
 	current_segment_ = segment_id;
 
-	for (shared_ptr<Signal> signal : signals_)
+	for (const shared_ptr<Signal>& signal : signals_)
 		signal->set_current_segment(current_segment_);
 #ifdef ENABLE_DECODE
-	for (shared_ptr<DecodeTrace> dt : decode_traces_)
+	for (shared_ptr<DecodeTrace>& dt : decode_traces_)
 		dt->set_current_segment(current_segment_);
 #endif
 
@@ -635,7 +635,7 @@ void View::set_segment_display_mode(Trace::SegmentDisplayMode mode)
 {
 	segment_display_mode_ = mode;
 
-	for (shared_ptr<Signal> signal : signals_)
+	for (const shared_ptr<Signal>& signal : signals_)
 		signal->set_segment_display_mode(mode);
 
 	uint32_t last_segment = session_.get_segment_count() - 1;
@@ -744,7 +744,7 @@ set< shared_ptr<SignalData> > View::get_visible_data() const
 {
 	// Make a set of all the visible data objects
 	set< shared_ptr<SignalData> > visible_data;
-	for (const shared_ptr<Signal> sig : signals_)
+	for (const shared_ptr<Signal>& sig : signals_)
 		if (sig->enabled())
 			visible_data.insert(sig->data());
 
@@ -755,9 +755,9 @@ pair<Timestamp, Timestamp> View::get_time_extents() const
 {
 	boost::optional<Timestamp> left_time, right_time;
 	const set< shared_ptr<SignalData> > visible_data = get_visible_data();
-	for (const shared_ptr<SignalData> d : visible_data) {
+	for (const shared_ptr<SignalData>& d : visible_data) {
 		const vector< shared_ptr<Segment> > segments = d->segments();
-		for (const shared_ptr<Segment> &s : segments) {
+		for (const shared_ptr<Segment>& s : segments) {
 			double samplerate = s->samplerate();
 			samplerate = (samplerate <= 0.0) ? 1.0 : samplerate;
 
@@ -1260,8 +1260,8 @@ TraceTreeItemOwner* View::find_prevalent_trace_group(
 	vector<TraceTreeItemOwner*> owner_list;
 
 	// Make a set and a list of all the owners
-	for (const auto &channel : group->channels()) {
-		for (auto entry : signal_map) {
+	for (const auto& channel : group->channels()) {
+		for (auto& entry : signal_map) {
 			if (entry.first->channel() == channel) {
 				TraceTreeItemOwner *const o = (entry.second)->owner();
 				owner_list.push_back(o);
@@ -1294,8 +1294,8 @@ vector< shared_ptr<Trace> > View::extract_new_traces_for_channels(
 {
 	vector< shared_ptr<Trace> > filtered_traces;
 
-	for (const auto &channel : channels) {
-		for (auto entry : signal_map) {
+	for (const auto& channel : channels) {
+		for (auto& entry : signal_map) {
 			if (entry.first->channel() == channel) {
 				shared_ptr<Trace> trace = entry.second;
 				const auto list_iter = add_list.find(trace);
@@ -1316,7 +1316,7 @@ void View::determine_time_unit()
 	// Check whether we know the sample rate and hence can use time as the unit
 	if (time_unit_ == util::TimeUnit::Samples) {
 		// Check all signals but...
-		for (const shared_ptr<Signal> signal : signals_) {
+		for (const shared_ptr<Signal>& signal : signals_) {
 			const shared_ptr<SignalData> data = signal->data();
 
 			// ...only check first segment of each
@@ -1410,7 +1410,7 @@ void View::update_hover_point()
 	// Determine signal that the mouse cursor is hovering over
 	signal_under_mouse_cursor_.reset();
 	if (hover_widget_ == this) {
-		for (shared_ptr<Signal> s : signals_) {
+		for (const shared_ptr<Signal>& s : signals_) {
 			const pair<int, int> extents = s->v_extents();
 			const int top = s->get_visual_y() + extents.first;
 			const int btm = s->get_visual_y() + extents.second;
@@ -1423,7 +1423,7 @@ void View::update_hover_point()
 	// Update all trace tree items
 	const vector<shared_ptr<TraceTreeItem>> trace_tree_items(
 		list_by_type<TraceTreeItem>());
-	for (shared_ptr<TraceTreeItem> r : trace_tree_items)
+	for (const shared_ptr<TraceTreeItem>& r : trace_tree_items)
 		r->hover_point_changed(hover_point_);
 
 	// Notify any other listeners
@@ -1558,12 +1558,12 @@ void View::signals_changed()
 	// Make a look-up table of sigrok Channels to pulseview Signals
 	unordered_map<shared_ptr<data::SignalBase>, shared_ptr<Signal> >
 		signal_map;
-	for (const shared_ptr<Signal> &sig : signals_)
+	for (const shared_ptr<Signal>& sig : signals_)
 		signal_map[sig->base()] = sig;
 
 	// Populate channel groups
 	if (sr_dev)
-		for (auto entry : sr_dev->channel_groups()) {
+		for (auto& entry : sr_dev->channel_groups()) {
 			const shared_ptr<sigrok::ChannelGroup> &group = entry.second;
 
 			if (group->channels().size() <= 1)
@@ -1589,7 +1589,7 @@ void View::signals_changed()
 			// Add the traces to the group
 			const pair<int, int> prev_v_extents = owner->v_extents();
 			int offset = prev_v_extents.second - prev_v_extents.first;
-			for (shared_ptr<Trace> trace : new_traces_in_group) {
+			for (const shared_ptr<Trace>& trace : new_traces_in_group) {
 				assert(trace);
 				owner->add_child_item(trace);
 
@@ -1624,7 +1624,7 @@ void View::signals_changed()
 	if (non_grouped_logic_signals.size() > 0) {
 		const shared_ptr<TraceGroup> non_grouped_trace_group(
 			make_shared<TraceGroup>());
-		for (shared_ptr<Trace> trace : non_grouped_logic_signals)
+		for (const shared_ptr<Trace>& trace : non_grouped_logic_signals)
 			non_grouped_trace_group->add_child_item(trace);
 
 		non_grouped_trace_group->restack_items();
@@ -1642,7 +1642,7 @@ void View::signals_changed()
 		add_traces.begin(), add_traces.end());
 
 	// Remove any removed traces
-	for (shared_ptr<Trace> trace : remove_traces) {
+	for (const shared_ptr<Trace>& trace : remove_traces) {
 		TraceTreeItemOwner *const owner = trace->owner();
 		assert(owner);
 		owner->remove_child_item(trace);

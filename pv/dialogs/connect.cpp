@@ -154,7 +154,7 @@ shared_ptr<HardwareDevice> Connect::get_selected_device() const
 
 void Connect::populate_drivers()
 {
-	for (auto entry : device_manager_.context()->drivers()) {
+	for (auto& entry : device_manager_.context()->drivers()) {
 		auto name = entry.first;
 		auto driver = entry.second;
 		/**
@@ -179,7 +179,7 @@ void Connect::populate_drivers()
 void Connect::populate_serials(shared_ptr<Driver> driver)
 {
 	serial_devices_.clear();
-	for (auto serial : device_manager_.context()->serials(driver))
+	for (auto& serial : device_manager_.context()->serials(driver))
 		serial_devices_.addItem(QString("%1 (%2)").arg(
 			serial.first.c_str(), serial.second.c_str()),
 			QString::fromStdString(serial.first));
@@ -245,7 +245,7 @@ void Connect::scan_pressed()
 	const list< shared_ptr<HardwareDevice> > devices =
 		device_manager_.driver_scan(driver, drvopts);
 
-	for (shared_ptr<HardwareDevice> device : devices) {
+	for (const shared_ptr<HardwareDevice>& device : devices) {
 		assert(device);
 
 		QString text = QString::fromStdString(device->display_name(device_manager_));

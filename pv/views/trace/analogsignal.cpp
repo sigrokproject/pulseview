@@ -788,7 +788,7 @@ void AnalogSignal::update_conversion_widgets()
 	conv_threshold_cb_->blockSignals(true);
 
 	// Set available options depending on chosen conversion
-	for (pair<QString, int> preset : presets)
+	for (pair<QString, int>& preset : presets)
 		conv_threshold_cb_->addItem(preset.first, preset.second);
 
 	map < QString, QVariant > options = base_->get_conversion_options();
@@ -857,7 +857,7 @@ void AnalogSignal::perform_autoranging(bool keep_divs, bool force_update)
 	static double prev_min = 0, prev_max = 0;
 	double min = 0, max = 0;
 
-	for (shared_ptr<pv::data::AnalogSegment> segment : segments) {
+	for (const shared_ptr<pv::data::AnalogSegment>& segment : segments) {
 		pair<double, double> mm = segment->get_min_max();
 		min = std::min(min, mm.first);
 		max = std::max(max, mm.second);

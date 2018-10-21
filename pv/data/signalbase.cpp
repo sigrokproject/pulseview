@@ -455,7 +455,7 @@ void SignalBase::save_settings(QSettings &settings) const
 
 	settings.setValue("conv_options", (int)(conversion_options_.size()));
 	int i = 0;
-	for (auto kvp : conversion_options_) {
+	for (auto& kvp : conversion_options_) {
 		settings.setValue(QString("conv_option%1_key").arg(i), kvp.first);
 		settings.setValue(QString("conv_option%1_value").arg(i), kvp.second);
 		i++;

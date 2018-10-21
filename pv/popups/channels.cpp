@@ -80,18 +80,18 @@ Channels::Channels(Session &session, QWidget *parent) :
 	map<shared_ptr<Channel>, shared_ptr<SignalBase> > signal_map;
 
 	unordered_set< shared_ptr<SignalBase> > sigs;
-	for (const shared_ptr<data::SignalBase> b : session_.signalbases())
+	for (const shared_ptr<data::SignalBase>& b : session_.signalbases())
 		sigs.insert(b);
 
 	for (const shared_ptr<SignalBase> &sig : sigs)
 		signal_map[sig->channel()] = sig;
 
 	// Populate channel groups
-	for (auto entry : device->channel_groups()) {
+	for (auto& entry : device->channel_groups()) {
 		const shared_ptr<ChannelGroup> group = entry.second;
 		// Make a set of signals and remove these signals from the signal map
 		vector< shared_ptr<SignalBase> > group_sigs;
-		for (auto channel : group->channels()) {
+		for (auto& channel : group->channels()) {
 			const auto iter = signal_map.find(channel);
 
 			if (iter == signal_map.end())
@@ -106,7 +106,7 @@ Channels::Channels(Session &session, QWidget *parent) :
 
 	// Make a vector of the remaining channels
 	vector< shared_ptr<SignalBase> > global_analog_sigs, global_logic_sigs;
-	for (auto channel : device->channels()) {
+	for (auto& channel : device->channels()) {
 		const map<shared_ptr<Channel>, shared_ptr<SignalBase> >::
 			const_iterator iter = signal_map.find(channel);
 
@@ -165,7 +165,7 @@ void Channels::set_all_channels(bool set)
 {
 	updating_channels_ = true;
 
-	for (auto entry : check_box_signal_map_) {
+	for (auto& entry : check_box_signal_map_) {
 		QCheckBox *cb = entry.first;
 		const shared_ptr<SignalBase> sig = entry.second;
 		assert(sig);
@@ -182,7 +182,7 @@ void Channels::enable_channels_conditionally(
 {
 	updating_channels_ = true;
 
-	for (auto entry : check_box_signal_map_) {
+	for (auto& entry : check_box_signal_map_) {
 		QCheckBox *cb = entry.first;
 		const shared_ptr<SignalBase> sig = entry.second;
 		assert(sig);
@@ -201,7 +201,7 @@ void Channels::disable_channels_conditionally(
 {
 	updating_channels_ = true;
 
-	for (auto entry : check_box_signal_map_) {
+	for (auto& entry : check_box_signal_map_) {
 		QCheckBox *cb = entry.first;
 		const shared_ptr<SignalBase> sig = entry.second;
 		assert(sig);
@@ -280,7 +280,7 @@ void Channels::showEvent(QShowEvent *event)
 	assert(device);
 
 	// Update group labels
-	for (auto entry : device->channel_groups()) {
+	for (auto& entry : device->channel_groups()) {
 		const shared_ptr<ChannelGroup> group = entry.second;
 
 		try {
@@ -293,7 +293,7 @@ void Channels::showEvent(QShowEvent *event)
 
 	updating_channels_ = true;
 
-	for (auto entry : check_box_signal_map_) {
+	for (auto& entry : check_box_signal_map_) {
 		QCheckBox *cb = entry.first;
 		const shared_ptr<SignalBase> sig = entry.second;
 		assert(sig);

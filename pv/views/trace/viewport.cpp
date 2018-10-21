@@ -177,11 +177,11 @@ void Viewport::paintEvent(QPaintEvent*)
 	for (LayerPaintFunc *paint_func = layer_paint_funcs;
 			*paint_func; paint_func++) {
 		ViewItemPaintParams time_pp(rect(), view_.scale(), view_.offset());
-		for (const shared_ptr<TimeItem> t : time_items)
+		for (const shared_ptr<TimeItem>& t : time_items)
 			(t.get()->*(*paint_func))(p, time_pp);
 
 		ViewItemPaintParams row_pp(rect(), view_.scale(), view_.offset());
-		for (const shared_ptr<RowItem> r : row_items)
+		for (const shared_ptr<RowItem>& r : row_items)
 			(r.get()->*(*paint_func))(p, row_pp);
 	}
 

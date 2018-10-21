@@ -89,7 +89,7 @@ pair<int, int> TraceTreeItemOwner::v_extents() const
 	bool has_children = false;
 
 	pair<int, int> extents(INT_MAX, INT_MIN);
-	for (const shared_ptr<TraceTreeItem> t : trace_tree_child_items()) {
+	for (const shared_ptr<TraceTreeItem>& t : trace_tree_child_items()) {
 		assert(t);
 		if (!t->enabled())
 			continue;

@@ -59,7 +59,7 @@ namespace binding {
 InputOutput::InputOutput(
 	const map<string, shared_ptr<Option>> &options)
 {
-	for (pair<string, shared_ptr<Option>> o : options) {
+	for (const pair<string, shared_ptr<Option>>& o : options) {
 		const shared_ptr<Option> &opt = o.second;
 		assert(opt);
 

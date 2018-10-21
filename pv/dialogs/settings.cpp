@@ -215,7 +215,7 @@ QWidget *Settings::get_general_settings_form(QWidget *parent) const
 	general_group->setLayout(general_layout);
 
 	QComboBox *theme_cb = new QComboBox();
-	for (pair<QString, QString> entry : Themes)
+	for (const pair<QString, QString>& entry : Themes)
 		theme_cb->addItem(entry.first, entry.second);
 
 	theme_cb->setCurrentIndex(

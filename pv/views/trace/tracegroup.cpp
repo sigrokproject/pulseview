@@ -116,7 +116,7 @@ void TraceGroup::paint_label(QPainter &p, const QRect &rect, bool hover)
 QRectF TraceGroup::label_rect(const QRectF &rect) const
 {
 	QRectF child_rect;
-	for (const shared_ptr<ViewItem> r : child_items())
+	for (const shared_ptr<ViewItem>& r : child_items())
 		if (r && r->enabled())
 			child_rect = child_rect.united(r->label_rect(rect));
 
@@ -166,7 +166,7 @@ void TraceGroup::ungroup()
 	const vector<shared_ptr<TraceTreeItem>> items(trace_tree_child_items());
 	clear_child_items();
 
-	for (shared_ptr<TraceTreeItem> r : items)
+	for (const shared_ptr<TraceTreeItem>& r : items)
 		owner_->add_child_item(r);
 
 	owner_->remove_child_item(shared_from_this());

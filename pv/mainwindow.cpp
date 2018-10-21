@@ -123,7 +123,7 @@ shared_ptr<views::ViewBase> MainWindow::get_active_view() const
 	}
 
 	// Get the view contained in the dock widget
-	for (auto entry : view_docks_)
+	for (auto& entry : view_docks_)
 		if (entry.first == dock)
 			return entry.second;
 
@@ -137,7 +137,7 @@ shared_ptr<views::ViewBase> MainWindow::add_view(const QString &title,
 	shared_ptr<views::ViewBase> v;
 
 	QMainWindow *main_window = nullptr;
-	for (auto entry : session_windows_)
+	for (auto& entry : session_windows_)
 		if (entry.first.get() == &session)
 			main_window = entry.second;
 
@@ -226,7 +226,7 @@ void MainWindow::remove_view(shared_ptr<views::ViewBase> view)
 			continue;
 
 		// Find the dock the view is contained in and remove it
-		for (auto entry : view_docks_)
+		for (auto& entry : view_docks_)
 			if (entry.second == view) {
 				// Remove the view from the session
 				session->deregister_view(view);
@@ -294,7 +294,7 @@ void MainWindow::remove_session(shared_ptr<Session> session)
 	session->stop_capture();
 	QApplication::processEvents();
 
-	for (shared_ptr<views::ViewBase> view : session->views())
+	for (const shared_ptr<views::ViewBase>& view : session->views())
 		remove_view(view);
 
 	QMainWindow *window = session_windows_.at(session);
@@ -346,7 +346,7 @@ void MainWindow::add_default_session()
 	// one of the auto detected devices that are not the demo device.
 	// Pick demo in the absence of "genuine" hardware devices.
 	shared_ptr<devices::HardwareDevice> user_device, other_device, demo_device;
-	for (shared_ptr<devices::HardwareDevice> dev : device_manager_.devices()) {
+	for (const shared_ptr<devices::HardwareDevice>& dev : device_manager_.devices()) {
 		if (dev == device_manager_.user_spec_device()) {
 			user_device = dev;
 		} else if (dev->hardware_device()->driver()->name() == "demo") {
@@ -368,7 +368,7 @@ void MainWindow::save_sessions()
 	QSettings settings;
 	int id = 0;
 
-	for (shared_ptr<Session> session : sessions_) {
+	for (shared_ptr<Session>& session : sessions_) {
 		// Ignore sessions using the demo device or no device at all
 		if (session->device()) {
 			shared_ptr<devices::HardwareDevice> device =
@@ -532,7 +532,7 @@ void MainWindow::restore_ui_settings()
 shared_ptr<Session> MainWindow::get_tab_session(int index) const
 {
 	// Find the session that belongs to the tab's main window
-	for (auto entry : session_windows_)
+	for (auto& entry : session_windows_)
 		if (entry.second == session_selector_.widget(index))
 			return entry.first;
 
@@ -543,7 +543,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 {
 	bool data_saved = true;
 
-	for (auto entry : session_windows_)
+	for (auto& entry : session_windows_)
 		if (!entry.first->data_saved())
 			data_saved = false;
 
@@ -578,7 +578,7 @@ void MainWindow::on_add_view(const QString &title, views::ViewType type,
 	Session *session)
 {
 	// We get a pointer and need a reference
-	for (shared_ptr<Session> s : sessions_)
+	for (shared_ptr<Session>& s : sessions_)
 		if (s.get() == session)
 			add_view(title, type, *s);
 }
@@ -656,9 +656,9 @@ void MainWindow::on_session_name_changed()
 	Session *session = qobject_cast<Session*>(QObject::sender());
 	assert(session);
 
-	for (shared_ptr<views::ViewBase> view : session->views()) {
+	for (const shared_ptr<views::ViewBase>& view : session->views()) {
 		// Get the dock that contains the view
-		for (auto entry : view_docks_)
+		for (auto& entry : view_docks_)
 			if (entry.second == view) {
 				entry.first->setObjectName(session->name());
 				entry.first->setWindowTitle(session->name());
@@ -666,7 +666,7 @@ void MainWindow::on_session_name_changed()
 	}
 
 	// Update the tab widget by finding the main window and the tab from that
-	for (auto entry : session_windows_)
+	for (auto& entry : session_windows_)
 		if (entry.first.get() == session) {
 			QMainWindow *window = entry.second;
 			const int index = session_selector_.indexOf(window);
@@ -698,7 +698,7 @@ void MainWindow::on_capture_state_changed(QObject *obj)
 void MainWindow::on_new_view(Session *session)
 {
 	// We get a pointer and need a reference
-	for (shared_ptr<Session> s : sessions_)
+	for (shared_ptr<Session>& s : sessions_)
 		if (s.get() == session)
 			add_view(session->name(), views::ViewTypeTrace, *s);
 }
@@ -719,7 +719,7 @@ void MainWindow::on_view_close_clicked()
 	// Get the view contained in the dock widget
 	shared_ptr<views::ViewBase> view;
 
-	for (auto entry : view_docks_)
+	for (auto& entry : view_docks_)
 		if (entry.first == dock)
 			view = entry.second;
 
@@ -799,7 +799,7 @@ void MainWindow::on_settingViewColoredBg_changed(const QVariant new_value)
 {
 	bool state = new_value.toBool();
 
-	for (auto entry : view_docks_) {
+	for (auto& entry : view_docks_) {
 		shared_ptr<views::ViewBase> viewbase = entry.second;
 
 		// Only trace views have this setting
@@ -814,7 +814,7 @@ void MainWindow::on_settingViewShowSamplingPoints_changed(const QVariant new_val
 {
 	bool state = new_value.toBool();
 
-	for (auto entry : view_docks_) {
+	for (auto& entry : view_docks_) {
 		shared_ptr<views::ViewBase> viewbase = entry.second;
 
 		// Only trace views have this setting
@@ -829,7 +829,7 @@ void MainWindow::on_settingViewShowAnalogMinorGrid_changed(const QVariant new_va
 {
 	bool state = new_value.toBool();
 
-	for (auto entry : view_docks_) {
+	for (auto& entry : view_docks_) {
 		shared_ptr<views::ViewBase> viewbase = entry.second;
 
 		// Only trace views have this setting

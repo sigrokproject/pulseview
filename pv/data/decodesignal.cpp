@@ -200,12 +200,12 @@ void DecodeSignal::begin_decode()
 	// Make sure that all assigned channels still provide logic data
 	// (can happen when a converted signal was assigned but the
 	// conversion removed in the meanwhile)
-	for (data::DecodeChannel &ch : channels_)
+	for (data::DecodeChannel& ch : channels_)
 		if (ch.assigned_signal && !(ch.assigned_signal->logic_data() != nullptr))
 			ch.assigned_signal = nullptr;
 
 	// Check that all decoders have the required channels
-	for (const shared_ptr<decode::Decoder> &dec : stack_)
+	for (const shared_ptr<decode::Decoder>& dec : stack_)
 		if (!dec->have_required_channels()) {
 			set_error_message(tr("One or more required channels "
 				"have not been specified"));
@@ -214,7 +214,7 @@ void DecodeSignal::begin_decode()
 
 	// Map out all the annotation classes
 	int row_index = 0;
-	for (const shared_ptr<decode::Decoder> &dec : stack_) {
+	for (const shared_ptr<decode::Decoder>& dec : stack_) {
 		assert(dec);
 		const srd_decoder *const decc = dec->decoder();
 		assert(dec->decoder());
@@ -295,7 +295,7 @@ void DecodeSignal::auto_assign_signals(const shared_ptr<Decoder> dec)
 	bool new_assignment = false;
 
 	// Try to auto-select channels that don't have signals assigned yet
-	for (data::DecodeChannel &ch : channels_) {
+	for (data::DecodeChannel& ch : channels_) {
 		// If a decoder is given, auto-assign only its channels
 		if (dec && (ch.decoder_ != dec))
 			continue;
@@ -307,7 +307,7 @@ void DecodeSignal::auto_assign_signals(const shared_ptr<Decoder> dec)
 		ch_name = ch_name.replace(QRegExp("[-_.]"), " ");
 
 		shared_ptr<data::SignalBase> match;
-		for (shared_ptr<data::SignalBase> s : session_.signalbases()) {
+		for (const shared_ptr<data::SignalBase>& s : session_.signalbases()) {
 			if (!s->enabled())
 				continue;
 
@@ -344,7 +344,7 @@ void DecodeSignal::auto_assign_signals(const shared_ptr<Decoder> dec)
 
 void DecodeSignal::assign_signal(const uint16_t channel_id, const SignalBase *signal)
 {
-	for (data::DecodeChannel &ch : channels_)
+	for (data::DecodeChannel& ch : channels_)
 		if (ch.id == channel_id) {
 			ch.assigned_signal = signal;
 			logic_mux_data_invalid_ = true;
@@ -365,7 +365,7 @@ int DecodeSignal::get_assigned_signal_count() const
 
 void DecodeSignal::set_initial_pin_state(const uint16_t channel_id, const int init_state)
 {
-	for (data::DecodeChannel &ch : channels_)
+	for (data::DecodeChannel& ch : channels_)
 		if (ch.id == channel_id)
 			ch.initial_pin_state = init_state;
 
@@ -405,7 +405,7 @@ int64_t DecodeSignal::get_working_sample_count(uint32_t segment_id) const
 	int64_t count = std::numeric_limits<int64_t>::max();
 	bool no_signals_assigned = true;
 
-	for (const data::DecodeChannel &ch : channels_)
+	for (const data::DecodeChannel& ch : channels_)
 		if (ch.assigned_signal) {
 			no_signals_assigned = false;
 
@@ -450,7 +450,7 @@ vector<Row> DecodeSignal::visible_rows() const
 
 	vector<Row> rows;
 
-	for (const shared_ptr<decode::Decoder> &dec : stack_) {
+	for (const shared_ptr<decode::Decoder>& dec : stack_) {
 		assert(dec);
 		if (!dec->shown())
 			continue;
@@ -531,7 +531,7 @@ void DecodeSignal::save_settings(QSettings &settings) const
 
 	// Save decoder stack
 	int decoder_idx = 0;
-	for (shared_ptr<decode::Decoder> decoder : stack_) {
+	for (const shared_ptr<decode::Decoder>& decoder : stack_) {
 		settings.beginGroup("decoder" + QString::number(decoder_idx++));
 
 		settings.setValue("id", decoder->decoder()->id);
@@ -544,7 +544,7 @@ void DecodeSignal::save_settings(QSettings &settings) const
 		// Note: decode::Decoder::options() returns only the options
 		// that differ from the default. See binding::Decoder::getter()
 		int i = 0;
-		for (auto option : options) {
+		for (auto& option : options) {
 			settings.beginGroup("option" + QString::number(i));
 			settings.setValue("name", QString::fromStdString(option.first));
 			GlobalSettings::store_gvariant(settings, option.second);
@@ -644,7 +644,7 @@ void DecodeSignal::restore_settings(QSettings &settings)
 
 		QString assigned_signal_name = settings.value("assigned_signal_name").toString();
 
-		for (shared_ptr<data::SignalBase> signal : signalbases)
+		for (const shared_ptr<data::SignalBase>& signal : signalbases)
 			if (signal->name() == assigned_signal_name)
 				channel->assigned_signal = signal.get();
 
@@ -673,7 +673,7 @@ uint32_t DecodeSignal::get_input_segment_count() const
 	uint64_t count = std::numeric_limits<uint64_t>::max();
 	bool no_signals_assigned = true;
 
-	for (const data::DecodeChannel &ch : channels_)
+	for (const data::DecodeChannel& ch : channels_)
 		if (ch.assigned_signal) {
 			no_signals_assigned = false;
 
@@ -693,7 +693,7 @@ uint32_t DecodeSignal::get_input_samplerate(uint32_t segment_id) const
 {
 	double samplerate = 0;
 
-	for (const data::DecodeChannel &ch : channels_)
+	for (const data::DecodeChannel& ch : channels_)
 		if (ch.assigned_signal) {
 			const shared_ptr<Logic> logic_data = ch.assigned_signal->logic_data();
 			if (!logic_data || logic_data->logic_segments().empty())
@@ -719,7 +719,7 @@ void DecodeSignal::update_channel_list()
 	uint16_t id = 0;
 
 	// Copy existing entries, create new as needed
-	for (shared_ptr<Decoder> decoder : stack_) {
+	for (shared_ptr<Decoder>& decoder : stack_) {
 		const srd_decoder* srd_d = decoder->decoder();
 		const GSList *l;
 
@@ -729,7 +729,7 @@ void DecodeSignal::update_channel_list()
 			bool ch_added = false;
 
 			// Copy but update ID if this channel was in the list before
-			for (data::DecodeChannel &ch : prev_channels)
+			for (data::DecodeChannel& ch : prev_channels)
 				if (ch.pdch_ == pdch) {
 					ch.id = id++;
 					channels_.push_back(ch);
@@ -752,7 +752,7 @@ void DecodeSignal::update_channel_list()
 			bool ch_added = false;
 
 			// Copy but update ID if this channel was in the list before
-			for (data::DecodeChannel &ch : prev_channels)
+			for (data::DecodeChannel& ch : prev_channels)
 				if (ch.pdch_ == pdch) {
 					ch.id = id++;
 					channels_.push_back(ch);
@@ -777,8 +777,8 @@ void DecodeSignal::update_channel_list()
 	} else {
 		// Same number but assignment may still differ, so compare all channels
 		for (size_t i = 0; i < channels_.size(); i++) {
-			const data::DecodeChannel &p_ch = prev_channels[i];
-			const data::DecodeChannel &ch = channels_[i];
+			const data::DecodeChannel& p_ch = prev_channels[i];
+			const data::DecodeChannel& ch = channels_[i];
 
 			if ((p_ch.pdch_ != ch.pdch_) ||
 				(p_ch.assigned_signal != ch.assigned_signal)) {
@@ -798,7 +798,7 @@ void DecodeSignal::commit_decoder_channels()
 	for (shared_ptr<decode::Decoder> dec : stack_) {
 		vector<data::DecodeChannel*> channel_list;
 
-		for (data::DecodeChannel &ch : channels_)
+		for (data::DecodeChannel& ch : channels_)
 			if (ch.decoder_ == dec)
 				channel_list.push_back(&ch);
 
@@ -807,7 +807,7 @@ void DecodeSignal::commit_decoder_channels()
 
 	// Channel bit IDs must be in sync with the channel's apperance in channels_
 	int id = 0;
-	for (data::DecodeChannel &ch : channels_)
+	for (data::DecodeChannel& ch : channels_)
 		if (ch.assigned_signal)
 			ch.bit_id = id++;
 }
@@ -824,7 +824,7 @@ void DecodeSignal::mux_logic_samples(uint32_t segment_id, const int64_t start, c
 	vector<uint8_t> signal_in_bytepos;
 	vector<uint8_t> signal_in_bitpos;
 
-	for (data::DecodeChannel &ch : channels_)
+	for (data::DecodeChannel& ch : channels_)
 		if (ch.assigned_signal) {
 			const shared_ptr<Logic> logic_data = ch.assigned_signal->logic_data();
 
@@ -1110,7 +1110,7 @@ void DecodeSignal::start_srd_session()
 		if (samplerate)
 			srd_session_metadata_set(srd_session_, SRD_CONF_SAMPLERATE,
 				g_variant_new_uint64(samplerate));
-		for (const shared_ptr<decode::Decoder> &dec : stack_)
+		for (const shared_ptr<decode::Decoder>& dec : stack_)
 			dec->apply_all_options();
 		srd_session_start(srd_session_);
 
@@ -1123,7 +1123,7 @@ void DecodeSignal::start_srd_session()
 
 	// Create the decoders
 	srd_decoder_inst *prev_di = nullptr;
-	for (const shared_ptr<decode::Decoder> &dec : stack_) {
+	for (const shared_ptr<decode::Decoder>& dec : stack_) {
 		srd_decoder_inst *const di = dec->create_decoder_inst(srd_session_);
 
 		if (!di) {
@@ -1170,7 +1170,7 @@ void DecodeSignal::terminate_srd_session()
 		if (samplerate)
 			srd_session_metadata_set(srd_session_, SRD_CONF_SAMPLERATE,
 				g_variant_new_uint64(samplerate));
-		for (const shared_ptr<decode::Decoder> &dec : stack_)
+		for (const shared_ptr<decode::Decoder>& dec : stack_)
 			dec->apply_all_options();
 	}
 }
@@ -1183,7 +1183,7 @@ void DecodeSignal::stop_srd_session()
 		srd_session_ = nullptr;
 
 		// Mark the decoder instances as non-existant since they were deleted
-		for (const shared_ptr<decode::Decoder> &dec : stack_)
+		for (const shared_ptr<decode::Decoder>& dec : stack_)
 			dec->invalidate_decoder_inst();
 	}
 }
@@ -1195,7 +1195,7 @@ void DecodeSignal::connect_input_notifiers()
 	disconnect(this, SLOT(on_data_received()));
 
 	// Connect the currently used signals to our slot
-	for (data::DecodeChannel &ch : channels_) {
+	for (data::DecodeChannel& ch : channels_) {
 		if (!ch.assigned_signal)
 			continue;
 
@@ -1213,7 +1213,7 @@ void DecodeSignal::create_decode_segment()
 	segments_.emplace_back(DecodeSegment());
 
 	// Add annotation classes
-	for (const shared_ptr<decode::Decoder> &dec : stack_) {
+	for (const shared_ptr<decode::Decoder>& dec : stack_) {
 		assert(dec);
 		const srd_decoder *const decc = dec->decoder();
 		assert(dec->decoder());
