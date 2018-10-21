@@ -258,10 +258,11 @@ void LogicSignal::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 
 		if (fill_high_areas) {
 			// Any edge terminates a high area
-			const int width = x - rising_edge_x;
-			if (rising_edge_seen && (width > 0)) {
-				high_rects.emplace_back(rising_edge_x, high_offset,
-					width, signal_height_);
+			if (rising_edge_seen) {
+				const int width = x - rising_edge_x;
+				if (width > 0)
+					high_rects.emplace_back(rising_edge_x, high_offset,
+						width, signal_height_);
 				rising_edge_seen = false;
 			}
 
