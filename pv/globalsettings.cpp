@@ -26,6 +26,8 @@
 #include <QFontMetrics>
 #include <QPixmapCache>
 #include <QString>
+#include <QStyleFactory>
+#include <QtGlobal>
 
 using std::map;
 using std::pair;
@@ -142,6 +144,9 @@ void GlobalSettings::apply_theme()
 	qApp->setPalette(default_palette_);
 
 	if (theme_name.compare("QDarkStyleSheet") == 0) {
+#ifdef Q_OS_WIN
+		qApp->setStyle(QStyleFactory::create("Fusion"));
+#endif
 		QPalette dark_palette;
 		dark_palette.setColor(QPalette::Window, QColor(53, 53, 53));
 		dark_palette.setColor(QPalette::WindowText, Qt::white);
@@ -150,6 +155,9 @@ void GlobalSettings::apply_theme()
 		dark_palette.setColor(QPalette::Highlight, QColor(42, 130, 218));
 		qApp->setPalette(dark_palette);
 	} else if (theme_name.compare("DarkStyle") == 0) {
+#ifdef Q_OS_WIN
+		qApp->setStyle(QStyleFactory::create("Fusion"));
+#endif
 		QPalette dark_palette;
 		dark_palette.setColor(QPalette::Window, QColor(53, 53, 53));
 		dark_palette.setColor(QPalette::WindowText, Qt::white);
