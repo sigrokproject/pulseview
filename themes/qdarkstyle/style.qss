@@ -1,3 +1,7 @@
+QScrollArea {
+    background-color: transparent; /* Workaround for widget background on Windows, see https://stackoverflow.com/questions/25012224/qt-widget-background-differs-from-linux-to-windows/25088075 */
+}
+
 QToolTip {
     border: 1px solid #76797C;
     background-color: #5A7566;
