@@ -495,9 +495,12 @@ const Timestamp& View::ruler_offset() const
 	return ruler_offset_;
 }
 
-void View::set_zero_position(pv::util::Timestamp& position)
+void View::set_zero_position(const pv::util::Timestamp& position)
 {
-	ruler_shift_ = -position;
+	// ruler shift is a negative offset and the new zero position is relative
+	// to the current offset. Hence, we adjust the ruler shift only by the
+	// difference.
+	ruler_shift_ = -(position + (-ruler_shift_));
 
 	// Force an immediate update of the offsets
 	set_offset(offset_, true);

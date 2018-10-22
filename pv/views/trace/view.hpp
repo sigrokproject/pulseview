@@ -173,7 +173,7 @@ public:
 	 */
 	const pv::util::Timestamp& ruler_offset() const;
 
-	void set_zero_position(pv::util::Timestamp& position);
+	void set_zero_position(const pv::util::Timestamp& position);
 
 	void reset_zero_position();
 

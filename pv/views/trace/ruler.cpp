@@ -129,6 +129,10 @@ void Ruler::contextMenuEvent(QContextMenuEvent *event)
 	connect(create_marker, SIGNAL(triggered()), this, SLOT(on_createMarker()));
 	menu->addAction(create_marker);
 
+	QAction *const set_zero_position = new QAction(tr("Set as zero point"), this);
+	connect(set_zero_position, SIGNAL(triggered()), this, SLOT(on_setZeroPosition()));
+	menu->addAction(set_zero_position);
+
 	QAction *const toggle_hover_marker = new QAction(this);
 	connect(toggle_hover_marker, SIGNAL(triggered()), this, SLOT(on_toggleHoverMarker()));
 	menu->addAction(toggle_hover_marker);
@@ -320,6 +324,11 @@ void Ruler::invalidate_tick_position_cache()
 void Ruler::on_createMarker()
 {
 	view_.add_flag(get_time_from_x_pos(mouse_down_point_.x()));
+}
+
+void Ruler::on_setZeroPosition()
+{
+	view_.set_zero_position(get_time_from_x_pos(mouse_down_point_.x()));
 }
 
 void Ruler::on_toggleHoverMarker()

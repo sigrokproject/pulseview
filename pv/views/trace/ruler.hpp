@@ -176,6 +176,7 @@ private Q_SLOTS:
 	void invalidate_tick_position_cache();
 
 	void on_createMarker();
+	void on_setZeroPosition();
 	void on_toggleHoverMarker();
 
 private:
