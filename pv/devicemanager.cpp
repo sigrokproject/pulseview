@@ -30,6 +30,7 @@
 #include <libsigrokcxx/libsigrokcxx.hpp>
 
 #include <QApplication>
+#include <QDebug>
 #include <QObject>
 #include <QProgressDialog>
 
@@ -252,21 +253,27 @@ DeviceManager::driver_scan(
 	devices_.remove_if([&](shared_ptr<devices::HardwareDevice> device) {
 		return device->hardware_device()->driver() == driver; });
 
-	// Do the scan
-	auto devices = driver->scan(drvopts);
+	try {
+		// Do the scan
+		auto devices = driver->scan(drvopts);
 
-	// Add the scanned devices to the main list, set display names and sort.
-	for (shared_ptr<sigrok::HardwareDevice>& device : devices) {
-		const shared_ptr<devices::HardwareDevice> d(
-			new devices::HardwareDevice(context_, device));
-		driver_devices.push_back(d);
+		// Add the scanned devices to the main list, set display names and sort.
+		for (shared_ptr<sigrok::HardwareDevice>& device : devices) {
+			const shared_ptr<devices::HardwareDevice> d(
+				new devices::HardwareDevice(context_, device));
+			driver_devices.push_back(d);
+		}
+
+		devices_.insert(devices_.end(), driver_devices.begin(),
+			driver_devices.end());
+		devices_.sort(bind(&DeviceManager::compare_devices, this, _1, _2));
+		driver_devices.sort(bind(
+			&DeviceManager::compare_devices, this, _1, _2));
+
+	} catch (const sigrok::Error &e) {
+		qWarning() << QApplication::tr("Error when scanning device driver '%1': %2").
+			arg(QString::fromStdString(driver->name()), e.what());
 	}
-
-	devices_.insert(devices_.end(), driver_devices.begin(),
-		driver_devices.end());
-	devices_.sort(bind(&DeviceManager::compare_devices, this, _1, _2));
-	driver_devices.sort(bind(
-		&DeviceManager::compare_devices, this, _1, _2));
 
 	return driver_devices;
 }
