@@ -81,25 +81,34 @@ or enter custom values as well. They take the form "0.0V" and "0.0V/0.0V", respe
 === Troubleshooting
 
 In case a protocol decoder doesn't provide the expected result, there are several things
-you can check. The first check you should perform is whether the time unit in the ruler
+you can check.
+
+The first check you should perform is whether the time unit in the ruler
 is given as "sa". This is short for "samples" and means that the device didn't provide
 a sample rate and so PulseView has no way of showing a time scale in seconds or
-fractions thereof. While some decoders can run without timing information, others
-cannot.
+fractions thereof. While some decoders can run without timing information, or only
+optionally make use of the time scale, others may not be able to interpret the
+input data since timing information is an essential part of the very protocol.
+
+Another issue to remain aware of is that decoders need enough samples per protocol step
+to reliably interpret the information. In typical cases the minimum sample rate should
+be four to five times the rate of the fastest activity in the protocol.
 
 If a protocol decoder runs but shows you annotations that don't seem to make any sense,
 it's worth double-checking the decoder settings. One common source of error is the
-baud rate, for example. For example, the CAN protocol decoder doesn't know what baud rate
+baud rate. For example, the CAN protocol decoder doesn't know what baud rate
 is used on the bus that you captured, so it could be that a different baud rate is used
 than the one you set. Also, if this is still not the reason for the malfunction, it's
 worth checking whether any of the signals have been captured inverted. Again using the
 CAN bus as an example, the decoder will decode the signal just fine if it's inverted but
 it'll show data even when the signal looks "idle".
 
-When a protocol decoder stops execution because of a bug in the decoder itself, you
+When a protocol decoder stops execution because of an unmet constraint (required input
+not connected, essential parameter not specified) or a bug in the decoder itself, you
 will be presented a static red message in the protocol decoder's display area.
 In that case, you check the log output in the settings menu. There you'll find the Python
-error description which you can use to either debug the decoder (and let us know of the
+error description which you can use to either adjust the configuration,
+or debug the decoder (and let us know of the
 fix) or you can copy that information and file a bug report so that we can fix it.
 
 === Exporting Annotations
