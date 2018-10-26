@@ -572,6 +572,24 @@ void Settings::on_general_theme_changed_changed(int state)
 	GlobalSettings settings;
 	settings.setValue(GlobalSettings::Key_General_Theme, state);
 	settings.apply_theme();
+
+	QMessageBox msg(this);
+	msg.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+	msg.setIcon(QMessageBox::Question);
+
+	if (settings.current_theme_is_dark()) {
+		msg.setText(tr("You selected a dark theme.\n" \
+			"Should I set the user-adjustable colors to better suit your choice?\n\n" \
+			"Please keep in mind that PulseView may need a restart to display correctly."));
+		if (msg.exec() == QMessageBox::Yes)
+			settings.set_dark_theme_default_colors();
+	} else {
+		msg.setText(tr("You selected a bright theme.\n" \
+			"Should I set the user-adjustable colors to better suit your choice?\n\n" \
+			"Please keep in mind that PulseView may need a restart to display correctly."));
+		if (msg.exec() == QMessageBox::Yes)
+			settings.set_bright_theme_default_colors();
+	}
 }
 
 void Settings::on_general_style_changed(int state)

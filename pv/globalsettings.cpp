@@ -70,9 +70,19 @@ QString GlobalSettings::default_style_;
 QPalette GlobalSettings::default_palette_;
 
 GlobalSettings::GlobalSettings() :
-	QSettings()
+	QSettings(),
+	is_dark_theme_(false)
 {
 	beginGroup("Settings");
+}
+
+void GlobalSettings::save_internal_defaults()
+{
+	default_style_ = qApp->style()->objectName();
+	if (default_style_.isEmpty())
+		default_style_ = "fusion";
+
+	default_palette_ = QApplication::palette();
 }
 
 void GlobalSettings::set_defaults_where_needed()
@@ -98,9 +108,6 @@ void GlobalSettings::set_defaults_where_needed()
 	// Enable filling logic signal high areas by default
 	if (!contains(Key_View_FillSignalHighAreas))
 		setValue(Key_View_FillSignalHighAreas, true);
-	if (!contains(Key_View_FillSignalHighAreaColor))
-		setValue(Key_View_FillSignalHighAreaColor,
-			QColor(0, 0, 0, 5 * 256 / 100).rgba());
 
 	if (!contains(Key_View_DefaultDivHeight))
 		setValue(Key_View_DefaultDivHeight,
@@ -126,15 +133,26 @@ void GlobalSettings::set_defaults_where_needed()
 	// Notify user of existing stack trace by default
 	if (!contains(Key_Log_NotifyOfStacktrace))
 		setValue(Key_Log_NotifyOfStacktrace, true);
+
+	// Default theme is bright, so use its color scheme
+	set_bright_theme_default_colors();
 }
 
-void GlobalSettings::save_internal_defaults()
+void GlobalSettings::set_bright_theme_default_colors()
 {
-	default_style_ = qApp->style()->objectName();
-	if (default_style_.isEmpty())
-		default_style_ = "fusion";
+	setValue(Key_View_FillSignalHighAreaColor,
+		QColor(0, 0, 0, 5 * 256 / 100).rgba());
+}
 
-	default_palette_ = QApplication::palette();
+void GlobalSettings::set_dark_theme_default_colors()
+{
+	setValue(Key_View_FillSignalHighAreaColor,
+		QColor(188, 188, 188, 9 * 256 / 100).rgba());
+}
+
+bool GlobalSettings::current_theme_is_dark()
+{
+	return is_dark_theme_;
 }
 
 void GlobalSettings::apply_theme()
@@ -157,6 +175,8 @@ void GlobalSettings::apply_theme()
 	else
 		qApp->setStyle(style);
 
+	is_dark_theme_ = false;
+
 	if (theme_name.compare("QDarkStyleSheet") == 0) {
 		QPalette dark_palette;
 		dark_palette.setColor(QPalette::Window, QColor(53, 53, 53));
@@ -165,6 +185,7 @@ void GlobalSettings::apply_theme()
 		dark_palette.setColor(QPalette::Dark, QColor(35, 35, 35));
 		dark_palette.setColor(QPalette::Highlight, QColor(42, 130, 218));
 		qApp->setPalette(dark_palette);
+		is_dark_theme_ = true;
 	} else if (theme_name.compare("DarkStyle") == 0) {
 		QPalette dark_palette;
 		dark_palette.setColor(QPalette::Window, QColor(53, 53, 53));
@@ -188,6 +209,7 @@ void GlobalSettings::apply_theme()
 		dark_palette.setColor(QPalette::HighlightedText, Qt::white);
 		dark_palette.setColor(QPalette::Disabled, QPalette::HighlightedText, QColor(127, 127, 127));
 		qApp->setPalette(dark_palette);
+		is_dark_theme_ = true;
 	}
 
 	QPixmapCache::clear();
