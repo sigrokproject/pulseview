@@ -26,7 +26,7 @@
 #include <QFontMetrics>
 #include <QPixmapCache>
 #include <QString>
-#include <QStyleFactory>
+#include <QStyle>
 #include <QtGlobal>
 
 using std::map;
@@ -43,6 +43,7 @@ const vector< pair<QString, QString> > Themes {
 };
 
 const QString GlobalSettings::Key_General_Theme = "General_Theme";
+const QString GlobalSettings::Key_General_Style = "General_Style";
 const QString GlobalSettings::Key_View_ZoomToFitDuringAcq = "View_ZoomToFitDuringAcq";
 const QString GlobalSettings::Key_View_ZoomToFitAfterAcq = "View_ZoomToFitAfterAcq";
 const QString GlobalSettings::Key_View_TriggerIsZeroTime = "View_TriggerIsZeroTime";
@@ -65,6 +66,7 @@ const QString GlobalSettings::Key_Log_NotifyOfStacktrace = "Log_NotifyOfStacktra
 vector<GlobalSettingsInterface*> GlobalSettings::callbacks_;
 bool GlobalSettings::tracking_ = false;
 map<QString, QVariant> GlobalSettings::tracked_changes_;
+QString GlobalSettings::default_style_;
 QPalette GlobalSettings::default_palette_;
 
 GlobalSettings::GlobalSettings() :
@@ -78,6 +80,8 @@ void GlobalSettings::set_defaults_where_needed()
 	// Use no theme by default
 	if (!contains(Key_General_Theme))
 		setValue(Key_General_Theme, 0);
+	if (!contains(Key_General_Style))
+		setValue(Key_General_Style, "");
 
 	// Enable zoom-to-fit after acquisition by default
 	if (!contains(Key_View_ZoomToFitAfterAcq))
@@ -124,8 +128,12 @@ void GlobalSettings::set_defaults_where_needed()
 		setValue(Key_Log_NotifyOfStacktrace, true);
 }
 
-void GlobalSettings::save_default_palette()
+void GlobalSettings::save_internal_defaults()
 {
+	default_style_ = qApp->style()->objectName();
+	if (default_style_.isEmpty())
+		default_style_ = "fusion";
+
 	default_palette_ = QApplication::palette();
 }
 
@@ -143,10 +151,13 @@ void GlobalSettings::apply_theme()
 
 	qApp->setPalette(default_palette_);
 
+	const QString style = value(Key_General_Style).toString();
+	if (style.isEmpty())
+		qApp->setStyle(default_style_);
+	else
+		qApp->setStyle(style);
+
 	if (theme_name.compare("QDarkStyleSheet") == 0) {
-#ifdef Q_OS_WIN
-		qApp->setStyle(QStyleFactory::create("Fusion"));
-#endif
 		QPalette dark_palette;
 		dark_palette.setColor(QPalette::Window, QColor(53, 53, 53));
 		dark_palette.setColor(QPalette::WindowText, Qt::white);
@@ -155,9 +166,6 @@ void GlobalSettings::apply_theme()
 		dark_palette.setColor(QPalette::Highlight, QColor(42, 130, 218));
 		qApp->setPalette(dark_palette);
 	} else if (theme_name.compare("DarkStyle") == 0) {
-#ifdef Q_OS_WIN
-		qApp->setStyle(QStyleFactory::create("Fusion"));
-#endif
 		QPalette dark_palette;
 		dark_palette.setColor(QPalette::Window, QColor(53, 53, 53));
 		dark_palette.setColor(QPalette::WindowText, Qt::white);

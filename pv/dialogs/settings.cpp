@@ -35,6 +35,7 @@
 #include <QScrollBar>
 #include <QSpinBox>
 #include <QString>
+#include <QStyleFactory>
 #include <QTextBrowser>
 #include <QTextDocument>
 #include <QTextStream>
@@ -227,6 +228,26 @@ QWidget *Settings::get_general_settings_form(QWidget *parent) const
 	QLabel *description_1 = new QLabel(tr("(You may need to restart PulseView for all UI elements to update)"));
 	description_1->setAlignment(Qt::AlignRight);
 	general_layout->addRow(description_1);
+
+	QComboBox *style_cb = new QComboBox();
+	style_cb->addItem(tr("System Default"), "");
+	for (QString& s : QStyleFactory::keys())
+		style_cb->addItem(s, s);
+
+	const QString current_style =
+		settings.value(GlobalSettings::Key_General_Style).toString();
+	if (current_style.isEmpty())
+		style_cb->setCurrentIndex(0);
+	else
+		style_cb->setCurrentIndex(style_cb->findText(current_style, 0));
+
+	connect(style_cb, SIGNAL(currentIndexChanged(int)),
+		this, SLOT(on_general_style_changed(int)));
+	general_layout->addRow(tr("Qt widget style"), style_cb);
+
+	QLabel *description_2 = new QLabel(tr("(Dark themes look best with the Fusion style)"));
+	description_2->setAlignment(Qt::AlignRight);
+	general_layout->addRow(description_2);
 
 	return form;
 }
@@ -550,6 +571,19 @@ void Settings::on_general_theme_changed_changed(int state)
 {
 	GlobalSettings settings;
 	settings.setValue(GlobalSettings::Key_General_Theme, state);
+	settings.apply_theme();
+}
+
+void Settings::on_general_style_changed(int state)
+{
+	GlobalSettings settings;
+
+	if (state == 0)
+		settings.setValue(GlobalSettings::Key_General_Style, "");
+	else
+		settings.setValue(GlobalSettings::Key_General_Style,
+			QStyleFactory::keys().at(state - 1));
+
 	settings.apply_theme();
 }
 

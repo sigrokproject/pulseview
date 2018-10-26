@@ -52,6 +52,7 @@ class GlobalSettings : public QSettings
 
 public:
 	static const QString Key_General_Theme;
+	static const QString Key_General_Style;
 	static const QString Key_View_ZoomToFitDuringAcq;
 	static const QString Key_View_ZoomToFitAfterAcq;
 	static const QString Key_View_TriggerIsZeroTime;
@@ -81,8 +82,8 @@ public:
 	GlobalSettings();
 
 	void set_defaults_where_needed();
+	void save_internal_defaults();
 
-	void save_default_palette();
 	void apply_theme();
 
 	static void add_change_handler(GlobalSettingsInterface *cb);
@@ -122,6 +123,7 @@ private:
 	static bool tracking_;
 	static map<QString, QVariant> tracked_changes_;
 
+	static QString default_style_;
 	static QPalette default_palette_;
 };
 
