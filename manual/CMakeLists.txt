@@ -26,11 +26,11 @@ set(STYLES_DIR "asciidoctor-stylesheet-factory/stylesheets")
 set(STYLE_SHEET "readthedocs.css")
 
 # Input files.
-set(MANUAL_SRC "${CMAKE_CURRENT_SOURCE_DIR}/pulseview_manual.txt")
+set(MANUAL_SRC "${CMAKE_CURRENT_SOURCE_DIR}/manual.txt")
 
 # Output files, conversion results.
-set(MANUAL_OUT_HTML "${CMAKE_CURRENT_BINARY_DIR}/pulseview_manual.html")
-set(MANUAL_OUT_PDF "${CMAKE_CURRENT_BINARY_DIR}/pulseview_manual.pdf")
+set(MANUAL_OUT_HTML "${CMAKE_CURRENT_BINARY_DIR}/manual.html")
+set(MANUAL_OUT_PDF "${CMAKE_CURRENT_BINARY_DIR}/manual.pdf")
 
 # Manual related make(1) targets.
 add_custom_target(manual-html
