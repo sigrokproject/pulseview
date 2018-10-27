@@ -70,8 +70,7 @@ and make it available for execution:
 
 Then, to build the PulseView manual, run:
 
- $ cd manual
- $ ./generate
+ $ make manual
 
 Note: The stylesheet used is a lightly modified version of "Read The Docs"
 from the Asciidoctor stylesheet factory:
