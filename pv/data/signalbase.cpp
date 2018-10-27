@@ -450,7 +450,7 @@ void SignalBase::save_settings(QSettings &settings) const
 {
 	settings.setValue("name", name());
 	settings.setValue("enabled", enabled());
-	settings.setValue("color", color());
+	settings.setValue("color", color().rgba());
 	settings.setValue("conversion_type", (int)conversion_type_);
 
 	settings.setValue("conv_options", (int)(conversion_options_.size()));
@@ -470,8 +470,15 @@ void SignalBase::restore_settings(QSettings &settings)
 	if (settings.contains("enabled"))
 		set_enabled(settings.value("enabled").toBool());
 
-	if (settings.contains("color"))
-		set_color(settings.value("color").value<QColor>());
+	if (settings.contains("color")) {
+		QVariant value = settings.value("color");
+
+		// Workaround for Qt QColor serialization bug on OSX
+		if (((QMetaType::Type)(value.type()) == QMetaType::QColor) && value.isValid())
+			set_color(value.value<QColor>());
+		else
+			set_color(QColor::fromRgba(value.value<uint32_t>()));
+	}
 
 	if (settings.contains("conversion_type"))
 		set_conversion_type((ConversionType)settings.value("conversion_type").toInt());
