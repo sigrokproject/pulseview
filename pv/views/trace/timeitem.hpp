@@ -33,7 +33,6 @@ class View;
  * nature, not making assumptions about the kind of item shown.
  */
 class TimeItem : public ViewItem
-
 {
 	Q_OBJECT
 

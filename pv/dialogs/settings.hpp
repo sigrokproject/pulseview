@@ -71,6 +71,7 @@ private Q_SLOTS:
 	void on_view_showAnalogMinorGrid_changed(int state);
 	void on_view_showHoverMarker_changed(int state);
 	void on_view_snapDistance_changed(int value);
+	void on_view_cursorFillColor_changed(QColor color);
 	void on_view_conversionThresholdDispMode_changed(int state);
 	void on_view_defaultDivHeight_changed(int value);
 	void on_view_defaultLogicHeight_changed(int value);

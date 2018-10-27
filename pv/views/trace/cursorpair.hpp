@@ -21,9 +21,11 @@
 #define PULSEVIEW_PV_VIEWS_TRACEVIEW_CURSORPAIR_HPP
 
 #include "cursor.hpp"
+#include "pv/globalsettings.hpp"
 
 #include <memory>
 
+#include <QColor>
 #include <QPainter>
 #include <QRect>
 
@@ -38,13 +40,12 @@ namespace trace {
 
 class View;
 
-class CursorPair : public TimeItem
+class CursorPair : public TimeItem, public GlobalSettingsInterface
 {
 	Q_OBJECT
 
 private:
 	static const int DeltaPadding;
-	static const QColor ViewportFillColor;
 
 public:
 	/**
@@ -52,6 +53,8 @@ public:
 	 * @param view A reference to the view that owns this cursor pair.
 	 */
 	CursorPair(View &view);
+
+	~CursorPair();
 
 	/**
 	 * Returns true if the item is visible and enabled.
@@ -79,7 +82,6 @@ public:
 
 	pv::widgets::Popup* create_popup(QWidget *parent) override;
 
-public:
 	QRectF label_rect(const QRectF &rect) const override;
 
 	/**
@@ -104,11 +106,14 @@ public:
 
 	pair<float, float> get_cursor_offsets() const;
 
+	virtual void on_setting_changed(const QString &key, const QVariant &value) override;
+
 public Q_SLOTS:
 	void on_hover_point_changed(const QWidget* widget, const QPoint &hp);
 
 private:
 	shared_ptr<Cursor> first_, second_;
+	QColor fill_color_;
 
 	QSizeF text_size_;
 	QRectF label_area_;

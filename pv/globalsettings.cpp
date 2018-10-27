@@ -58,6 +58,7 @@ const QString GlobalSettings::Key_View_DefaultDivHeight = "View_DefaultDivHeight
 const QString GlobalSettings::Key_View_DefaultLogicHeight = "View_DefaultLogicHeight";
 const QString GlobalSettings::Key_View_ShowHoverMarker = "View_ShowHoverMarker";
 const QString GlobalSettings::Key_View_SnapDistance = "View_SnapDistance";
+const QString GlobalSettings::Key_View_CursorFillColor = "View_CursorFillColor";
 const QString GlobalSettings::Key_Dec_InitialStateConfigurable = "Dec_InitialStateConfigurable";
 const QString GlobalSettings::Key_Dec_ExportFormat = "Dec_ExportFormat";
 const QString GlobalSettings::Key_Log_BufferSize = "Log_BufferSize";
@@ -134,20 +135,27 @@ void GlobalSettings::set_defaults_where_needed()
 	if (!contains(Key_Log_NotifyOfStacktrace))
 		setValue(Key_Log_NotifyOfStacktrace, true);
 
-	// Default theme is bright, so use its color scheme
-	set_bright_theme_default_colors();
+	// Default theme is bright, so use its color scheme if undefined
+	if (!contains(Key_View_CursorFillColor))
+		set_bright_theme_default_colors();
 }
 
 void GlobalSettings::set_bright_theme_default_colors()
 {
 	setValue(Key_View_FillSignalHighAreaColor,
 		QColor(0, 0, 0, 5 * 256 / 100).rgba());
+
+	setValue(Key_View_CursorFillColor,
+		QColor(220, 231, 243).rgba());
 }
 
 void GlobalSettings::set_dark_theme_default_colors()
 {
 	setValue(Key_View_FillSignalHighAreaColor,
 		QColor(188, 188, 188, 9 * 256 / 100).rgba());
+
+	setValue(Key_View_CursorFillColor,
+		QColor(60, 60, 60).rgba());
 }
 
 bool GlobalSettings::current_theme_is_dark()

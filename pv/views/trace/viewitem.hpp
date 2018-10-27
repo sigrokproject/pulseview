@@ -53,7 +53,6 @@ public:
 public:
 	ViewItem();
 
-public:
 	/**
 	 * Returns true if the item is visible and enabled.
 	 */
@@ -151,7 +150,6 @@ public:
 	 */
 	virtual void paint_fore(QPainter &p, ViewItemPaintParams &pp);
 
-public:
 	/**
 	 * Gets the text color.
 	 * @remarks This color is computed by comparing the lightness

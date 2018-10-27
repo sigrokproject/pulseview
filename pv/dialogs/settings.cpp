@@ -319,6 +319,13 @@ QWidget *Settings::get_view_settings_form(QWidget *parent) const
 		SLOT(on_view_snapDistance_changed(int)));
 	trace_view_layout->addRow(tr("Maximum distance from edges before cursors snap to them"), snap_distance_sb);
 
+	ColorButton* cursor_fill_cb = new ColorButton(parent);
+	cursor_fill_cb->set_color(QColor::fromRgba(
+		settings.value(GlobalSettings::Key_View_CursorFillColor).value<uint32_t>()));
+	connect(cursor_fill_cb, SIGNAL(selected(QColor)),
+		this, SLOT(on_view_cursorFillColor_changed(QColor)));
+	trace_view_layout->addRow(tr("Color to fill cursor area with"), cursor_fill_cb);
+
 	QComboBox *thr_disp_mode_cb = new QComboBox();
 	thr_disp_mode_cb->addItem(tr("None"), GlobalSettings::ConvThrDispMode_None);
 	thr_disp_mode_cb->addItem(tr("Background"), GlobalSettings::ConvThrDispMode_Background);
@@ -669,6 +676,12 @@ void Settings::on_view_snapDistance_changed(int value)
 {
 	GlobalSettings settings;
 	settings.setValue(GlobalSettings::Key_View_SnapDistance, value);
+}
+
+void Settings::on_view_cursorFillColor_changed(QColor color)
+{
+	GlobalSettings settings;
+	settings.setValue(GlobalSettings::Key_View_CursorFillColor, color.rgba());
 }
 
 void Settings::on_view_conversionThresholdDispMode_changed(int state)

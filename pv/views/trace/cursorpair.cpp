@@ -20,11 +20,12 @@
 #include <algorithm>
 #include <cassert>
 
-#include <QDebug>
+#include <QColor>
 #include <QToolTip>
 
 #include "cursorpair.hpp"
 
+#include "pv/globalsettings.hpp"
 #include "pv/util.hpp"
 #include "ruler.hpp"
 #include "view.hpp"
@@ -40,15 +41,25 @@ namespace views {
 namespace trace {
 
 const int CursorPair::DeltaPadding = 8;
-const QColor CursorPair::ViewportFillColor(220, 231, 243);
 
 CursorPair::CursorPair(View &view) :
 	TimeItem(view),
 	first_(new Cursor(view, 0.0)),
 	second_(new Cursor(view, 1.0))
 {
+	GlobalSettings::add_change_handler(this);
+
+	GlobalSettings settings;
+	fill_color_ = QColor::fromRgba(settings.value(
+		GlobalSettings::Key_View_CursorFillColor).value<uint32_t>());
+
 	connect(&view_, SIGNAL(hover_point_changed(const QWidget*, QPoint)),
 		this, SLOT(on_hover_point_changed(const QWidget*, QPoint)));
+}
+
+CursorPair::~CursorPair()
+{
+	GlobalSettings::remove_change_handler(this);
 }
 
 bool CursorPair::enabled() const
@@ -158,7 +169,7 @@ void CursorPair::paint_back(QPainter &p, ViewItemPaintParams &pp)
 		return;
 
 	p.setPen(Qt::NoPen);
-	p.setBrush(QBrush(ViewportFillColor));
+	p.setBrush(fill_color_);
 
 	const pair<float, float> offsets(get_cursor_offsets());
 	const int l = (int)max(min(offsets.first, offsets.second), 0.0f);
@@ -186,6 +197,12 @@ pair<float, float> CursorPair::get_cursor_offsets() const
 	assert(second_);
 
 	return pair<float, float>(first_->get_x(), second_->get_x());
+}
+
+void CursorPair::on_setting_changed(const QString &key, const QVariant &value)
+{
+	if (key == GlobalSettings::Key_View_CursorFillColor)
+		fill_color_ = QColor::fromRgba(value.value<uint32_t>());
 }
 
 void CursorPair::on_hover_point_changed(const QWidget* widget, const QPoint& hp)
