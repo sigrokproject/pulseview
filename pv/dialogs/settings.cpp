@@ -300,7 +300,7 @@ QWidget *Settings::get_view_settings_form(QWidget *parent) const
 		settings.value(GlobalSettings::Key_View_FillSignalHighAreaColor).value<uint32_t>()));
 	connect(high_fill_cb, SIGNAL(selected(QColor)),
 		this, SLOT(on_view_fillSignalHighAreaColor_changed(QColor)));
-	trace_view_layout->addRow(tr("Fill high areas of logic signals"), high_fill_cb);
+	trace_view_layout->addRow(tr("Color to fill high areas of logic signals with"), high_fill_cb);
 
 	cb = create_checkbox(GlobalSettings::Key_View_ShowAnalogMinorGrid,
 		SLOT(on_view_showAnalogMinorGrid_changed(int)));
