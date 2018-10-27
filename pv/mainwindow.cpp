@@ -75,9 +75,6 @@ MainWindow::MainWindow(DeviceManager &device_manager, QWidget *parent) :
 	icon_green_(":/icons/status-green.svg"),
 	icon_grey_(":/icons/status-grey.svg")
 {
-	qRegisterMetaType<util::Timestamp>("util::Timestamp");
-	qRegisterMetaType<uint64_t>("uint64_t");
-
 	GlobalSettings::add_change_handler(this);
 
 	setup_ui();

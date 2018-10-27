@@ -54,6 +54,7 @@
 #include "pv/logging.hpp"
 #include "pv/mainwindow.hpp"
 #include "pv/session.hpp"
+#include "pv/util.hpp"
 
 #ifdef ANDROID
 #include <libsigrokandroidutils/libsigrokandroidutils.h>
@@ -253,6 +254,9 @@ int main(int argc, char *argv[])
 
 	for (int i = 0; i < argc; i++)
 		open_files.emplace_back(argv[i]);
+
+	qRegisterMetaType<pv::util::Timestamp>("util::Timestamp");
+	qRegisterMetaType<uint64_t>("uint64_t");
 
 	// Prepare the global settings since logging needs them early on
 	pv::GlobalSettings settings;
