@@ -121,11 +121,18 @@ AnalogSignal::AnalogSignal(
 	connect(analog_data, SIGNAL(min_max_changed(float, float)),
 		this, SLOT(on_min_max_changed(float, float)));
 
-	GlobalSettings gs;
+	GlobalSettings settings;
+	show_sampling_points_ =
+		settings.value(GlobalSettings::Key_View_ShowSamplingPoints).toBool();
+	fill_high_areas_ =
+		settings.value(GlobalSettings::Key_View_FillSignalHighAreas).toBool();
+	high_fill_color_ = QColor::fromRgba(settings.value(
+		GlobalSettings::Key_View_FillSignalHighAreaColor).value<uint32_t>());
+	show_analog_minor_grid_ =
+		settings.value(GlobalSettings::Key_View_ShowAnalogMinorGrid).toBool();
 	conversion_threshold_disp_mode_ =
-		gs.value(GlobalSettings::Key_View_ConversionThresholdDispMode).toInt();
-
-	div_height_ = gs.value(GlobalSettings::Key_View_DefaultDivHeight).toInt();
+		settings.value(GlobalSettings::Key_View_ConversionThresholdDispMode).toInt();
+	div_height_ = settings.value(GlobalSettings::Key_View_DefaultDivHeight).toInt();
 
 	base_->set_color(SignalColors[base_->index() % countof(SignalColors)]);
 	update_scale();
@@ -182,14 +189,6 @@ pair<int, int> AnalogSignal::v_extents() const
 	const int ph = pos_vdivs_ * div_height_;
 	const int nh = neg_vdivs_ * div_height_;
 	return make_pair(-ph, nh);
-}
-
-void AnalogSignal::on_setting_changed(const QString &key, const QVariant &value)
-{
-	Signal::on_setting_changed(key, value);
-
-	if (key == GlobalSettings::Key_View_ConversionThresholdDispMode)
-		on_settingViewConversionThresholdDispMode_changed(value);
 }
 
 void AnalogSignal::paint_back(QPainter &p, ViewItemPaintParams &pp)
@@ -322,10 +321,6 @@ void AnalogSignal::paint_grid(QPainter &p, int y, int left, int right)
 {
 	p.setRenderHint(QPainter::Antialiasing, false);
 
-	GlobalSettings settings;
-	const bool show_analog_minor_grid =
-		settings.value(GlobalSettings::Key_View_ShowAnalogMinorGrid).toBool();
-
 	if (pos_vdivs_ > 0) {
 		p.setPen(QPen(GridMajorColor, 1, Qt::DashLine));
 		for (int i = 1; i <= pos_vdivs_; i++) {
@@ -334,7 +329,7 @@ void AnalogSignal::paint_grid(QPainter &p, int y, int left, int right)
 		}
 	}
 
-	if ((pos_vdivs_ > 0) && show_analog_minor_grid) {
+	if ((pos_vdivs_ > 0) && show_analog_minor_grid_) {
 		p.setPen(QPen(GridMinorColor, 1, Qt::DashLine));
 		for (int i = 0; i < pos_vdivs_; i++) {
 			const float dy = i * div_height_;
@@ -355,7 +350,7 @@ void AnalogSignal::paint_grid(QPainter &p, int y, int left, int right)
 		}
 	}
 
-	if ((pos_vdivs_ > 0) && show_analog_minor_grid) {
+	if ((pos_vdivs_ > 0) && show_analog_minor_grid_) {
 		p.setPen(QPen(GridMinorColor, 1, Qt::DashLine));
 		for (int i = 0; i < neg_vdivs_; i++) {
 			const float dy = i * div_height_;
@@ -390,8 +385,7 @@ void AnalogSignal::paint_trace(QPainter &p,
 	// Calculate and paint the sampling points if enabled and useful
 	GlobalSettings settings;
 	const bool show_sampling_points =
-		(settings.value(GlobalSettings::Key_View_ShowSamplingPoints).toBool() ||
-		paint_thr_dots) && (samples_per_pixel < 0.25);
+		(show_sampling_points_ || paint_thr_dots) && (samples_per_pixel < 0.25);
 
 	p.setPen(base_->color());
 
@@ -572,11 +566,7 @@ void AnalogSignal::paint_logic_mid(QPainter &p, ViewItemPaintParams &pp)
 		pp.left() + (edges.back().first / samples_per_pixel - pixels_offset);
 
 	// Check whether we need to paint the sampling points
-	GlobalSettings settings;
-	const bool show_sampling_points =
-		settings.value(GlobalSettings::Key_View_ShowSamplingPoints).toBool() &&
-		(samples_per_pixel < 0.25);
-
+	const bool show_sampling_points = show_sampling_points_ && (samples_per_pixel < 0.25);
 	vector<QRectF> sampling_points;
 	float sampling_point_x = first_sample_x;
 	int64_t sampling_point_sample = start_sample;
@@ -585,9 +575,6 @@ void AnalogSignal::paint_logic_mid(QPainter &p, ViewItemPaintParams &pp)
 	if (show_sampling_points)
 		sampling_points.reserve(end_sample - start_sample + 1);
 
-	// Check whether we need to fill the high areas
-	const bool fill_high_areas =
-		settings.value(GlobalSettings::Key_View_FillSignalHighAreas).toBool();
 	vector<QRectF> high_rects;
 	float rising_edge_x;
 	bool rising_edge_seen = false;
@@ -612,7 +599,7 @@ void AnalogSignal::paint_logic_mid(QPainter &p, ViewItemPaintParams &pp)
 		const float x = pp.left() + ((*i).first / samples_per_pixel - pixels_offset);
 		*line++ = QLineF(x, high_offset, x, low_offset);
 
-		if (fill_high_areas) {
+		if (fill_high_areas_) {
 			// Any edge terminates a high area
 			if (rising_edge_seen) {
 				const int width = x - rising_edge_x;
@@ -650,16 +637,14 @@ void AnalogSignal::paint_logic_mid(QPainter &p, ViewItemPaintParams &pp)
 			sampling_point_x += pixels_per_sample;
 		};
 
-	if (fill_high_areas) {
+	if (fill_high_areas_) {
 		// Add last high rectangle if the signal is still high at the end of the trace
 		if (rising_edge_seen && (edges.cend() - 1)->second)
 			high_rects.emplace_back(rising_edge_x, high_offset,
 				last_sample_x - rising_edge_x, signal_height);
 
-		const QColor fill_color = QColor::fromRgba(settings.value(
-			GlobalSettings::Key_View_FillSignalHighAreaColor).value<uint32_t>());
-		p.setPen(fill_color);
-		p.setBrush(fill_color);
+		p.setPen(high_fill_color_);
+		p.setBrush(high_fill_color_);
 		p.drawRects((const QRectF*)(high_rects.data()), high_rects.size());
 	}
 
@@ -1103,6 +1088,30 @@ void AnalogSignal::hover_point_changed(const QPoint &hp)
 	}
 }
 
+void AnalogSignal::on_setting_changed(const QString &key, const QVariant &value)
+{
+	Signal::on_setting_changed(key, value);
+
+	if (key == GlobalSettings::Key_View_ShowSamplingPoints)
+		show_sampling_points_ = value.toBool();
+
+	if (key == GlobalSettings::Key_View_FillSignalHighAreas)
+		fill_high_areas_ = value.toBool();
+
+	if (key == GlobalSettings::Key_View_FillSignalHighAreaColor)
+		high_fill_color_ = QColor::fromRgba(value.value<uint32_t>());
+
+	if (key == GlobalSettings::Key_View_ShowAnalogMinorGrid)
+		show_analog_minor_grid_ = value.toBool();
+
+	if (key == GlobalSettings::Key_View_ConversionThresholdDispMode) {
+		conversion_threshold_disp_mode_ = value.toInt();
+
+		if (owner_)
+			owner_->row_item_appearance_changed(false, true);
+	}
+}
+
 void AnalogSignal::on_min_max_changed(float min, float max)
 {
 	(void)min;
@@ -1311,14 +1320,6 @@ void AnalogSignal::on_delayed_conversion_starter()
 void AnalogSignal::on_display_type_changed(int index)
 {
 	display_type_ = (DisplayType)(display_type_cb_->itemData(index).toInt());
-
-	if (owner_)
-		owner_->row_item_appearance_changed(false, true);
-}
-
-void AnalogSignal::on_settingViewConversionThresholdDispMode_changed(const QVariant new_value)
-{
-	conversion_threshold_disp_mode_ = new_value.toInt();
 
 	if (owner_)
 		owner_->row_item_appearance_changed(false, true);

@@ -22,6 +22,7 @@
 
 #include <memory>
 
+#include <QColor>
 #include <QComboBox>
 #include <QSpinBox>
 
@@ -85,8 +86,6 @@ public:
 	 * @return A pair containing the minimum and maximum y-values.
 	 */
 	pair<int, int> v_extents() const;
-
-	virtual void on_setting_changed(const QString &key, const QVariant &value);
 
 	/**
 	 * Paints the background layer of the signal with a QPainter
@@ -161,6 +160,8 @@ protected:
 	virtual void hover_point_changed(const QPoint &hp);
 
 private Q_SLOTS:
+	virtual void on_setting_changed(const QString &key, const QVariant &value);
+
 	void on_min_max_changed(float min, float max);
 
 	void on_pos_vdivs_changed(int vdivs);
@@ -177,8 +178,6 @@ private Q_SLOTS:
 
 	void on_display_type_changed(int index);
 
-	void on_settingViewConversionThresholdDispMode_changed(const QVariant new_value);
-
 private:
 	QComboBox *resolution_cb_, *conversion_cb_, *conv_threshold_cb_,
 		*display_type_cb_;
@@ -189,7 +188,11 @@ private:
 
 	int div_height_;
 	int pos_vdivs_, neg_vdivs_;  // divs per positive/negative side
-	float resolution_; // e.g. 10 for 10 V/div
+	float resolution_;  // e.g. 10 for 10 V/div
+
+	bool show_analog_minor_grid_;
+	QColor high_fill_color_;
+	bool show_sampling_points_, fill_high_areas_;
 
 	DisplayType display_type_;
 	bool autoranging_;

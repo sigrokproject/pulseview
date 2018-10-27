@@ -117,8 +117,14 @@ LogicSignal::LogicSignal(
 
 	base_->set_color(SignalColors[base->index() % countof(SignalColors)]);
 
-	GlobalSettings gs;
-	signal_height_ = gs.value(GlobalSettings::Key_View_DefaultLogicHeight).toInt();
+	GlobalSettings settings;
+	signal_height_ = settings.value(GlobalSettings::Key_View_DefaultLogicHeight).toInt();
+	show_sampling_points_ =
+		settings.value(GlobalSettings::Key_View_ShowSamplingPoints).toBool();
+	fill_high_areas_ =
+		settings.value(GlobalSettings::Key_View_FillSignalHighAreas).toBool();
+	high_fill_color_ = QColor::fromRgba(settings.value(
+		GlobalSettings::Key_View_FillSignalHighAreaColor).value<uint32_t>());
 
 	/* Populate this channel's trigger setting with whatever we
 	 * find in the current session trigger, if anything. */
@@ -216,11 +222,7 @@ void LogicSignal::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 		pp.left() + (edges.back().first / samples_per_pixel - pixels_offset);
 
 	// Check whether we need to paint the sampling points
-	GlobalSettings settings;
-	const bool show_sampling_points =
-		settings.value(GlobalSettings::Key_View_ShowSamplingPoints).toBool() &&
-		(samples_per_pixel < 0.25);
-
+	const bool show_sampling_points = show_sampling_points_ && (samples_per_pixel < 0.25);
 	vector<QRectF> sampling_points;
 	float sampling_point_x = first_sample_x;
 	int64_t sampling_point_sample = start_sample;
@@ -229,9 +231,6 @@ void LogicSignal::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 	if (show_sampling_points)
 		sampling_points.reserve(end_sample - start_sample + 1);
 
-	// Check whether we need to fill the high areas
-	const bool fill_high_areas =
-		settings.value(GlobalSettings::Key_View_FillSignalHighAreas).toBool();
 	vector<QRectF> high_rects;
 	float rising_edge_x;
 	bool rising_edge_seen = false;
@@ -256,7 +255,7 @@ void LogicSignal::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 		const float x = pp.left() + ((*i).first / samples_per_pixel - pixels_offset);
 		*line++ = QLineF(x, high_offset, x, low_offset);
 
-		if (fill_high_areas) {
+		if (fill_high_areas_) {
 			// Any edge terminates a high area
 			if (rising_edge_seen) {
 				const int width = x - rising_edge_x;
@@ -294,16 +293,14 @@ void LogicSignal::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 			sampling_point_x += pixels_per_sample;
 		};
 
-	if (fill_high_areas) {
+	if (fill_high_areas_) {
 		// Add last high rectangle if the signal is still high at the end of the trace
 		if (rising_edge_seen && (edges.cend() - 1)->second)
 			high_rects.emplace_back(rising_edge_x, high_offset,
 				last_sample_x - rising_edge_x, signal_height_);
 
-		const QColor fill_color = QColor::fromRgba(settings.value(
-			GlobalSettings::Key_View_FillSignalHighAreaColor).value<uint32_t>());
-		p.setPen(fill_color);
-		p.setBrush(fill_color);
+		p.setPen(high_fill_color_);
+		p.setBrush(high_fill_color_);
 		p.drawRects((const QRectF*)(high_rects.data()), high_rects.size());
 	}
 
@@ -648,6 +645,20 @@ const QPixmap* LogicSignal::get_pixmap(const char *path)
 	}
 
 	return pixmap_cache_.take(path);
+}
+
+void LogicSignal::on_setting_changed(const QString &key, const QVariant &value)
+{
+	Signal::on_setting_changed(key, value);
+
+	if (key == GlobalSettings::Key_View_ShowSamplingPoints)
+		show_sampling_points_ = value.toBool();
+
+	if (key == GlobalSettings::Key_View_FillSignalHighAreas)
+		fill_high_areas_ = value.toBool();
+
+	if (key == GlobalSettings::Key_View_FillSignalHighAreaColor)
+		high_fill_color_ = QColor::fromRgba(value.value<uint32_t>());
 }
 
 void LogicSignal::on_trigger()

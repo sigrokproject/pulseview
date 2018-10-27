@@ -21,6 +21,7 @@
 #define PULSEVIEW_PV_VIEWS_TRACEVIEW_LOGICSIGNAL_HPP
 
 #include <QCache>
+#include <QColor>
 #include <QDebug>
 #include <QSpinBox>
 
@@ -133,12 +134,16 @@ private:
 	static const QPixmap* get_pixmap(const char *path);
 
 private Q_SLOTS:
+	void on_setting_changed(const QString &key, const QVariant &value);
+
 	void on_trigger();
 
 	void on_signal_height_changed(int height);
 
 private:
 	int signal_height_;
+	QColor high_fill_color_;
+	bool show_sampling_points_, fill_high_areas_;
 
 	shared_ptr<pv::devices::Device> device_;
 
