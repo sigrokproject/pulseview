@@ -474,10 +474,14 @@ void SignalBase::restore_settings(QSettings &settings)
 		QVariant value = settings.value("color");
 
 		// Workaround for Qt QColor serialization bug on OSX
-		if (((QMetaType::Type)(value.type()) == QMetaType::QColor) && value.isValid())
+		if ((QMetaType::Type)(value.type()) == QMetaType::QColor)
 			set_color(value.value<QColor>());
 		else
 			set_color(QColor::fromRgba(value.value<uint32_t>()));
+
+		// A color with an alpha value of 0 makes the signal marker invisible
+		if (color() == QColor(0, 0, 0, 0))
+			set_color(Qt::gray);
 	}
 
 	if (settings.contains("conversion_type"))
