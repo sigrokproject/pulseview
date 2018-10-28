@@ -108,11 +108,11 @@ not connected, essential parameter not specified) or a bug in the decoder itself
 will be presented a static red message in the protocol decoder's display area.
 In that case, you check the log output in the settings menu. There you'll find the Python
 error description which you can use to either adjust the configuration,
-or debug the decoder (and let us know of the
-fix) or you can copy that information and file a bug report so that we can fix it.
+or debug the decoder (and let us know of the fix) or you can copy that information and
+file a bug report so that we can fix it.
 
-The link:https://sigrok.org/wiki/FAQ#Where_can_I_learn_more_about_logic_analyzers.3F["Learn about logic analyzers" FAQ item]
-contains more information and links to helpful knowledge and further explanations.
+Further helpful knowledge and explanations on logic analyzers can be found in our
+https://sigrok.org/wiki/FAQ#Where_can_I_learn_more_about_logic_analyzers.3F["Learn about logic analyzers" FAQ item].
 
 === Exporting Annotations
 
