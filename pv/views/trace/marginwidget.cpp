@@ -53,13 +53,17 @@ void MarginWidget::show_popup(const shared_ptr<ViewItem> &item)
 
 void MarginWidget::contextMenuEvent(QContextMenuEvent *event)
 {
+	event->setAccepted(false);
+
 	const shared_ptr<ViewItem> r = get_mouse_over_item(mouse_point_);
 	if (!r)
 		return;
 
 	QMenu *menu = r->create_header_context_menu(this);
-	if (menu)
+	if (menu) {
+		event->setAccepted(true);
 		menu->popup(event->globalPos());
+	}
 }
 
 void MarginWidget::keyPressEvent(QKeyEvent *event)

@@ -121,6 +121,12 @@ pv::util::Timestamp Ruler::get_time_from_x_pos(uint32_t x) const
 
 void Ruler::contextMenuEvent(QContextMenuEvent *event)
 {
+	MarginWidget::contextMenuEvent(event);
+
+	// Don't show a context menu if the MarginWidget found a widget that shows one
+	if (event->isAccepted())
+		return;
+
 	context_menu_x_pos_ = event->pos().x();
 
 	QMenu *const menu = new QMenu(this);
@@ -143,6 +149,7 @@ void Ruler::contextMenuEvent(QContextMenuEvent *event)
 	toggle_hover_marker->setText(hover_marker_shown ?
 		tr("Disable mouse hover marker") : tr("Enable mouse hover marker"));
 
+	event->setAccepted(true);
 	menu->popup(event->globalPos());
 }
 
