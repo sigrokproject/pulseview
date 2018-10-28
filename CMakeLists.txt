@@ -197,6 +197,12 @@ if(NOT PV_TAG_VERSION_STRING)
 		string(SUBSTRING "${PV_HASH}" 0 7 PV_SHORTHASH)
 		set(PV_VERSION_STRING "${PV_VERSION_STRING}-git-${PV_SHORTHASH}")
 	endif()
+
+	# Non-tagged releases use the unstable manual
+	set(PV_MANUAL_VERSION "unstable")
+else()
+	# Tagged releases use a fixed manual version
+	set(PV_MANUAL_VERSION ${PV_VERSION_STRING})
 endif()
 
 if(PV_VERSION_STRING MATCHES "^([0-9]+)\\.([0-9]+)\\.([0-9]+)(-[-0-9a-z]*)?$")

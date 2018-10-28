@@ -62,7 +62,7 @@ if (ASCIIDOCTOR_PDF_EXECUTABLE)
 else ()
 	add_custom_target(manual-pdf
 		COMMAND ${CMAKE_COMMAND} -E echo
-			"asciidoctor-pdf executable is missing, NOT generating HTML output"
+			"asciidoctor-pdf executable is missing, NOT generating PDF output"
 		DEPENDS ${MANUAL_SRC}
 		WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 	)

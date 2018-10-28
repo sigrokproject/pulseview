@@ -81,7 +81,7 @@ RequestExecutionLevel admin
 !define SHCNF_IDLIST 0
 
 
-# --- Functions ---------------------------------------------------------------
+# --- Functions/Macros --------------------------------------------------------
 
 Function register_sr_files
 	${registerExtension} "$INSTDIR\pulseview.exe" ".sr" "sigrok session file"
@@ -90,6 +90,12 @@ Function register_sr_files
 	System::Call 'Shell32::SHChangeNotify(i ${SHCNE_ASSOCCHANGED}, i ${SHCNF_IDLIST}, i 0, i 0)'
 FunctionEnd
 
+# Inspired by http://nsis.sourceforge.net/Create_Internet_Shorcuts_during_installation
+!Macro "CreateURL" "URLFile" "URLSite" "URLDesc"
+	WriteINIStr "$INSTDIR\${URLFile}.URL" "InternetShortcut" "URL" "${URLSite}"
+	CreateShortCut "$SMPROGRAMS\sigrok\PulseView\${URLFile}.lnk" "$INSTDIR\${URLFile}.url" "" \
+		"$INSTDIR\pulseview.exe" 0 "SW_SHOWNORMAL" "" "${URLDesc}"
+!MacroEnd
 
 # --- MUI pages ---------------------------------------------------------------
 
@@ -198,6 +204,10 @@ Section "PulseView (required)" Section1
 		"$INSTDIR\zadig_xp.exe" "" "$INSTDIR\zadig_xp.exe" 0 \
 		SW_SHOWNORMAL "" "Zadig (PulseView, Win XP)"
 
+	# Create shortcuts to the HTML and PDF manuals, respectively.
+	!InsertMacro "CreateURL" "PulseView HTML manual" "https://sigrok.org/doc/pulseview/@PV_MANUAL_VERSION@/manual.html" "PulseView HTML manual"
+	!InsertMacro "CreateURL" "PulseView PDF manual" "https://sigrok.org/doc/pulseview/@PV_MANUAL_VERSION@/manual.pdf" "PulseView PDF manual"
+
 	# Create registry keys for "Add/remove programs" in the control panel.
 	WriteRegStr HKLM "${REGSTR}" "DisplayName" "PulseView"
 	WriteRegStr HKLM "${REGSTR}" "UninstallString" \
@@ -273,6 +283,10 @@ Section "Uninstall"
 	# Delete the example *.sr files.
 	RMDir /r "$INSTDIR\examples\*"
 
+	# Delete the URL files for the manual.
+	Delete "$INSTDIR\PulseView HTML manual.url"
+	Delete "$INSTDIR\PulseView PDF manual.url"
+
 	# Delete the install directory and its sub-directories.
 	RMDir "$INSTDIR\share"
 	RMDir "$INSTDIR\examples"
@@ -280,10 +294,15 @@ Section "Uninstall"
 
 	# Delete the links from the start menu.
 	Delete "$SMPROGRAMS\sigrok\PulseView\PulseView.lnk"
+	Delete "$SMPROGRAMS\sigrok\PulseView\PulseView (Debug).lnk"
 	Delete "$SMPROGRAMS\sigrok\PulseView\Uninstall PulseView.lnk"
 	Delete "$SMPROGRAMS\sigrok\PulseView\Zadig (PulseView).lnk"
 	Delete "$SMPROGRAMS\sigrok\PulseView\Zadig (PulseView, Win XP).lnk"
 	Delete "$SMPROGRAMS\sigrok\PulseView\Examples (PulseView).lnk"
+
+	# Delete the links to the manual.
+	Delete "$SMPROGRAMS\sigrok\PulseView\PulseView HTML manual.lnk"
+	Delete "$SMPROGRAMS\sigrok\PulseView\PulseView PDF manual.lnk"
 
 	# Delete the sub-directory in the start menu.
 	RMDir "$SMPROGRAMS\sigrok\PulseView"
