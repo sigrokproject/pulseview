@@ -23,8 +23,8 @@ Requirements
     - libboost-serialization
     - libboost-test (optional, only needed to run the unit tests)
     - libboost-stacktrace (optional, only needed for debugging)
- - libsigrokcxx >= 0.6.0 (libsigrok C++ bindings)
- - libsigrokdecode >= 0.6.0
+ - libsigrokcxx >= 0.5.1 (libsigrok C++ bindings)
+ - libsigrokdecode >= 0.5.2
  - libsigrokandroidutils >= 0.1.0 (optional, only needed on Android)
  - Asciidoctor (optional, only needed to build the manual)
 
