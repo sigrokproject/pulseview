@@ -66,7 +66,7 @@ void Logic::clear()
 {
 	segments_.clear();
 
-	samples_cleared();
+	Q_EMIT samples_cleared();
 }
 
 double Logic::get_samplerate() const
@@ -90,7 +90,7 @@ uint64_t Logic::max_sample_count() const
 void Logic::notify_samples_added(QObject* segment, uint64_t start_sample,
 	uint64_t end_sample)
 {
-	samples_added(segment, start_sample, end_sample);
+	Q_EMIT samples_added(segment, start_sample, end_sample);
 }
 
 } // namespace data

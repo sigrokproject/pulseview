@@ -253,7 +253,7 @@ void AnalogSegment::append_payload_to_envelope_levels()
 
 	// Notify if the min or max value changed
 	if ((old_min_value != min_value_) || (old_max_value != max_value_))
-		owner_.min_max_changed(min_value_, max_value_);
+		Q_EMIT owner_.min_max_changed(min_value_, max_value_);
 }
 
 } // namespace data

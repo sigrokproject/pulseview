@@ -60,7 +60,7 @@ void Analog::clear()
 {
 	segments_.clear();
 
-	samples_cleared();
+	Q_EMIT samples_cleared();
 }
 
 double Analog::get_samplerate() const
@@ -84,12 +84,12 @@ uint64_t Analog::max_sample_count() const
 void Analog::notify_samples_added(QObject* segment, uint64_t start_sample,
 	uint64_t end_sample)
 {
-	samples_added(segment, start_sample, end_sample);
+	Q_EMIT samples_added(segment, start_sample, end_sample);
 }
 
 void Analog::notify_min_max_changed(float min, float max)
 {
-	min_max_changed(min, max);
+	Q_EMIT min_max_changed(min, max);
 }
 
 } // namespace data

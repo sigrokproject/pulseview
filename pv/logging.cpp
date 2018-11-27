@@ -145,7 +145,7 @@ out:
 	// If we're tearing down the program, sending out notifications to UI
 	// elements that can no longer function properly is a bad idea
 	if (!QApplication::closingDown())
-		logged_text(s);
+		Q_EMIT logged_text(s);
 }
 
 void Logging::log_pv(QtMsgType type, const QMessageLogContext &context, const QString &msg)

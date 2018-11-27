@@ -96,7 +96,7 @@ void SignalBase::set_name(QString name)
 
 	name_ = name;
 
-	name_changed(name);
+	Q_EMIT name_changed(name);
 }
 
 bool SignalBase::enabled() const
@@ -108,7 +108,7 @@ void SignalBase::set_enabled(bool value)
 {
 	if (channel_) {
 		channel_->set_enabled(value);
-		enabled_changed(value);
+		Q_EMIT enabled_changed(value);
 	}
 }
 
@@ -142,7 +142,7 @@ void SignalBase::set_color(QColor color)
 	bgcolor_ = color;
 	bgcolor_.setAlpha(ColorBGAlpha);
 
-	color_changed(color);
+	Q_EMIT color_changed(color);
 }
 
 QColor SignalBase::bgcolor() const
@@ -297,7 +297,7 @@ void SignalBase::set_conversion_type(ConversionType t)
 
 		// Discard converted data
 		converted_data_.reset();
-		samples_cleared();
+		Q_EMIT samples_cleared();
 	}
 
 	conversion_type_ = t;
@@ -311,7 +311,7 @@ void SignalBase::set_conversion_type(ConversionType t)
 
 	start_conversion();
 
-	conversion_type_changed(t);
+	Q_EMIT conversion_type_changed(t);
 }
 
 map<QString, QVariant> SignalBase::get_conversion_options() const
@@ -547,7 +547,7 @@ void SignalBase::convert_single_segment_range(AnalogSegment *asegment,
 					analog->get_logic_via_threshold(threshold, lsamples);
 
 				lsegment->append_payload(logic->data_pointer(), logic->data_length());
-				samples_added(lsegment->segment_id(), i, i + ConversionBlockSize);
+				Q_EMIT samples_added(lsegment->segment_id(), i, i + ConversionBlockSize);
 				i += ConversionBlockSize;
 			}
 
@@ -561,7 +561,7 @@ void SignalBase::convert_single_segment_range(AnalogSegment *asegment,
 			shared_ptr<sigrok::Logic> logic =
 				analog->get_logic_via_threshold(threshold, lsamples);
 			lsegment->append_payload(logic->data_pointer(), logic->data_length());
-			samples_added(lsegment->segment_id(), i, end_sample);
+			Q_EMIT samples_added(lsegment->segment_id(), i, end_sample);
 		}
 
 		if (conversion_type_ == A2LConversionBySchmittTrigger) {
@@ -580,7 +580,7 @@ void SignalBase::convert_single_segment_range(AnalogSegment *asegment,
 						&state, lsamples);
 
 				lsegment->append_payload(logic->data_pointer(), logic->data_length());
-				samples_added(lsegment->segment_id(), i, i + ConversionBlockSize);
+				Q_EMIT samples_added(lsegment->segment_id(), i, i + ConversionBlockSize);
 				i += ConversionBlockSize;
 			}
 
@@ -595,7 +595,7 @@ void SignalBase::convert_single_segment_range(AnalogSegment *asegment,
 				analog->get_logic_via_schmitt_trigger(lo_thr, hi_thr,
 					&state, lsamples);
 			lsegment->append_payload(logic->data_pointer(), logic->data_length());
-			samples_added(lsegment->segment_id(), i, end_sample);
+			Q_EMIT samples_added(lsegment->segment_id(), i, end_sample);
 		}
 
 		// If acquisition is ongoing, start-/endsample may have changed
@@ -719,7 +719,7 @@ void SignalBase::start_conversion(bool delayed_start)
 
 	if (converted_data_)
 		converted_data_->clear();
-	samples_cleared();
+	Q_EMIT samples_cleared();
 
 	conversion_interrupt_ = false;
 	conversion_thread_ = std::thread(
@@ -740,7 +740,7 @@ void SignalBase::on_samples_cleared()
 	if (converted_data_)
 		converted_data_->clear();
 
-	samples_cleared();
+	Q_EMIT samples_cleared();
 }
 
 void SignalBase::on_samples_added(QObject* segment, uint64_t start_sample,
@@ -758,7 +758,7 @@ void SignalBase::on_samples_added(QObject* segment, uint64_t start_sample,
 	}
 
 	data::Segment* s = qobject_cast<data::Segment*>(segment);
-	samples_added(s->segment_id(), start_sample, end_sample);
+	Q_EMIT samples_added(s->segment_id(), start_sample, end_sample);
 }
 
 void SignalBase::on_min_max_changed(float min, float max)
@@ -768,7 +768,7 @@ void SignalBase::on_min_max_changed(float min, float max)
 		(get_current_conversion_preset() == DynamicPreset))
 		start_conversion(true);
 
-	min_max_changed(min, max);
+	Q_EMIT min_max_changed(min, max);
 }
 
 void SignalBase::on_capture_state_changed(int state)

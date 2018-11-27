@@ -235,7 +235,7 @@ Q_SIGNALS:
 	void data_received();
 
 	void add_view(const QString &title, views::ViewType type,
-		Session *session);
+		pv::Session *session);
 
 public Q_SLOTS:
 	void on_data_saved();

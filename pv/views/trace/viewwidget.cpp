@@ -190,7 +190,7 @@ void ViewWidget::mouse_left_press_event(QMouseEvent *event)
 	if (!item_dragged)
 		drag();
 
-	selection_changed();
+	Q_EMIT selection_changed();
 }
 
 void ViewWidget::mouse_left_release_event(QMouseEvent *event)

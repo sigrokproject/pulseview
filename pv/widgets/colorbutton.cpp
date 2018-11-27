@@ -108,13 +108,13 @@ void ColorButton::on_selected(int row, int col)
 	assert(popup_);
 
 	cur_color_ = popup_->well_array().cellBrush(row, col).color();
-	selected(cur_color_);
+	Q_EMIT selected(cur_color_);
 }
 
 void ColorButton::on_color_selected(const QColor& color)
 {
 	cur_color_ = color;
-	selected(cur_color_);
+	Q_EMIT selected(cur_color_);
 }
 
 void ColorButton::paintEvent(QPaintEvent *event)

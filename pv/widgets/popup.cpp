@@ -245,7 +245,7 @@ void Popup::reposition_widget()
 
 void Popup::closeEvent(QCloseEvent*)
 {
-	closed();
+	Q_EMIT closed();
 }
 
 void Popup::paintEvent(QPaintEvent*)

@@ -271,7 +271,7 @@ void StandardBar::on_segment_selected(int ui_segment_id)
 	if (view_->segment_display_mode() != Trace::ShowSingleSegmentOnly)
 		on_actionSDMSingle_triggered();
 
-	segment_selected(segment_id);
+	Q_EMIT segment_selected(segment_id);
 }
 
 void StandardBar::on_segment_display_mode_changed(int mode, bool segment_selectable)

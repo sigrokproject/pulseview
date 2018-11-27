@@ -752,7 +752,7 @@ void MainBar::on_config_changed()
 
 void MainBar::on_actionNewView_triggered()
 {
-	new_view(&session_);
+	Q_EMIT new_view(&session_);
 }
 
 void MainBar::on_actionOpen_triggered()

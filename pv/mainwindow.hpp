@@ -113,10 +113,10 @@ private:
 
 private Q_SLOTS:
 	void on_add_view(const QString &title, views::ViewType type,
-		Session *session);
+		pv::Session *session);
 
 	void on_focus_changed();
-	void on_focused_session_changed(shared_ptr<Session> session);
+	void on_focused_session_changed(shared_ptr<pv::Session> session);
 
 	void on_new_session_clicked();
 	void on_run_stop_clicked();
@@ -125,7 +125,7 @@ private Q_SLOTS:
 	void on_session_name_changed();
 	void on_capture_state_changed(QObject *obj);
 
-	void on_new_view(Session *session);
+	void on_new_view(pv::Session *session);
 	void on_view_close_clicked();
 
 	void on_tab_changed(int index);

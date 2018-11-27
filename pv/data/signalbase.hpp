@@ -305,7 +305,7 @@ Q_SIGNALS:
 
 	void color_changed(const QColor &color);
 
-	void conversion_type_changed(const ConversionType t);
+	void conversion_type_changed(const pv::data::SignalBase::ConversionType t);
 
 	void samples_cleared();
 

@@ -151,7 +151,7 @@ protected:
 	bool eventFilter(QObject *watched, QEvent *event);
 
 Q_SIGNALS:
-	void new_view(Session *session);
+	void new_view(pv::Session *session);
 
 private:
 	QToolButton *open_button_, *save_button_;

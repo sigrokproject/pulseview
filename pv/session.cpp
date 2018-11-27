@@ -145,7 +145,7 @@ void Session::set_name(QString name)
 
 	name_ = name;
 
-	name_changed();
+	Q_EMIT name_changed();
 }
 
 const list< shared_ptr<views::ViewBase> > Session::views() const
@@ -359,7 +359,7 @@ void Session::restore_settings(QSettings &settings)
 
 			if (i > 0) {
 				views::ViewType type = (views::ViewType)settings.value("type").toInt();
-				add_view(name_, type, this);
+				Q_EMIT add_view(name_, type, this);
 				views_.back()->restore_settings(settings);
 			} else
 				main_view_->restore_settings(settings);
@@ -395,7 +395,7 @@ void Session::set_device(shared_ptr<devices::Device> device)
 
 	// Revert name back to default name (e.g. "Session 1") as the data is gone
 	name_ = default_name_;
-	name_changed();
+	Q_EMIT name_changed();
 
 	// Remove all stored data and reset all views
 	for (shared_ptr<views::ViewBase> view : views_) {
@@ -418,7 +418,7 @@ void Session::set_device(shared_ptr<devices::Device> device)
 
 	logic_data_.reset();
 
-	signals_changed();
+	Q_EMIT signals_changed();
 
 	device_ = move(device);
 
@@ -438,7 +438,7 @@ void Session::set_device(shared_ptr<devices::Device> device)
 		update_signals();
 	}
 
-	device_changed();
+	Q_EMIT device_changed();
 }
 
 void Session::set_default_device()
@@ -606,7 +606,7 @@ void Session::start_capture(function<void (const QString)> error_handler)
 
 	if (hw_device) {
 		name_ = default_name_;
-		name_changed();
+		Q_EMIT name_changed();
 	}
 
 	// Begin the session
@@ -667,7 +667,7 @@ void Session::register_view(shared_ptr<views::ViewBase> view)
 		}
 	}
 
-	signals_changed();
+	Q_EMIT signals_changed();
 }
 
 void Session::deregister_view(shared_ptr<views::ViewBase> view)
@@ -767,7 +767,7 @@ shared_ptr<data::DecodeSignal> Session::add_decode_signal()
 		return nullptr;
 	}
 
-	signals_changed();
+	Q_EMIT signals_changed();
 
 	return signal;
 }
@@ -779,7 +779,7 @@ void Session::remove_decode_signal(shared_ptr<data::DecodeSignal> signal)
 	for (shared_ptr<views::ViewBase>& view : views_)
 		view->remove_decode_signal(signal);
 
-	signals_changed();
+	Q_EMIT signals_changed();
 }
 #endif
 
@@ -794,7 +794,7 @@ void Session::set_capture_state(capture_state state)
 	}
 
 	if (changed)
-		capture_state_changed(state);
+		Q_EMIT capture_state_changed(state);
 }
 
 void Session::update_signals()
@@ -929,7 +929,7 @@ void Session::update_signals()
 		}
 	}
 
-	signals_changed();
+	Q_EMIT signals_changed();
 }
 
 shared_ptr<data::SignalBase> Session::signalbase_from_channel(
@@ -1040,7 +1040,7 @@ void Session::signal_new_segment()
 
 	if (new_segment_id > highest_segment_id_) {
 		highest_segment_id_ = new_segment_id;
-		new_segment(highest_segment_id_);
+		Q_EMIT new_segment(highest_segment_id_);
 	}
 }
 
@@ -1062,7 +1062,7 @@ void Session::signal_segment_completed()
 	}
 
 	if (segment_id >= 0)
-		segment_completed(segment_id);
+		Q_EMIT segment_completed(segment_id);
 }
 
 void Session::feed_in_header()
@@ -1083,7 +1083,7 @@ void Session::feed_in_meta(shared_ptr<Meta> meta)
 		}
 	}
 
-	signals_changed();
+	Q_EMIT signals_changed();
 }
 
 void Session::feed_in_trigger()
@@ -1123,7 +1123,7 @@ void Session::feed_in_trigger()
 	// TODO Create timestamp from segment start time + segment's current sample count
 	util::Timestamp timestamp = sample_count / get_samplerate();
 	trigger_list_.emplace_back(segment_id, timestamp);
-	trigger_event(segment_id, timestamp);
+	Q_EMIT trigger_event(segment_id, timestamp);
 }
 
 void Session::feed_in_frame_begin()
@@ -1194,7 +1194,7 @@ void Session::feed_in_logic(shared_ptr<Logic> logic)
 
 	cur_logic_segment_->append_payload(logic);
 
-	data_received();
+	Q_EMIT data_received();
 }
 
 void Session::feed_in_analog(shared_ptr<Analog> analog)
@@ -1267,7 +1267,7 @@ void Session::feed_in_analog(shared_ptr<Analog> analog)
 		set_capture_state(Running);
 	}
 
-	data_received();
+	Q_EMIT data_received();
 }
 
 void Session::data_feed_in(shared_ptr<sigrok::Device> device,

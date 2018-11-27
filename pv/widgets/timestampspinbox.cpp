@@ -87,7 +87,7 @@ void TimestampSpinBox::setValue(const pv::util::Timestamp& val)
 
 	value_ = val;
 	updateEdit();
-	valueChanged(value_);
+	Q_EMIT valueChanged(value_);
 }
 
 void TimestampSpinBox::on_editingFinished()

@@ -78,7 +78,7 @@ Device::Device(shared_ptr<sigrok::Configurable> configurable) :
 			return configurable_->config_get(key); };
 		const Property::Setter set = [&, key](Glib::VariantBase value) {
 			configurable_->config_set(key, value);
-			config_changed();
+			Q_EMIT config_changed();
 		};
 
 		switch (key->id()) {

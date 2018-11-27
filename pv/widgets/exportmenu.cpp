@@ -92,7 +92,7 @@ void ExportMenu::on_action(QObject *action)
 	if (iter == formats.cend())
 		return;
 
-	format_selected((*iter).second);
+	Q_EMIT format_selected((*iter).second);
 }
 
 }  // namespace widgets

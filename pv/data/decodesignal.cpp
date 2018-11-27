@@ -166,7 +166,7 @@ void DecodeSignal::reset_decode(bool shutting_down)
 		qDebug().nospace() << name() << ": Error cleared";
 	}
 
-	decode_reset();
+	Q_EMIT decode_reset();
 }
 
 void DecodeSignal::begin_decode()
@@ -338,7 +338,7 @@ void DecodeSignal::auto_assign_signals(const shared_ptr<Decoder> dec)
 		logic_mux_data_invalid_ = true;
 		stack_config_changed_ = true;
 		commit_decoder_channels();
-		channels_updated();
+		Q_EMIT channels_updated();
 	}
 }
 
@@ -352,7 +352,7 @@ void DecodeSignal::assign_signal(const uint16_t channel_id, const SignalBase *si
 
 	stack_config_changed_ = true;
 	commit_decoder_channels();
-	channels_updated();
+	Q_EMIT channels_updated();
 	begin_decode();
 }
 
@@ -370,7 +370,7 @@ void DecodeSignal::set_initial_pin_state(const uint16_t channel_id, const int in
 			ch.initial_pin_state = init_state;
 
 	stack_config_changed_ = true;
-	channels_updated();
+	Q_EMIT channels_updated();
 	begin_decode();
 }
 
@@ -622,7 +622,7 @@ void DecodeSignal::restore_settings(QSettings &settings)
 		}
 
 		settings.endGroup();
-		channels_updated();
+		Q_EMIT channels_updated();
 	}
 
 	// Restore channel mapping
@@ -789,7 +789,7 @@ void DecodeSignal::update_channel_list()
 
 	}
 
-	channels_updated();
+	Q_EMIT channels_updated();
 }
 
 void DecodeSignal::commit_decoder_channels()
@@ -1003,7 +1003,7 @@ void DecodeSignal::decode_data(
 
 		// Notify the frontend that we processed some data and
 		// possibly have new annotations as well
-		new_annotations();
+		Q_EMIT new_annotations();
 
 		if (decode_paused_) {
 			unique_lock<mutex> pause_wait_lock(decode_pause_mutex_);
@@ -1073,7 +1073,7 @@ void DecodeSignal::decode_proc()
 				terminate_srd_session();
 			} else {
 				// All segments have been processed
-				decode_finished();
+				Q_EMIT decode_finished();
 
 				// Wait for new input data or an interrupt was requested
 				unique_lock<mutex> input_wait_lock(input_mutex_);

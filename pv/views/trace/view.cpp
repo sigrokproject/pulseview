@@ -250,7 +250,7 @@ void View::reset_view_state()
 	suppress_zoom_to_fit_after_acq_ = false;
 
 	show_cursors_ = false;
-	cursor_state_changed(show_cursors_);
+	Q_EMIT cursor_state_changed(show_cursors_);
 	flags_.clear();
 
 	// Update the zoom state
@@ -472,7 +472,7 @@ void View::set_scale(double scale)
 {
 	if (scale_ != scale) {
 		scale_ = scale;
-		scale_changed();
+		Q_EMIT scale_changed();
 	}
 }
 
@@ -481,7 +481,7 @@ void View::set_offset(const pv::util::Timestamp& offset, bool force_update)
 	if ((offset_ != offset) || force_update) {
 		offset_ = offset;
 		ruler_offset_ = offset_ + ruler_shift_;
-		offset_changed();
+		Q_EMIT offset_changed();
 	}
 }
 
@@ -547,7 +547,7 @@ void View::set_tick_prefix(pv::util::SIPrefix tick_prefix)
 {
 	if (tick_prefix_ != tick_prefix) {
 		tick_prefix_ = tick_prefix;
-		tick_prefix_changed();
+		Q_EMIT tick_prefix_changed();
 	}
 }
 
@@ -560,7 +560,7 @@ void View::set_tick_precision(unsigned tick_precision)
 {
 	if (tick_precision_ != tick_precision) {
 		tick_precision_ = tick_precision;
-		tick_precision_changed();
+		Q_EMIT tick_precision_changed();
 	}
 }
 
@@ -578,7 +578,7 @@ void View::set_tick_period(const pv::util::Timestamp& tick_period)
 {
 	if (tick_period_ != tick_period) {
 		tick_period_ = tick_period;
-		tick_period_changed();
+		Q_EMIT tick_period_changed();
 	}
 }
 
@@ -591,7 +591,7 @@ void View::set_time_unit(pv::util::TimeUnit time_unit)
 {
 	if (time_unit_ != time_unit) {
 		time_unit_ = time_unit;
-		time_unit_changed();
+		Q_EMIT time_unit_changed();
 	}
 }
 
@@ -621,7 +621,7 @@ void View::set_current_segment(uint32_t segment_id)
 
 	viewport_->update();
 
-	segment_changed(segment_id);
+	Q_EMIT segment_changed(segment_id);
 }
 
 bool View::segment_is_selectable() const
@@ -677,7 +677,7 @@ void View::set_segment_display_mode(Trace::SegmentDisplayMode mode)
 
 	viewport_->update();
 
-	segment_display_mode_changed((int)mode, segment_selectable_);
+	Q_EMIT segment_display_mode_changed((int)mode, segment_selectable_);
 }
 
 void View::zoom(double steps)
@@ -695,10 +695,10 @@ void View::zoom_fit(bool gui_state)
 	// Act as one-shot when stopped, toggle along with the GUI otherwise
 	if (session_.get_capture_state() == Session::Stopped) {
 		always_zoom_to_fit_ = false;
-		always_zoom_to_fit_changed(false);
+		Q_EMIT always_zoom_to_fit_changed(false);
 	} else {
 		always_zoom_to_fit_ = gui_state;
-		always_zoom_to_fit_changed(gui_state);
+		Q_EMIT always_zoom_to_fit_changed(gui_state);
 	}
 
 	const pair<Timestamp, Timestamp> extents = get_time_extents();
@@ -724,12 +724,12 @@ void View::set_scale_offset(double scale, const Timestamp& offset)
 
 		if (sticky_scrolling_) {
 			sticky_scrolling_ = false;
-			sticky_scrolling_changed(false);
+			Q_EMIT sticky_scrolling_changed(false);
 		}
 
 		if (always_zoom_to_fit_) {
 			always_zoom_to_fit_ = false;
-			always_zoom_to_fit_changed(false);
+			Q_EMIT always_zoom_to_fit_changed(false);
 		}
 	}
 
@@ -814,7 +814,7 @@ bool View::cursors_shown() const
 void View::show_cursors(bool show)
 {
 	show_cursors_ = show;
-	cursor_state_changed(show);
+	Q_EMIT cursor_state_changed(show);
 	ruler_->update();
 	viewport_->update();
 }
@@ -1043,7 +1043,7 @@ void View::set_zoom(double scale, int offset)
 {
 	// Reset the "always zoom to fit" feature as the user changed the zoom
 	always_zoom_to_fit_ = false;
-	always_zoom_to_fit_changed(false);
+	Q_EMIT always_zoom_to_fit_changed(false);
 
 	const Timestamp cursor_offset = offset_ + scale_ * offset;
 	const Timestamp new_scale = max(min(Timestamp(scale), MaxScale), MinScale);
@@ -1431,7 +1431,7 @@ void View::update_hover_point()
 		r->hover_point_changed(hover_point_);
 
 	// Notify any other listeners
-	hover_point_changed(hover_widget_, hover_point_);
+	Q_EMIT hover_point_changed(hover_widget_, hover_point_);
 }
 
 void View::row_item_appearance_changed(bool label, bool content)
@@ -1489,7 +1489,7 @@ void View::h_scroll_value_changed(int value)
 	// during a running acquisition
 	if (sticky_scrolling_ && (session_.get_capture_state() == Session::Running)) {
 		sticky_scrolling_ = false;
-		sticky_scrolling_changed(false);
+		Q_EMIT sticky_scrolling_changed(false);
 	}
 
 	const int range = scrollarea_->horizontalScrollBar()->maximum();
@@ -1709,7 +1709,7 @@ void View::capture_state_updated(int state)
 		bool state = settings.value(GlobalSettings::Key_View_ZoomToFitDuringAcq).toBool();
 		if (is_main_view_ && state) {
 			always_zoom_to_fit_ = true;
-			always_zoom_to_fit_changed(always_zoom_to_fit_);
+			Q_EMIT always_zoom_to_fit_changed(always_zoom_to_fit_);
 		}
 
 		// Enable sticky scrolling if the setting is enabled
@@ -1730,7 +1730,7 @@ void View::capture_state_updated(int state)
 			// Perform a final zoom-to-fit before disabling
 			zoom_fit(always_zoom_to_fit_);
 			always_zoom_to_fit_ = false;
-			always_zoom_to_fit_changed(always_zoom_to_fit_);
+			Q_EMIT always_zoom_to_fit_changed(always_zoom_to_fit_);
 		}
 
 		bool zoom_to_fit_after_acq =

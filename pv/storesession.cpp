@@ -235,7 +235,7 @@ void StoreSession::store_proc(vector< shared_ptr<data::SignalBase> > achannel_li
 		min(asamples_per_block, lsamples_per_block);
 
 	while (!interrupt_ && sample_count_) {
-		progress_updated();
+		Q_EMIT progress_updated();
 
 		const uint64_t packet_len =
 			min((uint64_t)samples_per_block, sample_count_);
@@ -289,8 +289,8 @@ void StoreSession::store_proc(vector< shared_ptr<data::SignalBase> > achannel_li
 	// Zeroing the progress variables indicates completion
 	units_stored_ = unit_count_ = 0;
 
-	store_successful();
-	progress_updated();
+	Q_EMIT store_successful();
+	Q_EMIT progress_updated();
 
 	output_.reset();
 	output_stream_.close();

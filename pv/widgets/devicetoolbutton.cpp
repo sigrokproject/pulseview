@@ -129,7 +129,7 @@ void DeviceToolButton::on_action(QObject *action)
 	setText(QString::fromStdString(
 		selected_device_->display_name(device_manager_)));
 
-	device_selected();
+	Q_EMIT device_selected();
 }
 
 void DeviceToolButton::on_menu_hovered(QAction *action)
