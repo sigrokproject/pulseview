@@ -87,7 +87,7 @@ if(ANDROID)
 endif()
 
 find_package(PkgConfig)
-pkg_check_modules(LIBSRCXX QUIET ${LIBSR_CXX_BINDING})
+pkg_check_modules(LIBSRCXX ${LIBSR_CXX_BINDING})
 if(NOT LIBSRCXX_FOUND OR NOT LIBSRCXX_VERSION)
 	message(FATAL_ERROR "libsigrok C++ bindings missing, check libsigrok's 'configure' output (missing dependencies?)")
 endif()
