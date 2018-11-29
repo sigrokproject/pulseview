@@ -297,7 +297,7 @@ void AnalogSignal::paint_fore(QPainter &p, ViewItemPaintParams &pp)
 		// and we have corresponding data available
 		if (show_hover_marker_ && !std::isnan(value_at_hover_pos_)) {
 			infotext = QString("[%1] %2 V/div")
-				.arg(format_value_si(value_at_hover_pos_, SIPrefix::unspecified, 0, "V", false))
+				.arg(format_value_si(value_at_hover_pos_, SIPrefix::unspecified, 2, "V", false))
 				.arg(resolution_);
 		} else
 			infotext = QString("%1 V/div").arg(resolution_);
