@@ -35,7 +35,6 @@
 
 #include <boost/algorithm/string/join.hpp>
 
-#include <pv/data/decodesignal.hpp>
 #include <pv/devicemanager.hpp>
 #include <pv/devices/hardwaredevice.hpp>
 #include <pv/devices/inputfile.hpp>
@@ -52,6 +51,7 @@
 #include <pv/widgets/importmenu.hpp>
 #ifdef ENABLE_DECODE
 #include <pv/widgets/decodermenu.hpp>
+#include <pv/data/decodesignal.hpp>
 #endif
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
