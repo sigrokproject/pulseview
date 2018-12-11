@@ -612,13 +612,6 @@ void View::set_current_segment(uint32_t segment_id)
 	for (util::Timestamp timestamp : triggers)
 		trigger_markers_.push_back(make_shared<TriggerMarker>(*this, timestamp));
 
-	// When enabled, the first trigger for this segment is used as the zero position
-	GlobalSettings settings;
-	bool trigger_is_zero_time = settings.value(GlobalSettings::Key_View_TriggerIsZeroTime).toBool();
-
-	if (trigger_is_zero_time && (triggers.size() > 0))
-		set_zero_position(triggers.front());
-
 	viewport_->update();
 
 	segment_changed(segment_id);
@@ -1702,6 +1695,7 @@ void View::capture_state_updated(int state)
 
 		scale_at_acq_start_ = scale_;
 		offset_at_acq_start_ = offset_;
+		ruler_shift_ = 0;
 
 		// Activate "always zoom to fit" if the setting is enabled and we're
 		// the main view of this session (other trace views may be used for
