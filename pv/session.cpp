@@ -982,6 +982,10 @@ void Session::sample_thread_proc(function<void (const QString)> error_handler)
 		error_handler(e.what());
 		set_capture_state(Stopped);
 		return;
+	} catch (QString& e) {
+		error_handler(e);
+		set_capture_state(Stopped);
+		return;
 	}
 
 	set_capture_state(Stopped);
@@ -1162,6 +1166,9 @@ void Session::feed_in_logic(shared_ptr<Logic> logic)
 		qDebug() << "WARNING: Received logic packet with 0 samples.";
 		return;
 	}
+
+	if (logic->unit_size() > 8)
+		throw QString(tr("Can't handle more than 64 logic channels."));
 
 	if (!cur_samplerate_)
 		try {
