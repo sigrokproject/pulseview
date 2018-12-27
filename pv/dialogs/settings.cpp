@@ -744,8 +744,7 @@ void Settings::on_log_saveToFile_clicked(bool checked)
 
 		if (out_stream.status() == QTextStream::Ok) {
 			QMessageBox msg(this);
-			msg.setText(tr("Success"));
-			msg.setInformativeText(tr("Log saved to %1.").arg(file_name));
+			msg.setText(tr("Success") + "\n\n" + tr("Log saved to %1.").arg(file_name));
 			msg.setStandardButtons(QMessageBox::Ok);
 			msg.setIcon(QMessageBox::Information);
 			msg.exec();
@@ -755,8 +754,7 @@ void Settings::on_log_saveToFile_clicked(bool checked)
 	}
 
 	QMessageBox msg(this);
-	msg.setText(tr("Error"));
-	msg.setInformativeText(tr("File %1 could not be written to.").arg(file_name));
+	msg.setText(tr("Error") + "\n\n" + tr("File %1 could not be written to.").arg(file_name));
 	msg.setStandardButtons(QMessageBox::Ok);
 	msg.setIcon(QMessageBox::Warning);
 	msg.exec();

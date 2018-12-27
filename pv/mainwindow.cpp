@@ -95,8 +95,7 @@ void MainWindow::show_session_error(const QString text, const QString info_text)
 	qDebug() << "Notifying user of session error:" << info_text;
 
 	QMessageBox msg;
-	msg.setText(text);
-	msg.setInformativeText(info_text);
+	msg.setText(text + "\n\n" + info_text);
 	msg.setStandardButtons(QMessageBox::Ok);
 	msg.setIcon(QMessageBox::Warning);
 	msg.exec();

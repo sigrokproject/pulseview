@@ -82,8 +82,7 @@ void StoreProgress::show_error()
 	qDebug() << "Error trying to save:" << session_.error();
 
 	QMessageBox msg(parentWidget());
-	msg.setText(tr("Failed to save session."));
-	msg.setInformativeText(session_.error());
+	msg.setText(tr("Failed to save session.") + "\n\n" + session_.error());
 	msg.setStandardButtons(QMessageBox::Ok);
 	msg.setIcon(QMessageBox::Warning);
 	msg.exec();

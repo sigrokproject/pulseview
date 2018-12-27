@@ -556,8 +556,7 @@ void MainBar::commit_sample_count()
 void MainBar::show_session_error(const QString text, const QString info_text)
 {
 	QMessageBox msg(this);
-	msg.setText(text);
-	msg.setInformativeText(info_text);
+	msg.setText(text + "\n\n" + info_text);
 	msg.setStandardButtons(QMessageBox::Ok);
 	msg.setIcon(QMessageBox::Warning);
 	msg.exec();
