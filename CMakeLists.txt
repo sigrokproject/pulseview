@@ -44,6 +44,7 @@ option(DISABLE_WERROR "Build without -Werror" TRUE)
 option(ENABLE_SIGNALS "Build with UNIX signals" TRUE)
 option(ENABLE_STACKTRACE "Enable stack trace when crashing" FALSE)
 option(ENABLE_DECODE "Build with libsigrokdecode" TRUE)
+option(ENABLE_GSTREAMERMM "Build with gstreamermm" TRUE)
 option(ENABLE_TESTS "Enable unit tests" FALSE)
 option(STATIC_PKGDEPS_LIBS "Statically link to (pkg-config) libraries" FALSE)
 
@@ -74,7 +75,10 @@ add_subdirectory(manual)
 
 list(APPEND PKGDEPS glib-2.0>=2.28.0)
 list(APPEND PKGDEPS glibmm-2.4>=2.28.0)
-list(APPEND PKGDEPS gstreamermm-1.0>=1.8.0)
+
+if(ENABLE_GSTREAMERMM)
+	list(APPEND PKGDEPS gstreamermm-1.0>=1.8.0)
+endif()
 
 set(LIBSR_CXX_BINDING "libsigrokcxx>=0.5.1")
 list(APPEND PKGDEPS "${LIBSR_CXX_BINDING}")
@@ -414,6 +418,10 @@ add_definitions(-D__STDC_LIMIT_MACROS)
 add_definitions(-Wall -Wextra)
 add_definitions(-std=c++11)
 add_definitions(-DBOOST_MATH_DISABLE_FLOAT128=1)
+
+if(ENABLE_GSTREAMERMM)
+	add_definitions(-DENABLE_GSTREAMERMM)
+endif()
 
 if(ENABLE_DECODE)
 	add_definitions(-DENABLE_DECODE)

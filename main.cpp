@@ -26,7 +26,9 @@
 #include <getopt.h>
 #include <vector>
 
+#ifdef ENABLE_GSTREAMERMM
 #include <gstreamermm.h>
+#endif
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
 
@@ -171,8 +173,10 @@ int main(int argc, char *argv[])
 	bool do_scan = true;
 	bool show_version = false;
 
+#ifdef ENABLE_GSTREAMERMM
 	// Initialise gstreamermm. Must be called before any other GLib stuff.
 	Gst::init();
+#endif
 
 	Application a(argc, argv);
 
