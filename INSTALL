@@ -15,6 +15,7 @@ Requirements
  - cmake >= 2.8.12
  - libglib >= 2.28.0
  - glibmm-2.4 (>= 2.28.0)
+ - gstreamermm-1.0 (>= 1.8.0)
  - Qt5 (including the following components):
     - Qt5Core, Qt5Gui, Qt5Widgets, Qt5Svg
  - libboost >= 1.55 (including the following libs):

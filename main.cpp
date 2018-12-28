@@ -26,6 +26,8 @@
 #include <getopt.h>
 #include <vector>
 
+#include <gstreamermm.h>
+
 #include <libsigrokcxx/libsigrokcxx.hpp>
 
 #include <QCheckBox>
@@ -168,6 +170,9 @@ int main(int argc, char *argv[])
 	bool restore_sessions = true;
 	bool do_scan = true;
 	bool show_version = false;
+
+	// Initialise gstreamermm. Must be called before any other GLib stuff.
+	Gst::init();
 
 	Application a(argc, argv);
 
