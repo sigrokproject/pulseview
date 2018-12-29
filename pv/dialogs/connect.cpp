@@ -82,8 +82,23 @@ Connect::Connect(QWidget *parent, pv::DeviceManager &device_manager) :
 
 	radiobtn_usb->setChecked(true);
 
+	serial_config_ = new QWidget();
+	QHBoxLayout *serial_config_layout = new QHBoxLayout(serial_config_);
+
 	serial_devices_.setEditable(true);
-	serial_devices_.setEnabled(false);
+	serial_devices_.setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+
+	serial_baudrate_.setEditable(true);
+	serial_baudrate_.addItem("");
+	serial_baudrate_.addItem("921600");
+	serial_baudrate_.addItem("115200");
+	serial_baudrate_.addItem("57600");
+	serial_baudrate_.addItem("19200");
+	serial_baudrate_.addItem("9600");
+
+	serial_config_layout->addWidget(&serial_devices_);
+	serial_config_layout->addWidget(&serial_baudrate_);
+	serial_config_layout->addWidget(new QLabel("baud"));
 
 	tcp_config_ = new QWidget();
 	QHBoxLayout *tcp_config_layout = new QHBoxLayout(tcp_config_);
@@ -111,7 +126,7 @@ Connect::Connect(QWidget *parent, pv::DeviceManager &device_manager) :
 	QVBoxLayout *vbox_if = new QVBoxLayout;
 	vbox_if->addWidget(radiobtn_usb);
 	vbox_if->addWidget(radiobtn_serial);
-	vbox_if->addWidget(&serial_devices_);
+	vbox_if->addWidget(serial_config_);
 	vbox_if->addWidget(radiobtn_tcp);
 	vbox_if->addWidget(tcp_config_);
 
@@ -194,6 +209,7 @@ void Connect::unset_connection()
 void Connect::serial_toggled(bool checked)
 {
 	serial_devices_.setEnabled(checked);
+	serial_baudrate_.setEnabled(checked);
 }
 
 void Connect::tcp_toggled(bool checked)
@@ -216,7 +232,7 @@ void Connect::scan_pressed()
 
 	map<const ConfigKey *, VariantBase> drvopts;
 
-	if (serial_devices_.isEnabled()) {
+	if (serial_config_->isEnabled()) {
 		QString serial;
 		const int index = serial_devices_.currentIndex();
 		if (index >= 0 && index < serial_devices_.count() &&
@@ -224,8 +240,14 @@ void Connect::scan_pressed()
 			serial = serial_devices_.itemData(index).toString();
 		else
 			serial = serial_devices_.currentText();
+
 		drvopts[ConfigKey::CONN] = Variant<ustring>::create(
 			serial.toUtf8().constData());
+
+		// Set baud rate if specified
+		if (serial_baudrate_.currentText().length() > 0)
+			drvopts[ConfigKey::SERIALCOMM] = Variant<ustring>::create(
+				QString("%1/8n1").arg(serial_baudrate_.currentText()).toUtf8().constData());
 	}
 
 	if (tcp_config_->isEnabled()) {
