@@ -52,6 +52,11 @@
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
 
+#ifdef ENABLE_FLOW
+#include <gstreamermm.h>
+#include <libsigrokflow/libsigrokflow.hpp>
+#endif
+
 #ifdef ENABLE_DECODE
 #include <libsigrokdecode/libsigrokdecode.h>
 #include "data/decodesignal.hpp"
@@ -74,6 +79,9 @@ using std::recursive_mutex;
 using std::runtime_error;
 using std::shared_ptr;
 using std::string;
+#ifdef ENABLE_FLOW
+using std::unique_lock;
+#endif
 using std::unique_ptr;
 using std::unordered_set;
 using std::vector;
@@ -90,6 +98,12 @@ using sigrok::Packet;
 using sigrok::Session;
 
 using Glib::VariantBase;
+
+#ifdef ENABLE_FLOW
+using Gst::Bus;
+using Gst::ElementFactory;
+using Gst::Pipeline;
+#endif
 
 namespace pv {
 
@@ -947,6 +961,35 @@ void Session::sample_thread_proc(function<void (const QString)> error_handler)
 {
 	assert(error_handler);
 
+#ifdef ENABLE_FLOW
+	pipeline_ = Pipeline::create();
+
+	source_ = ElementFactory::create_element("filesrc", "source");
+	sink_ = RefPtr<AppSink>::cast_dynamic(ElementFactory::create_element("appsink", "sink"));
+
+	pipeline_->add(source_)->add(sink_);
+	source_->link(sink_);
+
+	source_->set_property("location", Glib::ustring("/tmp/dummy_binary"));
+
+	sink_->set_property("emit-signals", TRUE);
+	sink_->signal_new_sample().connect(sigc::mem_fun(*this, &Session::on_gst_new_sample));
+
+	// Get the bus from the pipeline and add a bus watch to the default main context
+	RefPtr<Bus> bus = pipeline_->get_bus();
+	bus->add_watch(sigc::mem_fun(this, &Session::on_gst_bus_message));
+
+	// Start pipeline and Wait until it finished processing
+	pipeline_done_interrupt_ = false;
+	pipeline_->set_state(Gst::STATE_PLAYING);
+
+	unique_lock<mutex> pipeline_done_lock_(pipeline_done_mutex_);
+	pipeline_done_cond_.wait(pipeline_done_lock_);
+
+	// Let the pipeline free all resources
+	pipeline_->set_state(Gst::STATE_NULL);
+
+#else
 	if (!device_)
 		return;
 
@@ -993,6 +1036,7 @@ void Session::sample_thread_proc(function<void (const QString)> error_handler)
 	// Confirm that SR_DF_END was received
 	if (cur_logic_segment_)
 		qDebug() << "WARNING: SR_DF_END was not received.";
+#endif
 
 	// Optimize memory usage
 	free_unused_memory();
@@ -1068,6 +1112,49 @@ void Session::signal_segment_completed()
 	if (segment_id >= 0)
 		segment_completed(segment_id);
 }
+
+#ifdef ENABLE_FLOW
+bool Session::on_gst_bus_message(const Glib::RefPtr<Gst::Bus>& bus, const Glib::RefPtr<Gst::Message>& message)
+{
+	(void)bus;
+
+	if ((message->get_source() == pipeline_) && \
+		((message->get_message_type() == Gst::MESSAGE_EOS)))
+		pipeline_done_cond_.notify_one();
+
+	// TODO Also evaluate MESSAGE_STREAM_STATUS to receive error notifications
+
+	return true;
+}
+
+Gst::FlowReturn Session::on_gst_new_sample()
+{
+	RefPtr<Gst::Sample> sample = sink_->pull_sample();
+	RefPtr<Gst::Buffer> buf = sample->get_buffer();
+
+	for (uint32_t block_id = 0; block_id < buf->n_memory(); block_id++) {
+		RefPtr<Gst::Memory> buf_mem = buf->get_memory(block_id);
+		Gst::MapInfo mapinfo;
+		buf_mem->map(mapinfo, Gst::MAP_READ);
+
+		shared_ptr<sigrok::Packet> logic_packet =
+			sr_context->create_logic_packet(mapinfo.get_data(), buf->get_size(), 1);
+
+		try {
+			feed_in_logic(dynamic_pointer_cast<sigrok::Logic>(logic_packet->payload()));
+		} catch (bad_alloc&) {
+			out_of_memory_ = true;
+			device_->stop();
+			buf_mem->unmap(mapinfo);
+			return Gst::FLOW_ERROR;
+		}
+
+		buf_mem->unmap(mapinfo);
+	}
+
+	return Gst::FLOW_OK;
+}
+#endif
 
 void Session::feed_in_header()
 {

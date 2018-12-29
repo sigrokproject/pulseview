@@ -20,6 +20,11 @@
 #ifndef PULSEVIEW_PV_SESSION_HPP
 #define PULSEVIEW_PV_SESSION_HPP
 
+#ifdef ENABLE_FLOW
+#include <atomic>
+#include <condition_variable>
+#endif
+
 #include <functional>
 #include <map>
 #include <memory>
@@ -34,8 +39,14 @@
 #include <QSettings>
 #include <QString>
 
+#ifdef ENABLE_FLOW
+#include <gstreamermm.h>
+#include <libsigrokflow/libsigrokflow.hpp>
+#endif
+
 #include "util.hpp"
 #include "views/viewbase.hpp"
+
 
 using std::function;
 using std::list;
@@ -45,6 +56,13 @@ using std::recursive_mutex;
 using std::shared_ptr;
 using std::string;
 using std::unordered_set;
+
+#ifdef ENABLE_FLOW
+using Glib::RefPtr;
+using Gst::AppSink;
+using Gst::Element;
+using Gst::Pipeline;
+#endif
 
 struct srd_decoder;
 struct srd_channel;
@@ -203,6 +221,12 @@ private:
 	void signal_new_segment();
 	void signal_segment_completed();
 
+#ifdef ENABLE_FLOW
+	bool on_gst_bus_message(const Glib::RefPtr<Gst::Bus>& bus, const Glib::RefPtr<Gst::Message>& message);
+
+	Gst::FlowReturn on_gst_new_sample();
+#endif
+
 	void feed_in_header();
 
 	void feed_in_meta(shared_ptr<sigrok::Meta> meta);
@@ -272,6 +296,16 @@ private:
 	bool out_of_memory_;
 	bool data_saved_;
 	bool frame_began_;
+
+#ifdef ENABLE_FLOW
+	RefPtr<Pipeline> pipeline_;
+	RefPtr<Element> source_;
+	RefPtr<AppSink> sink_;
+
+	mutable mutex pipeline_done_mutex_;
+	mutable condition_variable pipeline_done_cond_;
+	atomic<bool> pipeline_done_interrupt_;
+#endif
 };
 
 } // namespace pv
