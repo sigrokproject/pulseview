@@ -28,6 +28,7 @@
 
 #ifdef ENABLE_GSTREAMERMM
 #include <gstreamermm.h>
+#include <libsigrokflow/libsigrokflow.hpp>
 #endif
 
 #include <libsigrokcxx/libsigrokcxx.hpp>

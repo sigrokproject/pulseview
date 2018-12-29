@@ -78,6 +78,7 @@ list(APPEND PKGDEPS glibmm-2.4>=2.28.0)
 
 if(ENABLE_GSTREAMERMM)
 	list(APPEND PKGDEPS gstreamermm-1.0>=1.8.0)
+	list(APPEND PKGDEPS libsigrokflow>=0.1.0)
 endif()
 
 set(LIBSR_CXX_BINDING "libsigrokcxx>=0.5.1")
