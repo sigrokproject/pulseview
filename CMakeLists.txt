@@ -534,7 +534,7 @@ install(FILES icons/pulseview.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons
 install(FILES icons/pulseview.svg DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/scalable/apps)
 
 # Generate Windows installer script.
-configure_file(contrib/pulseview_cross.nsi.in contrib/pulseview_cross.nsi @ONLY)
+configure_file(contrib/pulseview_cross.nsi.in ${CMAKE_CURRENT_BINARY_DIR}/contrib/pulseview_cross.nsi @ONLY)
 
 #===============================================================================
 #= Packaging (handled by CPack)
