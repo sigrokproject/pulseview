@@ -44,7 +44,7 @@ option(DISABLE_WERROR "Build without -Werror" TRUE)
 option(ENABLE_SIGNALS "Build with UNIX signals" TRUE)
 option(ENABLE_STACKTRACE "Enable stack trace when crashing" FALSE)
 option(ENABLE_DECODE "Build with libsigrokdecode" TRUE)
-option(ENABLE_FLOW "Build with libsigrokflow" TRUE)
+option(ENABLE_FLOW "Build with libsigrokflow" FALSE)
 option(ENABLE_TESTS "Enable unit tests" FALSE)
 option(STATIC_PKGDEPS_LIBS "Statically link to (pkg-config) libraries" FALSE)
 
