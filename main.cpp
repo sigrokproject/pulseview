@@ -26,7 +26,7 @@
 #include <getopt.h>
 #include <vector>
 
-#ifdef ENABLE_GSTREAMERMM
+#ifdef ENABLE_FLOW
 #include <gstreamermm.h>
 #include <libsigrokflow/libsigrokflow.hpp>
 #endif
@@ -174,7 +174,7 @@ int main(int argc, char *argv[])
 	bool do_scan = true;
 	bool show_version = false;
 
-#ifdef ENABLE_GSTREAMERMM
+#ifdef ENABLE_FLOW
 	// Initialise gstreamermm. Must be called before any other GLib stuff.
 	Gst::init();
 #endif
