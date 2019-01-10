@@ -177,6 +177,9 @@ int main(int argc, char *argv[])
 #ifdef ENABLE_FLOW
 	// Initialise gstreamermm. Must be called before any other GLib stuff.
 	Gst::init();
+
+	// Initialize libsigrokflow. Must be called after Gst::init().
+	Srf::init();
 #endif
 
 	Application a(argc, argv);
