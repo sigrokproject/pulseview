@@ -411,7 +411,7 @@ void Trace::on_create_marker_here() const
 	const Ruler *ruler = view->ruler();
 	QPoint p = ruler->mapFrom(view, QPoint(context_menu_x_pos_, 0));
 
-	view->add_flag(ruler->get_time_from_x_pos(p.x()));
+	view->add_flag(ruler->get_absolute_time_from_x_pos(p.x()));
 }
 
 } // namespace trace

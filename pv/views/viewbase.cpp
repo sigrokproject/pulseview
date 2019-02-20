@@ -57,7 +57,6 @@ ViewBase::ViewBase(Session &session, bool is_main_view, QWidget *parent) :
 
 void ViewBase::reset_view_state()
 {
-	ruler_shift_ = 0;
 	current_segment_ = 0;
 }
 

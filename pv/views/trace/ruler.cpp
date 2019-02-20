@@ -114,7 +114,12 @@ QString Ruler::format_time_with_distance(
 		return pv::util::format_time_minutes(t, precision, sign);
 }
 
-pv::util::Timestamp Ruler::get_time_from_x_pos(uint32_t x) const
+pv::util::Timestamp Ruler::get_absolute_time_from_x_pos(uint32_t x) const
+{
+	return view_.offset() + ((double)x + 0.5) * view_.scale();
+}
+
+pv::util::Timestamp Ruler::get_ruler_time_from_x_pos(uint32_t x) const
 {
 	return view_.ruler_offset() + ((double)x + 0.5) * view_.scale();
 }
@@ -177,7 +182,7 @@ shared_ptr<ViewItem> Ruler::get_mouse_over_item(const QPoint &pt)
 
 void Ruler::mouseDoubleClickEvent(QMouseEvent *event)
 {
-	view_.add_flag(get_time_from_x_pos(event->x()));
+	view_.add_flag(get_ruler_time_from_x_pos(event->x()));
 }
 
 void Ruler::paintEvent(QPaintEvent*)
@@ -330,12 +335,12 @@ void Ruler::invalidate_tick_position_cache()
 
 void Ruler::on_createMarker()
 {
-	view_.add_flag(get_time_from_x_pos(mouse_down_point_.x()));
+	view_.add_flag(get_absolute_time_from_x_pos(mouse_down_point_.x()));
 }
 
 void Ruler::on_setZeroPosition()
 {
-	view_.set_zero_position(get_time_from_x_pos(mouse_down_point_.x()));
+	view_.set_zero_position(get_absolute_time_from_x_pos(mouse_down_point_.x()));
 }
 
 void Ruler::on_toggleHoverMarker()

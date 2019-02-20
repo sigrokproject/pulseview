@@ -365,12 +365,6 @@ void View::save_settings(QSettings &settings) const
 	{
 		stringstream ss;
 		boost::archive::text_oarchive oa(ss);
-		oa << boost::serialization::make_nvp("ruler_shift", ruler_shift_);
-		settings.setValue("ruler_shift", QString::fromStdString(ss.str()));
-	}
-	{
-		stringstream ss;
-		boost::archive::text_oarchive oa(ss);
 		oa << boost::serialization::make_nvp("offset", offset_);
 		settings.setValue("offset", QString::fromStdString(ss.str()));
 	}
@@ -389,20 +383,6 @@ void View::restore_settings(QSettings &settings)
 
 	if (settings.contains("scale"))
 		set_scale(settings.value("scale").toDouble());
-
-	if (settings.contains("ruler_shift")) {
-		util::Timestamp shift;
-		stringstream ss;
-		ss << settings.value("ruler_shift").toString().toStdString();
-
-		try {
-			boost::archive::text_iarchive ia(ss);
-			ia >> boost::serialization::make_nvp("ruler_shift", shift);
-			ruler_shift_ = shift;
-		} catch (boost::archive::archive_exception&) {
-			qDebug() << "Could not restore the view ruler shift";
-		}
-	}
 
 	if (settings.contains("offset")) {
 		util::Timestamp offset;
@@ -480,7 +460,7 @@ void View::set_offset(const pv::util::Timestamp& offset, bool force_update)
 {
 	if ((offset_ != offset) || force_update) {
 		offset_ = offset;
-		ruler_offset_ = offset_ + ruler_shift_;
+		ruler_offset_ = offset_ + zero_offset_;
 		offset_changed();
 	}
 }
@@ -497,10 +477,7 @@ const Timestamp& View::ruler_offset() const
 
 void View::set_zero_position(const pv::util::Timestamp& position)
 {
-	// ruler shift is a negative offset and the new zero position is relative
-	// to the current offset. Hence, we adjust the ruler shift only by the
-	// difference.
-	ruler_shift_ = -(position + (-ruler_shift_));
+	zero_offset_ = -position;
 
 	// Force an immediate update of the offsets
 	set_offset(offset_, true);
@@ -509,7 +486,7 @@ void View::set_zero_position(const pv::util::Timestamp& position)
 
 void View::reset_zero_position()
 {
-	ruler_shift_ = 0;
+	zero_offset_ = 0;
 
 	// Force an immediate update of the offsets
 	set_offset(offset_, true);
@@ -1699,6 +1676,7 @@ void View::capture_state_updated(int state)
 		set_time_unit(util::TimeUnit::Samples);
 
 		trigger_markers_.clear();
+		set_zero_position(0);
 
 		scale_at_acq_start_ = scale_;
 		offset_at_acq_start_ = offset_;

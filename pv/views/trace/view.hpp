@@ -507,6 +507,8 @@ private:
 	pv::util::Timestamp offset_;
 	/// The ruler version of the time offset in seconds.
 	pv::util::Timestamp ruler_offset_;
+	/// The offset of the zero point in seconds.
+	pv::util::Timestamp zero_offset_;
 
 	bool updating_scroll_;
 	bool settings_restored_;
