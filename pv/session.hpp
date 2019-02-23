@@ -151,7 +151,11 @@ public:
 	 */
 	bool data_saved() const;
 
+	void save_setup(QSettings &settings) const;
+
 	void save_settings(QSettings &settings) const;
+
+	void restore_setup(QSettings &settings);
 
 	void restore_settings(QSettings &settings);
 

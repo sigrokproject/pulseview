@@ -187,11 +187,49 @@ bool Session::data_saved() const
 	return data_saved_;
 }
 
+void Session::save_setup(QSettings &settings) const
+{
+	int decode_signals = 0, views = 0;
+
+	// Save channels and decoders
+	for (const shared_ptr<data::SignalBase>& base : signalbases_) {
+#ifdef ENABLE_DECODE
+		if (base->is_decode_signal()) {
+			settings.beginGroup("decode_signal" + QString::number(decode_signals++));
+			base->save_settings(settings);
+			settings.endGroup();
+		} else
+#endif
+		{
+			settings.beginGroup(base->internal_name());
+			base->save_settings(settings);
+			settings.endGroup();
+		}
+	}
+
+	settings.setValue("decode_signals", decode_signals);
+
+	// Save view states and their signal settings
+	// Note: main_view must be saved as view0
+	settings.beginGroup("view" + QString::number(views++));
+	main_view_->save_settings(settings);
+	settings.endGroup();
+
+	for (const shared_ptr<views::ViewBase>& view : views_) {
+		if (view != main_view_) {
+			settings.beginGroup("view" + QString::number(views++));
+			view->save_settings(settings);
+			settings.endGroup();
+		}
+	}
+
+	settings.setValue("views", views);
+}
+
 void Session::save_settings(QSettings &settings) const
 {
 	map<string, string> dev_info;
 	list<string> key_list;
-	int decode_signals = 0, views = 0;
 
 	if (device_) {
 		shared_ptr<devices::HardwareDevice> hw_device =
@@ -241,39 +279,45 @@ void Session::save_settings(QSettings &settings) const
 			settings.endGroup();
 		}
 
-		// Save channels and decoders
-		for (const shared_ptr<data::SignalBase>& base : signalbases_) {
-#ifdef ENABLE_DECODE
-			if (base->is_decode_signal()) {
-				settings.beginGroup("decode_signal" + QString::number(decode_signals++));
-				base->save_settings(settings);
-				settings.endGroup();
-			} else
-#endif
-			{
-				settings.beginGroup(base->internal_name());
-				base->save_settings(settings);
-				settings.endGroup();
-			}
-		}
+		save_setup(settings);
+	}
+}
 
-		settings.setValue("decode_signals", decode_signals);
-
-		// Save view states and their signal settings
-		// Note: main_view must be saved as view0
-		settings.beginGroup("view" + QString::number(views++));
-		main_view_->save_settings(settings);
+void Session::restore_setup(QSettings &settings)
+{
+	// Restore channels
+	for (shared_ptr<data::SignalBase> base : signalbases_) {
+		settings.beginGroup(base->internal_name());
+		base->restore_settings(settings);
 		settings.endGroup();
+	}
 
-		for (const shared_ptr<views::ViewBase>& view : views_) {
-			if (view != main_view_) {
-				settings.beginGroup("view" + QString::number(views++));
-				view->save_settings(settings);
-				settings.endGroup();
-			}
-		}
+	// Restore decoders
+#ifdef ENABLE_DECODE
+	int decode_signals = settings.value("decode_signals").toInt();
 
-		settings.setValue("views", views);
+	for (int i = 0; i < decode_signals; i++) {
+		settings.beginGroup("decode_signal" + QString::number(i));
+		shared_ptr<data::DecodeSignal> signal = add_decode_signal();
+		signal->restore_settings(settings);
+		settings.endGroup();
+	}
+#endif
+
+	// Restore views
+	int views = settings.value("views").toInt();
+
+	for (int i = 0; i < views; i++) {
+		settings.beginGroup("view" + QString::number(i));
+
+		if (i > 0) {
+			views::ViewType type = (views::ViewType)settings.value("type").toInt();
+			add_view(name_, type, this);
+			views_.back()->restore_settings(settings);
+		} else
+			main_view_->restore_settings(settings);
+
+		settings.endGroup();
 	}
 }
 
@@ -345,42 +389,8 @@ void Session::restore_settings(QSettings &settings)
 		}
 	}
 
-	if (device) {
-		// Restore channels
-		for (shared_ptr<data::SignalBase> base : signalbases_) {
-			settings.beginGroup(base->internal_name());
-			base->restore_settings(settings);
-			settings.endGroup();
-		}
-
-		// Restore decoders
-#ifdef ENABLE_DECODE
-		int decode_signals = settings.value("decode_signals").toInt();
-
-		for (int i = 0; i < decode_signals; i++) {
-			settings.beginGroup("decode_signal" + QString::number(i));
-			shared_ptr<data::DecodeSignal> signal = add_decode_signal();
-			signal->restore_settings(settings);
-			settings.endGroup();
-		}
-#endif
-
-		// Restore views
-		int views = settings.value("views").toInt();
-
-		for (int i = 0; i < views; i++) {
-			settings.beginGroup("view" + QString::number(i));
-
-			if (i > 0) {
-				views::ViewType type = (views::ViewType)settings.value("type").toInt();
-				add_view(name_, type, this);
-				views_.back()->restore_settings(settings);
-			} else
-				main_view_->restore_settings(settings);
-
-			settings.endGroup();
-		}
-	}
+	if (device)
+		restore_setup(settings);
 }
 
 void Session::select_device(shared_ptr<devices::Device> device)

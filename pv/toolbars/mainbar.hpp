@@ -98,6 +98,8 @@ public:
 	QAction* action_open() const;
 	QAction* action_save_as() const;
 	QAction* action_save_selection_as() const;
+	QAction* action_restore_setup() const;
+	QAction* action_save_setup() const;
 	QAction* action_connect() const;
 
 private:
@@ -118,6 +120,8 @@ private:
 	QAction *const action_open_;
 	QAction *const action_save_as_;
 	QAction *const action_save_selection_as_;
+	QAction *const action_restore_setup_;
+	QAction *const action_save_setup_;
 	QAction *const action_connect_;
 
 private Q_SLOTS:
@@ -142,6 +146,9 @@ private Q_SLOTS:
 	void on_actionOpen_triggered();
 	void on_actionSaveAs_triggered();
 	void on_actionSaveSelectionAs_triggered();
+
+	void on_actionSaveSetup_triggered();
+	void on_actionRestoreSetup_triggered();
 
 	void on_actionConnect_triggered();
 

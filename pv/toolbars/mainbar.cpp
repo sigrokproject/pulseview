@@ -93,6 +93,8 @@ MainBar::MainBar(Session &session, QWidget *parent, pv::views::trace::View *view
 	action_open_(new QAction(this)),
 	action_save_as_(new QAction(this)),
 	action_save_selection_as_(new QAction(this)),
+	action_restore_setup_(new QAction(this)),
+	action_save_setup_(new QAction(this)),
 	action_connect_(new QAction(this)),
 	open_button_(new QToolButton()),
 	save_button_(new QToolButton()),
@@ -129,6 +131,10 @@ MainBar::MainBar(Session &session, QWidget *parent, pv::views::trace::View *view
 	connect(action_open_, SIGNAL(triggered(bool)),
 		this, SLOT(on_actionOpen_triggered()));
 
+	action_restore_setup_->setText(tr("Restore Session Setu&p..."));
+	connect(action_restore_setup_, SIGNAL(triggered(bool)),
+		this, SLOT(on_actionRestoreSetup_triggered()));
+
 	action_save_as_->setText(tr("&Save As..."));
 	action_save_as_->setIcon(QIcon::fromTheme("document-save-as",
 		QIcon(":/icons/document-save-as.png")));
@@ -142,6 +148,10 @@ MainBar::MainBar(Session &session, QWidget *parent, pv::views::trace::View *view
 	action_save_selection_as_->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_R));
 	connect(action_save_selection_as_, SIGNAL(triggered(bool)),
 		this, SLOT(on_actionSaveSelectionAs_triggered()));
+
+	action_save_setup_->setText(tr("Save Session Setu&p..."));
+	connect(action_save_setup_, SIGNAL(triggered(bool)),
+		this, SLOT(on_actionSaveSetup_triggered()));
 
 	widgets::ExportMenu *menu_file_export = new widgets::ExportMenu(this,
 		session.device_manager().context());
@@ -160,8 +170,15 @@ MainBar::MainBar(Session &session, QWidget *parent, pv::views::trace::View *view
 		this, SLOT(on_actionConnect_triggered()));
 
 	// Open button
+	vector<QAction*> open_actions;
+	open_actions.push_back(action_open_);
+	QAction* separator_o = new QAction(this);
+	separator_o->setSeparator(true);
+	open_actions.push_back(separator_o);
+	open_actions.push_back(action_restore_setup_);
+
 	widgets::ImportMenu *import_menu = new widgets::ImportMenu(this,
-		session.device_manager().context(), action_open_);
+		session.device_manager().context(), open_actions);
 	connect(import_menu, SIGNAL(format_selected(shared_ptr<sigrok::InputFormat>)),
 		this, SLOT(import_file(shared_ptr<sigrok::InputFormat>)));
 
@@ -170,12 +187,16 @@ MainBar::MainBar(Session &session, QWidget *parent, pv::views::trace::View *view
 	open_button_->setPopupMode(QToolButton::MenuButtonPopup);
 
 	// Save button
-	vector<QAction*> open_actions;
-	open_actions.push_back(action_save_as_);
-	open_actions.push_back(action_save_selection_as_);
+	vector<QAction*> save_actions;
+	save_actions.push_back(action_save_as_);
+	save_actions.push_back(action_save_selection_as_);
+	QAction* separator_s = new QAction(this);
+	separator_s->setSeparator(true);
+	save_actions.push_back(separator_s);
+	save_actions.push_back(action_save_setup_);
 
 	widgets::ExportMenu *export_menu = new widgets::ExportMenu(this,
-		session.device_manager().context(), open_actions);
+		session.device_manager().context(), save_actions);
 	connect(export_menu, SIGNAL(format_selected(shared_ptr<sigrok::OutputFormat>)),
 		this, SLOT(export_file(shared_ptr<sigrok::OutputFormat>)));
 
@@ -781,6 +802,40 @@ void MainBar::on_actionSaveAs_triggered()
 void MainBar::on_actionSaveSelectionAs_triggered()
 {
 	export_file(session_.device_manager().context()->output_formats()["srzip"], true);
+}
+
+void MainBar::on_actionSaveSetup_triggered()
+{
+	QSettings settings;
+	const QString dir = settings.value(SettingSaveDirectory).toString();
+
+	const QString file_name = QFileDialog::getSaveFileName(
+		this, tr("Save File"), dir, tr(
+				"PulseView Session Setups (*.pvs);;"
+				"All Files (*)"));
+
+	if (file_name.isEmpty())
+		return;
+
+	QSettings settings_storage(file_name, QSettings::IniFormat);
+	session_.save_setup(settings_storage);
+}
+
+void MainBar::on_actionRestoreSetup_triggered()
+{
+	QSettings settings;
+	const QString dir = settings.value(SettingSaveDirectory).toString();
+
+	const QString file_name = QFileDialog::getOpenFileName(
+		this, tr("Open File"), dir, tr(
+				"PulseView Session Setups (*.pvs);;"
+				"All Files (*)"));
+
+	if (file_name.isEmpty())
+		return;
+
+	QSettings settings_storage(file_name, QSettings::IniFormat);
+	session_.restore_setup(settings_storage);
 }
 
 void MainBar::on_actionConnect_triggered()
