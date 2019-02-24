@@ -582,6 +582,15 @@ void Session::load_file(QString file_name,
 		return;
 	}
 
+	// Auto-load the setup if one exists
+	QString setup_file_name = file_name;
+	setup_file_name.truncate(setup_file_name.lastIndexOf('.'));
+	setup_file_name.append(".pvs");
+	if (QFileInfo::exists(setup_file_name) && QFileInfo(setup_file_name).isReadable()) {
+		QSettings settings_storage(setup_file_name, QSettings::IniFormat);
+		restore_setup(settings_storage);
+	}
+
 	main_bar_->update_device_list();
 
 	start_capture([&, errorMessage](QString infoMessage) {

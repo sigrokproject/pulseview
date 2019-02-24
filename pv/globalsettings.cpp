@@ -44,6 +44,7 @@ const vector< pair<QString, QString> > Themes {
 
 const QString GlobalSettings::Key_General_Theme = "General_Theme";
 const QString GlobalSettings::Key_General_Style = "General_Style";
+const QString GlobalSettings::Key_General_SaveWithSetup = "General_SaveWithSetup";
 const QString GlobalSettings::Key_View_ZoomToFitDuringAcq = "View_ZoomToFitDuringAcq";
 const QString GlobalSettings::Key_View_ZoomToFitAfterAcq = "View_ZoomToFitAfterAcq";
 const QString GlobalSettings::Key_View_TriggerIsZeroTime = "View_TriggerIsZeroTime";
@@ -93,6 +94,10 @@ void GlobalSettings::set_defaults_where_needed()
 		setValue(Key_General_Theme, 0);
 	if (!contains(Key_General_Style))
 		setValue(Key_General_Style, "");
+
+	// Save setup with .sr files by default
+	if (!contains(Key_General_SaveWithSetup))
+		setValue(Key_General_SaveWithSetup, true);
 
 	// Enable zoom-to-fit after acquisition by default
 	if (!contains(Key_View_ZoomToFitAfterAcq))

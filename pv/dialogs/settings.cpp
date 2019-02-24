@@ -204,6 +204,7 @@ QPlainTextEdit *Settings::create_log_view() const
 QWidget *Settings::get_general_settings_form(QWidget *parent) const
 {
 	GlobalSettings settings;
+	QCheckBox *cb;
 
 	QWidget *form = new QWidget(parent);
 	QVBoxLayout *form_layout = new QVBoxLayout(form);
@@ -248,6 +249,10 @@ QWidget *Settings::get_general_settings_form(QWidget *parent) const
 	QLabel *description_2 = new QLabel(tr("(Dark themes look best with the Fusion style)"));
 	description_2->setAlignment(Qt::AlignRight);
 	general_layout->addRow(description_2);
+
+	cb = create_checkbox(GlobalSettings::Key_General_SaveWithSetup,
+		SLOT(on_general_save_with_setup_changed(int)));
+	general_layout->addRow(tr("Save session &setup along with .sr file"), cb);
 
 	return form;
 }
@@ -610,6 +615,12 @@ void Settings::on_general_style_changed(int state)
 			QStyleFactory::keys().at(state - 1));
 
 	settings.apply_theme();
+}
+
+void Settings::on_general_save_with_setup_changed(int state)
+{
+	GlobalSettings settings;
+	settings.setValue(GlobalSettings::Key_General_SaveWithSetup, state ? true : false);
 }
 
 void Settings::on_view_zoomToFitDuringAcq_changed(int state)

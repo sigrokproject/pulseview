@@ -21,6 +21,8 @@
 
 #include "storesession.hpp"
 
+#include <QSettings>
+
 #include <pv/data/analog.hpp>
 #include <pv/data/analogsegment.hpp>
 #include <pv/data/logic.hpp>
@@ -28,6 +30,7 @@
 #include <pv/data/signalbase.hpp>
 #include <pv/devicemanager.hpp>
 #include <pv/devices/device.hpp>
+#include <pv/globalsettings.hpp>
 #include <pv/session.hpp>
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
@@ -189,6 +192,20 @@ bool StoreSession::start()
 
 	thread_ = std::thread(&StoreSession::store_proc, this,
 		achannel_list, asegment_list, lsegment);
+
+	// Save session setup if we're saving to srzip and the user wants it
+	GlobalSettings settings;
+	bool save_with_setup = settings.value(GlobalSettings::Key_General_SaveWithSetup).toBool();
+
+	if ((output_format_->name() == "srzip") && (save_with_setup)) {
+		QString setup_file_name = QString::fromStdString(file_name_);
+		setup_file_name.truncate(setup_file_name.lastIndexOf('.'));
+		setup_file_name.append(".pvs");
+
+		QSettings settings_storage(setup_file_name, QSettings::IniFormat);
+		session_.save_setup(settings_storage);
+	}
+
 	return true;
 }
 

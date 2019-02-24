@@ -60,6 +60,7 @@ private Q_SLOTS:
 	void on_page_changed(QListWidgetItem *current, QListWidgetItem *previous);
 	void on_general_theme_changed_changed(int state);
 	void on_general_style_changed(int state);
+	void on_general_save_with_setup_changed(int state);
 	void on_view_zoomToFitDuringAcq_changed(int state);
 	void on_view_zoomToFitAfterAcq_changed(int state);
 	void on_view_triggerIsZero_changed(int state);
