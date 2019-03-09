@@ -32,6 +32,7 @@
 
 #include "globalsettings.hpp"
 #include "session.hpp"
+#include "subwindows/subwindowbase.hpp"
 #include "views/viewbase.hpp"
 
 using std::list;
@@ -84,6 +85,9 @@ public:
 
 	void remove_view(shared_ptr<views::ViewBase> view);
 
+	shared_ptr<subwindows::SubWindowBase> add_subwindow(
+		subwindows::SubWindowType type, Session &session);
+
 	shared_ptr<Session> add_session();
 
 	void remove_session(shared_ptr<Session> session);
@@ -131,6 +135,9 @@ private Q_SLOTS:
 	void on_tab_changed(int index);
 	void on_tab_close_requested(int index);
 
+	void on_show_decoder_selector(Session *session);
+	void on_sub_window_close_clicked();
+
 	void on_view_colored_bg_shortcut();
 	void on_view_sticky_scrolling_shortcut();
 	void on_view_show_sampling_points_shortcut();
@@ -149,6 +156,7 @@ private:
 	shared_ptr<Session> last_focused_session_;
 
 	map< QDockWidget*, shared_ptr<views::ViewBase> > view_docks_;
+	map< QDockWidget*, shared_ptr<subwindows::SubWindowBase> > sub_windows_;
 
 	map< shared_ptr<Session>, QMainWindow*> session_windows_;
 

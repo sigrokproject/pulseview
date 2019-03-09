@@ -44,6 +44,7 @@
 #include "devices/hardwaredevice.hpp"
 #include "dialogs/settings.hpp"
 #include "globalsettings.hpp"
+#include "subwindows/decoder_selector/subwindow.hpp"
 #include "toolbars/mainbar.hpp"
 #include "util.hpp"
 #include "views/trace/view.hpp"
@@ -85,8 +86,13 @@ MainWindow::~MainWindow()
 {
 	GlobalSettings::remove_change_handler(this);
 
+	// Make sure we no longer hold any shared pointers to widgets after the
+	// destructor finishes (goes for sessions and sub windows alike)
+
 	while (!sessions_.empty())
 		remove_session(sessions_.front());
+
+	sub_windows_.clear();
 }
 
 void MainWindow::show_session_error(const QString text, const QString info_text)
@@ -194,6 +200,8 @@ shared_ptr<views::ViewBase> MainWindow::add_view(const QString &title,
 
 			connect(main_bar.get(), SIGNAL(new_view(Session*)),
 				this, SLOT(on_new_view(Session*)));
+			connect(main_bar.get(), SIGNAL(show_decoder_selector(Session*)),
+				this, SLOT(on_show_decoder_selector(Session*)));
 
 			main_bar->action_view_show_cursors()->setChecked(tv->cursors_shown());
 
@@ -241,6 +249,61 @@ void MainWindow::remove_view(shared_ptr<views::ViewBase> view)
 				break;
 			}
 	}
+}
+
+shared_ptr<subwindows::SubWindowBase> MainWindow::add_subwindow(
+	subwindows::SubWindowType type, Session &session)
+{
+	GlobalSettings settings;
+	shared_ptr<subwindows::SubWindowBase> v;
+
+	QMainWindow *main_window = nullptr;
+	for (auto entry : session_windows_)
+		if (entry.first.get() == &session)
+			main_window = entry.second;
+
+	assert(main_window);
+
+	QString title = "";
+
+	switch (type) {
+		case subwindows::SubWindowTypeDecoderSelector:
+			title = tr("Decoder Selector");
+	}
+
+	QDockWidget* dock = new QDockWidget(title, main_window);
+	dock->setObjectName(title);
+	main_window->addDockWidget(Qt::TopDockWidgetArea, dock);
+
+	// Insert a QMainWindow into the dock widget to allow for a tool bar
+	QMainWindow *dock_main = new QMainWindow(dock);
+	dock_main->setWindowFlags(Qt::Widget);  // Remove Qt::Window flag
+
+	if (type == subwindows::SubWindowTypeDecoderSelector)
+		v = make_shared<subwindows::decoder_selector::SubWindow>(session, dock_main);
+
+	if (!v)
+		return nullptr;
+
+	sub_windows_[dock] = v;
+	dock_main->setCentralWidget(v.get());
+	dock->setWidget(dock_main);
+
+	dock->setContextMenuPolicy(Qt::PreventContextMenu);
+	dock->setFeatures(QDockWidget::DockWidgetMovable |
+		QDockWidget::DockWidgetFloatable | QDockWidget::DockWidgetClosable);
+
+	QAbstractButton *close_btn =
+		dock->findChildren<QAbstractButton*>
+			("qt_dockwidget_closebutton").front();
+
+	connect(close_btn, SIGNAL(clicked(bool)),
+		this, SLOT(on_sub_window_close_clicked()));
+
+	if (v->has_toolbar())
+		dock_main->addToolBar(v->create_toolbar(dock_main));
+
+	return v;
 }
 
 shared_ptr<Session> MainWindow::add_session()
@@ -757,6 +820,41 @@ void MainWindow::on_tab_close_requested(int index)
 		tr("This session contains unsaved data. Close it anyway?"),
 		QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes))
 		remove_session(session);
+}
+
+void MainWindow::on_show_decoder_selector(Session *session)
+{
+	// Close dock widget if it's already showing and return
+	for (auto entry : sub_windows_) {
+		QDockWidget* dock = entry.first;
+		if (dynamic_pointer_cast<subwindows::decoder_selector::SubWindow>(entry.second)) {
+			sub_windows_.erase(dock);
+			dock->close();
+			return;
+		}
+	}
+
+	// We get a pointer and need a reference
+	for (shared_ptr<Session> s : sessions_)
+		if (s.get() == session)
+			add_subwindow(subwindows::SubWindowTypeDecoderSelector, *s);
+}
+
+void MainWindow::on_sub_window_close_clicked()
+{
+	// Find the dock widget that contains the close button that was clicked
+	QObject *w = QObject::sender();
+	QDockWidget *dock = nullptr;
+
+	while (w) {
+	    dock = qobject_cast<QDockWidget*>(w);
+	    if (dock)
+	        break;
+	    w = w->parent();
+	}
+
+	sub_windows_.erase(dock);
+	dock->close();
 }
 
 void MainWindow::on_view_colored_bg_shortcut()

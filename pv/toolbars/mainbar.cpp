@@ -50,7 +50,6 @@
 #include <pv/widgets/exportmenu.hpp>
 #include <pv/widgets/importmenu.hpp>
 #ifdef ENABLE_DECODE
-#include <pv/widgets/decodermenu.hpp>
 #include <pv/data/decodesignal.hpp>
 #endif
 
@@ -109,8 +108,7 @@ MainBar::MainBar(Session &session, QWidget *parent, pv::views::trace::View *view
 	updating_sample_count_(false),
 	sample_count_supported_(false)
 #ifdef ENABLE_DECODE
-	, add_decoder_button_(new QToolButton()),
-	menu_decoders_add_(new pv::widgets::DecoderMenu(this, true))
+	, add_decoder_button_(new QToolButton())
 #endif
 {
 	setObjectName(QString::fromUtf8("MainBar"));
@@ -210,14 +208,12 @@ MainBar::MainBar(Session &session, QWidget *parent, pv::views::trace::View *view
 
 	// Setup the decoder button
 #ifdef ENABLE_DECODE
-	menu_decoders_add_->setTitle(tr("&Add"));
-	connect(menu_decoders_add_, SIGNAL(decoder_selected(srd_decoder*)),
-		this, SLOT(add_decoder(srd_decoder*)));
-
 	add_decoder_button_->setIcon(QIcon(":/icons/add-decoder.svg"));
 	add_decoder_button_->setPopupMode(QToolButton::InstantPopup);
-	add_decoder_button_->setMenu(menu_decoders_add_);
-	add_decoder_button_->setToolTip(tr("Add low-level, non-stacked protocol decoder"));
+	add_decoder_button_->setToolTip(tr("Add protocol decoder"));
+
+	connect(add_decoder_button_, SIGNAL(clicked()),
+		this, SLOT(on_add_decoder_clicked()));
 #endif
 
 	connect(&sample_count_, SIGNAL(value_changed()),
@@ -583,18 +579,6 @@ void MainBar::show_session_error(const QString text, const QString info_text)
 	msg.exec();
 }
 
-void MainBar::add_decoder(srd_decoder *decoder)
-{
-#ifdef ENABLE_DECODE
-	assert(decoder);
-	shared_ptr<data::DecodeSignal> signal = session_.add_decode_signal();
-	if (signal)
-		signal->stack_decoder(decoder);
-#else
-	(void)decoder;
-#endif
-}
-
 void MainBar::export_file(shared_ptr<OutputFormat> format, bool selection_only)
 {
 	using pv::dialogs::StoreProgress;
@@ -851,6 +835,11 @@ void MainBar::on_actionConnect_triggered()
 		session_.select_device(dlg.get_selected_device());
 
 	update_device_list();
+}
+
+void MainBar::on_add_decoder_clicked()
+{
+	show_decoder_selector(&session_);
 }
 
 void MainBar::add_toolbar_widgets()

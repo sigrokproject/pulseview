@@ -266,6 +266,7 @@ set(pulseview_SOURCES
 	pv/prop/int.cpp
 	pv/prop/property.cpp
 	pv/prop/string.cpp
+	pv/subwindows/subwindowbase.cpp
 	pv/toolbars/mainbar.cpp
 	pv/views/trace/analogsignal.cpp
 	pv/views/trace/cursor.cpp
@@ -330,6 +331,7 @@ set(pulseview_HEADERS
 	pv/prop/int.hpp
 	pv/prop/property.hpp
 	pv/prop/string.hpp
+	pv/subwindows/subwindowbase.hpp
 	pv/toolbars/mainbar.hpp
 	pv/views/trace/analogsignal.hpp
 	pv/views/trace/cursor.hpp
@@ -381,6 +383,9 @@ if(ENABLE_DECODE)
 		pv/data/decode/decoder.cpp
 		pv/data/decode/row.cpp
 		pv/data/decode/rowdata.cpp
+		pv/subwindows/decoder_selector/item.cpp
+		pv/subwindows/decoder_selector/model.cpp
+		pv/subwindows/decoder_selector/subwindow.cpp
 		pv/views/trace/decodetrace.cpp
 		pv/widgets/decodergroupbox.cpp
 		pv/widgets/decodermenu.cpp
@@ -388,6 +393,7 @@ if(ENABLE_DECODE)
 
 	list(APPEND pulseview_HEADERS
 		pv/data/decodesignal.hpp
+		pv/subwindows/decoder_selector/subwindow.hpp
 		pv/views/trace/decodetrace.hpp
 		pv/widgets/decodergroupbox.hpp
 		pv/widgets/decodermenu.hpp

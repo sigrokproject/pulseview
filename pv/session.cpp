@@ -1461,4 +1461,17 @@ void Session::on_data_saved()
 	data_saved_ = true;
 }
 
+#ifdef ENABLE_DECODE
+void Session::on_new_decoders_selected(vector<const srd_decoder*> decoders)
+{
+	assert(decoders.size() > 0);
+
+	shared_ptr<data::DecodeSignal> signal = add_decode_signal();
+
+	if (signal)
+		for (const srd_decoder* d : decoders)
+			signal->stack_decoder(d);
+}
+#endif
+
 } // namespace pv

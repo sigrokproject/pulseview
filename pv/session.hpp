@@ -268,6 +268,10 @@ Q_SIGNALS:
 public Q_SLOTS:
 	void on_data_saved();
 
+#ifdef ENABLE_DECODE
+	void on_new_decoders_selected(vector<const srd_decoder*> decoders);
+#endif
+
 private:
 	DeviceManager &device_manager_;
 	shared_ptr<devices::Device> device_;

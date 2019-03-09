@@ -127,8 +127,6 @@ private:
 private Q_SLOTS:
 	void show_session_error(const QString text, const QString info_text);
 
-	void add_decoder(srd_decoder *decoder);
-
 	void export_file(shared_ptr<sigrok::OutputFormat> format,
 		bool selection_only = false);
 	void import_file(shared_ptr<sigrok::InputFormat> format);
@@ -152,6 +150,8 @@ private Q_SLOTS:
 
 	void on_actionConnect_triggered();
 
+	void on_add_decoder_clicked();
+
 protected:
 	void add_toolbar_widgets();
 
@@ -159,6 +159,7 @@ protected:
 
 Q_SIGNALS:
 	void new_view(Session *session);
+	void show_decoder_selector(Session *session);
 
 private:
 	QToolButton *open_button_, *save_button_;
@@ -180,7 +181,6 @@ private:
 
 #ifdef ENABLE_DECODE
 	QToolButton *add_decoder_button_;
-	QMenu *const menu_decoders_add_;
 #endif
 };
 

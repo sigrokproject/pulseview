@@ -54,6 +54,7 @@ set(pulseview_TEST_SOURCES
 	${PROJECT_SOURCE_DIR}/pv/prop/string.cpp
 	${PROJECT_SOURCE_DIR}/pv/popups/channels.cpp
 	${PROJECT_SOURCE_DIR}/pv/popups/deviceoptions.cpp
+	${PROJECT_SOURCE_DIR}/pv/subwindows/subwindowbase.cpp
 	${PROJECT_SOURCE_DIR}/pv/toolbars/mainbar.cpp
 	${PROJECT_SOURCE_DIR}/pv/views/trace/analogsignal.cpp
 	${PROJECT_SOURCE_DIR}/pv/views/trace/cursor.cpp
@@ -127,6 +128,7 @@ set(pulseview_TEST_HEADERS
 	${PROJECT_SOURCE_DIR}/pv/prop/int.hpp
 	${PROJECT_SOURCE_DIR}/pv/prop/property.hpp
 	${PROJECT_SOURCE_DIR}/pv/prop/string.hpp
+	${PROJECT_SOURCE_DIR}/pv/subwindows/subwindowbase.cpp
 	${PROJECT_SOURCE_DIR}/pv/toolbars/mainbar.hpp
 	${PROJECT_SOURCE_DIR}/pv/views/trace/analogsignal.hpp
 	${PROJECT_SOURCE_DIR}/pv/views/trace/cursor.hpp
@@ -169,6 +171,9 @@ if(ENABLE_DECODE)
 		${PROJECT_SOURCE_DIR}/pv/data/decode/decoder.cpp
 		${PROJECT_SOURCE_DIR}/pv/data/decode/row.cpp
 		${PROJECT_SOURCE_DIR}/pv/data/decode/rowdata.cpp
+		${PROJECT_SOURCE_DIR}/pv/subwindows/decoder_selector/item.cpp
+		${PROJECT_SOURCE_DIR}/pv/subwindows/decoder_selector/model.cpp
+		${PROJECT_SOURCE_DIR}/pv/subwindows/decoder_selector/subwindow.cpp
 		${PROJECT_SOURCE_DIR}/pv/views/trace/decodetrace.cpp
 		${PROJECT_SOURCE_DIR}/pv/widgets/decodergroupbox.cpp
 		${PROJECT_SOURCE_DIR}/pv/widgets/decodermenu.cpp
@@ -176,6 +181,7 @@ if(ENABLE_DECODE)
 
 	list(APPEND pulseview_TEST_HEADERS
 		${PROJECT_SOURCE_DIR}/pv/data/decodesignal.hpp
+		${PROJECT_SOURCE_DIR}/pv/subwindows/decoder_selector/subwindow.hpp
 		${PROJECT_SOURCE_DIR}/pv/views/trace/decodetrace.hpp
 		${PROJECT_SOURCE_DIR}/pv/widgets/decodergroupbox.hpp
 		${PROJECT_SOURCE_DIR}/pv/widgets/decodermenu.hpp
