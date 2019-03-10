@@ -78,13 +78,18 @@ const vector< shared_ptr<Decoder> >& DecodeSignal::decoder_stack() const
 void DecodeSignal::stack_decoder(const srd_decoder *decoder)
 {
 	assert(decoder);
-	const shared_ptr<Decoder> dec = make_shared<decode::Decoder>(decoder);
 
-	stack_.push_back(dec);
+	// Set name if this decoder is the first in the list or the name is unchanged
+	const srd_decoder* prev_dec =
+		stack_.empty() ? nullptr : stack_.back()->decoder();
+	const QString prev_dec_name =
+		prev_dec ? QString::fromUtf8(prev_dec->name) : QString();
 
-	// Set name if this decoder is the first in the list
-	if (stack_.size() == 1)
+	if ((stack_.empty()) || ((stack_.size() > 0) && (name() == prev_dec_name)))
 		set_name(QString::fromUtf8(decoder->name));
+
+	const shared_ptr<Decoder> dec = make_shared<decode::Decoder>(decoder);
+	stack_.push_back(dec);
 
 	// Include the newly created decode channels in the channel lists
 	update_channel_list();
