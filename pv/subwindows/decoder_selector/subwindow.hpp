@@ -24,6 +24,7 @@
 
 #include <QAbstractItemModel>
 #include <QLabel>
+#include <QSortFilterProxyModel>
 #include <QSplitter>
 #include <QTreeView>
 
@@ -134,6 +135,7 @@ private:
 	QLabel* info_label_body_;
 	QLabel* info_label_footer_;
 	DecoderCollectionModel* model_;
+	QSortFilterProxyModel* sort_filter_model_;
 };
 
 } // decoder_selector

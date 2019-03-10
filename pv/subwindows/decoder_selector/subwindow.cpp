@@ -52,7 +52,8 @@ SubWindow::SubWindow(Session& session, QWidget* parent) :
 	info_label_header_(new QLabel()),
 	info_label_body_(new QLabel()),
 	info_label_footer_(new QLabel()),
-	model_(new DecoderCollectionModel())
+	model_(new DecoderCollectionModel()),
+	sort_filter_model_(new QSortFilterProxyModel())
 {
 	QVBoxLayout* root_layout = new QVBoxLayout(this);
 	root_layout->setContentsMargins(0, 0, 0, 0);
@@ -62,8 +63,12 @@ SubWindow::SubWindow(Session& session, QWidget* parent) :
 	splitter_->addWidget(tree_view_);
 	splitter_->addWidget(info_box_);
 
-	tree_view_->setModel(model_);
+	sort_filter_model_->setSourceModel(model_);
+
+	tree_view_->setModel(sort_filter_model_);
 	tree_view_->setRootIsDecorated(true);
+	tree_view_->setSortingEnabled(true);
+	tree_view_->sortByColumn(0, Qt::AscendingOrder);
 
 	// Hide the columns that hold the detailed item information
 	tree_view_->hideColumn(2);  // ID
