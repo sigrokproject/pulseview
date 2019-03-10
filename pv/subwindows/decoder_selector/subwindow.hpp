@@ -85,6 +85,12 @@ private:
 };
 
 
+class QCustomSortFilterProxyModel : public QSortFilterProxyModel
+{
+protected:
+	bool filterAcceptsRow(int source_row, const QModelIndex& source_parent) const;
+};
+
 class QCustomTreeView : public QTreeView
 {
 	Q_OBJECT
@@ -127,6 +133,8 @@ public Q_SLOTS:
 	void on_item_changed(const QModelIndex& index);
 	void on_item_activated(const QModelIndex& index);
 
+	void on_filter_changed(const QString& text);
+
 private:
 	QSplitter* splitter_;
 	QCustomTreeView* tree_view_;
@@ -135,7 +143,7 @@ private:
 	QLabel* info_label_body_;
 	QLabel* info_label_footer_;
 	DecoderCollectionModel* model_;
-	QSortFilterProxyModel* sort_filter_model_;
+	QCustomSortFilterProxyModel* sort_filter_model_;
 };
 
 } // decoder_selector

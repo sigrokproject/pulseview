@@ -22,6 +22,7 @@
 #include <QDebug>
 #include <QInputDialog>
 #include <QLabel>
+#include <QLineEdit>
 #include <QPushButton>
 #include <QVBoxLayout>
 
@@ -34,6 +35,24 @@ using std::shared_ptr;
 namespace pv {
 namespace subwindows {
 namespace decoder_selector {
+
+
+bool QCustomSortFilterProxyModel::filterAcceptsRow(int source_row,
+	const QModelIndex& source_parent) const
+{
+	// Search model recursively
+
+	if (QSortFilterProxyModel::filterAcceptsRow(source_row, source_parent))
+		return true;
+
+	const QModelIndex index = sourceModel()->index(source_row, 0, source_parent);
+
+	for (int i = 0; i < sourceModel()->rowCount(index); i++)
+		if (filterAcceptsRow(i, index))
+			return true;
+
+	return false;
+}
 
 
 void QCustomTreeView::currentChanged(const QModelIndex& current,
@@ -53,17 +72,30 @@ SubWindow::SubWindow(Session& session, QWidget* parent) :
 	info_label_body_(new QLabel()),
 	info_label_footer_(new QLabel()),
 	model_(new DecoderCollectionModel()),
-	sort_filter_model_(new QSortFilterProxyModel())
+	sort_filter_model_(new QCustomSortFilterProxyModel())
 {
 	QVBoxLayout* root_layout = new QVBoxLayout(this);
 	root_layout->setContentsMargins(0, 0, 0, 0);
 	root_layout->addWidget(splitter_);
 
+	QWidget* upper_container = new QWidget();
+	QVBoxLayout* upper_layout = new QVBoxLayout(upper_container);
+	upper_layout->setContentsMargins(0, 5, 0, 0);
+	QLineEdit* filter = new QLineEdit();
+	upper_layout->addWidget(filter);
+	upper_layout->addWidget(tree_view_);
+
 	splitter_->setOrientation(Qt::Vertical);
-	splitter_->addWidget(tree_view_);
+	splitter_->addWidget(upper_container);
 	splitter_->addWidget(info_box_);
 
+	const QIcon filter_icon(QIcon::fromTheme("search",
+		QIcon(":/icons/search.svg")));
+	filter->setClearButtonEnabled(true);
+	filter->addAction(filter_icon, QLineEdit::LeadingPosition);
+
 	sort_filter_model_->setSourceModel(model_);
+	sort_filter_model_->setFilterCaseSensitivity(Qt::CaseInsensitive);
 
 	tree_view_->setModel(sort_filter_model_);
 	tree_view_->setRootIsDecorated(true);
@@ -80,6 +112,9 @@ SubWindow::SubWindow(Session& session, QWidget* parent) :
 	info_box_layout->addWidget(info_label_footer_);
 	info_label_body_->setWordWrap(true);
 	info_label_body_->setText(tr("Select a decoder to see its description here."));
+
+	connect(filter, SIGNAL(textChanged(const QString&)),
+		this, SLOT(on_filter_changed(const QString&)));
 
 	connect(tree_view_, SIGNAL(currentChanged(const QModelIndex&)),
 		this, SLOT(on_item_changed(const QModelIndex&)));
@@ -254,6 +289,11 @@ void SubWindow::on_item_activated(const QModelIndex& index)
 	// Reverse decoder list and add the stack
 	reverse(decoders.begin(), decoders.end());
 	new_decoders_selected(decoders);
+}
+
+void SubWindow::on_filter_changed(const QString& text)
+{
+	sort_filter_model_->setFilterFixedString(text);
 }
 
 } // namespace decoder_selector
