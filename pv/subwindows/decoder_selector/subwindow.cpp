@@ -36,10 +36,18 @@ namespace subwindows {
 namespace decoder_selector {
 
 
+void QCustomTreeView::currentChanged(const QModelIndex& current,
+	const QModelIndex& previous)
+{
+	QTreeView::currentChanged(current, previous);
+	currentChanged(current);
+}
+
+
 SubWindow::SubWindow(Session& session, QWidget* parent) :
 	SubWindowBase(session, parent),
 	splitter_(new QSplitter()),
-	tree_view_(new QTreeView()),
+	tree_view_(new QCustomTreeView()),
 	info_box_(new QWidget()),
 	info_label_header_(new QLabel()),
 	info_label_body_(new QLabel()),
@@ -68,10 +76,10 @@ SubWindow::SubWindow(Session& session, QWidget* parent) :
 	info_label_body_->setWordWrap(true);
 	info_label_body_->setText(tr("Select a decoder to see its description here."));
 
-	connect(tree_view_, SIGNAL(clicked(const QModelIndex&)),
-		this, SLOT(on_item_clicked(const QModelIndex&)));
-	connect(tree_view_, SIGNAL(doubleClicked(const QModelIndex&)),
-		this, SLOT(on_item_double_clicked(const QModelIndex&)));
+	connect(tree_view_, SIGNAL(currentChanged(const QModelIndex&)),
+		this, SLOT(on_item_changed(const QModelIndex&)));
+	connect(tree_view_, SIGNAL(activated(const QModelIndex&)),
+		this, SLOT(on_item_activated(const QModelIndex&)));
 
 	connect(this, SIGNAL(new_decoders_selected(vector<const srd_decoder*>)),
 		&session, SLOT(on_new_decoders_selected(vector<const srd_decoder*>)));
@@ -141,7 +149,7 @@ vector<const srd_decoder*> SubWindow::decoders_providing(const char* output) con
 	return ret_val;
 }
 
-void SubWindow::on_item_clicked(const QModelIndex& index)
+void SubWindow::on_item_changed(const QModelIndex& index)
 {
 	if (!index.isValid())
 		return;
@@ -175,7 +183,7 @@ void SubWindow::on_item_clicked(const QModelIndex& index)
 	info_label_footer_->setText(tr("<p align='right'>Tags: %1</p>").arg(tags));
 }
 
-void SubWindow::on_item_double_clicked(const QModelIndex& index)
+void SubWindow::on_item_activated(const QModelIndex& index)
 {
 	if (!index.isValid())
 		return;
