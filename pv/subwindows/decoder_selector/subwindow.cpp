@@ -40,13 +40,19 @@ SubWindow::SubWindow(Session& session, QWidget* parent) :
 	SubWindowBase(session, parent),
 	splitter_(new QSplitter()),
 	tree_view_(new QTreeView()),
+	info_box_(new QWidget()),
+	info_label_header_(new QLabel()),
+	info_label_body_(new QLabel()),
+	info_label_footer_(new QLabel()),
 	model_(new DecoderCollectionModel())
 {
 	QVBoxLayout* root_layout = new QVBoxLayout(this);
 	root_layout->setContentsMargins(0, 0, 0, 0);
 	root_layout->addWidget(splitter_);
 
+	splitter_->setOrientation(Qt::Vertical);
 	splitter_->addWidget(tree_view_);
+	splitter_->addWidget(info_box_);
 
 	tree_view_->setModel(model_);
 	tree_view_->setRootIsDecorated(true);
@@ -54,6 +60,16 @@ SubWindow::SubWindow(Session& session, QWidget* parent) :
 	// Hide the columns that hold the detailed item information
 	tree_view_->hideColumn(2);  // ID
 
+	info_box_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+	QVBoxLayout* info_box_layout = new QVBoxLayout(info_box_);
+	info_box_layout->addWidget(info_label_header_);
+	info_box_layout->addWidget(info_label_body_);
+	info_box_layout->addWidget(info_label_footer_);
+	info_label_body_->setWordWrap(true);
+	info_label_body_->setText(tr("Select a decoder to see its description here."));
+
+	connect(tree_view_, SIGNAL(clicked(const QModelIndex&)),
+		this, SLOT(on_item_clicked(const QModelIndex&)));
 	connect(tree_view_, SIGNAL(doubleClicked(const QModelIndex&)),
 		this, SLOT(on_item_double_clicked(const QModelIndex&)));
 
@@ -123,6 +139,40 @@ vector<const srd_decoder*> SubWindow::decoders_providing(const char* output) con
 	g_slist_free(l);
 
 	return ret_val;
+}
+
+void SubWindow::on_item_clicked(const QModelIndex& index)
+{
+	if (!index.isValid())
+		return;
+
+	QModelIndex id_index = index.model()->index(index.row(), 2, index.parent());
+	QString decoder_name = index.model()->data(id_index, Qt::DisplayRole).toString();
+
+	if (decoder_name.isEmpty())
+		return;
+
+	const srd_decoder* d = get_srd_decoder_from_id(decoder_name);
+
+	const QString id = QString::fromUtf8(d->id);
+	const QString longname = QString::fromUtf8(d->longname);
+	const QString desc = QString::fromUtf8(d->desc);
+	const QString doc = QString::fromUtf8(srd_decoder_doc_get(d));
+
+	QString tags;
+	GSList* l = g_slist_copy((GSList*)d->tags);
+	for (GSList* li = l; li; li = li->next) {
+		QString s = (li == l) ?
+			tr((char*)li->data) :
+			QString(tr(", %1")).arg(tr((char*)li->data));
+		tags.append(s);
+	}
+	g_slist_free(l);
+
+	info_label_header_->setText(QString("<span style='font-size:large;font-weight:bold'>%1 (%2)</span><br>%3")
+		.arg(longname, id, desc));
+	info_label_body_->setText(doc);
+	info_label_footer_->setText(tr("<p align='right'>Tags: %1</p>").arg(tags));
 }
 
 void SubWindow::on_item_double_clicked(const QModelIndex& index)

@@ -23,6 +23,7 @@
 #include <vector>
 
 #include <QAbstractItemModel>
+#include <QLabel>
 #include <QSplitter>
 #include <QTreeView>
 
@@ -111,11 +112,16 @@ Q_SIGNALS:
 	void new_decoders_selected(vector<const srd_decoder*> decoders);
 
 public Q_SLOTS:
+	void on_item_clicked(const QModelIndex& index);
 	void on_item_double_clicked(const QModelIndex& index);
 
 private:
 	QSplitter* splitter_;
 	QTreeView* tree_view_;
+	QWidget* info_box_;
+	QLabel* info_label_header_;
+	QLabel* info_label_body_;
+	QLabel* info_label_footer_;
 	DecoderCollectionModel* model_;
 };
 
