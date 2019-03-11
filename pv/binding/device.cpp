@@ -114,7 +114,7 @@ Device::Device(shared_ptr<sigrok::Configurable> configurable) :
 			bind_enum(name, "", key, capabilities, get, set, print_timebase);
 			break;
 
-		case SR_CONF_VDIV:
+		case SR_CONF_VSCALE:
 			bind_enum(name, "", key, capabilities, get, set, print_vdiv);
 			break;
 
