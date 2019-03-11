@@ -37,6 +37,7 @@ const int ViewBase::MaxViewAutoUpdateRate = 25; // No more than 25 Hz
 
 ViewBase::ViewBase(Session &session, bool is_main_view, QWidget *parent) :
 	// Note: Place defaults in ViewBase::reset_view_state(), not here
+	QWidget(parent),
 	session_(session),
 	is_main_view_(is_main_view)
 {
