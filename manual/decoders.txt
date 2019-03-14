@@ -50,14 +50,15 @@ image::pv_decoders_3.png[]
 With the stacked decoder added, we can now see that PulseView has decoded the meaning
 of the I²C commands, so that we don't need to bother searching the reference manual.
 In this view, we can see that the I²C packet was a command to read the date and time,
-which was then reported to be 10.03.2013 23:35:30. 
+which was then reported to be 10.03.2013 23:35:30.
 
-There are all kinds of stacked decoders available, but keep in mind that they're not
-shown in the decoder menu. Stacked decoders require a lower-level decoder first before
-they become stackable. Most of the time, they require either the UART, I²C or SPI decoder.
+In this example, we added the I²C and DS1307 decoders separately. However, when opening
+the decoder selector window, you can also double-click on the DS1307 decoder and PulseView
+will try to auto-resolve the dependencies needed to use this decoder. In case there are
+ambiguities (e.g. when several different protocol decoders offer 'uart' output), it will
+ask you to choose which one to use.
 
-You can check the https://sigrok.org/wiki/Protocol_decoders[List of Protocol Decoders]
-to see which protocol decoders have been created already.
+For a list of available and planned protocol decoders, you can https://sigrok.org/wiki/Protocol_decoders[check the wiki].
 
 === Using Decoders on Analog Signals
 

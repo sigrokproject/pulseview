@@ -63,7 +63,7 @@ There are some decoders available that analyze the data instead of decoding it.
 You can make use of them to examine various properties of the signals that are
 of interest to you.
 
-Their names are:
+Among them are:
 
 * Counter - counts pulses and/or groups of pulses (i.e. words)
 * Guess bitrate - guesses the bitrate when using a serial protocol
@@ -72,6 +72,7 @@ Their names are:
 
 === Other Features
 
+==== Signal Label Area Resizing
 Trace Views also allow you to maximize the viewing area by minimizing the area
 occupied by the label area on the left. To do this, simply position the mouse
 cursor at the right edge of the label area (or left edge of the viewing area).
@@ -80,5 +81,20 @@ Your mouse cursor will change shape and you now can drag the border.
 This way, you can give signals long, expressive names without clogging up the
 view area.
 
-Also, you can create multiple views by clicking on the "New View" button on
-the very left of the toolbar. Those can be rearranged as you wish.
+==== Multiple Views
+You can create multiple views by clicking on the "New View" button on the very
+left of the toolbar. These can be rearranged as you wish.
+
+==== Session Saving/Restoring
+When closing PulseView, it automatically saves the sessions you currently have
+open, including the signal configuration and any protocol decoders you might
+have added. The next time you start it again, it'll be restored to its
+previous state.
+
+This metadata is also saved with every .sr file you save so that the next time
+you open the .sr file, your signal configurations, views and decoders are
+restored. These metadata files have the ending .pvs (PulseView Setup) and can
+be edited in any text editor if you wish to change something manually.
+
+Additionally, you can save or load this metadata at any time using the
+save/load buttons.

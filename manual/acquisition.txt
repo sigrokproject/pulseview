@@ -15,7 +15,7 @@ program even when you don't have any hardware to use it with.
 
 The device selector offers two methods to choose the device to use. If you click on the small
 arrow on the side, you see a list of devices PulseView has recognized. If the device you want
-to use it listed, you can just select it here to use it.
+to use is listed, you can just select it here.
 
 image::device_selector_dropdown.png[]
 
