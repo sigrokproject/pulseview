@@ -110,10 +110,14 @@ SubWindow::SubWindow(Session& session, QWidget* parent) :
 	info_box_layout->addWidget(info_label_header_);
 	info_box_layout->addWidget(info_label_body_);
 	info_box_layout->addWidget(info_label_footer_);
+	Qt::TextInteractionFlags flags = Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard;
 	info_label_header_->setWordWrap(true);
+	info_label_header_->setTextInteractionFlags(flags);
 	info_label_body_->setWordWrap(true);
+	info_label_body_->setTextInteractionFlags(flags);
 	info_label_body_->setText(tr("Select a decoder to see its description here."));
 	info_label_footer_->setWordWrap(true);
+	info_label_footer_->setTextInteractionFlags(flags);
 
 	connect(filter, SIGNAL(textChanged(const QString&)),
 		this, SLOT(on_filter_changed(const QString&)));
