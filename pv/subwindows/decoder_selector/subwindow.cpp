@@ -204,7 +204,7 @@ void SubWindow::on_item_changed(const QModelIndex& index)
 		tags.append(s);
 	}
 
-	info_label_header_->setText(QString("<span style='font-size:large;font-weight:bold'>%1 (%2)</span><br>%3")
+	info_label_header_->setText(QString("<span style='font-size:large'><b>%1 (%2)</b></span><br><i>%3</i>")
 		.arg(longname, id, desc));
 	info_label_body_->setText(doc);
 	info_label_footer_->setText(tr("<p align='right'>Tags: %1</p>").arg(tags));
