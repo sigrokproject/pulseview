@@ -105,6 +105,9 @@ SubWindow::SubWindow(Session& session, QWidget* parent) :
 	// Hide the columns that hold the detailed item information
 	tree_view_->hideColumn(2);  // ID
 
+	// Ensure that all decoder tag names are fully visible by default
+	tree_view_->resizeColumnToContents(0);
+
 	info_box_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 	QVBoxLayout* info_box_layout = new QVBoxLayout(info_box_);
 	info_box_layout->addWidget(info_label_header_);
