@@ -112,8 +112,6 @@ public:
 	bool has_toolbar() const;
 	QToolBar* create_toolbar(QWidget *parent) const;
 
-	const srd_decoder* get_srd_decoder_from_id(QString id) const;
-
 	/**
 	 * Returns a list of input types that a given protocol decoder requires
 	 * ("logic", "uart", etc.)

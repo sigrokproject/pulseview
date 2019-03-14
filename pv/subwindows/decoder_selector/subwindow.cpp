@@ -137,21 +137,6 @@ QToolBar* SubWindow::create_toolbar(QWidget *parent) const
 	return toolbar;
 }
 
-const srd_decoder* SubWindow::get_srd_decoder_from_id(QString id) const
-{
-	const srd_decoder* ret_val = nullptr;
-
-	for (GSList* li = (GSList*)srd_decoder_list(); li; li = li->next) {
-		const srd_decoder* d = (srd_decoder*)li->data;
-		assert(d);
-
-		if (QString::fromUtf8(d->id) == id)
-			ret_val = d;
-	}
-
-	return ret_val;
-}
-
 vector<const char*> SubWindow::get_decoder_inputs(const srd_decoder* d) const
 {
 	vector<const char*> ret_val;
@@ -192,7 +177,7 @@ void SubWindow::on_item_changed(const QModelIndex& index)
 	if (decoder_name.isEmpty())
 		return;
 
-	const srd_decoder* d = get_srd_decoder_from_id(decoder_name);
+	const srd_decoder* d = srd_decoder_get_by_id(decoder_name.toUtf8());
 
 	const QString id = QString::fromUtf8(d->id);
 	const QString longname = QString::fromUtf8(d->longname);
@@ -221,7 +206,7 @@ void SubWindow::on_item_activated(const QModelIndex& index)
 	QModelIndex id_index = index.model()->index(index.row(), 2, index.parent());
 	QString decoder_name = index.model()->data(id_index, Qt::DisplayRole).toString();
 
-	const srd_decoder* chosen_decoder = get_srd_decoder_from_id(decoder_name);
+	const srd_decoder* chosen_decoder = srd_decoder_get_by_id(decoder_name.toUtf8());
 	if (chosen_decoder == nullptr)
 		return;
 
@@ -270,7 +255,7 @@ void SubWindow::on_item_activated(const QModelIndex& index)
 				return;
 
 			QString d = item.section(' ', 0, 0);
-			decoders.push_back(get_srd_decoder_from_id(d));
+			decoders.push_back(srd_decoder_get_by_id(d.toUtf8()));
 		}
 
 		inputs = get_decoder_inputs(decoders.back());
