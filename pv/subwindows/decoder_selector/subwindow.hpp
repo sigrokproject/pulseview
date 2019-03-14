@@ -118,13 +118,13 @@ public:
 	 * Returns a list of input types that a given protocol decoder requires
 	 * ("logic", "uart", etc.)
 	 */
-	vector<const char*> decoder_inputs(const srd_decoder* d) const;
+	vector<const char*> get_decoder_inputs(const srd_decoder* d) const;
 
 	/**
 	 * Returns a list of protocol decoder IDs which provide a given output
 	 * ("uart", "spi", etc.)
 	 */
-	vector<const srd_decoder*> decoders_providing(const char* output) const;
+	vector<const srd_decoder*> get_decoders_providing(const char* output) const;
 
 Q_SIGNALS:
 	void new_decoders_selected(vector<const srd_decoder*> decoders);

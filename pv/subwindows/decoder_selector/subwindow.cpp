@@ -152,7 +152,7 @@ const srd_decoder* SubWindow::get_srd_decoder_from_id(QString id) const
 	return ret_val;
 }
 
-vector<const char*> SubWindow::decoder_inputs(const srd_decoder* d) const
+vector<const char*> SubWindow::get_decoder_inputs(const srd_decoder* d) const
 {
 	vector<const char*> ret_val;
 
@@ -162,7 +162,7 @@ vector<const char*> SubWindow::decoder_inputs(const srd_decoder* d) const
 	return ret_val;
 }
 
-vector<const srd_decoder*> SubWindow::decoders_providing(const char* output) const
+vector<const srd_decoder*> SubWindow::get_decoders_providing(const char* output) const
 {
 	vector<const srd_decoder*> ret_val;
 
@@ -229,7 +229,7 @@ void SubWindow::on_item_activated(const QModelIndex& index)
 	decoders.push_back(chosen_decoder);
 
 	// If the decoder only depends on logic inputs, we add it and are done
-	vector<const char*> inputs = decoder_inputs(decoders.front());
+	vector<const char*> inputs = get_decoder_inputs(decoders.front());
 	if (inputs.size() == 0) {
 		qWarning() << "Protocol decoder" << decoder_name << "cannot have 0 inputs!";
 		return;
@@ -242,7 +242,7 @@ void SubWindow::on_item_activated(const QModelIndex& index)
 
 	// Check if we can automatically fulfill the stacking requirements
 	while (strncmp(inputs.at(0), "logic", 5) != 0) {
-		vector<const srd_decoder*> prov_decoders = decoders_providing(inputs.at(0));
+		vector<const srd_decoder*> prov_decoders = get_decoders_providing(inputs.at(0));
 
 		if (prov_decoders.size() == 0) {
 			// Emit warning and add the stack that we could gather so far
@@ -273,7 +273,7 @@ void SubWindow::on_item_activated(const QModelIndex& index)
 			decoders.push_back(get_srd_decoder_from_id(d));
 		}
 
-		inputs = decoder_inputs(decoders.back());
+		inputs = get_decoder_inputs(decoders.back());
 	}
 
 	// Reverse decoder list and add the stack
