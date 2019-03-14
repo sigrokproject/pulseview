@@ -108,6 +108,8 @@ SubWindow::SubWindow(Session& session, QWidget* parent) :
 	// Ensure that all decoder tag names are fully visible by default
 	tree_view_->resizeColumnToContents(0);
 
+	tree_view_->setIndentation(10);
+
 	info_box_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 	QVBoxLayout* info_box_layout = new QVBoxLayout(info_box_);
 	info_box_layout->addWidget(info_label_header_);
