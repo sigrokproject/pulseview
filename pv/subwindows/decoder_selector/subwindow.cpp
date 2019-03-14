@@ -110,6 +110,7 @@ SubWindow::SubWindow(Session& session, QWidget* parent) :
 	info_box_layout->addWidget(info_label_header_);
 	info_box_layout->addWidget(info_label_body_);
 	info_box_layout->addWidget(info_label_footer_);
+	info_box_layout->setAlignment(Qt::AlignTop);
 	Qt::TextInteractionFlags flags = Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard;
 	info_label_header_->setWordWrap(true);
 	info_label_header_->setTextInteractionFlags(flags);
