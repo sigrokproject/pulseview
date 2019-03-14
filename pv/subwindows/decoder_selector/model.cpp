@@ -51,8 +51,7 @@ DecoderCollectionModel::DecoderCollectionModel(QObject* parent) :
 		make_shared<DecoderCollectionItem>(item_data, root_);
 	root_->appendSubItem(group_item_all);
 
-	GSList* l = g_slist_copy((GSList*)srd_decoder_list());
-	for (GSList* li = l; li; li = li->next) {
+	for (GSList* li = (GSList*)srd_decoder_list(); li; li = li->next) {
 		const srd_decoder *const d = (srd_decoder*)li->data;
 		assert(d);
 
@@ -70,8 +69,7 @@ DecoderCollectionModel::DecoderCollectionModel(QObject* parent) :
 		group_item_all->appendSubItem(decoder_item_all);
 
 		// Add decoder to all relevant groups using the tag information
-		GSList* t = g_slist_copy((GSList*)d->tags);
-		for (GSList* ti = t; ti; ti = ti->next) {
+		for (GSList* ti = (GSList*)d->tags; ti; ti = ti->next) {
 			const QString tag = tr((char*)ti->data);
 			const QVariant tag_var = QVariant(tag);
 
@@ -101,9 +99,7 @@ DecoderCollectionModel::DecoderCollectionModel(QObject* parent) :
 			// Add decoder to tag group
 			group_item->appendSubItem(decoder_item);
 		}
-		g_slist_free(t);
 	}
-	g_slist_free(l);
 }
 
 QVariant DecoderCollectionModel::data(const QModelIndex& index, int role) const

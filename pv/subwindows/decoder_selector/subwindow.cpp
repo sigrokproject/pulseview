@@ -141,15 +141,13 @@ const srd_decoder* SubWindow::get_srd_decoder_from_id(QString id) const
 {
 	const srd_decoder* ret_val = nullptr;
 
-	GSList* l = g_slist_copy((GSList*)srd_decoder_list());
-	for (GSList* li = l; li; li = li->next) {
+	for (GSList* li = (GSList*)srd_decoder_list(); li; li = li->next) {
 		const srd_decoder* d = (srd_decoder*)li->data;
 		assert(d);
 
 		if (QString::fromUtf8(d->id) == id)
 			ret_val = d;
 	}
-	g_slist_free(l);
 
 	return ret_val;
 }
@@ -158,12 +156,8 @@ vector<const char*> SubWindow::decoder_inputs(const srd_decoder* d) const
 {
 	vector<const char*> ret_val;
 
-	GSList* l = g_slist_copy(d->inputs);
-	for (GSList* li = l; li; li = li->next) {
-		const char* input = (const char*)li->data;
-		ret_val.push_back(input);
-	}
-	g_slist_free(l);
+	for (GSList* li = d->inputs; li; li = li->next)
+		ret_val.push_back((const char*)li->data);
 
 	return ret_val;
 }
@@ -172,8 +166,7 @@ vector<const srd_decoder*> SubWindow::decoders_providing(const char* output) con
 {
 	vector<const srd_decoder*> ret_val;
 
-	GSList* l = g_slist_copy((GSList*)srd_decoder_list());
-	for (GSList* li = l; li; li = li->next) {
+	for (GSList* li = (GSList*)srd_decoder_list(); li; li = li->next) {
 		const srd_decoder* d = (srd_decoder*)li->data;
 		assert(d);
 
@@ -184,7 +177,6 @@ vector<const srd_decoder*> SubWindow::decoders_providing(const char* output) con
 		if (strncmp((char*)(d->outputs->data), output, strlen(output)) == 0)
 			ret_val.push_back(d);
 	}
-	g_slist_free(l);
 
 	return ret_val;
 }
@@ -208,14 +200,12 @@ void SubWindow::on_item_changed(const QModelIndex& index)
 	const QString doc = QString::fromUtf8(srd_decoder_doc_get(d));
 
 	QString tags;
-	GSList* l = g_slist_copy((GSList*)d->tags);
-	for (GSList* li = l; li; li = li->next) {
-		QString s = (li == l) ?
+	for (GSList* li = (GSList*)d->tags; li; li = li->next) {
+		QString s = (li == (GSList*)d->tags) ?
 			tr((char*)li->data) :
 			QString(tr(", %1")).arg(tr((char*)li->data));
 		tags.append(s);
 	}
-	g_slist_free(l);
 
 	info_label_header_->setText(QString("<span style='font-size:large;font-weight:bold'>%1 (%2)</span><br>%3")
 		.arg(longname, id, desc));
