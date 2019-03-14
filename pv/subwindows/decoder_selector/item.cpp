@@ -41,7 +41,7 @@ shared_ptr<DecoderCollectionItem> DecoderCollectionItem::subItem(int row) const
 {
 	try {
 		return subItems_.at(row);
-	} catch (out_of_range) {
+	} catch (out_of_range&) {
 		return nullptr;
 	}
 }
@@ -85,7 +85,7 @@ QVariant DecoderCollectionItem::data(int column) const
 {
 	try {
 		return data_.at(column);
-	} catch (out_of_range) {
+	} catch (out_of_range&) {
 		return QVariant();
 	}
 }
