@@ -74,7 +74,7 @@ int DecoderCollectionItem::columnCount() const
 int DecoderCollectionItem::row() const
 {
 	if (parent_)
-		for (uint i = 0; i < parent_->subItems_.size(); i++)
+		for (size_t i = 0; i < parent_->subItems_.size(); i++)
 			if (parent_->subItems_.at(i).get() == const_cast<DecoderCollectionItem*>(this))
 				return i;
 
