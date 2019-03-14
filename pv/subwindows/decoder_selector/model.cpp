@@ -107,13 +107,22 @@ QVariant DecoderCollectionModel::data(const QModelIndex& index, int role) const
 	if (!index.isValid())
 		return QVariant();
 
-	if (role != Qt::DisplayRole)
-		return QVariant();
+	if (role == Qt::DisplayRole)
+	{
+		DecoderCollectionItem* item =
+			static_cast<DecoderCollectionItem*>(index.internalPointer());
 
-	DecoderCollectionItem* item =
-		static_cast<DecoderCollectionItem*>(index.internalPointer());
+		return item->data(index.column());
+	}
 
-	return item->data(index.column());
+	if ((role == Qt::FontRole) && (index.parent().isValid()) && (index.column() == 0))
+	{
+		QFont font;
+		font.setItalic(true);
+		return QVariant(font);
+	}
+
+	return QVariant();
 }
 
 Qt::ItemFlags DecoderCollectionModel::flags(const QModelIndex& index) const
