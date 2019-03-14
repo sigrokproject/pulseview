@@ -44,11 +44,14 @@
 #include "devices/hardwaredevice.hpp"
 #include "dialogs/settings.hpp"
 #include "globalsettings.hpp"
-#include "subwindows/decoder_selector/subwindow.hpp"
 #include "toolbars/mainbar.hpp"
 #include "util.hpp"
 #include "views/trace/view.hpp"
 #include "views/trace/standardbar.hpp"
+
+#ifdef ENABLE_DECODE
+#include "subwindows/decoder_selector/subwindow.hpp"
+#endif
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
 
@@ -267,8 +270,13 @@ shared_ptr<subwindows::SubWindowBase> MainWindow::add_subwindow(
 	QString title = "";
 
 	switch (type) {
+#ifdef ENABLE_DECODE
 		case subwindows::SubWindowTypeDecoderSelector:
 			title = tr("Decoder Selector");
+			break;
+#endif
+		default:
+			break;
 	}
 
 	QDockWidget* dock = new QDockWidget(title, main_window);
@@ -279,8 +287,10 @@ shared_ptr<subwindows::SubWindowBase> MainWindow::add_subwindow(
 	QMainWindow *dock_main = new QMainWindow(dock);
 	dock_main->setWindowFlags(Qt::Widget);  // Remove Qt::Window flag
 
+#ifdef ENABLE_DECODE
 	if (type == subwindows::SubWindowTypeDecoderSelector)
 		v = make_shared<subwindows::decoder_selector::SubWindow>(session, dock_main);
+#endif
 
 	if (!v)
 		return nullptr;
@@ -824,6 +834,7 @@ void MainWindow::on_tab_close_requested(int index)
 
 void MainWindow::on_show_decoder_selector(Session *session)
 {
+#ifdef ENABLE_DECODE
 	// Close dock widget if it's already showing and return
 	for (auto entry : sub_windows_) {
 		QDockWidget* dock = entry.first;
@@ -838,6 +849,7 @@ void MainWindow::on_show_decoder_selector(Session *session)
 	for (shared_ptr<Session> s : sessions_)
 		if (s.get() == session)
 			add_subwindow(subwindows::SubWindowTypeDecoderSelector, *s);
+#endif
 }
 
 void MainWindow::on_sub_window_close_clicked()
