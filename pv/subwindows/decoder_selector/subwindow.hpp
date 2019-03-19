@@ -112,6 +112,8 @@ public:
 	bool has_toolbar() const;
 	QToolBar* create_toolbar(QWidget *parent) const;
 
+	int minimum_width() const;
+
 	/**
 	 * Returns a list of input types that a given protocol decoder requires
 	 * ("logic", "uart", etc.)

@@ -19,7 +19,9 @@
 
 #include <algorithm>
 
+#include <QApplication>
 #include <QDebug>
+#include <QFontMetrics>
 #include <QInputDialog>
 #include <QLabel>
 #include <QLineEdit>
@@ -36,6 +38,9 @@ using std::shared_ptr;
 namespace pv {
 namespace subwindows {
 namespace decoder_selector {
+
+const QString initial_notice = QApplication::tr("Select a decoder to see its description here.");
+const int min_width_margin = 75;
 
 
 bool QCustomSortFilterProxyModel::filterAcceptsRow(int source_row,
@@ -126,7 +131,7 @@ SubWindow::SubWindow(Session& session, QWidget* parent) :
 	info_label_header_->setTextInteractionFlags(flags);
 	info_label_body_->setWordWrap(true);
 	info_label_body_->setTextInteractionFlags(flags);
-	info_label_body_->setText(tr("Select a decoder to see its description here."));
+	info_label_body_->setText(initial_notice);
 	info_label_footer_->setWordWrap(true);
 	info_label_footer_->setTextInteractionFlags(flags);
 
@@ -152,6 +157,14 @@ QToolBar* SubWindow::create_toolbar(QWidget *parent) const
 	QToolBar* toolbar = new QToolBar(parent);
 
 	return toolbar;
+}
+
+int SubWindow::minimum_width() const
+{
+	QFontMetrics m(info_label_body_->font());
+	const int label_width = m.width(initial_notice);
+
+	return label_width + min_width_margin;
 }
 
 vector<const char*> SubWindow::get_decoder_inputs(const srd_decoder* d) const

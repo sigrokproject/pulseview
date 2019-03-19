@@ -76,6 +76,8 @@ public:
 	virtual void remove_decode_signal(shared_ptr<data::DecodeSignal> signal);
 #endif
 
+	virtual int minimum_width() const;
+
 public Q_SLOTS:
 	virtual void on_signals_changed();
 

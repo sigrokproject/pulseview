@@ -313,6 +313,9 @@ shared_ptr<subwindows::SubWindowBase> MainWindow::add_subwindow(
 	if (v->has_toolbar())
 		dock_main->addToolBar(v->create_toolbar(dock_main));
 
+	if (v->minimum_width() > 0)
+		dock->setMinimumSize(v->minimum_width(), 0);
+
 	return v;
 }
 

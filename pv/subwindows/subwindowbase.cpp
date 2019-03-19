@@ -98,6 +98,11 @@ void SubWindowBase::remove_decode_signal(shared_ptr<data::DecodeSignal> signal)
 }
 #endif
 
+int SubWindowBase::minimum_width() const
+{
+	return 0;
+}
+
 void SubWindowBase::on_signals_changed()
 {
 }
