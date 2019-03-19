@@ -24,6 +24,7 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
+#include <QScrollArea>
 #include <QVBoxLayout>
 
 #include "pv/session.hpp"
@@ -110,10 +111,14 @@ SubWindow::SubWindow(Session& session, QWidget* parent) :
 
 	tree_view_->setIndentation(10);
 
+	QScrollArea* info_label_body_container = new QScrollArea();
+	info_label_body_container->setWidget(info_label_body_);
+	info_label_body_container->setWidgetResizable(true);
+
 	info_box_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 	QVBoxLayout* info_box_layout = new QVBoxLayout(info_box_);
 	info_box_layout->addWidget(info_label_header_);
-	info_box_layout->addWidget(info_label_body_);
+	info_box_layout->addWidget(info_label_body_container);
 	info_box_layout->addWidget(info_label_footer_);
 	info_box_layout->setAlignment(Qt::AlignTop);
 	Qt::TextInteractionFlags flags = Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard;
@@ -194,7 +199,7 @@ void SubWindow::on_item_changed(const QModelIndex& index)
 	const QString id = QString::fromUtf8(d->id);
 	const QString longname = QString::fromUtf8(d->longname);
 	const QString desc = QString::fromUtf8(d->desc);
-	const QString doc = QString::fromUtf8(srd_decoder_doc_get(d));
+	const QString doc = QString::fromUtf8(srd_decoder_doc_get(d)).trimmed();
 
 	QString tags;
 	for (GSList* li = (GSList*)d->tags; li; li = li->next) {
