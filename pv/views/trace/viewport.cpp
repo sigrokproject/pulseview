@@ -30,6 +30,8 @@
 #include <pv/session.hpp>
 
 #include <QMouseEvent>
+#include <QScreen>
+#include <QWindow>
 
 #include <QDebug>
 
@@ -172,7 +174,10 @@ void Viewport::paintEvent(QPaintEvent*)
 		[](const shared_ptr<TimeItem> &t) { return !t; }));
 
 	QPainter p(this);
-	p.setRenderHint(QPainter::Antialiasing);
+
+	bool useAntialiasing =
+		window()->windowHandle()->screen()->devicePixelRatio() < 2.0;
+	p.setRenderHint(QPainter::Antialiasing, useAntialiasing);
 
 	for (LayerPaintFunc *paint_func = layer_paint_funcs;
 			*paint_func; paint_func++) {

@@ -292,12 +292,13 @@ void Trace::paint_back(QPainter &p, ViewItemPaintParams &pp)
 
 void Trace::paint_axis(QPainter &p, ViewItemPaintParams &pp, int y)
 {
+	bool wasAntialiased = p.testRenderHint(QPainter::Antialiasing);
 	p.setRenderHint(QPainter::Antialiasing, false);
 
 	p.setPen(axis_pen_);
 	p.drawLine(QPointF(pp.left(), y), QPointF(pp.right(), y));
 
-	p.setRenderHint(QPainter::Antialiasing, true);
+	p.setRenderHint(QPainter::Antialiasing, wasAntialiased);
 }
 
 void Trace::add_color_option(QWidget *parent, QFormLayout *form)
@@ -328,10 +329,11 @@ void Trace::paint_hover_marker(QPainter &p)
 
 	const pair<int, int> extents = v_extents();
 
+	bool wasAntialiased = p.testRenderHint(QPainter::Antialiasing);
 	p.setRenderHint(QPainter::Antialiasing, false);
 	p.drawLine(x, get_visual_y() + extents.first,
 		x, get_visual_y() + extents.second);
-	p.setRenderHint(QPainter::Antialiasing, true);
+	p.setRenderHint(QPainter::Antialiasing, wasAntialiased);
 }
 
 void Trace::create_popup_form()
