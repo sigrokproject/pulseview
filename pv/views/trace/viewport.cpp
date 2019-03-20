@@ -175,9 +175,10 @@ void Viewport::paintEvent(QPaintEvent*)
 
 	QPainter p(this);
 
-	bool useAntialiasing =
+	// Disable antialiasing for high-DPI displays
+	bool use_antialiasing =
 		window()->windowHandle()->screen()->devicePixelRatio() < 2.0;
-	p.setRenderHint(QPainter::Antialiasing, useAntialiasing);
+	p.setRenderHint(QPainter::Antialiasing, use_antialiasing);
 
 	for (LayerPaintFunc *paint_func = layer_paint_funcs;
 			*paint_func; paint_func++) {

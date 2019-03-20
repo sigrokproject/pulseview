@@ -319,7 +319,7 @@ void AnalogSignal::paint_fore(QPainter &p, ViewItemPaintParams &pp)
 
 void AnalogSignal::paint_grid(QPainter &p, int y, int left, int right)
 {
-	bool wasAntialiased = p.testRenderHint(QPainter::Antialiasing);
+	bool was_antialiased = p.testRenderHint(QPainter::Antialiasing);
 	p.setRenderHint(QPainter::Antialiasing, false);
 
 	if (pos_vdivs_ > 0) {
@@ -364,7 +364,7 @@ void AnalogSignal::paint_grid(QPainter &p, int y, int left, int right)
 		}
 	}
 
-	p.setRenderHint(QPainter::Antialiasing, wasAntialiased);
+	p.setRenderHint(QPainter::Antialiasing, was_antialiased);
 }
 
 void AnalogSignal::paint_trace(QPainter &p,
