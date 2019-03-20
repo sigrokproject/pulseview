@@ -932,6 +932,7 @@ void Session::update_signals()
 						break;
 
 					case SR_CHANNEL_ANALOG:
+					case SR_CHANNEL_FFT:
 					{
 						if (!signalbase) {
 							signalbase = make_shared<data::SignalBase>(channel,
