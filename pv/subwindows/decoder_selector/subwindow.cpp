@@ -132,6 +132,7 @@ SubWindow::SubWindow(Session& session, QWidget* parent) :
 	info_label_body_->setWordWrap(true);
 	info_label_body_->setTextInteractionFlags(flags);
 	info_label_body_->setText(initial_notice);
+	info_label_body_->setAlignment(Qt::AlignTop);
 	info_label_footer_->setWordWrap(true);
 	info_label_footer_->setTextInteractionFlags(flags);
 
