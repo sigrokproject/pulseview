@@ -521,6 +521,7 @@ void MainBar::update_device_config_widgets()
 
 void MainBar::commit_sample_rate()
 {
+	int result;
 	uint64_t sample_rate = 0;
 
 	const shared_ptr<devices::Device> device = device_selector_.selected_device();
@@ -532,9 +533,10 @@ void MainBar::commit_sample_rate()
 	sample_rate = sample_rate_.value();
 
 	try {
-		sr_dev->config_set(ConfigKey::SAMPLERATE,
+		result = sr_dev->config_set(ConfigKey::SAMPLERATE,
 			Glib::Variant<guint64>::create(sample_rate));
-		update_sample_rate_selector();
+		if (result == SR_OK)
+			update_sample_rate_selector();
 	} catch (Error& error) {
 		qDebug() << tr("Failed to configure samplerate:") << error.what();
 		return;
@@ -548,6 +550,7 @@ void MainBar::commit_sample_rate()
 
 void MainBar::commit_sample_count()
 {
+	int result;
 	uint64_t sample_count = 0;
 
 	const shared_ptr<devices::Device> device = device_selector_.selected_device();
@@ -559,9 +562,10 @@ void MainBar::commit_sample_count()
 	sample_count = sample_count_.value();
 	if (sample_count_supported_) {
 		try {
-			sr_dev->config_set(ConfigKey::LIMIT_SAMPLES,
+			result = sr_dev->config_set(ConfigKey::LIMIT_SAMPLES,
 				Glib::Variant<guint64>::create(sample_count));
-			update_sample_count_selector();
+			if (result == SR_OK)
+				update_sample_count_selector();
 		} catch (Error& error) {
 			qDebug() << tr("Failed to configure sample count:") << error.what();
 			return;
