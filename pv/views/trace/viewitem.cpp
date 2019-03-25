@@ -148,6 +148,11 @@ QColor ViewItem::select_text_color(QColor background)
 	return (background.lightness() > 110) ? Qt::black : Qt::white;
 }
 
+void ViewItem::hover_point_changed(const QPoint &hp)
+{
+	(void)hp;
+}
+
 } // namespace trace
 } // namespace views
 } // namespace pv

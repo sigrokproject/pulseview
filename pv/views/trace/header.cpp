@@ -99,16 +99,16 @@ void Header::paintEvent(QPaintEvent*)
 {
 	const QRect rect(0, 0, width(), height());
 
-	vector< shared_ptr<RowItem> > items(view_.list_by_type<RowItem>());
+	vector< shared_ptr<ViewItem> > items(view_.list_by_type<ViewItem>());
 
 	stable_sort(items.begin(), items.end(),
-		[](const shared_ptr<RowItem> &a, const shared_ptr<RowItem> &b) {
+		[](const shared_ptr<ViewItem> &a, const shared_ptr<ViewItem> &b) {
 			return a->drag_point(QRect()).y() < b->drag_point(QRect()).y(); });
 
 	QPainter painter(this);
 	painter.setRenderHint(QPainter::Antialiasing);
 
-	for (const shared_ptr<RowItem>& r : items) {
+	for (const shared_ptr<ViewItem>& r : items) {
 		assert(r);
 
 		const bool highlight = !item_dragging_ &&

@@ -105,9 +105,9 @@ void ViewWidget::drag_items(const QPoint &delta)
 	bool item_dragged = false;
 
 	// Drag the row items
-	const vector< shared_ptr<RowItem> > row_items(
-		view_.list_by_type<RowItem>());
-	for (const shared_ptr<RowItem>& r : row_items)
+	const vector< shared_ptr<ViewItem> > row_items(
+		view_.list_by_type<ViewItem>());
+	for (const shared_ptr<ViewItem>& r : row_items)
 		if (r->dragging()) {
 			r->drag_by(delta);
 

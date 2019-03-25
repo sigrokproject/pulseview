@@ -275,7 +275,6 @@ set(pulseview_SOURCES
 	pv/views/trace/header.cpp
 	pv/views/trace/marginwidget.cpp
 	pv/views/trace/logicsignal.cpp
-	pv/views/trace/rowitem.cpp
 	pv/views/trace/ruler.cpp
 	pv/views/trace/signal.cpp
 	pv/views/trace/timeitem.cpp
@@ -339,7 +338,6 @@ set(pulseview_HEADERS
 	pv/views/trace/header.hpp
 	pv/views/trace/logicsignal.hpp
 	pv/views/trace/marginwidget.hpp
-	pv/views/trace/rowitem.hpp
 	pv/views/trace/ruler.hpp
 	pv/views/trace/signal.hpp
 	pv/views/trace/timeitem.hpp

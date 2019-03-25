@@ -69,7 +69,7 @@ shared_ptr<ViewItem> Viewport::get_mouse_over_item(const QPoint &pt)
 void Viewport::item_hover(const shared_ptr<ViewItem> &item, QPoint pos)
 {
 	if (item && item->is_draggable(pos))
-		setCursor(dynamic_pointer_cast<RowItem>(item) ?
+		setCursor(dynamic_pointer_cast<ViewItem>(item) ?
 			Qt::SizeVerCursor : Qt::SizeHorCursor);
 	else
 		unsetCursor();
@@ -161,12 +161,12 @@ void Viewport::paintEvent(QPaintEvent*)
 		&ViewItem::paint_back, &ViewItem::paint_mid,
 		&ViewItem::paint_fore, nullptr};
 
-	vector< shared_ptr<RowItem> > row_items(view_.list_by_type<RowItem>());
+	vector< shared_ptr<ViewItem> > row_items(view_.list_by_type<ViewItem>());
 	assert(none_of(row_items.begin(), row_items.end(),
-		[](const shared_ptr<RowItem> &r) { return !r; }));
+		[](const shared_ptr<ViewItem> &r) { return !r; }));
 
 	stable_sort(row_items.begin(), row_items.end(),
-		[](const shared_ptr<RowItem> &a, const shared_ptr<RowItem> &b) {
+		[](const shared_ptr<ViewItem> &a, const shared_ptr<ViewItem> &b) {
 			return a->drag_point(QRect()).y() < b->drag_point(QRect()).y(); });
 
 	const vector< shared_ptr<TimeItem> > time_items(view_.time_items());
@@ -187,7 +187,7 @@ void Viewport::paintEvent(QPaintEvent*)
 			(t.get()->*(*paint_func))(p, time_pp);
 
 		ViewItemPaintParams row_pp(rect(), view_.scale(), view_.offset());
-		for (const shared_ptr<RowItem>& r : row_items)
+		for (const shared_ptr<ViewItem>& r : row_items)
 			(r.get()->*(*paint_func))(p, row_pp);
 	}
 

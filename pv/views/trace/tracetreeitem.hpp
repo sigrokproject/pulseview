@@ -24,7 +24,7 @@
 
 #include <QPropertyAnimation>
 
-#include "rowitem.hpp"
+#include "viewitem.hpp"
 
 using std::enable_shared_from_this;
 using std::pair;
@@ -35,7 +35,7 @@ namespace trace {
 
 class TraceTreeItemOwner;
 
-class TraceTreeItem : public RowItem,
+class TraceTreeItem : public ViewItem,
 	public enable_shared_from_this<TraceTreeItem>
 {
 	Q_OBJECT

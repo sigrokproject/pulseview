@@ -167,6 +167,8 @@ public:
 
 	virtual void delete_pressed();
 
+	virtual void hover_point_changed(const QPoint &hp);
+
 protected:
 	static QPen highlight_pen();
 
