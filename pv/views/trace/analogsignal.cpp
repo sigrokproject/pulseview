@@ -444,7 +444,9 @@ void AnalogSignal::paint_trace(QPainter &p,
 	}
 	delete[] sample_block;
 
-	p.drawPolyline(points, points_count);
+	// QPainter::drawPolyline() is slow, let's paint the lines ourselves
+	for (int64_t i = 1; i < points_count; i++)
+		p.drawLine(points[i - 1], points[i]);
 
 	if (show_sampling_points) {
 		if (paint_thr_dots) {
