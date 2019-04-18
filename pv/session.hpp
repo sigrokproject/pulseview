@@ -38,6 +38,7 @@
 #include <QObject>
 #include <QSettings>
 #include <QString>
+#include <QTime>
 
 #ifdef ENABLE_FLOW
 #include <gstreamermm.h>
@@ -304,6 +305,8 @@ private:
 	bool out_of_memory_;
 	bool data_saved_;
 	bool frame_began_;
+
+	QTime acq_time_;
 
 #ifdef ENABLE_FLOW
 	RefPtr<Pipeline> pipeline_;

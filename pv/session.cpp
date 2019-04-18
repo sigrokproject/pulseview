@@ -820,6 +820,11 @@ void Session::set_capture_state(capture_state state)
 {
 	bool changed;
 
+	if (state == Running)
+		acq_time_.start();
+	if (state == Stopped)
+		qDebug("Acquisition took %.2f s", acq_time_.elapsed() / 1000.);
+
 	{
 		lock_guard<mutex> lock(sampling_mutex_);
 		changed = capture_state_ != state;
