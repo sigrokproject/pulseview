@@ -588,7 +588,7 @@ void Session::load_file(QString file_name,
 	}
 
 	// Default the setup filename with a .pvs extension if none is provided
-	if (setup_file_name.isEmpty() || setup_file_name.isNull()) {
+	if (setup_file_name.isEmpty()) {
 		setup_file_name = file_name;
 		setup_file_name.truncate(setup_file_name.lastIndexOf('.'));
 		setup_file_name.append(".pvs");
