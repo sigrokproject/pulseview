@@ -399,10 +399,13 @@ void MainWindow::remove_session(shared_ptr<Session> session)
 }
 
 void MainWindow::add_session_with_file(string open_file_name,
-	string open_file_format)
+	string open_file_format,
+	string open_setup_file_name)
 {
 	shared_ptr<Session> session = add_session();
-	session->load_init_file(open_file_name, open_file_format);
+	session->load_init_file(open_file_name,
+		open_file_format,
+		open_setup_file_name);
 }
 
 void MainWindow::add_default_session()

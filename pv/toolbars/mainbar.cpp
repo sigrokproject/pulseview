@@ -705,7 +705,7 @@ void MainBar::import_file(shared_ptr<InputFormat> format)
 		options = dlg.options();
 	}
 
-	session_.load_file(file_name, format, options);
+	session_.load_file(file_name, nullptr, format, options);
 
 	const QString abs_path = QFileInfo(file_name).absolutePath();
 	settings.setValue(SettingOpenDirectory, abs_path);

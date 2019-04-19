@@ -172,9 +172,12 @@ public:
 
 	void set_default_device();
 
-	void load_init_file(const string &file_name, const string &format);
+	void load_init_file(const string &file_name,
+		const string &format,
+		const string &setup_file_name);
 
 	void load_file(QString file_name,
+		QString setup_file_name = nullptr,
 		shared_ptr<sigrok::InputFormat> format = nullptr,
 		const map<string, Glib::VariantBase> &options =
 			map<string, Glib::VariantBase>());
