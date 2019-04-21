@@ -102,6 +102,7 @@ SubWindow::SubWindow(Session& session, QWidget* parent) :
 
 	sort_filter_model_->setSourceModel(model_);
 	sort_filter_model_->setFilterCaseSensitivity(Qt::CaseInsensitive);
+	sort_filter_model_->setFilterKeyColumn(-1);
 
 	tree_view_->setModel(sort_filter_model_);
 	tree_view_->setRootIsDecorated(true);
