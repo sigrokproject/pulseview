@@ -92,8 +92,7 @@ public:
 
 	void remove_session(shared_ptr<Session> session);
 
-	void add_session_with_file(string open_file_name,
-		string open_file_format,
+	void add_session_with_file(string open_file_name, string open_file_format,
 		string open_setup_file_name);
 
 	void add_default_session();

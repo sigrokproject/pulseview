@@ -526,8 +526,7 @@ Session::input_format_options(vector<string> user_spec,
 }
 
 void Session::load_init_file(const string &file_name,
-	const string &format,
-	const string &setup_file_name)
+	const string &format, const string &setup_file_name)
 {
 	shared_ptr<InputFormat> input_format;
 	map<string, Glib::VariantBase> input_opts;
@@ -551,15 +550,12 @@ void Session::load_init_file(const string &file_name,
 			input_format->options());
 	}
 
-	load_file(QString::fromStdString(file_name),
-		QString::fromStdString(setup_file_name),
+	load_file(QString::fromStdString(file_name), QString::fromStdString(setup_file_name),
 		input_format, input_opts);
 }
 
-void Session::load_file(QString file_name,
-	QString setup_file_name,
-	shared_ptr<sigrok::InputFormat> format,
-	const map<string, Glib::VariantBase> &options)
+void Session::load_file(QString file_name, QString setup_file_name,
+	shared_ptr<sigrok::InputFormat> format, const map<string, Glib::VariantBase> &options)
 {
 	const QString errorMessage(
 		QString("Failed to load file %1").arg(file_name));
@@ -587,13 +583,13 @@ void Session::load_file(QString file_name,
 		return;
 	}
 
-	// Default the setup filename with a .pvs extension if none is provided
+	// Use the input file with .pvs extension if no setup file was given
 	if (setup_file_name.isEmpty()) {
 		setup_file_name = file_name;
 		setup_file_name.truncate(setup_file_name.lastIndexOf('.'));
 		setup_file_name.append(".pvs");
 	}
-	// Auto-load the setup if one exists
+
 	if (QFileInfo::exists(setup_file_name) && QFileInfo(setup_file_name).isReadable()) {
 		QSettings settings_storage(setup_file_name, QSettings::IniFormat);
 		restore_setup(settings_storage);

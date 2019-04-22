@@ -340,8 +340,7 @@ int main(int argc, char *argv[])
 				w.add_default_session();
 			else
 				for (string& open_file : open_files)
-					w.add_session_with_file(open_file, open_file_format,
-						open_setup_file);
+					w.add_session_with_file(open_file, open_file_format, open_setup_file);
 
 #ifdef ENABLE_SIGNALS
 			if (SignalHandler::prepare_signals()) {
