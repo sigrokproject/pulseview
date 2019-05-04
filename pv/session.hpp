@@ -38,7 +38,7 @@
 #include <QObject>
 #include <QSettings>
 #include <QString>
-#include <QTime>
+#include <QElapsedTimer>
 
 #ifdef ENABLE_FLOW
 #include <gstreamermm.h>
@@ -307,7 +307,7 @@ private:
 	bool data_saved_;
 	bool frame_began_;
 
-	QTime acq_time_;
+	QElapsedTimer acq_time_;
 
 #ifdef ENABLE_FLOW
 	RefPtr<Pipeline> pipeline_;
