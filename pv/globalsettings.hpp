@@ -69,6 +69,8 @@ public:
 	static const QString Key_View_ShowHoverMarker;
 	static const QString Key_View_SnapDistance;
 	static const QString Key_View_CursorFillColor;
+	static const QString Key_View_CursorShowInterval;
+	static const QString Key_View_CursorShowFrequency;
 	static const QString Key_Dec_InitialStateConfigurable;
 	static const QString Key_Dec_ExportFormat;
 	static const QString Key_Log_BufferSize;

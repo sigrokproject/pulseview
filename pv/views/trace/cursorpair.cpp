@@ -21,6 +21,7 @@
 #include <cassert>
 
 #include <QColor>
+#include <QMenu>
 #include <QToolTip>
 
 #include "cursorpair.hpp"
@@ -49,16 +50,20 @@ CursorPair::CursorPair(View &view) :
 {
 	GlobalSettings::add_change_handler(this);
 
-	GlobalSettings settings;
-	fill_color_ = QColor::fromRgba(settings.value(
+	fill_color_ = QColor::fromRgba(settings_.value(
 		GlobalSettings::Key_View_CursorFillColor).value<uint32_t>());
-
+	show_frequency_ = settings_.value(
+		GlobalSettings::Key_View_CursorShowFrequency, true).value<bool>();
+	show_interval_ = settings_.value(
+		GlobalSettings::Key_View_CursorShowInterval, true).value<bool>();
 	connect(&view_, SIGNAL(hover_point_changed(const QWidget*, QPoint)),
 		this, SLOT(on_hover_point_changed(const QWidget*, QPoint)));
 }
 
 CursorPair::~CursorPair()
 {
+	settings_.setValue(GlobalSettings::Key_View_CursorShowFrequency, show_frequency_);
+	settings_.setValue(GlobalSettings::Key_View_CursorShowInterval, show_interval_);
 	GlobalSettings::remove_change_handler(this);
 }
 
@@ -98,6 +103,29 @@ pv::widgets::Popup* CursorPair::create_popup(QWidget *parent)
 {
 	(void)parent;
 	return nullptr;
+}
+
+QMenu *CursorPair::create_header_context_menu(QWidget *parent)
+{
+	QMenu *ret = new QMenu(parent);
+	QAction *displayIntervalAction = new QAction(tr("Display interval"));
+	displayIntervalAction->setCheckable(true);
+	displayIntervalAction->setChecked(show_interval_);
+	ret->addAction(displayIntervalAction);
+
+	connect(displayIntervalAction, &QAction::toggled, [=] {
+		this->show_interval_ = !this->show_interval_;
+	});
+
+	QAction *displayFrequencyAction = new QAction(tr("Display frequency"));
+	displayFrequencyAction->setCheckable(true);
+	displayFrequencyAction->setChecked(show_frequency_);
+	ret->addAction(displayFrequencyAction);
+
+	connect(displayFrequencyAction, &QAction::toggled, [=] {
+		this->show_frequency_ = !this->show_frequency_;
+	});
+	return ret;
 }
 
 QRectF CursorPair::label_rect(const QRectF &rect) const
@@ -183,12 +211,24 @@ QString CursorPair::format_string()
 	const pv::util::SIPrefix prefix = view_.tick_prefix();
 	const pv::util::Timestamp diff = abs(second_->time() - first_->time());
 
-	const QString s1 = Ruler::format_time_with_distance(
-		diff, diff, prefix, view_.time_unit(), 12, false);  /* Always use 12 precision digits */
-	const QString s2 = util::format_time_si(
-		1 / diff, pv::util::SIPrefix::unspecified, 4, "Hz", false);
+	QString interval;
+	if (show_interval_) {
+		interval = Ruler::format_time_with_distance(
+			diff, diff, prefix, view_.time_unit(), 12, false);  /* Always use 12 precision digits */
+	}
+	QString freq;
+	if (show_frequency_) {
+		freq = util::format_time_si(
+			1 / diff, pv::util::SIPrefix::unspecified, 4, "Hz", false);
+	}
 
-	return QString("%1 / %2").arg(s1, s2);
+	if (show_frequency_ && show_interval_)
+		return QString("%1 / %2").arg(interval, freq);
+	else if (!show_frequency_ && show_interval_)
+		return interval;
+	else if (show_frequency_ && !show_interval_)
+		return freq;
+	return QString();
 }
 
 pair<float, float> CursorPair::get_cursor_offsets() const

@@ -82,6 +82,8 @@ public:
 
 	pv::widgets::Popup* create_popup(QWidget *parent) override;
 
+	QMenu* create_header_context_menu(QWidget *parent) override;
+
 	QRectF label_rect(const QRectF &rect) const override;
 
 	/**
@@ -118,6 +120,10 @@ private:
 	QSizeF text_size_;
 	QRectF label_area_;
 	bool label_incomplete_;
+	bool show_interval_;
+	bool show_frequency_;
+
+	GlobalSettings settings_;
 };
 
 } // namespace trace
