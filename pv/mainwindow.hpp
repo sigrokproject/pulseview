@@ -108,6 +108,8 @@ private:
 	void save_ui_settings();
 	void restore_ui_settings();
 
+	void zoom_current_view(double steps);
+
 	shared_ptr<Session> get_tab_session(int index) const;
 
 	void closeEvent(QCloseEvent *event);
@@ -148,6 +150,9 @@ private Q_SLOTS:
 	void on_settingViewShowSamplingPoints_changed(const QVariant new_value);
 	void on_settingViewShowAnalogMinorGrid_changed(const QVariant new_value);
 
+	void on_zoom_out_shortcut_triggered();
+	void on_zoom_in_shortcut_triggered();
+
 	void on_close_current_tab();
 
 private:
@@ -177,6 +182,8 @@ private:
 	QShortcut *run_stop_shortcut_;
 	QShortcut *close_application_shortcut_;
 	QShortcut *close_current_tab_shortcut_;
+	QShortcut *zoom_in_shortcut_;
+	QShortcut *zoom_out_shortcut_;
 };
 
 } // namespace pv
