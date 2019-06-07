@@ -27,7 +27,7 @@
 
 #include <QCheckBox>
 #include <QFormLayout>
-#include <QGridLayout>
+#include <QHBoxLayout>
 #include <QLabel>
 #include <QPushButton>
 #include <QSignalMapper>
@@ -69,55 +69,41 @@ public:
 	Channels(Session &session, QWidget *parent);
 
 private:
-	void set_all_channels(bool set);
-
-	void enable_channels_conditionally(
-		function<bool (const shared_ptr<data::SignalBase>)> cond_func);
-	void disable_channels_conditionally(
+	void set_all_channels(bool value);
+	void set_channels_to_condition(
 		function<bool (const shared_ptr<data::SignalBase>)> cond_func);
 
 	void populate_group(shared_ptr<sigrok::ChannelGroup> group,
 		const vector< shared_ptr<pv::data::SignalBase> > sigs);
 
-	QGridLayout* create_channel_group_grid(
-		const vector< shared_ptr<pv::data::SignalBase> > sigs);
-
 	void showEvent(QShowEvent *event);
 
-private Q_SLOTS:
-	void on_channel_checked(QWidget *widget);
+    static bool has_signal(const shared_ptr<pv::data::SignalBase> signal);
 
+private Q_SLOTS:
 	void enable_all_channels();
 	void disable_all_channels();
-	void enable_all_logic_channels();
-	void disable_all_logic_channels();
-	void enable_all_analog_channels();
-	void disable_all_analog_channels();
-	void enable_all_named_channels();
-	void disable_all_unnamed_channels();
-	void enable_all_changing_channels();
-	void disable_all_non_changing_channels();
+	void enable_only_logic_channels();
+	void enable_only_analog_channels();
+	void enable_only_named_channels();
+	void enable_only_changing_channels();
 
 private:
 	pv::Session &session_;
 
 	QFormLayout layout_;
 
-	bool updating_channels_;
-
-	vector< shared_ptr<pv::binding::Device> > group_bindings_;
 	map< QCheckBox*, shared_ptr<pv::data::SignalBase> >
 		check_box_signal_map_;
+	vector< shared_ptr<pv::binding::Device> > group_bindings_;
 	map< shared_ptr<sigrok::ChannelGroup>, QLabel*> group_label_map_;
 
-	QGridLayout filter_buttons_bar_;
+	QHBoxLayout filter_buttons_bar_;
 	QPushButton enable_all_channels_, disable_all_channels_;
-	QPushButton enable_all_logic_channels_, disable_all_logic_channels_;
-	QPushButton enable_all_analog_channels_, disable_all_analog_channels_;
-	QPushButton enable_all_named_channels_, disable_all_unnamed_channels_;
-	QPushButton enable_all_changing_channels_, disable_all_non_changing_channels_;
-
-	QSignalMapper check_box_mapper_;
+	QPushButton *enable_only_logic_channels_;
+	QPushButton *enable_only_analog_channels_;
+	QPushButton enable_only_named_channels_;
+	QPushButton enable_only_changing_channels_;
 };
 
 }  // namespace popups
