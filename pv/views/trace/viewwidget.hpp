@@ -25,6 +25,8 @@
 #include <QPoint>
 #include <QWidget>
 
+#include <pv/util.hpp>
+
 using std::shared_ptr;
 using std::vector;
 
@@ -143,6 +145,7 @@ protected:
 	pv::views::trace::View &view_;
 	QPoint mouse_point_;
 	QPoint mouse_down_point_;
+	pv::util::Timestamp mouse_down_offset_;
 	shared_ptr<ViewItem> mouse_down_item_;
 	bool item_dragging_;
 };

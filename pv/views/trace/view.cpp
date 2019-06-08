@@ -790,22 +790,37 @@ bool View::cursors_shown() const
 
 void View::show_cursors(bool show)
 {
-	show_cursors_ = show;
-	cursor_state_changed(show);
-	ruler_->update();
-	viewport_->update();
+    if (show_cursors_ != show) {
+        show_cursors_ = show;
+        cursor_state_changed(show);
+        ruler_->update();
+        viewport_->update();
+
+    } else {
+        show_cursors_ = show;
+    }
+}
+
+void View::set_cursors(pv::util::Timestamp& first, pv::util::Timestamp& second) {
+    assert(cursors);
+
+    cursors_->first()->set_time(first);
+    cursors_->second()->set_time(second);
+
+    ruler_->update();
+    viewport_->update();
 }
 
 void View::centre_cursors()
 {
-	if (cursors_) {
-		const double time_width = scale_ * viewport_->width();
-		cursors_->first()->set_time(offset_ + time_width * 0.4);
-		cursors_->second()->set_time(offset_ + time_width * 0.6);
+    assert(cursors);
 
-		ruler_->update();
-		viewport_->update();
-	}
+    const double time_width = scale_ * viewport_->width();
+    cursors_->first()->set_time(offset_ + time_width * 0.4);
+    cursors_->second()->set_time(offset_ + time_width * 0.6);
+
+    ruler_->update();
+    viewport_->update();
 }
 
 shared_ptr<CursorPair> View::cursors() const
