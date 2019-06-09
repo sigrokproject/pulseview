@@ -129,19 +129,14 @@ void CursorPair::paint_label(QPainter &p, const QRect &rect, bool hover)
 	const QColor text_color = ViewItem::select_text_color(Cursor::FillColor);
 	p.setPen(text_color);
 
-	QString text = format_string();
-	text_size_ = p.boundingRect(QRectF(), 0, text).size();
-
 	QRectF delta_rect(label_rect(rect));
 	const int radius = delta_rect.height() / 2;
 	QRectF text_rect(delta_rect.intersected(rect).adjusted(radius, 0, -radius, 0));
 
-	if (text_rect.width() < text_size_.width()) {
-		text = "...";
-		text_size_ = p.boundingRect(QRectF(), 0, text).size();
-		label_incomplete_ = true;
-	} else
-		label_incomplete_ = false;
+	QString text = format_string(text_rect.width(), [&p](const QString& s) -> qreal {
+			return p.boundingRect(QRectF(), 0, s).width();
+		});
+	text_size_ = p.boundingRect(QRectF(), 0, text).size();
 
 	if (selected()) {
 		p.setBrush(Qt::transparent);
@@ -178,17 +173,50 @@ void CursorPair::paint_back(QPainter &p, ViewItemPaintParams &pp)
 	p.drawRect(l, pp.top(), r - l, pp.height());
 }
 
-QString CursorPair::format_string()
+QString CursorPair::format_string(qreal max_width, std::function<qreal(const QString&)> query_size)
 {
+	constexpr int time_precision = 12;
+	constexpr int freq_precision = 4;
+
 	const pv::util::SIPrefix prefix = view_.tick_prefix();
 	const pv::util::Timestamp diff = abs(second_->time() - first_->time());
 
-	const QString s1 = Ruler::format_time_with_distance(
-		diff, diff, prefix, view_.time_unit(), 12, false);  /* Always use 12 precision digits */
-	const QString s2 = util::format_time_si(
-		1 / diff, pv::util::SIPrefix::unspecified, 4, "Hz", false);
+	const QString time = Ruler::format_time_with_distance(
+			diff, diff, prefix, view_.time_unit(), time_precision, false);
+	const QString freq = util::format_time_si(
+		1 / diff, pv::util::SIPrefix::unspecified, freq_precision, "Hz", false);
+	const QString out = QString("%1 / %2").arg(time, freq);
 
-	return QString("%1 / %2").arg(s1, s2);
+	// Try full "{time} ms / {freq} Hz" format
+	if (max_width <= 0 || query_size(out) <= max_width) {
+		label_incomplete_ = false;
+		return out;
+	}
+
+	label_incomplete_ = true;
+
+	// Try just "{time}ms" format and gradually reduce time precision down to zero
+	for (int shrinkage=0; shrinkage <= time_precision; shrinkage++) {
+		int prec = time_precision - shrinkage ;
+
+		const QString time = Ruler::format_time_with_distance(
+			diff, diff, prefix, view_.time_unit(),
+			prec, false);
+
+		if (query_size(time) <= max_width)
+			return time;
+	}
+
+	// Try no trailing digits and drop the unit to at least display something. The unit should be obvious from the ruler
+	// anyway.
+	const QString bare_number = Ruler::format_time_with_distance(
+		diff, diff, prefix, view_.time_unit(),
+		0, false, false);
+	if (query_size(bare_number) <= max_width)
+		return bare_number;
+
+	// Give up.
+	return "...";
 }
 
 pair<float, float> CursorPair::get_cursor_offsets() const

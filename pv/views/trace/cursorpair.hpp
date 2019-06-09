@@ -102,7 +102,8 @@ public:
 	/**
 	 * Constructs the string to display.
 	 */
-	QString format_string();
+	QString format_string(qreal max_width = 0, std::function<qreal(const QString&)> query_size
+			= [](const QString& s) -> qreal { Q_UNUSED(s); return 0; });
 
 	pair<float, float> get_cursor_offsets() const;
 

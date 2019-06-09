@@ -88,7 +88,8 @@ QString Ruler::format_time_with_distance(
 	pv::util::SIPrefix prefix,
 	pv::util::TimeUnit unit,
 	unsigned precision,
-	bool sign)
+	bool sign,
+	bool show_unit)
 {
 	const unsigned limit = 60;
 
@@ -97,7 +98,7 @@ QString Ruler::format_time_with_distance(
 
 	// If we have to use samples then we have no alternative formats
 	if (unit == pv::util::TimeUnit::Samples)
-		return pv::util::format_time_si_adjusted(t, prefix, precision, "sa", sign);
+		return pv::util::format_time_si_adjusted(t, prefix, precision, show_unit ? "sa" : NULL, sign);
 
 	// View zoomed way out -> low precision (0), big distance (>=60s)
 	// -> DD:HH:MM
@@ -109,7 +110,7 @@ QString Ruler::format_time_with_distance(
 	// View zoomed way in -> high precision (>3), low step size (<1s)
 	// -> HH:MM:SS.mmm... or xxxx (si unit) if less than limit seconds
 	if (abs(t) < limit)
-		return pv::util::format_time_si_adjusted(t, prefix, precision, "s", sign);
+		return pv::util::format_time_si_adjusted(t, prefix, precision, show_unit ? "s" : NULL, sign);
 	else
 		return pv::util::format_time_minutes(t, precision, sign);
 }
