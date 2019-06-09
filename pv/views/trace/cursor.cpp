@@ -59,7 +59,8 @@ QString Cursor::get_text() const
 	const pv::util::Timestamp& diff = abs(time_ - other->time_);
 
 	return Ruler::format_time_with_distance(
-		diff, time_, view_.tick_prefix(), view_.time_unit(), view_.tick_precision());
+		diff, view_.absolute_to_ruler_time(time_),
+        view_.tick_prefix(), view_.time_unit(), view_.tick_precision());
 }
 
 QRectF Cursor::label_rect(const QRectF &rect) const

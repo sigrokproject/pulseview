@@ -456,6 +456,16 @@ void View::set_scale(double scale)
 	}
 }
 
+pv::util::Timestamp View::absolute_to_ruler_time(const pv::util::Timestamp& abs_time) const
+{
+    return abs_time + zero_offset_;
+}
+
+pv::util::Timestamp View::ruler_to_absolute_time(const pv::util::Timestamp& ruler_time) const
+{
+    return ruler_time - zero_offset_;
+}
+
 void View::set_offset(const pv::util::Timestamp& offset, bool force_update)
 {
 	if ((offset_ != offset) || force_update) {
