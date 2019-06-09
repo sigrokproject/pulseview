@@ -128,7 +128,6 @@ protected:
 
 	QWidgetAction *value_action_;
 	pv::widgets::TimestampSpinBox *value_widget_;
-	bool updating_value_widget_;
 };
 
 } // namespace trace

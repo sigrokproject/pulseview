@@ -49,8 +49,7 @@ TimeMarker::TimeMarker(
 	color_(color),
 	time_(time),
 	value_action_(nullptr),
-	value_widget_(nullptr),
-	updating_value_widget_(false)
+	value_widget_(nullptr)
 {
 }
 
@@ -64,9 +63,8 @@ void TimeMarker::set_time(const pv::util::Timestamp& time)
 	time_ = time;
 
 	if (value_widget_) {
-		updating_value_widget_ = true;
+		QSignalBlocker blocker(value_widget_);
 		value_widget_->setValue(view_.absolute_to_ruler_time(time));
-		updating_value_widget_ = false;
 	}
 
 	view_.time_item_appearance_changed(true, true);
@@ -191,8 +189,7 @@ pv::widgets::Popup* TimeMarker::create_popup(QWidget *parent)
 
 void TimeMarker::on_value_changed(const pv::util::Timestamp& value)
 {
-	if (!updating_value_widget_)
-		set_time(view_.ruler_to_absolute_time(value));
+	set_time(view_.ruler_to_absolute_time(value));
 }
 
 } // namespace trace
