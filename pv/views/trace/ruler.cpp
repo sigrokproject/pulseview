@@ -183,7 +183,7 @@ shared_ptr<ViewItem> Ruler::get_mouse_over_item(const QPoint &pt)
 
 void Ruler::mouseDoubleClickEvent(QMouseEvent *event)
 {
-	view_.add_flag(get_ruler_time_from_x_pos(event->x()));
+	view_.add_flag(get_absolute_time_from_x_pos(event->x()));
 }
 
 void Ruler::paintEvent(QPaintEvent*)
