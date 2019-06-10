@@ -283,10 +283,27 @@ void ViewWidget::mouseReleaseEvent(QMouseEvent *event)
 	mouse_down_item_ = nullptr;
 }
 
+void ViewWidget::keyReleaseEvent(QKeyEvent *event)
+{
+	// Update mouse_modifiers_ also if modifiers change, but pointer doesn't move
+	if (mouse_point_.x() >= 0 && mouse_point_.y() >= 0) // mouse is inside
+		mouse_modifiers_ = event->modifiers();
+	update();
+}
+
+void ViewWidget::keyPressEvent(QKeyEvent *event)
+{
+	// Update mouse_modifiers_ also if modifiers change, but pointer doesn't move
+	if (mouse_point_.x() >= 0 && mouse_point_.y() >= 0) // mouse is inside
+		mouse_modifiers_ = event->modifiers();
+	update();
+}
+
 void ViewWidget::mouseMoveEvent(QMouseEvent *event)
 {
 	assert(event);
 	mouse_point_ = event->pos();
+	mouse_modifiers_ = event->modifiers();
 
 	if (!event->buttons()) {
 		item_hover(get_mouse_over_item(event->pos()), event->pos());
@@ -326,6 +343,8 @@ void ViewWidget::mouseMoveEvent(QMouseEvent *event)
 void ViewWidget::leaveEvent(QEvent*)
 {
 	mouse_point_ = QPoint(-1, -1);
+	mouse_modifiers_ = Qt::NoModifier;
+	item_hover(nullptr, QPoint());
 	update();
 }
 

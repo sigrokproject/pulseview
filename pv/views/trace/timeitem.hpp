@@ -49,7 +49,11 @@ public:
 	 */
 	virtual void set_time(const pv::util::Timestamp& time) = 0;
 
+	virtual const pv::util::Timestamp time() const = 0;
+
 	virtual float get_x() const = 0;
+
+	virtual const pv::util::Timestamp delta(const pv::util::Timestamp& other) const = 0;
 
 	/**
 	 * Drags the item to a delta relative to the drag point.

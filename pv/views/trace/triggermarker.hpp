@@ -67,7 +67,11 @@ public:
 	 */
 	void set_time(const pv::util::Timestamp& time) override;
 
+	virtual const pv::util::Timestamp time() const override;
+
 	float get_x() const override;
+
+	virtual const pv::util::Timestamp delta(const pv::util::Timestamp& other) const override;
 
 	/**
 	 * Gets the arrow-tip point of the time marker.

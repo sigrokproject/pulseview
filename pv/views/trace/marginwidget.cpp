@@ -76,6 +76,8 @@ void MarginWidget::keyPressEvent(QKeyEvent *event)
 			if (i->selected())
 				i->delete_pressed();
 	}
+
+    ViewWidget::keyPressEvent(event);
 }
 
 } // namespace trace

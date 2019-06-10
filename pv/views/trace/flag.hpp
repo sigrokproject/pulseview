@@ -73,6 +73,8 @@ public:
 
 	void delete_pressed();
 
+	QRectF label_rect(const QRectF &rect) const override;
+
 private Q_SLOTS:
 	void on_delete();
 

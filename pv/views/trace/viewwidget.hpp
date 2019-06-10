@@ -133,6 +133,9 @@ protected:
 	void mouseReleaseEvent(QMouseEvent *event);
 	void mouseMoveEvent(QMouseEvent *event);
 
+	void keyPressEvent(QKeyEvent *event);
+	void keyReleaseEvent(QKeyEvent *event);
+
 	void leaveEvent(QEvent *event);
 
 public Q_SLOTS:
@@ -144,6 +147,7 @@ Q_SIGNALS:
 protected:
 	pv::views::trace::View &view_;
 	QPoint mouse_point_;
+	Qt::KeyboardModifiers mouse_modifiers_;
 	QPoint mouse_down_point_;
 	pv::util::Timestamp mouse_down_offset_;
 	shared_ptr<ViewItem> mouse_down_item_;
