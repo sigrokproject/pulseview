@@ -156,6 +156,8 @@ public:
 	 */
 	vector< shared_ptr<TimeItem> > time_items() const;
 
+	shared_ptr<TimeItem> get_reference_time_item();
+
 	/**
 	 * Returns the view time scale in seconds per pixel.
 	 */
@@ -298,7 +300,7 @@ public:
 	/**
 	 * Adds a new flag at a specified time.
 	 */
-	void add_flag(const pv::util::Timestamp& time);
+	shared_ptr<Flag> add_flag(const pv::util::Timestamp& time);
 
 	/**
 	 * Removes a flag from the list.

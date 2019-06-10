@@ -129,7 +129,7 @@ View::View(Session &session, bool is_main_view, QWidget *parent) :
 
 	// Note: Place defaults in View::reset_view_state(), not here
 	splitter_(new QSplitter()),
-	header_was_shrunk_(false),  // The splitter remains unchanged after a reset, so this goes here
+	header_was_shrunk_(false),	// The splitter remains unchanged after a reset, so this goes here
 	sticky_scrolling_(false)  // Default setting is set in MainWindow::setup_ui()
 {
 	QVBoxLayout *root_layout = new QVBoxLayout(this);
@@ -168,8 +168,8 @@ View::View(Session &session, bool is_main_view, QWidget *parent) :
 	splitter_->setHandleWidth(1);  // Don't show a visible rubber band
 	splitter_->setCollapsible(0, false);  // Prevent the header from collapsing
 	splitter_->setCollapsible(1, false);  // Prevent the traces from collapsing
-	splitter_->setStretchFactor(0, 0);  // Prevent the panes from being resized
-	splitter_->setStretchFactor(1, 1);  // when the entire view is resized
+	splitter_->setStretchFactor(0, 0);	// Prevent the panes from being resized
+	splitter_->setStretchFactor(1, 1);	// when the entire view is resized
 	splitter_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
 	viewport_->installEventFilter(this);
@@ -441,6 +441,11 @@ vector< shared_ptr<TimeItem> > View::time_items() const
 		items.push_back(trigger_marker);
 
 	return items;
+}
+
+shared_ptr<TimeItem> View::get_reference_time_item()
+{
+	return ruler_->get_reference_item();
 }
 
 double View::scale() const
@@ -749,10 +754,10 @@ pair<Timestamp, Timestamp> View::get_time_extents() const
 			const Timestamp start_time = s->start_time();
 			left_time = left_time ?
 				min(*left_time, start_time) :
-				                start_time;
+								start_time;
 			right_time = right_time ?
 				max(*right_time, start_time + d->max_sample_count() / samplerate) :
-				                 start_time + d->max_sample_count() / samplerate;
+								 start_time + d->max_sample_count() / samplerate;
 		}
 	}
 
@@ -832,15 +837,17 @@ shared_ptr<CursorPair> View::cursors() const
 	return cursors_;
 }
 
-void View::add_flag(const Timestamp& time)
+shared_ptr<Flag> View::add_flag(const Timestamp& time)
 {
-	flags_.push_back(make_shared<Flag>(*this, time,
-		QString("%1").arg(next_flag_text_)));
+	shared_ptr<Flag> flag = make_shared<Flag>(
+			*this, time, QString("%1").arg(next_flag_text_));
+	flags_.push_back(flag);
 
 	next_flag_text_ = (next_flag_text_ >= 'Z') ? 'A' :
 		(next_flag_text_ + 1);
 
 	time_item_appearance_changed(true, true);
+	return flag;
 }
 
 void View::remove_flag(shared_ptr<Flag> flag)

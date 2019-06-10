@@ -186,6 +186,34 @@ vector< shared_ptr<ViewItem> > Ruler::items()
 		time_items.begin(), time_items.end());
 }
 
+void Ruler::item_hover(const shared_ptr<ViewItem> &item, QPoint pos)
+{
+	Q_UNUSED(pos);
+	hover_item_ = dynamic_pointer_cast<TimeItem>(item);
+}
+
+shared_ptr<TimeItem> Ruler::get_reference_item()
+{
+	if (mouse_modifiers_ & Qt::ShiftModifier)
+		return nullptr;
+
+	if (hover_item_ != nullptr)
+		return hover_item_;
+
+	shared_ptr<TimeItem> found(nullptr);
+	const vector< shared_ptr<TimeItem> > items(view_.time_items());
+	for (auto i = items.rbegin(); i != items.rend(); i++) {
+		if ((*i)->enabled() && (*i)->selected()) {
+			if (found == nullptr)
+				found = *i;
+			else
+				return nullptr; // Return null if multiple items are selected
+		}
+	}
+
+	return found;
+}
+
 shared_ptr<ViewItem> Ruler::get_mouse_over_item(const QPoint &pt)
 {
 	const vector< shared_ptr<TimeItem> > items(view_.time_items());
@@ -197,7 +225,7 @@ shared_ptr<ViewItem> Ruler::get_mouse_over_item(const QPoint &pt)
 
 void Ruler::mouseDoubleClickEvent(QMouseEvent *event)
 {
-	view_.add_flag(get_absolute_time_from_x_pos(event->x()));
+	hover_item_ = view_.add_flag(get_absolute_time_from_x_pos(event->x()));
 }
 
 void Ruler::paintEvent(QPaintEvent*)
@@ -350,7 +378,7 @@ void Ruler::invalidate_tick_position_cache()
 
 void Ruler::on_createMarker()
 {
-	view_.add_flag(get_absolute_time_from_x_pos(mouse_down_point_.x()));
+	hover_item_ = view_.add_flag(get_absolute_time_from_x_pos(mouse_down_point_.x()));
 }
 
 void Ruler::on_setZeroPosition()

@@ -19,11 +19,13 @@
 
 #include "timemarker.hpp"
 #include "view.hpp"
+#include "ruler.hpp"
 
 #include <QColor>
 #include <QFormLayout>
 #include <QLineEdit>
 #include <QMenu>
+#include <QApplication>
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
 
@@ -57,7 +59,43 @@ bool Flag::enabled() const
 
 QString Flag::get_text() const
 {
-	return text_;
+	const shared_ptr<TimeItem> ref_item = view_.get_reference_time_item();
+	if (ref_item == nullptr || ref_item.get() == this) {
+		return text_;
+	} else {
+		return Ruler::format_time_with_distance(
+			ref_item->time(), ref_item->delta(time_),
+			view_.tick_prefix(), view_.time_unit(), view_.tick_precision());
+	}
+}
+
+QRectF Flag::label_rect(const QRectF &rect) const
+{
+	const shared_ptr<TimeItem> ref_item = view_.get_reference_time_item();
+	if (ref_item == nullptr || ref_item.get() == this) {
+		return TimeMarker::label_rect(rect);
+
+	} else {
+		// TODO: Remove code duplication between here and cursor.cpp
+		const float x = get_x();
+
+		QFontMetrics m(QApplication::font());
+		QSize text_size = m.boundingRect(get_text()).size();
+
+		const QSizeF label_size(
+			text_size.width() + LabelPadding.width() * 2,
+			text_size.height() + LabelPadding.height() * 2);
+		const float top = rect.height() - label_size.height() -
+			TimeMarker::ArrowSize - 0.5f;
+		const float height = label_size.height();
+
+		const pv::util::Timestamp& delta = ref_item->delta(time_);
+
+		if (delta >= 0)
+			return QRectF(x, top, label_size.width(), height);
+		else
+			return QRectF(x - label_size.width(), top, label_size.width(), height);
+	}
 }
 
 pv::widgets::Popup* Flag::create_popup(QWidget *parent)

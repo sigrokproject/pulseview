@@ -84,9 +84,22 @@ void CursorPair::set_time(const pv::util::Timestamp& time)
 	second_->set_time(time + delta);
 }
 
+const pv::util::Timestamp CursorPair::time() const
+{
+	return (first_->time() + second_->time()) / 2.0f;
+}
+
 float CursorPair::get_x() const
 {
 	return (first_->get_x() + second_->get_x()) / 2.0f;
+}
+
+const pv::util::Timestamp CursorPair::delta(const pv::util::Timestamp& other) const
+{
+	if (other < second_->time())
+		return other - first_->time();
+	else
+		return other - second_->time();
 }
 
 QPoint CursorPair::drag_point(const QRect &rect) const
