@@ -278,10 +278,10 @@ public:
 	 */
 	void show_cursors(bool show = true);
 
-    /**
-     * Sets the cursors to the given offsets. You will still have to call show_cursors separately.
-     */
-    void set_cursors(pv::util::Timestamp& first, pv::util::Timestamp& second);
+	/**
+	 * Sets the cursors to the given offsets. You will still have to call show_cursors separately.
+	 */
+	void set_cursors(pv::util::Timestamp& first, pv::util::Timestamp& second);
 
 	/**
 	 * Moves the cursors to a convenient position in the view.

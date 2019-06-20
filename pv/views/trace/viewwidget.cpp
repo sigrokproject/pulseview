@@ -253,10 +253,11 @@ void ViewWidget::mousePressEvent(QMouseEvent *event)
 	assert(event);
 
 	if (event->button() & Qt::LeftButton) {
-        if (event->modifiers() & Qt::ShiftModifier)
-            view_.show_cursors(false);
+		if (event->modifiers() & Qt::ShiftModifier)
+			view_.show_cursors(false);
+
 		mouse_down_point_ = event->pos();
-		mouse_down_offset_ =  view_.offset() + event->pos().x() * view_.scale();
+		mouse_down_offset_ = view_.offset() + event->pos().x() * view_.scale();
 		mouse_down_item_ = get_mouse_over_item(event->pos());
 		mouse_left_press_event(event);
 	}
@@ -288,38 +289,38 @@ void ViewWidget::mouseMoveEvent(QMouseEvent *event)
 	assert(event);
 	mouse_point_ = event->pos();
 
-	if (!event->buttons()) {
+	if (!event->buttons())
 		item_hover(get_mouse_over_item(event->pos()), event->pos());
 
-    } else if (event->buttons() & Qt::LeftButton) {
+	if (event->buttons() & Qt::LeftButton) {
+		if (event->modifiers() & Qt::ShiftModifier) {
+			// Cursor drag
+			pv::util::Timestamp current_offset = view_.offset() + event->pos().x() * view_.scale();
 
-        if (event->modifiers() & Qt::ShiftModifier) { // Cursor drag 
-            pv::util::Timestamp current_offset =  view_.offset() + event->pos().x() * view_.scale();
+			const int drag_distance = qAbs(current_offset.convert_to<double>() -
+				mouse_down_offset_.convert_to<double>()) / view_.scale();
 
-            // TODO: Is startDragDistance the right constant here?
-            if (qAbs(current_offset - mouse_down_offset_)/view_.scale() > QApplication::startDragDistance()) {
-                view_.show_cursors(true);
-                view_.set_cursors(mouse_down_offset_, current_offset);
+			if (drag_distance > QApplication::startDragDistance()) {
+				view_.show_cursors(true);
+				view_.set_cursors(mouse_down_offset_, current_offset);
+			} else
+				view_.show_cursors(false);
 
-            } else {
-                view_.show_cursors(false);
-            }
+		} else {
+			if (!item_dragging_) {
+				if ((event->pos() - mouse_down_point_).manhattanLength() <
+					QApplication::startDragDistance())
+					return;
 
-        } else {
-            if (!item_dragging_) {
-                if ((event->pos() - mouse_down_point_).manhattanLength() <
-                    QApplication::startDragDistance())
-                    return;
+				if (!accept_drag())
+					return;
 
-                if (!accept_drag())
-                    return;
+				item_dragging_ = true;
+			}
 
-                item_dragging_ = true;
-            }
-
-            // Do the drag
-            drag_items(event->pos() - mouse_down_point_);
-        }
+			// Do the drag
+			drag_items(event->pos() - mouse_down_point_);
+		}
 	}
 }
 
