@@ -115,8 +115,7 @@ public:
 		pv::util::SIPrefix prefix = pv::util::SIPrefix::unspecified,
 		pv::util::TimeUnit unit = pv::util::TimeUnit::Time,
 		unsigned precision = 0,
-		bool sign = true,
-		bool show_unit = true);
+		bool sign = true);
 
 	pv::util::Timestamp get_absolute_time_from_x_pos(uint32_t x) const;
 	pv::util::Timestamp get_ruler_time_from_x_pos(uint32_t x) const;

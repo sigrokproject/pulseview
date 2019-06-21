@@ -38,6 +38,7 @@ namespace pv {
 namespace util {
 
 enum class TimeUnit {
+	None = 0,
 	Time = 1,
 	Samples = 2
 };

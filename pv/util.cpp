@@ -139,8 +139,7 @@ QString format_time_si(const Timestamp& v, SIPrefix prefix,
 	if (sign && !v.is_zero())
 		ts << forcesign;
 	ts << qSetRealNumberPrecision(precision) << (v * multiplier);
-	if (!unit.isNull())
-		ts << ' ' << prefix << unit;
+	ts << ' ' << prefix << unit;
 
 	return s;
 }
@@ -162,6 +161,10 @@ QString format_value_si(double v, SIPrefix prefix, unsigned precision,
 				exp -= 3;
 			}
 		}
+
+		const int prefix_order = -exponent(prefix);
+		precision = (prefix >= SIPrefix::none) ? max((int)(precision + prefix_order), 0) :
+			max((int)(precision - prefix_order), 0);
 	}
 
 	assert(prefix >= SIPrefix::yocto);
