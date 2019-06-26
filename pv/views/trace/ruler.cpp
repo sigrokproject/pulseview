@@ -129,6 +129,16 @@ pv::util::Timestamp Ruler::get_ruler_time_from_x_pos(uint32_t x) const
 	return view_.ruler_offset() + ((double)x + 0.5) * view_.scale();
 }
 
+pv::util::Timestamp Ruler::get_ruler_time_from_absolute_time(const pv::util::Timestamp& abs_time) const
+{
+	return abs_time + view_.zero_offset();
+}
+
+pv::util::Timestamp Ruler::get_absolute_time_from_ruler_time(const pv::util::Timestamp& ruler_time) const
+{
+	return ruler_time - view_.zero_offset();
+}
+
 void Ruler::contextMenuEvent(QContextMenuEvent *event)
 {
 	MarginWidget::contextMenuEvent(event);

@@ -456,16 +456,6 @@ void View::set_scale(double scale)
 	}
 }
 
-pv::util::Timestamp View::absolute_to_ruler_time(const pv::util::Timestamp& abs_time) const
-{
-    return abs_time + zero_offset_;
-}
-
-pv::util::Timestamp View::ruler_to_absolute_time(const pv::util::Timestamp& ruler_time) const
-{
-    return ruler_time - zero_offset_;
-}
-
 void View::set_offset(const pv::util::Timestamp& offset, bool force_update)
 {
 	if ((offset_ != offset) || force_update) {
@@ -501,6 +491,11 @@ void View::reset_zero_position()
 	// Force an immediate update of the offsets
 	set_offset(offset_, true);
 	ruler_->update();
+}
+
+pv::util::Timestamp View::zero_offset() const
+{
+	return zero_offset_;
 }
 
 int View::owner_visual_v_offset() const

@@ -59,7 +59,7 @@ QString Cursor::get_text() const
 	const pv::util::Timestamp& diff = abs(time_ - other->time_);
 
 	return Ruler::format_time_with_distance(
-		diff, view_.absolute_to_ruler_time(time_),
+		diff, view_.ruler()->get_ruler_time_from_absolute_time(time_),
         view_.tick_prefix(), view_.time_unit(), view_.tick_precision());
 }
 

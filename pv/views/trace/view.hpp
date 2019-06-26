@@ -177,8 +177,7 @@ public:
 
 	void reset_zero_position();
 
-    pv::util::Timestamp absolute_to_ruler_time(const pv::util::Timestamp& abs_time) const;
-    pv::util::Timestamp ruler_to_absolute_time(const pv::util::Timestamp& ruler_time) const;
+	pv::util::Timestamp zero_offset() const;
 
 	/**
 	 * Returns the vertical scroll offset.

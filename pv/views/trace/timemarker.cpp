@@ -25,6 +25,7 @@
 #include "timemarker.hpp"
 
 #include "pv/widgets/timestampspinbox.hpp"
+#include "ruler.hpp"
 #include "view.hpp"
 
 #include <QApplication>
@@ -65,7 +66,7 @@ void TimeMarker::set_time(const pv::util::Timestamp& time)
 
 	if (value_widget_) {
 		updating_value_widget_ = true;
-		value_widget_->setValue(view_.absolute_to_ruler_time(time));
+		value_widget_->setValue(view_.ruler()->get_ruler_time_from_absolute_time(time));
 		updating_value_widget_ = false;
 	}
 
@@ -179,7 +180,7 @@ pv::widgets::Popup* TimeMarker::create_popup(QWidget *parent)
 	popup->setLayout(form);
 
 	value_widget_ = new pv::widgets::TimestampSpinBox(parent);
-	value_widget_->setValue(view_.absolute_to_ruler_time(time_));
+	value_widget_->setValue(view_.ruler()->get_ruler_time_from_absolute_time(time_));
 
 	connect(value_widget_, SIGNAL(valueChanged(const pv::util::Timestamp&)),
 		this, SLOT(on_value_changed(const pv::util::Timestamp&)));
@@ -192,7 +193,7 @@ pv::widgets::Popup* TimeMarker::create_popup(QWidget *parent)
 void TimeMarker::on_value_changed(const pv::util::Timestamp& value)
 {
 	if (!updating_value_widget_)
-		set_time(view_.ruler_to_absolute_time(value));
+		set_time(view_.ruler()->get_absolute_time_from_ruler_time(value));
 }
 
 } // namespace trace
