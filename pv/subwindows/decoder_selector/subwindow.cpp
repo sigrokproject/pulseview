@@ -304,6 +304,9 @@ void SubWindow::on_item_activated(const QModelIndex& index)
 void SubWindow::on_filter_changed(const QString& text)
 {
 	sort_filter_model_->setFilterFixedString(text);
+
+	// Expand the "All Decoders" category/tag if the user filtered
+	tree_view_->setExpanded(tree_view_->model()->index(0, 0), !text.isEmpty());
 }
 
 } // namespace decoder_selector
