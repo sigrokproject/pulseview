@@ -147,6 +147,9 @@ SubWindow::SubWindow(Session& session, QWidget* parent) :
 
 	connect(this, SIGNAL(new_decoders_selected(vector<const srd_decoder*>)),
 		&session, SLOT(on_new_decoders_selected(vector<const srd_decoder*>)));
+
+	// Place the keyboard cursor in the filter QLineEdit initially
+	filter->setFocus();
 }
 
 bool SubWindow::has_toolbar() const
