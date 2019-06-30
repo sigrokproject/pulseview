@@ -134,6 +134,7 @@ public Q_SLOTS:
 	void on_item_activated(const QModelIndex& index);
 
 	void on_filter_changed(const QString& text);
+	void on_filter_return_pressed();
 
 private:
 	QSplitter* splitter_;
