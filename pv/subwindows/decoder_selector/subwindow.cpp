@@ -193,8 +193,10 @@ vector<const srd_decoder*> SubWindow::get_decoders_providing(const char* output)
 		if (!d->outputs)
 			continue;
 
+		const int maxlen = 1024;
+
 		// TODO For now we ignore that d->outputs is actually a list
-		if (strncmp((char*)(d->outputs->data), output, strlen(output)) == 0)
+		if (strncmp((char*)(d->outputs->data), output, maxlen) == 0)
 			ret_val.push_back(d);
 	}
 
@@ -255,13 +257,13 @@ void SubWindow::on_item_activated(const QModelIndex& index)
 		return;
 	}
 
-	if (strncmp(inputs.at(0), "logic", 5) == 0) {
+	if (strcmp(inputs.at(0), "logic") == 0) {
 		new_decoders_selected(decoders);
 		return;
 	}
 
 	// Check if we can automatically fulfill the stacking requirements
-	while (strncmp(inputs.at(0), "logic", 5) != 0) {
+	while (strcmp(inputs.at(0), "logic") != 0) {
 		vector<const srd_decoder*> prov_decoders = get_decoders_providing(inputs.at(0));
 
 		if (prov_decoders.size() == 0) {
