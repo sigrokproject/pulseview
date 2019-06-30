@@ -77,11 +77,6 @@ float TimeMarker::get_x() const
 	return roundf(((time_ - view_.offset()) / view_.scale()).convert_to<float>()) + 0.5f;
 }
 
-const pv::util::Timestamp TimeMarker::delta(const pv::util::Timestamp& other) const
-{
-	return other - time_;
-}
-
 QPoint TimeMarker::drag_point(const QRect &rect) const
 {
 	(void)rect;

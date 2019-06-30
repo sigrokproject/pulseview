@@ -71,8 +71,6 @@ public:
 
 	float get_x() const override;
 
-	virtual const pv::util::Timestamp delta(const pv::util::Timestamp& other) const override;
-
 	/**
 	 * Gets the arrow-tip point of the time marker.
 	 * @param rect the rectangle of the ruler area.

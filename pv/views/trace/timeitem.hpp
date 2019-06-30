@@ -53,7 +53,7 @@ public:
 
 	virtual float get_x() const = 0;
 
-	virtual const pv::util::Timestamp delta(const pv::util::Timestamp& other) const = 0;
+	virtual const pv::util::Timestamp delta(const pv::util::Timestamp& other) const;
 
 	/**
 	 * Drags the item to a delta relative to the drag point.

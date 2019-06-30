@@ -147,10 +147,13 @@ Q_SIGNALS:
 protected:
 	pv::views::trace::View &view_;
 	QPoint mouse_point_;
-	Qt::KeyboardModifiers mouse_modifiers_;
 	QPoint mouse_down_point_;
 	pv::util::Timestamp mouse_down_offset_;
 	shared_ptr<ViewItem> mouse_down_item_;
+
+	/// Keyboard modifiers that were active when mouse was last moved or clicked
+	Qt::KeyboardModifiers mouse_modifiers_;
+
 	bool item_dragging_;
 };
 

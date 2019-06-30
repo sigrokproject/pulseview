@@ -287,7 +287,7 @@ void ViewWidget::mouseReleaseEvent(QMouseEvent *event)
 void ViewWidget::keyReleaseEvent(QKeyEvent *event)
 {
 	// Update mouse_modifiers_ also if modifiers change, but pointer doesn't move
-	if (mouse_point_.x() >= 0 && mouse_point_.y() >= 0) // mouse is inside
+	if ((mouse_point_.x() >= 0) && (mouse_point_.y() >= 0)) // mouse is inside
 		mouse_modifiers_ = event->modifiers();
 	update();
 }
@@ -295,7 +295,7 @@ void ViewWidget::keyReleaseEvent(QKeyEvent *event)
 void ViewWidget::keyPressEvent(QKeyEvent *event)
 {
 	// Update mouse_modifiers_ also if modifiers change, but pointer doesn't move
-	if (mouse_point_.x() >= 0 && mouse_point_.y() >= 0) // mouse is inside
+	if ((mouse_point_.x() >= 0) && (mouse_point_.y() >= 0)) // mouse is inside
 		mouse_modifiers_ = event->modifiers();
 	update();
 }

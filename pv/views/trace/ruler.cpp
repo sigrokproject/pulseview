@@ -19,7 +19,6 @@
 
 #include <extdef.h>
 
-#include <QApplication>
 #include <QFontMetrics>
 #include <QMenu>
 #include <QMouseEvent>
@@ -188,38 +187,45 @@ vector< shared_ptr<ViewItem> > Ruler::items()
 
 void Ruler::item_hover(const shared_ptr<ViewItem> &item, QPoint pos)
 {
-	Q_UNUSED(pos);
+	(void)pos;
+
 	hover_item_ = dynamic_pointer_cast<TimeItem>(item);
 }
 
-shared_ptr<TimeItem> Ruler::get_reference_item()
+shared_ptr<TimeItem> Ruler::get_reference_item() const
 {
 	if (mouse_modifiers_ & Qt::ShiftModifier)
 		return nullptr;
 
-	if (hover_item_ != nullptr)
+	if (hover_item_)
 		return hover_item_;
 
-	shared_ptr<TimeItem> found(nullptr);
+	shared_ptr<TimeItem> ref_item;
 	const vector< shared_ptr<TimeItem> > items(view_.time_items());
+
 	for (auto i = items.rbegin(); i != items.rend(); i++) {
 		if ((*i)->enabled() && (*i)->selected()) {
-			if (found == nullptr)
-				found = *i;
-			else
-				return nullptr; // Return null if multiple items are selected
+			if (!ref_item)
+				ref_item = *i;
+			else {
+				// Return nothing if multiple items are selected
+				ref_item.reset();
+				break;
+			}
 		}
 	}
 
-	return found;
+	return ref_item;
 }
 
 shared_ptr<ViewItem> Ruler::get_mouse_over_item(const QPoint &pt)
 {
 	const vector< shared_ptr<TimeItem> > items(view_.time_items());
+
 	for (auto i = items.rbegin(); i != items.rend(); i++)
 		if ((*i)->enabled() && (*i)->label_rect(rect()).contains(pt))
 			return *i;
+
 	return nullptr;
 }
 

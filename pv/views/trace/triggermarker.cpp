@@ -52,6 +52,7 @@ bool TriggerMarker::is_draggable(QPoint pos) const
 void TriggerMarker::set_time(const pv::util::Timestamp& time)
 {
 	time_ = time;
+
 	view_.time_item_appearance_changed(true, true);
 }
 
@@ -63,11 +64,6 @@ const pv::util::Timestamp TriggerMarker::time() const
 float TriggerMarker::get_x() const
 {
 	return ((time_ - view_.offset()) / view_.scale()).convert_to<float>();
-}
-
-const pv::util::Timestamp TriggerMarker::delta(const pv::util::Timestamp& other) const
-{
-	return other - time_;
 }
 
 QPoint TriggerMarker::drag_point(const QRect &rect) const

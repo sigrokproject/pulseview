@@ -123,7 +123,7 @@ public:
 	pv::util::Timestamp get_ruler_time_from_absolute_time(const pv::util::Timestamp& abs_time) const;
 	pv::util::Timestamp get_absolute_time_from_ruler_time(const pv::util::Timestamp& ruler_time) const;
 
-	shared_ptr<TimeItem> get_reference_item();
+	shared_ptr<TimeItem> get_reference_item() const;
 
 protected:
 	virtual void contextMenuEvent(QContextMenuEvent *event) override;
