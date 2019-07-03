@@ -194,10 +194,12 @@ void Ruler::item_hover(const shared_ptr<ViewItem> &item, QPoint pos)
 
 shared_ptr<TimeItem> Ruler::get_reference_item() const
 {
+	// Note: time() returns 0 if item returns no valid time
+
 	if (mouse_modifiers_ & Qt::ShiftModifier)
 		return nullptr;
 
-	if (hover_item_)
+	if (hover_item_ && (hover_item_->time() != 0))
 		return hover_item_;
 
 	shared_ptr<TimeItem> ref_item;
@@ -214,6 +216,9 @@ shared_ptr<TimeItem> Ruler::get_reference_item() const
 			}
 		}
 	}
+
+	if (ref_item && (ref_item->time() == 0))
+		ref_item.reset();
 
 	return ref_item;
 }

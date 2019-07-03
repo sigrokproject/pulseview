@@ -86,7 +86,7 @@ void CursorPair::set_time(const pv::util::Timestamp& time)
 
 const pv::util::Timestamp CursorPair::time() const
 {
-	return (first_->time() + second_->time()) / 2.0f;
+	return 0;
 }
 
 float CursorPair::get_x() const
