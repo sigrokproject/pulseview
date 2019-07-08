@@ -139,6 +139,8 @@ SubWindow::SubWindow(Session& session, QWidget* parent) :
 
 	connect(filter, SIGNAL(textChanged(const QString&)),
 		this, SLOT(on_filter_changed(const QString&)));
+	connect(filter, SIGNAL(returnPressed()),
+		this, SLOT(on_filter_return_pressed()));
 
 	connect(tree_view_, SIGNAL(currentChanged(const QModelIndex&)),
 		this, SLOT(on_item_changed(const QModelIndex&)));
@@ -147,6 +149,9 @@ SubWindow::SubWindow(Session& session, QWidget* parent) :
 
 	connect(this, SIGNAL(new_decoders_selected(vector<const srd_decoder*>)),
 		&session, SLOT(on_new_decoders_selected(vector<const srd_decoder*>)));
+
+	// Place the keyboard cursor in the filter QLineEdit initially
+	filter->setFocus();
 }
 
 bool SubWindow::has_toolbar() const
@@ -190,8 +195,10 @@ vector<const srd_decoder*> SubWindow::get_decoders_providing(const char* output)
 		if (!d->outputs)
 			continue;
 
+		const int maxlen = 1024;
+
 		// TODO For now we ignore that d->outputs is actually a list
-		if (strncmp((char*)(d->outputs->data), output, strlen(output)) == 0)
+		if (strncmp((char*)(d->outputs->data), output, maxlen) == 0)
 			ret_val.push_back(d);
 	}
 
@@ -252,13 +259,13 @@ void SubWindow::on_item_activated(const QModelIndex& index)
 		return;
 	}
 
-	if (strncmp(inputs.at(0), "logic", 5) == 0) {
+	if (strcmp(inputs.at(0), "logic") == 0) {
 		new_decoders_selected(decoders);
 		return;
 	}
 
 	// Check if we can automatically fulfill the stacking requirements
-	while (strncmp(inputs.at(0), "logic", 5) != 0) {
+	while (strcmp(inputs.at(0), "logic") != 0) {
 		vector<const srd_decoder*> prov_decoders = get_decoders_providing(inputs.at(0));
 
 		if (prov_decoders.size() == 0) {
@@ -301,6 +308,31 @@ void SubWindow::on_item_activated(const QModelIndex& index)
 void SubWindow::on_filter_changed(const QString& text)
 {
 	sort_filter_model_->setFilterFixedString(text);
+
+	// Expand the "All Decoders" category/tag if the user filtered
+	tree_view_->setExpanded(tree_view_->model()->index(0, 0), !text.isEmpty());
+}
+
+void SubWindow::on_filter_return_pressed()
+{
+	int num_visible_decoders = 0;
+	QModelIndex last_valid_index;
+
+	QModelIndex index = tree_view_->model()->index(0, 0);
+
+	while (index.isValid()) {
+		QModelIndex id_index = index.model()->index(index.row(), 2, index.parent());
+		QString decoder_name = index.model()->data(id_index, Qt::DisplayRole).toString();
+		if (!decoder_name.isEmpty()) {
+			last_valid_index = index;
+			num_visible_decoders++;
+		}
+		index = tree_view_->indexBelow(index);
+	}
+
+	// If only one decoder matches the filter, apply it when the user presses enter
+	if (num_visible_decoders == 1)
+		tree_view_->activated(last_valid_index);
 }
 
 } // namespace decoder_selector

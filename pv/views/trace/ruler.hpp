@@ -120,9 +120,15 @@ public:
 	pv::util::Timestamp get_absolute_time_from_x_pos(uint32_t x) const;
 	pv::util::Timestamp get_ruler_time_from_x_pos(uint32_t x) const;
 
+	pv::util::Timestamp get_ruler_time_from_absolute_time(const pv::util::Timestamp& abs_time) const;
+	pv::util::Timestamp get_absolute_time_from_ruler_time(const pv::util::Timestamp& ruler_time) const;
+
+	shared_ptr<TimeItem> get_reference_item() const;
+
 protected:
 	virtual void contextMenuEvent(QContextMenuEvent *event) override;
 	void resizeEvent(QResizeEvent*) override;
+	virtual void item_hover(const shared_ptr<ViewItem> &item, QPoint pos) override;
 
 private:
 	/**
@@ -186,6 +192,8 @@ private:
 	 * every redraw. Set by 'paintEvent()' when needed.
 	 */
 	boost::optional<TickPositions> tick_position_cache_;
+
+	shared_ptr<TimeItem> hover_item_;
 
 	uint32_t context_menu_x_pos_;
 };

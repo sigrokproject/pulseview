@@ -76,7 +76,11 @@ public:
 	 */
 	void set_time(const pv::util::Timestamp& time) override;
 
+	virtual const pv::util::Timestamp time() const override;
+
 	float get_x() const override;
+
+	virtual const pv::util::Timestamp delta(const pv::util::Timestamp& other) const override;
 
 	QPoint drag_point(const QRect &rect) const override;
 
@@ -104,7 +108,8 @@ public:
 	/**
 	 * Constructs the string to display.
 	 */
-	QString format_string();
+	QString format_string(int max_width = 0, std::function<double(const QString&)> query_size
+		= [](const QString& s) -> double { (void)s; return 0; });
 
 	pair<float, float> get_cursor_offsets() const;
 
@@ -112,6 +117,9 @@ public:
 
 public Q_SLOTS:
 	void on_hover_point_changed(const QWidget* widget, const QPoint &hp);
+
+private:
+	QString format_string_sub(int time_precision, int freq_precision, bool show_unit = true);
 
 private:
 	shared_ptr<Cursor> first_, second_;

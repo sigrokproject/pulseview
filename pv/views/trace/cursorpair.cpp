@@ -89,9 +89,22 @@ void CursorPair::set_time(const pv::util::Timestamp& time)
 	second_->set_time(time + delta);
 }
 
+const pv::util::Timestamp CursorPair::time() const
+{
+	return 0;
+}
+
 float CursorPair::get_x() const
 {
 	return (first_->get_x() + second_->get_x()) / 2.0f;
+}
+
+const pv::util::Timestamp CursorPair::delta(const pv::util::Timestamp& other) const
+{
+	if (other < second_->time())
+		return other - first_->time();
+	else
+		return other - second_->time();
 }
 
 QPoint CursorPair::drag_point(const QRect &rect) const
@@ -157,19 +170,14 @@ void CursorPair::paint_label(QPainter &p, const QRect &rect, bool hover)
 	const QColor text_color = ViewItem::select_text_color(Cursor::FillColor);
 	p.setPen(text_color);
 
-	QString text = format_string();
-	text_size_ = p.boundingRect(QRectF(), 0, text).size();
-
 	QRectF delta_rect(label_rect(rect));
 	const int radius = delta_rect.height() / 2;
 	QRectF text_rect(delta_rect.intersected(rect).adjusted(radius, 0, -radius, 0));
 
-	if (text_rect.width() < text_size_.width()) {
-		text = "...";
-		text_size_ = p.boundingRect(QRectF(), 0, text).size();
-		label_incomplete_ = true;
-	} else
-		label_incomplete_ = false;
+	QString text = format_string(text_rect.width(),
+		[&p](const QString& s) -> double { return p.boundingRect(QRectF(), 0, s).width(); });
+
+	text_size_ = p.boundingRect(QRectF(), 0, text).size();
 
 	if (selected()) {
 		p.setBrush(Qt::transparent);
@@ -206,29 +214,48 @@ void CursorPair::paint_back(QPainter &p, ViewItemPaintParams &pp)
 	p.drawRect(l, pp.top(), r - l, pp.height());
 }
 
-QString CursorPair::format_string()
+QString CursorPair::format_string(int max_width, std::function<double(const QString&)> query_size)
 {
-	const pv::util::SIPrefix prefix = view_.tick_prefix();
-	const pv::util::Timestamp diff = abs(second_->time() - first_->time());
+	int time_precision = 12;
+	int freq_precision = 12;
 
-	QString interval;
-	if (show_interval_) {
-		interval = Ruler::format_time_with_distance(
-			diff, diff, prefix, view_.time_unit(), 12, false);  /* Always use 12 precision digits */
-	}
-	QString freq;
-	if (show_frequency_) {
-		freq = util::format_time_si(
-			1 / diff, pv::util::SIPrefix::unspecified, 4, "Hz", false);
+	QString s = format_string_sub(time_precision, freq_precision);
+
+	// Try full "{time} s / {freq} Hz" format
+	if ((max_width <= 0) || (query_size(s) <= max_width)) {
+		label_incomplete_ = false;
+		return s;
 	}
 
-	if (show_frequency_ && show_interval_)
-		return QString("%1 / %2").arg(interval, freq);
-	else if (!show_frequency_ && show_interval_)
-		return interval;
-	else if (show_frequency_ && !show_interval_)
-		return freq;
-	return QString();
+	label_incomplete_ = true;
+
+	// Gradually reduce time precision to match frequency precision
+	while (time_precision > freq_precision) {
+		time_precision--;
+
+		s = format_string_sub(time_precision, freq_precision);
+		if (query_size(s) <= max_width)
+			return s;
+	}
+
+	// Gradually reduce both precisions down to zero
+	while (time_precision > 0) {
+		time_precision--;
+		freq_precision--;
+
+		s = format_string_sub(time_precision, freq_precision);
+		if (query_size(s) <= max_width)
+			return s;
+	}
+
+	// Try no trailing digits and drop the unit to at least display something
+	s = format_string_sub(0, 0, false);
+
+	if (query_size(s) <= max_width)
+		return s;
+
+	// Give up
+	return QStringLiteral("...");
 }
 
 pair<float, float> CursorPair::get_cursor_offsets() const
@@ -257,6 +284,35 @@ void CursorPair::on_hover_point_changed(const QWidget* widget, const QPoint& hp)
 		QToolTip::showText(view_.mapToGlobal(hp), format_string());
 	else
 		QToolTip::hideText();  // TODO Will break other tooltips when there can be others
+}
+
+QString CursorPair::format_string_sub(int time_precision, int freq_precision, bool show_unit)
+{
+	const pv::util::SIPrefix prefix = view_.tick_prefix();
+	const pv::util::Timestamp diff = abs(second_->time() - first_->time());
+
+	const QString time = Ruler::format_time_with_distance(
+		diff, diff, prefix, (show_unit ? view_.time_unit() : pv::util::TimeUnit::None),
+		time_precision, false);
+
+	// We can only show a frequency when there's a time base
+	if (view_.time_unit() == pv::util::TimeUnit::Time) {
+		if (show_frequency_) {
+			const QString freq = util::format_value_si(
+				1 / diff.convert_to<double>(), pv::util::SIPrefix::unspecified,
+				freq_precision, (show_unit ? "Hz" : nullptr), false);
+
+			if (show_interval_)
+				return QString("%1 / %2").arg(time, freq);
+			else
+				return QString("%1").arg(freq);
+		} else if (show_interval_) {
+			return QString("%1").arg(time);
+		}
+	} else
+		// In this case, we return the number of samples, really
+		return time;
+	return QStringLiteral("...");
 }
 
 } // namespace trace

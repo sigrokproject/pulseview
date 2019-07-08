@@ -99,6 +99,7 @@ Connect::Connect(QWidget *parent, pv::DeviceManager &device_manager) :
 	serial_config_layout->addWidget(&serial_devices_);
 	serial_config_layout->addWidget(&serial_baudrate_);
 	serial_config_layout->addWidget(new QLabel("baud"));
+	serial_config_->setEnabled(false);
 
 	tcp_config_ = new QWidget();
 	QHBoxLayout *tcp_config_layout = new QHBoxLayout(tcp_config_);

@@ -65,7 +65,7 @@ public:
 	/**
 	 * Gets the time of the marker.
 	 */
-	const pv::util::Timestamp& time() const;
+	virtual const pv::util::Timestamp time() const override;
 
 	/**
 	 * Sets the time of the marker.
@@ -128,7 +128,6 @@ protected:
 
 	QWidgetAction *value_action_;
 	pv::widgets::TimestampSpinBox *value_widget_;
-	bool updating_value_widget_;
 };
 
 } // namespace trace

@@ -511,6 +511,12 @@ void MainWindow::setup_ui()
 	view_colored_bg_shortcut_ = new QShortcut(QKeySequence(Qt::Key_B), this, SLOT(on_view_colored_bg_shortcut()));
 	view_colored_bg_shortcut_->setAutoRepeat(false);
 
+	zoom_in_shortcut_ = new QShortcut(QKeySequence(Qt::Key_Plus), this, SLOT(on_zoom_in_shortcut_triggered()));
+	zoom_in_shortcut_->setAutoRepeat(false);
+
+	zoom_out_shortcut_ = new QShortcut(QKeySequence(Qt::Key_Minus), this, SLOT(on_zoom_out_shortcut_triggered()));
+	zoom_out_shortcut_->setAutoRepeat(false);
+
 	// Set up the tab area
 	new_session_button_ = new QToolButton();
 	new_session_button_->setIcon(QIcon::fromTheme("document-new",
@@ -599,6 +605,19 @@ void MainWindow::restore_ui_settings()
 		resize(1000, 720);
 
 	settings.endGroup();
+}
+
+void MainWindow::zoom_current_view(double steps)
+{
+	shared_ptr<Session> session = get_tab_session(session_selector_.currentIndex());
+
+	if (!session)
+		return;
+
+	shared_ptr<views::ViewBase> v = session.get()->main_view();
+	views::trace::View *tv =
+		qobject_cast<views::trace::View*>(v.get());
+	tv->zoom(steps);
 }
 
 shared_ptr<Session> MainWindow::get_tab_session(int index) const
@@ -947,6 +966,16 @@ void MainWindow::on_settingViewShowAnalogMinorGrid_changed(const QVariant new_va
 		if (view)
 			view->enable_show_analog_minor_grid(state);
 	}
+}
+
+void MainWindow::on_zoom_out_shortcut_triggered()
+{
+	zoom_current_view(-1);
+}
+
+void MainWindow::on_zoom_in_shortcut_triggered()
+{
+	zoom_current_view(1);
 }
 
 void MainWindow::on_close_current_tab()

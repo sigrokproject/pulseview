@@ -40,6 +40,11 @@ void TimeItem::drag_by(const QPoint &delta)
 			view_.scale());
 }
 
+const pv::util::Timestamp TimeItem::delta(const pv::util::Timestamp& other) const
+{
+	return other - time();
+}
+
 } // namespace trace
 } // namespace views
 } // namespace pv
