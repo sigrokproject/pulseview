@@ -517,6 +517,17 @@ void MainWindow::setup_ui()
 	zoom_out_shortcut_ = new QShortcut(QKeySequence(Qt::Key_Minus), this, SLOT(on_zoom_out_shortcut_triggered()));
 	zoom_out_shortcut_->setAutoRepeat(false);
 
+	grab_ruler_left_shortcut_ = new QShortcut(QKeySequence(Qt::Key_0), this);
+	connect(grab_ruler_left_shortcut_, &QShortcut::activated, this, [=]{on_grab_ruler(true);});
+	grab_ruler_left_shortcut_->setAutoRepeat(false);
+
+	grab_ruler_right_shortcut_ = new QShortcut(QKeySequence(Qt::Key_1), this);
+	connect(grab_ruler_right_shortcut_, &QShortcut::activated, this, [=]{on_grab_ruler(false);});
+	grab_ruler_right_shortcut_->setAutoRepeat(false);
+
+	exit_grab_shortcut_ = new QShortcut(QKeySequence(Qt::Key_Escape), this, SLOT(on_cancel_grab()));
+	exit_grab_shortcut_->setAutoRepeat(false);
+
 	// Set up the tab area
 	new_session_button_ = new QToolButton();
 	new_session_button_->setIcon(QIcon::fromTheme("document-new",
@@ -976,6 +987,36 @@ void MainWindow::on_zoom_out_shortcut_triggered()
 void MainWindow::on_zoom_in_shortcut_triggered()
 {
 	zoom_current_view(1);
+}
+
+void MainWindow::on_grab_ruler(bool first)
+{
+	shared_ptr<Session> session = get_tab_session(session_selector_.currentIndex());
+
+	if (!session)
+		return;
+	shared_ptr<views::ViewBase> v = session.get()->main_view();
+	views::trace::View *tv =
+			qobject_cast<views::trace::View*>(v.get());
+	if (tv->cursors_shown()) {
+		if (first)
+			tv->set_grabbed_widget(tv->cursors()->first().get());
+		else
+			tv->set_grabbed_widget(tv->cursors()->second().get());
+	}
+}
+
+void MainWindow::on_cancel_grab()
+{
+	shared_ptr<Session> session = get_tab_session(session_selector_.currentIndex());
+
+	if (!session)
+		return;
+
+	shared_ptr<views::ViewBase> v = session.get()->main_view();
+	views::trace::View *tv =
+		qobject_cast<views::trace::View*>(v.get());
+	tv->clear_grabbed_widget();
 }
 
 void MainWindow::on_close_current_tab()

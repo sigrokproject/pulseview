@@ -242,6 +242,7 @@ void View::reset_view_state()
 	next_flag_text_ = 'A';
 	trigger_markers_.clear();
 	hover_widget_ = nullptr;
+	grabbed_widget_ = nullptr;
 	hover_point_ = QPoint(-1, -1);
 	scroll_needs_defaults_ = true;
 	saved_v_offset_ = 0;
@@ -604,6 +605,17 @@ void View::set_current_segment(uint32_t segment_id)
 	viewport_->update();
 
 	segment_changed(segment_id);
+}
+
+void View::set_grabbed_widget(TimeMarker *tracked_widget)
+{
+	grabbed_widget_ = tracked_widget;
+	grabbed_widget_->set_time(offset_ + mapFromGlobal(QCursor::pos()).x() * scale_);
+}
+
+void View::clear_grabbed_widget()
+{
+	grabbed_widget_ = nullptr;
 }
 
 bool View::segment_is_selectable() const
@@ -1352,6 +1364,18 @@ bool View::eventFilter(QObject *object, QEvent *event)
 
 		update_hover_point();
 
+		if (grabbed_widget_) {
+			int64_t nearest = get_nearest_level_change(hover_point_);
+			pv::util::Timestamp mouse_time = offset_ + hover_point_.x() * scale_;
+			if (nearest == -1) {
+				grabbed_widget_->set_time(mouse_time);
+			} else {
+				grabbed_widget_->set_time(nearest / get_signal_under_mouse_cursor()->base()->get_samplerate());
+			}
+		}
+	} else if (type == QEvent::MouseButtonPress) {
+		if (grabbed_widget_)
+			clear_grabbed_widget();
 	} else if (type == QEvent::Leave) {
 		hover_point_ = QPoint(-1, -1);
 		update_hover_point();

@@ -427,6 +427,9 @@ public:
 
 	void extents_changed(bool horz, bool vert);
 
+	void set_grabbed_widget(TimeMarker *tracked_widget);
+	void clear_grabbed_widget();
+
 private Q_SLOTS:
 
 	void on_signal_name_changed();
@@ -540,6 +543,7 @@ private:
 	vector< shared_ptr<TriggerMarker> > trigger_markers_;
 
 	QWidget* hover_widget_;
+	TimeMarker* grabbed_widget_;
 	QPoint hover_point_;
 	shared_ptr<Signal> signal_under_mouse_cursor_;
 	uint16_t snap_distance_;

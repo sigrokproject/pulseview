@@ -153,6 +153,9 @@ private Q_SLOTS:
 	void on_zoom_out_shortcut_triggered();
 	void on_zoom_in_shortcut_triggered();
 
+	void on_grab_ruler(bool first);
+	void on_cancel_grab();
+
 	void on_close_current_tab();
 
 private:
@@ -184,6 +187,9 @@ private:
 	QShortcut *close_current_tab_shortcut_;
 	QShortcut *zoom_in_shortcut_;
 	QShortcut *zoom_out_shortcut_;
+	QShortcut *grab_ruler_left_shortcut_;
+	QShortcut *grab_ruler_right_shortcut_;
+	QShortcut *exit_grab_shortcut_;
 };
 
 } // namespace pv
