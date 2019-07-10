@@ -67,6 +67,8 @@ public:
 	 */
 	QRectF label_rect(const QRectF &rect) const;
 
+	virtual QMenu* create_header_context_menu(QWidget *parent) override;
+
 private:
 	shared_ptr<Cursor> get_other_cursor() const;
 };

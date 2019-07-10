@@ -43,6 +43,8 @@ protected:
 	 */
 	TimeItem(View &view);
 
+	bool snapping_disabled_ = false;
+
 public:
 	/**
 	 * Sets the time of the marker.
@@ -64,6 +66,8 @@ public:
 	 * @param delta the offset from the drag point.
 	 */
 	void drag_by(const QPoint &delta);
+
+	bool is_snapping_disabled() const;
 
 protected:
 	View &view_;
