@@ -109,6 +109,7 @@ private:
 	void restore_ui_settings();
 
 	void zoom_current_view(double steps);
+	void scroll_to_start_or_end(bool start);
 
 	shared_ptr<Session> get_tab_session(int index) const;
 
@@ -152,6 +153,8 @@ private Q_SLOTS:
 
 	void on_zoom_out_shortcut_triggered();
 	void on_zoom_in_shortcut_triggered();
+	void on_scroll_to_start_triggered();
+	void on_scroll_to_end_triggered();
 
 	void on_close_current_tab();
 
@@ -184,6 +187,8 @@ private:
 	QShortcut *close_current_tab_shortcut_;
 	QShortcut *zoom_in_shortcut_;
 	QShortcut *zoom_out_shortcut_;
+	QShortcut *home_shortcut_;
+	QShortcut *end_shortcut_;
 };
 
 } // namespace pv
