@@ -137,6 +137,12 @@ QMenu* Flag::create_header_context_menu(QWidget *parent)
 	connect(del, SIGNAL(triggered()), this, SLOT(on_delete()));
 	menu->addAction(del);
 
+	QAction *const snap_disable = new QAction(tr("Disable snapping"), this);
+	snap_disable->setCheckable(true);
+	snap_disable->setChecked(snapping_disabled_);
+	connect(snap_disable, &QAction::toggled, this, [=](bool checked){snapping_disabled_ = checked;});
+	menu->addAction(snap_disable);
+
 	return menu;
 }
 
