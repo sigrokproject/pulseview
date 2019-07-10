@@ -190,6 +190,16 @@ public:
 	void set_v_offset(int offset);
 
 	/**
+	 * Sets the visual h-offset.
+	 */
+	void set_h_offset(int offset);
+
+	/**
+	 * Gets the length of the horizontal scrollbar
+	 */
+	int get_h_scrollbar_maximum() const;
+
+	/**
 	 * Returns the SI prefix to apply to the graticule time markings.
 	 */
 	pv::util::SIPrefix tick_prefix() const;
