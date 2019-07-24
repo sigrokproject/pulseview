@@ -183,7 +183,9 @@ private:
 	QShortcut *close_application_shortcut_;
 	QShortcut *close_current_tab_shortcut_;
 	QShortcut *zoom_in_shortcut_;
+	QShortcut *zoom_in_shortcut_2_;
 	QShortcut *zoom_out_shortcut_;
+	QShortcut *zoom_out_shortcut_2_;
 };
 
 } // namespace pv
