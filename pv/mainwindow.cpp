@@ -514,8 +514,12 @@ void MainWindow::setup_ui()
 	zoom_in_shortcut_ = new QShortcut(QKeySequence(Qt::Key_Plus), this, SLOT(on_zoom_in_shortcut_triggered()));
 	zoom_in_shortcut_->setAutoRepeat(false);
 
+	zoom_in_shortcut_2_ = new QShortcut(QKeySequence(Qt::Key_Up), this, SLOT(on_zoom_in_shortcut_triggered()));
+
 	zoom_out_shortcut_ = new QShortcut(QKeySequence(Qt::Key_Minus), this, SLOT(on_zoom_out_shortcut_triggered()));
 	zoom_out_shortcut_->setAutoRepeat(false);
+
+	zoom_out_shortcut_2_ = new QShortcut(QKeySequence(Qt::Key_Down), this, SLOT(on_zoom_out_shortcut_triggered()));
 
 	home_shortcut_ = new QShortcut(QKeySequence(Qt::Key_Home), this, SLOT(on_scroll_to_start_triggered()));
 	home_shortcut_->setAutoRepeat(false);
