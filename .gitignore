@@ -51,4 +51,17 @@ android/src/org/kde/
 /CMakeLists.txt.user*
 *.cbp
 
+# KDE temp file show marker
+.directory
+
 doxy
+build/
+
+contrib/pulseview_cross.nsi
+cmake_install.cmake
+install_manifest.txt
+manual/cmake_install.cmake
+manual/manual.html
+manual/manual.pdf
+test/cmake_install.cmake
+*_autogen
