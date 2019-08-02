@@ -1,4 +1,4 @@
-.TH PULSEVIEW 1 "March 30, 2018"
+.TH PULSEVIEW 1 "July 31, 2019"
 .SH "NAME"
 PulseView \- Qt-based LA/scope/MSO GUI for sigrok
 .SH "SYNOPSIS"
@@ -77,9 +77,6 @@ command line instead of restoring all previously used sessions as well.
 .B "f"
 Zoom-to-fit.
 .TP
-.B "o"
-Zoom 1:1.
-.TP
 .B "s"
 Enable / disable sticky scrolling. When enabled, the right edge of the screen
 always shows the most recently captured data.
@@ -100,8 +97,17 @@ gray trace backgrounds.
 .B "SPACE"
 Start / stop an acquisition.
 .TP
-.B "Arrow keys"
-Scroll up/down/left/right.
+.B "Left/right arrow keys"
+Scroll left/right.
+.TP
+.B "Up/down arrow keys"
+Zoom in/out.
+.TP
+.B "Home"
+Jump to the start of the sample data.
+.TP
+.B "End"
+Jump to the end of the sample data.
 .TP
 .B "CTRL+o"
 Open file.
@@ -117,6 +123,9 @@ Group all currently selected traces into a trace group.
 .TP
 .B "CTRL+u"
 Ungroup the traces in the currently selected trace group.
+.TP
+.B "CTRL+up/down arrow keys"
+Scroll down/up.
 .TP
 .B "CTRL++"
 Zoom in.

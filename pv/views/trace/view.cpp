@@ -511,6 +511,18 @@ void View::set_v_offset(int offset)
 	viewport_->update();
 }
 
+void View::set_h_offset(int offset)
+{
+	scrollarea_->horizontalScrollBar()->setSliderPosition(offset);
+	header_->update();
+	viewport_->update();
+}
+
+int View::get_h_scrollbar_maximum() const
+{
+	return scrollarea_->horizontalScrollBar()->maximum();
+}
+
 unsigned int View::depth() const
 {
 	return 0;
