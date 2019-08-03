@@ -327,6 +327,26 @@ void Decoder::on_class_visibility_changed()
 	annotation_visibility_changed();
 }
 
+bool Decoder::has_logic_output() const
+{
+	return (srd_decoder_->logic_output_channels != nullptr);
+}
+
+const vector<DecoderLogicOutputChannel> Decoder::logic_output_channels() const
+{
+	vector<DecoderLogicOutputChannel> result;
+
+	for (GSList *l = srd_decoder_->logic_output_channels; l; l = l->next) {
+		const srd_decoder_logic_output_channel* ch_data =
+			(srd_decoder_logic_output_channel*)l->data;
+
+		result.emplace_back(QString::fromUtf8(ch_data->id),
+			QString::fromUtf8(ch_data->desc), ch_data->samplerate);
+	}
+
+	return result;
+}
+
 }  // namespace decode
 }  // namespace data
 }  // namespace pv

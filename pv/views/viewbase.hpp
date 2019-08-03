@@ -91,15 +91,12 @@ public:
 	vector< shared_ptr<data::SignalBase> > signalbases() const;
 
 	virtual void clear_signalbases();
-
 	virtual void add_signalbase(const shared_ptr<data::SignalBase> signalbase);
 	virtual void remove_signalbase(const shared_ptr<data::SignalBase> signalbase);
 
 #ifdef ENABLE_DECODE
 	virtual void clear_decode_signals();
-
 	virtual void add_decode_signal(shared_ptr<data::DecodeSignal> signal);
-
 	virtual void remove_decode_signal(shared_ptr<data::DecodeSignal> signal);
 #endif
 

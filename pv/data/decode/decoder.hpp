@@ -89,6 +89,13 @@ struct DecodeChannel
 	const srd_channel *pdch_;
 };
 
+struct DecoderLogicOutputChannel {
+	DecoderLogicOutputChannel (QString id, QString desc, uint64_t sr) :
+		id(id), desc(desc), samplerate(sr) {};
+	QString id, desc;
+	uint64_t samplerate;
+};
+
 struct DecodeBinaryClassInfo
 {
 	uint32_t bin_class_id;
@@ -138,6 +145,9 @@ public:
 
 	uint32_t get_binary_class_count() const;
 	const DecodeBinaryClassInfo* get_binary_class(uint32_t id) const;
+
+	bool has_logic_output() const;
+	const vector<DecoderLogicOutputChannel> logic_output_channels() const;
 
 Q_SIGNALS:
 	void annotation_visibility_changed();

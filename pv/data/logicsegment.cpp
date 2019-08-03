@@ -363,6 +363,29 @@ void LogicSegment::append_payload(void *data, uint64_t data_size)
 			prev_sample_count + 1, prev_sample_count + 1);
 }
 
+void LogicSegment::append_subsignal_payload(unsigned int index, void *data, uint64_t data_size)
+{
+	static vector<uint8_t> merged_data;  // Using static also places it on the heap
+
+	for (uint64_t i = 0; i < data_size * unit_size_; i++)
+		merged_data.emplace_back(0);
+
+	// Set the bits for this sub-signal where needed
+	// Note: the bytes in *data must either be 0 or 1, nothing else
+	unsigned int index_byte = index / 8;
+	for (uint64_t i = 0; i < data_size; i++) {
+		unsigned int offs = i * unit_size_ + index_byte;
+		uint8_t* data_byte = merged_data.data() + offs;
+		*data_byte |= *((uint8_t*)data + i) << index;
+	}
+
+	if (index == owner_.num_channels() - 1) {
+		// We gathered sample data of all sub-signals, let's append it
+		append_payload(merged_data.data(), merged_data.size());
+		merged_data.clear();
+	}
+}
+
 void LogicSegment::get_samples(int64_t start_sample,
 	int64_t end_sample, uint8_t* dest) const
 {

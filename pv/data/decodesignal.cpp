@@ -33,6 +33,7 @@
 #include <pv/globalsettings.hpp>
 #include <pv/session.hpp>
 
+using std::dynamic_pointer_cast;
 using std::lock_guard;
 using std::make_shared;
 using std::min;
@@ -95,6 +96,7 @@ void DecodeSignal::stack_decoder(const srd_decoder *decoder, bool restart_decode
 	stack_config_changed_ = true;
 	auto_assign_signals(dec);
 	commit_decoder_channels();
+	update_output_signals();
 
 	decoder_stacked((void*)dec.get());
 
@@ -356,6 +358,53 @@ int DecodeSignal::get_assigned_signal_count() const
 	// Count all channels that have a signal assigned to them
 	return count_if(channels_.begin(), channels_.end(),
 		[](decode::DecodeChannel ch) { return ch.assigned_signal.get(); });
+}
+
+void DecodeSignal::update_output_signals()
+{
+	for (const shared_ptr<decode::Decoder>& dec : stack_) {
+		assert(dec);
+
+		if (dec->has_logic_output()) {
+			const vector<decode::DecoderLogicOutputChannel> logic_channels =
+				dec->logic_output_channels();
+
+			// All signals of a decoder share the same LogicSegment, so it's
+			// sufficient to check for the first channel only
+			const decode::DecoderLogicOutputChannel& first_ch = logic_channels[0];
+
+			bool ch_exists = false;
+			for (const shared_ptr<SignalBase>& signal : output_signals_)
+				if (signal->internal_name() == first_ch.id)
+					ch_exists = true;
+
+			if (!ch_exists) {
+				shared_ptr<Logic> logic_data = make_shared<Logic>(logic_channels.size());
+				output_logic_[dec->get_srd_decoder()] = logic_data;
+
+				shared_ptr<LogicSegment> logic_segment = make_shared<data::LogicSegment>(
+					*logic_data, 0, (logic_data->num_channels() + 7) / 8, first_ch.samplerate);
+				logic_data->push_segment(logic_segment);
+
+				uint index = 0;
+				for (const decode::DecoderLogicOutputChannel& logic_ch : logic_channels) {
+					shared_ptr<data::SignalBase> signal =
+						make_shared<data::SignalBase>(nullptr, LogicChannel);
+					signal->set_internal_name(logic_ch.id);
+					signal->set_name(logic_ch.id);
+					signal->set_index(index);
+					signal->set_data(logic_data);
+					output_signals_.push_back(signal);
+					session_.add_generated_signal(signal);
+					index++;
+				}
+			}
+		}
+	}
+
+	// TODO Delete signals that no longer have a corresponding decoder (also from session)
+	// TODO Check whether all sample rates are the same as the session's
+	// TODO Set colors to the same as the decoder's background color
 }
 
 void DecodeSignal::set_initial_pin_state(const uint16_t channel_id, const int init_state)
@@ -731,6 +780,8 @@ void DecodeSignal::save_settings(QSettings &settings) const
 
 		settings.endGroup();
 	}
+
+	// TODO Save logic output signal settings
 }
 
 void DecodeSignal::restore_settings(QSettings &settings)
@@ -835,6 +886,9 @@ void DecodeSignal::restore_settings(QSettings &settings)
 	stack_config_changed_ = true;
 	update_channel_list();
 	commit_decoder_channels();
+	update_output_signals();
+
+	// TODO Restore logic output signal settings
 
 	begin_decode();
 }
@@ -1395,6 +1449,9 @@ void DecodeSignal::start_srd_session()
 	srd_pd_output_callback_add(srd_session_, SRD_OUTPUT_BINARY,
 		DecodeSignal::binary_callback, this);
 
+	srd_pd_output_callback_add(srd_session_, SRD_OUTPUT_LOGIC,
+		DecodeSignal::logic_output_callback, this);
+
 	srd_session_start(srd_session_);
 
 	// We just recreated the srd session, so all stack changes are applied now
@@ -1642,6 +1699,39 @@ void DecodeSignal::binary_callback(srd_proto_data *pdata, void *decode_signal)
 	Decoder* dec = ds->get_decoder_by_instance(srd_dec);
 
 	ds->new_binary_data(ds->current_segment_id_, (void*)dec, pdb->bin_class);
+}
+
+void DecodeSignal::logic_output_callback(srd_proto_data *pdata, void *decode_signal)
+{
+	assert(pdata);
+	assert(decode_signal);
+
+	DecodeSignal *const ds = (DecodeSignal*)decode_signal;
+	assert(ds);
+
+	if (ds->decode_interrupt_)
+		return;
+
+	lock_guard<mutex> lock(ds->output_mutex_);
+
+	assert(pdata->pdo);
+	assert(pdata->pdo->di);
+	const srd_decoder *const decc = pdata->pdo->di->decoder;
+	assert(decc);
+
+	const srd_proto_data_logic *const pdl = (const srd_proto_data_logic*)pdata->data;
+	assert(pdl);
+
+	shared_ptr<Logic> output_logic = ds->output_logic_.at(decc);
+	shared_ptr<LogicSegment> last_segment =
+		dynamic_pointer_cast<LogicSegment>(output_logic->segments().back());
+	assert(last_segment);
+
+	last_segment->append_subsignal_payload(pdl->logic_class, (void*)pdl->data, pdl->size);
+
+	qInfo() << "Received" << pdl->size << "bytes /" << pdl->size \
+		<< "samples of logic output for class" << pdl->logic_class << "from decoder" \
+		<< QString::fromUtf8(decc->name);
 }
 
 void DecodeSignal::on_capture_state_changed(int state)

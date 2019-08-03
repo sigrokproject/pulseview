@@ -86,6 +86,18 @@ public:
 	void append_payload(shared_ptr<sigrok::Logic> logic);
 	void append_payload(void *data, uint64_t data_size);
 
+	/**
+	 * Appends sample data for a single channel where each byte
+	 * represents one sample - if it's 0 the state is low, if 1 high.
+	 * Other values are not permitted.
+	 * Assumes that all channels are having samples added and in the
+	 * order of 0..n, not n..0.
+	 * Also assumes the the number of samples added for each channel
+	 * is constant for every invokation for 0..n. The number of samples
+	 * hence may only change when index is 0.
+	 */
+	void append_subsignal_payload(unsigned int index, void *data, uint64_t data_size);
+
 	void get_samples(int64_t start_sample, int64_t end_sample, uint8_t* dest) const;
 
 	/**
