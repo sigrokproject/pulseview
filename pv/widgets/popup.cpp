@@ -23,6 +23,8 @@
 #include <QApplication>
 #include <QDesktopWidget>
 #include <QLineEdit>
+#include <QScrollBar>
+#include <QStyle>
 #include <QtGui>
 
 #include "popup.hpp"
@@ -36,6 +38,33 @@ namespace widgets {
 const unsigned int Popup::ArrowLength = 10;
 const unsigned int Popup::ArrowOverlap = 3;
 const unsigned int Popup::MarginWidth = 6;
+
+
+QWidthAdjustingScrollArea::QWidthAdjustingScrollArea(QWidget* parent) :
+	QScrollArea(parent)
+{
+}
+
+void QWidthAdjustingScrollArea::setWidget(QWidget* w)
+{
+	QScrollArea::setWidget(w);
+	// It happens that QScrollArea already filters widget events,
+	// but that's an implementation detail that we shouldn't rely on.
+	w->installEventFilter(this);
+}
+
+bool QWidthAdjustingScrollArea::eventFilter(QObject* obj, QEvent* ev)
+{
+	if (obj == widget() && ev->type() == QEvent::Resize) {
+		if (widget()->height() > height())
+			setMinimumWidth(widget()->width() + qApp->style()->pixelMetric(QStyle::PM_ScrollBarExtent));
+		else
+			setMinimumWidth(widget()->width());
+	}
+
+	return QScrollArea::eventFilter(obj, ev);
+}
+
 
 Popup::Popup(QWidget *parent) :
 	QWidget(parent, Qt::Popup | Qt::FramelessWindowHint),

@@ -346,13 +346,28 @@ void Trace::create_popup_form()
 	// handled, leaving the parent popup_ time to handle the change.
 	if (popup_form_) {
 		QWidget *suicidal = new QWidget();
-		suicidal->setLayout(popup_form_);
+		suicidal->setLayout(popup_->layout());
 		suicidal->deleteLater();
 	}
 
 	// Repopulate the popup
-	popup_form_ = new QFormLayout(popup_);
-	popup_->setLayout(popup_form_);
+	widgets::QWidthAdjustingScrollArea* scrollarea = new widgets::QWidthAdjustingScrollArea();
+	QWidget* scrollarea_content = new QWidget(scrollarea);
+
+	scrollarea->setWidget(scrollarea_content);
+	scrollarea->setWidgetResizable(true);
+	scrollarea->setContentsMargins(0, 0, 0, 0);
+	scrollarea->setFrameShape(QFrame::NoFrame);
+	scrollarea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+	scrollarea_content->setContentsMargins(0, 0, 0, 0);
+
+	popup_->setLayout(new QVBoxLayout());
+	popup_->layout()->addWidget(scrollarea);
+	popup_->layout()->setContentsMargins(0, 0, 0, 0);
+
+	popup_form_ = new QFormLayout(scrollarea_content);
+	popup_form_->setSizeConstraint(QLayout::SetMinAndMaxSize);
+
 	populate_popup_form(popup_, popup_form_);
 }
 

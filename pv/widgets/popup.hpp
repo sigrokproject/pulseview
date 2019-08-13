@@ -20,10 +20,28 @@
 #ifndef PULSEVIEW_PV_WIDGETS_POPUP_HPP
 #define PULSEVIEW_PV_WIDGETS_POPUP_HPP
 
+#include <QScrollArea>
 #include <QWidget>
 
 namespace pv {
 namespace widgets {
+
+
+// A regular QScrollArea has a fixed size and provides scroll bars when the
+// content can't be shown in its entirety. However, we want no horizontal
+// scroll bar and want the scroll area to adjust its width to fit the content
+// instead.
+// Inspired by https://stackoverflow.com/questions/21253755/qscrollarea-with-dynamically-changing-contents?answertab=votes#tab-top
+class QWidthAdjustingScrollArea : public QScrollArea
+{
+	Q_OBJECT
+
+public:
+	QWidthAdjustingScrollArea(QWidget* parent = 0);
+	void setWidget(QWidget* w);
+	bool eventFilter(QObject* obj, QEvent* ev);
+};
+
 
 class Popup : public QWidget
 {
