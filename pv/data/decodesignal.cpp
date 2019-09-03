@@ -370,7 +370,7 @@ void DecodeSignal::update_output_signals()
 				dec->logic_output_channels();
 
 			// All signals of a decoder share the same LogicSegment, so it's
-			// sufficient to check for the first channel only
+			// sufficient to check for only the first channel
 			const decode::DecoderLogicOutputChannel& first_ch = logic_channels[0];
 
 			bool ch_exists = false;
@@ -380,6 +380,7 @@ void DecodeSignal::update_output_signals()
 
 			if (!ch_exists) {
 				shared_ptr<Logic> logic_data = make_shared<Logic>(logic_channels.size());
+				logic_data->set_samplerate(first_ch.samplerate);
 				output_logic_[dec->get_srd_decoder()] = logic_data;
 
 				shared_ptr<LogicSegment> logic_segment = make_shared<data::LogicSegment>(
@@ -1723,9 +1724,19 @@ void DecodeSignal::logic_output_callback(srd_proto_data *pdata, void *decode_sig
 	assert(pdl);
 
 	shared_ptr<Logic> output_logic = ds->output_logic_.at(decc);
-	shared_ptr<LogicSegment> last_segment =
-		dynamic_pointer_cast<LogicSegment>(output_logic->segments().back());
-	assert(last_segment);
+
+	vector< shared_ptr<Segment> > segments = output_logic->segments();
+
+	shared_ptr<LogicSegment> last_segment;
+
+	if (!segments.empty())
+		last_segment = dynamic_pointer_cast<LogicSegment>(segments.back());
+	else {
+		// Happens when the data was cleared - all segments are gone then
+		last_segment = make_shared<data::LogicSegment>(
+			*output_logic, 0, (output_logic->num_channels() + 7) / 8, output_logic->get_samplerate());
+		output_logic->push_segment(last_segment);
+	}
 
 	last_segment->append_subsignal_payload(pdl->logic_class, (void*)pdl->data, pdl->size);
 
