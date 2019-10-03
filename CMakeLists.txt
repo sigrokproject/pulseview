@@ -103,6 +103,8 @@ set(CMAKE_AUTOMOC TRUE)
 
 find_package(Qt5 5.3 COMPONENTS Core Gui Widgets Svg REQUIRED)
 
+message(STATUS "Qt version: ${Qt5_VERSION}")
+
 if(WIN32)
 	# MXE workaround: Use pkg-config to find Qt5 libs.
 	# https://github.com/mxe/mxe/issues/1642
