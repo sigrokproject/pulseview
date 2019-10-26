@@ -179,6 +179,7 @@ private:
 	QIcon icon_grey_;
 
 	QShortcut *view_sticky_scrolling_shortcut_;
+	QShortcut *view_trigger_scrolling_shortcut_;
 	QShortcut *view_show_sampling_points_shortcut_;
 	QShortcut *view_show_analog_minor_grid_shortcut_;
 	QShortcut *view_colored_bg_shortcut_;

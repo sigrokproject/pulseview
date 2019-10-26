@@ -41,6 +41,7 @@ StandardBar::StandardBar(Session &session, QWidget *parent,
 	action_view_zoom_in_(new QAction(this)),
 	action_view_zoom_out_(new QAction(this)),
 	action_view_zoom_fit_(new QAction(this)),
+	action_view_trigger_scrolling_(new QAction(this)),
 	action_view_show_cursors_(new QAction(this)),
 	segment_display_mode_selector_(new QToolButton(this)),
 	action_sdm_last_(new QAction(this)),
@@ -73,6 +74,14 @@ StandardBar::StandardBar(Session &session, QWidget *parent,
 	action_view_zoom_fit_->setShortcut(QKeySequence(Qt::Key_F));
 	connect(action_view_zoom_fit_, SIGNAL(triggered(bool)),
 		this, SLOT(on_actionViewZoomFit_triggered(bool)));
+
+	action_view_trigger_scrolling_->setCheckable(true);
+	action_view_trigger_scrolling_->setText(tr("Scroll to &Trigger"));
+	action_view_trigger_scrolling_->setIcon(QIcon::fromTheme("trigger-scrolling",
+		QIcon(":/icons/trigger-scrolling.svg")));
+	action_view_trigger_scrolling_->setShortcut(QKeySequence(Qt::Key_T));
+	connect(action_view_trigger_scrolling_, SIGNAL(triggered(bool)),
+		this, SLOT(on_actionViewScrollToTrigger_triggered(bool)));
 
 	action_view_show_cursors_->setCheckable(true);
 	action_view_show_cursors_->setIcon(QIcon(":/icons/show-cursors.svg"));
@@ -125,6 +134,9 @@ StandardBar::StandardBar(Session &session, QWidget *parent,
 	connect(view_, SIGNAL(always_zoom_to_fit_changed(bool)),
 		this, SLOT(on_always_zoom_to_fit_changed(bool)));
 
+	connect(view_, SIGNAL(trigger_scrolling_changed(bool)),
+		this, SLOT(on_trigger_scrolling_changed(bool)));
+
 	connect(view_, SIGNAL(cursor_state_changed(bool)),
 		this, SLOT(on_cursor_state_changed(bool)));
 
@@ -143,6 +155,7 @@ void StandardBar::add_toolbar_widgets()
 	addAction(action_view_zoom_in_);
 	addAction(action_view_zoom_out_);
 	addAction(action_view_zoom_fit_);
+	addAction(action_view_trigger_scrolling_);
 	addSeparator();
 	addAction(action_view_show_cursors_);
 	multi_segment_actions_.push_back(addSeparator());
@@ -198,6 +211,11 @@ void StandardBar::on_actionViewZoomFit_triggered(bool checked)
 	view_->zoom_fit(checked);
 }
 
+void StandardBar::on_actionViewScrollToTrigger_triggered(bool checked)
+{
+	view_->trigger_scrolling(checked);
+}
+
 void StandardBar::on_actionViewShowCursors_triggered()
 {
 	const bool show = action_view_show_cursors_->isChecked();
@@ -226,6 +244,11 @@ void StandardBar::on_actionSDMSingle_triggered()
 void StandardBar::on_always_zoom_to_fit_changed(bool state)
 {
 	action_view_zoom_fit_->setChecked(state);
+}
+
+void StandardBar::on_trigger_scrolling_changed(bool state)
+{
+	action_view_trigger_scrolling_->setChecked(state);
 }
 
 void StandardBar::on_new_segment(int new_segment_id)

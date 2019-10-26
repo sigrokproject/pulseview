@@ -247,6 +247,7 @@ public:
 	void zoom(double steps, int offset);
 
 	void zoom_fit(bool gui_state);
+	void trigger_scrolling(bool gui_state);
 
 	/**
 	 * Sets the scale and offset.
@@ -350,6 +351,7 @@ Q_SIGNALS:
 	void scale_changed();
 
 	void sticky_scrolling_changed(bool state);
+	void trigger_scrolling_changed(bool state);
 
 	void always_zoom_to_fit_changed(bool state);
 
@@ -402,6 +404,8 @@ private:
 	void reset_scroll();
 
 	void set_scroll_default();
+
+	void scroll_to_trigger();
 
 	void determine_if_header_was_shrunk();
 
@@ -532,6 +536,7 @@ private:
 	bool header_was_shrunk_;
 
 	bool sticky_scrolling_;
+	bool trigger_scrolling_;
 	bool colored_bg_;
 	bool always_zoom_to_fit_;
 
