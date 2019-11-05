@@ -870,7 +870,10 @@ void MainWindow::on_show_decoder_selector(Session *session)
 	// Close dock widget if it's already showing and return
 	for (auto entry : sub_windows_) {
 		QDockWidget* dock = entry.first;
-		if (dynamic_pointer_cast<subwindows::decoder_selector::SubWindow>(entry.second)) {
+		shared_ptr<subwindows::SubWindowBase> decoder_selector =
+			dynamic_pointer_cast<subwindows::decoder_selector::SubWindow>(entry.second);
+
+		if (decoder_selector && (&decoder_selector->session() == session)) {
 			sub_windows_.erase(dock);
 			dock->close();
 			return;
