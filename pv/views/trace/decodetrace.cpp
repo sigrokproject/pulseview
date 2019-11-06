@@ -31,6 +31,7 @@ extern "C" {
 
 #include <QAction>
 #include <QApplication>
+#include <QClipboard>
 #include <QComboBox>
 #include <QFileDialog>
 #include <QFormLayout>
@@ -370,9 +371,12 @@ QMenu* DecodeTrace::create_view_context_menu(QWidget *parent, QPoint &click_pos)
 		selected_row_ = nullptr;
 	}
 
+	const View *const view = owner_->view();
+	assert(view);
+	QPoint pos = view->viewport()->mapFrom(parent, click_pos);
+
 	// Default sample range is "from here"
-	const pair<uint64_t, uint64_t> sample_range =
-		get_view_sample_range(click_pos.x(), click_pos.x() + 1);
+	const pair<uint64_t, uint64_t> sample_range = get_view_sample_range(pos.x(), pos.x() + 1);
 	selected_sample_range_ = make_pair(sample_range.first, numeric_limits<uint64_t>::max());
 
 	if (decode_signal_->is_paused()) {
@@ -390,6 +394,13 @@ QMenu* DecodeTrace::create_view_context_menu(QWidget *parent, QPoint &click_pos)
 		connect(pause, SIGNAL(triggered()), this, SLOT(on_pause_decode()));
 		menu->addAction(pause);
 	}
+
+	QAction *const copy_annotation_to_clipboard =
+		new QAction(tr("Copy annotation text to clipboard"), this);
+	copy_annotation_to_clipboard->setIcon(QIcon::fromTheme("edit-paste",
+		QIcon(":/icons/edit-paste.png")));
+	connect(copy_annotation_to_clipboard, SIGNAL(triggered()), this, SLOT(on_copy_annotation_to_clipboard()));
+	menu->addAction(copy_annotation_to_clipboard);
 
 	menu->addSeparator();
 
@@ -438,9 +449,6 @@ QMenu* DecodeTrace::create_view_context_menu(QWidget *parent, QPoint &click_pos)
 		QIcon(":/icons/document-save-as.png")));
 	connect(export_row_with_cursor, SIGNAL(triggered()), this, SLOT(on_export_row_with_cursor()));
 	menu->addAction(export_row_with_cursor);
-
-	const View *view = owner_->view();
-	assert(view);
 
 	if (!view->cursors()->enabled()) {
 		export_all_rows_with_cursor->setEnabled(false);
@@ -853,8 +861,6 @@ void DecodeTrace::hover_point_changed(const QPoint &hp)
 
 	QString ann = get_annotation_at_point(hp);
 
-	assert(view);
-
 	if (!row_height_ || ann.isEmpty()) {
 		QToolTip::hideText();
 		return;
@@ -1173,6 +1179,27 @@ void DecodeTrace::on_show_hide_decoder(int index)
 
 	if (owner_)
 		owner_->row_item_appearance_changed(false, true);
+}
+
+void DecodeTrace::on_copy_annotation_to_clipboard()
+{
+	using namespace pv::data::decode;
+
+	if (!selected_row_)
+		return;
+
+	vector<Annotation> *annotations = new vector<Annotation>();
+
+	decode_signal_->get_annotation_subset(*annotations, *selected_row_,
+		current_segment_, selected_sample_range_.first, selected_sample_range_.first);
+
+	if (annotations->empty())
+		return;
+
+	QClipboard *clipboard = QGuiApplication::clipboard();
+	clipboard->setText(annotations->front().annotations().front());
+
+	delete annotations;
 }
 
 void DecodeTrace::on_export_row()

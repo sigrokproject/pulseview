@@ -206,6 +206,8 @@ private Q_SLOTS:
 
 	void on_show_hide_decoder(int index);
 
+	void on_copy_annotation_to_clipboard();
+
 	void on_export_row();
 	void on_export_all_rows();
 	void on_export_row_with_cursor();
