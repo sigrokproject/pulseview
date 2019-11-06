@@ -26,7 +26,7 @@
 namespace pv {
 namespace widgets {
 
-DecoderMenu::DecoderMenu(QWidget *parent, bool first_level_decoder) :
+DecoderMenu::DecoderMenu(QWidget *parent, const char* input, bool first_level_decoder) :
 	QMenu(parent),
 	mapper_(this)
 {
@@ -37,14 +37,25 @@ DecoderMenu::DecoderMenu(QWidget *parent, bool first_level_decoder) :
 		assert(d);
 
 		const bool have_channels = (d->channels || d->opt_channels) != 0;
-		if (first_level_decoder == have_channels) {
-			QAction *const action =
-				addAction(QString::fromUtf8(d->name));
-			action->setData(qVariantFromValue(l->data));
-			mapper_.setMapping(action, action);
-			connect(action, SIGNAL(triggered()),
-				&mapper_, SLOT(map()));
+		if (first_level_decoder != have_channels)
+			continue;
+
+		if (!first_level_decoder) {
+			// Dismiss all non-stacked decoders unless we're looking for first-level decoders
+			if (!d->inputs)
+				continue;
+
+			// TODO For now we ignore that d->inputs is actually a list
+			if (strncmp((char*)(d->inputs->data), input, 1024) != 0)
+				continue;
 		}
+
+		QAction *const action =
+			addAction(QString::fromUtf8(d->name));
+		action->setData(qVariantFromValue(l->data));
+		mapper_.setMapping(action, action);
+		connect(action, SIGNAL(triggered()),
+			&mapper_, SLOT(map()));
 	}
 	g_slist_free(li);
 

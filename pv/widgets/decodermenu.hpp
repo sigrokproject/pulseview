@@ -33,7 +33,7 @@ class DecoderMenu : public QMenu
 	Q_OBJECT;
 
 public:
-	DecoderMenu(QWidget *parent, bool first_level_decoder = false);
+	DecoderMenu(QWidget *parent, const char* input, bool first_level_decoder = false);
 
 private:
 	static int decoder_name_cmp(const void *a, const void *b);

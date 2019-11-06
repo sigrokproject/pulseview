@@ -29,6 +29,7 @@
 
 #include <QColor>
 #include <QComboBox>
+#include <QPushButton>
 #include <QSignalMapper>
 #include <QTimer>
 
@@ -168,6 +169,8 @@ private:
 
 	const QString get_annotation_at_point(const QPoint &point);
 
+	void update_stack_button();
+
 	void create_decoder_form(int index,
 		shared_ptr<pv::data::decode::Decoder> &dec,
 		QWidget *parent, QFormLayout *form);
@@ -224,6 +227,7 @@ private:
 	pair<uint64_t, uint64_t> selected_sample_range_;
 
 	vector<pv::widgets::DecoderGroupBox*> decoder_forms_;
+	QPushButton* stack_button_;
 
 	map<data::decode::Row, int> row_title_widths_;
 	int row_height_, max_visible_rows_;

@@ -263,6 +263,31 @@ void DecodeTrace::paint_fore(QPainter &p, ViewItemPaintParams &pp)
 		paint_hover_marker(p);
 }
 
+void DecodeTrace::update_stack_button()
+{
+	const vector< shared_ptr<data::decode::Decoder> > &stack = decode_signal_->decoder_stack();
+
+	// Only show decoders in the menu that can be stacked onto the last one in the stack
+	if (!stack.empty()) {
+		const srd_decoder* d = stack.back()->decoder();
+
+		if (d->outputs) {
+			pv::widgets::DecoderMenu *const decoder_menu =
+				new pv::widgets::DecoderMenu(stack_button_, (const char*)(d->outputs->data));
+			connect(decoder_menu, SIGNAL(decoder_selected(srd_decoder*)),
+				this, SLOT(on_stack_decoder(srd_decoder*)));
+
+			stack_button_->setMenu(decoder_menu);
+			stack_button_->show();
+			return;
+		}
+	}
+
+	// No decoders available for stacking
+	stack_button_->setMenu(nullptr);
+	stack_button_->hide();
+}
+
 void DecodeTrace::populate_popup_form(QWidget *parent, QFormLayout *form)
 {
 	using pv::data::decode::Decoder;
@@ -297,18 +322,12 @@ void DecodeTrace::populate_popup_form(QWidget *parent, QFormLayout *form)
 	}
 
 	// Add stacking button
-	pv::widgets::DecoderMenu *const decoder_menu =
-		new pv::widgets::DecoderMenu(parent);
-	connect(decoder_menu, SIGNAL(decoder_selected(srd_decoder*)),
-		this, SLOT(on_stack_decoder(srd_decoder*)));
-
-	QPushButton *const stack_button =
-		new QPushButton(tr("Stack Decoder"), parent);
-	stack_button->setMenu(decoder_menu);
-	stack_button->setToolTip(tr("Stack a higher-level decoder on top of this one"));
+	stack_button_ = new QPushButton(tr("Stack Decoder"), parent);
+	stack_button_->setToolTip(tr("Stack a higher-level decoder on top of this one"));
+	update_stack_button();
 
 	QHBoxLayout *stack_button_box = new QHBoxLayout;
-	stack_button_box->addWidget(stack_button, 0, Qt::AlignRight);
+	stack_button_box->addWidget(stack_button_, 0, Qt::AlignRight);
 	form->addRow(stack_button_box);
 }
 
