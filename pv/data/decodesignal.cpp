@@ -540,6 +540,7 @@ void DecodeSignal::save_settings(QSettings &settings) const
 		settings.beginGroup("decoder" + QString::number(decoder_idx++));
 
 		settings.setValue("id", decoder->decoder()->id);
+		settings.setValue("shown", decoder->shown());
 
 		// Save decoder options
 		const map<string, GVariant*>& options = decoder->options();
@@ -608,6 +609,7 @@ void DecodeSignal::restore_settings(QSettings &settings)
 					make_shared<decode::Decoder>(dec);
 
 				stack_.push_back(decoder);
+				decoder->show(settings.value("shown", true).toBool());
 
 				// Restore decoder options that differ from their default
 				int options = settings.value("options").toInt();
