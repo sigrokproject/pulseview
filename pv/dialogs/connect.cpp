@@ -211,6 +211,7 @@ void Connect::serial_toggled(bool checked)
 {
 	serial_devices_.setEnabled(checked);
 	serial_baudrate_.setEnabled(checked);
+	serial_config_->setEnabled(checked);
 }
 
 void Connect::tcp_toggled(bool checked)
