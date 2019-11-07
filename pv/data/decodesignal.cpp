@@ -449,7 +449,7 @@ int64_t DecodeSignal::get_decoded_sample_count(uint32_t segment_id,
 	return result;
 }
 
-vector<Row> DecodeSignal::visible_rows() const
+vector<Row> DecodeSignal::get_rows(bool visible_only) const
 {
 	lock_guard<mutex> lock(output_mutex_);
 
@@ -457,7 +457,7 @@ vector<Row> DecodeSignal::visible_rows() const
 
 	for (const shared_ptr<decode::Decoder>& dec : stack_) {
 		assert(dec);
-		if (!dec->shown())
+		if (visible_only && !dec->shown())
 			continue;
 
 		const srd_decoder *const decc = dec->decoder();
@@ -507,7 +507,7 @@ void DecodeSignal::get_annotation_subset(
 {
 	// Note: We put all vectors and lists on the heap, not the stack
 
-	const vector<Row> rows = visible_rows();
+	const vector<Row> rows = get_rows(true);
 
 	// Use forward_lists for faster merging
 	forward_list<Annotation> *all_ann_list = new forward_list<Annotation>();

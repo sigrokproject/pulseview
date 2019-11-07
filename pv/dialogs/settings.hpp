@@ -79,6 +79,7 @@ private Q_SLOTS:
 #ifdef ENABLE_DECODE
 	void on_dec_initialStateConfigurable_changed(int state);
 	void on_dec_exportFormat_changed(const QString &text);
+	void on_dec_alwaysshowallrows_changed(int state);
 #endif
 	void on_log_logLevel_changed(int value);
 	void on_log_bufferSize_changed(int value);

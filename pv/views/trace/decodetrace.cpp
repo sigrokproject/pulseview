@@ -102,6 +102,11 @@ DecodeTrace::DecodeTrace(pv::Session &session,
 {
 	decode_signal_ = dynamic_pointer_cast<data::DecodeSignal>(base_);
 
+	GlobalSettings settings;
+	always_show_all_rows_ = settings.value(GlobalSettings::Key_Dec_AlwaysShowAllRows).toBool();
+
+	GlobalSettings::add_change_handler(this);
+
 	// Determine shortest string we want to see displayed in full
 	QFontMetrics m(QApplication::font());
 	min_useful_label_width_ = m.width("XX"); // e.g. two hex characters
@@ -135,6 +140,11 @@ DecodeTrace::DecodeTrace(pv::Session &session,
 		this, SLOT(on_delayed_trace_update()));
 	delayed_trace_updater_.setSingleShot(true);
 	delayed_trace_updater_.setInterval(1000 / MaxTraceUpdateRate);
+}
+
+DecodeTrace::~DecodeTrace()
+{
+	GlobalSettings::remove_change_handler(this);
 }
 
 bool DecodeTrace::enabled() const
@@ -182,7 +192,7 @@ void DecodeTrace::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 	sample_range.second = min((int64_t)sample_range.second,
 		decode_signal_->get_decoded_sample_count(current_segment_, false));
 
-	const vector<Row> rows = decode_signal_->visible_rows();
+	const vector<Row> rows = decode_signal_->get_rows(!always_show_all_rows_);
 
 	visible_rows_.clear();
 	for (const Row& row : rows) {
@@ -200,7 +210,7 @@ void DecodeTrace::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 		vector<Annotation> annotations;
 		decode_signal_->get_annotation_subset(annotations, row,
 			current_segment_, sample_range.first, sample_range.second);
-		if (!annotations.empty()) {
+		if (always_show_all_rows_ || !annotations.empty()) {
 			draw_annotations(annotations, p, annotation_height, pp, y,
 				get_row_color(row.index()), row_title_width);
 			y += row_height_;
@@ -1065,6 +1075,15 @@ void DecodeTrace::export_annotations(vector<Annotation> *annotations) const
 	msg.setStandardButtons(QMessageBox::Ok);
 	msg.setIcon(QMessageBox::Warning);
 	msg.exec();
+}
+
+void DecodeTrace::on_setting_changed(const QString &key, const QVariant &value)
+{
+	if (key == GlobalSettings::Key_Dec_AlwaysShowAllRows) {
+		visible_rows_.clear();
+		max_visible_rows_ = 0;
+		always_show_all_rows_ = value.toBool();
+	}
 }
 
 void DecodeTrace::on_new_annotations()

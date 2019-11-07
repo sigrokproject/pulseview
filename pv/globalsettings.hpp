@@ -71,6 +71,7 @@ public:
 	static const QString Key_View_CursorFillColor;
 	static const QString Key_Dec_InitialStateConfigurable;
 	static const QString Key_Dec_ExportFormat;
+	static const QString Key_Dec_AlwaysShowAllRows;
 	static const QString Key_Log_BufferSize;
 	static const QString Key_Log_NotifyOfStacktrace;
 

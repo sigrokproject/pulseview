@@ -382,6 +382,10 @@ QWidget *Settings::get_decoder_settings_form(QWidget *parent)
 		SLOT(on_dec_initialStateConfigurable_changed(int)));
 	decoder_layout->addRow(tr("Allow configuration of &initial signal state"), cb);
 
+	cb = create_checkbox(GlobalSettings::Key_Dec_AlwaysShowAllRows,
+		SLOT(on_dec_alwaysshowallrows_changed(int)));
+	decoder_layout->addRow(tr("Always show all &rows, even if no annotation is visible"), cb);
+
 	// Annotation export settings
 	ann_export_format_ = new QLineEdit();
 	ann_export_format_->setText(
@@ -724,6 +728,12 @@ void Settings::on_dec_exportFormat_changed(const QString &text)
 {
 	GlobalSettings settings;
 	settings.setValue(GlobalSettings::Key_Dec_ExportFormat, text);
+}
+
+void Settings::on_dec_alwaysshowallrows_changed(int state)
+{
+	GlobalSettings settings;
+	settings.setValue(GlobalSettings::Key_Dec_AlwaysShowAllRows, state ? true : false);
 }
 #endif
 

@@ -86,6 +86,8 @@ public:
 	DecodeTrace(pv::Session &session, shared_ptr<data::SignalBase> signalbase,
 		int index);
 
+	~DecodeTrace();
+
 	bool enabled() const;
 
 	shared_ptr<data::SignalBase> base() const;
@@ -186,6 +188,8 @@ public:
 	virtual void hover_point_changed(const QPoint &hp);
 
 private Q_SLOTS:
+	void on_setting_changed(const QString &key, const QVariant &value);
+
 	void on_new_annotations();
 	void on_delayed_trace_update();
 	void on_decode_reset();
@@ -220,6 +224,7 @@ private:
 	shared_ptr<data::DecodeSignal> decode_signal_;
 
 	vector<data::decode::Row> visible_rows_;
+	bool always_show_all_rows_;
 
 	map<QComboBox*, uint16_t> channel_id_map_;  // channel selector -> decode channel ID
 	map<QComboBox*, uint16_t> init_state_map_;  // init state selector -> decode channel ID
