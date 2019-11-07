@@ -1218,7 +1218,10 @@ void DecodeTrace::on_copy_annotation_to_clipboard()
 		return;
 
 	QClipboard *clipboard = QGuiApplication::clipboard();
-	clipboard->setText(annotations->front().annotations().front());
+	clipboard->setText(annotations->front().annotations().front(), QClipboard::Clipboard);
+
+	if (clipboard->supportsSelection())
+		clipboard->setText(annotations->front().annotations().front(), QClipboard::Selection);
 
 	delete annotations;
 }
