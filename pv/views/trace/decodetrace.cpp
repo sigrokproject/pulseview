@@ -288,6 +288,8 @@ void DecodeTrace::update_stack_button()
 			connect(decoder_menu, SIGNAL(decoder_selected(srd_decoder*)),
 				this, SLOT(on_stack_decoder(srd_decoder*)));
 
+			decoder_menu->setStyleSheet("QMenu { menu-scrollable: 1; }");
+
 			stack_button_->setMenu(decoder_menu);
 			stack_button_->show();
 			return;
