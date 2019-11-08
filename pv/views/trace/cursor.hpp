@@ -53,19 +53,19 @@ public:
 	/**
 	 * Returns true if the item is visible and enabled.
 	 */
-	bool enabled() const;
+	virtual bool enabled() const override;
 
 	/**
 	 * Gets the text to show in the marker.
 	 */
-	QString get_text() const;
+	virtual QString get_text() const override;
 
 	/**
 	 * Gets the marker label rectangle.
 	 * @param rect The rectangle of the ruler client area.
 	 * @return Returns the label rectangle.
 	 */
-	QRectF label_rect(const QRectF &rect) const;
+	virtual QRectF label_rect(const QRectF &rect) const override;
 
 	virtual QMenu* create_header_context_menu(QWidget *parent) override;
 
