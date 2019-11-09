@@ -410,7 +410,7 @@ QMenu* DecodeTrace::create_view_context_menu(QWidget *parent, QPoint &click_pos)
 	QAction *const copy_annotation_to_clipboard =
 		new QAction(tr("Copy annotation text to clipboard"), this);
 	copy_annotation_to_clipboard->setIcon(QIcon::fromTheme("edit-paste",
-		QIcon(":/icons/edit-paste.png")));
+		QIcon(":/icons/edit-paste.svg")));
 	connect(copy_annotation_to_clipboard, SIGNAL(triggered()), this, SLOT(on_copy_annotation_to_clipboard()));
 	menu->addAction(copy_annotation_to_clipboard);
 
