@@ -127,7 +127,7 @@ set(pulseview_TEST_HEADERS
 	${PROJECT_SOURCE_DIR}/pv/prop/int.hpp
 	${PROJECT_SOURCE_DIR}/pv/prop/property.hpp
 	${PROJECT_SOURCE_DIR}/pv/prop/string.hpp
-	${PROJECT_SOURCE_DIR}/pv/subwindows/subwindowbase.cpp
+	${PROJECT_SOURCE_DIR}/pv/subwindows/subwindowbase.hpp
 	${PROJECT_SOURCE_DIR}/pv/toolbars/mainbar.hpp
 	${PROJECT_SOURCE_DIR}/pv/views/trace/analogsignal.hpp
 	${PROJECT_SOURCE_DIR}/pv/views/trace/cursor.hpp
