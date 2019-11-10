@@ -1,0 +1,5 @@
+<RCC>
+	<qresource prefix="/">
+		<file>l10n/de.qm</file>
+	</qresource>
+</RCC>

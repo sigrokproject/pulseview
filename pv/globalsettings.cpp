@@ -18,6 +18,7 @@
  */
 
 #include "globalsettings.hpp"
+#include "application.hpp"
 
 #include <QApplication>
 #include <QColor>
@@ -42,6 +43,7 @@ const vector< pair<QString, QString> > Themes {
 	{"DarkStyle", ":/themes/darkstyle/darkstyle.qss"}
 };
 
+const QString GlobalSettings::Key_General_Language = "General_Language";
 const QString GlobalSettings::Key_General_Theme = "General_Theme";
 const QString GlobalSettings::Key_General_Style = "General_Style";
 const QString GlobalSettings::Key_General_SaveWithSetup = "General_SaveWithSetup";
@@ -90,6 +92,14 @@ void GlobalSettings::save_internal_defaults()
 
 void GlobalSettings::set_defaults_where_needed()
 {
+	if (!contains(Key_General_Language)) {
+		// Determine and set default UI language
+		QString language = QLocale().uiLanguages().first();  // May return e.g. en-Latn-US
+		language = language.split("-").first();
+
+		setValue(Key_General_Language, language);
+	}
+
 	// Use no theme by default
 	if (!contains(Key_General_Theme))
 		setValue(Key_General_Theme, 0);
@@ -229,6 +239,12 @@ void GlobalSettings::apply_theme()
 	}
 
 	QPixmapCache::clear();
+}
+
+void GlobalSettings::apply_language()
+{
+	Application* a = qobject_cast<Application*>(QApplication::instance());
+	a->switch_language(value(Key_General_Language).toString());
 }
 
 void GlobalSettings::add_change_handler(GlobalSettingsInterface *cb)

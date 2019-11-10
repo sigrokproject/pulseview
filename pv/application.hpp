@@ -23,19 +23,25 @@
 #include <vector>
 
 #include <QApplication>
+#include <QTranslator>
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
+
+#include "globalsettings.hpp"
 
 using std::shared_ptr;
 using std::pair;
 using std::vector;
 
-class Application : public QApplication
+class Application : public QApplication, public pv::GlobalSettingsInterface
 {
 	Q_OBJECT
 
 public:
 	Application(int &argc, char* argv[]);
+
+	void switch_language(const QString& language);
+	void on_setting_changed(const QString &key, const QVariant &value);
 
 	void collect_version_info(shared_ptr<sigrok::Context> context);
 	void print_version_info();
@@ -58,6 +64,8 @@ private:
 	vector< pair<QString, QString> > input_format_list_;
 	vector< pair<QString, QString> > output_format_list_;
 	vector< pair<QString, QString> > pd_list_;
+
+	QTranslator app_translator_, qt_translator_;
 };
 
 #endif // PULSEVIEW_PV_APPLICATION_HPP

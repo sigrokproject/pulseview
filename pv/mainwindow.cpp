@@ -40,6 +40,7 @@
 
 #include "mainwindow.hpp"
 
+#include "application.hpp"
 #include "devicemanager.hpp"
 #include "devices/hardwaredevice.hpp"
 #include "dialogs/settings.hpp"

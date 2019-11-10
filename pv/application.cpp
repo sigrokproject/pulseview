@@ -17,9 +17,6 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "application.hpp"
-#include "config.h"
-
 #include <iostream>
 #include <typeinfo>
 
@@ -34,6 +31,10 @@
 #ifdef ENABLE_DECODE
 #include <libsigrokdecode/libsigrokdecode.h>
 #endif
+
+#include "application.hpp"
+#include "config.h"
+#include "globalsettings.hpp"
 
 using std::cout;
 using std::endl;
@@ -58,6 +59,34 @@ Application::Application(int &argc, char* argv[]) :
 	setApplicationName("PulseView");
 	setOrganizationName("sigrok");
 	setOrganizationDomain("sigrok.org");
+}
+
+void Application::switch_language(const QString& language)
+{
+	removeTranslator(&app_translator_);
+	removeTranslator(&qt_translator_);
+
+	if ((language != "C") && (language != "en")) {
+		// Application translations
+		QString resource = ":/l10n/" + language +".qm";
+		if (app_translator_.load(resource))
+			installTranslator(&app_translator_);
+		else
+			qWarning() << "Translation resource" << resource << "not found";
+
+		// Qt translations
+		resource = ":/l10n/qtbase_" + language +".qm";
+		if (qt_translator_.load(resource))
+			installTranslator(&qt_translator_);
+		else
+			qWarning() << "Translation resource" << resource << "not found";
+	}
+}
+
+void Application::on_setting_changed(const QString &key, const QVariant &value)
+{
+	if (key == pv::GlobalSettings::Key_General_Language)
+		switch_language(value.toString());
 }
 
 void Application::collect_version_info(shared_ptr<sigrok::Context> context)

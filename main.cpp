@@ -279,8 +279,10 @@ int main(int argc, char *argv[])
 
 	// Prepare the global settings since logging needs them early on
 	pv::GlobalSettings settings;
+	settings.add_change_handler(&a);  // Only the application object can't register itself
 	settings.save_internal_defaults();
 	settings.set_defaults_where_needed();
+	settings.apply_language();
 	settings.apply_theme();
 
 	pv::logging.init();

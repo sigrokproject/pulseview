@@ -101,7 +101,7 @@ pkg_check_modules(PKGDEPS REQUIRED ${PKGDEPS})
 
 set(CMAKE_AUTOMOC TRUE)
 
-find_package(Qt5 5.3 COMPONENTS Core Gui Widgets Svg REQUIRED)
+find_package(Qt5 5.3 COMPONENTS Core Gui LinguistTools Widgets Svg REQUIRED)
 
 message(STATUS "Qt version: ${Qt5_VERSION}")
 
@@ -423,6 +423,18 @@ endif()
 qt5_add_resources(pulseview_RESOURCES_RCC ${pulseview_RESOURCES})
 
 #===============================================================================
+#= Translations
+#-------------------------------------------------------------------------------
+
+file(GLOB TS_FILES l10n/*.ts)
+set_property(SOURCE ${TS_FILES} PROPERTY OUTPUT_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/l10n)
+
+qt5_add_translation(QM_FILES ${TS_FILES})
+qt5_create_translation(QM_FILES ${pulseview_SOURCES} ${TS_FILES})
+
+qt5_add_resources(pulseview_RESOURCES_RCC translations.qrc)
+
+#===============================================================================
 #= Global Definitions
 #-------------------------------------------------------------------------------
 
@@ -513,9 +525,9 @@ if(ANDROID)
 endif()
 
 if(ANDROID)
-	add_library(${PROJECT_NAME} SHARED ${pulseview_SOURCES} ${pulseview_RESOURCES_RCC})
+	add_library(${PROJECT_NAME} SHARED ${pulseview_SOURCES} ${pulseview_RESOURCES_RCC} ${QM_FILES})
 else()
-	add_executable(${PROJECT_NAME} ${pulseview_SOURCES} ${pulseview_RESOURCES_RCC})
+	add_executable(${PROJECT_NAME} ${pulseview_SOURCES} ${pulseview_RESOURCES_RCC} ${QM_FILES})
 endif()
 
 target_link_libraries(${PROJECT_NAME} ${PULSEVIEW_LINK_LIBS})

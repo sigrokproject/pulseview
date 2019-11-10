@@ -33,6 +33,7 @@
 #include "pv/subwindows/decoder_selector/subwindow.hpp"
 
 #include <libsigrokdecode/libsigrokdecode.h>
+#include "subwindow.hpp"  // Required only for lupdate since above include isn't recognized
 
 #define DECODERS_HAVE_TAGS \
 	((SRD_PACKAGE_VERSION_MAJOR > 0) || \
@@ -46,7 +47,7 @@ namespace decoder_selector {
 
 const char *initial_notice =
 	QT_TRANSLATE_NOOP("pv::subwindows::decoder_selector::SubWindow",
-		"Select a decoder to see its description here.");  // clazy:exclude=non-pod-global-static
+			"Select a decoder to see its description here.");  // clazy:exclude=non-pod-global-static
 
 const int min_width_margin = 75;
 
