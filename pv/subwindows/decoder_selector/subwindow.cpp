@@ -39,7 +39,9 @@ namespace pv {
 namespace subwindows {
 namespace decoder_selector {
 
-const QString initial_notice = QApplication::tr("Select a decoder to see its description here.");
+const char *initial_notice =
+	QT_TRANSLATE_NOOP("pv::subwindows::decoder_selector::SubWindow", "Select a decoder to see its description here.");
+
 const int min_width_margin = 75;
 
 
@@ -132,7 +134,7 @@ SubWindow::SubWindow(Session& session, QWidget* parent) :
 	info_label_header_->setTextInteractionFlags(flags);
 	info_label_body_->setWordWrap(true);
 	info_label_body_->setTextInteractionFlags(flags);
-	info_label_body_->setText(initial_notice);
+	info_label_body_->setText(QString(tr(initial_notice)));
 	info_label_body_->setAlignment(Qt::AlignTop);
 	info_label_footer_->setWordWrap(true);
 	info_label_footer_->setTextInteractionFlags(flags);
@@ -169,7 +171,7 @@ QToolBar* SubWindow::create_toolbar(QWidget *parent) const
 int SubWindow::minimum_width() const
 {
 	QFontMetrics m(info_label_body_->font());
-	const int label_width = m.width(initial_notice);
+	const int label_width = m.width(QString(tr(initial_notice)));
 
 	return label_width + min_width_margin;
 }
