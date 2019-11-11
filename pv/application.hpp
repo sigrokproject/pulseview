@@ -23,6 +23,7 @@
 #include <vector>
 
 #include <QApplication>
+#include <QStringList>
 #include <QTranslator>
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
@@ -40,6 +41,7 @@ class Application : public QApplication, public pv::GlobalSettingsInterface
 public:
 	Application(int &argc, char* argv[]);
 
+	QStringList get_languages();
 	void switch_language(const QString& language);
 	void on_setting_changed(const QString &key, const QVariant &value);
 

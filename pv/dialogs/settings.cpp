@@ -216,6 +216,26 @@ QWidget *Settings::get_general_settings_form(QWidget *parent) const
 	QFormLayout *general_layout = new QFormLayout();
 	general_group->setLayout(general_layout);
 
+	// Generate language combobox
+	QComboBox *language_cb = new QComboBox();
+	Application* a = qobject_cast<Application*>(QApplication::instance());
+
+	QString current_language = settings.value(GlobalSettings::Key_General_Language).toString();
+	for (QString language : a->get_languages()) {
+		QLocale locale = QLocale(language);
+		QString desc = locale.languageToString(locale.language());
+		language_cb->addItem(desc, language);
+
+		if (language == current_language) {
+			int index = language_cb->findText(desc, Qt::MatchFixedString);
+			language_cb->setCurrentIndex(index);
+		}
+	}
+	connect(language_cb, SIGNAL(currentIndexChanged(const QString&)),
+		this, SLOT(on_general_language_changed(const QString&)));
+	general_layout->addRow(tr("User interface language"), language_cb);
+
+	// Theme combobox
 	QComboBox *theme_cb = new QComboBox();
 	for (const pair<QString, QString>& entry : Themes)
 		theme_cb->addItem(entry.first, entry.second);
@@ -223,13 +243,14 @@ QWidget *Settings::get_general_settings_form(QWidget *parent) const
 	theme_cb->setCurrentIndex(
 		settings.value(GlobalSettings::Key_General_Theme).toInt());
 	connect(theme_cb, SIGNAL(currentIndexChanged(int)),
-		this, SLOT(on_general_theme_changed_changed(int)));
+		this, SLOT(on_general_theme_changed(int)));
 	general_layout->addRow(tr("User interface theme"), theme_cb);
 
 	QLabel *description_1 = new QLabel(tr("(You may need to restart PulseView for all UI elements to update)"));
 	description_1->setAlignment(Qt::AlignRight);
 	general_layout->addRow(description_1);
 
+	// Style combobox
 	QComboBox *style_cb = new QComboBox();
 	style_cb->addItem(tr("System Default"), "");
 	for (QString& s : QStyleFactory::keys())
@@ -250,6 +271,7 @@ QWidget *Settings::get_general_settings_form(QWidget *parent) const
 	description_2->setAlignment(Qt::AlignRight);
 	general_layout->addRow(description_2);
 
+	// Misc
 	cb = create_checkbox(GlobalSettings::Key_General_SaveWithSetup,
 		SLOT(on_general_save_with_setup_changed(int)));
 	general_layout->addRow(tr("Save session &setup along with .sr file"), cb);
@@ -583,10 +605,24 @@ void Settings::on_page_changed(QListWidgetItem *current, QListWidgetItem *previo
 	pages->setCurrentIndex(page_list->row(current));
 }
 
-void Settings::on_general_theme_changed_changed(int state)
+void Settings::on_general_language_changed(const QString &text)
 {
 	GlobalSettings settings;
-	settings.setValue(GlobalSettings::Key_General_Theme, state);
+	Application* a = qobject_cast<Application*>(QApplication::instance());
+
+	for (QString language : a->get_languages()) {
+		QLocale locale = QLocale(language);
+		QString desc = locale.languageToString(locale.language());
+
+		if (text == desc)
+			settings.setValue(GlobalSettings::Key_General_Language, language);
+	}
+}
+
+void Settings::on_general_theme_changed(int value)
+{
+	GlobalSettings settings;
+	settings.setValue(GlobalSettings::Key_General_Theme, value);
 	settings.apply_theme();
 
 	QMessageBox msg(this);
@@ -608,15 +644,15 @@ void Settings::on_general_theme_changed_changed(int state)
 	}
 }
 
-void Settings::on_general_style_changed(int state)
+void Settings::on_general_style_changed(int value)
 {
 	GlobalSettings settings;
 
-	if (state == 0)
+	if (value == 0)
 		settings.setValue(GlobalSettings::Key_General_Style, "");
 	else
 		settings.setValue(GlobalSettings::Key_General_Style,
-			QStyleFactory::keys().at(state - 1));
+			QStyleFactory::keys().at(value - 1));
 
 	settings.apply_theme();
 }

@@ -21,6 +21,9 @@
 #include <typeinfo>
 
 #include <QDebug>
+#include <QDir>
+#include <QMessageBox>
+#include <QWidget>
 
 #include <boost/version.hpp>
 
@@ -61,6 +64,22 @@ Application::Application(int &argc, char* argv[]) :
 	setOrganizationDomain("sigrok.org");
 }
 
+QStringList Application::get_languages()
+{
+	QStringList files = QDir(":/l10n/").entryList(QStringList("*.qm"), QDir::Files);
+
+	QStringList result;
+	result << "en";  // Add default language to the set
+
+	// Remove file extensions
+	for (QString file : files)
+		result << file.split(".").front();
+
+	result.sort(Qt::CaseInsensitive);
+
+	return result;
+}
+
 void Application::switch_language(const QString& language)
 {
 	removeTranslator(&app_translator_);
@@ -80,6 +99,20 @@ void Application::switch_language(const QString& language)
 			installTranslator(&qt_translator_);
 		else
 			qWarning() << "Translation resource" << resource << "not found";
+	}
+
+	if (!topLevelWidgets().empty()) {
+		// Force all windows to update
+		for (QWidget *widget : topLevelWidgets())
+			widget->update();
+
+		QMessageBox msg(topLevelWidgets().front());
+		msg.setText(tr("Some parts of the application may still " \
+				"use the previous language. Re-opening the affected windows or " \
+				"restarting the application will remedy this."));
+		msg.setStandardButtons(QMessageBox::Ok);
+		msg.setIcon(QMessageBox::Information);
+		msg.exec();
 	}
 }
 
