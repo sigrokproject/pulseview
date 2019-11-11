@@ -65,3 +65,6 @@ manual/manual.html
 manual/manual.pdf
 test/cmake_install.cmake
 *_autogen
+
+# Translation binaries
+*.qm
