@@ -344,7 +344,7 @@ QWidget *Settings::get_view_settings_form(QWidget *parent) const
 		settings.value(GlobalSettings::Key_View_SnapDistance).toInt());
 	connect(snap_distance_sb, SIGNAL(valueChanged(int)), this,
 		SLOT(on_view_snapDistance_changed(int)));
-	trace_view_layout->addRow(tr("Maximum distance from edges before cursors snap to them"), snap_distance_sb);
+	trace_view_layout->addRow(tr("Maximum distance from edges before markers snap to them"), snap_distance_sb);
 
 	ColorButton* cursor_fill_cb = new ColorButton(parent);
 	cursor_fill_cb->set_color(QColor::fromRgba(

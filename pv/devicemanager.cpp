@@ -93,7 +93,7 @@ DeviceManager::DeviceManager(shared_ptr<Context> context,
 		if (!driver_supported(entry.second))
 			continue;
 
-		progress->setLabelText(QObject::tr("Scanning for %1...")
+		progress->setLabelText(QObject::tr("Scanning for devices that driver %1 can access...")
 			.arg(QString::fromStdString(entry.first)));
 
 		if (entry.first == user_name)
