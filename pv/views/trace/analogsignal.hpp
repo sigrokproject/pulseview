@@ -183,6 +183,8 @@ private:
 		*display_type_cb_;
 	QSpinBox *pvdiv_sb_, *nvdiv_sb_, *div_height_sb_;
 
+	double signal_min_, signal_max_;  // Min/max values of this signal's analog data
+
 	float scale_;
 	int scale_index_;
 

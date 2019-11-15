@@ -842,7 +842,7 @@ void AnalogSignal::perform_autoranging(bool keep_divs, bool force_update)
 	if (segments.empty())
 		return;
 
-	static double prev_min = 0, prev_max = 0;
+	double signal_min_ = 0, signal_max_ = 0;
 	double min = 0, max = 0;
 
 	for (const shared_ptr<pv::data::AnalogSegment>& segment : segments) {
@@ -851,11 +851,11 @@ void AnalogSignal::perform_autoranging(bool keep_divs, bool force_update)
 		max = std::max(max, mm.second);
 	}
 
-	if ((min == prev_min) && (max == prev_max) && !force_update)
+	if ((min == signal_min_) && (max == signal_max_) && !force_update)
 		return;
 
-	prev_min = min;
-	prev_max = max;
+	signal_min_ = min;
+	signal_max_ = max;
 
 	// If we're allowed to alter the div assignment...
 	if (!keep_divs) {
