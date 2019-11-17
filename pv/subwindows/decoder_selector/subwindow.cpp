@@ -33,7 +33,6 @@
 #include "pv/subwindows/decoder_selector/subwindow.hpp"
 
 using std::reverse;
-using std::shared_ptr;
 
 namespace pv {
 namespace subwindows {

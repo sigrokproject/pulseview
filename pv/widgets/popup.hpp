@@ -37,7 +37,7 @@ class QWidthAdjustingScrollArea : public QScrollArea
 	Q_OBJECT
 
 public:
-	QWidthAdjustingScrollArea(QWidget* parent = 0);
+	QWidthAdjustingScrollArea(QWidget* parent = nullptr);
 	void setWidget(QWidget* w);
 	bool eventFilter(QObject* obj, QEvent* ev);
 };

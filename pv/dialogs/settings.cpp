@@ -240,7 +240,7 @@ QWidget *Settings::get_general_settings_form(QWidget *parent) const
 	if (current_style.isEmpty())
 		style_cb->setCurrentIndex(0);
 	else
-		style_cb->setCurrentIndex(style_cb->findText(current_style, 0));
+		style_cb->setCurrentIndex(style_cb->findText(current_style, nullptr));
 
 	connect(style_cb, SIGNAL(currentIndexChanged(int)),
 		this, SLOT(on_general_style_changed(int)));

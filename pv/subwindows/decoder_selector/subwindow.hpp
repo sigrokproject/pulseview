@@ -65,7 +65,7 @@ class DecoderCollectionModel : public QAbstractItemModel
 	Q_OBJECT
 
 public:
-	DecoderCollectionModel(QObject* parent = 0);
+	DecoderCollectionModel(QObject* parent = nullptr);
 
 	QVariant data(const QModelIndex& index, int role) const override;
 	Qt::ItemFlags flags(const QModelIndex& index) const override;
@@ -147,7 +147,7 @@ private:
 	QCustomSortFilterProxyModel* sort_filter_model_;
 };
 
-} // decoder_selector
+} // namespace decoder_selector
 } // namespace subwindows
 } // namespace pv
 
