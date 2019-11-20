@@ -261,7 +261,7 @@ shared_ptr<subwindows::SubWindowBase> MainWindow::add_subwindow(
 	shared_ptr<subwindows::SubWindowBase> v;
 
 	QMainWindow *main_window = nullptr;
-	for (auto entry : session_windows_)
+	for (auto& entry : session_windows_)
 		if (entry.first.get() == &session)
 			main_window = entry.second;
 
@@ -304,7 +304,7 @@ shared_ptr<subwindows::SubWindowBase> MainWindow::add_subwindow(
 		QDockWidget::DockWidgetFloatable | QDockWidget::DockWidgetClosable);
 
 	QAbstractButton *close_btn =
-		dock->findChildren<QAbstractButton*>
+		dock->findChildren<QAbstractButton*>  // clazy:exclude=detaching-temporary
 			("qt_dockwidget_closebutton").front();
 
 	connect(close_btn, SIGNAL(clicked(bool)),
@@ -868,7 +868,7 @@ void MainWindow::on_show_decoder_selector(Session *session)
 {
 #ifdef ENABLE_DECODE
 	// Close dock widget if it's already showing and return
-	for (auto entry : sub_windows_) {
+	for (auto& entry : sub_windows_) {
 		QDockWidget* dock = entry.first;
 		shared_ptr<subwindows::SubWindowBase> decoder_selector =
 			dynamic_pointer_cast<subwindows::decoder_selector::SubWindow>(entry.second);
@@ -881,7 +881,7 @@ void MainWindow::on_show_decoder_selector(Session *session)
 	}
 
 	// We get a pointer and need a reference
-	for (shared_ptr<Session> s : sessions_)
+	for (shared_ptr<Session>& s : sessions_)
 		if (s.get() == session)
 			add_subwindow(subwindows::SubWindowTypeDecoderSelector, *s);
 #endif

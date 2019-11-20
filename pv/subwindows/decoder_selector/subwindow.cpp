@@ -39,7 +39,8 @@ namespace subwindows {
 namespace decoder_selector {
 
 const char *initial_notice =
-	QT_TRANSLATE_NOOP("pv::subwindows::decoder_selector::SubWindow", "Select a decoder to see its description here.");
+	QT_TRANSLATE_NOOP("pv::subwindows::decoder_selector::SubWindow",
+		"Select a decoder to see its description here.");  // clazy:exclude=non-pod-global-static
 
 const int min_width_margin = 75;
 
