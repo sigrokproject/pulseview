@@ -45,7 +45,8 @@ const int CursorPair::DeltaPadding = 8;
 CursorPair::CursorPair(View &view) :
 	TimeItem(view),
 	first_(new Cursor(view, 0.0)),
-	second_(new Cursor(view, 1.0))
+	second_(new Cursor(view, 1.0)),
+	label_incomplete_(true)
 {
 	GlobalSettings::add_change_handler(this);
 

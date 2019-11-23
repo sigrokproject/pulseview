@@ -130,7 +130,8 @@ View::View(Session &session, bool is_main_view, QWidget *parent) :
 	// Note: Place defaults in View::reset_view_state(), not here
 	splitter_(new QSplitter()),
 	header_was_shrunk_(false),  // The splitter remains unchanged after a reset, so this goes here
-	sticky_scrolling_(false)  // Default setting is set in MainWindow::setup_ui()
+	sticky_scrolling_(false),  // Default setting is set in MainWindow::setup_ui()
+	scroll_needs_defaults_(true)
 {
 	QVBoxLayout *root_layout = new QVBoxLayout(this);
 	root_layout->setContentsMargins(0, 0, 0, 0);
