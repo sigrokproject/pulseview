@@ -151,11 +151,6 @@ private Q_SLOTS:
 	void on_settingViewShowSamplingPoints_changed(const QVariant new_value);
 	void on_settingViewShowAnalogMinorGrid_changed(const QVariant new_value);
 
-	void on_zoom_out_shortcut_triggered();
-	void on_zoom_in_shortcut_triggered();
-	void on_scroll_to_start_triggered();
-	void on_scroll_to_end_triggered();
-
 	void on_close_current_tab();
 
 private:
@@ -185,12 +180,6 @@ private:
 	QShortcut *run_stop_shortcut_;
 	QShortcut *close_application_shortcut_;
 	QShortcut *close_current_tab_shortcut_;
-	QShortcut *zoom_in_shortcut_;
-	QShortcut *zoom_in_shortcut_2_;
-	QShortcut *zoom_out_shortcut_;
-	QShortcut *zoom_out_shortcut_2_;
-	QShortcut *home_shortcut_;
-	QShortcut *end_shortcut_;
 };
 
 } // namespace pv

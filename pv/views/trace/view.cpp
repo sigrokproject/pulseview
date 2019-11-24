@@ -206,11 +206,33 @@ View::View(Session &session, bool is_main_view, QWidget *parent) :
 		this, SLOT(process_sticky_events()));
 	lazy_event_handler_.setSingleShot(true);
 
+	// Set up local keyboard shortcuts
+	zoom_in_shortcut_ = new QShortcut(QKeySequence(Qt::Key_Plus), this,
+			SLOT(on_zoom_in_shortcut_triggered()), nullptr, Qt::WidgetWithChildrenShortcut);
+	zoom_in_shortcut_->setAutoRepeat(false);
+
+	zoom_out_shortcut_ = new QShortcut(QKeySequence(Qt::Key_Minus), this,
+		SLOT(on_zoom_out_shortcut_triggered()), nullptr, Qt::WidgetWithChildrenShortcut);
+	zoom_out_shortcut_->setAutoRepeat(false);
+
+	zoom_in_shortcut_2_ = new QShortcut(QKeySequence(Qt::Key_Up), this,
+		SLOT(on_zoom_in_shortcut_triggered()), nullptr, Qt::WidgetWithChildrenShortcut);
+	zoom_out_shortcut_2_ = new QShortcut(QKeySequence(Qt::Key_Down), this,
+		SLOT(on_zoom_out_shortcut_triggered()), nullptr, Qt::WidgetWithChildrenShortcut);
+
+	home_shortcut_ = new QShortcut(QKeySequence(Qt::Key_Home), this,
+		SLOT(on_scroll_to_start_shortcut_triggered()), nullptr, Qt::WidgetWithChildrenShortcut);
+	home_shortcut_->setAutoRepeat(false);
+
+	end_shortcut_ = new QShortcut(QKeySequence(Qt::Key_End), this,
+		SLOT(on_scroll_to_end_shortcut_triggered()), nullptr, Qt::WidgetWithChildrenShortcut);
+	end_shortcut_->setAutoRepeat(false);
+
 	// Trigger the initial event manually. The default device has signals
 	// which were created before this object came into being
 	signals_changed();
 
-	// make sure the transparent widgets are on the top
+	// Make sure the transparent widgets are on the top
 	ruler_->raise();
 	header_->raise();
 
@@ -1489,6 +1511,26 @@ void View::on_splitter_moved()
 
 	if (!header_was_shrunk_)
 		resize_header_to_fit();
+}
+
+void View::on_zoom_in_shortcut_triggered()
+{
+	zoom(1);
+}
+
+void View::on_zoom_out_shortcut_triggered()
+{
+	zoom(-1);
+}
+
+void View::on_scroll_to_start_shortcut_triggered()
+{
+	set_h_offset(0);
+}
+
+void View::on_scroll_to_end_shortcut_triggered()
+{
+	set_h_offset(get_h_scrollbar_maximum());
 }
 
 void View::h_scroll_value_changed(int value)

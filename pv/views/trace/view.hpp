@@ -28,6 +28,7 @@
 #include <vector>
 
 #include <QAbstractScrollArea>
+#include <QShortcut>
 #include <QSizeF>
 #include <QSplitter>
 
@@ -442,6 +443,11 @@ private Q_SLOTS:
 	void on_signal_name_changed();
 	void on_splitter_moved();
 
+	void on_zoom_in_shortcut_triggered();
+	void on_zoom_out_shortcut_triggered();
+	void on_scroll_to_start_shortcut_triggered();
+	void on_scroll_to_end_shortcut_triggered();
+
 	void h_scroll_value_changed(int value);
 	void v_scroll_value_changed();
 
@@ -505,6 +511,10 @@ private:
 	Ruler *ruler_;
 	Header *header_;
 	QSplitter *splitter_;
+
+	QShortcut *zoom_in_shortcut_, *zoom_in_shortcut_2_;
+	QShortcut *zoom_out_shortcut_, *zoom_out_shortcut_2_;
+	QShortcut *home_shortcut_, *end_shortcut_;
 
 	unordered_set< shared_ptr<Signal> > signals_;
 
