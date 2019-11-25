@@ -110,8 +110,8 @@ public:
 	 */
 	virtual void reset_view_state();
 
-	Session& session();
-	const Session& session() const;
+	Session& session();  // This method is needed for TraceTreeItemOwner, not ViewBase
+	const Session& session() const;  // This method is needed for TraceTreeItemOwner, not ViewBase
 
 	/**
 	 * Returns the signals contained in this view.

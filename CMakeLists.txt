@@ -386,6 +386,7 @@ if(ENABLE_DECODE)
 		pv/subwindows/decoder_selector/item.cpp
 		pv/subwindows/decoder_selector/model.cpp
 		pv/subwindows/decoder_selector/subwindow.cpp
+		pv/views/decoder_output/view.cpp
 		pv/views/trace/decodetrace.cpp
 		pv/widgets/decodergroupbox.cpp
 		pv/widgets/decodermenu.cpp
@@ -394,6 +395,7 @@ if(ENABLE_DECODE)
 	list(APPEND pulseview_HEADERS
 		pv/data/decodesignal.hpp
 		pv/subwindows/decoder_selector/subwindow.hpp
+		pv/views/decoder_output/view.hpp
 		pv/views/trace/decodetrace.hpp
 		pv/widgets/decodergroupbox.hpp
 		pv/widgets/decodermenu.hpp
