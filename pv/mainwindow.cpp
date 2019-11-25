@@ -51,6 +51,7 @@
 
 #ifdef ENABLE_DECODE
 #include "subwindows/decoder_selector/subwindow.hpp"
+#include "views/decoder_output/view.hpp"
 #endif
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
@@ -61,10 +62,6 @@ using std::shared_ptr;
 using std::string;
 
 namespace pv {
-
-namespace view {
-class ViewItem;
-}
 
 using toolbars::MainBar;
 
@@ -79,16 +76,12 @@ MainWindow::MainWindow(DeviceManager &device_manager, QWidget *parent) :
 	icon_green_(":/icons/status-green.svg"),
 	icon_grey_(":/icons/status-grey.svg")
 {
-	GlobalSettings::add_change_handler(this);
-
 	setup_ui();
 	restore_ui_settings();
 }
 
 MainWindow::~MainWindow()
 {
-	GlobalSettings::remove_change_handler(this);
-
 	// Make sure we no longer hold any shared pointers to widgets after the
 	// destructor finishes (goes for sessions and sub windows alike)
 
@@ -162,6 +155,10 @@ shared_ptr<views::ViewBase> MainWindow::add_view(const QString &title,
 		// This view will be the main view if there's no main bar yet
 		v = make_shared<views::trace::View>(session,
 			(main_bar ? false : true), dock_main);
+#ifdef ENABLE_DECODE
+	if (type == views::ViewTypeDecoderOutput)
+		v = make_shared<views::decoder_output::View>(session, false, dock_main);
+#endif
 
 	if (!v)
 		return nullptr;
@@ -190,10 +187,6 @@ shared_ptr<views::ViewBase> MainWindow::add_view(const QString &title,
 	if (type == views::ViewTypeTrace) {
 		views::trace::View *tv =
 			qobject_cast<views::trace::View*>(v.get());
-
-		tv->enable_colored_bg(settings.value(GlobalSettings::Key_View_ColoredBG).toBool());
-		tv->enable_show_sampling_points(settings.value(GlobalSettings::Key_View_ShowSamplingPoints).toBool());
-		tv->enable_show_analog_minor_grid(settings.value(GlobalSettings::Key_View_ShowAnalogMinorGrid).toBool());
 
 		if (!main_bar) {
 			/* Initial view, create the main bar */
@@ -476,18 +469,6 @@ void MainWindow::restore_sessions()
 	}
 }
 
-void MainWindow::on_setting_changed(const QString &key, const QVariant &value)
-{
-	if (key == GlobalSettings::Key_View_ColoredBG)
-		on_settingViewColoredBg_changed(value);
-
-	if (key == GlobalSettings::Key_View_ShowSamplingPoints)
-		on_settingViewShowSamplingPoints_changed(value);
-
-	if (key == GlobalSettings::Key_View_ShowAnalogMinorGrid)
-		on_settingViewShowAnalogMinorGrid_changed(value);
-}
-
 void MainWindow::setup_ui()
 {
 	setObjectName(QString::fromUtf8("MainWindow"));
@@ -600,19 +581,6 @@ void MainWindow::restore_ui_settings()
 		resize(1000, 720);
 
 	settings.endGroup();
-}
-
-void MainWindow::zoom_current_view(double steps)
-{
-	shared_ptr<Session> session = get_tab_session(session_selector_.currentIndex());
-
-	if (!session)
-		return;
-
-	shared_ptr<views::ViewBase> v = session.get()->main_view();
-	views::trace::View *tv =
-		qobject_cast<views::trace::View*>(v.get());
-	tv->zoom(steps);
 }
 
 shared_ptr<Session> MainWindow::get_tab_session(int index) const
@@ -919,51 +887,6 @@ void MainWindow::on_view_show_analog_minor_grid_shortcut()
 
 	bool state = settings.value(GlobalSettings::Key_View_ShowAnalogMinorGrid).toBool();
 	settings.setValue(GlobalSettings::Key_View_ShowAnalogMinorGrid, !state);
-}
-
-void MainWindow::on_settingViewColoredBg_changed(const QVariant new_value)
-{
-	bool state = new_value.toBool();
-
-	for (auto& entry : view_docks_) {
-		shared_ptr<views::ViewBase> viewbase = entry.second;
-
-		// Only trace views have this setting
-		views::trace::View* view =
-				qobject_cast<views::trace::View*>(viewbase.get());
-		if (view)
-			view->enable_colored_bg(state);
-	}
-}
-
-void MainWindow::on_settingViewShowSamplingPoints_changed(const QVariant new_value)
-{
-	bool state = new_value.toBool();
-
-	for (auto& entry : view_docks_) {
-		shared_ptr<views::ViewBase> viewbase = entry.second;
-
-		// Only trace views have this setting
-		views::trace::View* view =
-				qobject_cast<views::trace::View*>(viewbase.get());
-		if (view)
-			view->enable_show_sampling_points(state);
-	}
-}
-
-void MainWindow::on_settingViewShowAnalogMinorGrid_changed(const QVariant new_value)
-{
-	bool state = new_value.toBool();
-
-	for (auto& entry : view_docks_) {
-		shared_ptr<views::ViewBase> viewbase = entry.second;
-
-		// Only trace views have this setting
-		views::trace::View* view =
-				qobject_cast<views::trace::View*>(viewbase.get());
-		if (view)
-			view->enable_show_analog_minor_grid(state);
-	}
 }
 
 void MainWindow::on_close_current_tab()

@@ -30,7 +30,6 @@
 #include <QTabWidget>
 #include <QToolButton>
 
-#include "globalsettings.hpp"
 #include "session.hpp"
 #include "subwindows/subwindowbase.hpp"
 #include "views/viewbase.hpp"
@@ -63,7 +62,7 @@ class DecoderMenu;
 #endif
 }
 
-class MainWindow : public QMainWindow, public GlobalSettingsInterface
+class MainWindow : public QMainWindow
 {
 	Q_OBJECT
 
@@ -100,16 +99,11 @@ public:
 	void save_sessions();
 	void restore_sessions();
 
-	void on_setting_changed(const QString &key, const QVariant &value);
-
 private:
 	void setup_ui();
 
 	void save_ui_settings();
 	void restore_ui_settings();
-
-	void zoom_current_view(double steps);
-	void scroll_to_start_or_end(bool start);
 
 	shared_ptr<Session> get_tab_session(int index) const;
 
@@ -146,10 +140,6 @@ private Q_SLOTS:
 	void on_view_sticky_scrolling_shortcut();
 	void on_view_show_sampling_points_shortcut();
 	void on_view_show_analog_minor_grid_shortcut();
-
-	void on_settingViewColoredBg_changed(const QVariant new_value);
-	void on_settingViewShowSamplingPoints_changed(const QVariant new_value);
-	void on_settingViewShowAnalogMinorGrid_changed(const QVariant new_value);
 
 	void on_close_current_tab();
 

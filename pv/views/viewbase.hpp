@@ -52,6 +52,7 @@ namespace views {
 
 enum ViewType {
 	ViewTypeTrace,
+	ViewTypeDecoderOutput,
 	ViewTypeTabularDecode
 };
 

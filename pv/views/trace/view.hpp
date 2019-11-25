@@ -261,25 +261,9 @@ public:
 	pair<pv::util::Timestamp, pv::util::Timestamp> get_time_extents() const;
 
 	/**
-	 * Enables or disables colored trace backgrounds. If they're not
-	 * colored then they will use alternating colors.
-	 */
-	void enable_colored_bg(bool state);
-
-	/**
 	 * Returns true if the trace background should be drawn with a colored background.
 	 */
 	bool colored_bg() const;
-
-	/**
-	 * Enable or disable showing sampling points.
-	 */
-	void enable_show_sampling_points(bool state);
-
-	/**
-	 * Enable or disable showing the analog minor grid.
-	 */
-	void enable_show_analog_minor_grid(bool state);
 
 	/**
 	 * Returns true if cursors are displayed. false otherwise.

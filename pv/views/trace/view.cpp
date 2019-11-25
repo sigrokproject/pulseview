@@ -798,26 +798,6 @@ pair<Timestamp, Timestamp> View::get_time_extents() const
 	return make_pair(*left_time, *right_time);
 }
 
-void View::enable_show_sampling_points(bool state)
-{
-	(void)state;
-
-	viewport_->update();
-}
-
-void View::enable_show_analog_minor_grid(bool state)
-{
-	(void)state;
-
-	viewport_->update();
-}
-
-void View::enable_colored_bg(bool state)
-{
-	colored_bg_ = state;
-	viewport_->update();
-}
-
 bool View::colored_bg() const
 {
 	return colored_bg_;
@@ -1037,13 +1017,22 @@ int View::header_width() const
 
 void View::on_setting_changed(const QString &key, const QVariant &value)
 {
+	GlobalSettings settings;
+
+	if (key == GlobalSettings::Key_View_ColoredBG) {
+		colored_bg_ = settings.value(GlobalSettings::Key_View_ColoredBG).toBool();
+		viewport_->update();
+	}
+
+	if ((key == GlobalSettings::Key_View_ShowSamplingPoints) ||
+	   (key == GlobalSettings::Key_View_ShowAnalogMinorGrid))
+		viewport_->update();
+
 	if (key == GlobalSettings::Key_View_TriggerIsZeroTime)
 		on_settingViewTriggerIsZeroTime_changed(value);
 
-	if (key == GlobalSettings::Key_View_SnapDistance) {
-		GlobalSettings settings;
+	if (key == GlobalSettings::Key_View_SnapDistance)
 		snap_distance_ = settings.value(GlobalSettings::Key_View_SnapDistance).toInt();
-	}
 }
 
 void View::trigger_event(int segment_id, util::Timestamp location)
