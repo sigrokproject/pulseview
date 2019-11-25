@@ -312,7 +312,7 @@ void Session::restore_setup(QSettings &settings)
 
 		if (i > 0) {
 			views::ViewType type = (views::ViewType)settings.value("type").toInt();
-			add_view(name_, type, this);
+			add_view(type, this);
 			views_.back()->restore_settings(settings);
 		} else
 			main_view_->restore_settings(settings);

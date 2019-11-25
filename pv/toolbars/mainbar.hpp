@@ -139,7 +139,7 @@ private Q_SLOTS:
 
 	void on_config_changed();
 
-	void on_actionNewView_triggered();
+	void on_actionNewView_triggered(QAction* action = nullptr);
 
 	void on_actionOpen_triggered();
 	void on_actionSaveAs_triggered();
@@ -158,11 +158,11 @@ protected:
 	bool eventFilter(QObject *watched, QEvent *event);
 
 Q_SIGNALS:
-	void new_view(Session *session);
+	void new_view(Session *session, int type);
 	void show_decoder_selector(Session *session);
 
 private:
-	QToolButton *open_button_, *save_button_;
+	QToolButton *new_view_button_, *open_button_, *save_button_;
 
 	pv::widgets::DeviceToolButton device_selector_;
 

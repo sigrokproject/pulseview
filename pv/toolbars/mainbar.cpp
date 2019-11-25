@@ -95,6 +95,7 @@ MainBar::MainBar(Session &session, QWidget *parent, pv::views::trace::View *view
 	action_restore_setup_(new QAction(this)),
 	action_save_setup_(new QAction(this)),
 	action_connect_(new QAction(this)),
+	new_view_button_(new QToolButton()),
 	open_button_(new QToolButton()),
 	save_button_(new QToolButton()),
 	device_selector_(parent, session.device_manager(), action_connect_),
@@ -166,6 +167,20 @@ MainBar::MainBar(Session &session, QWidget *parent, pv::views::trace::View *view
 	action_connect_->setText(tr("&Connect to Device..."));
 	connect(action_connect_, SIGNAL(triggered(bool)),
 		this, SLOT(on_actionConnect_triggered()));
+
+	// New view button
+	QMenu *menu_new_view = new QMenu();
+	connect(menu_new_view, SIGNAL(triggered(QAction*)),
+		this, SLOT(on_actionNewView_triggered(QAction*)));
+
+	for (int i = 0; i < views::ViewTypeCount; i++) {
+		QAction *const action =	menu_new_view->addAction(tr(views::ViewTypeNames[i]));
+		action->setData(qVariantFromValue(i));
+	}
+
+	new_view_button_->setMenu(menu_new_view);
+	new_view_button_->setDefaultAction(action_new_view_);
+	new_view_button_->setPopupMode(QToolButton::MenuButtonPopup);
 
 	// Open button
 	vector<QAction*> open_actions;
@@ -754,9 +769,13 @@ void MainBar::on_config_changed()
 	commit_sample_rate();
 }
 
-void MainBar::on_actionNewView_triggered()
+void MainBar::on_actionNewView_triggered(QAction* action)
 {
-	new_view(&session_);
+	if (action)
+		new_view(&session_, action->data().toInt());
+	else
+		// When the icon of the button is clicked, we create a trace view
+		new_view(&session_, views::ViewTypeTrace);
 }
 
 void MainBar::on_actionOpen_triggered()
@@ -844,7 +863,7 @@ void MainBar::on_add_decoder_clicked()
 
 void MainBar::add_toolbar_widgets()
 {
-	addAction(action_new_view_);
+	addWidget(new_view_button_);
 	addSeparator();
 	addWidget(open_button_);
 	addWidget(save_button_);

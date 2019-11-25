@@ -128,8 +128,8 @@ shared_ptr<views::ViewBase> MainWindow::get_active_view() const
 	return nullptr;
 }
 
-shared_ptr<views::ViewBase> MainWindow::add_view(const QString &title,
-	views::ViewType type, Session &session)
+shared_ptr<views::ViewBase> MainWindow::add_view(views::ViewType type,
+	Session &session)
 {
 	GlobalSettings settings;
 	shared_ptr<views::ViewBase> v;
@@ -143,6 +143,13 @@ shared_ptr<views::ViewBase> MainWindow::add_view(const QString &title,
 
 	shared_ptr<MainBar> main_bar = session.main_bar();
 
+	// Only use the view type in the name if it's not the main view
+	QString title;
+	if (main_bar)
+		title = QString("%1 (%2)").arg(session.name()).arg(views::ViewTypeNames[type]);
+	else
+		title = session.name();
+
 	QDockWidget* dock = new QDockWidget(title, main_window);
 	dock->setObjectName(title);
 	main_window->addDockWidget(Qt::TopDockWidgetArea, dock);
@@ -153,8 +160,7 @@ shared_ptr<views::ViewBase> MainWindow::add_view(const QString &title,
 
 	if (type == views::ViewTypeTrace)
 		// This view will be the main view if there's no main bar yet
-		v = make_shared<views::trace::View>(session,
-			(main_bar ? false : true), dock_main);
+		v = make_shared<views::trace::View>(session, (main_bar ? false : true), dock_main);
 #ifdef ENABLE_DECODE
 	if (type == views::ViewTypeDecoderOutput)
 		v = make_shared<views::decoder_output::View>(session, false, dock_main);
@@ -194,8 +200,8 @@ shared_ptr<views::ViewBase> MainWindow::add_view(const QString &title,
 			dock_main->addToolBar(main_bar.get());
 			session.set_main_bar(main_bar);
 
-			connect(main_bar.get(), SIGNAL(new_view(Session*)),
-				this, SLOT(on_new_view(Session*)));
+			connect(main_bar.get(), SIGNAL(new_view(Session*, int)),
+				this, SLOT(on_new_view(Session*, int)));
 			connect(main_bar.get(), SIGNAL(show_decoder_selector(Session*)),
 				this, SLOT(on_show_decoder_selector(Session*)));
 
@@ -319,8 +325,8 @@ shared_ptr<Session> MainWindow::add_session()
 
 	shared_ptr<Session> session = make_shared<Session>(device_manager_, name);
 
-	connect(session.get(), SIGNAL(add_view(const QString&, views::ViewType, Session*)),
-		this, SLOT(on_add_view(const QString&, views::ViewType, Session*)));
+	connect(session.get(), SIGNAL(add_view(views::ViewType, Session*)),
+		this, SLOT(on_add_view(views::ViewType, Session*)));
 	connect(session.get(), SIGNAL(name_changed()),
 		this, SLOT(on_session_name_changed()));
 	session_state_mapper_.setMapping(session.get(), session.get());
@@ -339,8 +345,7 @@ shared_ptr<Session> MainWindow::add_session()
 
 	window->setDockNestingEnabled(true);
 
-	shared_ptr<views::ViewBase> main_view =
-		add_view(name, views::ViewTypeTrace, *session);
+	shared_ptr<views::ViewBase> main_view = add_view(views::ViewTypeTrace, *session);
 
 	return session;
 }
@@ -628,13 +633,12 @@ bool MainWindow::restoreState(const QByteArray &state, int version)
 	return false;
 }
 
-void MainWindow::on_add_view(const QString &title, views::ViewType type,
-	Session *session)
+void MainWindow::on_add_view(views::ViewType type, Session *session)
 {
 	// We get a pointer and need a reference
 	for (shared_ptr<Session>& s : sessions_)
 		if (s.get() == session)
-			add_view(title, type, *s);
+			add_view(type, *s);
 }
 
 void MainWindow::on_focus_changed()
@@ -749,12 +753,12 @@ void MainWindow::on_capture_state_changed(QObject *obj)
 		tr("Run") : tr("Stop"));
 }
 
-void MainWindow::on_new_view(Session *session)
+void MainWindow::on_new_view(Session *session, int view_type)
 {
 	// We get a pointer and need a reference
 	for (shared_ptr<Session>& s : sessions_)
 		if (s.get() == session)
-			add_view(session->name(), views::ViewTypeTrace, *s);
+			add_view((views::ViewType)view_type, *s);
 }
 
 void MainWindow::on_view_close_clicked()

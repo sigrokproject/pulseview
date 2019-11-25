@@ -79,8 +79,7 @@ public:
 
 	shared_ptr<views::ViewBase> get_active_view() const;
 
-	shared_ptr<views::ViewBase> add_view(const QString &title,
-		views::ViewType type, Session &session);
+	shared_ptr<views::ViewBase> add_view(views::ViewType type, Session &session);
 
 	void remove_view(shared_ptr<views::ViewBase> view);
 
@@ -114,8 +113,7 @@ private:
 	virtual bool restoreState(const QByteArray &state, int version = 0);
 
 private Q_SLOTS:
-	void on_add_view(const QString &title, views::ViewType type,
-		Session *session);
+	void on_add_view(views::ViewType type, Session *session);
 
 	void on_focus_changed();
 	void on_focused_session_changed(shared_ptr<Session> session);
@@ -127,7 +125,7 @@ private Q_SLOTS:
 	void on_session_name_changed();
 	void on_capture_state_changed(QObject *obj);
 
-	void on_new_view(Session *session);
+	void on_new_view(Session *session, int view_type);
 	void on_view_close_clicked();
 
 	void on_tab_changed(int index);

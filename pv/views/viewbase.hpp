@@ -50,11 +50,16 @@ class Signal;
 
 namespace views {
 
+// When adding an entry here, don't forget to update ViewTypeNames as well
 enum ViewType {
 	ViewTypeTrace,
+#ifdef ENABLE_DECODE
 	ViewTypeDecoderOutput,
-	ViewTypeTabularDecode
+#endif
+	ViewTypeCount  // Indicates how many view types there are, must always be last
 };
+
+extern const char* ViewTypeNames[ViewTypeCount];
 
 class ViewBase : public QWidget
 {

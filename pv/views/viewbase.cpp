@@ -33,6 +33,13 @@ using std::shared_ptr;
 namespace pv {
 namespace views {
 
+const char* ViewTypeNames[ViewTypeCount] = {
+		"Trace View",
+#ifdef ENABLE_DECODE
+		"Decoder Output View"
+#endif
+};
+
 const int ViewBase::MaxViewAutoUpdateRate = 25; // No more than 25 Hz
 
 ViewBase::ViewBase(Session &session, bool is_main_view, QWidget *parent) :
