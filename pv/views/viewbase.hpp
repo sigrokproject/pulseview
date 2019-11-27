@@ -26,6 +26,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include <QMainWindow>
 #include <QTimer>
 #include <QWidget>
 
@@ -69,7 +70,7 @@ private:
 	static const int MaxViewAutoUpdateRate;
 
 public:
-	explicit ViewBase(Session &session, bool is_main_view = false, QWidget *parent = nullptr);
+	explicit ViewBase(Session &session, bool is_main_view = false, QMainWindow *parent = nullptr);
 
 	/**
 	 * Resets the view to its default state after construction. It does however

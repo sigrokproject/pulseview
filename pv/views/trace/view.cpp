@@ -124,7 +124,7 @@ bool CustomScrollArea::viewportEvent(QEvent *event)
 	}
 }
 
-View::View(Session &session, bool is_main_view, QWidget *parent) :
+View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 	ViewBase(session, is_main_view, parent),
 
 	// Note: Place defaults in View::reset_view_state(), not here

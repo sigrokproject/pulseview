@@ -35,7 +35,7 @@ class View : public ViewBase
 	Q_OBJECT
 
 public:
-	explicit View(Session &session, bool is_main_view=false, QWidget *parent = nullptr);
+	explicit View(Session &session, bool is_main_view=false, QMainWindow *parent = nullptr);
 
 	~View();
 

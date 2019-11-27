@@ -20,6 +20,7 @@
 #include <libsigrokdecode/libsigrokdecode.h>
 
 #include <QMenu>
+#include <QToolBar>
 #include <QVBoxLayout>
 
 #include "view.hpp"
@@ -36,13 +37,18 @@ namespace pv {
 namespace views {
 namespace decoder_output {
 
-View::View(Session &session, bool is_main_view, QWidget *parent) :
+View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 	ViewBase(session, is_main_view, parent)
 
 	// Note: Place defaults in View::reset_view_state(), not here
 {
 	QVBoxLayout *root_layout = new QVBoxLayout(this);
 	root_layout->setContentsMargins(0, 0, 0, 0);
+
+	QToolBar* tool_bar = new QToolBar();
+	tool_bar->setContextMenuPolicy(Qt::PreventContextMenu);
+
+	parent->addToolBar(tool_bar);
 
 	reset_view_state();
 }
