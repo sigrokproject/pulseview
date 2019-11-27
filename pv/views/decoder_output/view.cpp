@@ -57,6 +57,11 @@ View::~View()
 {
 }
 
+ViewType View::get_type() const
+{
+	return ViewTypeDecoderOutput;
+}
+
 void View::reset_view_state()
 {
 	ViewBase::reset_view_state();

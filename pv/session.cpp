@@ -218,6 +218,7 @@ void Session::save_setup(QSettings &settings) const
 	for (const shared_ptr<views::ViewBase>& view : views_) {
 		if (view != main_view_) {
 			settings.beginGroup("view" + QString::number(views++));
+			settings.setValue("type", view->get_type());
 			view->save_settings(settings);
 			settings.endGroup();
 		}

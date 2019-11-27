@@ -244,6 +244,11 @@ View::~View()
 	GlobalSettings::remove_change_handler(this);
 }
 
+ViewType View::get_type() const
+{
+	return ViewTypeTrace;
+}
+
 void View::reset_view_state()
 {
 	ViewBase::reset_view_state();

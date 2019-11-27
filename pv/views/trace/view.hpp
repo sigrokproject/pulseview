@@ -104,6 +104,8 @@ public:
 
 	~View();
 
+	virtual ViewType get_type() const;
+
 	/**
 	 * Resets the view to its default state after construction. It does however
 	 * not reset the signal bases or any other connections with the session.

@@ -72,6 +72,8 @@ private:
 public:
 	explicit ViewBase(Session &session, bool is_main_view = false, QMainWindow *parent = nullptr);
 
+	virtual ViewType get_type() const = 0;
+
 	/**
 	 * Resets the view to its default state after construction. It does however
 	 * not reset the signal bases or any other connections with the session.
