@@ -20,6 +20,8 @@
 #ifndef PULSEVIEW_PV_VIEWS_DECODEROUTPUT_VIEW_HPP
 #define PULSEVIEW_PV_VIEWS_DECODEROUTPUT_VIEW_HPP
 
+#include <QComboBox>
+
 #include <pv/views/viewbase.hpp>
 
 namespace pv {
@@ -57,8 +59,10 @@ public:
 	virtual void restore_settings(QSettings &settings);
 
 private Q_SLOTS:
-	void on_signal_name_changed();
+	void on_signal_name_changed(const QString &name);
 
+private:
+	QComboBox *signal_selector_;
 };
 
 } // namespace decoder_output

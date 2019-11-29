@@ -664,9 +664,8 @@ void Session::stop_capture()
 
 void Session::register_view(shared_ptr<views::ViewBase> view)
 {
-	if (views_.empty()) {
+	if (views_.empty())
 		main_view_ = view;
-	}
 
 	views_.push_back(view);
 
@@ -674,35 +673,29 @@ void Session::register_view(shared_ptr<views::ViewBase> view)
 	update_signals();
 
 	// Add all other signals
-	unordered_set< shared_ptr<data::SignalBase> > view_signalbases =
-		view->signalbases();
+	unordered_set< shared_ptr<data::SignalBase> > view_signalbases = view->signalbases();
 
-	views::trace::View *trace_view =
-		qobject_cast<views::trace::View*>(view.get());
+	for (const shared_ptr<data::SignalBase>& signalbase : signalbases_) {
+		const int sb_exists = count_if(
+			view_signalbases.cbegin(), view_signalbases.cend(),
+			[&](const shared_ptr<data::SignalBase> &sb) {
+				return sb == signalbase;
+			});
 
-	if (trace_view) {
-		for (const shared_ptr<data::SignalBase>& signalbase : signalbases_) {
-			const int sb_exists = count_if(
-				view_signalbases.cbegin(), view_signalbases.cend(),
-				[&](const shared_ptr<data::SignalBase> &sb) {
-					return sb == signalbase;
-				});
-			// Add the signal to the view as it doesn't have it yet
-			if (!sb_exists)
-				switch (signalbase->type()) {
-				case data::SignalBase::AnalogChannel:
-				case data::SignalBase::LogicChannel:
-				case data::SignalBase::DecodeChannel:
+		// Add the signal to the view if it doesn't have it yet
+		if (!sb_exists)
+			switch (signalbase->type()) {
+			case data::SignalBase::AnalogChannel:
+			case data::SignalBase::LogicChannel:
+			case data::SignalBase::MathChannel:
+				view->add_signalbase(signalbase);
+				break;
+			case data::SignalBase::DecodeChannel:
 #ifdef ENABLE_DECODE
-					trace_view->add_decode_signal(
-						dynamic_pointer_cast<data::DecodeSignal>(signalbase));
+				view->add_decode_signal(dynamic_pointer_cast<data::DecodeSignal>(signalbase));
 #endif
-					break;
-				case data::SignalBase::MathChannel:
-					// TBD
-					break;
-				}
-		}
+				break;
+			}
 	}
 
 	signals_changed();

@@ -19,6 +19,7 @@
 
 #include <libsigrokdecode/libsigrokdecode.h>
 
+#include <QLabel>
 #include <QMenu>
 #include <QToolBar>
 #include <QVBoxLayout>
@@ -28,6 +29,7 @@
 #include "pv/session.hpp"
 #include "pv/util.hpp"
 
+using pv::data::SignalBase;
 using pv::util::TimeUnit;
 using pv::util::Timestamp;
 
@@ -38,17 +40,22 @@ namespace views {
 namespace decoder_output {
 
 View::View(Session &session, bool is_main_view, QMainWindow *parent) :
-	ViewBase(session, is_main_view, parent)
+	ViewBase(session, is_main_view, parent),
 
 	// Note: Place defaults in View::reset_view_state(), not here
+	signal_selector_(new QComboBox())
 {
 	QVBoxLayout *root_layout = new QVBoxLayout(this);
 	root_layout->setContentsMargins(0, 0, 0, 0);
 
-	QToolBar* tool_bar = new QToolBar();
-	tool_bar->setContextMenuPolicy(Qt::PreventContextMenu);
+	// Create toolbar
+	QToolBar* toolbar = new QToolBar();
+	toolbar->setContextMenuPolicy(Qt::PreventContextMenu);
+	parent->addToolBar(toolbar);
 
-	parent->addToolBar(tool_bar);
+	// Populate toolbar
+	toolbar->addWidget(new QLabel(tr("Decoder:")));
+	toolbar->addWidget(signal_selector_);
 
 	reset_view_state();
 }
@@ -74,17 +81,23 @@ void View::clear_signals()
 
 void View::clear_decode_signals()
 {
+	signal_selector_->clear();
 }
 
 void View::add_decode_signal(shared_ptr<data::DecodeSignal> signal)
 {
 	connect(signal.get(), SIGNAL(name_changed(const QString&)),
-		this, SLOT(on_signal_name_changed()));
+		this, SLOT(on_signal_name_changed(const QString&)));
+
+	signal_selector_->addItem(signal->name(), qVariantFromValue(signal.get()));
 }
 
 void View::remove_decode_signal(shared_ptr<data::DecodeSignal> signal)
 {
-	(void)signal;
+	int index = signal_selector_->findData(qVariantFromValue(signal.get()));
+
+	if (index != -1)
+		signal_selector_->removeItem(index);
 }
 
 void View::save_settings(QSettings &settings) const
@@ -99,8 +112,14 @@ void View::restore_settings(QSettings &settings)
 	(void)settings;
 }
 
-void View::on_signal_name_changed()
+void View::on_signal_name_changed(const QString &name)
 {
+	SignalBase *sb = qobject_cast<SignalBase*>(QObject::sender());
+	assert(sb);
+
+	int index = signal_selector_->findData(qVariantFromValue(sb));
+	if (index != -1)
+		signal_selector_->setItemText(index, name);
 }
 
 } // namespace decoder_output
