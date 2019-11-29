@@ -22,9 +22,9 @@ PulseView is licensed under the terms of the GNU General Public License
 (GPL), version 3 or later.
 
 While some individual source code files are licensed under the GPLv2+, and
-some files are licensed under the GPLv3+, this doesn't change the fact that
-the program as a whole is licensed under the terms of the GPLv3+ (e.g. also
-due to the fact that it links against GPLv3+ libraries).
+some files are licensed under the GPLv3+ or MIT, this doesn't change the fact
+that the program as a whole is licensed under the terms of the GPLv3+ (e.g.
+also due to the fact that it links against GPLv3+ libraries).
 
 Please see the individual source files for the full list of copyright holders.
 
@@ -82,6 +82,12 @@ DarkStyle: Juergen Skrotzky
   License:
     MIT license
     https://github.com/Jorgen-VikingGod/Qt-Frameless-Window-DarkStyle#licence
+
+QHexView:
+  https://github.com/virinext/QHexView
+  License:
+    MIT license
+    https://github.com/virinext/QHexView/blob/master/LICENSE
 
 
 Mailing list
