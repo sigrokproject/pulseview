@@ -43,7 +43,8 @@ View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 	ViewBase(session, is_main_view, parent),
 
 	// Note: Place defaults in View::reset_view_state(), not here
-	signal_selector_(new QComboBox())
+	signal_selector_(new QComboBox()),
+	format_selector_(new QComboBox())
 {
 	QVBoxLayout *root_layout = new QVBoxLayout(this);
 	root_layout->setContentsMargins(0, 0, 0, 0);
@@ -56,6 +57,12 @@ View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 	// Populate toolbar
 	toolbar->addWidget(new QLabel(tr("Decoder:")));
 	toolbar->addWidget(signal_selector_);
+	toolbar->addSeparator();
+	toolbar->addWidget(new QLabel(tr("Show data as")));
+	toolbar->addWidget(format_selector_);
+
+	// Add format types
+	format_selector_->addItem(tr("Hexdump"), qVariantFromValue(QString("text/hexdump")));
 
 	reset_view_state();
 }
@@ -82,6 +89,7 @@ void View::clear_signals()
 void View::clear_decode_signals()
 {
 	signal_selector_->clear();
+	format_selector_->setCurrentIndex(0);
 }
 
 void View::add_decode_signal(shared_ptr<data::DecodeSignal> signal)
@@ -89,12 +97,12 @@ void View::add_decode_signal(shared_ptr<data::DecodeSignal> signal)
 	connect(signal.get(), SIGNAL(name_changed(const QString&)),
 		this, SLOT(on_signal_name_changed(const QString&)));
 
-	signal_selector_->addItem(signal->name(), qVariantFromValue(signal.get()));
+	signal_selector_->addItem(signal->name(), QVariant::fromValue(signal.get()));
 }
 
 void View::remove_decode_signal(shared_ptr<data::DecodeSignal> signal)
 {
-	int index = signal_selector_->findData(qVariantFromValue(signal.get()));
+	int index = signal_selector_->findData(QVariant::fromValue(signal.get()));
 
 	if (index != -1)
 		signal_selector_->removeItem(index);
@@ -117,7 +125,7 @@ void View::on_signal_name_changed(const QString &name)
 	SignalBase *sb = qobject_cast<SignalBase*>(QObject::sender());
 	assert(sb);
 
-	int index = signal_selector_->findData(qVariantFromValue(sb));
+	int index = signal_selector_->findData(QVariant::fromValue(sb));
 	if (index != -1)
 		signal_selector_->setItemText(index, name);
 }

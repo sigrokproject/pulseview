@@ -62,7 +62,7 @@ private Q_SLOTS:
 	void on_signal_name_changed(const QString &name);
 
 private:
-	QComboBox *signal_selector_;
+	QComboBox *signal_selector_, *format_selector_;
 };
 
 } // namespace decoder_output
