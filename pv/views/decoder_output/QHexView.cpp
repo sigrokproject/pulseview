@@ -38,34 +38,16 @@
 
 #include "QHexView.hpp"
 
-using std::size_t;
-
 const unsigned int BYTES_PER_LINE   = 16;
 const unsigned int HEXCHARS_IN_LINE = BYTES_PER_LINE * 3 - 1;
 const unsigned int GAP_ADR_HEX      = 10;
 const unsigned int GAP_HEX_ASCII    = 10;
 const unsigned int GAP_ASCII_SLIDER = 5;
 
-DataStorageArray::DataStorageArray(const QByteArray &arr)
-{
-	data_ = arr;
-}
-
-QByteArray DataStorageArray::getData(size_t position, size_t length)
-{
-	return data_.mid(position, length);
-}
-
-size_t DataStorageArray::size()
-{
-	return data_.count();
-}
-
-
 
 QHexView::QHexView(QWidget *parent):
 	QAbstractScrollArea(parent),
-	pdata_(nullptr)
+	data_(nullptr)
 {
 	setFont(QFont("Courier", 10));
 
@@ -80,27 +62,18 @@ QHexView::QHexView(QWidget *parent):
 	setFocusPolicy(Qt::StrongFocus);
 }
 
-QHexView::~QHexView()
-{
-	if (pdata_)
-		delete pdata_;
-}
-
-void QHexView::setData(DataStorage *pData)
+void QHexView::setData(QByteArray *data)
 {
 	verticalScrollBar()->setValue(0);
 
-	if (pdata_)
-		delete pdata_;
-
-	pdata_ = pData;
+	data_ = data;
 	cursorPos_ = 0;
 	resetSelection(0);
 }
 
 void QHexView::showFromOffset(size_t offset)
 {
-	if (pdata_ && (offset < pdata_->size())) {
+	if (data_ && (offset < (size_t)data_->count())) {
 		setCursorPos(offset * 2);
 
 		int cursorY = cursorPos_ / (2 * BYTES_PER_LINE);
@@ -111,19 +84,20 @@ void QHexView::showFromOffset(size_t offset)
 void QHexView::clear()
 {
 	verticalScrollBar()->setValue(0);
+	data_ = nullptr;
 }
 
 QSize QHexView::getFullSize() const
 {
-	if (!pdata_)
-		return QSize(0, 0);
-
 	size_t width = posAscii_ + (BYTES_PER_LINE * charWidth_) +
 		GAP_ASCII_SLIDER + verticalScrollBar()->width();
 
-	size_t height = pdata_->size() / BYTES_PER_LINE;
+	if (!data_)
+		return QSize(width, 0);
 
-	if (pdata_->size() % BYTES_PER_LINE)
+	size_t height = data_->count() / BYTES_PER_LINE;
+
+	if (data_->count() % BYTES_PER_LINE)
 		height++;
 
 	height *= charHeight_;
@@ -133,31 +107,40 @@ QSize QHexView::getFullSize() const
 
 void QHexView::paintEvent(QPaintEvent *event)
 {
-	if (!pdata_)
-		return;
-
 	QPainter painter(viewport());
 
 	// Calculate and update the widget and paint area sizes
-	QSize areaSize = viewport()->size();
 	QSize widgetSize = getFullSize();
 	setMinimumWidth(widgetSize.width());
 	setMaximumWidth(widgetSize.width());
+	QSize areaSize = viewport()->size();
 
 	verticalScrollBar()->setPageStep(areaSize.height() / charHeight_);
 	verticalScrollBar()->setRange(0, (widgetSize.height() - areaSize.height()) / charHeight_ + 1);
 
+	// Fill widget background
+	painter.fillRect(event->rect(), palette().color(QPalette::Base));
+
+	if (!data_) {
+		painter.setPen(palette().color(QPalette::Text));
+		QString s = tr("No data available");
+		int x = (areaSize.width() - fontMetrics().boundingRect(s).width()) / 2;
+		int y = areaSize.height() / 2;
+		painter.drawText(x, y, s);
+		return;
+	}
+
+	// Determine first/last line indices
 	size_t firstLineIdx = verticalScrollBar()->value();
 
 	size_t lastLineIdx = firstLineIdx + areaSize.height() / charHeight_;
-	if (lastLineIdx > (pdata_->size() / BYTES_PER_LINE)) {
-		lastLineIdx = pdata_->size() / BYTES_PER_LINE;
-		if (pdata_->size() % BYTES_PER_LINE)
+	if (lastLineIdx > (data_->count() / BYTES_PER_LINE)) {
+		lastLineIdx = data_->count() / BYTES_PER_LINE;
+		if (data_->count() % BYTES_PER_LINE)
 			lastLineIdx++;
 	}
 
-	// Fill widget and address area backgrounds
-	painter.fillRect(event->rect(), palette().color(QPalette::Base));
+	// Fill address area background
 	painter.fillRect(QRect(posAddr_, event->rect().top(),
 		posHex_ - (GAP_ADR_HEX / 2), height()), palette().color(QPalette::Window));
 
@@ -180,7 +163,8 @@ void QHexView::paintEvent(QPaintEvent *event)
 	// Paint hex values
 	QBrush regular = painter.brush();
 	QBrush selected = QBrush(palette().color(QPalette::Highlight));
-	QByteArray data = pdata_->getData(firstLineIdx * BYTES_PER_LINE, (lastLineIdx - firstLineIdx) * BYTES_PER_LINE);
+	QByteArray data = data_->mid(firstLineIdx * BYTES_PER_LINE,
+		(lastLineIdx - firstLineIdx) * BYTES_PER_LINE);
 
 	yStart = charHeight_;
 	for (size_t lineIdx = firstLineIdx, y = yStart; lineIdx < lastLineIdx; lineIdx++) {
@@ -299,8 +283,8 @@ void QHexView::keyPressEvent(QKeyEvent *event)
 		setVisible = true;
 	}
 	if (event->matches(QKeySequence::MoveToEndOfDocument)) {
-		if (pdata_)
-			setCursorPos(pdata_->size() * 2);
+		if (data_)
+			setCursorPos(data_->count() * 2);
 		resetSelection(cursorPos_);
 		setVisible = true;
 	}
@@ -313,8 +297,8 @@ void QHexView::keyPressEvent(QKeyEvent *event)
 	// Select commands
 	if (event->matches(QKeySequence::SelectAll)) {
 		resetSelection(0);
-		if (pdata_)
-			setSelection(2 * pdata_->size() + 1);
+		if (data_)
+			setSelection(2 * data_->count() + 1);
 		setVisible = true;
 	}
 	if (event->matches(QKeySequence::SelectNextChar)) {
@@ -368,8 +352,8 @@ void QHexView::keyPressEvent(QKeyEvent *event)
 	}
 	if (event->matches(QKeySequence::SelectEndOfDocument)) {
 		int pos = 0;
-		if (pdata_)
-			pos = pdata_->size() * 2;
+		if (data_)
+			pos = data_->count() * 2;
 		setCursorPos(pos);
 		setSelection(pos);
 		setVisible = true;
@@ -381,12 +365,12 @@ void QHexView::keyPressEvent(QKeyEvent *event)
 		setVisible = true;
 	}
 
-	if (event->matches(QKeySequence::Copy) && (pdata_)) {
+	if (event->matches(QKeySequence::Copy) && (data_)) {
 		QString text;
 		int idx = 0;
 		int copyOffset = 0;
 
-		QByteArray data = pdata_->getData(selectBegin_ / 2, (selectEnd_ - selectBegin_) / 2 + 1);
+		QByteArray data = data_->mid(selectBegin_ / 2, (selectEnd_ - selectBegin_) / 2 + 1);
 		if (selectBegin_ % 2) {
 			text += QString::number((data.at((idx+1) / 2) & 0xF), 16);
 			text += " ";
@@ -503,9 +487,9 @@ void QHexView::setCursorPos(int position)
 		position = 0;
 
 	int maxPos = 0;
-	if (pdata_) {
-		maxPos = pdata_->size() * 2;
-		if (pdata_->size() % BYTES_PER_LINE)
+	if (data_) {
+		maxPos = data_->count() * 2;
+		if (data_->count() % BYTES_PER_LINE)
 			maxPos++;
 	}
 

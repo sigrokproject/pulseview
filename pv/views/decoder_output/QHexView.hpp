@@ -36,36 +36,14 @@
 
 using std::size_t;
 
-
-class DataStorage
-{
-public:
-	virtual ~DataStorage() {};
-	virtual QByteArray getData(size_t position, size_t length) = 0;
-	virtual size_t size() = 0;
-};
-
-
-class DataStorageArray: public DataStorage
-{
-public:
-	DataStorageArray(const QByteArray &arr);
-	virtual QByteArray getData(size_t position, size_t length);
-	virtual size_t size();
-
-private:
-	QByteArray data_;
-};
-
-
 class QHexView: public QAbstractScrollArea
 {
 public:
 	QHexView(QWidget *parent = 0);
-	~QHexView();
+
+	void setData(QByteArray *data);
 
 public Q_SLOTS:
-	void setData(DataStorage *pData);
 	void clear();
 	void showFromOffset(size_t offset);
 
@@ -85,7 +63,7 @@ private:
 	size_t cursorPosFromMousePos(const QPoint &position);
 
 private:
-	DataStorage *pdata_;
+	QByteArray *data_;
 
 	size_t posAddr_, posHex_, posAscii_;
 	size_t charWidth_, charHeight_;
