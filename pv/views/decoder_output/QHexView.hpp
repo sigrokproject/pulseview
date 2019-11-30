@@ -60,6 +60,7 @@ private:
 
 class QHexView: public QAbstractScrollArea
 {
+public:
 	QHexView(QWidget *parent = 0);
 	~QHexView();
 
@@ -75,13 +76,13 @@ protected:
 	void mousePressEvent(QMouseEvent *event);
 
 private:
-	QSize fullSize() const;
+	QSize getFullSize() const;
 	void resetSelection();
 	void resetSelection(int pos);
 	void setSelection(int pos);
 	void ensureVisible();
 	void setCursorPos(int pos);
-	size_t cursorPos(const QPoint &position);
+	size_t cursorPosFromMousePos(const QPoint &position);
 
 private:
 	DataStorage *pdata_;

@@ -21,8 +21,11 @@
 #define PULSEVIEW_PV_VIEWS_DECODEROUTPUT_VIEW_HPP
 
 #include <QComboBox>
+#include <QStackedWidget>
 
 #include <pv/views/viewbase.hpp>
+
+#include "QHexView.hpp"
 
 namespace pv {
 
@@ -63,6 +66,8 @@ private Q_SLOTS:
 
 private:
 	QComboBox *signal_selector_, *format_selector_;
+	QStackedWidget *stacked_widget_;
+	QHexView *hex_view_;
 };
 
 } // namespace decoder_output

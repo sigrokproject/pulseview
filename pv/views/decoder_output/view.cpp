@@ -25,6 +25,7 @@
 #include <QVBoxLayout>
 
 #include "view.hpp"
+#include "QHexView.hpp"
 
 #include "pv/session.hpp"
 #include "pv/util.hpp"
@@ -44,7 +45,9 @@ View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 
 	// Note: Place defaults in View::reset_view_state(), not here
 	signal_selector_(new QComboBox()),
-	format_selector_(new QComboBox())
+	format_selector_(new QComboBox()),
+	stacked_widget_(new QStackedWidget()),
+	hex_view_(new QHexView())
 {
 	QVBoxLayout *root_layout = new QVBoxLayout(this);
 	root_layout->setContentsMargins(0, 0, 0, 0);
@@ -63,6 +66,10 @@ View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 
 	// Add format types
 	format_selector_->addItem(tr("Hexdump"), qVariantFromValue(QString("text/hexdump")));
+
+	// Add widget stack
+	root_layout->addWidget(stacked_widget_);
+	stacked_widget_->addWidget(hex_view_);
 
 	reset_view_state();
 }
