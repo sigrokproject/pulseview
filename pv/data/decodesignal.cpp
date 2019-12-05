@@ -17,6 +17,7 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <cstring>
 #include <forward_list>
 #include <limits>
 
@@ -527,6 +528,61 @@ void DecodeSignal::get_annotation_subset(
 	move(all_ann_list->begin(), all_ann_list->end(), back_inserter(dest));
 	delete all_ann_list;
 }
+
+uint32_t DecodeSignal::get_binary_data_chunk_count(uint32_t segment_id) const
+{
+	uint32_t count = 0;
+
+	try {
+		const DecodeSegment *segment = &(segments_.at(segment_id));
+		count = segment->binary_data.size();
+	} catch (out_of_range&) {
+		// Do nothing
+	}
+
+	return count;
+}
+
+void DecodeSignal::get_binary_data_chunk(uint32_t segment_id, uint32_t chunk_id,
+	const vector<uint8_t> **dest, uint64_t *size)
+{
+	try {
+		const DecodeSegment *segment = &(segments_.at(segment_id));
+		if (dest)
+			*dest = &(segment->binary_data.at(chunk_id).data);
+		if (size)
+			*size = segment->binary_data.at(chunk_id).data.size();
+	} catch (out_of_range&) {
+		// Do nothing
+	}
+}
+
+void DecodeSignal::get_binary_data_chunks_merged(uint32_t segment_id,
+	uint64_t start_sample, uint64_t end_sample, vector<uint8_t> *dest) const
+{
+	assert(dest != nullptr);
+
+	try {
+		const DecodeSegment *segment = &(segments_.at(segment_id));
+
+		// Determine overall size before copying to resize dest vector only once
+		uint64_t size = 0;
+		for (const DecodeBinaryData& d : segment->binary_data)
+			if ((d.sample >= start_sample) && (d.sample < end_sample))
+				size += d.data.size();
+		dest->reserve(size);
+
+		uint64_t index = 0;
+		for (const DecodeBinaryData& d : segment->binary_data)
+			if ((d.sample >= start_sample) && (d.sample < end_sample)) {
+				memcpy(dest->data() + index, d.data.data(), d.data.size());
+				index += d.data.size();
+			}
+	} catch (out_of_range&) {
+		// Do nothing
+	}
+}
+
 
 void DecodeSignal::save_settings(QSettings &settings) const
 {
@@ -1154,6 +1210,9 @@ void DecodeSignal::start_srd_session()
 	srd_pd_output_callback_add(srd_session_, SRD_OUTPUT_ANN,
 		DecodeSignal::annotation_callback, this);
 
+	srd_pd_output_callback_add(srd_session_, SRD_OUTPUT_BINARY,
+		DecodeSignal::binary_callback, this);
+
 	srd_session_start(srd_session_);
 
 	// We just recreated the srd session, so all stack changes are applied now
@@ -1259,19 +1318,19 @@ void DecodeSignal::annotation_callback(srd_proto_data *pdata, void *decode_signa
 
 	lock_guard<mutex> lock(ds->output_mutex_);
 
-	// Find the row
+	// Get the decoder and the annotation data
 	assert(pdata->pdo);
 	assert(pdata->pdo->di);
 	const srd_decoder *const decc = pdata->pdo->di->decoder;
 	assert(decc);
 
-	const srd_proto_data_annotation *const pda =
-		(const srd_proto_data_annotation*)pdata->data;
+	const srd_proto_data_annotation *const pda = (const srd_proto_data_annotation*)pdata->data;
 	assert(pda);
 
+	// Find the row
 	auto row_iter = ds->segments_.at(ds->current_segment_id_).annotation_rows.end();
 
-	// Try looking up the sub-row of this class
+	// Try finding a better row match than the default by looking up the sub-row of this class
 	const auto format = pda->ann_class;
 	const auto r = ds->class_rows_.find(make_pair(decc, format));
 	if (r != ds->class_rows_.end())
@@ -1290,6 +1349,32 @@ void DecodeSignal::annotation_callback(srd_proto_data *pdata, void *decode_signa
 
 	// Add the annotation
 	(*row_iter).second.emplace_annotation(pdata, &((*row_iter).first));
+}
+
+void DecodeSignal::binary_callback(srd_proto_data *pdata, void *decode_signal)
+{
+	assert(pdata);
+	assert(decode_signal);
+
+	DecodeSignal *const ds = (DecodeSignal*)decode_signal;
+	assert(ds);
+
+	if (ds->decode_interrupt_)
+		return;
+
+	const srd_proto_data_binary *const pdb = (const srd_proto_data_binary*)pdata->data;
+	assert(pdb);
+
+	DecodeSegment* segment = &(ds->segments_.at(ds->current_segment_id_));
+
+	segment->binary_data.emplace_back();
+	DecodeBinaryData* bin_data = &(segment->binary_data.back());
+
+	bin_data->sample = pdata->start_sample;
+	bin_data->data.reserve(pdb->size);
+	memcpy(bin_data->data.data(), pdb->data, pdb->size);
+
+	ds->new_binary_data(ds->current_segment_id_);
 }
 
 void DecodeSignal::on_capture_state_changed(int state)

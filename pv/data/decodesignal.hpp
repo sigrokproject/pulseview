@@ -71,12 +71,19 @@ struct DecodeChannel
 	const srd_channel *pdch_;
 };
 
+struct DecodeBinaryData
+{
+	vector<uint8_t> data;
+	uint64_t sample;   ///< Number of the sample where this data was provided by the PD
+};
+
 struct DecodeSegment
 {
 	map<const decode::Row, decode::RowData> annotation_rows;
 	pv::util::Timestamp start_time;
 	double samplerate;
 	int64_t samples_decoded_incl, samples_decoded_excl;
+	vector<DecodeBinaryData> binary_data;
 };
 
 class DecodeSignal : public SignalBase
@@ -155,6 +162,12 @@ public:
 		vector<pv::data::decode::Annotation> &dest,
 		uint32_t segment_id, uint64_t start_sample, uint64_t end_sample) const;
 
+	uint32_t get_binary_data_chunk_count(uint32_t segment_id) const;
+	void get_binary_data_chunk(uint32_t segment_id, uint32_t chunk_id,
+		const vector<uint8_t> **dest, uint64_t *size);
+	void get_binary_data_chunks_merged(uint32_t segment_id,
+		uint64_t start_sample, uint64_t end_sample, vector<uint8_t> *dest) const;
+
 	virtual void save_settings(QSettings &settings) const;
 
 	virtual void restore_settings(QSettings &settings);
@@ -188,9 +201,11 @@ private:
 	void create_decode_segment();
 
 	static void annotation_callback(srd_proto_data *pdata, void *decode_signal);
+	static void binary_callback(srd_proto_data *pdata, void *decode_signal);
 
 Q_SIGNALS:
 	void new_annotations(); // TODO Supply segment for which they belong to
+	void new_binary_data(uint32_t segment_id);
 	void decode_reset();
 	void decode_finished();
 	void channels_updated();
