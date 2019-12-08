@@ -17,12 +17,16 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <libsigrokdecode/libsigrokdecode.h>
+#include <climits>
 
+#include <QByteArray>
+#include <QDebug>
 #include <QLabel>
 #include <QMenu>
 #include <QToolBar>
 #include <QVBoxLayout>
+
+#include <libsigrokdecode/libsigrokdecode.h>
 
 #include "view.hpp"
 #include "QHexView.hpp"
@@ -30,10 +34,12 @@
 #include "pv/session.hpp"
 #include "pv/util.hpp"
 
+using pv::data::DecodeSignal;
 using pv::data::SignalBase;
 using pv::util::TimeUnit;
 using pv::util::Timestamp;
 
+using std::numeric_limits;
 using std::shared_ptr;
 
 namespace pv {
@@ -47,7 +53,9 @@ View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 	signal_selector_(new QComboBox()),
 	format_selector_(new QComboBox()),
 	stacked_widget_(new QStackedWidget()),
-	hex_view_(new QHexView())
+	hex_view_(new QHexView()),
+	signal_(nullptr),
+	merged_data_(new QByteArray())
 {
 	QVBoxLayout *root_layout = new QVBoxLayout(this);
 	root_layout->setContentsMargins(0, 0, 0, 0);
@@ -70,6 +78,12 @@ View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 	// Add widget stack
 	root_layout->addWidget(stacked_widget_);
 	stacked_widget_->addWidget(hex_view_);
+	stacked_widget_->setCurrentIndex(0);
+
+	connect(signal_selector_, SIGNAL(currentIndexChanged(int)),
+		this, SLOT(on_selected_signal_changed(int)));
+
+	hex_view_->setData(merged_data_);
 
 	reset_view_state();
 }
@@ -91,12 +105,14 @@ void View::reset_view_state()
 void View::clear_signals()
 {
 	ViewBase::clear_signalbases();
+	signal_ = nullptr;
 }
 
 void View::clear_decode_signals()
 {
 	signal_selector_->clear();
 	format_selector_->setCurrentIndex(0);
+	signal_ = nullptr;
 }
 
 void View::add_decode_signal(shared_ptr<data::DecodeSignal> signal)
@@ -104,15 +120,20 @@ void View::add_decode_signal(shared_ptr<data::DecodeSignal> signal)
 	connect(signal.get(), SIGNAL(name_changed(const QString&)),
 		this, SLOT(on_signal_name_changed(const QString&)));
 
-	signal_selector_->addItem(signal->name(), QVariant::fromValue(signal.get()));
+	signal_selector_->addItem(signal->name(), QVariant::fromValue((void*)signal.get()));
 }
 
 void View::remove_decode_signal(shared_ptr<data::DecodeSignal> signal)
 {
-	int index = signal_selector_->findData(QVariant::fromValue(signal.get()));
+	int index = signal_selector_->findData(QVariant::fromValue((void*)signal.get()));
 
 	if (index != -1)
 		signal_selector_->removeItem(index);
+
+	if (signal.get() == signal_) {
+		signal_ = nullptr;
+		update_data();
+	}
 }
 
 void View::save_settings(QSettings &settings) const
@@ -127,6 +148,39 @@ void View::restore_settings(QSettings &settings)
 	(void)settings;
 }
 
+void View::update_data()
+{
+	if (!signal_) {
+		merged_data_->clear();
+		return;
+	}
+
+	if (signal_->get_binary_data_chunk_count(current_segment_) == 0) {
+		merged_data_->clear();
+		return;
+	}
+
+	vector<uint8_t> data;
+	signal_->get_binary_data_chunks_merged(current_segment_, 0,
+		numeric_limits<uint64_t>::max(), &data);
+
+	merged_data_->resize(data.size());
+	memcpy(merged_data_->data(), data.data(), data.size());
+}
+
+void View::on_selected_signal_changed(int index)
+{
+	if (signal_)
+		disconnect(signal_, SIGNAL(new_binary_data(unsigned int)));
+
+	signal_ = (DecodeSignal*)signal_selector_->itemData(index).value<void*>();
+	update_data();
+
+	if (signal_)
+		connect(signal_, SIGNAL(new_binary_data(unsigned int)),
+			this, SLOT(on_new_binary_data(unsigned int)));
+}
+
 void View::on_signal_name_changed(const QString &name)
 {
 	SignalBase *sb = qobject_cast<SignalBase*>(QObject::sender());
@@ -135,6 +189,12 @@ void View::on_signal_name_changed(const QString &name)
 	int index = signal_selector_->findData(QVariant::fromValue(sb));
 	if (index != -1)
 		signal_selector_->setItemText(index, name);
+}
+
+void View::on_new_binary_data(unsigned int segment_id)
+{
+	if (segment_id == current_segment_)
+		update_data();
 }
 
 } // namespace decoder_output

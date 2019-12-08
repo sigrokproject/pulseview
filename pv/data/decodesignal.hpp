@@ -205,7 +205,7 @@ private:
 
 Q_SIGNALS:
 	void new_annotations(); // TODO Supply segment for which they belong to
-	void new_binary_data(uint32_t segment_id);
+	void new_binary_data(unsigned int segment_id);
 	void decode_reset();
 	void decode_finished();
 	void channels_updated();

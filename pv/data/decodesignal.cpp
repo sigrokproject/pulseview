@@ -567,10 +567,13 @@ void DecodeSignal::get_binary_data_chunks_merged(uint32_t segment_id,
 
 		// Determine overall size before copying to resize dest vector only once
 		uint64_t size = 0;
+		int matches = 0;
 		for (const DecodeBinaryData& d : segment->binary_data)
-			if ((d.sample >= start_sample) && (d.sample < end_sample))
+			if ((d.sample >= start_sample) && (d.sample < end_sample)) {
 				size += d.data.size();
-		dest->reserve(size);
+				matches++;
+			}
+		dest->resize(size);
 
 		uint64_t index = 0;
 		for (const DecodeBinaryData& d : segment->binary_data)
@@ -1371,7 +1374,7 @@ void DecodeSignal::binary_callback(srd_proto_data *pdata, void *decode_signal)
 	DecodeBinaryData* bin_data = &(segment->binary_data.back());
 
 	bin_data->sample = pdata->start_sample;
-	bin_data->data.reserve(pdb->size);
+	bin_data->data.resize(pdb->size);
 	memcpy(bin_data->data.data(), pdb->data, pdb->size);
 
 	ds->new_binary_data(ds->current_segment_id_);

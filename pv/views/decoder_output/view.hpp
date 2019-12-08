@@ -24,6 +24,7 @@
 #include <QStackedWidget>
 
 #include <pv/views/viewbase.hpp>
+#include <pv/data/decodesignal.hpp>
 
 #include "QHexView.hpp"
 
@@ -61,13 +62,22 @@ public:
 	virtual void save_settings(QSettings &settings) const;
 	virtual void restore_settings(QSettings &settings);
 
+private:
+	void update_data();
+
 private Q_SLOTS:
+	void on_selected_signal_changed(int index);
 	void on_signal_name_changed(const QString &name);
+	void on_new_binary_data(unsigned int segment_id);
 
 private:
 	QComboBox *signal_selector_, *format_selector_;
 	QStackedWidget *stacked_widget_;
 	QHexView *hex_view_;
+
+	data::DecodeSignal *signal_;
+
+	QByteArray *merged_data_;
 };
 
 } // namespace decoder_output

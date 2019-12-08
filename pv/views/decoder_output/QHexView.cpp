@@ -79,12 +79,16 @@ void QHexView::showFromOffset(size_t offset)
 		int cursorY = cursorPos_ / (2 * BYTES_PER_LINE);
 		verticalScrollBar() -> setValue(cursorY);
 	}
+
+	viewport()->update();
 }
 
 void QHexView::clear()
 {
 	verticalScrollBar()->setValue(0);
 	data_ = nullptr;
+
+	viewport()->update();
 }
 
 QSize QHexView::getFullSize() const
@@ -121,7 +125,7 @@ void QHexView::paintEvent(QPaintEvent *event)
 	// Fill widget background
 	painter.fillRect(event->rect(), palette().color(QPalette::Base));
 
-	if (!data_) {
+	if (!data_ || (data_->size() == 0)) {
 		painter.setPen(palette().color(QPalette::Text));
 		QString s = tr("No data available");
 		int x = (areaSize.width() - fontMetrics().boundingRect(s).width()) / 2;
