@@ -70,7 +70,7 @@ using std::vector;
 
 using pv::data::decode::Annotation;
 using pv::data::decode::Row;
-using pv::data::DecodeChannel;
+using pv::data::decode::DecodeChannel;
 using pv::data::DecodeSignal;
 
 namespace pv {

@@ -34,6 +34,7 @@
 #include <QTimer>
 
 #include <pv/binding/decoder.hpp>
+#include <pv/data/decode/decoder.hpp>
 #include <pv/data/decode/annotation.hpp>
 #include <pv/data/decode/row.hpp>
 #include <pv/data/signalbase.hpp>
@@ -178,9 +179,9 @@ private:
 		QWidget *parent, QFormLayout *form);
 
 	QComboBox* create_channel_selector(QWidget *parent,
-		const data::DecodeChannel *ch);
+		const data::decode::DecodeChannel *ch);
 	QComboBox* create_channel_selector_init_state(QWidget *parent,
-		const data::DecodeChannel *ch);
+		const data::decode::DecodeChannel *ch);
 
 	void export_annotations(vector<data::decode::Annotation> *annotations) const;
 

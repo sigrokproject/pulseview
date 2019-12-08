@@ -27,6 +27,8 @@
 
 #include <glib.h>
 
+#include <pv/data/signalbase.hpp>
+
 using std::map;
 using std::string;
 using std::vector;
@@ -40,11 +42,25 @@ namespace pv {
 
 namespace data {
 
-struct DecodeChannel;
 class Logic;
 class SignalBase;
 
 namespace decode {
+
+class Decoder;
+
+struct DecodeChannel
+{
+	uint16_t id;     ///< Global numerical ID for the decode channels in the stack
+	uint16_t bit_id; ///< Tells which bit within a sample represents this channel
+	const bool is_optional;
+	const pv::data::SignalBase *assigned_signal;
+	const QString name, desc;
+	int initial_pin_state;
+	const shared_ptr<Decoder> decoder_;
+	const srd_channel *pdch_;
+};
+
 
 class Decoder
 {
@@ -58,8 +74,8 @@ public:
 	bool shown() const;
 	void show(bool show = true);
 
-	const vector<data::DecodeChannel*>& channels() const;
-	void set_channels(vector<data::DecodeChannel*> channels);
+	const vector<DecodeChannel*>& channels() const;
+	void set_channels(vector<DecodeChannel*> channels);
 
 	const map<string, GVariant*>& options() const;
 
@@ -72,12 +88,14 @@ public:
 	srd_decoder_inst* create_decoder_inst(srd_session *session);
 	void invalidate_decoder_inst();
 
+
+
 private:
 	const srd_decoder *const decoder_;
 
 	bool shown_;
 
-	vector<data::DecodeChannel*> channels_;
+	vector<DecodeChannel*> channels_;
 	map<string, GVariant*> options_;
 	srd_decoder_inst *decoder_inst_;
 };

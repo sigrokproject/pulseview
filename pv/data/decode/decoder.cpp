@@ -29,7 +29,6 @@
 #include <pv/data/signalbase.hpp>
 #include <pv/data/decodesignal.hpp>
 
-using pv::data::DecodeChannel;
 using std::map;
 using std::string;
 

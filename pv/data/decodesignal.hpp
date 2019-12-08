@@ -30,6 +30,7 @@
 
 #include <libsigrokdecode/libsigrokdecode.h>
 
+#include <pv/data/decode/decoder.hpp>
 #include <pv/data/decode/row.hpp>
 #include <pv/data/decode/rowdata.hpp>
 #include <pv/data/signalbase.hpp>
@@ -58,18 +59,6 @@ class Logic;
 class LogicSegment;
 class SignalBase;
 class SignalData;
-
-struct DecodeChannel
-{
-	uint16_t id;     ///< Global numerical ID for the decode channels in the stack
-	uint16_t bit_id; ///< Tells which bit within a sample represents this channel
-	const bool is_optional;
-	const pv::data::SignalBase *assigned_signal;
-	const QString name, desc;
-	int initial_pin_state;
-	const shared_ptr<pv::data::decode::Decoder> decoder_;
-	const srd_channel *pdch_;
-};
 
 struct DecodeBinaryData
 {
@@ -113,7 +102,7 @@ public:
 	bool is_paused() const;
 	QString error_message() const;
 
-	const vector<data::DecodeChannel> get_channels() const;
+	const vector<data::decode::DecodeChannel> get_channels() const;
 	void auto_assign_signals(const shared_ptr<pv::data::decode::Decoder> dec);
 	void assign_signal(const uint16_t channel_id, const SignalBase *signal);
 	int get_assigned_signal_count() const;
@@ -218,7 +207,7 @@ private Q_SLOTS:
 private:
 	pv::Session &session_;
 
-	vector<data::DecodeChannel> channels_;
+	vector<data::decode::DecodeChannel> channels_;
 
 	struct srd_session *srd_session_;
 
