@@ -567,7 +567,7 @@ void DecodeSignal::get_binary_data_chunks_merged(uint32_t segment_id,
 
 		// Determine overall size before copying to resize dest vector only once
 		uint64_t size = 0;
-		int matches = 0;
+		uint64_t matches = 0;
 		for (const DecodeBinaryData& d : segment->binary_data)
 			if ((d.sample >= start_sample) && (d.sample < end_sample)) {
 				size += d.data.size();
@@ -575,11 +575,17 @@ void DecodeSignal::get_binary_data_chunks_merged(uint32_t segment_id,
 			}
 		dest->resize(size);
 
-		uint64_t index = 0;
+		uint64_t offset = 0;
+		uint64_t matches2 = 0;
 		for (const DecodeBinaryData& d : segment->binary_data)
 			if ((d.sample >= start_sample) && (d.sample < end_sample)) {
-				memcpy(dest->data() + index, d.data.data(), d.data.size());
-				index += d.data.size();
+				memcpy(dest->data() + offset, d.data.data(), d.data.size());
+				offset += d.data.size();
+				matches2++;
+
+				// Make sure we don't overwrite memory if the array grew in the meanwhile
+				if (matches2 == matches)
+					break;
 			}
 	} catch (out_of_range&) {
 		// Do nothing
