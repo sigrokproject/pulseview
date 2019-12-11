@@ -60,10 +60,17 @@ class LogicSegment;
 class SignalBase;
 class SignalData;
 
-struct DecodeBinaryData
+struct DecodeBinaryDataChunk
 {
 	vector<uint8_t> data;
 	uint64_t sample;   ///< Number of the sample where this data was provided by the PD
+};
+
+struct DecodeBinaryClass
+{
+	const decode::Decoder* decoder;
+	const decode::DecodeBinaryClassInfo* info;
+	vector<DecodeBinaryDataChunk> chunks;
 };
 
 struct DecodeSegment
@@ -72,7 +79,7 @@ struct DecodeSegment
 	pv::util::Timestamp start_time;
 	double samplerate;
 	int64_t samples_decoded_incl, samples_decoded_excl;
-	vector<DecodeBinaryData> binary_data;
+	vector<DecodeBinaryClass> binary_classes;
 };
 
 class DecodeSignal : public SignalBase
@@ -151,11 +158,14 @@ public:
 		vector<pv::data::decode::Annotation> &dest,
 		uint32_t segment_id, uint64_t start_sample, uint64_t end_sample) const;
 
-	uint32_t get_binary_data_chunk_count(uint32_t segment_id) const;
-	void get_binary_data_chunk(uint32_t segment_id, uint32_t chunk_id,
-		const vector<uint8_t> **dest, uint64_t *size);
-	void get_binary_data_chunks_merged(uint32_t segment_id,
-		uint64_t start_sample, uint64_t end_sample, vector<uint8_t> *dest) const;
+	uint32_t get_binary_data_chunk_count(uint32_t segment_id,
+		const data::decode::Decoder* dec, uint8_t bin_class_id) const;
+	void get_binary_data_chunk(uint32_t segment_id, const data::decode::Decoder* dec,
+		uint8_t bin_class_id, uint32_t chunk_id, const vector<uint8_t> **dest,
+		uint64_t *size);
+	void get_binary_data_chunks_merged(uint32_t segment_id, const data::decode::Decoder* dec,
+		uint8_t bin_class_id, uint64_t start_sample, uint64_t end_sample,
+		vector<uint8_t> *dest) const;
 
 	virtual void save_settings(QSettings &settings) const;
 
@@ -193,8 +203,10 @@ private:
 	static void binary_callback(srd_proto_data *pdata, void *decode_signal);
 
 Q_SIGNALS:
+	void decoder_stacked(void* decoder); ///< decoder is of type decode::Decoder*
+	void decoder_removed(void* decoder); ///< decoder is of type decode::Decoder*
 	void new_annotations(); // TODO Supply segment for which they belong to
-	void new_binary_data(unsigned int segment_id);
+	void new_binary_data(unsigned int segment_id, unsigned int bin_class_id);
 	void decode_reset();
 	void decode_finished();
 	void channels_updated();

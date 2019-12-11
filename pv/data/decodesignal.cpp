@@ -98,6 +98,9 @@ void DecodeSignal::stack_decoder(const srd_decoder *decoder)
 	stack_config_changed_ = true;
 	auto_assign_signals(dec);
 	commit_decoder_channels();
+
+	decoder_stacked((void*)dec.get());
+
 	begin_decode();
 }
 
@@ -110,6 +113,8 @@ void DecodeSignal::remove_decoder(int index)
 	auto iter = stack_.begin();
 	for (int i = 0; i < index; i++, iter++)
 		assert(iter != stack_.end());
+
+	decoder_removed(iter->get());
 
 	// Delete the element
 	stack_.erase(iter);
@@ -529,58 +534,70 @@ void DecodeSignal::get_annotation_subset(
 	delete all_ann_list;
 }
 
-uint32_t DecodeSignal::get_binary_data_chunk_count(uint32_t segment_id) const
+uint32_t DecodeSignal::get_binary_data_chunk_count(uint32_t segment_id,
+	const Decoder* dec, uint8_t bin_class_id) const
 {
-	uint32_t count = 0;
-
 	try {
 		const DecodeSegment *segment = &(segments_.at(segment_id));
-		count = segment->binary_data.size();
+
+		for (const DecodeBinaryClass& bc : segment->binary_classes)
+			if ((bc.decoder == dec) && (bc.info->bin_class_id == bin_class_id))
+				return bc.chunks.size();
 	} catch (out_of_range&) {
 		// Do nothing
 	}
 
-	return count;
+	return 0;
 }
 
-void DecodeSignal::get_binary_data_chunk(uint32_t segment_id, uint32_t chunk_id,
+void DecodeSignal::get_binary_data_chunk(uint32_t segment_id,
+	const  Decoder* dec, uint8_t bin_class_id, uint32_t chunk_id,
 	const vector<uint8_t> **dest, uint64_t *size)
 {
 	try {
 		const DecodeSegment *segment = &(segments_.at(segment_id));
-		if (dest)
-			*dest = &(segment->binary_data.at(chunk_id).data);
-		if (size)
-			*size = segment->binary_data.at(chunk_id).data.size();
+
+		for (const DecodeBinaryClass& bc : segment->binary_classes)
+			if ((bc.decoder == dec) && (bc.info->bin_class_id == bin_class_id)) {
+				if (dest) *dest = &(bc.chunks.at(chunk_id).data);
+				if (size) *size = bc.chunks.at(chunk_id).data.size();
+				return;
+			}
 	} catch (out_of_range&) {
 		// Do nothing
 	}
 }
 
 void DecodeSignal::get_binary_data_chunks_merged(uint32_t segment_id,
-	uint64_t start_sample, uint64_t end_sample, vector<uint8_t> *dest) const
+	const Decoder* dec, uint8_t bin_class_id, uint64_t start_sample,
+	uint64_t end_sample, vector<uint8_t> *dest) const
 {
 	assert(dest != nullptr);
 
 	try {
 		const DecodeSegment *segment = &(segments_.at(segment_id));
 
+		const DecodeBinaryClass* bin_class = nullptr;
+		for (const DecodeBinaryClass& bc : segment->binary_classes)
+			if ((bc.decoder == dec) && (bc.info->bin_class_id == bin_class_id))
+				bin_class = &bc;
+
 		// Determine overall size before copying to resize dest vector only once
 		uint64_t size = 0;
 		uint64_t matches = 0;
-		for (const DecodeBinaryData& d : segment->binary_data)
-			if ((d.sample >= start_sample) && (d.sample < end_sample)) {
-				size += d.data.size();
+		for (const DecodeBinaryDataChunk& chunk : bin_class->chunks)
+			if ((chunk.sample >= start_sample) && (chunk.sample < end_sample)) {
+				size += chunk.data.size();
 				matches++;
 			}
 		dest->resize(size);
 
 		uint64_t offset = 0;
 		uint64_t matches2 = 0;
-		for (const DecodeBinaryData& d : segment->binary_data)
-			if ((d.sample >= start_sample) && (d.sample < end_sample)) {
-				memcpy(dest->data() + offset, d.data.data(), d.data.size());
-				offset += d.data.size();
+		for (const DecodeBinaryDataChunk& chunk : bin_class->chunks)
+			if ((chunk.sample >= start_sample) && (chunk.sample < end_sample)) {
+				memcpy(dest->data() + offset, chunk.data.data(), chunk.data.size());
+				offset += chunk.data.size();
 				matches2++;
 
 				// Make sure we don't overwrite memory if the array grew in the meanwhile
@@ -1312,6 +1329,15 @@ void DecodeSignal::create_decode_segment()
 				decode::RowData();
 		}
 	}
+
+	// Prepare our binary output classes
+	for (const shared_ptr<decode::Decoder>& dec : stack_) {
+		uint8_t n = dec->get_binary_class_count();
+
+		for (uint8_t i = 0; i < n; i++)
+			segments_.back().binary_classes.push_back(
+				{dec.get(), dec->get_binary_class(i), vector<DecodeBinaryDataChunk>()});
+	}
 }
 
 void DecodeSignal::annotation_callback(srd_proto_data *pdata, void *decode_signal)
@@ -1371,19 +1397,45 @@ void DecodeSignal::binary_callback(srd_proto_data *pdata, void *decode_signal)
 	if (ds->decode_interrupt_)
 		return;
 
+	// Get the decoder and the binary data
+	assert(pdata->pdo);
+	assert(pdata->pdo->di);
+	const srd_decoder *const decc = pdata->pdo->di->decoder;
+	assert(decc);
+
 	const srd_proto_data_binary *const pdb = (const srd_proto_data_binary*)pdata->data;
 	assert(pdb);
 
+	// Find the matching DecodeBinaryClass
 	DecodeSegment* segment = &(ds->segments_.at(ds->current_segment_id_));
 
-	segment->binary_data.emplace_back();
-	DecodeBinaryData* bin_data = &(segment->binary_data.back());
+	DecodeBinaryClass* bin_class = nullptr;
+	for (DecodeBinaryClass& bc : segment->binary_classes)
+		if ((bc.decoder->decoder() == decc) && (bc.info->bin_class_id == pdb->bin_class))
+			bin_class = &bc;
 
-	bin_data->sample = pdata->start_sample;
-	bin_data->data.resize(pdb->size);
-	memcpy(bin_data->data.data(), pdb->data, pdb->size);
+	if (!bin_class) {
+		qWarning() << "Could not find valid DecodeBinaryClass in segment" <<
+				ds->current_segment_id_ << "for binary class ID" << pdb->bin_class <<
+				", segment only knows" << segment->binary_classes.size() << "classes";
+		return;
+	}
 
-	ds->new_binary_data(ds->current_segment_id_);
+	// Add the data chunk
+	bin_class->chunks.emplace_back();
+	DecodeBinaryDataChunk* chunk = &(bin_class->chunks.back());
+
+	chunk->sample = pdata->start_sample;
+	chunk->data.resize(pdb->size);
+	memcpy(chunk->data.data(), pdb->data, pdb->size);
+
+	// Note: using pdb->bin_class is only unique for each decoder in the stack,
+	// so if two stacked decoders both emit binary data with the same bin_class,
+	// we may be triggering unnecessary updates. Should be ok for now as that
+	// case isn't possible yet. When it is, we might add the decoder's name
+	// as an additional parameter to the signal, although string comparisons
+	// are not really fast.
+	ds->new_binary_data(ds->current_segment_id_, pdb->bin_class);
 }
 
 void DecodeSignal::on_capture_state_changed(int state)

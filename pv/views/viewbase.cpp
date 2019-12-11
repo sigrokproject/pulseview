@@ -112,16 +112,17 @@ void ViewBase::add_signalbase(const shared_ptr<data::SignalBase> signalbase)
 #ifdef ENABLE_DECODE
 void ViewBase::clear_decode_signals()
 {
+	decode_signals_.clear();
 }
 
 void ViewBase::add_decode_signal(shared_ptr<data::DecodeSignal> signal)
 {
-	(void)signal;
+	decode_signals_.insert(signal);
 }
 
 void ViewBase::remove_decode_signal(shared_ptr<data::DecodeSignal> signal)
 {
-	(void)signal;
+	decode_signals_.erase(signal);
 }
 #endif
 

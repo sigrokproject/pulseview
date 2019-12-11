@@ -61,6 +61,13 @@ struct DecodeChannel
 	const srd_channel *pdch_;
 };
 
+struct DecodeBinaryClassInfo
+{
+	uint8_t bin_class_id;
+	char* name;
+	char* description;
+};
+
 
 class Decoder
 {
@@ -70,6 +77,8 @@ public:
 	virtual ~Decoder();
 
 	const srd_decoder* decoder() const;
+
+	const char* name() const;
 
 	bool shown() const;
 	void show(bool show = true);
@@ -88,7 +97,8 @@ public:
 	srd_decoder_inst* create_decoder_inst(srd_session *session);
 	void invalidate_decoder_inst();
 
-
+	uint8_t get_binary_class_count() const;
+	const DecodeBinaryClassInfo* get_binary_class(uint8_t id) const;
 
 private:
 	const srd_decoder *const decoder_;
@@ -96,6 +106,7 @@ private:
 	bool shown_;
 
 	vector<DecodeChannel*> channels_;
+	vector<DecodeBinaryClassInfo> bin_classes_;
 	map<string, GVariant*> options_;
 	srd_decoder_inst *decoder_inst_;
 };

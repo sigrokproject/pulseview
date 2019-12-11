@@ -33,12 +33,15 @@
 
 #include "pv/session.hpp"
 #include "pv/util.hpp"
+#include "pv/data/decode/decoder.hpp"
 
 using pv::data::DecodeSignal;
 using pv::data::SignalBase;
+using pv::data::decode::Decoder;
 using pv::util::TimeUnit;
 using pv::util::Timestamp;
 
+using std::dynamic_pointer_cast;
 using std::numeric_limits;
 using std::shared_ptr;
 
@@ -50,8 +53,9 @@ View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 	ViewBase(session, is_main_view, parent),
 
 	// Note: Place defaults in View::reset_view_state(), not here
-	signal_selector_(new QComboBox()),
+	decoder_selector_(new QComboBox()),
 	format_selector_(new QComboBox()),
+	class_selector_(new QComboBox()),
 	stacked_widget_(new QStackedWidget()),
 	hex_view_(new QHexView()),
 	signal_(nullptr),
@@ -67,7 +71,8 @@ View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 
 	// Populate toolbar
 	toolbar->addWidget(new QLabel(tr("Decoder:")));
-	toolbar->addWidget(signal_selector_);
+	toolbar->addWidget(decoder_selector_);
+	toolbar->addWidget(class_selector_);
 	toolbar->addSeparator();
 	toolbar->addWidget(new QLabel(tr("Show data as")));
 	toolbar->addWidget(format_selector_);
@@ -80,8 +85,8 @@ View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 	stacked_widget_->addWidget(hex_view_);
 	stacked_widget_->setCurrentIndex(0);
 
-	connect(signal_selector_, SIGNAL(currentIndexChanged(int)),
-		this, SLOT(on_selected_signal_changed(int)));
+	connect(decoder_selector_, SIGNAL(currentIndexChanged(int)),
+		this, SLOT(on_selected_decoder_changed(int)));
 
 	hex_view_->setData(merged_data_);
 
@@ -110,28 +115,54 @@ void View::clear_signals()
 
 void View::clear_decode_signals()
 {
-	signal_selector_->clear();
+	ViewBase::clear_decode_signals();
+
+	decoder_selector_->clear();
 	format_selector_->setCurrentIndex(0);
 	signal_ = nullptr;
 }
 
 void View::add_decode_signal(shared_ptr<data::DecodeSignal> signal)
 {
+	ViewBase::add_decode_signal(signal);
+
 	connect(signal.get(), SIGNAL(name_changed(const QString&)),
 		this, SLOT(on_signal_name_changed(const QString&)));
+	connect(signal.get(), SIGNAL(decoder_stacked(void*)),
+		this, SLOT(on_decoder_stacked(void*)));
+	connect(signal.get(), SIGNAL(decoder_removed(void*)),
+		this, SLOT(on_decoder_removed(void*)));
 
-	signal_selector_->addItem(signal->name(), QVariant::fromValue((void*)signal.get()));
+	// Add all decoders provided by this signal
+	auto stack = signal->decoder_stack();
+	if (stack.size() > 1) {
+		for (const shared_ptr<Decoder>& dec : stack) {
+			QString title = QString("%1 (%2)").arg(signal->name(), dec->name());
+			decoder_selector_->addItem(title, QVariant::fromValue((void*)dec.get()));
+		}
+	} else
+		if (!stack.empty()) {
+			shared_ptr<Decoder>& dec = stack.at(0);
+			decoder_selector_->addItem(signal->name(), QVariant::fromValue((void*)dec.get()));
+		}
 }
 
 void View::remove_decode_signal(shared_ptr<data::DecodeSignal> signal)
 {
-	int index = signal_selector_->findData(QVariant::fromValue((void*)signal.get()));
+	// Remove all decoders provided by this signal
+	for (const shared_ptr<Decoder>& dec : signal->decoder_stack()) {
+		int index = decoder_selector_->findData(QVariant::fromValue((void*)dec.get()));
 
-	if (index != -1)
-		signal_selector_->removeItem(index);
+		if (index != -1)
+			decoder_selector_->removeItem(index);
+	}
+
+	ViewBase::remove_decode_signal(signal);
 
 	if (signal.get() == signal_) {
 		signal_ = nullptr;
+		decoder_ = nullptr;
+		bin_class_id_ = 0;
 		update_data();
 	}
 }
@@ -155,47 +186,113 @@ void View::update_data()
 		return;
 	}
 
-	if (signal_->get_binary_data_chunk_count(current_segment_) == 0) {
+	if (signal_->get_binary_data_chunk_count(current_segment_, decoder_, bin_class_id_) == 0) {
 		merged_data_->clear();
 		return;
 	}
 
 	vector<uint8_t> data;
-	signal_->get_binary_data_chunks_merged(current_segment_, 0,
-		numeric_limits<uint64_t>::max(), &data);
+	signal_->get_binary_data_chunks_merged(current_segment_, decoder_, bin_class_id_,
+		0, numeric_limits<uint64_t>::max(), &data);
 
 	merged_data_->resize(data.size());
 	memcpy(merged_data_->data(), data.data(), data.size());
 }
 
-void View::on_selected_signal_changed(int index)
+void View::on_selected_decoder_changed(int index)
 {
 	if (signal_)
-		disconnect(signal_, SIGNAL(new_binary_data(unsigned int)));
+		disconnect(signal_, SIGNAL(new_binary_data(unsigned int, unsigned int)));
 
-	signal_ = (DecodeSignal*)signal_selector_->itemData(index).value<void*>();
-	update_data();
+	decoder_ = (Decoder*)decoder_selector_->itemData(index).value<void*>();
+
+	// Find the signal that contains the selected decoder
+	signal_ = nullptr;
+
+	for (const shared_ptr<data::SignalBase>& sb : signalbases_) {
+		shared_ptr<DecodeSignal> ds = dynamic_pointer_cast<DecodeSignal>(sb);
+
+		if (ds)
+			for (const shared_ptr<Decoder>& dec : ds->decoder_stack())
+				if (decoder_ == dec.get())
+					signal_ = ds.get();
+	}
 
 	if (signal_)
-		connect(signal_, SIGNAL(new_binary_data(unsigned int)),
-			this, SLOT(on_new_binary_data(unsigned int)));
+		connect(signal_, SIGNAL(new_binary_data(unsigned int, unsigned int)),
+			this, SLOT(on_new_binary_data(unsigned int, unsigned int)));
+
+	update_data();
 }
 
 void View::on_signal_name_changed(const QString &name)
 {
-	SignalBase *sb = qobject_cast<SignalBase*>(QObject::sender());
+	(void)name;
+
+	SignalBase* sb = qobject_cast<SignalBase*>(QObject::sender());
 	assert(sb);
 
-	int index = signal_selector_->findData(QVariant::fromValue(sb));
-	if (index != -1)
-		signal_selector_->setItemText(index, name);
+	DecodeSignal* signal = dynamic_cast<DecodeSignal*>(sb);
+	assert(signal);
+
+	// Update all decoder entries provided by this signal
+	auto stack = signal->decoder_stack();
+	if (stack.size() > 1) {
+		for (const shared_ptr<Decoder>& dec : stack) {
+			QString title = QString("%1 (%2)").arg(signal->name(), dec->name());
+			int index = decoder_selector_->findData(QVariant::fromValue((void*)dec.get()));
+
+			if (index != -1)
+				decoder_selector_->setItemText(index, title);
+		}
+	} else
+		if (!stack.empty()) {
+			shared_ptr<Decoder>& dec = stack.at(0);
+			int index = decoder_selector_->findData(QVariant::fromValue((void*)dec.get()));
+
+			if (index != -1)
+				decoder_selector_->setItemText(index, signal->name());
+		}
 }
 
-void View::on_new_binary_data(unsigned int segment_id)
+void View::on_new_binary_data(unsigned int segment_id, unsigned int bin_class_id)
 {
-	if (segment_id == current_segment_)
+	if ((segment_id == current_segment_) && (bin_class_id == bin_class_id_))
 		update_data();
 }
+
+void View::on_decoder_stacked(void* decoder)
+{
+	// TODO This doesn't change existing entries for the same signal - but it should as the naming scheme may change
+
+	Decoder* d = static_cast<Decoder*>(decoder);
+
+	// Find the signal that contains the selected decoder
+	DecodeSignal* signal = nullptr;
+
+	for (const shared_ptr<DecodeSignal>& ds : decode_signals_)
+		for (const shared_ptr<Decoder>& dec : ds->decoder_stack())
+			if (d == dec.get())
+				signal = ds.get();
+
+	assert(signal);
+
+	// Add the decoder to the list
+	QString title = QString("%1 (%2)").arg(signal->name(), d->name());
+	decoder_selector_->addItem(title, QVariant::fromValue((void*)d));
+}
+
+void View::on_decoder_removed(void* decoder)
+{
+	Decoder* d = static_cast<Decoder*>(decoder);
+
+	// Remove the decoder from the list
+	int index = decoder_selector_->findData(QVariant::fromValue((void*)d));
+
+	if (index != -1)
+		decoder_selector_->removeItem(index);
+}
+
 
 } // namespace decoder_output
 } // namespace views

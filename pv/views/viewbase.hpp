@@ -128,6 +128,9 @@ protected:
 	util::TimeUnit time_unit_;
 
 	unordered_set< shared_ptr<data::SignalBase> > signalbases_;
+#ifdef ENABLE_DECODE
+	unordered_set< shared_ptr<data::DecodeSignal> > decode_signals_;
+#endif
 
 	/// The ID of the currently displayed segment
 	uint32_t current_segment_;

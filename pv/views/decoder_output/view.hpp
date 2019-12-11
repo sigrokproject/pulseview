@@ -66,16 +66,21 @@ private:
 	void update_data();
 
 private Q_SLOTS:
-	void on_selected_signal_changed(int index);
+	void on_selected_decoder_changed(int index);
 	void on_signal_name_changed(const QString &name);
-	void on_new_binary_data(unsigned int segment_id);
+	void on_new_binary_data(unsigned int segment_id, unsigned int bin_class_id);
+
+	void on_decoder_stacked(void* decoder);
+	void on_decoder_removed(void* decoder);
 
 private:
-	QComboBox *signal_selector_, *format_selector_;
+	QComboBox *decoder_selector_, *format_selector_, *class_selector_;
 	QStackedWidget *stacked_widget_;
 	QHexView *hex_view_;
 
 	data::DecodeSignal *signal_;
+	const data::decode::Decoder *decoder_;
+	uint8_t bin_class_id_;
 
 	QByteArray *merged_data_;
 };

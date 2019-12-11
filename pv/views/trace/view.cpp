@@ -324,11 +324,14 @@ void View::add_signal(const shared_ptr<Signal> signal)
 #ifdef ENABLE_DECODE
 void View::clear_decode_signals()
 {
+	ViewBase::clear_decode_signals();
 	decode_traces_.clear();
 }
 
 void View::add_decode_signal(shared_ptr<data::DecodeSignal> signal)
 {
+	ViewBase::add_decode_signal(signal);
+
 	shared_ptr<DecodeTrace> d(
 		new DecodeTrace(session_, signal, decode_traces_.size()));
 	decode_traces_.push_back(d);
@@ -348,6 +351,8 @@ void View::remove_decode_signal(shared_ptr<data::DecodeSignal> signal)
 			signals_changed();
 			return;
 		}
+
+	ViewBase::remove_decode_signal(signal);
 }
 #endif
 
