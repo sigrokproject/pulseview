@@ -122,6 +122,7 @@ void QHexView::initialize_byte_iterator(size_t offset)
 {
 	current_chunk_id_ = 0;
 	current_chunk_offset_ = 0;
+	current_offset_ = offset;
 
 	for (const DecodeBinaryDataChunk& chunk : data_->chunks)
 		if (offset >= chunk.data.size()) {
@@ -142,7 +143,9 @@ uint8_t QHexView::get_next_byte(bool* is_next_chunk)
 
 	uint8_t v = current_chunk_->data[current_chunk_offset_];
 
+	current_offset_++;
 	current_chunk_offset_++;
+
 	if (current_chunk_offset_ == current_chunk_->data.size()) {
 		current_chunk_id_++;
 		current_chunk_offset_ = 0;
@@ -237,7 +240,7 @@ void QHexView::paintEvent(QPaintEvent *event)
 	for (size_t lineIdx = firstLineIdx, y = yStart; lineIdx < lastLineIdx; lineIdx++) {
 
 		int x = posHex_;
-		for (size_t i = 0; i < BYTES_PER_LINE && ((lineIdx - firstLineIdx) * BYTES_PER_LINE + i) < data_size_; i++) {
+		for (size_t i = 0; (i < BYTES_PER_LINE) && (current_offset_ < data_size_); i++) {
 			size_t pos = (lineIdx * BYTES_PER_LINE + i) * 2;
 
 			// Fetch byte
@@ -283,7 +286,7 @@ void QHexView::paintEvent(QPaintEvent *event)
 	for (size_t lineIdx = firstLineIdx, y = yStart; lineIdx < lastLineIdx; lineIdx++) {
 
 		int x = posAscii_;
-		for (size_t i = 0; ((lineIdx - firstLineIdx) * BYTES_PER_LINE + i) < data_size_ && (i < BYTES_PER_LINE); i++) {
+		for (size_t i = 0; (i < BYTES_PER_LINE) && (current_offset_ < data_size_); i++) {
 			// Fetch byte
 			uint8_t ch = get_next_byte();
 

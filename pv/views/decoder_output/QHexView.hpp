@@ -84,7 +84,7 @@ private:
 	size_t charWidth_, charHeight_;
 	size_t selectBegin_, selectEnd_, selectInit_, cursorPos_;
 
-	size_t current_chunk_id_, current_chunk_offset_;
+	size_t current_chunk_id_, current_chunk_offset_, current_offset_;
 	const DecodeBinaryDataChunk* current_chunk_;
 
 	vector<QColor> chunk_colors_;

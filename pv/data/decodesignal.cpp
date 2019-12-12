@@ -1426,7 +1426,7 @@ void DecodeSignal::binary_callback(srd_proto_data *pdata, void *decode_signal)
 
 	DecodeBinaryClass* bin_class = nullptr;
 	for (DecodeBinaryClass& bc : segment->binary_classes)
-		if ((bc.decoder->decoder() == decc) && (bc.info->bin_class_id == pdb->bin_class))
+		if ((bc.decoder->decoder() == decc) && (bc.info->bin_class_id == (uint32_t)pdb->bin_class))
 			bin_class = &bc;
 
 	if (!bin_class) {

@@ -226,7 +226,7 @@ void View::on_selected_decoder_changed(int index)
 		uint32_t bin_classes = decoder_->get_binary_class_count();
 		for (uint32_t i = 0; i < bin_classes; i++) {
 			const data::decode::DecodeBinaryClassInfo* class_info = decoder_->get_binary_class(i);
-			class_selector_->addItem(class_info->name, QVariant::fromValue(i));
+			class_selector_->addItem(class_info->description, QVariant::fromValue(i));
 		}
 
 		connect(signal_, SIGNAL(new_binary_data(unsigned int, void*, unsigned int)),
