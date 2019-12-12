@@ -159,15 +159,15 @@ public:
 		uint32_t segment_id, uint64_t start_sample, uint64_t end_sample) const;
 
 	uint32_t get_binary_data_chunk_count(uint32_t segment_id,
-		const data::decode::Decoder* dec, uint8_t bin_class_id) const;
+		const data::decode::Decoder* dec, uint32_t bin_class_id) const;
 	void get_binary_data_chunk(uint32_t segment_id, const data::decode::Decoder* dec,
-		uint8_t bin_class_id, uint32_t chunk_id, const vector<uint8_t> **dest,
+		uint32_t bin_class_id, uint32_t chunk_id, const vector<uint8_t> **dest,
 		uint64_t *size);
 	void get_binary_data_chunks_merged(uint32_t segment_id, const data::decode::Decoder* dec,
-		uint8_t bin_class_id, uint64_t start_sample, uint64_t end_sample,
+		uint32_t bin_class_id, uint64_t start_sample, uint64_t end_sample,
 		vector<uint8_t> *dest) const;
 	const DecodeBinaryClass* get_binary_data_class(uint32_t segment_id,
-		const data::decode::Decoder* dec, uint8_t bin_class_id) const;
+		const data::decode::Decoder* dec, uint32_t bin_class_id) const;
 
 	virtual void save_settings(QSettings &settings) const;
 

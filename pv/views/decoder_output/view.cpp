@@ -223,8 +223,8 @@ void View::on_selected_decoder_changed(int index)
 
 	if (signal_) {
 		// Populate binary class selector
-		uint8_t bin_classes = decoder_->get_binary_class_count();
-		for (uint8_t i = 0; i < bin_classes; i++) {
+		uint32_t bin_classes = decoder_->get_binary_class_count();
+		for (uint32_t i = 0; i < bin_classes; i++) {
 			const data::decode::DecodeBinaryClassInfo* class_info = decoder_->get_binary_class(i);
 			class_selector_->addItem(class_info->name, QVariant::fromValue(i));
 		}
@@ -238,7 +238,7 @@ void View::on_selected_decoder_changed(int index)
 
 void View::on_selected_class_changed(int index)
 {
-	bin_class_id_ = class_selector_->itemData(index).value<uint8_t>();
+	bin_class_id_ = class_selector_->itemData(index).value<uint32_t>();
 
 	update_data();
 }

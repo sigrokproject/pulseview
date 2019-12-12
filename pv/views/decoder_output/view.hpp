@@ -81,7 +81,7 @@ private:
 
 	data::DecodeSignal *signal_;
 	const data::decode::Decoder *decoder_;
-	uint8_t bin_class_id_;
+	uint32_t bin_class_id_;
 };
 
 } // namespace decoder_output

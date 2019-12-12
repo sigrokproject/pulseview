@@ -535,7 +535,7 @@ void DecodeSignal::get_annotation_subset(
 }
 
 uint32_t DecodeSignal::get_binary_data_chunk_count(uint32_t segment_id,
-	const Decoder* dec, uint8_t bin_class_id) const
+	const Decoder* dec, uint32_t bin_class_id) const
 {
 	try {
 		const DecodeSegment *segment = &(segments_.at(segment_id));
@@ -551,7 +551,7 @@ uint32_t DecodeSignal::get_binary_data_chunk_count(uint32_t segment_id,
 }
 
 void DecodeSignal::get_binary_data_chunk(uint32_t segment_id,
-	const  Decoder* dec, uint8_t bin_class_id, uint32_t chunk_id,
+	const  Decoder* dec, uint32_t bin_class_id, uint32_t chunk_id,
 	const vector<uint8_t> **dest, uint64_t *size)
 {
 	try {
@@ -569,7 +569,7 @@ void DecodeSignal::get_binary_data_chunk(uint32_t segment_id,
 }
 
 void DecodeSignal::get_binary_data_chunks_merged(uint32_t segment_id,
-	const Decoder* dec, uint8_t bin_class_id, uint64_t start_sample,
+	const Decoder* dec, uint32_t bin_class_id, uint64_t start_sample,
 	uint64_t end_sample, vector<uint8_t> *dest) const
 {
 	assert(dest != nullptr);
@@ -610,7 +610,7 @@ void DecodeSignal::get_binary_data_chunks_merged(uint32_t segment_id,
 }
 
 const DecodeBinaryClass* DecodeSignal::get_binary_data_class(uint32_t segment_id,
-	const data::decode::Decoder* dec, uint8_t bin_class_id) const
+	const data::decode::Decoder* dec, uint32_t bin_class_id) const
 {
 	try {
 		const DecodeSegment *segment = &(segments_.at(segment_id));
@@ -1347,9 +1347,9 @@ void DecodeSignal::create_decode_segment()
 
 	// Prepare our binary output classes
 	for (const shared_ptr<decode::Decoder>& dec : stack_) {
-		uint8_t n = dec->get_binary_class_count();
+		uint32_t n = dec->get_binary_class_count();
 
-		for (uint8_t i = 0; i < n; i++)
+		for (uint32_t i = 0; i < n; i++)
 			segments_.back().binary_classes.push_back(
 				{dec.get(), dec->get_binary_class(i), vector<DecodeBinaryDataChunk>()});
 	}

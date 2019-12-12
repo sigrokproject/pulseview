@@ -42,7 +42,7 @@ Decoder::Decoder(const srd_decoder *const dec) :
 	decoder_inst_(nullptr)
 {
 	// Query the decoder outputs
-	uint8_t i = 0;
+	uint32_t i = 0;
 	for (GSList *l = dec->binary; l; l = l->next) {
 		char **bin_class = (char**)l->data;
 		char *name = bin_class[0];
@@ -184,12 +184,12 @@ void Decoder::invalidate_decoder_inst()
 	decoder_inst_ = nullptr;
 }
 
-uint8_t Decoder::get_binary_class_count() const
+uint32_t Decoder::get_binary_class_count() const
 {
 	return bin_classes_.size();
 }
 
-const DecodeBinaryClassInfo* Decoder::get_binary_class(uint8_t id) const
+const DecodeBinaryClassInfo* Decoder::get_binary_class(uint32_t id) const
 {
 	return &(bin_classes_.at(id));
 }

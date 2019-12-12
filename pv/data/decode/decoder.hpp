@@ -63,7 +63,7 @@ struct DecodeChannel
 
 struct DecodeBinaryClassInfo
 {
-	uint8_t bin_class_id;
+	uint32_t bin_class_id;
 	char* name;
 	char* description;
 };
@@ -97,8 +97,8 @@ public:
 	srd_decoder_inst* create_decoder_inst(srd_session *session);
 	void invalidate_decoder_inst();
 
-	uint8_t get_binary_class_count() const;
-	const DecodeBinaryClassInfo* get_binary_class(uint8_t id) const;
+	uint32_t get_binary_class_count() const;
+	const DecodeBinaryClassInfo* get_binary_class(uint32_t id) const;
 
 private:
 	const srd_decoder *const decoder_;
