@@ -74,6 +74,8 @@ private Q_SLOTS:
 	void on_decoder_stacked(void* decoder);
 	void on_decoder_removed(void* decoder);
 
+	virtual void perform_delayed_view_update();
+
 private:
 	QComboBox *decoder_selector_, *format_selector_, *class_selector_;
 	QStackedWidget *stacked_widget_;

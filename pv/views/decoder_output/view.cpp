@@ -276,7 +276,8 @@ void View::on_signal_name_changed(const QString &name)
 void View::on_new_binary_data(unsigned int segment_id, void* decoder, unsigned int bin_class_id)
 {
 	if ((segment_id == current_segment_) && (decoder == decoder_) && (bin_class_id == bin_class_id_))
-		update_data();
+		if (!delayed_view_updater_.isActive())
+			delayed_view_updater_.start();
 }
 
 void View::on_decoder_stacked(void* decoder)
@@ -313,6 +314,11 @@ void View::on_decoder_removed(void* decoder)
 
 	if (index != -1)
 		decoder_selector_->removeItem(index);
+}
+
+void View::perform_delayed_view_update()
+{
+	update_data();
 }
 
 

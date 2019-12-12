@@ -133,7 +133,7 @@ void QHexView::initialize_byte_iterator(size_t offset)
 			break;
 		}
 
-	current_chunk_ = &(data_->chunks[current_chunk_id_]);
+	current_chunk_ = data_->chunks[current_chunk_id_];
 }
 
 uint8_t QHexView::get_next_byte(bool* is_next_chunk)
@@ -141,15 +141,15 @@ uint8_t QHexView::get_next_byte(bool* is_next_chunk)
 	if (is_next_chunk != nullptr)
 		*is_next_chunk = (current_chunk_offset_ == 0);
 
-	uint8_t v = current_chunk_->data[current_chunk_offset_];
+	uint8_t v = current_chunk_.data[current_chunk_offset_];
 
 	current_offset_++;
 	current_chunk_offset_++;
 
-	if (current_chunk_offset_ == current_chunk_->data.size()) {
+	if (current_chunk_offset_ == current_chunk_.data.size()) {
 		current_chunk_id_++;
 		current_chunk_offset_ = 0;
-		current_chunk_ = &(data_->chunks[current_chunk_id_]);
+		current_chunk_ = data_->chunks[current_chunk_id_];
 	}
 
 	return v;

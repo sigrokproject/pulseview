@@ -85,7 +85,7 @@ private:
 	size_t selectBegin_, selectEnd_, selectInit_, cursorPos_;
 
 	size_t current_chunk_id_, current_chunk_offset_, current_offset_;
-	const DecodeBinaryDataChunk* current_chunk_;
+	DecodeBinaryDataChunk current_chunk_; // Cache locally so that we're not messed up when the vector is re-allocating its data
 
 	vector<QColor> chunk_colors_;
 };
