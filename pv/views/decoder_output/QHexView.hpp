@@ -86,6 +86,8 @@ private:
 
 	size_t current_chunk_id_, current_chunk_offset_;
 	const DecodeBinaryDataChunk* current_chunk_;
+
+	vector<QColor> chunk_colors_;
 };
 
 #endif /* PULSEVIEW_PV_VIEWS_DECODEROUTPUT_QHEXVIEW_H */

@@ -64,6 +64,18 @@ QHexView::QHexView(QWidget *parent):
 	posAscii_ = posHex_ + HEXCHARS_IN_LINE * charWidth_ + GAP_HEX_ASCII;
 
 	setFocusPolicy(Qt::StrongFocus);
+
+	if (palette().color(QPalette::ButtonText).toHsv().value() > 127) {
+		// Color is bright
+		chunk_colors_.emplace_back(100, 149, 237); // QColorConstants::Svg::cornflowerblue
+		chunk_colors_.emplace_back(60, 179, 113);  // QColorConstants::Svg::mediumseagreen
+		chunk_colors_.emplace_back(210, 180, 140); // QColorConstants::Svg::tan
+	} else {
+		// Color is dark
+		chunk_colors_.emplace_back(0, 0, 139);   // QColorConstants::Svg::darkblue
+		chunk_colors_.emplace_back(34, 139, 34); // QColorConstants::Svg::forestgreen
+		chunk_colors_.emplace_back(160, 82, 45); // QColorConstants::Svg::sienna
+	}
 }
 
 void QHexView::setMode(Mode m)
@@ -214,29 +226,42 @@ void QHexView::paintEvent(QPaintEvent *event)
 	}
 
 	// Paint hex values
-	QBrush regular = painter.brush();
-	QBrush selected = QBrush(palette().color(QPalette::Highlight));
+	QBrush regular = palette().buttonText();
+	QBrush selected = palette().highlight();
+
+	bool multiple_chunks = (data_->chunks.size() > 1);
+	unsigned int chunk_color = 0;
 
 	initialize_byte_iterator(firstLineIdx * BYTES_PER_LINE);
 	yStart = charHeight_;
 	for (size_t lineIdx = firstLineIdx, y = yStart; lineIdx < lastLineIdx; lineIdx++) {
 
-		painter.setBackgroundMode(Qt::OpaqueMode);
-
 		int x = posHex_;
 		for (size_t i = 0; i < BYTES_PER_LINE && ((lineIdx - firstLineIdx) * BYTES_PER_LINE + i) < data_size_; i++) {
 			size_t pos = (lineIdx * BYTES_PER_LINE + i) * 2;
 
+			// Fetch byte
+			bool is_next_chunk;
+			uint8_t byte_value = get_next_byte(&is_next_chunk);
+
+			if (is_next_chunk) {
+				chunk_color++;
+				if (chunk_color == chunk_colors_.size())
+					chunk_color = 0;
+			}
+
 			if ((pos >= selectBegin_) && (pos < selectEnd_)) {
+				painter.setBackgroundMode(Qt::OpaqueMode);
 				painter.setBackground(selected);
 				painter.setPen(palette().color(QPalette::HighlightedText));
 			} else {
 				painter.setBackground(regular);
-				painter.setPen(palette().color(QPalette::Text));
+				painter.setBackgroundMode(Qt::TransparentMode);
+				if (!multiple_chunks)
+					painter.setPen(palette().color(QPalette::Text));
+				else
+					painter.setPen(chunk_colors_[chunk_color]);
 			}
-
-			// Fetch byte
-			uint8_t byte_value = get_next_byte();
 
 			// First nibble
 			QString val = QString::number((byte_value & 0xF0) >> 4, 16).toUpper();
@@ -267,9 +292,11 @@ void QHexView::paintEvent(QPaintEvent *event)
 
 			size_t pos = (lineIdx * BYTES_PER_LINE + i) * 2;
 			if ((pos >= selectBegin_) && (pos < selectEnd_)) {
+				painter.setBackgroundMode(Qt::OpaqueMode);
 				painter.setBackground(selected);
 				painter.setPen(palette().color(QPalette::HighlightedText));
 			} else {
+				painter.setBackgroundMode(Qt::TransparentMode);
 				painter.setBackground(regular);
 				painter.setPen(palette().color(QPalette::Text));
 			}
