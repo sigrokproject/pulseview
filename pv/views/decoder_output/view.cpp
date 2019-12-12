@@ -87,6 +87,8 @@ View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 
 	connect(decoder_selector_, SIGNAL(currentIndexChanged(int)),
 		this, SLOT(on_selected_decoder_changed(int)));
+	connect(class_selector_, SIGNAL(currentIndexChanged(int)),
+		this, SLOT(on_selected_class_changed(int)));
 
 	hex_view_->setData(merged_data_);
 
@@ -118,6 +120,7 @@ void View::clear_decode_signals()
 	ViewBase::clear_decode_signals();
 
 	decoder_selector_->clear();
+	class_selector_->clear();
 	format_selector_->setCurrentIndex(0);
 	signal_ = nullptr;
 }
@@ -136,14 +139,17 @@ void View::add_decode_signal(shared_ptr<data::DecodeSignal> signal)
 	// Add all decoders provided by this signal
 	auto stack = signal->decoder_stack();
 	if (stack.size() > 1) {
-		for (const shared_ptr<Decoder>& dec : stack) {
-			QString title = QString("%1 (%2)").arg(signal->name(), dec->name());
-			decoder_selector_->addItem(title, QVariant::fromValue((void*)dec.get()));
-		}
+		for (const shared_ptr<Decoder>& dec : stack)
+			// Only add the decoder if it has binary output
+			if (dec->get_binary_class_count() > 0) {
+				QString title = QString("%1 (%2)").arg(signal->name(), dec->name());
+				decoder_selector_->addItem(title, QVariant::fromValue((void*)dec.get()));
+			}
 	} else
 		if (!stack.empty()) {
 			shared_ptr<Decoder>& dec = stack.at(0);
-			decoder_selector_->addItem(signal->name(), QVariant::fromValue((void*)dec.get()));
+			if (dec->get_binary_class_count() > 0)
+				decoder_selector_->addItem(signal->name(), QVariant::fromValue((void*)dec.get()));
 		}
 }
 
@@ -197,30 +203,45 @@ void View::update_data()
 
 	merged_data_->resize(data.size());
 	memcpy(merged_data_->data(), data.data(), data.size());
+
+	hex_view_->setData(merged_data_);
 }
 
 void View::on_selected_decoder_changed(int index)
 {
 	if (signal_)
-		disconnect(signal_, SIGNAL(new_binary_data(unsigned int, unsigned int)));
+		disconnect(signal_, SIGNAL(new_binary_data(unsigned int, void*, unsigned int)));
 
 	decoder_ = (Decoder*)decoder_selector_->itemData(index).value<void*>();
 
 	// Find the signal that contains the selected decoder
 	signal_ = nullptr;
 
-	for (const shared_ptr<data::SignalBase>& sb : signalbases_) {
-		shared_ptr<DecodeSignal> ds = dynamic_pointer_cast<DecodeSignal>(sb);
+	for (const shared_ptr<DecodeSignal>& ds : decode_signals_)
+		for (const shared_ptr<Decoder>& dec : ds->decoder_stack())
+			if (decoder_ == dec.get())
+				signal_ = ds.get();
 
-		if (ds)
-			for (const shared_ptr<Decoder>& dec : ds->decoder_stack())
-				if (decoder_ == dec.get())
-					signal_ = ds.get();
+	class_selector_->clear();
+
+	if (signal_) {
+		// Populate binary class selector
+		uint8_t bin_classes = decoder_->get_binary_class_count();
+		for (uint8_t i = 0; i < bin_classes; i++) {
+			const data::decode::DecodeBinaryClassInfo* class_info = decoder_->get_binary_class(i);
+			class_selector_->addItem(class_info->name, QVariant::fromValue(i));
+		}
+
+		connect(signal_, SIGNAL(new_binary_data(unsigned int, void*, unsigned int)),
+			this, SLOT(on_new_binary_data(unsigned int, void*, unsigned int)));
 	}
 
-	if (signal_)
-		connect(signal_, SIGNAL(new_binary_data(unsigned int, unsigned int)),
-			this, SLOT(on_new_binary_data(unsigned int, unsigned int)));
+	update_data();
+}
+
+void View::on_selected_class_changed(int index)
+{
+	bin_class_id_ = class_selector_->itemData(index).value<uint8_t>();
 
 	update_data();
 }
@@ -255,9 +276,9 @@ void View::on_signal_name_changed(const QString &name)
 		}
 }
 
-void View::on_new_binary_data(unsigned int segment_id, unsigned int bin_class_id)
+void View::on_new_binary_data(unsigned int segment_id, void* decoder, unsigned int bin_class_id)
 {
-	if ((segment_id == current_segment_) && (bin_class_id == bin_class_id_))
+	if ((segment_id == current_segment_) && (decoder == decoder_) && (bin_class_id == bin_class_id_))
 		update_data();
 }
 
@@ -266,6 +287,10 @@ void View::on_decoder_stacked(void* decoder)
 	// TODO This doesn't change existing entries for the same signal - but it should as the naming scheme may change
 
 	Decoder* d = static_cast<Decoder*>(decoder);
+
+	// Only add the decoder if it has binary output
+	if (d->get_binary_class_count() == 0)
+		return;
 
 	// Find the signal that contains the selected decoder
 	DecodeSignal* signal = nullptr;

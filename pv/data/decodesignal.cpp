@@ -1429,13 +1429,15 @@ void DecodeSignal::binary_callback(srd_proto_data *pdata, void *decode_signal)
 	chunk->data.resize(pdb->size);
 	memcpy(chunk->data.data(), pdb->data, pdb->size);
 
-	// Note: using pdb->bin_class is only unique for each decoder in the stack,
-	// so if two stacked decoders both emit binary data with the same bin_class,
-	// we may be triggering unnecessary updates. Should be ok for now as that
-	// case isn't possible yet. When it is, we might add the decoder's name
-	// as an additional parameter to the signal, although string comparisons
-	// are not really fast.
-	ds->new_binary_data(ds->current_segment_id_, pdb->bin_class);
+	// Find decoder class instance
+	Decoder* dec = nullptr;
+	for (const shared_ptr<decode::Decoder>& d : ds->decoder_stack())
+		if (d->decoder() == decc) {
+			dec = d.get();
+			break;
+		}
+
+	ds->new_binary_data(ds->current_segment_id_, (void*)dec, pdb->bin_class);
 }
 
 void DecodeSignal::on_capture_state_changed(int state)

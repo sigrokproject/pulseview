@@ -67,8 +67,9 @@ private:
 
 private Q_SLOTS:
 	void on_selected_decoder_changed(int index);
+	void on_selected_class_changed(int index);
 	void on_signal_name_changed(const QString &name);
-	void on_new_binary_data(unsigned int segment_id, unsigned int bin_class_id);
+	void on_new_binary_data(unsigned int segment_id, void* decoder, unsigned int bin_class_id);
 
 	void on_decoder_stacked(void* decoder);
 	void on_decoder_removed(void* decoder);

@@ -206,7 +206,7 @@ Q_SIGNALS:
 	void decoder_stacked(void* decoder); ///< decoder is of type decode::Decoder*
 	void decoder_removed(void* decoder); ///< decoder is of type decode::Decoder*
 	void new_annotations(); // TODO Supply segment for which they belong to
-	void new_binary_data(unsigned int segment_id, unsigned int bin_class_id);
+	void new_binary_data(unsigned int segment_id, void* decoder, unsigned int bin_class_id);
 	void decode_reset();
 	void decode_finished();
 	void channels_updated();

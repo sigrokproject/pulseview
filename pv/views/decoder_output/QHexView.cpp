@@ -69,6 +69,8 @@ void QHexView::setData(QByteArray *data)
 	data_ = data;
 	cursorPos_ = 0;
 	resetSelection(0);
+
+	viewport()->update();
 }
 
 void QHexView::showFromOffset(size_t offset)
