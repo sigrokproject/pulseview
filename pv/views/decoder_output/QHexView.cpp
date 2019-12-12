@@ -47,7 +47,11 @@ const unsigned int GAP_ASCII_SLIDER = 5;
 
 QHexView::QHexView(QWidget *parent):
 	QAbstractScrollArea(parent),
-	data_(nullptr)
+	mode_(ChunkedDataMode),
+	data_(nullptr),
+	selectBegin_(0),
+	selectEnd_(0),
+	cursorPos_(0)
 {
 	setFont(QFont("Courier", 10));
 
@@ -62,20 +66,37 @@ QHexView::QHexView(QWidget *parent):
 	setFocusPolicy(Qt::StrongFocus);
 }
 
-void QHexView::setData(QByteArray *data)
+void QHexView::setMode(Mode m)
+{
+	mode_ = m;
+
+	// This is not expected to be set when data is showing,
+	// so we don't update the viewport here
+}
+
+void QHexView::setData(const DecodeBinaryClass* data)
+{
+	data_ = data;
+
+	data_size_ = 0;
+	for (const DecodeBinaryDataChunk& chunk : data_->chunks)
+		data_size_ += chunk.data.size();
+
+	viewport()->update();
+}
+
+void QHexView::clear()
 {
 	verticalScrollBar()->setValue(0);
-
-	data_ = data;
-	cursorPos_ = 0;
-	resetSelection(0);
+	data_ = nullptr;
+	data_size_ = 0;
 
 	viewport()->update();
 }
 
 void QHexView::showFromOffset(size_t offset)
 {
-	if (data_ && (offset < (size_t)data_->count())) {
+	if (data_ && (offset < data_size_)) {
 		setCursorPos(offset * 2);
 
 		int cursorY = cursorPos_ / (2 * BYTES_PER_LINE);
@@ -85,12 +106,38 @@ void QHexView::showFromOffset(size_t offset)
 	viewport()->update();
 }
 
-void QHexView::clear()
+void QHexView::initialize_byte_iterator(size_t offset)
 {
-	verticalScrollBar()->setValue(0);
-	data_ = nullptr;
+	current_chunk_id_ = 0;
+	current_chunk_offset_ = 0;
 
-	viewport()->update();
+	for (const DecodeBinaryDataChunk& chunk : data_->chunks)
+		if (offset >= chunk.data.size()) {
+			current_chunk_id_++;
+			offset -= chunk.data.size();
+		} else {
+			current_chunk_offset_ = offset;
+			break;
+		}
+
+	current_chunk_ = &(data_->chunks[current_chunk_id_]);
+}
+
+uint8_t QHexView::get_next_byte(bool* is_next_chunk)
+{
+	if (is_next_chunk != nullptr)
+		*is_next_chunk = (current_chunk_offset_ == 0);
+
+	uint8_t v = current_chunk_->data[current_chunk_offset_];
+
+	current_chunk_offset_++;
+	if (current_chunk_offset_ == current_chunk_->data.size()) {
+		current_chunk_id_++;
+		current_chunk_offset_ = 0;
+		current_chunk_ = &(data_->chunks[current_chunk_id_]);
+	}
+
+	return v;
 }
 
 QSize QHexView::getFullSize() const
@@ -101,9 +148,9 @@ QSize QHexView::getFullSize() const
 	if (!data_)
 		return QSize(width, 0);
 
-	size_t height = data_->count() / BYTES_PER_LINE;
+	size_t height = data_size_ / BYTES_PER_LINE;
 
-	if (data_->count() % BYTES_PER_LINE)
+	if (data_size_ % BYTES_PER_LINE)
 		height++;
 
 	height *= charHeight_;
@@ -127,7 +174,7 @@ void QHexView::paintEvent(QPaintEvent *event)
 	// Fill widget background
 	painter.fillRect(event->rect(), palette().color(QPalette::Base));
 
-	if (!data_ || (data_->size() == 0)) {
+	if (!data_ || (data_size_ == 0)) {
 		painter.setPen(palette().color(QPalette::Text));
 		QString s = tr("No data available");
 		int x = (areaSize.width() - fontMetrics().boundingRect(s).width()) / 2;
@@ -140,9 +187,9 @@ void QHexView::paintEvent(QPaintEvent *event)
 	size_t firstLineIdx = verticalScrollBar()->value();
 
 	size_t lastLineIdx = firstLineIdx + areaSize.height() / charHeight_;
-	if (lastLineIdx > (data_->count() / BYTES_PER_LINE)) {
-		lastLineIdx = data_->count() / BYTES_PER_LINE;
-		if (data_->count() % BYTES_PER_LINE)
+	if (lastLineIdx > (data_size_ / BYTES_PER_LINE)) {
+		lastLineIdx = data_size_ / BYTES_PER_LINE;
+		if (data_size_ % BYTES_PER_LINE)
 			lastLineIdx++;
 	}
 
@@ -169,16 +216,15 @@ void QHexView::paintEvent(QPaintEvent *event)
 	// Paint hex values
 	QBrush regular = painter.brush();
 	QBrush selected = QBrush(palette().color(QPalette::Highlight));
-	QByteArray data = data_->mid(firstLineIdx * BYTES_PER_LINE,
-		(lastLineIdx - firstLineIdx) * BYTES_PER_LINE);
 
+	initialize_byte_iterator(firstLineIdx * BYTES_PER_LINE);
 	yStart = charHeight_;
 	for (size_t lineIdx = firstLineIdx, y = yStart; lineIdx < lastLineIdx; lineIdx++) {
 
 		painter.setBackgroundMode(Qt::OpaqueMode);
 
 		int x = posHex_;
-		for (size_t i = 0; i < BYTES_PER_LINE && ((lineIdx - firstLineIdx) * BYTES_PER_LINE + i) < (size_t)data.size(); i++) {
+		for (size_t i = 0; i < BYTES_PER_LINE && ((lineIdx - firstLineIdx) * BYTES_PER_LINE + i) < data_size_; i++) {
 			size_t pos = (lineIdx * BYTES_PER_LINE + i) * 2;
 
 			if ((pos >= selectBegin_) && (pos < selectEnd_)) {
@@ -189,12 +235,15 @@ void QHexView::paintEvent(QPaintEvent *event)
 				painter.setPen(palette().color(QPalette::Text));
 			}
 
+			// Fetch byte
+			uint8_t byte_value = get_next_byte();
+
 			// First nibble
-			QString val = QString::number((data.at((lineIdx - firstLineIdx) * BYTES_PER_LINE + i) & 0xF0) >> 4, 16).toUpper();
+			QString val = QString::number((byte_value & 0xF0) >> 4, 16).toUpper();
 			painter.drawText(x, y, val);
 
 			// Second nibble
-			val = QString::number((data.at((lineIdx - firstLineIdx) * BYTES_PER_LINE + i) & 0xF), 16).toUpper();
+			val = QString::number((byte_value & 0xF), 16).toUpper();
 			painter.drawText(x + charWidth_, y, val);
 
 			x += 3 * charWidth_;
@@ -204,12 +253,14 @@ void QHexView::paintEvent(QPaintEvent *event)
 	}
 
 	// Paint ASCII characters
+	initialize_byte_iterator(firstLineIdx * BYTES_PER_LINE);
 	yStart = charHeight_;
 	for (size_t lineIdx = firstLineIdx, y = yStart; lineIdx < lastLineIdx; lineIdx++) {
 
 		int x = posAscii_;
-		for (size_t i = 0; ((lineIdx - firstLineIdx) * BYTES_PER_LINE + i) < (size_t)data.size() && (i < BYTES_PER_LINE); i++) {
-			char ch = data[(unsigned int)((lineIdx - firstLineIdx) * BYTES_PER_LINE + i)];
+		for (size_t i = 0; ((lineIdx - firstLineIdx) * BYTES_PER_LINE + i) < data_size_ && (i < BYTES_PER_LINE); i++) {
+			// Fetch byte
+			uint8_t ch = get_next_byte();
 
 			if ((ch < 0x20) || (ch > 0x7E))
 				ch = '.';
@@ -289,8 +340,7 @@ void QHexView::keyPressEvent(QKeyEvent *event)
 		setVisible = true;
 	}
 	if (event->matches(QKeySequence::MoveToEndOfDocument)) {
-		if (data_)
-			setCursorPos(data_->count() * 2);
+		setCursorPos(data_size_ * 2);
 		resetSelection(cursorPos_);
 		setVisible = true;
 	}
@@ -303,8 +353,7 @@ void QHexView::keyPressEvent(QKeyEvent *event)
 	// Select commands
 	if (event->matches(QKeySequence::SelectAll)) {
 		resetSelection(0);
-		if (data_)
-			setSelection(2 * data_->count() + 1);
+		setSelection(2 * data_size_);
 		setVisible = true;
 	}
 	if (event->matches(QKeySequence::SelectNextChar)) {
@@ -357,52 +406,38 @@ void QHexView::keyPressEvent(QKeyEvent *event)
 		setVisible = true;
 	}
 	if (event->matches(QKeySequence::SelectEndOfDocument)) {
-		int pos = 0;
-		if (data_)
-			pos = data_->count() * 2;
+		int pos = data_size_ * 2;
 		setCursorPos(pos);
 		setSelection(pos);
 		setVisible = true;
 	}
 	if (event->matches(QKeySequence::SelectStartOfDocument)) {
-		int pos = 0;
-		setCursorPos(pos);
-		setSelection(pos);
+		setCursorPos(0);
+		setSelection(0);
 		setVisible = true;
 	}
 
 	if (event->matches(QKeySequence::Copy) && (data_)) {
 		QString text;
-		int idx = 0;
-		int copyOffset = 0;
 
-		QByteArray data = data_->mid(selectBegin_ / 2, (selectEnd_ - selectBegin_) / 2 + 1);
-		if (selectBegin_ % 2) {
-			text += QString::number((data.at((idx+1) / 2) & 0xF), 16);
-			text += " ";
-			idx++;
-			copyOffset = 1;
-		}
+		initialize_byte_iterator(selectBegin_ / 2);
 
-		int selectedSize = selectEnd_ - selectBegin_;
-		while (idx < selectedSize) {
-			QString val = QString::number((data.at((copyOffset + idx) / 2) & 0xF0) >> 4, 16);
-			if ((idx + 1) < selectedSize) {
-				val += QString::number((data.at((copyOffset + idx) / 2) & 0xF), 16);
-				val += " ";
-			}
-			text += val;
+		size_t selectedSize = (selectEnd_ - selectBegin_ + 1) / 2;
+		for (size_t i = 0; i < selectedSize; i++) {
+			uint8_t byte_value = get_next_byte();
 
-			if ((idx/2) % BYTES_PER_LINE == (BYTES_PER_LINE - 1))
+			QString s = QString::number((byte_value & 0xF0) >> 4, 16).toUpper() +
+				QString::number((byte_value & 0xF), 16).toUpper() + " ";
+			text += s;
+
+			if (i % BYTES_PER_LINE == (BYTES_PER_LINE - 1))
 				text += "\n";
-
-			idx += 2;
 		}
 
 		QClipboard *clipboard = QApplication::clipboard();
-		clipboard->setText(text);
+		clipboard->setText(text, QClipboard::Clipboard);
 		if (clipboard->supportsSelection())
-			clipboard->setText(text);
+			clipboard->setText(text, QClipboard::Selection);
 	}
 
 	if (setVisible)
@@ -436,25 +471,27 @@ void QHexView::mousePressEvent(QMouseEvent *event)
 
 size_t QHexView::cursorPosFromMousePos(const QPoint &position)
 {
-	int pos = -1;
+	size_t pos = -1;
 
 	if (((size_t)position.x() >= posHex_) &&
 		((size_t)position.x() < (posHex_ + HEXCHARS_IN_LINE * charWidth_))) {
 
 		// Note: We add 1.5 character widths so that selection across
 		// byte gaps is smoother
-		int x = (position.x() + (1.5 * charWidth_ / 2) - posHex_) / charWidth_;
+		size_t x = (position.x() + (1.5 * charWidth_ / 2) - posHex_) / charWidth_;
 
 		// Note: We allow only full bytes to be selected, not nibbles,
 		// so we round to the nearest byte gap
 		x = (2 * x + 1) / 3;
 
-		int firstLineIdx = verticalScrollBar()->value();
-		int y = (position.y() / charHeight_) * 2 * BYTES_PER_LINE;
+		size_t firstLineIdx = verticalScrollBar()->value();
+		size_t y = (position.y() / charHeight_) * 2 * BYTES_PER_LINE;
 		pos = x + y + firstLineIdx * BYTES_PER_LINE * 2;
 	}
 
-	return pos;
+	size_t max_pos = data_size_ * 2;
+
+	return std::min(pos, max_pos);
 }
 
 void QHexView::resetSelection()
@@ -492,12 +529,10 @@ void QHexView::setCursorPos(int position)
 	if (position < 0)
 		position = 0;
 
-	int maxPos = 0;
-	if (data_)
-		maxPos = data_->count() * 2;
+	int max_pos = data_size_ * 2;
 
-	if (position > maxPos)
-		position = maxPos;
+	if (position > max_pos)
+		position = max_pos;
 
 	cursorPos_ = position;
 }
@@ -506,13 +541,14 @@ void QHexView::ensureVisible()
 {
 	QSize areaSize = viewport()->size();
 
-	int firstLineIdx = verticalScrollBar() -> value();
+	int firstLineIdx = verticalScrollBar()->value();
 	int lastLineIdx = firstLineIdx + areaSize.height() / charHeight_;
 
 	int cursorY = cursorPos_ / (2 * BYTES_PER_LINE);
 
 	if (cursorY < firstLineIdx)
-		verticalScrollBar() -> setValue(cursorY);
-	else if(cursorY >= lastLineIdx)
-		verticalScrollBar() -> setValue(cursorY - areaSize.height() / charHeight_ + 1);
+		verticalScrollBar()->setValue(cursorY);
+	else
+		if(cursorY >= lastLineIdx)
+			verticalScrollBar()->setValue(cursorY - areaSize.height() / charHeight_ + 1);
 }

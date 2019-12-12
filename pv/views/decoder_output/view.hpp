@@ -82,8 +82,6 @@ private:
 	data::DecodeSignal *signal_;
 	const data::decode::Decoder *decoder_;
 	uint8_t bin_class_id_;
-
-	QByteArray *merged_data_;
 };
 
 } // namespace decoder_output

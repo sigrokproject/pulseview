@@ -31,23 +31,36 @@
 #define PULSEVIEW_PV_VIEWS_DECODEROUTPUT_QHEXVIEW_H
 
 #include <QAbstractScrollArea>
-#include <QByteArray>
-#include <QFile>
+
+#include <pv/data/decodesignal.hpp>
 
 using std::size_t;
+using pv::data::DecodeBinaryClass;
+using pv::data::DecodeBinaryDataChunk;
 
 class QHexView: public QAbstractScrollArea
 {
+	Q_OBJECT
+
+public:
+	enum Mode {
+		ChunkedDataMode,    ///< Displays all data chunks in succession
+		MemoryEmulationMode ///< Reconstructs memory contents from data chunks
+	};
+
 public:
 	QHexView(QWidget *parent = 0);
 
-	void setData(QByteArray *data);
+	void setMode(Mode m);
+	void setData(const DecodeBinaryClass* data);
 
-public Q_SLOTS:
 	void clear();
 	void showFromOffset(size_t offset);
 
 protected:
+	void initialize_byte_iterator(size_t offset);
+	uint8_t get_next_byte(bool* is_next_chunk = nullptr);
+
 	void paintEvent(QPaintEvent *event);
 	void keyPressEvent(QKeyEvent *event);
 	void mouseMoveEvent(QMouseEvent *event);
@@ -63,11 +76,16 @@ private:
 	size_t cursorPosFromMousePos(const QPoint &position);
 
 private:
-	QByteArray *data_;
+	Mode mode_;
+	const DecodeBinaryClass* data_;
+	size_t data_size_;
 
 	size_t posAddr_, posHex_, posAscii_;
 	size_t charWidth_, charHeight_;
 	size_t selectBegin_, selectEnd_, selectInit_, cursorPos_;
+
+	size_t current_chunk_id_, current_chunk_offset_;
+	const DecodeBinaryDataChunk* current_chunk_;
 };
 
 #endif /* PULSEVIEW_PV_VIEWS_DECODEROUTPUT_QHEXVIEW_H */

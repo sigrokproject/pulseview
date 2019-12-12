@@ -58,8 +58,7 @@ View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 	class_selector_(new QComboBox()),
 	stacked_widget_(new QStackedWidget()),
 	hex_view_(new QHexView()),
-	signal_(nullptr),
-	merged_data_(new QByteArray())
+	signal_(nullptr)
 {
 	QVBoxLayout *root_layout = new QVBoxLayout(this);
 	root_layout->setContentsMargins(0, 0, 0, 0);
@@ -93,8 +92,6 @@ View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 	// Configure widgets
 	decoder_selector_->setSizeAdjustPolicy(QComboBox::AdjustToContents);
 	class_selector_->setSizeAdjustPolicy(QComboBox::AdjustToContents);
-
-	hex_view_->setData(merged_data_);
 
 	reset_view_state();
 }
@@ -192,23 +189,19 @@ void View::restore_settings(QSettings &settings)
 void View::update_data()
 {
 	if (!signal_) {
-		merged_data_->clear();
+		hex_view_->clear();
 		return;
 	}
 
 	if (signal_->get_binary_data_chunk_count(current_segment_, decoder_, bin_class_id_) == 0) {
-		merged_data_->clear();
+		hex_view_->clear();
 		return;
 	}
 
-	vector<uint8_t> data;
-	signal_->get_binary_data_chunks_merged(current_segment_, decoder_, bin_class_id_,
-		0, numeric_limits<uint64_t>::max(), &data);
+	const DecodeBinaryClass* bin_class =
+		signal_->get_binary_data_class(current_segment_, decoder_, bin_class_id_);
 
-	merged_data_->resize(data.size());
-	memcpy(merged_data_->data(), data.data(), data.size());
-
-	hex_view_->setData(merged_data_);
+	hex_view_->setData(bin_class);
 }
 
 void View::on_selected_decoder_changed(int index)

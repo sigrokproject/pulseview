@@ -609,6 +609,21 @@ void DecodeSignal::get_binary_data_chunks_merged(uint32_t segment_id,
 	}
 }
 
+const DecodeBinaryClass* DecodeSignal::get_binary_data_class(uint32_t segment_id,
+	const data::decode::Decoder* dec, uint8_t bin_class_id) const
+{
+	try {
+		const DecodeSegment *segment = &(segments_.at(segment_id));
+
+		for (const DecodeBinaryClass& bc : segment->binary_classes)
+			if ((bc.decoder == dec) && (bc.info->bin_class_id == bin_class_id))
+				return &bc;
+	} catch (out_of_range&) {
+		// Do nothing
+	}
+
+	return nullptr;
+}
 
 void DecodeSignal::save_settings(QSettings &settings) const
 {

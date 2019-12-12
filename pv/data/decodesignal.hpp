@@ -166,6 +166,8 @@ public:
 	void get_binary_data_chunks_merged(uint32_t segment_id, const data::decode::Decoder* dec,
 		uint8_t bin_class_id, uint64_t start_sample, uint64_t end_sample,
 		vector<uint8_t> *dest) const;
+	const DecodeBinaryClass* get_binary_data_class(uint32_t segment_id,
+		const data::decode::Decoder* dec, uint8_t bin_class_id) const;
 
 	virtual void save_settings(QSettings &settings) const;
 
