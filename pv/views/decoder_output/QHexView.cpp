@@ -493,11 +493,8 @@ void QHexView::setCursorPos(int position)
 		position = 0;
 
 	int maxPos = 0;
-	if (data_) {
+	if (data_)
 		maxPos = data_->count() * 2;
-		if (data_->count() % BYTES_PER_LINE)
-			maxPos++;
-	}
 
 	if (position > maxPos)
 		position = maxPos;
