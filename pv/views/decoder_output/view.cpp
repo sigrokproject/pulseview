@@ -90,6 +90,10 @@ View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 	connect(class_selector_, SIGNAL(currentIndexChanged(int)),
 		this, SLOT(on_selected_class_changed(int)));
 
+	// Configure widgets
+	decoder_selector_->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+	class_selector_->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+
 	hex_view_->setData(merged_data_);
 
 	reset_view_state();
