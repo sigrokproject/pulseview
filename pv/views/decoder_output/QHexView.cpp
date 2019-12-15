@@ -173,10 +173,12 @@ uint8_t QHexView::get_next_byte(bool* is_next_chunk)
 
 QSize QHexView::getFullSize() const
 {
-	size_t width = posAscii_ + (BYTES_PER_LINE * charWidth_) +
-		GAP_ASCII_SLIDER + verticalScrollBar()->width();
+	size_t width = posAscii_ + (BYTES_PER_LINE * charWidth_);
 
-	if (!data_)
+	if (verticalScrollBar()->isEnabled())
+		width += GAP_ASCII_SLIDER + verticalScrollBar()->width();
+
+	if (!data_ || (data_size_ == 0))
 		return QSize(width, 0);
 
 	size_t height = data_size_ / BYTES_PER_LINE;
@@ -199,8 +201,13 @@ void QHexView::paintEvent(QPaintEvent *event)
 	setMaximumWidth(widgetSize.width());
 	QSize areaSize = viewport()->size();
 
-	verticalScrollBar()->setPageStep(areaSize.height() / charHeight_);
-	verticalScrollBar()->setRange(0, (widgetSize.height() - areaSize.height()) / charHeight_ + 1);
+	// Only show scrollbar if the content goes beyond the visible area
+	if (widgetSize.height() > areaSize.height()) {
+		verticalScrollBar()->setEnabled(true);
+		verticalScrollBar()->setPageStep(areaSize.height() / charHeight_);
+		verticalScrollBar()->setRange(0, ((widgetSize.height() - areaSize.height())) / charHeight_ + 1);
+	} else
+		verticalScrollBar()->setEnabled(false);
 
 	// Fill widget background
 	painter.fillRect(event->rect(), palette().color(QPalette::Base));
