@@ -198,9 +198,11 @@ void DecodeTrace::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 	for (const Row& row : rows) {
 		// Cache the row title widths
 		int row_title_width;
-		try {
-			row_title_width = row_title_widths_.at(row);
-		} catch (out_of_range&) {
+		auto cached_width = row_title_widths_.find(row);
+
+		if (cached_width != row_title_widths_.end())
+			row_title_width = cached_width->second;
+		else {
 			const int w = p.boundingRect(QRectF(), 0, row.title()).width() +
 				RowTitleMargin;
 			row_title_widths_[row] = w;

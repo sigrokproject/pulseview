@@ -29,6 +29,7 @@
 
 #include <QApplication>
 #include <QClipboard>
+#include <QDebug>
 #include <QFont>
 #include <QKeyEvent>
 #include <QScrollBar>
@@ -90,9 +91,11 @@ void QHexView::setData(const DecodeBinaryClass* data)
 {
 	data_ = data;
 
-	data_size_ = 0;
-	for (const DecodeBinaryDataChunk& chunk : data_->chunks)
-		data_size_ += chunk.data.size();
+	size_t size = 0;
+	size_t chunks = data_->chunks.size();
+	for (size_t i = 0; i < chunks; i++)
+		size += data_->chunks[i].data.size();
+	data_size_ = size;
 
 	viewport()->update();
 }
@@ -124,16 +127,21 @@ void QHexView::initialize_byte_iterator(size_t offset)
 	current_chunk_offset_ = 0;
 	current_offset_ = offset;
 
-	for (const DecodeBinaryDataChunk& chunk : data_->chunks)
-		if (offset >= chunk.data.size()) {
+	size_t chunks = data_->chunks.size();
+	for (size_t i = 0; i < chunks; i++) {
+		size_t size = data_->chunks[i].data.size();
+
+		if (offset >= size) {
 			current_chunk_id_++;
-			offset -= chunk.data.size();
+			offset -= size;
 		} else {
 			current_chunk_offset_ = offset;
 			break;
 		}
+	}
 
-	current_chunk_ = data_->chunks[current_chunk_id_];
+	if (current_chunk_id_ < data_->chunks.size())
+		current_chunk_ = data_->chunks[current_chunk_id_];
 }
 
 uint8_t QHexView::get_next_byte(bool* is_next_chunk)
@@ -141,12 +149,20 @@ uint8_t QHexView::get_next_byte(bool* is_next_chunk)
 	if (is_next_chunk != nullptr)
 		*is_next_chunk = (current_chunk_offset_ == 0);
 
-	uint8_t v = current_chunk_.data[current_chunk_offset_];
+	uint8_t v = 0;
+	if (current_chunk_offset_ < current_chunk_.data.size())
+		v = current_chunk_.data[current_chunk_offset_];
 
 	current_offset_++;
 	current_chunk_offset_++;
 
-	if (current_chunk_offset_ == current_chunk_.data.size()) {
+	if (current_offset_ > data_size_) {
+		qWarning() << "QHexView::get_next_byte() overran binary data boundary:" <<
+			current_offset_ << "of" << data_size_ << "bytes";
+		return 0xEE;
+	}
+
+	if ((current_chunk_offset_ == current_chunk_.data.size()) && (current_offset_ < data_size_)) {
 		current_chunk_id_++;
 		current_chunk_offset_ = 0;
 		current_chunk_ = data_->chunks[current_chunk_id_];

@@ -442,15 +442,13 @@ int64_t DecodeSignal::get_decoded_sample_count(uint32_t segment_id,
 
 	int64_t result = 0;
 
-	try {
-		const DecodeSegment *segment = &(segments_.at(segment_id));
-		if (include_processing)
-			result = segment->samples_decoded_incl;
-		else
-			result = segment->samples_decoded_excl;
-	} catch (out_of_range&) {
-		// Do nothing
-	}
+	if (segment_id >= segments_.size())
+		return result;
+
+	if (include_processing)
+		result = segments_[segment_id].samples_decoded_incl;
+	else
+		result = segments_[segment_id].samples_decoded_excl;
 
 	return result;
 }
@@ -493,18 +491,16 @@ void DecodeSignal::get_annotation_subset(
 {
 	lock_guard<mutex> lock(output_mutex_);
 
-	try {
-		const DecodeSegment *segment = &(segments_.at(segment_id));
-		const map<const decode::Row, decode::RowData> *rows =
-			&(segment->annotation_rows);
+	if (segment_id >= segments_.size())
+		return;
 
-		const auto iter = rows->find(row);
-		if (iter != rows->end())
-			(*iter).second.get_annotation_subset(dest,
-				start_sample, end_sample);
-	} catch (out_of_range&) {
-		// Do nothing
-	}
+	const DecodeSegment *segment = &(segments_.at(segment_id));
+	const map<const decode::Row, decode::RowData> *rows =
+		&(segment->annotation_rows);
+
+	const auto iter = rows->find(row);
+	if (iter != rows->end())
+		(*iter).second.get_annotation_subset(dest, start_sample, end_sample);
 }
 
 void DecodeSignal::get_annotation_subset(
@@ -537,6 +533,9 @@ void DecodeSignal::get_annotation_subset(
 uint32_t DecodeSignal::get_binary_data_chunk_count(uint32_t segment_id,
 	const Decoder* dec, uint32_t bin_class_id) const
 {
+	if (segments_.size() == 0)
+		return 0;
+
 	try {
 		const DecodeSegment *segment = &(segments_.at(segment_id));
 
@@ -1351,7 +1350,7 @@ void DecodeSignal::create_decode_segment()
 
 		for (uint32_t i = 0; i < n; i++)
 			segments_.back().binary_classes.push_back(
-				{dec.get(), dec->get_binary_class(i), vector<DecodeBinaryDataChunk>()});
+				{dec.get(), dec->get_binary_class(i), deque<DecodeBinaryDataChunk>()});
 	}
 }
 

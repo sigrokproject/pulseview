@@ -21,6 +21,7 @@
 #define PULSEVIEW_PV_DATA_DECODESIGNAL_HPP
 
 #include <atomic>
+#include <deque>
 #include <condition_variable>
 #include <unordered_set>
 #include <vector>
@@ -38,6 +39,7 @@
 
 using std::atomic;
 using std::condition_variable;
+using std::deque;
 using std::map;
 using std::mutex;
 using std::pair;
@@ -70,7 +72,7 @@ struct DecodeBinaryClass
 {
 	const decode::Decoder* decoder;
 	const decode::DecodeBinaryClassInfo* info;
-	vector<DecodeBinaryDataChunk> chunks;
+	deque<DecodeBinaryDataChunk> chunks;
 };
 
 struct DecodeSegment
