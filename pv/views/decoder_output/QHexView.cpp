@@ -121,6 +121,11 @@ void QHexView::showFromOffset(size_t offset)
 	viewport()->update();
 }
 
+QSizePolicy QHexView::sizePolicy() const
+{
+	return QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
+}
+
 void QHexView::initialize_byte_iterator(size_t offset)
 {
 	current_chunk_id_ = 0;

@@ -56,6 +56,7 @@ public:
 
 	void clear();
 	void showFromOffset(size_t offset);
+	virtual QSizePolicy sizePolicy() const;
 
 protected:
 	void initialize_byte_iterator(size_t offset);

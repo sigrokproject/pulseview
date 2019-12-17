@@ -77,6 +77,8 @@ private Q_SLOTS:
 	virtual void perform_delayed_view_update();
 
 private:
+	QWidget* parent_;
+
 	QComboBox *decoder_selector_, *format_selector_, *class_selector_;
 	QStackedWidget *stacked_widget_;
 	QHexView *hex_view_;

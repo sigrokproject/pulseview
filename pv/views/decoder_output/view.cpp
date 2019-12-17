@@ -53,6 +53,7 @@ View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 	ViewBase(session, is_main_view, parent),
 
 	// Note: Place defaults in View::reset_view_state(), not here
+	parent_(parent),
 	decoder_selector_(new QComboBox()),
 	format_selector_(new QComboBox()),
 	class_selector_(new QComboBox()),
@@ -92,6 +93,8 @@ View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 	// Configure widgets
 	decoder_selector_->setSizeAdjustPolicy(QComboBox::AdjustToContents);
 	class_selector_->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+
+	parent->setSizePolicy(hex_view_->sizePolicy()); // TODO Must be updated when selected widget changes
 
 	reset_view_state();
 }
