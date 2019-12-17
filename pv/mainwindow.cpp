@@ -306,6 +306,9 @@ shared_ptr<subwindows::SubWindowBase> MainWindow::add_subwindow(
 		dock->findChildren<QAbstractButton*>  // clazy:exclude=detaching-temporary
 			("qt_dockwidget_closebutton").front();
 
+	// Allow all subwindows to be closed via ESC.
+	close_btn->setShortcut(QKeySequence(Qt::Key_Escape));
+
 	connect(close_btn, SIGNAL(clicked(bool)),
 		this, SLOT(on_sub_window_close_clicked()));
 

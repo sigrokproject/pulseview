@@ -226,6 +226,7 @@ MainBar::MainBar(Session &session, QWidget *parent, pv::views::trace::View *view
 	add_decoder_button_->setIcon(QIcon(":/icons/add-decoder.svg"));
 	add_decoder_button_->setPopupMode(QToolButton::InstantPopup);
 	add_decoder_button_->setToolTip(tr("Add protocol decoder"));
+	add_decoder_button_->setShortcut(QKeySequence(Qt::Key_D));
 
 	connect(add_decoder_button_, SIGNAL(clicked()),
 		this, SLOT(on_add_decoder_clicked()));
