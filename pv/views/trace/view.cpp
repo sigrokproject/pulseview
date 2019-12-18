@@ -305,7 +305,7 @@ unordered_set< shared_ptr<Signal> > View::signals() const
 
 void View::clear_signals()
 {
-	ViewBase::clear_signalbases();
+	ViewBase::clear_signals();
 	signals_.clear();
 }
 

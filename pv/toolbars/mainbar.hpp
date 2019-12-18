@@ -116,14 +116,6 @@ private:
 	void commit_sample_rate();
 	void commit_sample_count();
 
-	QAction *const action_new_view_;
-	QAction *const action_open_;
-	QAction *const action_save_as_;
-	QAction *const action_save_selection_as_;
-	QAction *const action_restore_setup_;
-	QAction *const action_save_setup_;
-	QAction *const action_connect_;
-
 private Q_SLOTS:
 	void show_session_error(const QString text, const QString info_text);
 
@@ -162,6 +154,14 @@ Q_SIGNALS:
 	void show_decoder_selector(Session *session);
 
 private:
+	QAction *const action_new_view_;
+	QAction *const action_open_;
+	QAction *const action_save_as_;
+	QAction *const action_save_selection_as_;
+	QAction *const action_restore_setup_;
+	QAction *const action_save_setup_;
+	QAction *const action_connect_;
+
 	QToolButton *new_view_button_, *open_button_, *save_button_;
 
 	pv::widgets::DeviceToolButton device_selector_;

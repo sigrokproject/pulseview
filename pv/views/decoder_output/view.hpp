@@ -20,8 +20,10 @@
 #ifndef PULSEVIEW_PV_VIEWS_DECODEROUTPUT_VIEW_HPP
 #define PULSEVIEW_PV_VIEWS_DECODEROUTPUT_VIEW_HPP
 
+#include <QAction>
 #include <QComboBox>
 #include <QStackedWidget>
+#include <QToolButton>
 
 #include <pv/views/viewbase.hpp>
 #include <pv/data/decodesignal.hpp>
@@ -35,6 +37,16 @@ class Session;
 namespace views {
 
 namespace decoder_output {
+
+// When adding an entry here, don't forget to update SaveTypeNames as well
+enum SaveType {
+	SaveTypeBinary,
+	SaveTypeHexDump,
+	SaveTypeCount  // Indicates how many save types there are, must always be last
+};
+
+extern const char* SaveTypeNames[SaveTypeCount];
+
 
 class View : public ViewBase
 {
@@ -53,8 +65,6 @@ public:
 	 */
 	virtual void reset_view_state();
 
-	virtual void clear_signals();
-
 	virtual void clear_decode_signals();
 	virtual void add_decode_signal(shared_ptr<data::DecodeSignal> signal);
 	virtual void remove_decode_signal(shared_ptr<data::DecodeSignal> signal);
@@ -63,6 +73,7 @@ public:
 	virtual void restore_settings(QSettings &settings);
 
 private:
+	void reset_data();
 	void update_data();
 
 private Q_SLOTS:
@@ -74,6 +85,8 @@ private Q_SLOTS:
 	void on_decoder_stacked(void* decoder);
 	void on_decoder_removed(void* decoder);
 
+	void on_actionSave_triggered(QAction* action = nullptr);
+
 	virtual void perform_delayed_view_update();
 
 private:
@@ -83,9 +96,13 @@ private:
 	QStackedWidget *stacked_widget_;
 	QHexView *hex_view_;
 
+	QToolButton* save_button_;
+	QAction* save_action_;
+
 	data::DecodeSignal *signal_;
 	const data::decode::Decoder *decoder_;
 	uint32_t bin_class_id_;
+	bool binary_data_exists_;
 };
 
 } // namespace decoder_output

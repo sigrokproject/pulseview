@@ -34,9 +34,9 @@ namespace pv {
 namespace views {
 
 const char* ViewTypeNames[ViewTypeCount] = {
-		"Trace View",
+	"Trace View",
 #ifdef ENABLE_DECODE
-		"Decoder Output View"
+	"Decoder Output View"
 #endif
 };
 
@@ -80,6 +80,7 @@ const Session& ViewBase::session() const
 
 void ViewBase::clear_signals()
 {
+	clear_signalbases();
 }
 
 unordered_set< shared_ptr<data::SignalBase> > ViewBase::signalbases() const

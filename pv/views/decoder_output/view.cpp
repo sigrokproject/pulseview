@@ -49,6 +49,12 @@ namespace pv {
 namespace views {
 namespace decoder_output {
 
+const char* SaveTypeNames[SaveTypeCount] = {
+	"Binary",
+	"Hex Dump"
+};
+
+
 View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 	ViewBase(session, is_main_view, parent),
 
@@ -59,6 +65,8 @@ View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 	class_selector_(new QComboBox()),
 	stacked_widget_(new QStackedWidget()),
 	hex_view_(new QHexView()),
+	save_button_(new QToolButton()),
+	save_action_(new QAction(this)),
 	signal_(nullptr)
 {
 	QVBoxLayout *root_layout = new QVBoxLayout(this);
@@ -76,6 +84,8 @@ View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 	toolbar->addSeparator();
 	toolbar->addWidget(new QLabel(tr("Show data as")));
 	toolbar->addWidget(format_selector_);
+	toolbar->addSeparator();
+	toolbar->addWidget(save_button_);
 
 	// Add format types
 	format_selector_->addItem(tr("Hexdump"), qVariantFromValue(QString("text/hexdump")));
@@ -94,6 +104,27 @@ View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 	decoder_selector_->setSizeAdjustPolicy(QComboBox::AdjustToContents);
 	class_selector_->setSizeAdjustPolicy(QComboBox::AdjustToContents);
 
+	// Configure actions
+	save_action_->setText(tr("&Save..."));
+	save_action_->setIcon(QIcon::fromTheme("document-save-as",
+		QIcon(":/icons/document-save-as.png")));
+	save_action_->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_S));
+	connect(save_action_, SIGNAL(triggered(bool)),
+		this, SLOT(on_actionSave_triggered()));
+
+	QMenu *save_menu = new QMenu();
+	connect(save_menu, SIGNAL(triggered(QAction*)),
+		this, SLOT(on_actionSave_triggered(QAction*)));
+
+	for (int i = 0; i < SaveTypeCount; i++) {
+		QAction *const action =	save_menu->addAction(tr(SaveTypeNames[i]));
+		action->setData(qVariantFromValue(i));
+	}
+
+	save_button_->setMenu(save_menu);
+	save_button_->setDefaultAction(save_action_);
+	save_button_->setPopupMode(QToolButton::MenuButtonPopup);
+
 	parent->setSizePolicy(hex_view_->sizePolicy()); // TODO Must be updated when selected widget changes
 
 	reset_view_state();
@@ -111,22 +142,21 @@ ViewType View::get_type() const
 void View::reset_view_state()
 {
 	ViewBase::reset_view_state();
-}
 
-void View::clear_signals()
-{
-	ViewBase::clear_signalbases();
-	signal_ = nullptr;
+	decoder_selector_->clear();
+	class_selector_->clear();
+	format_selector_->setCurrentIndex(0);
+	save_button_->setEnabled(false);
+
+	hex_view_->clear();
 }
 
 void View::clear_decode_signals()
 {
 	ViewBase::clear_decode_signals();
 
-	decoder_selector_->clear();
-	class_selector_->clear();
-	format_selector_->setCurrentIndex(0);
-	signal_ = nullptr;
+	reset_data();
+	reset_view_state();
 }
 
 void View::add_decode_signal(shared_ptr<data::DecodeSignal> signal)
@@ -170,10 +200,9 @@ void View::remove_decode_signal(shared_ptr<data::DecodeSignal> signal)
 	ViewBase::remove_decode_signal(signal);
 
 	if (signal.get() == signal_) {
-		signal_ = nullptr;
-		decoder_ = nullptr;
-		bin_class_id_ = 0;
+		reset_data();
 		update_data();
+		reset_view_state();
 	}
 }
 
@@ -189,17 +218,23 @@ void View::restore_settings(QSettings &settings)
 	(void)settings;
 }
 
+void View::reset_data()
+{
+	signal_ = nullptr;
+	decoder_ = nullptr;
+	bin_class_id_ = 0;
+	binary_data_exists_ = false;
+
+	hex_view_->clear();
+}
+
 void View::update_data()
 {
-	if (!signal_) {
-		hex_view_->clear();
+	if (!signal_)
 		return;
-	}
 
-	if (signal_->get_binary_data_chunk_count(current_segment_, decoder_, bin_class_id_) == 0) {
-		hex_view_->clear();
+	if (!binary_data_exists_)
 		return;
-	}
 
 	const DecodeBinaryClass* bin_class =
 		signal_->get_binary_data_class(current_segment_, decoder_, bin_class_id_);
@@ -212,11 +247,11 @@ void View::on_selected_decoder_changed(int index)
 	if (signal_)
 		disconnect(signal_, SIGNAL(new_binary_data(unsigned int, void*, unsigned int)));
 
+	reset_data();
+
 	decoder_ = (Decoder*)decoder_selector_->itemData(index).value<void*>();
 
 	// Find the signal that contains the selected decoder
-	signal_ = nullptr;
-
 	for (const shared_ptr<DecodeSignal>& ds : decode_signals_)
 		for (const shared_ptr<Decoder>& dec : ds->decoder_stack())
 			if (decoder_ == dec.get())
@@ -242,6 +277,9 @@ void View::on_selected_decoder_changed(int index)
 void View::on_selected_class_changed(int index)
 {
 	bin_class_id_ = class_selector_->itemData(index).value<uint32_t>();
+
+	binary_data_exists_ =
+		signal_->get_binary_data_chunk_count(current_segment_, decoder_, bin_class_id_);
 
 	update_data();
 }
@@ -319,8 +357,20 @@ void View::on_decoder_removed(void* decoder)
 		decoder_selector_->removeItem(index);
 }
 
+void View::on_actionSave_triggered(QAction* action)
+{
+	(void)action;
+}
+
 void View::perform_delayed_view_update()
 {
+	if (!binary_data_exists_)
+		if (signal_->get_binary_data_chunk_count(current_segment_, decoder_, bin_class_id_)) {
+			binary_data_exists_ = true;
+
+			save_button_->setEnabled(true);
+		}
+
 	update_data();
 }
 
