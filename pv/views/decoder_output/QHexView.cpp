@@ -126,6 +126,21 @@ QSizePolicy QHexView::sizePolicy() const
 	return QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
 }
 
+pair<size_t, size_t> QHexView::get_selection() const
+{
+	size_t start = selectBegin_ / 2;
+	size_t end = selectEnd_ / 2;
+
+	if (start == end) {
+		// Nothing is currently selected
+		start = 0;
+		end = data_size_;
+	} else
+		end++;
+
+	return std::make_pair(start, end);
+}
+
 void QHexView::initialize_byte_iterator(size_t offset)
 {
 	current_chunk_id_ = 0;

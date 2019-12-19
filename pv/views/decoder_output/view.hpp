@@ -76,6 +76,9 @@ private:
 	void reset_data();
 	void update_data();
 
+	void save_data() const;
+	void save_data_as_hex_dump() const;
+
 private Q_SLOTS:
 	void on_selected_decoder_changed(int index);
 	void on_selected_class_changed(int index);

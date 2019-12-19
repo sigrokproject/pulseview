@@ -21,8 +21,10 @@
 
 #include <QByteArray>
 #include <QDebug>
+#include <QFileDialog>
 #include <QLabel>
 #include <QMenu>
+#include <QMessageBox>
 #include <QToolBar>
 #include <QVBoxLayout>
 
@@ -31,6 +33,7 @@
 #include "view.hpp"
 #include "QHexView.hpp"
 
+#include "pv/globalsettings.hpp"
 #include "pv/session.hpp"
 #include "pv/util.hpp"
 #include "pv/data/decode/decoder.hpp"
@@ -240,6 +243,52 @@ void View::update_data()
 		signal_->get_binary_data_class(current_segment_, decoder_, bin_class_id_);
 
 	hex_view_->setData(bin_class);
+
+	if (!save_button_->isEnabled())
+		save_button_->setEnabled(true);
+}
+
+void View::save_data() const
+{
+	assert(decoder_);
+	assert(signal_);
+
+	if (!signal_)
+		return;
+
+	GlobalSettings settings;
+	const QString dir = settings.value("MainWindow/SaveDirectory").toString();
+
+	const QString file_name = QFileDialog::getSaveFileName(
+		parent_, tr("Save Binary Data"), dir, tr("Binary Data Files (*.bin);;All Files (*)"));
+
+	if (file_name.isEmpty())
+		return;
+
+	QFile file(file_name);
+	if (file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+		pair<size_t, size_t> selection = hex_view_->get_selection();
+
+		vector<uint8_t> data;
+		signal_->get_merged_binary_data_chunks_by_offset(current_segment_, decoder_,
+			bin_class_id_, selection.first, selection.second, &data);
+
+		int64_t bytes_written = file.write((const char*)data.data(), data.size());
+
+		if ((bytes_written == -1) || ((uint64_t)bytes_written != data.size())) {
+			QMessageBox msg(parent_);
+			msg.setText(tr("Error") + "\n\n" + tr("File %1 could not be written to.").arg(file_name));
+			msg.setStandardButtons(QMessageBox::Ok);
+			msg.setIcon(QMessageBox::Warning);
+			msg.exec();
+			return;
+		}
+	}
+}
+
+void View::save_data_as_hex_dump() const
+{
+
 }
 
 void View::on_selected_decoder_changed(int index)
@@ -359,17 +408,21 @@ void View::on_decoder_removed(void* decoder)
 
 void View::on_actionSave_triggered(QAction* action)
 {
-	(void)action;
+	int save_type = SaveTypeBinary;
+	if (action)
+		save_type = action->data().toInt();
+
+	if (save_type == SaveTypeBinary)
+		save_data();
+	if (save_type == SaveTypeHexDump)
+		save_data_as_hex_dump();
 }
 
 void View::perform_delayed_view_update()
 {
 	if (!binary_data_exists_)
-		if (signal_->get_binary_data_chunk_count(current_segment_, decoder_, bin_class_id_)) {
+		if (signal_->get_binary_data_chunk_count(current_segment_, decoder_, bin_class_id_))
 			binary_data_exists_ = true;
-
-			save_button_->setEnabled(true);
-		}
 
 	update_data();
 }

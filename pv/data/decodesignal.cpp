@@ -567,7 +567,7 @@ void DecodeSignal::get_binary_data_chunk(uint32_t segment_id,
 	}
 }
 
-void DecodeSignal::get_binary_data_chunks_merged(uint32_t segment_id,
+void DecodeSignal::get_merged_binary_data_chunks_by_sample(uint32_t segment_id,
 	const Decoder* dec, uint32_t bin_class_id, uint64_t start_sample,
 	uint64_t end_sample, vector<uint8_t> *dest) const
 {
@@ -603,6 +603,48 @@ void DecodeSignal::get_binary_data_chunks_merged(uint32_t segment_id,
 				if (matches2 == matches)
 					break;
 			}
+	} catch (out_of_range&) {
+		// Do nothing
+	}
+}
+
+void DecodeSignal::get_merged_binary_data_chunks_by_offset(uint32_t segment_id,
+	const data::decode::Decoder* dec, uint32_t bin_class_id, uint64_t start,
+	uint64_t end, vector<uint8_t> *dest) const
+{
+	assert(dest != nullptr);
+
+	try {
+		const DecodeSegment *segment = &(segments_.at(segment_id));
+
+		const DecodeBinaryClass* bin_class = nullptr;
+		for (const DecodeBinaryClass& bc : segment->binary_classes)
+			if ((bc.decoder == dec) && (bc.info->bin_class_id == bin_class_id))
+				bin_class = &bc;
+
+		// Determine overall size before copying to resize dest vector only once
+		uint64_t size = 0;
+		uint64_t offset = 0;
+		for (const DecodeBinaryDataChunk& chunk : bin_class->chunks) {
+			if (offset >= start)
+				size += chunk.data.size();
+			offset += chunk.data.size();
+			if (offset >= end)
+				break;
+		}
+		dest->resize(size);
+
+		offset = 0;
+		uint64_t dest_offset = 0;
+		for (const DecodeBinaryDataChunk& chunk : bin_class->chunks) {
+			if (offset >= start) {
+				memcpy(dest->data() + dest_offset, chunk.data.data(), chunk.data.size());
+				dest_offset += chunk.data.size();
+			}
+			offset += chunk.data.size();
+			if (offset >= end)
+				break;
+		}
 	} catch (out_of_range&) {
 		// Do nothing
 	}
