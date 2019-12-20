@@ -139,7 +139,9 @@ public:
 	int64_t get_decoded_sample_count(uint32_t segment_id,
 		bool include_processing) const;
 
-	vector<decode::Row> get_rows(bool visible_only) const;
+	vector<decode::Row> get_rows() const;
+
+	uint64_t get_annotation_count(const decode::Row &row, uint32_t segment_id) const;
 
 	/**
 	 * Extracts annotations from a single row into a vector.

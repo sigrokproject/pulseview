@@ -32,6 +32,11 @@ uint64_t RowData::get_max_sample() const
 	return annotations_.back().end_sample();
 }
 
+uint64_t RowData::get_annotation_count() const
+{
+	return annotations_.size();
+}
+
 void RowData::get_annotation_subset(
 	vector<pv::data::decode::Annotation> &dest,
 	uint64_t start_sample, uint64_t end_sample) const

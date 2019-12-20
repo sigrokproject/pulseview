@@ -42,6 +42,8 @@ public:
 public:
 	uint64_t get_max_sample() const;
 
+	uint64_t get_annotation_count() const;
+
 	/**
 	 * Extracts annotations between the given sample range into a vector.
 	 * Note: The annotations are unsorted and only annotations that fully

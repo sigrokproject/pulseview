@@ -192,7 +192,7 @@ void DecodeTrace::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 	sample_range.second = min((int64_t)sample_range.second,
 		decode_signal_->get_decoded_sample_count(current_segment_, false));
 
-	const vector<Row> rows = decode_signal_->get_rows(!always_show_all_rows_);
+	const vector<Row> rows = decode_signal_->get_rows();
 
 	visible_rows_.clear();
 	for (const Row& row : rows) {
@@ -212,7 +212,13 @@ void DecodeTrace::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 		vector<Annotation> annotations;
 		decode_signal_->get_annotation_subset(annotations, row,
 			current_segment_, sample_range.first, sample_range.second);
-		if (always_show_all_rows_ || !annotations.empty()) {
+
+		// Show row if there are visible annotations or when user wants to see
+		// all rows that have annotations somewhere and this one is one of them
+		bool row_visible = !annotations.empty() ||
+			(always_show_all_rows_ && (decode_signal_->get_annotation_count(row, current_segment_) > 0));
+
+		if (row_visible) {
 			draw_annotations(annotations, p, annotation_height, pp, y,
 				get_row_color(row.index()), row_title_width);
 			y += row_height_;
