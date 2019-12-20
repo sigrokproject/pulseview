@@ -76,7 +76,7 @@ const vector< shared_ptr<Decoder> >& DecodeSignal::decoder_stack() const
 	return stack_;
 }
 
-void DecodeSignal::stack_decoder(const srd_decoder *decoder)
+void DecodeSignal::stack_decoder(const srd_decoder *decoder, bool restart_decode)
 {
 	assert(decoder);
 
@@ -101,7 +101,8 @@ void DecodeSignal::stack_decoder(const srd_decoder *decoder)
 
 	decoder_stacked((void*)dec.get());
 
-	begin_decode();
+	if (restart_decode)
+		begin_decode();
 }
 
 void DecodeSignal::remove_decoder(int index)

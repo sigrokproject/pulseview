@@ -1472,8 +1472,10 @@ void Session::on_new_decoders_selected(vector<const srd_decoder*> decoders)
 	shared_ptr<data::DecodeSignal> signal = add_decode_signal();
 
 	if (signal)
-		for (const srd_decoder* d : decoders)
-			signal->stack_decoder(d);
+		for (unsigned int i = 0; i < decoders.size(); i++) {
+			const srd_decoder* d = decoders[i];
+			signal->stack_decoder(d, !(i < decoders.size() - 1));
+		}
 }
 #endif
 
