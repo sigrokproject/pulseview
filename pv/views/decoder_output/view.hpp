@@ -41,7 +41,9 @@ namespace decoder_output {
 // When adding an entry here, don't forget to update SaveTypeNames as well
 enum SaveType {
 	SaveTypeBinary,
-	SaveTypeHexDump,
+	SaveTypeHexDumpPlain,
+	SaveTypeHexDumpWithOffset,
+	SaveTypeHexDumpComplete,
 	SaveTypeCount  // Indicates how many save types there are, must always be last
 };
 
@@ -77,7 +79,7 @@ private:
 	void update_data();
 
 	void save_data() const;
-	void save_data_as_hex_dump() const;
+	void save_data_as_hex_dump(bool with_offset=false, bool with_ascii=false) const;
 
 private Q_SLOTS:
 	void on_selected_decoder_changed(int index);

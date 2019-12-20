@@ -54,7 +54,9 @@ namespace decoder_output {
 
 const char* SaveTypeNames[SaveTypeCount] = {
 	"Binary",
-	"Hex Dump"
+	"Hex Dump, plain",
+	"Hex Dump, with offset",
+	"Hex Dump, complete"
 };
 
 
@@ -242,7 +244,7 @@ void View::update_data()
 	const DecodeBinaryClass* bin_class =
 		signal_->get_binary_data_class(current_segment_, decoder_, bin_class_id_);
 
-	hex_view_->setData(bin_class);
+	hex_view_->set_data(bin_class);
 
 	if (!save_button_->isEnabled())
 		save_button_->setEnabled(true);
@@ -286,9 +288,54 @@ void View::save_data() const
 	}
 }
 
-void View::save_data_as_hex_dump() const
+void View::save_data_as_hex_dump(bool with_offset, bool with_ascii) const
 {
+	assert(decoder_);
+	assert(signal_);
 
+	if (!signal_)
+		return;
+
+	GlobalSettings settings;
+	const QString dir = settings.value("MainWindow/SaveDirectory").toString();
+
+	const QString file_name = QFileDialog::getSaveFileName(
+		parent_, tr("Save Binary Data"), dir, tr("Hex Dumps (*.txt);;All Files (*)"));
+
+	if (file_name.isEmpty())
+		return;
+
+	QFile file(file_name);
+	if (file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
+		pair<size_t, size_t> selection = hex_view_->get_selection();
+
+		vector<uint8_t> data;
+		signal_->get_merged_binary_data_chunks_by_offset(current_segment_, decoder_,
+			bin_class_id_, selection.first, selection.second, &data);
+
+		QTextStream out_stream(&file);
+
+		uint64_t offset = selection.first;
+		unsigned int n = hex_view_->get_bytes_per_line();
+		QString s;
+
+		while (offset < selection.second) {
+			size_t end = std::min(selection.second, offset + n);
+			offset = hex_view_->create_hex_line(offset, end, &s, with_offset, with_ascii);
+			out_stream << s << endl;
+		}
+
+		out_stream << endl;
+
+		if (out_stream.status() != QTextStream::Ok) {
+			QMessageBox msg(parent_);
+			msg.setText(tr("Error") + "\n\n" + tr("File %1 could not be written to.").arg(file_name));
+			msg.setStandardButtons(QMessageBox::Ok);
+			msg.setIcon(QMessageBox::Warning);
+			msg.exec();
+			return;
+		}
+	}
 }
 
 void View::on_selected_decoder_changed(int index)
@@ -412,10 +459,13 @@ void View::on_actionSave_triggered(QAction* action)
 	if (action)
 		save_type = action->data().toInt();
 
-	if (save_type == SaveTypeBinary)
-		save_data();
-	if (save_type == SaveTypeHexDump)
-		save_data_as_hex_dump();
+	switch (save_type)
+	{
+	case SaveTypeBinary: save_data(); break;
+	case SaveTypeHexDumpPlain: save_data_as_hex_dump(false, false); break;
+	case SaveTypeHexDumpWithOffset: save_data_as_hex_dump(true, false); break;
+	case SaveTypeHexDumpComplete: save_data_as_hex_dump(true, true); break;
+	}
 }
 
 void View::perform_delayed_view_update()

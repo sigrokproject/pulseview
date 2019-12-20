@@ -79,7 +79,7 @@ QHexView::QHexView(QWidget *parent):
 	}
 }
 
-void QHexView::setMode(Mode m)
+void QHexView::set_mode(Mode m)
 {
 	mode_ = m;
 
@@ -87,7 +87,7 @@ void QHexView::setMode(Mode m)
 	// so we don't update the viewport here
 }
 
-void QHexView::setData(const DecodeBinaryClass* data)
+void QHexView::set_data(const DecodeBinaryClass* data)
 {
 	data_ = data;
 
@@ -98,6 +98,11 @@ void QHexView::setData(const DecodeBinaryClass* data)
 	data_size_ = size;
 
 	viewport()->update();
+}
+
+unsigned int QHexView::get_bytes_per_line() const
+{
+	return BYTES_PER_LINE;
 }
 
 void QHexView::clear()
@@ -139,6 +144,47 @@ pair<size_t, size_t> QHexView::get_selection() const
 		end++;
 
 	return std::make_pair(start, end);
+}
+
+size_t QHexView::create_hex_line(size_t start, size_t end, QString* dest,
+	bool with_offset, bool with_ascii)
+{
+	dest->clear();
+
+	// Determine start address for the row
+	uint64_t row = start / BYTES_PER_LINE;
+	uint64_t offset = row * BYTES_PER_LINE;
+	end = std::min(end, offset + BYTES_PER_LINE);
+
+	if (with_offset)
+		dest->append(QString("%1 ").arg(row * BYTES_PER_LINE, 10, 16, QChar('0')).toUpper());
+
+	initialize_byte_iterator(offset);
+	for (size_t i = offset; i < offset + BYTES_PER_LINE; i++) {
+		uint8_t value = 0;
+
+		if (i < end)
+			value = get_next_byte();
+
+		if ((i < start) || (i >= end))
+			dest->append("   ");
+		else
+			dest->append(QString("%1 ").arg(value, 2, 16, QChar('0')).toUpper());
+	}
+
+	if (with_ascii) {
+		initialize_byte_iterator(offset);
+		for (size_t i = offset; i < end; i++) {
+			uint8_t value = get_next_byte();
+
+			if (i < start)
+				dest->append(' ');
+			else
+				dest->append((char)value);
+		}
+	}
+
+	return end;
 }
 
 void QHexView::initialize_byte_iterator(size_t offset)

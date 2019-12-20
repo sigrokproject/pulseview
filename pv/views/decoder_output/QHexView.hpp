@@ -52,14 +52,18 @@ public:
 public:
 	QHexView(QWidget *parent = 0);
 
-	void setMode(Mode m);
-	void setData(const DecodeBinaryClass* data);
+	void set_mode(Mode m);
+	void set_data(const DecodeBinaryClass* data);
+	unsigned int get_bytes_per_line() const;
 
 	void clear();
 	void showFromOffset(size_t offset);
 	virtual QSizePolicy sizePolicy() const;
 
 	pair<size_t, size_t> get_selection() const;
+
+	size_t create_hex_line(size_t start, size_t end, QString* dest,
+		bool with_offset=false, bool with_ascii=false);
 
 protected:
 	void initialize_byte_iterator(size_t offset);
