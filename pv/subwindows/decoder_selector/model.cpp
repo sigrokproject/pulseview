@@ -23,6 +23,10 @@
 
 #include <libsigrokdecode/libsigrokdecode.h>
 
+#define DECODERS_HAVE_TAGS \
+	((SRD_PACKAGE_VERSION_MAJOR > 0) || \
+	 (SRD_PACKAGE_VERSION_MAJOR == 0) && (SRD_PACKAGE_VERSION_MINOR > 5))
+
 using std::make_shared;
 
 namespace pv {
@@ -69,6 +73,7 @@ DecoderCollectionModel::DecoderCollectionModel(QObject* parent) :
 		group_item_all->appendSubItem(decoder_item_all);
 
 		// Add decoder to all relevant groups using the tag information
+#if DECODERS_HAVE_TAGS
 		for (GSList* ti = (GSList*)d->tags; ti; ti = ti->next) {
 			const QString tag = tr((char*)ti->data);
 			const QVariant tag_var = QVariant(tag);
@@ -99,6 +104,7 @@ DecoderCollectionModel::DecoderCollectionModel(QObject* parent) :
 			// Add decoder to tag group
 			group_item->appendSubItem(decoder_item);
 		}
+#endif
 	}
 }
 

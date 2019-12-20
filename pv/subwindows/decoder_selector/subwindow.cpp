@@ -32,6 +32,12 @@
 #include "pv/session.hpp"
 #include "pv/subwindows/decoder_selector/subwindow.hpp"
 
+#include <libsigrokdecode/libsigrokdecode.h>
+
+#define DECODERS_HAVE_TAGS \
+	((SRD_PACKAGE_VERSION_MAJOR > 0) || \
+	 (SRD_PACKAGE_VERSION_MAJOR == 0) && (SRD_PACKAGE_VERSION_MINOR > 5))
+
 using std::reverse;
 
 namespace pv {
@@ -102,7 +108,9 @@ SubWindow::SubWindow(Session& session, QWidget* parent) :
 	filter->setClearButtonEnabled(true);
 	filter->addAction(filter_icon, QLineEdit::LeadingPosition);
 
+
 	sort_filter_model_->setSourceModel(model_);
+	sort_filter_model_->setSortCaseSensitivity(Qt::CaseInsensitive);
 	sort_filter_model_->setFilterCaseSensitivity(Qt::CaseInsensitive);
 	sort_filter_model_->setFilterKeyColumn(-1);
 
@@ -118,6 +126,11 @@ SubWindow::SubWindow(Session& session, QWidget* parent) :
 	tree_view_->resizeColumnToContents(0);
 
 	tree_view_->setIndentation(10);
+
+#if (!DECODERS_HAVE_TAGS)
+	tree_view_->expandAll();
+	tree_view_->setItemsExpandable(false);
+#endif
 
 	QScrollArea* info_label_body_container = new QScrollArea();
 	info_label_body_container->setWidget(info_label_body_);
@@ -226,17 +239,21 @@ void SubWindow::on_item_changed(const QModelIndex& index)
 	const QString doc = QString::fromUtf8(srd_decoder_doc_get(d)).trimmed();
 
 	QString tags;
+#if DECODERS_HAVE_TAGS
 	for (GSList* li = (GSList*)d->tags; li; li = li->next) {
 		QString s = (li == (GSList*)d->tags) ?
 			tr((char*)li->data) :
 			QString(tr(", %1")).arg(tr((char*)li->data));
 		tags.append(s);
 	}
+#endif
 
 	info_label_header_->setText(QString("<span style='font-size:large'><b>%1 (%2)</b></span><br><i>%3</i>")
 		.arg(longname, id, desc));
 	info_label_body_->setText(doc);
-	info_label_footer_->setText(tr("<p align='right'>Tags: %1</p>").arg(tags));
+
+	if (!tags.isEmpty())
+		info_label_footer_->setText(tr("<p align='right'>Tags: %1</p>").arg(tags));
 }
 
 void SubWindow::on_item_activated(const QModelIndex& index)
