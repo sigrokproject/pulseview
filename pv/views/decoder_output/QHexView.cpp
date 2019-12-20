@@ -177,6 +177,9 @@ size_t QHexView::create_hex_line(size_t start, size_t end, QString* dest,
 		for (size_t i = offset; i < end; i++) {
 			uint8_t value = get_next_byte();
 
+			if ((value < 0x20) || (value > 0x7E))
+				value = '.';
+
 			if (i < start)
 				dest->append(' ');
 			else
