@@ -363,6 +363,9 @@ void QHexView::paintEvent(QPaintEvent *event)
 			val = QString::number((byte_value & 0xF), 16).toUpper();
 			painter.drawText(x + charWidth_, y, val);
 
+			if ((pos >= selectBegin_) && (pos < selectEnd_ - 1) && (i < BYTES_PER_LINE - 1))
+				painter.drawText(x + 2 * charWidth_, y, QString(' '));
+
 			x += 3 * charWidth_;
 		}
 
