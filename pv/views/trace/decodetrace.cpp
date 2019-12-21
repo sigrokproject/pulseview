@@ -1089,6 +1089,8 @@ void DecodeTrace::export_annotations(vector<Annotation> *annotations) const
 
 void DecodeTrace::on_setting_changed(const QString &key, const QVariant &value)
 {
+	Trace::on_setting_changed(key, value);
+
 	if (key == GlobalSettings::Key_Dec_AlwaysShowAllRows) {
 		visible_rows_.clear();
 		max_visible_rows_ = 0;
