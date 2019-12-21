@@ -238,13 +238,13 @@ void View::update_data()
 	if (!signal_)
 		return;
 
-	if (!binary_data_exists_)
-		return;
-
 	const DecodeBinaryClass* bin_class =
 		signal_->get_binary_data_class(current_segment_, decoder_, bin_class_id_);
 
 	hex_view_->set_data(bin_class);
+
+	if (!binary_data_exists_)
+		return;
 
 	if (!save_button_->isEnabled())
 		save_button_->setEnabled(true);
