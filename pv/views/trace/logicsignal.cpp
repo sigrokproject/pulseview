@@ -146,16 +146,21 @@ shared_ptr<pv::data::Logic> LogicSignal::logic_data() const
 	return base_->logic_data();
 }
 
-void LogicSignal::save_settings(QSettings &settings) const
+std::map<QString, QVariant> LogicSignal::save_settings() const
 {
-	settings.setValue("trace_height", signal_height_);
+	std::map<QString, QVariant> result;
+
+	result["trace_height"] = signal_height_;
+
+	return result;
 }
 
-void LogicSignal::restore_settings(QSettings &settings)
+void LogicSignal::restore_settings(std::map<QString, QVariant> settings)
 {
-	if (settings.contains("trace_height")) {
+	auto entry = settings.find("trace_height");
+	if (entry != settings.end()) {
 		const int old_height = signal_height_;
-		signal_height_ = settings.value("trace_height").toInt();
+		signal_height_ = settings["trace_height"].toInt();
 
 		if ((signal_height_ != old_height) && owner_) {
 			// Call order is important, otherwise the lazy event handler won't work

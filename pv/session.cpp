@@ -105,6 +105,10 @@ using Gst::ElementFactory;
 using Gst::Pipeline;
 #endif
 
+using pv::views::trace::Signal;
+using pv::views::trace::AnalogSignal;
+using pv::views::trace::LogicSignal;
+
 namespace pv {
 
 shared_ptr<sigrok::Context> Session::sr_context;
@@ -889,18 +893,17 @@ void Session::update_signals()
 			qobject_cast<views::trace::View*>(viewbase.get());
 
 		if (trace_view) {
-			unordered_set< shared_ptr<views::trace::Signal> >
-				prev_sigs(trace_view->signals());
+			unordered_set< shared_ptr<Signal> > prev_sigs(trace_view->signals());
 			trace_view->clear_signals();
 
 			for (auto channel : sr_dev->channels()) {
 				shared_ptr<data::SignalBase> signalbase;
-				shared_ptr<views::trace::Signal> signal;
+				shared_ptr<Signal> signal;
 
 				// Find the channel in the old signals
 				const auto iter = find_if(
 					prev_sigs.cbegin(), prev_sigs.cend(),
-					[&](const shared_ptr<views::trace::Signal> &s) {
+					[&](const shared_ptr<Signal> &s) {
 						return s->base()->channel() == channel;
 					});
 				if (iter != prev_sigs.end()) {
@@ -913,6 +916,8 @@ void Session::update_signals()
 					for (const shared_ptr<data::SignalBase>& b : signalbases_)
 						if (b->channel() == channel)
 							signalbase = b;
+
+					shared_ptr<Signal> signal;
 
 					switch(channel->type()->id()) {
 					case SR_CHANNEL_LOGIC:
@@ -928,10 +933,7 @@ void Session::update_signals()
 								signalbase.get(), SLOT(on_capture_state_changed(int)));
 						}
 
-						signal = shared_ptr<views::trace::Signal>(
-							new views::trace::LogicSignal(*this,
-								device_, signalbase));
-						trace_view->add_signal(signal);
+						signal = shared_ptr<Signal>(new LogicSignal(*this, device_, signalbase));
 						break;
 
 					case SR_CHANNEL_ANALOG:
@@ -949,10 +951,7 @@ void Session::update_signals()
 								signalbase.get(), SLOT(on_capture_state_changed(int)));
 						}
 
-						signal = shared_ptr<views::trace::Signal>(
-							new views::trace::AnalogSignal(
-								*this, signalbase));
-						trace_view->add_signal(signal);
+						signal = shared_ptr<Signal>(new AnalogSignal(*this, signalbase));
 						break;
 					}
 
@@ -960,6 +959,17 @@ void Session::update_signals()
 						assert(false);
 						break;
 					}
+
+					// New views take their signal settings from the main view
+					if (!viewbase->is_main_view()) {
+						shared_ptr<pv::views::trace::View> main_tv =
+							dynamic_pointer_cast<pv::views::trace::View>(main_view_);
+						shared_ptr<Signal> main_signal =
+							main_tv->get_signal_by_signalbase(signalbase);
+						signal->restore_settings(main_signal->save_settings());
+					}
+
+					trace_view->add_signal(signal);
 				}
 			}
 		}

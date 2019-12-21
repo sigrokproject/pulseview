@@ -77,9 +77,8 @@ public:
 
 	shared_ptr<pv::data::SignalData> data() const;
 
-	virtual void save_settings(QSettings &settings) const;
-
-	virtual void restore_settings(QSettings &settings);
+	virtual std::map<QString, QVariant> save_settings() const;
+	virtual void restore_settings(std::map<QString, QVariant> settings);
 
 	/**
 	 * Computes the vertical extents of the contents of this row item.
@@ -185,19 +184,10 @@ private:
 
 	double signal_min_, signal_max_;  // Min/max values of this signal's analog data
 
-	float scale_;
-	int scale_index_;
-
-	int div_height_;
-	int pos_vdivs_, neg_vdivs_;  // divs per positive/negative side
-	float resolution_;  // e.g. 10 for 10 V/div
-
 	bool show_analog_minor_grid_;
 	QColor high_fill_color_;
 	bool show_sampling_points_, fill_high_areas_;
 
-	DisplayType display_type_;
-	bool autoranging_;
 	int conversion_threshold_disp_mode_;
 
 	vector<float> value_at_pixel_pos_;
@@ -205,6 +195,18 @@ private:
 	float prev_value_at_pixel_;  // Only used during lookup table update
 	float min_value_at_pixel_, max_value_at_pixel_;  // Only used during lookup table update
 	int current_pixel_pos_;  // Only used during lookup table update
+
+	// ---------------------------------------------------------------------------
+	// Note: Make sure to update .. when adding a trace-configurable variable here
+	float scale_;
+	int scale_index_;
+
+	int div_height_;
+	int pos_vdivs_, neg_vdivs_;  // divs per positive/negative side
+	float resolution_;  // e.g. 10 for 10 V/div
+
+	DisplayType display_type_;
+	bool autoranging_;
 };
 
 } // namespace trace

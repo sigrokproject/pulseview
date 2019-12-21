@@ -81,8 +81,8 @@ public:
 
 	shared_ptr<pv::data::Logic> logic_data() const;
 
-	virtual void save_settings(QSettings &settings) const;
-	virtual void restore_settings(QSettings &settings);
+	virtual std::map<QString, QVariant> save_settings() const;
+	virtual void restore_settings(std::map<QString, QVariant> settings);
 
 	/**
 	 * Computes the vertical extents of the contents of this row item.

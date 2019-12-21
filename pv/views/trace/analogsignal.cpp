@@ -105,13 +105,13 @@ AnalogSignal::AnalogSignal(
 	pv::Session &session,
 	shared_ptr<data::SignalBase> base) :
 	Signal(session, base),
+	value_at_hover_pos_(std::numeric_limits<float>::quiet_NaN()),
 	scale_index_(4), // 20 per div
 	pos_vdivs_(1),
 	neg_vdivs_(1),
 	resolution_(0),
 	display_type_(DisplayBoth),
-	autoranging_(true),
-	value_at_hover_pos_(std::numeric_limits<float>::quiet_NaN())
+	autoranging_(true)
 {
 	axis_pen_ = AxisPen;
 
@@ -143,38 +143,48 @@ shared_ptr<pv::data::SignalData> AnalogSignal::data() const
 	return base_->analog_data();
 }
 
-void AnalogSignal::save_settings(QSettings &settings) const
+std::map<QString, QVariant> AnalogSignal::save_settings() const
 {
-	settings.setValue("pos_vdivs", pos_vdivs_);
-	settings.setValue("neg_vdivs", neg_vdivs_);
-	settings.setValue("scale_index", scale_index_);
-	settings.setValue("display_type", display_type_);
-	settings.setValue("autoranging", autoranging_);
-	settings.setValue("div_height", div_height_);
+	std::map<QString, QVariant> result;
+
+	result["pos_vdivs"] = pos_vdivs_;
+	result["neg_vdivs"] = neg_vdivs_;
+	result["scale_index"] = scale_index_;
+	result["display_type"] = display_type_;
+	result["autoranging"] = pos_vdivs_;
+	result["div_height"] = div_height_;
+
+	return result;
 }
 
-void AnalogSignal::restore_settings(QSettings &settings)
+void AnalogSignal::restore_settings(std::map<QString, QVariant> settings)
 {
-	if (settings.contains("pos_vdivs"))
-		pos_vdivs_ = settings.value("pos_vdivs").toInt();
+	auto entry = settings.find("pos_vdivs");
+	if (entry != settings.end())
+		pos_vdivs_ = settings["pos_vdivs"].toInt();
 
-	if (settings.contains("neg_vdivs"))
-		neg_vdivs_ = settings.value("neg_vdivs").toInt();
+	entry = settings.find("neg_vdivs");
+	if (entry != settings.end())
+		neg_vdivs_ = settings["neg_vdivs"].toInt();
 
-	if (settings.contains("scale_index")) {
-		scale_index_ = settings.value("scale_index").toInt();
+	entry = settings.find("scale_index");
+	if (entry != settings.end()) {
+		scale_index_ = settings["scale_index"].toInt();
 		update_scale();
 	}
 
-	if (settings.contains("display_type"))
-		display_type_ = (DisplayType)(settings.value("display_type").toInt());
+	entry = settings.find("display_type");
+	if (entry != settings.end())
+		display_type_ = (DisplayType)(settings["display_type"].toInt());
 
-	if (settings.contains("autoranging"))
-		autoranging_ = settings.value("autoranging").toBool();
+	entry = settings.find("autoranging");
+	if (entry != settings.end())
+		autoranging_ = settings["autoranging"].toBool();
 
-	if (settings.contains("div_height")) {
+	entry = settings.find("div_height");
+	if (entry != settings.end()) {
 		const int old_height = div_height_;
-		div_height_ = settings.value("div_height").toInt();
+		div_height_ = settings["div_height"].toInt();
 
 		if ((div_height_ != old_height) && owner_) {
 			// Call order is important, otherwise the lazy event handler won't work

@@ -303,6 +303,19 @@ unordered_set< shared_ptr<Signal> > View::signals() const
 	return signals_;
 }
 
+shared_ptr<Signal> View::get_signal_by_signalbase(shared_ptr<data::SignalBase> base) const
+{
+	shared_ptr<Signal> ret_val;
+
+	for (const shared_ptr<Signal> s : signals_)
+		if (s->base() == base) {
+			ret_val = s;
+			break;
+		}
+
+	return ret_val;
+}
+
 void View::clear_signals()
 {
 	ViewBase::clear_signals();

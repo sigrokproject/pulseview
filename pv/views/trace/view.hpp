@@ -120,6 +120,8 @@ public:
 	 */
 	unordered_set< shared_ptr<Signal> > signals() const;
 
+	shared_ptr<Signal> get_signal_by_signalbase(shared_ptr<data::SignalBase> base) const;
+
 	virtual void clear_signals();
 
 	void add_signal(const shared_ptr<Signal> signal);
@@ -425,7 +427,6 @@ public:
 	void extents_changed(bool horz, bool vert);
 
 private Q_SLOTS:
-
 	void on_signal_name_changed();
 	void on_splitter_moved();
 

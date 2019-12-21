@@ -73,6 +73,7 @@ public:
 	explicit ViewBase(Session &session, bool is_main_view = false, QMainWindow *parent = nullptr);
 
 	virtual ViewType get_type() const = 0;
+	bool is_main_view() const;
 
 	/**
 	 * Resets the view to its default state after construction. It does however

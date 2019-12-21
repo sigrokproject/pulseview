@@ -63,6 +63,11 @@ ViewBase::ViewBase(Session &session, bool is_main_view, QMainWindow *parent) :
 	delayed_view_updater_.setInterval(1000 / MaxViewAutoUpdateRate);
 }
 
+bool ViewBase::is_main_view() const
+{
+	return is_main_view_;
+}
+
 void ViewBase::reset_view_state()
 {
 	current_segment_ = 0;
