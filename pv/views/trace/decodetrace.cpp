@@ -1094,7 +1094,7 @@ void DecodeTrace::export_annotations(vector<Annotation> *annotations) const
 			QString out_text = format;
 			out_text = out_text.replace("%s", sample_range);
 			out_text = out_text.replace("%d",
-				quote + QString::fromUtf8(ann.row()->decoder()->name) + quote);
+				quote + QString::fromUtf8(ann.row()->decoder()->name()) + quote);
 			out_text = out_text.replace("%c", class_name);
 			out_text = out_text.replace("%1", first_ann_text);
 			out_text = out_text.replace("%a", all_ann_text);

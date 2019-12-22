@@ -236,12 +236,11 @@ void DecodeSignal::begin_decode()
 				(srd_decoder_annotation_row *)l->data;
 			assert(ann_row);
 
-			const Row row(row_index++, decc, ann_row);
+			const Row row(row_index++, dec.get(), ann_row);
 
 			for (const GSList *ll = ann_row->ann_classes;
 				ll; ll = ll->next)
-				class_rows_[make_pair(decc,
-					GPOINTER_TO_INT(ll->data))] = row;
+				class_rows_[make_pair(decc, GPOINTER_TO_INT(ll->data))] = row;
 		}
 	}
 
@@ -454,7 +453,7 @@ int64_t DecodeSignal::get_decoded_sample_count(uint32_t segment_id,
 	return result;
 }
 
-vector<Row> DecodeSignal::get_rows() const
+vector<Row> DecodeSignal::get_rows(bool visible_only) const
 {
 	lock_guard<mutex> lock(output_mutex_);
 
@@ -462,20 +461,23 @@ vector<Row> DecodeSignal::get_rows() const
 
 	for (const shared_ptr<decode::Decoder>& dec : stack_) {
 		assert(dec);
+		if (visible_only && !dec->shown())
+			continue;
+
 		const srd_decoder *const decc = dec->decoder();
 		assert(dec->decoder());
 
 		int row_index = 0;
 		// Add a row for the decoder if it doesn't have a row list
 		if (!decc->annotation_rows)
-			rows.emplace_back(row_index++, decc);
+			rows.emplace_back(row_index++, dec.get());
 
 		// Add the decoder rows
 		for (const GSList *l = decc->annotation_rows; l; l = l->next) {
 			const srd_decoder_annotation_row *const ann_row =
 				(srd_decoder_annotation_row *)l->data;
 			assert(ann_row);
-			rows.emplace_back(row_index++, decc, ann_row);
+			rows.emplace_back(row_index++, dec.get(), ann_row);
 		}
 	}
 
@@ -1383,7 +1385,7 @@ void DecodeSignal::create_decode_segment()
 		int row_index = 0;
 		// Add a row for the decoder if it doesn't have a row list
 		if (!decc->annotation_rows)
-			(segments_.back().annotation_rows)[Row(row_index++, decc)] =
+			(segments_.back().annotation_rows)[Row(row_index++, dec.get())] =
 				decode::RowData();
 
 		// Add the decoder rows
@@ -1392,11 +1394,10 @@ void DecodeSignal::create_decode_segment()
 				(srd_decoder_annotation_row *)l->data;
 			assert(ann_row);
 
-			const Row row(row_index++, decc, ann_row);
+			const Row row(row_index++, dec.get(), ann_row);
 
 			// Add a new empty row data object
-			(segments_.back().annotation_rows)[row] =
-				decode::RowData();
+			(segments_.back().annotation_rows)[row] = decode::RowData();
 		}
 	}
 
@@ -1442,7 +1443,9 @@ void DecodeSignal::annotation_callback(srd_proto_data *pdata, void *decode_signa
 		row_iter = ds->segments_.at(ds->current_segment_id_).annotation_rows.find((*r).second);
 	else {
 		// Failing that, use the decoder as a key
-		row_iter = ds->segments_.at(ds->current_segment_id_).annotation_rows.find(Row(0, decc));
+		for (const shared_ptr<decode::Decoder>& dec : ds->decoder_stack())
+			if (dec->decoder() == decc)
+				row_iter = ds->segments_.at(ds->current_segment_id_).annotation_rows.find(Row(0, dec.get()));
 	}
 
 	if (row_iter == ds->segments_.at(ds->current_segment_id_).annotation_rows.end()) {

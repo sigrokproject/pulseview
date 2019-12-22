@@ -37,7 +37,7 @@ namespace data {
 namespace decode {
 
 Decoder::Decoder(const srd_decoder *const dec) :
-	decoder_(dec),
+	srd_decoder_(dec),
 	shown_(true),
 	decoder_inst_(nullptr)
 {
@@ -59,12 +59,12 @@ Decoder::~Decoder()
 
 const srd_decoder* Decoder::decoder() const
 {
-	return decoder_;
+	return srd_decoder_;
 }
 
 const char* Decoder::name() const
 {
-	return decoder_->name;
+	return srd_decoder_->name;
 }
 
 bool Decoder::shown() const
@@ -144,7 +144,7 @@ srd_decoder_inst* Decoder::create_decoder_inst(srd_session *session)
 	if (decoder_inst_)
 		qDebug() << "WARNING: previous decoder instance" << decoder_inst_ << "exists";
 
-	decoder_inst_ = srd_inst_new(session, decoder_->id, opt_hash);
+	decoder_inst_ = srd_inst_new(session, srd_decoder_->id, opt_hash);
 	g_hash_table_destroy(opt_hash);
 
 	if (!decoder_inst_)

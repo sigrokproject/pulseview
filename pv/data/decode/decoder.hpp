@@ -101,7 +101,7 @@ public:
 	const DecodeBinaryClassInfo* get_binary_class(uint32_t id) const;
 
 private:
-	const srd_decoder *const decoder_;
+	const srd_decoder* const srd_decoder_;
 
 	bool shown_;
 

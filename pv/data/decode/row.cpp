@@ -17,6 +17,7 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "decoder.hpp"
 #include "row.hpp"
 
 #include <libsigrokdecode/libsigrokdecode.h>
@@ -31,31 +32,31 @@ Row::Row() :
 {
 }
 
-Row::Row(int index, const srd_decoder *decoder, const srd_decoder_annotation_row *row) :
+Row::Row(int index, const Decoder* decoder, const srd_decoder_annotation_row* row) :
 	index_(index),
 	decoder_(decoder),
 	row_(row)
 {
 }
 
-const srd_decoder* Row::decoder() const
+const Decoder* Row::decoder() const
 {
 	return decoder_;
 }
 
-const srd_decoder_annotation_row* Row::row() const
+const srd_decoder_annotation_row* Row::srd_row() const
 {
 	return row_;
 }
 
 const QString Row::title() const
 {
-	if (decoder_ && decoder_->name && row_ && row_->desc)
+	if (decoder_ && decoder_->name() && row_ && row_->desc)
 		return QString("%1: %2")
-			.arg(QString::fromUtf8(decoder_->name),
+			.arg(QString::fromUtf8(decoder_->name()),
 			     QString::fromUtf8(row_->desc));
-	if (decoder_ && decoder_->name)
-		return QString::fromUtf8(decoder_->name);
+	if (decoder_ && decoder_->name())
+		return QString::fromUtf8(decoder_->name());
 	if (row_ && row_->desc)
 		return QString::fromUtf8(row_->desc);
 	return QString();
@@ -73,15 +74,15 @@ int Row::index() const
 	return index_;
 }
 
-bool Row::operator<(const Row &other) const
+bool Row::operator<(const Row& other) const
 {
 	return (decoder_ < other.decoder_) ||
 		(decoder_ == other.decoder_ && row_ < other.row_);
 }
 
-bool Row::operator==(const Row &other) const
+bool Row::operator==(const Row& other) const
 {
-	return ((decoder_ == other.decoder()) && (row_ == other.row()));
+	return ((decoder_ == other.decoder()) && (row_ == other.srd_row()));
 }
 
 }  // namespace decode

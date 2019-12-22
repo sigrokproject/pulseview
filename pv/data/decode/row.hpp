@@ -31,28 +31,30 @@ namespace pv {
 namespace data {
 namespace decode {
 
+class Decoder;
+
 class Row
 {
 public:
 	Row();
 
-	Row(int index, const srd_decoder *decoder,
-		const srd_decoder_annotation_row *row = nullptr);
+	Row(int index, const Decoder* decoder,
+		const srd_decoder_annotation_row* row = nullptr);
 
-	const srd_decoder* decoder() const;
-	const srd_decoder_annotation_row* row() const;
+	const Decoder* decoder() const;
+	const srd_decoder_annotation_row* srd_row() const;
 
 	const QString title() const;
 	const QString class_name() const;
 	int index() const;
 
-	bool operator<(const Row &other) const;
-	bool operator==(const Row &other) const;
+	bool operator<(const Row& other) const;
+	bool operator==(const Row& other) const;
 
 private:
 	int index_;
-	const srd_decoder *decoder_;
-	const srd_decoder_annotation_row *row_;
+	const Decoder* decoder_;
+	const srd_decoder_annotation_row* row_;
 };
 
 }  // namespace decode
