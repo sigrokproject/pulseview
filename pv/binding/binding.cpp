@@ -82,6 +82,7 @@ void Binding::add_properties_to_form(QFormLayout *layout, bool auto_commit)
 			help_lbl = new QLabel(p->desc());
 			help_lbl->setVisible(false);
 			help_lbl->setWordWrap(true);
+			help_lbl->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::MinimumExpanding);
 			help_labels_[help_btn] = help_lbl;
 		}
 
