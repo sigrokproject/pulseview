@@ -339,11 +339,22 @@ void ViewWidget::mouseMoveEvent(QMouseEvent *event)
 			drag_items(event->pos() - mouse_down_point_);
 		}
 	}
+
+	// Force a repaint of the widget to update highlighted parts
+	update();
 }
 
 void ViewWidget::leaveEvent(QEvent*)
 {
-	mouse_point_ = QPoint(-1, -1);
+	bool cursor_above_widget = rect().contains(mapFromGlobal(QCursor::pos()));
+
+	// We receive leaveEvent also when the widget loses focus even when
+	// the mouse cursor hasn't moved at all - e.g. when the popup shows.
+	// However, we don't want to reset mouse_position_ when the mouse is
+	// still above this widget as doing so would break the context menu
+	if (!cursor_above_widget)
+		mouse_point_ = QPoint(INT_MIN, INT_MIN);
+
 	mouse_modifiers_ = Qt::NoModifier;
 	item_hover(nullptr, QPoint());
 	update();
