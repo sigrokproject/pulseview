@@ -510,8 +510,7 @@ void DecodeSignal::get_annotation_subset(
 		return;
 
 	const DecodeSegment *segment = &(segments_.at(segment_id));
-	const map<const decode::Row, decode::RowData> *rows =
-		&(segment->annotation_rows);
+	const map<const decode::Row, decode::RowData> *rows = &(segment->annotation_rows);
 
 	const auto iter = rows->find(row);
 	if (iter != rows->end())

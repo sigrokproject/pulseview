@@ -39,8 +39,10 @@
 #include <pv/data/decode/row.hpp>
 #include <pv/data/signalbase.hpp>
 
+using std::deque;
 using std::list;
 using std::map;
+using std::mutex;
 using std::pair;
 using std::shared_ptr;
 using std::vector;
@@ -67,6 +69,15 @@ class DecoderGroupBox;
 
 namespace views {
 namespace trace {
+
+struct RowData {
+	// When adding a field, make sure it's initialized properly in
+	// DecodeTrace::update_rows()
+
+	data::decode::Row decode_row;
+	unsigned int height, title_width;
+	bool exists, currently_visible, expand_marker_highlighted, expanded;
+};
 
 class DecodeTrace : public Trace
 {
@@ -168,7 +179,9 @@ private:
 	QColor get_row_color(int row_index) const;
 	QColor get_annotation_color(QColor row_color, int annotation_index) const;
 
-	int get_row_at_point(const QPoint &point);
+	unsigned int get_row_y(const RowData* row) const;
+
+	RowData* get_row_at_point(const QPoint &point);
 
 	const QString get_annotation_at_point(const QPoint &point);
 
@@ -184,6 +197,8 @@ private:
 		const data::decode::DecodeChannel *ch);
 
 	void export_annotations(vector<data::decode::Annotation> *annotations) const;
+
+	void update_rows();
 
 public:
 	virtual void hover_point_changed(const QPoint &hp);
@@ -224,23 +239,23 @@ private:
 	pv::Session &session_;
 	shared_ptr<data::DecodeSignal> decode_signal_;
 
-	vector<data::decode::Row> visible_rows_;
-	bool always_show_all_rows_;
+	deque<RowData> rows_;
+	mutable mutex row_modification_mutex_;
 
 	map<QComboBox*, uint16_t> channel_id_map_;  // channel selector -> decode channel ID
 	map<QComboBox*, uint16_t> init_state_map_;  // init state selector -> decode channel ID
 	list< shared_ptr<pv::binding::Decoder> > bindings_;
 
-	data::decode::Row *selected_row_;
+	const data::decode::Row* selected_row_;
 	pair<uint64_t, uint64_t> selected_sample_range_;
 
 	vector<pv::widgets::DecoderGroupBox*> decoder_forms_;
 	QPushButton* stack_button_;
 
-	map<data::decode::Row, int> row_title_widths_;
-	int row_height_, max_visible_rows_;
+	unsigned int default_row_height_, visible_rows_, max_visible_rows_;
 
 	int min_useful_label_width_;
+	bool always_show_all_rows_;
 
 	QSignalMapper delete_mapper_, show_hide_mapper_;
 

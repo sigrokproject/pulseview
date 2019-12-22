@@ -47,6 +47,7 @@ public:
 	int index() const;
 
 	bool operator<(const Row &other) const;
+	bool operator==(const Row &other) const;
 
 private:
 	int index_;
