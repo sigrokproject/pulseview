@@ -211,7 +211,8 @@ void DecodeTrace::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 		// Show row if there are visible annotations or when user wants to see
 		// all rows that have annotations somewhere and this one is one of them
 		size_t ann_count = decode_signal_->get_annotation_count(r.decode_row, current_segment_);
-		r.currently_visible = !annotations.empty() || (always_show_all_rows_ && (ann_count > 0));
+		r.currently_visible = (!annotations.empty() || (always_show_all_rows_ && (ann_count > 0)))
+			&& (r.decode_row.decoder()->shown());
 
 		if (r.currently_visible) {
 			draw_annotations(annotations, p, annotation_height, pp, y,
