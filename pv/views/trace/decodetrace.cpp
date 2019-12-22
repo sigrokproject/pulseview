@@ -113,6 +113,7 @@ DecodeTrace::DecodeTrace(pv::Session &session,
 	min_useful_label_width_ = m.width("XX"); // e.g. two hex characters
 
 	default_row_height_ = (ViewItemPaintParams::text_height() * 6) / 4;
+	annotation_height_ = (ViewItemPaintParams::text_height() * 5) / 4;
 
 	// For the base color, we want to start at a very different color for
 	// every decoder stack, so multiply the index with a number that is
@@ -184,9 +185,6 @@ void DecodeTrace::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 {
 	lock_guard<mutex> lock(row_modification_mutex_);
 
-	const int text_height = ViewItemPaintParams::text_height();
-	const int annotation_height = (text_height * 5) / 4;
-
 	// Set default pen to allow for text width calculation
 	p.setPen(Qt::black);
 
@@ -204,6 +202,12 @@ void DecodeTrace::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 	int y = get_visual_y();
 
 	for (RowData& r : rows_) {
+		// If an entire decoder is hidden, we don't want to fetch annotations
+		if (!r.decode_row.decoder()->shown()) {
+			r.currently_visible = false;
+			continue;
+		}
+
 		vector<Annotation> annotations;
 		decode_signal_->get_annotation_subset(annotations, r.decode_row,
 			current_segment_, sample_range.first, sample_range.second);
@@ -211,18 +215,17 @@ void DecodeTrace::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 		// Show row if there are visible annotations or when user wants to see
 		// all rows that have annotations somewhere and this one is one of them
 		size_t ann_count = decode_signal_->get_annotation_count(r.decode_row, current_segment_);
-		r.currently_visible = (!annotations.empty() || (always_show_all_rows_ && (ann_count > 0)))
-			&& (r.decode_row.decoder()->shown());
+		r.currently_visible = !annotations.empty() || (always_show_all_rows_ && (ann_count > 0));
 
 		if (r.currently_visible) {
-			draw_annotations(annotations, p, annotation_height, pp, y,
+			draw_annotations(annotations, p, annotation_height_, pp, y,
 				get_row_color(r.decode_row.index()), r.title_width);
 			y += r.height;
 			visible_rows_++;
 		}
 	}
 
-	draw_unresolved_period(p, annotation_height, pp.left(), pp.right());
+	draw_unresolved_period(p, annotation_height_, pp.left(), pp.right());
 
 	if (visible_rows_ > max_visible_rows_) {
 		max_visible_rows_ = visible_rows_;
@@ -833,18 +836,22 @@ unsigned int DecodeTrace::get_row_y(const RowData* row) const
 
 	unsigned int y = get_visual_y();
 
-	for (const RowData& r : rows_)
-		if (row != &r)
-			y += r.height;
-		else
+	for (const RowData& r : rows_) {
+		if (!r.currently_visible)
+			continue;
+
+		if (row->decode_row == r.decode_row)
 			break;
+		else
+			y += r.height;
+	}
 
 	return y;
 }
 
 RowData* DecodeTrace::get_row_at_point(const QPoint &point)
 {
-	int y = get_visual_y();
+	int y = get_visual_y() - (default_row_height_ / 2);
 
 	for (RowData& r : rows_) {
 		if (!r.currently_visible)
@@ -873,6 +880,9 @@ const QString DecodeTrace::get_annotation_at_point(const QPoint &point)
 	if (!r)
 		return QString();
 
+	if (point.y() > (int)(get_row_y(r) + (annotation_height_ / 2)))
+		return QString();
+
 	vector<Annotation> annotations;
 
 	decode_signal_->get_annotation_subset(annotations, r->decode_row,
@@ -890,7 +900,7 @@ void DecodeTrace::hover_point_changed(const QPoint &hp)
 
 	RowData* hover_row = get_row_at_point(hp);
 
-	// Row/class visibility button handling
+	// Row expansion marker handling
 	for (RowData& r : rows_)
 		r.expand_marker_highlighted = false;
 
@@ -905,31 +915,30 @@ void DecodeTrace::hover_point_changed(const QPoint &hp)
 	if (hp.x() > 0) {
 		QString ann = get_annotation_at_point(hp);
 
-		if (ann.isEmpty()) {
+		if (!ann.isEmpty()) {
+			QFontMetrics m(QToolTip::font());
+			const QRect text_size = m.boundingRect(QRect(), 0, ann);
+
+			// This is OS-specific and unfortunately we can't query it, so
+			// use an approximation to at least try to minimize the error.
+			const int padding = default_row_height_ + 8;
+
+			// Make sure the tool tip doesn't overlap with the mouse cursor.
+			// If it did, the tool tip would constantly hide and re-appear.
+			// We also push it up by one row so that it appears above the
+			// decode trace, not below.
+			QPoint p = hp;
+			p.setX(hp.x() - (text_size.width() / 2) - padding);
+
+			p.setY(get_row_y(hover_row) - default_row_height_ -
+				text_size.height() - padding);
+
+			const View *const view = owner_->view();
+			assert(view);
+			QToolTip::showText(view->viewport()->mapToGlobal(p), ann);
+
+		} else
 			QToolTip::hideText();
-			return;
-		}
-
-		QFontMetrics m(QToolTip::font());
-		const QRect text_size = m.boundingRect(QRect(), 0, ann);
-
-		// This is OS-specific and unfortunately we can't query it, so
-		// use an approximation to at least try to minimize the error.
-		const int padding = 8;
-
-		// Make sure the tool tip doesn't overlap with the mouse cursor.
-		// If it did, the tool tip would constantly hide and re-appear.
-		// We also push it up by one row so that it appears above the
-		// decode trace, not below.
-		QPoint p = hp;
-		p.setX(hp.x() - (text_size.width() / 2) - padding);
-
-		p.setY(get_row_y(hover_row) - hover_row->height - default_row_height_ -
-			text_size.height() - padding);
-
-		const View *const view = owner_->view();
-		assert(view);
-		QToolTip::showText(view->viewport()->mapToGlobal(p), ann);
 
 	} else
 		QToolTip::hideText();

@@ -252,7 +252,8 @@ private:
 	vector<pv::widgets::DecoderGroupBox*> decoder_forms_;
 	QPushButton* stack_button_;
 
-	unsigned int default_row_height_, visible_rows_, max_visible_rows_;
+	unsigned int default_row_height_, annotation_height_;
+	unsigned int visible_rows_, max_visible_rows_;
 
 	int min_useful_label_width_;
 	bool always_show_all_rows_;
