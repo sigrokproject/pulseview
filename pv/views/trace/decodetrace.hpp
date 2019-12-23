@@ -81,6 +81,8 @@ struct RowData {
 	bool expand_marker_highlighted, expanding, expanded, collapsing;
 	QPolygon expand_marker_shape;
 	float anim_height, anim_shape;
+
+	QWidget* container;
 };
 
 class DecodeTrace : public Trace

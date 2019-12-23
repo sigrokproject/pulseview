@@ -158,6 +158,9 @@ DecodeTrace::DecodeTrace(pv::Session &session,
 DecodeTrace::~DecodeTrace()
 {
 	GlobalSettings::remove_change_handler(this);
+
+	for (RowData& r : rows_)
+		delete r.container;
 }
 
 bool DecodeTrace::enabled() const
@@ -566,10 +569,15 @@ void DecodeTrace::mouse_left_press_event(const QMouseEvent* event)
 			} else {
 				r.expanding = true;
 				r.anim_shape = 0;
+				r.container->setVisible(true);
 			}
 
 			r.animation_step = 0;
 			r.anim_height = r.height;
+
+			r.container->move(2 * ArrowSize,
+				get_row_y(&r) + default_row_height_);
+
 			animation_timer_.start();
 		}
 	}
@@ -1188,6 +1196,7 @@ void DecodeTrace::update_rows()
 			nr.expanded = false;
 			nr.collapsing = false;
 			nr.expand_marker_shape = default_marker_shape_;
+			nr.container = new QWidget(owner_->view()->viewport());
 
 			rows_.push_back(nr);
 			r = &rows_.back();
@@ -1198,6 +1207,10 @@ void DecodeTrace::update_rows()
 
 		const int w = m.boundingRect(r->decode_row.title()).width() + RowTitleMargin;
 		r->title_width = w;
+
+		r->container->resize(owner_->view()->viewport()->width() - r->container->pos().x(),
+			r->expanded_height - 2 * default_row_height_);
+		r->container->setVisible(false);
 	}
 
 	// Remove any rows that no longer exist, obeying that iterators are invalidated
@@ -1207,6 +1220,7 @@ void DecodeTrace::update_rows()
 
 		for (unsigned int i = 0; i < rows_.size(); i++)
 			if (!rows_[i].exists) {
+				delete rows_[i].container;
 				rows_.erase(rows_.begin() + i);
 				any_exists = true;
 				break;
@@ -1490,6 +1504,7 @@ void DecodeTrace::on_animation_timer()
 				r.collapsing = false;
 				r.expanded = false;
 				r.expand_marker_shape = default_marker_shape_;
+				r.container->setVisible(false);
 			}
 		}
 
@@ -1500,6 +1515,9 @@ void DecodeTrace::on_animation_timer()
 		r.expand_marker_shape.setPoint(0, 0, -ArrowSize + r.anim_shape);
 		r.expand_marker_shape.setPoint(1, ArrowSize, r.anim_shape);
 		r.expand_marker_shape.setPoint(2, 2*r.anim_shape, ArrowSize - r.anim_shape);
+
+		r.container->resize(owner_->view()->viewport()->width() - r.container->pos().x(),
+			r.height - 2 * default_row_height_);
 	}
 
 	if (animation_finished)
