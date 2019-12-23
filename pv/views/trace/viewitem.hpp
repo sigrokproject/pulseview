@@ -22,6 +22,7 @@
 
 #include <list>
 
+#include <QMouseEvent>
 #include <QPen>
 #include <QPoint>
 
@@ -168,6 +169,12 @@ public:
 	virtual void delete_pressed();
 
 	virtual void hover_point_changed(const QPoint &hp);
+
+	/**
+	 * Handles left mouse button press events.
+	 * @param event the mouse event that triggered this handler.
+	 */
+	virtual void mouse_left_press_event(const QMouseEvent* event);
 
 protected:
 	static QPen highlight_pen();

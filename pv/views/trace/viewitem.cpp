@@ -153,6 +153,11 @@ void ViewItem::hover_point_changed(const QPoint &hp)
 	(void)hp;
 }
 
+void ViewItem::mouse_left_press_event(const QMouseEvent* event)
+{
+	(void)event;
+}
+
 } // namespace trace
 } // namespace views
 } // namespace pv

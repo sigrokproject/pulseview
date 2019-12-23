@@ -66,7 +66,7 @@ class ViewBase : public QWidget
 {
 	Q_OBJECT
 
-private:
+public:
 	static const int MaxViewAutoUpdateRate;
 
 public:

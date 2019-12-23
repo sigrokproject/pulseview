@@ -86,12 +86,13 @@ namespace trace {
 const QColor DecodeTrace::ErrorBgColor = QColor(0xEF, 0x29, 0x29);
 const QColor DecodeTrace::NoDecodeColor = QColor(0x88, 0x8A, 0x85);
 
-const int DecodeTrace::ArrowSize = 7;
+const int DecodeTrace::ArrowSize = 6;
 const double DecodeTrace::EndCapWidth = 5;
-const int DecodeTrace::RowTitleMargin = 10;
+const int DecodeTrace::RowTitleMargin = 7;
 const int DecodeTrace::DrawPadding = 100;
 
 const int DecodeTrace::MaxTraceUpdateRate = 1; // No more than 1 Hz
+const unsigned int DecodeTrace::AnimationDurationInTicks = 7;
 
 DecodeTrace::DecodeTrace(pv::Session &session,
 	shared_ptr<data::SignalBase> signalbase, int index) :
@@ -144,6 +145,14 @@ DecodeTrace::DecodeTrace(pv::Session &session,
 		this, SLOT(on_delayed_trace_update()));
 	delayed_trace_updater_.setSingleShot(true);
 	delayed_trace_updater_.setInterval(1000 / MaxTraceUpdateRate);
+
+	connect(&animation_timer_, SIGNAL(timeout()),
+		this, SLOT(on_animation_timer()));
+	animation_timer_.setInterval(1000 / 50);
+
+	default_marker_shape_ << QPoint(0,         -ArrowSize);
+	default_marker_shape_ << QPoint(ArrowSize,  0);
+	default_marker_shape_ << QPoint(0,          ArrowSize);
 }
 
 DecodeTrace::~DecodeTrace()
@@ -251,17 +260,14 @@ void DecodeTrace::paint_fore(QPainter &p, ViewItemPaintParams &pp)
 		p.setPen(QPen(Qt::NoPen));
 
 		if (r.expand_marker_highlighted)
-			p.setBrush(QApplication::palette().brush(QPalette::HighlightedText));
+			p.setBrush(QApplication::palette().brush(QPalette::Highlight));
 		else
 			p.setBrush(QApplication::palette().brush(QPalette::WindowText));
 
 		// Draw expansion marker
-		const QPointF points[] = {
-			QPointF(pp.left(), y - ArrowSize),
-			QPointF(pp.left() + ArrowSize, y),
-			QPointF(pp.left(), y + ArrowSize)
-		};
-		p.drawPolygon(points, countof(points));
+		QPolygon marker(r.expand_marker_shape);
+		marker.translate(pp.left(), y);
+		p.drawPolygon(marker);
 
 		p.setBrush(QApplication::palette().brush(QPalette::WindowText));
 
@@ -484,6 +490,91 @@ QMenu* DecodeTrace::create_view_context_menu(QWidget *parent, QPoint &click_pos)
 	return menu;
 }
 
+void DecodeTrace::delete_pressed()
+{
+	on_delete();
+}
+
+void DecodeTrace::hover_point_changed(const QPoint &hp)
+{
+	Trace::hover_point_changed(hp);
+
+	assert(owner_);
+
+	RowData* hover_row = get_row_at_point(hp);
+
+	// Row expansion marker handling
+	for (RowData& r : rows_)
+		r.expand_marker_highlighted = false;
+
+	if (hover_row) {
+		int row_y = get_row_y(hover_row);
+		if ((hp.x() > 0) && (hp.x() < 2 * ArrowSize) &&
+			(hp.y() > (int)(row_y - ArrowSize)) && (hp.y() < (int)(row_y + ArrowSize)))
+			hover_row->expand_marker_highlighted = true;
+	}
+
+	// Tooltip handling
+	if (hp.x() > 0) {
+		QString ann = get_annotation_at_point(hp);
+
+		if (!ann.isEmpty()) {
+			QFontMetrics m(QToolTip::font());
+			const QRect text_size = m.boundingRect(QRect(), 0, ann);
+
+			// This is OS-specific and unfortunately we can't query it, so
+			// use an approximation to at least try to minimize the error.
+			const int padding = default_row_height_ + 8;
+
+			// Make sure the tool tip doesn't overlap with the mouse cursor.
+			// If it did, the tool tip would constantly hide and re-appear.
+			// We also push it up by one row so that it appears above the
+			// decode trace, not below.
+			QPoint p = hp;
+			p.setX(hp.x() - (text_size.width() / 2) - padding);
+
+			p.setY(get_row_y(hover_row) - default_row_height_ -
+				text_size.height() - padding);
+
+			const View *const view = owner_->view();
+			assert(view);
+			QToolTip::showText(view->viewport()->mapToGlobal(p), ann);
+
+		} else
+			QToolTip::hideText();
+
+	} else
+		QToolTip::hideText();
+}
+
+void DecodeTrace::mouse_left_press_event(const QMouseEvent* event)
+{
+	// Handle row expansion marker
+	for (RowData& r : rows_) {
+		if (!r.expand_marker_highlighted)
+			continue;
+
+		unsigned int y = get_row_y(&r);
+		if ((event->x() > 0) && (event->x() <= (int)(ArrowSize + 3)) &&
+			(event->y() > (int)(y - (default_row_height_ / 2))) &&
+			(event->y() <= (int)(y + (default_row_height_ / 2)))) {
+
+			if (r.expanded) {
+				r.collapsing = true;
+				r.expanded = false;
+				r.anim_shape = ArrowSize;
+			} else {
+				r.expanding = true;
+				r.anim_shape = 0;
+			}
+
+			r.animation_step = 0;
+			r.anim_height = r.height;
+			animation_timer_.start();
+		}
+	}
+}
+
 void DecodeTrace::draw_annotations(vector<pv::data::decode::Annotation> annotations,
 		QPainter &p, int h, const ViewItemPaintParams &pp, int y,
 		QColor row_color, int row_title_width)
@@ -681,7 +772,7 @@ void DecodeTrace::draw_range(const pv::data::decode::Annotation &a, QPainter &p,
 	const int ann_start = start + cap_width;
 	const int ann_end = end - cap_width;
 
-	const int real_start = max(ann_start, pp.left() + row_title_width);
+	const int real_start = max(ann_start, pp.left() + ArrowSize + row_title_width);
 	const int real_end = min(ann_end, pp.right());
 	const int real_width = real_end - real_start;
 
@@ -892,58 +983,6 @@ const QString DecodeTrace::get_annotation_at_point(const QPoint &point)
 		QString() : annotations[0].annotations().front();
 }
 
-void DecodeTrace::hover_point_changed(const QPoint &hp)
-{
-	Trace::hover_point_changed(hp);
-
-	assert(owner_);
-
-	RowData* hover_row = get_row_at_point(hp);
-
-	// Row expansion marker handling
-	for (RowData& r : rows_)
-		r.expand_marker_highlighted = false;
-
-	if (hover_row) {
-		int row_y = get_row_y(hover_row);
-		if ((hp.x() > 0) && (hp.x() < ArrowSize) &&
-			(hp.y() > (int)(row_y - ArrowSize)) && (hp.y() < (int)(row_y + ArrowSize)))
-			hover_row->expand_marker_highlighted = true;
-	}
-
-	// Tooltip handling
-	if (hp.x() > 0) {
-		QString ann = get_annotation_at_point(hp);
-
-		if (!ann.isEmpty()) {
-			QFontMetrics m(QToolTip::font());
-			const QRect text_size = m.boundingRect(QRect(), 0, ann);
-
-			// This is OS-specific and unfortunately we can't query it, so
-			// use an approximation to at least try to minimize the error.
-			const int padding = default_row_height_ + 8;
-
-			// Make sure the tool tip doesn't overlap with the mouse cursor.
-			// If it did, the tool tip would constantly hide and re-appear.
-			// We also push it up by one row so that it appears above the
-			// decode trace, not below.
-			QPoint p = hp;
-			p.setX(hp.x() - (text_size.width() / 2) - padding);
-
-			p.setY(get_row_y(hover_row) - default_row_height_ -
-				text_size.height() - padding);
-
-			const View *const view = owner_->view();
-			assert(view);
-			QToolTip::showText(view->viewport()->mapToGlobal(p), ann);
-
-		} else
-			QToolTip::hideText();
-
-	} else
-		QToolTip::hideText();
-}
-
 void DecodeTrace::create_decoder_form(int index,
 	shared_ptr<data::decode::Decoder> &dec, QWidget *parent,
 	QFormLayout *form)
@@ -1142,9 +1181,13 @@ void DecodeTrace::update_rows()
 			RowData nr;
 			nr.decode_row = decode_row;
 			nr.height = default_row_height_;
+			nr.expanded_height = 5*default_row_height_;
 			nr.currently_visible = false;
 			nr.expand_marker_highlighted = false;
+			nr.expanding = false;
 			nr.expanded = false;
+			nr.collapsing = false;
+			nr.expand_marker_shape = default_marker_shape_;
 
 			rows_.push_back(nr);
 			r = &rows_.back();
@@ -1214,11 +1257,6 @@ void DecodeTrace::on_pause_decode()
 		decode_signal_->resume_decode();
 	else
 		decode_signal_->pause_decode();
-}
-
-void DecodeTrace::delete_pressed()
-{
-	on_delete();
 }
 
 void DecodeTrace::on_delete()
@@ -1416,6 +1454,59 @@ void DecodeTrace::on_export_all_rows_from_here()
 		export_annotations(annotations);
 
 	delete annotations;
+}
+
+void DecodeTrace::on_animation_timer()
+{
+	bool animation_finished = true;
+
+	for (RowData& r : rows_) {
+		if (!(r.expanding || r.collapsing))
+			continue;
+
+		unsigned int height_delta = r.expanded_height - default_row_height_;
+
+		if (r.expanding) {
+			if (r.height < r.expanded_height) {
+				r.anim_height += height_delta / (float)AnimationDurationInTicks;
+				r.height = r.anim_height;
+				r.anim_shape += ArrowSize / (float)AnimationDurationInTicks;
+				animation_finished = false;
+			} else {
+				r.height = std::min(r.height, r.expanded_height);
+				r.expanding = false;
+				r.expanded = true;
+			}
+		}
+
+		if (r.collapsing) {
+			if (r.height > default_row_height_) {
+				r.anim_height -= height_delta / (float)AnimationDurationInTicks;
+				r.height = r.anim_height;
+				r.anim_shape -= ArrowSize / (float)AnimationDurationInTicks;
+				animation_finished = false;
+			} else {
+				r.height = std::max(r.height, default_row_height_);
+				r.collapsing = false;
+				r.expanded = false;
+				r.expand_marker_shape = default_marker_shape_;
+			}
+		}
+
+		// The expansion marker shape switches between
+		// 0/-A, A/0,  0/A (default state; anim_shape=0) and
+		// 0/ 0, A/A, 2A/0 (expanded state; anim_shape=ArrowSize)
+
+		r.expand_marker_shape.setPoint(0, 0, -ArrowSize + r.anim_shape);
+		r.expand_marker_shape.setPoint(1, ArrowSize, r.anim_shape);
+		r.expand_marker_shape.setPoint(2, 2*r.anim_shape, ArrowSize - r.anim_shape);
+	}
+
+	if (animation_finished)
+		animation_timer_.stop();
+
+	if (owner_)
+		owner_->row_item_appearance_changed(false, true);
 }
 
 } // namespace trace

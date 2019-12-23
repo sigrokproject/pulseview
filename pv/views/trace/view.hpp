@@ -147,7 +147,6 @@ public:
 	virtual const View* view() const;
 
 	Viewport* viewport();
-
 	const Viewport* viewport() const;
 
 	const Ruler* ruler() const;

@@ -29,6 +29,7 @@
 
 #include <QColor>
 #include <QComboBox>
+#include <QPolygon>
 #include <QPushButton>
 #include <QSignalMapper>
 #include <QTimer>
@@ -75,8 +76,11 @@ struct RowData {
 	// DecodeTrace::update_rows()
 
 	data::decode::Row decode_row;
-	unsigned int height, title_width;
-	bool exists, currently_visible, expand_marker_highlighted, expanded;
+	unsigned int height, expanded_height, title_width, animation_step;
+	bool exists, currently_visible;
+	bool expand_marker_highlighted, expanding, expanded, collapsing;
+	QPolygon expand_marker_shape;
+	float anim_height, anim_shape;
 };
 
 class DecodeTrace : public Trace
@@ -93,6 +97,7 @@ private:
 	static const int DrawPadding;
 
 	static const int MaxTraceUpdateRate;
+	static const unsigned int AnimationDurationInTicks;
 
 public:
 	DecodeTrace(pv::Session &session, shared_ptr<data::SignalBase> signalbase,
@@ -137,7 +142,11 @@ public:
 
 	virtual QMenu* create_view_context_menu(QWidget *parent, QPoint &click_pos);
 
-	void delete_pressed();
+	virtual void delete_pressed();
+
+	virtual void hover_point_changed(const QPoint &hp);
+
+	virtual void mouse_left_press_event(const QMouseEvent* event);
 
 private:
 	void draw_annotations(vector<pv::data::decode::Annotation> annotations,
@@ -200,9 +209,6 @@ private:
 
 	void update_rows();
 
-public:
-	virtual void hover_point_changed(const QPoint &hp);
-
 private Q_SLOTS:
 	void on_setting_changed(const QString &key, const QVariant &value);
 
@@ -235,6 +241,8 @@ private Q_SLOTS:
 	void on_export_row_from_here();
 	void on_export_all_rows_from_here();
 
+	void on_animation_timer();
+
 private:
 	pv::Session &session_;
 	shared_ptr<data::DecodeSignal> decode_signal_;
@@ -260,7 +268,9 @@ private:
 
 	QSignalMapper delete_mapper_, show_hide_mapper_;
 
-	QTimer delayed_trace_updater_;
+	QTimer delayed_trace_updater_, animation_timer_;
+
+	QPolygon default_marker_shape_;
 };
 
 } // namespace trace

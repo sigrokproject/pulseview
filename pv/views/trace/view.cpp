@@ -1382,6 +1382,7 @@ void View::determine_time_unit()
 bool View::eventFilter(QObject *object, QEvent *event)
 {
 	const QEvent::Type type = event->type();
+
 	if (type == QEvent::MouseMove) {
 
 		if (object)
@@ -1399,6 +1400,15 @@ bool View::eventFilter(QObject *object, QEvent *event)
 
 		update_hover_point();
 
+	} else if (type == QEvent::MouseButtonPress) {
+		const QMouseEvent *const mouse_event = (QMouseEvent*)event;
+		if ((object == viewport_) && (mouse_event->button() & Qt::LeftButton)) {
+			// Send event to all trace tree items
+			const vector<shared_ptr<TraceTreeItem>> trace_tree_items(
+				list_by_type<TraceTreeItem>());
+			for (const shared_ptr<TraceTreeItem>& r : trace_tree_items)
+				r->mouse_left_press_event(mouse_event);
+		}
 	} else if (type == QEvent::Leave) {
 		hover_point_ = QPoint(-1, -1);
 		update_hover_point();
