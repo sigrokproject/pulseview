@@ -28,7 +28,7 @@
 #include <vector>
 
 #include <QColor>
-#include <QComboBox>
+#include <QCheckBox>
 #include <QPolygon>
 #include <QPushButton>
 #include <QSignalMapper>
@@ -83,6 +83,9 @@ struct RowData {
 	float anim_height, anim_shape;
 
 	QWidget* container;
+	QWidget* header_container;
+	QWidget* selector_container;
+	vector<QCheckBox*> selectors;
 };
 
 class DecodeTrace : public Trace
@@ -92,6 +95,8 @@ class DecodeTrace : public Trace
 private:
 	static const QColor ErrorBgColor;
 	static const QColor NoDecodeColor;
+	static const uint8_t ExpansionAreaHeaderAlpha;
+	static const uint8_t ExpansionAreaAlpha;
 
 	static const int ArrowSize;
 	static const double EndCapWidth;
@@ -211,6 +216,18 @@ private:
 
 	void update_rows();
 
+	/**
+	 * Sets row r to expanded state without forcing an update of the view
+	 */
+	void set_row_expanded(RowData* r);
+
+	/**
+	 * Sets row r to collapsed state without forcing an update of the view
+	 */
+	void set_row_collapsed(RowData* r);
+
+	void update_expanded_rows();
+
 private Q_SLOTS:
 	void on_setting_changed(const QString &key, const QVariant &value);
 
@@ -233,6 +250,7 @@ private Q_SLOTS:
 	void on_delete_decoder(int index);
 
 	void on_show_hide_decoder(int index);
+	void on_show_hide_row(int index);
 
 	void on_copy_annotation_to_clipboard();
 
@@ -268,7 +286,7 @@ private:
 	int min_useful_label_width_;
 	bool always_show_all_rows_;
 
-	QSignalMapper delete_mapper_, show_hide_mapper_;
+	QSignalMapper delete_mapper_, show_hide_mapper_, row_show_hide_mapper_;
 
 	QTimer delayed_trace_updater_, animation_timer_;
 

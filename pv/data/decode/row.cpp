@@ -35,7 +35,8 @@ Row::Row() :
 Row::Row(int index, const Decoder* decoder, const srd_decoder_annotation_row* row) :
 	index_(index),
 	decoder_(decoder),
-	row_(row)
+	row_(row),
+	visible_(true)
 {
 }
 
@@ -72,6 +73,16 @@ const QString Row::class_name() const
 int Row::index() const
 {
 	return index_;
+}
+
+bool Row::visible() const
+{
+	return visible_;
+}
+
+void Row::set_visible(bool visible)
+{
+	visible_ = visible;
 }
 
 bool Row::operator<(const Row& other) const

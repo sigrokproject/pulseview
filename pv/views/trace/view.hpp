@@ -149,6 +149,8 @@ public:
 	Viewport* viewport();
 	const Viewport* viewport() const;
 
+	QAbstractScrollArea* scrollarea() const;
+
 	const Ruler* ruler() const;
 
 	virtual void save_settings(QSettings &settings) const;

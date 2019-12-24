@@ -48,6 +48,9 @@ public:
 	const QString class_name() const;
 	int index() const;
 
+	bool visible() const;
+	void set_visible(bool visible);
+
 	bool operator<(const Row& other) const;
 	bool operator==(const Row& other) const;
 
@@ -55,6 +58,7 @@ private:
 	int index_;
 	const Decoder* decoder_;
 	const srd_decoder_annotation_row* row_;
+	bool visible_;
 };
 
 }  // namespace decode

@@ -68,13 +68,13 @@ const QString GlobalSettings::Key_Log_NotifyOfStacktrace = "Log_NotifyOfStacktra
 
 vector<GlobalSettingsInterface*> GlobalSettings::callbacks_;
 bool GlobalSettings::tracking_ = false;
+bool GlobalSettings::is_dark_theme_ = false;
 map<QString, QVariant> GlobalSettings::tracked_changes_;
 QString GlobalSettings::default_style_;
 QPalette GlobalSettings::default_palette_;
 
 GlobalSettings::GlobalSettings() :
-	QSettings(),
-	is_dark_theme_(false)
+	QSettings()
 {
 	beginGroup("Settings");
 }

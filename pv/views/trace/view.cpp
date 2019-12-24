@@ -394,6 +394,11 @@ const Viewport* View::viewport() const
 	return viewport_;
 }
 
+QAbstractScrollArea* View::scrollarea() const
+{
+	return scrollarea_;
+}
+
 const Ruler* View::ruler() const
 {
 	return ruler_;

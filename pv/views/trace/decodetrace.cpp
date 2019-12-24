@@ -32,6 +32,7 @@ extern "C" {
 #include <QAction>
 #include <QApplication>
 #include <QClipboard>
+#include <QCheckBox>
 #include <QComboBox>
 #include <QFileDialog>
 #include <QFormLayout>
@@ -85,6 +86,8 @@ namespace trace {
 
 const QColor DecodeTrace::ErrorBgColor = QColor(0xEF, 0x29, 0x29);
 const QColor DecodeTrace::NoDecodeColor = QColor(0x88, 0x8A, 0x85);
+const uint8_t DecodeTrace::ExpansionAreaHeaderAlpha = 10 * 255 / 100;
+const uint8_t DecodeTrace::ExpansionAreaAlpha = 5 * 255 / 100;
 
 const int DecodeTrace::ArrowSize = 6;
 const double DecodeTrace::EndCapWidth = 5;
@@ -100,7 +103,8 @@ DecodeTrace::DecodeTrace(pv::Session &session,
 	session_(session),
 	max_visible_rows_(0),
 	delete_mapper_(this),
-	show_hide_mapper_(this)
+	show_hide_mapper_(this),
+	row_show_hide_mapper_(this)
 {
 	decode_signal_ = dynamic_pointer_cast<data::DecodeSignal>(base_);
 
@@ -140,6 +144,8 @@ DecodeTrace::DecodeTrace(pv::Session &session,
 		this, SLOT(on_delete_decoder(int)));
 	connect(&show_hide_mapper_, SIGNAL(mapped(int)),
 		this, SLOT(on_show_hide_decoder(int)));
+	connect(&row_show_hide_mapper_, SIGNAL(mapped(int)),
+		this, SLOT(on_show_hide_row(int)));
 
 	connect(&delayed_trace_updater_, SIGNAL(timeout()),
 		this, SLOT(on_delayed_trace_update()));
@@ -159,8 +165,14 @@ DecodeTrace::~DecodeTrace()
 {
 	GlobalSettings::remove_change_handler(this);
 
-	for (RowData& r : rows_)
+	for (RowData& r : rows_) {
+		for (QCheckBox* cb : r.selectors)
+			delete cb;
+
+		delete r.selector_container;
+		delete r.header_container;
 		delete r.container;
+	}
 }
 
 bool DecodeTrace::enabled() const
@@ -214,8 +226,8 @@ void DecodeTrace::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 	int y = get_visual_y();
 
 	for (RowData& r : rows_) {
-		// If an entire decoder is hidden, we don't want to fetch annotations
-		if (!r.decode_row.decoder()->shown()) {
+		// If the row is hidden, we don't want to fetch annotations
+		if ((!r.decode_row.decoder()->shown()) || (!r.decode_row.visible())) {
 			r.currently_visible = false;
 			continue;
 		}
@@ -570,14 +582,14 @@ void DecodeTrace::mouse_left_press_event(const QMouseEvent* event)
 				r.expanding = true;
 				r.anim_shape = 0;
 				r.container->setVisible(true);
+				QApplication::processEvents();
+				r.expanded_height = 5 * default_row_height_ + r.container->size().height();
 			}
 
 			r.animation_step = 0;
 			r.anim_height = r.height;
 
-			r.container->move(2 * ArrowSize,
-				get_row_y(&r) + default_row_height_);
-
+			update_expanded_rows();
 			animation_timer_.start();
 		}
 	}
@@ -1175,9 +1187,25 @@ void DecodeTrace::update_rows()
 
 	QFontMetrics m(QApplication::font());
 
+	QPalette header_palette = owner_->view()->palette();
+	QPalette selector_palette = owner_->view()->palette();
+
+	if (GlobalSettings::current_theme_is_dark()) {
+		header_palette.setColor(QPalette::Background,
+			QColor(255, 255, 255, ExpansionAreaHeaderAlpha));
+		selector_palette.setColor(QPalette::Background,
+			QColor(255, 255, 255, ExpansionAreaAlpha));
+	} else {
+		header_palette.setColor(QPalette::Background,
+			QColor(0, 0, 0, ExpansionAreaHeaderAlpha));
+		selector_palette.setColor(QPalette::Background,
+			QColor(0, 0, 0, ExpansionAreaAlpha));
+	}
+
 	for (RowData& r : rows_)
 		r.exists = false;
 
+	unsigned int row_id = 0;
 	for (const Row& decode_row : decode_signal_->get_rows()) {
 		// Find row in our list
 		auto r_it = find_if(rows_.begin(), rows_.end(),
@@ -1189,14 +1217,16 @@ void DecodeTrace::update_rows()
 			RowData nr;
 			nr.decode_row = decode_row;
 			nr.height = default_row_height_;
-			nr.expanded_height = 5*default_row_height_;
+			nr.expanded_height = default_row_height_;
 			nr.currently_visible = false;
 			nr.expand_marker_highlighted = false;
 			nr.expanding = false;
 			nr.expanded = false;
 			nr.collapsing = false;
 			nr.expand_marker_shape = default_marker_shape_;
-			nr.container = new QWidget(owner_->view()->viewport());
+			nr.container = new QWidget(owner_->view()->scrollarea());
+			nr.header_container = new QWidget(nr.container);
+			nr.selector_container = new QWidget(nr.container);
 
 			rows_.push_back(nr);
 			r = &rows_.back();
@@ -1211,6 +1241,44 @@ void DecodeTrace::update_rows()
 		r->container->resize(owner_->view()->viewport()->width() - r->container->pos().x(),
 			r->expanded_height - 2 * default_row_height_);
 		r->container->setVisible(false);
+
+		QVBoxLayout* vlayout = new QVBoxLayout();
+		r->container->setLayout(vlayout);
+
+		// Add header container with checkbox for this row
+		vlayout->addWidget(r->header_container);
+		vlayout->setContentsMargins(0, 0, 0, 0);
+		vlayout->setSpacing(0);
+		r->header_container->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+		r->header_container->setMinimumSize(0, default_row_height_);
+		r->header_container->setLayout(new QVBoxLayout());
+		r->header_container->layout()->setContentsMargins(10, 2, 0, 2);
+
+		r->header_container->setAutoFillBackground(true);
+		r->header_container->setPalette(header_palette);
+
+		QCheckBox* cb = new QCheckBox();
+		r->header_container->layout()->addWidget(cb);
+		cb->setText(tr("Show this row"));
+		cb->setChecked(r->decode_row.visible());
+
+		row_show_hide_mapper_.setMapping(cb, row_id);
+		connect(cb, SIGNAL(stateChanged(int)),
+			&row_show_hide_mapper_, SLOT(map()));
+
+		// Add selector container
+		vlayout->addWidget(r->selector_container);
+		r->selector_container->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+		r->selector_container->setMinimumSize(0, 3 * default_row_height_);                            // FIXME
+		r->selector_container->setLayout(new QVBoxLayout());
+
+		r->selector_container->setAutoFillBackground(true);
+		r->selector_container->setPalette(selector_palette);
+
+
+		// Add all classes that can be toggled
+
+		row_id++;
 	}
 
 	// Remove any rows that no longer exist, obeying that iterators are invalidated
@@ -1220,12 +1288,54 @@ void DecodeTrace::update_rows()
 
 		for (unsigned int i = 0; i < rows_.size(); i++)
 			if (!rows_[i].exists) {
+				for (QCheckBox* cb : rows_[i].selectors)
+					delete cb;
+
+				delete rows_[i].selector_container;
+				delete rows_[i].header_container;
 				delete rows_[i].container;
+
 				rows_.erase(rows_.begin() + i);
 				any_exists = true;
 				break;
 			}
 	} while (any_exists);
+}
+
+void DecodeTrace::set_row_expanded(RowData* r)
+{
+	r->height = r->expanded_height;
+	r->expanding = false;
+	r->expanded = true;
+
+	// For details on this, see on_animation_timer()
+	r->expand_marker_shape.setPoint(0, 0, 0);
+	r->expand_marker_shape.setPoint(1, ArrowSize, ArrowSize);
+	r->expand_marker_shape.setPoint(2, 2*ArrowSize, 0);
+
+	r->container->resize(owner_->view()->viewport()->width() - r->container->pos().x(),
+		r->height - 2 * default_row_height_);
+}
+
+void DecodeTrace::set_row_collapsed(RowData* r)
+{
+	r->height = default_row_height_;
+	r->collapsing = false;
+	r->expanded = false;
+	r->expand_marker_shape = default_marker_shape_;
+	r->container->setVisible(false);
+
+	r->container->resize(owner_->view()->viewport()->width() - r->container->pos().x(),
+		r->height - 2 * default_row_height_);
+}
+
+void DecodeTrace::update_expanded_rows()
+{
+	for (RowData& r : rows_) {
+
+		r.container->move(2 * ArrowSize,
+			get_row_y(&r) + default_row_height_);
+	}
 }
 
 void DecodeTrace::on_setting_changed(const QString &key, const QVariant &value)
@@ -1344,8 +1454,21 @@ void DecodeTrace::on_show_hide_decoder(int index)
 		owner_->extents_changed(false, true);
 	}
 
-	if (owner_)
-		owner_->row_item_appearance_changed(false, true);
+	owner_->row_item_appearance_changed(false, true);
+}
+
+void DecodeTrace::on_show_hide_row(int index)
+{
+	if (index >= (int)rows_.size())
+		return;
+
+	set_row_collapsed(&rows_[index]);
+	rows_[index].decode_row.set_visible(!rows_[index].decode_row.visible());
+
+	// Force re-calculation of the trace height, see paint_mid()
+	max_visible_rows_ = 0;
+	owner_->extents_changed(false, true);
+	owner_->row_item_appearance_changed(false, true);
 }
 
 void DecodeTrace::on_copy_annotation_to_clipboard()
@@ -1486,11 +1609,8 @@ void DecodeTrace::on_animation_timer()
 				r.height = r.anim_height;
 				r.anim_shape += ArrowSize / (float)AnimationDurationInTicks;
 				animation_finished = false;
-			} else {
-				r.height = std::min(r.height, r.expanded_height);
-				r.expanding = false;
-				r.expanded = true;
-			}
+			} else
+				set_row_expanded(&r);
 		}
 
 		if (r.collapsing) {
@@ -1499,13 +1619,8 @@ void DecodeTrace::on_animation_timer()
 				r.height = r.anim_height;
 				r.anim_shape -= ArrowSize / (float)AnimationDurationInTicks;
 				animation_finished = false;
-			} else {
-				r.height = std::max(r.height, default_row_height_);
-				r.collapsing = false;
-				r.expanded = false;
-				r.expand_marker_shape = default_marker_shape_;
-				r.container->setVisible(false);
-			}
+			} else
+				set_row_collapsed(&r);
 		}
 
 		// The expansion marker shape switches between
@@ -1515,16 +1630,13 @@ void DecodeTrace::on_animation_timer()
 		r.expand_marker_shape.setPoint(0, 0, -ArrowSize + r.anim_shape);
 		r.expand_marker_shape.setPoint(1, ArrowSize, r.anim_shape);
 		r.expand_marker_shape.setPoint(2, 2*r.anim_shape, ArrowSize - r.anim_shape);
-
-		r.container->resize(owner_->view()->viewport()->width() - r.container->pos().x(),
-			r.height - 2 * default_row_height_);
 	}
 
 	if (animation_finished)
 		animation_timer_.stop();
 
-	if (owner_)
-		owner_->row_item_appearance_changed(false, true);
+	owner_->extents_changed(false, true);
+	owner_->row_item_appearance_changed(false, true);
 }
 
 } // namespace trace

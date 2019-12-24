@@ -89,7 +89,7 @@ public:
 	void set_bright_theme_default_colors();
 	void set_dark_theme_default_colors();
 
-	bool current_theme_is_dark();
+	static bool current_theme_is_dark();
 	void apply_theme();
 
 	static void add_change_handler(GlobalSettingsInterface *cb);
@@ -132,7 +132,7 @@ private:
 	static QString default_style_;
 	static QPalette default_palette_;
 
-	bool is_dark_theme_;
+	static bool is_dark_theme_;
 };
 
 } // namespace pv
