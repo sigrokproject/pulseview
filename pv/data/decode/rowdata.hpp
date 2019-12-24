@@ -24,7 +24,7 @@
 
 #include <libsigrokdecode/libsigrokdecode.h>
 
-#include "annotation.hpp"
+#include <pv/data/decode/annotation.hpp>
 
 using std::vector;
 
@@ -37,7 +37,7 @@ class Row;
 class RowData
 {
 public:
-	RowData() = default;
+	RowData(Row* row);
 
 public:
 	uint64_t get_max_sample() const;
@@ -53,10 +53,11 @@ public:
 		vector<pv::data::decode::Annotation> &dest,
 		uint64_t start_sample, uint64_t end_sample) const;
 
-	void emplace_annotation(srd_proto_data *pdata, const Row *row);
+	void emplace_annotation(srd_proto_data *pdata);
 
 private:
 	vector<Annotation> annotations_;
+	const Row* row_;
 };
 
 }  // namespace decode

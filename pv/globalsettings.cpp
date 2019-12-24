@@ -130,8 +130,10 @@ void GlobalSettings::set_defaults_where_needed()
 	if (!contains(Key_View_SnapDistance))
 		setValue(Key_View_SnapDistance, 15);
 
-	if (!contains(Key_Dec_ExportFormat))
-		setValue(Key_Dec_ExportFormat, "%s %d: %c: %1");
+	// %c was used for the row name in the past so we need to transition such users
+	if (!contains(Key_Dec_ExportFormat) ||
+		value(Key_Dec_ExportFormat).toString() == "%s %d: %c: %1")
+		setValue(Key_Dec_ExportFormat, "%s %d: %r: %1");
 
 	// Default to 500 lines of backlog
 	if (!contains(Key_Log_BufferSize))

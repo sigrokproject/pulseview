@@ -41,14 +41,44 @@ Decoder::Decoder(const srd_decoder *const dec) :
 	shown_(true),
 	decoder_inst_(nullptr)
 {
-	// Query the decoder outputs
+	// Query the annotation output classes
 	uint32_t i = 0;
+	for (GSList *l = dec->annotations; l; l = l->next) {
+		char **ann_class = (char**)l->data;
+		char *name = ann_class[0];
+		char *desc = ann_class[1];
+		ann_classes_.push_back({i++, name, desc, nullptr, true}); // Visible by default
+	}
+
+	// Query the binary output classes
+	i = 0;
 	for (GSList *l = dec->binary; l; l = l->next) {
 		char **bin_class = (char**)l->data;
 		char *name = bin_class[0];
 		char *desc = bin_class[1];
 		bin_classes_.push_back({i++, name, desc});
 	}
+
+	// Query the annotation rows and reference them by the classes that use them
+	uint32_t row_count = 0;
+	for (const GSList *rl = srd_decoder_->annotation_rows; rl; rl = rl->next)
+		row_count++;
+	rows_.reserve(row_count);
+
+	i = 0;
+	for (const GSList *rl = srd_decoder_->annotation_rows; rl; rl = rl->next) {
+		const srd_decoder_annotation_row *const srd_row = (srd_decoder_annotation_row *)rl->data;
+		assert(srd_row);
+		rows_.push_back({i++, this, srd_row});
+
+		// FIXME PV can crash from .at() if a PD's ann classes are defined incorrectly
+		for (const GSList *cl = srd_row->ann_classes; cl; cl = cl->next)
+			ann_classes_.at((size_t)cl->data).row = &(rows_.back());
+	}
+
+	if (rows_.empty())
+		// Make sure there is a row for PDs without row declarations
+		rows_.emplace_back(0, this);
 }
 
 Decoder::~Decoder()
@@ -57,7 +87,7 @@ Decoder::~Decoder()
 		g_variant_unref(option.second);
 }
 
-const srd_decoder* Decoder::decoder() const
+const srd_decoder* Decoder::get_srd_decoder() const
 {
 	return srd_decoder_;
 }
@@ -182,6 +212,42 @@ srd_decoder_inst* Decoder::create_decoder_inst(srd_session *session)
 void Decoder::invalidate_decoder_inst()
 {
 	decoder_inst_ = nullptr;
+}
+
+vector<Row*> Decoder::get_rows()
+{
+	vector<Row*> result;
+
+	for (Row& row : rows_)
+		result.push_back(&row);
+
+	return result;
+}
+
+Row* Decoder::get_row_by_id(size_t id)
+{
+	if (id > rows_.size())
+		return nullptr;
+
+	return &(rows_[id]);
+}
+
+vector<const AnnotationClass*> Decoder::ann_classes() const
+{
+	vector<const AnnotationClass*> result;
+
+	for (const AnnotationClass& c : ann_classes_)
+		result.push_back(&c);
+
+	return result;
+}
+
+AnnotationClass* Decoder::get_ann_class_by_id(size_t id)
+{
+	if (id >= ann_classes_.size())
+		return nullptr;
+
+	return &(ann_classes_[id]);
 }
 
 uint32_t Decoder::get_binary_class_count() const

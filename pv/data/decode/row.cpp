@@ -27,15 +27,17 @@ namespace data {
 namespace decode {
 
 Row::Row() :
+	index_(0),
 	decoder_(nullptr),
-	row_(nullptr)
+	srd_row_(nullptr),
+	visible_(true)
 {
 }
 
-Row::Row(int index, const Decoder* decoder, const srd_decoder_annotation_row* row) :
+Row::Row(uint32_t index, Decoder* decoder, const srd_decoder_annotation_row* srd_row) :
 	index_(index),
 	decoder_(decoder),
-	row_(row),
+	srd_row_(srd_row),
 	visible_(true)
 {
 }
@@ -45,32 +47,49 @@ const Decoder* Row::decoder() const
 	return decoder_;
 }
 
-const srd_decoder_annotation_row* Row::srd_row() const
+const srd_decoder_annotation_row* Row::get_srd_row() const
 {
-	return row_;
+	return srd_row_;
 }
 
 const QString Row::title() const
 {
-	if (decoder_ && decoder_->name() && row_ && row_->desc)
+	if (decoder_ && decoder_->name() && srd_row_ && srd_row_->desc)
 		return QString("%1: %2")
 			.arg(QString::fromUtf8(decoder_->name()),
-			     QString::fromUtf8(row_->desc));
+			     QString::fromUtf8(srd_row_->desc));
 	if (decoder_ && decoder_->name())
 		return QString::fromUtf8(decoder_->name());
-	if (row_ && row_->desc)
-		return QString::fromUtf8(row_->desc);
+	if (srd_row_ && srd_row_->desc)
+		return QString::fromUtf8(srd_row_->desc);
+
 	return QString();
 }
 
-const QString Row::class_name() const
+const QString Row::description() const
 {
-	if (row_ && row_->desc)
-		return QString::fromUtf8(row_->desc);
+	if (srd_row_ && srd_row_->desc)
+		return QString::fromUtf8(srd_row_->desc);
 	return QString();
 }
 
-int Row::index() const
+vector<AnnotationClass*> Row::ann_classes() const
+{
+	vector<AnnotationClass*> result;
+
+	if (!srd_row_)
+		return result;
+	assert(decoder_);
+
+	for (GSList *l = srd_row_->ann_classes; l; l = l->next) {
+		size_t class_id = (size_t)l->data;
+		result.push_back(decoder_->get_ann_class_by_id(class_id));
+	}
+
+	return result;
+}
+
+uint32_t Row::index() const
 {
 	return index_;
 }
@@ -88,12 +107,12 @@ void Row::set_visible(bool visible)
 bool Row::operator<(const Row& other) const
 {
 	return (decoder_ < other.decoder_) ||
-		(decoder_ == other.decoder_ && row_ < other.row_);
+		(decoder_ == other.decoder_ && srd_row_ < other.srd_row_);
 }
 
 bool Row::operator==(const Row& other) const
 {
-	return ((decoder_ == other.decoder()) && (row_ == other.srd_row()));
+	return ((decoder_ == other.decoder()) && (srd_row_ == other.srd_row_));
 }
 
 }  // namespace decode

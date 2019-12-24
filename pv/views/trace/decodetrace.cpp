@@ -72,6 +72,7 @@ using std::tie;
 using std::vector;
 
 using pv::data::decode::Annotation;
+using pv::data::decode::AnnotationClass;
 using pv::data::decode::Row;
 using pv::data::decode::DecodeChannel;
 using pv::data::DecodeSignal;
@@ -146,6 +147,8 @@ DecodeTrace::DecodeTrace(pv::Session &session,
 		this, SLOT(on_show_hide_decoder(int)));
 	connect(&row_show_hide_mapper_, SIGNAL(mapped(int)),
 		this, SLOT(on_show_hide_row(int)));
+	connect(&class_show_hide_mapper_, SIGNAL(mapped(QWidget*)),
+		this, SLOT(on_show_hide_class(QWidget*)));
 
 	connect(&delayed_trace_updater_, SIGNAL(timeout()),
 		this, SLOT(on_delayed_trace_update()));
@@ -165,7 +168,7 @@ DecodeTrace::~DecodeTrace()
 {
 	GlobalSettings::remove_change_handler(this);
 
-	for (RowData& r : rows_) {
+	for (DecodeTraceRow& r : rows_) {
 		for (QCheckBox* cb : r.selectors)
 			delete cb;
 
@@ -192,7 +195,7 @@ pair<int, int> DecodeTrace::v_extents() const
 		return make_pair(-default_row_height_, default_row_height_);
 
 	unsigned int height = 0;
-	for (const RowData& r : rows_)
+	for (const DecodeTraceRow& r : rows_)
 		if (r.currently_visible)
 			height += r.height;
 
@@ -220,14 +223,14 @@ void DecodeTrace::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 	sample_range.second = min((int64_t)sample_range.second,
 		decode_signal_->get_decoded_sample_count(current_segment_, false));
 
-	for (RowData& r : rows_)
-		r.currently_visible = false;
 	visible_rows_ = 0;
 	int y = get_visual_y();
 
-	for (RowData& r : rows_) {
+	for (DecodeTraceRow& r : rows_) {
 		// If the row is hidden, we don't want to fetch annotations
-		if ((!r.decode_row.decoder()->shown()) || (!r.decode_row.visible())) {
+		assert(r.decode_row);
+		assert(r.decode_row->decoder());
+		if ((!r.decode_row->decoder()->shown()) || (!r.decode_row->visible())) {
 			r.currently_visible = false;
 			continue;
 		}
@@ -238,12 +241,15 @@ void DecodeTrace::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 
 		// Show row if there are visible annotations or when user wants to see
 		// all rows that have annotations somewhere and this one is one of them
-		size_t ann_count = decode_signal_->get_annotation_count(r.decode_row, current_segment_);
-		r.currently_visible = !annotations.empty() || (always_show_all_rows_ && (ann_count > 0));
+		r.currently_visible = !annotations.empty();
+		if (!r.currently_visible) {
+			size_t ann_count = decode_signal_->get_annotation_count(r.decode_row, current_segment_);
+			r.currently_visible = always_show_all_rows_ && (ann_count > 0);
+		}
 
 		if (r.currently_visible) {
 			draw_annotations(annotations, p, annotation_height_, pp, y,
-				get_row_color(r.decode_row.index()), r.title_width);
+				get_row_color(r.decode_row->index()), r.title_width);
 			y += r.height;
 			visible_rows_++;
 		}
@@ -268,7 +274,7 @@ void DecodeTrace::paint_fore(QPainter &p, ViewItemPaintParams &pp)
 {
 	unsigned int y = get_visual_y();
 
-	for (const RowData& r : rows_) {
+	for (const DecodeTraceRow& r : rows_) {
 		if (!r.currently_visible)
 			continue;
 
@@ -288,7 +294,7 @@ void DecodeTrace::paint_fore(QPainter &p, ViewItemPaintParams &pp)
 
 		const QRect text_rect(pp.left() + ArrowSize * 2, y - r.height / 2,
 			pp.right() - pp.left(), r.height);
-		const QString h(r.decode_row.title());
+		const QString h(r.decode_row->title());
 		const int f = Qt::AlignLeft | Qt::AlignVCenter |
 			Qt::TextDontClip;
 
@@ -316,7 +322,7 @@ void DecodeTrace::update_stack_button()
 
 	// Only show decoders in the menu that can be stacked onto the last one in the stack
 	if (!stack.empty()) {
-		const srd_decoder* d = stack.back()->decoder();
+		const srd_decoder* d = stack.back()->get_srd_decoder();
 
 		if (d->outputs) {
 			pv::widgets::DecoderMenu *const decoder_menu =
@@ -414,9 +420,9 @@ QMenu* DecodeTrace::create_view_context_menu(QWidget *parent, QPoint &click_pos)
 	}
 
 	selected_row_ = nullptr;
-	const RowData* r = get_row_at_point(click_pos);
+	const DecodeTraceRow* r = get_row_at_point(click_pos);
 	if (r)
-		selected_row_ = &(r->decode_row);
+		selected_row_ = r->decode_row;
 
 	const View *const view = owner_->view();
 	assert(view);
@@ -516,10 +522,10 @@ void DecodeTrace::hover_point_changed(const QPoint &hp)
 
 	assert(owner_);
 
-	RowData* hover_row = get_row_at_point(hp);
+	DecodeTraceRow* hover_row = get_row_at_point(hp);
 
 	// Row expansion marker handling
-	for (RowData& r : rows_)
+	for (DecodeTraceRow& r : rows_)
 		r.expand_marker_highlighted = false;
 
 	if (hover_row) {
@@ -565,7 +571,7 @@ void DecodeTrace::hover_point_changed(const QPoint &hp)
 void DecodeTrace::mouse_left_press_event(const QMouseEvent* event)
 {
 	// Handle row expansion marker
-	for (RowData& r : rows_) {
+	for (DecodeTraceRow& r : rows_) {
 		if (!r.expand_marker_highlighted)
 			continue;
 
@@ -941,13 +947,13 @@ QColor DecodeTrace::get_annotation_color(QColor row_color, int annotation_index)
 	return color;
 }
 
-unsigned int DecodeTrace::get_row_y(const RowData* row) const
+unsigned int DecodeTrace::get_row_y(const DecodeTraceRow* row) const
 {
 	assert(row);
 
 	unsigned int y = get_visual_y();
 
-	for (const RowData& r : rows_) {
+	for (const DecodeTraceRow& r : rows_) {
 		if (!r.currently_visible)
 			continue;
 
@@ -960,11 +966,11 @@ unsigned int DecodeTrace::get_row_y(const RowData* row) const
 	return y;
 }
 
-RowData* DecodeTrace::get_row_at_point(const QPoint &point)
+DecodeTraceRow* DecodeTrace::get_row_at_point(const QPoint &point)
 {
 	int y = get_visual_y() - (default_row_height_ / 2);
 
-	for (RowData& r : rows_) {
+	for (DecodeTraceRow& r : rows_) {
 		if (!r.currently_visible)
 			continue;
 
@@ -986,7 +992,7 @@ const QString DecodeTrace::get_annotation_at_point(const QPoint &point)
 
 	const pair<uint64_t, uint64_t> sample_range =
 		get_view_sample_range(point.x(), point.x() + 1);
-	const RowData* r = get_row_at_point(point);
+	const DecodeTraceRow* r = get_row_at_point(point);
 
 	if (!r)
 		return QString();
@@ -1010,7 +1016,7 @@ void DecodeTrace::create_decoder_form(int index,
 	GlobalSettings settings;
 
 	assert(dec);
-	const srd_decoder *const decoder = dec->decoder();
+	const srd_decoder *const decoder = dec->get_srd_decoder();
 	assert(decoder);
 
 	const bool decoder_deletable = index > 0;
@@ -1151,7 +1157,7 @@ void DecodeTrace::export_annotations(vector<Annotation> *annotations) const
 			const QString sample_range = QString("%1-%2") \
 				.arg(QString::number(ann.start_sample()), QString::number(ann.end_sample()));
 
-			const QString class_name = quote + ann.row()->class_name() + quote;
+			const QString row_name = quote + ann.row()->description() + quote;
 
 			QString all_ann_text;
 			for (const QString &s : ann.annotations())
@@ -1164,7 +1170,7 @@ void DecodeTrace::export_annotations(vector<Annotation> *annotations) const
 			out_text = out_text.replace("%s", sample_range);
 			out_text = out_text.replace("%d",
 				quote + QString::fromUtf8(ann.row()->decoder()->name()) + quote);
-			out_text = out_text.replace("%c", class_name);
+			out_text = out_text.replace("%r", row_name);
 			out_text = out_text.replace("%1", first_ann_text);
 			out_text = out_text.replace("%a", all_ann_text);
 			out_stream << out_text << '\n';
@@ -1181,10 +1187,8 @@ void DecodeTrace::export_annotations(vector<Annotation> *annotations) const
 	msg.exec();
 }
 
-void DecodeTrace::update_rows()
+void DecodeTrace::initialize_row_widgets(DecodeTraceRow* r, unsigned int row_id)
 {
-	lock_guard<mutex> lock(row_modification_mutex_);
-
 	QFontMetrics m(QApplication::font());
 
 	QPalette header_palette = owner_->view()->palette();
@@ -1202,19 +1206,80 @@ void DecodeTrace::update_rows()
 			QColor(0, 0, 0, ExpansionAreaAlpha));
 	}
 
-	for (RowData& r : rows_)
+	const int w = m.boundingRect(r->decode_row->title()).width() + RowTitleMargin;
+	r->title_width = w;
+
+	r->container->resize(owner_->view()->viewport()->width() - r->container->pos().x(),
+		r->expanded_height - 2 * default_row_height_);
+	r->container->setVisible(false);
+
+	QVBoxLayout* vlayout = new QVBoxLayout();
+	r->container->setLayout(vlayout);
+
+	// Add header container with checkbox for this row
+	vlayout->addWidget(r->header_container);
+	vlayout->setContentsMargins(0, 0, 0, 0);
+	vlayout->setSpacing(0);
+	r->header_container->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+	r->header_container->setMinimumSize(0, default_row_height_);
+	r->header_container->setLayout(new QVBoxLayout());
+	r->header_container->layout()->setContentsMargins(10, 2, 0, 2);
+
+	r->header_container->setAutoFillBackground(true);
+	r->header_container->setPalette(header_palette);
+
+	QCheckBox* cb = new QCheckBox();
+	r->header_container->layout()->addWidget(cb);
+	cb->setText(tr("Show this row"));
+	cb->setChecked(r->decode_row->visible());
+
+	row_show_hide_mapper_.setMapping(cb, row_id);
+	connect(cb, SIGNAL(stateChanged(int)),
+		&row_show_hide_mapper_, SLOT(map()));
+
+	// Add selector container
+	vlayout->addWidget(r->selector_container);
+	r->selector_container->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+	r->selector_container->setMinimumSize(0, 3 * default_row_height_);                            // FIXME
+	r->selector_container->setLayout(new QHBoxLayout());
+
+	r->selector_container->setAutoFillBackground(true);
+	r->selector_container->setPalette(selector_palette);
+
+	// Add all classes that can be toggled
+	vector<AnnotationClass*> ann_classes = r->decode_row->ann_classes();
+
+	for (const AnnotationClass* ann_class : ann_classes) {
+		cb = new QCheckBox();
+		cb->setText(tr(ann_class->description));
+		cb->setChecked(ann_class->visible);
+
+		r->selector_container->layout()->addWidget(cb);
+
+		cb->setProperty("ann_class_ptr", QVariant::fromValue((void*)ann_class));
+		class_show_hide_mapper_.setMapping(cb, cb);
+		connect(cb, SIGNAL(stateChanged(int)),
+			&class_show_hide_mapper_, SLOT(map()));
+	}
+}
+
+void DecodeTrace::update_rows()
+{
+	lock_guard<mutex> lock(row_modification_mutex_);
+
+	for (DecodeTraceRow& r : rows_)
 		r.exists = false;
 
 	unsigned int row_id = 0;
-	for (const Row& decode_row : decode_signal_->get_rows()) {
+	for (Row* decode_row : decode_signal_->get_rows()) {
 		// Find row in our list
 		auto r_it = find_if(rows_.begin(), rows_.end(),
-			[&](RowData& r){ return r.decode_row == decode_row; });
+			[&](DecodeTraceRow& r){ return r.decode_row == decode_row; });
 
-		RowData* r = nullptr;
+		DecodeTraceRow* r = nullptr;
 		if (r_it == rows_.end()) {
 			// Row doesn't exist yet, create and append it
-			RowData nr;
+			DecodeTraceRow nr;
 			nr.decode_row = decode_row;
 			nr.height = default_row_height_;
 			nr.expanded_height = default_row_height_;
@@ -1230,54 +1295,11 @@ void DecodeTrace::update_rows()
 
 			rows_.push_back(nr);
 			r = &rows_.back();
+			initialize_row_widgets(r, row_id);
 		} else
 			r = &(*r_it);
 
 		r->exists = true;
-
-		const int w = m.boundingRect(r->decode_row.title()).width() + RowTitleMargin;
-		r->title_width = w;
-
-		r->container->resize(owner_->view()->viewport()->width() - r->container->pos().x(),
-			r->expanded_height - 2 * default_row_height_);
-		r->container->setVisible(false);
-
-		QVBoxLayout* vlayout = new QVBoxLayout();
-		r->container->setLayout(vlayout);
-
-		// Add header container with checkbox for this row
-		vlayout->addWidget(r->header_container);
-		vlayout->setContentsMargins(0, 0, 0, 0);
-		vlayout->setSpacing(0);
-		r->header_container->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-		r->header_container->setMinimumSize(0, default_row_height_);
-		r->header_container->setLayout(new QVBoxLayout());
-		r->header_container->layout()->setContentsMargins(10, 2, 0, 2);
-
-		r->header_container->setAutoFillBackground(true);
-		r->header_container->setPalette(header_palette);
-
-		QCheckBox* cb = new QCheckBox();
-		r->header_container->layout()->addWidget(cb);
-		cb->setText(tr("Show this row"));
-		cb->setChecked(r->decode_row.visible());
-
-		row_show_hide_mapper_.setMapping(cb, row_id);
-		connect(cb, SIGNAL(stateChanged(int)),
-			&row_show_hide_mapper_, SLOT(map()));
-
-		// Add selector container
-		vlayout->addWidget(r->selector_container);
-		r->selector_container->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-		r->selector_container->setMinimumSize(0, 3 * default_row_height_);                            // FIXME
-		r->selector_container->setLayout(new QVBoxLayout());
-
-		r->selector_container->setAutoFillBackground(true);
-		r->selector_container->setPalette(selector_palette);
-
-
-		// Add all classes that can be toggled
-
 		row_id++;
 	}
 
@@ -1302,7 +1324,7 @@ void DecodeTrace::update_rows()
 	} while (any_exists);
 }
 
-void DecodeTrace::set_row_expanded(RowData* r)
+void DecodeTrace::set_row_expanded(DecodeTraceRow* r)
 {
 	r->height = r->expanded_height;
 	r->expanding = false;
@@ -1315,9 +1337,11 @@ void DecodeTrace::set_row_expanded(RowData* r)
 
 	r->container->resize(owner_->view()->viewport()->width() - r->container->pos().x(),
 		r->height - 2 * default_row_height_);
+
+	max_visible_rows_ = 0;
 }
 
-void DecodeTrace::set_row_collapsed(RowData* r)
+void DecodeTrace::set_row_collapsed(DecodeTraceRow* r)
 {
 	r->height = default_row_height_;
 	r->collapsing = false;
@@ -1327,11 +1351,13 @@ void DecodeTrace::set_row_collapsed(RowData* r)
 
 	r->container->resize(owner_->view()->viewport()->width() - r->container->pos().x(),
 		r->height - 2 * default_row_height_);
+
+	max_visible_rows_ = 0;
 }
 
 void DecodeTrace::update_expanded_rows()
 {
-	for (RowData& r : rows_) {
+	for (DecodeTraceRow& r : rows_) {
 
 		r.container->move(2 * ArrowSize,
 			get_row_y(&r) + default_row_height_);
@@ -1457,17 +1483,28 @@ void DecodeTrace::on_show_hide_decoder(int index)
 	owner_->row_item_appearance_changed(false, true);
 }
 
-void DecodeTrace::on_show_hide_row(int index)
+void DecodeTrace::on_show_hide_row(int row_id)
 {
-	if (index >= (int)rows_.size())
+	if (row_id >= (int)rows_.size())
 		return;
 
-	set_row_collapsed(&rows_[index]);
-	rows_[index].decode_row.set_visible(!rows_[index].decode_row.visible());
+	set_row_collapsed(&rows_[row_id]);
+	rows_[row_id].decode_row->set_visible(!rows_[row_id].decode_row->visible());
 
 	// Force re-calculation of the trace height, see paint_mid()
 	max_visible_rows_ = 0;
 	owner_->extents_changed(false, true);
+	owner_->row_item_appearance_changed(false, true);
+}
+
+void DecodeTrace::on_show_hide_class(QWidget* sender)
+{
+	void* ann_class_ptr = sender->property("ann_class_ptr").value<void*>();
+	assert(ann_class_ptr);
+
+	AnnotationClass* ann_class = (AnnotationClass*)ann_class_ptr;
+	ann_class->visible = !ann_class->visible;
+
 	owner_->row_item_appearance_changed(false, true);
 }
 
@@ -1480,7 +1517,7 @@ void DecodeTrace::on_copy_annotation_to_clipboard()
 
 	vector<Annotation> *annotations = new vector<Annotation>();
 
-	decode_signal_->get_annotation_subset(*annotations, *selected_row_,
+	decode_signal_->get_annotation_subset(*annotations, selected_row_,
 		current_segment_, selected_sample_range_.first, selected_sample_range_.first);
 
 	if (annotations->empty())
@@ -1568,7 +1605,7 @@ void DecodeTrace::on_export_row_from_here()
 
 	vector<Annotation> *annotations = new vector<Annotation>();
 
-	decode_signal_->get_annotation_subset(*annotations, *selected_row_,
+	decode_signal_->get_annotation_subset(*annotations, selected_row_,
 		current_segment_, selected_sample_range_.first, selected_sample_range_.second);
 
 	if (annotations->empty())
@@ -1597,7 +1634,7 @@ void DecodeTrace::on_animation_timer()
 {
 	bool animation_finished = true;
 
-	for (RowData& r : rows_) {
+	for (DecodeTraceRow& r : rows_) {
 		if (!(r.expanding || r.collapsing))
 			continue;
 

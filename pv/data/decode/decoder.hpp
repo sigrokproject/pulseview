@@ -28,6 +28,7 @@
 #include <glib.h>
 
 #include <pv/data/signalbase.hpp>
+#include <pv/data/decode/row.hpp>
 
 using std::map;
 using std::string;
@@ -48,6 +49,15 @@ class SignalBase;
 namespace decode {
 
 class Decoder;
+
+struct AnnotationClass
+{
+	size_t id;
+	char* name;
+	char* description;
+	Row* row;
+	bool visible;
+};
 
 struct DecodeChannel
 {
@@ -76,7 +86,7 @@ public:
 
 	virtual ~Decoder();
 
-	const srd_decoder* decoder() const;
+	const srd_decoder* get_srd_decoder() const;
 
 	const char* name() const;
 
@@ -97,6 +107,12 @@ public:
 	srd_decoder_inst* create_decoder_inst(srd_session *session);
 	void invalidate_decoder_inst();
 
+	vector<Row*> get_rows();
+	Row* get_row_by_id(size_t id);
+
+	vector<const AnnotationClass*> ann_classes() const;
+	AnnotationClass* get_ann_class_by_id(size_t id);
+
 	uint32_t get_binary_class_count() const;
 	const DecodeBinaryClassInfo* get_binary_class(uint32_t id) const;
 
@@ -106,6 +122,8 @@ private:
 	bool shown_;
 
 	vector<DecodeChannel*> channels_;
+	vector<Row> rows_;
+	vector<AnnotationClass> ann_classes_;
 	vector<DecodeBinaryClassInfo> bin_classes_;
 	map<string, GVariant*> options_;
 	srd_decoder_inst *decoder_inst_;

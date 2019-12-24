@@ -54,12 +54,11 @@ Decoder::Decoder(
 {
 	assert(decoder_);
 
-	const srd_decoder *const dec = decoder_->decoder();
+	const srd_decoder *const dec = decoder_->get_srd_decoder();
 	assert(dec);
 
 	for (GSList *l = dec->options; l; l = l->next) {
-		const srd_decoder_option *const opt =
-			(srd_decoder_option*)l->data;
+		const srd_decoder_option *const opt = (srd_decoder_option*)l->data;
 
 		const QString name = QString::fromUtf8(opt->desc);
 
@@ -115,12 +114,11 @@ Glib::VariantBase Decoder::getter(const char *id)
 	if (iter != options.end())
 		val = (*iter).second;
 	else {
-		assert(decoder_->decoder());
+		assert(decoder_->get_srd_decoder());
 
 		// Get the default value if not
-		for (GSList *l = decoder_->decoder()->options; l; l = l->next) {
-			const srd_decoder_option *const opt =
-				(srd_decoder_option*)l->data;
+		for (GSList *l = decoder_->get_srd_decoder()->options; l; l = l->next) {
+			const srd_decoder_option *const opt = (srd_decoder_option*)l->data;
 			if (strcmp(opt->id, id) == 0) {
 				val = opt->def;
 				break;

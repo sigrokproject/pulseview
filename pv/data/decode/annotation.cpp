@@ -24,7 +24,7 @@ extern "C" {
 #include <cassert>
 #include <vector>
 
-#include "annotation.hpp"
+#include <pv/data/decode/annotation.hpp>
 
 using std::vector;
 
@@ -49,6 +49,8 @@ Annotation::Annotation(const srd_proto_data *const pdata, const Row *row) :
 		annotations_.push_back(QString::fromUtf8(*annotations));
 		annotations++;
 	}
+
+	annotations_.shrink_to_fit();
 }
 
 uint64_t Annotation::start_sample() const

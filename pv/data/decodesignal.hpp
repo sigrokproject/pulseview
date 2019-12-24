@@ -46,16 +46,17 @@ using std::pair;
 using std::vector;
 using std::shared_ptr;
 
+using pv::data::decode::Annotation;
+using pv::data::decode::DecodeBinaryClassInfo;
+using pv::data::decode::DecodeChannel;
+using pv::data::decode::Decoder;
+using pv::data::decode::Row;
+using pv::data::decode::RowData;
+
 namespace pv {
 class Session;
 
 namespace data {
-
-namespace decode {
-class Annotation;
-class Decoder;
-class Row;
-}
 
 class Logic;
 class LogicSegment;
@@ -70,14 +71,14 @@ struct DecodeBinaryDataChunk
 
 struct DecodeBinaryClass
 {
-	const decode::Decoder* decoder;
-	const decode::DecodeBinaryClassInfo* info;
+	const Decoder* decoder;
+	const DecodeBinaryClassInfo* info;
 	deque<DecodeBinaryDataChunk> chunks;
 };
 
 struct DecodeSegment
 {
-	map<const decode::Row, decode::RowData> annotation_rows;
+	map<const Row*, RowData> annotation_rows;
 	pv::util::Timestamp start_time;
 	double samplerate;
 	int64_t samples_decoded_incl, samples_decoded_excl;
@@ -98,7 +99,7 @@ public:
 	virtual ~DecodeSignal();
 
 	bool is_decode_signal() const;
-	const vector< shared_ptr<data::decode::Decoder> >& decoder_stack() const;
+	const vector< shared_ptr<Decoder> >& decoder_stack() const;
 
 	void stack_decoder(const srd_decoder *decoder, bool restart_decode=true);
 	void remove_decoder(int index);
@@ -111,8 +112,8 @@ public:
 	bool is_paused() const;
 	QString error_message() const;
 
-	const vector<data::decode::DecodeChannel> get_channels() const;
-	void auto_assign_signals(const shared_ptr<pv::data::decode::Decoder> dec);
+	const vector<decode::DecodeChannel> get_channels() const;
+	void auto_assign_signals(const shared_ptr<Decoder> dec);
 	void assign_signal(const uint16_t channel_id, const SignalBase *signal);
 	int get_assigned_signal_count() const;
 
@@ -139,44 +140,42 @@ public:
 	int64_t get_decoded_sample_count(uint32_t segment_id,
 		bool include_processing) const;
 
-	vector<decode::Row> get_rows(bool visible_only=false) const;
+	vector<Row*> get_rows(bool visible_only=false);
+	vector<const Row*> get_rows(bool visible_only=false) const;
 
-	uint64_t get_annotation_count(const decode::Row &row, uint32_t segment_id) const;
+	uint64_t get_annotation_count(const Row* row, uint32_t segment_id) const;
 
 	/**
 	 * Extracts annotations from a single row into a vector.
 	 * Note: The annotations may be unsorted and only annotations that fully
 	 * fit into the sample range are considered.
 	 */
-	void get_annotation_subset(
-		vector<pv::data::decode::Annotation> &dest,
-		const decode::Row &row, uint32_t segment_id, uint64_t start_sample,
-		uint64_t end_sample) const;
+	void get_annotation_subset(vector<Annotation> &dest, const Row* row,
+		uint32_t segment_id, uint64_t start_sample, uint64_t end_sample) const;
 
 	/**
 	 * Extracts annotations from all rows into a vector.
 	 * Note: The annotations may be unsorted and only annotations that fully
 	 * fit into the sample range are considered.
 	 */
-	void get_annotation_subset(
-		vector<pv::data::decode::Annotation> &dest,
-		uint32_t segment_id, uint64_t start_sample, uint64_t end_sample) const;
+	void get_annotation_subset(vector<Annotation> &dest, uint32_t segment_id,
+		uint64_t start_sample, uint64_t end_sample) const;
 
 	uint32_t get_binary_data_chunk_count(uint32_t segment_id,
-		const data::decode::Decoder* dec, uint32_t bin_class_id) const;
-	void get_binary_data_chunk(uint32_t segment_id, const data::decode::Decoder* dec,
+		const Decoder* dec, uint32_t bin_class_id) const;
+	void get_binary_data_chunk(uint32_t segment_id, const Decoder* dec,
 		uint32_t bin_class_id, uint32_t chunk_id, const vector<uint8_t> **dest,
 		uint64_t *size);
 	void get_merged_binary_data_chunks_by_sample(uint32_t segment_id,
-		const data::decode::Decoder* dec, uint32_t bin_class_id,
+		const Decoder* dec, uint32_t bin_class_id,
 		uint64_t start_sample, uint64_t end_sample,
 		vector<uint8_t> *dest) const;
 	void get_merged_binary_data_chunks_by_offset(uint32_t segment_id,
-		const data::decode::Decoder* dec, uint32_t bin_class_id,
+		const Decoder* dec, uint32_t bin_class_id,
 		uint64_t start, uint64_t end,
 		vector<uint8_t> *dest) const;
 	const DecodeBinaryClass* get_binary_data_class(uint32_t segment_id,
-		const data::decode::Decoder* dec, uint32_t bin_class_id) const;
+		const Decoder* dec, uint32_t bin_class_id) const;
 
 	virtual void save_settings(QSettings &settings) const;
 
@@ -186,20 +185,19 @@ private:
 	void set_error_message(QString msg);
 
 	uint32_t get_input_segment_count() const;
-
 	uint32_t get_input_samplerate(uint32_t segment_id) const;
+
+	Decoder* get_decoder_by_instance(const srd_decoder *const srd_dec);
 
 	void update_channel_list();
 
 	void commit_decoder_channels();
 
 	void mux_logic_samples(uint32_t segment_id, const int64_t start, const int64_t end);
-
 	void logic_mux_proc();
 
 	void decode_data(const int64_t abs_start_samplenum, const int64_t sample_count,
 		const shared_ptr<LogicSegment> input_segment);
-
 	void decode_proc();
 
 	void start_srd_session();
@@ -230,7 +228,7 @@ private Q_SLOTS:
 private:
 	pv::Session &session_;
 
-	vector<data::decode::DecodeChannel> channels_;
+	vector<decode::DecodeChannel> channels_;
 
 	struct srd_session *srd_session_;
 
@@ -238,9 +236,8 @@ private:
 	uint32_t logic_mux_unit_size_;
 	bool logic_mux_data_invalid_;
 
-	vector< shared_ptr<decode::Decoder> > stack_;
+	vector< shared_ptr<Decoder> > stack_;
 	bool stack_config_changed_;
-	map<pair<const srd_decoder*, int>, decode::Row> class_rows_;
 
 	vector<DecodeSegment> segments_;
 	uint32_t current_segment_id_;

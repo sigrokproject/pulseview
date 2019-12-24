@@ -48,6 +48,8 @@ using std::pair;
 using std::shared_ptr;
 using std::vector;
 
+using pv::data::decode::Row;
+
 struct srd_channel;
 struct srd_decoder;
 
@@ -61,6 +63,7 @@ class DecodeSignal;
 
 namespace decode {
 class Decoder;
+class Row;
 }
 }  // namespace data
 
@@ -71,11 +74,11 @@ class DecoderGroupBox;
 namespace views {
 namespace trace {
 
-struct RowData {
+struct DecodeTraceRow {
 	// When adding a field, make sure it's initialized properly in
 	// DecodeTrace::update_rows()
 
-	data::decode::Row decode_row;
+	Row* decode_row;
 	unsigned int height, expanded_height, title_width, animation_step;
 	bool exists, currently_visible;
 	bool expand_marker_highlighted, expanding, expanded, collapsing;
@@ -195,9 +198,9 @@ private:
 	QColor get_row_color(int row_index) const;
 	QColor get_annotation_color(QColor row_color, int annotation_index) const;
 
-	unsigned int get_row_y(const RowData* row) const;
+	unsigned int get_row_y(const DecodeTraceRow* row) const;
 
-	RowData* get_row_at_point(const QPoint &point);
+	DecodeTraceRow* get_row_at_point(const QPoint &point);
 
 	const QString get_annotation_at_point(const QPoint &point);
 
@@ -214,17 +217,18 @@ private:
 
 	void export_annotations(vector<data::decode::Annotation> *annotations) const;
 
+	void initialize_row_widgets(DecodeTraceRow* r, unsigned int row_id);
 	void update_rows();
 
 	/**
 	 * Sets row r to expanded state without forcing an update of the view
 	 */
-	void set_row_expanded(RowData* r);
+	void set_row_expanded(DecodeTraceRow* r);
 
 	/**
 	 * Sets row r to collapsed state without forcing an update of the view
 	 */
-	void set_row_collapsed(RowData* r);
+	void set_row_collapsed(DecodeTraceRow* r);
 
 	void update_expanded_rows();
 
@@ -250,7 +254,8 @@ private Q_SLOTS:
 	void on_delete_decoder(int index);
 
 	void on_show_hide_decoder(int index);
-	void on_show_hide_row(int index);
+	void on_show_hide_row(int row_id);
+	void on_show_hide_class(QWidget* sender);
 
 	void on_copy_annotation_to_clipboard();
 
@@ -267,14 +272,14 @@ private:
 	pv::Session &session_;
 	shared_ptr<data::DecodeSignal> decode_signal_;
 
-	deque<RowData> rows_;
+	deque<DecodeTraceRow> rows_;
 	mutable mutex row_modification_mutex_;
 
 	map<QComboBox*, uint16_t> channel_id_map_;  // channel selector -> decode channel ID
 	map<QComboBox*, uint16_t> init_state_map_;  // init state selector -> decode channel ID
 	list< shared_ptr<pv::binding::Decoder> > bindings_;
 
-	const data::decode::Row* selected_row_;
+	const Row* selected_row_;
 	pair<uint64_t, uint64_t> selected_sample_range_;
 
 	vector<pv::widgets::DecoderGroupBox*> decoder_forms_;
@@ -286,7 +291,8 @@ private:
 	int min_useful_label_width_;
 	bool always_show_all_rows_;
 
-	QSignalMapper delete_mapper_, show_hide_mapper_, row_show_hide_mapper_;
+	QSignalMapper delete_mapper_, show_hide_mapper_;
+	QSignalMapper row_show_hide_mapper_, class_show_hide_mapper_;
 
 	QTimer delayed_trace_updater_, animation_timer_;
 
