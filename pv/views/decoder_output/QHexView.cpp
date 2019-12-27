@@ -154,7 +154,7 @@ size_t QHexView::create_hex_line(size_t start, size_t end, QString* dest,
 	// Determine start address for the row
 	uint64_t row = start / BYTES_PER_LINE;
 	uint64_t offset = row * BYTES_PER_LINE;
-	end = std::min(end, offset + BYTES_PER_LINE);
+	end = std::min((uint64_t)end, offset + BYTES_PER_LINE);
 
 	if (with_offset)
 		dest->append(QString("%1 ").arg(row * BYTES_PER_LINE, 10, 16, QChar('0')).toUpper());
