@@ -79,9 +79,9 @@ void RowData::get_annotation_subset(
 					class_visible[c->id] = 1;
 
 			for (const auto& annotation : annotations_)
-				if ((annotation.end_sample() > start_sample) &&
-					(annotation.start_sample() <= end_sample) &&
-					(class_visible[annotation.ann_class()]))
+				if ((class_visible[annotation.ann_class()]) &&
+					(annotation.end_sample() > start_sample) &&
+					(annotation.start_sample() <= end_sample))
 					dest.push_back(annotation);
 		}
 	}

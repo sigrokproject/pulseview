@@ -87,6 +87,7 @@ namespace trace {
 
 const QColor DecodeTrace::ErrorBgColor = QColor(0xEF, 0x29, 0x29);
 const QColor DecodeTrace::NoDecodeColor = QColor(0x88, 0x8A, 0x85);
+const QColor DecodeTrace::ExpandMarkerWarnColor = QColor(0xFF, 0xA5, 0x00); // QColorConstants::Svg::orange
 const uint8_t DecodeTrace::ExpansionAreaHeaderAlpha = 10 * 255 / 100;
 const uint8_t DecodeTrace::ExpansionAreaAlpha = 5 * 255 / 100;
 
@@ -282,6 +283,8 @@ void DecodeTrace::paint_fore(QPainter &p, ViewItemPaintParams &pp)
 
 		if (r.expand_marker_highlighted)
 			p.setBrush(QApplication::palette().brush(QPalette::Highlight));
+		else if (r.has_hidden_classes)
+			p.setBrush(ExpandMarkerWarnColor);
 		else
 			p.setBrush(QApplication::palette().brush(QPalette::WindowText));
 
@@ -1257,6 +1260,8 @@ void DecodeTrace::initialize_row_widgets(DecodeTraceRow* r, unsigned int row_id)
 		r->selector_container->layout()->addWidget(cb);
 
 		cb->setProperty("ann_class_ptr", QVariant::fromValue((void*)ann_class));
+		cb->setProperty("decode_trace_row_ptr", QVariant::fromValue((void*)r));
+
 		class_show_hide_mapper_.setMapping(cb, cb);
 		connect(cb, SIGNAL(stateChanged(int)),
 			&class_show_hide_mapper_, SLOT(map()));
@@ -1284,6 +1289,7 @@ void DecodeTrace::update_rows()
 			nr.height = default_row_height_;
 			nr.expanded_height = default_row_height_;
 			nr.currently_visible = false;
+			nr.has_hidden_classes = decode_row->has_hidden_classes();
 			nr.expand_marker_highlighted = false;
 			nr.expanding = false;
 			nr.expanded = false;
@@ -1501,9 +1507,15 @@ void DecodeTrace::on_show_hide_class(QWidget* sender)
 {
 	void* ann_class_ptr = sender->property("ann_class_ptr").value<void*>();
 	assert(ann_class_ptr);
-
 	AnnotationClass* ann_class = (AnnotationClass*)ann_class_ptr;
+
 	ann_class->visible = !ann_class->visible;
+
+	void* row_ptr = sender->property("decode_trace_row_ptr").value<void*>();
+	assert(row_ptr);
+	DecodeTraceRow* row = (DecodeTraceRow*)row_ptr;
+
+	row->has_hidden_classes = row->decode_row->has_hidden_classes();
 
 	owner_->row_item_appearance_changed(false, true);
 }

@@ -104,6 +104,15 @@ void Row::set_visible(bool visible)
 	visible_ = visible;
 }
 
+bool Row::has_hidden_classes() const
+{
+	for (const AnnotationClass* c : ann_classes())
+		if (!c->visible)
+			return true;
+
+	return false;
+}
+
 bool Row::operator<(const Row& other) const
 {
 	return (decoder_ < other.decoder_) ||

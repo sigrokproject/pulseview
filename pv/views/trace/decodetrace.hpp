@@ -80,7 +80,7 @@ struct DecodeTraceRow {
 
 	Row* decode_row;
 	unsigned int height, expanded_height, title_width, animation_step;
-	bool exists, currently_visible;
+	bool exists, currently_visible, has_hidden_classes;
 	bool expand_marker_highlighted, expanding, expanded, collapsing;
 	QPolygon expand_marker_shape;
 	float anim_height, anim_shape;
@@ -98,6 +98,7 @@ class DecodeTrace : public Trace
 private:
 	static const QColor ErrorBgColor;
 	static const QColor NoDecodeColor;
+	static const QColor ExpandMarkerWarnColor;
 	static const uint8_t ExpansionAreaHeaderAlpha;
 	static const uint8_t ExpansionAreaAlpha;
 

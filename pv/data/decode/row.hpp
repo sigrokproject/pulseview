@@ -54,6 +54,8 @@ public:
 	bool visible() const;
 	void set_visible(bool visible);
 
+	bool has_hidden_classes() const;
+
 	bool operator<(const Row& other) const;
 	bool operator==(const Row& other) const;
 
