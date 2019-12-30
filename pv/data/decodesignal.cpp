@@ -1411,7 +1411,12 @@ void DecodeSignal::annotation_callback(srd_proto_data *pdata, void *decode_signa
 	assert(dec);
 
 	AnnotationClass* ann_class = dec->get_ann_class_by_id(pda->ann_class);
-	assert(ann_class);
+	if (!ann_class) {
+		qWarning() << "Decoder" << ds->display_name() << "wanted to add annotation" <<
+			"with class ID" << pda->ann_class << "but there are only" <<
+			dec->ann_classes().size() << "known classes";
+		return;
+	}
 
 	const Row* row = ann_class->row;
 
