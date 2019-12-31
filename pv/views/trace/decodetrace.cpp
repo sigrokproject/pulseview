@@ -275,6 +275,8 @@ void DecodeTrace::paint_fore(QPainter &p, ViewItemPaintParams &pp)
 {
 	unsigned int y = get_visual_y();
 
+	update_expanded_rows();
+
 	for (const DecodeTraceRow& r : rows_) {
 		if (!r.currently_visible)
 			continue;
@@ -1364,9 +1366,11 @@ void DecodeTrace::set_row_collapsed(DecodeTraceRow* r)
 void DecodeTrace::update_expanded_rows()
 {
 	for (DecodeTraceRow& r : rows_) {
-
 		r.container->move(2 * ArrowSize,
 			get_row_y(&r) + default_row_height_);
+
+		r.container->resize(owner_->view()->viewport()->width() - r.container->pos().x(),
+			r.height - 2 * default_row_height_);
 	}
 }
 
