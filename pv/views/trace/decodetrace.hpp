@@ -20,6 +20,7 @@
 #ifndef PULSEVIEW_PV_VIEWS_TRACEVIEW_DECODETRACE_HPP
 #define PULSEVIEW_PV_VIEWS_TRACEVIEW_DECODETRACE_HPP
 
+#include <config.h>
 #include "trace.hpp"
 
 #include <list>
@@ -29,6 +30,7 @@
 
 #include <QColor>
 #include <QCheckBox>
+#include <QElapsedTimer>
 #include <QPolygon>
 #include <QPushButton>
 #include <QSignalMapper>
@@ -40,6 +42,8 @@
 #include <pv/data/decode/row.hpp>
 #include <pv/data/signalbase.hpp>
 
+#define DECODETRACE_SHOW_RENDER_TIME 0
+
 using std::deque;
 using std::list;
 using std::map;
@@ -48,6 +52,9 @@ using std::pair;
 using std::shared_ptr;
 using std::vector;
 
+using pv::data::SignalBase;
+using pv::data::decode::Annotation;
+using pv::data::decode::Decoder;
 using pv::data::decode::Row;
 
 struct srd_channel;
@@ -111,14 +118,14 @@ private:
 	static const unsigned int AnimationDurationInTicks;
 
 public:
-	DecodeTrace(pv::Session &session, shared_ptr<data::SignalBase> signalbase,
+	DecodeTrace(pv::Session &session, shared_ptr<SignalBase> signalbase,
 		int index);
 
 	~DecodeTrace();
 
 	bool enabled() const;
 
-	shared_ptr<data::SignalBase> base() const;
+	shared_ptr<SignalBase> base() const;
 
 	/**
 	 * Computes the vertical extents of the contents of this row item.
@@ -160,30 +167,25 @@ public:
 	virtual void mouse_left_press_event(const QMouseEvent* event);
 
 private:
-	void draw_annotations(vector<pv::data::decode::Annotation> annotations,
-		QPainter &p, int h, const ViewItemPaintParams &pp, int y,
-		QColor row_color, int row_title_width);
+	void draw_annotations(vector<const Annotation*> annotations, QPainter &p,
+		int h, const ViewItemPaintParams &pp, int y, QColor row_color,
+		int row_title_width);
 
-	void draw_annotation(const pv::data::decode::Annotation &a, QPainter &p,
-		int h, const ViewItemPaintParams &pp, int y,
-		QColor row_color, int row_title_width) const;
-
-	void draw_annotation_block(qreal start, qreal end,
-		pv::data::decode::Annotation::Class ann_class, bool use_ann_format,
-		QPainter &p, int h, int y, QColor row_color) const;
-
-	void draw_instant(const pv::data::decode::Annotation &a, QPainter &p,
-		int h, qreal x, int y) const;
-
-	void draw_range(const pv::data::decode::Annotation &a, QPainter &p,
-		int h, qreal start, qreal end, int y, const ViewItemPaintParams &pp,
+	void draw_annotation(const Annotation* a, QPainter &p, int h,
+		const ViewItemPaintParams &pp, int y, QColor row_color,
 		int row_title_width) const;
 
-	void draw_error(QPainter &p, const QString &message,
-		const ViewItemPaintParams &pp);
+	void draw_annotation_block(qreal start, qreal end, Annotation::Class ann_class,
+		bool use_ann_format, QPainter &p, int h, int y, QColor row_color) const;
 
-	void draw_unresolved_period(QPainter &p, int h, int left,
-		int right) const;
+	void draw_instant(const Annotation* a, QPainter &p, int h, qreal x, int y) const;
+
+	void draw_range(const Annotation* a, QPainter &p, int h, qreal start, qreal end,
+		int y, const ViewItemPaintParams &pp, int row_title_width) const;
+
+	void draw_error(QPainter &p, const QString &message, const ViewItemPaintParams &pp);
+
+	void draw_unresolved_period(QPainter &p, int h, int left, int right) const;
 
 	pair<double, double> get_pixels_offset_samples_per_pixel() const;
 
@@ -207,8 +209,7 @@ private:
 
 	void update_stack_button();
 
-	void create_decoder_form(int index,
-		shared_ptr<pv::data::decode::Decoder> &dec,
+	void create_decoder_form(int index, shared_ptr<Decoder> &dec,
 		QWidget *parent, QFormLayout *form);
 
 	QComboBox* create_channel_selector(QWidget *parent,
@@ -216,7 +217,7 @@ private:
 	QComboBox* create_channel_selector_init_state(QWidget *parent,
 		const data::decode::DecodeChannel *ch);
 
-	void export_annotations(vector<data::decode::Annotation> *annotations) const;
+	void export_annotations(vector<const Annotation*> *annotations) const;
 
 	void initialize_row_widgets(DecodeTraceRow* r, unsigned int row_id);
 	void update_rows();
@@ -298,6 +299,10 @@ private:
 	QTimer delayed_trace_updater_, animation_timer_;
 
 	QPolygon default_marker_shape_;
+
+#if DECODETRACE_SHOW_RENDER_TIME
+	QElapsedTimer render_time_;
+#endif
 };
 
 } // namespace trace

@@ -150,7 +150,7 @@ public:
 	 * Note: The annotations may be unsorted and only annotations that fully
 	 * fit into the sample range are considered.
 	 */
-	void get_annotation_subset(vector<Annotation> &dest, const Row* row,
+	void get_annotation_subset(vector<const Annotation*> &dest, const Row* row,
 		uint32_t segment_id, uint64_t start_sample, uint64_t end_sample) const;
 
 	/**
@@ -158,7 +158,7 @@ public:
 	 * Note: The annotations may be unsorted and only annotations that fully
 	 * fit into the sample range are considered.
 	 */
-	void get_annotation_subset(vector<Annotation> &dest, uint32_t segment_id,
+	void get_annotation_subset(vector<const Annotation*> &dest, uint32_t segment_id,
 		uint64_t start_sample, uint64_t end_sample) const;
 
 	uint32_t get_binary_data_chunk_count(uint32_t segment_id,

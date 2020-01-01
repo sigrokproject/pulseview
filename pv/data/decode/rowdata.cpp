@@ -28,7 +28,8 @@ namespace data {
 namespace decode {
 
 RowData::RowData(Row* row) :
-	row_(row)
+	row_(row),
+	prev_ann_start_sample_(0)
 {
 	assert(row);
 }
@@ -46,7 +47,7 @@ uint64_t RowData::get_annotation_count() const
 }
 
 void RowData::get_annotation_subset(
-	vector<pv::data::decode::Annotation> &dest,
+	vector<const pv::data::decode::Annotation*> &dest,
 	uint64_t start_sample, uint64_t end_sample) const
 {
 	// Determine whether we must apply per-class filtering or not
@@ -65,10 +66,11 @@ void RowData::get_annotation_subset(
 
 	if (all_ann_classes_enabled) {
 		// No filtering, send everyting out as-is
+		dest.reserve(dest.size() + annotations_.size());
 		for (const auto& annotation : annotations_)
 			if ((annotation.end_sample() > start_sample) &&
 				(annotation.start_sample() <= end_sample))
-				dest.push_back(annotation);
+				dest.push_back(&annotation);
 	} else {
 		if (!all_ann_classes_disabled) {
 			// Filter out invisible annotation classes
@@ -78,18 +80,39 @@ void RowData::get_annotation_subset(
 				if (c->visible)
 					class_visible[c->id] = 1;
 
+			dest.reserve(dest.size() + annotations_.size());
 			for (const auto& annotation : annotations_)
 				if ((class_visible[annotation.ann_class()]) &&
 					(annotation.end_sample() > start_sample) &&
 					(annotation.start_sample() <= end_sample))
-					dest.push_back(annotation);
+					dest.push_back(&annotation);
 		}
 	}
 }
 
 void RowData::emplace_annotation(srd_proto_data *pdata)
 {
-	annotations_.emplace_back(pdata, row_);
+	// We insert the annotation in a way so that the annotation list
+	// is sorted by start sample. Otherwise, we'd have to sort when
+	// painting, which is expensive
+
+	if (pdata->start_sample < prev_ann_start_sample_) {
+		// Find location to insert the annotation at
+
+		auto it = annotations_.end();
+		do {
+			it--;
+		} while ((it->start_sample() > pdata->start_sample) && (it != annotations_.begin()));
+
+		// Allow inserting at the front
+		if (it != annotations_.begin())
+			it++;
+
+		annotations_.insert(it, Annotation(pdata, row_));
+	} else {
+		annotations_.emplace_back(pdata, row_);
+		prev_ann_start_sample_ = pdata->start_sample;
+	}
 }
 
 }  // namespace decode

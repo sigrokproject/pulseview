@@ -26,6 +26,7 @@
 
 #include <pv/data/decode/annotation.hpp>
 
+using std::deque;
 using std::vector;
 
 namespace pv {
@@ -39,7 +40,6 @@ class RowData
 public:
 	RowData(Row* row);
 
-public:
 	uint64_t get_max_sample() const;
 
 	uint64_t get_annotation_count() const;
@@ -50,14 +50,15 @@ public:
 	 * fit into the sample range are considered.
 	 */
 	void get_annotation_subset(
-		vector<pv::data::decode::Annotation> &dest,
+		vector<const pv::data::decode::Annotation*> &dest,
 		uint64_t start_sample, uint64_t end_sample) const;
 
 	void emplace_annotation(srd_proto_data *pdata);
 
 private:
-	vector<Annotation> annotations_;
-	const Row* row_;
+	deque<Annotation> annotations_;
+	Row* row_;
+	uint64_t prev_ann_start_sample_;
 };
 
 }  // namespace decode

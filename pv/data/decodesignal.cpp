@@ -41,11 +41,8 @@ using std::min;
 using std::out_of_range;
 using std::shared_ptr;
 using std::unique_lock;
-using pv::data::decode::Annotation;
 using pv::data::decode::AnnotationClass;
 using pv::data::decode::DecodeChannel;
-using pv::data::decode::Decoder;
-using pv::data::decode::Row;
 
 namespace pv {
 namespace data {
@@ -474,17 +471,15 @@ uint64_t DecodeSignal::get_annotation_count(const Row* row, uint32_t segment_id)
 	auto row_it = segment->annotation_rows.find(row);
 
 	const RowData* rd;
-	if (row_it == segment->annotation_rows.end()) {
-		// FIXME Use the fallback row, but how?
-		assert(false);
+	if (row_it == segment->annotation_rows.end())
 		return 0;
-	} else
+	else
 		rd = &(row_it->second);
 
 	return rd->get_annotation_count();
 }
 
-void DecodeSignal::get_annotation_subset(vector<Annotation> &dest,
+void DecodeSignal::get_annotation_subset(vector<const Annotation*> &dest,
 	const Row* row, uint32_t segment_id, uint64_t start_sample,
 	uint64_t end_sample) const
 {
@@ -498,29 +493,27 @@ void DecodeSignal::get_annotation_subset(vector<Annotation> &dest,
 	auto row_it = segment->annotation_rows.find(row);
 
 	const RowData* rd;
-	if (row_it == segment->annotation_rows.end()) {
-		// FIXME Use the fallback row, but how?
-		assert(false);
+	if (row_it == segment->annotation_rows.end())
 		return;
-	} else
+	else
 		rd = &(row_it->second);
 
 	rd->get_annotation_subset(dest, start_sample, end_sample);
 }
 
-void DecodeSignal::get_annotation_subset(vector<Annotation> &dest,
+void DecodeSignal::get_annotation_subset(vector<const Annotation*> &dest,
 	uint32_t segment_id, uint64_t start_sample, uint64_t end_sample) const
 {
 	// Use forward_lists for faster merging
-	forward_list<Annotation> *all_ann_list = new forward_list<Annotation>();
+	forward_list<const Annotation*> *all_ann_list = new forward_list<const Annotation*>();
 
 	vector<const Row*> rows = get_rows();
 	for (const Row* row : rows) {
-		vector<Annotation> *ann_vector = new vector<Annotation>();
+		vector<const Annotation*> *ann_vector = new vector<const Annotation*>();
 		get_annotation_subset(*ann_vector, row, segment_id, start_sample, end_sample);
 
-		forward_list<Annotation> *ann_list =
-			new forward_list<Annotation>(ann_vector->begin(), ann_vector->end());
+		forward_list<const Annotation*> *ann_list =
+			new forward_list<const Annotation*>(ann_vector->begin(), ann_vector->end());
 		delete ann_vector;
 
 		all_ann_list->merge(*ann_list);
