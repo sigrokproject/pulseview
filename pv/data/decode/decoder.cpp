@@ -38,7 +38,7 @@ namespace decode {
 
 Decoder::Decoder(const srd_decoder *const dec) :
 	srd_decoder_(dec),
-	shown_(true),
+	visible_(true),
 	decoder_inst_(nullptr)
 {
 	// Query the annotation output classes
@@ -101,14 +101,14 @@ const char* Decoder::name() const
 	return srd_decoder_->name;
 }
 
-bool Decoder::shown() const
+bool Decoder::visible() const
 {
-	return shown_;
+	return visible_;
 }
 
-void Decoder::show(bool show)
+void Decoder::set_visible(bool visible)
 {
-	shown_ = show;
+	visible_ = visible;
 }
 
 const vector<DecodeChannel*>& Decoder::channels() const

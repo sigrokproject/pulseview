@@ -136,8 +136,8 @@ bool DecodeSignal::toggle_decoder_visibility(int index)
 	// Toggle decoder visibility
 	bool state = false;
 	if (dec) {
-		state = !dec->shown();
-		dec->show(state);
+		state = !dec->visible();
+		dec->set_visible(state);
 	}
 
 	return state;
@@ -437,7 +437,7 @@ vector<Row*> DecodeSignal::get_rows(bool visible_only)
 
 	for (const shared_ptr<Decoder>& dec : stack_) {
 		assert(dec);
-		if (visible_only && !dec->shown())
+		if (visible_only && !dec->visible())
 			continue;
 
 		for (Row* row : dec->get_rows())
@@ -453,7 +453,7 @@ vector<const Row*> DecodeSignal::get_rows(bool visible_only) const
 
 	for (const shared_ptr<Decoder>& dec : stack_) {
 		assert(dec);
-		if (visible_only && !dec->shown())
+		if (visible_only && !dec->visible())
 			continue;
 
 		for (const Row* row : dec->get_rows())
@@ -679,7 +679,7 @@ void DecodeSignal::save_settings(QSettings &settings) const
 		settings.beginGroup("decoder" + QString::number(decoder_idx++));
 
 		settings.setValue("id", decoder->get_srd_decoder()->id);
-		settings.setValue("shown", decoder->shown());
+		settings.setValue("visible", decoder->visible());
 
 		// Save decoder options
 		const map<string, GVariant*>& options = decoder->options();
@@ -747,7 +747,7 @@ void DecodeSignal::restore_settings(QSettings &settings)
 				shared_ptr<Decoder> decoder = make_shared<Decoder>(dec);
 
 				stack_.push_back(decoder);
-				decoder->show(settings.value("shown", true).toBool());
+				decoder->set_visible(settings.value("visible", true).toBool());
 
 				// Restore decoder options that differ from their default
 				int options = settings.value("options").toInt();

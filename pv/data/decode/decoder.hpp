@@ -90,8 +90,8 @@ public:
 
 	const char* name() const;
 
-	bool shown() const;
-	void show(bool show = true);
+	bool visible() const;
+	void set_visible(bool visible);
 
 	const vector<DecodeChannel*>& channels() const;
 	void set_channels(vector<DecodeChannel*> channels);
@@ -120,7 +120,7 @@ public:
 private:
 	const srd_decoder* const srd_decoder_;
 
-	bool shown_;
+	bool visible_;
 
 	vector<DecodeChannel*> channels_;
 	vector<Row> rows_;

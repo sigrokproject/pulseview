@@ -231,7 +231,7 @@ void DecodeTrace::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 		// If the row is hidden, we don't want to fetch annotations
 		assert(r.decode_row);
 		assert(r.decode_row->decoder());
-		if ((!r.decode_row->decoder()->shown()) || (!r.decode_row->visible())) {
+		if ((!r.decode_row->decoder()->visible()) || (!r.decode_row->visible())) {
 			r.currently_visible = false;
 			continue;
 		}
@@ -1034,7 +1034,7 @@ void DecodeTrace::create_decoder_form(int index,
 			tr("%1:\n%2").arg(QString::fromUtf8(decoder->longname),
 				QString::fromUtf8(decoder->desc)),
 			nullptr, decoder_deletable);
-	group->set_decoder_visible(dec->shown());
+	group->set_decoder_visible(dec->visible());
 
 	if (decoder_deletable) {
 		delete_mapper_.setMapping(group, index);
