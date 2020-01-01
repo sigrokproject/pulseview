@@ -240,12 +240,14 @@ void DecodeTrace::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 		decode_signal_->get_annotation_subset(annotations, r.decode_row,
 			current_segment_, sample_range.first, sample_range.second);
 
-		// Show row if there are visible annotations or when user wants to see
+		// Show row if there are visible annotations, when user wants to see
 		// all rows that have annotations somewhere and this one is one of them
+		// or when the row has at least one hidden annotation class
 		r.currently_visible = !annotations.empty();
 		if (!r.currently_visible) {
 			size_t ann_count = decode_signal_->get_annotation_count(r.decode_row, current_segment_);
-			r.currently_visible = always_show_all_rows_ && (ann_count > 0);
+			r.currently_visible = (always_show_all_rows_ || r.has_hidden_classes) &&
+				(ann_count > 0);
 		}
 
 		if (r.currently_visible) {
@@ -535,7 +537,7 @@ void DecodeTrace::hover_point_changed(const QPoint &hp)
 
 	if (hover_row) {
 		int row_y = get_row_y(hover_row);
-		if ((hp.x() > 0) && (hp.x() < 2 * ArrowSize) &&
+		if ((hp.x() > 0) && (hp.x() < (int)(ArrowSize + 3 + hover_row->title_width)) &&
 			(hp.y() > (int)(row_y - ArrowSize)) && (hp.y() < (int)(row_y + ArrowSize)))
 			hover_row->expand_marker_highlighted = true;
 	}
@@ -581,7 +583,7 @@ void DecodeTrace::mouse_left_press_event(const QMouseEvent* event)
 			continue;
 
 		unsigned int y = get_row_y(&r);
-		if ((event->x() > 0) && (event->x() <= (int)(ArrowSize + 3)) &&
+		if ((event->x() > 0) && (event->x() <= (int)(ArrowSize + 3 + r.title_width)) &&
 			(event->y() > (int)(y - (default_row_height_ / 2))) &&
 			(event->y() <= (int)(y + (default_row_height_ / 2)))) {
 

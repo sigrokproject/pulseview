@@ -75,11 +75,17 @@ const QString Row::description() const
 
 vector<AnnotationClass*> Row::ann_classes() const
 {
+	assert(decoder_);
+
 	vector<AnnotationClass*> result;
 
-	if (!srd_row_)
+	if (!srd_row_) {
+		if (index_ == 0) {
+			// When operating as the fallback row, all annotation classes belong to it
+			return decoder_->ann_classes();
+		}
 		return result;
-	assert(decoder_);
+	}
 
 	for (GSList *l = srd_row_->ann_classes; l; l = l->next) {
 		size_t class_id = (size_t)l->data;

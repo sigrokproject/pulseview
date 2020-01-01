@@ -111,6 +111,7 @@ public:
 	Row* get_row_by_id(size_t id);
 
 	vector<const AnnotationClass*> ann_classes() const;
+	vector<AnnotationClass*> ann_classes();
 	AnnotationClass* get_ann_class_by_id(size_t id);
 
 	uint32_t get_binary_class_count() const;

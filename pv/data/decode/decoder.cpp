@@ -76,9 +76,13 @@ Decoder::Decoder(const srd_decoder *const dec) :
 			ann_classes_.at((size_t)cl->data).row = &(rows_.back());
 	}
 
-	if (rows_.empty())
+	if (rows_.empty()) {
 		// Make sure there is a row for PDs without row declarations
-		rows_.emplace_back(0, this);
+		rows_.push_back({0, this});
+
+		for (AnnotationClass& c : ann_classes_)
+			c.row = &(rows_.back());
+	}
 }
 
 Decoder::~Decoder()
@@ -237,6 +241,16 @@ vector<const AnnotationClass*> Decoder::ann_classes() const
 	vector<const AnnotationClass*> result;
 
 	for (const AnnotationClass& c : ann_classes_)
+		result.push_back(&c);
+
+	return result;
+}
+
+vector<AnnotationClass*> Decoder::ann_classes()
+{
+	vector<AnnotationClass*> result;
+
+	for (AnnotationClass& c : ann_classes_)
 		result.push_back(&c);
 
 	return result;
