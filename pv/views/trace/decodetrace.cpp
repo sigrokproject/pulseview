@@ -255,14 +255,13 @@ void DecodeTrace::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 		}
 
 		if (r.currently_visible) {
-			draw_annotations(annotations, p, annotation_height_, pp, y,
-				get_row_color(r.decode_row->index()), r.title_width);
+			draw_annotations(annotations, p, pp, y, r);
 			y += r.height;
 			visible_rows_++;
 		}
 	}
 
-	draw_unresolved_period(p, annotation_height_, pp.left(), pp.right());
+	draw_unresolved_period(p, pp.left(), pp.right());
 
 	if (visible_rows_ > max_visible_rows_) {
 		max_visible_rows_ = visible_rows_;
@@ -615,8 +614,7 @@ void DecodeTrace::mouse_left_press_event(const QMouseEvent* event)
 }
 
 void DecodeTrace::draw_annotations(vector<const Annotation*> annotations,
-		QPainter &p, int h, const ViewItemPaintParams &pp, int y,
-		QColor row_color, int row_title_width)
+		QPainter &p, const ViewItemPaintParams &pp, int y, const DecodeTraceRow& row)
 {
 	Annotation::Class block_class = 0;
 	bool block_class_uniform = true;
@@ -662,16 +660,16 @@ void DecodeTrace::draw_annotations(vector<const Annotation*> annotations,
 		if ((abs(delta) > 1) || a_is_separate) {
 			// Block was broken, draw annotations that form the current block
 			if (block_ann_count == 1)
-				draw_annotation(prev_ann, p, h, pp, y, row_color, row_title_width);
+				draw_annotation(prev_ann, p, pp, y, row);
 			else if (block_ann_count > 0)
 				draw_annotation_block(block_start, prev_end, block_class,
-					block_class_uniform, p, h, y, row_color);
+					block_class_uniform, p, y, row);
 
 			block_ann_count = 0;
 		}
 
 		if (a_is_separate) {
-			draw_annotation(a, p, h, pp, y, row_color, row_title_width);
+			draw_annotation(a, p, pp, y, row);
 			// Next annotation must start a new block. delta will be > 1
 			// because we set prev_end to INT_MIN but that's okay since
 			// block_ann_count will be 0 and nothing will be drawn
@@ -694,24 +692,23 @@ void DecodeTrace::draw_annotations(vector<const Annotation*> annotations,
 	}
 
 	if (block_ann_count == 1)
-		draw_annotation(prev_ann, p, h, pp, y, row_color, row_title_width);
+		draw_annotation(prev_ann, p, pp, y, row);
 	else if (block_ann_count > 0)
 		draw_annotation_block(block_start, prev_end, block_class,
-			block_class_uniform, p, h, y, row_color);
+			block_class_uniform, p, y, row);
 }
 
-void DecodeTrace::draw_annotation(const Annotation* a, QPainter &p, int h,
-	const ViewItemPaintParams &pp, int y, QColor row_color, int row_title_width) const
+void DecodeTrace::draw_annotation(const Annotation* a, QPainter &p,
+	const ViewItemPaintParams &pp, int y, const DecodeTraceRow& row) const
 {
 	double samples_per_pixel, pixels_offset;
 	tie(pixels_offset, samples_per_pixel) =
 		get_pixels_offset_samples_per_pixel();
 
-	const double start = a->start_sample() / samples_per_pixel -
-		pixels_offset;
+	const double start = a->start_sample() / samples_per_pixel - pixels_offset;
 	const double end = a->end_sample() / samples_per_pixel - pixels_offset;
 
-	QColor color = get_annotation_color(row_color, a->ann_class());
+	QColor color = row.ann_class_color.at(a->ann_class());
 	p.setPen(color.darker());
 	p.setBrush(color);
 
@@ -719,20 +716,20 @@ void DecodeTrace::draw_annotation(const Annotation* a, QPainter &p, int h,
 		return;
 
 	if (a->start_sample() == a->end_sample())
-		draw_instant(a, p, h, start, y);
+		draw_instant(a, p, start, y);
 	else
-		draw_range(a, p, h, start, end, y, pp, row_title_width);
+		draw_range(a, p, start, end, y, pp, row.title_width);
 }
 
 void DecodeTrace::draw_annotation_block(qreal start, qreal end,
-	Annotation::Class ann_class, bool use_ann_format, QPainter &p, int h,
-	int y, QColor row_color) const
+	Annotation::Class ann_class, bool use_ann_format, QPainter &p, int y,
+	const DecodeTraceRow& row) const
 {
-	const double top = y + .5 - h / 2;
-	const double bottom = y + .5 + h / 2;
+	const double top = y + .5 - annotation_height_ / 2;
+	const double bottom = y + .5 + annotation_height_ / 2;
 
 	const QRectF rect(start, top, end - start, bottom - top);
-	const int r = h / 4;
+	const int r = annotation_height_ / 4;
 
 	p.setPen(QPen(Qt::NoPen));
 	p.setBrush(Qt::white);
@@ -742,7 +739,7 @@ void DecodeTrace::draw_annotation_block(qreal start, qreal end,
 	// one format that all of these annotations have. Otherwise, we should use
 	// a neutral color (i.e. gray)
 	if (use_ann_format) {
-		const QColor color = get_annotation_color(row_color, ann_class);
+		const QColor color = row.ann_class_color.at(ann_class);
 		p.setPen(color.darker());
 		p.setBrush(QBrush(color, Qt::Dense4Pattern));
 	} else {
@@ -753,27 +750,26 @@ void DecodeTrace::draw_annotation_block(qreal start, qreal end,
 	p.drawRoundedRect(rect, r, r);
 }
 
-void DecodeTrace::draw_instant(const Annotation* a, QPainter &p, int h, qreal x,
-	int y) const
+void DecodeTrace::draw_instant(const Annotation* a, QPainter &p, qreal x, int y) const
 {
 	const QString text = a->annotations().empty() ?
 		QString() : a->annotations().back();
 	const qreal w = min((qreal)p.boundingRect(QRectF(), 0, text).width(),
-		0.0) + h;
-	const QRectF rect(x - w / 2, y - h / 2, w, h);
+		0.0) + annotation_height_;
+	const QRectF rect(x - w / 2, y - annotation_height_ / 2, w, annotation_height_);
 
-	p.drawRoundedRect(rect, h / 2, h / 2);
+	p.drawRoundedRect(rect, annotation_height_ / 2, annotation_height_ / 2);
 
 	p.setPen(Qt::black);
 	p.drawText(rect, Qt::AlignCenter | Qt::AlignVCenter, text);
 }
 
-void DecodeTrace::draw_range(const Annotation* a, QPainter &p, int h,
+void DecodeTrace::draw_range(const Annotation* a, QPainter &p,
 	qreal start, qreal end, int y, const ViewItemPaintParams &pp,
 	int row_title_width) const
 {
-	const qreal top = y + .5 - h / 2;
-	const qreal bottom = y + .5 + h / 2;
+	const qreal top = y + .5 - annotation_height_ / 2;
+	const qreal bottom = y + .5 + annotation_height_ / 2;
 	const vector<QString> annotations = a->annotations();
 
 	// If the two ends are within 1 pixel, draw a vertical line
@@ -805,7 +801,7 @@ void DecodeTrace::draw_range(const Annotation* a, QPainter &p, int h,
 	const int real_end = min(ann_end, pp.right());
 	const int real_width = real_end - real_start;
 
-	QRectF rect(real_start, y - h / 2, real_width, h);
+	QRectF rect(real_start, y - annotation_height_ / 2, real_width, annotation_height_);
 	if (rect.width() <= 4)
 		return;
 
@@ -851,7 +847,7 @@ void DecodeTrace::draw_error(QPainter &p, const QString &message,
 	p.drawText(text_rect, message);
 }
 
-void DecodeTrace::draw_unresolved_period(QPainter &p, int h, int left, int right) const
+void DecodeTrace::draw_unresolved_period(QPainter &p, int left, int right) const
 {
 	double samples_per_pixel, pixels_offset;
 
@@ -871,7 +867,8 @@ void DecodeTrace::draw_unresolved_period(QPainter &p, int h, int left, int right
 		samples_per_pixel - pixels_offset, left - 1.0);
 	const double end = min(sample_count / samples_per_pixel -
 		pixels_offset, right + 1.0);
-	const QRectF no_decode_rect(start, y - (h / 2) - 0.5, end - start, h);
+	const QRectF no_decode_rect(start, y - (annotation_height_ / 2) - 0.5,
+		end - start, annotation_height_);
 
 	p.setPen(QPen(Qt::NoPen));
 	p.setBrush(Qt::white);
@@ -1290,6 +1287,13 @@ void DecodeTrace::update_rows()
 			nr.container = new QWidget(owner_->view()->scrollarea());
 			nr.header_container = new QWidget(nr.container);
 			nr.selector_container = new QWidget(nr.container);
+
+			nr.row_color = get_row_color(decode_row->index());
+
+			vector<AnnotationClass*> ann_classes = decode_row->ann_classes();
+			for (const AnnotationClass* ann_class : ann_classes)
+				nr.ann_class_color[ann_class->id] =
+					get_annotation_color(nr.row_color, ann_class->id);
 
 			rows_.push_back(nr);
 			r = &rows_.back();

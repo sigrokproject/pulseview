@@ -96,6 +96,9 @@ struct DecodeTraceRow {
 	QWidget* header_container;
 	QWidget* selector_container;
 	vector<QCheckBox*> selectors;
+
+	QColor row_color;
+	map<uint32_t, QColor> ann_class_color;
 };
 
 class DecodeTrace : public Trace
@@ -168,24 +171,22 @@ public:
 
 private:
 	void draw_annotations(vector<const Annotation*> annotations, QPainter &p,
-		int h, const ViewItemPaintParams &pp, int y, QColor row_color,
-		int row_title_width);
+		const ViewItemPaintParams &pp, int y, const DecodeTraceRow& row);
 
-	void draw_annotation(const Annotation* a, QPainter &p, int h,
-		const ViewItemPaintParams &pp, int y, QColor row_color,
-		int row_title_width) const;
+	void draw_annotation(const Annotation* a, QPainter &p,
+		const ViewItemPaintParams &pp, int y, const DecodeTraceRow& row) const;
 
 	void draw_annotation_block(qreal start, qreal end, Annotation::Class ann_class,
-		bool use_ann_format, QPainter &p, int h, int y, QColor row_color) const;
+		bool use_ann_format, QPainter &p, int y, const DecodeTraceRow& row) const;
 
-	void draw_instant(const Annotation* a, QPainter &p, int h, qreal x, int y) const;
+	void draw_instant(const Annotation* a, QPainter &p, qreal x, int y) const;
 
-	void draw_range(const Annotation* a, QPainter &p, int h, qreal start, qreal end,
+	void draw_range(const Annotation* a, QPainter &p, qreal start, qreal end,
 		int y, const ViewItemPaintParams &pp, int row_title_width) const;
 
 	void draw_error(QPainter &p, const QString &message, const ViewItemPaintParams &pp);
 
-	void draw_unresolved_period(QPainter &p, int h, int left, int right) const;
+	void draw_unresolved_period(QPainter &p, int left, int right) const;
 
 	pair<double, double> get_pixels_offset_samples_per_pixel() const;
 
