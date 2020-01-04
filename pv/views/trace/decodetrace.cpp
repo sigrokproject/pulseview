@@ -1246,6 +1246,11 @@ void DecodeTrace::initialize_row_widgets(DecodeTraceRow* r, unsigned int row_id)
 		cb->setText(tr(ann_class->description));
 		cb->setChecked(ann_class->visible);
 
+		int dim = ViewItemPaintParams::text_height() - 2;
+		QPixmap pixmap(dim, dim);
+		pixmap.fill(r->ann_class_color[ann_class->id]);
+		cb->setIcon(pixmap);
+
 		r->selector_container->layout()->addWidget(cb);
 
 		cb->setProperty("ann_class_ptr", QVariant::fromValue((void*)ann_class));
