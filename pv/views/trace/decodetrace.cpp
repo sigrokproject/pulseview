@@ -1279,6 +1279,8 @@ void DecodeTrace::initialize_row_widgets(DecodeTraceRow* r, unsigned int row_id)
 	cb->setText(tr("Show this row"));
 	cb->setChecked(r->decode_row->visible());
 
+	cb->setEnabled(false);
+
 	row_show_hide_mapper_.setMapping(cb, row_id);
 	connect(cb, SIGNAL(stateChanged(int)),
 		&row_show_hide_mapper_, SLOT(map()));
