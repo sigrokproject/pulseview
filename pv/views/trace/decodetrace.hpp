@@ -81,6 +81,8 @@ class DecoderGroupBox;
 namespace views {
 namespace trace {
 
+class ContainerWidget;
+
 struct DecodeTraceRow {
 	// When adding a field, make sure it's initialized properly in
 	// DecodeTrace::update_rows()
@@ -92,13 +94,26 @@ struct DecodeTraceRow {
 	QPolygon expand_marker_shape;
 	float anim_height, anim_shape;
 
-	QWidget* container;
+	ContainerWidget* container;
 	QWidget* header_container;
 	QWidget* selector_container;
 	vector<QCheckBox*> selectors;
 
 	QColor row_color;
 	map<uint32_t, QColor> ann_class_color;
+};
+
+class ContainerWidget : public QWidget
+{
+	Q_OBJECT
+
+public:
+	ContainerWidget(QWidget *parent = nullptr);
+
+	virtual void resizeEvent(QResizeEvent* event);
+
+Q_SIGNALS:
+	void widgetResized(QWidget* sender);
 };
 
 class DecodeTrace : public Trace
@@ -259,6 +274,7 @@ private Q_SLOTS:
 	void on_show_hide_decoder(int index);
 	void on_show_hide_row(int row_id);
 	void on_show_hide_class(QWidget* sender);
+	void on_row_container_resized(QWidget* sender);
 
 	void on_copy_annotation_to_clipboard();
 

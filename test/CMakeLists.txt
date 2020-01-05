@@ -85,6 +85,7 @@ set(pulseview_TEST_SOURCES
 	${PROJECT_SOURCE_DIR}/pv/widgets/colorpopup.cpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/devicetoolbutton.cpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/exportmenu.cpp
+	${PROJECT_SOURCE_DIR}/pv/widgets/flowlayout.cpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/importmenu.cpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/popup.cpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/popuptoolbutton.cpp
@@ -153,6 +154,7 @@ set(pulseview_TEST_HEADERS
 	${PROJECT_SOURCE_DIR}/pv/widgets/colorpopup.hpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/devicetoolbutton.hpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/exportmenu.hpp
+	${PROJECT_SOURCE_DIR}/pv/widgets/flowlayout.hpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/importmenu.hpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/popup.hpp
 	${PROJECT_SOURCE_DIR}/pv/widgets/popuptoolbutton.hpp

@@ -58,6 +58,7 @@ extern "C" {
 #include <pv/data/logicsegment.hpp>
 #include <pv/widgets/decodergroupbox.hpp>
 #include <pv/widgets/decodermenu.hpp>
+#include <pv/widgets/flowlayout.hpp>
 
 using std::abs;
 using std::find_if;
@@ -98,6 +99,52 @@ const int DecodeTrace::DrawPadding = 100;
 
 const int DecodeTrace::MaxTraceUpdateRate = 1; // No more than 1 Hz
 const unsigned int DecodeTrace::AnimationDurationInTicks = 7;
+
+
+/**
+ * Helper function for forceUpdate()
+ */
+void invalidateLayout(QLayout* layout)
+{
+	// Recompute the given layout and all its child layouts recursively
+	for (int i = 0; i < layout->count(); i++) {
+		QLayoutItem *item = layout->itemAt(i);
+
+		if (item->layout())
+			invalidateLayout(item->layout());
+		else
+			item->invalidate();
+	}
+
+	layout->invalidate();
+	layout->activate();
+}
+
+void forceUpdate(QWidget* widget)
+{
+	// Update all child widgets recursively
+	for (QObject* child : widget->children())
+		if (child->isWidgetType())
+			forceUpdate((QWidget*)child);
+
+	// Invalidate the layout of the widget itself
+	if (widget->layout())
+		invalidateLayout(widget->layout());
+}
+
+
+ContainerWidget::ContainerWidget(QWidget *parent) :
+	QWidget(parent)
+{
+}
+
+void ContainerWidget::resizeEvent(QResizeEvent* event)
+{
+	QWidget::resizeEvent(event);
+
+	widgetResized(this);
+}
+
 
 DecodeTrace::DecodeTrace(pv::Session &session,
 	shared_ptr<data::SignalBase> signalbase, int index) :
@@ -582,6 +629,9 @@ void DecodeTrace::hover_point_changed(const QPoint &hp)
 
 void DecodeTrace::mouse_left_press_event(const QMouseEvent* event)
 {
+	// Update container widths which depend on the scrollarea's current width
+	update_expanded_rows();
+
 	// Handle row expansion marker
 	for (DecodeTraceRow& r : rows_) {
 		if (!r.expand_marker_highlighted)
@@ -599,15 +649,18 @@ void DecodeTrace::mouse_left_press_event(const QMouseEvent* event)
 			} else {
 				r.expanding = true;
 				r.anim_shape = 0;
+
+				// Force geometry update of the widget container to get
+				// an up-to-date height (which also depends on the width)
+				forceUpdate(r.container);
+
 				r.container->setVisible(true);
-				QApplication::processEvents();
-				r.expanded_height = 5 * default_row_height_ + r.container->size().height();
+				r.expanded_height = 2 * default_row_height_ + r.container->sizeHint().height();
 			}
 
 			r.animation_step = 0;
 			r.anim_height = r.height;
 
-			update_expanded_rows();
 			animation_timer_.start();
 		}
 	}
@@ -1181,6 +1234,7 @@ void DecodeTrace::export_annotations(vector<const Annotation*> *annotations) con
 
 void DecodeTrace::initialize_row_widgets(DecodeTraceRow* r, unsigned int row_id)
 {
+	// Set colors and fixed widths
 	QFontMetrics m(QApplication::font());
 
 	QPalette header_palette = owner_->view()->palette();
@@ -1201,9 +1255,9 @@ void DecodeTrace::initialize_row_widgets(DecodeTraceRow* r, unsigned int row_id)
 	const int w = m.boundingRect(r->decode_row->title()).width() + RowTitleMargin;
 	r->title_width = w;
 
-	r->container->resize(owner_->view()->viewport()->width() - r->container->pos().x(),
-		r->expanded_height - 2 * default_row_height_);
-	r->container->setVisible(false);
+	// Set up top-level container
+	connect(r->container, SIGNAL(widgetResized(QWidget*)),
+		this, SLOT(on_row_container_resized(QWidget*)));
 
 	QVBoxLayout* vlayout = new QVBoxLayout();
 	r->container->setLayout(vlayout);
@@ -1231,9 +1285,8 @@ void DecodeTrace::initialize_row_widgets(DecodeTraceRow* r, unsigned int row_id)
 
 	// Add selector container
 	vlayout->addWidget(r->selector_container);
-	r->selector_container->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-	r->selector_container->setMinimumSize(0, 3 * default_row_height_);                            // FIXME
-	r->selector_container->setLayout(new QHBoxLayout());
+	r->selector_container->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+	r->selector_container->setLayout(new FlowLayout(r->selector_container));
 
 	r->selector_container->setAutoFillBackground(true);
 	r->selector_container->setPalette(selector_palette);
@@ -1289,7 +1342,7 @@ void DecodeTrace::update_rows()
 			nr.expanded = false;
 			nr.collapsing = false;
 			nr.expand_marker_shape = default_marker_shape_;
-			nr.container = new QWidget(owner_->view()->scrollarea());
+			nr.container = new ContainerWidget(owner_->view()->scrollarea());
 			nr.header_container = new QWidget(nr.container);
 			nr.selector_container = new QWidget(nr.container);
 
@@ -1365,11 +1418,23 @@ void DecodeTrace::set_row_collapsed(DecodeTraceRow* r)
 void DecodeTrace::update_expanded_rows()
 {
 	for (DecodeTraceRow& r : rows_) {
-		r.container->move(2 * ArrowSize,
-			get_row_y(&r) + default_row_height_);
+		if (r.expanding || r.expanded)
+			r.expanded_height = 2 * default_row_height_ + r.container->sizeHint().height();
 
-		r.container->resize(owner_->view()->viewport()->width() - r.container->pos().x(),
-			r.height - 2 * default_row_height_);
+		if (r.expanded)
+			r.height = r.expanded_height;
+
+		int x = 2 * ArrowSize;
+		int y = get_row_y(&r) + default_row_height_;
+		// Only update the position if it actually changes
+		if ((x != r.container->pos().x()) || (y != r.container->pos().y()))
+			r.container->move(x, y);
+
+		int w = owner_->view()->viewport()->width() - x;
+		int h = r.height - 2 * default_row_height_;
+		// Only update the dimension if they actually change
+		if ((w != r.container->sizeHint().width()) || (h != r.container->sizeHint().height()))
+			r.container->resize(w, h);
 	}
 }
 
@@ -1520,6 +1585,14 @@ void DecodeTrace::on_show_hide_class(QWidget* sender)
 
 	row->has_hidden_classes = row->decode_row->has_hidden_classes();
 
+	owner_->row_item_appearance_changed(false, true);
+}
+
+void DecodeTrace::on_row_container_resized(QWidget* sender)
+{
+	sender->update();
+
+	owner_->extents_changed(false, true);
 	owner_->row_item_appearance_changed(false, true);
 }
 
