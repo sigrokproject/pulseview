@@ -307,7 +307,7 @@ shared_ptr<Signal> View::get_signal_by_signalbase(shared_ptr<data::SignalBase> b
 {
 	shared_ptr<Signal> ret_val;
 
-	for (const shared_ptr<Signal> s : signals_)
+	for (const shared_ptr<Signal>& s : signals_)
 		if (s->base() == base) {
 			ret_val = s;
 			break;

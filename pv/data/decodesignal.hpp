@@ -42,7 +42,6 @@ using std::condition_variable;
 using std::deque;
 using std::map;
 using std::mutex;
-using std::pair;
 using std::vector;
 using std::shared_ptr;
 

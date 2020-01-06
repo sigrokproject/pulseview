@@ -67,7 +67,6 @@ using std::make_pair;
 using std::max;
 using std::min;
 using std::numeric_limits;
-using std::out_of_range;
 using std::pair;
 using std::shared_ptr;
 using std::tie;

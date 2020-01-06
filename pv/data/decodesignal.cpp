@@ -35,7 +35,6 @@
 
 using std::forward_list;
 using std::lock_guard;
-using std::make_pair;
 using std::make_shared;
 using std::min;
 using std::out_of_range;
@@ -1363,7 +1362,7 @@ void DecodeSignal::create_decode_segment()
 	segments_.emplace_back(DecodeSegment());
 
 	// Add annotation classes
-	for (const shared_ptr<Decoder> dec : stack_)
+	for (const shared_ptr<Decoder>& dec : stack_)
 		for (Row* row : dec->get_rows())
 			segments_.back().annotation_rows.emplace(row, RowData(row));
 

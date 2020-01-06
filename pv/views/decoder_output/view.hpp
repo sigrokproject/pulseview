@@ -57,8 +57,6 @@ class View : public ViewBase
 public:
 	explicit View(Session &session, bool is_main_view=false, QMainWindow *parent = nullptr);
 
-	~View();
-
 	virtual ViewType get_type() const;
 
 	/**

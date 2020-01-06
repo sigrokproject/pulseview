@@ -50,7 +50,7 @@ public:
 	};
 
 public:
-	QHexView(QWidget *parent = 0);
+	QHexView(QWidget *parent = nullptr);
 
 	void set_mode(Mode m);
 	void set_data(const DecodeBinaryClass* data);

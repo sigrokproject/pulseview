@@ -41,11 +41,8 @@
 using pv::data::DecodeSignal;
 using pv::data::SignalBase;
 using pv::data::decode::Decoder;
-using pv::util::TimeUnit;
 using pv::util::Timestamp;
 
-using std::dynamic_pointer_cast;
-using std::numeric_limits;
 using std::shared_ptr;
 
 namespace pv {
@@ -133,10 +130,6 @@ View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 	parent->setSizePolicy(hex_view_->sizePolicy()); // TODO Must be updated when selected widget changes
 
 	reset_view_state();
-}
-
-View::~View()
-{
 }
 
 ViewType View::get_type() const

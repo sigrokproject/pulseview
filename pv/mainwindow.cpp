@@ -146,7 +146,7 @@ shared_ptr<views::ViewBase> MainWindow::add_view(views::ViewType type,
 	// Only use the view type in the name if it's not the main view
 	QString title;
 	if (main_bar)
-		title = QString("%1 (%2)").arg(session.name()).arg(views::ViewTypeNames[type]);
+		title = QString("%1 (%2)").arg(session.name(), views::ViewTypeNames[type]);
 	else
 		title = session.name();
 

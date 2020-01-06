@@ -69,7 +69,7 @@ Decoder::Decoder(const srd_decoder *const dec) :
 	for (const GSList *rl = srd_decoder_->annotation_rows; rl; rl = rl->next) {
 		const srd_decoder_annotation_row *const srd_row = (srd_decoder_annotation_row *)rl->data;
 		assert(srd_row);
-		rows_.push_back({i++, this, srd_row});
+		rows_.emplace_back(i++, this, srd_row);
 
 		// FIXME PV can crash from .at() if a PD's ann classes are defined incorrectly
 		for (const GSList *cl = srd_row->ann_classes; cl; cl = cl->next)
@@ -78,7 +78,7 @@ Decoder::Decoder(const srd_decoder *const dec) :
 
 	if (rows_.empty()) {
 		// Make sure there is a row for PDs without row declarations
-		rows_.push_back({0, this});
+		rows_.emplace_back(0, this);
 
 		for (AnnotationClass& c : ann_classes_)
 			c.row = &(rows_.back());
