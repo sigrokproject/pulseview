@@ -689,6 +689,24 @@ void DecodeSignal::save_settings(QSettings &settings) const
 			i++;
 		}
 
+		// Save row properties
+		i = 0;
+		for (const Row* row : decoder->get_rows()) {
+			settings.beginGroup("row" + QString::number(i));
+			settings.setValue("visible", row->visible());
+			settings.endGroup();
+			i++;
+		}
+
+		// Save class properties
+		i = 0;
+		for (const AnnotationClass* ann_class : decoder->ann_classes()) {
+			settings.beginGroup("ann_class" + QString::number(i));
+			settings.setValue("visible", ann_class->visible);
+			settings.endGroup();
+			i++;
+		}
+
 		settings.endGroup();
 	}
 
@@ -754,6 +772,25 @@ void DecodeSignal::restore_settings(QSettings &settings)
 
 				// Include the newly created decode channels in the channel lists
 				update_channel_list();
+
+				// Restore row properties
+				int i = 0;
+				for (Row* row : decoder->get_rows()) {
+					settings.beginGroup("row" + QString::number(i));
+					row->set_visible(settings.value("visible", true).toBool());
+					settings.endGroup();
+					i++;
+				}
+
+				// Restore class properties
+				i = 0;
+				for (AnnotationClass* ann_class : decoder->ann_classes()) {
+					settings.beginGroup("ann_class" + QString::number(i));
+					ann_class->visible = settings.value("visible", true).toBool();
+					settings.endGroup();
+					i++;
+				}
+
 				break;
 			}
 		}
