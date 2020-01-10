@@ -172,6 +172,8 @@ public:
 
 	void set_default_device();
 
+	bool using_file_device() const;
+
 	void load_init_file(const string &file_name, const string &format,
 		const string &setup_file_name);
 

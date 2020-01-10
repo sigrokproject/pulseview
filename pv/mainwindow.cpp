@@ -332,6 +332,8 @@ shared_ptr<Session> MainWindow::add_session()
 		this, SLOT(on_add_view(views::ViewType, Session*)));
 	connect(session.get(), SIGNAL(name_changed()),
 		this, SLOT(on_session_name_changed()));
+	connect(session.get(), SIGNAL(device_changed()),
+		this, SLOT(on_session_device_changed()));
 	session_state_mapper_.setMapping(session.get(), session.get());
 	connect(session.get(), SIGNAL(capture_state_changed(int)),
 		&session_state_mapper_, SLOT(map()));
@@ -566,6 +568,19 @@ void MainWindow::setup_ui()
 		this, SLOT(on_focus_changed()));
 }
 
+void MainWindow::update_acq_button(Session *session)
+{
+	int state = session->get_capture_state();
+
+	const QString run_caption =
+		session->using_file_device() ? tr("Reload") : tr("Run");
+
+	const QIcon *icons[] = {&icon_grey_, &icon_red_, &icon_green_};
+	run_stop_button_->setIcon(*icons[state]);
+	run_stop_button_->setText((state == pv::Session::Stopped) ?
+		run_caption : tr("Stop"));
+}
+
 void MainWindow::save_ui_settings()
 {
 	QSettings settings;
@@ -739,6 +754,19 @@ void MainWindow::on_session_name_changed()
 		setWindowTitle(session->name() + " - " + WindowTitle);
 }
 
+void MainWindow::on_session_device_changed()
+{
+	Session *session = qobject_cast<Session*>(QObject::sender());
+	assert(session);
+
+	// Ignore if caller is not the currently focused session
+	// unless there is only one session
+	if ((sessions_.size() > 1) && (session != last_focused_session_.get()))
+		return;
+
+	update_acq_button(session);
+}
+
 void MainWindow::on_capture_state_changed(QObject *obj)
 {
 	Session *caller = qobject_cast<Session*>(obj);
@@ -748,12 +776,7 @@ void MainWindow::on_capture_state_changed(QObject *obj)
 	if ((sessions_.size() > 1) && (caller != last_focused_session_.get()))
 		return;
 
-	int state = caller->get_capture_state();
-
-	const QIcon *icons[] = {&icon_grey_, &icon_red_, &icon_green_};
-	run_stop_button_->setIcon(*icons[state]);
-	run_stop_button_->setText((state == pv::Session::Stopped) ?
-		tr("Run") : tr("Stop"));
+	update_acq_button(caller);
 }
 
 void MainWindow::on_new_view(Session *session, int view_type)

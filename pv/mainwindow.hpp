@@ -100,6 +100,7 @@ public:
 
 private:
 	void setup_ui();
+	void update_acq_button(Session *session);
 
 	void save_ui_settings();
 	void restore_ui_settings();
@@ -123,6 +124,7 @@ private Q_SLOTS:
 	void on_settings_clicked();
 
 	void on_session_name_changed();
+	void on_session_device_changed();
 	void on_capture_state_changed(QObject *obj);
 
 	void on_new_view(Session *session, int view_type);

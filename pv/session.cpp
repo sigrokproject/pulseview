@@ -485,6 +485,17 @@ void Session::set_default_device()
 	set_device((iter == devices.end()) ? devices.front() : *iter);
 }
 
+bool Session::using_file_device() const
+{
+	shared_ptr<devices::SessionFile> sessionfile_device =
+		dynamic_pointer_cast<devices::SessionFile>(device_);
+
+	shared_ptr<devices::InputFile> inputfile_device =
+		dynamic_pointer_cast<devices::InputFile>(device_);
+
+	return (sessionfile_device || inputfile_device);
+}
+
 /**
  * Convert generic options to data types that are specific to InputFormat.
  *
