@@ -49,8 +49,7 @@ public:
 	 * Note: The annotations are unsorted and only annotations that fully
 	 * fit into the sample range are considered.
 	 */
-	void get_annotation_subset(
-		vector<const pv::data::decode::Annotation*> &dest,
+	void get_annotation_subset(deque<const pv::data::decode::Annotation*> &dest,
 		uint64_t start_sample, uint64_t end_sample) const;
 
 	void emplace_annotation(srd_proto_data *pdata);

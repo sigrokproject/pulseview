@@ -42,11 +42,14 @@ public:
 
 public:
 	Annotation(const srd_proto_data *const pdata, const Row *row);
+	Annotation(Annotation&& a);
+	Annotation& operator=(Annotation&& a);
+	~Annotation();
 
 	uint64_t start_sample() const;
 	uint64_t end_sample() const;
-	Class ann_class() const;
-	const vector<QString>& annotations() const;
+	Class ann_class_id() const;
+	const vector<QString>* annotations() const;
 	const Row* row() const;
 
 	bool operator<(const Annotation &other) const;
@@ -54,9 +57,9 @@ public:
 private:
 	uint64_t start_sample_;
 	uint64_t end_sample_;
-	Class ann_class_;
-	vector<QString> annotations_;
+	vector<QString>* annotations_;
 	const Row *row_;
+	Class ann_class_id_;
 };
 
 } // namespace decode

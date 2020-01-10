@@ -478,7 +478,7 @@ uint64_t DecodeSignal::get_annotation_count(const Row* row, uint32_t segment_id)
 	return rd->get_annotation_count();
 }
 
-void DecodeSignal::get_annotation_subset(vector<const Annotation*> &dest,
+void DecodeSignal::get_annotation_subset(deque<const Annotation*> &dest,
 	const Row* row, uint32_t segment_id, uint64_t start_sample,
 	uint64_t end_sample) const
 {
@@ -500,27 +500,11 @@ void DecodeSignal::get_annotation_subset(vector<const Annotation*> &dest,
 	rd->get_annotation_subset(dest, start_sample, end_sample);
 }
 
-void DecodeSignal::get_annotation_subset(vector<const Annotation*> &dest,
+void DecodeSignal::get_annotation_subset(deque<const Annotation*> &dest,
 	uint32_t segment_id, uint64_t start_sample, uint64_t end_sample) const
 {
-	// Use forward_lists for faster merging
-	forward_list<const Annotation*> *all_ann_list = new forward_list<const Annotation*>();
-
-	vector<const Row*> rows = get_rows();
-	for (const Row* row : rows) {
-		vector<const Annotation*> *ann_vector = new vector<const Annotation*>();
-		get_annotation_subset(*ann_vector, row, segment_id, start_sample, end_sample);
-
-		forward_list<const Annotation*> *ann_list =
-			new forward_list<const Annotation*>(ann_vector->begin(), ann_vector->end());
-		delete ann_vector;
-
-		all_ann_list->merge(*ann_list);
-		delete ann_list;
-	}
-
-	move(all_ann_list->begin(), all_ann_list->end(), back_inserter(dest));
-	delete all_ann_list;
+	for (const Row* row : get_rows())
+		get_annotation_subset(dest, row, segment_id, start_sample, end_sample);
 }
 
 uint32_t DecodeSignal::get_binary_data_chunk_count(uint32_t segment_id,

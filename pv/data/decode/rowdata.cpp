@@ -49,7 +49,7 @@ uint64_t RowData::get_annotation_count() const
 }
 
 void RowData::get_annotation_subset(
-	vector<const pv::data::decode::Annotation*> &dest,
+	deque<const pv::data::decode::Annotation*> &dest,
 	uint64_t start_sample, uint64_t end_sample) const
 {
 	// Determine whether we must apply per-class filtering or not
@@ -68,7 +68,6 @@ void RowData::get_annotation_subset(
 
 	if (all_ann_classes_enabled) {
 		// No filtering, send everyting out as-is
-		dest.reserve(dest.size() + annotations_.size());
 		for (const auto& annotation : annotations_)
 			if ((annotation.end_sample() > start_sample) &&
 				(annotation.start_sample() <= end_sample))
@@ -82,9 +81,8 @@ void RowData::get_annotation_subset(
 				if (c->visible)
 					class_visible[c->id] = 1;
 
-			dest.reserve(dest.size() + annotations_.size());
 			for (const auto& annotation : annotations_)
-				if ((class_visible[annotation.ann_class()]) &&
+				if ((class_visible[annotation.ann_class_id()]) &&
 					(annotation.end_sample() > start_sample) &&
 					(annotation.start_sample() <= end_sample))
 					dest.push_back(&annotation);
@@ -110,7 +108,7 @@ void RowData::emplace_annotation(srd_proto_data *pdata)
 		if (it != annotations_.begin())
 			it++;
 
-		annotations_.insert(it, Annotation(pdata, row_));
+		annotations_.emplace(it, pdata, row_);
 	} else {
 		annotations_.emplace_back(pdata, row_);
 		prev_ann_start_sample_ = pdata->start_sample;

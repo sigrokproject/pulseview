@@ -286,7 +286,7 @@ void DecodeTrace::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 			continue;
 		}
 
-		vector<const Annotation*> annotations;
+		deque<const Annotation*> annotations;
 		decode_signal_->get_annotation_subset(annotations, r.decode_row,
 			current_segment_, sample_range.first, sample_range.second);
 
@@ -665,7 +665,7 @@ void DecodeTrace::mouse_left_press_event(const QMouseEvent* event)
 	}
 }
 
-void DecodeTrace::draw_annotations(vector<const Annotation*> annotations,
+void DecodeTrace::draw_annotations(deque<const Annotation*>& annotations,
 		QPainter &p, const ViewItemPaintParams &pp, int y, const DecodeTraceRow& row)
 {
 	Annotation::Class block_class = 0;
@@ -698,7 +698,7 @@ void DecodeTrace::draw_annotations(vector<const Annotation*> annotations,
 
 		// Annotation wider than the threshold for a useful label width?
 		if (a_width >= min_useful_label_width_) {
-			for (const QString &ann_text : a->annotations()) {
+			for (const QString &ann_text : *(a->annotations())) {
 				const qreal w = p.boundingRect(QRectF(), 0, ann_text).width();
 				// Annotation wide enough to fit a label? Don't put it in a block then
 				if (w <= a_width) {
@@ -733,10 +733,10 @@ void DecodeTrace::draw_annotations(vector<const Annotation*> annotations,
 
 			if (block_ann_count == 0) {
 				block_start = a_start;
-				block_class = a->ann_class();
+				block_class = a->ann_class_id();
 				block_class_uniform = true;
 			} else
-				if (a->ann_class() != block_class)
+				if (a->ann_class_id() != block_class)
 					block_class_uniform = false;
 
 			block_ann_count++;
@@ -760,11 +760,10 @@ void DecodeTrace::draw_annotation(const Annotation* a, QPainter &p,
 	const double start = a->start_sample() / samples_per_pixel - pixels_offset;
 	const double end = a->end_sample() / samples_per_pixel - pixels_offset;
 
-	QColor color = row.ann_class_color.at(a->ann_class());
-	p.setPen(color.darker());
-	p.setBrush(color);
+	p.setPen(row.ann_class_dark_color.at(a->ann_class_id()));
+	p.setBrush(row.ann_class_color.at(a->ann_class_id()));
 
-	if (start > pp.right() + DrawPadding || end < pp.left() - DrawPadding)
+	if ((start > (pp.right() + DrawPadding)) || (end < (pp.left() - DrawPadding)))
 		return;
 
 	if (a->start_sample() == a->end_sample())
@@ -779,33 +778,32 @@ void DecodeTrace::draw_annotation_block(qreal start, qreal end,
 {
 	const double top = y + .5 - annotation_height_ / 2;
 	const double bottom = y + .5 + annotation_height_ / 2;
-
-	const QRectF rect(start, top, end - start, bottom - top);
-	const int r = annotation_height_ / 4;
-
-	p.setPen(QPen(Qt::NoPen));
-	p.setBrush(Qt::white);
-	p.drawRoundedRect(rect, r, r);
+	const double width = end - start;
 
 	// If all annotations in this block are of the same type, we can use the
 	// one format that all of these annotations have. Otherwise, we should use
 	// a neutral color (i.e. gray)
 	if (use_ann_format) {
-		const QColor color = row.ann_class_color.at(ann_class);
-		p.setPen(color.darker());
-		p.setBrush(QBrush(color, Qt::Dense4Pattern));
+		p.setPen(row.ann_class_dark_color.at(ann_class));
+		p.setBrush(QBrush(row.ann_class_color.at(ann_class), Qt::Dense4Pattern));
 	} else {
-		p.setPen(Qt::gray);
+		p.setPen(QColor(Qt::darkGray));
 		p.setBrush(QBrush(Qt::gray, Qt::Dense4Pattern));
 	}
 
-	p.drawRoundedRect(rect, r, r);
+	if (width <= 1)
+		p.drawLine(QPointF(start, top), QPointF(start, bottom));
+	else {
+		const QRectF rect(start, top, width, bottom - top);
+		const int r = annotation_height_ / 4;
+		p.drawRoundedRect(rect, r, r);
+	}
 }
 
 void DecodeTrace::draw_instant(const Annotation* a, QPainter &p, qreal x, int y) const
 {
-	const QString text = a->annotations().empty() ?
-		QString() : a->annotations().back();
+	const QString text = a->annotations()->empty() ?
+		QString() : a->annotations()->back();
 	const qreal w = min((qreal)p.boundingRect(QRectF(), 0, text).width(),
 		0.0) + annotation_height_;
 	const QRectF rect(x - w / 2, y - annotation_height_ / 2, w, annotation_height_);
@@ -822,7 +820,7 @@ void DecodeTrace::draw_range(const Annotation* a, QPainter &p,
 {
 	const qreal top = y + .5 - annotation_height_ / 2;
 	const qreal bottom = y + .5 + annotation_height_ / 2;
-	const vector<QString> annotations = a->annotations();
+	const vector<QString>* annotations = a->annotations();
 
 	// If the two ends are within 1 pixel, draw a vertical line
 	if (start + 1.0 > end) {
@@ -843,7 +841,7 @@ void DecodeTrace::draw_range(const Annotation* a, QPainter &p,
 
 	p.drawConvexPolygon(pts, countof(pts));
 
-	if (annotations.empty())
+	if (annotations->empty())
 		return;
 
 	const int ann_start = start + cap_width;
@@ -863,14 +861,14 @@ void DecodeTrace::draw_range(const Annotation* a, QPainter &p,
 	QString best_annotation;
 	int best_width = 0;
 
-	for (const QString &s : annotations) {
+	for (const QString &s : *annotations) {
 		const int w = p.boundingRect(QRectF(), 0, s).width();
 		if (w <= rect.width() && w > best_width)
 			best_annotation = s, best_width = w;
 	}
 
 	if (best_annotation.isEmpty())
-		best_annotation = annotations.back();
+		best_annotation = annotations->back();
 
 	// If not ellide the last in the list
 	p.drawText(rect, Qt::AlignCenter, p.fontMetrics().elidedText(
@@ -1047,13 +1045,13 @@ const QString DecodeTrace::get_annotation_at_point(const QPoint &point)
 	if (point.y() > (int)(get_row_y(r) + (annotation_height_ / 2)))
 		return QString();
 
-	vector<const Annotation*> annotations;
+	deque<const Annotation*> annotations;
 
 	decode_signal_->get_annotation_subset(annotations, r->decode_row,
 		current_segment_, sample_range.first, sample_range.second);
 
 	return (annotations.empty()) ?
-		QString() : annotations[0]->annotations().front();
+		QString() : annotations[0]->annotations()->front();
 }
 
 void DecodeTrace::create_decoder_form(int index, shared_ptr<Decoder> &dec,
@@ -1178,7 +1176,7 @@ QComboBox* DecodeTrace::create_channel_selector_init_state(QWidget *parent,
 	return selector;
 }
 
-void DecodeTrace::export_annotations(vector<const Annotation*> *annotations) const
+void DecodeTrace::export_annotations(deque<const Annotation*>& annotations) const
 {
 	GlobalSettings settings;
 	const QString dir = settings.value("MainWindow/SaveDirectory").toString();
@@ -1197,18 +1195,18 @@ void DecodeTrace::export_annotations(vector<const Annotation*> *annotations) con
 	if (file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
 		QTextStream out_stream(&file);
 
-		for (const Annotation* ann : *annotations) {
+		for (const Annotation* ann : annotations) {
 			const QString sample_range = QString("%1-%2") \
 				.arg(QString::number(ann->start_sample()), QString::number(ann->end_sample()));
 
 			const QString row_name = quote + ann->row()->description() + quote;
 
 			QString all_ann_text;
-			for (const QString &s : ann->annotations())
+			for (const QString &s : *(ann->annotations()))
 				all_ann_text = all_ann_text + quote + s + quote + ",";
 			all_ann_text.chop(1);
 
-			const QString first_ann_text = quote + ann->annotations().front() + quote;
+			const QString first_ann_text = quote + ann->annotations()->front() + quote;
 
 			QString out_text = format;
 			out_text = out_text.replace("%s", sample_range);
@@ -1350,9 +1348,12 @@ void DecodeTrace::update_rows()
 			nr.row_color = get_row_color(decode_row->index());
 
 			vector<AnnotationClass*> ann_classes = decode_row->ann_classes();
-			for (const AnnotationClass* ann_class : ann_classes)
+			for (const AnnotationClass* ann_class : ann_classes) {
 				nr.ann_class_color[ann_class->id] =
 					get_annotation_color(nr.row_color, ann_class->id);
+				nr.ann_class_dark_color[ann_class->id] =
+					nr.ann_class_color[ann_class->id].darker();
+			}
 
 			rows_.push_back(nr);
 			r = &rows_.back();
@@ -1602,21 +1603,19 @@ void DecodeTrace::on_copy_annotation_to_clipboard()
 	if (!selected_row_)
 		return;
 
-	vector<const Annotation*> *annotations = new vector<const Annotation*>();
+	deque<const Annotation*> annotations;
 
-	decode_signal_->get_annotation_subset(*annotations, selected_row_,
+	decode_signal_->get_annotation_subset(annotations, selected_row_,
 		current_segment_, selected_sample_range_.first, selected_sample_range_.first);
 
-	if (annotations->empty())
+	if (annotations.empty())
 		return;
 
 	QClipboard *clipboard = QApplication::clipboard();
-	clipboard->setText(annotations->front()->annotations().front(), QClipboard::Clipboard);
+	clipboard->setText(annotations.front()->annotations()->front(), QClipboard::Clipboard);
 
 	if (clipboard->supportsSelection())
-		clipboard->setText(annotations->front()->annotations().front(), QClipboard::Selection);
-
-	delete annotations;
+		clipboard->setText(annotations.front()->annotations()->front(), QClipboard::Selection);
 }
 
 void DecodeTrace::on_export_row()
@@ -1688,29 +1687,26 @@ void DecodeTrace::on_export_row_from_here()
 	if (!selected_row_)
 		return;
 
-	vector<const Annotation*> *annotations = new vector<const Annotation*>();
+	deque<const Annotation*> annotations;
 
-	decode_signal_->get_annotation_subset(*annotations, selected_row_,
+	decode_signal_->get_annotation_subset(annotations, selected_row_,
 		current_segment_, selected_sample_range_.first, selected_sample_range_.second);
 
-	if (annotations->empty())
+	if (annotations.empty())
 		return;
 
 	export_annotations(annotations);
-	delete annotations;
 }
 
 void DecodeTrace::on_export_all_rows_from_here()
 {
-	vector<const Annotation*> *annotations = new vector<const Annotation*>();
+	deque<const Annotation*> annotations;
 
-	decode_signal_->get_annotation_subset(*annotations, current_segment_,
+	decode_signal_->get_annotation_subset(annotations, current_segment_,
 			selected_sample_range_.first, selected_sample_range_.second);
 
-	if (!annotations->empty())
+	if (!annotations.empty())
 		export_annotations(annotations);
-
-	delete annotations;
 }
 
 void DecodeTrace::on_animation_timer()

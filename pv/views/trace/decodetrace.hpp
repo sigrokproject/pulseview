@@ -101,6 +101,7 @@ struct DecodeTraceRow {
 
 	QColor row_color;
 	map<uint32_t, QColor> ann_class_color;
+	map<uint32_t, QColor> ann_class_dark_color;
 };
 
 class ContainerWidget : public QWidget
@@ -185,7 +186,7 @@ public:
 	virtual void mouse_left_press_event(const QMouseEvent* event);
 
 private:
-	void draw_annotations(vector<const Annotation*> annotations, QPainter &p,
+	void draw_annotations(deque<const Annotation*>& annotations, QPainter &p,
 		const ViewItemPaintParams &pp, int y, const DecodeTraceRow& row);
 
 	void draw_annotation(const Annotation* a, QPainter &p,
@@ -233,7 +234,7 @@ private:
 	QComboBox* create_channel_selector_init_state(QWidget *parent,
 		const data::decode::DecodeChannel *ch);
 
-	void export_annotations(vector<const Annotation*> *annotations) const;
+	void export_annotations(deque<const Annotation*>& annotations) const;
 
 	void initialize_row_widgets(DecodeTraceRow* r, unsigned int row_id);
 	void update_rows();

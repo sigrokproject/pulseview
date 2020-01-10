@@ -42,15 +42,51 @@ Annotation::Annotation(const srd_proto_data *const pdata, const Row *row) :
 		(const srd_proto_data_annotation*)pdata->data;
 	assert(pda);
 
-	ann_class_ = (Class)(pda->ann_class);
+	ann_class_id_ = (Class)(pda->ann_class);
+
+	annotations_ = new vector<QString>();
 
 	const char *const *annotations = (char**)pda->ann_text;
 	while (*annotations) {
-		annotations_.push_back(QString::fromUtf8(*annotations));
+		annotations_->push_back(QString::fromUtf8(*annotations));
 		annotations++;
 	}
 
-	annotations_.shrink_to_fit();
+	annotations_->shrink_to_fit();
+}
+
+Annotation::Annotation(Annotation&& a) :
+	start_sample_(a.start_sample_),
+	end_sample_(a.end_sample_),
+	annotations_(a.annotations_),
+	row_(a.row_),
+	ann_class_id_(a.ann_class_id_)
+{
+	a.annotations_ = nullptr;
+}
+
+Annotation& Annotation::operator=(Annotation&& a)
+{
+	if (&a != this) {
+		if (annotations_)
+			delete annotations_;
+
+		start_sample_ = a.start_sample_;
+		end_sample_ = a.end_sample_;
+		annotations_ = a.annotations_;
+		row_ = a.row_;
+		ann_class_id_ = a.ann_class_id_;
+
+		a.annotations_ = nullptr;
+	}
+
+	return *this;
+}
+
+Annotation::~Annotation()
+{
+	if (annotations_)
+		delete annotations_;
 }
 
 uint64_t Annotation::start_sample() const
@@ -63,12 +99,12 @@ uint64_t Annotation::end_sample() const
 	return end_sample_;
 }
 
-Annotation::Class Annotation::ann_class() const
+Annotation::Class Annotation::ann_class_id() const
 {
-	return ann_class_;
+	return ann_class_id_;
 }
 
-const vector<QString>& Annotation::annotations() const
+const vector<QString>* Annotation::annotations() const
 {
 	return annotations_;
 }
