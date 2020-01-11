@@ -26,7 +26,6 @@
 
 #include <QMainWindow>
 #include <QShortcut>
-#include <QSignalMapper>
 #include <QTabWidget>
 #include <QToolButton>
 
@@ -125,7 +124,7 @@ private Q_SLOTS:
 
 	void on_session_name_changed();
 	void on_session_device_changed();
-	void on_capture_state_changed(QObject *obj);
+	void on_session_capture_state_changed(int state);
 
 	void on_new_view(Session *session, int view_type);
 	void on_view_close_clicked();
@@ -157,7 +156,6 @@ private:
 	QWidget *static_tab_widget_;
 	QToolButton *new_session_button_, *run_stop_button_, *settings_button_;
 	QTabWidget session_selector_;
-	QSignalMapper session_state_mapper_;
 
 	QIcon icon_red_;
 	QIcon icon_green_;

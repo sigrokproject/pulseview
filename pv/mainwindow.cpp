@@ -71,7 +71,6 @@ MainWindow::MainWindow(DeviceManager &device_manager, QWidget *parent) :
 	QMainWindow(parent),
 	device_manager_(device_manager),
 	session_selector_(this),
-	session_state_mapper_(this),
 	icon_red_(":/icons/status-red.svg"),
 	icon_green_(":/icons/status-green.svg"),
 	icon_grey_(":/icons/status-grey.svg")
@@ -334,9 +333,8 @@ shared_ptr<Session> MainWindow::add_session()
 		this, SLOT(on_session_name_changed()));
 	connect(session.get(), SIGNAL(device_changed()),
 		this, SLOT(on_session_device_changed()));
-	session_state_mapper_.setMapping(session.get(), session.get());
 	connect(session.get(), SIGNAL(capture_state_changed(int)),
-		&session_state_mapper_, SLOT(map()));
+		this, SLOT(on_session_capture_state_changed(int)));
 
 	sessions_.push_back(session);
 
@@ -552,8 +550,6 @@ void MainWindow::setup_ui()
 		this, SLOT(on_new_session_clicked()));
 	connect(run_stop_button_, SIGNAL(clicked(bool)),
 		this, SLOT(on_run_stop_clicked()));
-	connect(&session_state_mapper_, SIGNAL(mapped(QObject*)),
-		this, SLOT(on_capture_state_changed(QObject*)));
 	connect(settings_button_, SIGNAL(clicked(bool)),
 		this, SLOT(on_settings_clicked()));
 
@@ -693,7 +689,7 @@ void MainWindow::on_focused_session_changed(shared_ptr<Session> session)
 	setWindowTitle(session->name() + " - " + WindowTitle);
 
 	// Update the state of the run/stop button, too
-	on_capture_state_changed(session.get());
+	update_acq_button(session.get());
 }
 
 void MainWindow::on_new_session_clicked()
@@ -767,16 +763,19 @@ void MainWindow::on_session_device_changed()
 	update_acq_button(session);
 }
 
-void MainWindow::on_capture_state_changed(QObject *obj)
+void MainWindow::on_session_capture_state_changed(int state)
 {
-	Session *caller = qobject_cast<Session*>(obj);
+	(void)state;
+
+	Session *session = qobject_cast<Session*>(QObject::sender());
+	assert(session);
 
 	// Ignore if caller is not the currently focused session
 	// unless there is only one session
-	if ((sessions_.size() > 1) && (caller != last_focused_session_.get()))
+	if ((sessions_.size() > 1) && (session != last_focused_session_.get()))
 		return;
 
-	update_acq_button(caller);
+	update_acq_button(session);
 }
 
 void MainWindow::on_new_view(Session *session, int view_type)
