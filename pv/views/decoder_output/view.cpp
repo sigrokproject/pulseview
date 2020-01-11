@@ -53,7 +53,7 @@ const char* SaveTypeNames[SaveTypeCount] = {
 	"Binary",
 	"Hex Dump, plain",
 	"Hex Dump, with offset",
-	"Hex Dump, complete"
+	"Hex Dump, canonical"
 };
 
 
