@@ -222,38 +222,47 @@ vector<const srd_decoder*> SubWindow::get_decoders_providing(const char* output)
 
 void SubWindow::on_item_changed(const QModelIndex& index)
 {
-	if (!index.isValid())
-		return;
+	QString decoder_name, id, longname, desc, doc, tags;
 
-	QModelIndex id_index = index.model()->index(index.row(), 2, index.parent());
-	QString decoder_name = index.model()->data(id_index, Qt::DisplayRole).toString();
+	// If the parent isn't valid, a category title was clicked
+	if (index.isValid() && index.parent().isValid()) {
+		QModelIndex id_index = index.model()->index(index.row(), 2, index.parent());
+		decoder_name = index.model()->data(id_index, Qt::DisplayRole).toString();
 
-	if (decoder_name.isEmpty())
-		return;
+		if (decoder_name.isEmpty())
+			return;
 
-	const srd_decoder* d = srd_decoder_get_by_id(decoder_name.toUtf8());
+		const srd_decoder* d = srd_decoder_get_by_id(decoder_name.toUtf8());
 
-	const QString id = QString::fromUtf8(d->id);
-	const QString longname = QString::fromUtf8(d->longname);
-	const QString desc = QString::fromUtf8(d->desc);
-	const QString doc = QString::fromUtf8(srd_decoder_doc_get(d)).trimmed();
+		id = QString::fromUtf8(d->id);
+		longname = QString::fromUtf8(d->longname);
+		desc = QString::fromUtf8(d->desc);
+		doc = QString::fromUtf8(srd_decoder_doc_get(d)).trimmed();
 
-	QString tags;
 #if DECODERS_HAVE_TAGS
-	for (GSList* li = (GSList*)d->tags; li; li = li->next) {
-		QString s = (li == (GSList*)d->tags) ?
-			tr((char*)li->data) :
-			QString(tr(", %1")).arg(tr((char*)li->data));
-		tags.append(s);
-	}
+		for (GSList* li = (GSList*)d->tags; li; li = li->next) {
+			QString s = (li == (GSList*)d->tags) ?
+				tr((char*)li->data) :
+				QString(tr(", %1")).arg(tr((char*)li->data));
+			tags.append(s);
+		}
 #endif
+	} else
+		doc = QString(tr(initial_notice));
 
-	info_label_header_->setText(QString("<span style='font-size:large'><b>%1 (%2)</b></span><br><i>%3</i>")
-		.arg(longname, id, desc));
+	if (!id.isEmpty())
+		info_label_header_->setText(
+			QString("<span style='font-size:large'><b>%1 (%2)</b></span><br><i>%3</i>")
+			.arg(longname, id, desc));
+	else
+		info_label_header_->clear();
+
 	info_label_body_->setText(doc);
 
 	if (!tags.isEmpty())
 		info_label_footer_->setText(tr("<p align='right'>Tags: %1</p>").arg(tags));
+	else
+		info_label_footer_->clear();
 }
 
 void SubWindow::on_item_activated(const QModelIndex& index)
