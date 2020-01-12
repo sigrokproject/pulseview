@@ -4,7 +4,7 @@
 <context>
     <name>Application</name>
     <message>
-        <location filename="../pv/application.cpp" line="111"/>
+        <location filename="../pv/application.cpp" line="121"/>
         <source>Some parts of the application may still use the previous language. Re-opening the affected windows or restarting the application will remedy this.</source>
         <translation>Einige Teile der Anwendung verwenden vielleicht noch die vorherige Sprache. Sollte das der Fall sein, kann dies durch ein Schließen und neu Öffnen der betroffenen Fenster oder der Anwendung behoben werden.</translation>
     </message>
@@ -42,6 +42,14 @@
         <source>Error when scanning device driver &apos;%1&apos;: %2</source>
         <translatorcomment>Internal message</translatorcomment>
         <translation></translation>
+    </message>
+</context>
+<context>
+    <name>QHexView</name>
+    <message>
+        <location filename="../pv/views/decoder_output/QHexView.cpp" line="286"/>
+        <source>No data available</source>
+        <translation>Keine Daten vorhanden</translation>
     </message>
 </context>
 <context>
@@ -85,61 +93,66 @@ A human-readable form has been saved to disk and was written to the log. You may
 <context>
     <name>pv::MainWindow</name>
     <message>
-        <location filename="../pv/mainwindow.cpp" line="72"/>
+        <location filename="../pv/mainwindow.cpp" line="69"/>
         <source>PulseView</source>
         <translatorcomment>Name</translatorcomment>
         <translation></translation>
     </message>
     <message>
-        <location filename="../pv/mainwindow.cpp" line="276"/>
+        <location filename="../pv/mainwindow.cpp" line="274"/>
         <source>Decoder Selector</source>
         <translation>Protokolldekoder</translation>
     </message>
     <message>
-        <location filename="../pv/mainwindow.cpp" line="326"/>
+        <location filename="../pv/mainwindow.cpp" line="327"/>
         <source>Session %1</source>
         <translation>Analysesitzung %1</translation>
     </message>
     <message>
-        <location filename="../pv/mainwindow.cpp" line="535"/>
+        <location filename="../pv/mainwindow.cpp" line="509"/>
         <source>Create New Session</source>
         <translation>Neue Analysesitzung</translation>
     </message>
     <message>
-        <location filename="../pv/mainwindow.cpp" line="541"/>
+        <location filename="../pv/mainwindow.cpp" line="515"/>
         <source>Start/Stop Acquisition</source>
         <translation>Datenerfassung starten/stoppen</translation>
     </message>
     <message>
-        <location filename="../pv/mainwindow.cpp" line="549"/>
+        <location filename="../pv/mainwindow.cpp" line="523"/>
         <source>Settings</source>
         <translation>Einstellungen</translation>
     </message>
     <message>
-        <location filename="../pv/mainwindow.cpp" line="652"/>
-        <location filename="../pv/mainwindow.cpp" line="836"/>
-        <location filename="../pv/mainwindow.cpp" line="862"/>
+        <location filename="../pv/mainwindow.cpp" line="573"/>
+        <source>Reload</source>
+        <translation>Neu laden</translation>
+    </message>
+    <message>
+        <location filename="../pv/mainwindow.cpp" line="624"/>
+        <location filename="../pv/mainwindow.cpp" line="818"/>
+        <location filename="../pv/mainwindow.cpp" line="844"/>
         <source>Confirmation</source>
         <translation>Bestätigung</translation>
     </message>
     <message>
-        <location filename="../pv/mainwindow.cpp" line="653"/>
+        <location filename="../pv/mainwindow.cpp" line="625"/>
         <source>There is unsaved data. Close anyway?</source>
         <translation>Es gibt noch ungespeicherte Daten. Trotzdem beenden?</translation>
     </message>
     <message>
-        <location filename="../pv/mainwindow.cpp" line="797"/>
+        <location filename="../pv/mainwindow.cpp" line="573"/>
         <source>Run</source>
         <translation>Starten</translation>
     </message>
     <message>
-        <location filename="../pv/mainwindow.cpp" line="797"/>
+        <location filename="../pv/mainwindow.cpp" line="578"/>
         <source>Stop</source>
         <translation>Stoppen</translation>
     </message>
     <message>
-        <location filename="../pv/mainwindow.cpp" line="837"/>
-        <location filename="../pv/mainwindow.cpp" line="863"/>
+        <location filename="../pv/mainwindow.cpp" line="819"/>
+        <location filename="../pv/mainwindow.cpp" line="845"/>
         <source>This session contains unsaved data. Close it anyway?</source>
         <translation>Die Daten dieser Analysesitzung wurden nicht gespeichert. Trotzdem schließen?</translation>
     </message>
@@ -147,47 +160,47 @@ A human-readable form has been saved to disk and was written to the log. You may
 <context>
     <name>pv::Session</name>
     <message>
-        <location filename="../pv/session.cpp" line="404"/>
+        <location filename="../pv/session.cpp" line="409"/>
         <source>Failed to select device</source>
         <translation>Fehler beim Auswählen des Gerätes</translation>
     </message>
     <message>
-        <location filename="../pv/session.cpp" line="453"/>
+        <location filename="../pv/session.cpp" line="458"/>
         <source>Failed to open device</source>
         <translation>Fehler beim Öffnen des Gerätes</translation>
     </message>
     <message>
-        <location filename="../pv/session.cpp" line="544"/>
+        <location filename="../pv/session.cpp" line="560"/>
         <source>Error</source>
         <translation>Fehler</translation>
     </message>
     <message>
-        <location filename="../pv/session.cpp" line="545"/>
+        <location filename="../pv/session.cpp" line="561"/>
         <source>Unexpected input format: %s</source>
         <translation>Unerwartetes Importformat: %s</translation>
     </message>
     <message>
-        <location filename="../pv/session.cpp" line="580"/>
+        <location filename="../pv/session.cpp" line="596"/>
         <source>Failed to load %1</source>
         <translation>Fehler beim Laden von %1</translation>
     </message>
     <message>
-        <location filename="../pv/session.cpp" line="615"/>
+        <location filename="../pv/session.cpp" line="631"/>
         <source>No active device set, can&apos;t start acquisition.</source>
         <translation>Kein Gerät aktiv, kann Datenerfassung nicht starten.</translation>
     </message>
     <message>
-        <location filename="../pv/session.cpp" line="628"/>
+        <location filename="../pv/session.cpp" line="644"/>
         <source>No channels enabled.</source>
         <translation>Keine aktiven Kanäle vorhanden.</translation>
     </message>
     <message>
-        <location filename="../pv/session.cpp" line="1080"/>
+        <location filename="../pv/session.cpp" line="1095"/>
         <source>Out of memory, acquisition stopped.</source>
         <translation>Nicht genügend Arbeitsspeicher vorhanden, Datenerfassung wurde gestoppt.</translation>
     </message>
     <message>
-        <location filename="../pv/session.cpp" line="1286"/>
+        <location filename="../pv/session.cpp" line="1301"/>
         <source>Can&apos;t handle more than 64 logic channels.</source>
         <translatorcomment>Internal message</translatorcomment>
         <translation></translation>
@@ -217,7 +230,7 @@ A human-readable form has been saved to disk and was written to the log. You may
     </message>
     <message>
         <location filename="../pv/storesession.cpp" line="189"/>
-        <location filename="../pv/storesession.cpp" line="297"/>
+        <location filename="../pv/storesession.cpp" line="296"/>
         <source>Error while saving: </source>
         <translation>Fehler beim Speichern: </translation>
     </message>
@@ -225,32 +238,32 @@ A human-readable form has been saved to disk and was written to the log. You may
 <context>
     <name>pv::data::DecodeSignal</name>
     <message>
-        <location filename="../pv/data/decodesignal.cpp" line="194"/>
+        <location filename="../pv/data/decodesignal.cpp" line="195"/>
         <source>No decoders</source>
         <translation>Keine Protokolldekoder</translation>
     </message>
     <message>
-        <location filename="../pv/data/decodesignal.cpp" line="201"/>
+        <location filename="../pv/data/decodesignal.cpp" line="202"/>
         <source>There are no channels assigned to this decoder</source>
         <translation>Dem Protokolldekoder sind keine Kanäle zugeordnet</translation>
     </message>
     <message>
-        <location filename="../pv/data/decodesignal.cpp" line="215"/>
+        <location filename="../pv/data/decodesignal.cpp" line="216"/>
         <source>One or more required channels have not been specified</source>
         <translation>Mindestens ein notwendiger Kanal wurde noch nicht zugeordnet</translation>
     </message>
     <message>
-        <location filename="../pv/data/decodesignal.cpp" line="255"/>
+        <location filename="../pv/data/decodesignal.cpp" line="235"/>
         <source>No input data</source>
         <translation>Keine Daten zum Auswerten vorhanden</translation>
     </message>
     <message>
-        <location filename="../pv/data/decodesignal.cpp" line="1001"/>
+        <location filename="../pv/data/decodesignal.cpp" line="1161"/>
         <source>Decoder reported an error</source>
         <translation>Protokolldekoder meldet Fehler</translation>
     </message>
     <message>
-        <location filename="../pv/data/decodesignal.cpp" line="1137"/>
+        <location filename="../pv/data/decodesignal.cpp" line="1297"/>
         <source>Failed to create decoder instance</source>
         <translation>Fehler beim Erzeugen des Protokolldekoders</translation>
     </message>
@@ -544,8 +557,12 @@ A human-readable form has been saved to disk and was written to the log. You may
     </message>
     <message>
         <location filename="../pv/dialogs/settings.cpp" line="418"/>
-        <source>%s = sample range; %d: decoder name; %c: row name; %q: use quotations marks</source>
+        <source>%s = sample range; %d: decoder name; %r: row name; %q: use quotation marks</source>
         <translation>%s = Start-/Endsample; %d: Dekodername; %c Name der Kategorie; %q: Benutze Anführungszeichen</translation>
+    </message>
+    <message>
+        <source>%s = sample range; %d: decoder name; %c: row name; %q: use quotations marks</source>
+        <translation type="vanished">%s = Start-/Endsample; %d: Dekodername; %c Name der Kategorie; %q: Benutze Anführungszeichen</translation>
     </message>
     <message>
         <location filename="../pv/dialogs/settings.cpp" line="421"/>
@@ -802,22 +819,22 @@ Bei einer Änderung benötigt PulseView eventuell einen Neustart, damit alles ko
 <context>
     <name>pv::subwindows::decoder_selector::DecoderCollectionModel</name>
     <message>
-        <location filename="../pv/subwindows/decoder_selector/model.cpp" line="36"/>
+        <location filename="../pv/subwindows/decoder_selector/model.cpp" line="40"/>
         <source>Decoder</source>
         <translation>Dekoder</translation>
     </message>
     <message>
-        <location filename="../pv/subwindows/decoder_selector/model.cpp" line="37"/>
+        <location filename="../pv/subwindows/decoder_selector/model.cpp" line="41"/>
         <source>Name</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../pv/subwindows/decoder_selector/model.cpp" line="38"/>
+        <location filename="../pv/subwindows/decoder_selector/model.cpp" line="42"/>
         <source>ID</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../pv/subwindows/decoder_selector/model.cpp" line="45"/>
+        <location filename="../pv/subwindows/decoder_selector/model.cpp" line="49"/>
         <source>All Decoders</source>
         <translation>Alle Dekoder</translation>
     </message>
@@ -825,27 +842,27 @@ Bei einer Änderung benötigt PulseView eventuell einen Neustart, damit alles ko
 <context>
     <name>pv::subwindows::decoder_selector::SubWindow</name>
     <message>
-        <location filename="../pv/subwindows/decoder_selector/subwindow.cpp" line="44"/>
+        <location filename="../pv/subwindows/decoder_selector/subwindow.cpp" line="49"/>
         <source>Select a decoder to see its description here.</source>
         <translation>Wähle einen Dekoder, um dessen Beschreibung hier lesen zu können.</translation>
     </message>
     <message>
-        <location filename="../pv/subwindows/decoder_selector/subwindow.cpp" line="234"/>
+        <location filename="../pv/subwindows/decoder_selector/subwindow.cpp" line="247"/>
         <source>, %1</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../pv/subwindows/decoder_selector/subwindow.cpp" line="241"/>
+        <location filename="../pv/subwindows/decoder_selector/subwindow.cpp" line="264"/>
         <source>&lt;p align=&apos;right&apos;&gt;Tags: %1&lt;/p&gt;</source>
         <translation>&lt;p align=&apos;right&apos;&gt;Stichworte: %1&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../pv/subwindows/decoder_selector/subwindow.cpp" line="286"/>
+        <location filename="../pv/subwindows/decoder_selector/subwindow.cpp" line="311"/>
         <source>Protocol decoder &lt;b&gt;%1&lt;/b&gt; requires input type &lt;b&gt;%2&lt;/b&gt; which several decoders provide.&lt;br&gt;Choose which one to use:&lt;br&gt;</source>
         <translation>Protokolldekoder &lt;b&gt;%1&lt;/b&gt; benötigt Daten vom Typ &lt;b&gt;%2&lt;/b&gt;, die von verschiedenen Protokolldekodern bereitgestellt werden. &lt;br&gt;Wähle, welcher benutzt werden soll:&lt;br&gt;</translation>
     </message>
     <message>
-        <location filename="../pv/subwindows/decoder_selector/subwindow.cpp" line="294"/>
+        <location filename="../pv/subwindows/decoder_selector/subwindow.cpp" line="319"/>
         <source>Choose Decoder</source>
         <translation>Wähle Protokolldekoder</translation>
     </message>
@@ -853,250 +870,301 @@ Bei einer Änderung benötigt PulseView eventuell einen Neustart, damit alles ko
 <context>
     <name>pv::toolbars::MainBar</name>
     <message>
-        <location filename="../pv/toolbars/mainbar.cpp" line="119"/>
+        <location filename="../pv/toolbars/mainbar.cpp" line="120"/>
         <source>New &amp;View</source>
         <translation>Neue &amp;Ansicht</translation>
     </message>
     <message>
-        <location filename="../pv/toolbars/mainbar.cpp" line="125"/>
+        <location filename="../pv/toolbars/mainbar.cpp" line="126"/>
         <source>&amp;Open...</source>
         <translation>&amp;Öffnen...</translation>
     </message>
     <message>
-        <location filename="../pv/toolbars/mainbar.cpp" line="132"/>
+        <location filename="../pv/toolbars/mainbar.cpp" line="133"/>
         <source>Restore Session Setu&amp;p...</source>
         <translation>&amp;Konfiguration der Analysesitzung laden...</translation>
     </message>
     <message>
-        <location filename="../pv/toolbars/mainbar.cpp" line="136"/>
+        <location filename="../pv/toolbars/mainbar.cpp" line="137"/>
         <source>&amp;Save As...</source>
         <translation>&amp;Speichern als...</translation>
     </message>
     <message>
-        <location filename="../pv/toolbars/mainbar.cpp" line="143"/>
+        <location filename="../pv/toolbars/mainbar.cpp" line="144"/>
         <source>Save Selected &amp;Range As...</source>
         <translation>Ausgewählten &amp;Bereich speichern als...</translation>
     </message>
     <message>
-        <location filename="../pv/toolbars/mainbar.cpp" line="150"/>
+        <location filename="../pv/toolbars/mainbar.cpp" line="151"/>
         <source>Save Session Setu&amp;p...</source>
         <translation>&amp;Konfiguration der Analysesitzung speichern...</translation>
     </message>
     <message>
-        <location filename="../pv/toolbars/mainbar.cpp" line="156"/>
+        <location filename="../pv/toolbars/mainbar.cpp" line="157"/>
         <source>&amp;Export</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../pv/toolbars/mainbar.cpp" line="162"/>
+        <location filename="../pv/toolbars/mainbar.cpp" line="163"/>
         <source>&amp;Import</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../pv/toolbars/mainbar.cpp" line="166"/>
+        <location filename="../pv/toolbars/mainbar.cpp" line="167"/>
         <source>&amp;Connect to Device...</source>
         <translation>Mit Gerät &amp;verbinden...</translation>
     </message>
     <message>
-        <location filename="../pv/toolbars/mainbar.cpp" line="213"/>
+        <location filename="../pv/toolbars/mainbar.cpp" line="228"/>
         <source>Add protocol decoder</source>
         <translation>Protokolldekoder hinzufügen</translation>
     </message>
     <message>
-        <location filename="../pv/toolbars/mainbar.cpp" line="228"/>
+        <location filename="../pv/toolbars/mainbar.cpp" line="244"/>
         <source>Configure Device</source>
         <translation>Gerät konfigurieren</translation>
     </message>
     <message>
-        <location filename="../pv/toolbars/mainbar.cpp" line="232"/>
+        <location filename="../pv/toolbars/mainbar.cpp" line="248"/>
         <source>Configure Channels</source>
         <translation>Kanäle konfigurieren</translation>
     </message>
     <message>
-        <location filename="../pv/toolbars/mainbar.cpp" line="341"/>
+        <location filename="../pv/toolbars/mainbar.cpp" line="357"/>
         <source>Failed to get sample rate list:</source>
         <translation>Konnte Liste unterstützter Abtastraten nicht abfragen:</translation>
     </message>
     <message>
-        <location filename="../pv/toolbars/mainbar.cpp" line="404"/>
+        <location filename="../pv/toolbars/mainbar.cpp" line="420"/>
         <source>Failed to get sample rate:</source>
         <translation>Konnte Abtastrate nicht abfragen:</translation>
     </message>
     <message>
-        <location filename="../pv/toolbars/mainbar.cpp" line="445"/>
+        <location filename="../pv/toolbars/mainbar.cpp" line="461"/>
         <source>Failed to get sample limit list:</source>
         <translation>Konnte Liste der maximal erlaubten Abtastraten nicht abfragen:</translation>
     </message>
     <message>
-        <location filename="../pv/toolbars/mainbar.cpp" line="535"/>
+        <location filename="../pv/toolbars/mainbar.cpp" line="551"/>
         <source>Failed to configure samplerate:</source>
         <translation>Konnte Abtastrate nicht einstellen:</translation>
     </message>
     <message>
-        <location filename="../pv/toolbars/mainbar.cpp" line="562"/>
+        <location filename="../pv/toolbars/mainbar.cpp" line="578"/>
         <source>Failed to configure sample count:</source>
         <translation>Konnte Anzahl der Abtastpunkte nicht einstellen:</translation>
     </message>
     <message>
-        <location filename="../pv/toolbars/mainbar.cpp" line="600"/>
+        <location filename="../pv/toolbars/mainbar.cpp" line="616"/>
         <source>Missing Cursors</source>
         <translation>Fehlende Auswahl</translation>
     </message>
     <message>
-        <location filename="../pv/toolbars/mainbar.cpp" line="600"/>
+        <location filename="../pv/toolbars/mainbar.cpp" line="616"/>
         <source>You need to set the cursors before you can save the data enclosed by them to a session file (e.g. using the Show Cursors button).</source>
         <translation>Du musst die Auswahl-Markierer setzen, bevor du die darin befindlichen Daten abspeichern kannst. Verwende hierzu bspw. den Knopf für die Auswahl-Markierer.</translation>
     </message>
     <message>
-        <location filename="../pv/toolbars/mainbar.cpp" line="618"/>
+        <location filename="../pv/toolbars/mainbar.cpp" line="634"/>
         <source>Invalid Range</source>
         <translation>Auswahl ungültig</translation>
     </message>
     <message>
-        <location filename="../pv/toolbars/mainbar.cpp" line="618"/>
+        <location filename="../pv/toolbars/mainbar.cpp" line="634"/>
         <source>The cursors don&apos;t define a valid range of samples.</source>
         <translation>Die Auswahl-Markierer geben keinen gültigen Datenbereich an.</translation>
     </message>
     <message>
-        <location filename="../pv/toolbars/mainbar.cpp" line="630"/>
+        <location filename="../pv/toolbars/mainbar.cpp" line="646"/>
         <source>%1 files </source>
         <translation>%1-Dateien </translation>
     </message>
     <message>
-        <location filename="../pv/toolbars/mainbar.cpp" line="638"/>
-        <location filename="../pv/toolbars/mainbar.cpp" line="683"/>
+        <location filename="../pv/toolbars/mainbar.cpp" line="654"/>
+        <location filename="../pv/toolbars/mainbar.cpp" line="699"/>
         <source>All Files</source>
         <translation>Alle Dateien</translation>
     </message>
     <message>
-        <location filename="../pv/toolbars/mainbar.cpp" line="642"/>
-        <location filename="../pv/toolbars/mainbar.cpp" line="797"/>
+        <location filename="../pv/toolbars/mainbar.cpp" line="658"/>
+        <location filename="../pv/toolbars/mainbar.cpp" line="817"/>
         <source>Save File</source>
         <translation>Speichern</translation>
     </message>
     <message>
-        <location filename="../pv/toolbars/mainbar.cpp" line="654"/>
+        <location filename="../pv/toolbars/mainbar.cpp" line="670"/>
         <source>Export %1</source>
         <translation>%1 exportieren</translation>
     </message>
     <message>
-        <location filename="../pv/toolbars/mainbar.cpp" line="680"/>
+        <location filename="../pv/toolbars/mainbar.cpp" line="696"/>
         <source>%1 files</source>
         <translation>%1-Dateien</translation>
     </message>
     <message>
-        <location filename="../pv/toolbars/mainbar.cpp" line="691"/>
+        <location filename="../pv/toolbars/mainbar.cpp" line="707"/>
         <source>Import File</source>
         <translation>Dateiimport</translation>
     </message>
     <message>
-        <location filename="../pv/toolbars/mainbar.cpp" line="700"/>
+        <location filename="../pv/toolbars/mainbar.cpp" line="716"/>
         <source>Import %1</source>
         <translation>%1 importieren</translation>
     </message>
     <message>
-        <location filename="../pv/toolbars/mainbar.cpp" line="769"/>
-        <location filename="../pv/toolbars/mainbar.cpp" line="814"/>
+        <location filename="../pv/toolbars/mainbar.cpp" line="789"/>
+        <location filename="../pv/toolbars/mainbar.cpp" line="834"/>
         <source>Open File</source>
         <translation>Öffnen</translation>
     </message>
     <message>
-        <location filename="../pv/toolbars/mainbar.cpp" line="769"/>
+        <location filename="../pv/toolbars/mainbar.cpp" line="789"/>
         <source>sigrok Sessions (*.sr);;All Files (*)</source>
         <translation>sigrok-Datenformat (*.sr);;Alle Dateien (*)</translation>
     </message>
     <message>
-        <location filename="../pv/toolbars/mainbar.cpp" line="797"/>
-        <location filename="../pv/toolbars/mainbar.cpp" line="814"/>
+        <location filename="../pv/toolbars/mainbar.cpp" line="817"/>
+        <location filename="../pv/toolbars/mainbar.cpp" line="834"/>
         <source>PulseView Session Setups (*.pvs);;All Files (*)</source>
         <translation>Analysesitzungs-Konfigurationen (*.pvs);;Alle Dateien (*)</translation>
     </message>
     <message>
-        <location filename="../pv/toolbars/mainbar.cpp" line="875"/>
+        <location filename="../pv/toolbars/mainbar.cpp" line="895"/>
         <source>Total sampling time: %1</source>
         <translatorcomment>Internal message</translatorcomment>
         <translation></translation>
     </message>
 </context>
 <context>
+    <name>pv::views::decoder_output::View</name>
+    <message>
+        <location filename="../pv/views/decoder_output/view.cpp" line="83"/>
+        <source>Decoder:</source>
+        <translation>Dekoder:</translation>
+    </message>
+    <message>
+        <location filename="../pv/views/decoder_output/view.cpp" line="87"/>
+        <source>Show data as</source>
+        <translation>Zeige Daten als</translation>
+    </message>
+    <message>
+        <location filename="../pv/views/decoder_output/view.cpp" line="93"/>
+        <source>Hexdump</source>
+        <translation>Hex-Dump</translation>
+    </message>
+    <message>
+        <location filename="../pv/views/decoder_output/view.cpp" line="110"/>
+        <source>&amp;Save...</source>
+        <translation>&amp;Speichern...</translation>
+    </message>
+    <message>
+        <location filename="../pv/views/decoder_output/view.cpp" line="258"/>
+        <location filename="../pv/views/decoder_output/view.cpp" line="296"/>
+        <source>Save Binary Data</source>
+        <translation>Binäre Daten speichern</translation>
+    </message>
+    <message>
+        <location filename="../pv/views/decoder_output/view.cpp" line="258"/>
+        <source>Binary Data Files (*.bin);;All Files (*)</source>
+        <translation>Binärdateien (*.bin);;Alle Dateien (*)</translation>
+    </message>
+    <message>
+        <location filename="../pv/views/decoder_output/view.cpp" line="275"/>
+        <location filename="../pv/views/decoder_output/view.cpp" line="325"/>
+        <source>Error</source>
+        <translation>Fehler</translation>
+    </message>
+    <message>
+        <location filename="../pv/views/decoder_output/view.cpp" line="275"/>
+        <location filename="../pv/views/decoder_output/view.cpp" line="325"/>
+        <source>File %1 could not be written to.</source>
+        <translation>Konnte Datei %1 nicht speichern.</translation>
+    </message>
+    <message>
+        <location filename="../pv/views/decoder_output/view.cpp" line="296"/>
+        <source>Hex Dumps (*.txt);;All Files (*)</source>
+        <translation>Hex-Dumps (*.txt);;Alle Dateien (*)</translation>
+    </message>
+</context>
+<context>
     <name>pv::views::trace::AnalogSignal</name>
     <message>
-        <location filename="../pv/views/trace/analogsignal.cpp" line="978"/>
+        <location filename="../pv/views/trace/analogsignal.cpp" line="988"/>
         <source>Number of pos vertical divs</source>
         <translation>Anzahl Unterteilungen im Positiven</translation>
     </message>
     <message>
-        <location filename="../pv/views/trace/analogsignal.cpp" line="985"/>
+        <location filename="../pv/views/trace/analogsignal.cpp" line="995"/>
         <source>Number of neg vertical divs</source>
         <translation>Anzahl Unterteilungen im Negativen</translation>
     </message>
     <message>
-        <location filename="../pv/views/trace/analogsignal.cpp" line="990"/>
+        <location filename="../pv/views/trace/analogsignal.cpp" line="1000"/>
         <source> pixels</source>
         <translation> Pixel</translation>
     </message>
     <message>
-        <location filename="../pv/views/trace/analogsignal.cpp" line="994"/>
+        <location filename="../pv/views/trace/analogsignal.cpp" line="1004"/>
         <source>Div height</source>
         <translation>Höhe einer Unterteilung</translation>
     </message>
     <message>
-        <location filename="../pv/views/trace/analogsignal.cpp" line="1011"/>
+        <location filename="../pv/views/trace/analogsignal.cpp" line="1021"/>
         <source>V/div</source>
         <translation>V/div</translation>
     </message>
     <message>
-        <location filename="../pv/views/trace/analogsignal.cpp" line="1015"/>
+        <location filename="../pv/views/trace/analogsignal.cpp" line="1025"/>
         <source>Vertical resolution</source>
         <translation>Vertikale Auflösung</translation>
     </message>
     <message>
-        <location filename="../pv/views/trace/analogsignal.cpp" line="1024"/>
+        <location filename="../pv/views/trace/analogsignal.cpp" line="1034"/>
         <source>Autoranging</source>
         <translation>Automatische Skalierung</translation>
     </message>
     <message>
-        <location filename="../pv/views/trace/analogsignal.cpp" line="1029"/>
+        <location filename="../pv/views/trace/analogsignal.cpp" line="1039"/>
         <source>none</source>
         <translation>keine</translation>
     </message>
     <message>
-        <location filename="../pv/views/trace/analogsignal.cpp" line="1031"/>
+        <location filename="../pv/views/trace/analogsignal.cpp" line="1041"/>
         <source>to logic via threshold</source>
         <translation>zu Logik mittels Schwellwert</translation>
     </message>
     <message>
-        <location filename="../pv/views/trace/analogsignal.cpp" line="1033"/>
+        <location filename="../pv/views/trace/analogsignal.cpp" line="1043"/>
         <source>to logic via schmitt-trigger</source>
         <translation>zu Logik mittels Schmitt-Trigger</translation>
     </message>
     <message>
-        <location filename="../pv/views/trace/analogsignal.cpp" line="1039"/>
+        <location filename="../pv/views/trace/analogsignal.cpp" line="1049"/>
         <source>Conversion</source>
         <translation>Konvertierung</translation>
     </message>
     <message>
-        <location filename="../pv/views/trace/analogsignal.cpp" line="1048"/>
+        <location filename="../pv/views/trace/analogsignal.cpp" line="1058"/>
         <source>Conversion threshold(s)</source>
         <translation>Konvertierungs-Schwellwert(e)</translation>
     </message>
     <message>
-        <location filename="../pv/views/trace/analogsignal.cpp" line="1058"/>
+        <location filename="../pv/views/trace/analogsignal.cpp" line="1068"/>
         <source>analog</source>
         <translation>nur analog</translation>
     </message>
     <message>
-        <location filename="../pv/views/trace/analogsignal.cpp" line="1059"/>
+        <location filename="../pv/views/trace/analogsignal.cpp" line="1069"/>
         <source>converted</source>
         <translation>nur konvertiert</translation>
     </message>
     <message>
-        <location filename="../pv/views/trace/analogsignal.cpp" line="1060"/>
+        <location filename="../pv/views/trace/analogsignal.cpp" line="1070"/>
         <source>analog+converted</source>
         <translation>analog+konvertiert</translation>
     </message>
     <message>
-        <location filename="../pv/views/trace/analogsignal.cpp" line="1065"/>
+        <location filename="../pv/views/trace/analogsignal.cpp" line="1075"/>
         <source>Show traces for</source>
         <translation>Anzuzeigende Signale</translation>
     </message>
@@ -1112,105 +1180,110 @@ Bei einer Änderung benötigt PulseView eventuell einen Neustart, damit alles ko
 <context>
     <name>pv::views::trace::DecodeTrace</name>
     <message>
-        <location filename="../pv/views/trace/decodetrace.cpp" line="323"/>
+        <location filename="../pv/views/trace/decodetrace.cpp" line="423"/>
         <source>&lt;p&gt;&lt;i&gt;No decoders in the stack&lt;/i&gt;&lt;/p&gt;</source>
         <translation>&lt;p&gt;&lt;i&gt;Keine Protokolldekoder vorhanden&lt;/i&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../pv/views/trace/decodetrace.cpp" line="334"/>
+        <location filename="../pv/views/trace/decodetrace.cpp" line="434"/>
         <source>&lt;i&gt;* Required channels&lt;/i&gt;</source>
         <translation>&lt;i&gt;* Notwendige Kanäle&lt;/i&gt;</translation>
     </message>
     <message>
-        <location filename="../pv/views/trace/decodetrace.cpp" line="338"/>
+        <location filename="../pv/views/trace/decodetrace.cpp" line="438"/>
         <source>Stack Decoder</source>
         <translation>Protokolldekoder stapeln</translation>
     </message>
     <message>
-        <location filename="../pv/views/trace/decodetrace.cpp" line="339"/>
+        <location filename="../pv/views/trace/decodetrace.cpp" line="439"/>
         <source>Stack a higher-level decoder on top of this one</source>
         <translation>Weiteren Protokolldekoder auf diesen stapeln</translation>
     </message>
     <message>
-        <location filename="../pv/views/trace/decodetrace.cpp" line="353"/>
+        <location filename="../pv/views/trace/decodetrace.cpp" line="453"/>
         <source>Delete</source>
         <translation>Löschen</translation>
     </message>
     <message>
-        <location filename="../pv/views/trace/decodetrace.cpp" line="396"/>
+        <location filename="../pv/views/trace/decodetrace.cpp" line="495"/>
         <source>Resume decoding</source>
         <translation>Dekodierung fortsetzen</translation>
     </message>
     <message>
-        <location filename="../pv/views/trace/decodetrace.cpp" line="403"/>
+        <location filename="../pv/views/trace/decodetrace.cpp" line="502"/>
         <source>Pause decoding</source>
         <translation>Dekodierung anhalten</translation>
     </message>
     <message>
-        <location filename="../pv/views/trace/decodetrace.cpp" line="411"/>
+        <location filename="../pv/views/trace/decodetrace.cpp" line="510"/>
         <source>Copy annotation text to clipboard</source>
         <translation>Dekodierten Wert in die Zwischenablage kopieren</translation>
     </message>
     <message>
-        <location filename="../pv/views/trace/decodetrace.cpp" line="420"/>
+        <location filename="../pv/views/trace/decodetrace.cpp" line="519"/>
         <source>Export all annotations</source>
         <translation>Alle dekodierten Werte exportieren</translation>
     </message>
     <message>
-        <location filename="../pv/views/trace/decodetrace.cpp" line="427"/>
+        <location filename="../pv/views/trace/decodetrace.cpp" line="526"/>
         <source>Export all annotations for this row</source>
-        <translation>Alle dekodierten Werte dieser Kategorie exportieren</translation>
+        <translation>Alle dekodierten Werte dieser Zeile exportieren</translation>
     </message>
     <message>
-        <location filename="../pv/views/trace/decodetrace.cpp" line="436"/>
+        <location filename="../pv/views/trace/decodetrace.cpp" line="535"/>
         <source>Export all annotations, starting here</source>
         <translation>Alle dekodierten Werte ab hier exportieren</translation>
     </message>
     <message>
-        <location filename="../pv/views/trace/decodetrace.cpp" line="443"/>
+        <location filename="../pv/views/trace/decodetrace.cpp" line="542"/>
         <source>Export annotations for this row, starting here</source>
-        <translation>Alle dekodierten Werte dieser Kategorie ab hier exportieren</translation>
+        <translation>Alle dekodierten Werte dieser Zeile ab hier exportieren</translation>
     </message>
     <message>
-        <location filename="../pv/views/trace/decodetrace.cpp" line="452"/>
+        <location filename="../pv/views/trace/decodetrace.cpp" line="551"/>
         <source>Export all annotations within cursor range</source>
         <translation>Alle dekodierten Werte innerhalb des gewählten Bereiches exportieren</translation>
     </message>
     <message>
-        <location filename="../pv/views/trace/decodetrace.cpp" line="459"/>
+        <location filename="../pv/views/trace/decodetrace.cpp" line="558"/>
         <source>Export annotations for this row within cursor range</source>
-        <translation>Alle dekodierten Werte dieser Kategorie innerhalb des gewählten Bereiches exportieren</translation>
+        <translation>Alle dekodierten Werte dieser Zeile innerhalb des gewählten Bereiches exportieren</translation>
     </message>
     <message>
-        <location filename="../pv/views/trace/decodetrace.cpp" line="919"/>
+        <location filename="../pv/views/trace/decodetrace.cpp" line="1071"/>
         <source>%1:
 %2</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../pv/views/trace/decodetrace.cpp" line="963"/>
+        <location filename="../pv/views/trace/decodetrace.cpp" line="1115"/>
         <source>&lt;b&gt;%1&lt;/b&gt; (%2) %3</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../pv/views/trace/decodetrace.cpp" line="1035"/>
+        <location filename="../pv/views/trace/decodetrace.cpp" line="1185"/>
         <source>Export annotations</source>
         <translation>Dekodierte Werte exportieren</translation>
     </message>
     <message>
-        <location filename="../pv/views/trace/decodetrace.cpp" line="1035"/>
+        <location filename="../pv/views/trace/decodetrace.cpp" line="1185"/>
         <source>Text Files (*.txt);;All Files (*)</source>
         <translation>Textdateien (*.txt);;Alle Dateien (*)</translation>
     </message>
     <message>
-        <location filename="../pv/views/trace/decodetrace.cpp" line="1076"/>
+        <location filename="../pv/views/trace/decodetrace.cpp" line="1226"/>
         <source>Error</source>
         <translation>Fehler</translation>
     </message>
     <message>
-        <location filename="../pv/views/trace/decodetrace.cpp" line="1076"/>
+        <location filename="../pv/views/trace/decodetrace.cpp" line="1226"/>
         <source>File %1 could not be written to.</source>
         <translation>Konnte Datei %1 nicht speichern.</translation>
+    </message>
+    <message>
+        <location filename="../pv/views/trace/decodetrace.cpp" line="1276"/>
+        <source>Show this row</source>
+        <translation>Diese Zeile anzeigen</translation>
     </message>
 </context>
 <context>
@@ -1242,47 +1315,47 @@ Bei einer Änderung benötigt PulseView eventuell einen Neustart, damit alles ko
 <context>
     <name>pv::views::trace::LogicSignal</name>
     <message>
-        <location filename="../pv/views/trace/logicsignal.cpp" line="446"/>
+        <location filename="../pv/views/trace/logicsignal.cpp" line="451"/>
         <source>No trigger</source>
         <translation>Kein Trigger</translation>
     </message>
     <message>
-        <location filename="../pv/views/trace/logicsignal.cpp" line="451"/>
+        <location filename="../pv/views/trace/logicsignal.cpp" line="456"/>
         <source>Trigger on rising edge</source>
         <translation>Trigger auf steigende Flanke</translation>
     </message>
     <message>
-        <location filename="../pv/views/trace/logicsignal.cpp" line="456"/>
+        <location filename="../pv/views/trace/logicsignal.cpp" line="461"/>
         <source>Trigger on high level</source>
         <translation>Trigger auf High-Pegel</translation>
     </message>
     <message>
-        <location filename="../pv/views/trace/logicsignal.cpp" line="461"/>
+        <location filename="../pv/views/trace/logicsignal.cpp" line="466"/>
         <source>Trigger on falling edge</source>
         <translation>Trigger auf fallende Flanke</translation>
     </message>
     <message>
-        <location filename="../pv/views/trace/logicsignal.cpp" line="466"/>
+        <location filename="../pv/views/trace/logicsignal.cpp" line="471"/>
         <source>Trigger on low level</source>
         <translation>Trigger auf Low-Pegel</translation>
     </message>
     <message>
-        <location filename="../pv/views/trace/logicsignal.cpp" line="471"/>
+        <location filename="../pv/views/trace/logicsignal.cpp" line="476"/>
         <source>Trigger on rising or falling edge</source>
         <translation>Trigger auf steigende oder fallende Flanke</translation>
     </message>
     <message>
-        <location filename="../pv/views/trace/logicsignal.cpp" line="558"/>
+        <location filename="../pv/views/trace/logicsignal.cpp" line="563"/>
         <source> pixels</source>
         <translation> Pixel</translation>
     </message>
     <message>
-        <location filename="../pv/views/trace/logicsignal.cpp" line="562"/>
+        <location filename="../pv/views/trace/logicsignal.cpp" line="567"/>
         <source>Trace height</source>
         <translation>Kanalgröße</translation>
     </message>
     <message>
-        <location filename="../pv/views/trace/logicsignal.cpp" line="586"/>
+        <location filename="../pv/views/trace/logicsignal.cpp" line="591"/>
         <source>Trigger</source>
         <translation>Trigger</translation>
     </message>
@@ -1313,12 +1386,12 @@ Bei einer Änderung benötigt PulseView eventuell einen Neustart, damit alles ko
 <context>
     <name>pv::views::trace::Signal</name>
     <message>
-        <location filename="../pv/views/trace/signal.cpp" line="128"/>
+        <location filename="../pv/views/trace/signal.cpp" line="148"/>
         <source>Name</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../pv/views/trace/signal.cpp" line="139"/>
+        <location filename="../pv/views/trace/signal.cpp" line="159"/>
         <source>Disable</source>
         <translation>Deaktivieren</translation>
     </message>
