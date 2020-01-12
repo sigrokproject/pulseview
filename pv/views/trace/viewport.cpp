@@ -116,6 +116,9 @@ bool Viewport::touch_event(QTouchEvent *event)
 		pinch_zoom_active_ = false;
 		return false;
 	}
+	if (event->device()->type() == QTouchDevice::TouchPad) {
+		return false;
+	}
 
 	const QTouchEvent::TouchPoint &touchPoint0 = touchPoints.first();
 	const QTouchEvent::TouchPoint &touchPoint1 = touchPoints.last();
