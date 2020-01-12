@@ -4,9 +4,9 @@
 <context>
     <name>Application</name>
     <message>
-        <location filename="../pv/application.cpp" line="110"/>
+        <location filename="../pv/application.cpp" line="111"/>
         <source>Some parts of the application may still use the previous language. Re-opening the affected windows or restarting the application will remedy this.</source>
-        <translation>Einige Teile der Anwendung verwenden vielleicht noch die vorherige Sprache. Sollte das der Fall sein, kann dies durch ein schließen und neu öffnen der betroffenen Fenster oder der Anwendung behoben werden.</translation>
+        <translation>Einige Teile der Anwendung verwenden vielleicht noch die vorherige Sprache. Sollte das der Fall sein, kann dies durch ein Schließen und neu Öffnen der betroffenen Fenster oder der Anwendung behoben werden.</translation>
     </message>
 </context>
 <context>
@@ -164,7 +164,7 @@ A human-readable form has been saved to disk and was written to the log. You may
     <message>
         <location filename="../pv/session.cpp" line="545"/>
         <source>Unexpected input format: %s</source>
-        <translation>Unerwartetes Datenformat: %s</translation>
+        <translation>Unerwartetes Importformat: %s</translation>
     </message>
     <message>
         <location filename="../pv/session.cpp" line="580"/>
@@ -213,7 +213,7 @@ A human-readable form has been saved to disk and was written to the log. You may
     <message>
         <location filename="../pv/storesession.cpp" line="168"/>
         <source>Can&apos;t save range without sample data.</source>
-        <translation>In dem gewählten Bereich befinden sich keine Daten zum speichern.</translation>
+        <translation>In dem gewählten Bereich befinden sich keine Daten zum Speichern.</translation>
     </message>
     <message>
         <location filename="../pv/storesession.cpp" line="189"/>
@@ -530,7 +530,7 @@ A human-readable form has been saved to disk and was written to the log. You may
     <message>
         <location filename="../pv/dialogs/settings.cpp" line="405"/>
         <source>Allow configuration of &amp;initial signal state</source>
-        <translation>&amp;Initialzustände konfigurierbar machen</translation>
+        <translation>&amp;Initialzustände von Signalen konfigurierbar machen</translation>
     </message>
     <message>
         <location filename="../pv/dialogs/settings.cpp" line="409"/>
@@ -600,7 +600,7 @@ A human-readable form has been saved to disk and was written to the log. You may
     <message>
         <location filename="../pv/dialogs/settings.cpp" line="537"/>
         <source>Log level:</source>
-        <translation></translation>
+        <translation>Log-Level:</translation>
     </message>
     <message>
         <location filename="../pv/dialogs/settings.cpp" line="542"/>
@@ -647,7 +647,7 @@ Bei einer Änderung benötigt PulseView eventuell einen Neustart, damit alles ko
     <message>
         <location filename="../pv/dialogs/settings.cpp" line="792"/>
         <source>Save Log</source>
-        <translation>Log Speichern</translation>
+        <translation>Log speichern</translation>
     </message>
     <message>
         <location filename="../pv/dialogs/settings.cpp" line="792"/>
@@ -825,7 +825,7 @@ Bei einer Änderung benötigt PulseView eventuell einen Neustart, damit alles ko
 <context>
     <name>pv::subwindows::decoder_selector::SubWindow</name>
     <message>
-        <location filename="../pv/subwindows/decoder_selector/subwindow.cpp" line="45"/>
+        <location filename="../pv/subwindows/decoder_selector/subwindow.cpp" line="44"/>
         <source>Select a decoder to see its description here.</source>
         <translation>Wähle einen Dekoder, um dessen Beschreibung hier lesen zu können.</translation>
     </message>
@@ -915,7 +915,7 @@ Bei einer Änderung benötigt PulseView eventuell einen Neustart, damit alles ko
     <message>
         <location filename="../pv/toolbars/mainbar.cpp" line="341"/>
         <source>Failed to get sample rate list:</source>
-        <translation>Konnte Liste erlaubter Abtastraten nicht abfragen:</translation>
+        <translation>Konnte Liste unterstützter Abtastraten nicht abfragen:</translation>
     </message>
     <message>
         <location filename="../pv/toolbars/mainbar.cpp" line="404"/>
@@ -1028,7 +1028,7 @@ Bei einer Änderung benötigt PulseView eventuell einen Neustart, damit alles ko
     <message>
         <location filename="../pv/views/trace/analogsignal.cpp" line="985"/>
         <source>Number of neg vertical divs</source>
-        <translation>Anzah Unterteilungen im Negativen</translation>
+        <translation>Anzahl Unterteilungen im Negativen</translation>
     </message>
     <message>
         <location filename="../pv/views/trace/analogsignal.cpp" line="990"/>
@@ -1422,7 +1422,7 @@ Bei einer Änderung benötigt PulseView eventuell einen Neustart, damit alles ko
     <message>
         <location filename="../pv/widgets/exportmenu.cpp" line="71"/>
         <source>Export %1...</source>
-        <translation>%1 importieren...</translation>
+        <translation>%1 exportieren...</translation>
     </message>
 </context>
 <context>
