@@ -18,6 +18,7 @@ Requirements
  - gstreamermm-1.0 (>= 1.8.0)
  - Qt5 (>= 5.3), including the following components:
     - Qt5Core, Qt5Gui, Qt5Widgets, Qt5Svg
+    - Qt translation package (at runtime, not build time)
  - libboost >= 1.55 (including the following libs):
     - libboost-system
     - libboost-filesystem

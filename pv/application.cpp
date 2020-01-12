@@ -22,6 +22,7 @@
 
 #include <QDebug>
 #include <QDir>
+#include <QLibraryInfo>
 #include <QMessageBox>
 #include <QWidget>
 
@@ -84,6 +85,7 @@ void Application::switch_language(const QString& language)
 {
 	removeTranslator(&app_translator_);
 	removeTranslator(&qt_translator_);
+	removeTranslator(&qtbase_translator_);
 
 	if ((language != "C") && (language != "en")) {
 		// Application translations
@@ -94,11 +96,20 @@ void Application::switch_language(const QString& language)
 			qWarning() << "Translation resource" << resource << "not found";
 
 		// Qt translations
-		resource = ":/l10n/qtbase_" + language +".qm";
-		if (qt_translator_.load(resource))
+		QString tr_path(QLibraryInfo::location(QLibraryInfo::TranslationsPath));
+
+		if (qt_translator_.load("qt_" + language, tr_path))
 			installTranslator(&qt_translator_);
 		else
-			qWarning() << "Translation resource" << resource << "not found";
+			qWarning() << "QT translations for" << language << "not found at" <<
+				tr_path << ", Qt translations package is probably missing";
+
+		// Qt base translations
+		if (qtbase_translator_.load("qtbase_" + language, tr_path))
+			installTranslator(&qtbase_translator_);
+		else
+			qWarning() << "QT base translations for" << language << "not found at" <<
+				tr_path << ", Qt translations package is probably missing";
 	}
 
 	if (!topLevelWidgets().empty()) {

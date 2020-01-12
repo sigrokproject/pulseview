@@ -67,7 +67,7 @@ private:
 	vector< pair<QString, QString> > output_format_list_;
 	vector< pair<QString, QString> > pd_list_;
 
-	QTranslator app_translator_, qt_translator_;
+	QTranslator app_translator_, qt_translator_, qtbase_translator_;
 };
 
 #endif // PULSEVIEW_PV_APPLICATION_HPP
