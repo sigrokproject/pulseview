@@ -3,6 +3,7 @@
 ##
 ## Copyright (C) 2012 Joel Holdsworth <joel@airwebreathe.org.uk>
 ## Copyright (C) 2012-2013 Alexandru Gagniuc <mr.nuke.me@gmail.com>
+## Copyright (C) 2020 Soeren Apel <soeren@apelpie.net>
 ##
 ## This program is free software: you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -426,13 +427,14 @@ qt5_add_resources(pulseview_RESOURCES_RCC ${pulseview_RESOURCES})
 #= Translations
 #-------------------------------------------------------------------------------
 
-file(GLOB TS_FILES l10n/*.ts)
-set_property(SOURCE ${TS_FILES} PROPERTY OUTPUT_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/l10n)
+file(GLOB TS_FILES ${CMAKE_SOURCE_DIR}/l10n/*.ts)
+set_property(SOURCE ${TS_FILES} PROPERTY OUTPUT_LOCATION ${CMAKE_BINARY_DIR}/l10n)
+configure_file("translations.qrc" "translations.qrc" COPYONLY)
 
 qt5_add_translation(QM_FILES ${TS_FILES})
 qt5_create_translation(QM_FILES ${pulseview_SOURCES} ${TS_FILES})
 
-qt5_add_resources(pulseview_RESOURCES_RCC translations.qrc)
+qt5_add_resources(pulseview_RESOURCES_RCC ${CMAKE_BINARY_DIR}/translations.qrc)
 
 #===============================================================================
 #= Global Definitions
