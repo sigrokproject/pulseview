@@ -528,10 +528,11 @@ if(ANDROID)
 	list(APPEND PULSEVIEW_LINK_LIBS "-llog")
 endif()
 
+set(INPUT_FILES_LIST ${pulseview_SOURCES} ${pulseview_RESOURCES_RCC} ${QM_FILES})
 if(ANDROID)
-	add_library(${PROJECT_NAME} SHARED ${pulseview_SOURCES} ${pulseview_RESOURCES_RCC} ${QM_FILES})
+	add_library(${PROJECT_NAME} SHARED ${INPUT_FILES_LIST})
 else()
-	add_executable(${PROJECT_NAME} ${pulseview_SOURCES} ${pulseview_RESOURCES_RCC} ${QM_FILES})
+	add_executable(${PROJECT_NAME} ${INPUT_FILES_LIST})
 endif()
 
 target_link_libraries(${PROJECT_NAME} ${PULSEVIEW_LINK_LIBS})
