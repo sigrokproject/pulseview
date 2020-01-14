@@ -265,6 +265,8 @@ void View::save_data() const
 		pair<size_t, size_t> selection = hex_view_->get_selection();
 
 		vector<uint8_t> data;
+		data.resize(selection.second - selection.first + 1);
+
 		signal_->get_merged_binary_data_chunks_by_offset(current_segment_, decoder_,
 			bin_class_id_, selection.first, selection.second, &data);
 
@@ -303,6 +305,8 @@ void View::save_data_as_hex_dump(bool with_offset, bool with_ascii) const
 		pair<size_t, size_t> selection = hex_view_->get_selection();
 
 		vector<uint8_t> data;
+		data.resize(selection.second - selection.first + 1);
+
 		signal_->get_merged_binary_data_chunks_by_offset(current_segment_, decoder_,
 			bin_class_id_, selection.first, selection.second, &data);
 

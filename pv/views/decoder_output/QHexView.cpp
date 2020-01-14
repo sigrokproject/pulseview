@@ -142,7 +142,7 @@ pair<size_t, size_t> QHexView::get_selection() const
 		// Nothing is currently selected
 		start = 0;
 		end = data_size_;
-	} else
+	} if (end < data_size_)
 		end++;
 
 	return std::make_pair(start, end);
