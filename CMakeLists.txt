@@ -429,7 +429,9 @@ qt5_add_resources(pulseview_RESOURCES_RCC ${pulseview_RESOURCES})
 
 file(GLOB TS_FILES ${CMAKE_SOURCE_DIR}/l10n/*.ts)
 set_property(SOURCE ${TS_FILES} PROPERTY OUTPUT_LOCATION ${CMAKE_BINARY_DIR}/l10n)
-configure_file("translations.qrc" "translations.qrc" COPYONLY)
+if (NOT CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
+	configure_file("translations.qrc" "translations.qrc" COPYONLY)
+endif ()
 
 qt5_add_translation(QM_FILES ${TS_FILES})
 qt5_create_translation(QM_FILES ${pulseview_SOURCES} ${TS_FILES})
