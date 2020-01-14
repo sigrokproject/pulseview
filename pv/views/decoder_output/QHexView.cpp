@@ -92,9 +92,11 @@ void QHexView::set_data(const DecodeBinaryClass* data)
 	data_ = data;
 
 	size_t size = 0;
-	size_t chunks = data_->chunks.size();
-	for (size_t i = 0; i < chunks; i++)
-		size += data_->chunks[i].data.size();
+	if (data) {
+		size_t chunks = data_->chunks.size();
+		for (size_t i = 0; i < chunks; i++)
+			size += data_->chunks[i].data.size();
+	}
 	data_size_ = size;
 
 	viewport()->update();
@@ -268,7 +270,7 @@ void QHexView::paintEvent(QPaintEvent *event)
 	QSize widgetSize = getFullSize();
 	setMinimumWidth(widgetSize.width());
 	setMaximumWidth(widgetSize.width());
-	QSize areaSize = viewport()->size();
+	QSize areaSize = viewport()->size() - QSize(0, charHeight_);
 
 	// Only show scrollbar if the content goes beyond the visible area
 	if (widgetSize.height() > areaSize.height()) {
@@ -293,7 +295,7 @@ void QHexView::paintEvent(QPaintEvent *event)
 	// Determine first/last line indices
 	size_t firstLineIdx = verticalScrollBar()->value();
 
-	size_t lastLineIdx = firstLineIdx + areaSize.height() / charHeight_;
+	size_t lastLineIdx = firstLineIdx + (areaSize.height() / charHeight_);
 	if (lastLineIdx > (data_size_ / BYTES_PER_LINE)) {
 		lastLineIdx = data_size_ / BYTES_PER_LINE;
 		if (data_size_ % BYTES_PER_LINE)
@@ -312,13 +314,19 @@ void QHexView::paintEvent(QPaintEvent *event)
 	// Paint address area
 	painter.setPen(palette().color(QPalette::ButtonText));
 
-	int yStart = charHeight_;
+	int yStart = 2 * charHeight_;
 	for (size_t lineIdx = firstLineIdx, y = yStart; lineIdx < lastLineIdx; lineIdx++) {
 
 		QString address = QString("%1").arg(lineIdx * 16, 10, 16, QChar('0')).toUpper();
 		painter.drawText(posAddr_, y, address);
 		y += charHeight_;
 	}
+
+	// Paint top row with hex offsets
+	painter.setPen(palette().color(QPalette::ButtonText));
+	for (int offset = 0; offset <= 0xF; offset++)
+		painter.drawText(posHex_ + (1 + offset * 3) * charWidth_,
+			charHeight_, QString::number(offset, 16).toUpper());
 
 	// Paint hex values
 	QBrush regular = palette().buttonText();
@@ -328,7 +336,7 @@ void QHexView::paintEvent(QPaintEvent *event)
 	unsigned int chunk_color = 0;
 
 	initialize_byte_iterator(firstLineIdx * BYTES_PER_LINE);
-	yStart = charHeight_;
+	yStart = 2 * charHeight_;
 	for (size_t lineIdx = firstLineIdx, y = yStart; lineIdx < lastLineIdx; lineIdx++) {
 
 		int x = posHex_;
@@ -377,7 +385,7 @@ void QHexView::paintEvent(QPaintEvent *event)
 
 	// Paint ASCII characters
 	initialize_byte_iterator(firstLineIdx * BYTES_PER_LINE);
-	yStart = charHeight_;
+	yStart = 2 * charHeight_;
 	for (size_t lineIdx = firstLineIdx, y = yStart; lineIdx < lastLineIdx; lineIdx++) {
 
 		int x = posAscii_;
@@ -412,7 +420,7 @@ void QHexView::paintEvent(QPaintEvent *event)
 		int y = cursorPos_ / (2 * BYTES_PER_LINE);
 		y -= firstLineIdx;
 		int cursorX = (((x / 2) * 3) + (x % 2)) * charWidth_ + posHex_;
-		int cursorY = y * charHeight_ + 4;
+		int cursorY = charHeight_ + y * charHeight_ + 4;
 		painter.fillRect(cursorX, cursorY, 2, charHeight_, palette().color(QPalette::WindowText));
 	}
 }
@@ -610,7 +618,7 @@ size_t QHexView::cursorPosFromMousePos(const QPoint &position)
 		x = (2 * x + 1) / 3;
 
 		size_t firstLineIdx = verticalScrollBar()->value();
-		size_t y = (position.y() / charHeight_) * 2 * BYTES_PER_LINE;
+		size_t y = ((position.y() / charHeight_) - 1) * 2 * BYTES_PER_LINE;
 		pos = x + y + firstLineIdx * BYTES_PER_LINE * 2;
 	}
 

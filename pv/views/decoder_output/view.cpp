@@ -463,7 +463,7 @@ void View::on_actionSave_triggered(QAction* action)
 
 void View::perform_delayed_view_update()
 {
-	if (!binary_data_exists_)
+	if (signal_ && !binary_data_exists_)
 		if (signal_->get_binary_data_chunk_count(current_segment_, decoder_, bin_class_id_))
 			binary_data_exists_ = true;
 
