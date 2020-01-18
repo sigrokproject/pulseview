@@ -17,8 +17,8 @@ Requirements
  - glibmm-2.4 (>= 2.28.0)
  - gstreamermm-1.0 (>= 1.8.0)
  - Qt5 (>= 5.3), including the following components:
-    - Qt5Core, Qt5Gui, Qt5Widgets, Qt5Svg
-    - Qt translation package (at runtime, not build time)
+    - Qt5Core, Qt5Gui, Qt5Widgets, Qt5Svg, Qt5LinguistTools
+    - Qt translation package (optional; needed at runtime, not build time)
  - libboost >= 1.55 (including the following libs):
     - libboost-system
     - libboost-filesystem
