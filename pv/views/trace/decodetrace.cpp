@@ -1259,28 +1259,48 @@ void DecodeTrace::initialize_row_widgets(DecodeTraceRow* r, unsigned int row_id)
 	QVBoxLayout* vlayout = new QVBoxLayout();
 	r->container->setLayout(vlayout);
 
-	// Add header container with checkbox for this row
+	// Add header container
 	vlayout->addWidget(r->header_container);
 	vlayout->setContentsMargins(0, 0, 0, 0);
 	vlayout->setSpacing(0);
+	QHBoxLayout* header_container_layout = new QHBoxLayout();
 	r->header_container->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 	r->header_container->setMinimumSize(0, default_row_height_);
-	r->header_container->setLayout(new QVBoxLayout());
-	r->header_container->layout()->setContentsMargins(10, 2, 0, 2);
+	r->header_container->setLayout(header_container_layout);
+	r->header_container->layout()->setContentsMargins(10, 2, 10, 2);
 
 	r->header_container->setAutoFillBackground(true);
 	r->header_container->setPalette(header_palette);
 
+	// Add widgets inside the header container
 	QCheckBox* cb = new QCheckBox();
-	r->header_container->layout()->addWidget(cb);
+	header_container_layout->addWidget(cb);
 	cb->setText(tr("Show this row"));
 	cb->setChecked(r->decode_row->visible());
-
-	cb->setEnabled(false);
 
 	row_show_hide_mapper_.setMapping(cb, row_id);
 	connect(cb, SIGNAL(stateChanged(int)),
 		&row_show_hide_mapper_, SLOT(map()));
+
+	cb->setEnabled(false);
+
+	QPushButton* btn = new QPushButton();
+	header_container_layout->addWidget(btn);
+	btn->setFlat(true);
+	btn->setStyleSheet(":hover { background-color: palette(button); color: palette(button-text); border:0; }");
+	btn->setText(tr("Show All"));
+	btn->setProperty("decode_trace_row_ptr", QVariant::fromValue((void*)r));
+	connect(btn, SIGNAL(clicked(bool)), this, SLOT(on_show_all_classes()));
+
+	btn = new QPushButton();
+	header_container_layout->addWidget(btn);
+	btn->setFlat(true);
+	btn->setStyleSheet(":hover { background-color: palette(button); color: palette(button-text); border:0; }");
+	btn->setText(tr("Hide All"));
+	btn->setProperty("decode_trace_row_ptr", QVariant::fromValue((void*)r));
+	connect(btn, SIGNAL(clicked(bool)), this, SLOT(on_hide_all_classes()));
+
+	header_container_layout->addStretch(); // To left-align the header widgets
 
 	// Add selector container
 	vlayout->addWidget(r->selector_container);
@@ -1304,6 +1324,7 @@ void DecodeTrace::initialize_row_widgets(DecodeTraceRow* r, unsigned int row_id)
 		cb->setIcon(pixmap);
 
 		r->selector_container->layout()->addWidget(cb);
+		r->selectors.push_back(cb);
 
 		cb->setProperty("ann_class_ptr", QVariant::fromValue((void*)ann_class));
 		cb->setProperty("decode_trace_row_ptr", QVariant::fromValue((void*)r));
@@ -1586,6 +1607,34 @@ void DecodeTrace::on_show_hide_class(QWidget* sender)
 	DecodeTraceRow* row = (DecodeTraceRow*)row_ptr;
 
 	row->has_hidden_classes = row->decode_row->has_hidden_classes();
+
+	owner_->row_item_appearance_changed(false, true);
+}
+
+void DecodeTrace::on_show_all_classes()
+{
+	void* row_ptr = QObject::sender()->property("decode_trace_row_ptr").value<void*>();
+	assert(row_ptr);
+	DecodeTraceRow* row = (DecodeTraceRow*)row_ptr;
+
+	for (QCheckBox* cb : row->selectors)
+		cb->setChecked(true);
+
+	row->has_hidden_classes = false;
+
+	owner_->row_item_appearance_changed(false, true);
+}
+
+void DecodeTrace::on_hide_all_classes()
+{
+	void* row_ptr = QObject::sender()->property("decode_trace_row_ptr").value<void*>();
+	assert(row_ptr);
+	DecodeTraceRow* row = (DecodeTraceRow*)row_ptr;
+
+	for (QCheckBox* cb : row->selectors)
+		cb->setChecked(false);
+
+	row->has_hidden_classes = true;
 
 	owner_->row_item_appearance_changed(false, true);
 }

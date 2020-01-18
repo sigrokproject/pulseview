@@ -275,6 +275,8 @@ private Q_SLOTS:
 	void on_show_hide_decoder(int index);
 	void on_show_hide_row(int row_id);
 	void on_show_hide_class(QWidget* sender);
+	void on_show_all_classes();
+	void on_hide_all_classes();
 	void on_row_container_resized(QWidget* sender);
 
 	void on_copy_annotation_to_clipboard();

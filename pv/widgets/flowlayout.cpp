@@ -141,7 +141,7 @@ QSize FlowLayout::minimumSize() const
 		if (w > size.width())
 			size.setWidth(w);
 
-		int h = item->geometry().y() + item->geometry().width();
+		int h = item->geometry().y() + item->geometry().height();
 		if (h > size.height())
 			size.setHeight(h);
 	}
