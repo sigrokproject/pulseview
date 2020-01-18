@@ -61,10 +61,12 @@ protected:
 	 */
 	void show_popup(const shared_ptr<ViewItem> &item);
 
-protected:
+protected Q_SLOTS:
 	virtual void contextMenuEvent(QContextMenuEvent *event);
 
 	virtual void keyPressEvent(QKeyEvent *event);
+
+	virtual void on_popup_closed();
 };
 
 } // namespace trace

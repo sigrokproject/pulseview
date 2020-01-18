@@ -47,6 +47,9 @@ void MarginWidget::item_clicked(const shared_ptr<ViewItem> &item)
 void MarginWidget::show_popup(const shared_ptr<ViewItem> &item)
 {
 	pv::widgets::Popup *const p = item->create_popup(this);
+
+	connect(p, SIGNAL(closed()), this, SLOT(on_popup_closed()));
+
 	if (p)
 		p->show();
 }
@@ -79,6 +82,17 @@ void MarginWidget::keyPressEvent(QKeyEvent *event)
 
     ViewWidget::keyPressEvent(event);
 }
+
+void MarginWidget::on_popup_closed()
+{
+	bool cursor_above_widget = rect().contains(mapFromGlobal(QCursor::pos()));
+
+	if (!cursor_above_widget)
+		mouse_point_ = QPoint(INT_MIN, INT_MIN);
+
+	update();
+}
+
 
 } // namespace trace
 } // namespace views

@@ -357,6 +357,7 @@ void ViewWidget::leaveEvent(QEvent*)
 
 	mouse_modifiers_ = Qt::NoModifier;
 	item_hover(nullptr, QPoint());
+
 	update();
 }
 
