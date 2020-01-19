@@ -21,6 +21,7 @@
 #include <cassert>
 
 #include <QColor>
+#include <QMenu>
 #include <QToolTip>
 
 #include "cursorpair.hpp"
@@ -53,6 +54,10 @@ CursorPair::CursorPair(View &view) :
 	GlobalSettings settings;
 	fill_color_ = QColor::fromRgba(settings.value(
 		GlobalSettings::Key_View_CursorFillColor).value<uint32_t>());
+	show_frequency_ = settings.value(
+		GlobalSettings::Key_View_CursorShowFrequency).value<bool>();
+	show_interval_ = settings.value(
+		GlobalSettings::Key_View_CursorShowInterval).value<bool>();
 
 	connect(&view_, SIGNAL(hover_point_changed(const QWidget*, QPoint)),
 		this, SLOT(on_hover_point_changed(const QWidget*, QPoint)));
@@ -112,6 +117,35 @@ pv::widgets::Popup* CursorPair::create_popup(QWidget *parent)
 {
 	(void)parent;
 	return nullptr;
+}
+
+QMenu *CursorPair::create_header_context_menu(QWidget *parent)
+{
+	QMenu *menu = new QMenu(parent);
+
+	QAction *displayIntervalAction = new QAction(tr("Display interval"));
+	displayIntervalAction->setCheckable(true);
+	displayIntervalAction->setChecked(show_interval_);
+	menu->addAction(displayIntervalAction);
+
+	connect(displayIntervalAction, &QAction::toggled, [=]{
+		GlobalSettings settings;
+		settings.setValue(GlobalSettings::Key_View_CursorShowInterval,
+			!settings.value(GlobalSettings::Key_View_CursorShowInterval).value<bool>());
+		});
+
+	QAction *displayFrequencyAction = new QAction(tr("Display frequency"));
+	displayFrequencyAction->setCheckable(true);
+	displayFrequencyAction->setChecked(show_frequency_);
+	menu->addAction(displayFrequencyAction);
+
+	connect(displayFrequencyAction, &QAction::toggled, [=]{
+		GlobalSettings settings;
+		settings.setValue(GlobalSettings::Key_View_CursorShowFrequency,
+			!settings.value(GlobalSettings::Key_View_CursorShowFrequency).value<bool>());
+		});
+
+	return menu;
 }
 
 QRectF CursorPair::label_rect(const QRectF &rect) const
@@ -243,6 +277,12 @@ void CursorPair::on_setting_changed(const QString &key, const QVariant &value)
 {
 	if (key == GlobalSettings::Key_View_CursorFillColor)
 		fill_color_ = QColor::fromRgba(value.value<uint32_t>());
+
+	if (key == GlobalSettings::Key_View_CursorShowFrequency)
+		show_frequency_ = value.value<bool>();
+
+	if (key == GlobalSettings::Key_View_CursorShowInterval)
+		show_interval_ = value.value<bool>();
 }
 
 void CursorPair::on_hover_point_changed(const QWidget* widget, const QPoint& hp)
@@ -261,6 +301,8 @@ void CursorPair::on_hover_point_changed(const QWidget* widget, const QPoint& hp)
 
 QString CursorPair::format_string_sub(int time_precision, int freq_precision, bool show_unit)
 {
+	QString s = " ";
+
 	const pv::util::SIPrefix prefix = view_.tick_prefix();
 	const pv::util::Timestamp diff = abs(second_->time() - first_->time());
 
@@ -270,14 +312,28 @@ QString CursorPair::format_string_sub(int time_precision, int freq_precision, bo
 
 	// We can only show a frequency when there's a time base
 	if (view_.time_unit() == pv::util::TimeUnit::Time) {
-		const QString freq = util::format_value_si(
-			1 / diff.convert_to<double>(), pv::util::SIPrefix::unspecified,
-			freq_precision, (show_unit ? "Hz" : nullptr), false);
+		int items = 0;
 
-		return QString("%1 / %2").arg(time, freq);
+		if (show_frequency_) {
+			const QString freq = util::format_value_si(
+				1 / diff.convert_to<double>(), pv::util::SIPrefix::unspecified,
+				freq_precision, (show_unit ? "Hz" : nullptr), false);
+			s = QString("%1").arg(freq);
+			items++;
+		}
+
+		if (show_interval_) {
+			if (items > 0)
+				s = QString("%1 / %2").arg(s, time);
+			else
+				s = QString("%1").arg(time);
+			items++;
+		}
 	} else
 		// In this case, we return the number of samples, really
-		return time;
+		s = time;
+
+	return s;
 }
 
 } // namespace trace

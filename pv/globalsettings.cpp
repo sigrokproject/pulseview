@@ -62,6 +62,8 @@ const QString GlobalSettings::Key_View_DefaultLogicHeight = "View_DefaultLogicHe
 const QString GlobalSettings::Key_View_ShowHoverMarker = "View_ShowHoverMarker";
 const QString GlobalSettings::Key_View_SnapDistance = "View_SnapDistance";
 const QString GlobalSettings::Key_View_CursorFillColor = "View_CursorFillColor";
+const QString GlobalSettings::Key_View_CursorShowFrequency = "View_CursorShowFrequency";
+const QString GlobalSettings::Key_View_CursorShowInterval = "View_CursorShowInterval";
 const QString GlobalSettings::Key_Dec_InitialStateConfigurable = "Dec_InitialStateConfigurable";
 const QString GlobalSettings::Key_Dec_ExportFormat = "Dec_ExportFormat";
 const QString GlobalSettings::Key_Dec_AlwaysShowAllRows = "Dec_AlwaysShowAllRows";
@@ -139,6 +141,12 @@ void GlobalSettings::set_defaults_where_needed()
 
 	if (!contains(Key_View_SnapDistance))
 		setValue(Key_View_SnapDistance, 15);
+
+	if (!contains(Key_View_CursorShowInterval))
+		setValue(Key_View_CursorShowInterval, true);
+
+	if (!contains(Key_View_CursorShowFrequency))
+		setValue(Key_View_CursorShowFrequency, true);
 
 	// %c was used for the row name in the past so we need to transition such users
 	if (!contains(Key_Dec_ExportFormat) ||
