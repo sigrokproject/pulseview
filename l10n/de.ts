@@ -47,7 +47,7 @@
 <context>
     <name>QHexView</name>
     <message>
-        <location filename="../pv/views/decoder_output/QHexView.cpp" line="286"/>
+        <location filename="../pv/views/decoder_output/QHexView.cpp" line="288"/>
         <source>No data available</source>
         <translation>Keine Daten vorhanden</translation>
     </message>
@@ -1059,7 +1059,7 @@ Bei einer Änderung benötigt PulseView eventuell einen Neustart, damit alles ko
     </message>
     <message>
         <location filename="../pv/views/decoder_output/view.cpp" line="258"/>
-        <location filename="../pv/views/decoder_output/view.cpp" line="296"/>
+        <location filename="../pv/views/decoder_output/view.cpp" line="298"/>
         <source>Save Binary Data</source>
         <translation>Binäre Daten speichern</translation>
     </message>
@@ -1069,19 +1069,19 @@ Bei einer Änderung benötigt PulseView eventuell einen Neustart, damit alles ko
         <translation>Binärdateien (*.bin);;Alle Dateien (*)</translation>
     </message>
     <message>
-        <location filename="../pv/views/decoder_output/view.cpp" line="275"/>
-        <location filename="../pv/views/decoder_output/view.cpp" line="325"/>
+        <location filename="../pv/views/decoder_output/view.cpp" line="277"/>
+        <location filename="../pv/views/decoder_output/view.cpp" line="329"/>
         <source>Error</source>
         <translation>Fehler</translation>
     </message>
     <message>
-        <location filename="../pv/views/decoder_output/view.cpp" line="275"/>
-        <location filename="../pv/views/decoder_output/view.cpp" line="325"/>
+        <location filename="../pv/views/decoder_output/view.cpp" line="277"/>
+        <location filename="../pv/views/decoder_output/view.cpp" line="329"/>
         <source>File %1 could not be written to.</source>
         <translation>Konnte Datei %1 nicht speichern.</translation>
     </message>
     <message>
-        <location filename="../pv/views/decoder_output/view.cpp" line="296"/>
+        <location filename="../pv/views/decoder_output/view.cpp" line="298"/>
         <source>Hex Dumps (*.txt);;All Files (*)</source>
         <translation>Hex-Dumps (*.txt);;Alle Dateien (*)</translation>
     </message>
@@ -1175,6 +1175,24 @@ Bei einer Änderung benötigt PulseView eventuell einen Neustart, damit alles ko
         <location filename="../pv/views/trace/cursor.cpp" line="97"/>
         <source>Disable snapping</source>
         <translation>Einrasten deaktivieren</translation>
+    </message>
+</context>
+<context>
+    <name>pv::views::trace::CursorPair</name>
+    <message>
+        <location filename="../pv/views/trace/cursorpair.cpp" line="128"/>
+        <source>Display interval</source>
+        <translation>Intervall anzeigen</translation>
+    </message>
+    <message>
+        <location filename="../pv/views/trace/cursorpair.cpp" line="139"/>
+        <source>Display frequency</source>
+        <translation>Frequenz anzeigen</translation>
+    </message>
+    <message>
+        <location filename="../pv/views/trace/cursorpair.cpp" line="150"/>
+        <source>Display samples</source>
+        <translation>Samples anzeigen</translation>
     </message>
 </context>
 <context>
@@ -1281,9 +1299,19 @@ Bei einer Änderung benötigt PulseView eventuell einen Neustart, damit alles ko
         <translation>Konnte Datei %1 nicht speichern.</translation>
     </message>
     <message>
-        <location filename="../pv/views/trace/decodetrace.cpp" line="1276"/>
+        <location filename="../pv/views/trace/decodetrace.cpp" line="1278"/>
         <source>Show this row</source>
         <translation>Diese Zeile anzeigen</translation>
+    </message>
+    <message>
+        <location filename="../pv/views/trace/decodetrace.cpp" line="1291"/>
+        <source>Show All</source>
+        <translation>Alle anzeigen</translation>
+    </message>
+    <message>
+        <location filename="../pv/views/trace/decodetrace.cpp" line="1299"/>
+        <source>Hide All</source>
+        <translation>Alle verstecken</translation>
     </message>
 </context>
 <context>
