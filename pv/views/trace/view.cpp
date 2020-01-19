@@ -228,6 +228,21 @@ View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 		SLOT(on_scroll_to_end_shortcut_triggered()), nullptr, Qt::WidgetWithChildrenShortcut);
 	end_shortcut_->setAutoRepeat(false);
 
+	grab_ruler_left_shortcut_ = new QShortcut(QKeySequence(Qt::Key_1), this);
+	connect(grab_ruler_left_shortcut_, &QShortcut::activated,
+		this, [=]{on_grab_ruler(1);});
+	grab_ruler_left_shortcut_->setAutoRepeat(false);
+
+	grab_ruler_right_shortcut_ = new QShortcut(QKeySequence(Qt::Key_2), this);
+	connect(grab_ruler_right_shortcut_, &QShortcut::activated,
+		this, [=]{on_grab_ruler(2);});
+	grab_ruler_right_shortcut_->setAutoRepeat(false);
+
+	cancel_grab_shortcut_ = new QShortcut(QKeySequence(Qt::Key_Escape), this);
+	connect(cancel_grab_shortcut_, &QShortcut::activated,
+		this, [=]{grabbed_widget_ = nullptr;});
+	cancel_grab_shortcut_->setAutoRepeat(false);
+
 	// Trigger the initial event manually. The default device has signals
 	// which were created before this object came into being
 	signals_changed();
@@ -270,6 +285,7 @@ void View::reset_view_state()
 	next_flag_text_ = 'A';
 	trigger_markers_.clear();
 	hover_widget_ = nullptr;
+	grabbed_widget_ = nullptr;
 	hover_point_ = QPoint(-1, -1);
 	scroll_needs_defaults_ = true;
 	saved_v_offset_ = 0;
@@ -1405,7 +1421,20 @@ bool View::eventFilter(QObject *object, QEvent *event)
 
 		update_hover_point();
 
+		if (grabbed_widget_) {
+			int64_t nearest = get_nearest_level_change(hover_point_);
+			pv::util::Timestamp mouse_time = offset_ + hover_point_.x() * scale_;
+
+			if (nearest == -1) {
+				grabbed_widget_->set_time(mouse_time);
+			} else {
+				grabbed_widget_->set_time(nearest / get_signal_under_mouse_cursor()->base()->get_samplerate());
+			}
+		}
+
 	} else if (type == QEvent::MouseButtonPress) {
+		grabbed_widget_ = nullptr;
+
 		const QMouseEvent *const mouse_event = (QMouseEvent*)event;
 		if ((object == viewport_) && (mouse_event->button() & Qt::LeftButton)) {
 			// Send event to all trace tree items
@@ -1590,6 +1619,22 @@ void View::v_scroll_value_changed()
 {
 	header_->update();
 	viewport_->update();
+}
+
+void View::on_grab_ruler(int ruler_id)
+{
+	if (cursors_shown()) {
+		// Release the grabbed widget if its trigger hotkey was pressed twice
+		if (ruler_id == 1)
+			grabbed_widget_ = (grabbed_widget_ == cursors_->first().get()) ?
+				nullptr : cursors_->first().get();
+		else
+			grabbed_widget_ = (grabbed_widget_ == cursors_->second().get()) ?
+				nullptr : cursors_->second().get();
+
+		if (grabbed_widget_)
+			grabbed_widget_->set_time(offset_ + mapFromGlobal(QCursor::pos()).x() * scale_);
+	}
 }
 
 void View::signals_changed()

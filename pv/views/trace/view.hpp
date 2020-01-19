@@ -439,6 +439,8 @@ private Q_SLOTS:
 	void h_scroll_value_changed(int value);
 	void v_scroll_value_changed();
 
+	void on_grab_ruler(int ruler_id);
+
 	void signals_changed();
 	void capture_state_updated(int state);
 
@@ -503,6 +505,8 @@ private:
 	QShortcut *zoom_in_shortcut_, *zoom_in_shortcut_2_;
 	QShortcut *zoom_out_shortcut_, *zoom_out_shortcut_2_;
 	QShortcut *home_shortcut_, *end_shortcut_;
+	QShortcut *grab_ruler_left_shortcut_, *grab_ruler_right_shortcut_;
+	QShortcut *cancel_grab_shortcut_;
 
 	unordered_set< shared_ptr<Signal> > signals_;
 
@@ -548,6 +552,7 @@ private:
 	vector< shared_ptr<TriggerMarker> > trigger_markers_;
 
 	QWidget* hover_widget_;
+	TimeMarker* grabbed_widget_;
 	QPoint hover_point_;
 	shared_ptr<Signal> signal_under_mouse_cursor_;
 	uint16_t snap_distance_;
