@@ -64,6 +64,7 @@ const QString GlobalSettings::Key_View_SnapDistance = "View_SnapDistance";
 const QString GlobalSettings::Key_View_CursorFillColor = "View_CursorFillColor";
 const QString GlobalSettings::Key_View_CursorShowFrequency = "View_CursorShowFrequency";
 const QString GlobalSettings::Key_View_CursorShowInterval = "View_CursorShowInterval";
+const QString GlobalSettings::Key_View_CursorShowSamples = "View_CursorShowSamples";
 const QString GlobalSettings::Key_Dec_InitialStateConfigurable = "Dec_InitialStateConfigurable";
 const QString GlobalSettings::Key_Dec_ExportFormat = "Dec_ExportFormat";
 const QString GlobalSettings::Key_Dec_AlwaysShowAllRows = "Dec_AlwaysShowAllRows";

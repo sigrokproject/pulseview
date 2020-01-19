@@ -128,7 +128,7 @@ private:
 	QSizeF text_size_;
 	QRectF label_area_;
 	bool label_incomplete_;
-	bool show_interval_, show_frequency_;
+	bool show_interval_, show_frequency_, show_samples_;
 };
 
 } // namespace trace

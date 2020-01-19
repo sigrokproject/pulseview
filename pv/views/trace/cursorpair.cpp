@@ -58,6 +58,8 @@ CursorPair::CursorPair(View &view) :
 		GlobalSettings::Key_View_CursorShowFrequency).value<bool>();
 	show_interval_ = settings.value(
 		GlobalSettings::Key_View_CursorShowInterval).value<bool>();
+	show_samples_ = settings.value(
+		GlobalSettings::Key_View_CursorShowSamples).value<bool>();
 
 	connect(&view_, SIGNAL(hover_point_changed(const QWidget*, QPoint)),
 		this, SLOT(on_hover_point_changed(const QWidget*, QPoint)));
@@ -143,6 +145,17 @@ QMenu *CursorPair::create_header_context_menu(QWidget *parent)
 		GlobalSettings settings;
 		settings.setValue(GlobalSettings::Key_View_CursorShowFrequency,
 			!settings.value(GlobalSettings::Key_View_CursorShowFrequency).value<bool>());
+		});
+
+	QAction *displaySamplesAction = new QAction(tr("Display samples"));
+	displaySamplesAction->setCheckable(true);
+	displaySamplesAction->setChecked(show_samples_);
+	menu->addAction(displaySamplesAction);
+
+	connect(displaySamplesAction, &QAction::toggled, [=]{
+		GlobalSettings settings;
+		settings.setValue(GlobalSettings::Key_View_CursorShowSamples,
+			!settings.value(GlobalSettings::Key_View_CursorShowSamples).value<bool>());
 		});
 
 	return menu;
@@ -283,6 +296,9 @@ void CursorPair::on_setting_changed(const QString &key, const QVariant &value)
 
 	if (key == GlobalSettings::Key_View_CursorShowInterval)
 		show_interval_ = value.value<bool>();
+
+	if (key == GlobalSettings::Key_View_CursorShowSamples)
+		show_samples_ = value.value<bool>();
 }
 
 void CursorPair::on_hover_point_changed(const QWidget* widget, const QPoint& hp)
@@ -328,6 +344,15 @@ QString CursorPair::format_string_sub(int time_precision, int freq_precision, bo
 			else
 				s = QString("%1").arg(time);
 			items++;
+		}
+
+		if (show_samples_) {
+			const QString samples = QString::number(
+				(diff * view_.session().get_samplerate()).convert_to<uint64_t>());
+			if (items > 0)
+				s = QString("%1 / %2").arg(s, samples);
+			else
+				s = QString("%1").arg(samples);
 		}
 	} else
 		// In this case, we return the number of samples, really
