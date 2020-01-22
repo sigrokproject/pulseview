@@ -1,7 +1,7 @@
 ##
 ## This file is part of the PulseView project.
 ##
-## Copyright (C) 2013-2014 Uwe Hermann <uwe@hermann-uwe.de>
+## Copyright (C) 2013-2020 Uwe Hermann <uwe@hermann-uwe.de>
 ##
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -160,6 +160,7 @@ Section "PulseView (required)" Section1
 	# Python
 	File "${CROSS}/python34.dll"
 	File "${CROSS}/python34.zip"
+	File "${CROSS}/*.pyd"
 
 	SetOutPath "$INSTDIR\share"
 
@@ -272,6 +273,7 @@ Section "Uninstall"
 	Delete "$INSTDIR\zadig_xp.exe"
 	Delete "$INSTDIR\python34.dll"
 	Delete "$INSTDIR\python34.zip"
+	Delete "$INSTDIR\*.pyd"
 
 	# Delete all decoders and everything else in libsigrokdecode/.
 	# There could be *.pyc files or __pycache__ subdirs and so on.
