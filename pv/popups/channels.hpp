@@ -79,9 +79,6 @@ private:
 	void populate_group(shared_ptr<sigrok::ChannelGroup> group,
 		const vector< shared_ptr<pv::data::SignalBase> > sigs);
 
-	QGridLayout* create_channel_group_grid(
-		const vector< shared_ptr<pv::data::SignalBase> > sigs);
-
 	void showEvent(QShowEvent *event);
 
 private Q_SLOTS:
