@@ -271,7 +271,7 @@ public:
 	bool colored_bg() const;
 
 	/**
-	 * Returns true if cursors are displayed. false otherwise.
+	 * Returns true if cursors are displayed, false otherwise.
 	 */
 	bool cursors_shown() const;
 
@@ -281,14 +281,16 @@ public:
 	void show_cursors(bool show = true);
 
 	/**
-	 * Sets the cursors to the given offsets. You will still have to call show_cursors separately.
+	 * Sets the cursors to the given offsets.
+	 * You still have to call show_cursors() separately.
 	 */
 	void set_cursors(pv::util::Timestamp& first, pv::util::Timestamp& second);
 
 	/**
 	 * Moves the cursors to a convenient position in the view.
+	 * You still have to call show_cursors() separately.
 	 */
-	void centre_cursors();
+	void center_cursors();
 
 	/**
 	 * Returns a reference to the pair of cursors.

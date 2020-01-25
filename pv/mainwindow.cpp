@@ -222,6 +222,8 @@ shared_ptr<views::ViewBase> MainWindow::add_view(views::ViewType type,
 		}
 	}
 
+	v->setFocus();
+
 	return v;
 }
 
@@ -257,7 +259,7 @@ shared_ptr<subwindows::SubWindowBase> MainWindow::add_subwindow(
 	subwindows::SubWindowType type, Session &session)
 {
 	GlobalSettings settings;
-	shared_ptr<subwindows::SubWindowBase> v;
+	shared_ptr<subwindows::SubWindowBase> w;
 
 	QMainWindow *main_window = nullptr;
 	for (auto& entry : session_windows_)
@@ -288,14 +290,14 @@ shared_ptr<subwindows::SubWindowBase> MainWindow::add_subwindow(
 
 #ifdef ENABLE_DECODE
 	if (type == subwindows::SubWindowTypeDecoderSelector)
-		v = make_shared<subwindows::decoder_selector::SubWindow>(session, dock_main);
+		w = make_shared<subwindows::decoder_selector::SubWindow>(session, dock_main);
 #endif
 
-	if (!v)
+	if (!w)
 		return nullptr;
 
-	sub_windows_[dock] = v;
-	dock_main->setCentralWidget(v.get());
+	sub_windows_[dock] = w;
+	dock_main->setCentralWidget(w.get());
 	dock->setWidget(dock_main);
 
 	dock->setContextMenuPolicy(Qt::PreventContextMenu);
@@ -312,13 +314,15 @@ shared_ptr<subwindows::SubWindowBase> MainWindow::add_subwindow(
 	connect(close_btn, SIGNAL(clicked(bool)),
 		this, SLOT(on_sub_window_close_clicked()));
 
-	if (v->has_toolbar())
-		dock_main->addToolBar(v->create_toolbar(dock_main));
+	if (w->has_toolbar())
+		dock_main->addToolBar(w->create_toolbar(dock_main));
 
-	if (v->minimum_width() > 0)
-		dock->setMinimumSize(v->minimum_width(), 0);
+	if (w->minimum_width() > 0)
+		dock->setMinimumSize(w->minimum_width(), 0);
 
-	return v;
+	w->setFocus();
+
+	return w;
 }
 
 shared_ptr<Session> MainWindow::add_session()
@@ -349,7 +353,7 @@ shared_ptr<Session> MainWindow::add_session()
 
 	window->setDockNestingEnabled(true);
 
-	shared_ptr<views::ViewBase> main_view = add_view(views::ViewTypeTrace, *session);
+	add_view(views::ViewTypeTrace, *session);
 
 	return session;
 }
@@ -885,6 +889,10 @@ void MainWindow::on_sub_window_close_clicked()
 
 	sub_windows_.erase(dock);
 	dock->close();
+
+	// Restore focus to the last used main view
+	if (last_focused_session_)
+		last_focused_session_->main_view()->setFocus();
 }
 
 void MainWindow::on_view_colored_bg_shortcut()

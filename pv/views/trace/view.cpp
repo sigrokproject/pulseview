@@ -208,7 +208,7 @@ View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 
 	// Set up local keyboard shortcuts
 	zoom_in_shortcut_ = new QShortcut(QKeySequence(Qt::Key_Plus), this,
-			SLOT(on_zoom_in_shortcut_triggered()), nullptr, Qt::WidgetWithChildrenShortcut);
+		SLOT(on_zoom_in_shortcut_triggered()), nullptr, Qt::WidgetWithChildrenShortcut);
 	zoom_in_shortcut_->setAutoRepeat(false);
 
 	zoom_out_shortcut_ = new QShortcut(QKeySequence(Qt::Key_Minus), this,
@@ -228,17 +228,20 @@ View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 		SLOT(on_scroll_to_end_shortcut_triggered()), nullptr, Qt::WidgetWithChildrenShortcut);
 	end_shortcut_->setAutoRepeat(false);
 
-	grab_ruler_left_shortcut_ = new QShortcut(QKeySequence(Qt::Key_1), this);
+	grab_ruler_left_shortcut_ = new QShortcut(QKeySequence(Qt::Key_1), this,
+		nullptr, nullptr, Qt::WidgetWithChildrenShortcut);
 	connect(grab_ruler_left_shortcut_, &QShortcut::activated,
 		this, [=]{on_grab_ruler(1);});
 	grab_ruler_left_shortcut_->setAutoRepeat(false);
 
-	grab_ruler_right_shortcut_ = new QShortcut(QKeySequence(Qt::Key_2), this);
+	grab_ruler_right_shortcut_ = new QShortcut(QKeySequence(Qt::Key_2), this,
+		nullptr, nullptr, Qt::WidgetWithChildrenShortcut);
 	connect(grab_ruler_right_shortcut_, &QShortcut::activated,
 		this, [=]{on_grab_ruler(2);});
 	grab_ruler_right_shortcut_->setAutoRepeat(false);
 
-	cancel_grab_shortcut_ = new QShortcut(QKeySequence(Qt::Key_Escape), this);
+	cancel_grab_shortcut_ = new QShortcut(QKeySequence(Qt::Key_Escape), this,
+		nullptr, nullptr, Qt::WidgetWithChildrenShortcut);
 	connect(cancel_grab_shortcut_, &QShortcut::activated,
 		this, [=]{grabbed_widget_ = nullptr;});
 	cancel_grab_shortcut_->setAutoRepeat(false);
@@ -874,7 +877,7 @@ void View::set_cursors(pv::util::Timestamp& first, pv::util::Timestamp& second)
 	viewport_->update();
 }
 
-void View::centre_cursors()
+void View::center_cursors()
 {
 	assert(cursors_);
 
@@ -1623,18 +1626,22 @@ void View::v_scroll_value_changed()
 
 void View::on_grab_ruler(int ruler_id)
 {
-	if (cursors_shown()) {
-		// Release the grabbed widget if its trigger hotkey was pressed twice
-		if (ruler_id == 1)
-			grabbed_widget_ = (grabbed_widget_ == cursors_->first().get()) ?
-				nullptr : cursors_->first().get();
-		else
-			grabbed_widget_ = (grabbed_widget_ == cursors_->second().get()) ?
-				nullptr : cursors_->second().get();
-
-		if (grabbed_widget_)
-			grabbed_widget_->set_time(offset_ + mapFromGlobal(QCursor::pos()).x() * scale_);
+	if (!cursors_shown()) {
+		center_cursors();
+		show_cursors();
 	}
+
+	// Release the grabbed widget if its trigger hotkey was pressed twice
+	if (ruler_id == 1)
+		grabbed_widget_ = (grabbed_widget_ == cursors_->first().get()) ?
+			nullptr : cursors_->first().get();
+	else
+		grabbed_widget_ = (grabbed_widget_ == cursors_->second().get()) ?
+			nullptr : cursors_->second().get();
+
+	if (grabbed_widget_)
+		grabbed_widget_->set_time(ruler_->get_absolute_time_from_x_pos(
+			mapFromGlobal(QCursor::pos()).x() - header_width()));
 }
 
 void View::signals_changed()
