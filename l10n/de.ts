@@ -99,60 +99,60 @@ A human-readable form has been saved to disk and was written to the log. You may
         <translation></translation>
     </message>
     <message>
-        <location filename="../pv/mainwindow.cpp" line="274"/>
+        <location filename="../pv/mainwindow.cpp" line="276"/>
         <source>Decoder Selector</source>
         <translation>Protokolldekoder</translation>
     </message>
     <message>
-        <location filename="../pv/mainwindow.cpp" line="327"/>
+        <location filename="../pv/mainwindow.cpp" line="331"/>
         <source>Session %1</source>
         <translation>Analysesitzung %1</translation>
     </message>
     <message>
-        <location filename="../pv/mainwindow.cpp" line="509"/>
+        <location filename="../pv/mainwindow.cpp" line="513"/>
         <source>Create New Session</source>
         <translation>Neue Analysesitzung</translation>
     </message>
     <message>
-        <location filename="../pv/mainwindow.cpp" line="515"/>
+        <location filename="../pv/mainwindow.cpp" line="519"/>
         <source>Start/Stop Acquisition</source>
         <translation>Datenerfassung starten/stoppen</translation>
     </message>
     <message>
-        <location filename="../pv/mainwindow.cpp" line="523"/>
+        <location filename="../pv/mainwindow.cpp" line="527"/>
         <source>Settings</source>
         <translation>Einstellungen</translation>
     </message>
     <message>
-        <location filename="../pv/mainwindow.cpp" line="573"/>
+        <location filename="../pv/mainwindow.cpp" line="577"/>
         <source>Reload</source>
         <translation>Neu laden</translation>
     </message>
     <message>
-        <location filename="../pv/mainwindow.cpp" line="624"/>
-        <location filename="../pv/mainwindow.cpp" line="818"/>
-        <location filename="../pv/mainwindow.cpp" line="844"/>
+        <location filename="../pv/mainwindow.cpp" line="628"/>
+        <location filename="../pv/mainwindow.cpp" line="822"/>
+        <location filename="../pv/mainwindow.cpp" line="848"/>
         <source>Confirmation</source>
         <translation>Bestätigung</translation>
     </message>
     <message>
-        <location filename="../pv/mainwindow.cpp" line="625"/>
+        <location filename="../pv/mainwindow.cpp" line="629"/>
         <source>There is unsaved data. Close anyway?</source>
         <translation>Es gibt noch ungespeicherte Daten. Trotzdem beenden?</translation>
     </message>
     <message>
-        <location filename="../pv/mainwindow.cpp" line="573"/>
+        <location filename="../pv/mainwindow.cpp" line="577"/>
         <source>Run</source>
         <translation>Starten</translation>
     </message>
     <message>
-        <location filename="../pv/mainwindow.cpp" line="578"/>
+        <location filename="../pv/mainwindow.cpp" line="582"/>
         <source>Stop</source>
         <translation>Stoppen</translation>
     </message>
     <message>
-        <location filename="../pv/mainwindow.cpp" line="819"/>
-        <location filename="../pv/mainwindow.cpp" line="845"/>
+        <location filename="../pv/mainwindow.cpp" line="823"/>
+        <location filename="../pv/mainwindow.cpp" line="849"/>
         <source>This session contains unsaved data. Close it anyway?</source>
         <translation>Die Daten dieser Analysesitzung wurden nicht gespeichert. Trotzdem schließen?</translation>
     </message>
@@ -718,52 +718,60 @@ Bei einer Änderung benötigt PulseView eventuell einen Neustart, damit alles ko
 <context>
     <name>pv::popups::Channels</name>
     <message>
-        <location filename="../pv/popups/channels.cpp" line="61"/>
         <location filename="../pv/popups/channels.cpp" line="62"/>
+        <location filename="../pv/popups/channels.cpp" line="63"/>
+        <location filename="../pv/popups/channels.cpp" line="273"/>
+        <location filename="../pv/popups/channels.cpp" line="300"/>
         <source>All</source>
         <translation>Alle</translation>
     </message>
     <message>
-        <location filename="../pv/popups/channels.cpp" line="63"/>
         <location filename="../pv/popups/channels.cpp" line="64"/>
+        <location filename="../pv/popups/channels.cpp" line="65"/>
         <source>Logic</source>
         <translation>Logik</translation>
     </message>
     <message>
-        <location filename="../pv/popups/channels.cpp" line="65"/>
         <location filename="../pv/popups/channels.cpp" line="66"/>
+        <location filename="../pv/popups/channels.cpp" line="67"/>
         <source>Analog</source>
         <translation>Analog</translation>
     </message>
     <message>
-        <location filename="../pv/popups/channels.cpp" line="67"/>
+        <location filename="../pv/popups/channels.cpp" line="68"/>
         <source>Named</source>
         <translation>Benamte</translation>
     </message>
     <message>
-        <location filename="../pv/popups/channels.cpp" line="68"/>
+        <location filename="../pv/popups/channels.cpp" line="69"/>
         <source>Unnamed</source>
         <translation>Unbenamte</translation>
     </message>
     <message>
-        <location filename="../pv/popups/channels.cpp" line="69"/>
+        <location filename="../pv/popups/channels.cpp" line="70"/>
         <source>Changing</source>
         <translation>Sich ändernde</translation>
     </message>
     <message>
-        <location filename="../pv/popups/channels.cpp" line="70"/>
+        <location filename="../pv/popups/channels.cpp" line="71"/>
         <source>Non-changing</source>
         <translation>Konstante</translation>
     </message>
     <message>
-        <location filename="../pv/popups/channels.cpp" line="140"/>
+        <location filename="../pv/popups/channels.cpp" line="141"/>
         <source>Disable: </source>
         <translation>Deaktivieren: </translation>
     </message>
     <message>
-        <location filename="../pv/popups/channels.cpp" line="148"/>
+        <location filename="../pv/popups/channels.cpp" line="149"/>
         <source>Enable: </source>
         <translation>Aktivieren: </translation>
+    </message>
+    <message>
+        <location filename="../pv/popups/channels.cpp" line="281"/>
+        <location filename="../pv/popups/channels.cpp" line="301"/>
+        <source>None</source>
+        <translation>Keine</translation>
     </message>
 </context>
 <context>
