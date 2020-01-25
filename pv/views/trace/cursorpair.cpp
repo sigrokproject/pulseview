@@ -125,7 +125,7 @@ QMenu *CursorPair::create_header_context_menu(QWidget *parent)
 {
 	QMenu *menu = new QMenu(parent);
 
-	QAction *displayIntervalAction = new QAction(tr("Display interval"));
+	QAction *displayIntervalAction = new QAction(tr("Display interval"), this);
 	displayIntervalAction->setCheckable(true);
 	displayIntervalAction->setChecked(show_interval_);
 	menu->addAction(displayIntervalAction);
@@ -136,7 +136,7 @@ QMenu *CursorPair::create_header_context_menu(QWidget *parent)
 			!settings.value(GlobalSettings::Key_View_CursorShowInterval).value<bool>());
 		});
 
-	QAction *displayFrequencyAction = new QAction(tr("Display frequency"));
+	QAction *displayFrequencyAction = new QAction(tr("Display frequency"), this);
 	displayFrequencyAction->setCheckable(true);
 	displayFrequencyAction->setChecked(show_frequency_);
 	menu->addAction(displayFrequencyAction);
@@ -147,7 +147,7 @@ QMenu *CursorPair::create_header_context_menu(QWidget *parent)
 			!settings.value(GlobalSettings::Key_View_CursorShowFrequency).value<bool>());
 		});
 
-	QAction *displaySamplesAction = new QAction(tr("Display samples"));
+	QAction *displaySamplesAction = new QAction(tr("Display samples"), this);
 	displaySamplesAction->setCheckable(true);
 	displaySamplesAction->setChecked(show_samples_);
 	menu->addAction(displaySamplesAction);
