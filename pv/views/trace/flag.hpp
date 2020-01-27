@@ -67,6 +67,11 @@ public:
 	 */
 	virtual QString get_text() const override;
 
+	/**
+	 * Sets the text to show in the marker.
+	 */
+	virtual void set_text(const QString &text) override;
+
 	virtual pv::widgets::Popup* create_popup(QWidget *parent) override;
 
 	virtual QMenu* create_header_context_menu(QWidget *parent) override;

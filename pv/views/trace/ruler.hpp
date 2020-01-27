@@ -184,6 +184,7 @@ private Q_SLOTS:
 
 	void on_createMarker();
 	void on_setZeroPosition();
+	void on_resetZeroPosition();
 	void on_toggleHoverMarker();
 
 private:

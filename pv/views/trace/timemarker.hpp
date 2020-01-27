@@ -100,6 +100,11 @@ public:
 	virtual QString get_text() const = 0;
 
 	/**
+	 * Sets the text to show in the marker.
+	 */
+	virtual void set_text(const QString &text);
+
+	/**
 	 * Paints the marker's label to the ruler.
 	 * @param p The painter to draw with.
 	 * @param rect The rectangle of the ruler client area.

@@ -17,8 +17,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "globalsettings.hpp"
-#include "application.hpp"
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/serialization/serialization.hpp>
 
 #include <QApplication>
 #include <QColor>
@@ -30,9 +31,13 @@
 #include <QStyle>
 #include <QtGlobal>
 
+#include "globalsettings.hpp"
+#include "application.hpp"
+
 using std::map;
 using std::pair;
 using std::string;
+using std::stringstream;
 using std::vector;
 
 namespace pv {
@@ -368,6 +373,30 @@ Glib::VariantBase GlobalSettings::restore_variantbase(QSettings &settings)
 	g_variant_unref(value);
 
 	return ret_val;
+}
+
+void GlobalSettings::store_timestamp(QSettings &settings, const char *name, const pv::util::Timestamp &ts)
+{
+	stringstream ss;
+	boost::archive::text_oarchive oa(ss);
+	oa << boost::serialization::make_nvp(name, ts);
+	settings.setValue(name, QString::fromStdString(ss.str()));
+}
+
+pv::util::Timestamp GlobalSettings::restore_timestamp(QSettings &settings, const char *name)
+{
+	util::Timestamp result;
+	stringstream ss;
+	ss << settings.value(name).toString().toStdString();
+
+	try {
+		boost::archive::text_iarchive ia(ss);
+		ia >> boost::serialization::make_nvp(name, result);
+	} catch (boost::archive::archive_exception&) {
+		qDebug() << "Could not restore setting" << name;
+	}
+
+	return result;
 }
 
 } // namespace pv

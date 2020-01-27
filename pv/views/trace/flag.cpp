@@ -73,6 +73,12 @@ QString Flag::get_text() const
 	return s;
 }
 
+void Flag::set_text(const QString &text)
+{
+	text_ = text;
+	view_.time_item_appearance_changed(true, false);
+}
+
 QRectF Flag::label_rect(const QRectF &rect) const
 {
 	QRectF r;
@@ -158,8 +164,7 @@ void Flag::on_delete()
 
 void Flag::on_text_changed(const QString &text)
 {
-	text_ = text;
-	view_.time_item_appearance_changed(true, false);
+	set_text(text);
 }
 
 } // namespace trace

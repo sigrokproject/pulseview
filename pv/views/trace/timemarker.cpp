@@ -105,6 +105,11 @@ QRectF TimeMarker::hit_box_rect(const ViewItemPaintParams &pp) const
 	return QRectF(x - h / 2.0f, pp.top(), h, pp.height());
 }
 
+void TimeMarker::set_text(const QString &text)
+{
+	(void)text;
+}
+
 void TimeMarker::paint_label(QPainter &p, const QRect &rect, bool hover)
 {
 	if (!enabled())

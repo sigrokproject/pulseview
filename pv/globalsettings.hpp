@@ -30,6 +30,8 @@
 #include <QString>
 #include <QVariant>
 
+#include "util.hpp"
+
 using std::map;
 using std::pair;
 using std::vector;
@@ -122,12 +124,13 @@ public:
 	void undo_tracked_changes();
 
 	static void store_gvariant(QSettings &settings, GVariant *v);
-
 	static GVariant* restore_gvariant(QSettings &settings);
 
 	static void store_variantbase(QSettings &settings, Glib::VariantBase v);
-
 	static Glib::VariantBase restore_variantbase(QSettings &settings);
+
+	static void store_timestamp(QSettings &settings, const char *name, const pv::util::Timestamp &ts);
+	static pv::util::Timestamp restore_timestamp(QSettings &settings, const char *name);
 
 private:
 	static vector<GlobalSettingsInterface*> callbacks_;

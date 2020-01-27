@@ -17,9 +17,6 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QDebug>
-#include <QFileInfo>
-
 #include <cassert>
 #include <memory>
 #include <mutex>
@@ -27,9 +24,13 @@
 
 #include <sys/stat.h>
 
+#include <QDebug>
+#include <QFileInfo>
+
 #include "devicemanager.hpp"
 #include "mainwindow.hpp"
 #include "session.hpp"
+#include "util.hpp"
 
 #include "data/analog.hpp"
 #include "data/analogsegment.hpp"
@@ -105,6 +106,7 @@ using Gst::ElementFactory;
 using Gst::Pipeline;
 #endif
 
+using pv::util::Timestamp;
 using pv::views::trace::Signal;
 using pv::views::trace::AnalogSignal;
 using pv::views::trace::LogicSignal;
@@ -193,13 +195,13 @@ bool Session::data_saved() const
 
 void Session::save_setup(QSettings &settings) const
 {
-	int decode_signals = 0, views = 0;
+	int i = 0;
 
 	// Save channels and decoders
 	for (const shared_ptr<data::SignalBase>& base : signalbases_) {
 #ifdef ENABLE_DECODE
 		if (base->is_decode_signal()) {
-			settings.beginGroup("decode_signal" + QString::number(decode_signals++));
+			settings.beginGroup("decode_signal" + QString::number(i++));
 			base->save_settings(settings);
 			settings.endGroup();
 		} else
@@ -211,24 +213,54 @@ void Session::save_setup(QSettings &settings) const
 		}
 	}
 
-	settings.setValue("decode_signals", decode_signals);
+	settings.setValue("decode_signals", i);
 
 	// Save view states and their signal settings
 	// Note: main_view must be saved as view0
-	settings.beginGroup("view" + QString::number(views++));
+	i = 0;
+	settings.beginGroup("view" + QString::number(i++));
 	main_view_->save_settings(settings);
 	settings.endGroup();
 
 	for (const shared_ptr<views::ViewBase>& view : views_) {
 		if (view != main_view_) {
-			settings.beginGroup("view" + QString::number(views++));
+			settings.beginGroup("view" + QString::number(i++));
 			settings.setValue("type", view->get_type());
 			view->save_settings(settings);
 			settings.endGroup();
 		}
 	}
 
-	settings.setValue("views", views);
+	settings.setValue("views", i);
+
+	i = 0;
+	shared_ptr<views::trace::View> tv = dynamic_pointer_cast<views::trace::View>(main_view_);
+	for (const shared_ptr<views::trace::TimeItem>& time_item : tv->time_items()) {
+
+		const shared_ptr<views::trace::Flag> flag =
+			dynamic_pointer_cast<views::trace::Flag>(time_item);
+		if (flag) {
+			if (!flag->enabled())
+				continue;
+
+			settings.beginGroup("meta_obj" + QString::number(i++));
+			settings.setValue("type", "time_marker");
+			GlobalSettings::store_timestamp(settings, "time", flag->time());
+			settings.setValue("text", flag->get_text());
+			settings.endGroup();
+		}
+	}
+
+	if (tv->cursors_shown()) {
+		settings.beginGroup("meta_obj" + QString::number(i++));
+		settings.setValue("type", "selection");
+		const shared_ptr<views::trace::CursorPair> cp = tv->cursors();
+		GlobalSettings::store_timestamp(settings, "start_time", cp->first()->time());
+		GlobalSettings::store_timestamp(settings, "end_time", cp->second()->time());
+		settings.endGroup();
+	}
+
+	settings.setValue("meta_objs", i);
 }
 
 void Session::save_settings(QSettings &settings) const
@@ -324,13 +356,37 @@ void Session::restore_setup(QSettings &settings)
 
 		settings.endGroup();
 	}
+
+	// Restore meta objects like markers and cursors
+	int meta_objs = settings.value("meta_objs").toInt();
+
+	shared_ptr<views::trace::View> tv = dynamic_pointer_cast<views::trace::View>(main_view_);
+	for (int i = 0; i < meta_objs; i++) {
+		settings.beginGroup("meta_obj" + QString::number(i));
+		const QString type = settings.value("type").toString();
+
+		if (type == "time_marker") {
+			Timestamp ts = GlobalSettings::restore_timestamp(settings, "time");
+			shared_ptr<views::trace::Flag> flag = tv->add_flag(ts);
+			flag->set_text(settings.value("text").toString());
+		}
+
+		if (type == "selection") {
+			Timestamp start = GlobalSettings::restore_timestamp(settings, "start_time");
+			Timestamp end = GlobalSettings::restore_timestamp(settings, "end_time");
+			tv->set_cursors(start, end);
+			tv->show_cursors();
+		}
+
+		settings.endGroup();
+	}
 }
 
 void Session::restore_settings(QSettings &settings)
 {
 	shared_ptr<devices::Device> device;
 
-	QString device_type = settings.value("device_type").toString();
+	const QString device_type = settings.value("device_type").toString();
 
 	if (device_type == "hardware") {
 		map<string, string> dev_info;
@@ -366,7 +422,7 @@ void Session::restore_settings(QSettings &settings)
 	if ((device_type == "sessionfile") || (device_type == "inputfile")) {
 		if (device_type == "sessionfile") {
 			settings.beginGroup("device");
-			QString filename = settings.value("filename").toString();
+			const QString filename = settings.value("filename").toString();
 			settings.endGroup();
 
 			if (QFileInfo(filename).isReadable()) {

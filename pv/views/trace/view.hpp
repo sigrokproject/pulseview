@@ -530,6 +530,8 @@ private:
 	pv::util::Timestamp ruler_offset_;
 	/// The offset of the zero point in seconds.
 	pv::util::Timestamp zero_offset_;
+	/// Shows whether the user set a custom zero offset that we should keep
+	bool custom_zero_offset_set_;
 
 	bool updating_scroll_;
 	bool settings_restored_;
