@@ -113,6 +113,7 @@ public:
 	vector<const AnnotationClass*> ann_classes() const;
 	vector<AnnotationClass*> ann_classes();
 	AnnotationClass* get_ann_class_by_id(size_t id);
+	const AnnotationClass* get_ann_class_by_id(size_t id) const;
 
 	uint32_t get_binary_class_count() const;
 	const DecodeBinaryClassInfo* get_binary_class(uint32_t id) const;

@@ -1909,6 +1909,8 @@ void View::on_segment_changed(int segment)
 
 void View::on_settingViewTriggerIsZeroTime_changed(const QVariant new_value)
 {
+	(void)new_value;
+
 	if (!custom_zero_offset_set_)
 		reset_zero_position();
 }

@@ -264,6 +264,14 @@ AnnotationClass* Decoder::get_ann_class_by_id(size_t id)
 	return &(ann_classes_[id]);
 }
 
+const AnnotationClass* Decoder::get_ann_class_by_id(size_t id) const
+{
+	if (id >= ann_classes_.size())
+		return nullptr;
+
+	return &(ann_classes_[id]);
+}
+
 uint32_t Decoder::get_binary_class_count() const
 {
 	return bin_classes_.size();

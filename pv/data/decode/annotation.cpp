@@ -25,6 +25,7 @@ extern "C" {
 #include <vector>
 
 #include <pv/data/decode/annotation.hpp>
+#include <pv/data/decode/decoder.hpp>
 
 using std::vector;
 
@@ -102,6 +103,14 @@ uint64_t Annotation::end_sample() const
 Annotation::Class Annotation::ann_class_id() const
 {
 	return ann_class_id_;
+}
+
+const QString Annotation::ann_class_name() const
+{
+	const AnnotationClass* ann_class =
+		row_->decoder()->get_ann_class_by_id(ann_class_id_);
+
+	return QString(ann_class->name);
 }
 
 const vector<QString>* Annotation::annotations() const

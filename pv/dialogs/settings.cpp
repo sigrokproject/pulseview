@@ -415,10 +415,10 @@ QWidget *Settings::get_decoder_settings_form(QWidget *parent)
 	connect(ann_export_format_, SIGNAL(textChanged(const QString&)),
 		this, SLOT(on_dec_exportFormat_changed(const QString&)));
 	decoder_layout->addRow(tr("Annotation export format"), ann_export_format_);
-	QLabel *description_1 = new QLabel(tr("%s = sample range; %d: decoder name; %r: row name; %q: use quotation marks"));
+	QLabel *description_1 = new QLabel(tr("%s = sample range; %d: decoder name; %r: row name; %c: class name"));
 	description_1->setAlignment(Qt::AlignRight);
 	decoder_layout->addRow(description_1);
-	QLabel *description_2 = new QLabel(tr("%1: longest annotation text; %a: all annotation texts"));
+	QLabel *description_2 = new QLabel(tr("%1: longest annotation text; %a: all annotation texts; %q: use quotation marks"));
 	description_2->setAlignment(Qt::AlignRight);
 	decoder_layout->addRow(description_2);
 

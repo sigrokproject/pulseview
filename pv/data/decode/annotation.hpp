@@ -48,7 +48,10 @@ public:
 
 	uint64_t start_sample() const;
 	uint64_t end_sample() const;
+
 	Class ann_class_id() const;
+	const QString ann_class_name() const;
+
 	const vector<QString>* annotations() const;
 	const Row* row() const;
 

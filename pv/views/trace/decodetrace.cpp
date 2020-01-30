@@ -1191,30 +1191,54 @@ void DecodeTrace::export_annotations(deque<const Annotation*>& annotations) cons
 	const QString quote = format.contains("%q") ? "\"" : "";
 	format = format.remove("%q");
 
+	const bool has_sample_range   = format.contains("%s");
+	const bool has_row_name       = format.contains("%r");
+	const bool has_dec_name       = format.contains("%d");
+	const bool has_class_name     = format.contains("%c");
+	const bool has_first_ann_text = format.contains("%1");
+	const bool has_all_ann_text   = format.contains("%a");
+
 	QFile file(file_name);
 	if (file.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)) {
 		QTextStream out_stream(&file);
 
 		for (const Annotation* ann : annotations) {
-			const QString sample_range = QString("%1-%2") \
-				.arg(QString::number(ann->start_sample()), QString::number(ann->end_sample()));
-
-			const QString row_name = quote + ann->row()->description() + quote;
-
-			QString all_ann_text;
-			for (const QString &s : *(ann->annotations()))
-				all_ann_text = all_ann_text + quote + s + quote + ",";
-			all_ann_text.chop(1);
-
-			const QString first_ann_text = quote + ann->annotations()->front() + quote;
-
 			QString out_text = format;
-			out_text = out_text.replace("%s", sample_range);
-			out_text = out_text.replace("%d",
-				quote + QString::fromUtf8(ann->row()->decoder()->name()) + quote);
-			out_text = out_text.replace("%r", row_name);
-			out_text = out_text.replace("%1", first_ann_text);
-			out_text = out_text.replace("%a", all_ann_text);
+
+			if (has_sample_range) {
+				const QString sample_range = QString("%1-%2") \
+					.arg(QString::number(ann->start_sample()), QString::number(ann->end_sample()));
+				out_text = out_text.replace("%s", sample_range);
+			}
+
+			if (has_dec_name)
+				out_text = out_text.replace("%d",
+					quote + QString::fromUtf8(ann->row()->decoder()->name()) + quote);
+
+			if (has_row_name) {
+				const QString row_name = quote + ann->row()->description() + quote;
+				out_text = out_text.replace("%r", row_name);
+			}
+
+			if (has_class_name) {
+				const QString class_name = quote + ann->ann_class_name() + quote;
+				out_text = out_text.replace("%c", class_name);
+			}
+
+			if (has_first_ann_text) {
+				const QString first_ann_text = quote + ann->annotations()->front() + quote;
+				out_text = out_text.replace("%1", first_ann_text);
+			}
+
+			if (has_all_ann_text) {
+				QString all_ann_text;
+				for (const QString &s : *(ann->annotations()))
+					all_ann_text = all_ann_text + quote + s + quote + ",";
+				all_ann_text.chop(1);
+
+				out_text = out_text.replace("%a", all_ann_text);
+			}
+
 			out_stream << out_text << '\n';
 		}
 
