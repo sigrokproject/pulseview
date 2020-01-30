@@ -320,8 +320,6 @@ shared_ptr<subwindows::SubWindowBase> MainWindow::add_subwindow(
 	if (w->minimum_width() > 0)
 		dock->setMinimumSize(w->minimum_width(), 0);
 
-	w->setFocus();
-
 	return w;
 }
 
