@@ -104,55 +104,55 @@ A human-readable form has been saved to disk and was written to the log. You may
         <translation>Protokolldekoder</translation>
     </message>
     <message>
-        <location filename="../pv/mainwindow.cpp" line="331"/>
+        <location filename="../pv/mainwindow.cpp" line="329"/>
         <source>Session %1</source>
         <translation>Analysesitzung %1</translation>
     </message>
     <message>
-        <location filename="../pv/mainwindow.cpp" line="513"/>
+        <location filename="../pv/mainwindow.cpp" line="511"/>
         <source>Create New Session</source>
         <translation>Neue Analysesitzung</translation>
     </message>
     <message>
-        <location filename="../pv/mainwindow.cpp" line="519"/>
+        <location filename="../pv/mainwindow.cpp" line="517"/>
         <source>Start/Stop Acquisition</source>
         <translation>Datenerfassung starten/stoppen</translation>
     </message>
     <message>
-        <location filename="../pv/mainwindow.cpp" line="527"/>
+        <location filename="../pv/mainwindow.cpp" line="525"/>
         <source>Settings</source>
         <translation>Einstellungen</translation>
     </message>
     <message>
-        <location filename="../pv/mainwindow.cpp" line="577"/>
+        <location filename="../pv/mainwindow.cpp" line="575"/>
         <source>Reload</source>
         <translation>Neu laden</translation>
     </message>
     <message>
-        <location filename="../pv/mainwindow.cpp" line="628"/>
-        <location filename="../pv/mainwindow.cpp" line="822"/>
-        <location filename="../pv/mainwindow.cpp" line="848"/>
+        <location filename="../pv/mainwindow.cpp" line="626"/>
+        <location filename="../pv/mainwindow.cpp" line="820"/>
+        <location filename="../pv/mainwindow.cpp" line="846"/>
         <source>Confirmation</source>
         <translation>Bestätigung</translation>
     </message>
     <message>
-        <location filename="../pv/mainwindow.cpp" line="629"/>
+        <location filename="../pv/mainwindow.cpp" line="627"/>
         <source>There is unsaved data. Close anyway?</source>
         <translation>Es gibt noch ungespeicherte Daten. Trotzdem beenden?</translation>
     </message>
     <message>
-        <location filename="../pv/mainwindow.cpp" line="577"/>
+        <location filename="../pv/mainwindow.cpp" line="575"/>
         <source>Run</source>
         <translation>Starten</translation>
     </message>
     <message>
-        <location filename="../pv/mainwindow.cpp" line="582"/>
+        <location filename="../pv/mainwindow.cpp" line="580"/>
         <source>Stop</source>
         <translation>Stoppen</translation>
     </message>
     <message>
-        <location filename="../pv/mainwindow.cpp" line="823"/>
-        <location filename="../pv/mainwindow.cpp" line="849"/>
+        <location filename="../pv/mainwindow.cpp" line="821"/>
+        <location filename="../pv/mainwindow.cpp" line="847"/>
         <source>This session contains unsaved data. Close it anyway?</source>
         <translation>Die Daten dieser Analysesitzung wurden nicht gespeichert. Trotzdem schließen?</translation>
     </message>
@@ -160,47 +160,47 @@ A human-readable form has been saved to disk and was written to the log. You may
 <context>
     <name>pv::Session</name>
     <message>
-        <location filename="../pv/session.cpp" line="409"/>
+        <location filename="../pv/session.cpp" line="465"/>
         <source>Failed to select device</source>
         <translation>Fehler beim Auswählen des Gerätes</translation>
     </message>
     <message>
-        <location filename="../pv/session.cpp" line="458"/>
+        <location filename="../pv/session.cpp" line="514"/>
         <source>Failed to open device</source>
         <translation>Fehler beim Öffnen des Gerätes</translation>
     </message>
     <message>
-        <location filename="../pv/session.cpp" line="560"/>
+        <location filename="../pv/session.cpp" line="616"/>
         <source>Error</source>
         <translation>Fehler</translation>
     </message>
     <message>
-        <location filename="../pv/session.cpp" line="561"/>
+        <location filename="../pv/session.cpp" line="617"/>
         <source>Unexpected input format: %s</source>
         <translation>Unerwartetes Importformat: %s</translation>
     </message>
     <message>
-        <location filename="../pv/session.cpp" line="596"/>
+        <location filename="../pv/session.cpp" line="652"/>
         <source>Failed to load %1</source>
         <translation>Fehler beim Laden von %1</translation>
     </message>
     <message>
-        <location filename="../pv/session.cpp" line="631"/>
+        <location filename="../pv/session.cpp" line="687"/>
         <source>No active device set, can&apos;t start acquisition.</source>
         <translation>Kein Gerät aktiv, kann Datenerfassung nicht starten.</translation>
     </message>
     <message>
-        <location filename="../pv/session.cpp" line="644"/>
+        <location filename="../pv/session.cpp" line="700"/>
         <source>No channels enabled.</source>
         <translation>Keine aktiven Kanäle vorhanden.</translation>
     </message>
     <message>
-        <location filename="../pv/session.cpp" line="1095"/>
+        <location filename="../pv/session.cpp" line="1151"/>
         <source>Out of memory, acquisition stopped.</source>
         <translation>Nicht genügend Arbeitsspeicher vorhanden, Datenerfassung wurde gestoppt.</translation>
     </message>
     <message>
-        <location filename="../pv/session.cpp" line="1301"/>
+        <location filename="../pv/session.cpp" line="1357"/>
         <source>Can&apos;t handle more than 64 logic channels.</source>
         <translatorcomment>Internal message</translatorcomment>
         <translation></translation>
@@ -557,17 +557,25 @@ A human-readable form has been saved to disk and was written to the log. You may
     </message>
     <message>
         <location filename="../pv/dialogs/settings.cpp" line="418"/>
+        <source>%s = sample range; %d: decoder name; %r: row name; %c: class name</source>
+        <translation>%s = Start-/Endsample; %d: Dekodername; %r: Name der Reihe; %c: Klassenname</translation>
+    </message>
+    <message>
+        <location filename="../pv/dialogs/settings.cpp" line="421"/>
+        <source>%1: longest annotation text; %a: all annotation texts; %q: use quotation marks</source>
+        <translation>%1: Längste Beschreibung des dekodierten Wertes; %a: Alle Beschreibungen des dekodierten Wertes; %q: Benutze Anführungszeichen</translation>
+    </message>
+    <message>
         <source>%s = sample range; %d: decoder name; %r: row name; %q: use quotation marks</source>
-        <translation>%s = Start-/Endsample; %d: Dekodername; %c Name der Kategorie; %q: Benutze Anführungszeichen</translation>
+        <translation type="vanished">%s = Start-/Endsample; %d: Dekodername; %c Name der Kategorie; %q: Benutze Anführungszeichen</translation>
     </message>
     <message>
         <source>%s = sample range; %d: decoder name; %c: row name; %q: use quotations marks</source>
         <translation type="vanished">%s = Start-/Endsample; %d: Dekodername; %c Name der Kategorie; %q: Benutze Anführungszeichen</translation>
     </message>
     <message>
-        <location filename="../pv/dialogs/settings.cpp" line="421"/>
         <source>%1: longest annotation text; %a: all annotation texts</source>
-        <translation>%1: Längste Beschreibung des dekodierten Wertes; %a: Alle Beschreibungen des dekodierten Wertes</translation>
+        <translation type="vanished">%1: Längste Beschreibung des dekodierten Wertes; %a: Alle Beschreibungen des dekodierten Wertes</translation>
     </message>
     <message>
         <location filename="../pv/dialogs/settings.cpp" line="441"/>
@@ -1297,27 +1305,27 @@ Bei einer Änderung benötigt PulseView eventuell einen Neustart, damit alles ko
         <translation>Textdateien (*.txt);;Alle Dateien (*)</translation>
     </message>
     <message>
-        <location filename="../pv/views/trace/decodetrace.cpp" line="1226"/>
+        <location filename="../pv/views/trace/decodetrace.cpp" line="1250"/>
         <source>Error</source>
         <translation>Fehler</translation>
     </message>
     <message>
-        <location filename="../pv/views/trace/decodetrace.cpp" line="1226"/>
+        <location filename="../pv/views/trace/decodetrace.cpp" line="1250"/>
         <source>File %1 could not be written to.</source>
         <translation>Konnte Datei %1 nicht speichern.</translation>
     </message>
     <message>
-        <location filename="../pv/views/trace/decodetrace.cpp" line="1278"/>
+        <location filename="../pv/views/trace/decodetrace.cpp" line="1302"/>
         <source>Show this row</source>
         <translation>Diese Zeile anzeigen</translation>
     </message>
     <message>
-        <location filename="../pv/views/trace/decodetrace.cpp" line="1291"/>
+        <location filename="../pv/views/trace/decodetrace.cpp" line="1315"/>
         <source>Show All</source>
         <translation>Alle anzeigen</translation>
     </message>
     <message>
-        <location filename="../pv/views/trace/decodetrace.cpp" line="1299"/>
+        <location filename="../pv/views/trace/decodetrace.cpp" line="1323"/>
         <source>Hide All</source>
         <translation>Alle verstecken</translation>
     </message>
@@ -1325,17 +1333,17 @@ Bei einer Änderung benötigt PulseView eventuell einen Neustart, damit alles ko
 <context>
     <name>pv::views::trace::Flag</name>
     <message>
-        <location filename="../pv/views/trace/flag.cpp" line="126"/>
+        <location filename="../pv/views/trace/flag.cpp" line="132"/>
         <source>Text</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../pv/views/trace/flag.cpp" line="135"/>
+        <location filename="../pv/views/trace/flag.cpp" line="141"/>
         <source>Delete</source>
         <translation>Löschen</translation>
     </message>
     <message>
-        <location filename="../pv/views/trace/flag.cpp" line="140"/>
+        <location filename="../pv/views/trace/flag.cpp" line="146"/>
         <source>Disable snapping</source>
         <translation>Einrasten deaktivieren</translation>
     </message>
@@ -1409,12 +1417,17 @@ Bei einer Änderung benötigt PulseView eventuell einen Neustart, damit alles ko
         <translation>Als Nullpunkt setzen</translation>
     </message>
     <message>
-        <location filename="../pv/views/trace/ruler.cpp" line="169"/>
+        <location filename="../pv/views/trace/ruler.cpp" line="162"/>
+        <source>Reset zero point</source>
+        <translation>Nullpunkt zurücksetzen</translation>
+    </message>
+    <message>
+        <location filename="../pv/views/trace/ruler.cpp" line="175"/>
         <source>Disable mouse hover marker</source>
         <translation>Mauszeigerbalken deaktivieren</translation>
     </message>
     <message>
-        <location filename="../pv/views/trace/ruler.cpp" line="169"/>
+        <location filename="../pv/views/trace/ruler.cpp" line="175"/>
         <source>Enable mouse hover marker</source>
         <translation>Mauszeigerbalken aktivieren</translation>
     </message>
@@ -1473,7 +1486,7 @@ Bei einer Änderung benötigt PulseView eventuell einen Neustart, damit alles ko
 <context>
     <name>pv::views::trace::TimeMarker</name>
     <message>
-        <location filename="../pv/views/trace/timemarker.cpp" line="186"/>
+        <location filename="../pv/views/trace/timemarker.cpp" line="191"/>
         <source>Time</source>
         <translation>Zeit</translation>
     </message>
