@@ -296,8 +296,8 @@ void DecodeTrace::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 		r.currently_visible = !annotations.empty();
 		if (!r.currently_visible) {
 			size_t ann_count = decode_signal_->get_annotation_count(r.decode_row, current_segment_);
-			r.currently_visible = (always_show_all_rows_ || r.has_hidden_classes) &&
-				(ann_count > 0);
+			r.currently_visible = ((always_show_all_rows_ || r.has_hidden_classes) &&
+				(ann_count > 0)) || r.expanded;
 		}
 
 		if (r.currently_visible) {
