@@ -88,6 +88,7 @@ namespace trace {
 const QColor DecodeTrace::ErrorBgColor = QColor(0xEF, 0x29, 0x29);
 const QColor DecodeTrace::NoDecodeColor = QColor(0x88, 0x8A, 0x85);
 const QColor DecodeTrace::ExpandMarkerWarnColor = QColor(0xFF, 0xA5, 0x00); // QColorConstants::Svg::orange
+const QColor DecodeTrace::ExpandMarkerHiddenColor = QColor(0x69, 0x69, 0x69); // QColorConstants::Svg::dimgray
 const uint8_t DecodeTrace::ExpansionAreaHeaderAlpha = 10 * 255 / 100;
 const uint8_t DecodeTrace::ExpansionAreaAlpha = 5 * 255 / 100;
 
@@ -97,8 +98,8 @@ const int DecodeTrace::RowTitleMargin = 7;
 const int DecodeTrace::DrawPadding = 100;
 
 const int DecodeTrace::MaxTraceUpdateRate = 1; // No more than 1 Hz
-const unsigned int DecodeTrace::AnimationDurationInTicks = 7;
-
+const int DecodeTrace::AnimationDurationInTicks = 7;
+const int DecodeTrace::HiddenRowHideDelay = 1000; // 1 second
 
 /**
  * Helper function for forceUpdate()
@@ -150,6 +151,7 @@ DecodeTrace::DecodeTrace(pv::Session &session,
 	Trace(signalbase),
 	session_(session),
 	max_visible_rows_(0),
+	show_hidden_rows_(false),
 	delete_mapper_(this),
 	show_hide_mapper_(this),
 	row_show_hide_mapper_(this)
@@ -205,6 +207,11 @@ DecodeTrace::DecodeTrace(pv::Session &session,
 	connect(&animation_timer_, SIGNAL(timeout()),
 		this, SLOT(on_animation_timer()));
 	animation_timer_.setInterval(1000 / 50);
+
+	connect(&delayed_hidden_row_hider_, SIGNAL(timeout()),
+		this, SLOT(on_hide_hidden_rows()));
+	delayed_hidden_row_hider_.setSingleShot(true);
+	delayed_hidden_row_hider_.setInterval(HiddenRowHideDelay);
 
 	default_marker_shape_ << QPoint(0,         -ArrowSize);
 	default_marker_shape_ << QPoint(ArrowSize,  0);
@@ -281,7 +288,8 @@ void DecodeTrace::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 		// If the row is hidden, we don't want to fetch annotations
 		assert(r.decode_row);
 		assert(r.decode_row->decoder());
-		if ((!r.decode_row->decoder()->visible()) || (!r.decode_row->visible())) {
+		if ((!r.decode_row->decoder()->visible()) ||
+			((!r.decode_row->visible() && (!show_hidden_rows_) && (!r.expanding) && (!r.expanded) && (!r.collapsing)))) {
 			r.currently_visible = false;
 			continue;
 		}
@@ -340,6 +348,8 @@ void DecodeTrace::paint_fore(QPainter &p, ViewItemPaintParams &pp)
 
 		if (r.expand_marker_highlighted)
 			p.setBrush(QApplication::palette().brush(QPalette::Highlight));
+		else if (!r.decode_row->visible())
+			p.setBrush(ExpandMarkerHiddenColor);
 		else if (r.has_hidden_classes)
 			p.setBrush(ExpandMarkerWarnColor);
 		else
@@ -366,7 +376,11 @@ void DecodeTrace::paint_fore(QPainter &p, ViewItemPaintParams &pp)
 					p.drawText(text_rect.translated(dx, dy), f, h);
 
 		// Draw the text
-		p.setPen(QApplication::palette().color(QPalette::WindowText));
+		if (!r.decode_row->visible())
+			p.setPen(ExpandMarkerHiddenColor);
+		else
+			p.setPen(QApplication::palette().color(QPalette::WindowText));
+
 		p.drawText(text_rect, f, h);
 
 		y += r.height;
@@ -589,8 +603,12 @@ void DecodeTrace::hover_point_changed(const QPoint &hp)
 	if (hover_row) {
 		int row_y = get_row_y(hover_row);
 		if ((hp.x() > 0) && (hp.x() < (int)(ArrowSize + 3 + hover_row->title_width)) &&
-			(hp.y() > (int)(row_y - ArrowSize)) && (hp.y() < (int)(row_y + ArrowSize)))
+			(hp.y() > (int)(row_y - ArrowSize)) && (hp.y() < (int)(row_y + ArrowSize))) {
+
 			hover_row->expand_marker_highlighted = true;
+			show_hidden_rows_ = true;
+			delayed_hidden_row_hider_.start();
+		}
 	}
 
 	// Tooltip handling
@@ -1306,8 +1324,6 @@ void DecodeTrace::initialize_row_widgets(DecodeTraceRow* r, unsigned int row_id)
 	connect(cb, SIGNAL(stateChanged(int)),
 		&row_show_hide_mapper_, SLOT(map()));
 
-	cb->setEnabled(false);
-
 	QPushButton* btn = new QPushButton();
 	header_container_layout->addWidget(btn);
 	btn->setFlat(true);
@@ -1609,8 +1625,10 @@ void DecodeTrace::on_show_hide_row(int row_id)
 	if (row_id >= (int)rows_.size())
 		return;
 
-	set_row_collapsed(&rows_[row_id]);
 	rows_[row_id].decode_row->set_visible(!rows_[row_id].decode_row->visible());
+
+	if (!rows_[row_id].decode_row->visible())
+		set_row_collapsed(&rows_[row_id]);
 
 	// Force re-calculation of the trace height, see paint_mid()
 	max_visible_rows_ = 0;
@@ -1826,6 +1844,25 @@ void DecodeTrace::on_animation_timer()
 
 	owner_->extents_changed(false, true);
 	owner_->row_item_appearance_changed(false, true);
+}
+
+void DecodeTrace::on_hide_hidden_rows()
+{
+	// Make all hidden traces invisible again unless the user is hovering over a row name
+	bool any_highlighted = false;
+
+	for (DecodeTraceRow& r : rows_)
+		if (r.expand_marker_highlighted)
+			any_highlighted = true;
+
+	if (!any_highlighted) {
+		show_hidden_rows_ = false;
+
+		// Force re-calculation of the trace height, see paint_mid()
+		max_visible_rows_ = 0;
+		owner_->extents_changed(false, true);
+		owner_->row_item_appearance_changed(false, true);
+	}
 }
 
 } // namespace trace

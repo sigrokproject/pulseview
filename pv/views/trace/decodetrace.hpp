@@ -125,6 +125,7 @@ private:
 	static const QColor ErrorBgColor;
 	static const QColor NoDecodeColor;
 	static const QColor ExpandMarkerWarnColor;
+	static const QColor ExpandMarkerHiddenColor;
 	static const uint8_t ExpansionAreaHeaderAlpha;
 	static const uint8_t ExpansionAreaAlpha;
 
@@ -134,7 +135,8 @@ private:
 	static const int DrawPadding;
 
 	static const int MaxTraceUpdateRate;
-	static const unsigned int AnimationDurationInTicks;
+	static const int AnimationDurationInTicks;
+	static const int HiddenRowHideDelay;
 
 public:
 	DecodeTrace(pv::Session &session, shared_ptr<SignalBase> signalbase,
@@ -289,6 +291,7 @@ private Q_SLOTS:
 	void on_export_all_rows_from_here();
 
 	void on_animation_timer();
+	void on_hide_hidden_rows();
 
 private:
 	pv::Session &session_;
@@ -311,12 +314,12 @@ private:
 	unsigned int visible_rows_, max_visible_rows_;
 
 	int min_useful_label_width_;
-	bool always_show_all_rows_;
+	bool always_show_all_rows_, show_hidden_rows_;
 
 	QSignalMapper delete_mapper_, show_hide_mapper_;
 	QSignalMapper row_show_hide_mapper_, class_show_hide_mapper_;
 
-	QTimer delayed_trace_updater_, animation_timer_;
+	QTimer delayed_trace_updater_, animation_timer_, delayed_hidden_row_hider_;
 
 	QPolygon default_marker_shape_;
 
