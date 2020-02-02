@@ -106,6 +106,7 @@ void GlobalSettings::set_defaults_where_needed()
 		language = language.split("-").first();
 
 		setValue(Key_General_Language, language);
+		apply_language();
 	}
 
 	// Use no theme by default
