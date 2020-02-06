@@ -97,6 +97,7 @@ struct DecodeTraceRow {
 	ContainerWidget* container;
 	QWidget* header_container;
 	QWidget* selector_container;
+	QCheckBox* row_visibility_checkbox;
 	vector<QCheckBox*> selectors;
 
 	QColor row_color;

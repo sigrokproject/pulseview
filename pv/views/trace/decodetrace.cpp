@@ -1316,6 +1316,7 @@ void DecodeTrace::initialize_row_widgets(DecodeTraceRow* r, unsigned int row_id)
 
 	// Add widgets inside the header container
 	QCheckBox* cb = new QCheckBox();
+	r->row_visibility_checkbox = cb;
 	header_container_layout->addWidget(cb);
 	cb->setText(tr("Show this row"));
 	cb->setChecked(r->decode_row->visible());
@@ -1426,6 +1427,10 @@ void DecodeTrace::update_rows()
 		row_id++;
 	}
 
+	// If there's only one row, it must not be hidden or else it can't be un-hidden
+	if (row_id == 1)
+		rows_.front().row_visibility_checkbox->setEnabled(false);
+
 	// Remove any rows that no longer exist, obeying that iterators are invalidated
 	bool any_exists;
 	do {
@@ -1433,6 +1438,8 @@ void DecodeTrace::update_rows()
 
 		for (unsigned int i = 0; i < rows_.size(); i++)
 			if (!rows_[i].exists) {
+				delete rows_[i].row_visibility_checkbox;
+
 				for (QCheckBox* cb : rows_[i].selectors)
 					delete cb;
 
