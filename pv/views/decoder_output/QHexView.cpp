@@ -302,14 +302,16 @@ void QHexView::paintEvent(QPaintEvent *event)
 			lastLineIdx++;
 	}
 
-	// Fill address area background
-	painter.fillRect(QRect(posAddr_, event->rect().top(),
-		posHex_ - (GAP_ADR_HEX / 2), height()), palette().color(QPalette::Window));
-
 	// Paint divider line between hex and ASCII areas
 	int line_x = posAscii_ - (GAP_HEX_ASCII / 2);
 	painter.setPen(palette().color(QPalette::Midlight));
 	painter.drawLine(line_x, event->rect().top(), line_x, height());
+
+	// Fill address area background
+	painter.fillRect(QRect(posAddr_, event->rect().top(),
+		posHex_ - (GAP_ADR_HEX / 2), height()), palette().color(QPalette::Window));
+	painter.fillRect(QRect(posAddr_, event->rect().top(),
+		posAscii_ - (GAP_HEX_ASCII / 2), charHeight_ + 2), palette().color(QPalette::Window));
 
 	// Paint address area
 	painter.setPen(palette().color(QPalette::ButtonText));
@@ -326,7 +328,7 @@ void QHexView::paintEvent(QPaintEvent *event)
 	painter.setPen(palette().color(QPalette::ButtonText));
 	for (int offset = 0; offset <= 0xF; offset++)
 		painter.drawText(posHex_ + (1 + offset * 3) * charWidth_,
-			charHeight_, QString::number(offset, 16).toUpper());
+			charHeight_ - 3, QString::number(offset, 16).toUpper());
 
 	// Paint hex values
 	QBrush regular = palette().buttonText();
