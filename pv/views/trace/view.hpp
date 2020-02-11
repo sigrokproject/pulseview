@@ -96,6 +96,7 @@ private:
 	static const pv::util::Timestamp MinScale;
 
 	static const int MaxScrollValue;
+	static const int ViewScrollMargin;
 
 	static const int ScaleUnits[3];
 

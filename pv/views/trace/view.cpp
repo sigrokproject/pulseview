@@ -94,8 +94,10 @@ const Timestamp View::MinScale("1e-12");
 
 const int View::MaxScrollValue = INT_MAX / 2;
 
-const int View::ScaleUnits[3] = {1, 2, 5};
+/* Area at the top and bottom of the view that can't be scrolled out of sight */
+const int View::ViewScrollMargin = 50;
 
+const int View::ScaleUnits[3] = {1, 2, 5};
 
 CustomScrollArea::CustomScrollArea(QWidget *parent) :
 	QAbstractScrollArea(parent)
@@ -1245,9 +1247,13 @@ void View::update_scroll()
 	const pair<int, int> extents = v_extents();
 
 	// Don't change the scrollbar range if there are no traces
-	if (extents.first != extents.second)
-		vscrollbar->setRange(extents.first - areaSize.height(),
-			extents.second);
+	if (extents.first != extents.second) {
+		int top_margin = ViewScrollMargin;
+		int btm_margin = ViewScrollMargin;
+
+		vscrollbar->setRange(extents.first - areaSize.height() + top_margin,
+			extents.second - btm_margin);
+	}
 
 	if (scroll_needs_defaults_) {
 		set_scroll_default();
