@@ -242,6 +242,17 @@ shared_ptr<data::SignalBase> DecodeTrace::base() const
 	return base_;
 }
 
+void DecodeTrace::set_owner(TraceTreeItemOwner *owner)
+{
+	Trace::set_owner(owner);
+
+	// The owner is set in trace::View::signals_changed(), which is a slot.
+	// So after this trace was added to the view, we won't have an owner
+	// that we need to initialize in update_rows(). Once we do, we call it
+	// from on_decode_reset().
+	on_decode_reset();
+}
+
 pair<int, int> DecodeTrace::v_extents() const
 {
 	// Make an empty decode trace appear symmetrical
@@ -1378,6 +1389,9 @@ void DecodeTrace::initialize_row_widgets(DecodeTraceRow* r, unsigned int row_id)
 
 void DecodeTrace::update_rows()
 {
+	if (!owner_)
+		return;
+
 	lock_guard<mutex> lock(row_modification_mutex_);
 
 	for (DecodeTraceRow& r : rows_)

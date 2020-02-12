@@ -150,6 +150,12 @@ public:
 	shared_ptr<SignalBase> base() const;
 
 	/**
+	 * Sets the owner this trace in the view trace hierachy.
+	 * @param The new owner of the trace.
+	 */
+	virtual void set_owner(TraceTreeItemOwner *owner);
+
+	/**
 	 * Computes the vertical extents of the contents of this row item.
 	 * @return A pair containing the minimum and maximum y-values.
 	 */

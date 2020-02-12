@@ -94,7 +94,7 @@ public:
 	 * Sets the owner this trace in the view trace hierachy.
 	 * @param The new owner of the trace.
 	 */
-	void set_owner(TraceTreeItemOwner *owner);
+	virtual void set_owner(TraceTreeItemOwner *owner);
 
 	/**
 	 * Gets the visual y-offset of the axis.
