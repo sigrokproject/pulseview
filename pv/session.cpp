@@ -67,8 +67,8 @@ using std::bad_alloc;
 using std::dynamic_pointer_cast;
 using std::find_if;
 using std::function;
-using std::lock_guard;
 using std::list;
+using std::lock_guard;
 using std::make_pair;
 using std::make_shared;
 using std::map;
@@ -168,7 +168,7 @@ void Session::set_name(QString name)
 	name_changed();
 }
 
-const list< shared_ptr<views::ViewBase> > Session::views() const
+const vector< shared_ptr<views::ViewBase> > Session::views() const
 {
 	return views_;
 }
@@ -233,31 +233,40 @@ void Session::save_setup(QSettings &settings) const
 
 	settings.setValue("views", i);
 
+	int view_id = 0;
 	i = 0;
-	shared_ptr<views::trace::View> tv = dynamic_pointer_cast<views::trace::View>(main_view_);
-	for (const shared_ptr<views::trace::TimeItem>& time_item : tv->time_items()) {
+	for (const shared_ptr<views::ViewBase> vb : views_) {
+		shared_ptr<views::trace::View> tv = dynamic_pointer_cast<views::trace::View>(vb);
+		if (tv) {
+			for (const shared_ptr<views::trace::TimeItem>& time_item : tv->time_items()) {
 
-		const shared_ptr<views::trace::Flag> flag =
-			dynamic_pointer_cast<views::trace::Flag>(time_item);
-		if (flag) {
-			if (!flag->enabled())
-				continue;
+				const shared_ptr<views::trace::Flag> flag =
+					dynamic_pointer_cast<views::trace::Flag>(time_item);
+				if (flag) {
+					if (!flag->enabled())
+						continue;
 
-			settings.beginGroup("meta_obj" + QString::number(i++));
-			settings.setValue("type", "time_marker");
-			GlobalSettings::store_timestamp(settings, "time", flag->time());
-			settings.setValue("text", flag->get_text());
-			settings.endGroup();
+					settings.beginGroup("meta_obj" + QString::number(i++));
+					settings.setValue("type", "time_marker");
+					settings.setValue("assoc_view", view_id);
+					GlobalSettings::store_timestamp(settings, "time", flag->time());
+					settings.setValue("text", flag->get_text());
+					settings.endGroup();
+				}
+			}
+
+			if (tv->cursors_shown()) {
+				settings.beginGroup("meta_obj" + QString::number(i++));
+				settings.setValue("type", "selection");
+				settings.setValue("assoc_view", view_id);
+				const shared_ptr<views::trace::CursorPair> cp = tv->cursors();
+				GlobalSettings::store_timestamp(settings, "start_time", cp->first()->time());
+				GlobalSettings::store_timestamp(settings, "end_time", cp->second()->time());
+				settings.endGroup();
+			}
 		}
-	}
 
-	if (tv->cursors_shown()) {
-		settings.beginGroup("meta_obj" + QString::number(i++));
-		settings.setValue("type", "selection");
-		const shared_ptr<views::trace::CursorPair> cp = tv->cursors();
-		GlobalSettings::store_timestamp(settings, "start_time", cp->first()->time());
-		GlobalSettings::store_timestamp(settings, "end_time", cp->second()->time());
-		settings.endGroup();
+		view_id++;
 	}
 
 	settings.setValue("meta_objs", i);
@@ -360,18 +369,26 @@ void Session::restore_setup(QSettings &settings)
 	// Restore meta objects like markers and cursors
 	int meta_objs = settings.value("meta_objs").toInt();
 
-	shared_ptr<views::trace::View> tv = dynamic_pointer_cast<views::trace::View>(main_view_);
 	for (int i = 0; i < meta_objs; i++) {
 		settings.beginGroup("meta_obj" + QString::number(i));
+
+		shared_ptr<views::ViewBase> vb;
+		shared_ptr<views::trace::View> tv;
+		if (settings.contains("assoc_view"))
+			vb = views_.at(settings.value("assoc_view").toInt());
+
+		if (vb)
+			tv = dynamic_pointer_cast<views::trace::View>(vb);
+
 		const QString type = settings.value("type").toString();
 
-		if (type == "time_marker") {
+		if ((type == "time_marker") && tv) {
 			Timestamp ts = GlobalSettings::restore_timestamp(settings, "time");
 			shared_ptr<views::trace::Flag> flag = tv->add_flag(ts);
 			flag->set_text(settings.value("text").toString());
 		}
 
-		if (type == "selection") {
+		if ((type == "selection") && tv) {
 			Timestamp start = GlobalSettings::restore_timestamp(settings, "start_time");
 			Timestamp end = GlobalSettings::restore_timestamp(settings, "end_time");
 			tv->set_cursors(start, end);
@@ -774,7 +791,8 @@ void Session::register_view(shared_ptr<views::ViewBase> view)
 
 void Session::deregister_view(shared_ptr<views::ViewBase> view)
 {
-	views_.remove_if([&](shared_ptr<views::ViewBase> v) { return v == view; });
+
+	std::remove_if(views_.begin(), views_.end(), [&](shared_ptr<views::ViewBase> v) { return v == view; });
 
 	if (views_.empty()) {
 		main_view_.reset();

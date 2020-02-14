@@ -50,7 +50,6 @@
 
 
 using std::function;
-using std::list;
 using std::map;
 using std::mutex;
 using std::recursive_mutex;
@@ -139,7 +138,7 @@ public:
 
 	void set_name(QString name);
 
-	const list< shared_ptr<views::ViewBase> > views() const;
+	const vector< shared_ptr<views::ViewBase> > views() const;
 
 	shared_ptr<views::ViewBase> main_view() const;
 
@@ -280,7 +279,7 @@ private:
 	shared_ptr<devices::Device> device_;
 	QString default_name_, name_;
 
-	list< shared_ptr<views::ViewBase> > views_;
+	vector< shared_ptr<views::ViewBase> > views_;
 	shared_ptr<pv::views::ViewBase> main_view_;
 
 	shared_ptr<pv::toolbars::MainBar> main_bar_;
