@@ -29,6 +29,7 @@
 #include <vector>
 
 #include <QColor>
+#include <QComboBox>
 #include <QCheckBox>
 #include <QElapsedTimer>
 #include <QPolygon>

@@ -791,8 +791,9 @@ void Session::register_view(shared_ptr<views::ViewBase> view)
 
 void Session::deregister_view(shared_ptr<views::ViewBase> view)
 {
-
-	std::remove_if(views_.begin(), views_.end(), [&](shared_ptr<views::ViewBase> v) { return v == view; });
+	views_.erase(std::remove_if(views_.begin(), views_.end(),
+		[&](shared_ptr<views::ViewBase> v) { return v == view; }),
+		views_.end());
 
 	if (views_.empty()) {
 		main_view_.reset();
@@ -852,7 +853,7 @@ vector<util::Timestamp> Session::get_triggers(uint32_t segment_id) const
 	return result;
 }
 
-const unordered_set< shared_ptr<data::SignalBase> > Session::signalbases() const
+const vector< shared_ptr<data::SignalBase> > Session::signalbases() const
 {
 	return signalbases_;
 }
@@ -877,7 +878,7 @@ shared_ptr<data::DecodeSignal> Session::add_decode_signal()
 		// Create the decode signal
 		signal = make_shared<data::DecodeSignal>(*this);
 
-		signalbases_.insert(signal);
+		signalbases_.push_back(signal);
 
 		// Add the decode signal to all views
 		for (shared_ptr<views::ViewBase>& view : views_)
@@ -894,7 +895,9 @@ shared_ptr<data::DecodeSignal> Session::add_decode_signal()
 
 void Session::remove_decode_signal(shared_ptr<data::DecodeSignal> signal)
 {
-	signalbases_.erase(signal);
+	signalbases_.erase(std::remove_if(signalbases_.begin(), signalbases_.end(),
+		[&](shared_ptr<data::SignalBase> s) { return s == signal; }),
+		signalbases_.end());
 
 	for (shared_ptr<views::ViewBase>& view : views_)
 		view->remove_decode_signal(signal);
@@ -1009,7 +1012,7 @@ void Session::update_signals()
 						if (!signalbase) {
 							signalbase = make_shared<data::SignalBase>(channel,
 								data::SignalBase::LogicChannel);
-							signalbases_.insert(signalbase);
+							signalbases_.push_back(signalbase);
 
 							all_signal_data_.insert(logic_data_);
 							signalbase->set_data(logic_data_);
@@ -1026,7 +1029,7 @@ void Session::update_signals()
 						if (!signalbase) {
 							signalbase = make_shared<data::SignalBase>(channel,
 								data::SignalBase::AnalogChannel);
-							signalbases_.insert(signalbase);
+							signalbases_.push_back(signalbase);
 
 							shared_ptr<data::Analog> data(new data::Analog());
 							all_signal_data_.insert(data);

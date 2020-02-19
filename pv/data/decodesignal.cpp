@@ -786,7 +786,7 @@ void DecodeSignal::restore_settings(QSettings &settings)
 	// Restore channel mapping
 	unsigned int channels = settings.value("channels").toInt();
 
-	const unordered_set< shared_ptr<data::SignalBase> > signalbases =
+	const vector< shared_ptr<data::SignalBase> > signalbases =
 		session_.signalbases();
 
 	for (unsigned int channel_id = 0; channel_id < channels; channel_id++) {
