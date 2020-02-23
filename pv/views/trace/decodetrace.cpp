@@ -256,7 +256,7 @@ void DecodeTrace::set_owner(TraceTreeItemOwner *owner)
 pair<int, int> DecodeTrace::v_extents() const
 {
 	// Make an empty decode trace appear symmetrical
-	if (max_visible_rows_ == 0)
+	if (visible_rows_ == 0)
 		return make_pair(-default_row_height_, default_row_height_);
 
 	unsigned int height = 0;

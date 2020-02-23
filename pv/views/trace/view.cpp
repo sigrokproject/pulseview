@@ -203,6 +203,7 @@ View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 	connect(&lazy_event_handler_, SIGNAL(timeout()),
 		this, SLOT(process_sticky_events()));
 	lazy_event_handler_.setSingleShot(true);
+	lazy_event_handler_.setInterval(1000 / ViewBase::MaxViewAutoUpdateRate);
 
 	// Set up local keyboard shortcuts
 	zoom_in_shortcut_ = new QShortcut(QKeySequence(Qt::Key_Plus), this,
@@ -1553,8 +1554,8 @@ void View::extents_changed(bool horz, bool vert)
 		(horz ? TraceTreeItemHExtentsChanged : 0) |
 		(vert ? TraceTreeItemVExtentsChanged : 0);
 
-	lazy_event_handler_.stop();
-	lazy_event_handler_.start();
+	if (!lazy_event_handler_.isActive())
+		lazy_event_handler_.start();
 }
 
 void View::on_signal_name_changed()
