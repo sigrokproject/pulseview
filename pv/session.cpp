@@ -761,7 +761,7 @@ void Session::register_view(shared_ptr<views::ViewBase> view)
 	update_signals();
 
 	// Add all other signals
-	unordered_set< shared_ptr<data::SignalBase> > view_signalbases = view->signalbases();
+	vector< shared_ptr<data::SignalBase> > view_signalbases = view->signalbases();
 
 	for (const shared_ptr<data::SignalBase>& signalbase : signalbases_) {
 		const int sb_exists = count_if(
@@ -981,7 +981,7 @@ void Session::update_signals()
 			qobject_cast<views::trace::View*>(viewbase.get());
 
 		if (trace_view) {
-			unordered_set< shared_ptr<Signal> > prev_sigs(trace_view->signals());
+			vector< shared_ptr<Signal> > prev_sigs(trace_view->signals());
 			trace_view->clear_signals();
 
 			for (auto channel : sr_dev->channels()) {

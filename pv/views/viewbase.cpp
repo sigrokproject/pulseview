@@ -88,7 +88,7 @@ void ViewBase::clear_signals()
 	clear_signalbases();
 }
 
-unordered_set< shared_ptr<data::SignalBase> > ViewBase::signalbases() const
+vector< shared_ptr<data::SignalBase> > ViewBase::signalbases() const
 {
 	return signalbases_;
 }
@@ -107,7 +107,7 @@ void ViewBase::clear_signalbases()
 
 void ViewBase::add_signalbase(const shared_ptr<data::SignalBase> signalbase)
 {
-	signalbases_.insert(signalbase);
+	signalbases_.push_back(signalbase);
 
 	connect(signalbase.get(), SIGNAL(samples_cleared()),
 		this, SLOT(on_data_updated()));
@@ -123,12 +123,15 @@ void ViewBase::clear_decode_signals()
 
 void ViewBase::add_decode_signal(shared_ptr<data::DecodeSignal> signal)
 {
-	decode_signals_.insert(signal);
+	decode_signals_.push_back(signal);
 }
 
 void ViewBase::remove_decode_signal(shared_ptr<data::DecodeSignal> signal)
 {
-	decode_signals_.erase(signal);
+	decode_signals_.erase(std::remove_if(
+		decode_signals_.begin(), decode_signals_.end(),
+		[&](shared_ptr<data::DecodeSignal> s) { return s == signal; }),
+		decode_signals_.end());
 }
 #endif
 

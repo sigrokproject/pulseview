@@ -318,7 +318,7 @@ const Session& View::session() const
 	return session_;
 }
 
-unordered_set< shared_ptr<Signal> > View::signals() const
+vector< shared_ptr<Signal> > View::signals() const
 {
 	return signals_;
 }
@@ -345,7 +345,7 @@ void View::clear_signals()
 void View::add_signal(const shared_ptr<Signal> signal)
 {
 	ViewBase::add_signalbase(signal->base());
-	signals_.insert(signal);
+	signals_.push_back(signal);
 
 	signal->set_segment_display_mode(segment_display_mode_);
 	signal->set_current_segment(current_segment_);
@@ -811,13 +811,13 @@ void View::set_scale_offset(double scale, const Timestamp& offset)
 	viewport_->update();
 }
 
-set< shared_ptr<SignalData> > View::get_visible_data() const
+vector< shared_ptr<SignalData> > View::get_visible_data() const
 {
 	// Make a set of all the visible data objects
-	set< shared_ptr<SignalData> > visible_data;
+	vector< shared_ptr<SignalData> > visible_data;
 	for (const shared_ptr<Signal>& sig : signals_)
 		if (sig->enabled())
-			visible_data.insert(sig->data());
+			visible_data.push_back(sig->data());
 
 	return visible_data;
 }
@@ -825,8 +825,14 @@ set< shared_ptr<SignalData> > View::get_visible_data() const
 pair<Timestamp, Timestamp> View::get_time_extents() const
 {
 	boost::optional<Timestamp> left_time, right_time;
-	const set< shared_ptr<SignalData> > visible_data = get_visible_data();
-	for (const shared_ptr<SignalData>& d : visible_data) {
+
+	vector< shared_ptr<SignalData> > data;
+	if (signals_.size() == 0)
+		return make_pair(0, 0);
+
+	data.push_back(signals_.front()->data());
+
+	for (const shared_ptr<SignalData>& d : data) {
 		const vector< shared_ptr<Segment> > segments = d->segments();
 		for (const shared_ptr<Segment>& s : segments) {
 			double samplerate = s->samplerate();

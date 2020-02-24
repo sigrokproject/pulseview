@@ -119,7 +119,7 @@ public:
 	/**
 	 * Returns the signals contained in this view.
 	 */
-	unordered_set< shared_ptr<Signal> > signals() const;
+	vector< shared_ptr<Signal> > signals() const;
 
 	shared_ptr<Signal> get_signal_by_signalbase(shared_ptr<data::SignalBase> base) const;
 
@@ -262,7 +262,7 @@ public:
 	 */
 	void set_scale_offset(double scale, const pv::util::Timestamp& offset);
 
-	set< shared_ptr<pv::data::SignalData> > get_visible_data() const;
+	vector< shared_ptr<pv::data::SignalData> > get_visible_data() const;
 
 	pair<pv::util::Timestamp, pv::util::Timestamp> get_time_extents() const;
 
@@ -511,7 +511,7 @@ private:
 	QShortcut *grab_ruler_left_shortcut_, *grab_ruler_right_shortcut_;
 	QShortcut *cancel_grab_shortcut_;
 
-	unordered_set< shared_ptr<Signal> > signals_;
+	vector< shared_ptr<Signal> > signals_;
 
 #ifdef ENABLE_DECODE
 	vector< shared_ptr<DecodeTrace> > decode_traces_;
