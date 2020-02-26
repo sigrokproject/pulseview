@@ -569,10 +569,16 @@ void MainWindow::setup_ui()
 
 void MainWindow::update_acq_button(Session *session)
 {
-	int state = session->get_capture_state();
+	int state;
+	QString run_caption;
 
-	const QString run_caption =
-		session->using_file_device() ? tr("Reload") : tr("Run");
+	if (session) {
+		state = session->get_capture_state();
+		run_caption = session->using_file_device() ? tr("Reload") : tr("Run");
+	} else {
+		state = Session::Stopped;
+		run_caption = tr("Run");
+	}
 
 	const QIcon *icons[] = {&icon_grey_, &icon_red_, &icon_green_};
 	run_stop_button_->setIcon(*icons[state]);
@@ -847,6 +853,9 @@ void MainWindow::on_tab_close_requested(int index)
 		tr("This session contains unsaved data. Close it anyway?"),
 		QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes))
 		remove_session(session);
+
+	if (sessions_.empty())
+		update_acq_button(nullptr);
 }
 
 void MainWindow::on_show_decoder_selector(Session *session)
