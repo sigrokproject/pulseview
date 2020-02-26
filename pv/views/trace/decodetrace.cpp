@@ -150,7 +150,6 @@ DecodeTrace::DecodeTrace(pv::Session &session,
 	shared_ptr<data::SignalBase> signalbase, int index) :
 	Trace(signalbase),
 	session_(session),
-	max_visible_rows_(0),
 	show_hidden_rows_(false),
 	delete_mapper_(this),
 	show_hide_mapper_(this),
@@ -276,6 +275,7 @@ void DecodeTrace::paint_back(QPainter &p, ViewItemPaintParams &pp)
 void DecodeTrace::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 {
 	lock_guard<mutex> lock(row_modification_mutex_);
+	unsigned int visible_rows;
 
 #if DECODETRACE_SHOW_RENDER_TIME
 	render_time_.restart();
@@ -292,7 +292,7 @@ void DecodeTrace::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 	sample_range.second = min((int64_t)sample_range.second,
 		decode_signal_->get_decoded_sample_count(current_segment_, false));
 
-	visible_rows_ = 0;
+	visible_rows = 0;
 	int y = get_visual_y();
 
 	for (DecodeTraceRow& r : rows_) {
@@ -322,14 +322,14 @@ void DecodeTrace::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 		if (r.currently_visible) {
 			draw_annotations(annotations, p, pp, y, r);
 			y += r.height;
-			visible_rows_++;
+			visible_rows++;
 		}
 	}
 
 	draw_unresolved_period(p, pp.left(), pp.right());
 
-	if (visible_rows_ > max_visible_rows_) {
-		max_visible_rows_ = visible_rows_;
+	if (visible_rows != visible_rows_) {
+		visible_rows_ = visible_rows;
 
 		// Call order is important, otherwise the lazy event handler won't work
 		owner_->extents_changed(false, true);
@@ -1481,8 +1481,6 @@ void DecodeTrace::set_row_expanded(DecodeTraceRow* r)
 
 	r->container->resize(owner_->view()->viewport()->width() - r->container->pos().x(),
 		r->height - 2 * default_row_height_);
-
-	max_visible_rows_ = 0;
 }
 
 void DecodeTrace::set_row_collapsed(DecodeTraceRow* r)
@@ -1495,8 +1493,6 @@ void DecodeTrace::set_row_collapsed(DecodeTraceRow* r)
 
 	r->container->resize(owner_->view()->viewport()->width() - r->container->pos().x(),
 		r->height - 2 * default_row_height_);
-
-	max_visible_rows_ = 0;
 }
 
 void DecodeTrace::update_expanded_rows()
@@ -1526,10 +1522,8 @@ void DecodeTrace::on_setting_changed(const QString &key, const QVariant &value)
 {
 	Trace::on_setting_changed(key, value);
 
-	if (key == GlobalSettings::Key_Dec_AlwaysShowAllRows) {
-		max_visible_rows_ = 0;
+	if (key == GlobalSettings::Key_Dec_AlwaysShowAllRows)
 		always_show_all_rows_ = value.toBool();
-	}
 }
 
 void DecodeTrace::on_new_annotations()
@@ -1546,7 +1540,6 @@ void DecodeTrace::on_delayed_trace_update()
 
 void DecodeTrace::on_decode_reset()
 {
-	max_visible_rows_ = 0;
 	update_rows();
 
 	if (owner_)
@@ -1618,8 +1611,6 @@ void DecodeTrace::on_delete_decoder(int index)
 	decode_signal_->remove_decoder(index);
 	update_rows();
 
-	// Force re-calculation of the trace height
-	max_visible_rows_ = 0;
 	owner_->extents_changed(false, true);
 
 	create_popup_form();
@@ -1632,11 +1623,8 @@ void DecodeTrace::on_show_hide_decoder(int index)
 	assert(index < (int)decoder_forms_.size());
 	decoder_forms_[index]->set_decoder_visible(state);
 
-	if (!state) {
-		// Force re-calculation of the trace height, see paint_mid()
-		max_visible_rows_ = 0;
+	if (!state)
 		owner_->extents_changed(false, true);
-	}
 
 	owner_->row_item_appearance_changed(false, true);
 }
@@ -1651,8 +1639,6 @@ void DecodeTrace::on_show_hide_row(int row_id)
 	if (!rows_[row_id].decode_row->visible())
 		set_row_collapsed(&rows_[row_id]);
 
-	// Force re-calculation of the trace height, see paint_mid()
-	max_visible_rows_ = 0;
 	owner_->extents_changed(false, true);
 	owner_->row_item_appearance_changed(false, true);
 }
@@ -1879,8 +1865,6 @@ void DecodeTrace::on_hide_hidden_rows()
 	if (!any_highlighted) {
 		show_hidden_rows_ = false;
 
-		// Force re-calculation of the trace height, see paint_mid()
-		max_visible_rows_ = 0;
 		owner_->extents_changed(false, true);
 		owner_->row_item_appearance_changed(false, true);
 	}
