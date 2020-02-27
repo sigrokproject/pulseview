@@ -141,6 +141,8 @@ bool DecodeSignal::toggle_decoder_visibility(int index)
 
 void DecodeSignal::reset_decode(bool shutting_down)
 {
+	resume_decode();  // Make sure the decode thread isn't blocked by pausing
+
 	if (stack_config_changed_ || shutting_down)
 		stop_srd_session();
 	else
@@ -157,8 +159,6 @@ void DecodeSignal::reset_decode(bool shutting_down)
 		logic_mux_cond_.notify_one();
 		logic_mux_thread_.join();
 	}
-
-	resume_decode();  // Make sure the decode thread isn't blocked by pausing
 
 	current_segment_id_ = 0;
 	segments_.clear();
