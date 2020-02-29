@@ -50,7 +50,7 @@ image::pv_decoders_3.png[]
 With the stacked decoder added, we can now see that PulseView has decoded the meaning
 of the I²C commands, so that we don't need to bother searching the reference manual.
 In this view, we can see that the I²C packet was a command to read the date and time,
-which was then reported to be 10.03.2013 23:35:30.
+which was then reported to be "10.03.2013 23:35:30".
 
 In this example, we added the I²C and DS1307 decoders separately. However, when opening
 the decoder selector window, you can also double-click on the DS1307 decoder and PulseView
@@ -79,6 +79,48 @@ as you can now visually understand where the ranges for high and low are placed.
 Aside from the default conversion threshold(s), you can choose from a few common presets
 or enter custom values as well. They take the form "0.0V" and "0.0V/0.0V", respectively.
 
+=== Per-row Settings and Actions
+
+Sometimes, you don't want to see all protocol decoder rows or all of the annotation classes
+available in a row. To do so, simply click on the arrow or label of the row you want to
+customize.
+
+image::pv_class_selectors.png[]
+
+From that menu, you can either show/hide the entire row or choose the annotation classes
+you want to see. Everything is visible by default but if you want to focus on specific
+protocol messages or status annotations like warnings or errors, this should help.
+
+Also, if you are examining really long traces, disabling annotations for the most-often
+occuring class (e.g. bit annotations for SPI) then drawing performance will increase, too.
+
+=== Binary Decoder Output
+
+While all protocol decoders create visible annotations, some of them also create binary
+output data which isn't immediately visible at the moment. However, you can examine it
+by opening the Binary Decoder Output View as shown below.
+
+image::pv_binary_decoder_output_view.png[]
+
+Once opened, you need to select a decoder with binary output for it to show anything -
+among which are I2C, I2S, EEPROM24xx, SPI and UART. Having acquired some I2S data and
+using the I2S protocol decoder lets you have the sound data as raw .wav file data, for
+example:
+
+image::pv_binary_decoder_output_view_i2s.png[]
+
+Using the save icon at the top then lets you save this data either as a binary file
+(in this case creating a valid .wav file) or various types of hex dumps. If you want to
+only save a certain part of the binary data, simply select that part before saving.
+
+You may have noticed that the bytes are grouped by color somehow. The meaning behind
+this is that every chunk of bytes emitted by the protocol decoder receives one color,
+the next chunk another color and so on. As there are currently three colors, the cycle
+repeats. This makes it easier to visually organize the data that you see - in the case
+of the I2S decoder, the header has one color because it's sent out in one go and
+following that, every sample for left/right consists of 4 bytes with the same color
+since they're sent out one by one.
+
 === Troubleshooting
 
 In case a protocol decoder doesn't provide the expected result, there are several things
@@ -88,29 +130,29 @@ The first check you should perform is whether the time unit in the ruler
 is given as "sa". This is short for "samples" and means that the device didn't provide
 a sample rate and so PulseView has no way of showing a time scale in seconds or
 fractions thereof. While some decoders can run without timing information, or only
-optionally make use of the time scale, others may not be able to interpret the
-input data since timing information is an essential part of the very protocol.
+optionally make use of it, others may not be able to interpret the input data since
+timing information may be an essential part of that protocol.
 
 Another issue to remain aware of is that decoders need enough samples per protocol step
 to reliably interpret the information. In typical cases the minimum sample rate should
-be four to five times the rate of the fastest activity in the protocol.
+be 4-5 times the rate of the fastest activity in the protocol (e.g. its clock signal).
 
 If a protocol decoder runs but shows you annotations that don't seem to make any sense,
 it's worth double-checking the decoder settings. One common source of error is the
 baud rate. For example, the CAN protocol decoder doesn't know what baud rate
 is used on the bus that you captured, so it could be that a different baud rate is used
-than the one you set. Also, if this is still not the reason for the malfunction, it's
-worth checking whether any of the signals have been captured inverted. Again using the
-CAN bus as an example, the decoder will decode the signal just fine if it's inverted but
+than the one you set. If this is still not the reason for the malfunction, it's worth
+checking whether any of the signals have been captured inverted. Again using the CAN
+bus as an example, the decoder will decode the signal just fine if it's inverted but
 it'll show data even when the signal looks "idle".
 
 When a protocol decoder stops execution because of an unmet constraint (required input
 not connected, essential parameter not specified) or a bug in the decoder itself, you
 will be presented a static red message in the protocol decoder's display area.
-In that case, you check the log output in the settings menu. There you'll find the Python
-error description which you can use to either adjust the configuration,
-or debug the decoder (and let us know of the fix) or you can copy that information and
-file a bug report so that we can fix it.
+In that case, you can check the log output in the settings menu. There you'll find the
+Python error description which you can use to either adjust the configuration,
+debug the decoder (and let us know of the fix) or create a bug report so that we can
+fix it.
 
 Further helpful knowledge and explanations on logic analyzers can be found in our
 https://sigrok.org/wiki/FAQ#Where_can_I_learn_more_about_logic_analyzers.3F["Learn about logic analyzers" FAQ item].
@@ -122,11 +164,18 @@ can do so by right-clicking into the area of the decode signal (not on the signa
 on the left). You are shown several export methods to choose from, with the last one
 being only available if the cursor is enabled.
 
+image::pv_ann_export_menu.png[]
+
 After you chose a method that suits your needs, you are prompted for a file to export
 the annotations to. The contents of the file very much depend on the option you chose
 but also on the annotation export format string that you can define in the _Decoders_
 menu of the settings dialog. If the default output isn't useful to you, you can
 customize it there.
+
+image::pv_ann_export_format.png[]
+
+For example, the string "%s %d: %1" will generate this type of output for the DS1307
+RTC clock protocol decoder: "253-471 DS1307: Read date/time: Sunday, 10.03.2013 23:35:30"
 
 === Creating a Protocol Decoder
 

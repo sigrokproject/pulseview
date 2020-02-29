@@ -15,7 +15,7 @@ as $5. These can easily be found by searching for _24MHz Logic Analyzer_. There 
 Cypress FX2 boards such as the Lcsoft Mini Board, which can usually be found by searching for
 _Cypress FX2 Board_ or similar.
 
-In addition, a good set of https://sigrok.org/wiki/Probe_comparison[quality probe hooks] is recommended.
+Additionally, a good set of https://sigrok.org/wiki/Probe_comparison[quality probe hooks] is recommended.
 
 Aside from FX2-based logic analyzers, sigrok also supports FX2-based oscilloscopes such as the
 https://sigrok.org/wiki/Hantek_6022BE[Hantek 6022BE], non-FX2 devices like the
