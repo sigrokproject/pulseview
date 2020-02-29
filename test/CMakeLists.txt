@@ -174,8 +174,8 @@ if(ENABLE_DECODE)
 		${PROJECT_SOURCE_DIR}/pv/subwindows/decoder_selector/item.cpp
 		${PROJECT_SOURCE_DIR}/pv/subwindows/decoder_selector/model.cpp
 		${PROJECT_SOURCE_DIR}/pv/subwindows/decoder_selector/subwindow.cpp
-		${PROJECT_SOURCE_DIR}/pv/views/decoder_output/view.cpp
-		${PROJECT_SOURCE_DIR}/pv/views/decoder_output/QHexView.cpp
+		${PROJECT_SOURCE_DIR}/pv/views/decoder_binary/view.cpp
+		${PROJECT_SOURCE_DIR}/pv/views/decoder_binary/QHexView.cpp
 		${PROJECT_SOURCE_DIR}/pv/views/trace/decodetrace.cpp
 		${PROJECT_SOURCE_DIR}/pv/widgets/decodergroupbox.cpp
 		${PROJECT_SOURCE_DIR}/pv/widgets/decodermenu.cpp
@@ -184,8 +184,8 @@ if(ENABLE_DECODE)
 	list(APPEND pulseview_TEST_HEADERS
 		${PROJECT_SOURCE_DIR}/pv/data/decodesignal.hpp
 		${PROJECT_SOURCE_DIR}/pv/subwindows/decoder_selector/subwindow.hpp
-		${PROJECT_SOURCE_DIR}/pv/views/decoder_output/view.hpp
-		${PROJECT_SOURCE_DIR}/pv/views/decoder_output/QHexView.hpp
+		${PROJECT_SOURCE_DIR}/pv/views/decoder_binary/view.hpp
+		${PROJECT_SOURCE_DIR}/pv/views/decoder_binary/QHexView.hpp
 		${PROJECT_SOURCE_DIR}/pv/views/trace/decodetrace.hpp
 		${PROJECT_SOURCE_DIR}/pv/widgets/decodergroupbox.hpp
 		${PROJECT_SOURCE_DIR}/pv/widgets/decodermenu.hpp

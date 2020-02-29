@@ -47,7 +47,7 @@ using std::shared_ptr;
 
 namespace pv {
 namespace views {
-namespace decoder_output {
+namespace decoder_binary {
 
 const char* SaveTypeNames[SaveTypeCount] = {
 	"Binary",
@@ -134,7 +134,7 @@ View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 
 ViewType View::get_type() const
 {
-	return ViewTypeDecoderOutput;
+	return ViewTypeDecoderBinary;
 }
 
 void View::reset_view_state()
@@ -475,6 +475,6 @@ void View::perform_delayed_view_update()
 }
 
 
-} // namespace decoder_output
+} // namespace decoder_binary
 } // namespace views
 } // namespace pv

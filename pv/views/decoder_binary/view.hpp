@@ -17,8 +17,8 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PULSEVIEW_PV_VIEWS_DECODEROUTPUT_VIEW_HPP
-#define PULSEVIEW_PV_VIEWS_DECODEROUTPUT_VIEW_HPP
+#ifndef PULSEVIEW_PV_VIEWS_DECODERBINARY_VIEW_HPP
+#define PULSEVIEW_PV_VIEWS_DECODERBINARY_VIEW_HPP
 
 #include <QAction>
 #include <QComboBox>
@@ -36,7 +36,7 @@ class Session;
 
 namespace views {
 
-namespace decoder_output {
+namespace decoder_binary {
 
 // When adding an entry here, don't forget to update SaveTypeNames as well
 enum SaveType {
@@ -108,8 +108,8 @@ private:
 	bool binary_data_exists_;
 };
 
-} // namespace decoder_output
+} // namespace decoder_binary
 } // namespace views
 } // namespace pv
 
-#endif // PULSEVIEW_PV_VIEWS_DECODEROUTPUT_VIEW_HPP
+#endif // PULSEVIEW_PV_VIEWS_DECODERBINARY_VIEW_HPP

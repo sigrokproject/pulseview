@@ -52,7 +52,7 @@
 
 #ifdef ENABLE_DECODE
 #include "subwindows/decoder_selector/subwindow.hpp"
-#include "views/decoder_output/view.hpp"
+#include "views/decoder_binary/view.hpp"
 #endif
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
@@ -162,8 +162,8 @@ shared_ptr<views::ViewBase> MainWindow::add_view(views::ViewType type,
 		// This view will be the main view if there's no main bar yet
 		v = make_shared<views::trace::View>(session, (main_bar ? false : true), dock_main);
 #ifdef ENABLE_DECODE
-	if (type == views::ViewTypeDecoderOutput)
-		v = make_shared<views::decoder_output::View>(session, false, dock_main);
+	if (type == views::ViewTypeDecoderBinary)
+		v = make_shared<views::decoder_binary::View>(session, false, dock_main);
 #endif
 
 	if (!v)

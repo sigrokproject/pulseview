@@ -55,7 +55,7 @@ namespace views {
 enum ViewType {
 	ViewTypeTrace,
 #ifdef ENABLE_DECODE
-	ViewTypeDecoderOutput,
+	ViewTypeDecoderBinary,
 #endif
 	ViewTypeCount  // Indicates how many view types there are, must always be last
 };
