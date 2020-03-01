@@ -283,7 +283,7 @@ void QHexView::paintEvent(QPaintEvent *event)
 	// Fill widget background
 	painter.fillRect(event->rect(), palette().color(QPalette::Base));
 
-	if (!data_ || (data_size_ == 0)) {
+	if (!data_ || (data_size_ == 0) || (data_->chunks.empty())) {
 		painter.setPen(palette().color(QPalette::Text));
 		QString s = tr("No data available");
 		int x = (areaSize.width() - fontMetrics().boundingRect(s).width()) / 2;
