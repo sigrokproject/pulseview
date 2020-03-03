@@ -90,10 +90,9 @@ struct DecodeChannel
 };
 
 struct DecoderLogicOutputChannel {
-	DecoderLogicOutputChannel (QString id, QString desc, uint64_t sr) :
-		id(id), desc(desc), samplerate(sr) {};
+	DecoderLogicOutputChannel (QString id, QString desc) :
+		id(id), desc(desc) {};
 	QString id, desc;
-	uint64_t samplerate;
 };
 
 struct DecodeBinaryClassInfo

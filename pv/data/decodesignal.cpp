@@ -168,6 +168,10 @@ void DecodeSignal::reset_decode(bool shutting_down)
 	current_segment_id_ = 0;
 	segments_.clear();
 
+	for (const shared_ptr<decode::Decoder>& dec : stack_)
+		if (dec->has_logic_output())
+			output_logic_[dec->get_srd_decoder()]->clear();
+
 	logic_mux_data_.reset();
 	logic_mux_data_invalid_ = true;
 
@@ -380,11 +384,11 @@ void DecodeSignal::update_output_signals()
 
 			if (!ch_exists) {
 				shared_ptr<Logic> logic_data = make_shared<Logic>(logic_channels.size());
-				logic_data->set_samplerate(first_ch.samplerate);
+				logic_data->set_samplerate(get_samplerate());
 				output_logic_[dec->get_srd_decoder()] = logic_data;
 
 				shared_ptr<LogicSegment> logic_segment = make_shared<data::LogicSegment>(
-					*logic_data, 0, (logic_data->num_channels() + 7) / 8, first_ch.samplerate);
+					*logic_data, 0, (logic_data->num_channels() + 7) / 8, get_samplerate());
 				logic_data->push_segment(logic_segment);
 
 				uint index = 0;
@@ -399,12 +403,17 @@ void DecodeSignal::update_output_signals()
 					session_.add_generated_signal(signal);
 					index++;
 				}
+			} else {
+				shared_ptr<Logic> logic_data = output_logic_[dec->get_srd_decoder()];
+				logic_data->set_samplerate(get_samplerate());
+				for (shared_ptr<LogicSegment>& segment : logic_data->logic_segments())
+					segment->set_samplerate(get_samplerate());
 			}
 		}
 	}
 
 	// TODO Delete signals that no longer have a corresponding decoder (also from session)
-	// TODO Check whether all sample rates are the same as the session's
+	// TODO Assert that all sample rates are the same as the session's
 	// TODO Set colors to the same as the decoder's background color
 }
 
@@ -1417,6 +1426,9 @@ void DecodeSignal::start_srd_session()
 		return;
 	}
 
+	// Update the samplerates for the output logic channels
+	update_output_signals();
+
 	// Create the session
 	srd_session_new(&srd_session_);
 	assert(srd_session_);
@@ -1733,16 +1745,20 @@ void DecodeSignal::logic_output_callback(srd_proto_data *pdata, void *decode_sig
 		last_segment = dynamic_pointer_cast<LogicSegment>(segments.back());
 	else {
 		// Happens when the data was cleared - all segments are gone then
+		// segment_id is always 0 as it's the first segment
 		last_segment = make_shared<data::LogicSegment>(
 			*output_logic, 0, (output_logic->num_channels() + 7) / 8, output_logic->get_samplerate());
 		output_logic->push_segment(last_segment);
 	}
 
-	last_segment->append_subsignal_payload(pdl->logic_class, (void*)pdl->data, pdl->size);
+	vector<uint8_t> data;
+	for (unsigned int i = pdata->start_sample; i < pdata->end_sample; i++)
+		data.emplace_back(*((uint8_t*)pdl->data));
 
-	qInfo() << "Received" << pdl->size << "bytes /" << pdl->size \
-		<< "samples of logic output for class" << pdl->logic_class << "from decoder" \
-		<< QString::fromUtf8(decc->name);
+	last_segment->append_subsignal_payload(pdl->logic_class, data.data(), data.size());
+
+	qInfo() << "Received logic output state change for class" << pdl->logic_class << "from decoder" \
+		<< QString::fromUtf8(decc->name) << "from" << pdata->start_sample << "to" << pdata->end_sample;
 }
 
 void DecodeSignal::on_capture_state_changed(int state)

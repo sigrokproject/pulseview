@@ -365,18 +365,22 @@ void LogicSegment::append_payload(void *data, uint64_t data_size)
 
 void LogicSegment::append_subsignal_payload(unsigned int index, void *data, uint64_t data_size)
 {
-	static vector<uint8_t> merged_data;  // Using static also places it on the heap
+	static vector<uint8_t> merged_data;  // To preserve intermediate data across calls
 
-	for (uint64_t i = 0; i < data_size * unit_size_; i++)
-		merged_data.emplace_back(0);
+	if (index == 0)
+		for (uint64_t i = 0; i < data_size * unit_size_; i++)
+			merged_data.emplace_back(0);
 
 	// Set the bits for this sub-signal where needed
 	// Note: the bytes in *data must either be 0 or 1, nothing else
-	unsigned int index_byte = index / 8;
+	unsigned int index_byte_offs = index / 8;
+	uint8_t* output_data = merged_data.data() + index_byte_offs;
+	uint8_t* input_data = (uint8_t*)data;
+
 	for (uint64_t i = 0; i < data_size; i++) {
-		unsigned int offs = i * unit_size_ + index_byte;
-		uint8_t* data_byte = merged_data.data() + offs;
-		*data_byte |= *((uint8_t*)data + i) << index;
+		assert((i * unit_size_ + index_byte_offs) < merged_data.size());
+		*output_data |= (input_data[i] << index);
+		output_data += unit_size_;
 	}
 
 	if (index == owner_.num_channels() - 1) {

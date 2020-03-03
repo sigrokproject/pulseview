@@ -341,7 +341,7 @@ const vector<DecoderLogicOutputChannel> Decoder::logic_output_channels() const
 			(srd_decoder_logic_output_channel*)l->data;
 
 		result.emplace_back(QString::fromUtf8(ch_data->id),
-			QString::fromUtf8(ch_data->desc), ch_data->samplerate);
+			QString::fromUtf8(ch_data->desc));
 	}
 
 	return result;
