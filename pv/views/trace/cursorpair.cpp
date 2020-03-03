@@ -130,10 +130,11 @@ QMenu *CursorPair::create_header_context_menu(QWidget *parent)
 	displayIntervalAction->setChecked(show_interval_);
 	menu->addAction(displayIntervalAction);
 
-	connect(displayIntervalAction, &QAction::toggled, [=]{
-		GlobalSettings settings;
-		settings.setValue(GlobalSettings::Key_View_CursorShowInterval,
-			!settings.value(GlobalSettings::Key_View_CursorShowInterval).value<bool>());
+	connect(displayIntervalAction, &QAction::toggled, displayIntervalAction,
+		[=]{
+			GlobalSettings settings;
+			settings.setValue(GlobalSettings::Key_View_CursorShowInterval,
+				!settings.value(GlobalSettings::Key_View_CursorShowInterval).value<bool>());
 		});
 
 	QAction *displayFrequencyAction = new QAction(tr("Display frequency"), this);
@@ -141,10 +142,11 @@ QMenu *CursorPair::create_header_context_menu(QWidget *parent)
 	displayFrequencyAction->setChecked(show_frequency_);
 	menu->addAction(displayFrequencyAction);
 
-	connect(displayFrequencyAction, &QAction::toggled, [=]{
-		GlobalSettings settings;
-		settings.setValue(GlobalSettings::Key_View_CursorShowFrequency,
-			!settings.value(GlobalSettings::Key_View_CursorShowFrequency).value<bool>());
+	connect(displayFrequencyAction, &QAction::toggled, displayFrequencyAction,
+		[=]{
+			GlobalSettings settings;
+			settings.setValue(GlobalSettings::Key_View_CursorShowFrequency,
+				!settings.value(GlobalSettings::Key_View_CursorShowFrequency).value<bool>());
 		});
 
 	QAction *displaySamplesAction = new QAction(tr("Display samples"), this);
@@ -152,10 +154,11 @@ QMenu *CursorPair::create_header_context_menu(QWidget *parent)
 	displaySamplesAction->setChecked(show_samples_);
 	menu->addAction(displaySamplesAction);
 
-	connect(displaySamplesAction, &QAction::toggled, [=]{
-		GlobalSettings settings;
-		settings.setValue(GlobalSettings::Key_View_CursorShowSamples,
-			!settings.value(GlobalSettings::Key_View_CursorShowSamples).value<bool>());
+	connect(displaySamplesAction, &QAction::toggled, displaySamplesAction,
+		[=]{
+			GlobalSettings settings;
+			settings.setValue(GlobalSettings::Key_View_CursorShowSamples,
+				!settings.value(GlobalSettings::Key_View_CursorShowSamples).value<bool>());
 		});
 
 	return menu;

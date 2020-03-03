@@ -73,7 +73,7 @@ QStringList Application::get_languages()
 	result << "en";  // Add default language to the set
 
 	// Remove file extensions
-	for (QString file : files)
+	for (const QString& file : files)
 		result << file.split(".").front();
 
 	result.sort(Qt::CaseInsensitive);

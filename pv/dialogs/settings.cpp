@@ -221,7 +221,7 @@ QWidget *Settings::get_general_settings_form(QWidget *parent) const
 	Application* a = qobject_cast<Application*>(QApplication::instance());
 
 	QString current_language = settings.value(GlobalSettings::Key_General_Language).toString();
-	for (QString language : a->get_languages()) {
+	for (const QString& language : a->get_languages()) {
 		QLocale locale = QLocale(language);
 		QString desc = locale.languageToString(locale.language());
 		language_cb->addItem(desc, language);
@@ -610,7 +610,7 @@ void Settings::on_general_language_changed(const QString &text)
 	GlobalSettings settings;
 	Application* a = qobject_cast<Application*>(QApplication::instance());
 
-	for (QString language : a->get_languages()) {
+	for (const QString& language : a->get_languages()) {
 		QLocale locale = QLocale(language);
 		QString desc = locale.languageToString(locale.language());
 

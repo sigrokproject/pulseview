@@ -272,14 +272,14 @@ void Channels::populate_group(shared_ptr<ChannelGroup> group,
 			if (sigs.size() > 8) {
 				QPushButton *row_enable_button = new QPushButton(tr("All"), this);
 				grid->addWidget(row_enable_button, row, 8);
-				connect(row_enable_button, &QPushButton::clicked,
-						[this_row]() {
-					for (QCheckBox *box : this_row)
-						box->setChecked(true);
+				connect(row_enable_button, &QPushButton::clicked, row_enable_button,
+					[this_row]() {
+						for (QCheckBox *box : this_row)
+							box->setChecked(true);
 					});
 
 				QPushButton *row_disable_button = new QPushButton(tr("None"), this);
-				connect(row_disable_button, &QPushButton::clicked,
+				connect(row_disable_button, &QPushButton::clicked, row_disable_button,
 						[this_row]() {
 					for (QCheckBox *box : this_row)
 						box->setChecked(false);
@@ -302,14 +302,16 @@ void Channels::populate_group(shared_ptr<ChannelGroup> group,
 		group_layout->addWidget(btn_enable_all);
 		group_layout->addWidget(btn_disable_all);
 
-		connect(btn_enable_all, &QPushButton::clicked, [group_checkboxes](){
-			for (QCheckBox *box: group_checkboxes)
-				box->setChecked(true);
+		connect(btn_enable_all, &QPushButton::clicked, btn_enable_all,
+			[group_checkboxes](){
+				for (QCheckBox *box: group_checkboxes)
+					box->setChecked(true);
 			});
 
-		connect(btn_disable_all, &QPushButton::clicked, [group_checkboxes](){
-			for (QCheckBox *box: group_checkboxes)
-				box->setChecked(false);
+		connect(btn_disable_all, &QPushButton::clicked, btn_disable_all,
+			[group_checkboxes](){
+				for (QCheckBox *box: group_checkboxes)
+					box->setChecked(false);
 			});
 	}
 

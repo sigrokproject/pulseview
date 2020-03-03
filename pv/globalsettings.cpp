@@ -102,7 +102,7 @@ void GlobalSettings::set_defaults_where_needed()
 {
 	if (!contains(Key_General_Language)) {
 		// Determine and set default UI language
-		QString language = QLocale().uiLanguages().first();  // May return e.g. en-Latn-US
+		QString language = QLocale().uiLanguages().first();  // May return e.g. en-Latn-US  // clazy:exclude=detaching-temporary
 		language = language.split("-").first();
 
 		setValue(Key_General_Language, language);

@@ -235,7 +235,7 @@ void Session::save_setup(QSettings &settings) const
 
 	int view_id = 0;
 	i = 0;
-	for (const shared_ptr<views::ViewBase> vb : views_) {
+	for (const shared_ptr<views::ViewBase>& vb : views_) {
 		shared_ptr<views::trace::View> tv = dynamic_pointer_cast<views::trace::View>(vb);
 		if (tv) {
 			for (const shared_ptr<views::trace::TimeItem>& time_item : tv->time_items()) {
