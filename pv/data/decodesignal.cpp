@@ -33,7 +33,6 @@
 #include <pv/globalsettings.hpp>
 #include <pv/session.hpp>
 
-using std::forward_list;
 using std::lock_guard;
 using std::make_shared;
 using std::min;
