@@ -21,6 +21,7 @@
 #define PULSEVIEW_PV_DATA_LOGIC_HPP
 
 #include "signaldata.hpp"
+#include "segment.hpp"
 
 #include <deque>
 
@@ -67,7 +68,7 @@ public:
 Q_SIGNALS:
 	void samples_cleared();
 
-	void samples_added(shared_ptr<Segment> segment, uint64_t start_sample,
+	void samples_added(SharedPtrToSegment segment, uint64_t start_sample,
 		uint64_t end_sample);
 
 private:

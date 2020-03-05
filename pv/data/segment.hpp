@@ -121,6 +121,8 @@ protected:
 } // namespace data
 } // namespace pv
 
-Q_DECLARE_METATYPE(pv::data::Segment);
+typedef std::shared_ptr<pv::data::Segment> SharedPtrToSegment;
+
+Q_DECLARE_METATYPE(SharedPtrToSegment);
 
 #endif // PULSEVIEW_PV_DATA_SEGMENT_HPP

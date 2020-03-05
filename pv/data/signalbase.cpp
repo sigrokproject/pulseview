@@ -172,8 +172,8 @@ void SignalBase::set_data(shared_ptr<pv::data::SignalData> data)
 	if (data_) {
 		connect(data.get(), SIGNAL(samples_cleared()),
 			this, SLOT(on_samples_cleared()));
-		connect(data.get(), SIGNAL(samples_added(shared_ptr<Segment>, uint64_t, uint64_t)),
-			this, SLOT(on_samples_added(shared_ptr<Segment>, uint64_t, uint64_t)));
+		connect(data.get(), SIGNAL(samples_added(SharedPtrToSegment, uint64_t, uint64_t)),
+			this, SLOT(on_samples_added(SharedPtrToSegment, uint64_t, uint64_t)));
 
 		if (channel_type_ == AnalogChannel) {
 			shared_ptr<Analog> analog = analog_data();
@@ -752,7 +752,7 @@ void SignalBase::on_samples_cleared()
 	samples_cleared();
 }
 
-void SignalBase::on_samples_added(shared_ptr<Segment> segment, uint64_t start_sample,
+void SignalBase::on_samples_added(SharedPtrToSegment segment, uint64_t start_sample,
 	uint64_t end_sample)
 {
 	if (conversion_type_ != NoConversion) {

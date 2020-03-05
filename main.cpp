@@ -277,7 +277,7 @@ int main(int argc, char *argv[])
 
 	qRegisterMetaType<uint64_t>("uint64_t");
 	qRegisterMetaType<pv::util::Timestamp>("util::Timestamp");
-	qRegisterMetaType<pv::data::Segment>("data::Segment");
+	qRegisterMetaType<SharedPtrToSegment>("SharedPtrToSegment");
 
 	// Prepare the global settings since logging needs them early on
 	pv::GlobalSettings settings;
