@@ -24,7 +24,6 @@
 #include <list>
 #include <memory>
 #include <set>
-#include <unordered_map>
 #include <vector>
 
 #include <QAbstractScrollArea>
@@ -43,7 +42,7 @@
 #include "tracetreeitemowner.hpp"
 
 using std::list;
-using std::unordered_map;
+using std::map;
 using std::set;
 using std::shared_ptr;
 using std::vector;
@@ -404,14 +403,12 @@ private:
 
 	TraceTreeItemOwner* find_prevalent_trace_group(
 		const shared_ptr<sigrok::ChannelGroup> &group,
-		const unordered_map<shared_ptr<data::SignalBase>,
-			shared_ptr<Signal> > &signal_map);
+		const map<shared_ptr<data::SignalBase>, shared_ptr<Signal> > &signal_map);
 
 	static vector< shared_ptr<Trace> >
 		extract_new_traces_for_channels(
 		const vector< shared_ptr<sigrok::Channel> > &channels,
-		const unordered_map<shared_ptr<data::SignalBase>,
-			shared_ptr<Signal> > &signal_map,
+		const map<shared_ptr<data::SignalBase>, shared_ptr<Signal> > &signal_map,
 		set< shared_ptr<Trace> > &add_list);
 
 	void determine_time_unit();
