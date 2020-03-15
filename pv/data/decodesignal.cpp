@@ -386,6 +386,7 @@ void DecodeSignal::update_output_signals()
 				shared_ptr<Logic> logic_data = make_shared<Logic>(logic_channels.size());
 				logic_data->set_samplerate(get_samplerate());
 				output_logic_[dec->get_srd_decoder()] = logic_data;
+				output_logic_muxed_data_[dec->get_srd_decoder()] = vector<uint8_t>();
 
 				shared_ptr<LogicSegment> logic_segment = make_shared<data::LogicSegment>(
 					*logic_data, 0, (logic_data->num_channels() + 7) / 8, get_samplerate());
@@ -1755,7 +1756,8 @@ void DecodeSignal::logic_output_callback(srd_proto_data *pdata, void *decode_sig
 	for (unsigned int i = pdata->start_sample; i < pdata->end_sample; i++)
 		data.emplace_back(*((uint8_t*)pdl->data));
 
-	last_segment->append_subsignal_payload(pdl->logic_class, data.data(), data.size());
+	last_segment->append_subsignal_payload(pdl->logic_class, data.data(),
+		data.size(), ds->output_logic_muxed_data_.at(decc));
 
 	qInfo() << "Received logic output state change for class" << pdl->logic_class << "from decoder" \
 		<< QString::fromUtf8(decc->name) << "from" << pdata->start_sample << "to" << pdata->end_sample;

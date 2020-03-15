@@ -363,30 +363,28 @@ void LogicSegment::append_payload(void *data, uint64_t data_size)
 			prev_sample_count + 1, prev_sample_count + 1);
 }
 
-void LogicSegment::append_subsignal_payload(unsigned int index, void *data, uint64_t data_size)
+void LogicSegment::append_subsignal_payload(unsigned int index, void *data,
+	uint64_t data_size, vector<uint8_t>& destination)
 {
-	static vector<uint8_t> merged_data;  // To preserve intermediate data across calls
-
 	if (index == 0)
-		for (uint64_t i = 0; i < data_size * unit_size_; i++)
-			merged_data.emplace_back(0);
+		destination.resize(data_size * unit_size_, 0);
 
 	// Set the bits for this sub-signal where needed
 	// Note: the bytes in *data must either be 0 or 1, nothing else
 	unsigned int index_byte_offs = index / 8;
-	uint8_t* output_data = merged_data.data() + index_byte_offs;
+	uint8_t* output_data = destination.data() + index_byte_offs;
 	uint8_t* input_data = (uint8_t*)data;
 
 	for (uint64_t i = 0; i < data_size; i++) {
-		assert((i * unit_size_ + index_byte_offs) < merged_data.size());
+		assert((i * unit_size_ + index_byte_offs) < destination.size());
 		*output_data |= (input_data[i] << index);
 		output_data += unit_size_;
 	}
 
 	if (index == owner_.num_channels() - 1) {
 		// We gathered sample data of all sub-signals, let's append it
-		append_payload(merged_data.data(), merged_data.size());
-		merged_data.clear();
+		append_payload(destination.data(), destination.size());
+		destination.clear();
 	}
 }
 

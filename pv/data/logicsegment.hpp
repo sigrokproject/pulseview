@@ -96,7 +96,8 @@ public:
 	 * is constant for every invokation for 0..n. The number of samples
 	 * hence may only change when index is 0.
 	 */
-	void append_subsignal_payload(unsigned int index, void *data, uint64_t data_size);
+	void append_subsignal_payload(unsigned int index, void *data,
+		uint64_t data_size, vector<uint8_t>& destination);
 
 	void get_samples(int64_t start_sample, int64_t end_sample, uint8_t* dest) const;
 
