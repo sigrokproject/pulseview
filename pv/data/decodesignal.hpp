@@ -103,6 +103,16 @@ public:
 	DecodeSignal(pv::Session &session);
 	virtual ~DecodeSignal();
 
+	/**
+	 * Sets the name of the signal.
+	 */
+	virtual void set_name(QString name);
+
+	/**
+	 * Set the color of the signal.
+	 */
+	virtual void set_color(QColor color);
+
 	bool is_decode_signal() const;
 	const vector< shared_ptr<Decoder> >& decoder_stack() const;
 

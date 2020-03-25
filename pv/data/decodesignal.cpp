@@ -68,6 +68,20 @@ DecodeSignal::~DecodeSignal()
 	reset_decode(true);
 }
 
+void DecodeSignal::set_name(QString name)
+{
+	SignalBase::set_name(name);
+
+	update_output_signals();
+}
+
+void DecodeSignal::set_color(QColor color)
+{
+	SignalBase::set_color(color);
+
+	update_output_signals();
+}
+
 const vector< shared_ptr<Decoder> >& DecodeSignal::decoder_stack() const
 {
 	return stack_;
@@ -397,7 +411,6 @@ void DecodeSignal::update_output_signals()
 					shared_ptr<data::SignalBase> signal =
 						make_shared<data::SignalBase>(nullptr, LogicChannel);
 					signal->set_internal_name(logic_ch.id);
-					signal->set_name(logic_ch.id);
 					signal->set_index(index);
 					signal->set_data(logic_data);
 					output_signals_.push_back(signal);
@@ -413,9 +426,12 @@ void DecodeSignal::update_output_signals()
 		}
 	}
 
-	// TODO Delete signals that no longer have a corresponding decoder (also from session)
+	for (shared_ptr<SignalBase> s : output_signals_) {
+		s->set_name(s->internal_name() + " (" + name() + ")");
+		s->set_color(color());
+	}
+
 	// TODO Assert that all sample rates are the same as the session's
-	// TODO Set colors to the same as the decoder's background color
 }
 
 void DecodeSignal::set_initial_pin_state(const uint16_t channel_id, const int init_state)

@@ -219,7 +219,7 @@ public:
 	/**
 	 * Set the color of the signal.
 	 */
-	void set_color(QColor color);
+	virtual void set_color(QColor color);
 
 	/**
 	 * Get the background color of the signal.
