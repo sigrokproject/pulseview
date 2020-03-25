@@ -44,18 +44,23 @@ namespace trace {
 const char *const ChannelNames[] = {
 	"CLK",
 	"DATA",
+	"EN",
 	"IN",
 	"OUT",
 	"RST",
 	"TX",
 	"RX",
-	"EN",
+	"SDA",
+	"SCL"
 	"SCLK",
 	"MOSI",
 	"MISO",
+	"/CS",
+	"nCS",
 	"/SS",
-	"SDA",
-	"SCL"
+	"nSS",
+	"/RST",
+	"nRST",
 };
 
 Signal::Signal(pv::Session &session,
