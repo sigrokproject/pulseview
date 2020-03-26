@@ -95,8 +95,8 @@ const int64_t AnalogSignal::TracePaintBlockSize = 1024 * 1024;  // 4 MiB (due to
 const float AnalogSignal::EnvelopeThreshold = 64.0f;
 
 const int AnalogSignal::MaximumVDivs = 10;
-const int AnalogSignal::MinScaleIndex = -6;
-const int AnalogSignal::MaxScaleIndex = 7;
+const int AnalogSignal::MinScaleIndex = -6;  // 0.01 units/div
+const int AnalogSignal::MaxScaleIndex = 10;  // 1000 units/div
 
 const int AnalogSignal::InfoTextMarginRight = 20;
 const int AnalogSignal::InfoTextMarginBottom = 5;
