@@ -1768,15 +1768,24 @@ void DecodeSignal::logic_output_callback(srd_proto_data *pdata, void *decode_sig
 		output_logic->push_segment(last_segment);
 	}
 
-	vector<uint8_t> data;
-	for (unsigned int i = pdata->start_sample; i < pdata->end_sample; i++)
-		data.emplace_back(*((uint8_t*)pdl->data));
+	if (pdata->start_sample < pdata->end_sample) {
+		vector<uint8_t> data;
+		for (unsigned int i = pdata->start_sample; i < pdata->end_sample; i++)
+			data.emplace_back(*((uint8_t*)pdl->data));
 
-	last_segment->append_subsignal_payload(pdl->logic_class, data.data(),
-		data.size(), ds->output_logic_muxed_data_.at(decc));
+		if ((pdl->logic_class == 0) || ((pdl->logic_class > 0) && (data.size() <= ds->output_logic_muxed_data_.at(decc).size()))) {
+			last_segment->append_subsignal_payload(pdl->logic_class, data.data(),
+				data.size(), ds->output_logic_muxed_data_.at(decc));
 
-	qInfo() << "Received logic output state change for class" << pdl->logic_class << "from decoder" \
-		<< QString::fromUtf8(decc->name) << "from" << pdata->start_sample << "to" << pdata->end_sample;
+			qInfo() << "Received logic output state change for class" << pdl->logic_class << "from decoder" \
+				<< QString::fromUtf8(decc->name) << "from" << pdata->start_sample << "to" << pdata->end_sample;
+		} else
+			qWarning() << "Ignoring invalid logic output state change for class" << pdl->logic_class << "from decoder" \
+				<< QString::fromUtf8(decc->name) << "from" << pdata->start_sample << "to" << pdata->end_sample;
+
+	} else
+		qWarning() << "Ignoring malformed logic output state change for class" << pdl->logic_class << "from decoder" \
+			<< QString::fromUtf8(decc->name) << "from" << pdata->start_sample << "to" << pdata->end_sample;
 }
 
 void DecodeSignal::on_capture_state_changed(int state)
