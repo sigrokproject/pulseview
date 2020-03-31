@@ -1,3 +1,92 @@
+0.4.2 (2020-03-31)
+------------------
+
+ * Updated build requirements:
+   - Qt (all subcomponents) >= 5.3
+   - Qt LinguistTools >= 5.3
+   - Qt translation package (optional; needed at runtime, not build time)
+ * Allow manually saving/restoring session setups in *.pvs files (bug #971).
+   - Session setups can be auto-saved (config option).
+   - Session setups are auto-loaded if they exist.
+   - Add -s / --settings command-line option to load a session setup file.
+   - Also save/restore decoder visibility (bug #1362).
+   - Also save/restore markers, cursors, and zero offset (bug #1457).
+ * Add GUI element translations support and a language selection option.
+   - Add a German translation of the GUI elements. 
+ * Add a decoder selector subwindow.
+   - Decoders can be manually browsed by tags. For versions of libsigrokdecode
+     that don't yet support tags, an "All Decoders" tag is used (bug #1451).
+   - An edit field allows filtering the displayed decoders by substring match.
+     - Filtering will cover various PD fields, like ID and name (bug #1375).
+   - When a decoder is selected, show a description at the bottom (bug #1309).
+     Hide the description when no decoder is selected (bug #1488).
+   - When a stacked decoder is selected, auto-stacking compatible decoders
+     will be attempted, the user has to decide if multiple options exist.
+   - Avoid issues with multi-monitor setups (bug #1147).
+   - Fix a small issue with mouse clicks and multiple sessions (bug #1400).
+ * Add a decoder "binary" output subwindow that can show/save "OUTPUT_BINARY"
+   type decoder data in various (decoder-specific) formats (WAV, PCAP, PNG,
+   and many others); Also features a simple "hex view" for the data.
+ * Add the possibility to show/hide individual decoder annotation rows as well
+   as individual annotation classes.
+ * Cursors and markers:
+   - Allow setting cursors via shift-drag.
+   - Show relative time of flags on hover (i.e., when the mouse hovers over
+     a marker/cursor, show time relative to the item being hovered over).
+     Pressing shift, the regular labels are shown again.
+   - Add a context menu for the cursor which can be used to show/hide
+     measurement values like interval/frequency/samples (bug #1290).
+   - Add "temporary snapping disable" menu to markers and cursors.
+   - Make cursor pair drop precision when space for the text is too small.
+   - Show ruler timestamps in cursors and popups (not absolute timestamps).
+   - Fix ruler double-click to add cursor in the correct position.
+   - Accept new position on enter press in cursor popups.
+   - Cursors: Fix mouse cursor shape to be horizontal arrows.
+   - Fix Up and Down arrow hotkeys preventing combobox scrolling (bug #1440).
+ * Connect dialog:
+   - Fix scan for certain USB devices (bug #1403).
+   - Fix an issue where serial ports can't be selected.
+   - Add baud rate combobox for serial ports.
+ * Key shortcuts:
+   - Add +/- and cursor Up/Down shortcuts (zoom in/out).
+   - Add Home and End shortcuts (move to start/end of acquisition data).
+   - Use 'd' shortcut to show/hide the decoder selector, ESC to hide it.
+   - Add '1' and '2' shortcuts (attach cursor edges to the mouse).
+   - Update manpage to document all new/changed key shortcuts and options.
+ * Disable anti-aliasing on high-DPI displays.
+ * Improve drawing performance in some places.
+ * Improve decoder/annotation handling performance in some places.
+ * org.sigrok.PulseView.appdata.xml: Fix a few warnings.
+ * Use scroll bars for popups with too much content (bugs #183, #1412).
+ * Make it possible to copy the text from decoder annotations (bug #1107).
+ * Add an option to always show annotation rows, even when empty (bug #977).
+ * Logging: Break libsigrokdecode stacktraces up into proper newlines.
+ * Fixed disappearing annotation rows of stacked PDs (bug #1446).
+ * Fix an issue where selected channels couldn't be deleted (bug #852).
+ * Import options dialog: Fix visibility of extended info (bug #1462).
+ * Fix an issue of missing chunks of data when saving/exporting (bug #1470).
+ * Manual: Fix command line word order and quoting of wget invocations.
+ * The "Run" button will now read "Reload" when using files (bug #1448).
+ * Massively improve "two finger drag trackpad zooming and panning" on
+   Mac OS X. However, pinch-to-zoom no longer works, but two finger drag
+   up and down is an alternative (bug #1056).
+ * Improve channel selection popup to allow for easier group-show/hide.
+ * Annotation export format: Add "%c" to the format string.
+ * Fix a decoder trace overlap issue with multiple decoders (bug #1505).
+ * Improve reliability of auto-scaling of analog traces (bug #1431).
+ * Improve analog trace displaying with high values/voltages (bug #1525).
+ * Increase precision on analog views, avoid rounding issues (bug #1335).
+ * Abort acquisition if there are more than 64 logic channels.
+ * Fix an issue with extended error messages in dialog texts.
+ * Fix an issue with "zero" time display, triggers, and markers (bug #1338).
+ * Fix various compiler/scan-build/clang-tidy/clazy warnings.
+ * Build system:
+   - Create NSIS file in binary directory (not source).
+   - NSIS: Ship Python stdlib *.pyd files (bug #1409).
+   - Show detected Qt version.
+   - Don't do a QUIET search for libsigrokcxx (for easier debugging).
+   - Fix a compile issue when building without libsigrokdecode.
+
 0.4.1 (2018-10-29)
 ------------------
 
