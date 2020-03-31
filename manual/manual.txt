@@ -1,6 +1,6 @@
 PulseView User Manual
 =====================
-0.4.1, dated 2018-10-29
+0.4.2, dated 2020-02-29
 :doctype: book
 :imagesdir: ./images
 :sectnums:
