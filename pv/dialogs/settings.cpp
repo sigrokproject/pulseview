@@ -204,6 +204,7 @@ QPlainTextEdit *Settings::create_log_view() const
 QWidget *Settings::get_general_settings_form(QWidget *parent) const
 {
 	GlobalSettings settings;
+	QCheckBox *cb;
 
 	QWidget *form = new QWidget(parent);
 	QVBoxLayout *form_layout = new QVBoxLayout(form);
@@ -215,6 +216,26 @@ QWidget *Settings::get_general_settings_form(QWidget *parent) const
 	QFormLayout *general_layout = new QFormLayout();
 	general_group->setLayout(general_layout);
 
+	// Generate language combobox
+	QComboBox *language_cb = new QComboBox();
+	Application* a = qobject_cast<Application*>(QApplication::instance());
+
+	QString current_language = settings.value(GlobalSettings::Key_General_Language).toString();
+	for (const QString& language : a->get_languages()) {
+		QLocale locale = QLocale(language);
+		QString desc = locale.languageToString(locale.language());
+		language_cb->addItem(desc, language);
+
+		if (language == current_language) {
+			int index = language_cb->findText(desc, Qt::MatchFixedString);
+			language_cb->setCurrentIndex(index);
+		}
+	}
+	connect(language_cb, SIGNAL(currentIndexChanged(const QString&)),
+		this, SLOT(on_general_language_changed(const QString&)));
+	general_layout->addRow(tr("User interface language"), language_cb);
+
+	// Theme combobox
 	QComboBox *theme_cb = new QComboBox();
 	for (const pair<QString, QString>& entry : Themes)
 		theme_cb->addItem(entry.first, entry.second);
@@ -222,13 +243,14 @@ QWidget *Settings::get_general_settings_form(QWidget *parent) const
 	theme_cb->setCurrentIndex(
 		settings.value(GlobalSettings::Key_General_Theme).toInt());
 	connect(theme_cb, SIGNAL(currentIndexChanged(int)),
-		this, SLOT(on_general_theme_changed_changed(int)));
+		this, SLOT(on_general_theme_changed(int)));
 	general_layout->addRow(tr("User interface theme"), theme_cb);
 
 	QLabel *description_1 = new QLabel(tr("(You may need to restart PulseView for all UI elements to update)"));
 	description_1->setAlignment(Qt::AlignRight);
 	general_layout->addRow(description_1);
 
+	// Style combobox
 	QComboBox *style_cb = new QComboBox();
 	style_cb->addItem(tr("System Default"), "");
 	for (QString& s : QStyleFactory::keys())
@@ -239,7 +261,7 @@ QWidget *Settings::get_general_settings_form(QWidget *parent) const
 	if (current_style.isEmpty())
 		style_cb->setCurrentIndex(0);
 	else
-		style_cb->setCurrentIndex(style_cb->findText(current_style, 0));
+		style_cb->setCurrentIndex(style_cb->findText(current_style, nullptr));
 
 	connect(style_cb, SIGNAL(currentIndexChanged(int)),
 		this, SLOT(on_general_style_changed(int)));
@@ -248,6 +270,11 @@ QWidget *Settings::get_general_settings_form(QWidget *parent) const
 	QLabel *description_2 = new QLabel(tr("(Dark themes look best with the Fusion style)"));
 	description_2->setAlignment(Qt::AlignRight);
 	general_layout->addRow(description_2);
+
+	// Misc
+	cb = create_checkbox(GlobalSettings::Key_General_SaveWithSetup,
+		SLOT(on_general_save_with_setup_changed(int)));
+	general_layout->addRow(tr("Save session &setup along with .sr file"), cb);
 
 	return form;
 }
@@ -317,7 +344,7 @@ QWidget *Settings::get_view_settings_form(QWidget *parent) const
 		settings.value(GlobalSettings::Key_View_SnapDistance).toInt());
 	connect(snap_distance_sb, SIGNAL(valueChanged(int)), this,
 		SLOT(on_view_snapDistance_changed(int)));
-	trace_view_layout->addRow(tr("Maximum distance from edges before cursors snap to them"), snap_distance_sb);
+	trace_view_layout->addRow(tr("Maximum distance from edges before markers snap to them"), snap_distance_sb);
 
 	ColorButton* cursor_fill_cb = new ColorButton(parent);
 	cursor_fill_cb->set_color(QColor::fromRgba(
@@ -377,6 +404,10 @@ QWidget *Settings::get_decoder_settings_form(QWidget *parent)
 		SLOT(on_dec_initialStateConfigurable_changed(int)));
 	decoder_layout->addRow(tr("Allow configuration of &initial signal state"), cb);
 
+	cb = create_checkbox(GlobalSettings::Key_Dec_AlwaysShowAllRows,
+		SLOT(on_dec_alwaysshowallrows_changed(int)));
+	decoder_layout->addRow(tr("Always show all &rows, even if no annotation is visible"), cb);
+
 	// Annotation export settings
 	ann_export_format_ = new QLineEdit();
 	ann_export_format_->setText(
@@ -384,10 +415,10 @@ QWidget *Settings::get_decoder_settings_form(QWidget *parent)
 	connect(ann_export_format_, SIGNAL(textChanged(const QString&)),
 		this, SLOT(on_dec_exportFormat_changed(const QString&)));
 	decoder_layout->addRow(tr("Annotation export format"), ann_export_format_);
-	QLabel *description_1 = new QLabel(tr("%s = sample range; %d: decoder name; %c: row name; %q: use quotations marks"));
+	QLabel *description_1 = new QLabel(tr("%s = sample range; %d: decoder name; %r: row name; %c: class name"));
 	description_1->setAlignment(Qt::AlignRight);
 	decoder_layout->addRow(description_1);
-	QLabel *description_2 = new QLabel(tr("%1: longest annotation text; %a: all annotation texts"));
+	QLabel *description_2 = new QLabel(tr("%1: longest annotation text; %a: all annotation texts; %q: use quotation marks"));
 	description_2->setAlignment(Qt::AlignRight);
 	decoder_layout->addRow(description_2);
 
@@ -574,10 +605,24 @@ void Settings::on_page_changed(QListWidgetItem *current, QListWidgetItem *previo
 	pages->setCurrentIndex(page_list->row(current));
 }
 
-void Settings::on_general_theme_changed_changed(int state)
+void Settings::on_general_language_changed(const QString &text)
 {
 	GlobalSettings settings;
-	settings.setValue(GlobalSettings::Key_General_Theme, state);
+	Application* a = qobject_cast<Application*>(QApplication::instance());
+
+	for (const QString& language : a->get_languages()) {
+		QLocale locale = QLocale(language);
+		QString desc = locale.languageToString(locale.language());
+
+		if (text == desc)
+			settings.setValue(GlobalSettings::Key_General_Language, language);
+	}
+}
+
+void Settings::on_general_theme_changed(int value)
+{
+	GlobalSettings settings;
+	settings.setValue(GlobalSettings::Key_General_Theme, value);
 	settings.apply_theme();
 
 	QMessageBox msg(this);
@@ -599,17 +644,23 @@ void Settings::on_general_theme_changed_changed(int state)
 	}
 }
 
-void Settings::on_general_style_changed(int state)
+void Settings::on_general_style_changed(int value)
 {
 	GlobalSettings settings;
 
-	if (state == 0)
+	if (value == 0)
 		settings.setValue(GlobalSettings::Key_General_Style, "");
 	else
 		settings.setValue(GlobalSettings::Key_General_Style,
-			QStyleFactory::keys().at(state - 1));
+			QStyleFactory::keys().at(value - 1));
 
 	settings.apply_theme();
+}
+
+void Settings::on_general_save_with_setup_changed(int state)
+{
+	GlobalSettings settings;
+	settings.setValue(GlobalSettings::Key_General_SaveWithSetup, state ? true : false);
 }
 
 void Settings::on_view_zoomToFitDuringAcq_changed(int state)
@@ -714,6 +765,12 @@ void Settings::on_dec_exportFormat_changed(const QString &text)
 	GlobalSettings settings;
 	settings.setValue(GlobalSettings::Key_Dec_ExportFormat, text);
 }
+
+void Settings::on_dec_alwaysshowallrows_changed(int state)
+{
+	GlobalSettings settings;
+	settings.setValue(GlobalSettings::Key_Dec_AlwaysShowAllRows, state ? true : false);
+}
 #endif
 
 void Settings::on_log_logLevel_changed(int value)
@@ -744,8 +801,7 @@ void Settings::on_log_saveToFile_clicked(bool checked)
 
 		if (out_stream.status() == QTextStream::Ok) {
 			QMessageBox msg(this);
-			msg.setText(tr("Success"));
-			msg.setInformativeText(tr("Log saved to %1.").arg(file_name));
+			msg.setText(tr("Success") + "\n\n" + tr("Log saved to %1.").arg(file_name));
 			msg.setStandardButtons(QMessageBox::Ok);
 			msg.setIcon(QMessageBox::Information);
 			msg.exec();
@@ -755,8 +811,7 @@ void Settings::on_log_saveToFile_clicked(bool checked)
 	}
 
 	QMessageBox msg(this);
-	msg.setText(tr("Error"));
-	msg.setInformativeText(tr("File %1 could not be written to.").arg(file_name));
+	msg.setText(tr("Error") + "\n\n" + tr("File %1 could not be written to.").arg(file_name));
 	msg.setStandardButtons(QMessageBox::Ok);
 	msg.setIcon(QMessageBox::Warning);
 	msg.exec();

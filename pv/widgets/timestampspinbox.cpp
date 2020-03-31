@@ -31,6 +31,7 @@ TimestampSpinBox::TimestampSpinBox(QWidget* parent)
 	, stepsize_("1e-6")
 {
 	connect(this, SIGNAL(editingFinished()), this, SLOT(on_editingFinished()));
+	connect(lineEdit(), SIGNAL(editingFinished()), this, SLOT(on_editingFinished()));
 
 	updateEdit();
 }
@@ -92,10 +93,6 @@ void TimestampSpinBox::setValue(const pv::util::Timestamp& val)
 
 void TimestampSpinBox::on_editingFinished()
 {
-	if (!lineEdit()->isModified())
-		return;
-	lineEdit()->setModified(false);
-
 	QRegExp re(R"(\s*([-+]?)\s*([0-9]+\.?[0-9]*).*)");
 
 	if (re.exactMatch(text())) {
@@ -103,6 +100,7 @@ void TimestampSpinBox::on_editingFinished()
 		captures.removeFirst(); // remove entire match
 		QString str = captures.join("");
 		setValue(pv::util::Timestamp(str.toStdString()));
+
 	} else {
 		// replace the malformed entered string with the old value
 		updateEdit();
@@ -113,7 +111,11 @@ void TimestampSpinBox::updateEdit()
 {
 	QString newtext = pv::util::format_time_si(
 		value_, pv::util::SIPrefix::none, precision_);
+	const QSignalBlocker blocker(lineEdit());
+	// Keep cursor position
+	int cursor = lineEdit()->cursorPosition();
 	lineEdit()->setText(newtext);
+	lineEdit()->setCursorPosition(cursor);
 }
 
 }  // namespace widgets

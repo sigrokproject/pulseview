@@ -98,6 +98,8 @@ public:
 	QAction* action_open() const;
 	QAction* action_save_as() const;
 	QAction* action_save_selection_as() const;
+	QAction* action_restore_setup() const;
+	QAction* action_save_setup() const;
 	QAction* action_connect() const;
 
 private:
@@ -114,16 +116,8 @@ private:
 	void commit_sample_rate();
 	void commit_sample_count();
 
-	QAction *const action_new_view_;
-	QAction *const action_open_;
-	QAction *const action_save_as_;
-	QAction *const action_save_selection_as_;
-	QAction *const action_connect_;
-
 private Q_SLOTS:
 	void show_session_error(const QString text, const QString info_text);
-
-	void add_decoder(srd_decoder *decoder);
 
 	void export_file(shared_ptr<sigrok::OutputFormat> format,
 		bool selection_only = false);
@@ -137,13 +131,18 @@ private Q_SLOTS:
 
 	void on_config_changed();
 
-	void on_actionNewView_triggered();
+	void on_actionNewView_triggered(QAction* action = nullptr);
 
 	void on_actionOpen_triggered();
 	void on_actionSaveAs_triggered();
 	void on_actionSaveSelectionAs_triggered();
 
+	void on_actionSaveSetup_triggered();
+	void on_actionRestoreSetup_triggered();
+
 	void on_actionConnect_triggered();
+
+	void on_add_decoder_clicked();
 
 protected:
 	void add_toolbar_widgets();
@@ -151,10 +150,19 @@ protected:
 	bool eventFilter(QObject *watched, QEvent *event);
 
 Q_SIGNALS:
-	void new_view(Session *session);
+	void new_view(Session *session, int type);
+	void show_decoder_selector(Session *session);
 
 private:
-	QToolButton *open_button_, *save_button_;
+	QAction *const action_new_view_;
+	QAction *const action_open_;
+	QAction *const action_save_as_;
+	QAction *const action_save_selection_as_;
+	QAction *const action_restore_setup_;
+	QAction *const action_save_setup_;
+	QAction *const action_connect_;
+
+	QToolButton *new_view_button_, *open_button_, *save_button_;
 
 	pv::widgets::DeviceToolButton device_selector_;
 
@@ -173,7 +181,6 @@ private:
 
 #ifdef ENABLE_DECODE
 	QToolButton *add_decoder_button_;
-	QMenu *const menu_decoders_add_;
 #endif
 };
 

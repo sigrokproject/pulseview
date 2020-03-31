@@ -35,7 +35,6 @@
 
 #include <boost/algorithm/string/join.hpp>
 
-#include <pv/data/decodesignal.hpp>
 #include <pv/devicemanager.hpp>
 #include <pv/devices/hardwaredevice.hpp>
 #include <pv/devices/inputfile.hpp>
@@ -51,7 +50,7 @@
 #include <pv/widgets/exportmenu.hpp>
 #include <pv/widgets/importmenu.hpp>
 #ifdef ENABLE_DECODE
-#include <pv/widgets/decodermenu.hpp>
+#include <pv/data/decodesignal.hpp>
 #endif
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
@@ -93,7 +92,10 @@ MainBar::MainBar(Session &session, QWidget *parent, pv::views::trace::View *view
 	action_open_(new QAction(this)),
 	action_save_as_(new QAction(this)),
 	action_save_selection_as_(new QAction(this)),
+	action_restore_setup_(new QAction(this)),
+	action_save_setup_(new QAction(this)),
 	action_connect_(new QAction(this)),
+	new_view_button_(new QToolButton()),
 	open_button_(new QToolButton()),
 	save_button_(new QToolButton()),
 	device_selector_(parent, session.device_manager(), action_connect_),
@@ -107,8 +109,7 @@ MainBar::MainBar(Session &session, QWidget *parent, pv::views::trace::View *view
 	updating_sample_count_(false),
 	sample_count_supported_(false)
 #ifdef ENABLE_DECODE
-	, add_decoder_button_(new QToolButton()),
-	menu_decoders_add_(new pv::widgets::DecoderMenu(this, true))
+	, add_decoder_button_(new QToolButton())
 #endif
 {
 	setObjectName(QString::fromUtf8("MainBar"));
@@ -129,6 +130,10 @@ MainBar::MainBar(Session &session, QWidget *parent, pv::views::trace::View *view
 	connect(action_open_, SIGNAL(triggered(bool)),
 		this, SLOT(on_actionOpen_triggered()));
 
+	action_restore_setup_->setText(tr("Restore Session Setu&p..."));
+	connect(action_restore_setup_, SIGNAL(triggered(bool)),
+		this, SLOT(on_actionRestoreSetup_triggered()));
+
 	action_save_as_->setText(tr("&Save As..."));
 	action_save_as_->setIcon(QIcon::fromTheme("document-save-as",
 		QIcon(":/icons/document-save-as.png")));
@@ -142,6 +147,10 @@ MainBar::MainBar(Session &session, QWidget *parent, pv::views::trace::View *view
 	action_save_selection_as_->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_R));
 	connect(action_save_selection_as_, SIGNAL(triggered(bool)),
 		this, SLOT(on_actionSaveSelectionAs_triggered()));
+
+	action_save_setup_->setText(tr("Save Session Setu&p..."));
+	connect(action_save_setup_, SIGNAL(triggered(bool)),
+		this, SLOT(on_actionSaveSetup_triggered()));
 
 	widgets::ExportMenu *menu_file_export = new widgets::ExportMenu(this,
 		session.device_manager().context());
@@ -159,9 +168,30 @@ MainBar::MainBar(Session &session, QWidget *parent, pv::views::trace::View *view
 	connect(action_connect_, SIGNAL(triggered(bool)),
 		this, SLOT(on_actionConnect_triggered()));
 
+	// New view button
+	QMenu *menu_new_view = new QMenu();
+	connect(menu_new_view, SIGNAL(triggered(QAction*)),
+		this, SLOT(on_actionNewView_triggered(QAction*)));
+
+	for (int i = 0; i < views::ViewTypeCount; i++) {
+		QAction *const action =	menu_new_view->addAction(tr(views::ViewTypeNames[i]));
+		action->setData(qVariantFromValue(i));
+	}
+
+	new_view_button_->setMenu(menu_new_view);
+	new_view_button_->setDefaultAction(action_new_view_);
+	new_view_button_->setPopupMode(QToolButton::MenuButtonPopup);
+
 	// Open button
+	vector<QAction*> open_actions;
+	open_actions.push_back(action_open_);
+	QAction* separator_o = new QAction(this);
+	separator_o->setSeparator(true);
+	open_actions.push_back(separator_o);
+	open_actions.push_back(action_restore_setup_);
+
 	widgets::ImportMenu *import_menu = new widgets::ImportMenu(this,
-		session.device_manager().context(), action_open_);
+		session.device_manager().context(), open_actions);
 	connect(import_menu, SIGNAL(format_selected(shared_ptr<sigrok::InputFormat>)),
 		this, SLOT(import_file(shared_ptr<sigrok::InputFormat>)));
 
@@ -170,12 +200,16 @@ MainBar::MainBar(Session &session, QWidget *parent, pv::views::trace::View *view
 	open_button_->setPopupMode(QToolButton::MenuButtonPopup);
 
 	// Save button
-	vector<QAction*> open_actions;
-	open_actions.push_back(action_save_as_);
-	open_actions.push_back(action_save_selection_as_);
+	vector<QAction*> save_actions;
+	save_actions.push_back(action_save_as_);
+	save_actions.push_back(action_save_selection_as_);
+	QAction* separator_s = new QAction(this);
+	separator_s->setSeparator(true);
+	save_actions.push_back(separator_s);
+	save_actions.push_back(action_save_setup_);
 
 	widgets::ExportMenu *export_menu = new widgets::ExportMenu(this,
-		session.device_manager().context(), open_actions);
+		session.device_manager().context(), save_actions);
 	connect(export_menu, SIGNAL(format_selected(shared_ptr<sigrok::OutputFormat>)),
 		this, SLOT(export_file(shared_ptr<sigrok::OutputFormat>)));
 
@@ -189,14 +223,13 @@ MainBar::MainBar(Session &session, QWidget *parent, pv::views::trace::View *view
 
 	// Setup the decoder button
 #ifdef ENABLE_DECODE
-	menu_decoders_add_->setTitle(tr("&Add"));
-	connect(menu_decoders_add_, SIGNAL(decoder_selected(srd_decoder*)),
-		this, SLOT(add_decoder(srd_decoder*)));
-
 	add_decoder_button_->setIcon(QIcon(":/icons/add-decoder.svg"));
 	add_decoder_button_->setPopupMode(QToolButton::InstantPopup);
-	add_decoder_button_->setMenu(menu_decoders_add_);
-	add_decoder_button_->setToolTip(tr("Add low-level, non-stacked protocol decoder"));
+	add_decoder_button_->setToolTip(tr("Add protocol decoder"));
+	add_decoder_button_->setShortcut(QKeySequence(Qt::Key_D));
+
+	connect(add_decoder_button_, SIGNAL(clicked()),
+		this, SLOT(on_add_decoder_clicked()));
 #endif
 
 	connect(&sample_count_, SIGNAL(value_changed()),
@@ -556,23 +589,10 @@ void MainBar::commit_sample_count()
 void MainBar::show_session_error(const QString text, const QString info_text)
 {
 	QMessageBox msg(this);
-	msg.setText(text);
-	msg.setInformativeText(info_text);
+	msg.setText(text + "\n\n" + info_text);
 	msg.setStandardButtons(QMessageBox::Ok);
 	msg.setIcon(QMessageBox::Warning);
 	msg.exec();
-}
-
-void MainBar::add_decoder(srd_decoder *decoder)
-{
-#ifdef ENABLE_DECODE
-	assert(decoder);
-	shared_ptr<data::DecodeSignal> signal = session_.add_decode_signal();
-	if (signal)
-		signal->stack_decoder(decoder);
-#else
-	(void)decoder;
-#endif
 }
 
 void MainBar::export_file(shared_ptr<OutputFormat> format, bool selection_only)
@@ -701,7 +721,7 @@ void MainBar::import_file(shared_ptr<InputFormat> format)
 		options = dlg.options();
 	}
 
-	session_.load_file(file_name, format, options);
+	session_.load_file(file_name, "", format, options);
 
 	const QString abs_path = QFileInfo(file_name).absolutePath();
 	settings.setValue(SettingOpenDirectory, abs_path);
@@ -750,9 +770,13 @@ void MainBar::on_config_changed()
 	commit_sample_rate();
 }
 
-void MainBar::on_actionNewView_triggered()
+void MainBar::on_actionNewView_triggered(QAction* action)
 {
-	new_view(&session_);
+	if (action)
+		new_view(&session_, action->data().toInt());
+	else
+		// When the icon of the button is clicked, we create a trace view
+		new_view(&session_, views::ViewTypeTrace);
 }
 
 void MainBar::on_actionOpen_triggered()
@@ -784,6 +808,40 @@ void MainBar::on_actionSaveSelectionAs_triggered()
 	export_file(session_.device_manager().context()->output_formats()["srzip"], true);
 }
 
+void MainBar::on_actionSaveSetup_triggered()
+{
+	QSettings settings;
+	const QString dir = settings.value(SettingSaveDirectory).toString();
+
+	const QString file_name = QFileDialog::getSaveFileName(
+		this, tr("Save File"), dir, tr(
+				"PulseView Session Setups (*.pvs);;"
+				"All Files (*)"));
+
+	if (file_name.isEmpty())
+		return;
+
+	QSettings settings_storage(file_name, QSettings::IniFormat);
+	session_.save_setup(settings_storage);
+}
+
+void MainBar::on_actionRestoreSetup_triggered()
+{
+	QSettings settings;
+	const QString dir = settings.value(SettingSaveDirectory).toString();
+
+	const QString file_name = QFileDialog::getOpenFileName(
+		this, tr("Open File"), dir, tr(
+				"PulseView Session Setups (*.pvs);;"
+				"All Files (*)"));
+
+	if (file_name.isEmpty())
+		return;
+
+	QSettings settings_storage(file_name, QSettings::IniFormat);
+	session_.restore_setup(settings_storage);
+}
+
 void MainBar::on_actionConnect_triggered()
 {
 	// Stop any currently running capture session
@@ -799,9 +857,14 @@ void MainBar::on_actionConnect_triggered()
 	update_device_list();
 }
 
+void MainBar::on_add_decoder_clicked()
+{
+	show_decoder_selector(&session_);
+}
+
 void MainBar::add_toolbar_widgets()
 {
-	addAction(action_new_view_);
+	addWidget(new_view_button_);
 	addSeparator();
 	addWidget(open_button_);
 	addWidget(save_button_);

@@ -7,20 +7,19 @@
   <name>PulseView</name>
   <summary>Logic analyzer, oscilloscope and MSO GUI</summary>
   <description>
-    <p>PulseView is a Qt based logic analyzer, oscilloscope and MSO GUI for sigrok.</p>
-    <p>Features:</p>
+    <p>PulseView is a Qt based logic analyzer, oscilloscope and MSO GUI for sigrok supporting various features:</p>
     <ul>
       <li>Fast O(log N) signal rendering at all zoom levels</li>
       <li>Protocol decoder support</li>
       <li>Trace groups support</li>
     </ul>
   </description>
-  <url type="homepage">http://sigrok.org/wiki/PulseView</url>
-  <url type="bugtracker">http://sigrok.org/bugzilla/enter_bug.cgi?format=guided&amp;product=PulseView</url>
-  <url type="faq">http://sigrok.org/wiki/FAQ</url>
+  <url type="homepage">https://sigrok.org/wiki/PulseView</url>
+  <url type="bugtracker">https://sigrok.org/bugzilla/enter_bug.cgi?format=guided&amp;product=PulseView</url>
+  <url type="faq">https://sigrok.org/wiki/FAQ</url>
   <screenshots>
     <screenshot type="default">
-      <image>http://sigrok.org/wimg/e/ee/PulseView_I2C_DS1307_Decode.png</image>
+      <image>https://sigrok.org/wimg/e/ee/PulseView_I2C_DS1307_Decode.png</image>
     </screenshot>
   </screenshots>
   <provides>

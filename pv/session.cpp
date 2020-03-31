@@ -17,9 +17,6 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QDebug>
-#include <QFileInfo>
-
 #include <cassert>
 #include <memory>
 #include <mutex>
@@ -27,9 +24,13 @@
 
 #include <sys/stat.h>
 
+#include <QDebug>
+#include <QFileInfo>
+
 #include "devicemanager.hpp"
 #include "mainwindow.hpp"
 #include "session.hpp"
+#include "util.hpp"
 
 #include "data/analog.hpp"
 #include "data/analogsegment.hpp"
@@ -52,6 +53,11 @@
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
 
+#ifdef ENABLE_FLOW
+#include <gstreamermm.h>
+#include <libsigrokflow/libsigrokflow.hpp>
+#endif
+
 #ifdef ENABLE_DECODE
 #include <libsigrokdecode/libsigrokdecode.h>
 #include "data/decodesignal.hpp"
@@ -61,8 +67,8 @@ using std::bad_alloc;
 using std::dynamic_pointer_cast;
 using std::find_if;
 using std::function;
-using std::lock_guard;
 using std::list;
+using std::lock_guard;
 using std::make_pair;
 using std::make_shared;
 using std::map;
@@ -74,8 +80,10 @@ using std::recursive_mutex;
 using std::runtime_error;
 using std::shared_ptr;
 using std::string;
+#ifdef ENABLE_FLOW
+using std::unique_lock;
+#endif
 using std::unique_ptr;
-using std::unordered_set;
 using std::vector;
 
 using sigrok::Analog;
@@ -90,6 +98,17 @@ using sigrok::Packet;
 using sigrok::Session;
 
 using Glib::VariantBase;
+
+#ifdef ENABLE_FLOW
+using Gst::Bus;
+using Gst::ElementFactory;
+using Gst::Pipeline;
+#endif
+
+using pv::util::Timestamp;
+using pv::views::trace::Signal;
+using pv::views::trace::AnalogSignal;
+using pv::views::trace::LogicSignal;
 
 namespace pv {
 
@@ -148,7 +167,7 @@ void Session::set_name(QString name)
 	name_changed();
 }
 
-const list< shared_ptr<views::ViewBase> > Session::views() const
+const vector< shared_ptr<views::ViewBase> > Session::views() const
 {
 	return views_;
 }
@@ -173,11 +192,89 @@ bool Session::data_saved() const
 	return data_saved_;
 }
 
+void Session::save_setup(QSettings &settings) const
+{
+	int i = 0;
+
+	// Save channels and decoders
+	for (const shared_ptr<data::SignalBase>& base : signalbases_) {
+#ifdef ENABLE_DECODE
+		if (base->is_decode_signal()) {
+			settings.beginGroup("decode_signal" + QString::number(i++));
+			base->save_settings(settings);
+			settings.endGroup();
+		} else
+#endif
+		{
+			settings.beginGroup(base->internal_name());
+			base->save_settings(settings);
+			settings.endGroup();
+		}
+	}
+
+	settings.setValue("decode_signals", i);
+
+	// Save view states and their signal settings
+	// Note: main_view must be saved as view0
+	i = 0;
+	settings.beginGroup("view" + QString::number(i++));
+	main_view_->save_settings(settings);
+	settings.endGroup();
+
+	for (const shared_ptr<views::ViewBase>& view : views_) {
+		if (view != main_view_) {
+			settings.beginGroup("view" + QString::number(i++));
+			settings.setValue("type", view->get_type());
+			view->save_settings(settings);
+			settings.endGroup();
+		}
+	}
+
+	settings.setValue("views", i);
+
+	int view_id = 0;
+	i = 0;
+	for (const shared_ptr<views::ViewBase>& vb : views_) {
+		shared_ptr<views::trace::View> tv = dynamic_pointer_cast<views::trace::View>(vb);
+		if (tv) {
+			for (const shared_ptr<views::trace::TimeItem>& time_item : tv->time_items()) {
+
+				const shared_ptr<views::trace::Flag> flag =
+					dynamic_pointer_cast<views::trace::Flag>(time_item);
+				if (flag) {
+					if (!flag->enabled())
+						continue;
+
+					settings.beginGroup("meta_obj" + QString::number(i++));
+					settings.setValue("type", "time_marker");
+					settings.setValue("assoc_view", view_id);
+					GlobalSettings::store_timestamp(settings, "time", flag->time());
+					settings.setValue("text", flag->get_text());
+					settings.endGroup();
+				}
+			}
+
+			if (tv->cursors_shown()) {
+				settings.beginGroup("meta_obj" + QString::number(i++));
+				settings.setValue("type", "selection");
+				settings.setValue("assoc_view", view_id);
+				const shared_ptr<views::trace::CursorPair> cp = tv->cursors();
+				GlobalSettings::store_timestamp(settings, "start_time", cp->first()->time());
+				GlobalSettings::store_timestamp(settings, "end_time", cp->second()->time());
+				settings.endGroup();
+			}
+		}
+
+		view_id++;
+	}
+
+	settings.setValue("meta_objs", i);
+}
+
 void Session::save_settings(QSettings &settings) const
 {
 	map<string, string> dev_info;
 	list<string> key_list;
-	int decode_signals = 0, views = 0;
 
 	if (device_) {
 		shared_ptr<devices::HardwareDevice> hw_device =
@@ -227,39 +324,77 @@ void Session::save_settings(QSettings &settings) const
 			settings.endGroup();
 		}
 
-		// Save channels and decoders
-		for (const shared_ptr<data::SignalBase>& base : signalbases_) {
-#ifdef ENABLE_DECODE
-			if (base->is_decode_signal()) {
-				settings.beginGroup("decode_signal" + QString::number(decode_signals++));
-				base->save_settings(settings);
-				settings.endGroup();
-			} else
-#endif
-			{
-				settings.beginGroup(base->internal_name());
-				base->save_settings(settings);
-				settings.endGroup();
-			}
-		}
+		save_setup(settings);
+	}
+}
 
-		settings.setValue("decode_signals", decode_signals);
-
-		// Save view states and their signal settings
-		// Note: main_view must be saved as view0
-		settings.beginGroup("view" + QString::number(views++));
-		main_view_->save_settings(settings);
+void Session::restore_setup(QSettings &settings)
+{
+	// Restore channels
+	for (shared_ptr<data::SignalBase> base : signalbases_) {
+		settings.beginGroup(base->internal_name());
+		base->restore_settings(settings);
 		settings.endGroup();
+	}
 
-		for (const shared_ptr<views::ViewBase>& view : views_) {
-			if (view != main_view_) {
-				settings.beginGroup("view" + QString::number(views++));
-				view->save_settings(settings);
-				settings.endGroup();
-			}
+	// Restore decoders
+#ifdef ENABLE_DECODE
+	int decode_signals = settings.value("decode_signals").toInt();
+
+	for (int i = 0; i < decode_signals; i++) {
+		settings.beginGroup("decode_signal" + QString::number(i));
+		shared_ptr<data::DecodeSignal> signal = add_decode_signal();
+		signal->restore_settings(settings);
+		settings.endGroup();
+	}
+#endif
+
+	// Restore views
+	int views = settings.value("views").toInt();
+
+	for (int i = 0; i < views; i++) {
+		settings.beginGroup("view" + QString::number(i));
+
+		if (i > 0) {
+			views::ViewType type = (views::ViewType)settings.value("type").toInt();
+			add_view(type, this);
+			views_.back()->restore_settings(settings);
+		} else
+			main_view_->restore_settings(settings);
+
+		settings.endGroup();
+	}
+
+	// Restore meta objects like markers and cursors
+	int meta_objs = settings.value("meta_objs").toInt();
+
+	for (int i = 0; i < meta_objs; i++) {
+		settings.beginGroup("meta_obj" + QString::number(i));
+
+		shared_ptr<views::ViewBase> vb;
+		shared_ptr<views::trace::View> tv;
+		if (settings.contains("assoc_view"))
+			vb = views_.at(settings.value("assoc_view").toInt());
+
+		if (vb)
+			tv = dynamic_pointer_cast<views::trace::View>(vb);
+
+		const QString type = settings.value("type").toString();
+
+		if ((type == "time_marker") && tv) {
+			Timestamp ts = GlobalSettings::restore_timestamp(settings, "time");
+			shared_ptr<views::trace::Flag> flag = tv->add_flag(ts);
+			flag->set_text(settings.value("text").toString());
 		}
 
-		settings.setValue("views", views);
+		if ((type == "selection") && tv) {
+			Timestamp start = GlobalSettings::restore_timestamp(settings, "start_time");
+			Timestamp end = GlobalSettings::restore_timestamp(settings, "end_time");
+			tv->set_cursors(start, end);
+			tv->show_cursors();
+		}
+
+		settings.endGroup();
 	}
 }
 
@@ -267,7 +402,7 @@ void Session::restore_settings(QSettings &settings)
 {
 	shared_ptr<devices::Device> device;
 
-	QString device_type = settings.value("device_type").toString();
+	const QString device_type = settings.value("device_type").toString();
 
 	if (device_type == "hardware") {
 		map<string, string> dev_info;
@@ -303,7 +438,7 @@ void Session::restore_settings(QSettings &settings)
 	if ((device_type == "sessionfile") || (device_type == "inputfile")) {
 		if (device_type == "sessionfile") {
 			settings.beginGroup("device");
-			QString filename = settings.value("filename").toString();
+			const QString filename = settings.value("filename").toString();
 			settings.endGroup();
 
 			if (QFileInfo(filename).isReadable()) {
@@ -331,42 +466,8 @@ void Session::restore_settings(QSettings &settings)
 		}
 	}
 
-	if (device) {
-		// Restore channels
-		for (shared_ptr<data::SignalBase> base : signalbases_) {
-			settings.beginGroup(base->internal_name());
-			base->restore_settings(settings);
-			settings.endGroup();
-		}
-
-		// Restore decoders
-#ifdef ENABLE_DECODE
-		int decode_signals = settings.value("decode_signals").toInt();
-
-		for (int i = 0; i < decode_signals; i++) {
-			settings.beginGroup("decode_signal" + QString::number(i));
-			shared_ptr<data::DecodeSignal> signal = add_decode_signal();
-			signal->restore_settings(settings);
-			settings.endGroup();
-		}
-#endif
-
-		// Restore views
-		int views = settings.value("views").toInt();
-
-		for (int i = 0; i < views; i++) {
-			settings.beginGroup("view" + QString::number(i));
-
-			if (i > 0) {
-				views::ViewType type = (views::ViewType)settings.value("type").toInt();
-				add_view(name_, type, this);
-				views_.back()->restore_settings(settings);
-			} else
-				main_view_->restore_settings(settings);
-
-			settings.endGroup();
-		}
-	}
+	if (device)
+		restore_setup(settings);
 }
 
 void Session::select_device(shared_ptr<devices::Device> device)
@@ -456,6 +557,17 @@ void Session::set_default_device()
 	set_device((iter == devices.end()) ? devices.front() : *iter);
 }
 
+bool Session::using_file_device() const
+{
+	shared_ptr<devices::SessionFile> sessionfile_device =
+		dynamic_pointer_cast<devices::SessionFile>(device_);
+
+	shared_ptr<devices::InputFile> inputfile_device =
+		dynamic_pointer_cast<devices::InputFile>(device_);
+
+	return (sessionfile_device || inputfile_device);
+}
+
 /**
  * Convert generic options to data types that are specific to InputFormat.
  *
@@ -501,7 +613,8 @@ Session::input_format_options(vector<string> user_spec,
 	return result;
 }
 
-void Session::load_init_file(const string &file_name, const string &format)
+void Session::load_init_file(const string &file_name,
+	const string &format, const string &setup_file_name)
 {
 	shared_ptr<InputFormat> input_format;
 	map<string, Glib::VariantBase> input_opts;
@@ -525,12 +638,12 @@ void Session::load_init_file(const string &file_name, const string &format)
 			input_format->options());
 	}
 
-	load_file(QString::fromStdString(file_name), input_format, input_opts);
+	load_file(QString::fromStdString(file_name), QString::fromStdString(setup_file_name),
+		input_format, input_opts);
 }
 
-void Session::load_file(QString file_name,
-	shared_ptr<sigrok::InputFormat> format,
-	const map<string, Glib::VariantBase> &options)
+void Session::load_file(QString file_name, QString setup_file_name,
+	shared_ptr<sigrok::InputFormat> format, const map<string, Glib::VariantBase> &options)
 {
 	const QString errorMessage(
 		QString("Failed to load file %1").arg(file_name));
@@ -552,10 +665,22 @@ void Session::load_file(QString file_name,
 					device_manager_.context(),
 					file_name.toStdString())));
 	} catch (Error& e) {
-		MainWindow::show_session_error(tr("Failed to load ") + file_name, e.what());
+		MainWindow::show_session_error(tr("Failed to load %1").arg(file_name), e.what());
 		set_default_device();
 		main_bar_->update_device_list();
 		return;
+	}
+
+	// Use the input file with .pvs extension if no setup file was given
+	if (setup_file_name.isEmpty()) {
+		setup_file_name = file_name;
+		setup_file_name.truncate(setup_file_name.lastIndexOf('.'));
+		setup_file_name.append(".pvs");
+	}
+
+	if (QFileInfo::exists(setup_file_name) && QFileInfo(setup_file_name).isReadable()) {
+		QSettings settings_storage(setup_file_name, QSettings::IniFormat);
+		restore_setup(settings_storage);
 	}
 
 	main_bar_->update_device_list();
@@ -626,9 +751,8 @@ void Session::stop_capture()
 
 void Session::register_view(shared_ptr<views::ViewBase> view)
 {
-	if (views_.empty()) {
+	if (views_.empty())
 		main_view_ = view;
-	}
 
 	views_.push_back(view);
 
@@ -636,35 +760,29 @@ void Session::register_view(shared_ptr<views::ViewBase> view)
 	update_signals();
 
 	// Add all other signals
-	unordered_set< shared_ptr<data::SignalBase> > view_signalbases =
-		view->signalbases();
+	vector< shared_ptr<data::SignalBase> > view_signalbases = view->signalbases();
 
-	views::trace::View *trace_view =
-		qobject_cast<views::trace::View*>(view.get());
+	for (const shared_ptr<data::SignalBase>& signalbase : signalbases_) {
+		const int sb_exists = count_if(
+			view_signalbases.cbegin(), view_signalbases.cend(),
+			[&](const shared_ptr<data::SignalBase> &sb) {
+				return sb == signalbase;
+			});
 
-	if (trace_view) {
-		for (const shared_ptr<data::SignalBase>& signalbase : signalbases_) {
-			const int sb_exists = count_if(
-				view_signalbases.cbegin(), view_signalbases.cend(),
-				[&](const shared_ptr<data::SignalBase> &sb) {
-					return sb == signalbase;
-				});
-			// Add the signal to the view as it doesn't have it yet
-			if (!sb_exists)
-				switch (signalbase->type()) {
-				case data::SignalBase::AnalogChannel:
-				case data::SignalBase::LogicChannel:
-				case data::SignalBase::DecodeChannel:
+		// Add the signal to the view if it doesn't have it yet
+		if (!sb_exists)
+			switch (signalbase->type()) {
+			case data::SignalBase::AnalogChannel:
+			case data::SignalBase::LogicChannel:
+			case data::SignalBase::MathChannel:
+				view->add_signalbase(signalbase);
+				break;
+			case data::SignalBase::DecodeChannel:
 #ifdef ENABLE_DECODE
-					trace_view->add_decode_signal(
-						dynamic_pointer_cast<data::DecodeSignal>(signalbase));
+				view->add_decode_signal(dynamic_pointer_cast<data::DecodeSignal>(signalbase));
 #endif
-					break;
-				case data::SignalBase::MathChannel:
-					// TBD
-					break;
-				}
-		}
+				break;
+			}
 	}
 
 	signals_changed();
@@ -672,7 +790,9 @@ void Session::register_view(shared_ptr<views::ViewBase> view)
 
 void Session::deregister_view(shared_ptr<views::ViewBase> view)
 {
-	views_.remove_if([&](shared_ptr<views::ViewBase> v) { return v == view; });
+	views_.erase(std::remove_if(views_.begin(), views_.end(),
+		[&](shared_ptr<views::ViewBase> v) { return v == view; }),
+		views_.end());
 
 	if (views_.empty()) {
 		main_view_.reset();
@@ -732,7 +852,7 @@ vector<util::Timestamp> Session::get_triggers(uint32_t segment_id) const
 	return result;
 }
 
-const unordered_set< shared_ptr<data::SignalBase> > Session::signalbases() const
+const vector< shared_ptr<data::SignalBase> > Session::signalbases() const
 {
 	return signalbases_;
 }
@@ -757,7 +877,7 @@ shared_ptr<data::DecodeSignal> Session::add_decode_signal()
 		// Create the decode signal
 		signal = make_shared<data::DecodeSignal>(*this);
 
-		signalbases_.insert(signal);
+		signalbases_.push_back(signal);
 
 		// Add the decode signal to all views
 		for (shared_ptr<views::ViewBase>& view : views_)
@@ -774,7 +894,9 @@ shared_ptr<data::DecodeSignal> Session::add_decode_signal()
 
 void Session::remove_decode_signal(shared_ptr<data::DecodeSignal> signal)
 {
-	signalbases_.erase(signal);
+	signalbases_.erase(std::remove_if(signalbases_.begin(), signalbases_.end(),
+		[&](shared_ptr<data::SignalBase> s) { return s == signal; }),
+		signalbases_.end());
 
 	for (shared_ptr<views::ViewBase>& view : views_)
 		view->remove_decode_signal(signal);
@@ -786,6 +908,11 @@ void Session::remove_decode_signal(shared_ptr<data::DecodeSignal> signal)
 void Session::set_capture_state(capture_state state)
 {
 	bool changed;
+
+	if (state == Running)
+		acq_time_.restart();
+	if (state == Stopped)
+		qDebug("Acquisition took %.2f s", acq_time_.elapsed() / 1000.);
 
 	{
 		lock_guard<mutex> lock(sampling_mutex_);
@@ -853,18 +980,17 @@ void Session::update_signals()
 			qobject_cast<views::trace::View*>(viewbase.get());
 
 		if (trace_view) {
-			unordered_set< shared_ptr<views::trace::Signal> >
-				prev_sigs(trace_view->signals());
+			vector< shared_ptr<Signal> > prev_sigs(trace_view->signals());
 			trace_view->clear_signals();
 
 			for (auto channel : sr_dev->channels()) {
 				shared_ptr<data::SignalBase> signalbase;
-				shared_ptr<views::trace::Signal> signal;
+				shared_ptr<Signal> signal;
 
 				// Find the channel in the old signals
 				const auto iter = find_if(
 					prev_sigs.cbegin(), prev_sigs.cend(),
-					[&](const shared_ptr<views::trace::Signal> &s) {
+					[&](const shared_ptr<Signal> &s) {
 						return s->base()->channel() == channel;
 					});
 				if (iter != prev_sigs.end()) {
@@ -878,12 +1004,14 @@ void Session::update_signals()
 						if (b->channel() == channel)
 							signalbase = b;
 
+					shared_ptr<Signal> signal;
+
 					switch(channel->type()->id()) {
 					case SR_CHANNEL_LOGIC:
 						if (!signalbase) {
 							signalbase = make_shared<data::SignalBase>(channel,
 								data::SignalBase::LogicChannel);
-							signalbases_.insert(signalbase);
+							signalbases_.push_back(signalbase);
 
 							all_signal_data_.insert(logic_data_);
 							signalbase->set_data(logic_data_);
@@ -892,10 +1020,7 @@ void Session::update_signals()
 								signalbase.get(), SLOT(on_capture_state_changed(int)));
 						}
 
-						signal = shared_ptr<views::trace::Signal>(
-							new views::trace::LogicSignal(*this,
-								device_, signalbase));
-						trace_view->add_signal(signal);
+						signal = shared_ptr<Signal>(new LogicSignal(*this, device_, signalbase));
 						break;
 
 					case SR_CHANNEL_ANALOG:
@@ -903,7 +1028,7 @@ void Session::update_signals()
 						if (!signalbase) {
 							signalbase = make_shared<data::SignalBase>(channel,
 								data::SignalBase::AnalogChannel);
-							signalbases_.insert(signalbase);
+							signalbases_.push_back(signalbase);
 
 							shared_ptr<data::Analog> data(new data::Analog());
 							all_signal_data_.insert(data);
@@ -913,10 +1038,7 @@ void Session::update_signals()
 								signalbase.get(), SLOT(on_capture_state_changed(int)));
 						}
 
-						signal = shared_ptr<views::trace::Signal>(
-							new views::trace::AnalogSignal(
-								*this, signalbase));
-						trace_view->add_signal(signal);
+						signal = shared_ptr<Signal>(new AnalogSignal(*this, signalbase));
 						break;
 					}
 
@@ -924,6 +1046,17 @@ void Session::update_signals()
 						assert(false);
 						break;
 					}
+
+					// New views take their signal settings from the main view
+					if (!viewbase->is_main_view()) {
+						shared_ptr<pv::views::trace::View> main_tv =
+							dynamic_pointer_cast<pv::views::trace::View>(main_view_);
+						shared_ptr<Signal> main_signal =
+							main_tv->get_signal_by_signalbase(signalbase);
+						signal->restore_settings(main_signal->save_settings());
+					}
+
+					trace_view->add_signal(signal);
 				}
 			}
 		}
@@ -947,6 +1080,35 @@ void Session::sample_thread_proc(function<void (const QString)> error_handler)
 {
 	assert(error_handler);
 
+#ifdef ENABLE_FLOW
+	pipeline_ = Pipeline::create();
+
+	source_ = ElementFactory::create_element("filesrc", "source");
+	sink_ = RefPtr<AppSink>::cast_dynamic(ElementFactory::create_element("appsink", "sink"));
+
+	pipeline_->add(source_)->add(sink_);
+	source_->link(sink_);
+
+	source_->set_property("location", Glib::ustring("/tmp/dummy_binary"));
+
+	sink_->set_property("emit-signals", TRUE);
+	sink_->signal_new_sample().connect(sigc::mem_fun(*this, &Session::on_gst_new_sample));
+
+	// Get the bus from the pipeline and add a bus watch to the default main context
+	RefPtr<Bus> bus = pipeline_->get_bus();
+	bus->add_watch(sigc::mem_fun(this, &Session::on_gst_bus_message));
+
+	// Start pipeline and Wait until it finished processing
+	pipeline_done_interrupt_ = false;
+	pipeline_->set_state(Gst::STATE_PLAYING);
+
+	unique_lock<mutex> pipeline_done_lock_(pipeline_done_mutex_);
+	pipeline_done_cond_.wait(pipeline_done_lock_);
+
+	// Let the pipeline free all resources
+	pipeline_->set_state(Gst::STATE_NULL);
+
+#else
 	if (!device_)
 		return;
 
@@ -982,6 +1144,10 @@ void Session::sample_thread_proc(function<void (const QString)> error_handler)
 		error_handler(e.what());
 		set_capture_state(Stopped);
 		return;
+	} catch (QString& e) {
+		error_handler(e);
+		set_capture_state(Stopped);
+		return;
 	}
 
 	set_capture_state(Stopped);
@@ -989,6 +1155,7 @@ void Session::sample_thread_proc(function<void (const QString)> error_handler)
 	// Confirm that SR_DF_END was received
 	if (cur_logic_segment_)
 		qDebug() << "WARNING: SR_DF_END was not received.";
+#endif
 
 	// Optimize memory usage
 	free_unused_memory();
@@ -1064,6 +1231,49 @@ void Session::signal_segment_completed()
 	if (segment_id >= 0)
 		segment_completed(segment_id);
 }
+
+#ifdef ENABLE_FLOW
+bool Session::on_gst_bus_message(const Glib::RefPtr<Gst::Bus>& bus, const Glib::RefPtr<Gst::Message>& message)
+{
+	(void)bus;
+
+	if ((message->get_source() == pipeline_) && \
+		((message->get_message_type() == Gst::MESSAGE_EOS)))
+		pipeline_done_cond_.notify_one();
+
+	// TODO Also evaluate MESSAGE_STREAM_STATUS to receive error notifications
+
+	return true;
+}
+
+Gst::FlowReturn Session::on_gst_new_sample()
+{
+	RefPtr<Gst::Sample> sample = sink_->pull_sample();
+	RefPtr<Gst::Buffer> buf = sample->get_buffer();
+
+	for (uint32_t block_id = 0; block_id < buf->n_memory(); block_id++) {
+		RefPtr<Gst::Memory> buf_mem = buf->get_memory(block_id);
+		Gst::MapInfo mapinfo;
+		buf_mem->map(mapinfo, Gst::MAP_READ);
+
+		shared_ptr<sigrok::Packet> logic_packet =
+			sr_context->create_logic_packet(mapinfo.get_data(), buf->get_size(), 1);
+
+		try {
+			feed_in_logic(dynamic_pointer_cast<sigrok::Logic>(logic_packet->payload()));
+		} catch (bad_alloc&) {
+			out_of_memory_ = true;
+			device_->stop();
+			buf_mem->unmap(mapinfo);
+			return Gst::FLOW_ERROR;
+		}
+
+		buf_mem->unmap(mapinfo);
+	}
+
+	return Gst::FLOW_OK;
+}
+#endif
 
 void Session::feed_in_header()
 {
@@ -1162,6 +1372,9 @@ void Session::feed_in_logic(shared_ptr<Logic> logic)
 		qDebug() << "WARNING: Received logic packet with 0 samples.";
 		return;
 	}
+
+	if (logic->unit_size() > 8)
+		throw QString(tr("Can't handle more than 64 logic channels."));
 
 	if (!cur_samplerate_)
 		try {
@@ -1347,5 +1560,20 @@ void Session::on_data_saved()
 {
 	data_saved_ = true;
 }
+
+#ifdef ENABLE_DECODE
+void Session::on_new_decoders_selected(vector<const srd_decoder*> decoders)
+{
+	assert(decoders.size() > 0);
+
+	shared_ptr<data::DecodeSignal> signal = add_decode_signal();
+
+	if (signal)
+		for (unsigned int i = 0; i < decoders.size(); i++) {
+			const srd_decoder* d = decoders[i];
+			signal->stack_decoder(d, !(i < decoders.size() - 1));
+		}
+}
+#endif
 
 } // namespace pv

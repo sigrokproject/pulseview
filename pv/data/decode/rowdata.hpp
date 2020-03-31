@@ -24,8 +24,9 @@
 
 #include <libsigrokdecode/libsigrokdecode.h>
 
-#include "annotation.hpp"
+#include <pv/data/decode/annotation.hpp>
 
+using std::deque;
 using std::vector;
 
 namespace pv {
@@ -37,24 +38,26 @@ class Row;
 class RowData
 {
 public:
-	RowData() = default;
+	RowData(Row* row);
 
-public:
 	uint64_t get_max_sample() const;
+
+	uint64_t get_annotation_count() const;
 
 	/**
 	 * Extracts annotations between the given sample range into a vector.
 	 * Note: The annotations are unsorted and only annotations that fully
 	 * fit into the sample range are considered.
 	 */
-	void get_annotation_subset(
-		vector<pv::data::decode::Annotation> &dest,
+	void get_annotation_subset(deque<const pv::data::decode::Annotation*> &dest,
 		uint64_t start_sample, uint64_t end_sample) const;
 
-	void emplace_annotation(srd_proto_data *pdata, const Row *row);
+	void emplace_annotation(srd_proto_data *pdata);
 
 private:
-	vector<Annotation> annotations_;
+	deque<Annotation> annotations_;
+	Row* row_;
+	uint64_t prev_ann_start_sample_;
 };
 
 }  // namespace decode

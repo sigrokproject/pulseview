@@ -42,6 +42,7 @@ using std::out_of_range;
 using std::shared_ptr;
 using std::unordered_set;
 using std::vector;
+using std::weak_ptr;
 
 using pv::data::SignalBase;
 using pv::data::Logic;
@@ -227,49 +228,98 @@ void Channels::populate_group(shared_ptr<ChannelGroup> group,
 	if (group)
 		binding = make_shared<Device>(group);
 
+	QHBoxLayout* group_layout = new QHBoxLayout();
+	layout_.addRow(group_layout);
+
 	// Create a title if the group is going to have any content
 	if ((!sigs.empty() || (binding && !binding->properties().empty())) && group)
 	{
 		QLabel *label = new QLabel(
 			QString("<h3>%1</h3>").arg(group->name().c_str()));
-		layout_.addRow(label);
+		group_layout->addWidget(label);
 		group_label_map_[group] = label;
 	}
 
 	// Create the channel group grid
-	QGridLayout *const channel_grid = create_channel_group_grid(sigs);
-	layout_.addRow(channel_grid);
-
-	// Create the channel group options
-	if (binding) {
-		binding->add_properties_to_form(&layout_, true);
-		group_bindings_.push_back(binding);
-	}
-}
-
-QGridLayout* Channels::create_channel_group_grid(
-	const vector< shared_ptr<SignalBase> > sigs)
-{
 	int row = 0, col = 0;
 	QGridLayout *const grid = new QGridLayout();
+	vector<QCheckBox*> group_checkboxes, this_row;
 
 	for (const shared_ptr<SignalBase>& sig : sigs) {
 		assert(sig);
 
 		QCheckBox *const checkbox = new QCheckBox(sig->display_name());
 		check_box_mapper_.setMapping(checkbox, checkbox);
-		connect(checkbox, SIGNAL(toggled(bool)),
-			&check_box_mapper_, SLOT(map()));
+		connect(checkbox, SIGNAL(toggled(bool)), &check_box_mapper_, SLOT(map()));
 
 		grid->addWidget(checkbox, row, col);
 
+		group_checkboxes.push_back(checkbox);
+		this_row.push_back(checkbox);
+
 		check_box_signal_map_[checkbox] = sig;
 
-		if (++col >= 8)
+		weak_ptr<SignalBase> weak_sig(sig);
+		connect(checkbox, &QCheckBox::toggled,
+				[weak_sig](bool state) {
+			auto sig = weak_sig.lock();
+			assert(sig);
+			sig->set_enabled(state);
+			});
+
+		if ((++col >= 8 || &sig == &sigs.back())) {
+			// Show buttons if there's more than one row
+			if (sigs.size() > 8) {
+				QPushButton *row_enable_button = new QPushButton(tr("All"), this);
+				grid->addWidget(row_enable_button, row, 8);
+				connect(row_enable_button, &QPushButton::clicked, row_enable_button,
+					[this_row]() {
+						for (QCheckBox *box : this_row)
+							box->setChecked(true);
+					});
+
+				QPushButton *row_disable_button = new QPushButton(tr("None"), this);
+				connect(row_disable_button, &QPushButton::clicked, row_disable_button,
+						[this_row]() {
+					for (QCheckBox *box : this_row)
+						box->setChecked(false);
+					});
+				grid->addWidget(row_disable_button, row, 9);
+			}
+
+			this_row.clear();
 			col = 0, row++;
+		}
+	}
+	layout_.addRow(grid);
+
+	if (sigs.size() > 1) {
+		// Create enable all/none buttons
+		QPushButton *btn_enable_all, *btn_disable_all;
+
+		btn_enable_all = new QPushButton(tr("All"));
+		btn_disable_all = new QPushButton(tr("None"));
+		group_layout->addWidget(btn_enable_all);
+		group_layout->addWidget(btn_disable_all);
+
+		connect(btn_enable_all, &QPushButton::clicked, btn_enable_all,
+			[group_checkboxes](){
+				for (QCheckBox *box: group_checkboxes)
+					box->setChecked(true);
+			});
+
+		connect(btn_disable_all, &QPushButton::clicked, btn_disable_all,
+			[group_checkboxes](){
+				for (QCheckBox *box: group_checkboxes)
+					box->setChecked(false);
+			});
 	}
 
-	return grid;
+	// Create the channel group options
+	if (binding) {
+		binding->add_properties_to_form(&layout_, true);
+		group_bindings_.push_back(binding);
+	}
 }
 
 void Channels::showEvent(QShowEvent *event)

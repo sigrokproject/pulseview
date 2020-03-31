@@ -89,7 +89,8 @@ private:
 
 	QComboBox drivers_;
 
-	QComboBox serial_devices_;
+	QWidget *serial_config_;
+	QComboBox serial_devices_, serial_baudrate_;
 
 	QWidget *tcp_config_;
 	QLineEdit *tcp_host_;

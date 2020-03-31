@@ -17,13 +17,14 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "application.hpp"
-#include "config.h"
-
 #include <iostream>
 #include <typeinfo>
 
 #include <QDebug>
+#include <QDir>
+#include <QLibraryInfo>
+#include <QMessageBox>
+#include <QWidget>
 
 #include <boost/version.hpp>
 
@@ -34,6 +35,10 @@
 #ifdef ENABLE_DECODE
 #include <libsigrokdecode/libsigrokdecode.h>
 #endif
+
+#include "application.hpp"
+#include "config.h"
+#include "globalsettings.hpp"
 
 using std::cout;
 using std::endl;
@@ -58,6 +63,74 @@ Application::Application(int &argc, char* argv[]) :
 	setApplicationName("PulseView");
 	setOrganizationName("sigrok");
 	setOrganizationDomain("sigrok.org");
+}
+
+QStringList Application::get_languages()
+{
+	QStringList files = QDir(":/l10n/").entryList(QStringList("*.qm"), QDir::Files);
+
+	QStringList result;
+	result << "en";  // Add default language to the set
+
+	// Remove file extensions
+	for (const QString& file : files)
+		result << file.split(".").front();
+
+	result.sort(Qt::CaseInsensitive);
+
+	return result;
+}
+
+void Application::switch_language(const QString& language)
+{
+	removeTranslator(&app_translator_);
+	removeTranslator(&qt_translator_);
+	removeTranslator(&qtbase_translator_);
+
+	if ((language != "C") && (language != "en")) {
+		// Application translations
+		QString resource = ":/l10n/" + language +".qm";
+		if (app_translator_.load(resource))
+			installTranslator(&app_translator_);
+		else
+			qWarning() << "Translation resource" << resource << "not found";
+
+		// Qt translations
+		QString tr_path(QLibraryInfo::location(QLibraryInfo::TranslationsPath));
+
+		if (qt_translator_.load("qt_" + language, tr_path))
+			installTranslator(&qt_translator_);
+		else
+			qWarning() << "QT translations for" << language << "not found at" <<
+				tr_path << ", Qt translations package is probably missing";
+
+		// Qt base translations
+		if (qtbase_translator_.load("qtbase_" + language, tr_path))
+			installTranslator(&qtbase_translator_);
+		else
+			qWarning() << "QT base translations for" << language << "not found at" <<
+				tr_path << ", Qt translations package is probably missing";
+	}
+
+	if (!topLevelWidgets().empty()) {
+		// Force all windows to update
+		for (QWidget *widget : topLevelWidgets())
+			widget->update();
+
+		QMessageBox msg(topLevelWidgets().front());
+		msg.setText(tr("Some parts of the application may still " \
+				"use the previous language. Re-opening the affected windows or " \
+				"restarting the application will remedy this."));
+		msg.setStandardButtons(QMessageBox::Ok);
+		msg.setIcon(QMessageBox::Information);
+		msg.exec();
+	}
+}
+
+void Application::on_setting_changed(const QString &key, const QVariant &value)
+{
+	if (key == pv::GlobalSettings::Key_General_Language)
+		switch_language(value.toString());
 }
 
 void Application::collect_version_info(shared_ptr<sigrok::Context> context)

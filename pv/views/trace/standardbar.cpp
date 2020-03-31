@@ -203,7 +203,7 @@ void StandardBar::on_actionViewShowCursors_triggered()
 	const bool show = action_view_show_cursors_->isChecked();
 
 	if (show)
-		view_->centre_cursors();
+		view_->center_cursors();
 
 	view_->show_cursors(show);
 }

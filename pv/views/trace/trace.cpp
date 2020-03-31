@@ -292,12 +292,13 @@ void Trace::paint_back(QPainter &p, ViewItemPaintParams &pp)
 
 void Trace::paint_axis(QPainter &p, ViewItemPaintParams &pp, int y)
 {
+	bool was_antialiased = p.testRenderHint(QPainter::Antialiasing);
 	p.setRenderHint(QPainter::Antialiasing, false);
 
 	p.setPen(axis_pen_);
 	p.drawLine(QPointF(pp.left(), y), QPointF(pp.right(), y));
 
-	p.setRenderHint(QPainter::Antialiasing, true);
+	p.setRenderHint(QPainter::Antialiasing, was_antialiased);
 }
 
 void Trace::add_color_option(QWidget *parent, QFormLayout *form)
@@ -328,10 +329,11 @@ void Trace::paint_hover_marker(QPainter &p)
 
 	const pair<int, int> extents = v_extents();
 
+	bool was_antialiased = p.testRenderHint(QPainter::Antialiasing);
 	p.setRenderHint(QPainter::Antialiasing, false);
 	p.drawLine(x, get_visual_y() + extents.first,
 		x, get_visual_y() + extents.second);
-	p.setRenderHint(QPainter::Antialiasing, true);
+	p.setRenderHint(QPainter::Antialiasing, was_antialiased);
 }
 
 void Trace::create_popup_form()
@@ -344,13 +346,28 @@ void Trace::create_popup_form()
 	// handled, leaving the parent popup_ time to handle the change.
 	if (popup_form_) {
 		QWidget *suicidal = new QWidget();
-		suicidal->setLayout(popup_form_);
+		suicidal->setLayout(popup_->layout());
 		suicidal->deleteLater();
 	}
 
 	// Repopulate the popup
-	popup_form_ = new QFormLayout(popup_);
-	popup_->setLayout(popup_form_);
+	widgets::QWidthAdjustingScrollArea* scrollarea = new widgets::QWidthAdjustingScrollArea();
+	QWidget* scrollarea_content = new QWidget(scrollarea);
+
+	scrollarea->setWidget(scrollarea_content);
+	scrollarea->setWidgetResizable(true);
+	scrollarea->setContentsMargins(0, 0, 0, 0);
+	scrollarea->setFrameShape(QFrame::NoFrame);
+	scrollarea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+	scrollarea_content->setContentsMargins(0, 0, 0, 0);
+
+	popup_->setLayout(new QVBoxLayout());
+	popup_->layout()->addWidget(scrollarea);
+	popup_->layout()->setContentsMargins(0, 0, 0, 0);
+
+	popup_form_ = new QFormLayout(scrollarea_content);
+	popup_form_->setSizeConstraint(QLayout::SetMinAndMaxSize);
+
 	populate_popup_form(popup_, popup_form_);
 }
 
@@ -411,7 +428,7 @@ void Trace::on_create_marker_here() const
 	const Ruler *ruler = view->ruler();
 	QPoint p = ruler->mapFrom(view, QPoint(context_menu_x_pos_, 0));
 
-	view->add_flag(ruler->get_time_from_x_pos(p.x()));
+	view->add_flag(ruler->get_absolute_time_from_x_pos(p.x()));
 }
 
 } // namespace trace

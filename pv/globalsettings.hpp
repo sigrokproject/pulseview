@@ -30,6 +30,8 @@
 #include <QString>
 #include <QVariant>
 
+#include "util.hpp"
+
 using std::map;
 using std::pair;
 using std::vector;
@@ -51,8 +53,10 @@ class GlobalSettings : public QSettings
 	Q_OBJECT
 
 public:
+	static const QString Key_General_Language;
 	static const QString Key_General_Theme;
 	static const QString Key_General_Style;
+	static const QString Key_General_SaveWithSetup;
 	static const QString Key_View_ZoomToFitDuringAcq;
 	static const QString Key_View_ZoomToFitAfterAcq;
 	static const QString Key_View_TriggerIsZeroTime;
@@ -68,8 +72,12 @@ public:
 	static const QString Key_View_ShowHoverMarker;
 	static const QString Key_View_SnapDistance;
 	static const QString Key_View_CursorFillColor;
+	static const QString Key_View_CursorShowInterval;
+	static const QString Key_View_CursorShowFrequency;
+	static const QString Key_View_CursorShowSamples;
 	static const QString Key_Dec_InitialStateConfigurable;
 	static const QString Key_Dec_ExportFormat;
+	static const QString Key_Dec_AlwaysShowAllRows;
 	static const QString Key_Log_BufferSize;
 	static const QString Key_Log_NotifyOfStacktrace;
 
@@ -87,8 +95,10 @@ public:
 	void set_bright_theme_default_colors();
 	void set_dark_theme_default_colors();
 
-	bool current_theme_is_dark();
+	static bool current_theme_is_dark();
 	void apply_theme();
+
+	void apply_language();
 
 	static void add_change_handler(GlobalSettingsInterface *cb);
 	static void remove_change_handler(GlobalSettingsInterface *cb);
@@ -114,12 +124,13 @@ public:
 	void undo_tracked_changes();
 
 	static void store_gvariant(QSettings &settings, GVariant *v);
-
 	static GVariant* restore_gvariant(QSettings &settings);
 
 	static void store_variantbase(QSettings &settings, Glib::VariantBase v);
-
 	static Glib::VariantBase restore_variantbase(QSettings &settings);
+
+	static void store_timestamp(QSettings &settings, const char *name, const pv::util::Timestamp &ts);
+	static pv::util::Timestamp restore_timestamp(QSettings &settings, const char *name);
 
 private:
 	static vector<GlobalSettingsInterface*> callbacks_;
@@ -130,7 +141,7 @@ private:
 	static QString default_style_;
 	static QPalette default_palette_;
 
-	bool is_dark_theme_;
+	static bool is_dark_theme_;
 };
 
 } // namespace pv

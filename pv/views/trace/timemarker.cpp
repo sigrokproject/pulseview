@@ -25,6 +25,7 @@
 #include "timemarker.hpp"
 
 #include "pv/widgets/timestampspinbox.hpp"
+#include "ruler.hpp"
 #include "view.hpp"
 
 #include <QApplication>
@@ -49,12 +50,11 @@ TimeMarker::TimeMarker(
 	color_(color),
 	time_(time),
 	value_action_(nullptr),
-	value_widget_(nullptr),
-	updating_value_widget_(false)
+	value_widget_(nullptr)
 {
 }
 
-const pv::util::Timestamp& TimeMarker::time() const
+const pv::util::Timestamp TimeMarker::time() const
 {
 	return time_;
 }
@@ -64,9 +64,8 @@ void TimeMarker::set_time(const pv::util::Timestamp& time)
 	time_ = time;
 
 	if (value_widget_) {
-		updating_value_widget_ = true;
-		value_widget_->setValue(time);
-		updating_value_widget_ = false;
+		QSignalBlocker blocker(value_widget_);
+		value_widget_->setValue(view_.ruler()->get_ruler_time_from_absolute_time(time));
 	}
 
 	view_.time_item_appearance_changed(true, true);
@@ -104,6 +103,11 @@ QRectF TimeMarker::hit_box_rect(const ViewItemPaintParams &pp) const
 	const float x = get_x();
 	const float h = QFontMetrics(QApplication::font()).height();
 	return QRectF(x - h / 2.0f, pp.top(), h, pp.height());
+}
+
+void TimeMarker::set_text(const QString &text)
+{
+	(void)text;
 }
 
 void TimeMarker::paint_label(QPainter &p, const QRect &rect, bool hover)
@@ -179,7 +183,7 @@ pv::widgets::Popup* TimeMarker::create_popup(QWidget *parent)
 	popup->setLayout(form);
 
 	value_widget_ = new pv::widgets::TimestampSpinBox(parent);
-	value_widget_->setValue(time_);
+	value_widget_->setValue(view_.ruler()->get_ruler_time_from_absolute_time(time_));
 
 	connect(value_widget_, SIGNAL(valueChanged(const pv::util::Timestamp&)),
 		this, SLOT(on_value_changed(const pv::util::Timestamp&)));
@@ -191,8 +195,7 @@ pv::widgets::Popup* TimeMarker::create_popup(QWidget *parent)
 
 void TimeMarker::on_value_changed(const pv::util::Timestamp& value)
 {
-	if (!updating_value_widget_)
-		set_time(value);
+	set_time(view_.ruler()->get_absolute_time_from_ruler_time(value));
 }
 
 } // namespace trace

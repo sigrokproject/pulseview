@@ -20,6 +20,11 @@
 #ifndef PULSEVIEW_PV_SESSION_HPP
 #define PULSEVIEW_PV_SESSION_HPP
 
+#ifdef ENABLE_FLOW
+#include <atomic>
+#include <condition_variable>
+#endif
+
 #include <functional>
 #include <map>
 #include <memory>
@@ -33,18 +38,31 @@
 #include <QObject>
 #include <QSettings>
 #include <QString>
+#include <QElapsedTimer>
+
+#ifdef ENABLE_FLOW
+#include <gstreamermm.h>
+#include <libsigrokflow/libsigrokflow.hpp>
+#endif
 
 #include "util.hpp"
 #include "views/viewbase.hpp"
 
+
 using std::function;
-using std::list;
 using std::map;
 using std::mutex;
 using std::recursive_mutex;
 using std::shared_ptr;
 using std::string;
 using std::unordered_set;
+
+#ifdef ENABLE_FLOW
+using Glib::RefPtr;
+using Gst::AppSink;
+using Gst::Element;
+using Gst::Pipeline;
+#endif
 
 struct srd_decoder;
 struct srd_channel;
@@ -120,7 +138,7 @@ public:
 
 	void set_name(QString name);
 
-	const list< shared_ptr<views::ViewBase> > views() const;
+	const vector< shared_ptr<views::ViewBase> > views() const;
 
 	shared_ptr<views::ViewBase> main_view() const;
 
@@ -133,7 +151,11 @@ public:
 	 */
 	bool data_saved() const;
 
+	void save_setup(QSettings &settings) const;
+
 	void save_settings(QSettings &settings) const;
+
+	void restore_setup(QSettings &settings);
 
 	void restore_settings(QSettings &settings);
 
@@ -149,9 +171,12 @@ public:
 
 	void set_default_device();
 
-	void load_init_file(const string &file_name, const string &format);
+	bool using_file_device() const;
 
-	void load_file(QString file_name,
+	void load_init_file(const string &file_name, const string &format,
+		const string &setup_file_name);
+
+	void load_file(QString file_name, QString setup_file_name = QString(),
 		shared_ptr<sigrok::InputFormat> format = nullptr,
 		const map<string, Glib::VariantBase> &options =
 			map<string, Glib::VariantBase>());
@@ -174,7 +199,7 @@ public:
 
 	bool has_view(shared_ptr<views::ViewBase> view);
 
-	const unordered_set< shared_ptr<data::SignalBase> > signalbases() const;
+	const vector< shared_ptr<data::SignalBase> > signalbases() const;
 
 	bool all_segments_complete(uint32_t segment_id) const;
 
@@ -202,6 +227,12 @@ private:
 
 	void signal_new_segment();
 	void signal_segment_completed();
+
+#ifdef ENABLE_FLOW
+	bool on_gst_bus_message(const Glib::RefPtr<Gst::Bus>& bus, const Glib::RefPtr<Gst::Message>& message);
+
+	Gst::FlowReturn on_gst_new_sample();
+#endif
 
 	void feed_in_header();
 
@@ -234,18 +265,21 @@ Q_SIGNALS:
 
 	void data_received();
 
-	void add_view(const QString &title, views::ViewType type,
-		Session *session);
+	void add_view(views::ViewType type, Session *session);
 
 public Q_SLOTS:
 	void on_data_saved();
+
+#ifdef ENABLE_DECODE
+	void on_new_decoders_selected(vector<const srd_decoder*> decoders);
+#endif
 
 private:
 	DeviceManager &device_manager_;
 	shared_ptr<devices::Device> device_;
 	QString default_name_, name_;
 
-	list< shared_ptr<views::ViewBase> > views_;
+	vector< shared_ptr<views::ViewBase> > views_;
 	shared_ptr<pv::views::ViewBase> main_view_;
 
 	shared_ptr<pv::toolbars::MainBar> main_bar_;
@@ -253,7 +287,7 @@ private:
 	mutable mutex sampling_mutex_; //!< Protects access to capture_state_.
 	capture_state capture_state_;
 
-	unordered_set< shared_ptr<data::SignalBase> > signalbases_;
+	vector< shared_ptr<data::SignalBase> > signalbases_;
 	unordered_set< shared_ptr<data::SignalData> > all_signal_data_;
 
 	/// trigger_list_ contains pairs of <segment_id, timestamp> values.
@@ -272,6 +306,18 @@ private:
 	bool out_of_memory_;
 	bool data_saved_;
 	bool frame_began_;
+
+	QElapsedTimer acq_time_;
+
+#ifdef ENABLE_FLOW
+	RefPtr<Pipeline> pipeline_;
+	RefPtr<Element> source_;
+	RefPtr<AppSink> sink_;
+
+	mutable mutex pipeline_done_mutex_;
+	mutable condition_variable pipeline_done_cond_;
+	atomic<bool> pipeline_done_interrupt_;
+#endif
 };
 
 } // namespace pv

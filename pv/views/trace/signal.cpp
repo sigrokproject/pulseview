@@ -90,13 +90,33 @@ shared_ptr<data::SignalBase> Signal::base() const
 
 void Signal::save_settings(QSettings &settings) const
 {
-	(void)settings;
+	std::map<QString, QVariant> settings_map = save_settings();
+
+	for (auto& entry : settings_map)
+		settings.setValue(entry.first, entry.second);
+}
+
+std::map<QString, QVariant> Signal::save_settings() const
+{
+	return std::map<QString, QVariant>();
 }
 
 void Signal::restore_settings(QSettings &settings)
 {
+	std::map<QString, QVariant> settings_map;
+
+	QStringList keys = settings.allKeys();
+	for (int i = 0; i < keys.size(); i++)
+		settings_map[keys.at(i)] = settings.value(keys.at(i));
+
+	restore_settings(settings_map);
+}
+
+void Signal::restore_settings(std::map<QString, QVariant> settings)
+{
 	(void)settings;
 }
+
 
 void Signal::paint_back(QPainter &p, ViewItemPaintParams &pp)
 {

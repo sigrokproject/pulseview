@@ -56,6 +56,11 @@ void TriggerMarker::set_time(const pv::util::Timestamp& time)
 	view_.time_item_appearance_changed(true, true);
 }
 
+const pv::util::Timestamp TriggerMarker::time() const
+{
+	return time_;
+}
+
 float TriggerMarker::get_x() const
 {
 	return ((time_ - view_.offset()) / view_.scale()).convert_to<float>();

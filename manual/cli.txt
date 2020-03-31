@@ -23,6 +23,14 @@ Example:
 
 	pulseview -i data.csv -I csv:samplerate=3000000
 
+If you previously saved a PulseView session setup alongside your input file, PulseView will
+automatically load those settings so long as the setup file (.pvs) has the same base name
+as your input file.
+You can also manually specify a PulseView session setup file to load with -s / --settings.
+Example:
+
+	pulseview -s settings.pvs data.sr
+
 The remaining parameters are mostly for debug purposes:
 
 	-V / --version		Shows the release version

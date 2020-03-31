@@ -26,6 +26,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include <QMainWindow>
 #include <QTimer>
 #include <QWidget>
 
@@ -37,7 +38,7 @@
 #endif
 
 using std::shared_ptr;
-using std::unordered_set;
+using std::vector;
 
 namespace pv {
 
@@ -50,20 +51,29 @@ class Signal;
 
 namespace views {
 
+// When adding an entry here, don't forget to update ViewTypeNames as well
 enum ViewType {
 	ViewTypeTrace,
-	ViewTypeTabularDecode
+#ifdef ENABLE_DECODE
+	ViewTypeDecoderBinary,
+#endif
+	ViewTypeCount  // Indicates how many view types there are, must always be last
 };
+
+extern const char* ViewTypeNames[ViewTypeCount];
 
 class ViewBase : public QWidget
 {
 	Q_OBJECT
 
-private:
+public:
 	static const int MaxViewAutoUpdateRate;
 
 public:
-	explicit ViewBase(Session &session, bool is_main_view = false, QWidget *parent = nullptr);
+	explicit ViewBase(Session &session, bool is_main_view = false, QMainWindow *parent = nullptr);
+
+	virtual ViewType get_type() const = 0;
+	bool is_main_view() const;
 
 	/**
 	 * Resets the view to its default state after construction. It does however
@@ -79,7 +89,7 @@ public:
 	/**
 	 * Returns the signal bases contained in this view.
 	 */
-	unordered_set< shared_ptr<data::SignalBase> > signalbases() const;
+	vector< shared_ptr<data::SignalBase> > signalbases() const;
 
 	virtual void clear_signalbases();
 
@@ -116,10 +126,12 @@ protected:
 
 	const bool is_main_view_;
 
-	util::Timestamp ruler_shift_;
 	util::TimeUnit time_unit_;
 
-	unordered_set< shared_ptr<data::SignalBase> > signalbases_;
+	vector< shared_ptr<data::SignalBase> > signalbases_;
+#ifdef ENABLE_DECODE
+	vector< shared_ptr<data::DecodeSignal> > decode_signals_;
+#endif
 
 	/// The ID of the currently displayed segment
 	uint32_t current_segment_;

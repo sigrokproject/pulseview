@@ -31,13 +31,28 @@ TimeItem::TimeItem(View &view) :
 
 void TimeItem::drag_by(const QPoint &delta)
 {
-	int64_t sample_num = view_.get_nearest_level_change(drag_point_ + delta);
-
-	if (sample_num > -1)
-		set_time(sample_num / view_.get_signal_under_mouse_cursor()->base()->get_samplerate());
-	else
+	if (snapping_disabled_) {
 		set_time(view_.offset() + (drag_point_.x() + delta.x() - 0.5) *
 			view_.scale());
+	} else {
+		int64_t sample_num = view_.get_nearest_level_change(drag_point_ + delta);
+
+		if (sample_num > -1)
+			set_time(sample_num / view_.get_signal_under_mouse_cursor()->base()->get_samplerate());
+		else
+			set_time(view_.offset() + (drag_point_.x() + delta.x() - 0.5) * view_.scale());
+	}
+}
+
+const pv::util::Timestamp TimeItem::delta(const pv::util::Timestamp& other) const
+{
+	return other - time();
+}
+
+
+bool TimeItem::is_snapping_disabled() const
+{
+	return snapping_disabled_;
 }
 
 } // namespace trace

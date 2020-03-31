@@ -25,6 +25,7 @@
 
 #include <QApplication>
 #include <QBrush>
+#include <QMenu>
 #include <QPainter>
 #include <QPointF>
 #include <QRect>
@@ -59,7 +60,8 @@ QString Cursor::get_text() const
 	const pv::util::Timestamp& diff = abs(time_ - other->time_);
 
 	return Ruler::format_time_with_distance(
-		diff, time_, view_.tick_prefix(), view_.time_unit(), view_.tick_precision());
+		diff, view_.ruler()->get_ruler_time_from_absolute_time(time_),
+        view_.tick_prefix(), view_.time_unit(), view_.tick_precision());
 }
 
 QRectF Cursor::label_rect(const QRectF &rect) const
@@ -86,6 +88,19 @@ QRectF Cursor::label_rect(const QRectF &rect) const
 		return QRectF(x, top, label_size.width(), height);
 	else
 		return QRectF(x - label_size.width(), top, label_size.width(), height);
+}
+
+QMenu *Cursor::create_header_context_menu(QWidget *parent)
+{
+	QMenu *const menu = new QMenu(parent);
+
+	QAction *const snap_disable = new QAction(tr("Disable snapping"), this);
+	snap_disable->setCheckable(true);
+	snap_disable->setChecked(snapping_disabled_);
+	connect(snap_disable, &QAction::toggled, this, [=](bool checked){snapping_disabled_ = checked;});
+	menu->addAction(snap_disable);
+
+	return menu;
 }
 
 shared_ptr<Cursor> Cursor::get_other_cursor() const

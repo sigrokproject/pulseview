@@ -1,4 +1,4 @@
-.TH PULSEVIEW 1 "March 30, 2018"
+.TH PULSEVIEW 1 "March 31, 2020"
 .SH "NAME"
 PulseView \- Qt-based LA/scope/MSO GUI for sigrok
 .SH "SYNOPSIS"
@@ -64,6 +64,10 @@ file.
 .BR "\-I, \-\-input\-format " <format>
 Specifies the format of the input file to be loaded.
 .TP
+.BR "\-s, \-\-settings " <filename>
+Load PulseView session setup to use with the input file. The setup file must be
+in the "PulseView session setup" format (.pvs).
+.TP
 .BR "\-c, \-\-clean"
 Prevents the previously used sessions to be restored from settings storage.
 This is useful if you want only a single session with the file given on the
@@ -72,9 +76,6 @@ command line instead of restoring all previously used sessions as well.
 .TP
 .B "f"
 Zoom-to-fit.
-.TP
-.B "o"
-Zoom 1:1.
 .TP
 .B "s"
 Enable / disable sticky scrolling. When enabled, the right edge of the screen
@@ -89,6 +90,9 @@ Show / hide analog minor grid (in addition to the vdiv grid).
 .B "c"
 Show / hide cursors.
 .TP
+.B "d"
+Show / hide protocol decoder selector.
+.TP
 .B "b"
 Toggle between coloured trace backgrounds and alternating light/dark
 gray trace backgrounds.
@@ -96,8 +100,20 @@ gray trace backgrounds.
 .B "SPACE"
 Start / stop an acquisition.
 .TP
-.B "Arrow keys"
-Scroll up/down/left/right.
+.B "Left/right arrow keys"
+Scroll left/right.
+.TP
+.B "+/-"
+Zoom in/out.
+.TP
+.B "Up/down arrow keys"
+Zoom in/out.
+.TP
+.B "Home/End"
+Jump to the start/end of the sample data.
+.TP
+.B "1/2"
+Attach left/right side of the cursors to the mouse.
 .TP
 .B "CTRL+o"
 Open file.
@@ -114,11 +130,8 @@ Group all currently selected traces into a trace group.
 .B "CTRL+u"
 Ungroup the traces in the currently selected trace group.
 .TP
-.B "CTRL++"
-Zoom in.
-.TP
-.B "CTRL+-"
-Zoom out.
+.B "CTRL+up/down arrow keys"
+Scroll down/up.
 .TP
 .B "CTRL+q"
 Quit, i.e. shutdown PulseView (closing all session tabs).

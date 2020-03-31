@@ -21,6 +21,8 @@
 
 #include "storesession.hpp"
 
+#include <QSettings>
+
 #include <pv/data/analog.hpp>
 #include <pv/data/analogsegment.hpp>
 #include <pv/data/logic.hpp>
@@ -28,6 +30,7 @@
 #include <pv/data/signalbase.hpp>
 #include <pv/devicemanager.hpp>
 #include <pv/devices/device.hpp>
+#include <pv/globalsettings.hpp>
 #include <pv/session.hpp>
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
@@ -42,7 +45,6 @@ using std::mutex;
 using std::pair;
 using std::shared_ptr;
 using std::string;
-using std::unordered_set;
 using std::vector;
 
 using Glib::VariantBase;
@@ -90,7 +92,7 @@ const QString& StoreSession::error() const
 
 bool StoreSession::start()
 {
-	const unordered_set< shared_ptr<data::SignalBase> > sigs(session_.signalbases());
+	const vector< shared_ptr<data::SignalBase> > sigs(session_.signalbases());
 
 	shared_ptr<data::Segment> any_segment;
 	shared_ptr<data::LogicSegment> lsegment;
@@ -189,6 +191,20 @@ bool StoreSession::start()
 
 	thread_ = std::thread(&StoreSession::store_proc, this,
 		achannel_list, asegment_list, lsegment);
+
+	// Save session setup if we're saving to srzip and the user wants it
+	GlobalSettings settings;
+	bool save_with_setup = settings.value(GlobalSettings::Key_General_SaveWithSetup).toBool();
+
+	if ((output_format_->name() == "srzip") && (save_with_setup)) {
+		QString setup_file_name = QString::fromStdString(file_name_);
+		setup_file_name.truncate(setup_file_name.lastIndexOf('.'));
+		setup_file_name.append(".pvs");
+
+		QSettings settings_storage(setup_file_name, QSettings::IniFormat);
+		session_.save_setup(settings_storage);
+	}
+
 	return true;
 }
 
@@ -234,6 +250,7 @@ void StoreSession::store_proc(vector< shared_ptr<data::SignalBase> > achannel_li
 	const unsigned int samples_per_block =
 		min(asamples_per_block, lsamples_per_block);
 
+	const auto context = session_.device_manager().context();
 	while (!interrupt_ && sample_count_) {
 		progress_updated();
 
@@ -241,8 +258,6 @@ void StoreSession::store_proc(vector< shared_ptr<data::SignalBase> > achannel_li
 			min((uint64_t)samples_per_block, sample_count_);
 
 		try {
-			const auto context = session_.device_manager().context();
-
 			for (unsigned int i = 0; i < achannel_list.size(); i++) {
 				shared_ptr<sigrok::Channel> achannel = (achannel_list.at(i))->channel();
 				shared_ptr<data::AnalogSegment> asegment = asegment_list.at(i);
@@ -285,6 +300,11 @@ void StoreSession::store_proc(vector< shared_ptr<data::SignalBase> > achannel_li
 		start_sample_ += packet_len;
 		units_stored_ = unit_count_ - (sample_count_ >> progress_scale);
 	}
+
+	auto dfend = context->create_end_packet();
+	const string ldata_str = output_->receive(dfend);
+	if (output_stream_.is_open())
+		output_stream_ << ldata_str;
 
 	// Zeroing the progress variables indicates completion
 	units_stored_ = unit_count_ = 0;

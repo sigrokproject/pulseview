@@ -19,11 +19,13 @@
 
 #include "timemarker.hpp"
 #include "view.hpp"
+#include "ruler.hpp"
 
 #include <QColor>
 #include <QFormLayout>
 #include <QLineEdit>
 #include <QMenu>
+#include <QApplication>
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
 
@@ -57,7 +59,58 @@ bool Flag::enabled() const
 
 QString Flag::get_text() const
 {
-	return text_;
+	QString s;
+
+	const shared_ptr<TimeItem> ref_item = view_.ruler()->get_reference_item();
+
+	if (!ref_item || (ref_item.get() == this))
+		s = text_;
+	else
+		s = Ruler::format_time_with_distance(
+			ref_item->time(), ref_item->delta(time_),
+			view_.tick_prefix(), view_.time_unit(), view_.tick_precision());
+
+	return s;
+}
+
+void Flag::set_text(const QString &text)
+{
+	text_ = text;
+	view_.time_item_appearance_changed(true, false);
+}
+
+QRectF Flag::label_rect(const QRectF &rect) const
+{
+	QRectF r;
+
+	const shared_ptr<TimeItem> ref_item = view_.ruler()->get_reference_item();
+
+	if (!ref_item || (ref_item.get() == this)) {
+		r = TimeMarker::label_rect(rect);
+	} else {
+		// TODO: Remove code duplication between here and cursor.cpp
+		const float x = get_x();
+
+		QFontMetrics m(QApplication::font());
+		QSize text_size = m.boundingRect(get_text()).size();
+
+		const QSizeF label_size(
+			text_size.width() + LabelPadding.width() * 2,
+			text_size.height() + LabelPadding.height() * 2);
+
+		const float height = label_size.height();
+		const float top =
+			rect.height() - label_size.height() - TimeMarker::ArrowSize - 0.5f;
+
+		const pv::util::Timestamp& delta = ref_item->delta(time_);
+
+		if (delta >= 0)
+			r = QRectF(x, top, label_size.width(), height);
+		else
+			r = QRectF(x - label_size.width(), top, label_size.width(), height);
+	}
+
+	return r;
 }
 
 pv::widgets::Popup* Flag::create_popup(QWidget *parent)
@@ -90,6 +143,12 @@ QMenu* Flag::create_header_context_menu(QWidget *parent)
 	connect(del, SIGNAL(triggered()), this, SLOT(on_delete()));
 	menu->addAction(del);
 
+	QAction *const snap_disable = new QAction(tr("Disable snapping"), this);
+	snap_disable->setCheckable(true);
+	snap_disable->setChecked(snapping_disabled_);
+	connect(snap_disable, &QAction::toggled, this, [=](bool checked){snapping_disabled_ = checked;});
+	menu->addAction(snap_disable);
+
 	return menu;
 }
 
@@ -105,8 +164,7 @@ void Flag::on_delete()
 
 void Flag::on_text_changed(const QString &text)
 {
-	text_ = text;
-	view_.time_item_appearance_changed(true, false);
+	set_text(text);
 }
 
 } // namespace trace

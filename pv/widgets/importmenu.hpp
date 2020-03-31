@@ -26,6 +26,7 @@
 #include <QSignalMapper>
 
 using std::shared_ptr;
+using std::vector;
 
 namespace sigrok {
 class Context;
@@ -41,7 +42,7 @@ class ImportMenu : public QMenu
 
 public:
 	ImportMenu(QWidget *parent, shared_ptr<sigrok::Context> context,
-		QAction *open_action = nullptr);
+		vector<QAction *>open_actions = vector<QAction *>());
 
 private Q_SLOTS:
 	void on_action(QObject *action);

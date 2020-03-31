@@ -114,7 +114,7 @@ void TraceTreeItemOwner::restack_items()
 {
 	vector<shared_ptr<TraceTreeItem>> items(trace_tree_child_items());
 
-	// Sort by the centre line of the extents
+	// Sort by the center line of the extents
 	stable_sort(items.begin(), items.end(),
 		[](const shared_ptr<TraceTreeItem> &a, const shared_ptr<TraceTreeItem> &b) {
 			const auto aext = a->v_extents();

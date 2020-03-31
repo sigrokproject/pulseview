@@ -19,7 +19,6 @@
 
 #include <extdef.h>
 
-#include <QApplication>
 #include <QFontMetrics>
 #include <QMenu>
 #include <QMouseEvent>
@@ -99,6 +98,11 @@ QString Ruler::format_time_with_distance(
 	if (unit == pv::util::TimeUnit::Samples)
 		return pv::util::format_time_si_adjusted(t, prefix, precision, "sa", sign);
 
+	QString unit_string;
+	if (unit == pv::util::TimeUnit::Time)
+		unit_string = "s";
+	// Note: In case of pv::util::TimeUnit::None, unit_string remains empty
+
 	// View zoomed way out -> low precision (0), big distance (>=60s)
 	// -> DD:HH:MM
 	if ((precision == 0) && (distance >= limit))
@@ -109,14 +113,29 @@ QString Ruler::format_time_with_distance(
 	// View zoomed way in -> high precision (>3), low step size (<1s)
 	// -> HH:MM:SS.mmm... or xxxx (si unit) if less than limit seconds
 	if (abs(t) < limit)
-		return pv::util::format_time_si_adjusted(t, prefix, precision, "s", sign);
+		return pv::util::format_time_si_adjusted(t, prefix, precision, unit_string, sign);
 	else
 		return pv::util::format_time_minutes(t, precision, sign);
 }
 
-pv::util::Timestamp Ruler::get_time_from_x_pos(uint32_t x) const
+pv::util::Timestamp Ruler::get_absolute_time_from_x_pos(uint32_t x) const
+{
+	return view_.offset() + ((double)x + 0.5) * view_.scale();
+}
+
+pv::util::Timestamp Ruler::get_ruler_time_from_x_pos(uint32_t x) const
 {
 	return view_.ruler_offset() + ((double)x + 0.5) * view_.scale();
+}
+
+pv::util::Timestamp Ruler::get_ruler_time_from_absolute_time(const pv::util::Timestamp& abs_time) const
+{
+	return abs_time + view_.zero_offset();
+}
+
+pv::util::Timestamp Ruler::get_absolute_time_from_ruler_time(const pv::util::Timestamp& ruler_time) const
+{
+	return ruler_time - view_.zero_offset();
 }
 
 void Ruler::contextMenuEvent(QContextMenuEvent *event)
@@ -138,6 +157,12 @@ void Ruler::contextMenuEvent(QContextMenuEvent *event)
 	QAction *const set_zero_position = new QAction(tr("Set as zero point"), this);
 	connect(set_zero_position, SIGNAL(triggered()), this, SLOT(on_setZeroPosition()));
 	menu->addAction(set_zero_position);
+
+	if (view_.zero_offset().convert_to<double>() != 0) {
+		QAction *const reset_zero_position = new QAction(tr("Reset zero point"), this);
+		connect(reset_zero_position, SIGNAL(triggered()), this, SLOT(on_resetZeroPosition()));
+		menu->addAction(reset_zero_position);
+	}
 
 	QAction *const toggle_hover_marker = new QAction(this);
 	connect(toggle_hover_marker, SIGNAL(triggered()), this, SLOT(on_toggleHoverMarker()));
@@ -166,18 +191,58 @@ vector< shared_ptr<ViewItem> > Ruler::items()
 		time_items.begin(), time_items.end());
 }
 
+void Ruler::item_hover(const shared_ptr<ViewItem> &item, QPoint pos)
+{
+	(void)pos;
+
+	hover_item_ = dynamic_pointer_cast<TimeItem>(item);
+}
+
+shared_ptr<TimeItem> Ruler::get_reference_item() const
+{
+	// Note: time() returns 0 if item returns no valid time
+
+	if (mouse_modifiers_ & Qt::ShiftModifier)
+		return nullptr;
+
+	if (hover_item_ && (hover_item_->time() != 0))
+		return hover_item_;
+
+	shared_ptr<TimeItem> ref_item;
+	const vector< shared_ptr<TimeItem> > items(view_.time_items());
+
+	for (auto i = items.rbegin(); i != items.rend(); i++) {
+		if ((*i)->enabled() && (*i)->selected()) {
+			if (!ref_item)
+				ref_item = *i;
+			else {
+				// Return nothing if multiple items are selected
+				ref_item.reset();
+				break;
+			}
+		}
+	}
+
+	if (ref_item && (ref_item->time() == 0))
+		ref_item.reset();
+
+	return ref_item;
+}
+
 shared_ptr<ViewItem> Ruler::get_mouse_over_item(const QPoint &pt)
 {
 	const vector< shared_ptr<TimeItem> > items(view_.time_items());
+
 	for (auto i = items.rbegin(); i != items.rend(); i++)
 		if ((*i)->enabled() && (*i)->label_rect(rect()).contains(pt))
 			return *i;
+
 	return nullptr;
 }
 
 void Ruler::mouseDoubleClickEvent(QMouseEvent *event)
 {
-	view_.add_flag(get_time_from_x_pos(event->x()));
+	hover_item_ = view_.add_flag(get_absolute_time_from_x_pos(event->x()));
 }
 
 void Ruler::paintEvent(QPaintEvent*)
@@ -330,12 +395,17 @@ void Ruler::invalidate_tick_position_cache()
 
 void Ruler::on_createMarker()
 {
-	view_.add_flag(get_time_from_x_pos(mouse_down_point_.x()));
+	hover_item_ = view_.add_flag(get_absolute_time_from_x_pos(mouse_down_point_.x()));
 }
 
 void Ruler::on_setZeroPosition()
 {
-	view_.set_zero_position(get_time_from_x_pos(mouse_down_point_.x()));
+	view_.set_zero_position(get_absolute_time_from_x_pos(mouse_down_point_.x()));
+}
+
+void Ruler::on_resetZeroPosition()
+{
+	view_.reset_zero_position();
 }
 
 void Ruler::on_toggleHoverMarker()

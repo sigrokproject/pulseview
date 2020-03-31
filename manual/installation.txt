@@ -36,7 +36,7 @@ delete the AppImage. If you also want the stored settings gone, delete ~/.config
 _[install dependencies https://sigrok.org/wiki/Linux#Building[as listed on the wiki]]_
 mkdir ~/sr
 cd ~/sr
-wget 'https://sigrok.org/gitweb/?p=sigrok-util.git;a=blob_plain;f=cross-compile/linux/sigrok-cross-linux' -O sigrok-cross-linux
+wget -O sigrok-cross-linux "'https://sigrok.org/gitweb/?p=sigrok-util.git;a=blob_plain;f=cross-compile/linux/sigrok-cross-linux'"
 chmod u+x sigrok-cross-linux
 ./sigrok-cross-linux
 export LD_LIBRARY_PATH=~/sr/lib
@@ -58,9 +58,9 @@ Here's how you install them:
 [listing, subs="normal"]
 sudo bash
 cd /etc/udev/rules.d/
-wget 'https://sigrok.org/gitweb/?p=libsigrok.git;a=blob_plain;f=contrib/60-libsigrok.rules' -O 60-libsigrok.rules
-wget 'https://sigrok.org/gitweb/?p=libsigrok.git;a=blob_plain;f=contrib/61-libsigrok-plugdev.rules' -O 61-libsigrok-plugdev.rules
-wget 'https://sigrok.org/gitweb/?p=libsigrok.git;a=blob_plain;f=contrib/61-libsigrok-uaccess.rules' -O 61-libsigrok-uaccess.rules
+wget -O 60-libsigrok.rules "'https://sigrok.org/gitweb/?p=libsigrok.git;a=blob_plain;f=contrib/60-libsigrok.rules'"
+wget -O 61-libsigrok-plugdev.rules "'https://sigrok.org/gitweb/?p=libsigrok.git;a=blob_plain;f=contrib/61-libsigrok-plugdev.rules'"
+wget -O 61-libsigrok-uaccess.rules "'https://sigrok.org/gitweb/?p=libsigrok.git;a=blob_plain;f=contrib/61-libsigrok-uaccess.rules'"
 sudo udevadm control --reload-rules
 --
 

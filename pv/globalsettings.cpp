@@ -17,7 +17,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "globalsettings.hpp"
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/serialization/serialization.hpp>
 
 #include <QApplication>
 #include <QColor>
@@ -29,9 +31,13 @@
 #include <QStyle>
 #include <QtGlobal>
 
+#include "globalsettings.hpp"
+#include "application.hpp"
+
 using std::map;
 using std::pair;
 using std::string;
+using std::stringstream;
 using std::vector;
 
 namespace pv {
@@ -42,8 +48,10 @@ const vector< pair<QString, QString> > Themes {
 	{"DarkStyle", ":/themes/darkstyle/darkstyle.qss"}
 };
 
+const QString GlobalSettings::Key_General_Language = "General_Language";
 const QString GlobalSettings::Key_General_Theme = "General_Theme";
 const QString GlobalSettings::Key_General_Style = "General_Style";
+const QString GlobalSettings::Key_General_SaveWithSetup = "General_SaveWithSetup";
 const QString GlobalSettings::Key_View_ZoomToFitDuringAcq = "View_ZoomToFitDuringAcq";
 const QString GlobalSettings::Key_View_ZoomToFitAfterAcq = "View_ZoomToFitAfterAcq";
 const QString GlobalSettings::Key_View_TriggerIsZeroTime = "View_TriggerIsZeroTime";
@@ -59,20 +67,24 @@ const QString GlobalSettings::Key_View_DefaultLogicHeight = "View_DefaultLogicHe
 const QString GlobalSettings::Key_View_ShowHoverMarker = "View_ShowHoverMarker";
 const QString GlobalSettings::Key_View_SnapDistance = "View_SnapDistance";
 const QString GlobalSettings::Key_View_CursorFillColor = "View_CursorFillColor";
+const QString GlobalSettings::Key_View_CursorShowFrequency = "View_CursorShowFrequency";
+const QString GlobalSettings::Key_View_CursorShowInterval = "View_CursorShowInterval";
+const QString GlobalSettings::Key_View_CursorShowSamples = "View_CursorShowSamples";
 const QString GlobalSettings::Key_Dec_InitialStateConfigurable = "Dec_InitialStateConfigurable";
 const QString GlobalSettings::Key_Dec_ExportFormat = "Dec_ExportFormat";
+const QString GlobalSettings::Key_Dec_AlwaysShowAllRows = "Dec_AlwaysShowAllRows";
 const QString GlobalSettings::Key_Log_BufferSize = "Log_BufferSize";
 const QString GlobalSettings::Key_Log_NotifyOfStacktrace = "Log_NotifyOfStacktrace";
 
 vector<GlobalSettingsInterface*> GlobalSettings::callbacks_;
 bool GlobalSettings::tracking_ = false;
+bool GlobalSettings::is_dark_theme_ = false;
 map<QString, QVariant> GlobalSettings::tracked_changes_;
 QString GlobalSettings::default_style_;
 QPalette GlobalSettings::default_palette_;
 
 GlobalSettings::GlobalSettings() :
-	QSettings(),
-	is_dark_theme_(false)
+	QSettings()
 {
 	beginGroup("Settings");
 }
@@ -88,11 +100,24 @@ void GlobalSettings::save_internal_defaults()
 
 void GlobalSettings::set_defaults_where_needed()
 {
+	if (!contains(Key_General_Language)) {
+		// Determine and set default UI language
+		QString language = QLocale().uiLanguages().first();  // May return e.g. en-Latn-US  // clazy:exclude=detaching-temporary
+		language = language.split("-").first();
+
+		setValue(Key_General_Language, language);
+		apply_language();
+	}
+
 	// Use no theme by default
 	if (!contains(Key_General_Theme))
 		setValue(Key_General_Theme, 0);
 	if (!contains(Key_General_Style))
 		setValue(Key_General_Style, "");
+
+	// Save setup with .sr files by default
+	if (!contains(Key_General_SaveWithSetup))
+		setValue(Key_General_SaveWithSetup, true);
 
 	// Enable zoom-to-fit after acquisition by default
 	if (!contains(Key_View_ZoomToFitAfterAcq))
@@ -124,8 +149,16 @@ void GlobalSettings::set_defaults_where_needed()
 	if (!contains(Key_View_SnapDistance))
 		setValue(Key_View_SnapDistance, 15);
 
-	if (!contains(Key_Dec_ExportFormat))
-		setValue(Key_Dec_ExportFormat, "%s %d: %c: %1");
+	if (!contains(Key_View_CursorShowInterval))
+		setValue(Key_View_CursorShowInterval, true);
+
+	if (!contains(Key_View_CursorShowFrequency))
+		setValue(Key_View_CursorShowFrequency, true);
+
+	// %c was used for the row name in the past so we need to transition such users
+	if (!contains(Key_Dec_ExportFormat) ||
+		value(Key_Dec_ExportFormat).toString() == "%s %d: %c: %1")
+		setValue(Key_Dec_ExportFormat, "%s %d: %r: %1");
 
 	// Default to 500 lines of backlog
 	if (!contains(Key_Log_BufferSize))
@@ -221,6 +254,12 @@ void GlobalSettings::apply_theme()
 	}
 
 	QPixmapCache::clear();
+}
+
+void GlobalSettings::apply_language()
+{
+	Application* a = qobject_cast<Application*>(QApplication::instance());
+	a->switch_language(value(Key_General_Language).toString());
 }
 
 void GlobalSettings::add_change_handler(GlobalSettingsInterface *cb)
@@ -335,6 +374,30 @@ Glib::VariantBase GlobalSettings::restore_variantbase(QSettings &settings)
 	g_variant_unref(value);
 
 	return ret_val;
+}
+
+void GlobalSettings::store_timestamp(QSettings &settings, const char *name, const pv::util::Timestamp &ts)
+{
+	stringstream ss;
+	boost::archive::text_oarchive oa(ss);
+	oa << boost::serialization::make_nvp(name, ts);
+	settings.setValue(name, QString::fromStdString(ss.str()));
+}
+
+pv::util::Timestamp GlobalSettings::restore_timestamp(QSettings &settings, const char *name)
+{
+	util::Timestamp result;
+	stringstream ss;
+	ss << settings.value(name).toString().toStdString();
+
+	try {
+		boost::archive::text_iarchive ia(ss);
+		ia >> boost::serialization::make_nvp(name, result);
+	} catch (boost::archive::archive_exception&) {
+		qDebug() << "Could not restore setting" << name;
+	}
+
+	return result;
 }
 
 } // namespace pv

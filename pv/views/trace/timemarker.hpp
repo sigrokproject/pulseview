@@ -65,7 +65,7 @@ public:
 	/**
 	 * Gets the time of the marker.
 	 */
-	const pv::util::Timestamp& time() const;
+	virtual const pv::util::Timestamp time() const override;
 
 	/**
 	 * Sets the time of the marker.
@@ -100,6 +100,11 @@ public:
 	virtual QString get_text() const = 0;
 
 	/**
+	 * Sets the text to show in the marker.
+	 */
+	virtual void set_text(const QString &text);
+
+	/**
 	 * Paints the marker's label to the ruler.
 	 * @param p The painter to draw with.
 	 * @param rect The rectangle of the ruler client area.
@@ -128,7 +133,6 @@ protected:
 
 	QWidgetAction *value_action_;
 	pv::widgets::TimestampSpinBox *value_widget_;
-	bool updating_value_widget_;
 };
 
 } // namespace trace

@@ -22,7 +22,8 @@
 
 #include <vector>
 
-#include "annotation.hpp"
+#include <pv/data/decode/annotation.hpp>
+#include <pv/data/decode/decoder.hpp>
 
 struct srd_decoder;
 struct srd_decoder_annotation_row;
@@ -31,27 +32,38 @@ namespace pv {
 namespace data {
 namespace decode {
 
+struct AnnotationClass;
+class Decoder;
+
 class Row
 {
 public:
 	Row();
 
-	Row(int index, const srd_decoder *decoder,
-		const srd_decoder_annotation_row *row = nullptr);
+	Row(uint32_t index, Decoder* decoder,
+		const srd_decoder_annotation_row* srd_row = nullptr);
 
-	const srd_decoder* decoder() const;
-	const srd_decoder_annotation_row* row() const;
+	const Decoder* decoder() const;
+	const srd_decoder_annotation_row* get_srd_row() const;
 
 	const QString title() const;
-	const QString class_name() const;
-	int index() const;
+	const QString description() const;
+	vector<AnnotationClass*> ann_classes() const;
+	uint32_t index() const;
 
-	bool operator<(const Row &other) const;
+	bool visible() const;
+	void set_visible(bool visible);
+
+	bool has_hidden_classes() const;
+
+	bool operator<(const Row& other) const;
+	bool operator==(const Row& other) const;
 
 private:
-	int index_;
-	const srd_decoder *decoder_;
-	const srd_decoder_annotation_row *row_;
+	uint32_t index_;
+	Decoder* decoder_;
+	const srd_decoder_annotation_row* srd_row_;
+	bool visible_;
 };
 
 }  // namespace decode

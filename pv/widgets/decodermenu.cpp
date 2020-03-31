@@ -26,43 +26,50 @@
 namespace pv {
 namespace widgets {
 
-DecoderMenu::DecoderMenu(QWidget *parent, bool first_level_decoder) :
+DecoderMenu::DecoderMenu(QWidget *parent, const char* input, bool first_level_decoder) :
 	QMenu(parent),
 	mapper_(this)
 {
-	GSList *li = g_slist_sort(g_slist_copy(
-		(GSList*)srd_decoder_list()), decoder_name_cmp);
+	GSList *li = g_slist_sort(g_slist_copy((GSList*)srd_decoder_list()), decoder_name_cmp);
+
 	for (GSList *l = li; l; l = l->next) {
 		const srd_decoder *const d = (srd_decoder*)l->data;
 		assert(d);
 
 		const bool have_channels = (d->channels || d->opt_channels) != 0;
-		if (first_level_decoder == have_channels) {
-			QAction *const action =
-				addAction(QString::fromUtf8(d->name));
-			action->setData(qVariantFromValue(l->data));
-			mapper_.setMapping(action, action);
-			connect(action, SIGNAL(triggered()),
-				&mapper_, SLOT(map()));
+		if (first_level_decoder != have_channels)
+			continue;
+
+		if (!first_level_decoder) {
+			// Dismiss all non-stacked decoders unless we're looking for first-level decoders
+			if (!d->inputs)
+				continue;
+
+			// TODO For now we ignore that d->inputs is actually a list
+			if (strncmp((char*)(d->inputs->data), input, 1024) != 0)
+				continue;
 		}
+
+		QAction *const action = addAction(QString::fromUtf8(d->name));
+		action->setData(qVariantFromValue(l->data));
+		mapper_.setMapping(action, action);
+		connect(action, SIGNAL(triggered()), &mapper_, SLOT(map()));
 	}
 	g_slist_free(li);
 
-	connect(&mapper_, SIGNAL(mapped(QObject*)),
-		this, SLOT(on_action(QObject*)));
+	connect(&mapper_, SIGNAL(mapped(QObject*)), this, SLOT(on_action(QObject*)));
 }
 
 int DecoderMenu::decoder_name_cmp(const void *a, const void *b)
 {
-	return strcmp(((const srd_decoder*)a)->name,
-		((const srd_decoder*)b)->name);
+	return strcmp(((const srd_decoder*)a)->name, ((const srd_decoder*)b)->name);
 }
 
 void DecoderMenu::on_action(QObject *action)
 {
 	assert(action);
-	srd_decoder *const dec =
-		(srd_decoder*)((QAction*)action)->data().value<void*>();
+
+	srd_decoder *const dec = (srd_decoder*)((QAction*)action)->data().value<void*>();
 	assert(dec);
 
 	decoder_selected(dec);

@@ -60,18 +60,25 @@ public:
 	/**
 	 * Returns true if the item is visible and enabled.
 	 */
-	bool enabled() const;
+	virtual bool enabled() const override;
 
 	/**
 	 * Gets the text to show in the marker.
 	 */
-	QString get_text() const;
+	virtual QString get_text() const override;
 
-	pv::widgets::Popup* create_popup(QWidget *parent);
+	/**
+	 * Sets the text to show in the marker.
+	 */
+	virtual void set_text(const QString &text) override;
 
-	QMenu* create_header_context_menu(QWidget *parent);
+	virtual pv::widgets::Popup* create_popup(QWidget *parent) override;
 
-	void delete_pressed();
+	virtual QMenu* create_header_context_menu(QWidget *parent) override;
+
+	virtual void delete_pressed() override;
+
+	QRectF label_rect(const QRectF &rect) const override;
 
 private Q_SLOTS:
 	void on_delete();

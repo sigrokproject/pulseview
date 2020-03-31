@@ -28,6 +28,7 @@
 #include <vector>
 
 #include <QAbstractScrollArea>
+#include <QShortcut>
 #include <QSizeF>
 #include <QSplitter>
 
@@ -43,7 +44,6 @@
 
 using std::list;
 using std::unordered_map;
-using std::unordered_set;
 using std::set;
 using std::shared_ptr;
 using std::vector;
@@ -95,13 +95,16 @@ private:
 	static const pv::util::Timestamp MinScale;
 
 	static const int MaxScrollValue;
+	static const int ViewScrollMargin;
 
 	static const int ScaleUnits[3];
 
 public:
-	explicit View(Session &session, bool is_main_view=false, QWidget *parent = nullptr);
+	explicit View(Session &session, bool is_main_view=false, QMainWindow *parent = nullptr);
 
 	~View();
+
+	virtual ViewType get_type() const;
 
 	/**
 	 * Resets the view to its default state after construction. It does however
@@ -109,13 +112,15 @@ public:
 	 */
 	virtual void reset_view_state();
 
-	Session& session();
-	const Session& session() const;
+	Session& session();  // This method is needed for TraceTreeItemOwner, not ViewBase
+	const Session& session() const;  // This method is needed for TraceTreeItemOwner, not ViewBase
 
 	/**
 	 * Returns the signals contained in this view.
 	 */
-	unordered_set< shared_ptr<Signal> > signals() const;
+	vector< shared_ptr<Signal> > signals() const;
+
+	shared_ptr<Signal> get_signal_by_signalbase(shared_ptr<data::SignalBase> base) const;
 
 	virtual void clear_signals();
 
@@ -142,8 +147,9 @@ public:
 	virtual const View* view() const;
 
 	Viewport* viewport();
-
 	const Viewport* viewport() const;
+
+	QAbstractScrollArea* scrollarea() const;
 
 	const Ruler* ruler() const;
 
@@ -177,6 +183,8 @@ public:
 
 	void reset_zero_position();
 
+	pv::util::Timestamp zero_offset() const;
+
 	/**
 	 * Returns the vertical scroll offset.
 	 */
@@ -186,6 +194,16 @@ public:
 	 * Sets the visual v-offset.
 	 */
 	void set_v_offset(int offset);
+
+	/**
+	 * Sets the visual h-offset.
+	 */
+	void set_h_offset(int offset);
+
+	/**
+	 * Gets the length of the horizontal scrollbar.
+	 */
+	int get_h_scrollbar_maximum() const;
 
 	/**
 	 * Returns the SI prefix to apply to the graticule time markings.
@@ -243,15 +261,9 @@ public:
 	 */
 	void set_scale_offset(double scale, const pv::util::Timestamp& offset);
 
-	set< shared_ptr<pv::data::SignalData> > get_visible_data() const;
+	vector< shared_ptr<pv::data::SignalData> > get_visible_data() const;
 
 	pair<pv::util::Timestamp, pv::util::Timestamp> get_time_extents() const;
-
-	/**
-	 * Enables or disables colored trace backgrounds. If they're not
-	 * colored then they will use alternating colors.
-	 */
-	void enable_colored_bg(bool state);
 
 	/**
 	 * Returns true if the trace background should be drawn with a colored background.
@@ -259,17 +271,7 @@ public:
 	bool colored_bg() const;
 
 	/**
-	 * Enable or disable showing sampling points.
-	 */
-	void enable_show_sampling_points(bool state);
-
-	/**
-	 * Enable or disable showing the analog minor grid.
-	 */
-	void enable_show_analog_minor_grid(bool state);
-
-	/**
-	 * Returns true if cursors are displayed. false otherwise.
+	 * Returns true if cursors are displayed, false otherwise.
 	 */
 	bool cursors_shown() const;
 
@@ -279,9 +281,16 @@ public:
 	void show_cursors(bool show = true);
 
 	/**
-	 * Moves the cursors to a convenient position in the view.
+	 * Sets the cursors to the given offsets.
+	 * You still have to call show_cursors() separately.
 	 */
-	void centre_cursors();
+	void set_cursors(pv::util::Timestamp& first, pv::util::Timestamp& second);
+
+	/**
+	 * Moves the cursors to a convenient position in the view.
+	 * You still have to call show_cursors() separately.
+	 */
+	void center_cursors();
 
 	/**
 	 * Returns a reference to the pair of cursors.
@@ -291,7 +300,7 @@ public:
 	/**
 	 * Adds a new flag at a specified time.
 	 */
-	void add_flag(const pv::util::Timestamp& time);
+	shared_ptr<Flag> add_flag(const pv::util::Timestamp& time);
 
 	/**
 	 * Removes a flag from the list.
@@ -421,12 +430,18 @@ public:
 	void extents_changed(bool horz, bool vert);
 
 private Q_SLOTS:
-
 	void on_signal_name_changed();
 	void on_splitter_moved();
 
+	void on_zoom_in_shortcut_triggered();
+	void on_zoom_out_shortcut_triggered();
+	void on_scroll_to_start_shortcut_triggered();
+	void on_scroll_to_end_shortcut_triggered();
+
 	void h_scroll_value_changed(int value);
 	void v_scroll_value_changed();
+
+	void on_grab_ruler(int ruler_id);
 
 	void signals_changed();
 	void capture_state_updated(int state);
@@ -489,7 +504,13 @@ private:
 	Header *header_;
 	QSplitter *splitter_;
 
-	unordered_set< shared_ptr<Signal> > signals_;
+	QShortcut *zoom_in_shortcut_, *zoom_in_shortcut_2_;
+	QShortcut *zoom_out_shortcut_, *zoom_out_shortcut_2_;
+	QShortcut *home_shortcut_, *end_shortcut_;
+	QShortcut *grab_ruler_left_shortcut_, *grab_ruler_right_shortcut_;
+	QShortcut *cancel_grab_shortcut_;
+
+	vector< shared_ptr<Signal> > signals_;
 
 #ifdef ENABLE_DECODE
 	vector< shared_ptr<DecodeTrace> > decode_traces_;
@@ -507,6 +528,10 @@ private:
 	pv::util::Timestamp offset_;
 	/// The ruler version of the time offset in seconds.
 	pv::util::Timestamp ruler_offset_;
+	/// The offset of the zero point in seconds.
+	pv::util::Timestamp zero_offset_;
+	/// Shows whether the user set a custom zero offset that we should keep
+	bool custom_zero_offset_set_;
 
 	bool updating_scroll_;
 	bool settings_restored_;
@@ -531,6 +556,7 @@ private:
 	vector< shared_ptr<TriggerMarker> > trigger_markers_;
 
 	QWidget* hover_widget_;
+	TimeMarker* grabbed_widget_;
 	QPoint hover_point_;
 	shared_ptr<Signal> signal_under_mouse_cursor_;
 	uint16_t snap_distance_;

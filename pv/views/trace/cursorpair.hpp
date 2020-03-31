@@ -76,11 +76,17 @@ public:
 	 */
 	void set_time(const pv::util::Timestamp& time) override;
 
+	virtual const pv::util::Timestamp time() const override;
+
 	float get_x() const override;
+
+	virtual const pv::util::Timestamp delta(const pv::util::Timestamp& other) const override;
 
 	QPoint drag_point(const QRect &rect) const override;
 
 	pv::widgets::Popup* create_popup(QWidget *parent) override;
+
+	QMenu* create_header_context_menu(QWidget *parent) override;
 
 	QRectF label_rect(const QRectF &rect) const override;
 
@@ -102,7 +108,8 @@ public:
 	/**
 	 * Constructs the string to display.
 	 */
-	QString format_string();
+	QString format_string(int max_width = 0, std::function<double(const QString&)> query_size
+		= [](const QString& s) -> double { (void)s; return 0; });
 
 	pair<float, float> get_cursor_offsets() const;
 
@@ -112,12 +119,16 @@ public Q_SLOTS:
 	void on_hover_point_changed(const QWidget* widget, const QPoint &hp);
 
 private:
+	QString format_string_sub(int time_precision, int freq_precision, bool show_unit = true);
+
+private:
 	shared_ptr<Cursor> first_, second_;
 	QColor fill_color_;
 
 	QSizeF text_size_;
 	QRectF label_area_;
 	bool label_incomplete_;
+	bool show_interval_, show_frequency_, show_samples_;
 };
 
 } // namespace trace

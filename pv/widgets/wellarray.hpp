@@ -52,8 +52,8 @@ struct WellArrayData;
 class WellArray : public QWidget
 {
     Q_OBJECT
-    Q_PROPERTY(int selectedColumn READ selectedColumn)  // clazy-exclude:qproperty-without-notify
-    Q_PROPERTY(int selectedRow READ selectedRow)  // clazy-exclude:qproperty-without-notify
+    Q_PROPERTY(int selectedColumn READ selectedColumn)  // clazy:exclude=qproperty-without-notify
+    Q_PROPERTY(int selectedRow READ selectedRow)  // clazy:exclude=qproperty-without-notify
 
 public:
     WellArray(int rows, int cols, QWidget* parent = nullptr);

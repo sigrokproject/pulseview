@@ -83,7 +83,7 @@ QString SignalBase::internal_name() const
 
 QString SignalBase::display_name() const
 {
-	if (name() != internal_name_)
+	if ((name() != internal_name_) && (!internal_name_.isEmpty()))
 		return name() + " (" + internal_name_ + ")";
 	else
 		return name();

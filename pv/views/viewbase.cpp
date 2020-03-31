@@ -33,10 +33,18 @@ using std::shared_ptr;
 namespace pv {
 namespace views {
 
+const char* ViewTypeNames[ViewTypeCount] = {
+	"Trace View",
+#ifdef ENABLE_DECODE
+	"Binary Decoder Output View"
+#endif
+};
+
 const int ViewBase::MaxViewAutoUpdateRate = 25; // No more than 25 Hz
 
-ViewBase::ViewBase(Session &session, bool is_main_view, QWidget *parent) :
+ViewBase::ViewBase(Session &session, bool is_main_view, QMainWindow *parent) :
 	// Note: Place defaults in ViewBase::reset_view_state(), not here
+	QWidget(parent),
 	session_(session),
 	is_main_view_(is_main_view)
 {
@@ -55,9 +63,13 @@ ViewBase::ViewBase(Session &session, bool is_main_view, QWidget *parent) :
 	delayed_view_updater_.setInterval(1000 / MaxViewAutoUpdateRate);
 }
 
+bool ViewBase::is_main_view() const
+{
+	return is_main_view_;
+}
+
 void ViewBase::reset_view_state()
 {
-	ruler_shift_ = 0;
 	current_segment_ = 0;
 }
 
@@ -73,9 +85,10 @@ const Session& ViewBase::session() const
 
 void ViewBase::clear_signals()
 {
+	clear_signalbases();
 }
 
-unordered_set< shared_ptr<data::SignalBase> > ViewBase::signalbases() const
+vector< shared_ptr<data::SignalBase> > ViewBase::signalbases() const
 {
 	return signalbases_;
 }
@@ -94,7 +107,7 @@ void ViewBase::clear_signalbases()
 
 void ViewBase::add_signalbase(const shared_ptr<data::SignalBase> signalbase)
 {
-	signalbases_.insert(signalbase);
+	signalbases_.push_back(signalbase);
 
 	connect(signalbase.get(), SIGNAL(samples_cleared()),
 		this, SLOT(on_data_updated()));
@@ -105,16 +118,20 @@ void ViewBase::add_signalbase(const shared_ptr<data::SignalBase> signalbase)
 #ifdef ENABLE_DECODE
 void ViewBase::clear_decode_signals()
 {
+	decode_signals_.clear();
 }
 
 void ViewBase::add_decode_signal(shared_ptr<data::DecodeSignal> signal)
 {
-	(void)signal;
+	decode_signals_.push_back(signal);
 }
 
 void ViewBase::remove_decode_signal(shared_ptr<data::DecodeSignal> signal)
 {
-	(void)signal;
+	decode_signals_.erase(std::remove_if(
+		decode_signals_.begin(), decode_signals_.end(),
+		[&](shared_ptr<data::DecodeSignal> s) { return s == signal; }),
+		decode_signals_.end());
 }
 #endif
 

@@ -43,19 +43,31 @@ protected:
 	 */
 	TimeItem(View &view);
 
+	bool snapping_disabled_ = false;
+
 public:
 	/**
 	 * Sets the time of the marker.
 	 */
 	virtual void set_time(const pv::util::Timestamp& time) = 0;
 
+	/**
+	 * Returns the time this time item is set to.
+	 * @return 0 in case there is no valid time (e.g. for a cursor pair)
+	 */
+	virtual const pv::util::Timestamp time() const = 0;
+
 	virtual float get_x() const = 0;
+
+	virtual const pv::util::Timestamp delta(const pv::util::Timestamp& other) const;
 
 	/**
 	 * Drags the item to a delta relative to the drag point.
 	 * @param delta the offset from the drag point.
 	 */
 	void drag_by(const QPoint &delta);
+
+	bool is_snapping_disabled() const;
 
 protected:
 	View &view_;

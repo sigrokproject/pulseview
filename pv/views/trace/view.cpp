@@ -31,11 +31,8 @@
 #include <iterator>
 #include <unordered_set>
 
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/serialization/serialization.hpp>
-
 #include <QApplication>
+#include <QDebug>
 #include <QEvent>
 #include <QFontMetrics>
 #include <QMenu>
@@ -84,7 +81,6 @@ using std::pair;
 using std::set;
 using std::set_difference;
 using std::shared_ptr;
-using std::stringstream;
 using std::unordered_map;
 using std::unordered_set;
 using std::vector;
@@ -98,8 +94,10 @@ const Timestamp View::MinScale("1e-12");
 
 const int View::MaxScrollValue = INT_MAX / 2;
 
-const int View::ScaleUnits[3] = {1, 2, 5};
+/* Area at the top and bottom of the view that can't be scrolled out of sight */
+const int View::ViewScrollMargin = 50;
 
+const int View::ScaleUnits[3] = {1, 2, 5};
 
 CustomScrollArea::CustomScrollArea(QWidget *parent) :
 	QAbstractScrollArea(parent)
@@ -124,13 +122,14 @@ bool CustomScrollArea::viewportEvent(QEvent *event)
 	}
 }
 
-View::View(Session &session, bool is_main_view, QWidget *parent) :
+View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 	ViewBase(session, is_main_view, parent),
 
 	// Note: Place defaults in View::reset_view_state(), not here
 	splitter_(new QSplitter()),
 	header_was_shrunk_(false),  // The splitter remains unchanged after a reset, so this goes here
-	sticky_scrolling_(false)  // Default setting is set in MainWindow::setup_ui()
+	sticky_scrolling_(false),  // Default setting is set in MainWindow::setup_ui()
+	scroll_needs_defaults_(true)
 {
 	QVBoxLayout *root_layout = new QVBoxLayout(this);
 	root_layout->setContentsMargins(0, 0, 0, 0);
@@ -204,12 +203,53 @@ View::View(Session &session, bool is_main_view, QWidget *parent) :
 	connect(&lazy_event_handler_, SIGNAL(timeout()),
 		this, SLOT(process_sticky_events()));
 	lazy_event_handler_.setSingleShot(true);
+	lazy_event_handler_.setInterval(1000 / ViewBase::MaxViewAutoUpdateRate);
+
+	// Set up local keyboard shortcuts
+	zoom_in_shortcut_ = new QShortcut(QKeySequence(Qt::Key_Plus), this,
+		SLOT(on_zoom_in_shortcut_triggered()), nullptr, Qt::WidgetWithChildrenShortcut);
+	zoom_in_shortcut_->setAutoRepeat(false);
+
+	zoom_out_shortcut_ = new QShortcut(QKeySequence(Qt::Key_Minus), this,
+		SLOT(on_zoom_out_shortcut_triggered()), nullptr, Qt::WidgetWithChildrenShortcut);
+	zoom_out_shortcut_->setAutoRepeat(false);
+
+	zoom_in_shortcut_2_ = new QShortcut(QKeySequence(Qt::Key_Up), this,
+		SLOT(on_zoom_in_shortcut_triggered()), nullptr, Qt::WidgetWithChildrenShortcut);
+	zoom_out_shortcut_2_ = new QShortcut(QKeySequence(Qt::Key_Down), this,
+		SLOT(on_zoom_out_shortcut_triggered()), nullptr, Qt::WidgetWithChildrenShortcut);
+
+	home_shortcut_ = new QShortcut(QKeySequence(Qt::Key_Home), this,
+		SLOT(on_scroll_to_start_shortcut_triggered()), nullptr, Qt::WidgetWithChildrenShortcut);
+	home_shortcut_->setAutoRepeat(false);
+
+	end_shortcut_ = new QShortcut(QKeySequence(Qt::Key_End), this,
+		SLOT(on_scroll_to_end_shortcut_triggered()), nullptr, Qt::WidgetWithChildrenShortcut);
+	end_shortcut_->setAutoRepeat(false);
+
+	grab_ruler_left_shortcut_ = new QShortcut(QKeySequence(Qt::Key_1), this,
+		nullptr, nullptr, Qt::WidgetWithChildrenShortcut);
+	connect(grab_ruler_left_shortcut_, &QShortcut::activated,
+		this, [=]{on_grab_ruler(1);});
+	grab_ruler_left_shortcut_->setAutoRepeat(false);
+
+	grab_ruler_right_shortcut_ = new QShortcut(QKeySequence(Qt::Key_2), this,
+		nullptr, nullptr, Qt::WidgetWithChildrenShortcut);
+	connect(grab_ruler_right_shortcut_, &QShortcut::activated,
+		this, [=]{on_grab_ruler(2);});
+	grab_ruler_right_shortcut_->setAutoRepeat(false);
+
+	cancel_grab_shortcut_ = new QShortcut(QKeySequence(Qt::Key_Escape), this,
+		nullptr, nullptr, Qt::WidgetWithChildrenShortcut);
+	connect(cancel_grab_shortcut_, &QShortcut::activated,
+		this, [=]{grabbed_widget_ = nullptr;});
+	cancel_grab_shortcut_->setAutoRepeat(false);
 
 	// Trigger the initial event manually. The default device has signals
 	// which were created before this object came into being
 	signals_changed();
 
-	// make sure the transparent widgets are on the top
+	// Make sure the transparent widgets are on the top
 	ruler_->raise();
 	header_->raise();
 
@@ -221,6 +261,11 @@ View::~View()
 	GlobalSettings::remove_change_handler(this);
 }
 
+ViewType View::get_type() const
+{
+	return ViewTypeTrace;
+}
+
 void View::reset_view_state()
 {
 	ViewBase::reset_view_state();
@@ -230,6 +275,8 @@ void View::reset_view_state()
 	scale_ = 1e-3;
 	offset_ = 0;
 	ruler_offset_ = 0;
+	zero_offset_ = 0;
+	custom_zero_offset_set_ = false;
 	updating_scroll_ = false;
 	settings_restored_ = false;
 	always_zoom_to_fit_ = false;
@@ -242,6 +289,7 @@ void View::reset_view_state()
 	next_flag_text_ = 'A';
 	trigger_markers_.clear();
 	hover_widget_ = nullptr;
+	grabbed_widget_ = nullptr;
 	hover_point_ = QPoint(-1, -1);
 	scroll_needs_defaults_ = true;
 	saved_v_offset_ = 0;
@@ -270,21 +318,34 @@ const Session& View::session() const
 	return session_;
 }
 
-unordered_set< shared_ptr<Signal> > View::signals() const
+vector< shared_ptr<Signal> > View::signals() const
 {
 	return signals_;
 }
 
+shared_ptr<Signal> View::get_signal_by_signalbase(shared_ptr<data::SignalBase> base) const
+{
+	shared_ptr<Signal> ret_val;
+
+	for (const shared_ptr<Signal>& s : signals_)
+		if (s->base() == base) {
+			ret_val = s;
+			break;
+		}
+
+	return ret_val;
+}
+
 void View::clear_signals()
 {
-	ViewBase::clear_signalbases();
+	ViewBase::clear_signals();
 	signals_.clear();
 }
 
 void View::add_signal(const shared_ptr<Signal> signal)
 {
 	ViewBase::add_signalbase(signal->base());
-	signals_.insert(signal);
+	signals_.push_back(signal);
 
 	signal->set_segment_display_mode(segment_display_mode_);
 	signal->set_current_segment(current_segment_);
@@ -296,11 +357,14 @@ void View::add_signal(const shared_ptr<Signal> signal)
 #ifdef ENABLE_DECODE
 void View::clear_decode_signals()
 {
+	ViewBase::clear_decode_signals();
 	decode_traces_.clear();
 }
 
 void View::add_decode_signal(shared_ptr<data::DecodeSignal> signal)
 {
+	ViewBase::add_decode_signal(signal);
+
 	shared_ptr<DecodeTrace> d(
 		new DecodeTrace(session_, signal, decode_traces_.size()));
 	decode_traces_.push_back(d);
@@ -320,6 +384,8 @@ void View::remove_decode_signal(shared_ptr<data::DecodeSignal> signal)
 			signals_changed();
 			return;
 		}
+
+	ViewBase::remove_decode_signal(signal);
 }
 #endif
 
@@ -348,6 +414,11 @@ const Viewport* View::viewport() const
 	return viewport_;
 }
 
+QAbstractScrollArea* View::scrollarea() const
+{
+	return scrollarea_;
+}
+
 const Ruler* View::ruler() const
 {
 	return ruler_;
@@ -362,18 +433,12 @@ void View::save_settings(QSettings &settings) const
 	settings.setValue("splitter_state", splitter_->saveState());
 	settings.setValue("segment_display_mode", segment_display_mode_);
 
-	{
-		stringstream ss;
-		boost::archive::text_oarchive oa(ss);
-		oa << boost::serialization::make_nvp("ruler_shift", ruler_shift_);
-		settings.setValue("ruler_shift", QString::fromStdString(ss.str()));
-	}
-	{
-		stringstream ss;
-		boost::archive::text_oarchive oa(ss);
-		oa << boost::serialization::make_nvp("offset", offset_);
-		settings.setValue("offset", QString::fromStdString(ss.str()));
-	}
+	GlobalSettings::store_timestamp(settings, "offset", offset_);
+
+	if (custom_zero_offset_set_)
+		GlobalSettings::store_timestamp(settings, "zero_offset", -zero_offset_);
+	else
+		settings.remove("zero_offset");
 
 	for (const shared_ptr<Signal>& signal : signals_) {
 		settings.beginGroup(signal->base()->internal_name());
@@ -390,34 +455,13 @@ void View::restore_settings(QSettings &settings)
 	if (settings.contains("scale"))
 		set_scale(settings.value("scale").toDouble());
 
-	if (settings.contains("ruler_shift")) {
-		util::Timestamp shift;
-		stringstream ss;
-		ss << settings.value("ruler_shift").toString().toStdString();
-
-		try {
-			boost::archive::text_iarchive ia(ss);
-			ia >> boost::serialization::make_nvp("ruler_shift", shift);
-			ruler_shift_ = shift;
-		} catch (boost::archive::archive_exception&) {
-			qDebug() << "Could not restore the view ruler shift";
-		}
-	}
-
 	if (settings.contains("offset")) {
-		util::Timestamp offset;
-		stringstream ss;
-		ss << settings.value("offset").toString().toStdString();
-
-		try {
-			boost::archive::text_iarchive ia(ss);
-			ia >> boost::serialization::make_nvp("offset", offset);
-			// This also updates ruler_offset_
-			set_offset(offset);
-		} catch (boost::archive::archive_exception&) {
-			qDebug() << "Could not restore the view offset";
-		}
+		// This also updates ruler_offset_
+		set_offset(GlobalSettings::restore_timestamp(settings, "offset"));
 	}
+
+	if (settings.contains("zero_offset"))
+		set_zero_position(GlobalSettings::restore_timestamp(settings, "zero_offset"));
 
 	if (settings.contains("splitter_state"))
 		splitter_->restoreState(settings.value("splitter_state").toByteArray());
@@ -480,7 +524,7 @@ void View::set_offset(const pv::util::Timestamp& offset, bool force_update)
 {
 	if ((offset_ != offset) || force_update) {
 		offset_ = offset;
-		ruler_offset_ = offset_ + ruler_shift_;
+		ruler_offset_ = offset_ + zero_offset_;
 		offset_changed();
 	}
 }
@@ -497,10 +541,8 @@ const Timestamp& View::ruler_offset() const
 
 void View::set_zero_position(const pv::util::Timestamp& position)
 {
-	// ruler shift is a negative offset and the new zero position is relative
-	// to the current offset. Hence, we adjust the ruler shift only by the
-	// difference.
-	ruler_shift_ = -(position + (-ruler_shift_));
+	zero_offset_ = -position;
+	custom_zero_offset_set_ = true;
 
 	// Force an immediate update of the offsets
 	set_offset(offset_, true);
@@ -509,11 +551,29 @@ void View::set_zero_position(const pv::util::Timestamp& position)
 
 void View::reset_zero_position()
 {
-	ruler_shift_ = 0;
+	zero_offset_ = 0;
+
+	// When enabled, the first trigger for this segment is used as the zero position
+	GlobalSettings settings;
+	bool trigger_is_zero_time = settings.value(GlobalSettings::Key_View_TriggerIsZeroTime).toBool();
+
+	if (trigger_is_zero_time) {
+		vector<util::Timestamp> triggers = session_.get_triggers(current_segment_);
+
+		if (triggers.size() > 0)
+			zero_offset_ = triggers.front();
+	}
+
+	custom_zero_offset_set_ = false;
 
 	// Force an immediate update of the offsets
 	set_offset(offset_, true);
 	ruler_->update();
+}
+
+pv::util::Timestamp View::zero_offset() const
+{
+	return zero_offset_;
 }
 
 int View::owner_visual_v_offset() const
@@ -526,6 +586,18 @@ void View::set_v_offset(int offset)
 	scrollarea_->verticalScrollBar()->setSliderPosition(offset);
 	header_->update();
 	viewport_->update();
+}
+
+void View::set_h_offset(int offset)
+{
+	scrollarea_->horizontalScrollBar()->setSliderPosition(offset);
+	header_->update();
+	viewport_->update();
+}
+
+int View::get_h_scrollbar_maximum() const
+{
+	return scrollarea_->horizontalScrollBar()->maximum();
 }
 
 unsigned int View::depth() const
@@ -612,12 +684,8 @@ void View::set_current_segment(uint32_t segment_id)
 	for (util::Timestamp timestamp : triggers)
 		trigger_markers_.push_back(make_shared<TriggerMarker>(*this, timestamp));
 
-	// When enabled, the first trigger for this segment is used as the zero position
-	GlobalSettings settings;
-	bool trigger_is_zero_time = settings.value(GlobalSettings::Key_View_TriggerIsZeroTime).toBool();
-
-	if (trigger_is_zero_time && (triggers.size() > 0))
-		set_zero_position(triggers.front());
+	if (!custom_zero_offset_set_)
+		reset_zero_position();
 
 	viewport_->update();
 
@@ -743,13 +811,13 @@ void View::set_scale_offset(double scale, const Timestamp& offset)
 	viewport_->update();
 }
 
-set< shared_ptr<SignalData> > View::get_visible_data() const
+vector< shared_ptr<SignalData> > View::get_visible_data() const
 {
 	// Make a set of all the visible data objects
-	set< shared_ptr<SignalData> > visible_data;
+	vector< shared_ptr<SignalData> > visible_data;
 	for (const shared_ptr<Signal>& sig : signals_)
 		if (sig->enabled())
-			visible_data.insert(sig->data());
+			visible_data.push_back(sig->data());
 
 	return visible_data;
 }
@@ -757,8 +825,14 @@ set< shared_ptr<SignalData> > View::get_visible_data() const
 pair<Timestamp, Timestamp> View::get_time_extents() const
 {
 	boost::optional<Timestamp> left_time, right_time;
-	const set< shared_ptr<SignalData> > visible_data = get_visible_data();
-	for (const shared_ptr<SignalData>& d : visible_data) {
+
+	vector< shared_ptr<SignalData> > data;
+	if (signals_.size() == 0)
+		return make_pair(0, 0);
+
+	data.push_back(signals_.front()->data());
+
+	for (const shared_ptr<SignalData>& d : data) {
 		const vector< shared_ptr<Segment> > segments = d->segments();
 		for (const shared_ptr<Segment>& s : segments) {
 			double samplerate = s->samplerate();
@@ -781,26 +855,6 @@ pair<Timestamp, Timestamp> View::get_time_extents() const
 	return make_pair(*left_time, *right_time);
 }
 
-void View::enable_show_sampling_points(bool state)
-{
-	(void)state;
-
-	viewport_->update();
-}
-
-void View::enable_show_analog_minor_grid(bool state)
-{
-	(void)state;
-
-	viewport_->update();
-}
-
-void View::enable_colored_bg(bool state)
-{
-	colored_bg_ = state;
-	viewport_->update();
-}
-
 bool View::colored_bg() const
 {
 	return colored_bg_;
@@ -813,22 +867,36 @@ bool View::cursors_shown() const
 
 void View::show_cursors(bool show)
 {
-	show_cursors_ = show;
-	cursor_state_changed(show);
+	if (show_cursors_ != show) {
+		show_cursors_ = show;
+
+		cursor_state_changed(show);
+		ruler_->update();
+		viewport_->update();
+	}
+}
+
+void View::set_cursors(pv::util::Timestamp& first, pv::util::Timestamp& second)
+{
+	assert(cursors_);
+
+	cursors_->first()->set_time(first);
+	cursors_->second()->set_time(second);
+
 	ruler_->update();
 	viewport_->update();
 }
 
-void View::centre_cursors()
+void View::center_cursors()
 {
-	if (cursors_) {
-		const double time_width = scale_ * viewport_->width();
-		cursors_->first()->set_time(offset_ + time_width * 0.4);
-		cursors_->second()->set_time(offset_ + time_width * 0.6);
+	assert(cursors_);
 
-		ruler_->update();
-		viewport_->update();
-	}
+	const double time_width = scale_ * viewport_->width();
+	cursors_->first()->set_time(offset_ + time_width * 0.4);
+	cursors_->second()->set_time(offset_ + time_width * 0.6);
+
+	ruler_->update();
+	viewport_->update();
 }
 
 shared_ptr<CursorPair> View::cursors() const
@@ -836,15 +904,17 @@ shared_ptr<CursorPair> View::cursors() const
 	return cursors_;
 }
 
-void View::add_flag(const Timestamp& time)
+shared_ptr<Flag> View::add_flag(const Timestamp& time)
 {
-	flags_.push_back(make_shared<Flag>(*this, time,
-		QString("%1").arg(next_flag_text_)));
+	shared_ptr<Flag> flag =
+		make_shared<Flag>(*this, time, QString("%1").arg(next_flag_text_));
+	flags_.push_back(flag);
 
 	next_flag_text_ = (next_flag_text_ >= 'Z') ? 'A' :
 		(next_flag_text_ + 1);
 
 	time_item_appearance_changed(true, true);
+	return flag;
 }
 
 void View::remove_flag(shared_ptr<Flag> flag)
@@ -1004,13 +1074,22 @@ int View::header_width() const
 
 void View::on_setting_changed(const QString &key, const QVariant &value)
 {
+	GlobalSettings settings;
+
+	if (key == GlobalSettings::Key_View_ColoredBG) {
+		colored_bg_ = settings.value(GlobalSettings::Key_View_ColoredBG).toBool();
+		viewport_->update();
+	}
+
+	if ((key == GlobalSettings::Key_View_ShowSamplingPoints) ||
+	   (key == GlobalSettings::Key_View_ShowAnalogMinorGrid))
+		viewport_->update();
+
 	if (key == GlobalSettings::Key_View_TriggerIsZeroTime)
 		on_settingViewTriggerIsZeroTime_changed(value);
 
-	if (key == GlobalSettings::Key_View_SnapDistance) {
-		GlobalSettings settings;
+	if (key == GlobalSettings::Key_View_SnapDistance)
 		snap_distance_ = settings.value(GlobalSettings::Key_View_SnapDistance).toInt();
-	}
 }
 
 void View::trigger_event(int segment_id, util::Timestamp location)
@@ -1019,15 +1098,8 @@ void View::trigger_event(int segment_id, util::Timestamp location)
 	if ((uint32_t)segment_id != current_segment_)
 		return;
 
-	// Set zero location if the Key_View_TriggerIsZeroTime setting is set and
-	// if this is the first trigger for this segment.
-	GlobalSettings settings;
-	bool trigger_is_zero_time = settings.value(GlobalSettings::Key_View_TriggerIsZeroTime).toBool();
-
-	size_t trigger_count = session_.get_triggers(current_segment_).size();
-
-	if (trigger_is_zero_time && trigger_count == 1)
-		set_zero_position(location);
+	if (!custom_zero_offset_set_)
+		reset_zero_position();
 
 	trigger_markers_.push_back(make_shared<TriggerMarker>(*this, location));
 }
@@ -1182,9 +1254,13 @@ void View::update_scroll()
 	const pair<int, int> extents = v_extents();
 
 	// Don't change the scrollbar range if there are no traces
-	if (extents.first != extents.second)
-		vscrollbar->setRange(extents.first - areaSize.height(),
-			extents.second);
+	if (extents.first != extents.second) {
+		int top_margin = ViewScrollMargin;
+		int btm_margin = ViewScrollMargin;
+
+		vscrollbar->setRange(extents.first - areaSize.height() + top_margin,
+			extents.second - btm_margin);
+	}
 
 	if (scroll_needs_defaults_) {
 		set_scroll_default();
@@ -1337,6 +1413,7 @@ void View::determine_time_unit()
 bool View::eventFilter(QObject *object, QEvent *event)
 {
 	const QEvent::Type type = event->type();
+
 	if (type == QEvent::MouseMove) {
 
 		if (object)
@@ -1354,6 +1431,28 @@ bool View::eventFilter(QObject *object, QEvent *event)
 
 		update_hover_point();
 
+		if (grabbed_widget_) {
+			int64_t nearest = get_nearest_level_change(hover_point_);
+			pv::util::Timestamp mouse_time = offset_ + hover_point_.x() * scale_;
+
+			if (nearest == -1) {
+				grabbed_widget_->set_time(mouse_time);
+			} else {
+				grabbed_widget_->set_time(nearest / get_signal_under_mouse_cursor()->base()->get_samplerate());
+			}
+		}
+
+	} else if (type == QEvent::MouseButtonPress) {
+		grabbed_widget_ = nullptr;
+
+		const QMouseEvent *const mouse_event = (QMouseEvent*)event;
+		if ((object == viewport_) && (mouse_event->button() & Qt::LeftButton)) {
+			// Send event to all trace tree items
+			const vector<shared_ptr<TraceTreeItem>> trace_tree_items(
+				list_by_type<TraceTreeItem>());
+			for (const shared_ptr<TraceTreeItem>& r : trace_tree_items)
+				r->mouse_left_press_event(mouse_event);
+		}
 	} else if (type == QEvent::Leave) {
 		hover_point_ = QPoint(-1, -1);
 		update_hover_point();
@@ -1461,8 +1560,8 @@ void View::extents_changed(bool horz, bool vert)
 		(horz ? TraceTreeItemHExtentsChanged : 0) |
 		(vert ? TraceTreeItemVExtentsChanged : 0);
 
-	lazy_event_handler_.stop();
-	lazy_event_handler_.start();
+	if (!lazy_event_handler_.isActive())
+		lazy_event_handler_.start();
 }
 
 void View::on_signal_name_changed()
@@ -1478,6 +1577,26 @@ void View::on_splitter_moved()
 
 	if (!header_was_shrunk_)
 		resize_header_to_fit();
+}
+
+void View::on_zoom_in_shortcut_triggered()
+{
+	zoom(1);
+}
+
+void View::on_zoom_out_shortcut_triggered()
+{
+	zoom(-1);
+}
+
+void View::on_scroll_to_start_shortcut_triggered()
+{
+	set_h_offset(0);
+}
+
+void View::on_scroll_to_end_shortcut_triggered()
+{
+	set_h_offset(get_h_scrollbar_maximum());
 }
 
 void View::h_scroll_value_changed(int value)
@@ -1510,6 +1629,26 @@ void View::v_scroll_value_changed()
 {
 	header_->update();
 	viewport_->update();
+}
+
+void View::on_grab_ruler(int ruler_id)
+{
+	if (!cursors_shown()) {
+		center_cursors();
+		show_cursors();
+	}
+
+	// Release the grabbed widget if its trigger hotkey was pressed twice
+	if (ruler_id == 1)
+		grabbed_widget_ = (grabbed_widget_ == cursors_->first().get()) ?
+			nullptr : cursors_->first().get();
+	else
+		grabbed_widget_ = (grabbed_widget_ == cursors_->second().get()) ?
+			nullptr : cursors_->second().get();
+
+	if (grabbed_widget_)
+		grabbed_widget_->set_time(ruler_->get_absolute_time_from_x_pos(
+			mapFromGlobal(QCursor::pos()).x() - header_width()));
 }
 
 void View::signals_changed()
@@ -1699,6 +1838,8 @@ void View::capture_state_updated(int state)
 		set_time_unit(util::TimeUnit::Samples);
 
 		trigger_markers_.clear();
+		if (!custom_zero_offset_set_)
+			set_zero_position(0);
 
 		scale_at_acq_start_ = scale_;
 		offset_at_acq_start_ = offset_;
@@ -1781,12 +1922,9 @@ void View::on_segment_changed(int segment)
 
 void View::on_settingViewTriggerIsZeroTime_changed(const QVariant new_value)
 {
-	if (new_value.toBool()) {
-		// The first trigger for this segment is used as the zero position
-		vector<util::Timestamp> triggers = session_.get_triggers(current_segment_);
-		if (triggers.size() > 0)
-			set_zero_position(triggers.front());
-	} else
+	(void)new_value;
+
+	if (!custom_zero_offset_set_)
 		reset_zero_position();
 }
 

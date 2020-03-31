@@ -17,6 +17,7 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <cstring>
 #include <forward_list>
 #include <limits>
 
@@ -27,23 +28,19 @@
 #include "decodesignal.hpp"
 #include "signaldata.hpp"
 
-#include <pv/binding/decoder.hpp>
 #include <pv/data/decode/decoder.hpp>
 #include <pv/data/decode/row.hpp>
 #include <pv/globalsettings.hpp>
 #include <pv/session.hpp>
 
-using std::forward_list;
 using std::lock_guard;
-using std::make_pair;
 using std::make_shared;
 using std::min;
 using std::out_of_range;
 using std::shared_ptr;
 using std::unique_lock;
-using pv::data::decode::Annotation;
-using pv::data::decode::Decoder;
-using pv::data::decode::Row;
+using pv::data::decode::AnnotationClass;
+using pv::data::decode::DecodeChannel;
 
 namespace pv {
 namespace data {
@@ -75,16 +72,19 @@ const vector< shared_ptr<Decoder> >& DecodeSignal::decoder_stack() const
 	return stack_;
 }
 
-void DecodeSignal::stack_decoder(const srd_decoder *decoder)
+void DecodeSignal::stack_decoder(const srd_decoder *decoder, bool restart_decode)
 {
 	assert(decoder);
-	const shared_ptr<Decoder> dec = make_shared<decode::Decoder>(decoder);
 
-	stack_.push_back(dec);
+	// Set name if this decoder is the first in the list or the name is unchanged
+	const srd_decoder* prev_dec = stack_.empty() ? nullptr : stack_.back()->get_srd_decoder();
+	const QString prev_dec_name = prev_dec ? QString::fromUtf8(prev_dec->name) : QString();
 
-	// Set name if this decoder is the first in the list
-	if (stack_.size() == 1)
+	if ((stack_.empty()) || ((stack_.size() > 0) && (name() == prev_dec_name)))
 		set_name(QString::fromUtf8(decoder->name));
+
+	const shared_ptr<Decoder> dec = make_shared<Decoder>(decoder);
+	stack_.push_back(dec);
 
 	// Include the newly created decode channels in the channel lists
 	update_channel_list();
@@ -92,7 +92,11 @@ void DecodeSignal::stack_decoder(const srd_decoder *decoder)
 	stack_config_changed_ = true;
 	auto_assign_signals(dec);
 	commit_decoder_channels();
-	begin_decode();
+
+	decoder_stacked((void*)dec.get());
+
+	if (restart_decode)
+		begin_decode();
 }
 
 void DecodeSignal::remove_decoder(int index)
@@ -104,6 +108,8 @@ void DecodeSignal::remove_decoder(int index)
 	auto iter = stack_.begin();
 	for (int i = 0; i < index; i++, iter++)
 		assert(iter != stack_.end());
+
+	decoder_removed(iter->get());
 
 	// Delete the element
 	stack_.erase(iter);
@@ -125,8 +131,8 @@ bool DecodeSignal::toggle_decoder_visibility(int index)
 	// Toggle decoder visibility
 	bool state = false;
 	if (dec) {
-		state = !dec->shown();
-		dec->show(state);
+		state = !dec->visible();
+		dec->set_visible(state);
 	}
 
 	return state;
@@ -134,6 +140,8 @@ bool DecodeSignal::toggle_decoder_visibility(int index)
 
 void DecodeSignal::reset_decode(bool shutting_down)
 {
+	resume_decode();  // Make sure the decode thread isn't blocked by pausing
+
 	if (stack_config_changed_ || shutting_down)
 		stop_srd_session();
 	else
@@ -151,9 +159,6 @@ void DecodeSignal::reset_decode(bool shutting_down)
 		logic_mux_thread_.join();
 	}
 
-	resume_decode();  // Make sure the decode thread isn't blocked by pausing
-
-	class_rows_.clear();
 	current_segment_id_ = 0;
 	segments_.clear();
 
@@ -200,38 +205,17 @@ void DecodeSignal::begin_decode()
 	// Make sure that all assigned channels still provide logic data
 	// (can happen when a converted signal was assigned but the
 	// conversion removed in the meanwhile)
-	for (data::DecodeChannel& ch : channels_)
+	for (decode::DecodeChannel& ch : channels_)
 		if (ch.assigned_signal && !(ch.assigned_signal->logic_data() != nullptr))
 			ch.assigned_signal = nullptr;
 
 	// Check that all decoders have the required channels
-	for (const shared_ptr<decode::Decoder>& dec : stack_)
+	for (const shared_ptr<Decoder>& dec : stack_)
 		if (!dec->have_required_channels()) {
 			set_error_message(tr("One or more required channels "
 				"have not been specified"));
 			return;
 		}
-
-	// Map out all the annotation classes
-	int row_index = 0;
-	for (const shared_ptr<decode::Decoder>& dec : stack_) {
-		assert(dec);
-		const srd_decoder *const decc = dec->decoder();
-		assert(dec->decoder());
-
-		for (const GSList *l = decc->annotation_rows; l; l = l->next) {
-			const srd_decoder_annotation_row *const ann_row =
-				(srd_decoder_annotation_row *)l->data;
-			assert(ann_row);
-
-			const Row row(row_index++, decc, ann_row);
-
-			for (const GSList *ll = ann_row->ann_classes;
-				ll; ll = ll->next)
-				class_rows_[make_pair(decc,
-					GPOINTER_TO_INT(ll->data))] = row;
-		}
-	}
 
 	// Free the logic data and its segment(s) if it needs to be updated
 	if (logic_mux_data_invalid_)
@@ -285,7 +269,7 @@ QString DecodeSignal::error_message() const
 	return error_message_;
 }
 
-const vector<data::DecodeChannel> DecodeSignal::get_channels() const
+const vector<decode::DecodeChannel> DecodeSignal::get_channels() const
 {
 	return channels_;
 }
@@ -295,7 +279,7 @@ void DecodeSignal::auto_assign_signals(const shared_ptr<Decoder> dec)
 	bool new_assignment = false;
 
 	// Try to auto-select channels that don't have signals assigned yet
-	for (data::DecodeChannel& ch : channels_) {
+	for (decode::DecodeChannel& ch : channels_) {
 		// If a decoder is given, auto-assign only its channels
 		if (dec && (ch.decoder_ != dec))
 			continue;
@@ -344,7 +328,7 @@ void DecodeSignal::auto_assign_signals(const shared_ptr<Decoder> dec)
 
 void DecodeSignal::assign_signal(const uint16_t channel_id, const SignalBase *signal)
 {
-	for (data::DecodeChannel& ch : channels_)
+	for (decode::DecodeChannel& ch : channels_)
 		if (ch.id == channel_id) {
 			ch.assigned_signal = signal;
 			logic_mux_data_invalid_ = true;
@@ -360,12 +344,12 @@ int DecodeSignal::get_assigned_signal_count() const
 {
 	// Count all channels that have a signal assigned to them
 	return count_if(channels_.begin(), channels_.end(),
-		[](data::DecodeChannel ch) { return ch.assigned_signal; });
+		[](decode::DecodeChannel ch) { return ch.assigned_signal; });
 }
 
 void DecodeSignal::set_initial_pin_state(const uint16_t channel_id, const int init_state)
 {
-	for (data::DecodeChannel& ch : channels_)
+	for (decode::DecodeChannel& ch : channels_)
 		if (ch.id == channel_id)
 			ch.initial_pin_state = init_state;
 
@@ -405,7 +389,7 @@ int64_t DecodeSignal::get_working_sample_count(uint32_t segment_id) const
 	int64_t count = std::numeric_limits<int64_t>::max();
 	bool no_signals_assigned = true;
 
-	for (const data::DecodeChannel& ch : channels_)
+	for (const decode::DecodeChannel& ch : channels_)
 		if (ch.assigned_signal) {
 			no_signals_assigned = false;
 
@@ -431,96 +415,231 @@ int64_t DecodeSignal::get_decoded_sample_count(uint32_t segment_id,
 
 	int64_t result = 0;
 
-	try {
-		const DecodeSegment *segment = &(segments_.at(segment_id));
-		if (include_processing)
-			result = segment->samples_decoded_incl;
-		else
-			result = segment->samples_decoded_excl;
-	} catch (out_of_range&) {
-		// Do nothing
-	}
+	if (segment_id >= segments_.size())
+		return result;
+
+	if (include_processing)
+		result = segments_[segment_id].samples_decoded_incl;
+	else
+		result = segments_[segment_id].samples_decoded_excl;
 
 	return result;
 }
 
-vector<Row> DecodeSignal::visible_rows() const
+vector<Row*> DecodeSignal::get_rows(bool visible_only)
 {
-	lock_guard<mutex> lock(output_mutex_);
+	vector<Row*> rows;
 
-	vector<Row> rows;
-
-	for (const shared_ptr<decode::Decoder>& dec : stack_) {
+	for (const shared_ptr<Decoder>& dec : stack_) {
 		assert(dec);
-		if (!dec->shown())
+		if (visible_only && !dec->visible())
 			continue;
 
-		const srd_decoder *const decc = dec->decoder();
-		assert(dec->decoder());
-
-		int row_index = 0;
-		// Add a row for the decoder if it doesn't have a row list
-		if (!decc->annotation_rows)
-			rows.emplace_back(row_index++, decc);
-
-		// Add the decoder rows
-		for (const GSList *l = decc->annotation_rows; l; l = l->next) {
-			const srd_decoder_annotation_row *const ann_row =
-				(srd_decoder_annotation_row *)l->data;
-			assert(ann_row);
-			rows.emplace_back(row_index++, decc, ann_row);
-		}
+		for (Row* row : dec->get_rows())
+			rows.push_back(row);
 	}
 
 	return rows;
 }
 
-void DecodeSignal::get_annotation_subset(
-	vector<pv::data::decode::Annotation> &dest,
-	const decode::Row &row, uint32_t segment_id, uint64_t start_sample,
+vector<const Row*> DecodeSignal::get_rows(bool visible_only) const
+{
+	vector<const Row*> rows;
+
+	for (const shared_ptr<Decoder>& dec : stack_) {
+		assert(dec);
+		if (visible_only && !dec->visible())
+			continue;
+
+		for (const Row* row : dec->get_rows())
+			rows.push_back(row);
+	}
+
+	return rows;
+}
+
+
+uint64_t DecodeSignal::get_annotation_count(const Row* row, uint32_t segment_id) const
+{
+	if (segment_id >= segments_.size())
+		return 0;
+
+	const DecodeSegment* segment = &(segments_.at(segment_id));
+
+	auto row_it = segment->annotation_rows.find(row);
+
+	const RowData* rd;
+	if (row_it == segment->annotation_rows.end())
+		return 0;
+	else
+		rd = &(row_it->second);
+
+	return rd->get_annotation_count();
+}
+
+void DecodeSignal::get_annotation_subset(deque<const Annotation*> &dest,
+	const Row* row, uint32_t segment_id, uint64_t start_sample,
 	uint64_t end_sample) const
 {
 	lock_guard<mutex> lock(output_mutex_);
 
+	if (segment_id >= segments_.size())
+		return;
+
+	const DecodeSegment* segment = &(segments_.at(segment_id));
+
+	auto row_it = segment->annotation_rows.find(row);
+
+	const RowData* rd;
+	if (row_it == segment->annotation_rows.end())
+		return;
+	else
+		rd = &(row_it->second);
+
+	rd->get_annotation_subset(dest, start_sample, end_sample);
+}
+
+void DecodeSignal::get_annotation_subset(deque<const Annotation*> &dest,
+	uint32_t segment_id, uint64_t start_sample, uint64_t end_sample) const
+{
+	for (const Row* row : get_rows())
+		get_annotation_subset(dest, row, segment_id, start_sample, end_sample);
+}
+
+uint32_t DecodeSignal::get_binary_data_chunk_count(uint32_t segment_id,
+	const Decoder* dec, uint32_t bin_class_id) const
+{
+	if (segments_.size() == 0)
+		return 0;
+
 	try {
 		const DecodeSegment *segment = &(segments_.at(segment_id));
-		const map<const decode::Row, decode::RowData> *rows =
-			&(segment->annotation_rows);
 
-		const auto iter = rows->find(row);
-		if (iter != rows->end())
-			(*iter).second.get_annotation_subset(dest,
-				start_sample, end_sample);
+		for (const DecodeBinaryClass& bc : segment->binary_classes)
+			if ((bc.decoder == dec) && (bc.info->bin_class_id == bin_class_id))
+				return bc.chunks.size();
+	} catch (out_of_range&) {
+		// Do nothing
+	}
+
+	return 0;
+}
+
+void DecodeSignal::get_binary_data_chunk(uint32_t segment_id,
+	const  Decoder* dec, uint32_t bin_class_id, uint32_t chunk_id,
+	const vector<uint8_t> **dest, uint64_t *size)
+{
+	try {
+		const DecodeSegment *segment = &(segments_.at(segment_id));
+
+		for (const DecodeBinaryClass& bc : segment->binary_classes)
+			if ((bc.decoder == dec) && (bc.info->bin_class_id == bin_class_id)) {
+				if (dest) *dest = &(bc.chunks.at(chunk_id).data);
+				if (size) *size = bc.chunks.at(chunk_id).data.size();
+				return;
+			}
 	} catch (out_of_range&) {
 		// Do nothing
 	}
 }
 
-void DecodeSignal::get_annotation_subset(
-	vector<pv::data::decode::Annotation> &dest,
-	uint32_t segment_id, uint64_t start_sample, uint64_t end_sample) const
+void DecodeSignal::get_merged_binary_data_chunks_by_sample(uint32_t segment_id,
+	const Decoder* dec, uint32_t bin_class_id, uint64_t start_sample,
+	uint64_t end_sample, vector<uint8_t> *dest) const
 {
-	// Note: We put all vectors and lists on the heap, not the stack
+	assert(dest != nullptr);
 
-	const vector<Row> rows = visible_rows();
+	try {
+		const DecodeSegment *segment = &(segments_.at(segment_id));
 
-	// Use forward_lists for faster merging
-	forward_list<Annotation> *all_ann_list = new forward_list<Annotation>();
+		const DecodeBinaryClass* bin_class = nullptr;
+		for (const DecodeBinaryClass& bc : segment->binary_classes)
+			if ((bc.decoder == dec) && (bc.info->bin_class_id == bin_class_id))
+				bin_class = &bc;
 
-	for (const Row& row : rows) {
-		vector<Annotation> *ann_vector = new vector<Annotation>();
-		get_annotation_subset(*ann_vector, row, segment_id, start_sample, end_sample);
+		// Determine overall size before copying to resize dest vector only once
+		uint64_t size = 0;
+		uint64_t matches = 0;
+		for (const DecodeBinaryDataChunk& chunk : bin_class->chunks)
+			if ((chunk.sample >= start_sample) && (chunk.sample < end_sample)) {
+				size += chunk.data.size();
+				matches++;
+			}
+		dest->resize(size);
 
-		forward_list<Annotation> *ann_list =
-			new forward_list<Annotation>(ann_vector->begin(), ann_vector->end());
-		delete ann_vector;
+		uint64_t offset = 0;
+		uint64_t matches2 = 0;
+		for (const DecodeBinaryDataChunk& chunk : bin_class->chunks)
+			if ((chunk.sample >= start_sample) && (chunk.sample < end_sample)) {
+				memcpy(dest->data() + offset, chunk.data.data(), chunk.data.size());
+				offset += chunk.data.size();
+				matches2++;
 
-		all_ann_list->merge(*ann_list);
-		delete ann_list;
+				// Make sure we don't overwrite memory if the array grew in the meanwhile
+				if (matches2 == matches)
+					break;
+			}
+	} catch (out_of_range&) {
+		// Do nothing
+	}
+}
+
+void DecodeSignal::get_merged_binary_data_chunks_by_offset(uint32_t segment_id,
+	const Decoder* dec, uint32_t bin_class_id, uint64_t start, uint64_t end,
+	vector<uint8_t> *dest) const
+{
+	assert(dest != nullptr);
+
+	try {
+		const DecodeSegment *segment = &(segments_.at(segment_id));
+
+		const DecodeBinaryClass* bin_class = nullptr;
+		for (const DecodeBinaryClass& bc : segment->binary_classes)
+			if ((bc.decoder == dec) && (bc.info->bin_class_id == bin_class_id))
+				bin_class = &bc;
+
+		// Determine overall size before copying to resize dest vector only once
+		uint64_t size = 0;
+		uint64_t offset = 0;
+		for (const DecodeBinaryDataChunk& chunk : bin_class->chunks) {
+			if (offset >= start)
+				size += chunk.data.size();
+			offset += chunk.data.size();
+			if (offset >= end)
+				break;
+		}
+		dest->resize(size);
+
+		offset = 0;
+		uint64_t dest_offset = 0;
+		for (const DecodeBinaryDataChunk& chunk : bin_class->chunks) {
+			if (offset >= start) {
+				memcpy(dest->data() + dest_offset, chunk.data.data(), chunk.data.size());
+				dest_offset += chunk.data.size();
+			}
+			offset += chunk.data.size();
+			if (offset >= end)
+				break;
+		}
+	} catch (out_of_range&) {
+		// Do nothing
+	}
+}
+
+const DecodeBinaryClass* DecodeSignal::get_binary_data_class(uint32_t segment_id,
+	const Decoder* dec, uint32_t bin_class_id) const
+{
+	try {
+		const DecodeSegment *segment = &(segments_.at(segment_id));
+
+		for (const DecodeBinaryClass& bc : segment->binary_classes)
+			if ((bc.decoder == dec) && (bc.info->bin_class_id == bin_class_id))
+				return &bc;
+	} catch (out_of_range&) {
+		// Do nothing
 	}
 
-	move(all_ann_list->begin(), all_ann_list->end(), back_inserter(dest));
-	delete all_ann_list;
+	return nullptr;
 }
 
 void DecodeSignal::save_settings(QSettings &settings) const
@@ -531,23 +650,42 @@ void DecodeSignal::save_settings(QSettings &settings) const
 
 	// Save decoder stack
 	int decoder_idx = 0;
-	for (const shared_ptr<decode::Decoder>& decoder : stack_) {
+	for (const shared_ptr<Decoder>& decoder : stack_) {
 		settings.beginGroup("decoder" + QString::number(decoder_idx++));
 
-		settings.setValue("id", decoder->decoder()->id);
+		settings.setValue("id", decoder->get_srd_decoder()->id);
+		settings.setValue("visible", decoder->visible());
 
 		// Save decoder options
 		const map<string, GVariant*>& options = decoder->options();
 
 		settings.setValue("options", (int)options.size());
 
-		// Note: decode::Decoder::options() returns only the options
+		// Note: Decoder::options() returns only the options
 		// that differ from the default. See binding::Decoder::getter()
 		int i = 0;
 		for (auto& option : options) {
 			settings.beginGroup("option" + QString::number(i));
 			settings.setValue("name", QString::fromStdString(option.first));
 			GlobalSettings::store_gvariant(settings, option.second);
+			settings.endGroup();
+			i++;
+		}
+
+		// Save row properties
+		i = 0;
+		for (const Row* row : decoder->get_rows()) {
+			settings.beginGroup("row" + QString::number(i));
+			settings.setValue("visible", row->visible());
+			settings.endGroup();
+			i++;
+		}
+
+		// Save class properties
+		i = 0;
+		for (const AnnotationClass* ann_class : decoder->ann_classes()) {
+			settings.beginGroup("ann_class" + QString::number(i));
+			settings.setValue("visible", ann_class->visible);
 			settings.endGroup();
 			i++;
 		}
@@ -560,7 +698,7 @@ void DecodeSignal::save_settings(QSettings &settings) const
 
 	for (unsigned int channel_id = 0; channel_id < channels_.size(); channel_id++) {
 		auto channel = find_if(channels_.begin(), channels_.end(),
-			[&](data::DecodeChannel ch) { return ch.id == channel_id; });
+			[&](decode::DecodeChannel ch) { return ch.id == channel_id; });
 
 		if (channel == channels_.end()) {
 			qDebug() << "ERROR: Gap in channel index:" << channel_id;
@@ -599,10 +737,10 @@ void DecodeSignal::restore_settings(QSettings &settings)
 				continue;
 
 			if (QString::fromUtf8(dec->id) == id) {
-				shared_ptr<decode::Decoder> decoder =
-					make_shared<decode::Decoder>(dec);
+				shared_ptr<Decoder> decoder = make_shared<Decoder>(dec);
 
 				stack_.push_back(decoder);
+				decoder->set_visible(settings.value("visible", true).toBool());
 
 				// Restore decoder options that differ from their default
 				int options = settings.value("options").toInt();
@@ -617,6 +755,25 @@ void DecodeSignal::restore_settings(QSettings &settings)
 
 				// Include the newly created decode channels in the channel lists
 				update_channel_list();
+
+				// Restore row properties
+				int i = 0;
+				for (Row* row : decoder->get_rows()) {
+					settings.beginGroup("row" + QString::number(i));
+					row->set_visible(settings.value("visible", true).toBool());
+					settings.endGroup();
+					i++;
+				}
+
+				// Restore class properties
+				i = 0;
+				for (AnnotationClass* ann_class : decoder->ann_classes()) {
+					settings.beginGroup("ann_class" + QString::number(i));
+					ann_class->visible = settings.value("visible", true).toBool();
+					settings.endGroup();
+					i++;
+				}
+
 				break;
 			}
 		}
@@ -628,12 +785,12 @@ void DecodeSignal::restore_settings(QSettings &settings)
 	// Restore channel mapping
 	unsigned int channels = settings.value("channels").toInt();
 
-	const unordered_set< shared_ptr<data::SignalBase> > signalbases =
+	const vector< shared_ptr<data::SignalBase> > signalbases =
 		session_.signalbases();
 
 	for (unsigned int channel_id = 0; channel_id < channels; channel_id++) {
 		auto channel = find_if(channels_.begin(), channels_.end(),
-			[&](data::DecodeChannel ch) { return ch.id == channel_id; });
+			[&](decode::DecodeChannel ch) { return ch.id == channel_id; });
 
 		if (channel == channels_.end()) {
 			qDebug() << "ERROR: Non-existant channel index:" << channel_id;
@@ -673,7 +830,7 @@ uint32_t DecodeSignal::get_input_segment_count() const
 	uint64_t count = std::numeric_limits<uint64_t>::max();
 	bool no_signals_assigned = true;
 
-	for (const data::DecodeChannel& ch : channels_)
+	for (const decode::DecodeChannel& ch : channels_)
 		if (ch.assigned_signal) {
 			no_signals_assigned = false;
 
@@ -693,7 +850,7 @@ uint32_t DecodeSignal::get_input_samplerate(uint32_t segment_id) const
 {
 	double samplerate = 0;
 
-	for (const data::DecodeChannel& ch : channels_)
+	for (const decode::DecodeChannel& ch : channels_)
 		if (ch.assigned_signal) {
 			const shared_ptr<Logic> logic_data = ch.assigned_signal->logic_data();
 			if (!logic_data || logic_data->logic_segments().empty())
@@ -711,25 +868,34 @@ uint32_t DecodeSignal::get_input_samplerate(uint32_t segment_id) const
 	return samplerate;
 }
 
+Decoder* DecodeSignal::get_decoder_by_instance(const srd_decoder *const srd_dec)
+{
+	for (shared_ptr<Decoder>& d : stack_)
+		if (d->get_srd_decoder() == srd_dec)
+			return d.get();
+
+	return nullptr;
+}
+
 void DecodeSignal::update_channel_list()
 {
-	vector<data::DecodeChannel> prev_channels = channels_;
+	vector<decode::DecodeChannel> prev_channels = channels_;
 	channels_.clear();
 
 	uint16_t id = 0;
 
 	// Copy existing entries, create new as needed
 	for (shared_ptr<Decoder>& decoder : stack_) {
-		const srd_decoder* srd_d = decoder->decoder();
+		const srd_decoder* srd_dec = decoder->get_srd_decoder();
 		const GSList *l;
 
 		// Mandatory channels
-		for (l = srd_d->channels; l; l = l->next) {
+		for (l = srd_dec->channels; l; l = l->next) {
 			const struct srd_channel *const pdch = (struct srd_channel *)l->data;
 			bool ch_added = false;
 
 			// Copy but update ID if this channel was in the list before
-			for (data::DecodeChannel& ch : prev_channels)
+			for (decode::DecodeChannel& ch : prev_channels)
 				if (ch.pdch_ == pdch) {
 					ch.id = id++;
 					channels_.push_back(ch);
@@ -739,7 +905,7 @@ void DecodeSignal::update_channel_list()
 
 			if (!ch_added) {
 				// Create new entry without a mapped signal
-				data::DecodeChannel ch = {id++, 0, false, nullptr,
+				decode::DecodeChannel ch = {id++, 0, false, nullptr,
 					QString::fromUtf8(pdch->name), QString::fromUtf8(pdch->desc),
 					SRD_INITIAL_PIN_SAME_AS_SAMPLE0, decoder, pdch};
 				channels_.push_back(ch);
@@ -747,12 +913,12 @@ void DecodeSignal::update_channel_list()
 		}
 
 		// Optional channels
-		for (l = srd_d->opt_channels; l; l = l->next) {
+		for (l = srd_dec->opt_channels; l; l = l->next) {
 			const struct srd_channel *const pdch = (struct srd_channel *)l->data;
 			bool ch_added = false;
 
 			// Copy but update ID if this channel was in the list before
-			for (data::DecodeChannel& ch : prev_channels)
+			for (decode::DecodeChannel& ch : prev_channels)
 				if (ch.pdch_ == pdch) {
 					ch.id = id++;
 					channels_.push_back(ch);
@@ -762,7 +928,7 @@ void DecodeSignal::update_channel_list()
 
 			if (!ch_added) {
 				// Create new entry without a mapped signal
-				data::DecodeChannel ch = {id++, 0, true, nullptr,
+				decode::DecodeChannel ch = {id++, 0, true, nullptr,
 					QString::fromUtf8(pdch->name), QString::fromUtf8(pdch->desc),
 					SRD_INITIAL_PIN_SAME_AS_SAMPLE0, decoder, pdch};
 				channels_.push_back(ch);
@@ -777,8 +943,8 @@ void DecodeSignal::update_channel_list()
 	} else {
 		// Same number but assignment may still differ, so compare all channels
 		for (size_t i = 0; i < channels_.size(); i++) {
-			const data::DecodeChannel& p_ch = prev_channels[i];
-			const data::DecodeChannel& ch = channels_[i];
+			const decode::DecodeChannel& p_ch = prev_channels[i];
+			const decode::DecodeChannel& ch = channels_[i];
 
 			if ((p_ch.pdch_ != ch.pdch_) ||
 				(p_ch.assigned_signal != ch.assigned_signal)) {
@@ -795,10 +961,10 @@ void DecodeSignal::update_channel_list()
 void DecodeSignal::commit_decoder_channels()
 {
 	// Submit channel list to every decoder, containing only the relevant channels
-	for (shared_ptr<decode::Decoder> dec : stack_) {
-		vector<data::DecodeChannel*> channel_list;
+	for (shared_ptr<Decoder> dec : stack_) {
+		vector<decode::DecodeChannel*> channel_list;
 
-		for (data::DecodeChannel& ch : channels_)
+		for (decode::DecodeChannel& ch : channels_)
 			if (ch.decoder_ == dec)
 				channel_list.push_back(&ch);
 
@@ -807,7 +973,7 @@ void DecodeSignal::commit_decoder_channels()
 
 	// Channel bit IDs must be in sync with the channel's apperance in channels_
 	int id = 0;
-	for (data::DecodeChannel& ch : channels_)
+	for (decode::DecodeChannel& ch : channels_)
 		if (ch.assigned_signal)
 			ch.bit_id = id++;
 }
@@ -824,7 +990,7 @@ void DecodeSignal::mux_logic_samples(uint32_t segment_id, const int64_t start, c
 	vector<uint8_t> signal_in_bytepos;
 	vector<uint8_t> signal_in_bitpos;
 
-	for (data::DecodeChannel& ch : channels_)
+	for (decode::DecodeChannel& ch : channels_)
 		if (ch.assigned_signal) {
 			const shared_ptr<Logic> logic_data = ch.assigned_signal->logic_data();
 
@@ -1110,7 +1276,7 @@ void DecodeSignal::start_srd_session()
 		if (samplerate)
 			srd_session_metadata_set(srd_session_, SRD_CONF_SAMPLERATE,
 				g_variant_new_uint64(samplerate));
-		for (const shared_ptr<decode::Decoder>& dec : stack_)
+		for (const shared_ptr<Decoder>& dec : stack_)
 			dec->apply_all_options();
 		srd_session_start(srd_session_);
 
@@ -1123,7 +1289,7 @@ void DecodeSignal::start_srd_session()
 
 	// Create the decoders
 	srd_decoder_inst *prev_di = nullptr;
-	for (const shared_ptr<decode::Decoder>& dec : stack_) {
+	for (const shared_ptr<Decoder>& dec : stack_) {
 		srd_decoder_inst *const di = dec->create_decoder_inst(srd_session_);
 
 		if (!di) {
@@ -1146,6 +1312,9 @@ void DecodeSignal::start_srd_session()
 
 	srd_pd_output_callback_add(srd_session_, SRD_OUTPUT_ANN,
 		DecodeSignal::annotation_callback, this);
+
+	srd_pd_output_callback_add(srd_session_, SRD_OUTPUT_BINARY,
+		DecodeSignal::binary_callback, this);
 
 	srd_session_start(srd_session_);
 
@@ -1170,7 +1339,7 @@ void DecodeSignal::terminate_srd_session()
 		if (samplerate)
 			srd_session_metadata_set(srd_session_, SRD_CONF_SAMPLERATE,
 				g_variant_new_uint64(samplerate));
-		for (const shared_ptr<decode::Decoder>& dec : stack_)
+		for (const shared_ptr<Decoder>& dec : stack_)
 			dec->apply_all_options();
 	}
 }
@@ -1183,7 +1352,7 @@ void DecodeSignal::stop_srd_session()
 		srd_session_ = nullptr;
 
 		// Mark the decoder instances as non-existant since they were deleted
-		for (const shared_ptr<decode::Decoder>& dec : stack_)
+		for (const shared_ptr<Decoder>& dec : stack_)
 			dec->invalidate_decoder_inst();
 	}
 }
@@ -1195,7 +1364,7 @@ void DecodeSignal::connect_input_notifiers()
 	disconnect(this, SLOT(on_data_received()));
 
 	// Connect the currently used signals to our slot
-	for (data::DecodeChannel& ch : channels_) {
+	for (decode::DecodeChannel& ch : channels_) {
 		if (!ch.assigned_signal)
 			continue;
 
@@ -1213,29 +1382,17 @@ void DecodeSignal::create_decode_segment()
 	segments_.emplace_back(DecodeSegment());
 
 	// Add annotation classes
-	for (const shared_ptr<decode::Decoder>& dec : stack_) {
-		assert(dec);
-		const srd_decoder *const decc = dec->decoder();
-		assert(dec->decoder());
+	for (const shared_ptr<Decoder>& dec : stack_)
+		for (Row* row : dec->get_rows())
+			segments_.back().annotation_rows.emplace(row, RowData(row));
 
-		int row_index = 0;
-		// Add a row for the decoder if it doesn't have a row list
-		if (!decc->annotation_rows)
-			(segments_.back().annotation_rows)[Row(row_index++, decc)] =
-				decode::RowData();
+	// Prepare our binary output classes
+	for (const shared_ptr<Decoder>& dec : stack_) {
+		uint32_t n = dec->get_binary_class_count();
 
-		// Add the decoder rows
-		for (const GSList *l = decc->annotation_rows; l; l = l->next) {
-			const srd_decoder_annotation_row *const ann_row =
-				(srd_decoder_annotation_row *)l->data;
-			assert(ann_row);
-
-			const Row row(row_index++, decc, ann_row);
-
-			// Add a new empty row data object
-			(segments_.back().annotation_rows)[row] =
-				decode::RowData();
-		}
+		for (uint32_t i = 0; i < n; i++)
+			segments_.back().binary_classes.push_back(
+				{dec.get(), dec->get_binary_class(i), deque<DecodeBinaryDataChunk>()});
 	}
 }
 
@@ -1252,37 +1409,83 @@ void DecodeSignal::annotation_callback(srd_proto_data *pdata, void *decode_signa
 
 	lock_guard<mutex> lock(ds->output_mutex_);
 
-	// Find the row
+	// Get the decoder and the annotation data
 	assert(pdata->pdo);
 	assert(pdata->pdo->di);
-	const srd_decoder *const decc = pdata->pdo->di->decoder;
-	assert(decc);
+	const srd_decoder *const srd_dec = pdata->pdo->di->decoder;
+	assert(srd_dec);
 
-	const srd_proto_data_annotation *const pda =
-		(const srd_proto_data_annotation*)pdata->data;
+	const srd_proto_data_annotation *const pda = (const srd_proto_data_annotation*)pdata->data;
 	assert(pda);
 
-	auto row_iter = ds->segments_.at(ds->current_segment_id_).annotation_rows.end();
+	// Find the row
+	Decoder* dec = ds->get_decoder_by_instance(srd_dec);
+	assert(dec);
 
-	// Try looking up the sub-row of this class
-	const auto format = pda->ann_class;
-	const auto r = ds->class_rows_.find(make_pair(decc, format));
-	if (r != ds->class_rows_.end())
-		row_iter = ds->segments_.at(ds->current_segment_id_).annotation_rows.find((*r).second);
-	else {
-		// Failing that, use the decoder as a key
-		row_iter = ds->segments_.at(ds->current_segment_id_).annotation_rows.find(Row(0, decc));
-	}
-
-	if (row_iter == ds->segments_.at(ds->current_segment_id_).annotation_rows.end()) {
-		qDebug() << "Unexpected annotation: decoder = " << decc <<
-			", format = " << format;
-		assert(false);
+	AnnotationClass* ann_class = dec->get_ann_class_by_id(pda->ann_class);
+	if (!ann_class) {
+		qWarning() << "Decoder" << ds->display_name() << "wanted to add annotation" <<
+			"with class ID" << pda->ann_class << "but there are only" <<
+			dec->ann_classes().size() << "known classes";
 		return;
 	}
 
+	const Row* row = ann_class->row;
+
+	if (!row)
+		row = dec->get_row_by_id(0);
+
 	// Add the annotation
-	(*row_iter).second.emplace_annotation(pdata, &((*row_iter).first));
+	ds->segments_[ds->current_segment_id_].annotation_rows.at(row).emplace_annotation(pdata);
+}
+
+void DecodeSignal::binary_callback(srd_proto_data *pdata, void *decode_signal)
+{
+	assert(pdata);
+	assert(decode_signal);
+
+	DecodeSignal *const ds = (DecodeSignal*)decode_signal;
+	assert(ds);
+
+	if (ds->decode_interrupt_)
+		return;
+
+	// Get the decoder and the binary data
+	assert(pdata->pdo);
+	assert(pdata->pdo->di);
+	const srd_decoder *const srd_dec = pdata->pdo->di->decoder;
+	assert(srd_dec);
+
+	const srd_proto_data_binary *const pdb = (const srd_proto_data_binary*)pdata->data;
+	assert(pdb);
+
+	// Find the matching DecodeBinaryClass
+	DecodeSegment* segment = &(ds->segments_.at(ds->current_segment_id_));
+
+	DecodeBinaryClass* bin_class = nullptr;
+	for (DecodeBinaryClass& bc : segment->binary_classes)
+		if ((bc.decoder->get_srd_decoder() == srd_dec) &&
+			(bc.info->bin_class_id == (uint32_t)pdb->bin_class))
+			bin_class = &bc;
+
+	if (!bin_class) {
+		qWarning() << "Could not find valid DecodeBinaryClass in segment" <<
+				ds->current_segment_id_ << "for binary class ID" << pdb->bin_class <<
+				", segment only knows" << segment->binary_classes.size() << "classes";
+		return;
+	}
+
+	// Add the data chunk
+	bin_class->chunks.emplace_back();
+	DecodeBinaryDataChunk* chunk = &(bin_class->chunks.back());
+
+	chunk->sample = pdata->start_sample;
+	chunk->data.resize(pdb->size);
+	memcpy(chunk->data.data(), pdb->data, pdb->size);
+
+	Decoder* dec = ds->get_decoder_by_instance(srd_dec);
+
+	ds->new_binary_data(ds->current_segment_id_, (void*)dec, pdb->bin_class);
 }
 
 void DecodeSignal::on_capture_state_changed(int state)

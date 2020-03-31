@@ -23,6 +23,8 @@
 #include <memory>
 
 #include <QComboBox>
+#include <QString>
+#include <QVariant>
 #include <QWidgetAction>
 
 #include <cstdint>
@@ -87,8 +89,10 @@ public:
 	shared_ptr<data::SignalBase> base() const;
 
 	virtual void save_settings(QSettings &settings) const;
+	virtual std::map<QString, QVariant> save_settings() const;
 
 	virtual void restore_settings(QSettings &settings);
+	virtual void restore_settings(std::map<QString, QVariant> settings);
 
 	void paint_back(QPainter &p, ViewItemPaintParams &pp);
 

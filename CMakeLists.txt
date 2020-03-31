@@ -3,6 +3,7 @@
 ##
 ## Copyright (C) 2012 Joel Holdsworth <joel@airwebreathe.org.uk>
 ## Copyright (C) 2012-2013 Alexandru Gagniuc <mr.nuke.me@gmail.com>
+## Copyright (C) 2020 Soeren Apel <soeren@apelpie.net>
 ##
 ## This program is free software: you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -44,6 +45,7 @@ option(DISABLE_WERROR "Build without -Werror" TRUE)
 option(ENABLE_SIGNALS "Build with UNIX signals" TRUE)
 option(ENABLE_STACKTRACE "Enable stack trace when crashing" FALSE)
 option(ENABLE_DECODE "Build with libsigrokdecode" TRUE)
+option(ENABLE_FLOW "Build with libsigrokflow" FALSE)
 option(ENABLE_TESTS "Enable unit tests" FALSE)
 option(STATIC_PKGDEPS_LIBS "Statically link to (pkg-config) libraries" FALSE)
 
@@ -75,6 +77,11 @@ add_subdirectory(manual)
 list(APPEND PKGDEPS glib-2.0>=2.28.0)
 list(APPEND PKGDEPS glibmm-2.4>=2.28.0)
 
+if(ENABLE_FLOW)
+	list(APPEND PKGDEPS gstreamermm-1.0>=1.8.0)
+	list(APPEND PKGDEPS libsigrokflow>=0.1.0)
+endif()
+
 set(LIBSR_CXX_BINDING "libsigrokcxx>=0.5.1")
 list(APPEND PKGDEPS "${LIBSR_CXX_BINDING}")
 
@@ -87,7 +94,7 @@ if(ANDROID)
 endif()
 
 find_package(PkgConfig)
-pkg_check_modules(LIBSRCXX QUIET ${LIBSR_CXX_BINDING})
+pkg_check_modules(LIBSRCXX ${LIBSR_CXX_BINDING})
 if(NOT LIBSRCXX_FOUND OR NOT LIBSRCXX_VERSION)
 	message(FATAL_ERROR "libsigrok C++ bindings missing, check libsigrok's 'configure' output (missing dependencies?)")
 endif()
@@ -95,14 +102,16 @@ pkg_check_modules(PKGDEPS REQUIRED ${PKGDEPS})
 
 set(CMAKE_AUTOMOC TRUE)
 
-find_package(Qt5 COMPONENTS Core Gui Widgets Svg REQUIRED)
+find_package(Qt5 5.3 COMPONENTS Core Gui LinguistTools Widgets Svg REQUIRED)
+
+message(STATUS "Qt version: ${Qt5_VERSION}")
 
 if(WIN32)
 	# MXE workaround: Use pkg-config to find Qt5 libs.
 	# https://github.com/mxe/mxe/issues/1642
 	# Not required (and doesn't work) on MSYS2.
 	if(NOT DEFINED ENV{MSYSTEM})
-		pkg_check_modules(QT5ALL REQUIRED Qt5Widgets Qt5Gui Qt5Svg)
+		pkg_check_modules(QT5ALL REQUIRED Qt5Widgets>=5.3 Qt5Gui>=5.3 Qt5Svg>=5.3)
 	endif()
 endif()
 
@@ -260,6 +269,7 @@ set(pulseview_SOURCES
 	pv/prop/int.cpp
 	pv/prop/property.cpp
 	pv/prop/string.cpp
+	pv/subwindows/subwindowbase.cpp
 	pv/toolbars/mainbar.cpp
 	pv/views/trace/analogsignal.cpp
 	pv/views/trace/cursor.cpp
@@ -268,7 +278,6 @@ set(pulseview_SOURCES
 	pv/views/trace/header.cpp
 	pv/views/trace/marginwidget.cpp
 	pv/views/trace/logicsignal.cpp
-	pv/views/trace/rowitem.cpp
 	pv/views/trace/ruler.cpp
 	pv/views/trace/signal.cpp
 	pv/views/trace/timeitem.cpp
@@ -291,6 +300,7 @@ set(pulseview_SOURCES
 	pv/widgets/colorpopup.cpp
 	pv/widgets/devicetoolbutton.cpp
 	pv/widgets/exportmenu.cpp
+	pv/widgets/flowlayout.cpp
 	pv/widgets/importmenu.cpp
 	pv/widgets/popup.cpp
 	pv/widgets/popuptoolbutton.cpp
@@ -324,6 +334,7 @@ set(pulseview_HEADERS
 	pv/prop/int.hpp
 	pv/prop/property.hpp
 	pv/prop/string.hpp
+	pv/subwindows/subwindowbase.hpp
 	pv/toolbars/mainbar.hpp
 	pv/views/trace/analogsignal.hpp
 	pv/views/trace/cursor.hpp
@@ -331,7 +342,6 @@ set(pulseview_HEADERS
 	pv/views/trace/header.hpp
 	pv/views/trace/logicsignal.hpp
 	pv/views/trace/marginwidget.hpp
-	pv/views/trace/rowitem.hpp
 	pv/views/trace/ruler.hpp
 	pv/views/trace/signal.hpp
 	pv/views/trace/timeitem.hpp
@@ -350,6 +360,7 @@ set(pulseview_HEADERS
 	pv/widgets/colorpopup.hpp
 	pv/widgets/devicetoolbutton.hpp
 	pv/widgets/exportmenu.hpp
+	pv/widgets/flowlayout.hpp
 	pv/widgets/importmenu.hpp
 	pv/widgets/popup.hpp
 	pv/widgets/popuptoolbutton.hpp
@@ -375,6 +386,11 @@ if(ENABLE_DECODE)
 		pv/data/decode/decoder.cpp
 		pv/data/decode/row.cpp
 		pv/data/decode/rowdata.cpp
+		pv/subwindows/decoder_selector/item.cpp
+		pv/subwindows/decoder_selector/model.cpp
+		pv/subwindows/decoder_selector/subwindow.cpp
+		pv/views/decoder_binary/view.cpp
+		pv/views/decoder_binary/QHexView.cpp
 		pv/views/trace/decodetrace.cpp
 		pv/widgets/decodergroupbox.cpp
 		pv/widgets/decodermenu.cpp
@@ -382,6 +398,9 @@ if(ENABLE_DECODE)
 
 	list(APPEND pulseview_HEADERS
 		pv/data/decodesignal.hpp
+		pv/subwindows/decoder_selector/subwindow.hpp
+		pv/views/decoder_binary/view.hpp
+		pv/views/decoder_binary/QHexView.hpp
 		pv/views/trace/decodetrace.hpp
 		pv/widgets/decodergroupbox.hpp
 		pv/widgets/decodermenu.hpp
@@ -405,6 +424,21 @@ endif()
 qt5_add_resources(pulseview_RESOURCES_RCC ${pulseview_RESOURCES})
 
 #===============================================================================
+#= Translations
+#-------------------------------------------------------------------------------
+
+file(GLOB TS_FILES ${CMAKE_SOURCE_DIR}/l10n/*.ts)
+set_property(SOURCE ${TS_FILES} PROPERTY OUTPUT_LOCATION ${CMAKE_BINARY_DIR}/l10n)
+if (NOT CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
+	configure_file("translations.qrc" "translations.qrc" COPYONLY)
+endif ()
+
+qt5_add_translation(QM_FILES ${TS_FILES})
+qt5_create_translation(QM_FILES ${pulseview_SOURCES} ${TS_FILES})
+
+qt5_add_resources(pulseview_RESOURCES_RCC ${CMAKE_BINARY_DIR}/translations.qrc)
+
+#===============================================================================
 #= Global Definitions
 #-------------------------------------------------------------------------------
 
@@ -413,6 +447,10 @@ add_definitions(-D__STDC_LIMIT_MACROS)
 add_definitions(-Wall -Wextra)
 add_definitions(-std=c++11)
 add_definitions(-DBOOST_MATH_DISABLE_FLOAT128=1)
+
+if(ENABLE_FLOW)
+	add_definitions(-DENABLE_FLOW)
+endif()
 
 if(ENABLE_DECODE)
 	add_definitions(-DENABLE_DECODE)
@@ -490,10 +528,11 @@ if(ANDROID)
 	list(APPEND PULSEVIEW_LINK_LIBS "-llog")
 endif()
 
+set(INPUT_FILES_LIST ${pulseview_SOURCES} ${pulseview_RESOURCES_RCC} ${QM_FILES})
 if(ANDROID)
-	add_library(${PROJECT_NAME} SHARED ${pulseview_SOURCES} ${pulseview_RESOURCES_RCC})
+	add_library(${PROJECT_NAME} SHARED ${INPUT_FILES_LIST})
 else()
-	add_executable(${PROJECT_NAME} ${pulseview_SOURCES} ${pulseview_RESOURCES_RCC})
+	add_executable(${PROJECT_NAME} ${INPUT_FILES_LIST})
 endif()
 
 target_link_libraries(${PROJECT_NAME} ${PULSEVIEW_LINK_LIBS})
@@ -524,7 +563,7 @@ install(FILES icons/pulseview.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons
 install(FILES icons/pulseview.svg DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/scalable/apps)
 
 # Generate Windows installer script.
-configure_file(contrib/pulseview_cross.nsi.in contrib/pulseview_cross.nsi @ONLY)
+configure_file(contrib/pulseview_cross.nsi.in ${CMAKE_CURRENT_BINARY_DIR}/contrib/pulseview_cross.nsi @ONLY)
 
 #===============================================================================
 #= Packaging (handled by CPack)

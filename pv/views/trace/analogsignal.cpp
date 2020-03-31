@@ -95,8 +95,8 @@ const int64_t AnalogSignal::TracePaintBlockSize = 1024 * 1024;  // 4 MiB (due to
 const float AnalogSignal::EnvelopeThreshold = 64.0f;
 
 const int AnalogSignal::MaximumVDivs = 10;
-const int AnalogSignal::MinScaleIndex = -6;
-const int AnalogSignal::MaxScaleIndex = 7;
+const int AnalogSignal::MinScaleIndex = -6;  // 0.01 units/div
+const int AnalogSignal::MaxScaleIndex = 10;  // 1000 units/div
 
 const int AnalogSignal::InfoTextMarginRight = 20;
 const int AnalogSignal::InfoTextMarginBottom = 5;
@@ -105,13 +105,13 @@ AnalogSignal::AnalogSignal(
 	pv::Session &session,
 	shared_ptr<data::SignalBase> base) :
 	Signal(session, base),
+	value_at_hover_pos_(std::numeric_limits<float>::quiet_NaN()),
 	scale_index_(4), // 20 per div
 	pos_vdivs_(1),
 	neg_vdivs_(1),
 	resolution_(0),
 	display_type_(DisplayBoth),
-	autoranging_(true),
-	value_at_hover_pos_(std::numeric_limits<float>::quiet_NaN())
+	autoranging_(true)
 {
 	axis_pen_ = AxisPen;
 
@@ -143,38 +143,48 @@ shared_ptr<pv::data::SignalData> AnalogSignal::data() const
 	return base_->analog_data();
 }
 
-void AnalogSignal::save_settings(QSettings &settings) const
+std::map<QString, QVariant> AnalogSignal::save_settings() const
 {
-	settings.setValue("pos_vdivs", pos_vdivs_);
-	settings.setValue("neg_vdivs", neg_vdivs_);
-	settings.setValue("scale_index", scale_index_);
-	settings.setValue("display_type", display_type_);
-	settings.setValue("autoranging", autoranging_);
-	settings.setValue("div_height", div_height_);
+	std::map<QString, QVariant> result;
+
+	result["pos_vdivs"] = pos_vdivs_;
+	result["neg_vdivs"] = neg_vdivs_;
+	result["scale_index"] = scale_index_;
+	result["display_type"] = display_type_;
+	result["autoranging"] = pos_vdivs_;
+	result["div_height"] = div_height_;
+
+	return result;
 }
 
-void AnalogSignal::restore_settings(QSettings &settings)
+void AnalogSignal::restore_settings(std::map<QString, QVariant> settings)
 {
-	if (settings.contains("pos_vdivs"))
-		pos_vdivs_ = settings.value("pos_vdivs").toInt();
+	auto entry = settings.find("pos_vdivs");
+	if (entry != settings.end())
+		pos_vdivs_ = settings["pos_vdivs"].toInt();
 
-	if (settings.contains("neg_vdivs"))
-		neg_vdivs_ = settings.value("neg_vdivs").toInt();
+	entry = settings.find("neg_vdivs");
+	if (entry != settings.end())
+		neg_vdivs_ = settings["neg_vdivs"].toInt();
 
-	if (settings.contains("scale_index")) {
-		scale_index_ = settings.value("scale_index").toInt();
+	entry = settings.find("scale_index");
+	if (entry != settings.end()) {
+		scale_index_ = settings["scale_index"].toInt();
 		update_scale();
 	}
 
-	if (settings.contains("display_type"))
-		display_type_ = (DisplayType)(settings.value("display_type").toInt());
+	entry = settings.find("display_type");
+	if (entry != settings.end())
+		display_type_ = (DisplayType)(settings["display_type"].toInt());
 
-	if (settings.contains("autoranging"))
-		autoranging_ = settings.value("autoranging").toBool();
+	entry = settings.find("autoranging");
+	if (entry != settings.end())
+		autoranging_ = settings["autoranging"].toBool();
 
-	if (settings.contains("div_height")) {
+	entry = settings.find("div_height");
+	if (entry != settings.end()) {
 		const int old_height = div_height_;
-		div_height_ = settings.value("div_height").toInt();
+		div_height_ = settings["div_height"].toInt();
 
 		if ((div_height_ != old_height) && owner_) {
 			// Call order is important, otherwise the lazy event handler won't work
@@ -297,7 +307,7 @@ void AnalogSignal::paint_fore(QPainter &p, ViewItemPaintParams &pp)
 		// and we have corresponding data available
 		if (show_hover_marker_ && !std::isnan(value_at_hover_pos_)) {
 			infotext = QString("[%1] %2 V/div")
-				.arg(format_value_si(value_at_hover_pos_, SIPrefix::unspecified, 0, "V", false))
+				.arg(format_value_si(value_at_hover_pos_, SIPrefix::unspecified, 2, "V", false))
 				.arg(resolution_);
 		} else
 			infotext = QString("%1 V/div").arg(resolution_);
@@ -319,6 +329,7 @@ void AnalogSignal::paint_fore(QPainter &p, ViewItemPaintParams &pp)
 
 void AnalogSignal::paint_grid(QPainter &p, int y, int left, int right)
 {
+	bool was_antialiased = p.testRenderHint(QPainter::Antialiasing);
 	p.setRenderHint(QPainter::Antialiasing, false);
 
 	if (pos_vdivs_ > 0) {
@@ -363,7 +374,7 @@ void AnalogSignal::paint_grid(QPainter &p, int y, int left, int right)
 		}
 	}
 
-	p.setRenderHint(QPainter::Antialiasing, true);
+	p.setRenderHint(QPainter::Antialiasing, was_antialiased);
 }
 
 void AnalogSignal::paint_trace(QPainter &p,
@@ -443,7 +454,9 @@ void AnalogSignal::paint_trace(QPainter &p,
 	}
 	delete[] sample_block;
 
-	p.drawPolyline(points, points_count);
+	// QPainter::drawPolyline() is slow, let's paint the lines ourselves
+	for (int64_t i = 1; i < points_count; i++)
+		p.drawLine(points[i - 1], points[i]);
 
 	if (show_sampling_points) {
 		if (paint_thr_dots) {
@@ -839,7 +852,7 @@ void AnalogSignal::perform_autoranging(bool keep_divs, bool force_update)
 	if (segments.empty())
 		return;
 
-	static double prev_min = 0, prev_max = 0;
+	double signal_min_ = 0, signal_max_ = 0;
 	double min = 0, max = 0;
 
 	for (const shared_ptr<pv::data::AnalogSegment>& segment : segments) {
@@ -848,11 +861,11 @@ void AnalogSignal::perform_autoranging(bool keep_divs, bool force_update)
 		max = std::max(max, mm.second);
 	}
 
-	if ((min == prev_min) && (max == prev_max) && !force_update)
+	if ((min == signal_min_) && (max == signal_max_) && !force_update)
 		return;
 
-	prev_min = min;
-	prev_max = max;
+	signal_min_ = min;
+	signal_max_ = max;
 
 	// If we're allowed to alter the div assignment...
 	if (!keep_divs) {
@@ -1080,11 +1093,10 @@ void AnalogSignal::hover_point_changed(const QPoint &hp)
 	if (hp.x() <= 0) {
 		value_at_hover_pos_ = std::numeric_limits<float>::quiet_NaN();
 	} else {
-		try {
+		if ((size_t)hp.x() < value_at_pixel_pos_.size())
 			value_at_hover_pos_ = value_at_pixel_pos_.at(hp.x());
-		} catch (out_of_range&) {
+		else
 			value_at_hover_pos_ = std::numeric_limits<float>::quiet_NaN();
-		}
 	}
 }
 

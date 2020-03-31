@@ -26,6 +26,11 @@
 #include <getopt.h>
 #include <vector>
 
+#ifdef ENABLE_FLOW
+#include <gstreamermm.h>
+#include <libsigrokflow/libsigrokflow.hpp>
+#endif
+
 #include <libsigrokcxx/libsigrokcxx.hpp>
 
 #include <QCheckBox>
@@ -154,6 +159,7 @@ void usage()
 		"  -d, --driver                    Specify the device driver to use\n"
 		"  -D, --dont-scan                 Don't auto-scan for devices, use -d spec only\n"
 		"  -i, --input-file                Load input from file\n"
+		"  -s, --settings                  Load PulseView session setup from file\n"
 		"  -I, --input-format              Input format\n"
 		"  -c, --clean                     Don't restore previous sessions on startup\n"
 		"\n", PV_BIN_NAME);
@@ -163,11 +169,19 @@ int main(int argc, char *argv[])
 {
 	int ret = 0;
 	shared_ptr<sigrok::Context> context;
-	string open_file_format, driver;
+	string open_file_format, open_setup_file, driver;
 	vector<string> open_files;
 	bool restore_sessions = true;
 	bool do_scan = true;
 	bool show_version = false;
+
+#ifdef ENABLE_FLOW
+	// Initialise gstreamermm. Must be called before any other GLib stuff.
+	Gst::init();
+
+	// Initialize libsigrokflow. Must be called after Gst::init().
+	Srf::init();
+#endif
 
 	Application a(argc, argv);
 
@@ -186,6 +200,7 @@ int main(int argc, char *argv[])
 			{"driver", required_argument, nullptr, 'd'},
 			{"dont-scan", no_argument, nullptr, 'D'},
 			{"input-file", required_argument, nullptr, 'i'},
+			{"settings", required_argument, nullptr, 's'},
 			{"input-format", required_argument, nullptr, 'I'},
 			{"clean", no_argument, nullptr, 'c'},
 			{"log-to-stdout", no_argument, nullptr, 's'},
@@ -193,7 +208,7 @@ int main(int argc, char *argv[])
 		};
 
 		const int c = getopt_long(argc, argv,
-			"h?VDcl:d:i:I:", long_options, nullptr);
+			"h?VDcl:d:i:s:I:", long_options, nullptr);
 		if (c == -1)
 			break;
 
@@ -240,6 +255,10 @@ int main(int argc, char *argv[])
 			open_files.emplace_back(optarg);
 			break;
 
+		case 's':
+			open_setup_file = optarg;
+			break;
+
 		case 'I':
 			open_file_format = optarg;
 			break;
@@ -260,8 +279,10 @@ int main(int argc, char *argv[])
 
 	// Prepare the global settings since logging needs them early on
 	pv::GlobalSettings settings;
+	settings.add_change_handler(&a);  // Only the application object can't register itself
 	settings.save_internal_defaults();
 	settings.set_defaults_where_needed();
+	settings.apply_language();
 	settings.apply_theme();
 
 	pv::logging.init();
@@ -321,7 +342,7 @@ int main(int argc, char *argv[])
 				w.add_default_session();
 			else
 				for (string& open_file : open_files)
-					w.add_session_with_file(open_file, open_file_format);
+					w.add_session_with_file(open_file, open_file_format, open_setup_file);
 
 #ifdef ENABLE_SIGNALS
 			if (SignalHandler::prepare_signals()) {

@@ -27,6 +27,9 @@
 
 #include <glib.h>
 
+#include <pv/data/signalbase.hpp>
+#include <pv/data/decode/row.hpp>
+
 using std::map;
 using std::string;
 using std::vector;
@@ -40,11 +43,41 @@ namespace pv {
 
 namespace data {
 
-struct DecodeChannel;
 class Logic;
 class SignalBase;
 
 namespace decode {
+
+class Decoder;
+
+struct AnnotationClass
+{
+	size_t id;
+	char* name;
+	char* description;
+	Row* row;
+	bool visible;
+};
+
+struct DecodeChannel
+{
+	uint16_t id;     ///< Global numerical ID for the decode channels in the stack
+	uint16_t bit_id; ///< Tells which bit within a sample represents this channel
+	const bool is_optional;
+	const pv::data::SignalBase *assigned_signal;
+	const QString name, desc;
+	int initial_pin_state;
+	const shared_ptr<Decoder> decoder_;
+	const srd_channel *pdch_;
+};
+
+struct DecodeBinaryClassInfo
+{
+	uint32_t bin_class_id;
+	char* name;
+	char* description;
+};
+
 
 class Decoder
 {
@@ -53,13 +86,15 @@ public:
 
 	virtual ~Decoder();
 
-	const srd_decoder* decoder() const;
+	const srd_decoder* get_srd_decoder() const;
 
-	bool shown() const;
-	void show(bool show = true);
+	const char* name() const;
 
-	const vector<data::DecodeChannel*>& channels() const;
-	void set_channels(vector<data::DecodeChannel*> channels);
+	bool visible() const;
+	void set_visible(bool visible);
+
+	const vector<DecodeChannel*>& channels() const;
+	void set_channels(vector<DecodeChannel*> channels);
 
 	const map<string, GVariant*>& options() const;
 
@@ -72,12 +107,26 @@ public:
 	srd_decoder_inst* create_decoder_inst(srd_session *session);
 	void invalidate_decoder_inst();
 
+	vector<Row*> get_rows();
+	Row* get_row_by_id(size_t id);
+
+	vector<const AnnotationClass*> ann_classes() const;
+	vector<AnnotationClass*> ann_classes();
+	AnnotationClass* get_ann_class_by_id(size_t id);
+	const AnnotationClass* get_ann_class_by_id(size_t id) const;
+
+	uint32_t get_binary_class_count() const;
+	const DecodeBinaryClassInfo* get_binary_class(uint32_t id) const;
+
 private:
-	const srd_decoder *const decoder_;
+	const srd_decoder* const srd_decoder_;
 
-	bool shown_;
+	bool visible_;
 
-	vector<data::DecodeChannel*> channels_;
+	vector<DecodeChannel*> channels_;
+	vector<Row> rows_;
+	vector<AnnotationClass> ann_classes_;
+	vector<DecodeBinaryClassInfo> bin_classes_;
 	map<string, GVariant*> options_;
 	srd_decoder_inst *decoder_inst_;
 };

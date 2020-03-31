@@ -26,12 +26,11 @@
 
 #include <QMainWindow>
 #include <QShortcut>
-#include <QSignalMapper>
 #include <QTabWidget>
 #include <QToolButton>
 
-#include "globalsettings.hpp"
 #include "session.hpp"
+#include "subwindows/subwindowbase.hpp"
 #include "views/viewbase.hpp"
 
 using std::list;
@@ -62,7 +61,7 @@ class DecoderMenu;
 #endif
 }
 
-class MainWindow : public QMainWindow, public GlobalSettingsInterface
+class MainWindow : public QMainWindow
 {
 	Q_OBJECT
 
@@ -79,26 +78,28 @@ public:
 
 	shared_ptr<views::ViewBase> get_active_view() const;
 
-	shared_ptr<views::ViewBase> add_view(const QString &title,
-		views::ViewType type, Session &session);
+	shared_ptr<views::ViewBase> add_view(views::ViewType type, Session &session);
 
 	void remove_view(shared_ptr<views::ViewBase> view);
+
+	shared_ptr<subwindows::SubWindowBase> add_subwindow(
+		subwindows::SubWindowType type, Session &session);
 
 	shared_ptr<Session> add_session();
 
 	void remove_session(shared_ptr<Session> session);
 
-	void add_session_with_file(string open_file_name, string open_file_format);
+	void add_session_with_file(string open_file_name, string open_file_format,
+		string open_setup_file_name);
 
 	void add_default_session();
 
 	void save_sessions();
 	void restore_sessions();
 
-	void on_setting_changed(const QString &key, const QVariant &value);
-
 private:
 	void setup_ui();
+	void update_acq_button(Session *session);
 
 	void save_ui_settings();
 	void restore_ui_settings();
@@ -112,8 +113,7 @@ private:
 	virtual bool restoreState(const QByteArray &state, int version = 0);
 
 private Q_SLOTS:
-	void on_add_view(const QString &title, views::ViewType type,
-		Session *session);
+	void on_add_view(views::ViewType type, Session *session);
 
 	void on_focus_changed();
 	void on_focused_session_changed(shared_ptr<Session> session);
@@ -123,22 +123,22 @@ private Q_SLOTS:
 	void on_settings_clicked();
 
 	void on_session_name_changed();
-	void on_capture_state_changed(QObject *obj);
+	void on_session_device_changed();
+	void on_session_capture_state_changed(int state);
 
-	void on_new_view(Session *session);
+	void on_new_view(Session *session, int view_type);
 	void on_view_close_clicked();
 
 	void on_tab_changed(int index);
 	void on_tab_close_requested(int index);
 
+	void on_show_decoder_selector(Session *session);
+	void on_sub_window_close_clicked();
+
 	void on_view_colored_bg_shortcut();
 	void on_view_sticky_scrolling_shortcut();
 	void on_view_show_sampling_points_shortcut();
 	void on_view_show_analog_minor_grid_shortcut();
-
-	void on_settingViewColoredBg_changed(const QVariant new_value);
-	void on_settingViewShowSamplingPoints_changed(const QVariant new_value);
-	void on_settingViewShowAnalogMinorGrid_changed(const QVariant new_value);
 
 	void on_close_current_tab();
 
@@ -149,13 +149,13 @@ private:
 	shared_ptr<Session> last_focused_session_;
 
 	map< QDockWidget*, shared_ptr<views::ViewBase> > view_docks_;
+	map< QDockWidget*, shared_ptr<subwindows::SubWindowBase> > sub_windows_;
 
 	map< shared_ptr<Session>, QMainWindow*> session_windows_;
 
 	QWidget *static_tab_widget_;
 	QToolButton *new_session_button_, *run_stop_button_, *settings_button_;
 	QTabWidget session_selector_;
-	QSignalMapper session_state_mapper_;
 
 	QIcon icon_red_;
 	QIcon icon_green_;

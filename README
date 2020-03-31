@@ -22,9 +22,9 @@ PulseView is licensed under the terms of the GNU General Public License
 (GPL), version 3 or later.
 
 While some individual source code files are licensed under the GPLv2+, and
-some files are licensed under the GPLv3+, this doesn't change the fact that
-the program as a whole is licensed under the terms of the GPLv3+ (e.g. also
-due to the fact that it links against GPLv3+ libraries).
+some files are licensed under the GPLv3+ or MIT, this doesn't change the fact
+that the program as a whole is licensed under the terms of the GPLv3+ (e.g.
+also due to the fact that it links against GPLv3+ libraries).
 
 Please see the individual source files for the full list of copyright holders.
 
@@ -47,6 +47,24 @@ is to be interpreted as
 Resource authors and licenses
 -----------------------------
 
+icons/application-exit.png,
+icons/document-new.png,
+icons/document-open.png,
+icons/document-save-as.png,
+icons/edit-paste.svg,
+icons/help-browser.png,
+icons/media-playback-pause.png,
+icons/media-playback-start.png,
+icons/preferences-system.png,
+icons/search.svg,
+icons/window-new.png,
+icons/zoom-fit-best.png,
+icons/zoom-in.png,
+icons/zoom-out.png: Tango Icon Library
+  http://tango.freedesktop.org/Tango_Desktop_Project
+  License:
+    Public Domain
+
 icons/information.svg: Bobarino
   https://en.wikipedia.org/wiki/File:Information.svg
   License:
@@ -64,6 +82,12 @@ DarkStyle: Juergen Skrotzky
   License:
     MIT license
     https://github.com/Jorgen-VikingGod/Qt-Frameless-Window-DarkStyle#licence
+
+QHexView:
+  https://github.com/virinext/QHexView
+  License:
+    MIT license
+    https://github.com/virinext/QHexView/blob/master/LICENSE
 
 
 Mailing list
