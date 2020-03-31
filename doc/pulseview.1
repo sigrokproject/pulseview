@@ -1,4 +1,4 @@
-.TH PULSEVIEW 1 "December 17, 2019"
+.TH PULSEVIEW 1 "March 31, 2020"
 .SH "NAME"
 PulseView \- Qt-based LA/scope/MSO GUI for sigrok
 .SH "SYNOPSIS"
@@ -103,14 +103,17 @@ Start / stop an acquisition.
 .B "Left/right arrow keys"
 Scroll left/right.
 .TP
+.B "+/-"
+Zoom in/out.
+.TP
 .B "Up/down arrow keys"
 Zoom in/out.
 .TP
-.B "Home"
-Jump to the start of the sample data.
+.B "Home/End"
+Jump to the start/end of the sample data.
 .TP
-.B "End"
-Jump to the end of the sample data.
+.B "1/2"
+Attach left/right side of the cursors to the mouse.
 .TP
 .B "CTRL+o"
 Open file.
@@ -129,12 +132,6 @@ Ungroup the traces in the currently selected trace group.
 .TP
 .B "CTRL+up/down arrow keys"
 Scroll down/up.
-.TP
-.B "CTRL++"
-Zoom in.
-.TP
-.B "CTRL+-"
-Zoom out.
 .TP
 .B "CTRL+q"
 Quit, i.e. shutdown PulseView (closing all session tabs).
