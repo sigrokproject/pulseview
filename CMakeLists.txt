@@ -82,7 +82,7 @@ if(ENABLE_FLOW)
 	list(APPEND PKGDEPS libsigrokflow>=0.1.0)
 endif()
 
-set(LIBSR_CXX_BINDING "libsigrokcxx>=0.5.1")
+set(LIBSR_CXX_BINDING "libsigrokcxx>=0.5.2")
 list(APPEND PKGDEPS "${LIBSR_CXX_BINDING}")
 
 if(ENABLE_DECODE)
