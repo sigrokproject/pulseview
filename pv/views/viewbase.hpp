@@ -56,6 +56,7 @@ enum ViewType {
 	ViewTypeTrace,
 #ifdef ENABLE_DECODE
 	ViewTypeDecoderBinary,
+	ViewTypeTabularDecoder,
 #endif
 	ViewTypeCount  // Indicates how many view types there are, must always be last
 };

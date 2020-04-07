@@ -399,6 +399,9 @@ if(ENABLE_DECODE)
 		pv/subwindows/decoder_selector/subwindow.cpp
 		pv/views/decoder_binary/view.cpp
 		pv/views/decoder_binary/QHexView.cpp
+		pv/views/tabular_decoder/item.cpp
+		pv/views/tabular_decoder/model.cpp
+		pv/views/tabular_decoder/view.cpp
 		pv/views/trace/decodetrace.cpp
 		pv/widgets/decodergroupbox.cpp
 		pv/widgets/decodermenu.cpp
@@ -409,6 +412,7 @@ if(ENABLE_DECODE)
 		pv/subwindows/decoder_selector/subwindow.hpp
 		pv/views/decoder_binary/view.hpp
 		pv/views/decoder_binary/QHexView.hpp
+		pv/views/tabular_decoder/view.hpp
 		pv/views/trace/decodetrace.hpp
 		pv/widgets/decodergroupbox.hpp
 		pv/widgets/decodermenu.hpp

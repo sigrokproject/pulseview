@@ -53,6 +53,7 @@
 #ifdef ENABLE_DECODE
 #include "subwindows/decoder_selector/subwindow.hpp"
 #include "views/decoder_binary/view.hpp"
+#include "views/tabular_decoder/view.hpp"
 #endif
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
@@ -164,6 +165,8 @@ shared_ptr<views::ViewBase> MainWindow::add_view(views::ViewType type,
 #ifdef ENABLE_DECODE
 	if (type == views::ViewTypeDecoderBinary)
 		v = make_shared<views::decoder_binary::View>(session, false, dock_main);
+	if (type == views::ViewTypeTabularDecoder)
+		v = make_shared<views::tabular_decoder::View>(session, false, dock_main);
 #endif
 
 	if (!v)

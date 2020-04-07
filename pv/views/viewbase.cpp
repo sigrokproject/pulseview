@@ -36,7 +36,8 @@ namespace views {
 const char* ViewTypeNames[ViewTypeCount] = {
 	"Trace View",
 #ifdef ENABLE_DECODE
-	"Binary Decoder Output View"
+	"Binary Decoder Output View",
+	"Tabular Decoder Output View"
 #endif
 };
 
