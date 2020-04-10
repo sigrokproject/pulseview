@@ -19,8 +19,11 @@
 
 #include <climits>
 
+#include <QApplication>
 #include <QDebug>
 #include <QFileDialog>
+#include <QFontMetrics>
+#include <QHeaderView>
 #include <QLabel>
 #include <QMenu>
 #include <QMessageBox>
@@ -40,11 +43,31 @@ using pv::data::SignalBase;
 using pv::data::decode::Decoder;
 using pv::util::Timestamp;
 
+using std::make_shared;
 using std::shared_ptr;
 
 namespace pv {
 namespace views {
 namespace tabular_decoder {
+
+QSize QCustomTableView::minimumSizeHint() const
+{
+	QSize size(QTableView::sizeHint());
+
+	int width = 0;
+	for (int i = 0; i < horizontalHeader()->count(); i++)
+		if (!horizontalHeader()->isSectionHidden(i))
+			width += horizontalHeader()->sectionSizeHint(i);
+
+	size.setWidth(width + (horizontalHeader()->count() * 1));
+
+	return size;
+}
+
+QSize QCustomTableView::sizeHint() const
+{
+	return minimumSizeHint();
+}
 
 
 View::View(Session &session, bool is_main_view, QMainWindow *parent) :
@@ -55,9 +78,10 @@ View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 	decoder_selector_(new QComboBox()),
 	save_button_(new QToolButton()),
 	save_action_(new QAction(this)),
-	table_view_(new QTableView()),
+	table_view_(new QCustomTableView()),
 	model_(new AnnotationCollectionModel()),
-	signal_(nullptr)
+	signal_(nullptr),
+	updating_data_(false)
 {
 	QVBoxLayout *root_layout = new QVBoxLayout(this);
 	root_layout->setContentsMargins(0, 0, 0, 0);
@@ -101,6 +125,14 @@ View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 	table_view_->setSortingEnabled(true);
 	table_view_->sortByColumn(0, Qt::AscendingOrder);
 
+	const int font_height = QFontMetrics(QApplication::font()).height();
+	table_view_->verticalHeader()->setDefaultSectionSize((font_height * 5) / 4);
+
+	table_view_->horizontalHeader()->setSectionResizeMode(model_->columnCount() - 1, QHeaderView::Stretch);
+
+	table_view_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+	parent->setSizePolicy(table_view_->sizePolicy());
+
 	reset_view_state();
 }
 
@@ -135,18 +167,12 @@ void View::add_decode_signal(shared_ptr<data::DecodeSignal> signal)
 	connect(signal.get(), SIGNAL(decoder_removed(void*)),
 		this, SLOT(on_decoder_removed(void*)));
 
-	// Add all decoders provided by this signal
+	// Add the top-level decoder provided by this signal
 	auto stack = signal->decoder_stack();
-	if (stack.size() > 1) {
-		for (const shared_ptr<Decoder>& dec : stack) {
-			QString title = QString("%1 (%2)").arg(signal->name(), dec->name());
-			decoder_selector_->addItem(title, QVariant::fromValue((void*)dec.get()));
-		}
-	} else
-		if (!stack.empty()) {
-			shared_ptr<Decoder>& dec = stack.at(0);
-			decoder_selector_->addItem(signal->name(), QVariant::fromValue((void*)dec.get()));
-		}
+	if (!stack.empty()) {
+		shared_ptr<Decoder>& dec = stack.at(0);
+		decoder_selector_->addItem(signal->name(), QVariant::fromValue((void*)dec.get()));
+	}
 }
 
 void View::remove_decode_signal(shared_ptr<data::DecodeSignal> signal)
@@ -191,7 +217,18 @@ void View::update_data()
 	if (!signal_)
 		return;
 
-	// TBD
+	if (updating_data_) {
+		if (!delayed_view_updater_.isActive())
+			delayed_view_updater_.start();
+		return;
+	}
+
+	updating_data_ = true;
+
+	table_view_->setRootIndex(model_->index(1, 0, QModelIndex()));
+	model_->set_signal_and_segment(signal_, current_segment_);
+
+	updating_data_ = false;
 }
 
 void View::save_data() const
@@ -249,9 +286,8 @@ void View::on_selected_decoder_changed(int index)
 			if (decoder_ == dec.get())
 				signal_ = ds.get();
 
-	if (signal_) {
+	if (signal_)
 		connect(signal_, SIGNAL(new_annotations()), this, SLOT(on_new_annotations()));
-	}
 
 	update_data();
 }
@@ -266,24 +302,15 @@ void View::on_signal_name_changed(const QString &name)
 	DecodeSignal* signal = dynamic_cast<DecodeSignal*>(sb);
 	assert(signal);
 
-	// Update all decoder entries provided by this signal
+	// Update the top-level decoder provided by this signal
 	auto stack = signal->decoder_stack();
-	if (stack.size() > 1) {
-		for (const shared_ptr<Decoder>& dec : stack) {
-			QString title = QString("%1 (%2)").arg(signal->name(), dec->name());
-			int index = decoder_selector_->findData(QVariant::fromValue((void*)dec.get()));
+	if (!stack.empty()) {
+		shared_ptr<Decoder>& dec = stack.at(0);
+		int index = decoder_selector_->findData(QVariant::fromValue((void*)dec.get()));
 
-			if (index != -1)
-				decoder_selector_->setItemText(index, title);
-		}
-	} else
-		if (!stack.empty()) {
-			shared_ptr<Decoder>& dec = stack.at(0);
-			int index = decoder_selector_->findData(QVariant::fromValue((void*)dec.get()));
-
-			if (index != -1)
-				decoder_selector_->setItemText(index, signal->name());
-		}
+		if (index != -1)
+			decoder_selector_->setItemText(index, signal->name());
+	}
 }
 
 void View::on_new_annotations()
@@ -294,8 +321,6 @@ void View::on_new_annotations()
 
 void View::on_decoder_stacked(void* decoder)
 {
-	// TODO This doesn't change existing entries for the same signal - but it should as the naming scheme may change
-
 	Decoder* d = static_cast<Decoder*>(decoder);
 
 	// Find the signal that contains the selected decoder
@@ -308,9 +333,8 @@ void View::on_decoder_stacked(void* decoder)
 
 	assert(signal);
 
-	// Add the decoder to the list
-	QString title = QString("%1 (%2)").arg(signal->name(), d->name());
-	decoder_selector_->addItem(title, QVariant::fromValue((void*)d));
+	if (signal == signal_)
+		update_data();
 }
 
 void View::on_decoder_removed(void* decoder)

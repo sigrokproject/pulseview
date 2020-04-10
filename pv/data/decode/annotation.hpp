@@ -53,6 +53,7 @@ public:
 	const QString ann_class_name() const;
 
 	const vector<QString>* annotations() const;
+	const QString longest_annotation() const;
 	const Row* row() const;
 
 	bool operator<(const Annotation &other) const;

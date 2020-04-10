@@ -36,8 +36,9 @@ namespace pv {
 namespace data {
 namespace decode {
 
-Decoder::Decoder(const srd_decoder *const dec) :
+Decoder::Decoder(const srd_decoder *const dec, uint8_t stack_level) :
 	srd_decoder_(dec),
+	stack_level_(stack_level),
 	visible_(true),
 	decoder_inst_(nullptr)
 {
@@ -94,6 +95,11 @@ Decoder::~Decoder()
 const srd_decoder* Decoder::get_srd_decoder() const
 {
 	return srd_decoder_;
+}
+
+uint8_t Decoder::get_stack_level() const
+{
+	return stack_level_;
 }
 
 const char* Decoder::name() const

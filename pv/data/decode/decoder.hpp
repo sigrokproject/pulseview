@@ -82,11 +82,13 @@ struct DecodeBinaryClassInfo
 class Decoder
 {
 public:
-	Decoder(const srd_decoder *const dec);
+	Decoder(const srd_decoder *const dec, uint8_t stack_level);
 
 	virtual ~Decoder();
 
 	const srd_decoder* get_srd_decoder() const;
+
+	uint8_t get_stack_level() const;
 
 	const char* name() const;
 
@@ -97,7 +99,6 @@ public:
 	void set_channels(vector<DecodeChannel*> channels);
 
 	const map<string, GVariant*>& options() const;
-
 	void set_option(const char *id, GVariant *value);
 
 	void apply_all_options();
@@ -120,6 +121,7 @@ public:
 
 private:
 	const srd_decoder* const srd_decoder_;
+	uint8_t stack_level_;
 
 	bool visible_;
 

@@ -83,7 +83,7 @@ void DecodeSignal::stack_decoder(const srd_decoder *decoder, bool restart_decode
 	if ((stack_.empty()) || ((stack_.size() > 0) && (name() == prev_dec_name)))
 		set_name(QString::fromUtf8(decoder->name));
 
-	const shared_ptr<Decoder> dec = make_shared<Decoder>(decoder);
+	const shared_ptr<Decoder> dec = make_shared<Decoder>(decoder, stack_.size());
 	stack_.push_back(dec);
 
 	// Include the newly created decode channels in the channel lists
@@ -642,6 +642,19 @@ const DecodeBinaryClass* DecodeSignal::get_binary_data_class(uint32_t segment_id
 	return nullptr;
 }
 
+const deque<const Annotation*>* DecodeSignal::get_all_annotations_by_segment(
+	uint32_t segment_id) const
+{
+	try {
+		const DecodeSegment *segment = &(segments_.at(segment_id));
+		return &(segment->all_annotations);
+	} catch (out_of_range&) {
+		// Do nothing
+	}
+
+	return nullptr;
+}
+
 void DecodeSignal::save_settings(QSettings &settings) const
 {
 	SignalBase::save_settings(settings);
@@ -737,7 +750,7 @@ void DecodeSignal::restore_settings(QSettings &settings)
 				continue;
 
 			if (QString::fromUtf8(dec->id) == id) {
-				shared_ptr<Decoder> decoder = make_shared<Decoder>(dec);
+				shared_ptr<Decoder> decoder = make_shared<Decoder>(dec, stack_.size());
 
 				stack_.push_back(decoder);
 				decoder->set_visible(settings.value("visible", true).toBool());
@@ -1379,7 +1392,7 @@ void DecodeSignal::connect_input_notifiers()
 void DecodeSignal::create_decode_segment()
 {
 	// Create annotation segment
-	segments_.emplace_back(DecodeSegment());
+	segments_.emplace_back();
 
 	// Add annotation classes
 	for (const shared_ptr<Decoder>& dec : stack_)
@@ -1435,8 +1448,15 @@ void DecodeSignal::annotation_callback(srd_proto_data *pdata, void *decode_signa
 	if (!row)
 		row = dec->get_row_by_id(0);
 
-	// Add the annotation
-	ds->segments_[ds->current_segment_id_].annotation_rows.at(row).emplace_annotation(pdata);
+	RowData& row_data = ds->segments_[ds->current_segment_id_].annotation_rows.at(row);
+
+	// Add the annotation to the row
+	const Annotation* ann = row_data.emplace_annotation(pdata);
+
+	// Add the annotation to the global annotation list
+	deque<const Annotation*>& all_annotations =
+		ds->segments_[ds->current_segment_id_].all_annotations;
+	all_annotations.emplace_back(ann);
 }
 
 void DecodeSignal::binary_callback(srd_proto_data *pdata, void *decode_signal)

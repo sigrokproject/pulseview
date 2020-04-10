@@ -86,8 +86,7 @@ Annotation& Annotation::operator=(Annotation&& a)
 
 Annotation::~Annotation()
 {
-	if (annotations_)
-		delete annotations_;
+	delete annotations_;
 }
 
 uint64_t Annotation::start_sample() const
@@ -116,6 +115,11 @@ const QString Annotation::ann_class_name() const
 const vector<QString>* Annotation::annotations() const
 {
 	return annotations_;
+}
+
+const QString Annotation::longest_annotation() const
+{
+	return annotations_->front();
 }
 
 const Row* Annotation::row() const

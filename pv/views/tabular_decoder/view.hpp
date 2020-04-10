@@ -35,31 +35,7 @@ namespace views {
 
 namespace tabular_decoder {
 
-class AnnotationCollectionItem
-{
-public:
-	AnnotationCollectionItem(const vector<QVariant>& data,
-		shared_ptr<AnnotationCollectionItem> parent = nullptr);
-
-	void appendSubItem(shared_ptr<AnnotationCollectionItem> item);
-
-	shared_ptr<AnnotationCollectionItem> subItem(int row) const;
-	shared_ptr<AnnotationCollectionItem> parent() const;
-	shared_ptr<AnnotationCollectionItem> findSubItem(const QVariant& value, int column);
-
-	int subItemCount() const;
-	int columnCount() const;
-	int row() const;
-	QVariant data(int column) const;
-
-private:
-	vector< shared_ptr<AnnotationCollectionItem> > subItems_;
-	vector<QVariant> data_;
-	shared_ptr<AnnotationCollectionItem> parent_;
-};
-
-
-class AnnotationCollectionModel : public QAbstractItemModel
+class AnnotationCollectionModel : public QAbstractTableModel
 {
 	Q_OBJECT
 
@@ -79,8 +55,23 @@ public:
 	int rowCount(const QModelIndex& parent_idx = QModelIndex()) const override;
 	int columnCount(const QModelIndex& parent_idx = QModelIndex()) const override;
 
+	void set_signal_and_segment(data::DecodeSignal* signal, uint32_t current_segment);
+
 private:
-	shared_ptr<AnnotationCollectionItem> root_;
+	vector<QVariant> header_data_;
+	const deque<const Annotation*>* all_annotations_;
+	uint32_t prev_segment_;
+	uint64_t prev_last_row_;
+};
+
+
+class QCustomTableView : public QTableView
+{
+	Q_OBJECT
+
+public:
+	QSize minimumSizeHint() const;
+	QSize sizeHint() const;
 };
 
 
@@ -127,17 +118,18 @@ private Q_SLOTS:
 private:
 	QWidget* parent_;
 
-	QComboBox *decoder_selector_;
+	QComboBox* decoder_selector_;
 
 	QToolButton* save_button_;
 	QAction* save_action_;
 
-	QTableView* table_view_;
+	QCustomTableView* table_view_;
 
 	AnnotationCollectionModel* model_;
 
-	data::DecodeSignal *signal_;
-	const data::decode::Decoder *decoder_;
+	data::DecodeSignal* signal_;
+	const data::decode::Decoder* decoder_;
+	bool updating_data_;
 };
 
 } // namespace tabular_decoder

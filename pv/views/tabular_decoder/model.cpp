@@ -17,6 +17,7 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <QDebug>
 #include <QString>
 
 #include "pv/views/tabular_decoder/view.hpp"
@@ -28,16 +29,17 @@ namespace views {
 namespace tabular_decoder {
 
 AnnotationCollectionModel::AnnotationCollectionModel(QObject* parent) :
-	QAbstractItemModel(parent)
+	QAbstractTableModel(parent),
+	all_annotations_(nullptr),
+	prev_segment_(0),
+	prev_last_row_(0)
 {
-	vector<QVariant> header_data;
-	header_data.emplace_back(tr("ID"));                // Column #0
-	header_data.emplace_back(tr("Start Time"));        // Column #1
-	header_data.emplace_back(tr("End Time"));          // Column #2
-	header_data.emplace_back(tr("Ann Row Name"));      // Column #3
-	header_data.emplace_back(tr("Class Row Name"));    // Column #4
-	header_data.emplace_back(tr("Value"));             // Column #5
-	root_ = make_shared<AnnotationCollectionItem>(header_data);
+	// TBD Maybe use empty columns as indentation levels to indicate stacked decoders
+	header_data_.emplace_back(tr("Start Sample"));      // Column #0
+	header_data_.emplace_back(tr("Start Time"));        // Column #1
+	header_data_.emplace_back(tr("Ann Row Name"));      // Column #2
+	header_data_.emplace_back(tr("Ann Class Name"));    // Column #3
+	header_data_.emplace_back(tr("Value"));             // Column #4
 }
 
 QVariant AnnotationCollectionModel::data(const QModelIndex& index, int role) const
@@ -45,19 +47,18 @@ QVariant AnnotationCollectionModel::data(const QModelIndex& index, int role) con
 	if (!index.isValid())
 		return QVariant();
 
-	if (role == Qt::DisplayRole)
-	{
-		AnnotationCollectionItem* item =
-			static_cast<AnnotationCollectionItem*>(index.internalPointer());
+	if (role == Qt::DisplayRole) {
+		const Annotation* ann =
+			static_cast<const Annotation*>(index.internalPointer());
 
-		return item->data(index.column());
-	}
-
-	if ((role == Qt::FontRole) && (index.parent().isValid()) && (index.column() == 0))
-	{
-		QFont font;
-		font.setItalic(true);
-		return QVariant(font);
+		switch (index.column()) {
+		case 0: return QVariant((qulonglong)ann->start_sample());  // Column #0, Start Sample
+		case 1: return QVariant(0/*(qulonglong)ann->start_sample()*/);  // Column #1, Start Time
+		case 2: return QVariant(ann->row()->title());              // Column #2, Ann Row Name
+		case 3: return QVariant(ann->ann_class_name());            // Column #3, Ann Class Name
+		case 4: return QVariant(ann->longest_annotation());        // Column #4, Value
+		default: return QVariant();
+		}
 	}
 
 	return QVariant();
@@ -66,7 +67,7 @@ QVariant AnnotationCollectionModel::data(const QModelIndex& index, int role) con
 Qt::ItemFlags AnnotationCollectionModel::flags(const QModelIndex& index) const
 {
 	if (!index.isValid())
-		return nullptr;
+		return 0;
 
 	return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
 }
@@ -75,7 +76,7 @@ QVariant AnnotationCollectionModel::headerData(int section, Qt::Orientation orie
 	int role) const
 {
 	if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
-		return root_->data(section);
+		return header_data_.at(section);
 
 	return QVariant();
 }
@@ -83,55 +84,68 @@ QVariant AnnotationCollectionModel::headerData(int section, Qt::Orientation orie
 QModelIndex AnnotationCollectionModel::index(int row, int column,
 	const QModelIndex& parent_idx) const
 {
-	if (!hasIndex(row, column, parent_idx))
+	(void)parent_idx;
+
+	if (!all_annotations_)
 		return QModelIndex();
 
-	AnnotationCollectionItem* parent = root_.get();
+	if ((size_t)row > all_annotations_->size())
+		return QModelIndex();
 
-	if (parent_idx.isValid())
-		parent = static_cast<AnnotationCollectionItem*>(parent_idx.internalPointer());
-
-	AnnotationCollectionItem* subItem = parent->subItem(row).get();
-
-	return subItem ? createIndex(row, column, subItem) : QModelIndex();
+	return createIndex(row, column, (void*)(all_annotations_->at(row)));
 }
 
 QModelIndex AnnotationCollectionModel::parent(const QModelIndex& index) const
 {
-	if (!index.isValid())
-		return QModelIndex();
+	(void)index;
 
-	AnnotationCollectionItem* subItem =
-		static_cast<AnnotationCollectionItem*>(index.internalPointer());
-
-	shared_ptr<AnnotationCollectionItem> parent = subItem->parent();
-
-	return (parent == root_) ? QModelIndex() :
-		createIndex(parent->row(), 0, parent.get());
+	return QModelIndex();
 }
 
 int AnnotationCollectionModel::rowCount(const QModelIndex& parent_idx) const
 {
-	AnnotationCollectionItem* parent = root_.get();
+	(void)parent_idx;
 
-	if (parent_idx.column() > 0)
+	if (!all_annotations_)
 		return 0;
 
-	if (parent_idx.isValid())
-		parent = static_cast<AnnotationCollectionItem*>(parent_idx.internalPointer());
-
-	return parent->subItemCount();
+	return all_annotations_->size();
 }
 
 int AnnotationCollectionModel::columnCount(const QModelIndex& parent_idx) const
 {
-	if (parent_idx.isValid())
-		return static_cast<AnnotationCollectionItem*>(
-			parent_idx.internalPointer())->columnCount();
-	else
-		return root_->columnCount();
+	(void)parent_idx;
+
+	return header_data_.size();
 }
 
+void AnnotationCollectionModel::set_signal_and_segment(data::DecodeSignal* signal, uint32_t current_segment)
+{
+	all_annotations_ = signal->get_all_annotations_by_segment(current_segment);
+
+	if (!all_annotations_ || all_annotations_->empty()) {
+		prev_segment_ = current_segment;
+		return;
+	}
+
+	const size_t new_row_count = all_annotations_->size() - 1;
+
+	// Force the view associated with this model to update when the segment changes
+	if (prev_segment_ != current_segment) {
+		dataChanged(QModelIndex(), QModelIndex());
+		layoutChanged();
+	} else {
+		// Force the view associated with this model to update when we have more annotations
+		if (prev_last_row_ < new_row_count) {
+			dataChanged(index(prev_last_row_, 0, QModelIndex()),
+				index(new_row_count, 0, QModelIndex()));
+			layoutChanged();
+		}
+	}
+
+	prev_segment_ = current_segment;
+	prev_last_row_ = new_row_count;
+}
 
 } // namespace tabular_decoder
 } // namespace views

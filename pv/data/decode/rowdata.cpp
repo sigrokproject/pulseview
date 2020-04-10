@@ -90,8 +90,10 @@ void RowData::get_annotation_subset(
 	}
 }
 
-void RowData::emplace_annotation(srd_proto_data *pdata)
+const Annotation* RowData::emplace_annotation(srd_proto_data *pdata)
 {
+	const Annotation* result = nullptr;
+
 	// We insert the annotation in a way so that the annotation list
 	// is sorted by start sample. Otherwise, we'd have to sort when
 	// painting, which is expensive
@@ -108,11 +110,15 @@ void RowData::emplace_annotation(srd_proto_data *pdata)
 		if (it != annotations_.begin())
 			it++;
 
-		annotations_.emplace(it, pdata, row_);
+		it = annotations_.emplace(it, pdata, row_);
+		result = &(*it);
 	} else {
 		annotations_.emplace_back(pdata, row_);
+		result = &(annotations_.back());
 		prev_ann_start_sample_ = pdata->start_sample;
 	}
+
+	return result;
 }
 
 }  // namespace decode
