@@ -72,6 +72,7 @@ protected:
 	QAction *const action_view_zoom_in_;
 	QAction *const action_view_zoom_out_;
 	QAction *const action_view_zoom_fit_;
+	QAction *const action_view_trigger_scrolling_;
 	QAction *const action_view_show_cursors_;
 
 	QToolButton *segment_display_mode_selector_;
@@ -90,6 +91,7 @@ protected Q_SLOTS:
 	void on_actionViewZoomOut_triggered();
 
 	void on_actionViewZoomFit_triggered(bool checked);
+	void on_actionViewScrollToTrigger_triggered(bool checked);
 
 	void on_actionViewShowCursors_triggered();
 	void on_cursor_state_changed(bool show);
@@ -99,6 +101,7 @@ protected Q_SLOTS:
 	void on_actionSDMSingle_triggered();
 
 	void on_always_zoom_to_fit_changed(bool state);
+	void on_trigger_scrolling_changed(bool state);
 
 	void on_new_segment(int new_segment_id);
 	void on_segment_changed(int segment_id);

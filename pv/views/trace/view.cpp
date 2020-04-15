@@ -280,6 +280,7 @@ void View::reset_view_state()
 	updating_scroll_ = false;
 	settings_restored_ = false;
 	always_zoom_to_fit_ = false;
+	trigger_scrolling_ = false;
 	tick_period_ = 0;
 	tick_prefix_ = pv::util::SIPrefix::yocto;
 	tick_precision_ = 0;
@@ -783,9 +784,20 @@ void View::zoom_fit(bool gui_state)
 	set_scale_offset(scale.convert_to<double>(), extents.first);
 }
 
+void View::trigger_scrolling(bool gui_state)
+{
+	trigger_scrolling_ = gui_state;
+	trigger_scrolling_changed(gui_state);
+
+	// Try to update view right away
+	if (trigger_scrolling_) {
+		scroll_to_trigger();
+	}
+}
+
 void View::set_scale_offset(double scale, const Timestamp& offset)
 {
-	// Disable sticky scrolling / always zoom to fit when acquisition runs
+	// Disable sticky scrolling / always zoom to fit / trigger scrolling when acquisition runs
 	// and user drags the viewport
 	if ((scale_ == scale) && (offset_ != offset) &&
 			(session_.get_capture_state() == Session::Running)) {
@@ -798,6 +810,11 @@ void View::set_scale_offset(double scale, const Timestamp& offset)
 		if (always_zoom_to_fit_) {
 			always_zoom_to_fit_ = false;
 			always_zoom_to_fit_changed(false);
+		}
+
+		if (trigger_scrolling_) {
+			trigger_scrolling_ = false;
+			trigger_scrolling_changed(false);
 		}
 	}
 
@@ -1292,6 +1309,39 @@ void View::set_scroll_default()
 		set_v_offset(extents.first);
 }
 
+void View::scroll_to_trigger() {
+	const pair<Timestamp, Timestamp> extents = get_time_extents();
+
+	const QSize areaSize = viewport_->size();
+	const Timestamp view_time_width = areaSize.width() * scale_;
+	const auto trigger_time_max = extents.second - view_time_width;
+	// Jump back if user is scrolled to the right for some reason
+	const auto trigger_time_min = offset_ > trigger_time_max ? view_time_width : offset_ + view_time_width;
+
+	// Intuitively the markers would be sorted,
+	// but I'm not sure the threads guarantees that,
+	// either way, with this kind of dumb search it doesn't matter too much
+	// as it will still find some appropriate event to jump to
+	for (auto it = trigger_markers_.rbegin(); it != trigger_markers_.rend(); it++)
+	{
+		const auto marker = (*it);
+		if (marker->time() > trigger_time_max)
+		{
+			continue;
+		}
+
+		if (marker->time() > trigger_time_min)
+		{
+			set_zero_position(marker->time());
+			set_offset(marker->time(), true);
+			ruler_->update();
+		}
+		break;
+	}
+
+	// TODO actually disable triggers until view is filled
+}
+
 void View::determine_if_header_was_shrunk()
 {
 	const int header_pane_width =
@@ -1604,11 +1654,15 @@ void View::h_scroll_value_changed(int value)
 	if (updating_scroll_)
 		return;
 
-	// Disable sticky scrolling when user moves the horizontal scroll bar
+	// Disable sticky scrolling / trigger scrolling when user moves the horizontal scroll bar
 	// during a running acquisition
 	if (sticky_scrolling_ && (session_.get_capture_state() == Session::Running)) {
 		sticky_scrolling_ = false;
 		sticky_scrolling_changed(false);
+	}
+	if (trigger_scrolling_ && (session_.get_capture_state() == Session::Running)) {
+		trigger_scrolling_ = false;
+		trigger_scrolling_changed(false);
 	}
 
 	const int range = scrollarea_->horizontalScrollBar()->maximum();
@@ -1942,8 +1996,9 @@ void View::perform_delayed_view_update()
 		length = max(length - areaSize.width(), 0.0);
 
 		set_offset(scale_ * length);
+	} else if (trigger_scrolling_) {
+		scroll_to_trigger();
 	}
-
 	determine_time_unit();
 	update_scroll();
 	ruler_->update();
