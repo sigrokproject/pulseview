@@ -123,6 +123,14 @@ if(ENABLE_TESTS)
 endif()
 
 if(ENABLE_STACKTRACE)
+	include(FindBacktrace)
+	if (Backtrace_FOUND)
+		set(_Boost_STACKTRACE_BACKTRACE_HEADERS "boost/stacktrace.hpp")
+		list(APPEND BOOSTCOMPS stacktrace_backtrace)
+	else()
+		set(_Boost_STACKTRACE_BASIC_HEADERS     "boost/stacktrace.hpp")
+		list(APPEND BOOSTCOMPS stacktrace_basic)
+	endif()
 	find_package(Boost 1.65.1 COMPONENTS ${BOOSTCOMPS} REQUIRED)
 else()
 	find_package(Boost 1.55 COMPONENTS ${BOOSTCOMPS} REQUIRED)
@@ -465,7 +473,10 @@ if(ENABLE_SIGNALS)
 endif()
 
 if(ENABLE_STACKTRACE)
-	add_definitions(-DENABLE_STACKTRACE)
+	add_definitions(-DENABLE_STACKTRACE -no-pie -fno-pie)
+	if (Backtrace_FOUND)
+		add_definitions(-DBOOST_STACKTRACE_USE_BACKTRACE)
+	endif()
 endif()
 
 #===============================================================================
@@ -520,8 +531,8 @@ if(WIN32)
 endif()
 
 if(ENABLE_STACKTRACE)
-	# Needed to resolve dladdr.
-	list(APPEND PULSEVIEW_LINK_LIBS "-ldl")
+	list(APPEND PULSEVIEW_LINK_LIBS ${CMAKE_DL_LIBS} ${Backtrace_LIBRARIES})
+	link_libraries("-no-pie -fno-pie")
 endif()
 
 if(ANDROID)
