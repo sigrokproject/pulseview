@@ -108,6 +108,7 @@ private Q_SLOTS:
 	void on_signal_name_changed(const QString &name);
 	void on_new_annotations();
 
+	void on_decoder_reset();
 	void on_decoder_stacked(void* decoder);
 	void on_decoder_removed(void* decoder);
 

@@ -273,8 +273,10 @@ void View::save_data() const
 
 void View::on_selected_decoder_changed(int index)
 {
-	if (signal_)
+	if (signal_) {
 		disconnect(signal_, SIGNAL(new_annotations()));
+		disconnect(signal_, SIGNAL(decode_reset()));
+	}
 
 	reset_data();
 
@@ -286,8 +288,10 @@ void View::on_selected_decoder_changed(int index)
 			if (decoder_ == dec.get())
 				signal_ = ds.get();
 
-	if (signal_)
+	if (signal_) {
 		connect(signal_, SIGNAL(new_annotations()), this, SLOT(on_new_annotations()));
+		connect(signal_, SIGNAL(decode_reset()), this, SLOT(on_decoder_reset()));
+	}
 
 	update_data();
 }
@@ -317,6 +321,13 @@ void View::on_new_annotations()
 {
 	if (!delayed_view_updater_.isActive())
 		delayed_view_updater_.start();
+}
+
+void View::on_decoder_reset()
+{
+	// Invalidate the model's data connection immediately - otherwise we
+	// will use a stale pointer in model_->index() when called from the table view
+	model_->set_signal_and_segment(signal_, current_segment_);
 }
 
 void View::on_decoder_stacked(void* decoder)

@@ -1420,6 +1420,9 @@ void DecodeSignal::annotation_callback(srd_proto_data *pdata, void *decode_signa
 	if (ds->decode_interrupt_)
 		return;
 
+	if (ds->segments_.empty())
+		return;
+
 	lock_guard<mutex> lock(ds->output_mutex_);
 
 	// Get the decoder and the annotation data
