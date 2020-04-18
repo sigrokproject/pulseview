@@ -82,7 +82,7 @@ struct DecodeSegment
 	// Copy constructor is a no-op
 	DecodeSegment(DecodeSegment&& ds) { (void)ds; };
 
-	map<const Row*, RowData> annotation_rows;
+	map<const Row*, RowData> annotation_rows;  // Note: Row is the same for all segments while RowData is not
 	pv::util::Timestamp start_time;
 	double samplerate;
 	int64_t samples_decoded_incl, samples_decoded_excl;

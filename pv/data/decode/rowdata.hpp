@@ -20,14 +20,26 @@
 #ifndef PULSEVIEW_PV_DATA_DECODE_ROWDATA_HPP
 #define PULSEVIEW_PV_DATA_DECODE_ROWDATA_HPP
 
+#include <unordered_map>
 #include <vector>
+
+#include <QHash>
+#include <QString>
 
 #include <libsigrokdecode/libsigrokdecode.h>
 
 #include <pv/data/decode/annotation.hpp>
 
 using std::deque;
-using std::vector;
+using std::unordered_map;
+
+namespace std {
+  template<> struct hash<QString> {
+    std::size_t operator()(const QString& s) const noexcept {
+      return (size_t) qHash(s);
+    }
+  };
+}
 
 namespace pv {
 namespace data {
@@ -39,6 +51,8 @@ class RowData
 {
 public:
 	RowData(Row* row);
+
+	const Row* row() const;
 
 	uint64_t get_max_sample() const;
 
@@ -56,6 +70,7 @@ public:
 
 private:
 	deque<Annotation> annotations_;
+	unordered_map<QString, vector<QString> > ann_texts_;  // unordered_map since pointers must not change
 	Row* row_;
 	uint64_t prev_ann_start_sample_;
 };

@@ -36,6 +36,11 @@ RowData::RowData(Row* row) :
 	assert(row);
 }
 
+const Row* RowData::row() const
+{
+	return row_;
+}
+
 uint64_t RowData::get_max_sample() const
 {
 	if (annotations_.empty())
@@ -92,6 +97,24 @@ void RowData::get_annotation_subset(
 
 const Annotation* RowData::emplace_annotation(srd_proto_data *pdata)
 {
+	const srd_proto_data_annotation *const pda = (const srd_proto_data_annotation*)pdata->data;
+
+	Annotation::Class ann_class_id = (Annotation::Class)(pda->ann_class);
+
+	// Look up the longest annotation text to see if we have it in storage
+	const char* const* ann_texts = (char**)pda->ann_text;
+	const QString ann0 = QString::fromUtf8(ann_texts[0]);
+	vector<QString>* storage_entry = &(ann_texts_[ann0]);
+
+	if (storage_entry->empty()) {
+		while (*ann_texts) {
+			storage_entry->emplace_back(QString::fromUtf8(*ann_texts));
+			ann_texts++;
+		}
+		storage_entry->shrink_to_fit();
+	}
+
+
 	const Annotation* result = nullptr;
 
 	// We insert the annotation in a way so that the annotation list
@@ -110,10 +133,12 @@ const Annotation* RowData::emplace_annotation(srd_proto_data *pdata)
 		if (it != annotations_.begin())
 			it++;
 
-		it = annotations_.emplace(it, pdata, row_);
+		it = annotations_.emplace(it, pdata->start_sample, pdata->end_sample,
+			storage_entry, ann_class_id, this);
 		result = &(*it);
 	} else {
-		annotations_.emplace_back(pdata, row_);
+		annotations_.emplace_back(pdata->start_sample, pdata->end_sample,
+			storage_entry, ann_class_id, this);
 		result = &(annotations_.back());
 		prev_ann_start_sample_ = pdata->start_sample;
 	}

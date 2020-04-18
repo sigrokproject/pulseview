@@ -34,6 +34,7 @@ namespace data {
 namespace decode {
 
 class Row;
+class RowData;
 
 class Annotation
 {
@@ -41,7 +42,8 @@ public:
 	typedef uint32_t Class;
 
 public:
-	Annotation(const srd_proto_data *const pdata, const Row *row);
+	Annotation(uint64_t start_sample, uint64_t end_sample,
+		const vector<QString>* texts, Class ann_class_id, const RowData *data);
 	Annotation(Annotation&& a);
 	Annotation& operator=(Annotation&& a);
 	~Annotation();
@@ -61,9 +63,9 @@ public:
 private:
 	uint64_t start_sample_;
 	uint64_t end_sample_;
-	vector<QString>* annotations_;
-	const Row *row_;
+	const vector<QString>* texts_;
 	Class ann_class_id_;
+	const RowData* data_;
 };
 
 } // namespace decode
