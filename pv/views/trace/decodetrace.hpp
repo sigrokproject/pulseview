@@ -100,10 +100,6 @@ struct DecodeTraceRow {
 	QWidget* selector_container;
 	QCheckBox* row_visibility_checkbox;
 	vector<QCheckBox*> selectors;
-
-	QColor row_color;
-	map<uint32_t, QColor> ann_class_color;
-	map<uint32_t, QColor> ann_class_dark_color;
 };
 
 class ContainerWidget : public QWidget
@@ -225,9 +221,6 @@ private:
 	 */
 	pair<uint64_t, uint64_t> get_view_sample_range(int x_start, int x_end) const;
 
-	QColor get_row_color(int row_index) const;
-	QColor get_annotation_color(QColor row_color, int annotation_index) const;
-
 	unsigned int get_row_y(const DecodeTraceRow* row) const;
 
 	DecodeTraceRow* get_row_at_point(const QPoint &point);
@@ -263,6 +256,8 @@ private:
 
 private Q_SLOTS:
 	void on_setting_changed(const QString &key, const QVariant &value);
+
+	void on_color_changed(const QColor &color);
 
 	void on_new_annotations();
 	void on_delayed_trace_update();

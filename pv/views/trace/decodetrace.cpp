@@ -82,9 +82,6 @@ namespace pv {
 namespace views {
 namespace trace {
 
-#define DECODETRACE_COLOR_SATURATION (180) /* 0-255 */
-#define DECODETRACE_COLOR_VALUE (170) /* 0-255 */
-
 const QColor DecodeTrace::ErrorBgColor = QColor(0xEF, 0x29, 0x29);
 const QColor DecodeTrace::NoDecodeColor = QColor(0x88, 0x8A, 0x85);
 const QColor DecodeTrace::ExpandMarkerWarnColor = QColor(0xFF, 0xA5, 0x00); // QColorConstants::Svg::orange
@@ -175,10 +172,13 @@ DecodeTrace::DecodeTrace(pv::Session &session,
 	// Note: The offset equals the color of the first annotation
 	QColor color;
 	const int h = (120 + 160 * index) % 360;
-	const int s = DECODETRACE_COLOR_SATURATION;
-	const int v = DECODETRACE_COLOR_VALUE;
+	const int s = DECODE_COLOR_SATURATION;
+	const int v = DECODE_COLOR_VALUE;
 	color.setHsv(h, s, v);
 	base_->set_color(color);
+
+	connect(decode_signal_.get(), SIGNAL(color_changed(QColor)),
+		this, SLOT(on_color_changed(QColor)));
 
 	connect(decode_signal_.get(), SIGNAL(new_annotations()),
 		this, SLOT(on_new_annotations()));
@@ -789,8 +789,8 @@ void DecodeTrace::draw_annotation(const Annotation* a, QPainter &p,
 	const double start = a->start_sample() / samples_per_pixel - pixels_offset;
 	const double end = a->end_sample() / samples_per_pixel - pixels_offset;
 
-	p.setPen(row.ann_class_dark_color.at(a->ann_class_id()));
-	p.setBrush(row.ann_class_color.at(a->ann_class_id()));
+	p.setPen(a->dark_color());
+	p.setBrush(a->color());
 
 	if ((start > (pp.right() + DrawPadding)) || (end < (pp.left() - DrawPadding)))
 		return;
@@ -813,8 +813,8 @@ void DecodeTrace::draw_annotation_block(qreal start, qreal end,
 	// one format that all of these annotations have. Otherwise, we should use
 	// a neutral color (i.e. gray)
 	if (use_ann_format) {
-		p.setPen(row.ann_class_dark_color.at(ann_class));
-		p.setBrush(QBrush(row.ann_class_color.at(ann_class), Qt::Dense4Pattern));
+		p.setPen(row.decode_row->get_dark_class_color(ann_class));
+		p.setBrush(QBrush(row.decode_row->get_class_color(ann_class), Qt::Dense4Pattern));
 	} else {
 		p.setPen(QColor(Qt::darkGray));
 		p.setBrush(QBrush(Qt::gray, Qt::Dense4Pattern));
@@ -993,34 +993,6 @@ pair<uint64_t, uint64_t> DecodeTrace::get_view_sample_range(
 		(x_end + pixels_offset) * samples_per_pixel, 0.0);
 
 	return make_pair(start, end);
-}
-
-QColor DecodeTrace::get_row_color(int row_index) const
-{
-	// For each row color, use the base color hue and add an offset that's
-	// not a dividend of 360
-
-	QColor color;
-	const int h = (base_->color().toHsv().hue() + 20 * row_index) % 360;
-	const int s = DECODETRACE_COLOR_SATURATION;
-	const int v = DECODETRACE_COLOR_VALUE;
-	color.setHsl(h, s, v);
-
-	return color;
-}
-
-QColor DecodeTrace::get_annotation_color(QColor row_color, int annotation_index) const
-{
-	// For each row color, use the base color hue and add an offset that's
-	// not a dividend of 360 and not a multiple of the row offset
-
-	QColor color(row_color);
-	const int h = (color.toHsv().hue() + 55 * annotation_index) % 360;
-	const int s = DECODETRACE_COLOR_SATURATION;
-	const int v = DECODETRACE_COLOR_VALUE;
-	color.setHsl(h, s, v);
-
-	return color;
 }
 
 unsigned int DecodeTrace::get_row_y(const DecodeTraceRow* row) const
@@ -1372,7 +1344,7 @@ void DecodeTrace::initialize_row_widgets(DecodeTraceRow* r, unsigned int row_id)
 
 		int dim = ViewItemPaintParams::text_height() - 2;
 		QPixmap pixmap(dim, dim);
-		pixmap.fill(r->ann_class_color[ann_class->id]);
+		pixmap.fill(r->decode_row->get_class_color(ann_class->id));
 		cb->setIcon(pixmap);
 
 		r->selector_container->layout()->addWidget(cb);
@@ -1408,6 +1380,7 @@ void DecodeTrace::update_rows()
 			// Row doesn't exist yet, create and append it
 			DecodeTraceRow nr;
 			nr.decode_row = decode_row;
+			nr.decode_row->set_base_color(base_->color());
 			nr.height = default_row_height_;
 			nr.expanded_height = default_row_height_;
 			nr.currently_visible = false;
@@ -1420,16 +1393,6 @@ void DecodeTrace::update_rows()
 			nr.container = new ContainerWidget(owner_->view()->scrollarea());
 			nr.header_container = new QWidget(nr.container);
 			nr.selector_container = new QWidget(nr.container);
-
-			nr.row_color = get_row_color(decode_row->index());
-
-			vector<AnnotationClass*> ann_classes = decode_row->ann_classes();
-			for (const AnnotationClass* ann_class : ann_classes) {
-				nr.ann_class_color[ann_class->id] =
-					get_annotation_color(nr.row_color, ann_class->id);
-				nr.ann_class_dark_color[ann_class->id] =
-					nr.ann_class_color[ann_class->id].darker();
-			}
 
 			rows_.push_back(nr);
 			r = &rows_.back();
@@ -1524,6 +1487,12 @@ void DecodeTrace::on_setting_changed(const QString &key, const QVariant &value)
 
 	if (key == GlobalSettings::Key_Dec_AlwaysShowAllRows)
 		always_show_all_rows_ = value.toBool();
+}
+
+void DecodeTrace::on_color_changed(const QColor &color)
+{
+	for (DecodeTraceRow& r : rows_)
+		r.decode_row->set_base_color(color);
 }
 
 void DecodeTrace::on_new_annotations()

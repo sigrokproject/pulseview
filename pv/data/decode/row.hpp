@@ -22,6 +22,8 @@
 
 #include <vector>
 
+#include <QColor>
+
 #include <pv/data/decode/annotation.hpp>
 #include <pv/data/decode/decoder.hpp>
 
@@ -31,6 +33,9 @@ struct srd_decoder_annotation_row;
 namespace pv {
 namespace data {
 namespace decode {
+
+#define DECODE_COLOR_SATURATION (180) /* 0-255 */
+#define DECODE_COLOR_VALUE (170) /* 0-255 */
 
 struct AnnotationClass;
 class Decoder;
@@ -54,6 +59,12 @@ public:
 	bool visible() const;
 	void set_visible(bool visible);
 
+	void set_base_color(QColor base_color);
+	const QColor color() const;
+	const QColor get_class_color(uint32_t ann_class_id) const;
+	const QColor get_bright_class_color(uint32_t ann_class_id) const;
+	const QColor get_dark_class_color(uint32_t ann_class_id) const;
+
 	bool has_hidden_classes() const;
 
 	bool operator<(const Row& other) const;
@@ -64,6 +75,11 @@ private:
 	Decoder* decoder_;
 	const srd_decoder_annotation_row* srd_row_;
 	bool visible_;
+
+	QColor color_;
+	map<uint32_t, QColor> ann_class_color_;
+	map<uint32_t, QColor> ann_bright_class_color_;
+	map<uint32_t, QColor> ann_dark_class_color_;
 };
 
 }  // namespace decode

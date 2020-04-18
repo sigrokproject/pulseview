@@ -112,6 +112,54 @@ void Row::set_visible(bool visible)
 	visible_ = visible;
 }
 
+void Row::set_base_color(QColor base_color)
+{
+	// For the row color, use the base color hue and add an offset that's
+	// not a dividend of 360
+
+	const int h = (base_color.toHsv().hue() + 20 * index_) % 360;
+	const int s = DECODE_COLOR_SATURATION;
+	const int v = DECODE_COLOR_VALUE;
+	color_.setHsl(h, s, v);
+
+	vector<AnnotationClass*> classes = ann_classes();
+	for (const AnnotationClass* ann_class : classes) {
+
+		// For each class color, use the row color hue and add an offset that's
+		// not a dividend of 360 and not a multiple of the row offset
+
+		QColor ann_color(color_);
+		const int h = (ann_color.toHsv().hue() + 55 * ann_class->id) % 360;
+		const int s = DECODE_COLOR_SATURATION;
+		const int v = DECODE_COLOR_VALUE;
+		ann_color.setHsl(h, s, v);
+
+		ann_class_color_[ann_class->id] = ann_color;
+		ann_bright_class_color_[ann_class->id] = ann_color.lighter();
+		ann_dark_class_color_[ann_class->id] = ann_color.darker();
+	}
+}
+
+const QColor Row::color() const
+{
+	return color_;
+}
+
+const QColor Row::get_class_color(uint32_t ann_class_id) const
+{
+	return ann_class_color_.at(ann_class_id);
+}
+
+const QColor Row::get_bright_class_color(uint32_t ann_class_id) const
+{
+	return ann_bright_class_color_.at(ann_class_id);
+}
+
+const QColor Row::get_dark_class_color(uint32_t ann_class_id) const
+{
+	return ann_dark_class_color_.at(ann_class_id);
+}
+
 bool Row::has_hidden_classes() const
 {
 	for (const AnnotationClass* c : ann_classes())

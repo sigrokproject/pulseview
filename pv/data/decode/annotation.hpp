@@ -23,6 +23,7 @@
 #include <cstdint>
 #include <vector>
 
+#include <QColor>
 #include <QString>
 
 using std::vector;
@@ -46,7 +47,8 @@ public:
 		const vector<QString>* texts, Class ann_class_id, const RowData *data);
 	Annotation(Annotation&& a);
 	Annotation& operator=(Annotation&& a);
-	~Annotation();
+
+	const Row* row() const;
 
 	uint64_t start_sample() const;
 	uint64_t end_sample() const;
@@ -56,7 +58,10 @@ public:
 
 	const vector<QString>* annotations() const;
 	const QString longest_annotation() const;
-	const Row* row() const;
+
+	const QColor color() const;
+	const QColor bright_color() const;
+	const QColor dark_color() const;
 
 	bool operator<(const Annotation &other) const;
 

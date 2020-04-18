@@ -66,8 +66,9 @@ Annotation& Annotation::operator=(Annotation&& a)
 	return *this;
 }
 
-Annotation::~Annotation()
+const Row* Annotation::row() const
 {
+	return data_->row();
 }
 
 uint64_t Annotation::start_sample() const
@@ -103,9 +104,19 @@ const QString Annotation::longest_annotation() const
 	return texts_->front();
 }
 
-const Row* Annotation::row() const
+const QColor Annotation::color() const
 {
-	return data_->row();
+	return data_->row()->get_class_color(ann_class_id_);
+}
+
+const QColor Annotation::bright_color() const
+{
+	return data_->row()->get_bright_class_color(ann_class_id_);
+}
+
+const QColor Annotation::dark_color() const
+{
+	return data_->row()->get_dark_class_color(ann_class_id_);
 }
 
 bool Annotation::operator<(const Annotation &other) const
