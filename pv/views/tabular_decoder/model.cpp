@@ -34,12 +34,16 @@ AnnotationCollectionModel::AnnotationCollectionModel(QObject* parent) :
 	prev_segment_(0),
 	prev_last_row_(0)
 {
+	GlobalSettings::add_change_handler(this);
+	theme_is_dark_ = GlobalSettings::current_theme_is_dark();
+
 	// TBD Maybe use empty columns as indentation levels to indicate stacked decoders
-	header_data_.emplace_back(tr("Start Sample"));      // Column #0
-	header_data_.emplace_back(tr("Start Time"));        // Column #1
-	header_data_.emplace_back(tr("Ann Row Name"));      // Column #2
-	header_data_.emplace_back(tr("Ann Class Name"));    // Column #3
-	header_data_.emplace_back(tr("Value"));             // Column #4
+	header_data_.emplace_back(tr("Sample"));     // Column #0
+	header_data_.emplace_back(tr("Time"));       // Column #1
+	header_data_.emplace_back(tr("Decoder"));    // Column #2
+	header_data_.emplace_back(tr("Ann Row"));    // Column #3
+	header_data_.emplace_back(tr("Ann Class"));  // Column #4
+	header_data_.emplace_back(tr("Value"));      // Column #5
 }
 
 QVariant AnnotationCollectionModel::data(const QModelIndex& index, int role) const
@@ -47,18 +51,26 @@ QVariant AnnotationCollectionModel::data(const QModelIndex& index, int role) con
 	if (!index.isValid())
 		return QVariant();
 
-	if (role == Qt::DisplayRole) {
-		const Annotation* ann =
-			static_cast<const Annotation*>(index.internalPointer());
+	const Annotation* ann =
+		static_cast<const Annotation*>(index.internalPointer());
 
+	if (role == Qt::DisplayRole) {
 		switch (index.column()) {
 		case 0: return QVariant((qulonglong)ann->start_sample());  // Column #0, Start Sample
 		case 1: return QVariant(0/*(qulonglong)ann->start_sample()*/);  // Column #1, Start Time
-		case 2: return QVariant(ann->row()->title());              // Column #2, Ann Row Name
-		case 3: return QVariant(ann->ann_class_name());            // Column #3, Ann Class Name
-		case 4: return QVariant(ann->longest_annotation());        // Column #4, Value
+		case 2: return QVariant(ann->row()->decoder()->name());    // Column #2, Decoder
+		case 3: return QVariant(ann->row()->description());        // Column #3, Ann Row
+		case 4: return QVariant(ann->ann_class_description());     // Column #4, Ann Class
+		case 5: return QVariant(ann->longest_annotation());        // Column #5, Value
 		default: return QVariant();
 		}
+	}
+
+	if (role == Qt::BackgroundRole) {
+		if (theme_is_dark_)
+			return QBrush(ann->dark_color());
+		else
+			return QBrush(ann->bright_color());
 	}
 
 	return QVariant();
@@ -121,6 +133,13 @@ int AnnotationCollectionModel::columnCount(const QModelIndex& parent_idx) const
 
 void AnnotationCollectionModel::set_signal_and_segment(data::DecodeSignal* signal, uint32_t current_segment)
 {
+	if (!signal) {
+		all_annotations_ = nullptr;
+		dataChanged(QModelIndex(), QModelIndex());
+		layoutChanged();
+		return;
+	}
+
 	all_annotations_ = signal->get_all_annotations_by_segment(current_segment);
 
 	if (!all_annotations_ || all_annotations_->empty()) {
@@ -145,6 +164,16 @@ void AnnotationCollectionModel::set_signal_and_segment(data::DecodeSignal* signa
 
 	prev_segment_ = current_segment;
 	prev_last_row_ = new_row_count;
+}
+
+void AnnotationCollectionModel::on_setting_changed(const QString &key, const QVariant &value)
+{
+	(void)key;
+	(void)value;
+
+	// We don't really care about the actual setting, we just update the
+	// flag that indicates whether we are using a bright or dark color theme
+	theme_is_dark_ = GlobalSettings::current_theme_is_dark();
 }
 
 } // namespace tabular_decoder

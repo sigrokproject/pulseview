@@ -66,6 +66,11 @@ Annotation& Annotation::operator=(Annotation&& a)
 	return *this;
 }
 
+const RowData* Annotation::row_data() const
+{
+	return data_;
+}
+
 const Row* Annotation::row() const
 {
 	return data_->row();
@@ -92,6 +97,14 @@ const QString Annotation::ann_class_name() const
 		data_->row()->decoder()->get_ann_class_by_id(ann_class_id_);
 
 	return QString(ann_class->name);
+}
+
+const QString Annotation::ann_class_description() const
+{
+	const AnnotationClass* ann_class =
+		data_->row()->decoder()->get_ann_class_by_id(ann_class_id_);
+
+	return QString(ann_class->description);
 }
 
 const vector<QString>* Annotation::annotations() const

@@ -1493,6 +1493,9 @@ void DecodeTrace::on_color_changed(const QColor &color)
 {
 	for (DecodeTraceRow& r : rows_)
 		r.decode_row->set_base_color(color);
+
+	if (owner_)
+		owner_->row_item_appearance_changed(false, true);
 }
 
 void DecodeTrace::on_new_annotations()

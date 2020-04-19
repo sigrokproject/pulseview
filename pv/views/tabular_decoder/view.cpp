@@ -57,7 +57,7 @@ QSize QCustomTableView::minimumSizeHint() const
 	int width = 0;
 	for (int i = 0; i < horizontalHeader()->count(); i++)
 		if (!horizontalHeader()->isSectionHidden(i))
-			width += horizontalHeader()->sectionSizeHint(i);
+			width += horizontalHeader()->sectionSize(i);
 
 	size.setWidth(width + (horizontalHeader()->count() * 1));
 
@@ -128,7 +128,9 @@ View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 	const int font_height = QFontMetrics(QApplication::font()).height();
 	table_view_->verticalHeader()->setDefaultSectionSize((font_height * 5) / 4);
 
-	table_view_->horizontalHeader()->setSectionResizeMode(model_->columnCount() - 1, QHeaderView::Stretch);
+	table_view_->horizontalHeader()->setStretchLastSection(true);
+	table_view_->horizontalHeader()->setCascadingSectionResizes(true);
+	table_view_->horizontalHeader()->setSectionsMovable(true);
 
 	table_view_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 	parent->setSizePolicy(table_view_->sizePolicy());
@@ -162,12 +164,16 @@ void View::add_decode_signal(shared_ptr<data::DecodeSignal> signal)
 
 	connect(signal.get(), SIGNAL(name_changed(const QString&)),
 		this, SLOT(on_signal_name_changed(const QString&)));
+
+	// Note: At time of initial creation, decode signals have no decoders so we
+	// need to watch for decoder stacking events
+
 	connect(signal.get(), SIGNAL(decoder_stacked(void*)),
 		this, SLOT(on_decoder_stacked(void*)));
 	connect(signal.get(), SIGNAL(decoder_removed(void*)),
 		this, SLOT(on_decoder_removed(void*)));
 
-	// Add the top-level decoder provided by this signal
+	// Add the top-level decoder provided by an already-existing signal
 	auto stack = signal->decoder_stack();
 	if (!stack.empty()) {
 		shared_ptr<Decoder>& dec = stack.at(0);
@@ -274,6 +280,7 @@ void View::save_data() const
 void View::on_selected_decoder_changed(int index)
 {
 	if (signal_) {
+		disconnect(signal_, SIGNAL(signal_color_changed()));
 		disconnect(signal_, SIGNAL(new_annotations()));
 		disconnect(signal_, SIGNAL(decode_reset()));
 	}
@@ -289,6 +296,7 @@ void View::on_selected_decoder_changed(int index)
 				signal_ = ds.get();
 
 	if (signal_) {
+		connect(signal_, SIGNAL(color_changed(QColor)), this, SLOT(on_signal_color_changed(QColor)));
 		connect(signal_, SIGNAL(new_annotations()), this, SLOT(on_new_annotations()));
 		connect(signal_, SIGNAL(decode_reset()), this, SLOT(on_decoder_reset()));
 	}
@@ -315,6 +323,13 @@ void View::on_signal_name_changed(const QString &name)
 		if (index != -1)
 			decoder_selector_->setItemText(index, signal->name());
 	}
+}
+
+void View::on_signal_color_changed(const QColor &color)
+{
+	(void)color;
+
+	table_view_->update();
 }
 
 void View::on_new_annotations()
@@ -344,8 +359,14 @@ void View::on_decoder_stacked(void* decoder)
 
 	assert(signal);
 
-	if (signal == signal_)
-		update_data();
+	const shared_ptr<Decoder>& dec = signal->decoder_stack().at(0);
+	int index = decoder_selector_->findData(QVariant::fromValue((void*)dec.get()));
+
+	if (index == -1) {
+		// Add the decoder to the list
+		QString title = QString("%1 (%2)").arg(signal->name(), d->name());
+		decoder_selector_->addItem(title, QVariant::fromValue((void*)d));
+	}
 }
 
 void View::on_decoder_removed(void* decoder)

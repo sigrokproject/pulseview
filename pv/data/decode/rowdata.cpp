@@ -95,13 +95,21 @@ void RowData::get_annotation_subset(
 	}
 }
 
+const deque<Annotation>& RowData::annotations() const
+{
+	return annotations_;
+}
+
 const Annotation* RowData::emplace_annotation(srd_proto_data *pdata)
 {
 	const srd_proto_data_annotation *const pda = (const srd_proto_data_annotation*)pdata->data;
 
 	Annotation::Class ann_class_id = (Annotation::Class)(pda->ann_class);
 
-	// Look up the longest annotation text to see if we have it in storage
+	// Look up the longest annotation text to see if we have it in storage.
+	// This implies that if the longest text is the same, the shorter texts
+	// are expected to be the same, too. PDs that violate this assumption
+	// should be considered broken.
 	const char* const* ann_texts = (char**)pda->ann_text;
 	const QString ann0 = QString::fromUtf8(ann_texts[0]);
 	vector<QString>* storage_entry = &(ann_texts_[ann0]);

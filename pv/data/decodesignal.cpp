@@ -1460,6 +1460,29 @@ void DecodeSignal::annotation_callback(srd_proto_data *pdata, void *decode_signa
 	deque<const Annotation*>& all_annotations =
 		ds->segments_[ds->current_segment_id_].all_annotations;
 	all_annotations.emplace_back(ann);
+
+	// When emplace_annotation() inserts instead of appends an annotation,
+	// the pointers in all_annotations that follow the inserted annotation and
+	// point to annotations for this row are off by one and must be updated
+	if (&(row_data.annotations().back()) != ann) {
+		// Search backwards until we find the annotation we just added
+		auto row_it = row_data.annotations().end();
+		auto all_it = all_annotations.end();
+		do {
+			all_it--;
+			if ((*all_it)->row_data() == &row_data)
+				row_it--;
+		} while (&(*row_it) != ann);
+
+		// Update the annotation addresses for this row's annotations until the end
+		do {
+			if ((*all_it)->row_data() == &row_data) {
+				*all_it = &(*row_it);
+				row_it++;
+			}
+			all_it++;
+		} while (all_it != all_annotations.end());
+	}
 }
 
 void DecodeSignal::binary_callback(srd_proto_data *pdata, void *decode_signal)

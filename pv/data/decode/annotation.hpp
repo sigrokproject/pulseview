@@ -48,6 +48,7 @@ public:
 	Annotation(Annotation&& a);
 	Annotation& operator=(Annotation&& a);
 
+	const RowData* row_data() const;
 	const Row* row() const;
 
 	uint64_t start_sample() const;
@@ -55,6 +56,7 @@ public:
 
 	Class ann_class_id() const;
 	const QString ann_class_name() const;
+	const QString ann_class_description() const;
 
 	const vector<QString>* annotations() const;
 	const QString longest_annotation() const;

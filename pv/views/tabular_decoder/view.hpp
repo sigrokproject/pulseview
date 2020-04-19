@@ -25,6 +25,7 @@
 #include <QTableView>
 #include <QToolButton>
 
+#include "pv/globalsettings.hpp"
 #include "pv/views/viewbase.hpp"
 #include "pv/data/decodesignal.hpp"
 
@@ -35,7 +36,7 @@ namespace views {
 
 namespace tabular_decoder {
 
-class AnnotationCollectionModel : public QAbstractTableModel
+class AnnotationCollectionModel : public QAbstractTableModel, public GlobalSettingsInterface
 {
 	Q_OBJECT
 
@@ -57,11 +58,14 @@ public:
 
 	void set_signal_and_segment(data::DecodeSignal* signal, uint32_t current_segment);
 
+	void on_setting_changed(const QString &key, const QVariant &value) override;
+
 private:
 	vector<QVariant> header_data_;
 	const deque<const Annotation*>* all_annotations_;
 	uint32_t prev_segment_;
 	uint64_t prev_last_row_;
+	bool theme_is_dark_;
 };
 
 
@@ -106,6 +110,7 @@ private:
 private Q_SLOTS:
 	void on_selected_decoder_changed(int index);
 	void on_signal_name_changed(const QString &name);
+	void on_signal_color_changed(const QColor &color);
 	void on_new_annotations();
 
 	void on_decoder_reset();

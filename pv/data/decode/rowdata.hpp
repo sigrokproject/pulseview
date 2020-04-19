@@ -66,6 +66,8 @@ public:
 	void get_annotation_subset(deque<const pv::data::decode::Annotation*> &dest,
 		uint64_t start_sample, uint64_t end_sample) const;
 
+	const deque<Annotation>& annotations() const;
+
 	const Annotation* emplace_annotation(srd_proto_data *pdata);
 
 private:
