@@ -1456,10 +1456,39 @@ void DecodeSignal::annotation_callback(srd_proto_data *pdata, void *decode_signa
 	// Add the annotation to the row
 	const Annotation* ann = row_data.emplace_annotation(pdata);
 
-	// Add the annotation to the global annotation list
+	// We insert the annotation into the global annotation list in a way so that
+	// the annotation list is sorted by start sample and length. Otherwise, we'd
+	// have to sort the model, which is expensive
 	deque<const Annotation*>& all_annotations =
 		ds->segments_[ds->current_segment_id_].all_annotations;
-	all_annotations.emplace_back(ann);
+
+	if (all_annotations.empty()) {
+		all_annotations.emplace_back(ann);
+	} else {
+		const uint64_t new_ann_len = (pdata->end_sample - pdata->start_sample);
+		bool ann_has_earlier_start = (pdata->start_sample < all_annotations.back()->start_sample());
+		bool ann_is_longer = (new_ann_len >
+			(all_annotations.back()->end_sample() - all_annotations.back()->start_sample()));
+
+		if (ann_has_earlier_start && ann_is_longer) {
+			bool ann_has_same_start;
+			auto it = all_annotations.end();
+
+			do {
+				it--;
+				ann_has_earlier_start = (pdata->start_sample < (*it)->start_sample());
+				ann_has_same_start = (pdata->start_sample == (*it)->start_sample());
+				ann_is_longer = (new_ann_len > ((*it)->end_sample() - (*it)->start_sample()));
+			} while ((ann_has_earlier_start || (ann_has_same_start && ann_is_longer)) && (it != all_annotations.begin()));
+
+			// Allow inserting at the front
+			if (it != all_annotations.begin())
+				it++;
+
+			all_annotations.emplace(it, ann);
+		} else
+			all_annotations.emplace_back(ann);
+	}
 
 	// When emplace_annotation() inserts instead of appends an annotation,
 	// the pointers in all_annotations that follow the inserted annotation and
