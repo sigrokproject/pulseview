@@ -120,6 +120,11 @@ private Q_SLOTS:
 
 	void on_actionSave_triggered(QAction* action = nullptr);
 
+	void on_table_item_clicked(const QModelIndex& index);
+	void on_table_item_double_clicked(const QModelIndex& index);
+	void on_table_header_requested(const QPoint& pos);
+	void on_table_header_toggled(bool checked);
+
 	virtual void perform_delayed_view_update();
 
 private:

@@ -154,7 +154,6 @@ public:
 	const Ruler* ruler() const;
 
 	virtual void save_settings(QSettings &settings) const;
-
 	virtual void restore_settings(QSettings &settings);
 
 	/**
@@ -253,6 +252,8 @@ public:
 	void zoom(double steps, int offset);
 
 	void zoom_fit(bool gui_state);
+
+	virtual void focus_on_range(uint64_t start_sample, uint64_t end_sample);
 
 	/**
 	 * Sets the scale and offset.

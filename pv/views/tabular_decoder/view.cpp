@@ -35,6 +35,7 @@
 #include "view.hpp"
 
 #include "pv/globalsettings.hpp"
+#include "pv/session.hpp"
 #include "pv/util.hpp"
 #include "pv/data/decode/decoder.hpp"
 
@@ -122,6 +123,8 @@ View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 
 	// Set up the table view
 	table_view_->setModel(model_);
+	table_view_->setSelectionBehavior(QAbstractItemView::SelectRows);
+	table_view_->setSelectionMode(QAbstractItemView::SingleSelection);
 	table_view_->setSortingEnabled(true);
 	table_view_->sortByColumn(0, Qt::AscendingOrder);
 
@@ -131,9 +134,17 @@ View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 	table_view_->horizontalHeader()->setStretchLastSection(true);
 	table_view_->horizontalHeader()->setCascadingSectionResizes(true);
 	table_view_->horizontalHeader()->setSectionsMovable(true);
+	table_view_->horizontalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
 
 	table_view_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 	parent->setSizePolicy(table_view_->sizePolicy());
+
+	connect(table_view_, SIGNAL(clicked(const QModelIndex&)),
+		this, SLOT(on_table_item_clicked(const QModelIndex&)));
+	connect(table_view_, SIGNAL(doubleClicked(const QModelIndex&)),
+		this, SLOT(on_table_item_double_clicked(const QModelIndex&)));
+	connect(table_view_->horizontalHeader(), SIGNAL(customContextMenuRequested(const QPoint&)),
+		this, SLOT(on_table_header_requested(const QPoint&)));
 
 	reset_view_state();
 }
@@ -385,6 +396,55 @@ void View::on_actionSave_triggered(QAction* action)
 	(void)action;
 
 	save_data();
+}
+
+void View::on_table_item_clicked(const QModelIndex& index)
+{
+	(void)index;
+
+	// Force repaint, otherwise the new selection isn't shown for some reason
+	table_view_->viewport()->update();
+}
+
+void View::on_table_item_double_clicked(const QModelIndex& index)
+{
+	const Annotation* ann = static_cast<const Annotation*>(index.internalPointer());
+
+	shared_ptr<views::ViewBase> main_view = session_.main_view();
+
+	main_view->focus_on_range(ann->start_sample(), ann->end_sample());
+}
+
+void View::on_table_header_requested(const QPoint& pos)
+{
+	QMenu* menu = new QMenu(this);
+
+	for (int i = 0; i < table_view_->horizontalHeader()->count(); i++) {
+		int column = table_view_->horizontalHeader()->logicalIndex(i);
+
+		const QString title = model_->headerData(column, Qt::Horizontal, Qt::DisplayRole).toString();
+		QAction* action = new QAction(title, this);
+
+		action->setCheckable(true);
+		action->setChecked(!table_view_->horizontalHeader()->isSectionHidden(column));
+		action->setData(column);
+
+		connect(action, SIGNAL(toggled(bool)), this, SLOT(on_table_header_toggled(bool)));
+
+		menu->addAction(action);
+	}
+
+	menu->popup(table_view_->horizontalHeader()->viewport()->mapToGlobal(pos));
+}
+
+void View::on_table_header_toggled(bool checked)
+{
+	QAction* action = qobject_cast<QAction*>(QObject::sender());
+	assert(action);
+
+	const int column = action->data().toInt();
+
+	table_view_->horizontalHeader()->setSectionHidden(column, !checked);
 }
 
 void View::perform_delayed_view_update()

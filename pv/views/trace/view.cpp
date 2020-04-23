@@ -783,6 +783,26 @@ void View::zoom_fit(bool gui_state)
 	set_scale_offset(scale.convert_to<double>(), extents.first);
 }
 
+void View::focus_on_range(uint64_t start_sample, uint64_t end_sample)
+{
+	assert(viewport_);
+	const int w = viewport_->width();
+	if (w <= 0)
+		return;
+
+	const double samplerate = session_.get_samplerate();
+
+	const uint64_t sample_delta = (end_sample - start_sample);
+
+	// Note: We add 20% margin on the left and 5% on the right
+	const Timestamp delta = (sample_delta * 1.25) / samplerate;
+
+	const Timestamp scale = max(min(delta / w, MaxScale), MinScale);
+	const Timestamp offset = (start_sample - sample_delta * 0.20) / samplerate;
+
+	set_scale_offset(scale.convert_to<double>(), offset);
+}
+
 void View::set_scale_offset(double scale, const Timestamp& offset)
 {
 	// Disable sticky scrolling / always zoom to fit when acquisition runs

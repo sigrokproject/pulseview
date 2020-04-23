@@ -105,8 +105,9 @@ public:
 #endif
 
 	virtual void save_settings(QSettings &settings) const;
-
 	virtual void restore_settings(QSettings &settings);
+
+	virtual void focus_on_range(uint64_t start_sample, uint64_t end_sample);
 
 public Q_SLOTS:
 	virtual void trigger_event(int segment_id, util::Timestamp location);

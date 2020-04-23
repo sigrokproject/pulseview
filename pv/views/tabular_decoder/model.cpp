@@ -90,9 +90,9 @@ QVariant AnnotationCollectionModel::data(const QModelIndex& index, int role) con
 Qt::ItemFlags AnnotationCollectionModel::flags(const QModelIndex& index) const
 {
 	if (!index.isValid())
-		return 0;
+		return Qt::NoItemFlags;
 
-	return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+	return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemNeverHasChildren;
 }
 
 QVariant AnnotationCollectionModel::headerData(int section, Qt::Orientation orientation,

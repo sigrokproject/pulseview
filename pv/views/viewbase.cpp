@@ -146,6 +146,12 @@ void ViewBase::restore_settings(QSettings &settings)
 	(void)settings;
 }
 
+void ViewBase::focus_on_range(uint64_t start_sample, uint64_t end_sample)
+{
+	(void)start_sample;
+	(void)end_sample;
+}
+
 void ViewBase::trigger_event(int segment_id, util::Timestamp location)
 {
 	(void)segment_id;
