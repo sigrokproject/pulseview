@@ -36,6 +36,16 @@ namespace views {
 
 namespace tabular_decoder {
 
+// When adding an entry here, don't forget to update SaveTypeNames as well
+enum SaveType {
+	SaveTypeCSVEscaped,
+	SaveTypeCSVQuoted,
+	SaveTypeCount  // Indicates how many save types there are, must always be last
+};
+
+extern const char* SaveTypeNames[SaveTypeCount];
+
+
 class AnnotationCollectionModel : public QAbstractTableModel, public GlobalSettingsInterface
 {
 	Q_OBJECT
@@ -107,7 +117,7 @@ private:
 	void reset_data();
 	void update_data();
 
-	void save_data() const;
+	void save_data_as_csv(unsigned int save_type) const;
 
 private Q_SLOTS:
 	void on_selected_decoder_changed(int index);

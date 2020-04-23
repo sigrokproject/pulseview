@@ -51,6 +51,11 @@ namespace pv {
 namespace views {
 namespace tabular_decoder {
 
+const char* SaveTypeNames[SaveTypeCount] = {
+	"CSV, commas escaped",
+	"CSV, fields quoted"
+};
+
 QSize QCustomTableView::minimumSizeHint() const
 {
 	QSize size(QTableView::sizeHint());
@@ -117,6 +122,11 @@ View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 	connect(save_menu, SIGNAL(triggered(QAction*)),
 		this, SLOT(on_actionSave_triggered(QAction*)));
 
+	for (int i = 0; i < SaveTypeCount; i++) {
+		QAction *const action =	save_menu->addAction(tr(SaveTypeNames[i]));
+		action->setData(qVariantFromValue(i));
+	}
+
 	save_button_->setMenu(save_menu);
 	save_button_->setDefaultAction(save_action_);
 	save_button_->setPopupMode(QToolButton::MenuButtonPopup);
@@ -124,7 +134,7 @@ View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 	// Set up the table view
 	table_view_->setModel(model_);
 	table_view_->setSelectionBehavior(QAbstractItemView::SelectRows);
-	table_view_->setSelectionMode(QAbstractItemView::SingleSelection);
+	table_view_->setSelectionMode(QAbstractItemView::ContiguousSelection);
 	table_view_->setSortingEnabled(true);
 	table_view_->sortByColumn(0, Qt::AscendingOrder);
 
@@ -245,44 +255,94 @@ void View::update_data()
 	updating_data_ = false;
 }
 
-void View::save_data() const
+void View::save_data_as_csv(unsigned int save_type) const
 {
+	// Note: We try to follow RFC 4180 (https://tools.ietf.org/html/rfc4180)
+
 	assert(decoder_);
 	assert(signal_);
 
 	if (!signal_)
 		return;
 
-/*	GlobalSettings settings;
+	const bool save_all = !table_view_->selectionModel()->hasSelection();
+
+	GlobalSettings settings;
 	const QString dir = settings.value("MainWindow/SaveDirectory").toString();
 
 	const QString file_name = QFileDialog::getSaveFileName(
-		parent_, tr("Save Binary Data"), dir, tr("Binary Data Files (*.bin);;All Files (*)"));
+		parent_, tr("Save Annotations as CSV"), dir, tr("CSV Files (*.csv);;Text Files (*.txt);;All Files (*)"));
 
 	if (file_name.isEmpty())
 		return;
 
 	QFile file(file_name);
 	if (file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-		pair<size_t, size_t> selection = hex_view_->get_selection();
+		QTextStream out_stream(&file);
 
-		vector<uint8_t> data;
-		data.resize(selection.second - selection.first + 1);
+		if (save_all)
+			table_view_->selectAll();
 
-		signal_->get_merged_binary_data_chunks_by_offset(current_segment_, decoder_,
-			bin_class_id_, selection.first, selection.second, &data);
+		// Write out header columns in visual order, not logical order
+		for (int i = 0; i < table_view_->horizontalHeader()->count(); i++) {
+			int column = table_view_->horizontalHeader()->logicalIndex(i);
 
-		int64_t bytes_written = file.write((const char*)data.data(), data.size());
+			if (table_view_->horizontalHeader()->isSectionHidden(column))
+				continue;
 
-		if ((bytes_written == -1) || ((uint64_t)bytes_written != data.size())) {
-			QMessageBox msg(parent_);
-			msg.setText(tr("Error") + "\n\n" + tr("File %1 could not be written to.").arg(file_name));
-			msg.setStandardButtons(QMessageBox::Ok);
-			msg.setIcon(QMessageBox::Warning);
-			msg.exec();
+			const QString title = model_->headerData(column, Qt::Horizontal, Qt::DisplayRole).toString();
+
+			if (save_type == SaveTypeCSVEscaped)
+				out_stream << title;
+			else
+				out_stream << '"' << title << '"';
+
+			if (i < (table_view_->horizontalHeader()->count() - 1))
+				out_stream << ",";
+		}
+		out_stream << '\r' << '\n';
+
+
+		QModelIndexList selected_rows = table_view_->selectionModel()->selectedRows();
+
+		for (int i = 0; i < selected_rows.size(); i++) {
+			const int row = selected_rows.at(i).row();
+
+			// Write out columns in visual order, not logical order
+			for (int c = 0; c < table_view_->horizontalHeader()->count(); c++) {
+				const int column = table_view_->horizontalHeader()->logicalIndex(c);
+
+				if (table_view_->horizontalHeader()->isSectionHidden(column))
+					continue;
+
+				const QModelIndex idx = model_->index(row, column, QModelIndex());
+				QString s = model_->data(idx, Qt::DisplayRole).toString();
+
+				if (save_type == SaveTypeCSVEscaped)
+					out_stream << s.replace(",", "\\,");
+				else
+					out_stream << '"' << s.replace("\"", "\"\"") << '"';
+
+				if (c < (table_view_->horizontalHeader()->count() - 1))
+					out_stream << ",";
+			}
+
+			out_stream << '\r' << '\n';
+		}
+
+		if (out_stream.status() == QTextStream::Ok) {
+			if (save_all)
+				table_view_->clearSelection();
+
 			return;
 		}
-	} */
+	}
+
+	QMessageBox msg(parent_);
+	msg.setText(tr("Error") + "\n\n" + tr("File %1 could not be written to.").arg(file_name));
+	msg.setStandardButtons(QMessageBox::Ok);
+	msg.setIcon(QMessageBox::Warning);
+	msg.exec();
 }
 
 void View::on_selected_decoder_changed(int index)
@@ -389,9 +449,12 @@ void View::on_decoder_removed(void* decoder)
 
 void View::on_actionSave_triggered(QAction* action)
 {
-	(void)action;
+	int save_type = SaveTypeCSVQuoted;
 
-	save_data();
+	if (action)
+		save_type = action->data().toInt();
+
+	save_data_as_csv(save_type);
 }
 
 void View::on_table_item_clicked(const QModelIndex& index)
