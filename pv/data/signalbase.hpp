@@ -195,7 +195,7 @@ public:
 	/**
 	 * Returns the sample rate for this signal.
 	 */
-	double get_samplerate() const;
+	virtual double get_samplerate() const;
 
 	/**
 	 * Queries the kind of conversion performed on this channel.

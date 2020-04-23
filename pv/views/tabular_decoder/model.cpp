@@ -24,7 +24,14 @@
 
 #include "view.hpp"
 
+#include "pv/util.hpp"
+
 using std::make_shared;
+
+using pv::util::Timestamp;
+using pv::util::format_time_si;
+using pv::util::format_time_minutes;
+using pv::util::SIPrefix;
 
 namespace pv {
 namespace views {
@@ -49,6 +56,28 @@ AnnotationCollectionModel::AnnotationCollectionModel(QObject* parent) :
 	header_data_.emplace_back(tr("Value"));      // Column #5
 }
 
+QVariant AnnotationCollectionModel::data_from_ann(const Annotation* ann, int index) const
+{
+	switch (index) {
+	case 0: return QVariant((qulonglong)ann->start_sample());  // Column #0, Start Sample
+	case 1: {                                                  // Column #1, Start Time
+			Timestamp t = ann->start_sample() / signal_->get_samplerate();
+			QString unit = signal_->get_samplerate() ? tr("s") : tr("sa");
+			QString s;
+			if ((t < 60) || (signal_->get_samplerate() == 0))  // i.e. if unit is sa
+				s = format_time_si(t, SIPrefix::unspecified, 3, unit, false);
+			else
+				s = format_time_minutes(t, 3, false);
+			return QVariant(s);
+		}
+	case 2: return QVariant(ann->row()->decoder()->name());    // Column #2, Decoder
+	case 3: return QVariant(ann->row()->description());        // Column #3, Ann Row
+	case 4: return QVariant(ann->ann_class_description());     // Column #4, Ann Class
+	case 5: return QVariant(ann->longest_annotation());        // Column #5, Value
+	default: return QVariant();
+	}
+}
+
 QVariant AnnotationCollectionModel::data(const QModelIndex& index, int role) const
 {
 	if (!index.isValid() || !signal_)
@@ -57,17 +86,8 @@ QVariant AnnotationCollectionModel::data(const QModelIndex& index, int role) con
 	const Annotation* ann =
 		static_cast<const Annotation*>(index.internalPointer());
 
-	if (role == Qt::DisplayRole) {
-		switch (index.column()) {
-		case 0: return QVariant((qulonglong)ann->start_sample());  // Column #0, Start Sample
-		case 1: return QVariant(0/*(qulonglong)ann->start_sample()*/);  // Column #1, Start Time
-		case 2: return QVariant(ann->row()->decoder()->name());    // Column #2, Decoder
-		case 3: return QVariant(ann->row()->description());        // Column #3, Ann Row
-		case 4: return QVariant(ann->ann_class_description());     // Column #4, Ann Class
-		case 5: return QVariant(ann->longest_annotation());        // Column #5, Value
-		default: return QVariant();
-		}
-	}
+	if ((role == Qt::DisplayRole) || (role == Qt::ToolTipRole))
+		return data_from_ann(ann, index.column());
 
 	if (role == Qt::BackgroundRole) {
 		int level = 0;

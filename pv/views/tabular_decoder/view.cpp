@@ -231,9 +231,6 @@ void View::reset_data()
 
 void View::update_data()
 {
-	if (!signal_)
-		return;
-
 	if (updating_data_) {
 		if (!delayed_view_updater_.isActive())
 			delayed_view_updater_.start();
@@ -291,7 +288,7 @@ void View::save_data() const
 void View::on_selected_decoder_changed(int index)
 {
 	if (signal_) {
-		disconnect(signal_, SIGNAL(signal_color_changed()));
+		disconnect(signal_, SIGNAL(color_changed(QColor)));
 		disconnect(signal_, SIGNAL(new_annotations()));
 		disconnect(signal_, SIGNAL(decode_reset()));
 	}
@@ -375,8 +372,7 @@ void View::on_decoder_stacked(void* decoder)
 
 	if (index == -1) {
 		// Add the decoder to the list
-		QString title = QString("%1 (%2)").arg(signal->name(), d->name());
-		decoder_selector_->addItem(title, QVariant::fromValue((void*)d));
+		decoder_selector_->addItem(signal->name(), QVariant::fromValue((void*)d));
 	}
 }
 

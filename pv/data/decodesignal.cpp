@@ -358,7 +358,7 @@ void DecodeSignal::set_initial_pin_state(const uint16_t channel_id, const int in
 	begin_decode();
 }
 
-double DecodeSignal::samplerate() const
+double DecodeSignal::get_samplerate() const
 {
 	double result = 0;
 

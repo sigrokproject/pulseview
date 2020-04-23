@@ -971,7 +971,7 @@ pair<double, double> DecodeTrace::get_pixels_offset_samples_per_pixel() const
 	const double pixels_offset =
 		((view->offset() - decode_signal_->start_time()) / scale).convert_to<double>();
 
-	double samplerate = decode_signal_->samplerate();
+	double samplerate = decode_signal_->get_samplerate();
 
 	// Show sample rate as 1Hz when it is unknown
 	if (samplerate == 0.0)

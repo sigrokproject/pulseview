@@ -124,7 +124,7 @@ public:
 
 	void set_initial_pin_state(const uint16_t channel_id, const int init_state);
 
-	double samplerate() const;
+	virtual double get_samplerate() const;
 	const pv::util::Timestamp start_time() const;
 
 	/**
