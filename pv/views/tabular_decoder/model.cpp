@@ -22,6 +22,8 @@
 
 #include "pv/views/tabular_decoder/view.hpp"
 
+#include "view.hpp"
+
 using std::make_shared;
 
 namespace pv {
@@ -31,6 +33,7 @@ namespace tabular_decoder {
 AnnotationCollectionModel::AnnotationCollectionModel(QObject* parent) :
 	QAbstractTableModel(parent),
 	all_annotations_(nullptr),
+	signal_(nullptr),
 	prev_segment_(0),
 	prev_last_row_(0)
 {
@@ -48,7 +51,7 @@ AnnotationCollectionModel::AnnotationCollectionModel(QObject* parent) :
 
 QVariant AnnotationCollectionModel::data(const QModelIndex& index, int role) const
 {
-	if (!index.isValid())
+	if (!index.isValid() || !signal_)
 		return QVariant();
 
 	const Annotation* ann =
@@ -67,10 +70,18 @@ QVariant AnnotationCollectionModel::data(const QModelIndex& index, int role) con
 	}
 
 	if (role == Qt::BackgroundRole) {
-		if (theme_is_dark_)
-			return QBrush(ann->dark_color());
-		else
-			return QBrush(ann->bright_color());
+		int level = 0;
+
+		const unsigned int ann_stack_level = ann->row_data()->row()->decoder()->get_stack_level();
+		level = (signal_->decoder_stack().size() - 1 - ann_stack_level);
+
+		// Only use custom cell background color if column index reached the hierarchy level
+		if (index.column() >= level) {
+			if (theme_is_dark_)
+				return QBrush(ann->dark_color());
+			else
+				return QBrush(ann->bright_color());
+		}
 	}
 
 	return QVariant();
@@ -135,12 +146,14 @@ void AnnotationCollectionModel::set_signal_and_segment(data::DecodeSignal* signa
 {
 	if (!signal) {
 		all_annotations_ = nullptr;
+		signal_ = nullptr;
 		dataChanged(QModelIndex(), QModelIndex());
 		layoutChanged();
 		return;
 	}
 
 	all_annotations_ = signal->get_all_annotations_by_segment(current_segment);
+	signal_ = signal;
 
 	if (!all_annotations_ || all_annotations_->empty()) {
 		prev_segment_ = current_segment;

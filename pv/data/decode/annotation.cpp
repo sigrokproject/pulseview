@@ -86,6 +86,11 @@ uint64_t Annotation::end_sample() const
 	return end_sample_;
 }
 
+uint64_t Annotation::length() const
+{
+	return end_sample_ - start_sample_;
+}
+
 Annotation::Class Annotation::ann_class_id() const
 {
 	return ann_class_id_;

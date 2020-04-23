@@ -1478,7 +1478,7 @@ void DecodeSignal::annotation_callback(srd_proto_data *pdata, void *decode_signa
 				it--;
 				ann_has_earlier_start = (pdata->start_sample < (*it)->start_sample());
 				ann_has_same_start = (pdata->start_sample == (*it)->start_sample());
-				ann_is_longer = (new_ann_len > ((*it)->end_sample() - (*it)->start_sample()));
+				ann_is_longer = (new_ann_len > (*it)->length());
 			} while ((ann_has_earlier_start || (ann_has_same_start && ann_is_longer)) && (it != all_annotations.begin()));
 
 			// Allow inserting at the front

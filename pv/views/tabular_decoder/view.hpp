@@ -63,6 +63,7 @@ public:
 private:
 	vector<QVariant> header_data_;
 	const deque<const Annotation*>* all_annotations_;
+	data::DecodeSignal* signal_;
 	uint32_t prev_segment_;
 	uint64_t prev_last_row_;
 	bool theme_is_dark_;
