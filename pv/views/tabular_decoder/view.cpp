@@ -86,8 +86,7 @@ View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 	save_action_(new QAction(this)),
 	table_view_(new QCustomTableView()),
 	model_(new AnnotationCollectionModel()),
-	signal_(nullptr),
-	updating_data_(false)
+	signal_(nullptr)
 {
 	QVBoxLayout *root_layout = new QVBoxLayout(this);
 	root_layout->setContentsMargins(0, 0, 0, 0);
@@ -241,18 +240,7 @@ void View::reset_data()
 
 void View::update_data()
 {
-	if (updating_data_) {
-		if (!delayed_view_updater_.isActive())
-			delayed_view_updater_.start();
-		return;
-	}
-
-	updating_data_ = true;
-
-	table_view_->setRootIndex(model_->index(1, 0, QModelIndex()));
 	model_->set_signal_and_segment(signal_, current_segment_);
-
-	updating_data_ = false;
 }
 
 void View::save_data_as_csv(unsigned int save_type) const

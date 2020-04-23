@@ -80,7 +80,7 @@ QVariant AnnotationCollectionModel::data_from_ann(const Annotation* ann, int ind
 
 QVariant AnnotationCollectionModel::data(const QModelIndex& index, int role) const
 {
-	if (!index.isValid() || !signal_)
+	if (!signal_ || !index.isValid() || !index.internalPointer())
 		return QVariant();
 
 	const Annotation* ann =
@@ -118,7 +118,7 @@ Qt::ItemFlags AnnotationCollectionModel::flags(const QModelIndex& index) const
 QVariant AnnotationCollectionModel::headerData(int section, Qt::Orientation orientation,
 	int role) const
 {
-	if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
+	if ((orientation == Qt::Horizontal) && (role == Qt::DisplayRole))
 		return header_data_.at(section);
 
 	return QVariant();
@@ -128,6 +128,8 @@ QModelIndex AnnotationCollectionModel::index(int row, int column,
 	const QModelIndex& parent_idx) const
 {
 	(void)parent_idx;
+	assert(row >= 0);
+	assert(column >= 0);
 
 	if (!all_annotations_)
 		return QModelIndex();

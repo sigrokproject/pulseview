@@ -152,7 +152,6 @@ private:
 
 	data::DecodeSignal* signal_;
 	const data::decode::Decoder* decoder_;
-	bool updating_data_;
 };
 
 } // namespace tabular_decoder

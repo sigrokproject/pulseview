@@ -142,7 +142,7 @@ Qt::ItemFlags DecoderCollectionModel::flags(const QModelIndex& index) const
 QVariant DecoderCollectionModel::headerData(int section, Qt::Orientation orientation,
 	int role) const
 {
-	if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
+	if ((orientation == Qt::Horizontal) && (role == Qt::DisplayRole))
 		return root_->data(section);
 
 	return QVariant();
