@@ -139,6 +139,7 @@ View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 
 	const int font_height = QFontMetrics(QApplication::font()).height();
 	table_view_->verticalHeader()->setDefaultSectionSize((font_height * 5) / 4);
+	table_view_->verticalHeader()->setVisible(false);
 
 	table_view_->horizontalHeader()->setStretchLastSection(true);
 	table_view_->horizontalHeader()->setCascadingSectionResizes(true);
