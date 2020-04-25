@@ -169,6 +169,11 @@ bool Row::has_hidden_classes() const
 	return false;
 }
 
+bool Row::class_is_visible(uint32_t ann_class_id) const
+{
+	return decoder_->get_ann_class_by_id(ann_class_id)->visible;
+}
+
 bool Row::operator<(const Row& other) const
 {
 	return (decoder_ < other.decoder_) ||

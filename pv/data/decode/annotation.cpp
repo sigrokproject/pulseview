@@ -122,6 +122,13 @@ const QString Annotation::longest_annotation() const
 	return texts_->front();
 }
 
+bool Annotation::visible() const
+{
+	const Row* row = data_->row();
+
+	return (row->visible() && row->class_is_visible(ann_class_id_));
+}
+
 const QColor Annotation::color() const
 {
 	return data_->row()->get_class_color(ann_class_id_);

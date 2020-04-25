@@ -40,9 +40,11 @@ namespace tabular_decoder {
 AnnotationCollectionModel::AnnotationCollectionModel(QObject* parent) :
 	QAbstractTableModel(parent),
 	all_annotations_(nullptr),
+	dataset_(nullptr),
 	signal_(nullptr),
 	prev_segment_(0),
-	prev_last_row_(0)
+	prev_last_row_(0),
+	hide_hidden_(false)
 {
 	GlobalSettings::add_change_handler(this);
 	theme_is_dark_ = GlobalSettings::current_theme_is_dark();
@@ -131,13 +133,15 @@ QModelIndex AnnotationCollectionModel::index(int row, int column,
 	assert(row >= 0);
 	assert(column >= 0);
 
-	if (!all_annotations_)
+	if (!dataset_)
 		return QModelIndex();
 
-	if ((size_t)row > all_annotations_->size())
-		return QModelIndex();
+	QModelIndex idx;
 
-	return createIndex(row, column, (void*)(all_annotations_->at(row)));
+	if ((size_t)row < dataset_->size())
+		idx = createIndex(row, column, (void*)dataset_->at(row));
+
+	return idx;
 }
 
 QModelIndex AnnotationCollectionModel::parent(const QModelIndex& index) const
@@ -151,10 +155,10 @@ int AnnotationCollectionModel::rowCount(const QModelIndex& parent_idx) const
 {
 	(void)parent_idx;
 
-	if (!all_annotations_)
+	if (!dataset_)
 		return 0;
 
-	return all_annotations_->size();
+	return dataset_->size();
 }
 
 int AnnotationCollectionModel::columnCount(const QModelIndex& parent_idx) const
@@ -168,7 +172,9 @@ void AnnotationCollectionModel::set_signal_and_segment(data::DecodeSignal* signa
 {
 	if (!signal) {
 		all_annotations_ = nullptr;
+		dataset_ = nullptr;
 		signal_ = nullptr;
+
 		dataChanged(QModelIndex(), QModelIndex());
 		layoutChanged();
 		return;
@@ -177,12 +183,17 @@ void AnnotationCollectionModel::set_signal_and_segment(data::DecodeSignal* signa
 	all_annotations_ = signal->get_all_annotations_by_segment(current_segment);
 	signal_ = signal;
 
-	if (!all_annotations_ || all_annotations_->empty()) {
+	if (hide_hidden_)
+		update_annotations_without_hidden();
+	else
+		dataset_ = all_annotations_;
+
+	if (!dataset_ || dataset_->empty()) {
 		prev_segment_ = current_segment;
 		return;
 	}
 
-	const size_t new_row_count = all_annotations_->size() - 1;
+	const size_t new_row_count = dataset_->size() - 1;
 
 	// Force the view associated with this model to update when the segment changes
 	if (prev_segment_ != current_segment) {
@@ -199,6 +210,44 @@ void AnnotationCollectionModel::set_signal_and_segment(data::DecodeSignal* signa
 
 	prev_segment_ = current_segment;
 	prev_last_row_ = new_row_count;
+}
+
+void AnnotationCollectionModel::set_hide_hidden(bool hide_hidden)
+{
+	hide_hidden_ = hide_hidden;
+
+	if (hide_hidden_) {
+		dataset_ = &all_annotations_without_hidden_;
+		update_annotations_without_hidden();
+	} else {
+		dataset_ = all_annotations_;
+		all_annotations_without_hidden_.clear();  // To conserve memory
+	}
+}
+
+void AnnotationCollectionModel::update_annotations_without_hidden()
+{
+	uint64_t count = 0;
+
+	if (!all_annotations_ || all_annotations_->empty()) {
+		all_annotations_without_hidden_.clear();
+		return;
+	}
+
+	for (const Annotation* ann : *all_annotations_) {
+		if (!ann->visible())
+			continue;
+
+		if (all_annotations_without_hidden_.size() < (count + 100))
+			all_annotations_without_hidden_.resize(count + 100);
+
+		all_annotations_without_hidden_[count++] = ann;
+	}
+
+	all_annotations_without_hidden_.resize(count);
+
+	dataChanged(index(0, 0, QModelIndex()), index(count, 0, QModelIndex()));
+	layoutChanged();
 }
 
 void AnnotationCollectionModel::on_setting_changed(const QString &key, const QVariant &value)

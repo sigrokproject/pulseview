@@ -62,6 +62,8 @@ public:
 	const vector<QString>* annotations() const;
 	const QString longest_annotation() const;
 
+	bool visible() const;
+
 	const QColor color() const;
 	const QColor bright_color() const;
 	const QColor dark_color() const;

@@ -21,6 +21,7 @@
 #define PULSEVIEW_PV_VIEWS_TABULARDECODER_VIEW_HPP
 
 #include <QAction>
+#include <QCheckBox>
 #include <QComboBox>
 #include <QTableView>
 #include <QToolButton>
@@ -43,7 +44,16 @@ enum SaveType {
 	SaveTypeCount  // Indicates how many save types there are, must always be last
 };
 
+// When adding an entry here, don't forget to update ViewModeNames as well
+enum ViewModeType {
+	ViewModeAll,
+	ViewModeLatest,
+	ViewModeVisible,
+	ViewModeCount // Indicates how many save types there are, must always be last
+};
+
 extern const char* SaveTypeNames[SaveTypeCount];
+extern const char* ViewModeNames[ViewModeCount];
 
 
 class AnnotationCollectionModel : public QAbstractTableModel, public GlobalSettingsInterface
@@ -68,15 +78,21 @@ public:
 	int columnCount(const QModelIndex& parent_idx = QModelIndex()) const override;
 
 	void set_signal_and_segment(data::DecodeSignal* signal, uint32_t current_segment);
+	void set_hide_hidden(bool hide_hidden);
+
+	void update_annotations_without_hidden();
 
 	void on_setting_changed(const QString &key, const QVariant &value) override;
 
 private:
 	vector<QVariant> header_data_;
 	const deque<const Annotation*>* all_annotations_;
+	deque<const Annotation*> all_annotations_without_hidden_;
+	const deque<const Annotation*>* dataset_;
 	data::DecodeSignal* signal_;
 	uint32_t prev_segment_;
 	uint64_t prev_last_row_;
+	bool hide_hidden_;
 	bool theme_is_dark_;
 };
 
@@ -121,6 +137,9 @@ private:
 
 private Q_SLOTS:
 	void on_selected_decoder_changed(int index);
+	void on_hide_hidden_changed(bool checked);
+	void on_view_mode_changed(int index);
+
 	void on_signal_name_changed(const QString &name);
 	void on_signal_color_changed(const QColor &color);
 	void on_new_annotations();
@@ -142,6 +161,8 @@ private:
 	QWidget* parent_;
 
 	QComboBox* decoder_selector_;
+	QCheckBox* hide_hidden_cb_;
+	QComboBox* view_mode_selector_;
 
 	QToolButton* save_button_;
 	QAction* save_action_;

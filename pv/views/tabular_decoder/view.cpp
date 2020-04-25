@@ -56,6 +56,12 @@ const char* SaveTypeNames[SaveTypeCount] = {
 	"CSV, fields quoted"
 };
 
+const char* ViewModeNames[ViewModeCount] = {
+	"Show all",
+	"Show all and focus on newest",
+	"Show visible in main view"
+};
+
 QSize QCustomTableView::minimumSizeHint() const
 {
 	QSize size(QTableView::sizeHint());
@@ -82,6 +88,8 @@ View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 	// Note: Place defaults in View::reset_view_state(), not here
 	parent_(parent),
 	decoder_selector_(new QComboBox()),
+	hide_hidden_cb_(new QCheckBox()),
+	view_mode_selector_(new QComboBox()),
 	save_button_(new QToolButton()),
 	save_action_(new QAction(this)),
 	table_view_(new QCustomTableView()),
@@ -102,12 +110,26 @@ View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 	toolbar->addWidget(decoder_selector_);
 	toolbar->addSeparator();
 	toolbar->addWidget(save_button_);
+	toolbar->addSeparator();
+	toolbar->addWidget(view_mode_selector_);
+	toolbar->addSeparator();
+	toolbar->addWidget(hide_hidden_cb_);
 
 	connect(decoder_selector_, SIGNAL(currentIndexChanged(int)),
 		this, SLOT(on_selected_decoder_changed(int)));
+	connect(view_mode_selector_, SIGNAL(currentIndexChanged(int)),
+		this, SLOT(on_view_mode_changed(int)));
+	connect(hide_hidden_cb_, SIGNAL(toggled(bool)),
+		this, SLOT(on_hide_hidden_changed(bool)));
 
 	// Configure widgets
 	decoder_selector_->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+
+	for (int i = 0; i < ViewModeCount; i++)
+		view_mode_selector_->addItem(ViewModeNames[i], QVariant::fromValue(i));
+
+	hide_hidden_cb_->setText(tr("Hide Hidden Rows/Classes"));
+	hide_hidden_cb_->setChecked(true);
 
 	// Configure actions
 	save_action_->setText(tr("&Save..."));
@@ -224,13 +246,20 @@ void View::remove_decode_signal(shared_ptr<data::DecodeSignal> signal)
 void View::save_settings(QSettings &settings) const
 {
 	ViewBase::save_settings(settings);
+
+	settings.setValue("view_mode", view_mode_selector_->currentIndex());
+	settings.setValue("hide_hidden", hide_hidden_cb_->isChecked());
 }
 
 void View::restore_settings(QSettings &settings)
 {
-	// Note: It is assumed that this function is only called once,
-	// immediately after restoring a previous session.
 	ViewBase::restore_settings(settings);
+
+	if (settings.contains("view_mode"))
+		view_mode_selector_->setCurrentIndex(settings.value("view_mode").toInt());
+
+	if (settings.contains("hide_hidden"))
+		hide_hidden_cb_->setChecked(settings.value("hide_hidden").toBool());
 }
 
 void View::reset_data()
@@ -359,6 +388,19 @@ void View::on_selected_decoder_changed(int index)
 	}
 
 	update_data();
+}
+
+void View::on_hide_hidden_changed(bool checked)
+{
+	model_->set_hide_hidden(checked);
+
+	// Force repaint, otherwise the new selection isn't shown for some reason
+	table_view_->viewport()->update();
+}
+
+void View::on_view_mode_changed(int index)
+{
+	(void)index;
 }
 
 void View::on_signal_name_changed(const QString &name)

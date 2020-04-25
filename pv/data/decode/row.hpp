@@ -66,6 +66,7 @@ public:
 	const QColor get_dark_class_color(uint32_t ann_class_id) const;
 
 	bool has_hidden_classes() const;
+	bool class_is_visible(uint32_t ann_class_id) const;
 
 	bool operator<(const Row& other) const;
 	bool operator==(const Row& other) const;
