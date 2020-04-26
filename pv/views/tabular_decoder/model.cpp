@@ -202,8 +202,7 @@ void AnnotationCollectionModel::set_signal_and_segment(data::DecodeSignal* signa
 	} else {
 		// Force the view associated with this model to update when we have more annotations
 		if (prev_last_row_ < new_row_count) {
-			dataChanged(index(prev_last_row_, 0, QModelIndex()),
-				index(new_row_count, 0, QModelIndex()));
+			dataChanged(index(prev_last_row_, 0), index(new_row_count, 0));
 			layoutChanged();
 		}
 	}
@@ -246,7 +245,7 @@ void AnnotationCollectionModel::update_annotations_without_hidden()
 
 	all_annotations_without_hidden_.resize(count);
 
-	dataChanged(index(0, 0, QModelIndex()), index(count, 0, QModelIndex()));
+	dataChanged(index(0, 0), index(count, 0));
 	layoutChanged();
 }
 

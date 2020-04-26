@@ -48,7 +48,7 @@ enum SaveType {
 enum ViewModeType {
 	ViewModeAll,
 	ViewModeLatest,
-	ViewModeVisible,
+//	ViewModeVisible,
 	ViewModeCount // Indicates how many save types there are, must always be last
 };
 

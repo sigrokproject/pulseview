@@ -58,8 +58,8 @@ const char* SaveTypeNames[SaveTypeCount] = {
 
 const char* ViewModeNames[ViewModeCount] = {
 	"Show all",
-	"Show all and focus on newest",
-	"Show visible in main view"
+	"Show all and focus on newest"
+//	"Show visible in main view"
 };
 
 QSize QCustomTableView::minimumSizeHint() const
@@ -333,7 +333,7 @@ void View::save_data_as_csv(unsigned int save_type) const
 				if (table_view_->horizontalHeader()->isSectionHidden(column))
 					continue;
 
-				const QModelIndex idx = model_->index(row, column, QModelIndex());
+				const QModelIndex idx = model_->index(row, column);
 				QString s = model_->data(idx, Qt::DisplayRole).toString();
 
 				if (save_type == SaveTypeCSVEscaped)
@@ -433,8 +433,14 @@ void View::on_signal_color_changed(const QColor &color)
 
 void View::on_new_annotations()
 {
-	if (!delayed_view_updater_.isActive())
-		delayed_view_updater_.start();
+	if (view_mode_selector_->currentIndex() == ViewModeLatest) {
+		update_data();
+		table_view_->scrollTo(model_->index(model_->rowCount() - 1, 0),
+			QAbstractItemView::PositionAtBottom);
+	} else {
+		if (!delayed_view_updater_.isActive())
+			delayed_view_updater_.start();
+	}
 }
 
 void View::on_decoder_reset()
