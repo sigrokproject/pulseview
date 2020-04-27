@@ -45,9 +45,9 @@
 #include <libsigrokflow/libsigrokflow.hpp>
 #endif
 
+#include "metadata_obj.hpp"
 #include "util.hpp"
 #include "views/viewbase.hpp"
-
 
 using std::function;
 using std::map;
@@ -108,6 +108,7 @@ namespace views {
 class ViewBase;
 }
 
+
 class Session : public QObject
 {
 	Q_OBJECT
@@ -135,15 +136,12 @@ public:
 	shared_ptr<devices::Device> device() const;
 
 	QString name() const;
-
 	void set_name(QString name);
 
 	const vector< shared_ptr<views::ViewBase> > views() const;
 
 	shared_ptr<views::ViewBase> main_view() const;
-
 	shared_ptr<pv::toolbars::MainBar> main_bar() const;
-
 	void set_main_bar(shared_ptr<pv::toolbars::MainBar> main_bar);
 
 	/**
@@ -152,11 +150,8 @@ public:
 	bool data_saved() const;
 
 	void save_setup(QSettings &settings) const;
-
 	void save_settings(QSettings &settings) const;
-
 	void restore_setup(QSettings &settings);
-
 	void restore_settings(QSettings &settings);
 
 	/**
@@ -168,9 +163,7 @@ public:
 	 * Sets device instance that will be used in the next capture session.
 	 */
 	void set_device(shared_ptr<devices::Device> device);
-
 	void set_default_device();
-
 	bool using_file_device() const;
 
 	void load_init_file(const string &file_name, const string &format,
@@ -182,9 +175,7 @@ public:
 			map<string, Glib::VariantBase>());
 
 	capture_state get_capture_state() const;
-
 	void start_capture(function<void (const QString)> error_handler);
-
 	void stop_capture();
 
 	double get_samplerate() const;
@@ -194,9 +185,7 @@ public:
 	vector<util::Timestamp> get_triggers(uint32_t segment_id) const;
 
 	void register_view(shared_ptr<views::ViewBase> view);
-
 	void deregister_view(shared_ptr<views::ViewBase> view);
-
 	bool has_view(shared_ptr<views::ViewBase> view);
 
 	const vector< shared_ptr<data::SignalBase> > signalbases() const;
@@ -208,6 +197,8 @@ public:
 
 	void remove_decode_signal(shared_ptr<data::DecodeSignal> signal);
 #endif
+
+	MetadataObjManager* metadata_obj_manager();
 
 private:
 	void set_capture_state(capture_state state);
@@ -235,16 +226,11 @@ private:
 #endif
 
 	void feed_in_header();
-
 	void feed_in_meta(shared_ptr<sigrok::Meta> meta);
-
 	void feed_in_trigger();
-
 	void feed_in_frame_begin();
 	void feed_in_frame_end();
-
 	void feed_in_logic(shared_ptr<sigrok::Logic> logic);
-
 	void feed_in_analog(shared_ptr<sigrok::Analog> analog);
 
 	void data_feed_in(shared_ptr<sigrok::Device> device,
@@ -308,6 +294,8 @@ private:
 	bool frame_began_;
 
 	QElapsedTimer acq_time_;
+
+	MetadataObjManager metadata_obj_manager_;
 
 #ifdef ENABLE_FLOW
 	RefPtr<Pipeline> pipeline_;

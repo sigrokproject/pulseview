@@ -24,6 +24,7 @@ set(pulseview_TEST_SOURCES
 	${PROJECT_SOURCE_DIR}/pv/globalsettings.cpp
 	${PROJECT_SOURCE_DIR}/pv/logging.cpp
 	${PROJECT_SOURCE_DIR}/pv/mainwindow.cpp
+	${PROJECT_SOURCE_DIR}/pv/metadata_obj.cpp
 	${PROJECT_SOURCE_DIR}/pv/session.cpp
 	${PROJECT_SOURCE_DIR}/pv/storesession.cpp
 	${PROJECT_SOURCE_DIR}/pv/util.cpp
@@ -107,6 +108,7 @@ set(pulseview_TEST_HEADERS
 	${PROJECT_SOURCE_DIR}/pv/globalsettings.hpp
 	${PROJECT_SOURCE_DIR}/pv/logging.hpp
 	${PROJECT_SOURCE_DIR}/pv/mainwindow.hpp
+	${PROJECT_SOURCE_DIR}/pv/metadata_obj.hpp
 	${PROJECT_SOURCE_DIR}/pv/session.hpp
 	${PROJECT_SOURCE_DIR}/pv/storesession.hpp
 	${PROJECT_SOURCE_DIR}/pv/binding/device.hpp

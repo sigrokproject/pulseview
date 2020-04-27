@@ -905,6 +905,11 @@ void Session::remove_decode_signal(shared_ptr<data::DecodeSignal> signal)
 }
 #endif
 
+MetadataObjManager* Session::metadata_obj_manager()
+{
+	return &metadata_obj_manager_;
+}
+
 void Session::set_capture_state(capture_state state)
 {
 	bool changed;

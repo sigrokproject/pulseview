@@ -49,7 +49,7 @@ enum ViewModeType {
 	ViewModeAll,
 	ViewModeLatest,
 //	ViewModeVisible,
-	ViewModeCount // Indicates how many save types there are, must always be last
+	ViewModeCount // Indicates how many view mode types there are, must always be last
 };
 
 extern const char* SaveTypeNames[SaveTypeCount];
