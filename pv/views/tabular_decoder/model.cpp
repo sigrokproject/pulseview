@@ -130,10 +130,9 @@ QModelIndex AnnotationCollectionModel::index(int row, int column,
 	const QModelIndex& parent_idx) const
 {
 	(void)parent_idx;
-	assert(row >= 0);
 	assert(column >= 0);
 
-	if (!dataset_)
+	if (!dataset_ || (row < 0))
 		return QModelIndex();
 
 	QModelIndex idx;
