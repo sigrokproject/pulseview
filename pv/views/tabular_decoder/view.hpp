@@ -27,6 +27,7 @@
 #include <QToolButton>
 
 #include "pv/globalsettings.hpp"
+#include "pv/metadata_obj.hpp"
 #include "pv/views/viewbase.hpp"
 #include "pv/data/decodesignal.hpp"
 
@@ -48,7 +49,7 @@ enum SaveType {
 enum ViewModeType {
 	ViewModeAll,
 	ViewModeLatest,
-//	ViewModeVisible,
+	ViewModeVisible,
 	ViewModeCount // Indicates how many view mode types there are, must always be last
 };
 
@@ -78,6 +79,7 @@ public:
 	int columnCount(const QModelIndex& parent_idx = QModelIndex()) const override;
 
 	void set_signal_and_segment(data::DecodeSignal* signal, uint32_t current_segment);
+	void set_sample_range(uint64_t start_sample, uint64_t end_sample);
 	void set_hide_hidden(bool hide_hidden);
 
 	void update_annotations_without_hidden();
@@ -92,6 +94,7 @@ private:
 	data::DecodeSignal* signal_;
 	uint32_t prev_segment_;
 	uint64_t prev_last_row_;
+	uint64_t start_sample_, end_sample_, start_index_, end_index_;
 	bool hide_hidden_;
 	bool theme_is_dark_;
 };
@@ -107,12 +110,13 @@ public:
 };
 
 
-class View : public ViewBase
+class View : public ViewBase, public MetadataObjObserverInterface
 {
 	Q_OBJECT
 
 public:
 	explicit View(Session &session, bool is_main_view=false, QMainWindow *parent = nullptr);
+	~View();
 
 	virtual ViewType get_type() const;
 
@@ -154,6 +158,9 @@ private Q_SLOTS:
 	void on_table_item_double_clicked(const QModelIndex& index);
 	void on_table_header_requested(const QPoint& pos);
 	void on_table_header_toggled(bool checked);
+
+	virtual void on_metadata_object_changed(MetadataObject* obj,
+		MetadataValueType value_type);
 
 	virtual void perform_delayed_view_update();
 

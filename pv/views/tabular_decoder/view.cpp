@@ -45,6 +45,7 @@ using pv::data::decode::Decoder;
 using pv::util::Timestamp;
 
 using std::make_shared;
+using std::max;
 using std::shared_ptr;
 
 namespace pv {
@@ -58,8 +59,8 @@ const char* SaveTypeNames[SaveTypeCount] = {
 
 const char* ViewModeNames[ViewModeCount] = {
 	"Show all",
-	"Show all and focus on newest"
-//	"Show visible in main view"
+	"Show all and focus on newest",
+	"Show visible in main view"
 };
 
 QSize QCustomTableView::minimumSizeHint() const
@@ -178,7 +179,15 @@ View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 	connect(table_view_->horizontalHeader(), SIGNAL(customContextMenuRequested(const QPoint&)),
 		this, SLOT(on_table_header_requested(const QPoint&)));
 
+	// Set up metadata event handler
+	session_.metadata_obj_manager()->add_observer(this);
+
 	reset_view_state();
+}
+
+View::~View()
+{
+	session_.metadata_obj_manager()->remove_observer(this);
 }
 
 ViewType View::get_type() const
@@ -400,7 +409,24 @@ void View::on_hide_hidden_changed(bool checked)
 
 void View::on_view_mode_changed(int index)
 {
-	(void)index;
+	if (index == ViewModeVisible) {
+		MetadataObject *md_obj =
+			session_.metadata_obj_manager()->find_object_by_type(MetadataObjMainViewRange);
+		assert(md_obj);
+
+		int64_t start_sample = md_obj->value(MetadataValueStartSample).toLongLong();
+		int64_t end_sample = md_obj->value(MetadataValueEndSample).toLongLong();
+
+		model_->set_sample_range(max((int64_t)0, start_sample),
+			max((int64_t)0, end_sample));
+	} else {
+		// Reset the model's data range
+		model_->set_sample_range(0, 0);
+	}
+
+	if (index == ViewModeLatest)
+		table_view_->scrollTo(model_->index(model_->rowCount() - 1, 0),
+			QAbstractItemView::PositionAtBottom);
 }
 
 void View::on_signal_name_changed(const QString &name)
@@ -541,6 +567,25 @@ void View::on_table_header_toggled(bool checked)
 	const int column = action->data().toInt();
 
 	table_view_->horizontalHeader()->setSectionHidden(column, !checked);
+}
+
+void View::on_metadata_object_changed(MetadataObject* obj,
+	MetadataValueType value_type)
+{
+	// Check if we need to update the model's data range. We only work on the
+	// end sample value because the start sample value is updated first and
+	// we don't want to update the model twice
+
+	if ((view_mode_selector_->currentIndex() == ViewModeVisible) &&
+		(obj->type() == MetadataObjMainViewRange) &&
+		(value_type == MetadataValueEndSample)) {
+
+		int64_t start_sample = obj->value(MetadataValueStartSample).toLongLong();
+		int64_t end_sample = obj->value(MetadataValueEndSample).toLongLong();
+
+		model_->set_sample_range(max((int64_t)0, start_sample),
+			max((int64_t)0, end_sample));
+	}
 }
 
 void View::perform_delayed_view_update()

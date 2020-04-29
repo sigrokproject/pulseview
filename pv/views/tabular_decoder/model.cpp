@@ -44,6 +44,8 @@ AnnotationCollectionModel::AnnotationCollectionModel(QObject* parent) :
 	signal_(nullptr),
 	prev_segment_(0),
 	prev_last_row_(0),
+	start_index_(0),
+	end_index_(0),
 	hide_hidden_(false)
 {
 	GlobalSettings::add_change_handler(this);
@@ -137,8 +139,13 @@ QModelIndex AnnotationCollectionModel::index(int row, int column,
 
 	QModelIndex idx;
 
-	if ((size_t)row < dataset_->size())
-		idx = createIndex(row, column, (void*)dataset_->at(row));
+	if (start_index_ == end_index_) {
+		if ((size_t)row < dataset_->size())
+			idx = createIndex(row, column, (void*)dataset_->at(row));
+	} else {
+		if ((size_t)row < (end_index_ - start_index_))
+			idx = createIndex(row, column, (void*)dataset_->at(start_index_ + row));
+	}
 
 	return idx;
 }
@@ -157,7 +164,10 @@ int AnnotationCollectionModel::rowCount(const QModelIndex& parent_idx) const
 	if (!dataset_)
 		return 0;
 
-	return dataset_->size();
+	if (start_index_ == end_index_)
+		return dataset_->size();
+	else
+		return (end_index_ - start_index_);
 }
 
 int AnnotationCollectionModel::columnCount(const QModelIndex& parent_idx) const
@@ -192,6 +202,9 @@ void AnnotationCollectionModel::set_signal_and_segment(data::DecodeSignal* signa
 		return;
 	}
 
+	// Re-apply the requested sample range
+	set_sample_range(start_sample_, end_sample_);
+
 	const size_t new_row_count = dataset_->size() - 1;
 
 	// Force the view associated with this model to update when the segment changes
@@ -210,6 +223,62 @@ void AnnotationCollectionModel::set_signal_and_segment(data::DecodeSignal* signa
 	prev_last_row_ = new_row_count;
 }
 
+void AnnotationCollectionModel::set_sample_range(uint64_t start_sample, uint64_t end_sample)
+{
+	// Check if there's even anything to reset
+	if ((start_sample == end_sample) && (start_index_ == end_index_))
+		return;
+
+	if (!dataset_ || dataset_->empty() || (end_sample == 0)) {
+		start_index_ = 0;
+		end_index_ = 0;
+		start_sample_ = 0;
+		end_sample_ = 0;
+
+		dataChanged(QModelIndex(), QModelIndex());
+		layoutChanged();
+		return;
+	}
+
+	start_sample_ = start_sample;
+	end_sample_ = end_sample;
+
+	// Determine first and last indices into the annotation list
+	int64_t i = -1;
+	bool ann_outside_range;
+	do {
+		i++;
+
+		if (i == (int64_t)dataset_->size()) {
+			start_index_ = 0;
+			end_index_ = 0;
+
+			dataChanged(QModelIndex(), QModelIndex());
+			layoutChanged();
+			return;
+		}
+		const Annotation* ann = (*dataset_)[i];
+		ann_outside_range =
+			((ann->start_sample() < start_sample) && (ann->end_sample() < start_sample));
+	} while (ann_outside_range);
+	start_index_ = i;
+
+	// Ideally, we would be able to set end_index_ to the last annotation that
+	// is within range. However, as annotations in the list are sorted by
+	// start sample and hierarchy level, we may encounter this scenario:
+	//   [long annotation that spans across view]
+	//   [short annotations that aren't seen]
+	//   [short annotations that are seen]
+	// ..in which our output would only show the first long annotations.
+	// For this reason, we simply show everything after the first visible
+	// annotation for now.
+
+	end_index_ = dataset_->size();
+
+	dataChanged(index(0, 0), index((end_index_ - start_index_), 0));
+	layoutChanged();
+}
+
 void AnnotationCollectionModel::set_hide_hidden(bool hide_hidden)
 {
 	hide_hidden_ = hide_hidden;
@@ -221,6 +290,16 @@ void AnnotationCollectionModel::set_hide_hidden(bool hide_hidden)
 		dataset_ = all_annotations_;
 		all_annotations_without_hidden_.clear();  // To conserve memory
 	}
+
+	// Re-apply the requested sample range
+	set_sample_range(start_sample_, end_sample_);
+
+	if (dataset_)
+		dataChanged(index(0, 0), index(dataset_->size(), 0));
+	else
+		dataChanged(QModelIndex(), QModelIndex());
+
+	layoutChanged();
 }
 
 void AnnotationCollectionModel::update_annotations_without_hidden()
@@ -243,9 +322,6 @@ void AnnotationCollectionModel::update_annotations_without_hidden()
 	}
 
 	all_annotations_without_hidden_.resize(count);
-
-	dataChanged(index(0, 0), index(count, 0));
-	layoutChanged();
 }
 
 void AnnotationCollectionModel::on_setting_changed(const QString &key, const QVariant &value)

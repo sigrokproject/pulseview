@@ -26,6 +26,7 @@
 #include <QObject>
 #include <QSettings>
 #include <QString>
+#include <QVariant>
 
 using std::deque;
 using std::vector;
@@ -38,31 +39,32 @@ enum MetadataObjectType {
 	MetadataObjMainViewRange,
 	MetadataObjSelection,
 	MetadataObjTimeMarker,
-	MetadataObjTypeCount  // Indicates how many metadata object types there are, must always be last
+	MetadataObjectTypeCount  // Indicates how many metadata object types there are, must always be last
 };
 
 // When adding an entry here, don't forget to update MetadataValueNames as well
 enum MetadataValueType {
-	MetadataObjStartSample,
-	MetadataObjEndSample,
-	MetadataObjText,
-	MetadataObjValueCount  // Indicates how many metadata value types there are, must always be last
+	MetadataValueStartSample,  // int64_t / qlonglong
+	MetadataValueEndSample,    // int64_t / qlonglong
+	MetadataValueText,
+	MetadataValueTypeCount  // Indicates how many metadata value types there are, must always be last
 };
 
-extern const char* MetadataObjectNames[MetadataObjTypeCount];
-extern const char* MetadataValueNames[MetadataObjValueCount];
+extern const char* MetadataObjectNames[MetadataObjectTypeCount];
+extern const char* MetadataValueNames[MetadataValueTypeCount];
 
 
 class MetadataObjManager;
+class MetadataObject;
 
 
 class MetadataObjObserverInterface
 {
 public:
-	virtual void on_metadata_object_created(uint32_t obj_id, MetadataObjectType obj_type) = 0;
-	virtual void on_metadata_object_deleted(uint32_t obj_id, MetadataObjectType obj_type) = 0;
-	virtual void on_metadata_object_changed(uint32_t obj_id, MetadataObjectType obj_type,
-		MetadataValueType value_type, const QVariant& value) = 0;
+	virtual void on_metadata_object_created(MetadataObject* obj);
+	virtual void on_metadata_object_deleted(MetadataObject* obj);
+	virtual void on_metadata_object_changed(MetadataObject* obj,
+		MetadataValueType value_type);
 };
 
 
@@ -75,7 +77,7 @@ public:
 	virtual uint32_t id() const;
 	virtual MetadataObjectType type() const;
 
-	virtual void set_value(MetadataValueType value_type, QVariant& value);
+	virtual void set_value(MetadataValueType value_type, const QVariant& value);
 	virtual QVariant value(MetadataValueType value_type) const;
 private:
 	MetadataObjManager* obj_manager_;

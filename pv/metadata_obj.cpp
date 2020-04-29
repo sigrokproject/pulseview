@@ -22,17 +22,35 @@
 
 namespace pv {
 
-const char* MetadataObjectNames[MetadataObjTypeCount] = {
+const char* MetadataObjectNames[MetadataObjectTypeCount] = {
 	"main_view_range",
 	"selection",
 	"time_marker"
 };
 
-const char* MetadataValueNames[MetadataObjValueCount] = {
+const char* MetadataValueNames[MetadataValueTypeCount] = {
 	"start_sample",
 	"end_sample"
 	"text"
 };
+
+
+void MetadataObjObserverInterface::on_metadata_object_created(MetadataObject* obj)
+{
+	(void)obj;
+}
+
+void MetadataObjObserverInterface::on_metadata_object_deleted(MetadataObject* obj)
+{
+	(void)obj;
+}
+
+void MetadataObjObserverInterface::on_metadata_object_changed(MetadataObject* obj,
+	MetadataValueType value_type)
+{
+	(void)obj;
+	(void)value_type;
+}
 
 
 MetadataObject::MetadataObject(MetadataObjManager* obj_manager, uint32_t obj_id,
@@ -42,7 +60,7 @@ MetadataObject::MetadataObject(MetadataObjManager* obj_manager, uint32_t obj_id,
 	type_(obj_type)
 {
 	// Make sure we accept all value type indices
-	values_.resize(MetadataObjValueCount);
+	values_.resize(MetadataValueTypeCount);
 }
 
 uint32_t MetadataObject::id() const
@@ -55,7 +73,7 @@ MetadataObjectType MetadataObject::type() const
 	return type_;
 }
 
-void MetadataObject::set_value(MetadataValueType value_type, QVariant& value)
+void MetadataObject::set_value(MetadataValueType value_type, const QVariant& value)
 {
 	values_.at((uint8_t)value_type) = value;
 	obj_manager_->notify_observers(this, value_type);
@@ -76,21 +94,19 @@ MetadataObject* MetadataObjManager::create_object(MetadataObjectType obj_type)
 	MetadataObject* obj = &(objects_.back());
 
 	for (MetadataObjObserverInterface *cb : callbacks_)
-		cb->on_metadata_object_created(obj->id(), obj->type());
+		cb->on_metadata_object_created(obj);
 
 	return obj;
 }
 
 void MetadataObjManager::delete_object(uint32_t obj_id)
 {
-	MetadataObjectType type = objects_.at(obj_id).type();
+	for (MetadataObjObserverInterface *cb : callbacks_)
+		cb->on_metadata_object_deleted(&(objects_.at(obj_id)));
 
 	objects_.erase(std::remove_if(objects_.begin(), objects_.end(),
 		[&](MetadataObject obj) { return obj.id() == obj_id; }),
 		objects_.end());
-
-	for (MetadataObjObserverInterface *cb : callbacks_)
-		cb->on_metadata_object_deleted(obj_id, type);
 }
 
 MetadataObject* MetadataObjManager::find_object_by_type(MetadataObjectType obj_type)
@@ -135,8 +151,7 @@ void MetadataObjManager::notify_observers(MetadataObject* obj,
 	MetadataValueType changed_value)
 {
 	for (MetadataObjObserverInterface *cb : callbacks_)
-		cb->on_metadata_object_changed(obj->id(), obj->type(), changed_value,
-			obj->value(changed_value));
+		cb->on_metadata_object_changed(obj, changed_value);
 }
 
 } // namespace pv

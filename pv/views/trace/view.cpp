@@ -52,6 +52,7 @@
 #include "view.hpp"
 #include "viewport.hpp"
 
+#include "pv/metadata_obj.hpp"
 #include "pv/data/logic.hpp"
 #include "pv/data/logicsegment.hpp"
 #include "pv/devices/device.hpp"
@@ -182,6 +183,12 @@ View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 
 	GlobalSettings::add_change_handler(this);
 
+	// Set up metadata objects and event handlers
+	if (is_main_view)
+		session_.metadata_obj_manager()->create_object(MetadataObjMainViewRange);
+
+
+	// Set up UI event handlers
 	connect(scrollarea_->horizontalScrollBar(), SIGNAL(valueChanged(int)),
 		this, SLOT(h_scroll_value_changed(int)));
 	connect(scrollarea_->verticalScrollBar(), SIGNAL(valueChanged(int)),
@@ -525,6 +532,22 @@ void View::set_offset(const pv::util::Timestamp& offset, bool force_update)
 	if ((offset_ != offset) || force_update) {
 		offset_ = offset;
 		ruler_offset_ = offset_ + zero_offset_;
+
+		const int w = viewport_->width();
+		if (w > 0) {
+			const double samplerate = session_.get_samplerate();
+			// Note: sample_num = time * samplerate
+			// Note: samples_per_pixel = samplerate * scale
+			int64_t start_sample = (offset_ * samplerate).convert_to<int64_t>();
+			int64_t end_sample = (offset_ * samplerate).convert_to<int64_t>() +
+				(w * session_.get_samplerate() * scale_);
+
+			MetadataObject* md_obj =
+				session_.metadata_obj_manager()->find_object_by_type(MetadataObjMainViewRange);
+			md_obj->set_value(MetadataValueStartSample, QVariant((qlonglong)start_sample));
+			md_obj->set_value(MetadataValueEndSample, QVariant((qlonglong)end_sample));
+		}
+
 		offset_changed();
 	}
 }
