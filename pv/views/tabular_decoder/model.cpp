@@ -25,6 +25,7 @@
 #include "view.hpp"
 
 #include "pv/util.hpp"
+#include "pv/globalsettings.hpp"
 
 using std::make_shared;
 
@@ -48,9 +49,6 @@ AnnotationCollectionModel::AnnotationCollectionModel(QObject* parent) :
 	end_index_(0),
 	hide_hidden_(false)
 {
-	GlobalSettings::add_change_handler(this);
-	theme_is_dark_ = GlobalSettings::current_theme_is_dark();
-
 	// TBD Maybe use empty columns as indentation levels to indicate stacked decoders
 	header_data_.emplace_back(tr("Sample"));     // Column #0
 	header_data_.emplace_back(tr("Time"));       // Column #1
@@ -101,7 +99,7 @@ QVariant AnnotationCollectionModel::data(const QModelIndex& index, int role) con
 
 		// Only use custom cell background color if column index reached the hierarchy level
 		if (index.column() >= level) {
-			if (theme_is_dark_)
+			if (GlobalSettings::current_theme_is_dark())
 				return QBrush(ann->dark_color());
 			else
 				return QBrush(ann->bright_color());
@@ -328,16 +326,6 @@ void AnnotationCollectionModel::update_annotations_without_hidden()
 	}
 
 	all_annotations_without_hidden_.resize(count);
-}
-
-void AnnotationCollectionModel::on_setting_changed(const QString &key, const QVariant &value)
-{
-	(void)key;
-	(void)value;
-
-	// We don't really care about the actual setting, we just update the
-	// flag that indicates whether we are using a bright or dark color theme
-	theme_is_dark_ = GlobalSettings::current_theme_is_dark();
 }
 
 void AnnotationCollectionModel::on_annotation_visibility_changed()

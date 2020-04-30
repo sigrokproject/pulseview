@@ -26,7 +26,6 @@
 #include <QTableView>
 #include <QToolButton>
 
-#include "pv/globalsettings.hpp"
 #include "pv/metadata_obj.hpp"
 #include "pv/views/viewbase.hpp"
 #include "pv/data/decodesignal.hpp"
@@ -57,7 +56,7 @@ extern const char* SaveTypeNames[SaveTypeCount];
 extern const char* ViewModeNames[ViewModeCount];
 
 
-class AnnotationCollectionModel : public QAbstractTableModel, public GlobalSettingsInterface
+class AnnotationCollectionModel : public QAbstractTableModel
 {
 	Q_OBJECT
 
@@ -84,8 +83,6 @@ public:
 
 	void update_annotations_without_hidden();
 
-	void on_setting_changed(const QString &key, const QVariant &value) override;
-
 private Q_SLOTS:
 	void on_annotation_visibility_changed();
 
@@ -99,7 +96,6 @@ private:
 	uint64_t prev_last_row_;
 	uint64_t start_sample_, end_sample_, start_index_, end_index_;
 	bool hide_hidden_;
-	bool theme_is_dark_;
 };
 
 
