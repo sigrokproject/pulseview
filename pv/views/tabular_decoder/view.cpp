@@ -157,7 +157,7 @@ View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 	table_view_->setModel(model_);
 	table_view_->setSelectionBehavior(QAbstractItemView::SelectRows);
 	table_view_->setSelectionMode(QAbstractItemView::ContiguousSelection);
-	table_view_->setSortingEnabled(true);
+	table_view_->setSortingEnabled(false);
 	table_view_->sortByColumn(0, Qt::AscendingOrder);
 
 	const int font_height = QFontMetrics(QApplication::font()).height();
@@ -585,6 +585,14 @@ void View::on_metadata_object_changed(MetadataObject* obj,
 
 		model_->set_sample_range(max((int64_t)0, start_sample),
 			max((int64_t)0, end_sample));
+	}
+
+	if (obj->type() == MetadataObjMousePos) {
+		QModelIndex first_visual_idx = table_view_->indexAt(table_view_->rect().topLeft());
+		QModelIndex last_visual_idx = table_view_->indexAt(table_view_->rect().bottomLeft());
+
+		model_->update_highlighted_rows(first_visual_idx, last_visual_idx,
+			obj->value(MetadataValueStartSample).toLongLong());
 	}
 }
 

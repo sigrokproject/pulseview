@@ -184,9 +184,10 @@ View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 	GlobalSettings::add_change_handler(this);
 
 	// Set up metadata objects and event handlers
-	if (is_main_view)
+	if (is_main_view) {
 		session_.metadata_obj_manager()->create_object(MetadataObjMainViewRange);
-
+		session_.metadata_obj_manager()->create_object(MetadataObjMousePos);
+	}
 
 	// Set up UI event handlers
 	connect(scrollarea_->horizontalScrollBar(), SIGNAL(valueChanged(int)),
@@ -1572,8 +1573,19 @@ void View::update_hover_point()
 	for (const shared_ptr<TraceTreeItem>& r : trace_tree_items)
 		r->hover_point_changed(hover_point_);
 
-	// Notify any other listeners
+	// Notify this view's listeners
 	hover_point_changed(hover_widget_, hover_point_);
+
+	// Hover point is -1 when invalid and 0 for the header
+	if (hover_point_.x() > 0) {
+		// Notify global listeners
+		pv::util::Timestamp mouse_time = offset_ + hover_point_.x() * scale_;
+		int64_t sample_num = (mouse_time * session_.get_samplerate()).convert_to<int64_t>();
+
+		MetadataObject* md_obj =
+			session_.metadata_obj_manager()->find_object_by_type(MetadataObjMousePos);
+		md_obj->set_value(MetadataValueStartSample, QVariant((qlonglong)sample_num));
+	}
 }
 
 void View::row_item_appearance_changed(bool label, bool content)

@@ -39,6 +39,8 @@ enum MetadataObjectType {
 	MetadataObjMainViewRange,
 	MetadataObjSelection,
 	MetadataObjTimeMarker,
+    // --- Types below will not be saved/restored ---
+	MetadataObjMousePos,
 	MetadataObjectTypeCount  // Indicates how many metadata object types there are, must always be last
 };
 

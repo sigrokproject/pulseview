@@ -63,6 +63,7 @@ class AnnotationCollectionModel : public QAbstractTableModel
 public:
 	AnnotationCollectionModel(QObject* parent = nullptr);
 
+	int get_hierarchy_level(const Annotation* ann) const;
 	QVariant data_from_ann(const Annotation* ann, int index) const;
 	QVariant data(const QModelIndex& index, int role) const override;
 	Qt::ItemFlags flags(const QModelIndex& index) const override;
@@ -82,6 +83,8 @@ public:
 	void set_hide_hidden(bool hide_hidden);
 
 	void update_annotations_without_hidden();
+	void update_highlighted_rows(QModelIndex first, QModelIndex last,
+		int64_t sample_num);
 
 private Q_SLOTS:
 	void on_annotation_visibility_changed();
@@ -95,6 +98,8 @@ private:
 	uint32_t prev_segment_;
 	uint64_t prev_last_row_;
 	uint64_t start_sample_, end_sample_, start_index_, end_index_;
+	int64_t highlight_sample_num_;
+	bool had_highlight_before_;
 	bool hide_hidden_;
 };
 

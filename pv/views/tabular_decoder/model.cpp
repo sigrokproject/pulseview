@@ -17,6 +17,7 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <QApplication>
 #include <QDebug>
 #include <QString>
 
@@ -47,6 +48,7 @@ AnnotationCollectionModel::AnnotationCollectionModel(QObject* parent) :
 	prev_last_row_(0),
 	start_index_(0),
 	end_index_(0),
+	had_highlight_before_(false),
 	hide_hidden_(false)
 {
 	// TBD Maybe use empty columns as indentation levels to indicate stacked decoders
@@ -56,6 +58,16 @@ AnnotationCollectionModel::AnnotationCollectionModel(QObject* parent) :
 	header_data_.emplace_back(tr("Ann Row"));    // Column #3
 	header_data_.emplace_back(tr("Ann Class"));  // Column #4
 	header_data_.emplace_back(tr("Value"));      // Column #5
+}
+
+int AnnotationCollectionModel::get_hierarchy_level(const Annotation* ann) const
+{
+	int level = 0;
+
+	const unsigned int ann_stack_level = ann->row_data()->row()->decoder()->get_stack_level();
+	level = (signal_->decoder_stack().size() - 1 - ann_stack_level);
+
+	return level;
 }
 
 QVariant AnnotationCollectionModel::data_from_ann(const Annotation* ann, int index) const
@@ -91,18 +103,40 @@ QVariant AnnotationCollectionModel::data(const QModelIndex& index, int role) con
 	if ((role == Qt::DisplayRole) || (role == Qt::ToolTipRole))
 		return data_from_ann(ann, index.column());
 
+	if (role == Qt::ForegroundRole) {
+		if (index.column() >= get_hierarchy_level(ann)) {
+			// Invert the text color if this cell is highlighted
+			const bool must_highlight = (highlight_sample_num_ > 0) &&
+				((int64_t)ann->start_sample() <= highlight_sample_num_) &&
+				((int64_t)ann->end_sample() >= highlight_sample_num_);
+
+			if (must_highlight) {
+				if (GlobalSettings::current_theme_is_dark())
+					return QApplication::palette().brush(QPalette::Window);
+				else
+					return QApplication::palette().brush(QPalette::WindowText);
+			}
+		}
+
+		return QApplication::palette().brush(QPalette::WindowText);
+	}
+
 	if (role == Qt::BackgroundRole) {
-		int level = 0;
-
-		const unsigned int ann_stack_level = ann->row_data()->row()->decoder()->get_stack_level();
-		level = (signal_->decoder_stack().size() - 1 - ann_stack_level);
-
 		// Only use custom cell background color if column index reached the hierarchy level
-		if (index.column() >= level) {
-			if (GlobalSettings::current_theme_is_dark())
-				return QBrush(ann->dark_color());
+		if (index.column() >= get_hierarchy_level(ann)) {
+
+			QColor color;
+			const bool must_highlight = (highlight_sample_num_ > 0) &&
+				((int64_t)ann->start_sample() <= highlight_sample_num_) &&
+				((int64_t)ann->end_sample() >= highlight_sample_num_);
+
+			if (must_highlight)
+				color = ann->color();
 			else
-				return QBrush(ann->bright_color());
+				color = GlobalSettings::current_theme_is_dark() ?
+					ann->dark_color() : ann->bright_color();
+
+			return QBrush(color);
 		}
 	}
 
@@ -326,6 +360,43 @@ void AnnotationCollectionModel::update_annotations_without_hidden()
 	}
 
 	all_annotations_without_hidden_.resize(count);
+}
+
+void AnnotationCollectionModel::update_highlighted_rows(QModelIndex first,
+	QModelIndex last, int64_t sample_num)
+{
+	bool has_highlight = false;
+
+	highlight_sample_num_ = sample_num;
+
+	if (!dataset_ || dataset_->empty())
+		return;
+
+	if (sample_num >= 0) {
+		last = last.sibling(last.row() + 1, 0);
+
+		// Check if there are any annotations visible in the table view that
+		// we would need to highlight - only then do we do so
+		QModelIndex index = first;
+		do {
+			const Annotation* ann =
+				static_cast<const Annotation*>(index.internalPointer());
+			assert(ann);
+
+			if (((int64_t)ann->start_sample() <= sample_num) &&
+				((int64_t)ann->end_sample() >= sample_num)) {
+				has_highlight = true;
+				break;
+			}
+
+			index = index.sibling(index.row() + 1, 0);
+		} while (index != last);
+	}
+
+	if (has_highlight || had_highlight_before_)
+		dataChanged(first, last);
+
+	had_highlight_before_ = has_highlight;
 }
 
 void AnnotationCollectionModel::on_annotation_visibility_changed()

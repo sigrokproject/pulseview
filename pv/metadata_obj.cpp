@@ -25,7 +25,8 @@ namespace pv {
 const char* MetadataObjectNames[MetadataObjectTypeCount] = {
 	"main_view_range",
 	"selection",
-	"time_marker"
+	"time_marker",
+	"mouse_pos"
 };
 
 const char* MetadataValueNames[MetadataValueTypeCount] = {
