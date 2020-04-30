@@ -189,8 +189,14 @@ void AnnotationCollectionModel::set_signal_and_segment(data::DecodeSignal* signa
 		return;
 	}
 
+	disconnect(this, SLOT(on_annotation_visibility_changed()));
+
 	all_annotations_ = signal->get_all_annotations_by_segment(current_segment);
 	signal_ = signal;
+
+	for (const shared_ptr<Decoder>& dec : signal_->decoder_stack())
+		connect(dec.get(), SIGNAL(annotation_visibility_changed()),
+			this, SLOT(on_annotation_visibility_changed()));
 
 	if (hide_hidden_)
 		update_annotations_without_hidden();
@@ -332,6 +338,24 @@ void AnnotationCollectionModel::on_setting_changed(const QString &key, const QVa
 	// We don't really care about the actual setting, we just update the
 	// flag that indicates whether we are using a bright or dark color theme
 	theme_is_dark_ = GlobalSettings::current_theme_is_dark();
+}
+
+void AnnotationCollectionModel::on_annotation_visibility_changed()
+{
+	if (!hide_hidden_)
+		return;
+
+	update_annotations_without_hidden();
+
+	// Re-apply the requested sample range
+	set_sample_range(start_sample_, end_sample_);
+
+	if (dataset_)
+		dataChanged(index(0, 0), index(dataset_->size(), 0));
+	else
+		dataChanged(QModelIndex(), QModelIndex());
+
+	layoutChanged();
 }
 
 } // namespace tabular_decoder

@@ -1340,7 +1340,7 @@ void DecodeTrace::initialize_row_widgets(DecodeTraceRow* r, unsigned int row_id)
 	for (const AnnotationClass* ann_class : ann_classes) {
 		cb = new QCheckBox();
 		cb->setText(tr(ann_class->description));
-		cb->setChecked(ann_class->visible);
+		cb->setChecked(ann_class->visible());
 
 		int dim = ViewItemPaintParams::text_height() - 2;
 		QPixmap pixmap(dim, dim);
@@ -1621,7 +1621,7 @@ void DecodeTrace::on_show_hide_class(QWidget* sender)
 	assert(ann_class_ptr);
 	AnnotationClass* ann_class = (AnnotationClass*)ann_class_ptr;
 
-	ann_class->visible = !ann_class->visible;
+	ann_class->set_visible(!ann_class->visible());
 
 	void* row_ptr = sender->property("decode_trace_row_ptr").value<void*>();
 	assert(row_ptr);

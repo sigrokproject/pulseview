@@ -37,11 +37,13 @@ namespace decode {
 #define DECODE_COLOR_SATURATION (180) /* 0-255 */
 #define DECODE_COLOR_VALUE (170) /* 0-255 */
 
-struct AnnotationClass;
+class AnnotationClass;
 class Decoder;
 
-class Row
+class Row: public QObject
 {
+	Q_OBJECT
+
 public:
 	Row();
 
@@ -70,6 +72,9 @@ public:
 
 	bool operator<(const Row& other) const;
 	bool operator==(const Row& other) const;
+
+Q_SIGNALS:
+	void visibility_changed();
 
 private:
 	uint32_t index_;

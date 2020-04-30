@@ -110,6 +110,8 @@ bool Row::visible() const
 void Row::set_visible(bool visible)
 {
 	visible_ = visible;
+
+	visibility_changed();
 }
 
 void Row::set_base_color(QColor base_color)
@@ -163,7 +165,7 @@ const QColor Row::get_dark_class_color(uint32_t ann_class_id) const
 bool Row::has_hidden_classes() const
 {
 	for (const AnnotationClass* c : ann_classes())
-		if (!c->visible)
+		if (!c->visible())
 			return true;
 
 	return false;
@@ -171,7 +173,7 @@ bool Row::has_hidden_classes() const
 
 bool Row::class_is_visible(uint32_t ann_class_id) const
 {
-	return decoder_->get_ann_class_by_id(ann_class_id)->visible;
+	return decoder_->get_ann_class_by_id(ann_class_id)->visible();
 }
 
 bool Row::operator<(const Row& other) const

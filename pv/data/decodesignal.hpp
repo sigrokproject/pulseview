@@ -226,11 +226,14 @@ Q_SIGNALS:
 	void decode_reset();
 	void decode_finished();
 	void channels_updated();
+	void annotation_visibility_changed();
 
 private Q_SLOTS:
 	void on_capture_state_changed(int state);
 	void on_data_cleared();
 	void on_data_received();
+
+	void on_annotation_visibility_changed();
 
 private:
 	pv::Session &session_;

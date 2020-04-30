@@ -86,6 +86,9 @@ void DecodeSignal::stack_decoder(const srd_decoder *decoder, bool restart_decode
 	const shared_ptr<Decoder> dec = make_shared<Decoder>(decoder, stack_.size());
 	stack_.push_back(dec);
 
+	connect(dec.get(), SIGNAL(annotation_visibility_changed()),
+		this, SLOT(on_annotation_visibility_changed()));
+
 	// Include the newly created decode channels in the channel lists
 	update_channel_list();
 
@@ -698,7 +701,7 @@ void DecodeSignal::save_settings(QSettings &settings) const
 		i = 0;
 		for (const AnnotationClass* ann_class : decoder->ann_classes()) {
 			settings.beginGroup("ann_class" + QString::number(i));
-			settings.setValue("visible", ann_class->visible);
+			settings.setValue("visible", ann_class->visible());
 			settings.endGroup();
 			i++;
 		}
@@ -752,6 +755,9 @@ void DecodeSignal::restore_settings(QSettings &settings)
 			if (QString::fromUtf8(dec->id) == id) {
 				shared_ptr<Decoder> decoder = make_shared<Decoder>(dec, stack_.size());
 
+				connect(decoder.get(), SIGNAL(annotation_visibility_changed()),
+					this, SLOT(on_annotation_visibility_changed()));
+
 				stack_.push_back(decoder);
 				decoder->set_visible(settings.value("visible", true).toBool());
 
@@ -782,7 +788,7 @@ void DecodeSignal::restore_settings(QSettings &settings)
 				i = 0;
 				for (AnnotationClass* ann_class : decoder->ann_classes()) {
 					settings.beginGroup("ann_class" + QString::number(i));
-					ann_class->visible = settings.value("visible", true).toBool();
+					ann_class->set_visible(settings.value("visible", true).toBool());
 					settings.endGroup();
 					i++;
 				}
@@ -1589,6 +1595,11 @@ void DecodeSignal::on_data_received()
 		begin_decode();
 	else
 		logic_mux_cond_.notify_one();
+}
+
+void DecodeSignal::on_annotation_visibility_changed()
+{
+	annotation_visibility_changed();
 }
 
 } // namespace data

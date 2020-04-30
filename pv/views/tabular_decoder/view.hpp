@@ -86,6 +86,9 @@ public:
 
 	void on_setting_changed(const QString &key, const QVariant &value) override;
 
+private Q_SLOTS:
+	void on_annotation_visibility_changed();
+
 private:
 	vector<QVariant> header_data_;
 	const deque<const Annotation*>* all_annotations_;

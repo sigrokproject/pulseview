@@ -36,6 +36,28 @@ namespace pv {
 namespace data {
 namespace decode {
 
+AnnotationClass::AnnotationClass(size_t _id, char* _name, char* _description, Row* _row) :
+	id(_id),
+	name(_name),
+	description(_description),
+	row(_row),
+	visible_(true)
+{
+}
+
+bool AnnotationClass::visible() const
+{
+	return visible_;
+}
+
+void AnnotationClass::set_visible(bool visible)
+{
+	visible_ = visible;
+
+	visibility_changed();
+}
+
+
 Decoder::Decoder(const srd_decoder *const dec, uint8_t stack_level) :
 	srd_decoder_(dec),
 	stack_level_(stack_level),
@@ -48,7 +70,10 @@ Decoder::Decoder(const srd_decoder *const dec, uint8_t stack_level) :
 		char **ann_class = (char**)l->data;
 		char *name = ann_class[0];
 		char *desc = ann_class[1];
-		ann_classes_.push_back({i++, name, desc, nullptr, true}); // Visible by default
+		ann_classes_.emplace_back(i++, name, desc, nullptr);
+
+		connect(&(ann_classes_.back()), SIGNAL(visibility_changed()),
+			this, SLOT(on_class_visibility_changed()));
 	}
 
 	// Query the binary output classes
@@ -64,7 +89,6 @@ Decoder::Decoder(const srd_decoder *const dec, uint8_t stack_level) :
 	uint32_t row_count = 0;
 	for (const GSList *rl = srd_decoder_->annotation_rows; rl; rl = rl->next)
 		row_count++;
-	rows_.reserve(row_count);
 
 	i = 0;
 	for (const GSList *rl = srd_decoder_->annotation_rows; rl; rl = rl->next) {
@@ -75,6 +99,9 @@ Decoder::Decoder(const srd_decoder *const dec, uint8_t stack_level) :
 		// FIXME PV can crash from .at() if a PD's ann classes are defined incorrectly
 		for (const GSList *cl = srd_row->ann_classes; cl; cl = cl->next)
 			ann_classes_.at((size_t)cl->data).row = &(rows_.back());
+
+		connect(&(rows_.back()), SIGNAL(visibility_changed()),
+			this, SLOT(on_row_visibility_changed()));
 	}
 
 	if (rows_.empty()) {
@@ -115,6 +142,8 @@ bool Decoder::visible() const
 void Decoder::set_visible(bool visible)
 {
 	visible_ = visible;
+
+	annotation_visibility_changed();
 }
 
 const vector<DecodeChannel*>& Decoder::channels() const
@@ -286,6 +315,16 @@ uint32_t Decoder::get_binary_class_count() const
 const DecodeBinaryClassInfo* Decoder::get_binary_class(uint32_t id) const
 {
 	return &(bin_classes_.at(id));
+}
+
+void Decoder::on_row_visibility_changed()
+{
+	annotation_visibility_changed();
+}
+
+void Decoder::on_class_visibility_changed()
+{
+	annotation_visibility_changed();
 }
 
 }  // namespace decode

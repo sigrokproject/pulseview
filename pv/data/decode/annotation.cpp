@@ -126,7 +126,8 @@ bool Annotation::visible() const
 {
 	const Row* row = data_->row();
 
-	return (row->visible() && row->class_is_visible(ann_class_id_));
+	return (row->visible() && row->class_is_visible(ann_class_id_)
+		&& row->decoder()->visible());
 }
 
 const QColor Annotation::color() const

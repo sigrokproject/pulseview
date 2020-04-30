@@ -20,6 +20,7 @@
 #ifndef PULSEVIEW_PV_DATA_DECODE_DECODER_HPP
 #define PULSEVIEW_PV_DATA_DECODE_DECODER_HPP
 
+#include <deque>
 #include <map>
 #include <memory>
 #include <set>
@@ -27,9 +28,12 @@
 
 #include <glib.h>
 
+#include <QObject>
+
 #include <pv/data/signalbase.hpp>
 #include <pv/data/decode/row.hpp>
 
+using std::deque;
 using std::map;
 using std::string;
 using std::vector;
@@ -50,13 +54,27 @@ namespace decode {
 
 class Decoder;
 
-struct AnnotationClass
+class AnnotationClass: public QObject
 {
+	Q_OBJECT
+
+public:
+	AnnotationClass(size_t _id, char* _name, char* _description, Row* _row);
+
+	bool visible() const;
+	void set_visible(bool visible);
+
+Q_SIGNALS:
+	void visibility_changed();
+
+public:
 	size_t id;
 	char* name;
 	char* description;
 	Row* row;
-	bool visible;
+
+private:
+	bool visible_;
 };
 
 struct DecodeChannel
@@ -79,8 +97,10 @@ struct DecodeBinaryClassInfo
 };
 
 
-class Decoder
+class Decoder : public QObject
 {
+	Q_OBJECT
+
 public:
 	Decoder(const srd_decoder *const dec, uint8_t stack_level);
 
@@ -119,6 +139,13 @@ public:
 	uint32_t get_binary_class_count() const;
 	const DecodeBinaryClassInfo* get_binary_class(uint32_t id) const;
 
+Q_SIGNALS:
+	void annotation_visibility_changed();
+
+private Q_SLOTS:
+	void on_row_visibility_changed();
+	void on_class_visibility_changed();
+
 private:
 	const srd_decoder* const srd_decoder_;
 	uint8_t stack_level_;
@@ -126,8 +153,8 @@ private:
 	bool visible_;
 
 	vector<DecodeChannel*> channels_;
-	vector<Row> rows_;
-	vector<AnnotationClass> ann_classes_;
+	deque<Row> rows_;
+	deque<AnnotationClass> ann_classes_;
 	vector<DecodeBinaryClassInfo> bin_classes_;
 	map<string, GVariant*> options_;
 	srd_decoder_inst *decoder_inst_;

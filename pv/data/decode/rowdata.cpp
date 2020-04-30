@@ -63,7 +63,7 @@ void RowData::get_annotation_subset(
 
 	uint32_t max_ann_class_id = 0;
 	for (AnnotationClass* c : row_->ann_classes()) {
-		if (!c->visible)
+		if (!c->visible())
 			all_ann_classes_enabled = false;
 		else
 			all_ann_classes_disabled = false;
@@ -83,7 +83,7 @@ void RowData::get_annotation_subset(
 			vector<size_t> class_visible;
 			class_visible.resize(max_ann_class_id + 1, 0);
 			for (AnnotationClass* c : row_->ann_classes())
-				if (c->visible)
+				if (c->visible())
 					class_visible[c->id] = 1;
 
 			for (const auto& annotation : annotations_)
