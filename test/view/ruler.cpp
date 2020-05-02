@@ -17,7 +17,12 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <boost/version.hpp>
+#if BOOST_VERSION >= 107100 // 1.71 deprecated the old header location.
+#include <boost/test/tools/floating_point_comparison.hpp>
+#else
 #include <boost/test/floating_point_comparison.hpp>
+#endif
 #include <boost/test/unit_test.hpp>
 
 #include "pv/views/trace/ruler.hpp"
