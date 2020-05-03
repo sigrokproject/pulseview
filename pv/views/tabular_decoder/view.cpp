@@ -146,7 +146,7 @@ View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 
 	for (int i = 0; i < SaveTypeCount; i++) {
 		QAction *const action =	save_menu->addAction(tr(SaveTypeNames[i]));
-		action->setData(qVariantFromValue(i));
+		action->setData(QVariant::fromValue(i));
 	}
 
 	save_button_->setMenu(save_menu);

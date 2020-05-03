@@ -153,7 +153,7 @@ QWidget* Enum::get_widget(QWidget *parent, bool auto_commit)
 		selector_ = new QComboBox(parent);
 		for (unsigned int i = 0; i < values_.size(); i++) {
 			const pair<Glib::VariantBase, QString> &v = values_[i];
-			selector_->addItem(v.second, qVariantFromValue(v.first));
+			selector_->addItem(v.second, QVariant::fromValue(v.first));
 		}
 
 		update_widget();

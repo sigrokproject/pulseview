@@ -1142,7 +1142,7 @@ QComboBox* DecodeTrace::create_channel_selector(QWidget *parent, const DecodeCha
 
 	QComboBox *selector = new QComboBox(parent);
 
-	selector->addItem("-", qVariantFromValue((void*)nullptr));
+	selector->addItem("-", QVariant::fromValue((void*)nullptr));
 
 	if (!ch->assigned_signal)
 		selector->setCurrentIndex(0);
@@ -1151,7 +1151,7 @@ QComboBox* DecodeTrace::create_channel_selector(QWidget *parent, const DecodeCha
 		assert(b);
 		if (b->logic_data() && b->enabled()) {
 			selector->addItem(b->name(),
-				qVariantFromValue((void*)b.get()));
+				QVariant::fromValue((void*)b.get()));
 
 			if (ch->assigned_signal == b.get())
 				selector->setCurrentIndex(selector->count() - 1);
@@ -1166,9 +1166,9 @@ QComboBox* DecodeTrace::create_channel_selector_init_state(QWidget *parent,
 {
 	QComboBox *selector = new QComboBox(parent);
 
-	selector->addItem("0", qVariantFromValue((int)SRD_INITIAL_PIN_LOW));
-	selector->addItem("1", qVariantFromValue((int)SRD_INITIAL_PIN_HIGH));
-	selector->addItem("X", qVariantFromValue((int)SRD_INITIAL_PIN_SAME_AS_SAMPLE0));
+	selector->addItem("0", QVariant::fromValue((int)SRD_INITIAL_PIN_LOW));
+	selector->addItem("1", QVariant::fromValue((int)SRD_INITIAL_PIN_HIGH));
+	selector->addItem("X", QVariant::fromValue((int)SRD_INITIAL_PIN_SAME_AS_SAMPLE0));
 
 	selector->setCurrentIndex(ch->initial_pin_state);
 

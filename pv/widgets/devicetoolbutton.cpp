@@ -100,7 +100,7 @@ void DeviceToolButton::update_device_list()
 			dev->display_name(device_manager_)), this);
 		a->setCheckable(true);
 		a->setChecked(selected_device_ == dev);
-		a->setData(qVariantFromValue((void*)dev.get()));
+		a->setData(QVariant::fromValue((void*)dev.get()));
 		a->setToolTip(QString::fromStdString(dev->full_name()));
 		mapper_.setMapping(a, a);
 

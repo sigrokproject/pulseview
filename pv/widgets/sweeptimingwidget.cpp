@@ -95,7 +95,7 @@ void SweepTimingWidget::show_list(const uint64_t *vals, size_t count)
 	list_.clear();
 	for (size_t i = 0; i < count; i++) {
 		char *const s = sr_si_string_u64(vals[i], suffix_);
-		list_.addItem(QString::fromUtf8(s), qVariantFromValue(vals[i]));
+		list_.addItem(QString::fromUtf8(s), QVariant::fromValue(vals[i]));
 		g_free(s);
 	}
 

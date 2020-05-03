@@ -175,7 +175,7 @@ MainBar::MainBar(Session &session, QWidget *parent, pv::views::trace::View *view
 
 	for (int i = 0; i < views::ViewTypeCount; i++) {
 		QAction *const action =	menu_new_view->addAction(tr(views::ViewTypeNames[i]));
-		action->setData(qVariantFromValue(i));
+		action->setData(QVariant::fromValue(i));
 	}
 
 	new_view_button_->setMenu(menu_new_view);

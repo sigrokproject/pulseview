@@ -188,7 +188,7 @@ void Connect::populate_drivers()
 		if (supported_device)
 			drivers_.addItem(QString("%1 (%2)").arg(
 				driver->long_name().c_str(), name.c_str()),
-				qVariantFromValue(driver));
+				QVariant::fromValue(driver));
 	}
 }
 
@@ -276,7 +276,7 @@ void Connect::scan_pressed()
 		text += QString(" with %1 channels").arg(device->device()->channels().size());
 
 		QListWidgetItem *const item = new QListWidgetItem(text, &device_list_);
-		item->setData(Qt::UserRole, qVariantFromValue(device));
+		item->setData(Qt::UserRole, QVariant::fromValue(device));
 		device_list_.addItem(item);
 	}
 

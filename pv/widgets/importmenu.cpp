@@ -67,7 +67,7 @@ ImportMenu::ImportMenu(QWidget *parent, shared_ptr<Context> context,
 		assert(f.second);
 		QAction *const action =	addAction(tr("Import %1...")
 			.arg(QString::fromStdString(f.second->description())));
-		action->setData(qVariantFromValue((void*)f.second.get()));
+		action->setData(QVariant::fromValue((void*)f.second.get()));
 		mapper_.setMapping(action, action);
 		connect(action, SIGNAL(triggered()), &mapper_, SLOT(map()));
 	}

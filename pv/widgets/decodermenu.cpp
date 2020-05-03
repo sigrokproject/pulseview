@@ -51,7 +51,7 @@ DecoderMenu::DecoderMenu(QWidget *parent, const char* input, bool first_level_de
 		}
 
 		QAction *const action = addAction(QString::fromUtf8(d->name));
-		action->setData(qVariantFromValue(l->data));
+		action->setData(QVariant::fromValue(l->data));
 		mapper_.setMapping(action, action);
 		connect(action, SIGNAL(triggered()), &mapper_, SLOT(map()));
 	}
