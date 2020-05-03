@@ -77,8 +77,9 @@ Device::Device(shared_ptr<sigrok::Configurable> configurable) :
 		const Property::Getter get = [&, key]() {
 			return configurable_->config_get(key); };
 		const Property::Setter set = [&, key](Glib::VariantBase value) {
-			configurable_->config_set(key, value);
-			config_changed();
+			if (configurable_->config_set(key, value) != 0)
+				if (configurable_->config_set(key, value) != 0)
+					config_changed();
 		};
 
 		switch (key->id()) {
@@ -114,7 +115,7 @@ Device::Device(shared_ptr<sigrok::Configurable> configurable) :
 			bind_enum(name, "", key, capabilities, get, set, print_timebase);
 			break;
 
-		case SR_CONF_VDIV:
+		case SR_CONF_VSCALE:
 			bind_enum(name, "", key, capabilities, get, set, print_vdiv);
 			break;
 
