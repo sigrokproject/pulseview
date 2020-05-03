@@ -371,8 +371,9 @@ void View::on_selected_class_changed(int index)
 {
 	bin_class_id_ = class_selector_->itemData(index).value<uint32_t>();
 
-	binary_data_exists_ =
-		signal_->get_binary_data_chunk_count(current_segment_, decoder_, bin_class_id_);
+	binary_data_exists_ = (signal_) ?
+		signal_->get_binary_data_chunk_count(current_segment_, decoder_, bin_class_id_) :
+		false;
 
 	update_data();
 }
