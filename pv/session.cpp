@@ -115,6 +115,7 @@ namespace pv {
 shared_ptr<sigrok::Context> Session::sr_context;
 
 Session::Session(DeviceManager &device_manager, QString name) :
+	shutting_down_(false),
 	device_manager_(device_manager),
 	default_name_(name),
 	name_(name),
@@ -126,6 +127,8 @@ Session::Session(DeviceManager &device_manager, QString name) :
 
 Session::~Session()
 {
+	shutting_down_ = true;
+
 	// Stop and join to the thread
 	stop_capture();
 }
@@ -869,6 +872,9 @@ void Session::add_generated_signal(shared_ptr<data::SignalBase> signal)
 
 void Session::remove_generated_signal(shared_ptr<data::SignalBase> signal)
 {
+	if (shutting_down_)
+		return;
+
 	signalbases_.erase(std::remove_if(signalbases_.begin(), signalbases_.end(),
 		[&](shared_ptr<data::SignalBase> s) { return s == signal; }),
 		signalbases_.end());
@@ -916,6 +922,9 @@ shared_ptr<data::DecodeSignal> Session::add_decode_signal()
 
 void Session::remove_decode_signal(shared_ptr<data::DecodeSignal> signal)
 {
+	if (shutting_down_)
+		return;
+
 	signalbases_.erase(std::remove_if(signalbases_.begin(), signalbases_.end(),
 		[&](shared_ptr<data::SignalBase> s) { return s == signal; }),
 		signalbases_.end());

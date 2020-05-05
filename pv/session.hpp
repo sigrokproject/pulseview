@@ -262,6 +262,8 @@ public Q_SLOTS:
 #endif
 
 private:
+	bool shutting_down_;
+
 	DeviceManager &device_manager_;
 	shared_ptr<devices::Device> device_;
 	QString default_name_, name_;

@@ -389,6 +389,11 @@ void View::add_signalbase(const shared_ptr<data::SignalBase> signalbase)
 void View::remove_signalbase(const shared_ptr<data::SignalBase> signalbase)
 {
 	ViewBase::remove_signalbase(signalbase);
+
+	shared_ptr<Signal> signal = get_signal_by_signalbase(signalbase);
+
+	if (signal)
+		remove_trace(signal);
 }
 
 #ifdef ENABLE_DECODE
@@ -418,13 +423,33 @@ void View::remove_decode_signal(shared_ptr<data::DecodeSignal> signal)
 	for (auto i = decode_traces_.begin(); i != decode_traces_.end(); i++)
 		if ((*i)->base() == signal) {
 			decode_traces_.erase(i);
-			signals_changed();
-			return;
+			break;
 		}
 
 	ViewBase::remove_decode_signal(signal);
 }
 #endif
+
+void View::remove_trace(shared_ptr<Trace> trace)
+{
+	TraceTreeItemOwner *const owner = trace->owner();
+	assert(owner);
+	owner->remove_child_item(trace);
+
+	for (auto i = signals_.begin(); i != signals_.end(); i++)
+		if ((*i) == trace) {
+			signals_.erase(i);
+			break;
+		}
+
+	if (!header_was_shrunk_)
+		resize_header_to_fit();
+
+	update_layout();
+
+	header_->update();
+	viewport_->update();
+}
 
 shared_ptr<Signal> View::get_signal_under_mouse_cursor() const
 {
@@ -1773,7 +1798,6 @@ void View::signals_changed()
 #ifdef ENABLE_DECODE
 	traces.insert(decode_traces_.begin(), decode_traces_.end());
 #endif
-
 	set< shared_ptr<Trace> > add_traces;
 	set_difference(traces.begin(), traces.end(),
 		prev_traces.begin(), prev_traces.end(),
@@ -1887,6 +1911,10 @@ void View::signals_changed()
 	// Add and position the pending top levels items
 	int offset = v_extents().second;
 	for (shared_ptr<TraceTreeItem> item : new_top_level_items) {
+		// items may already have gained an owner when they were added to a group above
+		if (item->owner())
+			continue;
+
 		add_child_item(item);
 
 		// Position the item after the last item or at the top if there is none

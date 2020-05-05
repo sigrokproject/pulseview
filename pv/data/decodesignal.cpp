@@ -108,11 +108,12 @@ void DecodeSignal::remove_decoder(int index)
 	assert(index < (int)stack_.size());
 
 	// Find the decoder in the stack
-	auto iter = stack_.begin();
-	for (int i = 0; i < index; i++, iter++)
-		assert(iter != stack_.end());
+	auto iter = stack_.begin() + index;
+	assert(iter != stack_.end());
 
-	decoder_removed(iter->get());
+	shared_ptr<Decoder> dec = *iter;
+
+	decoder_removed(dec.get());
 
 	// Delete the element
 	stack_.erase(iter);

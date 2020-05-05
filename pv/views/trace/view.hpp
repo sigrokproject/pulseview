@@ -134,6 +134,8 @@ public:
 	virtual void remove_decode_signal(shared_ptr<data::DecodeSignal> signal);
 #endif
 
+	void remove_trace(shared_ptr<Trace> trace);
+
 	shared_ptr<Signal> get_signal_under_mouse_cursor() const;
 
 	/**
