@@ -32,7 +32,6 @@
 #include <set>
 #include <string>
 #include <thread>
-#include <unordered_set>
 #include <vector>
 
 #include <QObject>
@@ -270,13 +269,13 @@ private:
 
 	shared_ptr<pv::toolbars::MainBar> main_bar_;
 
-	mutable mutex sampling_mutex_; //!< Protects access to capture_state_.
+	mutable mutex sampling_mutex_; //!< Protects access to capture_state_
 	capture_state capture_state_;
 
 	vector< shared_ptr<data::SignalBase> > signalbases_;
 	unordered_set< shared_ptr<data::SignalData> > all_signal_data_;
 
-	/// trigger_list_ contains pairs of <segment_id, timestamp> values.
+	/// trigger_list_ contains pairs of <segment_id, timestamp> values
 	vector< std::pair<uint32_t, util::Timestamp> > trigger_list_;
 
 	mutable recursive_mutex data_mutex_;

@@ -85,8 +85,6 @@ public:
 	Session& session();
 	const Session& session() const;
 
-	virtual void clear_signals();
-
 	/**
 	 * Returns the signal bases contained in this view.
 	 */

@@ -84,11 +84,6 @@ const Session& ViewBase::session() const
 	return session_;
 }
 
-void ViewBase::clear_signals()
-{
-	clear_signalbases();
-}
-
 vector< shared_ptr<data::SignalBase> > ViewBase::signalbases() const
 {
 	return signalbases_;

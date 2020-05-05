@@ -500,7 +500,7 @@ void Session::set_device(shared_ptr<devices::Device> device)
 
 	// Remove all stored data and reset all views
 	for (shared_ptr<views::ViewBase> view : views_) {
-		view->clear_signals();
+		view->clear_signalbases();
 #ifdef ENABLE_DECODE
 		view->clear_decode_signals();
 #endif
@@ -935,7 +935,7 @@ void Session::update_signals()
 		signalbases_.clear();
 		logic_data_.reset();
 		for (shared_ptr<views::ViewBase>& view : views_) {
-			view->clear_signals();
+			view->clear_signalbases();
 #ifdef ENABLE_DECODE
 			view->clear_decode_signals();
 #endif
@@ -950,7 +950,7 @@ void Session::update_signals()
 		signalbases_.clear();
 		logic_data_.reset();
 		for (shared_ptr<views::ViewBase>& view : views_) {
-			view->clear_signals();
+			view->clear_signalbases();
 #ifdef ENABLE_DECODE
 			view->clear_decode_signals();
 #endif
@@ -965,7 +965,7 @@ void Session::update_signals()
 		[] (shared_ptr<Channel> channel) {
 			return channel->type() == sigrok::ChannelType::LOGIC; });
 
-	// Create data containers for the logic data segments
+	// Create a common data container for the logic signalbases
 	{
 		lock_guard<recursive_mutex> data_lock(data_mutex_);
 
@@ -973,97 +973,74 @@ void Session::update_signals()
 			logic_data_.reset();
 		} else if (!logic_data_ ||
 			logic_data_->num_channels() != logic_channel_count) {
-			logic_data_.reset(new data::Logic(
-				logic_channel_count));
+			logic_data_.reset(new data::Logic(logic_channel_count));
 			assert(logic_data_);
 		}
 	}
 
-	// Make the signals list
-	for (shared_ptr<views::ViewBase>& viewbase : views_) {
-		views::trace::View *trace_view =
-			qobject_cast<views::trace::View*>(viewbase.get());
+	// Create signalbases if necessary
+	for (auto channel : sr_dev->channels()) {
 
-		if (trace_view) {
-			vector< shared_ptr<Signal> > prev_sigs(trace_view->signals());
-			trace_view->clear_signals();
+		// Try to find the channel in the list of existing signalbases
+		const auto iter = find_if(signalbases_.cbegin(), signalbases_.cend(),
+			[&](const shared_ptr<SignalBase> &sb) { return sb->channel() == channel; });
 
-			for (auto channel : sr_dev->channels()) {
-				shared_ptr<data::SignalBase> signalbase;
-				shared_ptr<Signal> signal;
+		// Not found, let's make a signalbase for it
+		if (iter == signalbases_.cend()) {
+			shared_ptr<SignalBase> signalbase;
+			switch(channel->type()->id()) {
+			case SR_CHANNEL_LOGIC:
+				signalbase = make_shared<data::SignalBase>(channel, data::SignalBase::LogicChannel);
+				signalbases_.push_back(signalbase);
 
-				// Find the channel in the old signals
-				const auto iter = find_if(
-					prev_sigs.cbegin(), prev_sigs.cend(),
-					[&](const shared_ptr<Signal> &s) {
-						return s->base()->channel() == channel;
-					});
-				if (iter != prev_sigs.end()) {
-					// Copy the signal from the old set to the new
-					signal = *iter;
-					trace_view->add_signal(signal);
-				} else {
-					// Find the signalbase for this channel if possible
-					signalbase.reset();
-					for (const shared_ptr<data::SignalBase>& b : signalbases_)
-						if (b->channel() == channel)
-							signalbase = b;
+				all_signal_data_.insert(logic_data_);
+				signalbase->set_data(logic_data_);
 
-					shared_ptr<Signal> signal;
+				connect(this, SIGNAL(capture_state_changed(int)),
+						signalbase.get(), SLOT(on_capture_state_changed(int)));
+				break;
 
-					switch(channel->type()->id()) {
-					case SR_CHANNEL_LOGIC:
-						if (!signalbase) {
-							signalbase = make_shared<data::SignalBase>(channel,
-								data::SignalBase::LogicChannel);
-							signalbases_.push_back(signalbase);
+			case SR_CHANNEL_ANALOG:
+				signalbase = make_shared<data::SignalBase>(channel, data::SignalBase::AnalogChannel);
+				signalbases_.push_back(signalbase);
 
-							all_signal_data_.insert(logic_data_);
-							signalbase->set_data(logic_data_);
+				shared_ptr<data::Analog> data(new data::Analog());
+				all_signal_data_.insert(data);
+				signalbase->set_data(data);
 
-							connect(this, SIGNAL(capture_state_changed(int)),
-								signalbase.get(), SLOT(on_capture_state_changed(int)));
-						}
-
-						signal = shared_ptr<Signal>(new LogicSignal(*this, device_, signalbase));
-						break;
-
-					case SR_CHANNEL_ANALOG:
-					{
-						if (!signalbase) {
-							signalbase = make_shared<data::SignalBase>(channel,
-								data::SignalBase::AnalogChannel);
-							signalbases_.push_back(signalbase);
-
-							shared_ptr<data::Analog> data(new data::Analog());
-							all_signal_data_.insert(data);
-							signalbase->set_data(data);
-
-							connect(this, SIGNAL(capture_state_changed(int)),
-								signalbase.get(), SLOT(on_capture_state_changed(int)));
-						}
-
-						signal = shared_ptr<Signal>(new AnalogSignal(*this, signalbase));
-						break;
-					}
-
-					default:
-						assert(false);
-						break;
-					}
-
-					// New views take their signal settings from the main view
-					if (!viewbase->is_main_view()) {
-						shared_ptr<pv::views::trace::View> main_tv =
-							dynamic_pointer_cast<pv::views::trace::View>(main_view_);
-						shared_ptr<Signal> main_signal =
-							main_tv->get_signal_by_signalbase(signalbase);
-						signal->restore_settings(main_signal->save_settings());
-					}
-
-					trace_view->add_signal(signal);
-				}
+				connect(this, SIGNAL(capture_state_changed(int)),
+						signalbase.get(), SLOT(on_capture_state_changed(int)));
+				break;
 			}
+		}
+	}
+
+	for (shared_ptr<views::ViewBase>& viewbase : views_) {
+		vector< shared_ptr<SignalBase> > view_signalbases =
+				viewbase->signalbases();
+
+		// Add all non-decode signalbases that don't yet exist in the view
+		for (shared_ptr<SignalBase>& session_sb : signalbases_) {
+			if (session_sb->type() == SignalBase::DecodeChannel)
+				continue;
+
+			const auto iter = find_if(view_signalbases.cbegin(), view_signalbases.cend(),
+				[&](const shared_ptr<SignalBase> &sb) { return sb == session_sb; });
+
+			if (iter == view_signalbases.cend())
+				viewbase->add_signalbase(session_sb);
+		}
+
+		// Remove all non-decode signalbases that no longer exist
+		for (shared_ptr<SignalBase>& view_sb : view_signalbases) {
+			if (view_sb->type() == SignalBase::DecodeChannel)
+				continue;
+
+			const auto iter = find_if(signalbases_.cbegin(), signalbases_.cend(),
+				[&](const shared_ptr<SignalBase> &sb) {	return sb == view_sb; });
+
+			if (iter == signalbases_.cend())
+				viewbase->remove_signalbase(view_sb);
 		}
 	}
 

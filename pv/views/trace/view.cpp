@@ -72,6 +72,7 @@ using std::back_inserter;
 using std::copy_if;
 using std::count_if;
 using std::inserter;
+using std::lock_guard;
 using std::max;
 using std::make_pair;
 using std::make_shared;
@@ -341,22 +342,53 @@ shared_ptr<Signal> View::get_signal_by_signalbase(shared_ptr<data::SignalBase> b
 	return ret_val;
 }
 
-void View::clear_signals()
+void View::clear_signalbases()
 {
-	ViewBase::clear_signals();
+	ViewBase::clear_signalbases();
 	signals_.clear();
 }
 
-void View::add_signal(const shared_ptr<Signal> signal)
+void View::add_signalbase(const shared_ptr<data::SignalBase> signalbase)
 {
-	ViewBase::add_signalbase(signal->base());
+	ViewBase::add_signalbase(signalbase);
+
+	shared_ptr<Signal> signal;
+
+	switch (signalbase->type()) {
+	case SignalBase::LogicChannel:
+		signal = shared_ptr<Signal>(new LogicSignal(session_, session_.device(), signalbase));
+		break;
+
+	case SignalBase::AnalogChannel:
+		signal = shared_ptr<Signal>(new AnalogSignal(session_, signalbase));
+		break;
+
+	default:
+		qDebug() << "Unknown signalbase type:" << signalbase->type();
+		assert(false);
+		break;
+	}
+
 	signals_.push_back(signal);
 
 	signal->set_segment_display_mode(segment_display_mode_);
 	signal->set_current_segment(current_segment_);
 
+	// Secondary views use the signal's settings in the main view
+	if (!is_main_view()) {
+		shared_ptr<View> main_tv = dynamic_pointer_cast<View>(session_.main_view());
+		shared_ptr<Signal> main_signal = main_tv->get_signal_by_signalbase(signalbase);
+		if (main_signal)
+			signal->restore_settings(main_signal->save_settings());
+	}
+
 	connect(signal->base().get(), SIGNAL(name_changed(const QString&)),
 		this, SLOT(on_signal_name_changed()));
+}
+
+void View::remove_signalbase(const shared_ptr<data::SignalBase> signalbase)
+{
+	ViewBase::remove_signalbase(signalbase);
 }
 
 #ifdef ENABLE_DECODE
@@ -892,7 +924,7 @@ pair<Timestamp, Timestamp> View::get_time_extents() const
 	if (!left_time || !right_time)
 		return make_pair(0, 0);
 
-	assert(*left_time < *right_time);
+	assert(*left_time <= *right_time);
 	return make_pair(*left_time, *right_time);
 }
 
@@ -1705,6 +1737,8 @@ void View::signals_changed()
 {
 	using sigrok::Channel;
 
+	lock_guard<mutex> lock(signal_mutex_);
+
 	vector< shared_ptr<Channel> > channels;
 	shared_ptr<sigrok::Device> sr_dev;
 	bool signals_added_or_removed = false;
@@ -1727,7 +1761,9 @@ void View::signals_changed()
 	vector< shared_ptr<TraceTreeItem> > new_top_level_items;
 
 	// Make a list of traces that are being added, and a list of traces
-	// that are being removed
+	// that are being removed. The set_difference() algorithms require
+	// both sets to be in the exact same order, which means that PD signals
+	// must always be last as they interrupt the sort order otherwise
 	const vector<shared_ptr<Trace>> prev_trace_list = list_by_type<Trace>();
 	const set<shared_ptr<Trace>> prev_traces(
 		prev_trace_list.begin(), prev_trace_list.end());

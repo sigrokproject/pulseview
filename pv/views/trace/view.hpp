@@ -23,6 +23,7 @@
 #include <cstdint>
 #include <list>
 #include <memory>
+#include <mutex>
 #include <set>
 #include <vector>
 
@@ -121,9 +122,9 @@ public:
 
 	shared_ptr<Signal> get_signal_by_signalbase(shared_ptr<data::SignalBase> base) const;
 
-	virtual void clear_signals();
-
-	void add_signal(const shared_ptr<Signal> signal);
+	virtual void clear_signalbases();
+	virtual void add_signalbase(const shared_ptr<data::SignalBase> signalbase);
+	virtual void remove_signalbase(const shared_ptr<data::SignalBase> signalbase);
 
 #ifdef ENABLE_DECODE
 	virtual void clear_decode_signals();
@@ -508,6 +509,7 @@ private:
 	QShortcut *grab_ruler_left_shortcut_, *grab_ruler_right_shortcut_;
 	QShortcut *cancel_grab_shortcut_;
 
+	mutable mutex signal_mutex_;
 	vector< shared_ptr<Signal> > signals_;
 
 #ifdef ENABLE_DECODE
