@@ -185,6 +185,15 @@ void SignalBase::set_data(shared_ptr<pv::data::SignalData> data)
 	}
 }
 
+void SignalBase::clear_sample_data()
+{
+	if (analog_data())
+		analog_data()->clear();
+
+	if (logic_data())
+		logic_data()->clear();
+}
+
 shared_ptr<data::Analog> SignalBase::analog_data() const
 {
 	shared_ptr<Analog> result = nullptr;

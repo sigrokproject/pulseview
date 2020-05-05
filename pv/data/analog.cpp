@@ -31,7 +31,8 @@ namespace pv {
 namespace data {
 
 Analog::Analog() :
-	SignalData()
+	SignalData(),
+	samplerate_(1)  // Default is 1 Hz to prevent division-by-zero errors
 {
 }
 
@@ -63,12 +64,14 @@ void Analog::clear()
 	samples_cleared();
 }
 
+void Analog::set_samplerate(double value)
+{
+	samplerate_ = value;
+}
+
 double Analog::get_samplerate() const
 {
-	if (segments_.empty())
-		return 1.0;
-
-	return segments_.front()->samplerate();
+	return samplerate_;
 }
 
 uint64_t Analog::max_sample_count() const

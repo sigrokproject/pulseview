@@ -51,6 +51,8 @@ public:
 
 	virtual uint64_t max_sample_count() const = 0;
 
+	virtual void set_samplerate(double value) = 0;
+
 	virtual double get_samplerate() const = 0;
 };
 

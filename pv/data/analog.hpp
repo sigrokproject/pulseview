@@ -53,6 +53,8 @@ public:
 
 	void clear();
 
+	void set_samplerate(double value);
+
 	double get_samplerate() const;
 
 	uint64_t max_sample_count() const;
@@ -71,6 +73,7 @@ Q_SIGNALS:
 	void min_max_changed(float min, float max);
 
 private:
+	double samplerate_;
 	deque< shared_ptr<AnalogSegment> > segments_;
 };
 

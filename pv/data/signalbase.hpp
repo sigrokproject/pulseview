@@ -172,6 +172,11 @@ public:
 	void set_data(shared_ptr<pv::data::SignalData> data);
 
 	/**
+	 * Clears all sample data and removes all associated segments.
+	 */
+	void clear_sample_data();
+
+	/**
 	 * Get the internal data as analog data object in case of analog type.
 	 */
 	shared_ptr<pv::data::Analog> analog_data() const;

@@ -54,6 +54,8 @@ public:
 
 	void clear();
 
+	void set_samplerate(double value);
+
 	double get_samplerate() const;
 
 	uint64_t max_sample_count() const;
@@ -68,6 +70,7 @@ Q_SIGNALS:
 		uint64_t end_sample);
 
 private:
+	double samplerate_;
 	const unsigned int num_channels_;
 	deque< shared_ptr<LogicSegment> > segments_;
 };
