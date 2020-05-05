@@ -59,7 +59,7 @@ public:
 
 	uint64_t max_sample_count() const;
 
-	void notify_samples_added(QObject* segment, uint64_t start_sample,
+	void notify_samples_added(shared_ptr<Segment> segment, uint64_t start_sample,
 		uint64_t end_sample);
 
 	void notify_min_max_changed(float min, float max);
@@ -67,7 +67,7 @@ public:
 Q_SIGNALS:
 	void samples_cleared();
 
-	void samples_added(QObject* segment, uint64_t start_sample,
+	void samples_added(shared_ptr<Segment> segment, uint64_t start_sample,
 		uint64_t end_sample);
 
 	void min_max_changed(float min, float max);

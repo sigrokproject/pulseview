@@ -53,6 +53,11 @@ const deque< shared_ptr<LogicSegment> >& Logic::logic_segments() const
 	return segments_;
 }
 
+deque< shared_ptr<LogicSegment> >& Logic::logic_segments()
+{
+	return segments_;
+}
+
 vector< shared_ptr<Segment> > Logic::segments() const
 {
 	return vector< shared_ptr<Segment> >(segments_.begin(), segments_.end());
@@ -90,7 +95,7 @@ uint64_t Logic::max_sample_count() const
 	return l;
 }
 
-void Logic::notify_samples_added(QObject* segment, uint64_t start_sample,
+void Logic::notify_samples_added(shared_ptr<Segment> segment, uint64_t start_sample,
 	uint64_t end_sample)
 {
 	samples_added(segment, start_sample, end_sample);

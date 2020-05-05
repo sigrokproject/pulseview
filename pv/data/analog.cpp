@@ -84,7 +84,7 @@ uint64_t Analog::max_sample_count() const
 	return l;
 }
 
-void Analog::notify_samples_added(QObject* segment, uint64_t start_sample,
+void Analog::notify_samples_added(shared_ptr<Segment> segment, uint64_t start_sample,
 	uint64_t end_sample)
 {
 	samples_added(segment, start_sample, end_sample);

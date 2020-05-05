@@ -27,6 +27,7 @@
 
 #include <QObject>
 
+using std::enable_shared_from_this;
 using std::pair;
 
 namespace AnalogSegmentTest {
@@ -38,7 +39,7 @@ namespace data {
 
 class Analog;
 
-class AnalogSegment : public Segment
+class AnalogSegment : public Segment, public enable_shared_from_this<Segment>
 {
 	Q_OBJECT
 

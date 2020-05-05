@@ -22,11 +22,11 @@
 
 #include "segment.hpp"
 
-#include <utility>
 #include <vector>
 
 #include <QObject>
 
+using std::enable_shared_from_this;
 using std::pair;
 using std::shared_ptr;
 using std::vector;
@@ -48,7 +48,7 @@ namespace data {
 
 class Logic;
 
-class LogicSegment : public Segment
+class LogicSegment : public Segment, public enable_shared_from_this<Segment>
 {
 	Q_OBJECT
 

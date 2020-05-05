@@ -121,4 +121,6 @@ protected:
 } // namespace data
 } // namespace pv
 
+Q_DECLARE_METATYPE(pv::data::Segment);
+
 #endif // PULSEVIEW_PV_DATA_SEGMENT_HPP

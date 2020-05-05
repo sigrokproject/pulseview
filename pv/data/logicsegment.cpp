@@ -341,11 +341,11 @@ void LogicSegment::append_payload(void *data, uint64_t data_size)
 	append_payload_to_mipmap();
 
 	if (sample_count > 1)
-		owner_.notify_samples_added(this, prev_sample_count + 1,
-			prev_sample_count + 1 + sample_count);
+		owner_.notify_samples_added(shared_ptr<Segment>(shared_from_this()),
+			prev_sample_count + 1, prev_sample_count + 1 + sample_count);
 	else
-		owner_.notify_samples_added(this, prev_sample_count + 1,
-			prev_sample_count + 1);
+		owner_.notify_samples_added(shared_ptr<Segment>(shared_from_this()),
+			prev_sample_count + 1, prev_sample_count + 1);
 }
 
 void LogicSegment::get_samples(int64_t start_sample,

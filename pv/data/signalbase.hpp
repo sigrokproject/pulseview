@@ -55,6 +55,7 @@ class AnalogSegment;
 class DecoderStack;
 class Logic;
 class LogicSegment;
+class Segment;
 class SignalData;
 
 class SignalBase : public QObject
@@ -322,7 +323,7 @@ Q_SIGNALS:
 private Q_SLOTS:
 	void on_samples_cleared();
 
-	void on_samples_added(QObject* segment, uint64_t start_sample,
+	void on_samples_added(shared_ptr<Segment> segment, uint64_t start_sample,
 		uint64_t end_sample);
 
 	void on_min_max_changed(float min, float max);
