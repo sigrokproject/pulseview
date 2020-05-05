@@ -91,6 +91,7 @@ private:
 	size_t posAddr_, posHex_, posAscii_;
 	size_t charWidth_, charHeight_;
 	size_t selectBegin_, selectEnd_, selectInit_, cursorPos_;
+	uint8_t address_digits_;
 
 	size_t current_chunk_id_, current_chunk_offset_, current_offset_;
 	DecodeBinaryDataChunk current_chunk_; // Cache locally so that we're not messed up when the vector is re-allocating its data

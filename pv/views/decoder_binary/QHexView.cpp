@@ -34,6 +34,7 @@
 #include <QKeyEvent>
 #include <QScrollBar>
 #include <QSize>
+#include <QString>
 #include <QPainter>
 #include <QPaintEvent>
 
@@ -58,11 +59,6 @@ QHexView::QHexView(QWidget *parent):
 
 	charWidth_ = fontMetrics().boundingRect('X').width();
 	charHeight_ = fontMetrics().height();
-
-	// Determine X coordinates of the three sub-areas
-	posAddr_  = 0;
-	posHex_   = 10 * charWidth_ + GAP_ADR_HEX;
-	posAscii_ = posHex_ + HEXCHARS_IN_LINE * charWidth_ + GAP_HEX_ASCII;
 
 	setFocusPolicy(Qt::StrongFocus);
 
@@ -98,6 +94,13 @@ void QHexView::set_data(const DecodeBinaryClass* data)
 			size += data_->chunks[i].data.size();
 	}
 	data_size_ = size;
+
+	address_digits_ = (uint8_t)QString::number(data_size_, 16).length();
+
+	// Calculate X coordinates of the three sub-areas
+	posAddr_  = 0;
+	posHex_   = address_digits_ * charWidth_ + GAP_ADR_HEX;
+	posAscii_ = posHex_ + HEXCHARS_IN_LINE * charWidth_ + GAP_HEX_ASCII;
 
 	viewport()->update();
 }
@@ -159,7 +162,7 @@ size_t QHexView::create_hex_line(size_t start, size_t end, QString* dest,
 	end = std::min((uint64_t)end, offset + BYTES_PER_LINE);
 
 	if (with_offset)
-		dest->append(QString("%1 ").arg(row * BYTES_PER_LINE, 10, 16, QChar('0')).toUpper());
+		dest->append(QString("%1 ").arg(row * BYTES_PER_LINE, address_digits_, 16, QChar('0')).toUpper());
 
 	initialize_byte_iterator(offset);
 	for (size_t i = offset; i < offset + BYTES_PER_LINE; i++) {
@@ -319,7 +322,7 @@ void QHexView::paintEvent(QPaintEvent *event)
 	int yStart = 2 * charHeight_;
 	for (size_t lineIdx = firstLineIdx, y = yStart; lineIdx < lastLineIdx; lineIdx++) {
 
-		QString address = QString("%1").arg(lineIdx * 16, 10, 16, QChar('0')).toUpper();
+		QString address = QString("%1").arg(lineIdx * 16, address_digits_, 16, QChar('0')).toUpper();
 		painter.drawText(posAddr_, y, address);
 		y += charHeight_;
 	}
