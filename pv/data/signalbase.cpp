@@ -52,8 +52,10 @@ SignalBase::SignalBase(shared_ptr<sigrok::Channel> channel, ChannelType channel_
 	min_value_(0),
 	max_value_(0)
 {
-	if (channel_)
+	if (channel_) {
 		internal_name_ = QString::fromStdString(channel_->name());
+		index_ = channel_->index();
+	}
 
 	connect(&delayed_conversion_starter_, SIGNAL(timeout()),
 		this, SLOT(on_delayed_conversion_start()));
@@ -79,6 +81,11 @@ QString SignalBase::name() const
 QString SignalBase::internal_name() const
 {
 	return internal_name_;
+}
+
+void SignalBase::set_internal_name(QString internal_name)
+{
+	internal_name_ = internal_name;
 }
 
 QString SignalBase::display_name() const
@@ -119,13 +126,18 @@ SignalBase::ChannelType SignalBase::type() const
 
 unsigned int SignalBase::index() const
 {
-	return (channel_) ? channel_->index() : 0;
+	return index_;
+}
+
+void SignalBase::set_index(unsigned int index)
+{
+	index_ = index;
 }
 
 unsigned int SignalBase::logic_bit_index() const
 {
 	if (channel_type_ == LogicChannel)
-		return channel_->index();
+		return index_;
 	else
 		return 0;
 }

@@ -188,6 +188,8 @@ public:
 	bool has_view(shared_ptr<views::ViewBase> view);
 
 	const vector< shared_ptr<data::SignalBase> > signalbases() const;
+	void add_generated_signal(shared_ptr<data::SignalBase> signal);
+	void remove_generated_signal(shared_ptr<data::SignalBase> signal);
 
 	bool all_segments_complete(uint32_t segment_id) const;
 

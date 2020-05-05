@@ -93,6 +93,7 @@ public:
 	virtual void clear_signalbases();
 
 	virtual void add_signalbase(const shared_ptr<data::SignalBase> signalbase);
+	virtual void remove_signalbase(const shared_ptr<data::SignalBase> signalbase);
 
 #ifdef ENABLE_DECODE
 	virtual void clear_decode_signals();

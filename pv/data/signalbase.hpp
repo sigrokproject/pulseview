@@ -100,6 +100,7 @@ public:
 public:
 	/**
 	 * Returns the underlying SR channel.
+	 * Generated channels don't have a SR channel.
 	 */
 	shared_ptr<sigrok::Channel> channel() const;
 
@@ -126,6 +127,13 @@ public:
 	unsigned int index() const;
 
 	/**
+	 * Sets the index number of this channel, i.e. a unique ID assigned by
+	 * the device driver or the logic bit index (see below).
+	 * Only use immediately after creating the signal and leave it untouched after.
+	 */
+	void set_index(unsigned int index);
+
+	/**
 	 * Returns which bit of a given sample for this signal represents the
 	 * signal itself. This is relevant for compound signals like logic,
 	 * rather meaningless for everything else but provided in case there
@@ -139,9 +147,15 @@ public:
 	QString name() const;
 
 	/**
-	 * Gets the internal name of this signal, i.e. how the device calls it.
+	 * Gets the internal name of this signal, i.e. how the device/generator calls it.
 	 */
 	QString internal_name() const;
+
+	/**
+	 * Sets the internal name of this signal, i.e. how the device/generator calls it.
+	 * Only use immediately after creating the signal and leave it untouched after.
+	 */
+	void set_internal_name(QString internal_name);
 
 	/**
 	 * Produces a string for this signal that can be used for display,
@@ -352,6 +366,7 @@ protected:
 
 	QString internal_name_, name_;
 	QColor color_, bgcolor_;
+	unsigned int index_;
 };
 
 } // namespace data

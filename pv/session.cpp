@@ -857,6 +857,28 @@ const vector< shared_ptr<data::SignalBase> > Session::signalbases() const
 	return signalbases_;
 }
 
+void Session::add_generated_signal(shared_ptr<data::SignalBase> signal)
+{
+	signalbases_.push_back(signal);
+
+	for (shared_ptr<views::ViewBase>& view : views_)
+		view->add_signalbase(signal);
+
+	update_signals();
+}
+
+void Session::remove_generated_signal(shared_ptr<data::SignalBase> signal)
+{
+	signalbases_.erase(std::remove_if(signalbases_.begin(), signalbases_.end(),
+		[&](shared_ptr<data::SignalBase> s) { return s == signal; }),
+		signalbases_.end());
+
+	for (shared_ptr<views::ViewBase>& view : views_)
+		view->remove_signalbase(signal);
+
+	update_signals();
+}
+
 bool Session::all_segments_complete(uint32_t segment_id) const
 {
 	bool all_complete = true;
@@ -1106,6 +1128,8 @@ void Session::sample_thread_proc(function<void (const QString)> error_handler)
 		lock_guard<recursive_mutex> lock(data_mutex_);
 		cur_logic_segment_.reset();
 		cur_analog_segments_.clear();
+		for (shared_ptr<data::SignalBase> sb : signalbases_)
+			sb->clear_sample_data();
 	}
 	highest_segment_id_ = -1;
 	frame_began_ = false;
@@ -1348,7 +1372,7 @@ void Session::feed_in_frame_end()
 	signal_segment_completed();
 }
 
-void Session::feed_in_logic(shared_ptr<Logic> logic)
+void Session::feed_in_logic(shared_ptr<sigrok::Logic> logic)
 {
 	if (logic->data_length() == 0) {
 		qDebug() << "WARNING: Received logic packet with 0 samples.";
@@ -1392,7 +1416,7 @@ void Session::feed_in_logic(shared_ptr<Logic> logic)
 	data_received();
 }
 
-void Session::feed_in_analog(shared_ptr<Analog> analog)
+void Session::feed_in_analog(shared_ptr<sigrok::Analog> analog)
 {
 	if (analog->num_samples() == 0) {
 		qDebug() << "WARNING: Received analog packet with 0 samples.";
