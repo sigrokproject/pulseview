@@ -31,7 +31,6 @@
 
 #include "session.hpp"
 #include "subwindows/subwindowbase.hpp"
-#include "views/viewbase.hpp"
 
 using std::list;
 using std::map;
@@ -53,6 +52,7 @@ class MainBar;
 
 namespace view {
 class View;
+class ViewBase;
 }
 
 namespace widgets {
@@ -60,6 +60,9 @@ namespace widgets {
 class DecoderMenu;
 #endif
 }
+
+using pv::views::ViewBase;
+using pv::views::ViewType;
 
 class MainWindow : public QMainWindow
 {
@@ -78,9 +81,9 @@ public:
 
 	shared_ptr<views::ViewBase> get_active_view() const;
 
-	shared_ptr<views::ViewBase> add_view(views::ViewType type, Session &session);
+	shared_ptr<views::ViewBase> add_view(ViewType type, Session &session);
 
-	void remove_view(shared_ptr<views::ViewBase> view);
+	void remove_view(shared_ptr<ViewBase> view);
 
 	shared_ptr<subwindows::SubWindowBase> add_subwindow(
 		subwindows::SubWindowType type, Session &session);
@@ -113,7 +116,7 @@ private:
 	virtual bool restoreState(const QByteArray &state, int version = 0);
 
 private Q_SLOTS:
-	void on_add_view(views::ViewType type, Session *session);
+	void on_add_view(ViewType type, Session *session);
 
 	void on_focus_changed();
 	void on_focused_session_changed(shared_ptr<Session> session);

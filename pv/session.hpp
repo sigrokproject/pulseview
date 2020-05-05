@@ -107,6 +107,7 @@ namespace views {
 class ViewBase;
 }
 
+using pv::views::ViewType;
 
 class Session : public QObject
 {
@@ -252,7 +253,7 @@ Q_SIGNALS:
 
 	void data_received();
 
-	void add_view(views::ViewType type, Session *session);
+	void add_view(ViewType type, Session *session);
 
 public Q_SLOTS:
 	void on_data_saved();

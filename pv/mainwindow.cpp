@@ -333,8 +333,8 @@ shared_ptr<Session> MainWindow::add_session()
 
 	shared_ptr<Session> session = make_shared<Session>(device_manager_, name);
 
-	connect(session.get(), SIGNAL(add_view(views::ViewType, Session*)),
-		this, SLOT(on_add_view(views::ViewType, Session*)));
+	connect(session.get(), SIGNAL(add_view(ViewType, Session*)),
+		this, SLOT(on_add_view(ViewType, Session*)));
 	connect(session.get(), SIGNAL(name_changed()),
 		this, SLOT(on_session_name_changed()));
 	connect(session.get(), SIGNAL(device_changed()),
