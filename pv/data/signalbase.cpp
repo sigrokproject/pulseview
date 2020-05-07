@@ -45,9 +45,55 @@ const int SignalBase::ColorBGAlpha = 8 * 256 / 100;
 const uint64_t SignalBase::ConversionBlockSize = 4096;
 const uint32_t SignalBase::ConversionDelay = 1000;  // 1 second
 
+
+SignalGroup::SignalGroup(const QString& name)
+{
+	name_ = name;
+}
+
+void SignalGroup::append_signal(shared_ptr<SignalBase> signal)
+{
+	if (!signal)
+		return;
+
+	signals_.push_back(signal);
+	signal->set_group(this);
+}
+
+void SignalGroup::remove_signal(shared_ptr<SignalBase> signal)
+{
+	if (!signal)
+		return;
+
+	signals_.erase(std::remove_if(signals_.begin(), signals_.end(),
+		[&](shared_ptr<SignalBase> s) { return s == signal; }),
+		signals_.end());
+}
+
+deque<shared_ptr<SignalBase>> SignalGroup::signals() const
+{
+	return signals_;
+}
+
+void SignalGroup::clear()
+{
+	for (shared_ptr<SignalBase> sb : signals_)
+		sb->set_group(nullptr);
+
+	signals_.clear();
+}
+
+const QString SignalGroup::name() const
+{
+	return name_;
+}
+
+
+
 SignalBase::SignalBase(shared_ptr<sigrok::Channel> channel, ChannelType channel_type) :
 	channel_(channel),
 	channel_type_(channel_type),
+	group_(nullptr),
 	conversion_type_(NoConversion),
 	min_value_(0),
 	max_value_(0)
@@ -71,39 +117,6 @@ SignalBase::~SignalBase()
 shared_ptr<sigrok::Channel> SignalBase::channel() const
 {
 	return channel_;
-}
-
-QString SignalBase::name() const
-{
-	return (channel_) ? QString::fromStdString(channel_->name()) : name_;
-}
-
-QString SignalBase::internal_name() const
-{
-	return internal_name_;
-}
-
-void SignalBase::set_internal_name(QString internal_name)
-{
-	internal_name_ = internal_name;
-}
-
-QString SignalBase::display_name() const
-{
-	if ((name() != internal_name_) && (!internal_name_.isEmpty()))
-		return name() + " (" + internal_name_ + ")";
-	else
-		return name();
-}
-
-void SignalBase::set_name(QString name)
-{
-	if (channel_)
-		channel_->set_name(name.toUtf8().constData());
-
-	name_ = name;
-
-	name_changed(name);
 }
 
 bool SignalBase::enabled() const
@@ -140,6 +153,49 @@ unsigned int SignalBase::logic_bit_index() const
 		return index_;
 	else
 		return 0;
+}
+
+void SignalBase::set_group(SignalGroup* group)
+{
+	group_ = group;
+}
+
+SignalGroup* SignalBase::group() const
+{
+	return group_;
+}
+
+QString SignalBase::name() const
+{
+	return (channel_) ? QString::fromStdString(channel_->name()) : name_;
+}
+
+QString SignalBase::internal_name() const
+{
+	return internal_name_;
+}
+
+void SignalBase::set_internal_name(QString internal_name)
+{
+	internal_name_ = internal_name;
+}
+
+QString SignalBase::display_name() const
+{
+	if ((name() != internal_name_) && (!internal_name_.isEmpty()))
+		return name() + " (" + internal_name_ + ")";
+	else
+		return name();
+}
+
+void SignalBase::set_name(QString name)
+{
+	if (channel_)
+		channel_->set_name(name.toUtf8().constData());
+
+	name_ = name;
+
+	name_changed(name);
 }
 
 QColor SignalBase::color() const

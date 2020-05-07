@@ -25,6 +25,7 @@
 #include <condition_variable>
 #endif
 
+#include <deque>
 #include <functional>
 #include <map>
 #include <memory>
@@ -48,6 +49,7 @@
 #include "util.hpp"
 #include "views/viewbase.hpp"
 
+using std::deque;
 using std::function;
 using std::map;
 using std::mutex;
@@ -93,6 +95,7 @@ class Logic;
 class LogicSegment;
 class SignalBase;
 class SignalData;
+class SignalGroup;
 }
 
 namespace devices {
@@ -192,13 +195,13 @@ public:
 	void add_generated_signal(shared_ptr<data::SignalBase> signal);
 	void remove_generated_signal(shared_ptr<data::SignalBase> signal);
 
-	bool all_segments_complete(uint32_t segment_id) const;
-
 #ifdef ENABLE_DECODE
 	shared_ptr<data::DecodeSignal> add_decode_signal();
 
 	void remove_decode_signal(shared_ptr<data::DecodeSignal> signal);
 #endif
+
+	bool all_segments_complete(uint32_t segment_id) const;
 
 	MetadataObjManager* metadata_obj_manager();
 
@@ -279,6 +282,7 @@ private:
 
 	vector< shared_ptr<data::SignalBase> > signalbases_;
 	unordered_set< shared_ptr<data::SignalData> > all_signal_data_;
+	deque<data::SignalGroup*> signal_groups_;
 
 	/// trigger_list_ contains pairs of <segment_id, timestamp> values
 	vector< std::pair<uint32_t, util::Timestamp> > trigger_list_;

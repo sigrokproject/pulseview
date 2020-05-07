@@ -105,6 +105,7 @@ using Gst::ElementFactory;
 using Gst::Pipeline;
 #endif
 
+using pv::data::SignalGroup;
 using pv::util::Timestamp;
 using pv::views::trace::Signal;
 using pv::views::trace::AnalogSignal;
@@ -131,6 +132,11 @@ Session::~Session()
 
 	// Stop and join to the thread
 	stop_capture();
+
+	for (SignalGroup* group : signal_groups_) {
+		group->clear();
+		delete group;
+	}
 }
 
 DeviceManager& Session::device_manager()
@@ -509,8 +515,16 @@ void Session::set_device(shared_ptr<devices::Device> device)
 #endif
 		view->reset_view_state();
 	}
+
+	for (SignalGroup* group : signal_groups_) {
+		group->clear();
+		delete group;
+	}
+	signal_groups_.clear();
+
 	for (const shared_ptr<data::SignalData>& d : all_signal_data_)
 		d->clear();
+
 	all_signal_data_.clear();
 	signalbases_.clear();
 	cur_logic_segment_.reset();
@@ -885,17 +899,6 @@ void Session::remove_generated_signal(shared_ptr<data::SignalBase> signal)
 	update_signals();
 }
 
-bool Session::all_segments_complete(uint32_t segment_id) const
-{
-	bool all_complete = true;
-
-	for (const shared_ptr<data::SignalBase>& base : signalbases_)
-		if (!base->segment_is_complete(segment_id))
-			all_complete = false;
-
-	return all_complete;
-}
-
 #ifdef ENABLE_DECODE
 shared_ptr<data::DecodeSignal> Session::add_decode_signal()
 {
@@ -935,6 +938,17 @@ void Session::remove_decode_signal(shared_ptr<data::DecodeSignal> signal)
 	signals_changed();
 }
 #endif
+
+bool Session::all_segments_complete(uint32_t segment_id) const
+{
+	bool all_complete = true;
+
+	for (const shared_ptr<data::SignalBase>& base : signalbases_)
+		if (!base->segment_is_complete(segment_id))
+			all_complete = false;
+
+	return all_complete;
+}
 
 MetadataObjManager* Session::metadata_obj_manager()
 {
@@ -1028,7 +1042,7 @@ void Session::update_signals()
 				signalbase->set_data(logic_data_);
 
 				connect(this, SIGNAL(capture_state_changed(int)),
-						signalbase.get(), SLOT(on_capture_state_changed(int)));
+					signalbase.get(), SLOT(on_capture_state_changed(int)));
 				break;
 
 			case SR_CHANNEL_ANALOG:
@@ -1040,12 +1054,34 @@ void Session::update_signals()
 				signalbase->set_data(data);
 
 				connect(this, SIGNAL(capture_state_changed(int)),
-						signalbase.get(), SLOT(on_capture_state_changed(int)));
+					signalbase.get(), SLOT(on_capture_state_changed(int)));
 				break;
 			}
 		}
 	}
 
+	// Create and assign default signal groups if needed
+	if (signal_groups_.empty()) {
+		for (auto& entry : sr_dev->channel_groups()) {
+			const shared_ptr<sigrok::ChannelGroup>& group = entry.second;
+
+			if (group->channels().size() <= 1)
+				continue;
+
+			SignalGroup* sg = new SignalGroup(QString::fromStdString(entry.first));
+			for (const shared_ptr<sigrok::Channel>& channel : group->channels()) {
+				for (shared_ptr<data::SignalBase> s : signalbases_) {
+					if (s->channel() == channel) {
+						sg->append_signal(s);
+						break;
+					}
+				}
+			}
+			signal_groups_.emplace_back(sg);
+		}
+	}
+
+	// Update all views
 	for (shared_ptr<views::ViewBase>& viewbase : views_) {
 		vector< shared_ptr<SignalBase> > view_signalbases =
 				viewbase->signalbases();

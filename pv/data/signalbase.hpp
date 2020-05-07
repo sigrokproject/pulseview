@@ -22,6 +22,7 @@
 #define PULSEVIEW_PV_DATA_SIGNALBASE_HPP
 
 #include <atomic>
+#include <deque>
 #include <condition_variable>
 #include <thread>
 #include <vector>
@@ -39,6 +40,8 @@
 
 using std::atomic;
 using std::condition_variable;
+using std::deque;
+using std::enable_shared_from_this;
 using std::map;
 using std::mutex;
 using std::pair;
@@ -58,9 +61,30 @@ class DecoderStack;
 class Logic;
 class LogicSegment;
 class Segment;
+class SignalBase;
 class SignalData;
 
-class SignalBase : public QObject
+class SignalGroup : public QObject
+{
+	Q_OBJECT
+
+public:
+	SignalGroup(const QString& name);
+
+	void append_signal(shared_ptr<SignalBase> signal);
+	void remove_signal(shared_ptr<SignalBase> signal);
+	deque<shared_ptr<SignalBase>> signals() const;
+	void clear();
+
+	const QString name() const;
+
+private:
+	deque<shared_ptr<SignalBase>> signals_;
+	QString name_;
+};
+
+
+class SignalBase : public QObject, public enable_shared_from_this<SignalBase>
 {
 	Q_OBJECT
 
@@ -140,6 +164,16 @@ public:
 	 * is a conversion active that provides a digital signal using bit #0.
 	 */
 	unsigned int logic_bit_index() const;
+
+	/**
+	 * Sets the signal group this signal belongs to
+	 */
+	void set_group(SignalGroup* group);
+
+	/**
+	 * Returns the signal group this signal belongs to or nullptr if none
+	 */
+	SignalGroup* group() const;
 
 	/**
 	 * Gets the name of this signal.
@@ -351,6 +385,7 @@ private Q_SLOTS:
 protected:
 	shared_ptr<sigrok::Channel> channel_;
 	ChannelType channel_type_;
+	SignalGroup* group_;
 	shared_ptr<pv::data::SignalData> data_;
 	shared_ptr<pv::data::SignalData> converted_data_;
 	ConversionType conversion_type_;
