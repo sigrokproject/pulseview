@@ -44,20 +44,24 @@ AnnotationCollectionModel::AnnotationCollectionModel(QObject* parent) :
 	all_annotations_(nullptr),
 	dataset_(nullptr),
 	signal_(nullptr),
+	first_hidden_column_(0),
 	prev_segment_(0),
 	prev_last_row_(0),
-	start_index_(0),
-	end_index_(0),
 	had_highlight_before_(false),
 	hide_hidden_(false)
 {
-	// TBD Maybe use empty columns as indentation levels to indicate stacked decoders
-	header_data_.emplace_back(tr("Sample"));     // Column #0
-	header_data_.emplace_back(tr("Time"));       // Column #1
-	header_data_.emplace_back(tr("Decoder"));    // Column #2
-	header_data_.emplace_back(tr("Ann Row"));    // Column #3
-	header_data_.emplace_back(tr("Ann Class"));  // Column #4
-	header_data_.emplace_back(tr("Value"));      // Column #5
+	// Note: when adding entries, consider ViewVisibleFilterProxyModel::filterAcceptsRow()
+
+	uint8_t i = 0;
+	header_data_.emplace_back(tr("Sample"));    i++; // Column #0
+	header_data_.emplace_back(tr("Time"));      i++; // Column #1
+	header_data_.emplace_back(tr("Decoder"));   i++; // Column #2
+	header_data_.emplace_back(tr("Ann Row"));   i++; // Column #3
+	header_data_.emplace_back(tr("Ann Class")); i++; // Column #4
+	header_data_.emplace_back(tr("Value"));     i++; // Column #5
+
+	first_hidden_column_ = i;
+	header_data_.emplace_back("End Sample");         // Column #6, hidden
 }
 
 int AnnotationCollectionModel::get_hierarchy_level(const Annotation* ann) const
@@ -88,6 +92,7 @@ QVariant AnnotationCollectionModel::data_from_ann(const Annotation* ann, int ind
 	case 3: return QVariant(ann->row()->description());        // Column #3, Ann Row
 	case 4: return QVariant(ann->ann_class_description());     // Column #4, Ann Class
 	case 5: return QVariant(ann->longest_annotation());        // Column #5, Value
+	case 6: return QVariant((qulonglong)ann->end_sample());    // Column #6, End Sample
 	default: return QVariant();
 	}
 }
@@ -151,6 +156,11 @@ Qt::ItemFlags AnnotationCollectionModel::flags(const QModelIndex& index) const
 	return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemNeverHasChildren;
 }
 
+uint8_t AnnotationCollectionModel::first_hidden_column() const
+{
+	return first_hidden_column_;
+}
+
 QVariant AnnotationCollectionModel::headerData(int section, Qt::Orientation orientation,
 	int role) const
 {
@@ -171,13 +181,8 @@ QModelIndex AnnotationCollectionModel::index(int row, int column,
 
 	QModelIndex idx;
 
-	if (start_index_ == end_index_) {
-		if ((size_t)row < dataset_->size())
-			idx = createIndex(row, column, (void*)dataset_->at(row));
-	} else {
-		if ((size_t)row < (end_index_ - start_index_))
-			idx = createIndex(row, column, (void*)dataset_->at(start_index_ + row));
-	}
+	if ((size_t)row < dataset_->size())
+		idx = createIndex(row, column, (void*)dataset_->at(row));
 
 	return idx;
 }
@@ -196,10 +201,7 @@ int AnnotationCollectionModel::rowCount(const QModelIndex& parent_idx) const
 	if (!dataset_)
 		return 0;
 
-	if (start_index_ == end_index_)
-		return dataset_->size();
-	else
-		return (end_index_ - start_index_);
+	return dataset_->size();
 }
 
 int AnnotationCollectionModel::columnCount(const QModelIndex& parent_idx) const
@@ -240,14 +242,11 @@ void AnnotationCollectionModel::set_signal_and_segment(data::DecodeSignal* signa
 		return;
 	}
 
-	// Re-apply the requested sample range
-	set_sample_range(start_sample_, end_sample_);
-
 	const size_t new_row_count = dataset_->size() - 1;
 
 	// Force the view associated with this model to update when the segment changes
 	if (prev_segment_ != current_segment) {
-		dataChanged(QModelIndex(), QModelIndex());
+		dataChanged(index(0, 0), index(new_row_count, 0));
 		layoutChanged();
 	} else {
 		// Force the view associated with this model to update when we have more annotations
@@ -259,62 +258,6 @@ void AnnotationCollectionModel::set_signal_and_segment(data::DecodeSignal* signa
 
 	prev_segment_ = current_segment;
 	prev_last_row_ = new_row_count;
-}
-
-void AnnotationCollectionModel::set_sample_range(uint64_t start_sample, uint64_t end_sample)
-{
-	// Check if there's even anything to reset
-	if ((start_sample == end_sample) && (start_index_ == end_index_))
-		return;
-
-	if (!dataset_ || dataset_->empty() || (end_sample == 0)) {
-		start_index_ = 0;
-		end_index_ = 0;
-		start_sample_ = 0;
-		end_sample_ = 0;
-
-		dataChanged(QModelIndex(), QModelIndex());
-		layoutChanged();
-		return;
-	}
-
-	start_sample_ = start_sample;
-	end_sample_ = end_sample;
-
-	// Determine first and last indices into the annotation list
-	int64_t i = -1;
-	bool ann_outside_range;
-	do {
-		i++;
-
-		if (i == (int64_t)dataset_->size()) {
-			start_index_ = 0;
-			end_index_ = 0;
-
-			dataChanged(QModelIndex(), QModelIndex());
-			layoutChanged();
-			return;
-		}
-		const Annotation* ann = (*dataset_)[i];
-		ann_outside_range =
-			((ann->start_sample() < start_sample) && (ann->end_sample() < start_sample));
-	} while (ann_outside_range);
-	start_index_ = i;
-
-	// Ideally, we would be able to set end_index_ to the last annotation that
-	// is within range. However, as annotations in the list are sorted by
-	// start sample and hierarchy level, we may encounter this scenario:
-	//   [long annotation that spans across view]
-	//   [short annotations that aren't seen]
-	//   [short annotations that are seen]
-	// ..in which our output would only show the first long annotations.
-	// For this reason, we simply show everything after the first visible
-	// annotation for now.
-
-	end_index_ = dataset_->size();
-
-	dataChanged(index(0, 0), index((end_index_ - start_index_), 0));
-	layoutChanged();
 }
 
 void AnnotationCollectionModel::set_hide_hidden(bool hide_hidden)
@@ -329,11 +272,8 @@ void AnnotationCollectionModel::set_hide_hidden(bool hide_hidden)
 		all_annotations_without_hidden_.clear();  // To conserve memory
 	}
 
-	// Re-apply the requested sample range
-	set_sample_range(start_sample_, end_sample_);
-
 	if (dataset_)
-		dataChanged(index(0, 0), index(dataset_->size(), 0));
+		dataChanged(index(0, 0), index(dataset_->size() - 1, 0));
 	else
 		dataChanged(QModelIndex(), QModelIndex());
 
@@ -362,15 +302,16 @@ void AnnotationCollectionModel::update_annotations_without_hidden()
 	all_annotations_without_hidden_.resize(count);
 }
 
-void AnnotationCollectionModel::update_highlighted_rows(QModelIndex first,
+QModelIndex AnnotationCollectionModel::update_highlighted_rows(QModelIndex first,
 	QModelIndex last, int64_t sample_num)
 {
 	bool has_highlight = false;
+	QModelIndex result;
 
 	highlight_sample_num_ = sample_num;
 
 	if (!dataset_ || dataset_->empty())
-		return;
+		return result;
 
 	if (sample_num >= 0) {
 		last = last.sibling(last.row() + 1, 0);
@@ -385,6 +326,7 @@ void AnnotationCollectionModel::update_highlighted_rows(QModelIndex first,
 
 			if (((int64_t)ann->start_sample() <= sample_num) &&
 				((int64_t)ann->end_sample() >= sample_num)) {
+				result = index;
 				has_highlight = true;
 				break;
 			}
@@ -393,10 +335,14 @@ void AnnotationCollectionModel::update_highlighted_rows(QModelIndex first,
 		} while (index != last);
 	}
 
-	if (has_highlight || had_highlight_before_)
+	if (has_highlight || had_highlight_before_) {
 		dataChanged(first, last);
+		layoutChanged();
+	}
 
 	had_highlight_before_ = has_highlight;
+
+	return result;
 }
 
 void AnnotationCollectionModel::on_annotation_visibility_changed()
@@ -406,11 +352,8 @@ void AnnotationCollectionModel::on_annotation_visibility_changed()
 
 	update_annotations_without_hidden();
 
-	// Re-apply the requested sample range
-	set_sample_range(start_sample_, end_sample_);
-
 	if (dataset_)
-		dataChanged(index(0, 0), index(dataset_->size(), 0));
+		dataChanged(index(0, 0), index(dataset_->size() - 1, 0));
 	else
 		dataChanged(QModelIndex(), QModelIndex());
 

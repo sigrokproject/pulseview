@@ -63,7 +63,50 @@ const char* ViewModeNames[ViewModeCount] = {
 	"Show visible in main view"
 };
 
-QSize QCustomTableView::minimumSizeHint() const
+
+CustomFilterProxyModel::CustomFilterProxyModel(QObject* parent) :
+	QSortFilterProxyModel(parent)
+{
+}
+
+bool CustomFilterProxyModel::filterAcceptsRow(int sourceRow,
+	const QModelIndex &sourceParent) const
+{
+	(void)sourceParent;
+	assert(sourceModel() != nullptr);
+
+	const QModelIndex ann_start_sample_idx = sourceModel()->index(sourceRow, 0);
+	const uint64_t ann_start_sample =
+		sourceModel()->data(ann_start_sample_idx, Qt::DisplayRole).toULongLong();
+
+	const QModelIndex ann_end_sample_idx = sourceModel()->index(sourceRow, 6);
+	const uint64_t ann_end_sample =
+		sourceModel()->data(ann_end_sample_idx, Qt::DisplayRole).toULongLong();
+
+	// We consider all annotations as visible that either
+	// a) begin to the left of the range and end within the range or
+	// b) begin and end within the range or
+	// c) begin within the range and end to the right of the range
+	// ...which is equivalent to the negation of "begins and ends outside the range"
+
+	const bool left_of_range = (ann_end_sample < range_start_sample_);
+	const bool right_of_range = (ann_start_sample > range_end_sample_);
+	const bool entirely_outside_of_range = left_of_range || right_of_range;
+
+	return !entirely_outside_of_range;
+}
+
+void CustomFilterProxyModel::set_sample_range(uint64_t start_sample,
+	uint64_t end_sample)
+{
+	range_start_sample_ = start_sample;
+	range_end_sample_ = end_sample;
+
+	invalidateFilter();
+}
+
+
+QSize CustomTableView::minimumSizeHint() const
 {
 	QSize size(QTableView::sizeHint());
 
@@ -77,7 +120,7 @@ QSize QCustomTableView::minimumSizeHint() const
 	return size;
 }
 
-QSize QCustomTableView::sizeHint() const
+QSize CustomTableView::sizeHint() const
 {
 	return minimumSizeHint();
 }
@@ -93,8 +136,9 @@ View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 	view_mode_selector_(new QComboBox()),
 	save_button_(new QToolButton()),
 	save_action_(new QAction(this)),
-	table_view_(new QCustomTableView()),
-	model_(new AnnotationCollectionModel()),
+	table_view_(new CustomTableView()),
+	model_(new AnnotationCollectionModel(this)),
+	filter_proxy_model_(new CustomFilterProxyModel(this)),
 	signal_(nullptr)
 {
 	QVBoxLayout *root_layout = new QVBoxLayout(this);
@@ -153,12 +197,17 @@ View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 	save_button_->setDefaultAction(save_action_);
 	save_button_->setPopupMode(QToolButton::MenuButtonPopup);
 
-	// Set up the table view
-	table_view_->setModel(model_);
+	// Set up the models and the table view
+	filter_proxy_model_->setSourceModel(model_);
+	table_view_->setModel(filter_proxy_model_);
+
 	table_view_->setSelectionBehavior(QAbstractItemView::SelectRows);
 	table_view_->setSelectionMode(QAbstractItemView::ContiguousSelection);
-	table_view_->setSortingEnabled(false);
+	table_view_->setSortingEnabled(true);
 	table_view_->sortByColumn(0, Qt::AscendingOrder);
+
+	for (uint8_t i = model_->first_hidden_column(); i < model_->columnCount(); i++)
+		table_view_->setColumnHidden(i, true);
 
 	const int font_height = QFontMetrics(QApplication::font()).height();
 	table_view_->verticalHeader()->setDefaultSectionSize((font_height * 5) / 4);
@@ -417,15 +466,19 @@ void View::on_view_mode_changed(int index)
 		int64_t start_sample = md_obj->value(MetadataValueStartSample).toLongLong();
 		int64_t end_sample = md_obj->value(MetadataValueEndSample).toLongLong();
 
-		model_->set_sample_range(max((int64_t)0, start_sample),
+		filter_proxy_model_->set_sample_range(max((int64_t)0, start_sample),
 			max((int64_t)0, end_sample));
+
+		// Force repaint, otherwise the new selection may not show immediately
+//		table_view_->viewport()->update();
 	} else {
-		// Reset the model's data range
-		model_->set_sample_range(0, 0);
+		// Use the data model directly
+		table_view_->setModel(model_);
 	}
 
 	if (index == ViewModeLatest)
-		table_view_->scrollTo(model_->index(model_->rowCount() - 1, 0),
+		table_view_->scrollTo(
+			filter_proxy_model_->mapFromSource(model_->index(model_->rowCount() - 1, 0)),
 			QAbstractItemView::PositionAtBottom);
 }
 
@@ -583,16 +636,26 @@ void View::on_metadata_object_changed(MetadataObject* obj,
 		int64_t start_sample = obj->value(MetadataValueStartSample).toLongLong();
 		int64_t end_sample = obj->value(MetadataValueEndSample).toLongLong();
 
-		model_->set_sample_range(max((int64_t)0, start_sample),
+		filter_proxy_model_->set_sample_range(max((int64_t)0, start_sample),
 			max((int64_t)0, end_sample));
 	}
 
 	if (obj->type() == MetadataObjMousePos) {
-		QModelIndex first_visual_idx = table_view_->indexAt(table_view_->rect().topLeft());
-		QModelIndex last_visual_idx = table_view_->indexAt(table_view_->rect().bottomLeft());
+		QModelIndex first_visible_idx =
+			filter_proxy_model_->mapToSource(filter_proxy_model_->index(0, 0));
+		QModelIndex last_visible_idx =
+			filter_proxy_model_->mapToSource(filter_proxy_model_->index(filter_proxy_model_->rowCount() - 1, 0));
 
-		model_->update_highlighted_rows(first_visual_idx, last_visual_idx,
-			obj->value(MetadataValueStartSample).toLongLong());
+		if (first_visible_idx.isValid()) {
+			const QModelIndex first_highlighted_idx =
+				model_->update_highlighted_rows(first_visible_idx, last_visible_idx,
+					obj->value(MetadataValueStartSample).toLongLong());
+
+			if (view_mode_selector_->currentIndex() == ViewModeVisible) {
+				const QModelIndex idx = filter_proxy_model_->mapFromSource(first_highlighted_idx);
+				table_view_->scrollTo(idx, QAbstractItemView::EnsureVisible);
+			}
+		}
 	}
 }
 

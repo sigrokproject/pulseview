@@ -23,6 +23,7 @@
 #include <QAction>
 #include <QCheckBox>
 #include <QComboBox>
+#include <QSortFilterProxyModel>
 #include <QTableView>
 #include <QToolButton>
 
@@ -68,6 +69,7 @@ public:
 	QVariant data(const QModelIndex& index, int role) const override;
 	Qt::ItemFlags flags(const QModelIndex& index) const override;
 
+	uint8_t first_hidden_column() const;
 	QVariant headerData(int section, Qt::Orientation orientation,
 		int role = Qt::DisplayRole) const override;
 	QModelIndex index(int row, int column,
@@ -79,11 +81,10 @@ public:
 	int columnCount(const QModelIndex& parent_idx = QModelIndex()) const override;
 
 	void set_signal_and_segment(data::DecodeSignal* signal, uint32_t current_segment);
-	void set_sample_range(uint64_t start_sample, uint64_t end_sample);
 	void set_hide_hidden(bool hide_hidden);
 
 	void update_annotations_without_hidden();
-	void update_highlighted_rows(QModelIndex first, QModelIndex last,
+	QModelIndex update_highlighted_rows(QModelIndex first, QModelIndex last,
 		int64_t sample_num);
 
 private Q_SLOTS:
@@ -95,16 +96,33 @@ private:
 	deque<const Annotation*> all_annotations_without_hidden_;
 	const deque<const Annotation*>* dataset_;
 	data::DecodeSignal* signal_;
+	uint8_t first_hidden_column_;
 	uint32_t prev_segment_;
 	uint64_t prev_last_row_;
-	uint64_t start_sample_, end_sample_, start_index_, end_index_;
 	int64_t highlight_sample_num_;
 	bool had_highlight_before_;
 	bool hide_hidden_;
 };
 
 
-class QCustomTableView : public QTableView
+class CustomFilterProxyModel : public QSortFilterProxyModel
+{
+	Q_OBJECT
+
+public:
+	CustomFilterProxyModel(QObject* parent = 0);
+
+	void set_sample_range(uint64_t start_sample, uint64_t end_sample);
+
+protected:
+	bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override;
+
+private:
+	uint64_t range_start_sample_, range_end_sample_;
+};
+
+
+class CustomTableView : public QTableView
 {
 	Q_OBJECT
 
@@ -178,9 +196,9 @@ private:
 	QToolButton* save_button_;
 	QAction* save_action_;
 
-	QCustomTableView* table_view_;
-
+	CustomTableView* table_view_;
 	AnnotationCollectionModel* model_;
+	CustomFilterProxyModel* filter_proxy_model_;
 
 	data::DecodeSignal* signal_;
 	const data::decode::Decoder* decoder_;
