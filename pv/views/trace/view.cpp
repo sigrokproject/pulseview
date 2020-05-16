@@ -286,7 +286,7 @@ void View::reset_view_state()
 	zero_offset_ = 0;
 	custom_zero_offset_set_ = false;
 	updating_scroll_ = false;
-	settings_restored_ = false;
+	restoring_state_ = false;
 	always_zoom_to_fit_ = false;
 	tick_period_ = 0;
 	tick_prefix_ = pv::util::SIPrefix::yocto;
@@ -300,10 +300,8 @@ void View::reset_view_state()
 	grabbed_widget_ = nullptr;
 	hover_point_ = QPoint(-1, -1);
 	scroll_needs_defaults_ = true;
-	saved_v_offset_ = 0;
 	scale_at_acq_start_ = 0;
 	offset_at_acq_start_ = 0;
-	suppress_zoom_to_fit_after_acq_ = false;
 
 	show_cursors_ = false;
 	cursor_state_changed(show_cursors_);
@@ -314,6 +312,8 @@ void View::reset_view_state()
 
 	// Make sure the standard bar's segment selector is in sync
 	set_segment_display_mode(segment_display_mode_);
+
+	scrollarea_->verticalScrollBar()->setRange(-100000000, 100000000);
 }
 
 Session& View::session()
@@ -541,14 +541,12 @@ void View::restore_settings(QSettings &settings)
 	}
 
 	if (settings.contains("v_offset")) {
-		saved_v_offset_ = settings.value("v_offset").toInt();
-		set_v_offset(saved_v_offset_);
-		scroll_needs_defaults_ = false;
 		// Note: see eventFilter() for additional information
+		saved_v_offset_ = settings.value("v_offset").toInt();
+		scroll_needs_defaults_ = false;
 	}
 
-	settings_restored_ = true;
-	suppress_zoom_to_fit_after_acq_ = true;
+	restoring_state_ = true;
 
 	// Update the ruler so that it uses the new scale
 	calculate_tick_spacing();
@@ -888,7 +886,7 @@ void View::set_scale_offset(double scale, const Timestamp& offset)
 	// Disable sticky scrolling / always zoom to fit when acquisition runs
 	// and user drags the viewport
 	if ((scale_ == scale) && (offset_ != offset) &&
-			(session_.get_capture_state() == Session::Running)) {
+		(session_.get_capture_state() == Session::Running)) {
 
 		if (sticky_scrolling_) {
 			sticky_scrolling_ = false;
@@ -1565,7 +1563,7 @@ bool View::eventFilter(QObject *object, QEvent *event)
 		// resized to their final sizes.
 		update_layout();
 
-		if (settings_restored_)
+		if (restoring_state_)
 			determine_if_header_was_shrunk();
 		else
 			resize_header_to_fit();
@@ -1575,10 +1573,8 @@ bool View::eventFilter(QObject *object, QEvent *event)
 			scroll_needs_defaults_ = false;
 		}
 
-		if (saved_v_offset_) {
+		if (restoring_state_)
 			set_v_offset(saved_v_offset_);
-			saved_v_offset_ = 0;
-		}
 	}
 
 	return QObject::eventFilter(object, event);
@@ -1963,13 +1959,14 @@ void View::capture_state_updated(int state)
 		// the main view of this session (other trace views may be used for
 		// zooming and we don't want to mess them up)
 		bool state = settings.value(GlobalSettings::Key_View_ZoomToFitDuringAcq).toBool();
-		if (is_main_view_ && state) {
+		if (is_main_view_ && state && !restoring_state_) {
 			always_zoom_to_fit_ = true;
 			always_zoom_to_fit_changed(always_zoom_to_fit_);
 		}
 
 		// Enable sticky scrolling if the setting is enabled
-		sticky_scrolling_ = settings.value(GlobalSettings::Key_View_StickyScrolling).toBool();
+		sticky_scrolling_ = !restoring_state_ &&
+			settings.value(GlobalSettings::Key_View_StickyScrolling).toBool();
 
 		// Reset all traces to segment 0
 		current_segment_ = 0;
@@ -1995,12 +1992,13 @@ void View::capture_state_updated(int state)
 		// Only perform zoom-to-fit if the user hasn't altered the viewport and
 		// we didn't restore settings in the meanwhile
 		if (zoom_to_fit_after_acq &&
-			!suppress_zoom_to_fit_after_acq_ &&
+			!restoring_state_ &&
 			(scale_ == scale_at_acq_start_) &&
-			(offset_ == offset_at_acq_start_))
+			(sticky_scrolling_ || (offset_ == offset_at_acq_start_))) {
 			zoom_fit(false);  // We're stopped, so the GUI state doesn't matter
+		}
 
-		suppress_zoom_to_fit_after_acq_ = false;
+		restoring_state_ = false;
 	}
 }
 

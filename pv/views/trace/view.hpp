@@ -536,7 +536,7 @@ private:
 	bool custom_zero_offset_set_;
 
 	bool updating_scroll_;
-	bool settings_restored_;
+	bool restoring_state_;
 	bool header_was_shrunk_;
 
 	bool sticky_scrolling_;
@@ -569,18 +569,12 @@ private:
 	// This is true when the defaults couldn't be set due to insufficient info
 	bool scroll_needs_defaults_;
 
-	// A nonzero value indicates the v offset to restore. See View::resizeEvent()
+	// The v offset to restore. See View::eventFilter()
 	int saved_v_offset_;
 
 	// These are used to determine whether the view was altered after acq started
 	double scale_at_acq_start_;
 	pv::util::Timestamp offset_at_acq_start_;
-
-	// Used to suppress performing a "zoom to fit" when the session stops. This
-	// is needed when the view's settings are restored before acquisition ends.
-	// In that case we want to keep the restored settings, not have a "zoom to fit"
-	// mess them up.
-	bool suppress_zoom_to_fit_after_acq_;
 };
 
 } // namespace trace
