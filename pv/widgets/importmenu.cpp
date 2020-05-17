@@ -63,7 +63,7 @@ ImportMenu::ImportMenu(QWidget *parent, shared_ptr<Context> context,
 	const map<string, shared_ptr<InputFormat> > formats =
 		context->input_formats();
 
-	for (const pair<string, shared_ptr<InputFormat> > &f : formats) {
+	for (const pair<const string, shared_ptr<InputFormat> > &f : formats) {
 		assert(f.second);
 		QAction *const action =	addAction(tr("Import %1...")
 			.arg(QString::fromStdString(f.second->description())));

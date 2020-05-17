@@ -881,6 +881,8 @@ void MainWindow::on_show_decoder_selector(Session *session)
 	for (shared_ptr<Session>& s : sessions_)
 		if (s.get() == session)
 			add_subwindow(subwindows::SubWindowTypeDecoderSelector, *s);
+#else
+	(void)session;
 #endif
 }
 

@@ -63,7 +63,7 @@ ExportMenu::ExportMenu(QWidget *parent, shared_ptr<Context> context,
 	const map<string, shared_ptr<OutputFormat> > formats =
 		context->output_formats();
 
-	for (const pair<string, shared_ptr<OutputFormat> > &f : formats) {
+	for (const pair<const string, shared_ptr<OutputFormat> > &f : formats) {
 		if (f.first == "srzip")
 			continue;
 

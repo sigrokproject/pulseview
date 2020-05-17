@@ -54,6 +54,7 @@
 #include "pv/metadata_obj.hpp"
 #include "pv/data/logic.hpp"
 #include "pv/data/logicsegment.hpp"
+#include "pv/data/signalbase.hpp"
 #include "pv/devices/device.hpp"
 #include "pv/globalsettings.hpp"
 #include "pv/session.hpp"
@@ -63,6 +64,7 @@
 #include "decodetrace.hpp"
 #endif
 
+using pv::data::SignalBase;
 using pv::data::SignalData;
 using pv::data::Segment;
 using pv::util::TimeUnit;
