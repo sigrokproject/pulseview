@@ -30,11 +30,11 @@
 
 #include <QObject>
 
-#include <pv/data/signalbase.hpp>
 #include <pv/data/decode/row.hpp>
 
 using std::deque;
 using std::map;
+using std::shared_ptr;
 using std::string;
 using std::vector;
 

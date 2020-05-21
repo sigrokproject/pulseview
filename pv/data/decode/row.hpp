@@ -20,15 +20,17 @@
 #ifndef PULSEVIEW_PV_DATA_DECODE_ROW_HPP
 #define PULSEVIEW_PV_DATA_DECODE_ROW_HPP
 
+#include <map>
 #include <vector>
 
+#include <QObject>
 #include <QColor>
-
-#include <pv/data/decode/annotation.hpp>
-#include <pv/data/decode/decoder.hpp>
 
 struct srd_decoder;
 struct srd_decoder_annotation_row;
+
+using std::map;
+using std::vector;
 
 namespace pv {
 namespace data {

@@ -104,7 +104,7 @@ const Annotation* RowData::emplace_annotation(srd_proto_data *pdata)
 {
 	const srd_proto_data_annotation *const pda = (const srd_proto_data_annotation*)pdata->data;
 
-	Annotation::Class ann_class_id = (Annotation::Class)(pda->ann_class);
+	uint32_t ann_class_id = pda->ann_class;
 
 	// Look up the longest annotation text to see if we have it in storage.
 	// This implies that if the longest text is the same, the shorter texts

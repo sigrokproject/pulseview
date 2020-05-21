@@ -26,6 +26,8 @@
 #include <QColor>
 #include <QString>
 
+#include "pv/data/decode/row.hpp"
+
 using std::vector;
 
 struct srd_proto_data;
@@ -34,17 +36,13 @@ namespace pv {
 namespace data {
 namespace decode {
 
-class Row;
 class RowData;
 
 class Annotation
 {
 public:
-	typedef uint32_t Class;
-
-public:
 	Annotation(uint64_t start_sample, uint64_t end_sample,
-		const vector<QString>* texts, Class ann_class_id, const RowData *data);
+		const vector<QString>* texts, uint32_t ann_class_id, const RowData *data);
 	Annotation(Annotation&& a);
 	Annotation& operator=(Annotation&& a);
 
@@ -55,7 +53,7 @@ public:
 	uint64_t end_sample() const;
 	uint64_t length() const;
 
-	Class ann_class_id() const;
+	uint32_t ann_class_id() const;
 	const QString ann_class_name() const;
 	const QString ann_class_description() const;
 
@@ -74,7 +72,7 @@ private:
 	uint64_t start_sample_;
 	uint64_t end_sample_;
 	const vector<QString>* texts_;
-	Class ann_class_id_;
+	uint32_t ann_class_id_;
 	const RowData* data_;
 };
 

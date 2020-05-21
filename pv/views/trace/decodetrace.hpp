@@ -198,7 +198,7 @@ private:
 	void draw_annotation(const Annotation* a, QPainter &p,
 		const ViewItemPaintParams &pp, int y, const DecodeTraceRow& row) const;
 
-	void draw_annotation_block(qreal start, qreal end, Annotation::Class ann_class,
+	void draw_annotation_block(qreal start, qreal end, uint32_t ann_class,
 		bool use_ann_format, QPainter &p, int y, const DecodeTraceRow& row) const;
 
 	void draw_instant(const Annotation* a, QPainter &p, qreal x, int y) const;

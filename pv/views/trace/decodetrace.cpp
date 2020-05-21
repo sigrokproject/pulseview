@@ -697,7 +697,7 @@ void DecodeTrace::mouse_left_press_event(const QMouseEvent* event)
 void DecodeTrace::draw_annotations(deque<const Annotation*>& annotations,
 		QPainter &p, const ViewItemPaintParams &pp, int y, const DecodeTraceRow& row)
 {
-	Annotation::Class block_class = 0;
+	uint32_t block_class = 0;
 	bool block_class_uniform = true;
 	qreal block_start = 0;
 	int block_ann_count = 0;
@@ -802,7 +802,7 @@ void DecodeTrace::draw_annotation(const Annotation* a, QPainter &p,
 }
 
 void DecodeTrace::draw_annotation_block(qreal start, qreal end,
-	Annotation::Class ann_class, bool use_ann_format, QPainter &p, int y,
+	uint32_t ann_class, bool use_ann_format, QPainter &p, int y,
 	const DecodeTraceRow& row) const
 {
 	const double top = y + .5 - annotation_height_ / 2;

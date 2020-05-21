@@ -35,7 +35,7 @@ namespace data {
 namespace decode {
 
 Annotation::Annotation(uint64_t start_sample, uint64_t end_sample,
-	const vector<QString>* texts, Class ann_class_id, const RowData *data) :
+	const vector<QString>* texts, uint32_t ann_class_id, const RowData *data) :
 	start_sample_(start_sample),
 	end_sample_(end_sample),
 	texts_(texts),
@@ -91,7 +91,7 @@ uint64_t Annotation::length() const
 	return end_sample_ - start_sample_;
 }
 
-Annotation::Class Annotation::ann_class_id() const
+uint32_t Annotation::ann_class_id() const
 {
 	return ann_class_id_;
 }
