@@ -17,8 +17,8 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PULSEVIEW_PV_VIEWS_TRACEVIEW_VIEWITEMOWNER_HPP
-#define PULSEVIEW_PV_VIEWS_TRACEVIEW_VIEWITEMOWNER_HPP
+#ifndef PULSEVIEW_PV_VIEWS_TRACE_VIEWITEMOWNER_HPP
+#define PULSEVIEW_PV_VIEWS_TRACE_VIEWITEMOWNER_HPP
 
 #include <memory>
 #include <vector>
@@ -98,4 +98,4 @@ protected:
 } // namespace views
 } // namespace pv
 
-#endif // PULSEVIEW_PV_VIEWS_TRACEVIEW_VIEWITEMOWNER_HPP
+#endif // PULSEVIEW_PV_VIEWS_TRACE_VIEWITEMOWNER_HPP

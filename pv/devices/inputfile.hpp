@@ -17,8 +17,8 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PULSEVIEW_PV_DEVICE_INPUTFILE_HPP
-#define PULSEVIEW_PV_DEVICE_INPUTFILE_HPP
+#ifndef PULSEVIEW_PV_DEVICES_INPUTFILE_HPP
+#define PULSEVIEW_PV_DEVICES_INPUTFILE_HPP
 
 #include <atomic>
 
@@ -81,5 +81,5 @@ private:
 } // namespace devices
 } // namespace pv
 
-#endif // PULSEVIEW_PV_SESSIONS_INPUTFILE_HPP
+#endif // PULSEVIEW_PV_DEVICES_INPUTFILE_HPP
 

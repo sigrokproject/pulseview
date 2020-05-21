@@ -17,8 +17,8 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PULSEVIEW_PV_MARGINWIDGET_HPP
-#define PULSEVIEW_PV_MARGINWIDGET_HPP
+#ifndef PULSEVIEW_PV_VIEWS_TRACE_MARGINWIDGET_HPP
+#define PULSEVIEW_PV_VIEWS_TRACE_MARGINWIDGET_HPP
 
 #include <memory>
 
@@ -73,4 +73,4 @@ protected Q_SLOTS:
 } // namespace views
 } // namespace pv
 
-#endif // PULSEVIEW_PV_MARGINWIDGET_HPP
+#endif // PULSEVIEW_PV_VIEWS_TRACE_MARGINWIDGET_HPP

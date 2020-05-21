@@ -17,8 +17,8 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PULSEVIEW_PV_VIEWITEM_HPP
-#define PULSEVIEW_PV_VIEWITEM_HPP
+#ifndef PULSEVIEW_PV_VIEWS_TRACE_VIEWITEM_HPP
+#define PULSEVIEW_PV_VIEWS_TRACE_VIEWITEM_HPP
 
 #include <list>
 
@@ -191,4 +191,4 @@ private:
 } // namespace views
 } // namespace pv
 
-#endif // PULSEVIEW_PV_VIEWITEM_HPP
+#endif // PULSEVIEW_PV_VIEWS_TRACE_VIEWITEM_HPP

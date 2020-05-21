@@ -17,8 +17,8 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PULSEVIEW_PV_VIEWS_TRACEVIEW_MARKER_HPP
-#define PULSEVIEW_PV_VIEWS_TRACEVIEW_MARKER_HPP
+#ifndef PULSEVIEW_PV_VIEWS_TRACE_TIMEMARKER_HPP
+#define PULSEVIEW_PV_VIEWS_TRACE_TIMEMARKER_HPP
 
 #include <QColor>
 #include <QDoubleSpinBox>
@@ -139,4 +139,4 @@ protected:
 } // namespace views
 } // namespace pv
 
-#endif // PULSEVIEW_PV_VIEWS_TRACEVIEW_MARKER_HPP
+#endif // PULSEVIEW_PV_VIEWS_TRACE_TIMEMARKER_HPP

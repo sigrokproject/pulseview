@@ -17,8 +17,8 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PULSEVIEW_PV_VIEWS_TRACEVIEW_VIEW_HPP
-#define PULSEVIEW_PV_VIEWS_TRACEVIEW_VIEW_HPP
+#ifndef PULSEVIEW_PV_VIEWS_TRACE_VIEW_HPP
+#define PULSEVIEW_PV_VIEWS_TRACE_VIEW_HPP
 
 #include <cstdint>
 #include <list>
@@ -587,4 +587,4 @@ private:
 } // namespace views
 } // namespace pv
 
-#endif // PULSEVIEW_PV_VIEWS_TRACEVIEW_VIEW_HPP
+#endif // PULSEVIEW_PV_VIEWS_TRACE_VIEW_HPP

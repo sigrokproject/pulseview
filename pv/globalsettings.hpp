@@ -17,8 +17,8 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PULSEVIEW_GLOBALSETTINGS_HPP
-#define PULSEVIEW_GLOBALSETTINGS_HPP
+#ifndef PULSEVIEW_PV_GLOBALSETTINGS_HPP
+#define PULSEVIEW_PV_GLOBALSETTINGS_HPP
 
 #include <map>
 
@@ -146,4 +146,4 @@ private:
 
 } // namespace pv
 
-#endif // PULSEVIEW_GLOBALSETTINGS_HPP
+#endif // PULSEVIEW_PV_GLOBALSETTINGS_HPP

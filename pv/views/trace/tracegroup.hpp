@@ -17,8 +17,8 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PULSEVIEW_PV_VIEWS_TRACEVIEW_TRACEGROUP_HPP
-#define PULSEVIEW_PV_VIEWS_TRACEVIEW_TRACEGROUP_HPP
+#ifndef PULSEVIEW_PV_VIEWS_TRACE_TRACEGROUP_HPP
+#define PULSEVIEW_PV_VIEWS_TRACE_TRACEGROUP_HPP
 
 #include "tracetreeitem.hpp"
 #include "tracetreeitemowner.hpp"
@@ -131,4 +131,4 @@ private Q_SLOTS:
 } // namespace views
 } // namespace pv
 
-#endif // PULSEVIEW_PV_VIEWS_TRACEVIEW_TRACEGROUP_HPP
+#endif // PULSEVIEW_PV_VIEWS_TRACE_TRACEGROUP_HPP

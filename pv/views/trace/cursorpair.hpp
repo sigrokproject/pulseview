@@ -17,8 +17,8 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PULSEVIEW_PV_VIEWS_TRACEVIEW_CURSORPAIR_HPP
-#define PULSEVIEW_PV_VIEWS_TRACEVIEW_CURSORPAIR_HPP
+#ifndef PULSEVIEW_PV_VIEWS_TRACE_CURSORPAIR_HPP
+#define PULSEVIEW_PV_VIEWS_TRACE_CURSORPAIR_HPP
 
 #include "cursor.hpp"
 #include "pv/globalsettings.hpp"
@@ -135,4 +135,4 @@ private:
 } // namespace views
 } // namespace pv
 
-#endif // PULSEVIEW_PV_VIEWS_TRACEVIEW_CURSORPAIR_HPP
+#endif // PULSEVIEW_PV_VIEWS_TRACE_CURSORPAIR_HPP

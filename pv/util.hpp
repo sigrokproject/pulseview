@@ -17,8 +17,8 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PULSEVIEW_UTIL_HPP
-#define PULSEVIEW_UTIL_HPP
+#ifndef PULSEVIEW_PV_UTIL_HPP
+#define PULSEVIEW_PV_UTIL_HPP
 
 #include <cmath>
 #include <string>
@@ -143,4 +143,4 @@ vector<string> split_string(string text, string separator);
 
 Q_DECLARE_METATYPE(pv::util::Timestamp)
 
-#endif // PULSEVIEW_UTIL_HPP
+#endif // PULSEVIEW_PV_UTIL_HPP

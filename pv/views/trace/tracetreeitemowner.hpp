@@ -17,8 +17,8 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PULSEVIEW_PV_VIEWS_TRACEVIEW_TRACETREEITEMOWNER_HPP
-#define PULSEVIEW_PV_VIEWS_TRACEVIEW_TRACETREEITEMOWNER_HPP
+#ifndef PULSEVIEW_PV_VIEWS_TRACE_TRACETREEITEMOWNER_HPP
+#define PULSEVIEW_PV_VIEWS_TRACE_TRACETREEITEMOWNER_HPP
 
 #include "viewitemowner.hpp"
 #include "tracetreeitem.hpp"
@@ -110,4 +110,4 @@ public:
 } // namespace views
 } // namespace pv
 
-#endif // PULSEVIEW_PV_VIEWS_TRACEVIEW_TRACETREEITEMOWNER_HPP
+#endif // PULSEVIEW_PV_VIEWS_TRACE_TRACETREEITEMOWNER_HPP

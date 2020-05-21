@@ -17,8 +17,8 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PULSEVIEW_PV_SUBWINDOWBASE_HPP
-#define PULSEVIEW_PV_SUBWINDOWBASE_HPP
+#ifndef PULSEVIEW_PV_SUBWINDOWS_SUBWINDOWBASE_HPP
+#define PULSEVIEW_PV_SUBWINDOWS_SUBWINDOWBASE_HPP
 
 #include <cstdint>
 #include <memory>
@@ -90,4 +90,4 @@ protected:
 } // namespace subwindows
 } // namespace pv
 
-#endif // PULSEVIEW_PV_SUBWINDOWBASE_HPP
+#endif // PULSEVIEW_PV_SUBWINDOWS_SUBWINDOWBASE_HPP

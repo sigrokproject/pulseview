@@ -70,4 +70,4 @@ private:
 } // namespace dialogs
 } // namespace pv
 
-#endif // PULSEVIEW_PV_INPUTOUTPUTOPTIONS_HPP
+#endif // PULSEVIEW_PV_DIALOGS_INPUTOUTPUTOPTIONS_HPP

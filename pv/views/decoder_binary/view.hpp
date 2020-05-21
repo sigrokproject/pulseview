@@ -17,8 +17,8 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PULSEVIEW_PV_VIEWS_DECODERBINARY_VIEW_HPP
-#define PULSEVIEW_PV_VIEWS_DECODERBINARY_VIEW_HPP
+#ifndef PULSEVIEW_PV_VIEWS_DECODER_BINARY_VIEW_HPP
+#define PULSEVIEW_PV_VIEWS_DECODER_BINARY_VIEW_HPP
 
 #include <QAction>
 #include <QComboBox>
@@ -112,4 +112,4 @@ private:
 } // namespace views
 } // namespace pv
 
-#endif // PULSEVIEW_PV_VIEWS_DECODERBINARY_VIEW_HPP
+#endif // PULSEVIEW_PV_VIEWS_DECODER_BINARY_VIEW_HPP

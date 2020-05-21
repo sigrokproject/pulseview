@@ -17,8 +17,8 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PULSEVIEW_PV_VIEWS_TABULARDECODER_VIEW_HPP
-#define PULSEVIEW_PV_VIEWS_TABULARDECODER_VIEW_HPP
+#ifndef PULSEVIEW_PV_VIEWS_TABULAR_DECODER_VIEW_HPP
+#define PULSEVIEW_PV_VIEWS_TABULAR_DECODER_VIEW_HPP
 
 #include <QAction>
 #include <QCheckBox>
@@ -208,4 +208,4 @@ private:
 } // namespace views
 } // namespace pv
 
-#endif // PULSEVIEW_PV_VIEWS_TABULARDECODER_VIEW_HPP
+#endif // PULSEVIEW_PV_VIEWS_TABULAR_DECODER_VIEW_HPP

@@ -17,8 +17,8 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PULSEVIEW_PV_VIEWS_TRACEVIEW_RULER_HPP
-#define PULSEVIEW_PV_VIEWS_TRACEVIEW_RULER_HPP
+#ifndef PULSEVIEW_PV_VIEWS_TRACE_RULER_HPP
+#define PULSEVIEW_PV_VIEWS_TRACE_RULER_HPP
 
 #include <functional>
 #include <memory>
@@ -203,4 +203,4 @@ private:
 } // namespace views
 } // namespace pv
 
-#endif // PULSEVIEW_PV_VIEWS_TRACEVIEW_RULER_HPP
+#endif // PULSEVIEW_PV_VIEWS_TRACE_RULER_HPP

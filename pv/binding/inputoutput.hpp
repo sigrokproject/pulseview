@@ -81,4 +81,4 @@ private:
 }  // namespace binding
 }  // namespace pv
 
-#endif // PULSEVIEW_PV_BINDING_INPUTOUTPUT_H
+#endif // PULSEVIEW_PV_BINDING_INPUTOUTPUT_HPP

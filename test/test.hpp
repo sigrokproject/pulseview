@@ -26,4 +26,4 @@ using std::ostream;
 
 ostream& operator<<(ostream& stream, const QString& str);
 
-#endif
+#endif // PULSEVIEW_TEST_TEST_HPP

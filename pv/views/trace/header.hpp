@@ -17,8 +17,8 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PULSEVIEW_PV_VIEWS_TRACEVIEW_HEADER_HPP
-#define PULSEVIEW_PV_VIEWS_TRACEVIEW_HEADER_HPP
+#ifndef PULSEVIEW_PV_VIEWS_TRACE_HEADER_HPP
+#define PULSEVIEW_PV_VIEWS_TRACE_HEADER_HPP
 
 #include <list>
 #include <memory>
@@ -94,4 +94,4 @@ private Q_SLOTS:
 } // namespace views
 } // namespace pv
 
-#endif // PULSEVIEW_PV_VIEWS_TRACEVIEW_HEADER_HPP
+#endif // PULSEVIEW_PV_VIEWS_TRACE_HEADER_HPP

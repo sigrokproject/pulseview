@@ -17,8 +17,8 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PULSEVIEW_PV_SETTINGS_HPP
-#define PULSEVIEW_PV_SETTINGS_HPP
+#ifndef PULSEVIEW_PV_DIALOGS_SETTINGS_HPP
+#define PULSEVIEW_PV_DIALOGS_SETTINGS_HPP
 
 #include <QCheckBox>
 #include <QColor>
@@ -102,4 +102,4 @@ private:
 } // namespace dialogs
 } // namespace pv
 
-#endif // PULSEVIEW_PV_SETTINGS_HPP
+#endif // PULSEVIEW_PV_DIALOGS_SETTINGS_HPP

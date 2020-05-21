@@ -17,8 +17,8 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PULSEVIEW_PV_VIEWS_TRACEVIEW_DECODETRACE_HPP
-#define PULSEVIEW_PV_VIEWS_TRACEVIEW_DECODETRACE_HPP
+#ifndef PULSEVIEW_PV_VIEWS_TRACE_DECODETRACE_HPP
+#define PULSEVIEW_PV_VIEWS_TRACE_DECODETRACE_HPP
 
 #include <config.h>
 #include "trace.hpp"
@@ -335,4 +335,4 @@ private:
 } // namespace views
 } // namespace pv
 
-#endif // PULSEVIEW_PV_VIEWS_TRACEVIEW_DECODETRACE_HPP
+#endif // PULSEVIEW_PV_VIEWS_TRACE_DECODETRACE_HPP

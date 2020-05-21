@@ -17,8 +17,8 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PULSEVIEW_PV_VIEWS_TRACEVIEW_LOGICSIGNAL_HPP
-#define PULSEVIEW_PV_VIEWS_TRACEVIEW_LOGICSIGNAL_HPP
+#ifndef PULSEVIEW_PV_VIEWS_TRACE_LOGICSIGNAL_HPP
+#define PULSEVIEW_PV_VIEWS_TRACE_LOGICSIGNAL_HPP
 
 #include <QCache>
 #include <QColor>
@@ -167,4 +167,4 @@ private:
 } // namespace views
 } // namespace pv
 
-#endif // PULSEVIEW_PV_VIEWS_TRACEVIEW_LOGICSIGNAL_HPP
+#endif // PULSEVIEW_PV_VIEWS_TRACE_LOGICSIGNAL_HPP

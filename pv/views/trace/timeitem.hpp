@@ -17,8 +17,8 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PULSEVIEW_PV_VIEWS_TRACEVIEW_TIMEITEM_HPP
-#define PULSEVIEW_PV_VIEWS_TRACEVIEW_TIMEITEM_HPP
+#ifndef PULSEVIEW_PV_VIEWS_TRACE_TIMEITEM_HPP
+#define PULSEVIEW_PV_VIEWS_TRACE_TIMEITEM_HPP
 
 #include "viewitem.hpp"
 
@@ -77,4 +77,4 @@ protected:
 } // namespace views
 } // namespace pv
 
-#endif // PULSEVIEW_PV_VIEWS_TRACEVIEW_TIMEITEM_HPP
+#endif // PULSEVIEW_PV_VIEWS_TRACE_TIMEITEM_HPP

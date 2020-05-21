@@ -89,4 +89,4 @@ private:
 }  // namespace widgets
 }  // namespace pv
 
-#endif
+#endif // PULSEVIEW_PV_WIDGETS_TIMESTAMPSPINBOX_HPP

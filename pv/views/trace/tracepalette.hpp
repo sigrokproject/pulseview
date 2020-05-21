@@ -17,8 +17,8 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PULSEVIEW_PV_VIEWS_TRACEVIEW_TRACEPALETTE_HPP
-#define PULSEVIEW_PV_VIEWS_TRACEVIEW_TRACEPALETTE_HPP
+#ifndef PULSEVIEW_PV_VIEWS_TRACE_TRACEPALETTE_HPP
+#define PULSEVIEW_PV_VIEWS_TRACE_TRACEPALETTE_HPP
 
 #include <QColor>
 
@@ -38,4 +38,4 @@ public:
 } // namespace views
 } // namespace pv
 
-#endif // PULSEVIEW_PV_VIEWS_TRACEVIEW_TRACEPALETTE_HPP
+#endif // PULSEVIEW_PV_VIEWS_TRACE_TRACEPALETTE_HPP

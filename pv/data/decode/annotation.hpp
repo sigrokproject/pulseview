@@ -17,8 +17,8 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PULSEVIEW_PV_VIEW_DECODE_ANNOTATION_HPP
-#define PULSEVIEW_PV_VIEW_DECODE_ANNOTATION_HPP
+#ifndef PULSEVIEW_PV_DATA_DECODE_ANNOTATION_HPP
+#define PULSEVIEW_PV_DATA_DECODE_ANNOTATION_HPP
 
 #include <cstdint>
 #include <vector>
@@ -80,4 +80,4 @@ private:
 } // namespace data
 } // namespace pv
 
-#endif // PULSEVIEW_PV_VIEW_DECODE_ANNOTATION_HPP
+#endif // PULSEVIEW_PV_DATA_DECODE_ANNOTATION_HPP

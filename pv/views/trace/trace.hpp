@@ -17,8 +17,8 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PULSEVIEW_PV_VIEWS_TRACEVIEW_TRACE_HPP
-#define PULSEVIEW_PV_VIEWS_TRACEVIEW_TRACE_HPP
+#ifndef PULSEVIEW_PV_VIEWS_TRACE_TRACE_HPP
+#define PULSEVIEW_PV_VIEWS_TRACE_TRACE_HPP
 
 #include <QColor>
 #include <QPainter>
@@ -217,4 +217,4 @@ private:
 } // namespace views
 } // namespace pv
 
-#endif // PULSEVIEW_PV_VIEWS_TRACEVIEW_TRACE_HPP
+#endif // PULSEVIEW_PV_VIEWS_TRACE_TRACE_HPP

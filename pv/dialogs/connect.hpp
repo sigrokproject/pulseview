@@ -17,8 +17,8 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PULSEVIEW_PV_CONNECT_HPP
-#define PULSEVIEW_PV_CONNECT_HPP
+#ifndef PULSEVIEW_PV_DIALOGS_CONNECT_HPP
+#define PULSEVIEW_PV_DIALOGS_CONNECT_HPP
 
 #include <memory>
 
@@ -106,4 +106,4 @@ private:
 } // namespace dialogs
 } // namespace pv
 
-#endif // PULSEVIEW_PV_CONNECT_HPP
+#endif // PULSEVIEW_PV_DIALOGS_CONNECT_HPP

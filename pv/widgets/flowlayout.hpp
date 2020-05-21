@@ -38,8 +38,8 @@
  **
  ****************************************************************************/
 
-#ifndef FLOWLAYOUT_H
-#define FLOWLAYOUT_H
+#ifndef PULSEVIEW_PV_WIDGETS_FLOWLAYOUT_HPP
+#define PULSEVIEW_PV_WIDGETS_FLOWLAYOUT_HPP
 
 #include <QLayout>
 #include <QRect>
@@ -75,4 +75,4 @@ private:
 	int m_hSpace, m_vSpace;
 };
 
-#endif
+#endif // PULSEVIEW_PV_WIDGETS_FLOWLAYOUT_HPP

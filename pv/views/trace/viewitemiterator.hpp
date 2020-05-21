@@ -17,8 +17,8 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PULSEVIEW_PV_VIEWS_TRACEVIEW_VIEWITEMITERATOR_HPP
-#define PULSEVIEW_PV_VIEWS_TRACEVIEW_VIEWITEMITERATOR_HPP
+#ifndef PULSEVIEW_PV_VIEWS_TRACE_VIEWITEMITERATOR_HPP
+#define PULSEVIEW_PV_VIEWS_TRACE_VIEWITEMITERATOR_HPP
 
 #include <algorithm>
 #include <cassert>
@@ -129,4 +129,4 @@ void swap(ViewItemIterator<Owner, Item>& a, ViewItemIterator<Owner, Item>& b)
 } // namespace views
 } // namespace pv
 
-#endif // PULSEVIEW_PV_VIEWS_TRACEVIEW_VIEWITEMITERATOR_HPP
+#endif // PULSEVIEW_PV_VIEWS_TRACE_VIEWITEMITERATOR_HPP

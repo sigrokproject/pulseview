@@ -17,8 +17,8 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PULSEVIEW_PV_DIALOGS_SAVEPROGRESS_HPP
-#define PULSEVIEW_PV_DIALOGS_SAVEPROGRESS_HPP
+#ifndef PULSEVIEW_PV_DIALOGS_STOREPROGRESS_HPP
+#define PULSEVIEW_PV_DIALOGS_STOREPROGRESS_HPP
 
 #include <memory>
 #include <set>
@@ -68,4 +68,4 @@ private:
 }  // namespace dialogs
 }  // namespace pv
 
-#endif // PULSEVIEW_PV_DIALOGS_SAVEPROGRESS_HPP
+#endif // PULSEVIEW_PV_DIALOGS_STOREPROGRESS_HPP
