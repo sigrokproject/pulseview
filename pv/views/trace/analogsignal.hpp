@@ -197,7 +197,8 @@ private:
 	int current_pixel_pos_;  // Only used during lookup table update
 
 	// ---------------------------------------------------------------------------
-	// Note: Make sure to update .. when adding a trace-configurable variable here
+	// Note: Make sure to update save_settings() and restore_settings() when
+	//       adding a trace-configurable variable here
 	float scale_;
 	int scale_index_;
 

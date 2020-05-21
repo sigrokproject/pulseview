@@ -63,6 +63,11 @@ typedef boost::multiprecision::number<
 	boost::multiprecision::et_off> Timestamp;
 
 /**
+ * Chooses a prefix so that the value in front of the decimal point is between 1 and 999.
+ */
+SIPrefix determine_value_prefix(double v);
+
+/**
  * Formats a given timestamp with the specified SI prefix.
  *
  * If 'prefix' is left 'unspecified', the function chooses a prefix so that

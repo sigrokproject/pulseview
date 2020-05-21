@@ -141,7 +141,6 @@ private Q_SLOTS:
 	void on_signal_height_changed(int height);
 
 private:
-	int signal_height_;
 	QColor high_fill_color_;
 	bool show_sampling_points_, fill_high_areas_;
 
@@ -161,6 +160,11 @@ private:
 
 	static QCache<QString, const QIcon> icon_cache_;
 	static QCache<QString, const QPixmap> pixmap_cache_;
+
+	// ---------------------------------------------------------------------------
+	// Note: Make sure to update save_settings() and restore_settings() when
+	//       adding a trace-configurable variable here
+	int signal_height_;
 };
 
 } // namespace trace

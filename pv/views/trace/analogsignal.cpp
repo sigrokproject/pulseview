@@ -65,6 +65,7 @@ using std::vector;
 using pv::data::LogicSegment;
 using pv::data::SignalBase;
 using pv::util::SIPrefix;
+using pv::util::determine_value_prefix;
 
 namespace pv {
 namespace views {
@@ -302,12 +303,18 @@ void AnalogSignal::paint_fore(QPainter &p, ViewItemPaintParams &pp)
 
 		QString infotext;
 
+		SIPrefix prefix;
+		if (fabs(signal_max_) > fabs(signal_min_))
+			prefix = determine_value_prefix(fabs(signal_max_));
+		else
+			prefix = determine_value_prefix(fabs(signal_min_));
+
 		// Show the info section on the right side of the trace, including
 		// the value at the hover point when the hover marker is enabled
 		// and we have corresponding data available
 		if (show_hover_marker_ && !std::isnan(value_at_hover_pos_)) {
 			infotext = QString("[%1] %2 V/div")
-				.arg(format_value_si(value_at_hover_pos_, SIPrefix::unspecified, 2, "V", false))
+				.arg(format_value_si(value_at_hover_pos_, prefix, 3, "V", false))
 				.arg(resolution_);
 		} else
 			infotext = QString("%1 V/div").arg(resolution_);
@@ -852,7 +859,6 @@ void AnalogSignal::perform_autoranging(bool keep_divs, bool force_update)
 	if (segments.empty())
 		return;
 
-	double signal_min_ = 0, signal_max_ = 0;
 	double min = 0, max = 0;
 
 	for (const shared_ptr<pv::data::AnalogSegment>& segment : segments) {
@@ -1126,11 +1132,12 @@ void AnalogSignal::on_setting_changed(const QString &key, const QVariant &value)
 
 void AnalogSignal::on_min_max_changed(float min, float max)
 {
-	(void)min;
-	(void)max;
-
 	if (autoranging_)
 		perform_autoranging(false, false);
+	else {
+		if (min < signal_min_) signal_min_ = min;
+		if (max > signal_max_) signal_max_ = max;
+	}
 }
 
 void AnalogSignal::on_pos_vdivs_changed(int vdivs)
