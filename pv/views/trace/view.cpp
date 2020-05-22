@@ -928,7 +928,9 @@ pair<Timestamp, Timestamp> View::get_time_extents() const
 	if (signals_.size() == 0)
 		return make_pair(0, 0);
 
-	data.push_back(signals_.front()->data());
+	for (shared_ptr<Signal> s : signals_)
+		if (s->data()->segments().size() > 0)
+			data.push_back(s->data());
 
 	for (const shared_ptr<SignalData>& d : data) {
 		const vector< shared_ptr<Segment> > segments = d->segments();
