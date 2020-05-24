@@ -65,7 +65,8 @@ const char* ViewModeNames[ViewModeCount] = {
 
 
 CustomFilterProxyModel::CustomFilterProxyModel(QObject* parent) :
-	QSortFilterProxyModel(parent)
+	QSortFilterProxyModel(parent),
+	range_filtering_enabled_(false)
 {
 }
 
@@ -75,25 +76,31 @@ bool CustomFilterProxyModel::filterAcceptsRow(int sourceRow,
 	(void)sourceParent;
 	assert(sourceModel() != nullptr);
 
-	const QModelIndex ann_start_sample_idx = sourceModel()->index(sourceRow, 0);
-	const uint64_t ann_start_sample =
-		sourceModel()->data(ann_start_sample_idx, Qt::DisplayRole).toULongLong();
+	bool result = true;
 
-	const QModelIndex ann_end_sample_idx = sourceModel()->index(sourceRow, 6);
-	const uint64_t ann_end_sample =
-		sourceModel()->data(ann_end_sample_idx, Qt::DisplayRole).toULongLong();
+	if (range_filtering_enabled_) {
+		const QModelIndex ann_start_sample_idx = sourceModel()->index(sourceRow, 0);
+		const uint64_t ann_start_sample =
+			sourceModel()->data(ann_start_sample_idx, Qt::DisplayRole).toULongLong();
 
-	// We consider all annotations as visible that either
-	// a) begin to the left of the range and end within the range or
-	// b) begin and end within the range or
-	// c) begin within the range and end to the right of the range
-	// ...which is equivalent to the negation of "begins and ends outside the range"
+		const QModelIndex ann_end_sample_idx = sourceModel()->index(sourceRow, 6);
+		const uint64_t ann_end_sample =
+			sourceModel()->data(ann_end_sample_idx, Qt::DisplayRole).toULongLong();
 
-	const bool left_of_range = (ann_end_sample < range_start_sample_);
-	const bool right_of_range = (ann_start_sample > range_end_sample_);
-	const bool entirely_outside_of_range = left_of_range || right_of_range;
+		// We consider all annotations as visible that either
+		// a) begin to the left of the range and end within the range or
+		// b) begin and end within the range or
+		// c) begin within the range and end to the right of the range
+		// ...which is equivalent to the negation of "begins and ends outside the range"
 
-	return !entirely_outside_of_range;
+		const bool left_of_range = (ann_end_sample < range_start_sample_);
+		const bool right_of_range = (ann_start_sample > range_end_sample_);
+		const bool entirely_outside_of_range = left_of_range || right_of_range;
+
+		result = !entirely_outside_of_range;
+	}
+
+	return result;
 }
 
 void CustomFilterProxyModel::set_sample_range(uint64_t start_sample,
@@ -101,6 +108,13 @@ void CustomFilterProxyModel::set_sample_range(uint64_t start_sample,
 {
 	range_start_sample_ = start_sample;
 	range_end_sample_ = end_sample;
+
+	invalidateFilter();
+}
+
+void CustomFilterProxyModel::enable_range_filtering(bool value)
+{
+	range_filtering_enabled_ = value;
 
 	invalidateFilter();
 }
@@ -366,7 +380,7 @@ void View::save_data_as_csv(unsigned int save_type) const
 			if (table_view_->horizontalHeader()->isSectionHidden(column))
 				continue;
 
-			const QString title = model_->headerData(column, Qt::Horizontal, Qt::DisplayRole).toString();
+			const QString title = filter_proxy_model_->headerData(column, Qt::Horizontal, Qt::DisplayRole).toString();
 
 			if (save_type == SaveTypeCSVEscaped)
 				out_stream << title;
@@ -391,8 +405,8 @@ void View::save_data_as_csv(unsigned int save_type) const
 				if (table_view_->horizontalHeader()->isSectionHidden(column))
 					continue;
 
-				const QModelIndex idx = model_->index(row, column);
-				QString s = model_->data(idx, Qt::DisplayRole).toString();
+				const QModelIndex idx = filter_proxy_model_->index(row, column);
+				QString s = filter_proxy_model_->data(idx, Qt::DisplayRole).toString();
 
 				if (save_type == SaveTypeCSVEscaped)
 					out_stream << s.replace(",", "\\,");
@@ -458,6 +472,9 @@ void View::on_hide_hidden_changed(bool checked)
 
 void View::on_view_mode_changed(int index)
 {
+	if (index == ViewModeAll)
+		filter_proxy_model_->enable_range_filtering(false);
+
 	if (index == ViewModeVisible) {
 		MetadataObject *md_obj =
 			session_.metadata_obj_manager()->find_object_by_type(MetadataObjMainViewRange);
@@ -466,20 +483,18 @@ void View::on_view_mode_changed(int index)
 		int64_t start_sample = md_obj->value(MetadataValueStartSample).toLongLong();
 		int64_t end_sample = md_obj->value(MetadataValueEndSample).toLongLong();
 
+		filter_proxy_model_->enable_range_filtering(true);
 		filter_proxy_model_->set_sample_range(max((int64_t)0, start_sample),
 			max((int64_t)0, end_sample));
-
-		// Force repaint, otherwise the new selection may not show immediately
-//		table_view_->viewport()->update();
-	} else {
-		// Use the data model directly
-		table_view_->setModel(model_);
 	}
 
-	if (index == ViewModeLatest)
+	if (index == ViewModeLatest) {
+		filter_proxy_model_->enable_range_filtering(false);
+
 		table_view_->scrollTo(
 			filter_proxy_model_->mapFromSource(model_->index(model_->rowCount() - 1, 0)),
 			QAbstractItemView::PositionAtBottom);
+	}
 }
 
 void View::on_signal_name_changed(const QString &name)

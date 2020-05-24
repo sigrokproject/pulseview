@@ -114,11 +114,14 @@ public:
 
 	void set_sample_range(uint64_t start_sample, uint64_t end_sample);
 
+	void enable_range_filtering(bool value);
+
 protected:
 	bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override;
 
 private:
 	uint64_t range_start_sample_, range_end_sample_;
+	bool range_filtering_enabled_;
 };
 
 
