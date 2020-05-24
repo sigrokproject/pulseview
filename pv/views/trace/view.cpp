@@ -578,6 +578,9 @@ void View::set_scale(double scale)
 {
 	if (scale_ != scale) {
 		scale_ = scale;
+
+		update_view_range_metaobject();
+
 		scale_changed();
 	}
 }
@@ -588,20 +591,7 @@ void View::set_offset(const pv::util::Timestamp& offset, bool force_update)
 		offset_ = offset;
 		ruler_offset_ = offset_ + zero_offset_;
 
-		const int w = viewport_->width();
-		if (w > 0) {
-			const double samplerate = session_.get_samplerate();
-			// Note: sample_num = time * samplerate
-			// Note: samples_per_pixel = samplerate * scale
-			int64_t start_sample = (offset_ * samplerate).convert_to<int64_t>();
-			int64_t end_sample = (offset_ * samplerate).convert_to<int64_t>() +
-				(w * session_.get_samplerate() * scale_);
-
-			MetadataObject* md_obj =
-				session_.metadata_obj_manager()->find_object_by_type(MetadataObjMainViewRange);
-			md_obj->set_value(MetadataValueStartSample, QVariant((qlonglong)start_sample));
-			md_obj->set_value(MetadataValueEndSample, QVariant((qlonglong)end_sample));
-		}
+		update_view_range_metaobject();
 
 		offset_changed();
 	}
@@ -1427,6 +1417,8 @@ void View::resize_header_to_fit()
 void View::update_layout()
 {
 	update_scroll();
+
+	update_view_range_metaobject();
 }
 
 TraceTreeItemOwner* View::find_prevalent_trace_group(
@@ -1602,6 +1594,31 @@ void View::resizeEvent(QResizeEvent* event)
 		adjust_top_margin();
 
 	update_layout();
+}
+
+void View::update_view_range_metaobject() const
+{
+	const int w = viewport_->width();
+	if (w > 0) {
+		const double samplerate = session_.get_samplerate();
+		// Note: sample_num = time * samplerate
+		// Note: samples_per_pixel = samplerate * scale
+		const int64_t start_sample = (offset_ * samplerate).convert_to<int64_t>();
+		const int64_t end_sample = (offset_ * samplerate).convert_to<int64_t>() +
+			(w * session_.get_samplerate() * scale_);
+
+		MetadataObject* md_obj =
+			session_.metadata_obj_manager()->find_object_by_type(MetadataObjMainViewRange);
+
+		const int64_t old_start_sample = md_obj->value(MetadataValueStartSample).toLongLong();
+		const int64_t old_end_sample = md_obj->value(MetadataValueEndSample).toLongLong();
+
+		if (start_sample != old_start_sample)
+			md_obj->set_value(MetadataValueStartSample, QVariant((qlonglong)start_sample));
+
+		if (end_sample != old_end_sample)
+			md_obj->set_value(MetadataValueEndSample, QVariant((qlonglong)end_sample));
+	}
 }
 
 void View::update_hover_point()

@@ -529,7 +529,8 @@ void View::on_new_annotations()
 {
 	if (view_mode_selector_->currentIndex() == ViewModeLatest) {
 		update_data();
-		table_view_->scrollTo(model_->index(model_->rowCount() - 1, 0),
+		table_view_->scrollTo(
+			filter_proxy_model_->index(filter_proxy_model_->rowCount() - 1, 0),
 			QAbstractItemView::PositionAtBottom);
 	} else {
 		if (!delayed_view_updater_.isActive())

@@ -393,9 +393,7 @@ private:
 	void adjust_top_margin();
 
 	void update_scroll();
-
 	void reset_scroll();
-
 	void set_scroll_default();
 
 	void determine_if_header_was_shrunk();
@@ -422,6 +420,7 @@ private:
 
 	void resizeEvent(QResizeEvent *event);
 
+	void update_view_range_metaobject() const;
 	void update_hover_point();
 
 public:
