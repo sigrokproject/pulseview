@@ -621,8 +621,12 @@ Session::input_format_options(vector<string> user_spec,
 		 * data type.
 		 */
 		auto found = fmt_opts.find(key);
-		if (found == fmt_opts.end())
+		if (found == fmt_opts.end()) {
+			qCritical() << "Supplied input option" << QString::fromStdString(key) <<
+				"is not a valid option for this input module, it will be ignored!";
 			continue;
+		}
+
 		shared_ptr<Option> opt = found->second;
 		result[key] = opt->parse_string(val);
 	}
@@ -647,7 +651,7 @@ void Session::load_init_file(const string &file_name,
 				return f.first == user_name; });
 		if (iter == formats.end()) {
 			MainWindow::show_session_error(tr("Error"),
-				tr("Unexpected input format: %s").arg(QString::fromStdString(format)));
+				tr("Unexpected input format: %1").arg(QString::fromStdString(format)));
 			return;
 		}
 		input_format = (*iter).second;
