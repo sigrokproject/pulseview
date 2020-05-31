@@ -89,7 +89,6 @@ const QString SignalGroup::name() const
 }
 
 
-
 SignalBase::SignalBase(shared_ptr<sigrok::Channel> channel, ChannelType channel_type) :
 	channel_(channel),
 	channel_type_(channel_type),

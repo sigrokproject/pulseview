@@ -252,7 +252,6 @@ QBrush WellArray::cellBrush(int row, int col)
 }
 
 
-
 /*!\reimp
 */
 
