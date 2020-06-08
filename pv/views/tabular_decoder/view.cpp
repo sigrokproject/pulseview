@@ -599,7 +599,10 @@ void View::on_table_item_clicked(const QModelIndex& index)
 
 void View::on_table_item_double_clicked(const QModelIndex& index)
 {
-	const Annotation* ann = static_cast<const Annotation*>(index.internalPointer());
+	const QModelIndex src_idx = filter_proxy_model_->mapToSource(index);
+
+	const Annotation* ann = static_cast<const Annotation*>(src_idx.internalPointer());
+	assert(ann);
 
 	shared_ptr<views::ViewBase> main_view = session_.main_view();
 
@@ -613,7 +616,8 @@ void View::on_table_header_requested(const QPoint& pos)
 	for (int i = 0; i < table_view_->horizontalHeader()->count(); i++) {
 		int column = table_view_->horizontalHeader()->logicalIndex(i);
 
-		const QString title = model_->headerData(column, Qt::Horizontal, Qt::DisplayRole).toString();
+		const QString title =
+			filter_proxy_model_->headerData(column, Qt::Horizontal, Qt::DisplayRole).toString();
 		QAction* action = new QAction(title, this);
 
 		action->setCheckable(true);
@@ -671,6 +675,9 @@ void View::on_metadata_object_changed(MetadataObject* obj,
 				const QModelIndex idx = filter_proxy_model_->mapFromSource(first_highlighted_idx);
 				table_view_->scrollTo(idx, QAbstractItemView::EnsureVisible);
 			}
+
+			// Force repaint, otherwise the table doesn't immediately update for some reason
+			table_view_->viewport()->update();
 		}
 	}
 }

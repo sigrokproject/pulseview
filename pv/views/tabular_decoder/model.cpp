@@ -213,6 +213,8 @@ int AnnotationCollectionModel::columnCount(const QModelIndex& parent_idx) const
 
 void AnnotationCollectionModel::set_signal_and_segment(data::DecodeSignal* signal, uint32_t current_segment)
 {
+	layoutAboutToBeChanged();
+
 	if (!signal) {
 		all_annotations_ = nullptr;
 		dataset_ = nullptr;
@@ -262,6 +264,8 @@ void AnnotationCollectionModel::set_signal_and_segment(data::DecodeSignal* signa
 
 void AnnotationCollectionModel::set_hide_hidden(bool hide_hidden)
 {
+	layoutAboutToBeChanged();
+
 	hide_hidden_ = hide_hidden;
 
 	if (hide_hidden_) {
@@ -335,10 +339,8 @@ QModelIndex AnnotationCollectionModel::update_highlighted_rows(QModelIndex first
 		} while (index != last);
 	}
 
-	if (has_highlight || had_highlight_before_) {
+	if (has_highlight || had_highlight_before_)
 		dataChanged(first, last);
-		layoutChanged();
-	}
 
 	had_highlight_before_ = has_highlight;
 
@@ -349,6 +351,8 @@ void AnnotationCollectionModel::on_annotation_visibility_changed()
 {
 	if (!hide_hidden_)
 		return;
+
+	layoutAboutToBeChanged();
 
 	update_annotations_without_hidden();
 
