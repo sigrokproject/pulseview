@@ -184,6 +184,12 @@ Section "PulseView (required)" Section1
 		0 SW_SHOWNORMAL \
 		"" "Open-source, portable sigrok GUI"
 
+	# Create a shortcut for the PulseView application in "safe mode".
+	CreateShortCut "$SMPROGRAMS\sigrok\PulseView\PulseView (Safe Mode).lnk" \
+		"$INSTDIR\pulseview.exe" "-c -D" "$INSTDIR\pulseview.exe" \
+		0 SW_SHOWNORMAL \
+		"" "Open-source, portable sigrok GUI (Safe Mode)"
+
 	# Create a shortcut for the PulseView application running in debug mode.
 	CreateShortCut "$SMPROGRAMS\sigrok\PulseView\PulseView (Debug).lnk" \
 		"$INSTDIR\pulseview.exe" "-l 5" "$INSTDIR\pulseview.exe" \
@@ -296,6 +302,7 @@ Section "Uninstall"
 
 	# Delete the links from the start menu.
 	Delete "$SMPROGRAMS\sigrok\PulseView\PulseView.lnk"
+	Delete "$SMPROGRAMS\sigrok\PulseView\PulseView (Safe Mode).lnk"
 	Delete "$SMPROGRAMS\sigrok\PulseView\PulseView (Debug).lnk"
 	Delete "$SMPROGRAMS\sigrok\PulseView\Uninstall PulseView.lnk"
 	Delete "$SMPROGRAMS\sigrok\PulseView\Zadig (PulseView).lnk"
