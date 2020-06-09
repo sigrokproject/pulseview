@@ -822,7 +822,7 @@ void DecodeSignal::restore_settings(QSettings &settings)
 		QString assigned_signal_name = settings.value("assigned_signal_name").toString();
 
 		for (const shared_ptr<data::SignalBase>& signal : signalbases)
-			if (signal->name() == assigned_signal_name)
+			if ((signal->name() == assigned_signal_name) && (signal->type() != SignalBase::DecodeChannel))
 				channel->assigned_signal = signal.get();
 
 		channel->initial_pin_state = settings.value("initial_pin_state").toInt();
