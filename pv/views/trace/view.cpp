@@ -854,21 +854,31 @@ void View::zoom_fit(bool gui_state)
 void View::focus_on_range(uint64_t start_sample, uint64_t end_sample)
 {
 	assert(viewport_);
-	const int w = viewport_->width();
+	const uint64_t w = viewport_->width();
 	if (w <= 0)
 		return;
 
 	const double samplerate = session_.get_samplerate();
+	const double samples_per_pixel = samplerate * scale_;
+	const uint64_t viewport_samples = w * samples_per_pixel;
 
 	const uint64_t sample_delta = (end_sample - start_sample);
 
 	// Note: We add 20% margin on the left and 5% on the right
-	const Timestamp delta = (sample_delta * 1.25) / samplerate;
+	const uint64_t ext_sample_delta = sample_delta * 1.25;
 
-	const Timestamp scale = max(min(delta / w, MaxScale), MinScale);
-	const Timestamp offset = (start_sample - sample_delta * 0.20) / samplerate;
-
-	set_scale_offset(scale.convert_to<double>(), offset);
+	// Check if we can keep the zoom level and just center the supplied range
+	if (viewport_samples >= ext_sample_delta) {
+		// Note: offset is the left edge of the view so to center, we subtract half the view width
+		const int64_t sample_offset = (start_sample + (sample_delta / 2) - (viewport_samples / 2));
+		const Timestamp offset = sample_offset / samplerate;
+		set_scale_offset(scale_, offset);
+	} else {
+		const Timestamp offset = (start_sample - sample_delta * 0.20) / samplerate;
+		const Timestamp delta = ext_sample_delta / samplerate;
+		const Timestamp scale = max(min(delta / w, MaxScale), MinScale);
+		set_scale_offset(scale.convert_to<double>(), offset);
+	}
 }
 
 void View::set_scale_offset(double scale, const Timestamp& offset)

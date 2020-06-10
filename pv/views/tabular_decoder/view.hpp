@@ -23,6 +23,7 @@
 #include <QAction>
 #include <QCheckBox>
 #include <QComboBox>
+#include <QKeyEvent>
 #include <QSortFilterProxyModel>
 #include <QTableView>
 #include <QToolButton>
@@ -130,8 +131,14 @@ class CustomTableView : public QTableView
 	Q_OBJECT
 
 public:
-	QSize minimumSizeHint() const;
-	QSize sizeHint() const;
+	virtual QSize minimumSizeHint() const override;
+	virtual QSize sizeHint() const override;
+
+protected:
+	virtual void keyPressEvent(QKeyEvent *event) override;
+
+Q_SIGNALS:
+	void activatedByKey(const QModelIndex &index);
 };
 
 

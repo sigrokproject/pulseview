@@ -139,6 +139,14 @@ QSize CustomTableView::sizeHint() const
 	return minimumSizeHint();
 }
 
+void CustomTableView::keyPressEvent(QKeyEvent *event)
+{
+	if ((event->key() == Qt::Key_Return) || (event->key() == Qt::Key_Enter))
+		activatedByKey(currentIndex());
+	else
+		QTableView::keyPressEvent(event);
+}
+
 
 View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 	ViewBase(session, is_main_view, parent),
@@ -238,6 +246,8 @@ View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 	connect(table_view_, SIGNAL(clicked(const QModelIndex&)),
 		this, SLOT(on_table_item_clicked(const QModelIndex&)));
 	connect(table_view_, SIGNAL(doubleClicked(const QModelIndex&)),
+		this, SLOT(on_table_item_double_clicked(const QModelIndex&)));
+	connect(table_view_, SIGNAL(activatedByKey(const QModelIndex&)),
 		this, SLOT(on_table_item_double_clicked(const QModelIndex&)));
 	connect(table_view_->horizontalHeader(), SIGNAL(customContextMenuRequested(const QPoint&)),
 		this, SLOT(on_table_header_requested(const QPoint&)));
