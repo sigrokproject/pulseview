@@ -612,9 +612,12 @@ void DecodeTrace::hover_point_changed(const QPoint &hp)
 		r.expand_marker_highlighted = false;
 
 	if (hover_row) {
-		int row_y = get_row_y(hover_row);
+		const pair<int, int> extents = v_extents();
+		const int trace_top = get_visual_y() + extents.first;
+		const int trace_btm = get_visual_y() + extents.second;
+
 		if ((hp.x() > 0) && (hp.x() < (int)(ArrowSize + 3 + hover_row->title_width)) &&
-			(hp.y() > (int)(row_y - ArrowSize)) && (hp.y() < (int)(row_y + ArrowSize))) {
+			(hp.y() > trace_top) && (hp.y() < trace_btm)) {
 
 			hover_row->expand_marker_highlighted = true;
 			show_hidden_rows_ = true;
