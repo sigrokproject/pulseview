@@ -176,6 +176,17 @@ void Session::set_name(QString name)
 	name_changed();
 }
 
+QString Session::path() const
+{
+	return path_;
+}
+
+void Session::set_path(QString path)
+{
+	path_ = path;
+	set_name(QFileInfo(path).fileName());
+}
+
 const vector< shared_ptr<views::ViewBase> > Session::views() const
 {
 	return views_;
@@ -444,6 +455,8 @@ void Session::restore_settings(QSettings &settings)
 		settings.endGroup();
 	}
 
+
+	QString path;
 	if ((device_type == "sessionfile") || (device_type == "inputfile")) {
 		if (device_type == "sessionfile") {
 			settings.beginGroup("device");
@@ -451,6 +464,7 @@ void Session::restore_settings(QSettings &settings)
 			settings.endGroup();
 
 			if (QFileInfo(filename).isReadable()) {
+			path = filename;
 				device = make_shared<devices::SessionFile>(device_manager_.context(),
 					filename.toStdString());
 			}
@@ -472,6 +486,9 @@ void Session::restore_settings(QSettings &settings)
 
 			set_name(QString::fromStdString(
 				dynamic_pointer_cast<devices::File>(device)->display_name(device_manager_)));
+
+			if (!path.isEmpty())
+				set_path(path);
 		}
 	}
 
@@ -709,7 +726,7 @@ void Session::load_file(QString file_name, QString setup_file_name,
 	start_capture([&, errorMessage](QString infoMessage) {
 		MainWindow::show_session_error(errorMessage, infoMessage); });
 
-	set_name(QFileInfo(file_name).fileName());
+	set_path(file_name);
 }
 
 Session::capture_state Session::get_capture_state() const

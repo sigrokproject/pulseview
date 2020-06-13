@@ -96,6 +96,7 @@ public:
 
 	QAction* action_new_view() const;
 	QAction* action_open() const;
+	QAction* action_save() const;
 	QAction* action_save_as() const;
 	QAction* action_save_selection_as() const;
 	QAction* action_restore_setup() const;
@@ -120,7 +121,8 @@ private Q_SLOTS:
 	void show_session_error(const QString text, const QString info_text);
 
 	void export_file(shared_ptr<sigrok::OutputFormat> format,
-		bool selection_only = false);
+		bool selection_only = false,
+		QString path = QString{});
 	void import_file(shared_ptr<sigrok::InputFormat> format);
 
 	void on_device_selected();
@@ -134,6 +136,7 @@ private Q_SLOTS:
 	void on_actionNewView_triggered(QAction* action = nullptr);
 
 	void on_actionOpen_triggered();
+	void on_actionSave_triggered();
 	void on_actionSaveAs_triggered();
 	void on_actionSaveSelectionAs_triggered();
 
@@ -156,6 +159,7 @@ Q_SIGNALS:
 private:
 	QAction *const action_new_view_;
 	QAction *const action_open_;
+	QAction *const action_save_;
 	QAction *const action_save_as_;
 	QAction *const action_save_selection_as_;
 	QAction *const action_restore_setup_;
