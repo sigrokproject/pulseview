@@ -141,6 +141,9 @@ public:
 	QString name() const;
 	void set_name(QString name);
 
+	QString path() const;
+	void set_path(QString path);
+
 	const vector< shared_ptr<views::ViewBase> > views() const;
 
 	shared_ptr<views::ViewBase> main_view() const;
@@ -270,7 +273,7 @@ private:
 
 	DeviceManager &device_manager_;
 	shared_ptr<devices::Device> device_;
-	QString default_name_, name_;
+	QString default_name_, name_, path_;
 
 	vector< shared_ptr<views::ViewBase> > views_;
 	shared_ptr<pv::views::ViewBase> main_view_;
