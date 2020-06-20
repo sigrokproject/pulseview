@@ -283,7 +283,7 @@ void Ruler::paintEvent(QPaintEvent*)
 		const int rightedge = width();
 		const int x_tick = tick.first;
 		if ((x_tick > leftedge) && (x_tick < rightedge)) {
-			const int x_left_bound = QFontMetrics(font()).width(tick.second) / 2;
+			const int x_left_bound = util::text_width(QFontMetrics(font()), tick.second) / 2;
 			const int x_right_bound = rightedge - x_left_bound;
 			const int x_legend = min(max(x_tick, x_left_bound), x_right_bound);
 			p.drawText(x_legend, ValueMargin, 0, text_height,

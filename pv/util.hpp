@@ -30,6 +30,7 @@
 
 #include <QMetaType>
 #include <QString>
+#include <QFontMetrics>
 
 using std::string;
 using std::vector;
@@ -142,6 +143,15 @@ QString format_time_minutes(const Timestamp& t, signed precision = 0,
 	bool sign = true);
 
 vector<string> split_string(string text, string separator);
+
+/**
+ * Return the width of a string in a given font.
+ * @param[in] metric metrics of the font
+ * @param[in] string the string whose width should be determined
+ *
+ * @return width of the string in pixels
+ */
+std::streamsize text_width(const QFontMetrics &metric, const QString &string);
 
 } // namespace util
 } // namespace pv

@@ -76,7 +76,7 @@ QSize TimestampSpinBox::minimumSizeHint() const
 {
 	const QFontMetrics fm(fontMetrics());
 	const int l = round(value_).str().size() + precision_ + 10;
-	const int w = fm.width(QString(l, '0'));
+	const int w = util::text_width(fm, QString(l, '0'));
 	const int h = lineEdit()->minimumSizeHint().height();
 	return QSize(w, h);
 }
