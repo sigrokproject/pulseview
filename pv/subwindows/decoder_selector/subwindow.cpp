@@ -185,7 +185,7 @@ QToolBar* SubWindow::create_toolbar(QWidget *parent) const
 int SubWindow::minimum_width() const
 {
 	QFontMetrics m(info_label_body_->font());
-	const int label_width = m.width(QString(tr(initial_notice)));
+	const int label_width = util::text_width(m, tr(initial_notice));
 
 	return label_width + min_width_margin;
 }

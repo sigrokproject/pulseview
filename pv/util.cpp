@@ -143,7 +143,7 @@ QString format_time_si(const Timestamp& v, SIPrefix prefix,
 	QString s;
 	QTextStream ts(&s);
 	if (sign && !v.is_zero())
-		ts << forcesign;
+		ts.setNumberFlags(ts.numberFlags() | QTextStream::ForceSign);
 	ts << qSetRealNumberPrecision(precision) << (v * multiplier);
 	ts << ' ' << prefix << unit;
 
@@ -169,7 +169,7 @@ QString format_value_si(double v, SIPrefix prefix, unsigned precision,
 	QString s;
 	QTextStream ts(&s);
 	if (sign && (v != 0))
-		ts << forcesign;
+		ts.setNumberFlags(ts.numberFlags() | QTextStream::ForceSign);
 	ts.setRealNumberNotation(QTextStream::FixedNotation);
 	ts.setRealNumberPrecision(precision);
 	ts << (v * multiplier) << ' ' << prefix << unit;
@@ -277,6 +277,23 @@ vector<string> split_string(string text, string separator)
 	result.push_back(text);
 
 	return result;
+}
+
+/**
+ * Return the width of a string in a given font.
+ *
+ * @param[in] metric metrics of the font
+ * @param[in] string the string whose width should be determined
+ *
+ * @return width of the string in pixels
+ */
+std::streamsize text_width(const QFontMetrics &metric, const QString &string)
+{
+#if QT_VERSION >= QT_VERSION_CHECK(5, 11, 0)
+	return metric.horizontalAdvance(string);
+#else
+	return metric.width(string);
+#endif
 }
 
 } // namespace util

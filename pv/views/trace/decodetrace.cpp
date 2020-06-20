@@ -161,7 +161,8 @@ DecodeTrace::DecodeTrace(pv::Session &session,
 
 	// Determine shortest string we want to see displayed in full
 	QFontMetrics m(QApplication::font());
-	min_useful_label_width_ = m.width("XX"); // e.g. two hex characters
+	// e.g. two hex characters
+	min_useful_label_width_ = util::text_width(m, "XX");
 
 	default_row_height_ = (ViewItemPaintParams::text_height() * 6) / 4;
 	annotation_height_ = (ViewItemPaintParams::text_height() * 5) / 4;
