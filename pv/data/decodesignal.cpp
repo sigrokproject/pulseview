@@ -1752,6 +1752,8 @@ void DecodeSignal::logic_output_callback(srd_proto_data *pdata, void *decode_sig
 	const srd_proto_data_logic *const pdl = (const srd_proto_data_logic*)pdata->data;
 	assert(pdl);
 
+	assert(pdl->logic_group == 0);  // FIXME Only one group supported for now
+
 	shared_ptr<Logic> output_logic = ds->output_logic_.at(decc);
 
 	vector< shared_ptr<Segment> > segments = output_logic->segments();
@@ -1770,21 +1772,18 @@ void DecodeSignal::logic_output_callback(srd_proto_data *pdata, void *decode_sig
 
 	if (pdata->start_sample < pdata->end_sample) {
 		vector<uint8_t> data;
-		for (unsigned int i = pdata->start_sample; i < pdata->end_sample; i++)
+		data.reserve(pdl->repeat_count + 1);  // FIXME Include unit size in calculation
+		for (unsigned int i = 0; i <= pdl->repeat_count; i++)
+			// FIXME Currently only supports 8 channels as we ignore the unit size
 			data.emplace_back(*((uint8_t*)pdl->data));
 
-		if ((pdl->logic_class == 0) || ((pdl->logic_class > 0) && (data.size() <= ds->output_logic_muxed_data_.at(decc).size()))) {
-			last_segment->append_subsignal_payload(pdl->logic_class, data.data(),
-				data.size(), ds->output_logic_muxed_data_.at(decc));
+		last_segment->append_payload(data.data(), data.size());
 
-			qInfo() << "Received logic output state change for class" << pdl->logic_class << "from decoder" \
-				<< QString::fromUtf8(decc->name) << "from" << pdata->start_sample << "to" << pdata->end_sample;
-		} else
-			qWarning() << "Ignoring invalid logic output state change for class" << pdl->logic_class << "from decoder" \
-				<< QString::fromUtf8(decc->name) << "from" << pdata->start_sample << "to" << pdata->end_sample;
+		qInfo() << "Received logic output state change for group" << pdl->logic_group << "from decoder" \
+			<< QString::fromUtf8(decc->name) << "from" << pdata->start_sample << "to" << pdata->end_sample << ":" << *((uint8_t*)pdl->data);
 
 	} else
-		qWarning() << "Ignoring malformed logic output state change for class" << pdl->logic_class << "from decoder" \
+		qWarning() << "Ignoring malformed logic output state change for group" << pdl->logic_group << "from decoder" \
 			<< QString::fromUtf8(decc->name) << "from" << pdata->start_sample << "to" << pdata->end_sample;
 }
 
