@@ -324,9 +324,9 @@ QModelIndex AnnotationCollectionModel::update_highlighted_rows(QModelIndex first
 		// we would need to highlight - only then do we do so
 		QModelIndex index = first;
 		do {
-			const Annotation* ann =
-				static_cast<const Annotation*>(index.internalPointer());
-			assert(ann);
+			const Annotation* ann =	static_cast<const Annotation*>(index.internalPointer());
+			if (!ann)  // Can happen if the table is being modified at this exact time
+				return result;
 
 			if (((int64_t)ann->start_sample() <= sample_num) &&
 				((int64_t)ann->end_sample() >= sample_num)) {
