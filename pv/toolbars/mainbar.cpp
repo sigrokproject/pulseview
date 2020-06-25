@@ -608,7 +608,7 @@ void MainBar::show_session_error(const QString text, const QString info_text)
 	msg.exec();
 }
 
-void MainBar::export_file(shared_ptr<OutputFormat> format, bool selection_only, QString path)
+void MainBar::export_file(shared_ptr<OutputFormat> format, bool selection_only, QString file_name)
 {
 	using pv::dialogs::StoreProgress;
 
@@ -667,9 +667,8 @@ void MainBar::export_file(shared_ptr<OutputFormat> format, bool selection_only, 
 			tr("All Files"));
 
 	// Show the file dialog
-	const QString file_name = path.isEmpty() ?
-		QFileDialog::getSaveFileName(this, tr("Save File"), dir, filter) :
-		path;
+	if (file_name.isEmpty())
+		file_name = QFileDialog::getSaveFileName(this, tr("Save File"), dir, filter);
 
 	if (file_name.isEmpty())
 		return;
@@ -689,9 +688,14 @@ void MainBar::export_file(shared_ptr<OutputFormat> format, bool selection_only, 
 		options = dlg.options();
 	}
 
-	if (!selection_only &&
-			format == session_.device_manager().context()->output_formats()["srzip"])
-		session_.set_path(file_name);
+	if (!selection_only) {
+		session_.set_name(QFileInfo(file_name).fileName());
+
+		if (format == session_.device_manager().context()->output_formats()["srzip"])
+			session_.set_save_path(QFileInfo(file_name).absolutePath());
+		else
+			session_.set_save_path("");
+	}
 
 	StoreProgress *dlg = new StoreProgress(file_name, format, options,
 		sample_range, session_, this);
@@ -815,7 +819,15 @@ void MainBar::on_actionOpen_triggered()
 
 void MainBar::on_actionSave_triggered()
 {
-	export_file(session_.device_manager().context()->output_formats()["srzip"], false, session_.path());
+	// A path is only set if we loaded/saved an srzip file before
+	if (session_.save_path().isEmpty()) {
+		on_actionSaveAs_triggered();
+		return;
+	}
+
+	QFileInfo fi = QFileInfo(session_.save_path(), session_.name());
+	export_file(session_.device_manager().context()->output_formats()["srzip"], false,
+		fi.absoluteFilePath());
 }
 
 void MainBar::on_actionSaveAs_triggered()

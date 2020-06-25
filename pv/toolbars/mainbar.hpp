@@ -121,8 +121,7 @@ private Q_SLOTS:
 	void show_session_error(const QString text, const QString info_text);
 
 	void export_file(shared_ptr<sigrok::OutputFormat> format,
-		bool selection_only = false,
-		QString path = QString{});
+		bool selection_only = false, QString file_name = "");
 	void import_file(shared_ptr<sigrok::InputFormat> format);
 
 	void on_device_selected();

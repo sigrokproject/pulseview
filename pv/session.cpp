@@ -176,15 +176,14 @@ void Session::set_name(QString name)
 	name_changed();
 }
 
-QString Session::path() const
+QString Session::save_path() const
 {
-	return path_;
+	return save_path_;
 }
 
-void Session::set_path(QString path)
+void Session::set_save_path(QString path)
 {
-	path_ = path;
-	set_name(QFileInfo(path).fileName());
+	save_path_ = path;
 }
 
 const vector< shared_ptr<views::ViewBase> > Session::views() const
@@ -456,18 +455,16 @@ void Session::restore_settings(QSettings &settings)
 	}
 
 
-	QString path;
+	QString filename;
 	if ((device_type == "sessionfile") || (device_type == "inputfile")) {
 		if (device_type == "sessionfile") {
 			settings.beginGroup("device");
-			const QString filename = settings.value("filename").toString();
+			filename = settings.value("filename").toString();
 			settings.endGroup();
 
-			if (QFileInfo(filename).isReadable()) {
-			path = filename;
+			if (QFileInfo(filename).isReadable())
 				device = make_shared<devices::SessionFile>(device_manager_.context(),
 					filename.toStdString());
-			}
 		}
 
 		if (device_type == "inputfile") {
@@ -487,8 +484,13 @@ void Session::restore_settings(QSettings &settings)
 			set_name(QString::fromStdString(
 				dynamic_pointer_cast<devices::File>(device)->display_name(device_manager_)));
 
-			if (!path.isEmpty())
-				set_path(path);
+			if (!filename.isEmpty()) {
+				// Only set the save path if we load an srzip file
+				if (device_type == "sessionfile")
+					set_save_path(QFileInfo(filename).absolutePath());
+
+				set_name(QFileInfo(filename).fileName());
+			}
 		}
 	}
 
@@ -726,7 +728,11 @@ void Session::load_file(QString file_name, QString setup_file_name,
 	start_capture([&, errorMessage](QString infoMessage) {
 		MainWindow::show_session_error(errorMessage, infoMessage); });
 
-	set_path(file_name);
+	// Only set save path if we loaded an srzip file
+	if (dynamic_pointer_cast<devices::SessionFile>(device_))
+		set_save_path(QFileInfo(file_name).absolutePath());
+
+	set_name(QFileInfo(file_name).fileName());
 }
 
 Session::capture_state Session::get_capture_state() const
