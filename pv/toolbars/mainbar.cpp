@@ -689,11 +689,10 @@ void MainBar::export_file(shared_ptr<OutputFormat> format, bool selection_only, 
 	}
 
 	if (!selection_only) {
-		session_.set_name(QFileInfo(file_name).fileName());
-
-		if (format == session_.device_manager().context()->output_formats()["srzip"])
+		if (format == session_.device_manager().context()->output_formats()["srzip"]) {
 			session_.set_save_path(QFileInfo(file_name).absolutePath());
-		else
+			session_.set_name(QFileInfo(file_name).fileName());
+		} else
 			session_.set_save_path("");
 	}
 
@@ -825,7 +824,7 @@ void MainBar::on_actionSave_triggered()
 		return;
 	}
 
-	QFileInfo fi = QFileInfo(session_.save_path(), session_.name());
+	QFileInfo fi = QFileInfo(QDir(session_.save_path()), session_.name());
 	export_file(session_.device_manager().context()->output_formats()["srzip"], false,
 		fi.absoluteFilePath());
 }

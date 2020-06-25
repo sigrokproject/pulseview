@@ -25,6 +25,7 @@
 #include <sys/stat.h>
 
 #include <QDebug>
+#include <QDir>
 #include <QFileInfo>
 
 #include "devicemanager.hpp"
@@ -322,25 +323,36 @@ void Session::save_settings(QSettings &settings) const
 			settings.endGroup();
 		}
 
-		shared_ptr<devices::SessionFile> sessionfile_device =
-			dynamic_pointer_cast<devices::SessionFile>(device_);
-
-		if (sessionfile_device) {
+		// Having saved the data to srzip overrides the current device. This is
+		// a crappy hack around the fact that saving e.g. an imported file to
+		// srzip would require changing the underlying libsigrok device
+		if (!save_path_.isEmpty()) {
+			QFileInfo fi = QFileInfo(QDir(save_path_), name_);
 			settings.setValue("device_type", "sessionfile");
 			settings.beginGroup("device");
-			settings.setValue("filename", QString::fromStdString(
-				sessionfile_device->full_name()));
+			settings.setValue("filename", fi.absoluteFilePath());
 			settings.endGroup();
-		}
+		} else {
+			shared_ptr<devices::SessionFile> sessionfile_device =
+				dynamic_pointer_cast<devices::SessionFile>(device_);
 
-		shared_ptr<devices::InputFile> inputfile_device =
-			dynamic_pointer_cast<devices::InputFile>(device_);
+			if (sessionfile_device) {
+				settings.setValue("device_type", "sessionfile");
+				settings.beginGroup("device");
+				settings.setValue("filename", QString::fromStdString(
+					sessionfile_device->full_name()));
+				settings.endGroup();
+			}
 
-		if (inputfile_device) {
-			settings.setValue("device_type", "inputfile");
-			settings.beginGroup("device");
-			inputfile_device->save_meta_to_settings(settings);
-			settings.endGroup();
+			shared_ptr<devices::InputFile> inputfile_device =
+				dynamic_pointer_cast<devices::InputFile>(device_);
+
+			if (inputfile_device) {
+				settings.setValue("device_type", "inputfile");
+				settings.beginGroup("device");
+				inputfile_device->save_meta_to_settings(settings);
+				settings.endGroup();
+			}
 		}
 
 		save_setup(settings);
