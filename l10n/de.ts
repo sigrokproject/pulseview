@@ -4,7 +4,7 @@
 <context>
     <name>Application</name>
     <message>
-        <location filename="../pv/application.cpp" line="121"/>
+        <location filename="../pv/application.cpp" line="129"/>
         <source>Some parts of the application may still use the previous language. Re-opening the affected windows or restarting the application will remedy this.</source>
         <translation>Einige Teile der Anwendung verwenden vielleicht noch die vorherige Sprache. Sollte das der Fall sein, kann dies durch ein Schließen und neu Öffnen der betroffenen Fenster oder der Anwendung behoben werden.</translation>
     </message>
@@ -553,7 +553,7 @@ A human-readable form has been saved to disk and was written to the log. You may
     <message>
         <location filename="../pv/dialogs/settings.cpp" line="409"/>
         <source>Always show all &amp;rows, even if no annotation is visible</source>
-        <translation>Immer alle &amp;Reihen anzeigen, auch wenn hierfür keine dekodierten Werte vorliegen</translation>
+        <translation>Immer alle &amp;Kategorien (Zeilen) anzeigen, auch wenn hierfür keine dekodierten Werte vorliegen</translation>
     </message>
     <message>
         <location filename="../pv/dialogs/settings.cpp" line="417"/>
@@ -628,32 +628,37 @@ A human-readable form has been saved to disk and was written to the log. You may
         <translation>Unterstützte Protokolldekoder:</translation>
     </message>
     <message>
-        <location filename="../pv/dialogs/settings.cpp" line="537"/>
+        <location filename="../pv/dialogs/settings.cpp" line="504"/>
+        <source>Available Translations:</source>
+        <translation>Verfügbare Übersetzungen:</translation>
+    </message>
+    <message>
+        <location filename="../pv/dialogs/settings.cpp" line="552"/>
         <source>Log level:</source>
         <translation>Log-Level:</translation>
     </message>
     <message>
-        <location filename="../pv/dialogs/settings.cpp" line="542"/>
+        <location filename="../pv/dialogs/settings.cpp" line="557"/>
         <source> lines</source>
         <translation> Zeilen</translation>
     </message>
     <message>
-        <location filename="../pv/dialogs/settings.cpp" line="551"/>
+        <location filename="../pv/dialogs/settings.cpp" line="566"/>
         <source>Length of background buffer:</source>
         <translation>Länge des Logpuffers:</translation>
     </message>
     <message>
-        <location filename="../pv/dialogs/settings.cpp" line="557"/>
+        <location filename="../pv/dialogs/settings.cpp" line="572"/>
         <source>&amp;Save to File</source>
         <translation>&amp;Speichern</translation>
     </message>
     <message>
-        <location filename="../pv/dialogs/settings.cpp" line="564"/>
+        <location filename="../pv/dialogs/settings.cpp" line="579"/>
         <source>&amp;Pop out</source>
         <translation>&amp;Abdocken</translation>
     </message>
     <message>
-        <location filename="../pv/dialogs/settings.cpp" line="633"/>
+        <location filename="../pv/dialogs/settings.cpp" line="648"/>
         <source>You selected a dark theme.
 Should I set the user-adjustable colors to better suit your choice?
 
@@ -664,7 +669,7 @@ Sollen die benutzerspezifischen Farben entsprechend angepasst werden, damit sie 
 Bei einer Änderung benötigt PulseView eventuell einen Neustart, damit alles korrekt angezeigt wird.</translation>
     </message>
     <message>
-        <location filename="../pv/dialogs/settings.cpp" line="639"/>
+        <location filename="../pv/dialogs/settings.cpp" line="654"/>
         <source>You selected a bright theme.
 Should I set the user-adjustable colors to better suit your choice?
 
@@ -675,37 +680,37 @@ Sollen die benutzerspezifischen Farben entsprechend angepasst werden, damit sie 
 Bei einer Änderung benötigt PulseView eventuell einen Neustart, damit alles korrekt angezeigt wird.</translation>
     </message>
     <message>
-        <location filename="../pv/dialogs/settings.cpp" line="792"/>
+        <location filename="../pv/dialogs/settings.cpp" line="807"/>
         <source>Save Log</source>
         <translation>Log speichern</translation>
     </message>
     <message>
-        <location filename="../pv/dialogs/settings.cpp" line="792"/>
+        <location filename="../pv/dialogs/settings.cpp" line="807"/>
         <source>Log Files (*.txt *.log);;All Files (*)</source>
         <translation>Logdateien (*.txt *.log);;Alle Dateien (*)</translation>
     </message>
     <message>
-        <location filename="../pv/dialogs/settings.cpp" line="804"/>
+        <location filename="../pv/dialogs/settings.cpp" line="819"/>
         <source>Success</source>
         <translation>Erfolg</translation>
     </message>
     <message>
-        <location filename="../pv/dialogs/settings.cpp" line="804"/>
+        <location filename="../pv/dialogs/settings.cpp" line="819"/>
         <source>Log saved to %1.</source>
         <translation>Log als %1 gespeichert.</translation>
     </message>
     <message>
-        <location filename="../pv/dialogs/settings.cpp" line="814"/>
+        <location filename="../pv/dialogs/settings.cpp" line="829"/>
         <source>Error</source>
         <translation>Fehler</translation>
     </message>
     <message>
-        <location filename="../pv/dialogs/settings.cpp" line="814"/>
+        <location filename="../pv/dialogs/settings.cpp" line="829"/>
         <source>File %1 could not be written to.</source>
         <translation>Konnte Datei %1 nicht speichern.</translation>
     </message>
     <message>
-        <location filename="../pv/dialogs/settings.cpp" line="828"/>
+        <location filename="../pv/dialogs/settings.cpp" line="843"/>
         <source>%1 Log</source>
         <translation></translation>
     </message>
@@ -1451,7 +1456,7 @@ Bei einer Änderung benötigt PulseView eventuell einen Neustart, damit alles ko
     <message>
         <location filename="../pv/views/trace/decodetrace.cpp" line="1308"/>
         <source>Show this row</source>
-        <translation>Diese Zeile anzeigen</translation>
+        <translation>Diese Kategorie anzeigen</translation>
     </message>
     <message>
         <location filename="../pv/views/trace/decodetrace.cpp" line="1319"/>
