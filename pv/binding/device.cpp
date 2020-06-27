@@ -91,6 +91,10 @@ Device::Device(shared_ptr<sigrok::Configurable> configurable) :
 			bind_int(name, "", "%", pair<int64_t, int64_t>(0, 100), get, set);
 			break;
 
+		case SR_CONF_LIMIT_FRAMES:
+			bind_int(name, "", "", pair<int64_t, int64_t>(0, 1000000), get, set);
+			break;
+
 		case SR_CONF_PATTERN_MODE:
 		case SR_CONF_BUFFERSIZE:
 		case SR_CONF_TRIGGER_SOURCE:
