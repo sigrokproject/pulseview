@@ -65,7 +65,7 @@ Application::Application(int &argc, char* argv[]) :
 	setOrganizationDomain("sigrok.org");
 }
 
-QStringList Application::get_languages()
+const QStringList Application::get_languages() const
 {
 	QStringList files = QDir(":/l10n/").entryList(QStringList("*.qm"), QDir::Files);
 
@@ -79,6 +79,14 @@ QStringList Application::get_languages()
 	result.sort(Qt::CaseInsensitive);
 
 	return result;
+}
+
+const QString Application::get_language_editors(const QString& language) const
+{
+	if (language == "de") return "Sören Apel, Uwe Hermann";
+	if (language == "es_mx") return "Carlos Diaz";
+
+	return QString();
 }
 
 void Application::switch_language(const QString& language)

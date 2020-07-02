@@ -41,8 +41,10 @@ class Application : public QApplication, public pv::GlobalSettingsInterface
 public:
 	Application(int &argc, char* argv[]);
 
-	QStringList get_languages();
+	const QStringList get_languages() const;
+	const QString get_language_editors(const QString& language) const;
 	void switch_language(const QString& language);
+
 	void on_setting_changed(const QString &key, const QVariant &value);
 
 	void collect_version_info(shared_ptr<sigrok::Context> context);
