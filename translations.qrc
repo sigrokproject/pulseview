@@ -1,5 +1,6 @@
 <RCC>
 	<qresource prefix="/">
 		<file>l10n/de.qm</file>
+		<file>l10n/es_mx.qm</file>
 	</qresource>
 </RCC>
