@@ -164,8 +164,11 @@ uint8_t AnnotationCollectionModel::first_hidden_column() const
 QVariant AnnotationCollectionModel::headerData(int section, Qt::Orientation orientation,
 	int role) const
 {
+	if ((section < 0) || (section >= (int)header_data_.size()))
+		return QVariant();
+
 	if ((orientation == Qt::Horizontal) && (role == Qt::DisplayRole))
-		return header_data_.at(section);
+		return header_data_[section];
 
 	return QVariant();
 }
