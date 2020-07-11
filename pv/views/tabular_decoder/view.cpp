@@ -470,6 +470,9 @@ void View::on_selected_decoder_changed(int index)
 	}
 
 	update_data();
+
+	// Force repaint, otherwise the new selection isn't shown for some reason
+	table_view_->viewport()->update();
 }
 
 void View::on_hide_hidden_changed(bool checked)
@@ -532,7 +535,8 @@ void View::on_signal_color_changed(const QColor &color)
 {
 	(void)color;
 
-	table_view_->update();
+	// Force immediate repaint, otherwise it's updated after the header popup is closed
+	table_view_->viewport()->update();
 }
 
 void View::on_new_annotations()

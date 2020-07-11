@@ -237,9 +237,10 @@ void AnnotationCollectionModel::set_signal_and_segment(data::DecodeSignal* signa
 		connect(dec.get(), SIGNAL(annotation_visibility_changed()),
 			this, SLOT(on_annotation_visibility_changed()));
 
-	if (hide_hidden_)
+	if (hide_hidden_) {
 		update_annotations_without_hidden();
-	else
+		dataset_ = &all_annotations_without_hidden_;
+	} else
 		dataset_ = all_annotations_;
 
 	if (!dataset_ || dataset_->empty()) {
