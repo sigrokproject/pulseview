@@ -92,7 +92,9 @@ Device::Device(shared_ptr<sigrok::Configurable> configurable) :
 			break;
 
 		case SR_CONF_LIMIT_FRAMES:
-			bind_int(name, "", "", pair<int64_t, int64_t>(0, 1000000), get, set);
+			// Value 0 means that there is no limit
+			bind_int(name, "", "", pair<int64_t, int64_t>(0, 1000000), get, set,
+				tr("No Limit"));
 			break;
 
 		case SR_CONF_PATTERN_MODE:
@@ -182,13 +184,13 @@ void Device::bind_enum(const QString &name, const QString &desc,
 }
 
 void Device::bind_int(const QString &name, const QString &desc, QString suffix,
-	optional< pair<int64_t, int64_t> > range,
-	Property::Getter getter, Property::Setter setter)
+	optional< pair<int64_t, int64_t> > range, Property::Getter getter,
+	Property::Setter setter, QString special_value_text)
 {
 	assert(configurable_);
 
 	properties_.push_back(shared_ptr<Property>(new Int(name, desc, suffix,
-		range, getter, setter)));
+		range, getter, setter, special_value_text)));
 }
 
 QString Device::print_timebase(Glib::VariantBase gvar)

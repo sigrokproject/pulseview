@@ -41,7 +41,7 @@ namespace prop {
 
 class Enum : public Property
 {
-	Q_OBJECT;
+	Q_OBJECT
 
 public:
 	Enum(QString name, QString desc,

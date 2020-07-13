@@ -40,7 +40,7 @@ namespace prop {
 
 class Property : public QObject
 {
-	Q_OBJECT;
+	Q_OBJECT
 
 public:
 	typedef function<Glib::VariantBase ()> Getter;

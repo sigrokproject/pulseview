@@ -62,7 +62,8 @@ private:
 		function<QString (Glib::VariantBase)> printer = print_gvariant);
 	void bind_int(const QString &name, const QString &desc, QString suffix,
 		boost::optional< pair<int64_t, int64_t> > range,
-		prop::Property::Getter getter, prop::Property::Setter setter);
+		prop::Property::Getter getter, prop::Property::Setter setter,
+		QString special_value_text = "");
 
 	static QString print_timebase(Glib::VariantBase gvar);
 	static QString print_vdiv(Glib::VariantBase gvar);

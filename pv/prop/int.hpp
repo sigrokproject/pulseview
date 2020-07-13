@@ -35,12 +35,12 @@ namespace prop {
 
 class Int : public Property
 {
-	Q_OBJECT;
+	Q_OBJECT
 
 public:
 	Int(QString name, QString desc, QString suffix,
 		boost::optional< pair<int64_t, int64_t> > range,
-		Getter getter, Setter setter);
+		Getter getter, Setter setter, QString special_value_text = "");
 
 	virtual ~Int() = default;
 
@@ -53,7 +53,7 @@ private Q_SLOTS:
 	void on_value_changed(int);
 
 private:
-	const QString suffix_;
+	const QString suffix_, special_value_text_;
 	const boost::optional< pair<int64_t, int64_t> > range_;
 
 	Glib::VariantBase value_;

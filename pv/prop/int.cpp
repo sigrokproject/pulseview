@@ -35,14 +35,12 @@ using std::pair;
 namespace pv {
 namespace prop {
 
-Int::Int(QString name,
-	QString desc,
-	QString suffix,
-	optional< pair<int64_t, int64_t> > range,
-	Getter getter,
-	Setter setter) :
+Int::Int(QString name, QString desc, QString suffix,
+	optional< pair<int64_t, int64_t> > range, Getter getter, Setter setter,
+	QString special_value_text) :
 	Property(name, desc, getter, setter),
 	suffix_(suffix),
+	special_value_text_(special_value_text),
 	range_(range),
 	spin_box_(nullptr)
 {
@@ -72,6 +70,7 @@ QWidget* Int::get_widget(QWidget *parent, bool auto_commit)
 
 	spin_box_ = new QSpinBox(parent);
 	spin_box_->setSuffix(suffix_);
+	spin_box_->setSpecialValueText(special_value_text_);
 
 	const GVariantType *const type = g_variant_get_type(value);
 	assert(type);

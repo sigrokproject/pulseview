@@ -29,7 +29,7 @@ namespace prop {
 
 class String : public Property
 {
-	Q_OBJECT;
+	Q_OBJECT
 
 public:
 	String(QString name, QString desc, Getter getter, Setter setter);

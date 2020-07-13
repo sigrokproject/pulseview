@@ -29,7 +29,7 @@ namespace prop {
 
 class Bool : public Property
 {
-	Q_OBJECT;
+	Q_OBJECT
 
 public:
 	Bool(QString name, QString desc, Getter getter, Setter setter);
