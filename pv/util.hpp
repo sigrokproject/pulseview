@@ -25,6 +25,9 @@
 #include <vector>
 
 #ifndef Q_MOC_RUN
+// Workaround for https://github.com/boostorg/serialization/issues/186
+#include <boost/serialization/nvp.hpp>
+
 #include <boost/multiprecision/cpp_dec_float.hpp>
 #endif
 
