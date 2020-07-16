@@ -218,6 +218,14 @@ A human-readable form has been saved to disk and was written to the log. You may
     </message>
 </context>
 <context>
+    <name>pv::binding::Device</name>
+    <message>
+        <location filename="../pv/binding/device.cpp" line="97"/>
+        <source>No Limit</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>pv::data::DecodeSignal</name>
     <message>
         <location filename="../pv/data/decodesignal.cpp" line="198"/>
@@ -240,12 +248,12 @@ A human-readable form has been saved to disk and was written to the log. You may
         <translation>Sin datos de entrada</translation>
     </message>
     <message>
-        <location filename="../pv/data/decodesignal.cpp" line="1180"/>
+        <location filename="../pv/data/decodesignal.cpp" line="1172"/>
         <source>Decoder reported an error</source>
         <translation>El decodificador reportó un error</translation>
     </message>
     <message>
-        <location filename="../pv/data/decodesignal.cpp" line="1316"/>
+        <location filename="../pv/data/decodesignal.cpp" line="1308"/>
         <source>Failed to create decoder instance</source>
         <translation>Error al crear la instancia del decodificador</translation>
     </message>
@@ -781,8 +789,8 @@ Please keep in mind that PulseView may need a restart to display correctly.</sou
 <context>
     <name>pv::prop::Int</name>
     <message>
-        <location filename="../pv/prop/int.cpp" line="65"/>
-        <location filename="../pv/prop/int.cpp" line="128"/>
+        <location filename="../pv/prop/int.cpp" line="63"/>
+        <location filename="../pv/prop/int.cpp" line="127"/>
         <source>Querying config key %1 resulted in %2</source>
         <translation>La consulta de la clave de configuración %1 resultó en %2</translation>
     </message>
