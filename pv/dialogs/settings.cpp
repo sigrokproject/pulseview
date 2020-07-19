@@ -467,6 +467,7 @@ QWidget *Settings::get_about_page(QWidget *parent) const
 		tr("Protocol decoder search paths:") + "</b></td></tr>");
 	for (QString &entry : a->get_pd_path_list())
 		s.append(QString("<tr><td colspan=\"2\">%1</td></tr>").arg(entry));
+	s.append(tr("<tr><td colspan=\"2\">(Note: Set environment variable SIGROKDECODE_DIR to add a custom directory)</td></tr>"));
 #endif
 
 	s.append("<tr><td colspan=\"2\"></td></tr>");
