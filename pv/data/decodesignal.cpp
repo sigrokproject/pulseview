@@ -858,7 +858,7 @@ uint32_t DecodeSignal::get_input_segment_count() const
 	return (no_signals_assigned ? 0 : count);
 }
 
-uint32_t DecodeSignal::get_input_samplerate(uint32_t segment_id) const
+double DecodeSignal::get_input_samplerate(uint32_t segment_id) const
 {
 	double samplerate = 0;
 
@@ -1128,7 +1128,6 @@ void DecodeSignal::logic_mux_proc()
 				logic_mux_data_->push_segment(output_segment);
 
 				output_segment->set_samplerate(get_input_samplerate(segment_id));
-
 			} else {
 				// All segments have been processed
 				logic_mux_data_invalid_ = false;

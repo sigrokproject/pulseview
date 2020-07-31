@@ -192,7 +192,7 @@ private:
 	void set_error_message(QString msg);
 
 	uint32_t get_input_segment_count() const;
-	uint32_t get_input_samplerate(uint32_t segment_id) const;
+	double get_input_samplerate(uint32_t segment_id) const;
 
 	Decoder* get_decoder_by_instance(const srd_decoder *const srd_dec);
 
