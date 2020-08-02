@@ -225,13 +225,10 @@ void SignalBase::set_data(shared_ptr<pv::data::SignalData> data)
 		disconnect(data.get(), SIGNAL(samples_added(shared_ptr<Segment>, uint64_t, uint64_t)),
 			this, SLOT(on_samples_added(shared_ptr<Segment>, uint64_t, uint64_t)));
 
-		if (channel_type_ == AnalogChannel) {
-			shared_ptr<Analog> analog = analog_data();
-			assert(analog);
-
+		shared_ptr<Analog> analog = analog_data();
+		if (analog)
 			disconnect(analog.get(), SIGNAL(min_max_changed(float, float)),
 				this, SLOT(on_min_max_changed(float, float)));
-		}
 	}
 
 	data_ = data;
@@ -242,13 +239,10 @@ void SignalBase::set_data(shared_ptr<pv::data::SignalData> data)
 		connect(data.get(), SIGNAL(samples_added(SharedPtrToSegment, uint64_t, uint64_t)),
 			this, SLOT(on_samples_added(SharedPtrToSegment, uint64_t, uint64_t)));
 
-		if (channel_type_ == AnalogChannel) {
-			shared_ptr<Analog> analog = analog_data();
-			assert(analog);
-
+		shared_ptr<Analog> analog = analog_data();
+		if (analog)
 			connect(analog.get(), SIGNAL(min_max_changed(float, float)),
 				this, SLOT(on_min_max_changed(float, float)));
-		}
 	}
 }
 
@@ -263,20 +257,12 @@ void SignalBase::clear_sample_data()
 
 shared_ptr<data::Analog> SignalBase::analog_data() const
 {
-	shared_ptr<Analog> result = nullptr;
-
-	if (channel_type_ == AnalogChannel)
-		result = dynamic_pointer_cast<Analog>(data_);
-
-	return result;
+	return dynamic_pointer_cast<Analog>(data_);
 }
 
 shared_ptr<data::Logic> SignalBase::logic_data() const
 {
-	shared_ptr<Logic> result = nullptr;
-
-	if (channel_type_ == LogicChannel)
-		result = dynamic_pointer_cast<Logic>(data_);
+	shared_ptr<Logic> result = dynamic_pointer_cast<Logic>(data_);
 
 	if (((conversion_type_ == A2LConversionByThreshold) ||
 		(conversion_type_ == A2LConversionBySchmittTrigger)))
@@ -289,25 +275,25 @@ bool SignalBase::segment_is_complete(uint32_t segment_id) const
 {
 	bool result = true;
 
-	if (channel_type_ == AnalogChannel)
+	shared_ptr<Analog> adata = analog_data();
+	if (adata)
 	{
-		shared_ptr<Analog> data = dynamic_pointer_cast<Analog>(data_);
-		auto segments = data->analog_segments();
+		auto segments = adata->analog_segments();
 		try {
 			result = segments.at(segment_id)->is_complete();
 		} catch (out_of_range&) {
 			// Do nothing
 		}
-	}
-
-	if (channel_type_ == LogicChannel)
-	{
-		shared_ptr<Logic> data = dynamic_pointer_cast<Logic>(data_);
-		auto segments = data->logic_segments();
-		try {
-			result = segments.at(segment_id)->is_complete();
-		} catch (out_of_range&) {
-			// Do nothing
+	} else {
+		shared_ptr<Logic> ldata = logic_data();
+		if (ldata) {
+			shared_ptr<Logic> data = dynamic_pointer_cast<Logic>(data_);
+			auto segments = data->logic_segments();
+			try {
+				result = segments.at(segment_id)->is_complete();
+			} catch (out_of_range&) {
+				// Do nothing
+			}
 		}
 	}
 
@@ -318,21 +304,16 @@ bool SignalBase::has_samples() const
 {
 	bool result = false;
 
-	if (channel_type_ == AnalogChannel)
+	shared_ptr<Analog> adata = analog_data();
+	if (adata)
 	{
-		shared_ptr<Analog> data = dynamic_pointer_cast<Analog>(data_);
-		if (data) {
-			auto segments = data->analog_segments();
-			if ((segments.size() > 0) && (segments.front()->get_sample_count() > 0))
-				result = true;
-		}
-	}
-
-	if (channel_type_ == LogicChannel)
-	{
-		shared_ptr<Logic> data = dynamic_pointer_cast<Logic>(data_);
-		if (data) {
-			auto segments = data->logic_segments();
+		auto segments = adata->analog_segments();
+		if ((segments.size() > 0) && (segments.front()->get_sample_count() > 0))
+			result = true;
+	} else {
+		shared_ptr<Logic> ldata = logic_data();
+		if (ldata) {
+			auto segments = ldata->logic_segments();
 			if ((segments.size() > 0) && (segments.front()->get_sample_count() > 0))
 				result = true;
 		}
@@ -343,18 +324,13 @@ bool SignalBase::has_samples() const
 
 double SignalBase::get_samplerate() const
 {
-	if (channel_type_ == AnalogChannel)
-	{
-		shared_ptr<Analog> data = dynamic_pointer_cast<Analog>(data_);
-		if (data)
-			return data->get_samplerate();
-	}
-
-	if (channel_type_ == LogicChannel)
-	{
-		shared_ptr<Logic> data = dynamic_pointer_cast<Logic>(data_);
-		if (data)
-			return data->get_samplerate();
+	shared_ptr<Analog> adata = analog_data();
+	if (adata)
+		return adata->get_samplerate();
+	else {
+		shared_ptr<Logic> ldata = logic_data();
+		if (ldata)
+			return ldata->get_samplerate();
 	}
 
 	// Default samplerate is 1 Hz
@@ -580,8 +556,7 @@ void SignalBase::restore_settings(QSettings &settings)
 
 bool SignalBase::conversion_is_a2l() const
 {
-	return ((channel_type_ == AnalogChannel) &&
-		((conversion_type_ == A2LConversionByThreshold) ||
+	return (((conversion_type_ == A2LConversionByThreshold) ||
 		(conversion_type_ == A2LConversionBySchmittTrigger)));
 }
 

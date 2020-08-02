@@ -334,7 +334,6 @@ public:
 #endif
 
 	virtual void save_settings(QSettings &settings) const;
-
 	virtual void restore_settings(QSettings &settings);
 
 	void start_conversion(bool delayed_start=false);
