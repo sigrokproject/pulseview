@@ -71,6 +71,11 @@ icons/information.svg: Bobarino
     GFDL 1.2 or later / CC-BY-SA 3.0
     https://en.wikipedia.org/wiki/File:Information.svg#Licensing
 
+icons/add-math-channel.svg: Inductiveload
+  https://en.wikipedia.org/wiki/File:Icon_Mathematical_Plot.svg
+  License:
+    Public Domain
+
 QDarkStyleSheet: Colin Duquesnoy
   https://github.com/ColinDuquesnoy/QDarkStyleSheet
   License:

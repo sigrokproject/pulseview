@@ -258,6 +258,7 @@ set(pulseview_SOURCES
 	pv/data/analogsegment.cpp
 	pv/data/logic.cpp
 	pv/data/logicsegment.cpp
+	pv/data/mathsignal.cpp
 	pv/data/signalbase.cpp
 	pv/data/signaldata.cpp
 	pv/data/segment.cpp
@@ -331,6 +332,7 @@ set(pulseview_HEADERS
 	pv/data/analogsegment.hpp
 	pv/data/logic.hpp
 	pv/data/logicsegment.hpp
+	pv/data/mathsignal.hpp
 	pv/data/signalbase.hpp
 	pv/dialogs/connect.hpp
 	pv/dialogs/inputoutputoptions.hpp

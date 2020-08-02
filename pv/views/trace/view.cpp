@@ -365,6 +365,10 @@ void View::add_signalbase(const shared_ptr<data::SignalBase> signalbase)
 		signal = shared_ptr<Signal>(new AnalogSignal(session_, signalbase));
 		break;
 
+	case SignalBase::MathChannel:
+		signal = shared_ptr<Signal>(new AnalogSignal(session_, signalbase));
+		break;
+
 	default:
 		qDebug() << "Unknown signalbase type:" << signalbase->type();
 		assert(false);
@@ -929,7 +933,7 @@ pair<Timestamp, Timestamp> View::get_time_extents() const
 		return make_pair(0, 0);
 
 	for (shared_ptr<Signal> s : signals_)
-		if (s->data()->segments().size() > 0)
+		if (s->data() && (s->data()->segments().size() > 0))
 			data.push_back(s->data());
 
 	for (const shared_ptr<SignalData>& d : data) {

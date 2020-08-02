@@ -35,6 +35,7 @@ set(pulseview_TEST_SOURCES
 	${PROJECT_SOURCE_DIR}/pv/data/analogsegment.cpp
 	${PROJECT_SOURCE_DIR}/pv/data/logic.cpp
 	${PROJECT_SOURCE_DIR}/pv/data/logicsegment.cpp
+	${PROJECT_SOURCE_DIR}/pv/data/mathsignal.cpp
 	${PROJECT_SOURCE_DIR}/pv/data/segment.cpp
 	${PROJECT_SOURCE_DIR}/pv/data/signalbase.cpp
 	${PROJECT_SOURCE_DIR}/pv/data/signaldata.cpp
@@ -116,6 +117,7 @@ set(pulseview_TEST_HEADERS
 	${PROJECT_SOURCE_DIR}/pv/data/analogsegment.hpp
 	${PROJECT_SOURCE_DIR}/pv/data/logic.hpp
 	${PROJECT_SOURCE_DIR}/pv/data/logicsegment.hpp
+	${PROJECT_SOURCE_DIR}/pv/data/mathsignal.hpp
 	${PROJECT_SOURCE_DIR}/pv/data/signalbase.hpp
 	${PROJECT_SOURCE_DIR}/pv/devices/device.hpp
 	${PROJECT_SOURCE_DIR}/pv/dialogs/connect.hpp

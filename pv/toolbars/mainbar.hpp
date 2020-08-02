@@ -145,6 +145,7 @@ private Q_SLOTS:
 	void on_actionConnect_triggered();
 
 	void on_add_decoder_clicked();
+	void on_add_math_signal_clicked();
 
 protected:
 	void add_toolbar_widgets();
@@ -185,6 +186,8 @@ private:
 #ifdef ENABLE_DECODE
 	QToolButton *add_decoder_button_;
 #endif
+
+	QToolButton *add_math_signal_button_;
 };
 
 } // namespace toolbars
