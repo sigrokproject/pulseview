@@ -61,10 +61,6 @@ Device::Device(shared_ptr<sigrok::Configurable> configurable) :
 
 		auto capabilities = configurable->config_capabilities(key);
 
-		if (!capabilities.count(Capability::GET) ||
-			!capabilities.count(Capability::SET))
-			continue;
-
 		string name_str;
 		try {
 			name_str = key->description();
@@ -73,6 +69,13 @@ Device::Device(shared_ptr<sigrok::Configurable> configurable) :
 		}
 
 		const QString name = QString::fromStdString(name_str);
+
+		if (!capabilities.count(Capability::GET) ||
+			!capabilities.count(Capability::SET)) {
+			qDebug() << QString(tr("Note for device developers: Ignoring device configuration capability '%1' " \
+				"as it is missing GET and/or SET")).arg(name);
+			continue;
+		}
 
 		const Property::Getter get = [&, key]() {
 			return configurable_->config_get(key); };
