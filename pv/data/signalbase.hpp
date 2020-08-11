@@ -129,6 +129,11 @@ public:
 	shared_ptr<sigrok::Channel> channel() const;
 
 	/**
+	 * Returns whether this channel is generated or a channel associated with the device.
+	 */
+	bool is_generated() const;
+
+	/**
 	 * Returns enabled status of this channel.
 	 */
 	bool enabled() const;

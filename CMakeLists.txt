@@ -286,6 +286,7 @@ set(pulseview_SOURCES
 	pv/views/trace/cursorpair.cpp
 	pv/views/trace/flag.cpp
 	pv/views/trace/header.cpp
+	pv/views/trace/mathsignal.cpp
 	pv/views/trace/marginwidget.cpp
 	pv/views/trace/logicsignal.cpp
 	pv/views/trace/ruler.cpp
@@ -321,6 +322,7 @@ set(pulseview_SOURCES
 
 # This list includes only QObject derived class headers.
 set(pulseview_HEADERS
+	pv/exprtk.hpp
 	pv/logging.hpp
 	pv/globalsettings.hpp
 	pv/mainwindow.hpp
@@ -353,6 +355,7 @@ set(pulseview_HEADERS
 	pv/views/trace/flag.hpp
 	pv/views/trace/header.hpp
 	pv/views/trace/logicsignal.hpp
+	pv/views/trace/mathsignal.hpp
 	pv/views/trace/marginwidget.hpp
 	pv/views/trace/ruler.hpp
 	pv/views/trace/signal.hpp

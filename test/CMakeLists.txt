@@ -63,6 +63,7 @@ set(pulseview_TEST_SOURCES
 	${PROJECT_SOURCE_DIR}/pv/views/trace/cursorpair.cpp
 	${PROJECT_SOURCE_DIR}/pv/views/trace/flag.cpp
 	${PROJECT_SOURCE_DIR}/pv/views/trace/header.cpp
+	${PROJECT_SOURCE_DIR}/pv/views/trace/mathsignal.cpp
 	${PROJECT_SOURCE_DIR}/pv/views/trace/marginwidget.cpp
 	${PROJECT_SOURCE_DIR}/pv/views/trace/logicsignal.cpp
 	${PROJECT_SOURCE_DIR}/pv/views/trace/ruler.cpp
@@ -106,6 +107,7 @@ set(pulseview_TEST_SOURCES
 set(pulseview_TEST_HEADERS
 	${PROJECT_SOURCE_DIR}/pv/application.hpp
 	${PROJECT_SOURCE_DIR}/pv/devicemanager.hpp
+	${PROJECT_SOURCE_DIR}/pv/exprtk.hpp
 	${PROJECT_SOURCE_DIR}/pv/globalsettings.hpp
 	${PROJECT_SOURCE_DIR}/pv/logging.hpp
 	${PROJECT_SOURCE_DIR}/pv/mainwindow.hpp
@@ -139,6 +141,7 @@ set(pulseview_TEST_HEADERS
 	${PROJECT_SOURCE_DIR}/pv/views/trace/flag.hpp
 	${PROJECT_SOURCE_DIR}/pv/views/trace/header.hpp
 	${PROJECT_SOURCE_DIR}/pv/views/trace/logicsignal.hpp
+	${PROJECT_SOURCE_DIR}/pv/views/trace/mathsignal.hpp
 	${PROJECT_SOURCE_DIR}/pv/views/trace/marginwidget.hpp
 	${PROJECT_SOURCE_DIR}/pv/views/trace/ruler.hpp
 	${PROJECT_SOURCE_DIR}/pv/views/trace/signal.hpp

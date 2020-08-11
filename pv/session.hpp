@@ -186,7 +186,8 @@ public:
 
 	double get_samplerate() const;
 
-	uint32_t get_segment_count() const;
+	uint32_t get_highest_segment_id() const;
+	uint64_t get_segment_sample_count(uint32_t segment_id) const;
 
 	vector<util::Timestamp> get_triggers(uint32_t segment_id) const;
 
@@ -195,6 +196,9 @@ public:
 	bool has_view(shared_ptr<views::ViewBase> view);
 
 	const vector< shared_ptr<data::SignalBase> > signalbases() const;
+	uint32_t get_signal_count(data::SignalBase::ChannelType type) const;
+	uint32_t get_next_signal_index(data::SignalBase::ChannelType type);
+
 	void add_generated_signal(shared_ptr<data::SignalBase> signal);
 	void remove_generated_signal(shared_ptr<data::SignalBase> signal);
 
@@ -286,6 +290,7 @@ private:
 	vector< shared_ptr<data::SignalBase> > signalbases_;
 	unordered_set< shared_ptr<data::SignalData> > all_signal_data_;
 	deque<data::SignalGroup*> signal_groups_;
+	map<uint8_t, uint32_t> next_index_list_; // signal type -> index counter
 
 	/// trigger_list_ contains pairs of <segment_id, timestamp> values
 	vector< std::pair<uint32_t, util::Timestamp> > trigger_list_;
@@ -297,6 +302,7 @@ private:
 	map< shared_ptr<sigrok::Channel>, shared_ptr<data::AnalogSegment> >
 		cur_analog_segments_;
 	int32_t highest_segment_id_;
+	vector<uint64_t> segment_sample_count_;
 
 	std::thread sampling_thread_;
 

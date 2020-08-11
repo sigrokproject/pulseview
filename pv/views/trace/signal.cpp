@@ -64,8 +64,8 @@ const char *const ChannelNames[] = {
 };
 
 Signal::Signal(pv::Session &session,
-	shared_ptr<data::SignalBase> channel) :
-	Trace(channel),
+	shared_ptr<data::SignalBase> signal) :
+	Trace(signal),
 	session_(session),
 	name_widget_(nullptr)
 {
@@ -161,10 +161,17 @@ QMenu* Signal::create_header_context_menu(QWidget *parent)
 
 	menu->addSeparator();
 
-	QAction *const disable = new QAction(tr("Disable"), this);
-	disable->setShortcuts(QKeySequence::Delete);
-	connect(disable, SIGNAL(triggered()), this, SLOT(on_disable()));
-	menu->addAction(disable);
+	QString caption;
+
+	if (base_->is_generated())
+		caption = tr("Remove");
+	else
+		caption = tr("Disable");
+
+	QAction *const a = new QAction(caption, this);
+	a->setShortcuts(QKeySequence::Delete);
+	connect(a, SIGNAL(triggered()), this, SLOT(on_disable()));
+	menu->addAction(a);
 
 	return menu;
 }
@@ -189,7 +196,10 @@ void Signal::on_name_changed(const QString &text)
 
 void Signal::on_disable()
 {
-	base_->set_enabled(false);
+	if (base_->is_generated())
+		session_.remove_generated_signal(base_);
+	else
+		base_->set_enabled(false);
 }
 
 void Signal::on_enabled_changed(bool enabled)

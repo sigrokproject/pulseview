@@ -50,17 +50,17 @@ const int Trace::LabelHitPadding = 2;
 const QColor Trace::BrightGrayBGColor = QColor(0, 0, 0, 10 * 255 / 100);
 const QColor Trace::DarkGrayBGColor = QColor(0, 0, 0, 15 * 255 / 100);
 
-Trace::Trace(shared_ptr<data::SignalBase> channel) :
-	base_(channel),
+Trace::Trace(shared_ptr<data::SignalBase> signal) :
+	base_(signal),
 	axis_pen_(AxisPen),
 	segment_display_mode_(ShowLastSegmentOnly),  // Will be overwritten by View
 	current_segment_(0),
 	popup_(nullptr),
 	popup_form_(nullptr)
 {
-	connect(channel.get(), SIGNAL(name_changed(const QString&)),
+	connect(signal.get(), SIGNAL(name_changed(const QString&)),
 		this, SLOT(on_name_changed(const QString&)));
-	connect(channel.get(), SIGNAL(color_changed(const QColor&)),
+	connect(signal.get(), SIGNAL(color_changed(const QColor&)),
 		this, SLOT(on_color_changed(const QColor&)));
 
 	GlobalSettings::add_change_handler(this);

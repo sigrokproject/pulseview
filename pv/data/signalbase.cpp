@@ -118,6 +118,12 @@ shared_ptr<sigrok::Channel> SignalBase::channel() const
 	return channel_;
 }
 
+bool SignalBase::is_generated() const
+{
+	// Only signals associated with a device have a corresponding sigrok channel
+	return channel_ == nullptr;
+}
+
 bool SignalBase::enabled() const
 {
 	return (channel_) ? channel_->enabled() : true;
@@ -571,7 +577,8 @@ void SignalBase::convert_single_segment_range(AnalogSegment *asegment,
 		uint8_t *lsamples = new uint8_t[ConversionBlockSize];
 
 		vector<shared_ptr<sigrok::Channel> > channels;
-		channels.push_back(channel_);
+		if (channel_)
+			channels.push_back(channel_);
 
 		vector<const sigrok::QuantityFlag*> mq_flags;
 		const sigrok::Quantity * const mq = sigrok::Quantity::VOLTAGE;

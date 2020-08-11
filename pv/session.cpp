@@ -779,6 +779,7 @@ void Session::start_capture(function<void (const QString)> error_handler)
 		d->clear();
 
 	trigger_list_.clear();
+	segment_sample_count_.clear();
 
 	// Revert name back to default name (e.g. "Session 1") for real devices
 	// as the (possibly saved) data is gone. File devices keep their name.
@@ -885,16 +886,17 @@ double Session::get_samplerate() const
 	return samplerate;
 }
 
-uint32_t Session::get_segment_count() const
+uint32_t Session::get_highest_segment_id() const
 {
-	uint32_t value = 0;
+	return highest_segment_id_;
+}
 
-	// Find the highest number of segments
-	for (const shared_ptr<data::SignalData>& data : all_signal_data_)
-		if (data->get_segment_count() > value)
-			value = data->get_segment_count();
-
-	return value;
+uint64_t Session::get_segment_sample_count(uint32_t segment_id) const
+{
+	if (segment_id < segment_sample_count_.size())
+		return segment_sample_count_[segment_id];
+	else
+		return 0;
 }
 
 vector<util::Timestamp> Session::get_triggers(uint32_t segment_id) const
@@ -911,6 +913,18 @@ vector<util::Timestamp> Session::get_triggers(uint32_t segment_id) const
 const vector< shared_ptr<data::SignalBase> > Session::signalbases() const
 {
 	return signalbases_;
+}
+
+uint32_t Session::get_signal_count(data::SignalBase::ChannelType type) const
+{
+	return count_if(signalbases_.begin(), signalbases_.end(),
+		[&] (shared_ptr<SignalBase> sb) { return sb->type() == type; });
+}
+
+uint32_t Session::get_next_signal_index(data::SignalBase::ChannelType type)
+{
+	next_index_list_[type]++;
+	return next_index_list_[type];
 }
 
 void Session::add_generated_signal(shared_ptr<data::SignalBase> signal)
@@ -1297,6 +1311,7 @@ void Session::signal_new_segment()
 
 	if (new_segment_id > highest_segment_id_) {
 		highest_segment_id_ = new_segment_id;
+		segment_sample_count_.emplace_back(0);
 		new_segment(highest_segment_id_);
 	}
 }
@@ -1497,6 +1512,9 @@ void Session::feed_in_logic(shared_ptr<sigrok::Logic> logic)
 
 	cur_logic_segment_->append_payload(logic);
 
+	segment_sample_count_[highest_segment_id_] =
+		max(segment_sample_count_[highest_segment_id_], cur_logic_segment_->get_sample_count());
+
 	data_received();
 }
 
@@ -1563,6 +1581,9 @@ void Session::feed_in_analog(shared_ptr<sigrok::Analog> analog)
 		// Append the samples in the segment
 		segment->append_interleaved_samples(channel_data++, analog->num_samples(),
 			channels.size());
+
+		segment_sample_count_[highest_segment_id_] =
+			max(segment_sample_count_[highest_segment_id_], segment->get_sample_count());
 	}
 
 	if (sweep_beginning) {

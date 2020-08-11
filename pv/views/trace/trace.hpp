@@ -93,7 +93,7 @@ private:
 	static const QColor DarkGrayBGColor;
 
 protected:
-	Trace(shared_ptr<data::SignalBase> channel);
+	Trace(shared_ptr<data::SignalBase> signal);
 	~Trace();
 
 public:

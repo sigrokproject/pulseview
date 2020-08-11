@@ -56,7 +56,8 @@ DecodeSignal::DecodeSignal(pv::Session &session) :
 	srd_session_(nullptr),
 	logic_mux_data_invalid_(false),
 	stack_config_changed_(true),
-	current_segment_id_(0)
+	current_segment_id_(0),
+	error_message_("")
 {
 	connect(&session_, SIGNAL(capture_state_changed(int)),
 		this, SLOT(on_capture_state_changed(int)));

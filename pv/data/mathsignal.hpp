@@ -20,13 +20,16 @@
 #ifndef PULSEVIEW_PV_DATA_MATHSIGNAL_HPP
 #define PULSEVIEW_PV_DATA_MATHSIGNAL_HPP
 
-#include <QSettings>
 #include <QString>
 
+#include <pv/exprtk.hpp>
+#include <pv/util.hpp>
 #include <pv/data/analog.hpp>
 #include <pv/data/signalbase.hpp>
-#include <pv/util.hpp>
 
+using std::atomic;
+using std::condition_variable;
+using std::mutex;
 using std::shared_ptr;
 
 namespace pv {
@@ -35,11 +38,12 @@ class Session;
 namespace data {
 
 class SignalBase;
-class SignalData;
 
 class MathSignal : public SignalBase
 {
 	Q_OBJECT
+	Q_PROPERTY(QString expression READ get_expression WRITE set_expression NOTIFY expression_changed)
+	Q_PROPERTY(QString error_message READ error_message)
 
 private:
 	static const int64_t ChunkLength;
@@ -51,6 +55,30 @@ public:
 	virtual void save_settings(QSettings &settings) const;
 	virtual void restore_settings(QSettings &settings);
 
+	QString error_message() const;
+
+	QString get_expression() const;
+	void set_expression(QString expression);
+
+private:
+	void set_error_message(QString msg);
+
+	/**
+	 * Returns the number of samples that can be worked on,
+	 * i.e. the number of samples where samples are available
+	 * for all connected channels.
+	 * If the math signal uses no input channels, this is the
+	 * number of samples in the session.
+	 */
+	uint64_t get_working_sample_count(uint32_t segment_id) const;
+
+	void reset_generation();
+	void begin_generation();
+
+	void generate_samples(uint32_t segment_id, const uint64_t start_sample,
+		const int64_t sample_count);
+	void generation_proc();
+
 Q_SIGNALS:
 	void samples_cleared();
 
@@ -59,19 +87,34 @@ Q_SIGNALS:
 
 	void min_max_changed(float min, float max);
 
-//private Q_SLOTS:
-//	void on_data_cleared();
-//	void on_data_received();
+	void expression_changed(QString expression);
 
-//	void on_samples_added(SharedPtrToSegment segment, uint64_t start_sample,
-//		uint64_t end_sample);
-
-//	void on_min_max_changed(float min, float max);
+private Q_SLOTS:
+	void on_capture_state_changed(int state);
+	void on_data_received();
 
 private:
 	pv::Session &session_;
 
+	uint64_t custom_sample_rate_;
+	uint64_t custom_sample_count_;
+	bool use_custom_sample_rate_, use_custom_sample_count_;
+	vector< shared_ptr<SignalBase>> input_signals_;
+
+	QString expression_;
+
 	QString error_message_;
+
+	mutable mutex input_mutex_;
+	mutable condition_variable gen_input_cond_;
+
+	std::thread gen_thread_;
+	atomic<bool> gen_interrupt_;
+
+	exprtk::symbol_table<double> *exprtk_symbol_table_;
+	exprtk::expression<double> *exprtk_expression_;
+	exprtk::parser<double> *exprtk_parser_;
+	double exprtk_current_time_, exprtk_current_sample_;
 };
 
 } // namespace data

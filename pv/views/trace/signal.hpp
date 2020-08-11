@@ -62,7 +62,7 @@ class Signal : public Trace, public ViewItemOwner
 	Q_OBJECT
 
 protected:
-	Signal(pv::Session &session, shared_ptr<data::SignalBase> channel);
+	Signal(pv::Session &session, shared_ptr<data::SignalBase> signal);
 
 public:
 	/**

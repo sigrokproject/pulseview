@@ -983,22 +983,20 @@ void AnalogSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
 	// Add the standard options
 	Signal::populate_popup_form(parent, form);
 
-	QFormLayout *const layout = new QFormLayout;
-
 	// Add div-related settings
 	pvdiv_sb_ = new QSpinBox(parent);
 	pvdiv_sb_->setRange(0, MaximumVDivs);
 	pvdiv_sb_->setValue(pos_vdivs_);
 	connect(pvdiv_sb_, SIGNAL(valueChanged(int)),
 		this, SLOT(on_pos_vdivs_changed(int)));
-	layout->addRow(tr("Number of pos vertical divs"), pvdiv_sb_);
+	form->addRow(tr("Number of pos vertical divs"), pvdiv_sb_);
 
 	nvdiv_sb_ = new QSpinBox(parent);
 	nvdiv_sb_->setRange(0, MaximumVDivs);
 	nvdiv_sb_->setValue(neg_vdivs_);
 	connect(nvdiv_sb_, SIGNAL(valueChanged(int)),
 		this, SLOT(on_neg_vdivs_changed(int)));
-	layout->addRow(tr("Number of neg vertical divs"), nvdiv_sb_);
+	form->addRow(tr("Number of neg vertical divs"), nvdiv_sb_);
 
 	div_height_sb_ = new QSpinBox(parent);
 	div_height_sb_->setRange(20, 1000);
@@ -1007,7 +1005,7 @@ void AnalogSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
 	div_height_sb_->setValue(div_height_);
 	connect(div_height_sb_, SIGNAL(valueChanged(int)),
 		this, SLOT(on_div_height_changed(int)));
-	layout->addRow(tr("Div height"), div_height_sb_);
+	form->addRow(tr("Div height"), div_height_sb_);
 
 	// Add the vertical resolution
 	resolution_cb_ = new QComboBox(parent);
@@ -1028,7 +1026,7 @@ void AnalogSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
 	vdiv_layout->addWidget(resolution_cb_, 0, 0);
 	vdiv_layout->addWidget(vdiv_unit, 0, 1);
 
-	layout->addRow(tr("Vertical resolution"), vdiv_layout);
+	form->addRow(tr("Vertical resolution"), vdiv_layout);
 
 	// Add the autoranging checkbox
 	QCheckBox* autoranging_cb = new QCheckBox();
@@ -1037,7 +1035,7 @@ void AnalogSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
 	connect(autoranging_cb, SIGNAL(stateChanged(int)),
 		this, SLOT(on_autoranging_changed(int)));
 
-	layout->addRow(tr("Autoranging"), autoranging_cb);
+	form->addRow(tr("Autoranging"), autoranging_cb);
 
 	// Add the conversion type dropdown
 	conversion_cb_ = new QComboBox();
@@ -1052,7 +1050,7 @@ void AnalogSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
 	cur_idx = conversion_cb_->findData(QVariant(base_->get_conversion_type()));
 	conversion_cb_->setCurrentIndex(cur_idx);
 
-	layout->addRow(tr("Conversion"), conversion_cb_);
+	form->addRow(tr("Conversion"), conversion_cb_);
 
 	connect(conversion_cb_, SIGNAL(currentIndexChanged(int)),
 		this, SLOT(on_conversion_changed(int)));
@@ -1061,7 +1059,7 @@ void AnalogSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
     conv_threshold_cb_ = new QComboBox();
     conv_threshold_cb_->setEditable(true);
 
-    layout->addRow(tr("Conversion threshold(s)"), conv_threshold_cb_);
+    form->addRow(tr("Conversion threshold(s)"), conv_threshold_cb_);
 
     connect(conv_threshold_cb_, SIGNAL(currentIndexChanged(int)),
             this, SLOT(on_conv_threshold_changed(int)));
@@ -1078,15 +1076,13 @@ void AnalogSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
 	cur_idx = display_type_cb_->findData(QVariant(display_type_));
 	display_type_cb_->setCurrentIndex(cur_idx);
 
-	layout->addRow(tr("Show traces for"), display_type_cb_);
+	form->addRow(tr("Show traces for"), display_type_cb_);
 
 	connect(display_type_cb_, SIGNAL(currentIndexChanged(int)),
 		this, SLOT(on_display_type_changed(int)));
 
 	// Update the conversion widget contents and states
 	update_conversion_widgets();
-
-	form->addRow(layout);
 }
 
 void AnalogSignal::hover_point_changed(const QPoint &hp)

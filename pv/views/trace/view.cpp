@@ -41,27 +41,28 @@
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
 
-#include "analogsignal.hpp"
-#include "header.hpp"
-#include "logicsignal.hpp"
-#include "ruler.hpp"
-#include "signal.hpp"
-#include "tracegroup.hpp"
-#include "triggermarker.hpp"
 #include "view.hpp"
-#include "viewport.hpp"
 
+#include "pv/globalsettings.hpp"
 #include "pv/metadata_obj.hpp"
+#include "pv/session.hpp"
+#include "pv/util.hpp"
 #include "pv/data/logic.hpp"
 #include "pv/data/logicsegment.hpp"
 #include "pv/data/signalbase.hpp"
 #include "pv/devices/device.hpp"
-#include "pv/globalsettings.hpp"
-#include "pv/session.hpp"
-#include "pv/util.hpp"
+#include "pv/views/trace/mathsignal.hpp"
+#include "pv/views/trace/analogsignal.hpp"
+#include "pv/views/trace/header.hpp"
+#include "pv/views/trace/logicsignal.hpp"
+#include "pv/views/trace/ruler.hpp"
+#include "pv/views/trace/signal.hpp"
+#include "pv/views/trace/tracegroup.hpp"
+#include "pv/views/trace/triggermarker.hpp"
+#include "pv/views/trace/viewport.hpp"
 
 #ifdef ENABLE_DECODE
-#include "decodetrace.hpp"
+#include "pv/views/trace/decodetrace.hpp"
 #endif
 
 using pv::data::SignalBase;
@@ -366,7 +367,7 @@ void View::add_signalbase(const shared_ptr<data::SignalBase> signalbase)
 		break;
 
 	case SignalBase::MathChannel:
-		signal = shared_ptr<Signal>(new AnalogSignal(session_, signalbase));
+		signal = shared_ptr<Signal>(new MathSignal(session_, signalbase));
 		break;
 
 	default:
@@ -781,7 +782,7 @@ void View::set_segment_display_mode(Trace::SegmentDisplayMode mode)
 	for (const shared_ptr<Signal>& signal : signals_)
 		signal->set_segment_display_mode(mode);
 
-	uint32_t last_segment = session_.get_segment_count() - 1;
+	uint32_t last_segment = session_.get_highest_segment_id();
 
 	switch (mode) {
 	case Trace::ShowLastSegmentOnly:
