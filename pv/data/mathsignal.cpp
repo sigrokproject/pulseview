@@ -117,7 +117,7 @@ void MathSignal::set_error_message(QString msg)
 {
 	error_message_ = msg;
 	// TODO Emulate noquote()
-	qDebug().nospace() << name() << ": " << msg;
+	qDebug().nospace() << name() << ": " << msg << "(Expression: '" << expression_ << "')";
 }
 
 uint64_t MathSignal::get_working_sample_count(uint32_t segment_id) const
@@ -198,10 +198,12 @@ void MathSignal::begin_generation()
 	exprtk_expression_->register_symbol_table(*exprtk_symbol_table_);
 
 	exprtk_parser_ = new exprtk::parser<double>();
-	exprtk_parser_->compile(expression_.toStdString(), *exprtk_expression_);
-
-	gen_interrupt_ = false;
-	gen_thread_ = std::thread(&MathSignal::generation_proc, this);
+	if (!exprtk_parser_->compile(expression_.toStdString(), *exprtk_expression_)) {
+		error_message_ = set_error_message(tr("Error in expression"));
+	} else {
+		gen_interrupt_ = false;
+		gen_thread_ = std::thread(&MathSignal::generation_proc, this);
+	}
 }
 
 void MathSignal::generate_samples(uint32_t segment_id, const uint64_t start_sample,
