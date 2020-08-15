@@ -39,6 +39,44 @@ namespace data {
 const int64_t MathSignal::ChunkLength = 256 * 1024;
 
 
+template<typename T>
+struct sig_sample : public exprtk::igeneric_function<T>
+{
+	typedef typename exprtk::igeneric_function<T>::parameter_list_t parameter_list_t;
+	typedef typename exprtk::igeneric_function<T>::generic_type generic_type;
+	typedef typename generic_type::scalar_view scalar_t;
+	typedef typename generic_type::string_view string_t;
+
+	sig_sample(MathSignal& owner) :
+		exprtk::igeneric_function<T>("ST"),  // Require channel name and sample number
+		owner_(owner),
+		sig_data(nullptr)
+	{
+	}
+
+	T operator()(parameter_list_t parameters)
+	{
+		const string_t exprtk_sig_name = string_t(parameters[0]);
+		const scalar_t exprtk_sample_num = scalar_t(parameters[1]);
+
+		const std::string str_sig_name = to_str(exprtk_sig_name);
+		const double sample_num = exprtk_sample_num();
+
+		if (!sig_data)
+			sig_data = owner_.signal_from_name(str_sig_name);
+
+		assert(sig_data);
+		owner_.update_signal_sample(sig_data, current_segment, sample_num);
+
+		return T(sig_data->sample_value);
+	}
+
+	MathSignal& owner_;
+	uint32_t current_segment;
+	signal_data* sig_data;
+};
+
+
 MathSignal::MathSignal(pv::Session &session) :
 	SignalBase(nullptr, SignalBase::MathChannel),
 	session_(session),
@@ -46,9 +84,11 @@ MathSignal::MathSignal(pv::Session &session) :
 	use_custom_sample_count_(false),
 	expression_(""),
 	error_message_(""),
+	exprtk_unknown_symbol_table_(nullptr),
 	exprtk_symbol_table_(nullptr),
 	exprtk_expression_(nullptr),
-	exprtk_parser_(nullptr)
+	exprtk_parser_(nullptr),
+	fnc_sig_sample_(nullptr)
 {
 	set_name(QString(tr("Math%1")).arg(session_.get_next_signal_index(MathChannel)));
 
@@ -66,6 +106,9 @@ MathSignal::MathSignal(pv::Session &session) :
 MathSignal::~MathSignal()
 {
 	reset_generation();
+
+	if (fnc_sig_sample_)
+		delete fnc_sig_sample_;
 }
 
 void MathSignal::save_settings(QSettings &settings) const
@@ -133,7 +176,9 @@ uint64_t MathSignal::get_working_sample_count(uint32_t segment_id) const
 		result = (segment_id == 0) ? custom_sample_count_ : 0;
 	else {
 		if (input_signals_.size() > 0) {
-			for (const shared_ptr<SignalBase> &sb : input_signals_) {
+			for (auto input_signal : input_signals_) {
+				const shared_ptr<SignalBase>& sb = input_signal.second.sb;
+
 				shared_ptr<Analog> a = sb->analog_data();
 				const uint32_t last_segment = (a->analog_segments().size() - 1);
 				if (segment_id > last_segment)
@@ -157,10 +202,11 @@ void MathSignal::reset_generation()
 	}
 
 	data_->clear();
+	input_signals_.clear();
 
-	if (exprtk_symbol_table_) {
-		delete exprtk_symbol_table_;
-		exprtk_symbol_table_ = nullptr;
+	if (exprtk_parser_) {
+		delete exprtk_parser_;
+		exprtk_parser_ = nullptr;
 	}
 
 	if (exprtk_expression_) {
@@ -168,9 +214,19 @@ void MathSignal::reset_generation()
 		exprtk_expression_ = nullptr;
 	}
 
-	if (exprtk_parser_) {
-		delete exprtk_parser_;
-		exprtk_parser_ = nullptr;
+	if (exprtk_symbol_table_) {
+		delete exprtk_symbol_table_;
+		exprtk_symbol_table_ = nullptr;
+	}
+
+	if (exprtk_unknown_symbol_table_) {
+		delete exprtk_unknown_symbol_table_;
+		exprtk_unknown_symbol_table_ = nullptr;
+	}
+
+	if (fnc_sig_sample_) {
+		delete fnc_sig_sample_;
+		fnc_sig_sample_ = nullptr;
 	}
 
 	if (!error_message_.isEmpty()) {
@@ -189,18 +245,41 @@ void MathSignal::begin_generation()
 		return;
 	}
 
+	fnc_sig_sample_ = new sig_sample<double>(*this);
+
+	exprtk_unknown_symbol_table_ = new exprtk::symbol_table<double>();
+
 	exprtk_symbol_table_ = new exprtk::symbol_table<double>();
+	exprtk_symbol_table_->add_function("sig_sample", *fnc_sig_sample_);
 	exprtk_symbol_table_->add_variable("t", exprtk_current_time_);
 	exprtk_symbol_table_->add_variable("s", exprtk_current_sample_);
 	exprtk_symbol_table_->add_constants();
 
 	exprtk_expression_ = new exprtk::expression<double>();
+	exprtk_expression_->register_symbol_table(*exprtk_unknown_symbol_table_);
 	exprtk_expression_->register_symbol_table(*exprtk_symbol_table_);
 
 	exprtk_parser_ = new exprtk::parser<double>();
+	exprtk_parser_->enable_unknown_symbol_resolver();
+
 	if (!exprtk_parser_->compile(expression_.toStdString(), *exprtk_expression_)) {
-		error_message_ = set_error_message(tr("Error in expression"));
+		set_error_message(tr("Error in expression"));
 	} else {
+		// Resolve unknown scalars to signals and add them to the input signal list
+		vector<string> unknowns;
+		exprtk_unknown_symbol_table_->get_variable_list(unknowns);
+		for (string& unknown : unknowns) {
+			signal_data* sig_data = signal_from_name(unknown);
+			const shared_ptr<SignalBase> signal = (sig_data) ? (sig_data->sb) : nullptr;
+			if (!signal || (!signal->analog_data())) {
+				set_error_message(QString(tr("%1 isn't a valid signal")).arg(
+					QString::fromStdString(unknown)));
+			} else
+				sig_data->ref = &(exprtk_unknown_symbol_table_->variable_ref(unknown));
+		}
+	}
+
+	if (error_message_.isEmpty()) {
 		gen_interrupt_ = false;
 		gen_thread_ = std::thread(&MathSignal::generation_proc, this);
 	}
@@ -212,6 +291,9 @@ void MathSignal::generate_samples(uint32_t segment_id, const uint64_t start_samp
 	shared_ptr<Analog> analog = dynamic_pointer_cast<Analog>(data_);
 	shared_ptr<AnalogSegment> segment = analog->analog_segments().at(segment_id);
 
+	// Keep the math functions segment IDs in sync
+	fnc_sig_sample_->current_segment = segment_id;
+
 	const double sample_rate = data_->get_samplerate();
 
 	exprtk_current_sample_ = start_sample;
@@ -219,10 +301,16 @@ void MathSignal::generate_samples(uint32_t segment_id, const uint64_t start_samp
 	float *sample_data = new float[sample_count];
 
 	for (int64_t i = 0; i < sample_count; i++) {
-		exprtk_current_sample_ += 1;
 		exprtk_current_time_ = exprtk_current_sample_ / sample_rate;
+
+		for (auto& entry : input_signals_) {
+			signal_data* sig_data  = &(entry.second);
+			update_signal_sample(sig_data, segment_id, exprtk_current_sample_);
+		}
+
 		double value = exprtk_expression_->value();
 		sample_data[i] = value;
+		exprtk_current_sample_ += 1;
 	}
 
 	segment->append_interleaved_samples(sample_data, sample_count, 1);
@@ -301,6 +389,51 @@ void MathSignal::generation_proc()
 		}
 
 	} while (!gen_interrupt_);
+}
+
+signal_data* MathSignal::signal_from_name(const std::string& name)
+{
+	// Look up signal in the map and if it doesn't exist yet, add it for future use
+
+	auto element = input_signals_.find(name);
+
+	if (element != input_signals_.end()) {
+		return &(element->second);
+	} else {
+		const vector< shared_ptr<SignalBase> > signalbases = session_.signalbases();
+		const QString sig_name = QString::fromStdString(name);
+
+		for (const shared_ptr<SignalBase>& sb : signalbases)
+			if (sb->name() == sig_name)
+				return &(input_signals_.insert({name, signal_data(sb)}).first->second);
+	}
+
+	return nullptr;
+}
+
+void MathSignal::update_signal_sample(signal_data* sig_data, uint32_t segment_id, uint64_t sample_num)
+{
+	assert(sig_data);
+
+	// Update the value only if a different sample is requested
+	if (sig_data->sample_num == sample_num)
+		return;
+
+	assert(sig_data->sb);
+	const shared_ptr<pv::data::Analog> analog = sig_data->sb->analog_data();
+	assert(analog);
+
+	assert(segment_id < analog->analog_segments().size());
+
+	const shared_ptr<AnalogSegment> segment = analog->analog_segments().at(segment_id);
+
+	sig_data->sample_num = sample_num;
+	sig_data->sample_value = segment->get_sample(sample_num);
+
+	// We only have a reference if this signal is used as a scalar,
+	// if it's used by a function, it's null
+	if (sig_data->ref)
+		*(sig_data->ref) = sig_data->sample_value;
 }
 
 void MathSignal::on_capture_state_changed(int state)

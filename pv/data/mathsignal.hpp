@@ -20,6 +20,8 @@
 #ifndef PULSEVIEW_PV_DATA_MATHSIGNAL_HPP
 #define PULSEVIEW_PV_DATA_MATHSIGNAL_HPP
 
+#include <limits>
+
 #include <QString>
 
 #include <pv/exprtk.hpp>
@@ -30,6 +32,7 @@
 using std::atomic;
 using std::condition_variable;
 using std::mutex;
+using std::numeric_limits;
 using std::shared_ptr;
 
 namespace pv {
@@ -38,6 +41,20 @@ class Session;
 namespace data {
 
 class SignalBase;
+
+template<typename T>
+struct sig_sample;
+
+struct signal_data {
+	signal_data(const shared_ptr<SignalBase> _sb) :
+		sb(_sb), sample_num(numeric_limits<uint64_t>::max()), sample_value(0), ref(nullptr)
+	{}
+
+	const shared_ptr<SignalBase> sb;
+	uint64_t sample_num;
+	double sample_value;
+	double* ref;
+};
 
 class MathSignal : public SignalBase
 {
@@ -79,6 +96,9 @@ private:
 		const int64_t sample_count);
 	void generation_proc();
 
+	signal_data* signal_from_name(const std::string& name);
+	void update_signal_sample(signal_data* sig_data, uint32_t segment_id, uint64_t sample_num);
+
 Q_SIGNALS:
 	void samples_cleared();
 
@@ -99,11 +119,9 @@ private:
 	uint64_t custom_sample_rate_;
 	uint64_t custom_sample_count_;
 	bool use_custom_sample_rate_, use_custom_sample_count_;
-	vector< shared_ptr<SignalBase>> input_signals_;
+	map<std::string, signal_data> input_signals_;
 
-	QString expression_;
-
-	QString error_message_;
+	QString expression_, error_message_;
 
 	mutable mutex input_mutex_;
 	mutable condition_variable gen_input_cond_;
@@ -111,10 +129,15 @@ private:
 	std::thread gen_thread_;
 	atomic<bool> gen_interrupt_;
 
-	exprtk::symbol_table<double> *exprtk_symbol_table_;
+	exprtk::symbol_table<double> *exprtk_unknown_symbol_table_, *exprtk_symbol_table_;
 	exprtk::expression<double> *exprtk_expression_;
 	exprtk::parser<double> *exprtk_parser_;
 	double exprtk_current_time_, exprtk_current_sample_;
+
+	sig_sample<double>* fnc_sig_sample_;
+
+	// Give sig_sample access to the private helper functions
+	friend struct sig_sample<double>;
 };
 
 } // namespace data
