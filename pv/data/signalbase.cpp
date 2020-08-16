@@ -574,7 +574,9 @@ void SignalBase::convert_single_segment_range(AnalogSegment *asegment,
 
 		// Create sigrok::Analog instance
 		float *asamples = new float[ConversionBlockSize];
+		assert(asamples);
 		uint8_t *lsamples = new uint8_t[ConversionBlockSize];
+		assert(lsamples);
 
 		vector<shared_ptr<sigrok::Channel> > channels;
 		if (channel_)

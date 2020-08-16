@@ -25,12 +25,12 @@
 
 #include <mutex>
 #include <thread>
-#include <vector>
+#include <deque>
 
 #include <QObject>
 
 using std::recursive_mutex;
-using std::vector;
+using std::deque;
 
 namespace SegmentTest {
 struct SmallSize8Single;
@@ -84,6 +84,7 @@ public:
 protected:
 	void append_single_sample(void *data);
 	void append_samples(void *data, uint64_t samples);
+	const uint8_t* get_raw_sample(uint64_t sample_num) const;
 	void get_raw_samples(uint64_t start, uint64_t count, uint8_t *dest) const;
 
 	SegmentDataIterator* begin_sample_iteration(uint64_t start);
@@ -94,7 +95,7 @@ protected:
 
 	uint32_t segment_id_;
 	mutable recursive_mutex mutex_;
-	vector<uint8_t*> data_chunks_;
+	deque<uint8_t*> data_chunks_;
 	uint8_t* current_chunk_;
 	uint64_t used_samples_, unused_samples_;
 	uint64_t sample_count_;

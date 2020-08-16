@@ -96,6 +96,16 @@ void AnalogSegment::append_interleaved_samples(const float *data,
 			prev_sample_count + 1, prev_sample_count + 1);
 }
 
+float AnalogSegment::get_sample(int64_t sample_num) const
+{
+	assert(sample_num >= 0);
+	assert(sample_num <= (int64_t)sample_count_);
+
+	lock_guard<recursive_mutex> lock(mutex_);  // Because of free_unused_memory()
+
+	return *((const float*)get_raw_sample(sample_num));
+}
+
 void AnalogSegment::get_samples(int64_t start_sample, int64_t end_sample,
 	float* dest) const
 {
