@@ -92,8 +92,7 @@ MathSignal::MathSignal(pv::Session &session) :
 {
 	set_name(QString(tr("Math%1")).arg(session_.get_next_signal_index(MathChannel)));
 
-	shared_ptr<Analog> data(new data::Analog());
-	set_data(data);
+	set_data(std::make_shared<data::Analog>());
 
 	connect(&session_, SIGNAL(capture_state_changed(int)),
 		this, SLOT(on_capture_state_changed(int)));
@@ -338,7 +337,7 @@ void MathSignal::generation_proc()
 	if (gen_interrupt_)
 		return;
 
-	shared_ptr<Analog> analog = dynamic_pointer_cast<Analog>(data_);
+	shared_ptr<Analog> analog = analog_data();
 
 	// Create initial analog segment
 	shared_ptr<AnalogSegment> output_segment =
@@ -375,6 +374,8 @@ void MathSignal::generation_proc()
 
 		if (samples_to_process == 0) {
 			if (segment_id < session_.get_highest_segment_id()) {
+				analog->analog_segments().back()->set_complete();
+
 				// Process next segment
 				segment_id++;
 
@@ -440,6 +441,11 @@ void MathSignal::on_capture_state_changed(int state)
 {
 	if (state == Session::Running)
 		begin_generation();
+
+	if (state == Session::Stopped) {
+		shared_ptr<Analog> analog = analog_data();
+		analog->analog_segments().back()->set_complete();
+	}
 }
 
 void MathSignal::on_data_received()
