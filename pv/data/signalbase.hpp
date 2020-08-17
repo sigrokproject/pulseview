@@ -112,6 +112,9 @@ public:
 		DynamicPreset = 0  ///< Conversion uses calculated values
 	};
 
+	static const QColor AnalogSignalColors[8];
+	static const QColor LogicSignalColors[10];
+
 private:
 	static const int ColorBGAlpha;
 	static const uint64_t ConversionBlockSize;

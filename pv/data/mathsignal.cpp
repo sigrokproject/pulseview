@@ -23,6 +23,7 @@
 
 #include "mathsignal.hpp"
 
+#include <extdef.h>
 #include <pv/globalsettings.hpp>
 #include <pv/session.hpp>
 #include <pv/data/analogsegment.hpp>
@@ -90,7 +91,9 @@ MathSignal::MathSignal(pv::Session &session) :
 	exprtk_parser_(nullptr),
 	fnc_sig_sample_(nullptr)
 {
-	set_name(QString(tr("Math%1")).arg(session_.get_next_signal_index(MathChannel)));
+	uint32_t sig_idx = session_.get_next_signal_index(MathChannel);
+	set_name(QString(tr("Math%1")).arg(sig_idx));
+	set_color(AnalogSignalColors[(sig_idx - 1) % countof(AnalogSignalColors)]);
 
 	set_data(std::make_shared<data::Analog>());
 

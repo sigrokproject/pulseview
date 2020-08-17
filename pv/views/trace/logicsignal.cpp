@@ -70,19 +70,6 @@ const QColor LogicSignal::HighColor(0x00, 0xC0, 0x00);
 const QColor LogicSignal::LowColor(0xC0, 0x00, 0x00);
 const QColor LogicSignal::SamplingPointColor(0x77, 0x77, 0x77);
 
-const QColor LogicSignal::SignalColors[10] = {
-	QColor(0x16, 0x19, 0x1A),	// Black
-	QColor(0x8F, 0x52, 0x02),	// Brown
-	QColor(0xCC, 0x00, 0x00),	// Red
-	QColor(0xF5, 0x79, 0x00),	// Orange
-	QColor(0xED, 0xD4, 0x00),	// Yellow
-	QColor(0x73, 0xD2, 0x16),	// Green
-	QColor(0x34, 0x65, 0xA4),	// Blue
-	QColor(0x75, 0x50, 0x7B),	// Violet
-	QColor(0x88, 0x8A, 0x85),	// Grey
-	QColor(0xEE, 0xEE, 0xEC),	// White
-};
-
 QColor LogicSignal::TriggerMarkerBackgroundColor = QColor(0xED, 0xD4, 0x00);
 const int LogicSignal::TriggerMarkerPadding = 2;
 const char* LogicSignal::TriggerMarkerIcons[8] = {
@@ -114,8 +101,6 @@ LogicSignal::LogicSignal(
 	trigger_change_(nullptr)
 {
 	shared_ptr<Trigger> trigger;
-
-	base_->set_color(SignalColors[base->index() % countof(SignalColors)]);
 
 	GlobalSettings settings;
 	signal_height_ = settings.value(GlobalSettings::Key_View_DefaultLogicHeight).toInt();

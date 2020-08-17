@@ -71,13 +71,6 @@ namespace pv {
 namespace views {
 namespace trace {
 
-const QColor AnalogSignal::SignalColors[4] = {
-	QColor(0xC4, 0xA0, 0x00),	// Yellow
-	QColor(0x87, 0x20, 0x7A),	// Magenta
-	QColor(0x20, 0x4A, 0x87),	// Blue
-	QColor(0x4E, 0x9A, 0x06)	// Green
-};
-
 const QPen AnalogSignal::AxisPen(QColor(0, 0, 0, 30 * 256 / 100), 2);
 const QColor AnalogSignal::GridMajorColor = QColor(0, 0, 0, 40 * 256 / 100);
 const QColor AnalogSignal::GridMinorColor = QColor(0, 0, 0, 20 * 256 / 100);
@@ -135,7 +128,6 @@ AnalogSignal::AnalogSignal(
 		settings.value(GlobalSettings::Key_View_ConversionThresholdDispMode).toInt();
 	div_height_ = settings.value(GlobalSettings::Key_View_DefaultDivHeight).toInt();
 
-	base_->set_color(SignalColors[base_->index() % countof(SignalColors)]);
 	update_scale();
 }
 

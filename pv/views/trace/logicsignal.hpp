@@ -65,8 +65,6 @@ public:
 	static const QColor LowColor;
 	static const QColor SamplingPointColor;
 
-	static const QColor SignalColors[10];
-
 	static QColor TriggerMarkerBackgroundColor;
 	static const int TriggerMarkerPadding;
 	static const char* TriggerMarkerIcons[8];

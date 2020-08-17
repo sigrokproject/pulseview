@@ -28,8 +28,9 @@
 
 #include <QDebug>
 
-#include <pv/binding/decoder.hpp>
+#include <extdef.h>
 #include <pv/session.hpp>
+#include <pv/binding/decoder.hpp>
 
 using std::dynamic_pointer_cast;
 using std::make_shared;
@@ -40,6 +41,33 @@ using std::unique_lock;
 
 namespace pv {
 namespace data {
+
+const QColor SignalBase::AnalogSignalColors[8] =
+{
+	QColor(0xC4, 0xA0, 0x00),	// Yellow   HSV:  49 / 100 / 77
+	QColor(0x87, 0x20, 0x7A),	// Magenta  HSV: 308 /  70 / 53
+	QColor(0x20, 0x4A, 0x87),	// Blue     HSV: 216 /  76 / 53
+	QColor(0x4E, 0x9A, 0x06),	// Green    HSV:  91 /  96 / 60
+	QColor(0xBF, 0x6E, 0x00),	// Orange   HSV:  35 / 100 / 75
+	QColor(0x5E, 0x20, 0x80),	// Purple   HSV: 280 /  75 / 50
+	QColor(0x20, 0x80, 0x7A),	// Turqoise HSV: 177 /  75 / 50
+	QColor(0x80, 0x20, 0x24)	// Red      HSV: 358 /  75 / 50
+};
+
+const QColor SignalBase::LogicSignalColors[10] =
+{
+	QColor(0x16, 0x19, 0x1A),	// Black
+	QColor(0x8F, 0x52, 0x02),	// Brown
+	QColor(0xCC, 0x00, 0x00),	// Red
+	QColor(0xF5, 0x79, 0x00),	// Orange
+	QColor(0xED, 0xD4, 0x00),	// Yellow
+	QColor(0x73, 0xD2, 0x16),	// Green
+	QColor(0x34, 0x65, 0xA4),	// Blue
+	QColor(0x75, 0x50, 0x7B),	// Violet
+	QColor(0x88, 0x8A, 0x85),	// Grey
+	QColor(0xEE, 0xEE, 0xEC),	// White
+};
+
 
 const int SignalBase::ColorBGAlpha = 8 * 256 / 100;
 const uint64_t SignalBase::ConversionBlockSize = 4096;
@@ -106,6 +134,13 @@ SignalBase::SignalBase(shared_ptr<sigrok::Channel> channel, ChannelType channel_
 		this, SLOT(on_delayed_conversion_start()));
 	delayed_conversion_starter_.setSingleShot(true);
 	delayed_conversion_starter_.setInterval(ConversionDelay);
+
+	// Only logic and analog SR channels can have their colors auto-set
+	// because for them, we have an index that can be used
+	if (channel_type == LogicChannel)
+		set_color(LogicSignalColors[index() % countof(LogicSignalColors)]);
+	else if (channel_type == AnalogChannel)
+		set_color(AnalogSignalColors[index() % countof(AnalogSignalColors)]);
 }
 
 SignalBase::~SignalBase()
