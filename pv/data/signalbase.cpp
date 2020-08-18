@@ -601,8 +601,8 @@ bool SignalBase::conversion_is_a2l() const
 		(conversion_type_ == A2LConversionBySchmittTrigger)));
 }
 
-void SignalBase::convert_single_segment_range(AnalogSegment *asegment,
-	LogicSegment *lsegment, uint64_t start_sample, uint64_t end_sample)
+void SignalBase::convert_single_segment_range(shared_ptr<AnalogSegment> asegment,
+	shared_ptr<LogicSegment> lsegment, uint64_t start_sample, uint64_t end_sample)
 {
 	if (end_sample > start_sample) {
 		tie(min_value_, max_value_) = asegment->get_min_max();
@@ -701,7 +701,8 @@ void SignalBase::convert_single_segment_range(AnalogSegment *asegment,
 	}
 }
 
-void SignalBase::convert_single_segment(AnalogSegment *asegment, LogicSegment *lsegment)
+void SignalBase::convert_single_segment(shared_ptr<AnalogSegment> asegment,
+	shared_ptr<LogicSegment> lsegment)
 {
 	uint64_t start_sample, end_sample, old_end_sample;
 	start_sample = end_sample = 0;
@@ -755,7 +756,7 @@ void SignalBase::conversion_thread_proc()
 
 	uint32_t segment_id = 0;
 
-	AnalogSegment *asegment = analog_data->analog_segments().front().get();
+	shared_ptr<AnalogSegment> asegment = analog_data->analog_segments().front();
 	assert(asegment);
 
 	const shared_ptr<Logic> logic_data = dynamic_pointer_cast<Logic>(converted_data_);
@@ -768,7 +769,7 @@ void SignalBase::conversion_thread_proc()
 		logic_data->push_segment(new_segment);
 	}
 
-	LogicSegment *lsegment = logic_data->logic_segments().front().get();
+	shared_ptr<LogicSegment> lsegment = logic_data->logic_segments().front();
 	assert(lsegment);
 
 	do {
@@ -781,7 +782,7 @@ void SignalBase::conversion_thread_proc()
 			segment_id++;
 
 			try {
-				asegment = analog_data->analog_segments().at(segment_id).get();
+				asegment = analog_data->analog_segments().at(segment_id);
 			} catch (out_of_range&) {
 				qDebug() << "Conversion error for" << name() << ": no analog segment" \
 					<< segment_id << ", segments size is" << analog_data->analog_segments().size();
@@ -792,7 +793,7 @@ void SignalBase::conversion_thread_proc()
 				*logic_data.get(), segment_id, 1, asegment->samplerate());
 			logic_data->push_segment(new_segment);
 
-			lsegment = logic_data->logic_segments().back().get();
+			lsegment = logic_data->logic_segments().back();
 		} else {
 			// No more samples/segments to process, wait for data or interrupt
 			if (!conversion_interrupt_) {
