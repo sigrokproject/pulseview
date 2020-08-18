@@ -89,6 +89,8 @@ private:
 	 */
 	uint64_t get_working_sample_count(uint32_t segment_id) const;
 
+	void update_completeness(uint32_t segment_id);
+
 	void reset_generation();
 	void begin_generation();
 

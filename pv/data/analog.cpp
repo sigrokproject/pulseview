@@ -39,6 +39,8 @@ Analog::Analog() :
 void Analog::push_segment(shared_ptr<AnalogSegment> &segment)
 {
 	segments_.push_back(segment);
+
+	connect(segment.get(), SIGNAL(completed()), this, SLOT(on_segment_completed()));
 }
 
 const deque< shared_ptr<AnalogSegment> >& Analog::analog_segments() const
@@ -93,6 +95,11 @@ void Analog::notify_samples_added(shared_ptr<Segment> segment, uint64_t start_sa
 void Analog::notify_min_max_changed(float min, float max)
 {
 	min_max_changed(min, max);
+}
+
+void Analog::on_segment_completed()
+{
+	segment_completed();
 }
 
 } // namespace data

@@ -101,8 +101,6 @@ MathSignal::MathSignal(pv::Session &session) :
 		this, SLOT(on_capture_state_changed(int)));
 	connect(&session_, SIGNAL(data_received()),
 		this, SLOT(on_data_received()));
-
-	expression_ = "sin(2 * pi * t) + cos(t / 2 * pi)";
 }
 
 MathSignal::~MathSignal()
@@ -182,10 +180,18 @@ uint64_t MathSignal::get_working_sample_count(uint32_t segment_id) const
 				const shared_ptr<SignalBase>& sb = input_signal.second.sb;
 
 				shared_ptr<Analog> a = sb->analog_data();
-				const uint32_t last_segment = (a->analog_segments().size() - 1);
-				if (segment_id > last_segment)
+				auto analog_segments = a->analog_segments();
+
+				if (analog_segments.size() == 0) {
+					result = 0;
 					continue;
-				const shared_ptr<AnalogSegment> segment = a->analog_segments()[segment_id];
+				}
+
+				const uint32_t highest_segment_id = (analog_segments.size() - 1);
+				if (segment_id > highest_segment_id)
+					continue;
+
+				const shared_ptr<AnalogSegment> segment = analog_segments.at(segment_id);
 				result = min(result, (int64_t)segment->get_sample_count());
 			}
 		} else
@@ -193,6 +199,38 @@ uint64_t MathSignal::get_working_sample_count(uint32_t segment_id) const
 	}
 
 	return result;
+}
+
+void MathSignal::update_completeness(uint32_t segment_id)
+{
+	bool output_complete = true;
+
+	if (input_signals_.size() > 0) {
+		for (auto input_signal : input_signals_) {
+			const shared_ptr<SignalBase>& sb = input_signal.second.sb;
+
+			shared_ptr<Analog> a = sb->analog_data();
+			auto analog_segments = a->analog_segments();
+
+			if (analog_segments.size() == 0) {
+				output_complete = false;
+				continue;
+			}
+
+			const uint32_t highest_segment_id = (analog_segments.size() - 1);
+			if (segment_id > highest_segment_id) {
+				output_complete = false;
+				continue;
+			}
+
+			const shared_ptr<AnalogSegment> segment = analog_segments.at(segment_id);
+			if (!segment->is_complete())
+				output_complete = false;
+		}
+	}
+
+	if (output_complete)
+		analog_data()->analog_segments().at(segment_id)->set_complete();
 }
 
 void MathSignal::reset_generation()
@@ -274,7 +312,7 @@ void MathSignal::begin_generation()
 			signal_data* sig_data = signal_from_name(unknown);
 			const shared_ptr<SignalBase> signal = (sig_data) ? (sig_data->sb) : nullptr;
 			if (!signal || (!signal->analog_data())) {
-				set_error_message(QString(tr("%1 isn't a valid signal")).arg(
+				set_error_message(QString(tr("%1 isn't a valid analog signal")).arg(
 					QString::fromStdString(unknown)));
 			} else
 				sig_data->ref = &(exprtk_unknown_symbol_table_->variable_ref(unknown));
@@ -376,9 +414,9 @@ void MathSignal::generation_proc()
 		}
 
 		if (samples_to_process == 0) {
-			if (segment_id < session_.get_highest_segment_id()) {
-				analog->analog_segments().back()->set_complete();
+			update_completeness(segment_id);
 
+			if (segment_id < session_.get_highest_segment_id()) {
 				// Process next segment
 				segment_id++;
 
@@ -408,8 +446,15 @@ signal_data* MathSignal::signal_from_name(const std::string& name)
 		const QString sig_name = QString::fromStdString(name);
 
 		for (const shared_ptr<SignalBase>& sb : signalbases)
-			if (sb->name() == sig_name)
+			if (sb->name() == sig_name) {
+				if (!sb->analog_data())
+					continue;
+
+				connect(sb->analog_data().get(), SIGNAL(segment_completed()),
+					this, SLOT(on_data_received()));
+
 				return &(input_signals_.insert({name, signal_data(sb)}).first->second);
+			}
 	}
 
 	return nullptr;
@@ -446,8 +491,12 @@ void MathSignal::on_capture_state_changed(int state)
 		begin_generation();
 
 	if (state == Session::Stopped) {
-		shared_ptr<Analog> analog = analog_data();
-		analog->analog_segments().back()->set_complete();
+		// If we have input signals, we use those as the indicators
+		if (input_signals_.empty()) {
+			shared_ptr<Analog> analog = analog_data();
+			if (!analog->analog_segments().empty())
+				analog->analog_segments().back()->set_complete();
+		}
 	}
 }
 

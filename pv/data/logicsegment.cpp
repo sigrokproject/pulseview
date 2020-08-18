@@ -328,6 +328,7 @@ void LogicSegment::append_payload(shared_ptr<sigrok::Logic> logic)
 
 void LogicSegment::append_payload(void *data, uint64_t data_size)
 {
+	assert(unit_size_ > 0);
 	assert((data_size % unit_size_) == 0);
 
 	lock_guard<recursive_mutex> lock(mutex_);

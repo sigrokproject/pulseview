@@ -70,7 +70,6 @@ Segment::~Segment()
 
 uint64_t Segment::get_sample_count() const
 {
-	lock_guard<recursive_mutex> lock(mutex_);
 	return sample_count_;
 }
 
@@ -102,6 +101,8 @@ uint32_t Segment::segment_id() const
 void Segment::set_complete()
 {
 	is_complete_ = true;
+
+	completed();
 }
 
 bool Segment::is_complete() const
@@ -225,8 +226,7 @@ const uint8_t* Segment::get_raw_sample(uint64_t sample_num) const
 	return chunk + chunk_offs;
 }
 
-void Segment::get_raw_samples(uint64_t start, uint64_t count,
-	uint8_t* dest) const
+void Segment::get_raw_samples(uint64_t start, uint64_t count, uint8_t* dest) const
 {
 	assert(start < sample_count_);
 	assert(start + count <= sample_count_);

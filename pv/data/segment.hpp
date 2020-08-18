@@ -23,12 +23,14 @@
 
 #include "pv/util.hpp"
 
+#include <atomic>
 #include <mutex>
 #include <thread>
 #include <deque>
 
 #include <QObject>
 
+using std::atomic;
 using std::recursive_mutex;
 using std::deque;
 
@@ -81,6 +83,9 @@ public:
 
 	void free_unused_memory();
 
+Q_SIGNALS:
+	void completed();
+
 protected:
 	void append_single_sample(void *data);
 	void append_samples(void *data, uint64_t samples);
@@ -98,7 +103,7 @@ protected:
 	deque<uint8_t*> data_chunks_;
 	uint8_t* current_chunk_;
 	uint64_t used_samples_, unused_samples_;
-	uint64_t sample_count_;
+	atomic<uint64_t> sample_count_;
 	pv::util::Timestamp start_time_;
 	double samplerate_;
 	uint64_t chunk_size_;
