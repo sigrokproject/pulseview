@@ -21,9 +21,9 @@
 
 cmake_minimum_required(VERSION 2.8.12)
 
-include(GNUInstallDirs)
+project(pulseview C CXX)
 
-project(pulseview)
+include(GNUInstallDirs)
 
 # Let AUTOMOC and AUTOUIC process GENERATED files.
 if(POLICY CMP0071)
