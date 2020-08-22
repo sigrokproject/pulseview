@@ -120,7 +120,6 @@ class DecodeTrace : public Trace
 	Q_OBJECT
 
 private:
-	static const QColor ErrorBgColor;
 	static const QColor NoDecodeColor;
 	static const QColor ExpandMarkerWarnColor;
 	static const QColor ExpandMarkerHiddenColor;

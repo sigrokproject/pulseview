@@ -123,7 +123,8 @@ SignalBase::SignalBase(shared_ptr<sigrok::Channel> channel, ChannelType channel_
 	group_(nullptr),
 	conversion_type_(NoConversion),
 	min_value_(0),
-	max_value_(0)
+	max_value_(0),
+	error_message_("")
 {
 	if (channel_) {
 		internal_name_ = QString::fromStdString(channel_->name());
@@ -256,6 +257,11 @@ void SignalBase::set_color(QColor color)
 QColor SignalBase::bgcolor() const
 {
 	return bgcolor_;
+}
+
+QString SignalBase::get_error_message() const
+{
+	return error_message_;
 }
 
 void SignalBase::set_data(shared_ptr<pv::data::SignalData> data)
@@ -822,6 +828,15 @@ void SignalBase::start_conversion(bool delayed_start)
 
 	conversion_interrupt_ = false;
 	conversion_thread_ = std::thread(&SignalBase::conversion_thread_proc, this);
+}
+
+void SignalBase::set_error_message(QString msg)
+{
+	error_message_ = msg;
+	// TODO Emulate noquote()
+	qDebug().nospace() << name() << ": " << msg;
+
+	error_message_changed(msg);
 }
 
 void SignalBase::stop_conversion()

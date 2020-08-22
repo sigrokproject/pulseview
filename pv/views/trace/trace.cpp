@@ -49,6 +49,7 @@ const int Trace::LabelHitPadding = 2;
 
 const QColor Trace::BrightGrayBGColor = QColor(0, 0, 0, 10 * 255 / 100);
 const QColor Trace::DarkGrayBGColor = QColor(0, 0, 0, 15 * 255 / 100);
+const QColor Trace::ErrorBgColor = QColor(0xEF, 0x29, 0x29);
 
 Trace::Trace(shared_ptr<data::SignalBase> signal) :
 	base_(signal),
@@ -62,6 +63,8 @@ Trace::Trace(shared_ptr<data::SignalBase> signal) :
 		this, SLOT(on_name_changed(const QString&)));
 	connect(signal.get(), SIGNAL(color_changed(const QColor&)),
 		this, SLOT(on_color_changed(const QColor&)));
+	connect(signal.get(), SIGNAL(error_message_changed(const QString&)),
+		this, SLOT(on_error_message_changed(const QString&)));
 
 	GlobalSettings::add_change_handler(this);
 
@@ -173,6 +176,26 @@ void Trace::paint_label(QPainter &p, const QRect &rect, bool hover)
 	p.drawText(QRectF(r.x(), r.y(),
 		r.width() - label_arrow_length, r.height()),
 		Qt::AlignCenter | Qt::AlignVCenter, base_->name());
+}
+
+void Trace::paint_error(QPainter &p, const ViewItemPaintParams &pp)
+{
+	const QString message = base_->get_error_message();
+
+	const int y = get_visual_y();
+
+	p.setPen(ErrorBgColor.darker());
+	p.setBrush(ErrorBgColor);
+
+	const QRectF bounding_rect = QRectF(pp.left(), INT_MIN / 2 + y, pp.right(), INT_MAX);
+
+	const QRectF text_rect = p.boundingRect(bounding_rect, Qt::AlignCenter, message);
+	const qreal r = text_rect.height() / 4;
+
+	p.drawRoundedRect(text_rect.adjusted(-r, -r, r, r), r, r, Qt::AbsoluteSize);
+
+	p.setPen(Qt::black);
+	p.drawText(text_rect, message);
 }
 
 QMenu* Trace::create_header_context_menu(QWidget *parent)
@@ -400,6 +423,14 @@ void Trace::on_color_changed(const QColor &color)
 
 	if (owner_)
 		owner_->row_item_appearance_changed(true, true);
+}
+
+void Trace::on_error_message_changed(const QString &msg)
+{
+	(void)msg;
+
+	if (owner_)
+		owner_->row_item_appearance_changed(false, true);
 }
 
 void Trace::on_popup_closed()

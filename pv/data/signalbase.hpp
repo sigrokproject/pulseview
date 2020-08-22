@@ -87,6 +87,7 @@ private:
 class SignalBase : public QObject, public enable_shared_from_this<SignalBase>
 {
 	Q_OBJECT
+	Q_PROPERTY(QString error_message READ get_error_message)
 
 public:
 	enum ChannelType {
@@ -226,6 +227,11 @@ public:
 	QColor bgcolor() const;
 
 	/**
+	 * Returns the current error message text.
+	 */
+	virtual QString get_error_message() const;
+
+	/**
 	 * Sets the internal data object.
 	 */
 	void set_data(shared_ptr<pv::data::SignalData> data);
@@ -346,7 +352,12 @@ public:
 
 	void start_conversion(bool delayed_start=false);
 
+protected:
+	virtual void set_error_message(QString msg);
+
 private:
+	void stop_conversion();
+
 	bool conversion_is_a2l() const;
 
 	uint8_t convert_a2l_threshold(float threshold, float value);
@@ -359,19 +370,14 @@ private:
 		shared_ptr<LogicSegment> lsegment);
 	void conversion_thread_proc();
 
-	void stop_conversion();
-
 Q_SIGNALS:
 	void enabled_changed(const bool &value);
-
 	void name_changed(const QString &name);
-
 	void color_changed(const QColor &color);
-
+	void error_message_changed(const QString &msg);
 	void conversion_type_changed(const ConversionType t);
 
 	void samples_cleared();
-
 	void samples_added(uint64_t segment_id, uint64_t start_sample,
 		uint64_t end_sample);
 
@@ -409,6 +415,8 @@ protected:
 	QString internal_name_, name_;
 	QColor color_, bgcolor_;
 	unsigned int index_;
+
+	QString error_message_;
 };
 
 } // namespace data

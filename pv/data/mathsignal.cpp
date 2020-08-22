@@ -84,7 +84,6 @@ MathSignal::MathSignal(pv::Session &session) :
 	use_custom_sample_rate_(false),
 	use_custom_sample_count_(false),
 	expression_(""),
-	error_message_(""),
 	exprtk_unknown_symbol_table_(nullptr),
 	exprtk_symbol_table_(nullptr),
 	exprtk_expression_(nullptr),
@@ -137,11 +136,6 @@ void MathSignal::restore_settings(QSettings &settings)
 		use_custom_sample_count_ = settings.value("use_custom_sample_count").toBool();
 }
 
-QString MathSignal::error_message() const
-{
-	return error_message_;
-}
-
 QString MathSignal::get_expression() const
 {
 	return expression_;
@@ -159,6 +153,8 @@ void MathSignal::set_error_message(QString msg)
 	error_message_ = msg;
 	// TODO Emulate noquote()
 	qDebug().nospace() << name() << ": " << msg << "(Expression: '" << expression_ << "')";
+
+	error_message_changed(msg);
 }
 
 uint64_t MathSignal::get_working_sample_count(uint32_t segment_id) const
@@ -313,7 +309,25 @@ void MathSignal::begin_generation()
 	exprtk_parser_->enable_unknown_symbol_resolver();
 
 	if (!exprtk_parser_->compile(expression_.toStdString(), *exprtk_expression_)) {
-		set_error_message(tr("Error in expression"));
+		QString error_details;
+		size_t error_count = exprtk_parser_->error_count();
+
+		for (size_t i = 0; i < error_count; i++) {
+			typedef exprtk::parser_error::type error_t;
+			error_t error = exprtk_parser_->get_error(i);
+			exprtk::parser_error::update_error(error, expression_.toStdString());
+
+			QString error_detail = tr("%1 at line %2, column %3: %4");
+			if ((error_count > 1) && (i < (error_count - 1)))
+				error_detail += "\n";
+
+			error_details += error_detail \
+				.arg(exprtk::parser_error::to_str(error.mode).c_str()) \
+				.arg(error.line_no) \
+				.arg(error.column_no) \
+				.arg(error.diagnostic.c_str());
+		}
+		set_error_message(error_details);
 	} else {
 		// Resolve unknown scalars to signals and add them to the input signal list
 		vector<string> unknowns;

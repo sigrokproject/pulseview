@@ -27,7 +27,6 @@
 #include <vector>
 
 #include <QSettings>
-#include <QString>
 
 #include <libsigrokdecode/libsigrokdecode.h>
 
@@ -115,7 +114,6 @@ public:
 	void pause_decode();
 	void resume_decode();
 	bool is_paused() const;
-	QString error_message() const;
 
 	const vector<decode::DecodeChannel> get_channels() const;
 	void auto_assign_signals(const shared_ptr<Decoder> dec);
@@ -189,8 +187,6 @@ public:
 	virtual void restore_settings(QSettings &settings);
 
 private:
-	void set_error_message(QString msg);
-
 	bool all_input_segments_complete(uint32_t segment_id) const;
 	uint32_t get_input_segment_count() const;
 	double get_input_samplerate(uint32_t segment_id) const;
@@ -261,8 +257,6 @@ private:
 	atomic<bool> decode_interrupt_, logic_mux_interrupt_;
 
 	bool decode_paused_;
-
-	QString error_message_;
 };
 
 } // namespace data

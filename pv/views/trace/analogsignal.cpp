@@ -257,32 +257,36 @@ void AnalogSignal::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 		paint_grid(p, y, pp.left(), pp.right());
 
 		shared_ptr<pv::data::AnalogSegment> segment = get_analog_segment_to_paint();
-		if (!segment || (segment->get_sample_count() == 0))
-			return;
 
-		const double pixels_offset = pp.pixels_offset();
-		const double samplerate = max(1.0, segment->samplerate());
-		const pv::util::Timestamp& start_time = segment->start_time();
-		const int64_t last_sample = (int64_t)segment->get_sample_count() - 1;
-		const double samples_per_pixel = samplerate * pp.scale();
-		const pv::util::Timestamp start = samplerate * (pp.offset() - start_time);
-		const pv::util::Timestamp end = start + samples_per_pixel * pp.width();
+		if (segment && (segment->get_sample_count() > 0)) {
+			const double pixels_offset = pp.pixels_offset();
+			const double samplerate = max(1.0, segment->samplerate());
+			const pv::util::Timestamp& start_time = segment->start_time();
+			const int64_t last_sample = (int64_t)segment->get_sample_count() - 1;
+			const double samples_per_pixel = samplerate * pp.scale();
+			const pv::util::Timestamp start = samplerate * (pp.offset() - start_time);
+			const pv::util::Timestamp end = start + samples_per_pixel * pp.width();
 
-		const int64_t start_sample = min(max(floor(start).convert_to<int64_t>(),
-			(int64_t)0), last_sample);
-		const int64_t end_sample = min(max((ceil(end) + 1).convert_to<int64_t>(),
-			(int64_t)0), last_sample);
+			const int64_t start_sample = min(max(floor(start).convert_to<int64_t>(),
+				(int64_t)0), last_sample);
+			const int64_t end_sample = min(max((ceil(end) + 1).convert_to<int64_t>(),
+				(int64_t)0), last_sample);
 
-		if (samples_per_pixel < EnvelopeThreshold)
-			paint_trace(p, segment, y, pp.left(), start_sample, end_sample,
-				pixels_offset, samples_per_pixel);
-		else
-			paint_envelope(p, segment, y, pp.left(), start_sample, end_sample,
-				pixels_offset, samples_per_pixel);
+			if (samples_per_pixel < EnvelopeThreshold)
+				paint_trace(p, segment, y, pp.left(), start_sample, end_sample,
+					pixels_offset, samples_per_pixel);
+			else
+				paint_envelope(p, segment, y, pp.left(), start_sample, end_sample,
+					pixels_offset, samples_per_pixel);
+		}
 	}
 
 	if ((display_type_ == DisplayConverted) || (display_type_ == DisplayBoth))
 		paint_logic_mid(p, pp);
+
+	const QString err = base_->get_error_message();
+	if (!err.isEmpty())
+		paint_error(p, pp);
 }
 
 void AnalogSignal::paint_fore(QPainter &p, ViewItemPaintParams &pp)

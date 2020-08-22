@@ -56,8 +56,7 @@ DecodeSignal::DecodeSignal(pv::Session &session) :
 	srd_session_(nullptr),
 	logic_mux_data_invalid_(false),
 	stack_config_changed_(true),
-	current_segment_id_(0),
-	error_message_("")
+	current_segment_id_(0)
 {
 	connect(&session_, SIGNAL(capture_state_changed(int)),
 		this, SLOT(on_capture_state_changed(int)));
@@ -264,12 +263,6 @@ void DecodeSignal::resume_decode()
 bool DecodeSignal::is_paused() const
 {
 	return decode_paused_;
-}
-
-QString DecodeSignal::error_message() const
-{
-	lock_guard<mutex> lock(output_mutex_);
-	return error_message_;
 }
 
 const vector<decode::DecodeChannel> DecodeSignal::get_channels() const
@@ -827,13 +820,6 @@ void DecodeSignal::restore_settings(QSettings &settings)
 	commit_decoder_channels();
 
 	begin_decode();
-}
-
-void DecodeSignal::set_error_message(QString msg)
-{
-	error_message_ = msg;
-	// TODO Emulate noquote()
-	qDebug().nospace() << name() << ": " << msg;
 }
 
 bool DecodeSignal::all_input_segments_complete(uint32_t segment_id) const

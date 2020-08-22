@@ -60,7 +60,6 @@ class MathSignal : public SignalBase
 {
 	Q_OBJECT
 	Q_PROPERTY(QString expression READ get_expression WRITE set_expression NOTIFY expression_changed)
-	Q_PROPERTY(QString error_message READ error_message)
 
 private:
 	static const int64_t ChunkLength;
@@ -72,13 +71,11 @@ public:
 	virtual void save_settings(QSettings &settings) const;
 	virtual void restore_settings(QSettings &settings);
 
-	QString error_message() const;
-
 	QString get_expression() const;
 	void set_expression(QString expression);
 
 private:
-	void set_error_message(QString msg);
+	virtual void set_error_message(QString msg);
 
 	/**
 	 * Returns the number of samples that can be worked on,
@@ -123,7 +120,7 @@ private:
 	bool use_custom_sample_rate_, use_custom_sample_count_;
 	map<std::string, signal_data> input_signals_;
 
-	QString expression_, error_message_;
+	QString expression_;
 
 	mutable mutex input_mutex_;
 	mutable condition_variable gen_input_cond_;
