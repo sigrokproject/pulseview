@@ -676,6 +676,7 @@ void SignalBase::convert_single_segment_range(shared_ptr<AnalogSegment> asegment
 
 				lsegment->append_payload(logic->data_pointer(), logic->data_length());
 				samples_added(lsegment->segment_id(), i, i + ConversionBlockSize);
+
 				i += ConversionBlockSize;
 			}
 
@@ -778,6 +779,7 @@ void SignalBase::conversion_thread_proc()
 		// Only advance to next segment if the current input segment is complete
 		if (asegment->is_complete() &&
 			analog_data->analog_segments().size() > logic_data->logic_segments().size()) {
+
 			// There are more segments to process
 			segment_id++;
 
@@ -794,12 +796,12 @@ void SignalBase::conversion_thread_proc()
 			logic_data->push_segment(new_segment);
 
 			lsegment = logic_data->logic_segments().back();
-		} else {
-			// No more samples/segments to process, wait for data or interrupt
-			if (!conversion_interrupt_) {
-				unique_lock<mutex> input_lock(conversion_input_mutex_);
-				conversion_input_cond_.wait(input_lock);
-			}
+		}
+
+		// No more samples/segments to process, wait for data or interrupt
+		if (!conversion_interrupt_) {
+			unique_lock<mutex> input_lock(conversion_input_mutex_);
+			conversion_input_cond_.wait(input_lock);
 		}
 	} while (!conversion_interrupt_);
 }
@@ -815,11 +817,11 @@ void SignalBase::start_conversion(bool delayed_start)
 
 	if (converted_data_)
 		converted_data_->clear();
+
 	samples_cleared();
 
 	conversion_interrupt_ = false;
-	conversion_thread_ = std::thread(
-		&SignalBase::conversion_thread_proc, this);
+	conversion_thread_ = std::thread(&SignalBase::conversion_thread_proc, this);
 }
 
 void SignalBase::stop_conversion()

@@ -191,6 +191,7 @@ public:
 private:
 	void set_error_message(QString msg);
 
+	bool all_input_segments_complete(uint32_t segment_id) const;
 	uint32_t get_input_segment_count() const;
 	double get_input_samplerate(uint32_t segment_id) const;
 
