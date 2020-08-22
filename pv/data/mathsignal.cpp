@@ -110,6 +110,8 @@ MathSignal::~MathSignal()
 
 void MathSignal::save_settings(QSettings &settings) const
 {
+	SignalBase::save_settings(settings);
+
 	settings.setValue("expression", expression_);
 
 	settings.setValue("custom_sample_rate", (qulonglong)custom_sample_rate_);
@@ -120,6 +122,8 @@ void MathSignal::save_settings(QSettings &settings) const
 
 void MathSignal::restore_settings(QSettings &settings)
 {
+	SignalBase::restore_settings(settings);
+
 	if (settings.contains("expression"))
 		expression_ = settings.value("expression").toString();
 

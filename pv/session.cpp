@@ -38,6 +38,7 @@
 #include "data/decode/decoder.hpp"
 #include "data/logic.hpp"
 #include "data/logicsegment.hpp"
+#include "data/mathsignal.hpp"
 #include "data/signalbase.hpp"
 
 #include "devices/hardwaredevice.hpp"
@@ -214,25 +215,33 @@ bool Session::data_saved() const
 
 void Session::save_setup(QSettings &settings) const
 {
-	int i = 0;
+	int i;
+	int decode_signal_count = 0;
+	int gen_signal_count = 0;
 
 	// Save channels and decoders
 	for (const shared_ptr<data::SignalBase>& base : signalbases_) {
 #ifdef ENABLE_DECODE
 		if (base->is_decode_signal()) {
-			settings.beginGroup("decode_signal" + QString::number(i++));
+			settings.beginGroup("decode_signal" + QString::number(decode_signal_count++));
 			base->save_settings(settings);
 			settings.endGroup();
 		} else
 #endif
-		{
+		if (base->is_generated()) {
+			settings.beginGroup("generated_signal" + QString::number(gen_signal_count++));
+			settings.setValue("type", base->type());
+			base->save_settings(settings);
+			settings.endGroup();
+		} else {
 			settings.beginGroup(base->internal_name());
 			base->save_settings(settings);
 			settings.endGroup();
 		}
 	}
 
-	settings.setValue("decode_signals", i);
+	settings.setValue("decode_signals", decode_signal_count);
+	settings.setValue("generated_signals", gen_signal_count);
 
 	// Save view states and their signal settings
 	// Note: main_view must be saved as view0
@@ -368,11 +377,34 @@ void Session::restore_setup(QSettings &settings)
 		settings.endGroup();
 	}
 
+	// Restore generated signals
+	int gen_signal_count = settings.value("generated_signals").toInt();
+
+	for (int i = 0; i < gen_signal_count; i++) {
+		settings.beginGroup("generated_signal" + QString::number(i));
+		SignalBase::ChannelType type = (SignalBase::ChannelType)settings.value("type").toInt();
+		shared_ptr<data::SignalBase> signal;
+
+		if (type == SignalBase::MathChannel)
+			signal = make_shared<data::MathSignal>(*this);
+		else
+			qWarning() << tr("Can't restore generated signal of unknown type %1 (%2)") \
+				.arg((int)type) \
+				.arg(settings.value("name").toString());
+
+		if (signal) {
+			add_generated_signal(signal);
+			signal->restore_settings(settings);
+		}
+
+		settings.endGroup();
+	}
+
 	// Restore decoders
 #ifdef ENABLE_DECODE
-	int decode_signals = settings.value("decode_signals").toInt();
+	int decode_signal_count = settings.value("decode_signals").toInt();
 
-	for (int i = 0; i < decode_signals; i++) {
+	for (int i = 0; i < decode_signal_count; i++) {
 		settings.beginGroup("decode_signal" + QString::number(i));
 		shared_ptr<data::DecodeSignal> signal = add_decode_signal();
 		signal->restore_settings(settings);
@@ -464,8 +496,10 @@ void Session::restore_settings(QSettings &settings)
 			set_device(device);
 
 		settings.endGroup();
-	}
 
+		if (device)
+			restore_setup(settings);
+	}
 
 	QString filename;
 	if ((device_type == "sessionfile") || (device_type == "inputfile")) {
@@ -486,8 +520,10 @@ void Session::restore_settings(QSettings &settings)
 			settings.endGroup();
 		}
 
+
 		if (device) {
 			set_device(device);
+			restore_setup(settings);
 
 			start_capture([](QString infoMessage) {
 				// TODO Emulate noquote()
@@ -505,9 +541,6 @@ void Session::restore_settings(QSettings &settings)
 			}
 		}
 	}
-
-	if (device)
-		restore_setup(settings);
 }
 
 void Session::select_device(shared_ptr<devices::Device> device)
@@ -792,8 +825,7 @@ void Session::start_capture(function<void (const QString)> error_handler)
 	}
 
 	// Begin the session
-	sampling_thread_ = std::thread(
-		&Session::sample_thread_proc, this, error_handler);
+	sampling_thread_ = std::thread(&Session::sample_thread_proc, this, error_handler);
 }
 
 void Session::stop_capture()
@@ -1010,7 +1042,8 @@ MetadataObjManager* Session::metadata_obj_manager()
 
 void Session::set_capture_state(capture_state state)
 {
-	bool changed;
+	if (state == capture_state_)
+		return;
 
 	if (state == Running)
 		acq_time_.restart();
@@ -1019,12 +1052,10 @@ void Session::set_capture_state(capture_state state)
 
 	{
 		lock_guard<mutex> lock(sampling_mutex_);
-		changed = capture_state_ != state;
 		capture_state_ = state;
 	}
 
-	if (changed)
-		capture_state_changed(state);
+	capture_state_changed(state);
 }
 
 void Session::update_signals()

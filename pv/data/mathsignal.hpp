@@ -89,7 +89,7 @@ private:
 	void update_completeness(uint32_t segment_id, uint64_t output_sample_count);
 
 	void reset_generation();
-	void begin_generation();
+	virtual void begin_generation();
 
 	void generate_samples(uint32_t segment_id, const uint64_t start_sample,
 		const int64_t sample_count);
