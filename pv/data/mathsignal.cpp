@@ -47,14 +47,14 @@ const int64_t MathSignal::ChunkLength = 256 * 1024;
 
 
 template<typename T>
-struct sig_sample : public exprtk::igeneric_function<T>
+struct fnc_sample : public exprtk::igeneric_function<T>
 {
 	typedef typename exprtk::igeneric_function<T>::parameter_list_t parameter_list_t;
 	typedef typename exprtk::igeneric_function<T>::generic_type generic_type;
 	typedef typename generic_type::scalar_view scalar_t;
 	typedef typename generic_type::string_view string_t;
 
-	sig_sample(MathSignal& owner) :
+	fnc_sample(MathSignal& owner) :
 		exprtk::igeneric_function<T>("ST"),  // Require channel name and sample number
 		owner_(owner),
 		sig_data(nullptr)
@@ -67,7 +67,7 @@ struct sig_sample : public exprtk::igeneric_function<T>
 		const scalar_t exprtk_sample_num = scalar_t(parameters[1]);
 
 		const std::string str_sig_name = to_str(exprtk_sig_name);
-		const double sample_num = exprtk_sample_num();
+		const double sample_num = std::max(exprtk_sample_num(), (double)0);
 
 		if (!sig_data)
 			sig_data = owner_.signal_from_name(str_sig_name);
@@ -95,7 +95,7 @@ MathSignal::MathSignal(pv::Session &session) :
 	exprtk_symbol_table_(nullptr),
 	exprtk_expression_(nullptr),
 	exprtk_parser_(nullptr),
-	fnc_sig_sample_(nullptr)
+	fnc_sample_(nullptr)
 {
 	uint32_t sig_idx = session_.get_next_signal_index(MathChannel);
 	set_name(QString(tr("Math%1")).arg(sig_idx));
@@ -110,9 +110,6 @@ MathSignal::MathSignal(pv::Session &session) :
 MathSignal::~MathSignal()
 {
 	reset_generation();
-
-	if (fnc_sig_sample_)
-		delete fnc_sig_sample_;
 }
 
 void MathSignal::save_settings(QSettings &settings) const
@@ -280,9 +277,9 @@ void MathSignal::reset_generation()
 		exprtk_unknown_symbol_table_ = nullptr;
 	}
 
-	if (fnc_sig_sample_) {
-		delete fnc_sig_sample_;
-		fnc_sig_sample_ = nullptr;
+	if (fnc_sample_) {
+		delete fnc_sample_;
+		fnc_sample_ = nullptr;
 	}
 
 	if (!error_message_.isEmpty()) {
@@ -305,12 +302,12 @@ void MathSignal::begin_generation()
 	disconnect(this, SLOT(on_data_received()));
 	disconnect(this, SLOT(on_enabled_changed()));
 
-	fnc_sig_sample_ = new sig_sample<double>(*this);
+	fnc_sample_ = new fnc_sample<double>(*this);
 
 	exprtk_unknown_symbol_table_ = new exprtk::symbol_table<double>();
 
 	exprtk_symbol_table_ = new exprtk::symbol_table<double>();
-	exprtk_symbol_table_->add_function("sig_sample", *fnc_sig_sample_);
+	exprtk_symbol_table_->add_function("sample", *fnc_sample_);
 	exprtk_symbol_table_->add_variable("t", exprtk_current_time_);
 	exprtk_symbol_table_->add_variable("s", exprtk_current_sample_);
 	exprtk_symbol_table_->add_constants();
@@ -380,7 +377,7 @@ void MathSignal::generate_samples(uint32_t segment_id, const uint64_t start_samp
 	shared_ptr<AnalogSegment> segment = analog->analog_segments().at(segment_id);
 
 	// Keep the math functions segment IDs in sync
-	fnc_sig_sample_->current_segment = segment_id;
+	fnc_sample_->current_segment = segment_id;
 
 	const double sample_rate = data_->get_samplerate();
 

@@ -43,7 +43,7 @@ namespace data {
 class SignalBase;
 
 template<typename T>
-struct sig_sample;
+struct fnc_sample;
 
 struct signal_data {
 	signal_data(const shared_ptr<SignalBase> _sb) :
@@ -139,10 +139,10 @@ private:
 	exprtk::parser<double> *exprtk_parser_;
 	double exprtk_current_time_, exprtk_current_sample_;
 
-	sig_sample<double>* fnc_sig_sample_;
+	fnc_sample<double>* fnc_sample_;
 
 	// Give sig_sample access to the private helper functions
-	friend struct sig_sample<double>;
+	friend struct fnc_sample<double>;
 };
 
 } // namespace data
