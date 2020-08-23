@@ -170,7 +170,7 @@ void DecodeSignal::reset_decode(bool shutting_down)
 	logic_mux_data_invalid_ = true;
 
 	if (!error_message_.isEmpty()) {
-		error_message_ = QString();
+		error_message_.clear();
 		// TODO Emulate noquote()
 		qDebug().nospace() << name() << ": Error cleared";
 	}

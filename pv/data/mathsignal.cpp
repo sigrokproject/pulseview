@@ -37,6 +37,12 @@ using std::unique_lock;
 namespace pv {
 namespace data {
 
+#define MATH_ERR_NONE           0
+#define MATH_ERR_EMPTY_EXPR     1
+#define MATH_ERR_EXPRESSION     2
+#define MATH_ERR_INVALID_SIGNAL 3
+#define MATH_ERR_ENABLE         4
+
 const int64_t MathSignal::ChunkLength = 256 * 1024;
 
 
@@ -84,6 +90,7 @@ MathSignal::MathSignal(pv::Session &session) :
 	use_custom_sample_rate_(false),
 	use_custom_sample_count_(false),
 	expression_(""),
+	error_type_(MATH_ERR_NONE),
 	exprtk_unknown_symbol_table_(nullptr),
 	exprtk_symbol_table_(nullptr),
 	exprtk_expression_(nullptr),
@@ -152,11 +159,12 @@ void MathSignal::set_expression(QString expression)
 	begin_generation();
 }
 
-void MathSignal::set_error_message(QString msg)
+void MathSignal::set_error(uint8_t type, QString msg)
 {
+	error_type_ = type;
 	error_message_ = msg;
 	// TODO Emulate noquote()
-	qDebug().nospace() << name() << ": " << msg << "(Expression: '" << expression_ << "')";
+	qDebug().nospace() << name() << ": " << msg << "(Expression: '" + expression_ + "')";
 
 	error_message_changed(msg);
 }
@@ -278,7 +286,8 @@ void MathSignal::reset_generation()
 	}
 
 	if (!error_message_.isEmpty()) {
-		error_message_ = QString();
+		error_message_.clear();
+		error_type_ = MATH_ERR_NONE;
 		// TODO Emulate noquote()
 		qDebug().nospace() << name() << ": Error cleared";
 	}
@@ -289,11 +298,12 @@ void MathSignal::begin_generation()
 	reset_generation();
 
 	if (expression_.isEmpty()) {
-		set_error_message(tr("No expression defined, nothing to do"));
+		set_error(MATH_ERR_EMPTY_EXPR, tr("No expression defined, nothing to do"));
 		return;
 	}
 
 	disconnect(this, SLOT(on_data_received()));
+	disconnect(this, SLOT(on_enabled_changed()));
 
 	fnc_sig_sample_ = new sig_sample<double>(*this);
 
@@ -331,7 +341,7 @@ void MathSignal::begin_generation()
 				.arg(error.column_no) \
 				.arg(error.diagnostic.c_str());
 		}
-		set_error_message(error_details);
+		set_error(MATH_ERR_EXPRESSION, error_details);
 	} else {
 		// Resolve unknown scalars to signals and add them to the input signal list
 		vector<string> unknowns;
@@ -340,12 +350,17 @@ void MathSignal::begin_generation()
 			signal_data* sig_data = signal_from_name(unknown);
 			const shared_ptr<SignalBase> signal = (sig_data) ? (sig_data->sb) : nullptr;
 			if (!signal || (!signal->analog_data())) {
-				set_error_message(QString(tr("%1 isn't a valid analog signal")).arg(
-					QString::fromStdString(unknown)));
+				set_error(MATH_ERR_INVALID_SIGNAL, QString(tr("%1 isn't a valid analog signal")) \
+					.arg(QString::fromStdString(unknown)));
 			} else
 				sig_data->ref = &(exprtk_unknown_symbol_table_->variable_ref(unknown));
 		}
 	}
+
+	QString disabled_signals;
+	if (!all_input_signals_enabled(disabled_signals) && error_message_.isEmpty())
+		set_error(MATH_ERR_ENABLE,
+			tr("No data will be generated as %1 must be enabled").arg(disabled_signals));
 
 	if (error_message_.isEmpty()) {
 		// Connect to the session data notification if we have no input signals
@@ -485,6 +500,9 @@ signal_data* MathSignal::signal_from_name(const std::string& name)
 				connect(sb->analog_data().get(), SIGNAL(segment_completed()),
 					this, SLOT(on_data_received()));
 
+				connect(sb.get(), SIGNAL(enabled_changed(bool)),
+					this, SLOT(on_enabled_changed()));
+
 				return &(input_signals_.insert({name, signal_data(sb)}).first->second);
 			}
 	}
@@ -517,6 +535,25 @@ void MathSignal::update_signal_sample(signal_data* sig_data, uint32_t segment_id
 		*(sig_data->ref) = sig_data->sample_value;
 }
 
+bool MathSignal::all_input_signals_enabled(QString &disabled_signals) const
+{
+	bool all_enabled = true;
+
+	disabled_signals.clear();
+
+	for (auto input_signal : input_signals_) {
+		const shared_ptr<SignalBase>& sb = input_signal.second.sb;
+
+		if (!sb->enabled()) {
+			all_enabled = false;
+			disabled_signals += disabled_signals.isEmpty() ?
+				sb->name() : ", " + sb->name();
+		}
+	}
+
+	return all_enabled;
+}
+
 void MathSignal::on_capture_state_changed(int state)
 {
 	if (state == Session::Running)
@@ -530,6 +567,19 @@ void MathSignal::on_capture_state_changed(int state)
 void MathSignal::on_data_received()
 {
 	gen_input_cond_.notify_one();
+}
+
+void MathSignal::on_enabled_changed()
+{
+	QString disabled_signals;
+	if (!all_input_signals_enabled(disabled_signals) &&
+		((error_type_ == MATH_ERR_NONE) || (error_type_ == MATH_ERR_ENABLE)))
+		set_error(MATH_ERR_ENABLE,
+			tr("No data will be generated as %1 must be enabled").arg(disabled_signals));
+	else if (disabled_signals.isEmpty() && (error_type_ == MATH_ERR_ENABLE)) {
+		error_type_ = MATH_ERR_NONE;
+		error_message_.clear();
+	}
 }
 
 } // namespace data

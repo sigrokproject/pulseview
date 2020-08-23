@@ -75,7 +75,7 @@ public:
 	void set_expression(QString expression);
 
 private:
-	virtual void set_error_message(QString msg);
+	void set_error(uint8_t type, QString msg);
 
 	/**
 	 * Returns the number of samples that can be worked on,
@@ -98,6 +98,8 @@ private:
 	signal_data* signal_from_name(const std::string& name);
 	void update_signal_sample(signal_data* sig_data, uint32_t segment_id, uint64_t sample_num);
 
+	bool all_input_signals_enabled(QString &disabled_signals) const;
+
 Q_SIGNALS:
 	void samples_cleared();
 
@@ -112,6 +114,8 @@ private Q_SLOTS:
 	void on_capture_state_changed(int state);
 	void on_data_received();
 
+	void on_enabled_changed();
+
 private:
 	pv::Session &session_;
 
@@ -121,6 +125,8 @@ private:
 	map<std::string, signal_data> input_signals_;
 
 	QString expression_;
+
+	uint8_t error_type_;
 
 	mutable mutex input_mutex_;
 	mutable condition_variable gen_input_cond_;
