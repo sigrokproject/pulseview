@@ -21,6 +21,7 @@
 
 #include <QComboBox>
 #include <QDebug>
+#include <QDialogButtonBox>
 #include <QFormLayout>
 #include <QGridLayout>
 #include <QLineEdit>
@@ -37,6 +38,42 @@ namespace views {
 namespace trace {
 
 #define MATHSIGNAL_INPUT_TIMEOUT (2000)
+
+
+MathEditDialog::MathEditDialog(pv::Session &session,
+	shared_ptr<pv::data::MathSignal> math_signal, QWidget *parent) :
+	QDialog(parent),
+	session_(session),
+	math_signal_(math_signal),
+	expression_(math_signal->get_expression()),
+	old_expression_(math_signal->get_expression())
+{
+	setWindowTitle(tr("Math Expression Editor"));
+
+	// Create the rest of the dialog
+	QDialogButtonBox *button_box = new QDialogButtonBox(
+		QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+
+	QVBoxLayout* root_layout = new QVBoxLayout(this);
+//	root_layout->addLayout(tab_layout);
+	root_layout->addWidget(button_box);
+
+	connect(button_box, SIGNAL(accepted()), this, SLOT(accept()));
+	connect(button_box, SIGNAL(rejected()), this, SLOT(reject()));
+}
+
+void MathEditDialog::accept()
+{
+	math_signal_->set_expression(expression_);
+	QDialog::accept();
+}
+
+void MathEditDialog::reject()
+{
+	math_signal_->set_expression(old_expression_);
+	QDialog::reject();
+}
+
 
 MathSignal::MathSignal(
 	pv::Session &session,
@@ -56,8 +93,15 @@ void MathSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
 
 	expression_edit_ = new QLineEdit();
 	expression_edit_->setText(math_signal_->get_expression());
+
+	const QIcon edit_icon(QIcon::fromTheme("edit", QIcon(":/icons/math.svg")));
+	QAction *edit_action =
+		expression_edit_->addAction(edit_icon, QLineEdit::TrailingPosition);
+
 	connect(expression_edit_, SIGNAL(textEdited(QString)),
 		this, SLOT(on_expression_changed(QString)));
+	connect(edit_action, SIGNAL(triggered(bool)),
+		this, SLOT(on_edit_clicked()));
 	form->addRow(tr("Expression"), expression_edit_);
 
 	sample_count_cb_ = new QComboBox();
@@ -90,6 +134,13 @@ void MathSignal::on_expression_changed(const QString &text)
 void MathSignal::on_sample_count_changed(const QString &text)
 {
 	(void)text;
+}
+
+void MathSignal::on_edit_clicked()
+{
+	MathEditDialog dlg(session_, math_signal_);
+
+	dlg.exec();
 }
 
 } // namespace trace

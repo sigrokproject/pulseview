@@ -21,6 +21,7 @@
 #define PULSEVIEW_PV_VIEWS_TRACE_MATHSIGNAL_HPP
 
 #include <QComboBox>
+#include <QDialog>
 #include <QString>
 #include <QTimer>
 
@@ -32,6 +33,25 @@ using std::shared_ptr;
 namespace pv {
 namespace views {
 namespace trace {
+
+class MathEditDialog : public QDialog
+{
+	Q_OBJECT
+
+public:
+	MathEditDialog(pv::Session &session, shared_ptr<pv::data::MathSignal> math_signal,
+		QWidget *parent = nullptr);
+
+private Q_SLOTS:
+	void accept();
+	void reject();
+
+private:
+	pv::Session &session_;
+	shared_ptr<pv::data::MathSignal> math_signal_;
+	QString expression_, old_expression_;
+};
+
 
 class MathSignal : public AnalogSignal
 {
@@ -48,6 +68,8 @@ protected:
 private Q_SLOTS:
 	void on_expression_changed(const QString &text);
 	void on_sample_count_changed(const QString &text);
+
+	void on_edit_clicked();
 
 private:
 	QLineEdit *expression_edit_;

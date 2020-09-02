@@ -53,10 +53,10 @@ public:
 	QWidget *get_about_page(QWidget *parent) const;
 	QWidget *get_logging_page(QWidget *parent) const;
 
+private Q_SLOTS:
 	void accept();
 	void reject();
 
-private Q_SLOTS:
 	void on_page_changed(QListWidgetItem *current, QListWidgetItem *previous);
 	void on_general_language_changed(const QString &text);
 	void on_general_theme_changed(int value);
