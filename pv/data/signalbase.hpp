@@ -422,4 +422,6 @@ protected:
 } // namespace data
 } // namespace pv
 
+Q_DECLARE_METATYPE(shared_ptr<pv::data::SignalBase>);
+
 #endif // PULSEVIEW_PV_DATA_SIGNALBASE_HPP

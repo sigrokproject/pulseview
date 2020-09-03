@@ -75,6 +75,14 @@ public:
 
 	virtual ~LogicSegment();
 
+	/**
+	 * Using enable_shared_from_this prevents the normal use of shared_ptr
+	 * instances by users of LogicSegment instances. Instead, shared_ptrs may
+	 * only be created by the instance itself.
+	 * See https://en.cppreference.com/w/cpp/memory/enable_shared_from_this
+	 */
+	shared_ptr<const LogicSegment> get_shared_ptr() const;
+
 	void append_payload(shared_ptr<sigrok::Logic> logic);
 	void append_payload(void *data, uint64_t data_size);
 

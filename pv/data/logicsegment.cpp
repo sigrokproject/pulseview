@@ -63,8 +63,22 @@ LogicSegment::LogicSegment(pv::data::Logic& owner, uint32_t segment_id,
 LogicSegment::~LogicSegment()
 {
 	lock_guard<recursive_mutex> lock(mutex_);
+
 	for (MipMapLevel &l : mip_map_)
 		free(l.data);
+}
+
+shared_ptr<const LogicSegment> LogicSegment::get_shared_ptr() const
+{
+	shared_ptr<const Segment> ptr = nullptr;
+
+	try {
+		ptr = shared_from_this();
+	} catch (std::exception& e) {
+		/* Do nothing, ptr remains a null pointer */
+	}
+
+	return ptr ? std::dynamic_pointer_cast<const LogicSegment>(ptr) : nullptr;
 }
 
 template <class T>

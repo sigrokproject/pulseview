@@ -1131,10 +1131,9 @@ QComboBox* DecodeTrace::create_channel_selector(QWidget *parent, const DecodeCha
 	for (const shared_ptr<data::SignalBase> &b : sig_list) {
 		assert(b);
 		if (b->logic_data() && b->enabled()) {
-			selector->addItem(b->name(),
-				QVariant::fromValue((void*)b.get()));
+			selector->addItem(b->name(), QVariant::fromValue(b));
 
-			if (ch->assigned_signal == b.get())
+			if (ch->assigned_signal == b)
 				selector->setCurrentIndex(selector->count() - 1);
 		}
 	}
@@ -1523,8 +1522,8 @@ void DecodeTrace::on_channel_selected(int)
 	QComboBox *cb = qobject_cast<QComboBox*>(QObject::sender());
 
 	// Determine signal that was selected
-	const data::SignalBase *signal =
-		(data::SignalBase*)cb->itemData(cb->currentIndex()).value<void*>();
+	shared_ptr<data::SignalBase> signal =
+		cb->itemData(cb->currentIndex()).value<shared_ptr<data::SignalBase>>();
 
 	// Determine decode channel ID this combo box is the channel selector for
 	const uint16_t id = channel_id_map_.at(cb);

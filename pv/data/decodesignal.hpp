@@ -117,7 +117,7 @@ public:
 
 	const vector<decode::DecodeChannel> get_channels() const;
 	void auto_assign_signals(const shared_ptr<Decoder> dec);
-	void assign_signal(const uint16_t channel_id, const SignalBase *signal);
+	void assign_signal(const uint16_t channel_id, shared_ptr<const SignalBase> signal);
 	int get_assigned_signal_count() const;
 
 	void set_initial_pin_state(const uint16_t channel_id, const int init_state);
@@ -201,7 +201,7 @@ private:
 	void logic_mux_proc();
 
 	void decode_data(const int64_t abs_start_samplenum, const int64_t sample_count,
-		const shared_ptr<LogicSegment> input_segment);
+		const shared_ptr<const LogicSegment> input_segment);
 	void decode_proc();
 
 	void start_srd_session();

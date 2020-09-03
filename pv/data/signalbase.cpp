@@ -304,11 +304,17 @@ void SignalBase::clear_sample_data()
 
 shared_ptr<data::Analog> SignalBase::analog_data() const
 {
+	if (!data_)
+		return nullptr;
+
 	return dynamic_pointer_cast<Analog>(data_);
 }
 
 shared_ptr<data::Logic> SignalBase::logic_data() const
 {
+	if (!data_)
+		return nullptr;
+
 	shared_ptr<Logic> result = dynamic_pointer_cast<Logic>(data_);
 
 	if (((conversion_type_ == A2LConversionByThreshold) ||

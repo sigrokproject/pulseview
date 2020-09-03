@@ -309,7 +309,7 @@ void DecodeSignal::auto_assign_signals(const shared_ptr<Decoder> dec)
 		}
 
 		if (match) {
-			ch.assigned_signal = match.get();
+			ch.assigned_signal = match;
 			new_assignment = true;
 		}
 	}
@@ -322,7 +322,7 @@ void DecodeSignal::auto_assign_signals(const shared_ptr<Decoder> dec)
 	}
 }
 
-void DecodeSignal::assign_signal(const uint16_t channel_id, const SignalBase *signal)
+void DecodeSignal::assign_signal(const uint16_t channel_id, shared_ptr<const SignalBase> signal)
 {
 	for (decode::DecodeChannel& ch : channels_)
 		if (ch.id == channel_id) {
@@ -340,7 +340,7 @@ int DecodeSignal::get_assigned_signal_count() const
 {
 	// Count all channels that have a signal assigned to them
 	return count_if(channels_.begin(), channels_.end(),
-		[](decode::DecodeChannel ch) { return ch.assigned_signal; });
+		[](decode::DecodeChannel ch) { return ch.assigned_signal.get(); });
 }
 
 void DecodeSignal::set_initial_pin_state(const uint16_t channel_id, const int init_state)
@@ -399,8 +399,9 @@ int64_t DecodeSignal::get_working_sample_count(uint32_t segment_id) const
 			if (segment_id >= logic_data->logic_segments().size())
 				return 0;
 
-			const shared_ptr<LogicSegment> segment = logic_data->logic_segments()[segment_id];
-			count = min(count, (int64_t)segment->get_sample_count());
+			const shared_ptr<const LogicSegment> segment = logic_data->logic_segments()[segment_id]->get_shared_ptr();
+			if (segment)
+				count = min(count, (int64_t)segment->get_sample_count());
 		}
 
 	return (no_signals_assigned ? 0 : count);
@@ -807,7 +808,7 @@ void DecodeSignal::restore_settings(QSettings &settings)
 
 		for (const shared_ptr<data::SignalBase>& signal : signalbases)
 			if ((signal->name() == assigned_signal_name) && (signal->type() != SignalBase::DecodeChannel))
-				channel->assigned_signal = signal.get();
+				channel->assigned_signal = signal;
 
 		channel->initial_pin_state = settings.value("initial_pin_state").toInt();
 
@@ -838,8 +839,8 @@ bool DecodeSignal::all_input_segments_complete(uint32_t segment_id) const
 			if (segment_id >= logic_data->logic_segments().size())
 				return false;
 
-			const shared_ptr<LogicSegment> segment = logic_data->logic_segments()[segment_id];
-			if (!segment->is_complete())
+			const shared_ptr<const LogicSegment> segment = logic_data->logic_segments()[segment_id]->get_shared_ptr();
+			if (segment && !segment->is_complete())
 				all_complete = false;
 		}
 
@@ -878,8 +879,10 @@ double DecodeSignal::get_input_samplerate(uint32_t segment_id) const
 				continue;
 
 			try {
-				const shared_ptr<LogicSegment> segment = logic_data->logic_segments().at(segment_id);
-				samplerate = segment->samplerate();
+				const shared_ptr<const LogicSegment> segment =
+					logic_data->logic_segments().at(segment_id)->get_shared_ptr();
+				if (segment)
+					samplerate = segment->samplerate();
 			} catch (out_of_range&) {
 				// Do nothing
 			}
@@ -1006,7 +1009,8 @@ void DecodeSignal::mux_logic_samples(uint32_t segment_id, const int64_t start, c
 		return;
 
 	// Fetch the channel segments and their data
-	vector<shared_ptr<LogicSegment> > segments;
+	bool segment_missing = false;
+	vector<shared_ptr<const LogicSegment> > segments;
 	vector<const uint8_t*> signal_data;
 	vector<uint8_t> signal_in_bytepos;
 	vector<uint8_t> signal_in_bitpos;
@@ -1015,14 +1019,21 @@ void DecodeSignal::mux_logic_samples(uint32_t segment_id, const int64_t start, c
 		if (ch.assigned_signal) {
 			const shared_ptr<Logic> logic_data = ch.assigned_signal->logic_data();
 
-			shared_ptr<LogicSegment> segment;
+			shared_ptr<const LogicSegment> segment;
 			try {
-				segment = logic_data->logic_segments().at(segment_id);
+				segment = logic_data->logic_segments().at(segment_id)->get_shared_ptr();
 			} catch (out_of_range&) {
 				qDebug() << "Muxer error for" << name() << ":" << ch.assigned_signal->name() \
 					<< "has no logic segment" << segment_id;
+				logic_mux_interrupt_ = true;
 				return;
 			}
+
+			if (!segment) {
+				segment_missing = true;
+				break;
+			}
+
 			segments.push_back(segment);
 
 			uint8_t* data = new uint8_t[(end - start) * segment->unit_size()];
@@ -1034,6 +1045,8 @@ void DecodeSignal::mux_logic_samples(uint32_t segment_id, const int64_t start, c
 			signal_in_bitpos.push_back(bitpos % 8);
 		}
 
+	if (segment_missing)
+		return;
 
 	shared_ptr<LogicSegment> output_segment;
 	try {
@@ -1042,6 +1055,7 @@ void DecodeSignal::mux_logic_samples(uint32_t segment_id, const int64_t start, c
 		qDebug() << "Muxer error for" << name() << ": no logic mux segment" \
 			<< segment_id << "in mux_logic_samples(), mux segments size is" \
 			<< logic_mux_data_->logic_segments().size();
+		logic_mux_interrupt_ = true;
 		return;
 	}
 
@@ -1104,8 +1118,7 @@ void DecodeSignal::logic_mux_proc()
 
 	// Create initial logic mux segment
 	shared_ptr<LogicSegment> output_segment =
-		make_shared<LogicSegment>(*logic_mux_data_, segment_id,
-			logic_mux_unit_size_, 0);
+		make_shared<LogicSegment>(*logic_mux_data_, segment_id, logic_mux_unit_size_, 0);
 	logic_mux_data_->push_segment(output_segment);
 
 	output_segment->set_samplerate(get_input_samplerate(0));
@@ -1172,7 +1185,7 @@ void DecodeSignal::logic_mux_proc()
 
 void DecodeSignal::decode_data(
 	const int64_t abs_start_samplenum, const int64_t sample_count,
-	const shared_ptr<LogicSegment> input_segment)
+	const shared_ptr<const LogicSegment> input_segment)
 {
 	const int64_t unit_size = input_segment->unit_size();
 	const int64_t chunk_sample_count = DecodeChunkLength / unit_size;
@@ -1236,8 +1249,9 @@ void DecodeSignal::decode_proc()
 	if (decode_interrupt_)
 		return;
 
-	shared_ptr<LogicSegment> input_segment = logic_mux_data_->logic_segments().front();
-	assert(input_segment);
+	shared_ptr<const LogicSegment> input_segment = logic_mux_data_->logic_segments().front()->get_shared_ptr();
+	if (!input_segment)
+		return;
 
 	// Create the initial segment and set its sample rate so that we can pass it to SRD
 	create_decode_segment();
@@ -1418,7 +1432,7 @@ void DecodeSignal::connect_input_notifiers()
 		if (!ch.assigned_signal)
 			continue;
 
-		const data::SignalBase *signal = ch.assigned_signal;
+		const data::SignalBase *signal = ch.assigned_signal.get();
 		connect(signal, &data::SignalBase::samples_cleared,
 			this, &DecodeSignal::on_data_cleared);
 		connect(signal, &data::SignalBase::samples_added,

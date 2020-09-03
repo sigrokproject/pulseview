@@ -46,7 +46,6 @@ Segment::Segment(uint32_t segment_id, uint64_t samplerate, unsigned int unit_siz
 	mem_optimization_requested_(false),
 	is_complete_(false)
 {
-	lock_guard<recursive_mutex> lock(mutex_);
 	assert(unit_size_ > 0);
 
 	// Determine the number of samples we can fit in one chunk
