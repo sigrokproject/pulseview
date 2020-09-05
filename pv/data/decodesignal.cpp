@@ -1009,7 +1009,6 @@ void DecodeSignal::mux_logic_samples(uint32_t segment_id, const int64_t start, c
 		return;
 
 	// Fetch the channel segments and their data
-	bool segment_missing = false;
 	vector<shared_ptr<const LogicSegment> > segments;
 	vector<const uint8_t*> signal_data;
 	vector<uint8_t> signal_in_bytepos;
@@ -1020,19 +1019,17 @@ void DecodeSignal::mux_logic_samples(uint32_t segment_id, const int64_t start, c
 			const shared_ptr<Logic> logic_data = ch.assigned_signal->logic_data();
 
 			shared_ptr<const LogicSegment> segment;
-			try {
+			if (segment_id < logic_data->logic_segments().size()) {
 				segment = logic_data->logic_segments().at(segment_id)->get_shared_ptr();
-			} catch (out_of_range&) {
+			} else {
 				qDebug() << "Muxer error for" << name() << ":" << ch.assigned_signal->name() \
 					<< "has no logic segment" << segment_id;
 				logic_mux_interrupt_ = true;
 				return;
 			}
 
-			if (!segment) {
-				segment_missing = true;
-				break;
-			}
+			if (!segment)
+				return;
 
 			segments.push_back(segment);
 
@@ -1044,9 +1041,6 @@ void DecodeSignal::mux_logic_samples(uint32_t segment_id, const int64_t start, c
 			signal_in_bytepos.push_back(bitpos / 8);
 			signal_in_bitpos.push_back(bitpos % 8);
 		}
-
-	if (segment_missing)
-		return;
 
 	shared_ptr<LogicSegment> output_segment;
 	try {
@@ -1302,7 +1296,8 @@ void DecodeSignal::decode_proc()
 					terminate_srd_session();
 				} else {
 					// All segments have been processed
-					decode_finished();
+					if (!decode_interrupt_)
+						decode_finished();
 				}
 			} else {
 				// Wait for more input data
@@ -1311,11 +1306,6 @@ void DecodeSignal::decode_proc()
 			}
 		}
 	} while (!decode_interrupt_);
-
-	// Potentially reap decoders when the application no longer is
-	// interested in their (pending) results.
-	if (decode_interrupt_)
-		terminate_srd_session();
 }
 
 void DecodeSignal::start_srd_session()
