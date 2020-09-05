@@ -333,11 +333,9 @@ void Channels::showEvent(QShowEvent *event)
 	for (auto& entry : device->channel_groups()) {
 		const shared_ptr<ChannelGroup> group = entry.second;
 
-		try {
-			QLabel* label = group_label_map_.at(group);
+		if (group_label_map_.count(group) > 0) {
+			QLabel* label = group_label_map_[group];
 			label->setText(QString("<h3>%1</h3>").arg(group->name().c_str()));
-		} catch (out_of_range&) {
-			// Do nothing
 		}
 	}
 
