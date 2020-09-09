@@ -465,6 +465,8 @@ add_definitions(-D__STDC_LIMIT_MACROS)
 add_definitions(-Wall -Wextra)
 add_definitions(-std=c++11)
 add_definitions(-DBOOST_MATH_DISABLE_FLOAT128=1)
+add_definitions(-Wa,-mbig-obj)
+add_definitions(-O3)
 
 if(ENABLE_FLOW)
 	add_definitions(-DENABLE_FLOW)
