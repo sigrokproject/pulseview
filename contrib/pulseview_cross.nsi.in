@@ -43,7 +43,11 @@ Name "PulseView"
 OutFile "pulseview-@PV_VERSION_STRING@-installer.exe"
 
 # Where to install the application.
-InstallDir "$PROGRAMFILES\sigrok\PulseView"
+!ifdef PE64
+	InstallDir "$PROGRAMFILES64\sigrok\PulseView"
+!else
+	InstallDir "$PROGRAMFILES\sigrok\PulseView"
+!endif
 
 # Request admin privileges for Windows Vista and Windows 7.
 # http://nsis.sourceforge.net/Docs/Chapter4.html
