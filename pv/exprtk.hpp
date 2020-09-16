@@ -37114,6 +37114,8 @@ namespace exprtk
 #   ifndef WIN32_LEAN_AND_MEAN
 #      define WIN32_LEAN_AND_MEAN
 #   endif
+#   define NOGDI
+#   define NORESOURCE
 #   include <windows.h>
 #   include <ctime>
 #else
