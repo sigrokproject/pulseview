@@ -80,6 +80,183 @@ public:
 	bool viewportEvent(QEvent *event);
 };
 
+// This Navigation code handles customisation of keyboard and mousewheel controls
+// for navigating the traces by moving them and zooming them.
+// Code is done to support the custom controls as well as saving and restoring them
+// from settings. Missing is code to set/get them from a GUI settings dialog.
+// 
+// TODO: Add GUI support for getting and setting the navigation params.
+// The GUI can call these provided functions to get set the values:
+//   View::nav_kb_up_alt_get() / View::nav_kb_up_alt_set()
+//   View::nav_mw_vert_get() / View::nav_mw_vert_set()
+//   etc
+// 
+// Currently the customisations can only be changed by editing where the settings
+// are stored which is platform specific:
+// - Windows: stored in registry at "Computer\HKEY_CURRENT_USER\SOFTWARE\sigrok\PulseView\Session0\view0"
+// - Linux: stored in a file at ~/.config/sigrok/pulseview.conf
+// - Mac: stored in a file at ~/Library/Preferences/pulseview.plist
+
+// type of navigation to perform
+#define NAV_TYPE_NONE		0
+#define NAV_TYPE_ZOOM		1
+#define NAV_TYPE_HORI		2
+#define NAV_TYPE_VERT		3
+
+// navigation using keyboard
+typedef struct {
+	int type;			// NAV_TYPE_??? value
+	double amount;		// amount to perform nav operation by
+	QShortcut* sc;
+} NavKb_t;
+
+// navigation using mousewheel
+typedef struct {
+	int type;			// NAV_TYPE_??? value
+	double amount;		// amount to perform nav operation by
+} NavMw_t;
+
+// keyboard
+#define NAV_KB_VAR_DECLARE(name)	\
+	NavKb_t name ## _nav_, name ## _alt_nav_, name ## _ctrl_nav_, name ## _shift_nav_
+
+#define NAV_KB_VAR_SETUP(name, keys)			\
+	name ## _nav_.type			= NAV_TYPE_NONE;\
+	name ## _alt_nav_.type		= NAV_TYPE_NONE;\
+	name ## _ctrl_nav_.type		= NAV_TYPE_NONE;\
+	name ## _shift_nav_.type	= NAV_TYPE_NONE;\
+	name ## _nav_.amount		= 0;			\
+	name ## _alt_nav_.amount	= 0;			\
+	name ## _ctrl_nav_.amount	= 0;			\
+	name ## _shift_nav_.amount	= 0;			\
+	name ## _nav_.sc		= new QShortcut(QKeySequence(keys),				this, SLOT(on_kb_ ##name ()),			nullptr, Qt::WidgetWithChildrenShortcut);	\
+	name ## _alt_nav_.sc	= new QShortcut(QKeySequence(keys + Qt::ALT),	this, SLOT(on_kb_ ##name## _alt()),		nullptr, Qt::WidgetWithChildrenShortcut);	\
+	name ## _ctrl_nav_.sc	= new QShortcut(QKeySequence(keys + Qt::CTRL),	this, SLOT(on_kb_ ##name## _ctrl()),	nullptr, Qt::WidgetWithChildrenShortcut);	\
+	name ## _shift_nav_.sc	= new QShortcut(QKeySequence(keys + Qt::SHIFT),	this, SLOT(on_kb_ ##name## _shift()),	nullptr, Qt::WidgetWithChildrenShortcut)
+
+#define NAV_KB_VAR_DEFAULT(name, t, a)			\
+	name ## _nav_.type			= t;			\
+	name ## _nav_.amount		= a
+
+#define NAV_KB_FUNC_DECLARE1(name)	\
+	void on_kb_ ## name ();			\
+	void nav_kb_ ## name ## _set(int type, double amount);	\
+	void nav_kb_ ## name ## _get(int* type, double* amount)
+
+#define NAV_KB_FUNC_DECLARE(name)			\
+	NAV_KB_FUNC_DECLARE1(name);				\
+	NAV_KB_FUNC_DECLARE1(name ## _alt);		\
+	NAV_KB_FUNC_DECLARE1(name ## _ctrl);	\
+	NAV_KB_FUNC_DECLARE1(name ## _shift)
+
+#define NAV_KB_FUNC_DEFINE1(name)		\
+	void View::on_kb_ ## name ()	{	\
+		if (     name ## _nav_.type == NAV_TYPE_NONE )return;	\
+		else if (name ## _nav_.type == NAV_TYPE_ZOOM )nav_zoom(name ## _nav_.amount);		\
+		else if (name ## _nav_.type == NAV_TYPE_HORI )nav_move_hori(name ## _nav_.amount);	\
+		else if (name ## _nav_.type == NAV_TYPE_VERT )nav_move_vert(name ## _nav_.amount);	\
+	}	\
+	void View::nav_kb_ ## name ## _set(int type, double amount) {	\
+		name ## _nav_.type = type;		\
+		name ## _nav_.amount = amount;	\
+	}	\
+	void View::nav_kb_ ## name ## _get(int* type, double* amount) {	\
+		if(type) *type = name ## _nav_.type;		\
+		if(amount) *amount = name ## _nav_.amount;	\
+	}
+
+#define NAV_KB_FUNC_DEFINE(name)		\
+	NAV_KB_FUNC_DEFINE1(name)			\
+	NAV_KB_FUNC_DEFINE1(name ## _alt)	\
+	NAV_KB_FUNC_DEFINE1(name ## _ctrl)	\
+	NAV_KB_FUNC_DEFINE1(name ## _shift)
+
+// mousewheel
+#define NAV_MW_VAR_DECLARE(name)		\
+	NavMw_t name ## _nav_, name ## _alt_nav_, name ## _ctrl_nav_, name ## _shift_nav_
+
+#define NAV_MW_VAR_SETUP(name)			\
+	name ## _nav_.type			= NAV_TYPE_NONE;\
+	name ## _alt_nav_.type		= NAV_TYPE_NONE;\
+	name ## _ctrl_nav_.type		= NAV_TYPE_NONE;\
+	name ## _shift_nav_.type	= NAV_TYPE_NONE;\
+	name ## _nav_.amount		= 0;			\
+	name ## _alt_nav_.amount	= 0;			\
+	name ## _ctrl_nav_.amount	= 0;			\
+	name ## _shift_nav_.amount	= 0
+
+#define NAV_MW_VAR_DEFAULT(name, t, a)	\
+	name ## _nav_.type			= t;	\
+	name ## _nav_.amount		= a
+
+#define NAV_MW_FUNC_DECLARE1(name)	\
+	void on_mw_ ## name (QWheelEvent *event);			\
+	void nav_mw_ ## name ## _set(int type, double amount);	\
+	void nav_mw_ ## name ## _get(int* type, double* amount)
+
+#define NAV_MW_FUNC_DECLARE(name)			\
+	NAV_MW_FUNC_DECLARE1(name);				\
+	NAV_MW_FUNC_DECLARE1(name ## _alt);		\
+	NAV_MW_FUNC_DECLARE1(name ## _ctrl);	\
+	NAV_MW_FUNC_DECLARE1(name ## _shift)
+
+#define NAV_MW_FUNC_DEFINE1(name)		\
+	void View::on_mw_ ## name (QWheelEvent *event)	{	\
+		if (     name ## _nav_.type == NAV_TYPE_NONE )return;	\
+		else if (name ## _nav_.type == NAV_TYPE_ZOOM )nav_zoom(     (-event->delta() * name ## _nav_.amount)/120.0, event->x());	\
+		else if (name ## _nav_.type == NAV_TYPE_HORI )nav_move_hori((-event->delta() * name ## _nav_.amount)/120.0);	\
+		else if (name ## _nav_.type == NAV_TYPE_VERT )nav_move_vert((-event->delta() * name ## _nav_.amount)/120.0);	\
+	}	\
+	void View::nav_mw_ ## name ## _set(int type, double amount) {	\
+		name ## _nav_.type = type;		\
+		name ## _nav_.amount = amount;	\
+	}	\
+	void View::nav_mw_ ## name ## _get(int* type, double* amount) {	\
+		if(type) *type = name ## _nav_.type;		\
+		if(amount) *amount = name ## _nav_.amount;	\
+	}
+
+#define NAV_MW_FUNC_DEFINE(name)		\
+	NAV_MW_FUNC_DEFINE1(name)			\
+	NAV_MW_FUNC_DEFINE1(name ## _alt)	\
+	NAV_MW_FUNC_DEFINE1(name ## _ctrl)	\
+	NAV_MW_FUNC_DEFINE1(name ## _shift)
+
+
+#define NAV_SAVE1(name)		\
+	settings.setValue("nav_" #name "_type",   name ## _nav_.type);	\
+	settings.setValue("nav_" #name "_amount", name ## _nav_.amount)
+
+#define NAV_KB_SAVE(name)	\
+	NAV_SAVE1(name);		\
+	NAV_SAVE1(name ## _alt);\
+	NAV_SAVE1(name ## _ctrl);\
+	NAV_SAVE1(name ## _shift)
+
+#define NAV_MW_SAVE(name)	\
+	NAV_SAVE1(name);		\
+	NAV_SAVE1(name ## _alt);\
+	NAV_SAVE1(name ## _ctrl);\
+	NAV_SAVE1(name ## _shift)
+
+
+#define NAV_RESTORE1(name)		\
+	if (settings.contains("nav_" #name "_type"))	name ## _nav_.type   = settings.value("nav_" #name "_type").toInt();	\
+	if (settings.contains("nav_" #name "_amount"))	name ## _nav_.amount = settings.value("nav_" #name "_amount").toDouble()
+
+#define NAV_KB_RESTORE(name)	\
+	NAV_RESTORE1(name);			\
+	NAV_RESTORE1(name ## _alt);	\
+	NAV_RESTORE1(name ## _ctrl);\
+	NAV_RESTORE1(name ## _shift)
+
+#define NAV_MW_RESTORE(name)	\
+	NAV_RESTORE1(name);			\
+	NAV_RESTORE1(name ## _alt);	\
+	NAV_RESTORE1(name ## _ctrl);\
+	NAV_RESTORE1(name ## _shift)
+
+
 class View : public ViewBase, public TraceTreeItemOwner, public GlobalSettingsInterface
 {
 	Q_OBJECT
@@ -429,6 +606,14 @@ public:
 
 	void extents_changed(bool horz, bool vert);
 
+	void nav_zoom(double amount);
+	void nav_zoom(double amount, int offset);
+	void nav_move_hori(double amount);
+	void nav_move_vert(double amount);
+	
+	void on_mw_vert_all(QWheelEvent *event);
+	void on_mw_hori_all(QWheelEvent *event);
+	
 private Q_SLOTS:
 	void on_signal_name_changed();
 	void on_splitter_moved();
@@ -446,6 +631,16 @@ private Q_SLOTS:
 	void signals_changed();
 	void capture_state_updated(int state);
 
+	NAV_KB_FUNC_DECLARE(up);
+	NAV_KB_FUNC_DECLARE(down);
+	NAV_KB_FUNC_DECLARE(left);
+	NAV_KB_FUNC_DECLARE(right);
+	NAV_KB_FUNC_DECLARE(pageup);
+	NAV_KB_FUNC_DECLARE(pagedown);
+	
+	NAV_MW_FUNC_DECLARE(hori);
+	NAV_MW_FUNC_DECLARE(vert);
+	
 	void on_new_segment(int new_segment_id);
 	void on_segment_completed(int new_segment_id);
 	void on_segment_changed(int segment);
@@ -504,12 +699,21 @@ private:
 	Header *header_;
 	QSplitter *splitter_;
 
-	QShortcut *zoom_in_shortcut_, *zoom_in_shortcut_2_;
-	QShortcut *zoom_out_shortcut_, *zoom_out_shortcut_2_;
+	QShortcut *zoom_in_shortcut_, *zoom_out_shortcut_;
 	QShortcut *home_shortcut_, *end_shortcut_;
 	QShortcut *grab_ruler_left_shortcut_, *grab_ruler_right_shortcut_;
 	QShortcut *cancel_grab_shortcut_;
-
+	
+	// keyboard and mousewheel navigation
+	NAV_KB_VAR_DECLARE(up);
+	NAV_KB_VAR_DECLARE(down);
+	NAV_KB_VAR_DECLARE(left);
+	NAV_KB_VAR_DECLARE(right);
+	NAV_KB_VAR_DECLARE(pageup);
+	NAV_KB_VAR_DECLARE(pagedown);
+	NAV_MW_VAR_DECLARE(hori);
+	NAV_MW_VAR_DECLARE(vert);
+	
 	mutable mutex signal_mutex_;
 	vector< shared_ptr<Signal> > signals_;
 

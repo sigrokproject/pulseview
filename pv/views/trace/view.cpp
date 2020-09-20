@@ -223,11 +223,6 @@ View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 		SLOT(on_zoom_out_shortcut_triggered()), nullptr, Qt::WidgetWithChildrenShortcut);
 	zoom_out_shortcut_->setAutoRepeat(false);
 
-	zoom_in_shortcut_2_ = new QShortcut(QKeySequence(Qt::Key_Up), this,
-		SLOT(on_zoom_in_shortcut_triggered()), nullptr, Qt::WidgetWithChildrenShortcut);
-	zoom_out_shortcut_2_ = new QShortcut(QKeySequence(Qt::Key_Down), this,
-		SLOT(on_zoom_out_shortcut_triggered()), nullptr, Qt::WidgetWithChildrenShortcut);
-
 	home_shortcut_ = new QShortcut(QKeySequence(Qt::Key_Home), this,
 		SLOT(on_scroll_to_start_shortcut_triggered()), nullptr, Qt::WidgetWithChildrenShortcut);
 	home_shortcut_->setAutoRepeat(false);
@@ -254,6 +249,52 @@ View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 		this, [=]{grabbed_widget_ = nullptr;});
 	cancel_grab_shortcut_->setAutoRepeat(false);
 
+	// Keyboard navigation
+	// This sets them all up as disabled initially.
+	NAV_KB_VAR_SETUP(up,		Qt::Key_Up);
+	NAV_KB_VAR_SETUP(down,		Qt::Key_Down);
+	NAV_KB_VAR_SETUP(left,		Qt::Key_Left);
+	NAV_KB_VAR_SETUP(right,		Qt::Key_Right);
+	NAV_KB_VAR_SETUP(pageup,	Qt::Key_PageUp);
+	NAV_KB_VAR_SETUP(pagedown,	Qt::Key_PageDown);
+	// Next we set the default types and amounts to start with when the user has not changed them yet
+	// vertical movement
+	NAV_KB_VAR_DEFAULT(up,				NAV_TYPE_VERT, -0.125);	// up    arrow will move the traces up by 1/8 page
+	NAV_KB_VAR_DEFAULT(down,			NAV_TYPE_VERT,  0.125);	// down  arrow will move the traces up by 1/8 page
+	// zoom
+	NAV_KB_VAR_DEFAULT(up_shift,		NAV_TYPE_ZOOM, -1.0);	// up   arrow + shift will zoom in  by 1x
+	NAV_KB_VAR_DEFAULT(down_shift,		NAV_TYPE_ZOOM,  1.0);	// down arrow + shift will zoom out by 1x
+	NAV_KB_VAR_DEFAULT(pageup_shift,	NAV_TYPE_ZOOM, -2.0);	// page up    + shift will zoom in  by 2x
+	NAV_KB_VAR_DEFAULT(pagedown_shift,	NAV_TYPE_ZOOM,  2.0);	// page down  + shift will zoom out by 2x
+	// small horizontal movement
+	NAV_KB_VAR_DEFAULT(left,			NAV_TYPE_HORI, -0.125);	// left  arrow        will move the trace backwards by 1/8 page
+	NAV_KB_VAR_DEFAULT(right,			NAV_TYPE_HORI,  0.125);	// right arrow        will move the trace forwards  by 1/8 page
+	NAV_KB_VAR_DEFAULT(left_alt,		NAV_TYPE_HORI, -0.25);	// left  arrow + alt  will move the trace backwards by 1/4 page
+	NAV_KB_VAR_DEFAULT(right_alt,		NAV_TYPE_HORI,  0.25);	// right arrow + alt  will move the trace forwards  by 1/4 page
+	NAV_KB_VAR_DEFAULT(left_ctrl,		NAV_TYPE_HORI, -0.5);	// left  arrow + ctrl will move the trace backwards by 1/2 page
+	NAV_KB_VAR_DEFAULT(right_ctrl,		NAV_TYPE_HORI,  0.5);	// right arrow + ctrl will move the trace forwards  by 1/2 page
+	// big horizontal movement
+	NAV_KB_VAR_DEFAULT(pageup,			NAV_TYPE_HORI, -1.0);	// page up          will move the trace backwards by 1 page
+	NAV_KB_VAR_DEFAULT(pagedown,		NAV_TYPE_HORI,  1.0);	// page down        will move the trace forwards  by 1 page
+	NAV_KB_VAR_DEFAULT(pageup_alt,		NAV_TYPE_HORI, -2.0);	// page up   + alt  will move the trace backwards by 2 pages
+	NAV_KB_VAR_DEFAULT(pagedown_alt,	NAV_TYPE_HORI,  2.0);	// page down + alt  will move the trace forwards  by 2 pages
+	NAV_KB_VAR_DEFAULT(pageup_ctrl,		NAV_TYPE_HORI, -4.0);	// page up   + ctrl will move the trace backwards by 4 pages
+	NAV_KB_VAR_DEFAULT(pagedown_ctrl,	NAV_TYPE_HORI,  4.0);	// page down + ctrl will move the trace forwards  by 4 pages
+	
+	// Mousewheel navigation
+	// This sets them all up as disabled initially.
+	NAV_MW_VAR_SETUP(hori);
+	NAV_MW_VAR_SETUP(vert);
+	// Next we set the default types and amounts to start with when the user has not changed them yet
+	NAV_MW_VAR_DEFAULT(hori_shift,		NAV_TYPE_ZOOM,  0.25);	// horizontal mousewheel + shift will zoom the traces by 1/4 x
+	NAV_MW_VAR_DEFAULT(vert_shift,		NAV_TYPE_ZOOM,  0.25);	// vertical   mousewheel + shift will zoom the traces by 1/4 x
+	NAV_MW_VAR_DEFAULT(hori,			NAV_TYPE_HORI,  0.25);	// horizontal mousewheel will move the traces up by 1/4 page
+	NAV_MW_VAR_DEFAULT(vert,			NAV_TYPE_HORI,  0.25);	// vertical   mousewheel will move the traces up by 1/4 page
+	NAV_MW_VAR_DEFAULT(hori_alt,		NAV_TYPE_HORI,  0.5);	// horizontal mousewheel + alt will move the traces up by 1/2 page
+	NAV_MW_VAR_DEFAULT(vert_alt,		NAV_TYPE_HORI,  0.5);	// vertical   mousewheel + alt will move the traces up by 1/2 page
+	NAV_MW_VAR_DEFAULT(hori_ctrl,		NAV_TYPE_HORI,  1.0);	// horizontal mousewheel + ctrl will move the traces up by 1 page
+	NAV_MW_VAR_DEFAULT(vert_ctrl,		NAV_TYPE_HORI,  1.0);	// vertical   mousewheel + ctrl will move the traces up by 14 page
+	
 	// Trigger the initial event manually. The default device has signals
 	// which were created before this object came into being
 	signals_changed();
@@ -514,6 +555,16 @@ void View::save_settings(QSettings &settings) const
 		signal->save_settings(settings);
 		settings.endGroup();
 	}
+
+	NAV_KB_SAVE(up);
+	NAV_KB_SAVE(down);
+	NAV_KB_SAVE(left);
+	NAV_KB_SAVE(right);
+	NAV_KB_SAVE(pageup);
+	NAV_KB_SAVE(pagedown);
+	
+	NAV_MW_SAVE(hori);
+	NAV_MW_SAVE(vert);
 }
 
 void View::restore_settings(QSettings &settings)
@@ -550,6 +601,16 @@ void View::restore_settings(QSettings &settings)
 		saved_v_offset_ = settings.value("v_offset").toInt();
 		scroll_needs_defaults_ = false;
 	}
+
+	NAV_KB_RESTORE(up);
+	NAV_KB_RESTORE(down);
+	NAV_KB_RESTORE(left);
+	NAV_KB_RESTORE(right);
+	NAV_KB_RESTORE(pageup);
+	NAV_KB_RESTORE(pagedown);
+	
+	NAV_MW_RESTORE(hori);
+	NAV_MW_RESTORE(vert);
 
 	restoring_state_ = true;
 
@@ -1736,6 +1797,72 @@ void View::on_scroll_to_start_shortcut_triggered()
 void View::on_scroll_to_end_shortcut_triggered()
 {
 	set_h_offset(get_h_scrollbar_maximum());
+}
+
+
+void View::nav_zoom(double numTimes)
+{
+	zoom(numTimes);
+}
+
+void View::nav_zoom(double numTimes, int offset)
+{
+	zoom(numTimes, offset);
+}
+
+void View::nav_move_hori(double numPages)
+{
+	double page_width = viewport_->width();
+	double move_amount = numPages * page_width;
+	int curr_pos = scrollarea_->horizontalScrollBar()->sliderPosition();
+	int new_pos = curr_pos + move_amount;
+
+//	printf("nav_move_hori(): page_width=%g move_amount=%g curr_pos=%d new_pos=%d\n",
+//		page_width, move_amount, curr_pos, new_pos);
+	
+	set_h_offset(new_pos);
+}
+
+// amount is double value representing numPages.
+//  1.0 is a full page down
+// -1.0 is a full page up
+void View::nav_move_vert(double numPages)
+{
+	double page_height = viewport_->height();
+	double move_amount = numPages * page_height;
+	int curr_pos = scrollarea_->verticalScrollBar()->sliderPosition();
+	int new_pos = curr_pos + move_amount;
+ 
+//	printf("nav_move_vert(): page_height=%g move_amount=%g curr_pos=%d new_pos=%d\n",
+//		page_height, move_amount, curr_pos, new_pos);
+	
+	set_v_offset(new_pos);
+}
+
+NAV_KB_FUNC_DEFINE(up)
+NAV_KB_FUNC_DEFINE(down)
+NAV_KB_FUNC_DEFINE(left)
+NAV_KB_FUNC_DEFINE(right)
+NAV_KB_FUNC_DEFINE(pageup)
+NAV_KB_FUNC_DEFINE(pagedown)
+
+NAV_MW_FUNC_DEFINE(hori)
+NAV_MW_FUNC_DEFINE(vert)
+
+void View::on_mw_vert_all(QWheelEvent *event)
+{
+	if (event->modifiers() & Qt::AltModifier)			on_mw_vert_alt(event);
+	else if (event->modifiers() & Qt::ControlModifier)	on_mw_vert_ctrl(event);
+	else if (event->modifiers() & Qt::ShiftModifier)	on_mw_vert_shift(event);
+	else												on_mw_vert(event);
+}
+
+void View::on_mw_hori_all(QWheelEvent *event)
+{
+	if (event->modifiers() & Qt::AltModifier)			on_mw_hori_alt(event);
+	else if (event->modifiers() & Qt::ControlModifier)	on_mw_hori_ctrl(event);
+	else if (event->modifiers() & Qt::ShiftModifier)	on_mw_hori_shift(event);
+	else												on_mw_hori(event);
 }
 
 void View::h_scroll_value_changed(int value)
