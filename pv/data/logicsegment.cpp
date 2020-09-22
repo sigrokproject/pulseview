@@ -92,6 +92,7 @@ void LogicSegment::downsampleTmain(const T*&in, T &acc, T &prev)
 	}
 }
 
+
 template <>
 void LogicSegment::downsampleTmain<uint8_t>(const uint8_t*&in, uint8_t &acc, uint8_t &prev)
 {
@@ -643,7 +644,7 @@ void LogicSegment::append_payload_to_mipmap()
 		else if (unit_size_ == 4)
 			downsampleT<uint32_t>(src_ptr, dest_ptr, count);
 		else if (unit_size_ == 8)
-			downsampleT<uint8_t>(src_ptr, dest_ptr, count);
+			downsampleT<uint64_t>(src_ptr, dest_ptr, count);
 		else
 			downsampleGeneric(src_ptr, dest_ptr, count);
 		len_sample -= count;
