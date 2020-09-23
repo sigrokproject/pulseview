@@ -82,20 +82,31 @@ public:
 
 // This Navigation code handles customisation of keyboard and mousewheel controls
 // for navigating the traces by moving them and zooming them.
-// Code is done to support the custom controls as well as saving and restoring them
-// from settings. Missing is code to set/get them from a GUI settings dialog.
 // 
-// TODO: Add GUI support for getting and setting the navigation params.
-// The GUI can call these provided functions to get set the values:
-//   View::nav_kb_up_alt_get() / View::nav_kb_up_alt_set()
-//   View::nav_mw_vert_get() / View::nav_mw_vert_set()
-//   etc
+// There are 5 sets of keys/mousewheels usable for customisation:
+//   up/down, left/right, pageup/pagedown,
+//   horizontal mousewheel and vertical mousewheel.
+// There are 3 modifier keys that can be used with the above, as well as using
+// no modifier. These are:
+//   none, alt, ctrl, shift.
+// Together the main and modifiers provide 5 * 4 = 20 different navigation controls
+// for customisation.
 // 
-// Currently the customisations can only be changed by editing where the settings
-// are stored which is platform specific:
-// - Windows: stored in registry at "Computer\HKEY_CURRENT_USER\SOFTWARE\sigrok\PulseView\Session0\view0"
-// - Linux: stored in a file at ~/.config/sigrok/pulseview.conf
-// - Mac: stored in a file at ~/Library/Preferences/pulseview.plist
+// There are 4 types of navigation that the above can be assigned to do:
+//   none = no operation performed (same as disabling the operation)
+//   zoom = zoom in/out of the trace view
+//   hori = move the trace horizontally to see previous or next sample data
+//   vert = move the trace vertically to see channels above or below
+// 
+// There is an "amount" variable of type "double" to be used with navigation.
+// When moving traces horizontally or vertically the "amount" value is equal to
+// the number of pages to move. So a value of 1.0 would move 1 page forward.
+// A value of -0.5 would move half a page backwards.
+// When zooming into traces the "amount" value is equal to the zoom multiplier.
+// So a value of 1.0 will zoom out by 1x and a value of -2.0 will zoom in by 2x.
+// 
+// A "Navigation" page has been added to the Settings to allow the user to
+// customise the navigation controls to their liking.
 
 // type of navigation to perform
 #define NAV_TYPE_NONE		0
@@ -134,14 +145,8 @@ typedef struct {
 	name ## _ctrl_nav_.sc	= new QShortcut(QKeySequence(keys + Qt::CTRL),	this, SLOT(on_kb_ ##name## _ctrl()),	nullptr, Qt::WidgetWithChildrenShortcut);	\
 	name ## _shift_nav_.sc	= new QShortcut(QKeySequence(keys + Qt::SHIFT),	this, SLOT(on_kb_ ##name## _shift()),	nullptr, Qt::WidgetWithChildrenShortcut)
 
-#define NAV_KB_VAR_DEFAULT(name, t, a)			\
-	name ## _nav_.type			= t;			\
-	name ## _nav_.amount		= a
-
 #define NAV_KB_FUNC_DECLARE1(name)	\
-	void on_kb_ ## name ();			\
-	void nav_kb_ ## name ## _set(int type, double amount);	\
-	void nav_kb_ ## name ## _get(int* type, double* amount)
+	void on_kb_ ## name ()
 
 #define NAV_KB_FUNC_DECLARE(name)			\
 	NAV_KB_FUNC_DECLARE1(name);				\
@@ -155,14 +160,6 @@ typedef struct {
 		else if (name ## _nav_.type == NAV_TYPE_ZOOM )nav_zoom(name ## _nav_.amount);		\
 		else if (name ## _nav_.type == NAV_TYPE_HORI )nav_move_hori(name ## _nav_.amount);	\
 		else if (name ## _nav_.type == NAV_TYPE_VERT )nav_move_vert(name ## _nav_.amount);	\
-	}	\
-	void View::nav_kb_ ## name ## _set(int type, double amount) {	\
-		name ## _nav_.type = type;		\
-		name ## _nav_.amount = amount;	\
-	}	\
-	void View::nav_kb_ ## name ## _get(int* type, double* amount) {	\
-		if(type) *type = name ## _nav_.type;		\
-		if(amount) *amount = name ## _nav_.amount;	\
 	}
 
 #define NAV_KB_FUNC_DEFINE(name)		\
@@ -170,6 +167,38 @@ typedef struct {
 	NAV_KB_FUNC_DEFINE1(name ## _alt)	\
 	NAV_KB_FUNC_DEFINE1(name ## _ctrl)	\
 	NAV_KB_FUNC_DEFINE1(name ## _shift)
+
+#define NAV_KB_SETTING_CHANGED1(name, k1, k2)	\
+	if (key == GlobalSettings::Key_Nav_ ## name ## Type) {	\
+		k1 ## _nav_.type = settings.value(GlobalSettings::Key_Nav_ ## name ## Type).toInt();	\
+		k2 ## _nav_.type = settings.value(GlobalSettings::Key_Nav_ ## name ## Type).toInt();	\
+	}	\
+	if (key == GlobalSettings::Key_Nav_ ## name ## Amount) {	\
+		k1 ## _nav_.amount = -settings.value(GlobalSettings::Key_Nav_ ## name ## Amount).toDouble();	\
+		k2 ## _nav_.amount =  settings.value(GlobalSettings::Key_Nav_ ## name ## Amount).toDouble();	\
+	}
+	
+#define NAV_KB_SETTING_CHANGED(name, k1, k2)		\
+	NAV_KB_SETTING_CHANGED1(name,			k1, k2)	\
+	NAV_KB_SETTING_CHANGED1(name ## Alt,	k1 ## _alt, k2 ## _alt)		\
+	NAV_KB_SETTING_CHANGED1(name ## Ctrl,	k1 ## _ctrl, k2 ## _ctrl)	\
+	NAV_KB_SETTING_CHANGED1(name ## Shift,	k1 ## _shift, k2 ## _shift)
+
+#define NAV_KB_SETTING_LOAD1(name,	k1, k2)	\
+	if (settings.contains(GlobalSettings::Key_Nav_ ## name ## Type)) {	\
+		k1 ## _nav_.type = settings.value(GlobalSettings::Key_Nav_ ## name ## Type).toInt();	\
+		k2 ## _nav_.type = settings.value(GlobalSettings::Key_Nav_ ## name ## Type).toInt();	\
+	}	\
+	if (settings.contains(GlobalSettings::Key_Nav_ ## name ## Amount)) {	\
+		k1 ## _nav_.amount = -settings.value(GlobalSettings::Key_Nav_ ## name ## Amount).toDouble();	\
+		k2 ## _nav_.amount =  settings.value(GlobalSettings::Key_Nav_ ## name ## Amount).toDouble();	\
+	}
+
+#define NAV_KB_SETTING_LOAD(name,	k1, k2)		\
+	NAV_KB_SETTING_LOAD1(name,			k1, k2)	\
+	NAV_KB_SETTING_LOAD1(name ## Alt,	k1 ## _alt, k2 ## _alt)		\
+	NAV_KB_SETTING_LOAD1(name ## Ctrl,	k1 ## _ctrl, k2 ## _ctrl)	\
+	NAV_KB_SETTING_LOAD1(name ## Shift,	k1 ## _shift, k2 ## _shift)
 
 // mousewheel
 #define NAV_MW_VAR_DECLARE(name)		\
@@ -185,14 +214,8 @@ typedef struct {
 	name ## _ctrl_nav_.amount	= 0;			\
 	name ## _shift_nav_.amount	= 0
 
-#define NAV_MW_VAR_DEFAULT(name, t, a)	\
-	name ## _nav_.type			= t;	\
-	name ## _nav_.amount		= a
-
 #define NAV_MW_FUNC_DECLARE1(name)	\
-	void on_mw_ ## name (QWheelEvent *event);			\
-	void nav_mw_ ## name ## _set(int type, double amount);	\
-	void nav_mw_ ## name ## _get(int* type, double* amount)
+	void on_mw_ ## name (QWheelEvent *event)
 
 #define NAV_MW_FUNC_DECLARE(name)			\
 	NAV_MW_FUNC_DECLARE1(name);				\
@@ -206,14 +229,6 @@ typedef struct {
 		else if (name ## _nav_.type == NAV_TYPE_ZOOM )nav_zoom(     (-event->delta() * name ## _nav_.amount)/120.0, event->x());	\
 		else if (name ## _nav_.type == NAV_TYPE_HORI )nav_move_hori((-event->delta() * name ## _nav_.amount)/120.0);	\
 		else if (name ## _nav_.type == NAV_TYPE_VERT )nav_move_vert((-event->delta() * name ## _nav_.amount)/120.0);	\
-	}	\
-	void View::nav_mw_ ## name ## _set(int type, double amount) {	\
-		name ## _nav_.type = type;		\
-		name ## _nav_.amount = amount;	\
-	}	\
-	void View::nav_mw_ ## name ## _get(int* type, double* amount) {	\
-		if(type) *type = name ## _nav_.type;		\
-		if(amount) *amount = name ## _nav_.amount;	\
 	}
 
 #define NAV_MW_FUNC_DEFINE(name)		\
@@ -222,39 +237,33 @@ typedef struct {
 	NAV_MW_FUNC_DEFINE1(name ## _ctrl)	\
 	NAV_MW_FUNC_DEFINE1(name ## _shift)
 
+#define NAV_MW_SETTING_CHANGED1(name, mw)	\
+	if (key == GlobalSettings::Key_Nav_ ## name ## Type) {	\
+		mw ## _nav_.type = settings.value(GlobalSettings::Key_Nav_ ## name ## Type).toInt();	\
+	}	\
+	if (key == GlobalSettings::Key_Nav_ ## name ## Amount) {	\
+		mw ## _nav_.amount = settings.value(GlobalSettings::Key_Nav_ ## name ## Amount).toDouble();	\
+	}
+	
+#define NAV_MW_SETTING_CHANGED(name, mw)		\
+	NAV_MW_SETTING_CHANGED1(name,			mw)	\
+	NAV_MW_SETTING_CHANGED1(name ## Alt,	mw ## _alt)		\
+	NAV_MW_SETTING_CHANGED1(name ## Ctrl,	mw ## _ctrl)	\
+	NAV_MW_SETTING_CHANGED1(name ## Shift,	mw ## _shift)
 
-#define NAV_SAVE1(name)		\
-	settings.setValue("nav_" #name "_type",   name ## _nav_.type);	\
-	settings.setValue("nav_" #name "_amount", name ## _nav_.amount)
+#define NAV_MW_SETTING_LOAD1(name,	mw)		\
+	if (settings.contains(GlobalSettings::Key_Nav_ ## name ## Type)) {	\
+		mw ## _nav_.type = settings.value(GlobalSettings::Key_Nav_ ## name ## Type).toInt();	\
+	}	\
+	if (settings.contains(GlobalSettings::Key_Nav_ ## name ## Amount)) {	\
+		mw ## _nav_.amount = settings.value(GlobalSettings::Key_Nav_ ## name ## Amount).toDouble();	\
+	}
 
-#define NAV_KB_SAVE(name)	\
-	NAV_SAVE1(name);		\
-	NAV_SAVE1(name ## _alt);\
-	NAV_SAVE1(name ## _ctrl);\
-	NAV_SAVE1(name ## _shift)
-
-#define NAV_MW_SAVE(name)	\
-	NAV_SAVE1(name);		\
-	NAV_SAVE1(name ## _alt);\
-	NAV_SAVE1(name ## _ctrl);\
-	NAV_SAVE1(name ## _shift)
-
-
-#define NAV_RESTORE1(name)		\
-	if (settings.contains("nav_" #name "_type"))	name ## _nav_.type   = settings.value("nav_" #name "_type").toInt();	\
-	if (settings.contains("nav_" #name "_amount"))	name ## _nav_.amount = settings.value("nav_" #name "_amount").toDouble()
-
-#define NAV_KB_RESTORE(name)	\
-	NAV_RESTORE1(name);			\
-	NAV_RESTORE1(name ## _alt);	\
-	NAV_RESTORE1(name ## _ctrl);\
-	NAV_RESTORE1(name ## _shift)
-
-#define NAV_MW_RESTORE(name)	\
-	NAV_RESTORE1(name);			\
-	NAV_RESTORE1(name ## _alt);	\
-	NAV_RESTORE1(name ## _ctrl);\
-	NAV_RESTORE1(name ## _shift)
+#define NAV_MW_SETTING_LOAD(name,	mw)		\
+	NAV_MW_SETTING_LOAD1(name,			mw)	\
+	NAV_MW_SETTING_LOAD1(name ## Alt,	mw ## _alt)		\
+	NAV_MW_SETTING_LOAD1(name ## Ctrl,	mw ## _ctrl)	\
+	NAV_MW_SETTING_LOAD1(name ## Shift,	mw ## _shift)
 
 
 class View : public ViewBase, public TraceTreeItemOwner, public GlobalSettingsInterface
@@ -631,13 +640,13 @@ private Q_SLOTS:
 	void signals_changed();
 	void capture_state_updated(int state);
 
+	// keyboard and mousewheel navigation functions
 	NAV_KB_FUNC_DECLARE(up);
 	NAV_KB_FUNC_DECLARE(down);
 	NAV_KB_FUNC_DECLARE(left);
 	NAV_KB_FUNC_DECLARE(right);
 	NAV_KB_FUNC_DECLARE(pageup);
 	NAV_KB_FUNC_DECLARE(pagedown);
-	
 	NAV_MW_FUNC_DECLARE(hori);
 	NAV_MW_FUNC_DECLARE(vert);
 	
@@ -704,7 +713,7 @@ private:
 	QShortcut *grab_ruler_left_shortcut_, *grab_ruler_right_shortcut_;
 	QShortcut *cancel_grab_shortcut_;
 	
-	// keyboard and mousewheel navigation
+	// keyboard and mousewheel navigation variables
 	NAV_KB_VAR_DECLARE(up);
 	NAV_KB_VAR_DECLARE(down);
 	NAV_KB_VAR_DECLARE(left);

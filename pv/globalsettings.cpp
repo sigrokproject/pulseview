@@ -70,6 +70,11 @@ const QString GlobalSettings::Key_View_CursorFillColor = "View_CursorFillColor";
 const QString GlobalSettings::Key_View_CursorShowFrequency = "View_CursorShowFrequency";
 const QString GlobalSettings::Key_View_CursorShowInterval = "View_CursorShowInterval";
 const QString GlobalSettings::Key_View_CursorShowSamples = "View_CursorShowSamples";
+NAV_GSETTINGS_VAR_SETUP(UpDown);
+NAV_GSETTINGS_VAR_SETUP(LeftRight);
+NAV_GSETTINGS_VAR_SETUP(PageUpDown);
+NAV_GSETTINGS_VAR_SETUP(WheelHori);
+NAV_GSETTINGS_VAR_SETUP(WheelVert);
 const QString GlobalSettings::Key_Dec_InitialStateConfigurable = "Dec_InitialStateConfigurable";
 const QString GlobalSettings::Key_Dec_ExportFormat = "Dec_ExportFormat";
 const QString GlobalSettings::Key_Dec_AlwaysShowAllRows = "Dec_AlwaysShowAllRows";
@@ -96,6 +101,72 @@ void GlobalSettings::save_internal_defaults()
 		default_style_ = "fusion";
 
 	default_palette_ = QApplication::palette();
+}
+
+// make controls zoom the traces when not using any key modifiers
+// these controls are similar to the old controls used before customisation was introduced.
+void GlobalSettings::set_nav_zoom_defaults(bool force)
+{
+	// zoom
+	NAV_GSETTINGS_VAR_DEFAULT(UpDown,			NAV_TYPE_ZOOM, 0.25);	// up/down arrow will zoom the traces by 1/4x
+	// small vertical movement
+	NAV_GSETTINGS_VAR_DEFAULT(UpDownCtrl,		NAV_TYPE_VERT, 0.125);	// up/down with any modifier will move traces vertically by 1/8 page
+	NAV_GSETTINGS_VAR_DEFAULT(UpDownAlt,		NAV_TYPE_VERT, 0.125);
+	NAV_GSETTINGS_VAR_DEFAULT(UpDownShift,		NAV_TYPE_VERT, 0.125);
+	// small horizontal movement
+	NAV_GSETTINGS_VAR_DEFAULT(LeftRight,		NAV_TYPE_HORI, 0.125);	// left/right arrow        will move the trace by 1/8 page
+	NAV_GSETTINGS_VAR_DEFAULT(LeftRightShift,	NAV_TYPE_HORI, 0.125);	// left/right arrow + ctrl will move the trace by 1/8 page
+	NAV_GSETTINGS_VAR_DEFAULT(LeftRightCtrl,	NAV_TYPE_HORI, 0.25);	// left/right arrow + ctrl will move the trace by 1/4 page
+	NAV_GSETTINGS_VAR_DEFAULT(LeftRightAlt,		NAV_TYPE_HORI, 0.5);	// left/right arrow + alt  will move the trace by 1/2 page
+	// big vertical movement
+	NAV_GSETTINGS_VAR_DEFAULT(PageUpDown,		NAV_TYPE_VERT, 1.0);	// page up/down         will move traces vertically by 1 page
+	NAV_GSETTINGS_VAR_DEFAULT(PageUpDownShift,	NAV_TYPE_VERT, 1.0);	// page up/down + shift will move traces vertically by 1 page
+	NAV_GSETTINGS_VAR_DEFAULT(PageUpDownCtrl,	NAV_TYPE_VERT, 2.0);	// page up/down + ctrl  will move traces vertically by 2 page
+	NAV_GSETTINGS_VAR_DEFAULT(PageUpDownAlt,	NAV_TYPE_VERT, 4.0);	// page up/down + alt   will move traces vertically by 4 page
+	// vertical mosewheel can zoom and move horizontally and vertically
+	NAV_GSETTINGS_VAR_DEFAULT(WheelVert,		NAV_TYPE_ZOOM, 0.25);	// vertical   mousewheel will zoom the traces by 1/4x
+	NAV_GSETTINGS_VAR_DEFAULT(WheelVertShift,	NAV_TYPE_ZOOM, 0.25);	// vertical   mousewheel + shift will zoom the traces by 1/4x
+	NAV_GSETTINGS_VAR_DEFAULT(WheelVertCtrl,	NAV_TYPE_VERT, 0.5);	// vertical   mousewheel + ctrl will move the traces by 1/2 page
+	NAV_GSETTINGS_VAR_DEFAULT(WheelVertAlt,		NAV_TYPE_HORI, 1.0);	// vertical   mousewheel + alt  will move the traces by 1 page
+	// horizontal mousewheel always moves horizontally
+	NAV_GSETTINGS_VAR_DEFAULT(WheelHori,		NAV_TYPE_HORI, 0.25);	// horizontal mousewheel will move the traces by 1/4 page
+	NAV_GSETTINGS_VAR_DEFAULT(WheelHoriShift,	NAV_TYPE_HORI, 0.25);	// horizontal mousewheel + shift will move the traces by 1/4 page
+	NAV_GSETTINGS_VAR_DEFAULT(WheelHoriCtrl,	NAV_TYPE_HORI, 0.5);	// horizontal mousewheel + ctrl  will move the traces by 1/2 page
+	NAV_GSETTINGS_VAR_DEFAULT(WheelHoriAlt,		NAV_TYPE_HORI, 1.0);	// horizontal mousewheel + alt   will move the traces by 1 page
+}
+
+// make controls move the traces without key modifiers.
+// slow speed move is default
+// ctrl modifier does medium speed move
+// alt  modifier does fast speed move
+// shift key always does zoom
+void GlobalSettings::set_nav_move_defaults(bool force)
+{
+	// vertical movement
+	NAV_GSETTINGS_VAR_DEFAULT(UpDown,			NAV_TYPE_VERT, 0.125);	// up/down arrow will move the traces by 1/8 page
+	// zoom
+	NAV_GSETTINGS_VAR_DEFAULT(WheelHoriShift,	NAV_TYPE_ZOOM, 0.25);	// horizontal mousewheel + shift will zoom in/out by 1/4 x
+	NAV_GSETTINGS_VAR_DEFAULT(WheelVertShift,	NAV_TYPE_ZOOM, 0.25);	// vertical   mousewheel + shift will zoom in/out by 1/4 x
+	NAV_GSETTINGS_VAR_DEFAULT(UpDownShift,		NAV_TYPE_ZOOM, 1.0);	// up/down arrow + shift will zoom in/out  by 1x
+	NAV_GSETTINGS_VAR_DEFAULT(PageUpDownShift,	NAV_TYPE_ZOOM, 2.0);	// page up/down  + shift will zoom in/out  by 2x
+	// horizontal movement
+	NAV_GSETTINGS_VAR_DEFAULT(LeftRight,		NAV_TYPE_HORI, 0.125);	// left/right arrow        will move the trace by 1/8 page
+	NAV_GSETTINGS_VAR_DEFAULT(LeftRightCtrl,	NAV_TYPE_HORI, 0.25);	// left/right arrow + ctrl will move the trace by 1/4 page
+	NAV_GSETTINGS_VAR_DEFAULT(LeftRightAlt,		NAV_TYPE_HORI, 0.5);	// left/right arrow + alt  will move the trace by 1/2 page
+	NAV_GSETTINGS_VAR_DEFAULT(PageUpDown,		NAV_TYPE_HORI, 1.0);	// page up/down        will move the trace by 1 page
+	NAV_GSETTINGS_VAR_DEFAULT(PageUpDownCtrl,	NAV_TYPE_HORI, 2.0);	// page up/down + ctrl will move the trace by 2 pages
+	NAV_GSETTINGS_VAR_DEFAULT(PageUpDownAlt,	NAV_TYPE_HORI, 4.0);	// page up/down + alt  will move the trace by 4 pages
+	// horizontal movement with mousewheel
+	NAV_GSETTINGS_VAR_DEFAULT(WheelHori,		NAV_TYPE_HORI, 0.25);	// horizontal mousewheel will move the traces by 1/4 page
+	NAV_GSETTINGS_VAR_DEFAULT(WheelVert,		NAV_TYPE_HORI, 0.25);	// vertical   mousewheel will move the traces by 1/4 page
+	NAV_GSETTINGS_VAR_DEFAULT(WheelHoriCtrl,	NAV_TYPE_HORI, 0.5);	// horizontal mousewheel + ctrl will move the traces by 1/2 page
+	NAV_GSETTINGS_VAR_DEFAULT(WheelVertCtrl,	NAV_TYPE_HORI, 0.5);	// vertical   mousewheel + ctrl will move the traces by 1/2 page
+	NAV_GSETTINGS_VAR_DEFAULT(WheelHoriAlt,		NAV_TYPE_HORI, 1.0);	// horizontal mousewheel + alt will move the traces by 1 page
+	NAV_GSETTINGS_VAR_DEFAULT(WheelVertAlt,		NAV_TYPE_HORI, 1.0);	// vertical   mousewheel + alt will move the traces by 1 page
+	// not used
+	NAV_GSETTINGS_VAR_DEFAULT(UpDownCtrl,		NAV_TYPE_NONE, 0);
+	NAV_GSETTINGS_VAR_DEFAULT(UpDownAlt,		NAV_TYPE_NONE, 0);
+	NAV_GSETTINGS_VAR_DEFAULT(LeftRightShift,	NAV_TYPE_NONE, 0);
 }
 
 void GlobalSettings::set_defaults_where_needed()
@@ -154,7 +225,9 @@ void GlobalSettings::set_defaults_where_needed()
 
 	if (!contains(Key_View_CursorShowFrequency))
 		setValue(Key_View_CursorShowFrequency, true);
-
+	
+	set_nav_zoom_defaults(false);
+	
 	// %c was used for the row name in the past so we need to transition such users
 	if (!contains(Key_Dec_ExportFormat) ||
 		value(Key_Dec_ExportFormat).toString() == "%s %d: %c: %1")

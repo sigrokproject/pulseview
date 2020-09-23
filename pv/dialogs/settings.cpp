@@ -144,6 +144,15 @@ void Settings::create_pages()
 	viewButton->setTextAlignment(Qt::AlignVCenter);
 	viewButton->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
 
+	// Navigation page
+	pages->addWidget(get_navigation_settings_form(pages));
+
+	QListWidgetItem *navButton = new QListWidgetItem(page_list);
+	navButton->setIcon(QIcon(":/icons/navigation.svg"));
+	navButton->setText(tr("Navigation"));
+	navButton->setTextAlignment(Qt::AlignVCenter);
+	navButton->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+
 #ifdef ENABLE_DECODE
 	// Decoder page
 	pages->addWidget(get_decoder_settings_form(pages));
@@ -381,6 +390,54 @@ QWidget *Settings::get_view_settings_form(QWidget *parent) const
 		SLOT(on_view_defaultLogicHeight_changed(int)));
 	trace_view_layout->addRow(tr("Default logic trace height"), default_logic_height_sb);
 
+	return form;
+}
+
+QWidget *Settings::get_navigation_settings_form(QWidget *parent)
+{
+	GlobalSettings settings;
+
+	QWidget *form = new QWidget(parent);
+	QVBoxLayout *form_layout = new QVBoxLayout(form);
+
+	// Navigation control settings
+	QGroupBox *nav_group = new QGroupBox(tr("Trace Navigation Controls"));
+	form_layout->addWidget(nav_group);
+
+	QGridLayout *nav_layout = new QGridLayout();
+	nav_group->setLayout(nav_layout);
+	
+	int row = 0;
+	
+	// buttons for default settings
+	QPushButton *zoom_but = new QPushButton( tr("Reset to &Zoom as main controls") );
+	connect(zoom_but, SIGNAL(clicked(bool)), this, SLOT(on_nav_resetZoomControls_clicked(bool)));
+	nav_layout->addWidget(zoom_but, row, 0);
+	QPushButton *move_but = new QPushButton( tr("Reset to &Move as main controls") );
+	connect(move_but, SIGNAL(clicked(bool)), this, SLOT(on_nav_resetMoveControls_clicked(bool)));
+	nav_layout->addWidget(move_but, row, 1);
+	row++;
+	
+	// heading
+	QLabel *hdr1_label = new QLabel(tr("Control"));
+	hdr1_label->setAlignment(Qt::AlignLeft);
+	nav_layout->addWidget(hdr1_label, row, 0);
+	QLabel *hdr2_label = new QLabel(tr("Operation"));
+	hdr2_label->setAlignment(Qt::AlignLeft);
+	nav_layout->addWidget(hdr2_label, row, 1);
+	QLabel *hdr3_label = new QLabel(tr("NumPages or NumTimes"));
+	hdr3_label->setAlignment(Qt::AlignLeft);
+	nav_layout->addWidget(hdr3_label, row, 2);
+	row++;
+	// entries
+	NAV_SETTINGS_ROWS(UpDown,	"Up / Down", row); row++;
+	NAV_SETTINGS_ROWS(LeftRight,"Left / Right", row); row++;
+	NAV_SETTINGS_ROWS(PageUpDown,"PageUp / PageDown", row); row++;
+	NAV_SETTINGS_ROWS(WheelHori,"Mouse Wheel Horizontal", row); row++;
+	NAV_SETTINGS_ROWS(WheelVert,"Mouse Wheel Vertical", row); row++;
+	
+	nav_load_gui_from_settings();
+	
 	return form;
 }
 
@@ -767,6 +824,38 @@ void Settings::on_view_defaultLogicHeight_changed(int value)
 {
 	GlobalSettings settings;
 	settings.setValue(GlobalSettings::Key_View_DefaultLogicHeight, value);
+}
+
+void Settings::on_nav_resetZoomControls_clicked(bool checked)
+{
+	printf("on_nav_resetZoomControls_clicked : %d\n", checked?1:0);
+	GlobalSettings settings;
+	settings.set_nav_zoom_defaults(true);
+	nav_load_gui_from_settings();
+}
+
+void Settings::on_nav_resetMoveControls_clicked(bool checked)
+{
+	printf("on_nav_resetMoveControls_clicked : %d\n", checked?1:0);
+	GlobalSettings settings;
+	settings.set_nav_move_defaults(true);
+	nav_load_gui_from_settings();
+}
+
+NAV_SETTINGS_FUNC_DEFINE(UpDown)
+NAV_SETTINGS_FUNC_DEFINE(LeftRight)
+NAV_SETTINGS_FUNC_DEFINE(PageUpDown)
+NAV_SETTINGS_FUNC_DEFINE(WheelHori)
+NAV_SETTINGS_FUNC_DEFINE(WheelVert)
+
+void Settings::nav_load_gui_from_settings()
+{
+	GlobalSettings settings;
+	NAV_SETTINGS_LOAD(UpDown);
+	NAV_SETTINGS_LOAD(LeftRight);
+	NAV_SETTINGS_LOAD(PageUpDown);
+	NAV_SETTINGS_LOAD(WheelHori);
+	NAV_SETTINGS_LOAD(WheelVert);
 }
 
 #ifdef ENABLE_DECODE

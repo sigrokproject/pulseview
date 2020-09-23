@@ -257,43 +257,17 @@ View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 	NAV_KB_VAR_SETUP(right,		Qt::Key_Right);
 	NAV_KB_VAR_SETUP(pageup,	Qt::Key_PageUp);
 	NAV_KB_VAR_SETUP(pagedown,	Qt::Key_PageDown);
-	// Next we set the default types and amounts to start with when the user has not changed them yet
-	// vertical movement
-	NAV_KB_VAR_DEFAULT(up,				NAV_TYPE_VERT, -0.125);	// up    arrow will move the traces up by 1/8 page
-	NAV_KB_VAR_DEFAULT(down,			NAV_TYPE_VERT,  0.125);	// down  arrow will move the traces up by 1/8 page
-	// zoom
-	NAV_KB_VAR_DEFAULT(up_shift,		NAV_TYPE_ZOOM, -1.0);	// up   arrow + shift will zoom in  by 1x
-	NAV_KB_VAR_DEFAULT(down_shift,		NAV_TYPE_ZOOM,  1.0);	// down arrow + shift will zoom out by 1x
-	NAV_KB_VAR_DEFAULT(pageup_shift,	NAV_TYPE_ZOOM, -2.0);	// page up    + shift will zoom in  by 2x
-	NAV_KB_VAR_DEFAULT(pagedown_shift,	NAV_TYPE_ZOOM,  2.0);	// page down  + shift will zoom out by 2x
-	// small horizontal movement
-	NAV_KB_VAR_DEFAULT(left,			NAV_TYPE_HORI, -0.125);	// left  arrow        will move the trace backwards by 1/8 page
-	NAV_KB_VAR_DEFAULT(right,			NAV_TYPE_HORI,  0.125);	// right arrow        will move the trace forwards  by 1/8 page
-	NAV_KB_VAR_DEFAULT(left_alt,		NAV_TYPE_HORI, -0.25);	// left  arrow + alt  will move the trace backwards by 1/4 page
-	NAV_KB_VAR_DEFAULT(right_alt,		NAV_TYPE_HORI,  0.25);	// right arrow + alt  will move the trace forwards  by 1/4 page
-	NAV_KB_VAR_DEFAULT(left_ctrl,		NAV_TYPE_HORI, -0.5);	// left  arrow + ctrl will move the trace backwards by 1/2 page
-	NAV_KB_VAR_DEFAULT(right_ctrl,		NAV_TYPE_HORI,  0.5);	// right arrow + ctrl will move the trace forwards  by 1/2 page
-	// big horizontal movement
-	NAV_KB_VAR_DEFAULT(pageup,			NAV_TYPE_HORI, -1.0);	// page up          will move the trace backwards by 1 page
-	NAV_KB_VAR_DEFAULT(pagedown,		NAV_TYPE_HORI,  1.0);	// page down        will move the trace forwards  by 1 page
-	NAV_KB_VAR_DEFAULT(pageup_alt,		NAV_TYPE_HORI, -2.0);	// page up   + alt  will move the trace backwards by 2 pages
-	NAV_KB_VAR_DEFAULT(pagedown_alt,	NAV_TYPE_HORI,  2.0);	// page down + alt  will move the trace forwards  by 2 pages
-	NAV_KB_VAR_DEFAULT(pageup_ctrl,		NAV_TYPE_HORI, -4.0);	// page up   + ctrl will move the trace backwards by 4 pages
-	NAV_KB_VAR_DEFAULT(pagedown_ctrl,	NAV_TYPE_HORI,  4.0);	// page down + ctrl will move the trace forwards  by 4 pages
-	
 	// Mousewheel navigation
 	// This sets them all up as disabled initially.
 	NAV_MW_VAR_SETUP(hori);
 	NAV_MW_VAR_SETUP(vert);
-	// Next we set the default types and amounts to start with when the user has not changed them yet
-	NAV_MW_VAR_DEFAULT(hori_shift,		NAV_TYPE_ZOOM,  0.25);	// horizontal mousewheel + shift will zoom the traces by 1/4 x
-	NAV_MW_VAR_DEFAULT(vert_shift,		NAV_TYPE_ZOOM,  0.25);	// vertical   mousewheel + shift will zoom the traces by 1/4 x
-	NAV_MW_VAR_DEFAULT(hori,			NAV_TYPE_HORI,  0.25);	// horizontal mousewheel will move the traces up by 1/4 page
-	NAV_MW_VAR_DEFAULT(vert,			NAV_TYPE_HORI,  0.25);	// vertical   mousewheel will move the traces up by 1/4 page
-	NAV_MW_VAR_DEFAULT(hori_alt,		NAV_TYPE_HORI,  0.5);	// horizontal mousewheel + alt will move the traces up by 1/2 page
-	NAV_MW_VAR_DEFAULT(vert_alt,		NAV_TYPE_HORI,  0.5);	// vertical   mousewheel + alt will move the traces up by 1/2 page
-	NAV_MW_VAR_DEFAULT(hori_ctrl,		NAV_TYPE_HORI,  1.0);	// horizontal mousewheel + ctrl will move the traces up by 1 page
-	NAV_MW_VAR_DEFAULT(vert_ctrl,		NAV_TYPE_HORI,  1.0);	// vertical   mousewheel + ctrl will move the traces up by 14 page
+	
+	// Load settings for keyboard and mousewheel navigation
+	NAV_KB_SETTING_LOAD(UpDown,		up, down);
+	NAV_KB_SETTING_LOAD(LeftRight,	left, right);
+	NAV_KB_SETTING_LOAD(PageUpDown,	pageup, pagedown);
+	NAV_MW_SETTING_LOAD(WheelHori,	hori);
+	NAV_MW_SETTING_LOAD(WheelVert,	vert);
 	
 	// Trigger the initial event manually. The default device has signals
 	// which were created before this object came into being
@@ -555,16 +529,6 @@ void View::save_settings(QSettings &settings) const
 		signal->save_settings(settings);
 		settings.endGroup();
 	}
-
-	NAV_KB_SAVE(up);
-	NAV_KB_SAVE(down);
-	NAV_KB_SAVE(left);
-	NAV_KB_SAVE(right);
-	NAV_KB_SAVE(pageup);
-	NAV_KB_SAVE(pagedown);
-	
-	NAV_MW_SAVE(hori);
-	NAV_MW_SAVE(vert);
 }
 
 void View::restore_settings(QSettings &settings)
@@ -601,16 +565,6 @@ void View::restore_settings(QSettings &settings)
 		saved_v_offset_ = settings.value("v_offset").toInt();
 		scroll_needs_defaults_ = false;
 	}
-
-	NAV_KB_RESTORE(up);
-	NAV_KB_RESTORE(down);
-	NAV_KB_RESTORE(left);
-	NAV_KB_RESTORE(right);
-	NAV_KB_RESTORE(pageup);
-	NAV_KB_RESTORE(pagedown);
-	
-	NAV_MW_RESTORE(hori);
-	NAV_MW_RESTORE(vert);
 
 	restoring_state_ = true;
 
@@ -1256,6 +1210,12 @@ void View::on_setting_changed(const QString &key, const QVariant &value)
 
 	if (key == GlobalSettings::Key_View_SnapDistance)
 		snap_distance_ = settings.value(GlobalSettings::Key_View_SnapDistance).toInt();
+
+	NAV_KB_SETTING_CHANGED(UpDown,    up, down)
+	NAV_KB_SETTING_CHANGED(LeftRight, left, right)
+	NAV_KB_SETTING_CHANGED(PageUpDown, pageup, pagedown)
+	NAV_MW_SETTING_CHANGED(WheelHori, hori)
+	NAV_MW_SETTING_CHANGED(WheelVert, vert)
 }
 
 void View::trigger_event(int segment_id, util::Timestamp location)
@@ -1802,12 +1762,31 @@ void View::on_scroll_to_end_shortcut_triggered()
 
 void View::nav_zoom(double numTimes)
 {
-	zoom(numTimes);
+	QPoint global_point = QCursor::pos();
+	printf("nav_zoom()  global_point(%d, %d)  %d\n", global_point.x(), global_point.y(), global_point.isNull()?1:0);
+	if( global_point.isNull() )
+	{
+		zoom(-numTimes);
+		return;
+	}
+	
+	QPoint widget_point = viewport_->mapFromGlobal(global_point);
+	printf("nav_zoom()  widget_point(%d, %d)  %d\n", widget_point.x(), widget_point.y(), widget_point.isNull()?1:0);
+	if( widget_point.isNull() ||
+		widget_point.x() < 0 || widget_point.x() > viewport_->width() ||
+		widget_point.y() < 0 || widget_point.y() > viewport_->height())
+	{
+		zoom(-numTimes);
+		return;
+	}
+	
+	printf("zoom t mouse\n");
+	zoom(-numTimes, widget_point.x());
 }
 
 void View::nav_zoom(double numTimes, int offset)
 {
-	zoom(numTimes, offset);
+	zoom(-numTimes, offset);
 }
 
 void View::nav_move_hori(double numPages)
