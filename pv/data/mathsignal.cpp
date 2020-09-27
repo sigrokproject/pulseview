@@ -67,12 +67,18 @@ struct fnc_sample : public exprtk::igeneric_function<T>
 		const scalar_t exprtk_sample_num = scalar_t(parameters[1]);
 
 		const std::string str_sig_name = to_str(exprtk_sig_name);
-		const double sample_num = std::max(exprtk_sample_num(), (double)0);
+		const double sample_num = exprtk_sample_num();
+
+		if (sample_num < 0)
+			return 0;
 
 		if (!sig_data)
 			sig_data = owner_.signal_from_name(str_sig_name);
 
-		assert(sig_data);
+		if (!sig_data)
+			// There doesn't actually exist a signal with that name
+			return 0;
+
 		owner_.update_signal_sample(sig_data, current_segment, sample_num);
 
 		return T(sig_data->sample_value);
@@ -288,6 +294,8 @@ void MathSignal::reset_generation()
 		// TODO Emulate noquote()
 		qDebug().nospace() << name() << ": Error cleared";
 	}
+
+	generation_chunk_size_ = ChunkLength;
 }
 
 void MathSignal::begin_generation()
@@ -307,6 +315,7 @@ void MathSignal::begin_generation()
 	exprtk_unknown_symbol_table_ = new exprtk::symbol_table<double>();
 
 	exprtk_symbol_table_ = new exprtk::symbol_table<double>();
+	exprtk_symbol_table_->add_constant("T", 1 / session_.get_samplerate());
 	exprtk_symbol_table_->add_function("sample", *fnc_sample_);
 	exprtk_symbol_table_->add_variable("t", exprtk_current_time_);
 	exprtk_symbol_table_->add_variable("s", exprtk_current_sample_);
@@ -347,7 +356,7 @@ void MathSignal::begin_generation()
 			signal_data* sig_data = signal_from_name(unknown);
 			const shared_ptr<SignalBase> signal = (sig_data) ? (sig_data->sb) : nullptr;
 			if (!signal || (!signal->analog_data())) {
-				set_error(MATH_ERR_INVALID_SIGNAL, QString(tr("%1 isn't a valid analog signal")) \
+				set_error(MATH_ERR_INVALID_SIGNAL, QString(tr("\"%1\" isn't a valid analog signal")) \
 					.arg(QString::fromStdString(unknown)));
 			} else
 				sig_data->ref = &(exprtk_unknown_symbol_table_->variable_ref(unknown));
@@ -370,9 +379,11 @@ void MathSignal::begin_generation()
 	}
 }
 
-void MathSignal::generate_samples(uint32_t segment_id, const uint64_t start_sample,
+uint64_t MathSignal::generate_samples(uint32_t segment_id, const uint64_t start_sample,
 	const int64_t sample_count)
 {
+	uint64_t count = 0;
+
 	shared_ptr<Analog> analog = dynamic_pointer_cast<Analog>(data_);
 	shared_ptr<AnalogSegment> segment = analog->analog_segments().at(segment_id);
 
@@ -396,11 +407,20 @@ void MathSignal::generate_samples(uint32_t segment_id, const uint64_t start_samp
 		double value = exprtk_expression_->value();
 		sample_data[i] = value;
 		exprtk_current_sample_ += 1;
+		count++;
+
+		// If during the evaluation of the expression it was found that this
+		// math signal itself is being accessed, the chunk size was reduced
+		// to 1, which means we must stop after this sample we just generated
+		if (generation_chunk_size_ == 1)
+			break;
 	}
 
-	segment->append_interleaved_samples(sample_data, sample_count, 1);
+	segment->append_interleaved_samples(sample_data, count, 1);
 
 	delete[] sample_data;
+
+	return count;
 }
 
 void MathSignal::generation_proc()
@@ -440,15 +460,13 @@ void MathSignal::generation_proc()
 
 		// Process the samples if necessary...
 		if (samples_to_process > 0) {
-			const uint64_t chunk_sample_count = ChunkLength;
-
 			uint64_t processed_samples = 0;
 			do {
 				const uint64_t start_sample = output_sample_count + processed_samples;
-				const uint64_t sample_count =
-					min(samples_to_process - processed_samples,	chunk_sample_count);
+				uint64_t sample_count =
+					min(samples_to_process - processed_samples,	generation_chunk_size_);
 
-				generate_samples(segment_id, start_sample, sample_count);
+				sample_count = generate_samples(segment_id, start_sample, sample_count);
 				processed_samples += sample_count;
 
 				// Notify consumers of this signal's data
@@ -477,6 +495,12 @@ void MathSignal::generation_proc()
 
 signal_data* MathSignal::signal_from_name(const std::string& name)
 {
+	// If the expression contains the math signal itself, we must add every sample to
+	// the output segment immediately so that it can be accessed
+	const QString sig_name = QString::fromStdString(name);
+	if (sig_name == this->name())
+		generation_chunk_size_ = 1;
+
 	// Look up signal in the map and if it doesn't exist yet, add it for future use
 
 	auto element = input_signals_.find(name);
@@ -485,7 +509,6 @@ signal_data* MathSignal::signal_from_name(const std::string& name)
 		return &(element->second);
 	} else {
 		const vector< shared_ptr<SignalBase> > signalbases = session_.signalbases();
-		const QString sig_name = QString::fromStdString(name);
 
 		for (const shared_ptr<SignalBase>& sb : signalbases)
 			if (sb->name() == sig_name) {
@@ -503,6 +526,11 @@ signal_data* MathSignal::signal_from_name(const std::string& name)
 				return &(input_signals_.insert({name, signal_data(sb)}).first->second);
 			}
 	}
+
+	// If we reach this point, no valid signal was found with the supplied name
+	if (error_type_ == MATH_ERR_NONE)
+		set_error(MATH_ERR_INVALID_SIGNAL, QString(tr("\"%1\" isn't a valid analog signal")) \
+			.arg(QString::fromStdString(name)));
 
 	return nullptr;
 }
@@ -524,7 +552,11 @@ void MathSignal::update_signal_sample(signal_data* sig_data, uint32_t segment_id
 	const shared_ptr<AnalogSegment> segment = analog->analog_segments().at(segment_id);
 
 	sig_data->sample_num = sample_num;
-	sig_data->sample_value = segment->get_sample(sample_num);
+
+	if (sample_num < segment->get_sample_count())
+		sig_data->sample_value = segment->get_sample(sample_num);
+	else
+		sig_data->sample_value = 0;
 
 	// We only have a reference if this signal is used as a scalar;
 	// if it's used by a function, it's null

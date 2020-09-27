@@ -20,15 +20,22 @@
 #ifndef PULSEVIEW_PV_VIEWS_TRACE_MATHSIGNAL_HPP
 #define PULSEVIEW_PV_VIEWS_TRACE_MATHSIGNAL_HPP
 
+#include <memory>
+#include <vector>
+
 #include <QComboBox>
 #include <QDialog>
+#include <QPlainTextEdit>
 #include <QString>
 #include <QTimer>
 
 #include <pv/data/mathsignal.hpp>
 #include <pv/views/trace/analogsignal.hpp>
 
+using std::pair;
 using std::shared_ptr;
+using std::string;
+using std::vector;
 
 namespace pv {
 namespace views {
@@ -38,9 +45,14 @@ class MathEditDialog : public QDialog
 {
 	Q_OBJECT
 
+private:
+	static const vector< pair<string, string> > Examples;
+
 public:
 	MathEditDialog(pv::Session &session, shared_ptr<pv::data::MathSignal> math_signal,
 		QWidget *parent = nullptr);
+
+	void set_expr(const QString &expr);
 
 private Q_SLOTS:
 	void accept();
@@ -49,7 +61,9 @@ private Q_SLOTS:
 private:
 	pv::Session &session_;
 	shared_ptr<pv::data::MathSignal> math_signal_;
-	QString expression_, old_expression_;
+	QString old_expression_;
+
+	QPlainTextEdit *expr_edit_;
 };
 
 

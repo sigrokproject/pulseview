@@ -20,6 +20,10 @@
 #ifndef PULSEVIEW_PV_DATA_MATHSIGNAL_HPP
 #define PULSEVIEW_PV_DATA_MATHSIGNAL_HPP
 
+#define exprtk_disable_rtl_io_file /* Potential security issue, doubt anyone would use those anyway */
+#define exprtk_disable_rtl_vecops  /* Vector ops are rather useless for math channels */
+#define exprtk_disable_caseinsensitivity /* So that we can have both 't' and 'T' */
+
 #include <limits>
 
 #include <QString>
@@ -91,7 +95,7 @@ private:
 	void reset_generation();
 	virtual void begin_generation();
 
-	void generate_samples(uint32_t segment_id, const uint64_t start_sample,
+	uint64_t generate_samples(uint32_t segment_id, const uint64_t start_sample,
 		const int64_t sample_count);
 	void generation_proc();
 
@@ -122,6 +126,7 @@ private:
 	uint64_t custom_sample_rate_;
 	uint64_t custom_sample_count_;
 	bool use_custom_sample_rate_, use_custom_sample_count_;
+	uint64_t generation_chunk_size_;
 	map<std::string, signal_data> input_signals_;
 
 	QString expression_;
