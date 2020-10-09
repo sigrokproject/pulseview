@@ -43,7 +43,8 @@ bool SignalHandler::prepare_signals()
 	sig_action.sa_flags = SA_RESTART;
 
 	if (sigaction(SIGINT, &sig_action, nullptr) != 0 ||
-		sigaction(SIGTERM, &sig_action, nullptr) != 0) {
+		sigaction(SIGTERM, &sig_action, nullptr) != 0 ||
+		sigaction(SIGUSR1, &sig_action, nullptr) != 0) {
 		close(sockets_[0]);
 		close(sockets_[1]);
 		return false;
@@ -77,6 +78,9 @@ void SignalHandler::on_socket_notifier_activated()
 		break;
 	case SIGTERM:
 		Q_EMIT term_received();
+		break;
+	case SIGUSR1:
+		Q_EMIT usr1_received();
 		break;
 	}
 

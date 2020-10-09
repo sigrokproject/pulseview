@@ -145,6 +145,9 @@ private Q_SLOTS:
 
 	void on_close_current_tab();
 
+public Q_SLOTS:
+	void on_external_trigger();
+
 private:
 	DeviceManager &device_manager_;
 

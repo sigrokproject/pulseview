@@ -728,6 +728,11 @@ void MainWindow::on_run_stop_clicked()
 	}
 }
 
+void MainWindow::on_external_trigger()
+{
+	on_run_stop_clicked();
+}
+
 void MainWindow::on_settings_clicked()
 {
 	dialogs::Settings dlg(device_manager_);

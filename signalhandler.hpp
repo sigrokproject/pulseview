@@ -37,6 +37,7 @@ public:
 Q_SIGNALS:
 	void int_received();
 	void term_received();
+	void usr1_received();
 
 private Q_SLOTS:
 	void on_socket_notifier_activated();
