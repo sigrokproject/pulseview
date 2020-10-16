@@ -59,21 +59,26 @@ Device::Device(shared_ptr<sigrok::Configurable> configurable) :
 
 	for (auto key : keys) {
 
-		auto capabilities = configurable->config_capabilities(key);
-
-		string name_str;
+		string descr_str;
 		try {
-			name_str = key->description();
+			descr_str = key->description();
 		} catch (Error& e) {
-			name_str = key->name();
+			descr_str = key->name();
 		}
+		const QString descr = QString::fromStdString(descr_str);
 
-		const QString name = QString::fromStdString(name_str);
+		auto capabilities = configurable->config_capabilities(key);
 
 		if (!capabilities.count(Capability::GET) ||
 			!capabilities.count(Capability::SET)) {
+
+			// Ignore common read-only keys
+			if ((key->id() == SR_CONF_CONTINUOUS) || (key->id() == SR_CONF_TRIGGER_MATCH) ||
+			    (key->id() == SR_CONF_CONN) || (key->id() == SR_CONF_SERIALCOMM))
+				continue;
+
 			qDebug() << QString(tr("Note for device developers: Ignoring device configuration capability '%1' " \
-				"as it is missing GET and/or SET")).arg(name);
+				"as it is missing GET and/or SET")).arg(descr);
 			continue;
 		}
 
@@ -91,12 +96,12 @@ Device::Device(shared_ptr<sigrok::Configurable> configurable) :
 			break;
 
 		case SR_CONF_CAPTURE_RATIO:
-			bind_int(name, "", "%", pair<int64_t, int64_t>(0, 100), get, set);
+			bind_int(descr, "", "%", pair<int64_t, int64_t>(0, 100), get, set);
 			break;
 
 		case SR_CONF_LIMIT_FRAMES:
 			// Value 0 means that there is no limit
-			bind_int(name, "", "", pair<int64_t, int64_t>(0, 1000000), get, set,
+			bind_int(descr, "", "", pair<int64_t, int64_t>(0, 1000000), get, set,
 				tr("No Limit"));
 			break;
 
@@ -108,7 +113,7 @@ Device::Device(shared_ptr<sigrok::Configurable> configurable) :
 		case SR_CONF_CLOCK_EDGE:
 		case SR_CONF_DATA_SOURCE:
 		case SR_CONF_EXTERNAL_CLOCK_SOURCE:
-			bind_enum(name, "", key, capabilities, get, set);
+			bind_enum(descr, "", key, capabilities, get, set);
 			break;
 
 		case SR_CONF_FILTER:
@@ -116,33 +121,33 @@ Device::Device(shared_ptr<sigrok::Configurable> configurable) :
 		case SR_CONF_RLE:
 		case SR_CONF_POWER_OFF:
 		case SR_CONF_AVERAGING:
-			bind_bool(name, "", get, set);
+			bind_bool(descr, "", get, set);
 			break;
 
 		case SR_CONF_TIMEBASE:
-			bind_enum(name, "", key, capabilities, get, set, print_timebase);
+			bind_enum(descr, "", key, capabilities, get, set, print_timebase);
 			break;
 
 		case SR_CONF_VDIV:
-			bind_enum(name, "", key, capabilities, get, set, print_vdiv);
+			bind_enum(descr, "", key, capabilities, get, set, print_vdiv);
 			break;
 
 		case SR_CONF_VOLTAGE_THRESHOLD:
-			bind_enum(name, "", key, capabilities, get, set, print_voltage_threshold);
+			bind_enum(descr, "", key, capabilities, get, set, print_voltage_threshold);
 			break;
 
 		case SR_CONF_PROBE_FACTOR:
 			if (capabilities.count(Capability::LIST))
-				bind_enum(name, "", key, capabilities, get, set, print_probe_factor);
+				bind_enum(descr, "", key, capabilities, get, set, print_probe_factor);
 			else
-				bind_int(name, "", "", pair<int64_t, int64_t>(1, 500), get, set);
+				bind_int(descr, "", "", pair<int64_t, int64_t>(1, 500), get, set);
 			break;
 
 		case SR_CONF_AVG_SAMPLES:
 			if (capabilities.count(Capability::LIST))
-				bind_enum(name, "", key, capabilities, get, set, print_averages);
+				bind_enum(descr, "", key, capabilities, get, set, print_averages);
 			else
-				bind_int(name, "", "", pair<int64_t, int64_t>(0, INT32_MAX), get, set);
+				bind_int(descr, "", "", pair<int64_t, int64_t>(0, INT32_MAX), get, set);
 			break;
 
 		default:
