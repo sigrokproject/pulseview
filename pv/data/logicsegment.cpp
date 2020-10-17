@@ -92,7 +92,6 @@ void LogicSegment::downsampleTmain(const T*&in, T &acc, T &prev)
 	}
 }
 
-
 template <>
 void LogicSegment::downsampleTmain<uint8_t>(const uint8_t*&in, uint8_t &acc, uint8_t &prev)
 {
