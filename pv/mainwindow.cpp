@@ -659,6 +659,25 @@ bool MainWindow::restoreState(const QByteArray &state, int version)
 	return false;
 }
 
+void MainWindow::on_run_stop_clicked()
+{
+	shared_ptr<Session> session = last_focused_session_;
+
+	if (!session)
+		return;
+
+	switch (session->get_capture_state()) {
+	case Session::Stopped:
+		session->start_capture([&](QString message) {
+			show_session_error("Capture failed", message); });
+		break;
+	case Session::AwaitingTrigger:
+	case Session::Running:
+		session->stop_capture();
+		break;
+	}
+}
+
 void MainWindow::on_add_view(views::ViewType type, Session *session)
 {
 	// We get a pointer and need a reference
@@ -707,30 +726,6 @@ void MainWindow::on_focused_session_changed(shared_ptr<Session> session)
 void MainWindow::on_new_session_clicked()
 {
 	add_session();
-}
-
-void MainWindow::on_run_stop_clicked()
-{
-	shared_ptr<Session> session = last_focused_session_;
-
-	if (!session)
-		return;
-
-	switch (session->get_capture_state()) {
-	case Session::Stopped:
-		session->start_capture([&](QString message) {
-			show_session_error("Capture failed", message); });
-		break;
-	case Session::AwaitingTrigger:
-	case Session::Running:
-		session->stop_capture();
-		break;
-	}
-}
-
-void MainWindow::on_external_trigger()
-{
-	on_run_stop_clicked();
 }
 
 void MainWindow::on_settings_clicked()

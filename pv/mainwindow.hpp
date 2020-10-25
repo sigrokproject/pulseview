@@ -115,6 +115,9 @@ private:
 
 	virtual bool restoreState(const QByteArray &state, int version = 0);
 
+public Q_SLOTS:
+	void on_run_stop_clicked();
+
 private Q_SLOTS:
 	void on_add_view(ViewType type, Session *session);
 
@@ -122,7 +125,6 @@ private Q_SLOTS:
 	void on_focused_session_changed(shared_ptr<Session> session);
 
 	void on_new_session_clicked();
-	void on_run_stop_clicked();
 	void on_settings_clicked();
 
 	void on_session_name_changed();
@@ -144,9 +146,6 @@ private Q_SLOTS:
 	void on_view_show_analog_minor_grid_shortcut();
 
 	void on_close_current_tab();
-
-public Q_SLOTS:
-	void on_external_trigger();
 
 private:
 	DeviceManager &device_manager_;
