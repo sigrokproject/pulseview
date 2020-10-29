@@ -236,6 +236,14 @@ View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 		SLOT(on_scroll_to_end_shortcut_triggered()), nullptr, Qt::WidgetWithChildrenShortcut);
 	end_shortcut_->setAutoRepeat(false);
 
+	scroll_view_left_ = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_N), this,
+		SLOT(on_h_scroll_view_left_triggered()), nullptr, Qt::WidgetWithChildrenShortcut);
+	scroll_view_left_->setAutoRepeat(false);
+
+	scroll_view_right_ = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_M), this,
+		SLOT(on_h_scroll_view_right_triggered()), nullptr, Qt::WidgetWithChildrenShortcut);
+	scroll_view_right_->setAutoRepeat(false);
+
 	grab_ruler_left_shortcut_ = new QShortcut(QKeySequence(Qt::Key_1), this,
 		nullptr, nullptr, Qt::WidgetWithChildrenShortcut);
 	connect(grab_ruler_left_shortcut_, &QShortcut::activated,
@@ -1397,6 +1405,27 @@ void View::set_scroll_default()
 		set_v_offset(extents.first);
 }
 
+void View::h_scroll_view_fullpage(int direction)
+{
+	if (updating_scroll_)
+		return;
+
+	// Disable sticky scrolling when user moves the horizontal scroll bar
+	// during a running acquisition
+	if (sticky_scrolling_ && (session_.get_capture_state() == Session::Running)) {
+		sticky_scrolling_ = false;
+		sticky_scrolling_changed(false);
+	}
+
+	const QSize areaSize = viewport_->size();
+	double length = scale_ * areaSize.width();
+	Timestamp new_offset = offset_ + direction*length;
+	set_offset(new_offset);
+
+	ruler_->update();
+	viewport_->update();
+}
+
 void View::determine_if_header_was_shrunk()
 {
 	const int header_pane_width =
@@ -1736,6 +1765,16 @@ void View::on_scroll_to_start_shortcut_triggered()
 void View::on_scroll_to_end_shortcut_triggered()
 {
 	set_h_offset(get_h_scrollbar_maximum());
+}
+
+void View::on_h_scroll_view_left_triggered()
+{
+	h_scroll_view_fullpage(-1);
+}
+
+void View::on_h_scroll_view_right_triggered()
+{
+	h_scroll_view_fullpage(1);
 }
 
 void View::h_scroll_value_changed(int value)

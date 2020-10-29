@@ -423,6 +423,8 @@ private:
 	void update_view_range_metaobject() const;
 	void update_hover_point();
 
+	void h_scroll_view_fullpage(int direction);
+
 public:
 	void row_item_appearance_changed(bool label, bool content);
 	void time_item_appearance_changed(bool label, bool content);
@@ -437,6 +439,8 @@ private Q_SLOTS:
 	void on_zoom_out_shortcut_triggered();
 	void on_scroll_to_start_shortcut_triggered();
 	void on_scroll_to_end_shortcut_triggered();
+	void on_h_scroll_view_left_triggered();
+	void on_h_scroll_view_right_triggered();
 
 	void h_scroll_value_changed(int value);
 	void v_scroll_value_changed();
@@ -509,6 +513,8 @@ private:
 	QShortcut *home_shortcut_, *end_shortcut_;
 	QShortcut *grab_ruler_left_shortcut_, *grab_ruler_right_shortcut_;
 	QShortcut *cancel_grab_shortcut_;
+	QShortcut *scroll_view_left_;
+	QShortcut *scroll_view_right_;
 
 	mutable mutex signal_mutex_;
 	vector< shared_ptr<Signal> > signals_;
