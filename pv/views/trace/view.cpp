@@ -38,6 +38,8 @@
 #include <QMouseEvent>
 #include <QScrollBar>
 #include <QVBoxLayout>
+#include <QDir>
+#include <QDateTime>
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
 
@@ -243,6 +245,10 @@ View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 	scroll_view_right_ = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_M), this,
 		SLOT(on_h_scroll_view_right_triggered()), nullptr, Qt::WidgetWithChildrenShortcut);
 	scroll_view_right_->setAutoRepeat(false);
+
+	bitmap_screenshot_ = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_B), this,
+		SLOT(on_bitmap_screenshot_triggered()), nullptr, Qt::WidgetWithChildrenShortcut);
+	bitmap_screenshot_->setAutoRepeat(false);
 
 	grab_ruler_left_shortcut_ = new QShortcut(QKeySequence(Qt::Key_1), this,
 		nullptr, nullptr, Qt::WidgetWithChildrenShortcut);
@@ -1775,6 +1781,25 @@ void View::on_h_scroll_view_left_triggered()
 void View::on_h_scroll_view_right_triggered()
 {
 	h_scroll_view_fullpage(1);
+}
+
+void View::on_bitmap_screenshot_triggered()
+{
+	//note: viewport_ does not contain track name markings at left, nor ruler
+	//scrollarea_ is the same, except with added scrollbars
+	//here we will get only viewport_ and ruler_, so as to assist in stitching/appending images
+	QSize vpSize = viewport_->size();
+	QSize rlSize = ruler_->size();
+	QSize imgsize(vpSize.width(), vpSize.height()+rlSize.height());
+	QImage img(imgsize, QImage::Format::Format_ARGB32);
+	QPainter painter(&img);
+	ruler_->render(&painter, QPoint(0, 0));
+	scrollarea_->render(&painter, QPoint(0, rlSize.height()));
+	QString fileStamp = QDateTime::currentDateTimeUtc().toString("yyyyMMdd_hhmmss");
+	QString fileName = QString("pulseview_%1.png").arg(fileStamp);
+	QString filePath = QDir( QDir::tempPath() ).filePath(fileName);
+	bool issaved = img.save(filePath);
+	qDebug() << "Screenshot grabbed (" << issaved << "): " << filePath;
 }
 
 void View::h_scroll_value_changed(int value)

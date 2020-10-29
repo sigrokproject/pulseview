@@ -441,6 +441,7 @@ private Q_SLOTS:
 	void on_scroll_to_end_shortcut_triggered();
 	void on_h_scroll_view_left_triggered();
 	void on_h_scroll_view_right_triggered();
+	void on_bitmap_screenshot_triggered();
 
 	void h_scroll_value_changed(int value);
 	void v_scroll_value_changed();
@@ -515,6 +516,7 @@ private:
 	QShortcut *cancel_grab_shortcut_;
 	QShortcut *scroll_view_left_;
 	QShortcut *scroll_view_right_;
+	QShortcut *bitmap_screenshot_;
 
 	mutable mutex signal_mutex_;
 	vector< shared_ptr<Signal> > signals_;
