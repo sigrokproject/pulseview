@@ -57,6 +57,7 @@ public:
 	static const QString Key_General_Theme;
 	static const QString Key_General_Style;
 	static const QString Key_General_SaveWithSetup;
+	static const QString Key_General_StartAllSessions;
 	static const QString Key_View_ZoomToFitDuringAcq;
 	static const QString Key_View_ZoomToFitAfterAcq;
 	static const QString Key_View_TriggerIsZeroTime;

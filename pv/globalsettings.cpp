@@ -52,6 +52,7 @@ const QString GlobalSettings::Key_General_Language = "General_Language";
 const QString GlobalSettings::Key_General_Theme = "General_Theme";
 const QString GlobalSettings::Key_General_Style = "General_Style";
 const QString GlobalSettings::Key_General_SaveWithSetup = "General_SaveWithSetup";
+const QString GlobalSettings::Key_General_StartAllSessions = "General_StartAllSessions";
 const QString GlobalSettings::Key_View_ZoomToFitDuringAcq = "View_ZoomToFitDuringAcq";
 const QString GlobalSettings::Key_View_ZoomToFitAfterAcq = "View_ZoomToFitAfterAcq";
 const QString GlobalSettings::Key_View_TriggerIsZeroTime = "View_TriggerIsZeroTime";

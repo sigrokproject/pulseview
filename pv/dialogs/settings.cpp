@@ -276,6 +276,11 @@ QWidget *Settings::get_general_settings_form(QWidget *parent) const
 		SLOT(on_general_save_with_setup_changed(int)));
 	general_layout->addRow(tr("Save session &setup along with .sr file"), cb);
 
+	cb = create_checkbox(GlobalSettings::Key_General_StartAllSessions,
+		SLOT(on_general_start_all_sessions_changed(int)));
+	general_layout->addRow(tr("Start acquisition for all open sessions when clicking 'Run'"), cb);
+
+
 	return form;
 }
 
@@ -677,6 +682,12 @@ void Settings::on_general_save_with_setup_changed(int state)
 {
 	GlobalSettings settings;
 	settings.setValue(GlobalSettings::Key_General_SaveWithSetup, state ? true : false);
+}
+
+void Settings::on_general_start_all_sessions_changed(int state)
+{
+	GlobalSettings settings;
+	settings.setValue(GlobalSettings::Key_General_StartAllSessions, state ? true : false);
 }
 
 void Settings::on_view_zoomToFitDuringAcq_changed(int state)

@@ -661,20 +661,51 @@ bool MainWindow::restoreState(const QByteArray &state, int version)
 
 void MainWindow::on_run_stop_clicked()
 {
-	shared_ptr<Session> session = last_focused_session_;
+	GlobalSettings settings;
+	bool all_sessions = settings.value(GlobalSettings::Key_General_StartAllSessions).toBool();
 
-	if (!session)
-		return;
+	if (all_sessions)
+	{
+		vector< shared_ptr<Session> > hw_sessions;
 
-	switch (session->get_capture_state()) {
-	case Session::Stopped:
-		session->start_capture([&](QString message) {
-			show_session_error("Capture failed", message); });
-		break;
-	case Session::AwaitingTrigger:
-	case Session::Running:
-		session->stop_capture();
-		break;
+		// Make a list of all sessions where a hardware device is used
+		for (shared_ptr<Session> s : sessions_) {
+			shared_ptr<devices::HardwareDevice> hw_device =
+					dynamic_pointer_cast< devices::HardwareDevice >(s->device());
+			if (!hw_device)
+				continue;
+			hw_sessions.push_back(s);
+		}
+
+		// Stop all acquisitions if there are any running ones, start all otherwise
+		bool any_running = any_of(hw_sessions.begin(), hw_sessions.end(),
+				[](const shared_ptr<Session> &s)
+				{ return (s->get_capture_state() == Session::AwaitingTrigger) ||
+						(s->get_capture_state() == Session::Running); });
+
+		for (shared_ptr<Session> s : hw_sessions)
+			if (any_running)
+				s->stop_capture();
+			else
+				s->start_capture([&](QString message) {
+					show_session_error("Capture failed", message); });
+	} else {
+
+		shared_ptr<Session> session = last_focused_session_;
+
+		if (!session)
+			return;
+
+		switch (session->get_capture_state()) {
+		case Session::Stopped:
+			session->start_capture([&](QString message) {
+				show_session_error("Capture failed", message); });
+			break;
+		case Session::AwaitingTrigger:
+		case Session::Running:
+			session->stop_capture();
+			break;
+		}
 	}
 }
 
