@@ -40,6 +40,9 @@ void Analog::push_segment(shared_ptr<AnalogSegment> &segment)
 {
 	segments_.push_back(segment);
 
+	if ((samplerate_ == 1) && (segment->samplerate() > 1))
+		samplerate_ = segment->samplerate();
+
 	connect(segment.get(), SIGNAL(completed()), this, SLOT(on_segment_completed()));
 }
 

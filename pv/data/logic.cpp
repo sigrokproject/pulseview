@@ -46,6 +46,9 @@ unsigned int Logic::num_channels() const
 void Logic::push_segment(shared_ptr<LogicSegment> &segment)
 {
 	segments_.push_back(segment);
+
+	if ((samplerate_ == 1) && (segment->samplerate() > 1))
+		samplerate_ = segment->samplerate();
 }
 
 const deque< shared_ptr<LogicSegment> >& Logic::logic_segments() const
