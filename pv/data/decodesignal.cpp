@@ -308,7 +308,13 @@ void DecodeSignal::auto_assign_signals(const shared_ptr<Decoder> dec)
 			}
 		}
 
-		if (match) {
+		// Prevent using a signal more than once as D1 would match e.g. D1 and D10
+		bool signal_not_already_used = true;
+		for (decode::DecodeChannel& ch : channels_)
+			if (ch.assigned_signal && (ch.assigned_signal == match))
+				signal_not_already_used = false;
+
+		if (match && signal_not_already_used) {
 			ch.assigned_signal = match;
 			new_assignment = true;
 		}
