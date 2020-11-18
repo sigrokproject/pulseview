@@ -43,7 +43,8 @@ StoreProgress::StoreProgress(const QString &file_name,
 	const Session &session, QWidget *parent) :
 	QProgressDialog(tr("Saving..."), tr("Cancel"), 0, 0, parent),
 	session_(file_name.toStdString(), output_format, options, sample_range,
-		session)
+		session),
+	showing_error_(false)
 {
 	connect(&session_, SIGNAL(progress_updated()),
 		this, SLOT(on_progress_updated()));
@@ -79,6 +80,8 @@ void StoreProgress::run()
 
 void StoreProgress::show_error()
 {
+	showing_error_ = true;
+
 	qDebug() << "Error trying to save:" << session_.error();
 
 	QMessageBox msg(parentWidget());
@@ -109,9 +112,8 @@ void StoreProgress::on_progress_updated()
 		setMaximum(p.second);
 	} else {
 		const QString err = session_.error();
-		if (!err.isEmpty())
+		if (!err.isEmpty() && !showing_error_)
 			show_error();
-		close();
 	}
 }
 

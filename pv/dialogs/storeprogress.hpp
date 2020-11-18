@@ -20,6 +20,7 @@
 #ifndef PULSEVIEW_PV_DIALOGS_STOREPROGRESS_HPP
 #define PULSEVIEW_PV_DIALOGS_STOREPROGRESS_HPP
 
+#include <atomic>
 #include <memory>
 #include <set>
 
@@ -27,6 +28,7 @@
 
 #include <pv/storesession.hpp>
 
+using std::atomic;
 using std::map;
 using std::pair;
 using std::shared_ptr;
@@ -63,6 +65,7 @@ private Q_SLOTS:
 
 private:
 	pv::StoreSession session_;
+	atomic<bool> showing_error_;
 };
 
 }  // namespace dialogs
