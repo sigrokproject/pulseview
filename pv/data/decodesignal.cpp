@@ -1173,13 +1173,11 @@ void DecodeSignal::logic_mux_proc()
 					logic_mux_data_->push_segment(output_segment);
 
 					output_segment->set_samplerate(get_input_samplerate(segment_id));
+				} else {
+					// Wait for more input data if we're processing the currently last segment
+					unique_lock<mutex> logic_mux_lock(logic_mux_mutex_);
+					logic_mux_cond_.wait(logic_mux_lock);
 				}
-			}
-
-			if (segment_id == (get_input_segment_count() - 1)) {
-				// Wait for more input data if we're processing the currently last segment
-				unique_lock<mutex> logic_mux_lock(logic_mux_mutex_);
-				logic_mux_cond_.wait(logic_mux_lock);
 			}
 		}
 	} while (!logic_mux_interrupt_);
@@ -1305,14 +1303,13 @@ void DecodeSignal::decode_proc()
 					// All segments have been processed
 					if (!decode_interrupt_)
 						decode_finished();
+
+					// Wait for more input data
+					unique_lock<mutex> input_wait_lock(input_mutex_);
+					decode_input_cond_.wait(input_wait_lock);
 				}
 			}
 
-			if (current_segment_id_ == (logic_mux_data_->logic_segments().size() - 1)) {
-				// Wait for more input data if we're processing the currently last segment
-				unique_lock<mutex> input_wait_lock(input_mutex_);
-				decode_input_cond_.wait(input_wait_lock);
-			}
 		}
 	} while (!decode_interrupt_);
 }

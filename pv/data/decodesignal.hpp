@@ -26,6 +26,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include <QDebug>
 #include <QSettings>
 
 #include <libsigrokdecode/libsigrokdecode.h>
@@ -79,7 +80,7 @@ struct DecodeSegment
 	// Constructor is a no-op
 	DecodeSegment() { };
 	// Copy constructor is a no-op
-	DecodeSegment(DecodeSegment&& ds) { (void)ds; };
+	DecodeSegment(DecodeSegment&& ds) { (void)ds; qCritical() << "Empty DecodeSegment copy constructor called"; };
 
 	map<const Row*, RowData> annotation_rows;  // Note: Row is the same for all segments while RowData is not
 	pv::util::Timestamp start_time;
@@ -246,7 +247,7 @@ private:
 	vector< shared_ptr<Decoder> > stack_;
 	bool stack_config_changed_;
 
-	vector<DecodeSegment> segments_;
+	deque<DecodeSegment> segments_;
 	uint32_t current_segment_id_;
 
 	mutable mutex input_mutex_, output_mutex_, decode_pause_mutex_, logic_mux_mutex_;
