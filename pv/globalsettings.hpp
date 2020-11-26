@@ -63,6 +63,7 @@ public:
 	static const QString Key_View_TriggerIsZeroTime;
 	static const QString Key_View_ColoredBG;
 	static const QString Key_View_StickyScrolling;
+	static const QString Key_View_AllowVerticalDragging;
 	static const QString Key_View_ShowSamplingPoints;
 	static const QString Key_View_FillSignalHighAreas;
 	static const QString Key_View_FillSignalHighAreaColor;

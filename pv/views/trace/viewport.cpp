@@ -54,6 +54,17 @@ Viewport::Viewport(View &parent) :
 {
 	setAutoFillBackground(true);
 	setBackgroundRole(QPalette::Base);
+
+	// Set up settings and event handlers
+	GlobalSettings settings;
+	allow_vertical_dragging_ = settings.value(GlobalSettings::Key_View_AllowVerticalDragging).toBool();
+
+	GlobalSettings::add_change_handler(this);
+}
+
+Viewport::~Viewport()
+{
+	GlobalSettings::remove_change_handler(this);
 }
 
 shared_ptr<ViewItem> Viewport::get_mouse_over_item(const QPoint &pt)
@@ -78,7 +89,9 @@ void Viewport::item_hover(const shared_ptr<ViewItem> &item, QPoint pos)
 void Viewport::drag()
 {
 	drag_offset_ = view_.offset();
-	drag_v_offset_ = view_.owner_visual_v_offset();
+
+	if (allow_vertical_dragging_)
+		drag_v_offset_ = view_.owner_visual_v_offset();
 }
 
 void Viewport::drag_by(const QPoint &delta)
@@ -89,7 +102,8 @@ void Viewport::drag_by(const QPoint &delta)
 	view_.set_scale_offset(view_.scale(),
 		(*drag_offset_ - delta.x() * view_.scale()));
 
-	view_.set_v_offset(-drag_v_offset_ - delta.y());
+	if (allow_vertical_dragging_)
+		view_.set_v_offset(-drag_v_offset_ - delta.y());
 }
 
 void Viewport::drag_release()
@@ -225,6 +239,14 @@ void Viewport::wheelEvent(QWheelEvent *event)
 		// Horizontal scrolling is interpreted as moving left/right
 		view_.set_scale_offset(view_.scale(),
 			event->delta() * view_.scale() + view_.offset());
+	}
+}
+
+void Viewport::on_setting_changed(const QString &key, const QVariant &value)
+{
+	if (key == GlobalSettings::Key_View_AllowVerticalDragging) {
+		GlobalSettings settings;
+		allow_vertical_dragging_ = settings.value(GlobalSettings::Key_View_AllowVerticalDragging).toBool();
 	}
 }
 

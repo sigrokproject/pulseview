@@ -26,6 +26,8 @@
 #include <QTimer>
 #include <QTouchEvent>
 
+#include <pv/globalsettings.hpp>
+
 #include "pv/util.hpp"
 #include "viewwidget.hpp"
 
@@ -42,12 +44,13 @@ namespace trace {
 
 class View;
 
-class Viewport : public ViewWidget
+class Viewport : public ViewWidget, public GlobalSettingsInterface
 {
 	Q_OBJECT
 
 public:
 	explicit Viewport(View &parent);
+	~Viewport();
 
 	/**
 	 * Gets the first view item which has a hit-box that contains @c pt .
@@ -92,15 +95,18 @@ private:
 	 */
 	bool touch_event(QTouchEvent *event);
 
-private:
 	void paintEvent(QPaintEvent *event);
 
 	void mouseDoubleClickEvent(QMouseEvent *event);
+
 	void wheelEvent(QWheelEvent *event);
+
+	void on_setting_changed(const QString &key, const QVariant &value);
 
 private:
 	boost::optional<pv::util::Timestamp> drag_offset_;
 	int drag_v_offset_;
+	bool allow_vertical_dragging_;
 
 	double pinch_offset0_;
 	double pinch_offset1_;

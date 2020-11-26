@@ -58,6 +58,7 @@ const QString GlobalSettings::Key_View_ZoomToFitAfterAcq = "View_ZoomToFitAfterA
 const QString GlobalSettings::Key_View_TriggerIsZeroTime = "View_TriggerIsZeroTime";
 const QString GlobalSettings::Key_View_ColoredBG = "View_ColoredBG";
 const QString GlobalSettings::Key_View_StickyScrolling = "View_StickyScrolling";
+const QString GlobalSettings::Key_View_AllowVerticalDragging = "View_AllowVerticalDragging";
 const QString GlobalSettings::Key_View_ShowSamplingPoints = "View_ShowSamplingPoints";
 const QString GlobalSettings::Key_View_FillSignalHighAreas = "View_FillSignalHighAreas";
 const QString GlobalSettings::Key_View_FillSignalHighAreaColor = "View_FillSignalHighAreaColor";
@@ -123,6 +124,10 @@ void GlobalSettings::set_defaults_where_needed()
 	// Enable zoom-to-fit after acquisition by default
 	if (!contains(Key_View_ZoomToFitAfterAcq))
 		setValue(Key_View_ZoomToFitAfterAcq, true);
+
+	// Allow vertical dragging by default
+	if (!contains(Key_View_AllowVerticalDragging))
+		setValue(Key_View_AllowVerticalDragging, true);
 
 	// Enable colored trace backgrounds by default
 	if (!contains(Key_View_ColoredBG))

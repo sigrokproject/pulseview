@@ -313,11 +313,15 @@ QWidget *Settings::get_view_settings_form(QWidget *parent) const
 
 	cb = create_checkbox(GlobalSettings::Key_View_TriggerIsZeroTime,
 		SLOT(on_view_triggerIsZero_changed(int)));
-	trace_view_layout->addRow(tr("Show time zero at the trigger"), cb);
+	trace_view_layout->addRow(tr("Show time zero at the &trigger"), cb);
 
 	cb = create_checkbox(GlobalSettings::Key_View_StickyScrolling,
 		SLOT(on_view_stickyScrolling_changed(int)));
 	trace_view_layout->addRow(tr("Always keep &newest samples at the right edge during capture"), cb);
+
+	cb = create_checkbox(GlobalSettings::Key_View_AllowVerticalDragging,
+		SLOT(on_view_allowVerticalDragging_changed(int)));
+	trace_view_layout->addRow(tr("Allow &vertical dragging in the view area"), cb);
 
 	cb = create_checkbox(GlobalSettings::Key_View_ShowSamplingPoints,
 		SLOT(on_view_showSamplingPoints_changed(int)));
@@ -325,7 +329,7 @@ QWidget *Settings::get_view_settings_form(QWidget *parent) const
 
 	cb = create_checkbox(GlobalSettings::Key_View_FillSignalHighAreas,
 		SLOT(on_view_fillSignalHighAreas_changed(int)));
-	trace_view_layout->addRow(tr("Fill high areas of logic signals"), cb);
+	trace_view_layout->addRow(tr("Fill &high areas of logic signals"), cb);
 
 	ColorButton* high_fill_cb = new ColorButton(parent);
 	high_fill_cb->set_color(QColor::fromRgba(
@@ -718,6 +722,12 @@ void Settings::on_view_stickyScrolling_changed(int state)
 {
 	GlobalSettings settings;
 	settings.setValue(GlobalSettings::Key_View_StickyScrolling, state ? true : false);
+}
+
+void Settings::on_view_allowVerticalDragging_changed(int state)
+{
+	GlobalSettings settings;
+	settings.setValue(GlobalSettings::Key_View_AllowVerticalDragging, state ? true : false);
 }
 
 void Settings::on_view_showSamplingPoints_changed(int state)

@@ -68,6 +68,7 @@ private Q_SLOTS:
 	void on_view_triggerIsZero_changed(int state);
 	void on_view_coloredBG_changed(int state);
 	void on_view_stickyScrolling_changed(int state);
+	void on_view_allowVerticalDragging_changed(int state);
 	void on_view_showSamplingPoints_changed(int state);
 	void on_view_fillSignalHighAreas_changed(int state);
 	void on_view_fillSignalHighAreaColor_changed(QColor color);
