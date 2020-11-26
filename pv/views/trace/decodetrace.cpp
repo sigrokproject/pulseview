@@ -1032,8 +1032,17 @@ const QString DecodeTrace::get_annotation_at_point(const QPoint &point)
 	decode_signal_->get_annotation_subset(annotations, r->decode_row,
 		current_segment_, sample_range.first, sample_range.second);
 
-	return (annotations.empty()) ?
-		QString() : annotations[0]->annotations()->front();
+	const Annotation* a = annotations.empty() ? nullptr : annotations[0];
+
+	// Create a string of the format "CLASS: VALUE"
+	QString s;
+	if (a) {
+		if (!a->ann_class_description().isEmpty())
+			s = a->ann_class_description() + ": ";
+		s += a->annotations()->front();
+	}
+
+	return s;
 }
 
 void DecodeTrace::create_decoder_form(int index, shared_ptr<Decoder> &dec,
