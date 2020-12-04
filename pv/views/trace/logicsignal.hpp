@@ -69,15 +69,9 @@ public:
 	static const int TriggerMarkerPadding;
 	static const char* TriggerMarkerIcons[8];
 
-	LogicSignal(pv::Session &session,
-		shared_ptr<devices::Device> device,
-		shared_ptr<data::SignalBase> base);
+	LogicSignal(pv::Session &session, shared_ptr<data::SignalBase> base);
 
 	virtual ~LogicSignal() = default;
-
-	shared_ptr<pv::data::SignalData> data() const;
-
-	shared_ptr<pv::data::Logic> logic_data() const;
 
 	virtual std::map<QString, QVariant> save_settings() const;
 	virtual void restore_settings(std::map<QString, QVariant> settings);
@@ -86,14 +80,14 @@ public:
 	 * Computes the vertical extents of the contents of this row item.
 	 * @return A pair containing the minimum and maximum y-values.
 	 */
-	pair<int, int> v_extents() const;
+	virtual pair<int, int> v_extents() const;
 
 	/**
 	 * Paints the mid-layer of the signal with a QPainter
 	 * @param p the QPainter to paint into.
 	 * @param pp the painting parameters object to paint with..
 	 */
-	void paint_mid(QPainter &p, ViewItemPaintParams &pp);
+	virtual void paint_mid(QPainter &p, ViewItemPaintParams &pp);
 
 	/**
 	 * Paints the foreground layer of the signal with a QPainter
@@ -111,7 +105,7 @@ public:
 	 */
 	virtual vector<data::LogicSegment::EdgePair> get_nearest_level_changes(uint64_t sample_pos);
 
-private:
+protected:
 	void paint_caps(QPainter &p, QLineF *const lines,
 		vector< pair<int64_t, bool> > &edges,
 		bool level, double samples_per_pixel, double pixels_offset,
@@ -131,18 +125,19 @@ private:
 	static const QIcon* get_icon(const char *path);
 	static const QPixmap* get_pixmap(const char *path);
 
-private Q_SLOTS:
+	virtual void update_logic_level_offsets();
+
+protected Q_SLOTS:
 	void on_setting_changed(const QString &key, const QVariant &value);
 
 	void on_trigger();
 
 	void on_signal_height_changed(int height);
 
-private:
+protected:
 	QColor high_fill_color_;
 	bool show_sampling_points_, fill_high_areas_;
-
-	shared_ptr<pv::devices::Device> device_;
+	float high_level_offset_, low_level_offset_;  // y offsets relative to trace
 
 	QSpinBox *signal_height_sb_;
 

@@ -75,7 +75,6 @@ const QPen AnalogSignal::AxisPen(QColor(0, 0, 0, 30 * 256 / 100), 2);
 const QColor AnalogSignal::GridMajorColor = QColor(0, 0, 0, 40 * 256 / 100);
 const QColor AnalogSignal::GridMinorColor = QColor(0, 0, 0, 20 * 256 / 100);
 
-const QColor AnalogSignal::SamplingPointColor(0x77, 0x77, 0x77);
 const QColor AnalogSignal::SamplingPointColorLo = QColor(200, 0, 0, 80 * 256 / 100);
 const QColor AnalogSignal::SamplingPointColorNe = QColor(0,   0, 0, 80 * 256 / 100);
 const QColor AnalogSignal::SamplingPointColorHi = QColor(0, 200, 0, 80 * 256 / 100);
@@ -95,10 +94,8 @@ const int AnalogSignal::MaxScaleIndex = 10;  // 1000 units/div
 const int AnalogSignal::InfoTextMarginRight = 20;
 const int AnalogSignal::InfoTextMarginBottom = 5;
 
-AnalogSignal::AnalogSignal(
-	pv::Session &session,
-	shared_ptr<data::SignalBase> base) :
-	Signal(session, base),
+AnalogSignal::AnalogSignal(pv::Session &session, shared_ptr<data::SignalBase> base) :
+	LogicSignal(session, base),
 	value_at_hover_pos_(std::numeric_limits<float>::quiet_NaN()),
 	scale_index_(4), // 20 per div
 	pos_vdivs_(1),
@@ -110,7 +107,7 @@ AnalogSignal::AnalogSignal(
 	axis_pen_ = AxisPen;
 
 	pv::data::Analog* analog_data =
-		dynamic_cast<pv::data::Analog*>(data().get());
+		dynamic_cast<pv::data::Analog*>(base_->analog_data().get());
 
 	connect(analog_data, SIGNAL(min_max_changed(float, float)),
 		this, SLOT(on_min_max_changed(float, float)));
@@ -128,16 +125,14 @@ AnalogSignal::AnalogSignal(
 		settings.value(GlobalSettings::Key_View_ConversionThresholdDispMode).toInt();
 	div_height_ = settings.value(GlobalSettings::Key_View_DefaultDivHeight).toInt();
 
+	update_logic_level_offsets();
 	update_scale();
-}
-
-shared_ptr<pv::data::SignalData> AnalogSignal::data() const
-{
-	return base_->analog_data();
 }
 
 std::map<QString, QVariant> AnalogSignal::save_settings() const
 {
+	LogicSignal::save_settings();
+
 	std::map<QString, QVariant> result;
 
 	result["pos_vdivs"] = pos_vdivs_;
@@ -152,6 +147,8 @@ std::map<QString, QVariant> AnalogSignal::save_settings() const
 
 void AnalogSignal::restore_settings(std::map<QString, QVariant> settings)
 {
+	LogicSignal::restore_settings(settings);
+
 	auto entry = settings.find("pos_vdivs");
 	if (entry != settings.end())
 		pos_vdivs_ = settings["pos_vdivs"].toInt();
@@ -178,6 +175,8 @@ void AnalogSignal::restore_settings(std::map<QString, QVariant> settings)
 	if (entry != settings.end()) {
 		const int old_height = div_height_;
 		div_height_ = settings["div_height"].toInt();
+
+		update_logic_level_offsets();
 
 		if ((div_height_ != old_height) && owner_) {
 			// Call order is important, otherwise the lazy event handler won't work
@@ -282,7 +281,8 @@ void AnalogSignal::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 	}
 
 	if ((display_type_ == DisplayConverted) || (display_type_ == DisplayBoth))
-		paint_logic_mid(p, pp);
+		if (base_->logic_data())
+			LogicSignal::paint_mid(p, pp);
 
 	const QString err = base_->get_error_message();
 	if (!err.isEmpty())
@@ -324,10 +324,13 @@ void AnalogSignal::paint_fore(QPainter &p, ViewItemPaintParams &pp)
 				v_extents().second - v_extents().first - InfoTextMarginBottom);
 
 		p.drawText(bounding_rect, Qt::AlignRight | Qt::AlignBottom, infotext);
+
+		if (show_hover_marker_)
+			paint_hover_marker(p);
 	}
 
-	if (show_hover_marker_)
-		paint_hover_marker(p);
+	if ((display_type_ == DisplayConverted) || (display_type_ == DisplayBoth))
+		LogicSignal::paint_fore(p, pp);
 }
 
 void AnalogSignal::paint_grid(QPainter &p, int y, int left, int right)
@@ -527,186 +530,6 @@ void AnalogSignal::paint_envelope(QPainter &p,
 	delete[] e.samples;
 }
 
-void AnalogSignal::paint_logic_mid(QPainter &p, ViewItemPaintParams &pp)
-{
-	QLineF *line;
-
-	vector< pair<int64_t, bool> > edges;
-
-	assert(base_);
-
-	const int y = get_visual_y();
-
-	if (!base_->enabled() || !base_->logic_data())
-		return;
-
-	const int signal_margin =
-		QFontMetrics(QApplication::font()).height() / 2;
-
-	const int ph = min(pos_vdivs_, 1) * div_height_;
-	const int nh = min(neg_vdivs_, 1) * div_height_;
-	const float high_offset = y - ph + signal_margin + 0.5f;
-	const float low_offset = y + nh - signal_margin - 0.5f;
-	const float signal_height = low_offset - high_offset;
-
-	shared_ptr<pv::data::LogicSegment> segment = get_logic_segment_to_paint();
-	if (!segment || (segment->get_sample_count() == 0))
-		return;
-
-	double samplerate = segment->samplerate();
-
-	// Show sample rate as 1Hz when it is unknown
-	if (samplerate == 0.0)
-		samplerate = 1.0;
-
-	const double pixels_offset = pp.pixels_offset();
-	const pv::util::Timestamp& start_time = segment->start_time();
-	const int64_t last_sample = (int64_t)segment->get_sample_count() - 1;
-	const double samples_per_pixel = samplerate * pp.scale();
-	const double pixels_per_sample = 1 / samples_per_pixel;
-	const pv::util::Timestamp start = samplerate * (pp.offset() - start_time);
-	const pv::util::Timestamp end = start + samples_per_pixel * pp.width();
-
-	const int64_t start_sample = min(max(floor(start).convert_to<int64_t>(),
-		(int64_t)0), last_sample);
-	const uint64_t end_sample = min(max(ceil(end).convert_to<int64_t>(),
-		(int64_t)0), last_sample);
-
-	segment->get_subsampled_edges(edges, start_sample, end_sample,
-		samples_per_pixel / LogicSignal::Oversampling, 0);
-	assert(edges.size() >= 2);
-
-	const float first_sample_x =
-		pp.left() + (edges.front().first / samples_per_pixel - pixels_offset);
-	const float last_sample_x =
-		pp.left() + (edges.back().first / samples_per_pixel - pixels_offset);
-
-	// Check whether we need to paint the sampling points
-	const bool show_sampling_points = show_sampling_points_ && (samples_per_pixel < 0.25);
-	vector<QRectF> sampling_points;
-	float sampling_point_x = first_sample_x;
-	int64_t sampling_point_sample = start_sample;
-	const int w = 2;
-
-	if (show_sampling_points)
-		sampling_points.reserve(end_sample - start_sample + 1);
-
-	vector<QRectF> high_rects;
-	float rising_edge_x;
-	bool rising_edge_seen = false;
-
-	// Paint the edges
-	const unsigned int edge_count = edges.size() - 2;
-	QLineF *const edge_lines = new QLineF[edge_count];
-	line = edge_lines;
-
-	if (edges.front().second) {
-		// Beginning of trace is high
-		rising_edge_x = first_sample_x;
-		rising_edge_seen = true;
-	}
-
-	for (auto i = edges.cbegin() + 1; i != edges.cend() - 1; i++) {
-		// Note: multiple edges occupying a single pixel are represented by an edge
-		// with undefined logic level. This means that only the first falling edge
-		// after a rising edge corresponds to said rising edge - and vice versa. If
-		// more edges with the same logic level follow, they denote multiple edges.
-
-		const float x = pp.left() + ((*i).first / samples_per_pixel - pixels_offset);
-		*line++ = QLineF(x, high_offset, x, low_offset);
-
-		if (fill_high_areas_) {
-			// Any edge terminates a high area
-			if (rising_edge_seen) {
-				const int width = x - rising_edge_x;
-				if (width > 0)
-					high_rects.emplace_back(rising_edge_x, high_offset,
-						width, signal_height);
-				rising_edge_seen = false;
-			}
-
-			// Only rising edges start high areas
-			if ((*i).second) {
-				rising_edge_x = x;
-				rising_edge_seen = true;
-			}
-		}
-
-		if (show_sampling_points)
-			while (sampling_point_sample < (*i).first) {
-				const float y = (*i).second ? low_offset : high_offset;
-				sampling_points.emplace_back(
-					QRectF(sampling_point_x - (w / 2), y - (w / 2), w, w));
-				sampling_point_sample++;
-				sampling_point_x += pixels_per_sample;
-			};
-	}
-
-	// Calculate the sample points from the last edge to the end of the trace
-	if (show_sampling_points)
-		while ((uint64_t)sampling_point_sample <= end_sample) {
-			// Signal changed after the last edge, so the level is inverted
-			const float y = (edges.cend() - 1)->second ? high_offset : low_offset;
-			sampling_points.emplace_back(
-				QRectF(sampling_point_x - (w / 2), y - (w / 2), w, w));
-			sampling_point_sample++;
-			sampling_point_x += pixels_per_sample;
-		};
-
-	if (fill_high_areas_) {
-		// Add last high rectangle if the signal is still high at the end of the trace
-		if (rising_edge_seen && (edges.cend() - 1)->second)
-			high_rects.emplace_back(rising_edge_x, high_offset,
-				last_sample_x - rising_edge_x, signal_height);
-
-		p.setPen(high_fill_color_);
-		p.setBrush(high_fill_color_);
-		p.drawRects((const QRectF*)(high_rects.data()), high_rects.size());
-	}
-
-	p.setPen(LogicSignal::EdgeColor);
-	p.drawLines(edge_lines, edge_count);
-	delete[] edge_lines;
-
-	// Paint the caps
-	const unsigned int max_cap_line_count = edges.size();
-	QLineF *const cap_lines = new QLineF[max_cap_line_count];
-
-	p.setPen(LogicSignal::HighColor);
-	paint_logic_caps(p, cap_lines, edges, true, samples_per_pixel,
-		pixels_offset, pp.left(), high_offset);
-	p.setPen(LogicSignal::LowColor);
-	paint_logic_caps(p, cap_lines, edges, false, samples_per_pixel,
-		pixels_offset, pp.left(), low_offset);
-
-	delete[] cap_lines;
-
-	// Paint the sampling points
-	if (show_sampling_points) {
-		p.setPen(SamplingPointColor);
-		p.drawRects(sampling_points.data(), sampling_points.size());
-	}
-}
-
-void AnalogSignal::paint_logic_caps(QPainter &p, QLineF *const lines,
-	vector< pair<int64_t, bool> > &edges, bool level,
-	double samples_per_pixel, double pixels_offset, float x_offset,
-	float y_offset)
-{
-	QLineF *line = lines;
-
-	for (auto i = edges.begin(); i != (edges.end() - 1); i++)
-		if ((*i).second == level) {
-			*line++ = QLineF(
-				((*i).first / samples_per_pixel -
-					pixels_offset) + x_offset, y_offset,
-				((*(i+1)).first / samples_per_pixel -
-					pixels_offset) + x_offset, y_offset);
-		}
-
-	p.drawLines(lines, line - lines);
-}
-
 shared_ptr<pv::data::AnalogSegment> AnalogSignal::get_analog_segment_to_paint() const
 {
 	shared_ptr<pv::data::AnalogSegment> segment;
@@ -719,35 +542,11 @@ shared_ptr<pv::data::AnalogSegment> AnalogSignal::get_analog_segment_to_paint() 
 			segment = segments.back();
 
 		if ((segment_display_mode_ == ShowSingleSegmentOnly) ||
-				(segment_display_mode_ == ShowLastCompleteSegmentOnly)) {
+			(segment_display_mode_ == ShowLastCompleteSegmentOnly)) {
 			try {
 				segment = segments.at(current_segment_);
 			} catch (out_of_range&) {
 				qDebug() << "Current analog segment out of range for signal" << base_->name() << ":" << current_segment_;
-			}
-		}
-	}
-
-	return segment;
-}
-
-shared_ptr<pv::data::LogicSegment> AnalogSignal::get_logic_segment_to_paint() const
-{
-	shared_ptr<pv::data::LogicSegment> segment;
-
-	const deque< shared_ptr<pv::data::LogicSegment> > &segments =
-		base_->logic_data()->logic_segments();
-
-	if (!segments.empty()) {
-		if (segment_display_mode_ == ShowLastSegmentOnly)
-			segment = segments.back();
-
-		if ((segment_display_mode_ == ShowSingleSegmentOnly) ||
-				(segment_display_mode_ == ShowLastCompleteSegmentOnly)) {
-			try {
-				segment = segments.at(current_segment_);
-			} catch (out_of_range&) {
-				qDebug() << "Current logic segment out of range for signal" << base_->name() << ":" << current_segment_;
 			}
 		}
 	}
@@ -770,6 +569,17 @@ void AnalogSignal::update_scale()
 {
 	resolution_ = get_resolution(scale_index_);
 	scale_ = div_height_ / resolution_;
+}
+
+void AnalogSignal::update_logic_level_offsets()
+{
+	const int signal_margin = QFontMetrics(QApplication::font()).height() / 2;
+
+	const int ph = min(pos_vdivs_, 1) * div_height_;
+	const int nh = min(neg_vdivs_, 1) * div_height_;
+
+	high_level_offset_ = -ph + signal_margin + 0.5f;
+	low_level_offset_  =  nh - signal_margin - 0.5f;
 }
 
 void AnalogSignal::update_conversion_widgets()
@@ -1156,6 +966,8 @@ void AnalogSignal::on_pos_vdivs_changed(int vdivs)
 		}
 	}
 
+	update_logic_level_offsets();
+
 	if (owner_) {
 		// Call order is important, otherwise the lazy event handler won't work
 		owner_->extents_changed(false, true);
@@ -1187,6 +999,8 @@ void AnalogSignal::on_neg_vdivs_changed(int vdivs)
 		}
 	}
 
+	update_logic_level_offsets();
+
 	if (owner_) {
 		// Call order is important, otherwise the lazy event handler won't work
 		owner_->extents_changed(false, true);
@@ -1197,6 +1011,7 @@ void AnalogSignal::on_neg_vdivs_changed(int vdivs)
 void AnalogSignal::on_div_height_changed(int height)
 {
 	div_height_ = height;
+	update_logic_level_offsets();
 	update_scale();
 
 	if (owner_) {

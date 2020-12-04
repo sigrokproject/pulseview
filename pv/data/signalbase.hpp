@@ -252,6 +252,11 @@ public:
 	shared_ptr<pv::data::Logic> logic_data() const;
 
 	/**
+	 * Get the primary internal data object, i.e. the data that was acquired from the device.
+	 */
+	shared_ptr<pv::data::SignalData> data() const;
+
+	/**
 	 * Determines whether a given segment is complete (i.e. end-of-frame has
 	 * been seen). It only considers the original data, not the converted data.
 	 */

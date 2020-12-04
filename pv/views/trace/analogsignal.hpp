@@ -27,6 +27,7 @@
 #include <QSpinBox>
 
 #include <pv/views/trace/signal.hpp>
+#include <pv/views/trace/logicsignal.hpp>
 
 using std::pair;
 using std::shared_ptr;
@@ -42,14 +43,13 @@ class SignalBase;
 namespace views {
 namespace trace {
 
-class AnalogSignal : public Signal
+class AnalogSignal : public LogicSignal
 {
 	Q_OBJECT
 
 private:
 	static const QPen AxisPen;
 	static const QColor GridMajorColor, GridMinorColor;
-	static const QColor SamplingPointColor;
 	static const QColor SamplingPointColorLo;
 	static const QColor SamplingPointColorNe;
 	static const QColor SamplingPointColorHi;
@@ -74,8 +74,6 @@ private:
 public:
 	AnalogSignal(pv::Session &session, shared_ptr<data::SignalBase> base);
 
-	shared_ptr<pv::data::SignalData> data() const;
-
 	virtual std::map<QString, QVariant> save_settings() const;
 	virtual void restore_settings(std::map<QString, QVariant> settings);
 
@@ -83,28 +81,28 @@ public:
 	 * Computes the vertical extents of the contents of this row item.
 	 * @return A pair containing the minimum and maximum y-values.
 	 */
-	pair<int, int> v_extents() const;
+	virtual pair<int, int> v_extents() const;
 
 	/**
 	 * Paints the background layer of the signal with a QPainter
 	 * @param p the QPainter to paint into.
 	 * @param pp the painting parameters object to paint with..
 	 */
-	void paint_back(QPainter &p, ViewItemPaintParams &pp);
+	virtual void paint_back(QPainter &p, ViewItemPaintParams &pp);
 
 	/**
 	 * Paints the mid-layer of the signal with a QPainter
 	 * @param p the QPainter to paint into.
 	 * @param pp the painting parameters object to paint with..
 	 */
-	void paint_mid(QPainter &p, ViewItemPaintParams &pp);
+	virtual void paint_mid(QPainter &p, ViewItemPaintParams &pp);
 
 	/**
 	 * Paints the foreground layer of the item with a QPainter
 	 * @param p the QPainter to paint into.
 	 * @param pp the painting parameters object to paint with.
 	 */
-	void paint_fore(QPainter &p, ViewItemPaintParams &pp);
+	virtual void paint_fore(QPainter &p, ViewItemPaintParams &pp);
 
 private:
 	void paint_grid(QPainter &p, int y, int left, int right);
@@ -119,15 +117,7 @@ private:
 		int y, int left, const int64_t start, const int64_t end,
 		const double pixels_offset, const double samples_per_pixel);
 
-	void paint_logic_mid(QPainter &p, ViewItemPaintParams &pp);
-
-	void paint_logic_caps(QPainter &p, QLineF *const lines,
-		vector< pair<int64_t, bool> > &edges,
-		bool level, double samples_per_pixel, double pixels_offset,
-		float x_offset, float y_offset);
-
 	shared_ptr<pv::data::AnalogSegment> get_analog_segment_to_paint() const;
-	shared_ptr<pv::data::LogicSegment> get_logic_segment_to_paint() const;
 
 	/**
 	 * Computes the scale factor from the scale index and vdiv settings.
@@ -135,6 +125,7 @@ private:
 	float get_resolution(int scale_index);
 
 	void update_scale();
+	virtual void update_logic_level_offsets();
 
 	void update_conversion_widgets();
 

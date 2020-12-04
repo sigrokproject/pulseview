@@ -124,6 +124,7 @@ SignalBase::SignalBase(shared_ptr<sigrok::Channel> channel, ChannelType channel_
 	conversion_type_(NoConversion),
 	min_value_(0),
 	max_value_(0),
+	index_(0),
 	error_message_("")
 {
 	if (channel_) {
@@ -318,13 +319,20 @@ shared_ptr<data::Logic> SignalBase::logic_data() const
 	if (!data_)
 		return nullptr;
 
-	shared_ptr<Logic> result = dynamic_pointer_cast<Logic>(data_);
+	shared_ptr<Logic> result;
 
 	if (((conversion_type_ == A2LConversionByThreshold) ||
 		(conversion_type_ == A2LConversionBySchmittTrigger)))
 		result = dynamic_pointer_cast<Logic>(converted_data_);
+	else
+		result = dynamic_pointer_cast<Logic>(data_);
 
 	return result;
+}
+
+shared_ptr<pv::data::SignalData> SignalBase::data() const
+{
+	return data_;
 }
 
 bool SignalBase::segment_is_complete(uint32_t segment_id) const

@@ -359,7 +359,7 @@ void View::add_signalbase(const shared_ptr<data::SignalBase> signalbase)
 
 	switch (signalbase->type()) {
 	case SignalBase::LogicChannel:
-		signal = shared_ptr<Signal>(new LogicSignal(session_, session_.device(), signalbase));
+		signal = shared_ptr<Signal>(new LogicSignal(session_, signalbase));
 		break;
 
 	case SignalBase::AnalogChannel:
@@ -920,7 +920,7 @@ vector< shared_ptr<SignalData> > View::get_visible_data() const
 	vector< shared_ptr<SignalData> > visible_data;
 	for (const shared_ptr<Signal>& sig : signals_)
 		if (sig->enabled())
-			visible_data.push_back(sig->data());
+			visible_data.push_back(sig->base()->data());
 
 	return visible_data;
 }
@@ -934,8 +934,8 @@ pair<Timestamp, Timestamp> View::get_time_extents() const
 		return make_pair(0, 0);
 
 	for (shared_ptr<Signal> s : signals_)
-		if (s->data() && (s->data()->segments().size() > 0))
-			data.push_back(s->data());
+		if (s->base()->data() && (s->base()->data()->segments().size() > 0))
+			data.push_back(s->base()->data());
 
 	for (const shared_ptr<SignalData>& d : data) {
 		const vector< shared_ptr<Segment> > segments = d->segments();
@@ -1502,7 +1502,7 @@ void View::determine_time_unit()
 	if (time_unit_ == util::TimeUnit::Samples) {
 		// Check all signals but...
 		for (const shared_ptr<Signal>& signal : signals_) {
-			const shared_ptr<SignalData> data = signal->data();
+			const shared_ptr<SignalData> data = signal->base()->data();
 
 			// ...only check first segment of each
 			const vector< shared_ptr<Segment> > segments = data->segments();

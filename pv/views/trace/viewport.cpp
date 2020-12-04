@@ -244,10 +244,8 @@ void Viewport::wheelEvent(QWheelEvent *event)
 
 void Viewport::on_setting_changed(const QString &key, const QVariant &value)
 {
-	if (key == GlobalSettings::Key_View_AllowVerticalDragging) {
-		GlobalSettings settings;
-		allow_vertical_dragging_ = settings.value(GlobalSettings::Key_View_AllowVerticalDragging).toBool();
-	}
+	if (key == GlobalSettings::Key_View_AllowVerticalDragging)
+		allow_vertical_dragging_ = value.toBool();
 }
 
 } // namespace trace

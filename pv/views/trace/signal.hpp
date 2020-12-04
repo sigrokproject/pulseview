@@ -70,8 +70,6 @@ public:
 	 */
 	virtual void set_name(QString name);
 
-	virtual shared_ptr<pv::data::SignalData> data() const = 0;
-
 	/**
 	 * Determines the closest level change (i.e. edge) to a given sample, which
 	 * is useful for e.g. the "snap to edge" functionality.

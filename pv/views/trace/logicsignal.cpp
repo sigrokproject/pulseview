@@ -86,12 +86,8 @@ const char* LogicSignal::TriggerMarkerIcons[8] = {
 QCache<QString, const QIcon> LogicSignal::icon_cache_;
 QCache<QString, const QPixmap> LogicSignal::pixmap_cache_;
 
-LogicSignal::LogicSignal(
-	pv::Session &session,
-	shared_ptr<devices::Device> device,
-	shared_ptr<data::SignalBase> base) :
+LogicSignal::LogicSignal(pv::Session &session, shared_ptr<data::SignalBase> base) :
 	Signal(session, base),
-	device_(device),
 	trigger_types_(get_trigger_types()),
 	trigger_none_(nullptr),
 	trigger_rising_(nullptr),
@@ -100,8 +96,6 @@ LogicSignal::LogicSignal(
 	trigger_low_(nullptr),
 	trigger_change_(nullptr)
 {
-	shared_ptr<Trigger> trigger;
-
 	GlobalSettings settings;
 	signal_height_ = settings.value(GlobalSettings::Key_View_DefaultLogicHeight).toInt();
 	show_sampling_points_ =
@@ -111,24 +105,16 @@ LogicSignal::LogicSignal(
 	high_fill_color_ = QColor::fromRgba(settings.value(
 		GlobalSettings::Key_View_FillSignalHighAreaColor).value<uint32_t>());
 
+	update_logic_level_offsets();
+
 	/* Populate this channel's trigger setting with whatever we
 	 * find in the current session trigger, if anything. */
 	trigger_match_ = nullptr;
-	if ((trigger = session_.session()->trigger()))
+	if (shared_ptr<Trigger> trigger = session_.session()->trigger())
 		for (auto stage : trigger->stages())
 			for (auto match : stage->matches())
 				if (match->channel() == base_->channel())
 					trigger_match_ = match->type();
-}
-
-shared_ptr<pv::data::SignalData> LogicSignal::data() const
-{
-	return base_->logic_data();
-}
-
-shared_ptr<pv::data::Logic> LogicSignal::logic_data() const
-{
-	return base_->logic_data();
 }
 
 std::map<QString, QVariant> LogicSignal::save_settings() const
@@ -148,6 +134,8 @@ void LogicSignal::restore_settings(std::map<QString, QVariant> settings)
 		signal_height_ = settings["trace_height"].toInt();
 
 		if ((signal_height_ != old_height) && owner_) {
+			update_logic_level_offsets();
+
 			// Call order is important, otherwise the lazy event handler won't work
 			owner_->extents_changed(false, true);
 			owner_->row_item_appearance_changed(false, true);
@@ -176,8 +164,9 @@ void LogicSignal::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 	if (!base_->enabled())
 		return;
 
-	const float low_offset = y + 0.5f;
-	const float high_offset = low_offset - signal_height_;
+	const float low_offset = y + low_level_offset_;
+	const float high_offset = y + high_level_offset_;
+	const float fill_height = low_offset - high_offset;
 
 	shared_ptr<LogicSegment> segment = get_logic_segment_to_paint();
 	if (!segment || (segment->get_sample_count() == 0))
@@ -203,7 +192,7 @@ void LogicSignal::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 		(int64_t)0), last_sample);
 
 	segment->get_subsampled_edges(edges, start_sample, end_sample,
-		samples_per_pixel / Oversampling, base_->index());
+		samples_per_pixel / Oversampling, base_->logic_bit_index());
 	assert(edges.size() >= 2);
 
 	const float first_sample_x =
@@ -250,8 +239,7 @@ void LogicSignal::paint_mid(QPainter &p, ViewItemPaintParams &pp)
 			if (rising_edge_seen) {
 				const int width = x - rising_edge_x;
 				if (width > 0)
-					high_rects.emplace_back(rising_edge_x, high_offset,
-						width, signal_height_);
+					high_rects.emplace_back(rising_edge_x, high_offset, width, fill_height);
 				rising_edge_seen = false;
 			}
 
@@ -413,12 +401,11 @@ shared_ptr<pv::data::LogicSegment> LogicSignal::get_logic_segment_to_paint() con
 		base_->logic_data()->logic_segments();
 
 	if (!segments.empty()) {
-		if (segment_display_mode_ == ShowLastSegmentOnly) {
+		if (segment_display_mode_ == ShowLastSegmentOnly)
 			segment = segments.back();
-		}
 
-	if ((segment_display_mode_ == ShowSingleSegmentOnly) ||
-		(segment_display_mode_ == ShowLastCompleteSegmentOnly)) {
+		if ((segment_display_mode_ == ShowSingleSegmentOnly) ||
+			(segment_display_mode_ == ShowLastCompleteSegmentOnly)) {
 			try {
 				segment = segments.at(current_segment_);
 			} catch (out_of_range&) {
@@ -466,10 +453,10 @@ void LogicSignal::init_trigger_actions(QWidget *parent)
 const vector<int32_t> LogicSignal::get_trigger_types() const
 {
 	// We may not be associated with a device
-	if (!device_)
+	if (!session_.device())
 		return vector<int32_t>();
 
-	const auto sr_dev = device_->device();
+	const auto sr_dev = session_.device()->device();
 	if (sr_dev->config_check(ConfigKey::TRIGGER_MATCH, Capability::LIST)) {
 		const Glib::VariantContainerBase gvar =
 			sr_dev->config_list(ConfigKey::TRIGGER_MATCH);
@@ -637,6 +624,12 @@ const QPixmap* LogicSignal::get_pixmap(const char *path)
 	return pixmap_cache_.take(path);
 }
 
+void LogicSignal::update_logic_level_offsets()
+{
+	low_level_offset_ = 0.5f;
+	high_level_offset_ = low_level_offset_ - signal_height_;
+}
+
 void LogicSignal::on_setting_changed(const QString &key, const QVariant &value)
 {
 	Signal::on_setting_changed(key, value);
@@ -669,6 +662,8 @@ void LogicSignal::on_signal_height_changed(int height)
 	signal_height_ = height;
 
 	if (owner_) {
+		update_logic_level_offsets();
+
 		// Call order is important, otherwise the lazy event handler won't work
 		owner_->extents_changed(false, true);
 		owner_->row_item_appearance_changed(false, true);
