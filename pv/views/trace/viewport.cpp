@@ -241,6 +241,12 @@ void Viewport::wheelEvent(QWheelEvent *event)
 			// is intrepretted as vertical scrolling
 			view_.set_v_offset(-view_.owner_visual_v_offset() -
 				(delta * height()) / (8 * 120));
+		} else if (event->modifiers() & Qt::ShiftModifier) {
+			// Vertical scrolling with the shift key pressed
+			// acts as horizontal scrolling like in Gimp
+			// and Inkscape.
+			view_.set_scale_offset(view_.scale(),
+				- delta * view_.scale() + view_.offset());
 		} else {
 			// Vertical scrolling is interpreted as zooming in/out
 #if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
