@@ -127,8 +127,8 @@ SignalBase::SignalBase(shared_ptr<sigrok::Channel> channel, ChannelType channel_
 	error_message_("")
 {
 	if (channel_) {
-		internal_name_ = QString::fromStdString(channel_->name());
-		index_ = channel_->index();
+		set_internal_name(QString::fromStdString(channel_->name()));
+		set_index(channel_->index());
 	}
 
 	connect(&delayed_conversion_starter_, SIGNAL(timeout()),
@@ -219,6 +219,9 @@ QString SignalBase::internal_name() const
 void SignalBase::set_internal_name(QString internal_name)
 {
 	internal_name_ = internal_name;
+
+	// Use this name also for the QObject instance
+	setObjectName(internal_name);
 }
 
 QString SignalBase::display_name() const
@@ -745,6 +748,9 @@ void SignalBase::convert_single_segment(shared_ptr<AnalogSegment> asegment,
 		// we do another round of sample conversion.
 	} while ((complete_state != old_complete_state) ||
 		(end_sample - old_end_sample >= ConversionBlockSize));
+
+	if (complete_state)
+		lsegment->set_complete();
 }
 
 void SignalBase::conversion_thread_proc()
@@ -771,6 +777,7 @@ void SignalBase::conversion_thread_proc()
 
 	shared_ptr<AnalogSegment> asegment = analog_data->analog_segments().front();
 	assert(asegment);
+	connect(asegment.get(), SIGNAL(completed()), this, SLOT(on_input_segment_completed()));
 
 	const shared_ptr<Logic> logic_data = dynamic_pointer_cast<Logic>(converted_data_);
 	assert(logic_data);
@@ -792,11 +799,15 @@ void SignalBase::conversion_thread_proc()
 		if (asegment->is_complete() &&
 			analog_data->analog_segments().size() > logic_data->logic_segments().size()) {
 
+			disconnect(asegment.get(), SIGNAL(completed()), this, SLOT(on_input_segment_completed()));
+
 			// There are more segments to process
 			segment_id++;
 
 			try {
 				asegment = analog_data->analog_segments().at(segment_id);
+				disconnect(asegment.get(), SIGNAL(completed()), this, SLOT(on_input_segment_completed()));
+				connect(asegment.get(), SIGNAL(completed()), this, SLOT(on_input_segment_completed()));
 			} catch (out_of_range&) {
 				qDebug() << "Conversion error for" << name() << ": no analog segment" \
 					<< segment_id << ", segments size is" << analog_data->analog_segments().size();
@@ -808,14 +819,16 @@ void SignalBase::conversion_thread_proc()
 			logic_data->push_segment(new_segment);
 
 			lsegment = logic_data->logic_segments().back();
-		}
-
-		// No more samples/segments to process, wait for data or interrupt
-		if (!conversion_interrupt_) {
-			unique_lock<mutex> input_lock(conversion_input_mutex_);
-			conversion_input_cond_.wait(input_lock);
+		} else {
+			// No more samples/segments to process, wait for data or interrupt
+			if (!conversion_interrupt_) {
+				unique_lock<mutex> input_lock(conversion_input_mutex_);
+				conversion_input_cond_.wait(input_lock);
+			}
 		}
 	} while (!conversion_interrupt_);
+
+	disconnect(asegment.get(), SIGNAL(completed()), this, SLOT(on_input_segment_completed()));
 }
 
 void SignalBase::start_conversion(bool delayed_start)
@@ -827,10 +840,10 @@ void SignalBase::start_conversion(bool delayed_start)
 
 	stop_conversion();
 
-	if (converted_data_)
+	if (converted_data_ && (converted_data_->get_segment_count() > 0)) {
 		converted_data_->clear();
-
-	samples_cleared();
+		samples_cleared();
+	}
 
 	conversion_interrupt_ = false;
 	conversion_thread_ = std::thread(&SignalBase::conversion_thread_proc, this);
@@ -856,10 +869,10 @@ void SignalBase::stop_conversion()
 
 void SignalBase::on_samples_cleared()
 {
-	if (converted_data_)
+	if (converted_data_ && (converted_data_->get_segment_count() > 0)) {
 		converted_data_->clear();
-
-	samples_cleared();
+		samples_cleared();
+	}
 }
 
 void SignalBase::on_samples_added(SharedPtrToSegment segment, uint64_t start_sample,
@@ -877,6 +890,15 @@ void SignalBase::on_samples_added(SharedPtrToSegment segment, uint64_t start_sam
 	}
 
 	samples_added(segment->segment_id(), start_sample, end_sample);
+}
+
+void SignalBase::on_input_segment_completed()
+{
+	if (conversion_type_ != NoConversion)
+		if (conversion_thread_.joinable()) {
+			// Notify the conversion thread since it's running
+			conversion_input_cond_.notify_one();
+		}
 }
 
 void SignalBase::on_min_max_changed(float min, float max)

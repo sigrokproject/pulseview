@@ -231,9 +231,6 @@ void DecodeSignal::begin_decode()
 		logic_mux_data_ = make_shared<Logic>(ch_count);
 	}
 
-	// Receive notifications when new sample data is available
-	connect_input_notifiers();
-
 	if (get_input_segment_count() == 0)
 		set_error_message(tr("No input data"));
 
@@ -273,6 +270,9 @@ const vector<decode::DecodeChannel> DecodeSignal::get_channels() const
 void DecodeSignal::auto_assign_signals(const shared_ptr<Decoder> dec)
 {
 	bool new_assignment = false;
+
+	// Disconnect all input signal notifications so we don't have duplicate connections
+	disconnect_input_notifiers();
 
 	// Try to auto-select channels that don't have signals assigned yet
 	for (decode::DecodeChannel& ch : channels_) {
@@ -321,6 +321,9 @@ void DecodeSignal::auto_assign_signals(const shared_ptr<Decoder> dec)
 	}
 
 	if (new_assignment) {
+		// Receive notifications when new sample data is available
+		connect_input_notifiers();
+
 		logic_mux_data_invalid_ = true;
 		stack_config_changed_ = true;
 		commit_decoder_channels();
@@ -330,11 +333,17 @@ void DecodeSignal::auto_assign_signals(const shared_ptr<Decoder> dec)
 
 void DecodeSignal::assign_signal(const uint16_t channel_id, shared_ptr<const SignalBase> signal)
 {
+	// Disconnect all input signal notifications so we don't have duplicate connections
+	disconnect_input_notifiers();
+
 	for (decode::DecodeChannel& ch : channels_)
 		if (ch.id == channel_id) {
 			ch.assigned_signal = signal;
 			logic_mux_data_invalid_ = true;
 		}
+
+	// Receive notifications when new sample data is available
+	connect_input_notifiers();
 
 	stack_config_changed_ = true;
 	commit_decoder_channels();
@@ -1126,6 +1135,8 @@ void DecodeSignal::logic_mux_proc()
 	// Logic mux data is being updated
 	logic_mux_data_invalid_ = false;
 
+	connect_input_segment_notifiers(segment_id);
+
 	uint64_t samples_to_process;
 	do {
 		do {
@@ -1164,6 +1175,9 @@ void DecodeSignal::logic_mux_proc()
 					output_segment->set_complete();
 
 				if (segment_id < get_input_segment_count() - 1) {
+
+					disconnect_input_segment_notifiers(segment_id);
+
 					// Process next segment
 					segment_id++;
 
@@ -1173,14 +1187,22 @@ void DecodeSignal::logic_mux_proc()
 					logic_mux_data_->push_segment(output_segment);
 
 					output_segment->set_samplerate(get_input_samplerate(segment_id));
+
+					connect_input_segment_notifiers(segment_id);
 				} else {
 					// Wait for more input data if we're processing the currently last segment
 					unique_lock<mutex> logic_mux_lock(logic_mux_mutex_);
 					logic_mux_cond_.wait(logic_mux_lock);
 				}
+			} else {
+				// Input segments aren't all complete yet but samples_to_process is 0, wait for more input data
+				unique_lock<mutex> logic_mux_lock(logic_mux_mutex_);
+				logic_mux_cond_.wait(logic_mux_lock);
 			}
 		}
 	} while (!logic_mux_interrupt_);
+
+	disconnect_input_segment_notifiers(segment_id);
 }
 
 void DecodeSignal::decode_data(
@@ -1308,6 +1330,10 @@ void DecodeSignal::decode_proc()
 					unique_lock<mutex> input_wait_lock(input_mutex_);
 					decode_input_cond_.wait(input_wait_lock);
 				}
+			} else {
+				// Input segment isn't complete yet but samples_to_process is 0, wait for more input data
+				unique_lock<mutex> input_wait_lock(input_mutex_);
+				decode_input_cond_.wait(input_wait_lock);
 			}
 
 		}
@@ -1419,21 +1445,70 @@ void DecodeSignal::stop_srd_session()
 
 void DecodeSignal::connect_input_notifiers()
 {
-	// Disconnect the notification slot from the previous set of signals
-	disconnect(this, SLOT(on_data_cleared()));
-	disconnect(this, SLOT(on_data_received()));
-
 	// Connect the currently used signals to our slot
 	for (decode::DecodeChannel& ch : channels_) {
 		if (!ch.assigned_signal)
 			continue;
-
 		const data::SignalBase *signal = ch.assigned_signal.get();
-		connect(signal, &data::SignalBase::samples_cleared,
-			this, &DecodeSignal::on_data_cleared);
-		connect(signal, &data::SignalBase::samples_added,
-			this, &DecodeSignal::on_data_received);
+		connect(signal, SIGNAL(samples_cleared()),
+			this, SLOT(on_data_cleared()));
+		connect(signal, SIGNAL(samples_added(uint64_t, uint64_t, uint64_t)),
+			this, SLOT(on_data_received()));
 	}
+}
+
+void DecodeSignal::disconnect_input_notifiers()
+{
+	// Disconnect the notification slot from the previous set of signals
+	for (decode::DecodeChannel& ch : channels_) {
+		if (!ch.assigned_signal)
+			continue;
+		const data::SignalBase *signal = ch.assigned_signal.get();
+		disconnect(signal, nullptr, this, SLOT(on_data_cleared()));
+		disconnect(signal, nullptr, this, SLOT(on_data_received()));
+	}
+}
+
+void DecodeSignal::connect_input_segment_notifiers(uint32_t segment_id)
+{
+	for (decode::DecodeChannel& ch : channels_)
+		if (ch.assigned_signal) {
+			const shared_ptr<Logic> logic_data = ch.assigned_signal->logic_data();
+
+			shared_ptr<const LogicSegment> segment;
+			if (segment_id < logic_data->logic_segments().size()) {
+				segment = logic_data->logic_segments().at(segment_id)->get_shared_ptr();
+			} else {
+				qWarning() << "Signal" << name() << ":" << ch.assigned_signal->name() \
+					<< "has no logic segment, can't connect notifier" << segment_id;
+				continue;
+			}
+
+			if (!segment)
+				continue;
+
+			connect(segment.get(), SIGNAL(completed()), this, SLOT(on_input_segment_completed()));
+		}
+}
+
+void DecodeSignal::disconnect_input_segment_notifiers(uint32_t segment_id)
+{
+	for (decode::DecodeChannel& ch : channels_)
+		if (ch.assigned_signal) {
+			const shared_ptr<Logic> logic_data = ch.assigned_signal->logic_data();
+
+			shared_ptr<const LogicSegment> segment;
+			if (segment_id < logic_data->logic_segments().size()) {
+				segment = logic_data->logic_segments().at(segment_id)->get_shared_ptr();
+			} else {
+				continue;
+			}
+
+			if (!segment)
+				continue;
+
+			disconnect(segment.get(), SIGNAL(completed()), this, SLOT(on_input_segment_completed()));
+		}
 }
 
 void DecodeSignal::create_decode_segment()
@@ -1640,6 +1715,12 @@ void DecodeSignal::on_data_received()
 	if (!logic_mux_thread_.joinable())
 		begin_decode();
 	else
+		logic_mux_cond_.notify_one();
+}
+
+void DecodeSignal::on_input_segment_completed()
+{
+	if (!logic_mux_thread_.joinable())
 		logic_mux_cond_.notify_one();
 }
 

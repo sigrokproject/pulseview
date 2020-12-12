@@ -126,6 +126,8 @@ Session::Session(DeviceManager &device_manager, QString name) :
 	cur_samplerate_(0),
 	data_saved_(true)
 {
+	// Use this name also for the QObject instance
+	setObjectName(name_);
 }
 
 Session::~Session()
@@ -174,6 +176,9 @@ void Session::set_name(QString name)
 		default_name_ = name;
 
 	name_ = name;
+
+	// Use this name also for the QObject instance
+	setObjectName(name_);
 
 	name_changed();
 }

@@ -73,9 +73,11 @@ uint32_t Logic::get_segment_count() const
 
 void Logic::clear()
 {
-	segments_.clear();
+	if (!segments_.empty()) {
+		segments_.clear();
 
-	samples_cleared();
+		samples_cleared();
+	}
 }
 
 void Logic::set_samplerate(double value)

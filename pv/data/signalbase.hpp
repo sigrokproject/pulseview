@@ -389,6 +389,8 @@ private Q_SLOTS:
 	void on_samples_added(SharedPtrToSegment segment, uint64_t start_sample,
 		uint64_t end_sample);
 
+	void on_input_segment_completed();
+
 	void on_min_max_changed(float min, float max);
 
 	void on_capture_state_changed(int state);

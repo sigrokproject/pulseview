@@ -64,9 +64,11 @@ uint32_t Analog::get_segment_count() const
 
 void Analog::clear()
 {
-	segments_.clear();
+	if (!segments_.empty()) {
+		segments_.clear();
 
-	samples_cleared();
+		samples_cleared();
+	}
 }
 
 void Analog::set_samplerate(double value)
