@@ -548,7 +548,7 @@ void MainBar::update_device_config_widgets()
 		sample_count_supported_ = true;
 
 	// Add notification of reconfigure events
-	disconnect(this, SLOT(on_config_changed()));
+	// Note: No need to disconnect the previous signal as that QObject instance is destroyed
 	connect(&opts->binding(), SIGNAL(config_changed()),
 		this, SLOT(on_config_changed()));
 

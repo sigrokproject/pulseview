@@ -307,8 +307,13 @@ void MathSignal::begin_generation()
 		return;
 	}
 
-	disconnect(this, SLOT(on_data_received()));
-	disconnect(this, SLOT(on_enabled_changed()));
+	disconnect(&session_, SIGNAL(data_received()), this, SLOT(on_data_received()));
+
+	for (const shared_ptr<SignalBase>& sb : session_.signalbases()) {
+		if (sb->analog_data())
+			disconnect(sb->analog_data().get(), nullptr, this, SLOT(on_data_received()));
+		disconnect(sb.get(), nullptr, this, SLOT(on_enabled_changed()));
+	}
 
 	fnc_sample_ = new fnc_sample<double>(*this);
 
@@ -371,8 +376,7 @@ void MathSignal::begin_generation()
 	if (error_message_.isEmpty()) {
 		// Connect to the session data notification if we have no input signals
 		if (input_signals_.empty())
-			connect(&session_, SIGNAL(data_received()),
-				this, SLOT(on_data_received()));
+			connect(&session_, SIGNAL(data_received()),	this, SLOT(on_data_received()));
 
 		gen_interrupt_ = false;
 		gen_thread_ = std::thread(&MathSignal::generation_proc, this);
