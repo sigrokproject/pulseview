@@ -101,7 +101,7 @@ AnalogSignal::AnalogSignal(pv::Session &session, shared_ptr<data::SignalBase> ba
 	pos_vdivs_(1),
 	neg_vdivs_(1),
 	resolution_(0),
-	display_type_(DisplayBoth),
+	display_type_(DisplayAnalog),
 	autoranging_(true)
 {
 	axis_pen_ = AxisPen;
@@ -190,6 +190,7 @@ pair<int, int> AnalogSignal::v_extents() const
 {
 	const int ph = pos_vdivs_ * div_height_;
 	const int nh = neg_vdivs_ * div_height_;
+
 	return make_pair(-ph, nh);
 }
 
@@ -694,16 +695,18 @@ void AnalogSignal::perform_autoranging(bool keep_divs, bool force_update)
 		}
 	}
 
+	const bool showing_logic = (display_type_ == DisplayConverted) || (display_type_ == DisplayBoth);
+
  	// If there is still no positive div when we need it, add one
 	// (this can happen when pos_vdivs==neg_vdivs==0)
-	if ((max > 0) && (pos_vdivs_ == 0)) {
+	if (((max > 0) && (pos_vdivs_ == 0)) || showing_logic) {
 		pos_vdivs_ = 1;
 		owner_->extents_changed(false, true);
 	}
 
 	// If there is still no negative div when we need it, add one
 	// (this can happen when pos_vdivs was 0 or 1 when trying to split)
-	if ((min < 0) && (neg_vdivs_ == 0)) {
+	if (((min < 0) && (neg_vdivs_ == 0)) || showing_logic) {
 		neg_vdivs_ = 1;
 		owner_->extents_changed(false, true);
 	}
@@ -793,6 +796,7 @@ void AnalogSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
 	pvdiv_sb_ = new QSpinBox(parent);
 	pvdiv_sb_->setRange(0, MaximumVDivs);
 	pvdiv_sb_->setValue(pos_vdivs_);
+	pvdiv_sb_->setEnabled(!autoranging_);
 	connect(pvdiv_sb_, SIGNAL(valueChanged(int)),
 		this, SLOT(on_pos_vdivs_changed(int)));
 	form->addRow(tr("Number of pos vertical divs"), pvdiv_sb_);
@@ -800,6 +804,7 @@ void AnalogSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
 	nvdiv_sb_ = new QSpinBox(parent);
 	nvdiv_sb_->setRange(0, MaximumVDivs);
 	nvdiv_sb_->setValue(neg_vdivs_);
+	nvdiv_sb_->setEnabled(!autoranging_);
 	connect(nvdiv_sb_, SIGNAL(valueChanged(int)),
 		this, SLOT(on_neg_vdivs_changed(int)));
 	form->addRow(tr("Number of neg vertical divs"), nvdiv_sb_);
@@ -815,6 +820,7 @@ void AnalogSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
 
 	// Add the vertical resolution
 	resolution_cb_ = new QComboBox(parent);
+	resolution_cb_->setEnabled(!autoranging_);
 
 	for (int i = MinScaleIndex; i < MaxScaleIndex; i++) {
 		const QString label = QString("%1").arg(get_resolution(i));
@@ -1034,6 +1040,13 @@ void AnalogSignal::on_autoranging_changed(int state)
 {
 	autoranging_ = (state == Qt::Checked);
 
+	if (pvdiv_sb_)
+		pvdiv_sb_->setEnabled(!autoranging_);
+	if (nvdiv_sb_)
+		nvdiv_sb_->setEnabled(!autoranging_);
+	if (resolution_cb_)
+		resolution_cb_->setEnabled(!autoranging_);
+
 	if (autoranging_)
 		perform_autoranging(false, true);
 
@@ -1054,6 +1067,11 @@ void AnalogSignal::on_conversion_changed(int index)
 	if (conv_type != old_conv_type) {
 		base_->set_conversion_type(conv_type);
 		update_conversion_widgets();
+
+		if (conv_type == SignalBase::ConversionType::NoConversion)
+			on_display_type_changed(DisplayType::DisplayAnalog);
+		else
+			on_display_type_changed(DisplayType::DisplayBoth);
 
 		if (owner_)
 			owner_->row_item_appearance_changed(false, true);
@@ -1145,7 +1163,20 @@ void AnalogSignal::on_delayed_conversion_starter()
 
 void AnalogSignal::on_display_type_changed(int index)
 {
+	const bool prev_showing_logic = (display_type_ == DisplayConverted) || (display_type_ == DisplayBoth);
+
 	display_type_ = (DisplayType)(display_type_cb_->itemData(index).toInt());
+
+	const bool showing_logic = (display_type_ == DisplayConverted) || (display_type_ == DisplayBoth);
+
+	// If we show a logic trace, make sure we have at least one div for each
+	// polarity as that's where we paint it
+	if (showing_logic && !prev_showing_logic) {
+		if (pos_vdivs_ == 0)
+			on_pos_vdivs_changed(1);
+		if (neg_vdivs_ == 0)
+			on_neg_vdivs_changed(1);
+	}
 
 	if (owner_)
 		owner_->row_item_appearance_changed(false, true);
