@@ -196,6 +196,7 @@ void Signal::on_name_changed(const QString &text)
 
 void Signal::on_disable()
 {
+	// For generated signals, "disable" means "remove"
 	if (base_->is_generated())
 		session_.remove_generated_signal(base_);
 	else
