@@ -472,7 +472,6 @@ vector<const Row*> DecodeSignal::get_rows(bool visible_only) const
 	return rows;
 }
 
-
 uint64_t DecodeSignal::get_annotation_count(const Row* row, uint32_t segment_id) const
 {
 	if (segment_id >= segments_.size())
@@ -1450,6 +1449,7 @@ void DecodeSignal::connect_input_notifiers()
 		if (!ch.assigned_signal)
 			continue;
 		const data::SignalBase *signal = ch.assigned_signal.get();
+
 		connect(signal, SIGNAL(samples_cleared()),
 			this, SLOT(on_data_cleared()));
 		connect(signal, SIGNAL(samples_added(uint64_t, uint64_t, uint64_t)),
@@ -1484,8 +1484,11 @@ void DecodeSignal::connect_input_segment_notifiers(uint32_t segment_id)
 				continue;
 			}
 
-			if (!segment)
+			if (!segment) {
+				qWarning() << "Signal" << name() << ":" << ch.assigned_signal->name() \
+					<< "has no logic segment, can't connect notifier" << segment_id;
 				continue;
+			}
 
 			connect(segment.get(), SIGNAL(completed()), this, SLOT(on_input_segment_completed()));
 		}
@@ -1498,11 +1501,10 @@ void DecodeSignal::disconnect_input_segment_notifiers(uint32_t segment_id)
 			const shared_ptr<Logic> logic_data = ch.assigned_signal->logic_data();
 
 			shared_ptr<const LogicSegment> segment;
-			if (segment_id < logic_data->logic_segments().size()) {
+			if (segment_id < logic_data->logic_segments().size())
 				segment = logic_data->logic_segments().at(segment_id)->get_shared_ptr();
-			} else {
+			else
 				continue;
-			}
 
 			if (!segment)
 				continue;

@@ -105,13 +105,6 @@ private:
 	bool all_input_signals_enabled(QString &disabled_signals) const;
 
 Q_SIGNALS:
-	void samples_cleared();
-
-	void samples_added(uint64_t segment_id, uint64_t start_sample,
-		uint64_t end_sample);
-
-	void min_max_changed(float min, float max);
-
 	void expression_changed(QString expression);
 
 private Q_SLOTS:

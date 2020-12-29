@@ -723,6 +723,8 @@ void SignalBase::convert_single_segment_range(shared_ptr<AnalogSegment> asegment
 		delete[] lsamples;
 		delete[] asamples;
 	}
+
+	samples_added(lsegment->segment_id(), start_sample, end_sample);
 }
 
 void SignalBase::convert_single_segment(shared_ptr<AnalogSegment> asegment,
