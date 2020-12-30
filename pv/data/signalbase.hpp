@@ -87,7 +87,7 @@ private:
 class SignalBase : public QObject, public enable_shared_from_this<SignalBase>
 {
 	Q_OBJECT
-	Q_PROPERTY(QString error_message READ get_error_message)
+	Q_PROPERTY(QString error_message READ get_error_message NOTIFY error_message_changed)
 
 public:
 	enum ChannelType {
@@ -379,7 +379,7 @@ Q_SIGNALS:
 	void enabled_changed(const bool &value);
 	void name_changed(const QString &name);
 	void color_changed(const QColor &color);
-	void error_message_changed(const QString &msg);
+	void error_message_changed(QString msg);
 	void conversion_type_changed(const ConversionType t);
 
 	void samples_cleared();

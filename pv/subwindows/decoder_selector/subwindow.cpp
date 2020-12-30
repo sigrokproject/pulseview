@@ -74,7 +74,8 @@ void QCustomTreeView::currentChanged(const QModelIndex& current,
 	const QModelIndex& previous)
 {
 	QTreeView::currentChanged(current, previous);
-	currentChanged(current);
+
+	current_changed(current);
 }
 
 
@@ -158,7 +159,7 @@ SubWindow::SubWindow(Session& session, QWidget* parent) :
 	connect(filter, SIGNAL(returnPressed()),
 		this, SLOT(on_filter_return_pressed()));
 
-	connect(tree_view_, SIGNAL(currentChanged(const QModelIndex&)),
+	connect(tree_view_, SIGNAL(current_changed(const QModelIndex&)),
 		this, SLOT(on_item_changed(const QModelIndex&)));
 	connect(tree_view_, SIGNAL(activated(const QModelIndex&)),
 		this, SLOT(on_item_activated(const QModelIndex&)));

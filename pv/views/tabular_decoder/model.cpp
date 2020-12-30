@@ -228,8 +228,9 @@ void AnnotationCollectionModel::set_signal_and_segment(data::DecodeSignal* signa
 		return;
 	}
 
-	for (const shared_ptr<Decoder>& dec : signal_->decoder_stack())
-		disconnect(dec.get(), nullptr, this, SLOT(on_annotation_visibility_changed()));
+	if (signal_)
+		for (const shared_ptr<Decoder>& dec : signal_->decoder_stack())
+			disconnect(dec.get(), nullptr, this, SLOT(on_annotation_visibility_changed()));
 
 	all_annotations_ = signal->get_all_annotations_by_segment(current_segment);
 	signal_ = signal;

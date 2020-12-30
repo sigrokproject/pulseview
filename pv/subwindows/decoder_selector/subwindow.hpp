@@ -99,7 +99,7 @@ public:
 	void currentChanged(const QModelIndex& current, const QModelIndex& previous);
 
 Q_SIGNALS:
-	void currentChanged(const QModelIndex& current);
+	void current_changed(const QModelIndex& current);
 };
 
 class SubWindow : public SubWindowBase
