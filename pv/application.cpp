@@ -69,7 +69,7 @@ Application::Application(int &argc, char* argv[]) :
 
 const QStringList Application::get_languages() const
 {
-	QStringList files = QDir(":/l10n/").entryList(QStringList("*.qm"), QDir::Files);
+	const QStringList files = QDir(":/l10n/").entryList(QStringList("*.qm"), QDir::Files);
 
 	QStringList result;
 	result << "en";  // Add default language to the set

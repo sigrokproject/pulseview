@@ -669,7 +669,7 @@ void MainWindow::on_run_stop_clicked()
 		vector< shared_ptr<Session> > hw_sessions;
 
 		// Make a list of all sessions where a hardware device is used
-		for (shared_ptr<Session> s : sessions_) {
+		for (const shared_ptr<Session>& s : sessions_) {
 			shared_ptr<devices::HardwareDevice> hw_device =
 					dynamic_pointer_cast< devices::HardwareDevice >(s->device());
 			if (!hw_device)

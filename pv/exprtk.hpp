@@ -416,7 +416,7 @@ namespace exprtk
          std::string data_;
       };
 
-      static const std::string reserved_words[] =
+      const std::string reserved_words[] =
                                   {
                                     "break",  "case",  "continue",  "default",  "false",  "for",
                                     "if", "else", "ilike",  "in", "like", "and",  "nand", "nor",
@@ -427,7 +427,7 @@ namespace exprtk
 
       static const std::size_t reserved_words_size = sizeof(reserved_words) / sizeof(std::string);
 
-      static const std::string reserved_symbols[] =
+      const std::string reserved_symbols[] =
                                   {
                                     "abs",  "acos",  "acosh",  "and",  "asin",  "asinh", "atan",
                                     "atanh", "atan2", "avg",  "break", "case", "ceil",  "clamp",
@@ -446,7 +446,7 @@ namespace exprtk
 
       static const std::size_t reserved_symbols_size = sizeof(reserved_symbols) / sizeof(std::string);
 
-      static const std::string base_function_list[] =
+      const std::string base_function_list[] =
                                   {
                                     "abs", "acos",  "acosh", "asin",  "asinh", "atan",  "atanh",
                                     "atan2",  "avg",  "ceil",  "clamp",  "cos",  "cosh",  "cot",
@@ -461,28 +461,28 @@ namespace exprtk
 
       static const std::size_t base_function_list_size = sizeof(base_function_list) / sizeof(std::string);
 
-      static const std::string logic_ops_list[] =
+      const std::string logic_ops_list[] =
                                   {
                                     "and", "nand", "nor", "not", "or",  "xnor", "xor", "&", "|"
                                   };
 
       static const std::size_t logic_ops_list_size = sizeof(logic_ops_list) / sizeof(std::string);
 
-      static const std::string cntrl_struct_list[] =
+      const std::string cntrl_struct_list[] =
                                   {
                                      "if", "switch", "for", "while", "repeat", "return"
                                   };
 
       static const std::size_t cntrl_struct_list_size = sizeof(cntrl_struct_list) / sizeof(std::string);
 
-      static const std::string arithmetic_ops_list[] =
+      const std::string arithmetic_ops_list[] =
                                   {
                                     "+", "-", "*", "/", "%", "^"
                                   };
 
       static const std::size_t arithmetic_ops_list_size = sizeof(arithmetic_ops_list) / sizeof(std::string);
 
-      static const std::string assignment_ops_list[] =
+      const std::string assignment_ops_list[] =
                                   {
                                     ":=", "+=", "-=",
                                     "*=", "/=", "%="
@@ -490,7 +490,7 @@ namespace exprtk
 
       static const std::size_t assignment_ops_list_size = sizeof(assignment_ops_list) / sizeof(std::string);
 
-      static const std::string inequality_ops_list[] =
+      const std::string inequality_ops_list[] =
                                   {
                                      "<",  "<=", "==",
                                      "=",  "!=", "<>",
