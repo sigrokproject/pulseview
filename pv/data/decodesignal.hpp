@@ -211,8 +211,6 @@ private:
 
 	void connect_input_notifiers();
 	void disconnect_input_notifiers();
-	void connect_input_segment_notifiers(uint32_t segment_id);
-	void disconnect_input_segment_notifiers(uint32_t segment_id);
 
 	void create_decode_segment();
 

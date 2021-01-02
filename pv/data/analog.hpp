@@ -73,8 +73,6 @@ Q_SIGNALS:
 
 	void min_max_changed(float min, float max);
 
-	void segment_completed();
-
 private Q_SLOTS:
 	void on_segment_completed();
 

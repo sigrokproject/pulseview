@@ -829,6 +829,8 @@ void DecodeSignal::restore_settings(QSettings &settings)
 		settings.endGroup();
 	}
 
+	connect_input_notifiers();
+
 	// Update the internal structures
 	stack_config_changed_ = true;
 	update_channel_list();
@@ -1134,8 +1136,6 @@ void DecodeSignal::logic_mux_proc()
 	// Logic mux data is being updated
 	logic_mux_data_invalid_ = false;
 
-	connect_input_segment_notifiers(segment_id);
-
 	uint64_t samples_to_process;
 	do {
 		do {
@@ -1175,8 +1175,6 @@ void DecodeSignal::logic_mux_proc()
 
 				if (segment_id < get_input_segment_count() - 1) {
 
-					disconnect_input_segment_notifiers(segment_id);
-
 					// Process next segment
 					segment_id++;
 
@@ -1186,8 +1184,6 @@ void DecodeSignal::logic_mux_proc()
 					logic_mux_data_->push_segment(output_segment);
 
 					output_segment->set_samplerate(get_input_samplerate(segment_id));
-
-					connect_input_segment_notifiers(segment_id);
 				} else {
 					// Wait for more input data if we're processing the currently last segment
 					unique_lock<mutex> logic_mux_lock(logic_mux_mutex_);
@@ -1200,8 +1196,6 @@ void DecodeSignal::logic_mux_proc()
 			}
 		}
 	} while (!logic_mux_interrupt_);
-
-	disconnect_input_segment_notifiers(segment_id);
 }
 
 void DecodeSignal::decode_data(
@@ -1451,9 +1445,13 @@ void DecodeSignal::connect_input_notifiers()
 		const data::SignalBase *signal = ch.assigned_signal.get();
 
 		connect(signal, SIGNAL(samples_cleared()),
-			this, SLOT(on_data_cleared()));
+			this, SLOT(on_data_cleared()), Qt::UniqueConnection);
 		connect(signal, SIGNAL(samples_added(uint64_t, uint64_t, uint64_t)),
-			this, SLOT(on_data_received()));
+			this, SLOT(on_data_received()), Qt::UniqueConnection);
+
+		if (signal->logic_data())
+			connect(signal->logic_data().get(), SIGNAL(segment_completed()),
+				this, SLOT(on_input_segment_completed()), Qt::UniqueConnection);
 	}
 }
 
@@ -1466,51 +1464,10 @@ void DecodeSignal::disconnect_input_notifiers()
 		const data::SignalBase *signal = ch.assigned_signal.get();
 		disconnect(signal, nullptr, this, SLOT(on_data_cleared()));
 		disconnect(signal, nullptr, this, SLOT(on_data_received()));
+
+		if (signal->logic_data())
+			disconnect(signal->logic_data().get(), nullptr, this, SLOT(on_input_segment_completed()));
 	}
-}
-
-void DecodeSignal::connect_input_segment_notifiers(uint32_t segment_id)
-{
-	for (decode::DecodeChannel& ch : channels_)
-		if (ch.assigned_signal) {
-			const shared_ptr<Logic> logic_data = ch.assigned_signal->logic_data();
-
-			shared_ptr<const LogicSegment> segment;
-			if (segment_id < logic_data->logic_segments().size()) {
-				segment = logic_data->logic_segments().at(segment_id)->get_shared_ptr();
-			} else {
-				qWarning() << "Signal" << name() << ":" << ch.assigned_signal->name() \
-					<< "has no logic segment, can't connect notifier" << segment_id;
-				continue;
-			}
-
-			if (!segment) {
-				qWarning() << "Signal" << name() << ":" << ch.assigned_signal->name() \
-					<< "has no logic segment, can't connect notifier" << segment_id;
-				continue;
-			}
-
-			connect(segment.get(), SIGNAL(completed()), this, SLOT(on_input_segment_completed()));
-		}
-}
-
-void DecodeSignal::disconnect_input_segment_notifiers(uint32_t segment_id)
-{
-	for (decode::DecodeChannel& ch : channels_)
-		if (ch.assigned_signal) {
-			const shared_ptr<Logic> logic_data = ch.assigned_signal->logic_data();
-
-			shared_ptr<const LogicSegment> segment;
-			if (segment_id < logic_data->logic_segments().size())
-				segment = logic_data->logic_segments().at(segment_id)->get_shared_ptr();
-			else
-				continue;
-
-			if (!segment)
-				continue;
-
-			disconnect(segment.get(), SIGNAL(completed()), this, SLOT(on_input_segment_completed()));
-		}
 }
 
 void DecodeSignal::create_decode_segment()
@@ -1704,14 +1661,15 @@ void DecodeSignal::on_data_cleared()
 void DecodeSignal::on_data_received()
 {
 	// If we detected a lack of input data when trying to start decoding,
-	// we have set an error message. Only try again if we now have data
+	// we have set an error message. Bail out if we still don't have data
 	// to work with
 	if ((!error_message_.isEmpty()) && (get_input_segment_count() == 0))
 		return;
-	else {
+
+	if (!error_message_.isEmpty()) {
 		error_message_.clear();
 		// TODO Emulate noquote()
-		qDebug().nospace() << name() << ": Error cleared";
+		qDebug().nospace() << name() << ": Input data available, error cleared";
 	}
 
 	if (!logic_mux_thread_.joinable())

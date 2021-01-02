@@ -54,6 +54,9 @@ public:
 	virtual void set_samplerate(double value) = 0;
 
 	virtual double get_samplerate() const = 0;
+
+Q_SIGNALS:
+	void segment_completed();
 };
 
 } // namespace data

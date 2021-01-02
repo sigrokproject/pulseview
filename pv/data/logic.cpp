@@ -49,6 +49,8 @@ void Logic::push_segment(shared_ptr<LogicSegment> &segment)
 
 	if ((samplerate_ == 1) && (segment->samplerate() > 1))
 		samplerate_ = segment->samplerate();
+
+	connect(segment.get(), SIGNAL(completed()), this, SLOT(on_segment_completed()));
 }
 
 const deque< shared_ptr<LogicSegment> >& Logic::logic_segments() const
@@ -104,6 +106,11 @@ void Logic::notify_samples_added(shared_ptr<Segment> segment, uint64_t start_sam
 	uint64_t end_sample)
 {
 	samples_added(segment, start_sample, end_sample);
+}
+
+void Logic::on_segment_completed()
+{
+	segment_completed();
 }
 
 } // namespace data

@@ -71,6 +71,9 @@ Q_SIGNALS:
 	void samples_added(SharedPtrToSegment segment, uint64_t start_sample,
 		uint64_t end_sample);
 
+private Q_SLOTS:
+	void on_segment_completed();
+
 private:
 	double samplerate_;
 	const unsigned int num_channels_;
