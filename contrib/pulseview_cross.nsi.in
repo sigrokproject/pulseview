@@ -27,9 +27,6 @@
 # http://nsis.sourceforge.net/Docs/Modern%20UI%202/Readme.html
 #
 
-# Fix warning 7998: ANSI targets are deprecated
-Unicode True
-
 # Include the "Modern UI" header, which gives us the usual Windows look-n-feel.
 !include "MUI2.nsh"
 
