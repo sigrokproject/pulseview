@@ -62,6 +62,7 @@ private:
 
 private Q_SLOTS:
 	void on_progress_updated();
+	void on_cancel();
 
 private:
 	pv::StoreSession session_;
