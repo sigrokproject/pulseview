@@ -113,7 +113,9 @@ void StoreProgress::on_progress_updated()
 		setMaximum(p.second);
 	} else {
 		const QString err = session_.error();
-		if (!err.isEmpty() && !showing_error_)
+		if (err.isEmpty())
+			close();
+		else if (!showing_error_)
 			show_error();
 	}
 }
