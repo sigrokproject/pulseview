@@ -301,10 +301,14 @@ void StoreSession::store_proc(vector< shared_ptr<data::SignalBase> > achannel_li
 		units_stored_ = unit_count_ - (sample_count_ >> progress_scale);
 	}
 
-	auto dfend = context->create_end_packet();
-	const string ldata_str = output_->receive(dfend);
-	if (output_stream_.is_open())
-		output_stream_ << ldata_str;
+	try {
+		auto dfend = context->create_end_packet();
+		const string ldata_str = output_->receive(dfend);
+		if (output_stream_.is_open())
+			output_stream_ << ldata_str;
+	} catch (Error& error) {
+		error_ = tr("Error while saving: ") + error.what();
+	}
 
 	// Zeroing the progress variables indicates completion
 	units_stored_ = unit_count_ = 0;
