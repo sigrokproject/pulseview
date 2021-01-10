@@ -50,6 +50,7 @@ StoreProgress::StoreProgress(const QString &file_name,
 		this, SLOT(on_progress_updated()));
 	connect(&session_, SIGNAL(store_successful()),
 		&session, SLOT(on_data_saved()));
+	connect(this, SIGNAL(canceled()), this, SLOT(on_cancel()));
 
 	// Since we're not setting any progress in case of an error, the dialog
 	// will pop up after the minimumDuration time has been reached - 4000 ms
@@ -115,6 +116,11 @@ void StoreProgress::on_progress_updated()
 		if (!err.isEmpty() && !showing_error_)
 			show_error();
 	}
+}
+
+void StoreProgress::on_cancel()
+{
+	session_.cancel();
 }
 
 }  // namespace dialogs
