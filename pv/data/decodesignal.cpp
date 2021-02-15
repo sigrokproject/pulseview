@@ -1752,7 +1752,12 @@ void DecodeSignal::logic_output_callback(srd_proto_data *pdata, void *decode_sig
 	const srd_proto_data_logic *const pdl = (const srd_proto_data_logic*)pdata->data;
 	assert(pdl);
 
-	assert(pdl->logic_group == 0);  // FIXME Only one group supported for now
+	// FIXME Only one group supported for now
+	if (pdl->logic_group > 0) {
+		qWarning() << "Received logic output state change for group" << pdl->logic_group << "from decoder" \
+			<< QString::fromUtf8(decc->name) << "but only group 0 is currently supported";
+		return;
+	}
 
 	shared_ptr<Logic> output_logic = ds->output_logic_.at(decc);
 
@@ -1772,16 +1777,26 @@ void DecodeSignal::logic_output_callback(srd_proto_data *pdata, void *decode_sig
 
 	if (pdata->start_sample < pdata->end_sample) {
 		vector<uint8_t> data;
-		data.reserve(pdl->repeat_count + 1);  // FIXME Include unit size in calculation
-		for (unsigned int i = 0; i <= pdl->repeat_count; i++)
-			// FIXME Currently only supports 8 channels as we ignore the unit size
-			data.emplace_back(*((uint8_t*)pdl->data));
+		const unsigned int unit_size = last_segment->unit_size();
+		data.resize(unit_size * (1 + pdl->repeat_count));
+
+		if (unit_size == 1)
+			for (unsigned int i = 0; i <= pdl->repeat_count; i++)
+				data.data()[i * unit_size] = *((uint8_t*)pdl->data);
+		else if (unit_size == 2)
+			for (unsigned int i = 0; i <= pdl->repeat_count; i++)
+				data.data()[i * unit_size] = *((uint16_t*)pdl->data);
+		else if (unit_size <= 4)
+			for (unsigned int i = 0; i <= pdl->repeat_count; i++)
+				data.data()[i * unit_size] = *((uint32_t*)pdl->data);
+		else if (unit_size <= 8)
+			for (unsigned int i = 0; i <= pdl->repeat_count; i++)
+				data.data()[i * unit_size] = *((uint64_t*)pdl->data);
+		else
+			for (unsigned int i = 0; i <= pdl->repeat_count; i++)
+				memcpy((void*)&data.data()[i * unit_size], (void*)pdl->data, unit_size);
 
 		last_segment->append_payload(data.data(), data.size());
-
-		qInfo() << "Received logic output state change for group" << pdl->logic_group << "from decoder" \
-			<< QString::fromUtf8(decc->name) << "from" << pdata->start_sample << "to" << pdata->end_sample << ":" << *((uint8_t*)pdl->data);
-
 	} else
 		qWarning() << "Ignoring malformed logic output state change for group" << pdl->logic_group << "from decoder" \
 			<< QString::fromUtf8(decc->name) << "from" << pdata->start_sample << "to" << pdata->end_sample;
