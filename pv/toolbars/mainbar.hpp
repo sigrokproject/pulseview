@@ -146,7 +146,6 @@ private Q_SLOTS:
 
 	void on_add_decoder_clicked();
 	void on_add_math_signal_clicked();
-	void on_triggermode_clicked();
 
 protected:
 	void add_toolbar_widgets();
@@ -167,7 +166,7 @@ private:
 	QAction *const action_save_setup_;
 	QAction *const action_connect_;
 
-	QToolButton *new_view_button_, *open_button_, *save_button_, *triggermode_button_;
+	QToolButton *new_view_button_, *open_button_, *save_button_;
 
 	pv::widgets::DeviceToolButton device_selector_;
 
@@ -176,6 +175,9 @@ private:
 
 	pv::widgets::PopupToolButton channels_button_;
 	QAction *channels_button_action_;
+
+	pv::widgets::PopupToolButton triggermode_button_;
+	QAction *triggermode_button_action_;
 
 	pv::widgets::SweepTimingWidget sample_count_;
 	pv::widgets::SweepTimingWidget sample_rate_;

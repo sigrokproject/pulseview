@@ -43,10 +43,10 @@
 #include <pv/dialogs/connect.hpp>
 #include <pv/dialogs/inputoutputoptions.hpp>
 #include <pv/dialogs/storeprogress.hpp>
-#include <pv/dialogs/triggermode.hpp>
 #include <pv/mainwindow.hpp>
 #include <pv/popups/channels.hpp>
 #include <pv/popups/deviceoptions.hpp>
+#include <pv/popups/triggermode.hpp>
 #include <pv/util.hpp>
 #include <pv/views/trace/view.hpp>
 #include <pv/widgets/exportmenu.hpp>
@@ -102,12 +102,13 @@ MainBar::MainBar(Session &session, QWidget *parent, pv::views::trace::View *view
 	new_view_button_(new QToolButton()),
 	open_button_(new QToolButton()),
 	save_button_(new QToolButton()),
-	triggermode_button_(new QToolButton()),
 	device_selector_(parent, session.device_manager(), action_connect_),
 	configure_button_(this),
 	configure_button_action_(nullptr),
 	channels_button_(this),
 	channels_button_action_(nullptr),
+	triggermode_button_(this),
+	triggermode_button_action_(nullptr),
 	sample_count_(" samples", this),
 	sample_rate_("Hz", this),
 	updating_sample_rate_(false),
@@ -234,14 +235,6 @@ MainBar::MainBar(Session &session, QWidget *parent, pv::views::trace::View *view
 	connect(&device_selector_, SIGNAL(device_selected()),
 		this, SLOT(on_device_selected()));
 
-	// Setup the repeat trigger mode button
-	triggermode_button_ = new QToolButton();
-	triggermode_button_->setIcon(QIcon(":/icons/trigger-marker-rising.svg"));
-	triggermode_button_->setToolTip(tr("Trigger Mode"));
-	triggermode_button_->setAutoRaise(true);
-	connect(triggermode_button_, SIGNAL(clicked(bool)),
-			this, SLOT(on_triggermode_clicked()));
-
 	// Setup the decoder button
 #ifdef ENABLE_DECODE
 	add_decoder_button_->setIcon(QIcon(":/icons/add-decoder.svg"));
@@ -279,6 +272,11 @@ MainBar::MainBar(Session &session, QWidget *parent, pv::views::trace::View *view
 	channels_button_.setToolTip(tr("Configure Channels"));
 	channels_button_.setIcon(QIcon(":/icons/channels.svg"));
 
+	triggermode_button_.setToolTip(tr("Trigger Mode"));
+	triggermode_button_.setIcon(QIcon(":/icons/trigger-marker-change.svg"));
+	pv::popups::TriggerMode *const triggermode_popup = new pv::popups::TriggerMode(session_, this);
+	triggermode_button_.set_popup(triggermode_popup);
+
 	add_toolbar_widgets();
 
 	sample_count_.installEventFilter(this);
@@ -315,6 +313,7 @@ void MainBar::set_capture_state(pv::Session::capture_state state)
 	device_selector_.setEnabled(ui_enabled);
 	configure_button_.setEnabled(ui_enabled);
 	channels_button_.setEnabled(ui_enabled);
+	triggermode_button_.setEnabled(ui_enabled);
 	sample_count_.setEnabled(ui_enabled);
 	sample_rate_.setEnabled(ui_enabled);
 }
@@ -922,12 +921,6 @@ void MainBar::on_add_math_signal_clicked()
 	session_.add_generated_signal(signal);
 }
 
-void MainBar::on_triggermode_clicked()
-{
-	dialogs::TriggerMode dlg(this, session_);
-	dlg.exec();
-}
-
 void MainBar::add_toolbar_widgets()
 {
 	addWidget(new_view_button_);
@@ -941,7 +934,7 @@ void MainBar::add_toolbar_widgets()
 	addWidget(&device_selector_);
 	configure_button_action_ = addWidget(&configure_button_);
 	channels_button_action_ = addWidget(&channels_button_);
-	addWidget(triggermode_button_);
+	triggermode_button_action_ = addWidget(&triggermode_button_);
 	addWidget(&sample_count_);
 	addWidget(&sample_rate_);
 #ifdef ENABLE_DECODE

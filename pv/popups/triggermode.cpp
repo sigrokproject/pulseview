@@ -18,22 +18,20 @@
  */
 
 #include "triggermode.hpp"
+
 #include <pv/session.hpp>
 
 namespace pv {
-namespace dialogs {
+namespace popups {
 
-TriggerMode::TriggerMode(QWidget *parent, Session &session) :
-	QDialog(parent),
+TriggerMode::TriggerMode(Session &session, QWidget *parent) :
+	Popup(parent),
 	session_(session),
 	layout_(this),
 	form_(this),
-	form_layout_(&form_),
-	button_box_(QDialogButtonBox::Ok, Qt::Horizontal, this)
+	form_layout_(&form_)
 {
 	setWindowTitle(tr("Trigger Mode"));
-
-	connect(&button_box_, SIGNAL(accepted()), this, SLOT(accept()));
 
 	form_.setLayout(&form_layout_);
 
@@ -67,7 +65,6 @@ TriggerMode::TriggerMode(QWidget *parent, Session &session) :
 	connect(rearm_delay_, SIGNAL(valueChanged(int)), this, SLOT(rearm_time_changed(int)));
 
 	layout_.addWidget(&form_);
-	layout_.addWidget(&button_box_);
 
 // sync with session
 

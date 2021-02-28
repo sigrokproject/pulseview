@@ -17,8 +17,8 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PULSEVIEW_PV_TRIGGERMODE_HPP
-#define PULSEVIEW_PV_TRIGGERMODE_HPP
+#ifndef PULSEVIEW_PV_POPUPS_TRIGGERMODE_HPP
+#define PULSEVIEW_PV_POPUPS_TRIGGERMODE_HPP
 
 #include <memory>
 
@@ -31,18 +31,20 @@
 #include <QVBoxLayout>
 #include <QGroupBox>
 
+#include <pv/widgets/popup.hpp>
+
 using std::shared_ptr;
 
 namespace pv {
 class Session;
-namespace dialogs {
+namespace popups {
 
-class TriggerMode : public QDialog
+class TriggerMode : public pv::widgets::Popup
 {
 	Q_OBJECT
 
 public:
-		TriggerMode(QWidget *parent, Session &session);
+		TriggerMode(Session &session, QWidget *parent);
 
 private:
 		Session &session_;
@@ -55,7 +57,6 @@ private:
 	QVBoxLayout layout_;
 	QWidget form_;
 	QFormLayout form_layout_;
-	QDialogButtonBox button_box_;
 
 // mode
 
@@ -75,4 +76,4 @@ private:
 } // namespace dialogs
 } // namespace pv
 
-#endif // PULSEVIEW_PV_TRIGGERMODE_HPP
+#endif // PULSEVIEW_PV_POPUPS_TRIGGERMODE_HPP
