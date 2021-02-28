@@ -272,8 +272,8 @@ MainBar::MainBar(Session &session, QWidget *parent, pv::views::trace::View *view
 	channels_button_.setToolTip(tr("Configure Channels"));
 	channels_button_.setIcon(QIcon(":/icons/channels.svg"));
 
-	triggermode_button_.setToolTip(tr("Trigger Mode"));
-	triggermode_button_.setIcon(QIcon(":/icons/trigger-marker-change.svg"));
+	triggermode_button_.setToolTip(tr("Configure Repeating Trigger Rearm"));
+	triggermode_button_.setIcon(QIcon(":/icons/trigger-repeat-rearm.svg"));
 	pv::popups::TriggerMode *const triggermode_popup = new pv::popups::TriggerMode(session_, this);
 	triggermode_button_.set_popup(triggermode_popup);
 
