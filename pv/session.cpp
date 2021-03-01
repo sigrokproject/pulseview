@@ -847,6 +847,17 @@ void Session::start_capture(function<void (const QString)> error_handler)
 		name_changed();
 	}
 
+	// Init Segments
+	{
+		lock_guard<recursive_mutex> lock(data_mutex_);
+		cur_logic_segment_.reset();
+		cur_analog_segments_.clear();
+		for (shared_ptr<data::SignalBase> sb : signalbases_)
+			sb->clear_sample_data();
+	}
+	highest_segment_id_ = -1;
+	frame_began_ = false;
+
 	repetitive_rearm_permitted_ = true;
 
 	start_sampling_thread(error_handler);
@@ -1299,16 +1310,6 @@ void Session::sample_thread_proc(function<void (const QString)> error_handler)
 	}
 
 	out_of_memory_ = false;
-
-	{
-		lock_guard<recursive_mutex> lock(data_mutex_);
-		cur_logic_segment_.reset();
-		cur_analog_segments_.clear();
-		for (shared_ptr<data::SignalBase> sb : signalbases_)
-			sb->clear_sample_data();
-	}
-	highest_segment_id_ = -1;
-	frame_began_ = false;
 
 	try {
 		device_->start();
