@@ -1333,6 +1333,7 @@ void Session::sample_thread_proc(function<void (const QString)> error_handler)
 		return;
 	}
 
+	signal_segment_completed();
 	if (repetitive_rearm_permitted_ && capture_mode_ == Repetitive) {
 		set_capture_state(AwaitingRearm);
 	} else {

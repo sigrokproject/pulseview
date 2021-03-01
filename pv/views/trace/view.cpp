@@ -2003,8 +2003,18 @@ void View::capture_state_updated(int state)
 			settings.value(GlobalSettings::Key_View_StickyScrolling).toBool();
 
 		// Reset all traces to segment 0
-		current_segment_ = 0;
-		set_current_segment(current_segment_);
+		//// TODO
+		//// Problem here is that the session repeatedly goes to Running state now
+		//// This function might actually want to do things the first time the session
+		//// is "started"
+		//// So maybe the Session should have states:
+		//// - Stopped
+		//// - Starting
+		//// - AwaitingTrigger
+		//// - Capturing
+		//// - AwaitingRearm
+		////current_segment_ = 0;
+		////set_current_segment(current_segment_);
 	}
 
 	if (state == Session::Stopped) {
