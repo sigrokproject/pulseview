@@ -1979,7 +1979,7 @@ void View::capture_state_updated(int state)
 {
 	GlobalSettings settings;
 
-	if (state == Session::Running) {
+	if (state == Session::Starting) {
 		set_time_unit(util::TimeUnit::Samples);
 
 		trigger_markers_.clear();
@@ -2002,19 +2002,8 @@ void View::capture_state_updated(int state)
 		sticky_scrolling_ = !restoring_state_ &&
 			settings.value(GlobalSettings::Key_View_StickyScrolling).toBool();
 
-		// Reset all traces to segment 0
-		//// TODO
-		//// Problem here is that the session repeatedly goes to Running state now
-		//// This function might actually want to do things the first time the session
-		//// is "started"
-		//// So maybe the Session should have states:
-		//// - Stopped
-		//// - Starting
-		//// - AwaitingTrigger
-		//// - Capturing
-		//// - AwaitingRearm
-		////current_segment_ = 0;
-		////set_current_segment(current_segment_);
+		current_segment_ = 0;
+		set_current_segment(current_segment_);
 	}
 
 	if (state == Session::Stopped) {
@@ -2048,33 +2037,25 @@ void View::capture_state_updated(int state)
 
 void View::on_new_segment(int new_segment_id)
 {
-	on_segment_changed(new_segment_id);
+	if (segment_display_mode_ == Trace::ShowLastSegmentOnly)
+		set_current_segment(new_segment_id);
 }
 
 void View::on_segment_completed(int segment_id)
 {
-	on_segment_changed(segment_id);
+	if (segment_display_mode_ == Trace::ShowLastCompleteSegmentOnly)
+		// Only update if all segments are complete
+		if (session_.all_segments_complete(segment_id))
+			set_current_segment(segment_id);
 }
 
 void View::on_segment_changed(int segment)
 {
-	switch (segment_display_mode_) {
-	case Trace::ShowLastSegmentOnly:
-	case Trace::ShowSingleSegmentOnly:
-		set_current_segment(segment);
-		break;
+	// Triggered when a segment is selected by UI action from the user
+	// In this case, we assume segment_display_mode_ has already been
+	// reset to ShowSingleSegmentOnly and switch to the given segment.
 
-	case Trace::ShowLastCompleteSegmentOnly:
-		// Only update if all segments are complete
-		if (session_.all_segments_complete(segment))
-			set_current_segment(segment);
-		break;
-
-	case Trace::ShowAllSegments:
-	case Trace::ShowAccumulatedIntensity:
-	default:
-		break;
-	}
+	set_current_segment(segment);
 }
 
 void View::on_settingViewTriggerIsZeroTime_changed(const QVariant new_value)

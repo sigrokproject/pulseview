@@ -127,6 +127,7 @@ class Session : public QObject
 public:
 	enum capture_state {
 		Stopped,
+		Starting,
 		AwaitingTrigger,
 		Running,
 		AwaitingRearm,

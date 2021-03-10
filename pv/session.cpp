@@ -860,6 +860,7 @@ void Session::start_capture(function<void (const QString)> error_handler)
 
 	repetitive_rearm_permitted_ = true;
 
+	set_capture_state(capture_state::Starting);
 	start_sampling_thread(error_handler);
 }
 

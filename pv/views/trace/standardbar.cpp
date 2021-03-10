@@ -93,7 +93,7 @@ StandardBar::StandardBar(Session &session, QWidget *parent,
 
 	action_sdm_single_->setIcon(QIcon(":/icons/view-displaymode-single_segment.svg"));
 	action_sdm_single_->setText(tr("Display a single segment"));
-	connect(action_view_show_cursors_, SIGNAL(triggered(bool)),
+	connect(action_sdm_single_, SIGNAL(triggered(bool)),
 		this, SLOT(on_actionSDMSingle_triggered()));
 
 	segment_display_mode_selector_->addAction(action_sdm_last_);

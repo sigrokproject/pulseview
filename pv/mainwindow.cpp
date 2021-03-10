@@ -584,7 +584,8 @@ void MainWindow::update_acq_button(Session *session)
 		run_caption = tr("Run");
 	}
 
-	const QIcon *icons[] = {&icon_grey_, &icon_red_, &icon_green_, &icon_yellow_};
+	// Maps to pv::Session::capture_state enum elements
+	const QIcon *icons[] = {&icon_grey_, &icon_grey_, &icon_red_, &icon_green_, &icon_yellow_};
 	run_stop_button_->setIcon(*icons[state]);
 	run_stop_button_->setText((state == pv::Session::Stopped) ?
 		run_caption : tr("Stop"));
