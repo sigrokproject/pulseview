@@ -704,6 +704,7 @@ void MainWindow::on_run_stop_clicked()
 			session->start_capture([&](QString message) {
 				show_session_error("Capture failed", message); });
 			break;
+		case Session::Starting:
 		case Session::AwaitingRearm:
 		case Session::AwaitingTrigger:
 		case Session::Running:

@@ -422,6 +422,7 @@ private:
 
 	void update_view_range_metaobject() const;
 	void update_hover_point();
+	void update_current_segment();
 
 public:
 	void row_item_appearance_changed(bool label, bool content);

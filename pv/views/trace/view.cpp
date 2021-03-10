@@ -782,9 +782,23 @@ void View::set_segment_display_mode(Trace::SegmentDisplayMode mode)
 	for (const shared_ptr<Signal>& signal : signals_)
 		signal->set_segment_display_mode(mode);
 
+	update_current_segment();
+
+	segment_selectable_ = true;
+
+	if ((mode == Trace::ShowAllSegments) || (mode == Trace::ShowAccumulatedIntensity))
+		segment_selectable_ = false;
+
+	viewport_->update();
+
+	segment_display_mode_changed((int)mode, segment_selectable_);
+}
+
+void View::update_current_segment()
+{
 	uint32_t last_segment = session_.get_highest_segment_id();
 
-	switch (mode) {
+	switch (segment_display_mode_) {
 	case Trace::ShowLastSegmentOnly:
 		if (current_segment_ != last_segment)
 			set_current_segment(last_segment);
@@ -810,15 +824,6 @@ void View::set_segment_display_mode(Trace::SegmentDisplayMode mode)
 		// Current segment remains as-is
 		break;
 	}
-
-	segment_selectable_ = true;
-
-	if ((mode == Trace::ShowAllSegments) || (mode == Trace::ShowAccumulatedIntensity))
-		segment_selectable_ = false;
-
-	viewport_->update();
-
-	segment_display_mode_changed((int)mode, segment_selectable_);
 }
 
 void View::zoom(double steps)
@@ -2037,16 +2042,12 @@ void View::capture_state_updated(int state)
 
 void View::on_new_segment(int new_segment_id)
 {
-	if (segment_display_mode_ == Trace::ShowLastSegmentOnly)
-		set_current_segment(new_segment_id);
+	update_current_segment();
 }
 
 void View::on_segment_completed(int segment_id)
 {
-	if (segment_display_mode_ == Trace::ShowLastCompleteSegmentOnly)
-		// Only update if all segments are complete
-		if (session_.all_segments_complete(segment_id))
-			set_current_segment(segment_id);
+	update_current_segment();
 }
 
 void View::on_segment_changed(int segment)
