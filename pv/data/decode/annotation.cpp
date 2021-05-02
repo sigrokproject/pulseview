@@ -17,16 +17,16 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-extern "C" {
-#include <libsigrokdecode/libsigrokdecode.h>
-}
-
 #include <cassert>
 #include <vector>
 
 #include <pv/data/decode/annotation.hpp>
 #include <pv/data/decode/decoder.hpp>
 #include "pv/data/decode/rowdata.hpp"
+
+extern "C" {
+#include <libsigrokdecode/libsigrokdecode.h>
+}
 
 using std::vector;
 
