@@ -390,8 +390,10 @@ void Session::restore_setup(QSettings &settings)
 		SignalBase::ChannelType type = (SignalBase::ChannelType)settings.value("type").toInt();
 		shared_ptr<data::SignalBase> signal;
 
-		if (type == SignalBase::MathChannel)
-			signal = make_shared<data::MathSignal>(*this);
+		if (type == SignalBase::AnalogMathChannel)
+			signal = make_shared<data::MathSignalAnalog>(*this);
+		else if (type == SignalBase::LogicMathChannel)
+			signal = make_shared<data::MathSignalLogic>(*this);
 		else
 			qWarning() << tr("Can't restore generated signal of unknown type %1 (%2)") \
 				.arg((int)type) \
@@ -868,7 +870,8 @@ void Session::register_view(shared_ptr<views::ViewBase> view)
 			switch (signalbase->type()) {
 			case data::SignalBase::AnalogChannel:
 			case data::SignalBase::LogicChannel:
-			case data::SignalBase::MathChannel:
+			case data::SignalBase::AnalogMathChannel:
+			case data::SignalBase::LogicMathChannel:
 				view->add_signalbase(signalbase);
 				break;
 			case data::SignalBase::DecodeChannel:

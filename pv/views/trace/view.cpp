@@ -366,8 +366,12 @@ void View::add_signalbase(const shared_ptr<data::SignalBase> signalbase)
 		signal = shared_ptr<Signal>(new AnalogSignal(session_, signalbase));
 		break;
 
-	case SignalBase::MathChannel:
-		signal = shared_ptr<Signal>(new MathSignal(session_, signalbase));
+	case SignalBase::AnalogMathChannel:
+		signal = shared_ptr<Signal>(new MathSignalAnalog(session_, signalbase));
+		break;
+	
+	case SignalBase::LogicMathChannel:
+		signal = shared_ptr<Signal>(new MathSignalLogic(session_, signalbase));
 		break;
 
 	default:

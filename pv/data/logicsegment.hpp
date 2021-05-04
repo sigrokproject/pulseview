@@ -71,6 +71,8 @@ private:
 
 public:
 	LogicSegment(pv::data::Logic& owner, uint32_t segment_id,
+		uint64_t samplerate);
+	LogicSegment(pv::data::Logic& owner, uint32_t segment_id,
 		unsigned int unit_size, uint64_t samplerate);
 
 	virtual ~LogicSegment();
@@ -99,7 +101,12 @@ public:
 	void append_subsignal_payload(unsigned int index, void *data,
 		uint64_t data_size, vector<uint8_t>& destination);
 
+	void append_interleaved_samples(const uint8_t *data,
+		size_t sample_count, size_t stride);
+
 	void get_samples(int64_t start_sample, int64_t end_sample, uint8_t* dest) const;
+
+	uint8_t get_sample(int64_t sample_num, unsigned int index) const;
 
 	/**
 	 * Parses a logic data segment to generate a list of transitions

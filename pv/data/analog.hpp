@@ -26,7 +26,9 @@
 #include <memory>
 
 #include <QObject>
+#include <QColor>
 #include "pv/data/segment.hpp"
+#include "pv/data/signalbase.hpp"
 
 using std::deque;
 using std::shared_ptr;
@@ -42,11 +44,26 @@ class Analog : public SignalData
 	Q_OBJECT
 
 public:
+	/**
+	 * Types and statics used with templates
+	 */
+	typedef AnalogSegment segment_t;
+	typedef float sample_t;
+	static const QColor SignalColors[8];
+	static const char *InvalidSignal;
+	static const SignalBase::ChannelType math_channel_type = SignalBase::AnalogMathChannel;
+
+public:
 	Analog();
 
 	void push_segment(shared_ptr<AnalogSegment> &segment);
 
 	const deque< shared_ptr<AnalogSegment> >& analog_segments() const;
+
+	inline const deque< shared_ptr<AnalogSegment> >& typed_segments() const
+	{
+		return analog_segments();
+	}
 
 	vector< shared_ptr<Segment> > segments() const;
 
