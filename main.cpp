@@ -70,8 +70,10 @@
 
 #ifdef _WIN32
 #include <QtPlugin>
+#ifdef QT_STATIC
 Q_IMPORT_PLUGIN(QWindowsIntegrationPlugin)
 Q_IMPORT_PLUGIN(QSvgPlugin)
+#endif
 #endif
 
 using std::exception;
