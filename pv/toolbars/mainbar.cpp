@@ -114,7 +114,8 @@ MainBar::MainBar(Session &session, QWidget *parent, pv::views::trace::View *view
 #ifdef ENABLE_DECODE
 	add_decoder_button_(new QToolButton()),
 #endif
-	add_math_signal_button_(new QToolButton())
+	add_math_signal_button_(new QToolButton()),
+	add_math_logic_signal_button_(new QToolButton())
 {
 	setObjectName(QString::fromUtf8("MainBar"));
 
@@ -252,6 +253,14 @@ MainBar::MainBar(Session &session, QWidget *parent, pv::views::trace::View *view
 	connect(add_math_signal_button_, SIGNAL(clicked()),
 		this, SLOT(on_add_math_signal_clicked()));
 
+	// Setup the math logic signal button
+	add_math_logic_signal_button_->setIcon(QIcon(":/icons/add-math-logic-signal.svg"));
+	add_math_logic_signal_button_->setPopupMode(QToolButton::InstantPopup);
+	add_math_logic_signal_button_->setToolTip(tr("Add math logic signal"));
+	add_math_logic_signal_button_->setShortcut(QKeySequence(Qt::Key_M));
+
+	connect(add_math_logic_signal_button_, SIGNAL(clicked()),
+		this, SLOT(on_add_math_logic_signal_clicked()));
 
 	connect(&sample_count_, SIGNAL(value_changed()),
 		this, SLOT(on_sample_count_changed()));
@@ -908,7 +917,13 @@ void MainBar::on_add_decoder_clicked()
 
 void MainBar::on_add_math_signal_clicked()
 {
-	shared_ptr<data::SignalBase> signal = make_shared<data::MathSignal>(session_);
+	shared_ptr<data::SignalBase> signal = make_shared<data::MathSignalAnalog>(session_);
+	session_.add_generated_signal(signal);
+}
+
+void MainBar::on_add_math_logic_signal_clicked()
+{
+	shared_ptr<data::SignalBase> signal = make_shared<data::MathSignalLogic>(session_);
 	session_.add_generated_signal(signal);
 }
 
@@ -932,6 +947,7 @@ void MainBar::add_toolbar_widgets()
 	addWidget(add_decoder_button_);
 #endif
 	addWidget(add_math_signal_button_);
+	addWidget(add_math_logic_signal_button_);
 }
 
 bool MainBar::eventFilter(QObject *watched, QEvent *event)

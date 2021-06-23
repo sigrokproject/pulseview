@@ -22,10 +22,12 @@
 
 #include "signaldata.hpp"
 #include "segment.hpp"
+#include "signalbase.hpp"
 
 #include <deque>
 
 #include <QObject>
+#include <QColor>
 
 using std::deque;
 using std::shared_ptr;
@@ -41,7 +43,17 @@ class Logic : public SignalData
 	Q_OBJECT
 
 public:
-	Logic(unsigned int num_channels);
+	/**
+	 * Types and statics used with templates
+	 */
+	typedef LogicSegment segment_t;
+	typedef uint8_t sample_t;
+	static const QColor SignalColors[10];
+	static const char *InvalidSignal;
+	static const SignalBase::ChannelType math_channel_type = SignalBase::LogicMathChannel;
+
+public:
+	Logic(unsigned int num_channels = 1);
 
 	unsigned int num_channels() const;
 
@@ -49,6 +61,11 @@ public:
 
 	const deque< shared_ptr<LogicSegment> >& logic_segments() const;
 	deque< shared_ptr<LogicSegment> >& logic_segments();
+
+	inline const deque< shared_ptr<LogicSegment> >& typed_segments() const
+	{
+		return logic_segments();
+	}
 
 	vector< shared_ptr<Segment> > segments() const;
 

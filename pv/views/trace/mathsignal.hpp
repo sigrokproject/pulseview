@@ -22,6 +22,7 @@
 
 #include <memory>
 #include <vector>
+#include <functional>
 
 #include <QComboBox>
 #include <QDialog>
@@ -36,6 +37,7 @@ using std::pair;
 using std::shared_ptr;
 using std::string;
 using std::vector;
+using std::function;
 
 namespace pv {
 namespace views {
@@ -49,8 +51,8 @@ private:
 	static const vector< pair<string, string> > Examples;
 
 public:
-	MathEditDialog(pv::Session &session, shared_ptr<pv::data::MathSignal> math_signal,
-		QWidget *parent = nullptr);
+	MathEditDialog(pv::Session &session, function<void(QString)> math_signal_expr_setter,
+		QString old_expression, QWidget *parent = nullptr);
 
 	void set_expr(const QString &expr);
 
@@ -60,24 +62,25 @@ private Q_SLOTS:
 
 private:
 	pv::Session &session_;
-	shared_ptr<pv::data::MathSignal> math_signal_;
+	shared_ptr<pv::data::MathSignalAnalog> math_signal_;
+	function<void(QString)> math_signal_expr_setter_;
 	QString old_expression_;
 
 	QPlainTextEdit *expr_edit_;
 };
 
 
-class MathSignal : public AnalogSignal
+class MathSignalAnalog : public AnalogSignal
 {
 	Q_OBJECT
 
 public:
-	MathSignal(pv::Session &session, shared_ptr<data::SignalBase> base);
+	MathSignalAnalog(pv::Session &session, shared_ptr<data::SignalBase> base);
 
 protected:
 	void populate_popup_form(QWidget *parent, QFormLayout *form);
 
-	shared_ptr<pv::data::MathSignal> math_signal_;
+	shared_ptr<pv::data::MathSignalAnalog> math_signal_;
 
 private Q_SLOTS:
 	void on_expression_changed(const QString &text);
@@ -89,6 +92,29 @@ private:
 	QLineEdit *expression_edit_;
 	QComboBox *sample_count_cb_, *sample_rate_cb_;
 	QString sample_count_text_, sample_rate_text_;
+	QTimer delayed_expr_updater_, delayed_count_updater_, delayed_rate_updater_;
+};
+
+class MathSignalLogic : public LogicSignal
+{
+	Q_OBJECT
+
+public:
+	MathSignalLogic(pv::Session &session, shared_ptr<data::SignalBase> base);
+
+protected:
+	void populate_popup_form(QWidget *parent, QFormLayout *form);
+
+	shared_ptr<pv::data::MathSignalLogic> math_signal_;
+
+private Q_SLOTS:
+	void on_expression_changed(const QString &text);
+
+	void on_edit_clicked();
+
+private:
+	QLineEdit *expression_edit_;
+	QComboBox *sample_count_cb_, *sample_rate_cb_;
 	QTimer delayed_expr_updater_, delayed_count_updater_, delayed_rate_updater_;
 };
 

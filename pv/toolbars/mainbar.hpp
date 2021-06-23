@@ -146,6 +146,7 @@ private Q_SLOTS:
 
 	void on_add_decoder_clicked();
 	void on_add_math_signal_clicked();
+	void on_add_math_logic_signal_clicked();
 
 protected:
 	void add_toolbar_widgets();
@@ -188,6 +189,7 @@ private:
 #endif
 
 	QToolButton *add_math_signal_button_;
+	QToolButton *add_math_logic_signal_button_;
 };
 
 } // namespace toolbars
