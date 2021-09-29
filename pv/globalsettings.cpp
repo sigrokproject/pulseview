@@ -342,8 +342,11 @@ GVariant* GlobalSettings::restore_gvariant(QSettings &settings)
 
 	QByteArray data = settings.value("value").toByteArray();
 
-	gpointer var_data = g_memdup((gconstpointer)data.constData(),
-		(guint)data.size());
+#if GLIB_CHECK_VERSION(2, 67, 3)  // See https://discourse.gnome.org/t/port-your-module-from-g-memdup-to-g-memdup2-now/5538
+	gpointer var_data = g_memdup2((gconstpointer)data.constData(), (guint)data.size());
+#else
+	gpointer var_data = g_memdup((gconstpointer)data.constData(), (guint)data.size());
+#endif
 
 	GVariant *value = g_variant_new_from_data(var_type, var_data,
 		data.size(), false, g_free, var_data);
@@ -368,8 +371,11 @@ Glib::VariantBase GlobalSettings::restore_variantbase(QSettings &settings)
 
 	QByteArray data = settings.value("value").toByteArray();
 
-	gpointer var_data = g_memdup((gconstpointer)data.constData(),
-		(guint)data.size());
+#if GLIB_CHECK_VERSION(2, 67, 3)  // See https://discourse.gnome.org/t/port-your-module-from-g-memdup-to-g-memdup2-now/5538
+	gpointer var_data = g_memdup2((gconstpointer)data.constData(), (guint)data.size());
+#else
+	gpointer var_data = g_memdup((gconstpointer)data.constData(), (guint)data.size());
+#endif
 
 	GVariant *value = g_variant_new_from_data(var_type, var_data,
 		data.size(), false, g_free, var_data);
