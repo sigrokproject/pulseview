@@ -25,8 +25,9 @@
 #include <QStackedWidget>
 #include <QToolButton>
 
-#include <pv/views/viewbase.hpp>
-#include <pv/data/decodesignal.hpp>
+#include "pv/metadata_obj.hpp"
+#include "pv/views/viewbase.hpp"
+#include "pv/data/decodesignal.hpp"
 
 #include "QHexView.hpp"
 
@@ -50,12 +51,13 @@ enum SaveType {
 extern const char* SaveTypeNames[SaveTypeCount];
 
 
-class View : public ViewBase
+class View : public ViewBase, public MetadataObjObserverInterface
 {
 	Q_OBJECT
 
 public:
 	explicit View(Session &session, bool is_main_view=false, QMainWindow *parent = nullptr);
+	~View();
 
 	virtual ViewType get_type() const;
 
@@ -89,6 +91,9 @@ private Q_SLOTS:
 	void on_decoder_removed(void* decoder);
 
 	void on_actionSave_triggered(QAction* action = nullptr);
+
+	virtual void on_metadata_object_changed(MetadataObject* obj,
+		MetadataValueType value_type);
 
 	virtual void perform_delayed_view_update();
 

@@ -662,7 +662,6 @@ void View::on_metadata_object_changed(MetadataObject* obj,
 	// Check if we need to update the model's data range. We only work on the
 	// end sample value because the start sample value is updated first and
 	// we don't want to update the model twice
-
 	if ((view_mode_selector_->currentIndex() == ViewModeVisible) &&
 		(obj->type() == MetadataObjMainViewRange) &&
 		(value_type == MetadataValueEndSample)) {

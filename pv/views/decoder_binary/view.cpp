@@ -129,7 +129,15 @@ View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 
 	parent->setSizePolicy(hex_view_->sizePolicy()); // TODO Must be updated when selected widget changes
 
+	// Set up metadata event handler
+	session_.metadata_obj_manager()->add_observer(this);
+
 	reset_view_state();
+}
+
+View::~View()
+{
+	session_.metadata_obj_manager()->remove_observer(this);
 }
 
 ViewType View::get_type() const
@@ -464,6 +472,25 @@ void View::on_actionSave_triggered(QAction* action)
 	case SaveTypeHexDumpWithOffset: save_data_as_hex_dump(true, false); break;
 	case SaveTypeHexDumpComplete: save_data_as_hex_dump(true, true); break;
 	}
+}
+
+void View::on_metadata_object_changed(MetadataObject* obj,
+	MetadataValueType value_type)
+{
+	// Check if we need to update the model's data range. We only work on the
+	// end sample value because the start sample value is updated first and
+	// we need both
+	if ((obj->type() == MetadataObjMainViewRange) &&
+		(value_type == MetadataValueEndSample)) {
+
+		int64_t start_sample = obj->value(MetadataValueStartSample).toLongLong();
+		int64_t end_sample = obj->value(MetadataValueEndSample).toLongLong();
+
+		hex_view_->set_visible_sample_range(start_sample, end_sample);
+	}
+
+	if (obj->type() == MetadataObjMousePos)
+		hex_view_->set_highlighted_data_sample(obj->value(MetadataValueStartSample).toLongLong());
 }
 
 void View::perform_delayed_view_update()

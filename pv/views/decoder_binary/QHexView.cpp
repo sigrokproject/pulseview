@@ -27,6 +27,8 @@
  * SOFTWARE.
  */
 
+#include <limits>
+
 #include <QApplication>
 #include <QClipboard>
 #include <QDebug>
@@ -39,6 +41,8 @@
 #include <QPaintEvent>
 
 #include "QHexView.hpp"
+
+using std::make_pair;
 
 const unsigned int BYTES_PER_LINE   = 16;
 const unsigned int HEXCHARS_IN_LINE = BYTES_PER_LINE * 3 - 1;
@@ -53,7 +57,9 @@ QHexView::QHexView(QWidget *parent):
 	data_(nullptr),
 	selectBegin_(0),
 	selectEnd_(0),
-	cursorPos_(0)
+	cursorPos_(0),
+	visible_range_(0, 0),
+	highlighted_sample_(std::numeric_limits<uint64_t>::max())
 {
 	setFont(QFont("Courier", 10));
 
@@ -67,11 +73,13 @@ QHexView::QHexView(QWidget *parent):
 		chunk_colors_.emplace_back(100, 149, 237); // QColorConstants::Svg::cornflowerblue
 		chunk_colors_.emplace_back(60, 179, 113);  // QColorConstants::Svg::mediumseagreen
 		chunk_colors_.emplace_back(210, 180, 140); // QColorConstants::Svg::tan
+		visible_range_color_ = QColor("#fff5ee");  // QColorConstants::Svg::seashell
 	} else {
 		// Color is dark
-		chunk_colors_.emplace_back(0, 0, 139);   // QColorConstants::Svg::darkblue
-		chunk_colors_.emplace_back(34, 139, 34); // QColorConstants::Svg::forestgreen
-		chunk_colors_.emplace_back(160, 82, 45); // QColorConstants::Svg::sienna
+		chunk_colors_.emplace_back(0, 0, 139);    // QColorConstants::Svg::darkblue
+		chunk_colors_.emplace_back(34, 139, 34);  // QColorConstants::Svg::forestgreen
+		chunk_colors_.emplace_back(160, 82, 45);  // QColorConstants::Svg::sienna
+		visible_range_color_ = QColor("#fff5ee"); // QColorConstants::Svg::seashell
 	}
 }
 
@@ -105,6 +113,20 @@ void QHexView::set_data(const DecodeBinaryClass* data)
 	viewport()->update();
 }
 
+void QHexView::set_visible_sample_range(uint64_t start, uint64_t end)
+{
+	visible_range_ = make_pair(start, end);
+
+	viewport()->update();
+}
+
+void QHexView::set_highlighted_data_sample(uint64_t sample)
+{
+	highlighted_sample_ = sample;
+
+	viewport()->update();
+}
+
 unsigned int QHexView::get_bytes_per_line() const
 {
 	return BYTES_PER_LINE;
@@ -115,6 +137,8 @@ void QHexView::clear()
 	verticalScrollBar()->setValue(0);
 	data_ = nullptr;
 	data_size_ = 0;
+
+	highlighted_sample_ = std::numeric_limits<uint64_t>::max();
 
 	viewport()->update();
 }
@@ -216,16 +240,34 @@ void QHexView::initialize_byte_iterator(size_t offset)
 
 	if (current_chunk_id_ < data_->chunks.size())
 		current_chunk_ = data_->chunks[current_chunk_id_];
+
+	current_chunk_sample_ = current_chunk_.sample;
+
+	// Obtain sample of next chunk if there is one
+	if ((current_chunk_id_ + 1) < data_->chunks.size())
+		next_chunk_sample_ = data_->chunks[current_chunk_id_ + 1].sample;
+	else
+		next_chunk_sample_ = std::numeric_limits<uint64_t>::max();
 }
 
-uint8_t QHexView::get_next_byte(bool* is_next_chunk)
+uint8_t QHexView::get_next_byte(bool* is_new_chunk)
 {
-	if (is_next_chunk != nullptr)
-		*is_next_chunk = (current_chunk_offset_ == 0);
+	if (is_new_chunk != nullptr)
+		*is_new_chunk = (current_chunk_offset_ == 0);
 
 	uint8_t v = 0;
 	if (current_chunk_offset_ < current_chunk_.data.size())
 		v = current_chunk_.data[current_chunk_offset_];
+
+	current_chunk_sample_ = current_chunk_.sample;
+
+	if (is_new_chunk) {
+		// Obtain sample of next chunk if there is one
+		if ((current_chunk_id_ + 1) < data_->chunks.size())
+			next_chunk_sample_ = data_->chunks[current_chunk_id_ + 1].sample;
+		else
+			next_chunk_sample_ = std::numeric_limits<uint64_t>::max();
+	}
 
 	current_offset_++;
 	current_chunk_offset_++;
@@ -268,6 +310,12 @@ QSize QHexView::getFullSize() const
 void QHexView::paintEvent(QPaintEvent *event)
 {
 	QPainter painter(viewport());
+
+	QFont normal_font = painter.font();
+	QFont bold_font = painter.font();
+	bold_font.setWeight(QFont::Bold);
+
+	bool bold_font_was_used = false;
 
 	// Calculate and update the widget and paint area sizes
 	QSize widgetSize = getFullSize();
@@ -334,13 +382,15 @@ void QHexView::paintEvent(QPaintEvent *event)
 			charHeight_ - 3, QString::number(offset, 16).toUpper());
 
 	// Paint hex values
-	QBrush regular = palette().buttonText();
-	QBrush selected = palette().highlight();
+	QBrush regular_brush = palette().buttonText();
+	QBrush selected_brush = palette().highlight();
+	QBrush visible_range_brush = QBrush(visible_range_color_);
 
 	bool multiple_chunks = (data_->chunks.size() > 1);
 	unsigned int chunk_color = 0;
 
 	initialize_byte_iterator(firstLineIdx * BYTES_PER_LINE);
+
 	yStart = 2 * charHeight_;
 	for (size_t lineIdx = firstLineIdx, y = yStart; lineIdx < lastLineIdx; lineIdx++) {
 
@@ -349,26 +399,42 @@ void QHexView::paintEvent(QPaintEvent *event)
 			size_t pos = (lineIdx * BYTES_PER_LINE + i) * 2;
 
 			// Fetch byte
-			bool is_next_chunk;
-			uint8_t byte_value = get_next_byte(&is_next_chunk);
+			bool is_new_chunk;
+			uint8_t byte_value = get_next_byte(&is_new_chunk);
 
-			if (is_next_chunk) {
+			if (is_new_chunk) {
 				chunk_color++;
 				if (chunk_color == chunk_colors_.size())
 					chunk_color = 0;
+
+				// New chunk means also new chunk sample, so check for required changes
+				if (bold_font_was_used)
+					painter.setFont(normal_font);
+				if ((highlighted_sample_ >= current_chunk_sample_) && (highlighted_sample_ < next_chunk_sample_)) {
+					painter.setFont(bold_font);
+					bold_font_was_used = true;
+				}
 			}
 
+			// Restore default paint style
+			painter.setBackground(regular_brush);
+			painter.setBackgroundMode(Qt::TransparentMode);
+			if (!multiple_chunks)
+				painter.setPen(palette().color(QPalette::Text));
+			else
+				painter.setPen(chunk_colors_[chunk_color]);
+
+			// Highlight needed because it's the range visible in main view?
+			if ((current_chunk_sample_ >= visible_range_.first) && (current_chunk_sample_ < visible_range_.second)) {
+				painter.setBackgroundMode(Qt::OpaqueMode);
+				painter.setBackground(visible_range_brush);
+			}
+
+			// Highlight for selection range needed? (takes priority over visible range highlight)
 			if ((pos >= selectBegin_) && (pos < selectEnd_)) {
 				painter.setBackgroundMode(Qt::OpaqueMode);
-				painter.setBackground(selected);
+				painter.setBackground(selected_brush);
 				painter.setPen(palette().color(QPalette::HighlightedText));
-			} else {
-				painter.setBackground(regular);
-				painter.setBackgroundMode(Qt::TransparentMode);
-				if (!multiple_chunks)
-					painter.setPen(palette().color(QPalette::Text));
-				else
-					painter.setPen(chunk_colors_[chunk_color]);
 			}
 
 			// First nibble
@@ -379,7 +445,7 @@ void QHexView::paintEvent(QPaintEvent *event)
 			val = QString::number((byte_value & 0xF), 16).toUpper();
 			painter.drawText(x + charWidth_, y, val);
 
-			if ((pos >= selectBegin_) && (pos < selectEnd_ - 1) && (i < BYTES_PER_LINE - 1))
+			if ((i < BYTES_PER_LINE - 1) && (current_offset_ < data_size_))
 				painter.drawText(x + 2 * charWidth_, y, QString(' '));
 
 			x += 3 * charWidth_;
@@ -396,20 +462,39 @@ void QHexView::paintEvent(QPaintEvent *event)
 		int x = posAscii_;
 		for (size_t i = 0; (i < BYTES_PER_LINE) && (current_offset_ < data_size_); i++) {
 			// Fetch byte
-			uint8_t ch = get_next_byte();
+			bool is_new_chunk;
+			uint8_t ch = get_next_byte(&is_new_chunk);
+
+			if (is_new_chunk) {
+				// New chunk means also new chunk sample, so check for required changes
+				if (bold_font_was_used)
+					painter.setFont(normal_font);
+				if ((highlighted_sample_ >= current_chunk_sample_) && (highlighted_sample_ < next_chunk_sample_)) {
+					painter.setFont(bold_font);
+					bold_font_was_used = true;
+				}
+			}
 
 			if ((ch < 0x20) || (ch > 0x7E))
 				ch = '.';
 
+			// Restore default paint style
+			painter.setBackgroundMode(Qt::TransparentMode);
+			painter.setBackground(regular_brush);
+			painter.setPen(palette().color(QPalette::Text));
+
+			// Highlight needed because it's the range visible in main view?
+			if ((current_chunk_sample_ >= visible_range_.first) && (current_chunk_sample_ < visible_range_.second)) {
+				painter.setBackgroundMode(Qt::OpaqueMode);
+				painter.setBackground(visible_range_brush);
+			}
+
+			// Highlight for selection range needed? (takes priority over visible range highlight)
 			size_t pos = (lineIdx * BYTES_PER_LINE + i) * 2;
 			if ((pos >= selectBegin_) && (pos < selectEnd_)) {
 				painter.setBackgroundMode(Qt::OpaqueMode);
-				painter.setBackground(selected);
+				painter.setBackground(selected_brush);
 				painter.setPen(palette().color(QPalette::HighlightedText));
-			} else {
-				painter.setBackgroundMode(Qt::TransparentMode);
-				painter.setBackground(regular);
-				painter.setPen(palette().color(QPalette::Text));
 			}
 
 			painter.drawText(x, y, QString(ch));
@@ -418,6 +503,10 @@ void QHexView::paintEvent(QPaintEvent *event)
 
 		y += charHeight_;
 	}
+
+	// Restore painter defaults
+	painter.setBackgroundMode(Qt::TransparentMode);
+	painter.setBackground(regular_brush);
 
 	// Paint cursor
 	if (hasFocus()) {

@@ -54,6 +54,13 @@ public:
 
 	void set_mode(Mode m);
 	void set_data(const DecodeBinaryClass* data);
+
+	/* Sets range of samples that are visible in the main view */
+	void set_visible_sample_range(uint64_t start, uint64_t end);
+
+	/* Sets sample whose associated data we should highlight */
+	void set_highlighted_data_sample(uint64_t sample);
+
 	unsigned int get_bytes_per_line() const;
 
 	void clear();
@@ -67,7 +74,7 @@ public:
 
 protected:
 	void initialize_byte_iterator(size_t offset);
-	uint8_t get_next_byte(bool* is_next_chunk = nullptr);
+	uint8_t get_next_byte(bool* is_new_chunk = nullptr);
 
 	void paintEvent(QPaintEvent *event);
 	void keyPressEvent(QKeyEvent *event);
@@ -95,8 +102,13 @@ private:
 
 	size_t current_chunk_id_, current_chunk_offset_, current_offset_;
 	DecodeBinaryDataChunk current_chunk_; // Cache locally so that we're not messed up when the vector is re-allocating its data
+	uint64_t current_chunk_sample_, next_chunk_sample_;
+
+	pair<uint64_t, uint64_t> visible_range_;
+	uint64_t highlighted_sample_;
 
 	vector<QColor> chunk_colors_;
+	QColor visible_range_color_;
 };
 
 #endif // PULSEVIEW_PV_VIEWS_DECODER_BINARY_QHEXVIEW_HPP
