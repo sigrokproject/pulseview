@@ -143,7 +143,7 @@ void Application::on_setting_changed(const QString &key, const QVariant &value)
 		switch_language(value.toString());
 }
 
-void Application::collect_version_info(shared_ptr<sigrok::Context> context)
+void Application::collect_version_info(pv::DeviceManager &device_manager)
 {
 	// Library versions and features
 	version_info_.emplace_back(applicationName(), applicationVersion());
@@ -211,17 +211,18 @@ void Application::collect_version_info(shared_ptr<sigrok::Context> context)
 #endif
 
 	// Device drivers
-	for (auto& entry : context->drivers())
-		driver_list_.emplace_back(QString::fromUtf8(entry.first.c_str()),
-			QString::fromUtf8(entry.second->long_name().c_str()));
+	for (auto& entry : device_manager.context()->drivers())
+		if (device_manager.driver_supported(entry.second))
+			driver_list_.emplace_back(QString::fromUtf8(entry.first.c_str()),
+				QString::fromUtf8(entry.second->long_name().c_str()));
 
 	// Input formats
-	for (auto& entry : context->input_formats())
+	for (auto& entry : device_manager.context()->input_formats())
 		input_format_list_.emplace_back(QString::fromUtf8(entry.first.c_str()),
 			QString::fromUtf8(entry.second->description().c_str()));
 
 	// Output formats
-	for (auto& entry : context->output_formats())
+	for (auto& entry : device_manager.context()->output_formats())
 		output_format_list_.emplace_back(QString::fromUtf8(entry.first.c_str()),
 			QString::fromUtf8(entry.second->description().c_str()));
 

@@ -332,7 +332,7 @@ int main(int argc, char *argv[])
 		// Create the device manager, initialise the drivers
 		pv::DeviceManager device_manager(context, driver, do_scan);
 
-		a.collect_version_info(context);
+		a.collect_version_info(device_manager);
 		if (show_version) {
 			a.print_version_info();
 		} else {

@@ -28,6 +28,7 @@
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
 
+#include "devicemanager.hpp"
 #include "globalsettings.hpp"
 
 using std::shared_ptr;
@@ -47,7 +48,7 @@ public:
 
 	void on_setting_changed(const QString &key, const QVariant &value);
 
-	void collect_version_info(shared_ptr<sigrok::Context> context);
+	void collect_version_info(pv::DeviceManager &device_manager);
 	void print_version_info();
 
 	vector< pair<QString, QString> > get_version_info() const;
