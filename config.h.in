@@ -34,6 +34,9 @@
 /* Platform properties */
 #cmakedefine HAVE_UNALIGNED_LITTLE_ENDIAN_ACCESS
 
+/* Presence of features which depend on library versions. */
+#cmakedefine HAVE_SRD_SESSION_SEND_EOF 1
+
 #define PV_GLIBMM_VERSION "@PV_GLIBMM_VERSION@"
 
 #endif

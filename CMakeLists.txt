@@ -188,6 +188,29 @@ else()
   endif()
 endif()
 
+# Check availability of features which depend on library versions.
+# TODO Ideally use check_symbol_exists() instead, reduce boilerplate.
+if(ENABLE_DECODE)
+	include(CheckCSourceCompiles)
+	include(CMakePushCheckState)
+	cmake_push_check_state()
+	set(CMAKE_REQUIRED_INCLUDES "${PKGDEPS_INCLUDE_DIRS}")
+	set(CMAKE_REQUIRED_LIBRARIES "sigrokdecode")
+	foreach (LPATH ${PKGDEPS_LIBRARY_DIRS})
+		list(APPEND CMAKE_REQUIRED_LINK_OPTIONS "-L${LPATH}")
+	endforeach ()
+	check_c_source_compiles("
+	#include <libsigrokdecode/libsigrokdecode.h>
+	int main(int argc, char *argv[])
+	{
+		(void)argc;
+		(void)argv;
+		return srd_session_send_eof(NULL);
+	}
+	" HAVE_SRD_SESSION_SEND_EOF)
+	cmake_pop_check_state()
+endif()
+
 #===============================================================================
 #= System Introspection
 #-------------------------------------------------------------------------------
