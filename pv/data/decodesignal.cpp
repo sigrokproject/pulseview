@@ -17,6 +17,8 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "config.h"
+
 #include <cstring>
 #include <forward_list>
 #include <limits>
@@ -1373,6 +1375,9 @@ void DecodeSignal::decode_proc()
 
 			// If the input segment is complete, we've exhausted this segment
 			if (input_segment->is_complete()) {
+#if defined HAVE_SRD_SESSION_SEND_EOF && HAVE_SRD_SESSION_SEND_EOF
+				(void)srd_session_send_eof(srd_session_);
+#endif
 				if (current_segment_id_ < (logic_mux_data_->logic_segments().size() - 1)) {
 					// Process next segment
 					current_segment_id_++;
@@ -1496,6 +1501,9 @@ void DecodeSignal::terminate_srd_session()
 	// those stacks which still are processing data while the
 	// application no longer wants them to.
 	if (srd_session_) {
+#if defined HAVE_SRD_SESSION_SEND_EOF && HAVE_SRD_SESSION_SEND_EOF
+		(void)srd_session_send_eof(srd_session_);
+#endif
 		srd_session_terminate_reset(srd_session_);
 
 		// Metadata is cleared also, so re-set it
