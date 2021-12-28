@@ -22,6 +22,7 @@
 #include <limits>
 
 #include <QDebug>
+#include <QRegularExpression>
 
 #include "logic.hpp"
 #include "logicsegment.hpp"
@@ -304,7 +305,7 @@ void DecodeSignal::auto_assign_signals(const shared_ptr<Decoder> dec)
 			continue;
 
 		QString ch_name = ch.name.toLower();
-		ch_name = ch_name.replace(QRegExp("[-_.]"), " ");
+		ch_name = ch_name.replace(QRegularExpression("[-_.]"), " ");
 
 		shared_ptr<data::SignalBase> match;
 		for (const shared_ptr<data::SignalBase>& s : session_.signalbases()) {
@@ -312,7 +313,7 @@ void DecodeSignal::auto_assign_signals(const shared_ptr<Decoder> dec)
 				continue;
 
 			QString s_name = s->name().toLower();
-			s_name = s_name.replace(QRegExp("[-_.]"), " ");
+			s_name = s_name.replace(QRegularExpression("[-_.]"), " ");
 
 			if (s->logic_data() &&
 				((ch_name.contains(s_name)) || (s_name.contains(ch_name)))) {

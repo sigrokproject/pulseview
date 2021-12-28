@@ -75,7 +75,7 @@ ExportMenu::ExportMenu(QWidget *parent, shared_ptr<Context> context,
 		connect(action, SIGNAL(triggered()), &mapper_, SLOT(map()));
 	}
 
-	connect(&mapper_, SIGNAL(mapped(QObject*)),
+	connect(&mapper_, SIGNAL(mappedObject(QObject*)),
 		this, SLOT(on_action(QObject*)));
 }
 

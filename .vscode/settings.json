@@ -1,0 +1,14 @@
+{
+	"files.associations": {
+		"*.h": "c",
+		"array": "cpp",
+		"deque": "cpp",
+		"map": "cpp",
+		"string": "cpp",
+		"string_view": "cpp",
+		"unordered_map": "cpp",
+		"vector": "cpp",
+		"ostream": "cpp"
+	},
+	"C_Cpp.errorSquiggles": "Enabled"
+}

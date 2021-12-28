@@ -102,20 +102,20 @@ pkg_check_modules(PKGDEPS REQUIRED ${PKGDEPS})
 
 set(CMAKE_AUTOMOC TRUE)
 
-find_package(Qt5 5.3 COMPONENTS Core Gui LinguistTools Widgets Svg REQUIRED)
+find_package(Qt6 6.2 COMPONENTS Core Gui LinguistTools Widgets Svg REQUIRED)
 
-message(STATUS "Qt version: ${Qt5_VERSION}")
+message(STATUS "Qt version: ${Qt6_VERSION}")
 
 if(WIN32)
 	# MXE workaround: Use pkg-config to find Qt5 libs.
 	# https://github.com/mxe/mxe/issues/1642
 	# Not required (and doesn't work) on MSYS2.
 	if(NOT DEFINED ENV{MSYSTEM})
-		pkg_check_modules(QT5ALL REQUIRED Qt5Widgets>=5.3 Qt5Gui>=5.3 Qt5Svg>=5.3)
+		pkg_check_modules(QT6ALL REQUIRED Qt6Widgets>=6.2 Qt6Gui>=6.2 Qt6Svg>=6.2)
 	endif()
 endif()
 
-set(QT_LIBRARIES Qt5::Gui Qt5::Widgets Qt5::Svg)
+set(QT_LIBRARIES Qt6::Gui Qt6::Widgets Qt6::Svg)
 
 set(BOOSTCOMPS filesystem serialization system)
 if(ENABLE_TESTS)
@@ -136,7 +136,7 @@ else()
 	find_package(Boost 1.55 COMPONENTS ${BOOSTCOMPS} REQUIRED)
 endif()
 
-# Find the platform's thread library (needed for C++11 threads).
+# Find the platform's thread library (needed for C++17 threads).
 # This will set ${CMAKE_THREAD_LIBS_INIT} to the correct, OS-specific value.
 find_package(Threads REQUIRED)
 
@@ -154,7 +154,7 @@ function(check_working_cxx_atomics varname additional_lib)
   include(CheckCXXSourceCompiles)
   include(CMakePushCheckState)
   cmake_push_check_state()
-  set(CMAKE_REQUIRED_FLAGS "-std=c++11")
+  set(CMAKE_REQUIRED_FLAGS "-std=c++17")
   set(CMAKE_REQUIRED_LIBRARIES "${additional_lib}")
   set(CMAKE_REQUIRED_QUIET 1)
   CHECK_CXX_SOURCE_COMPILES("
@@ -462,7 +462,7 @@ if(ANDROID)
 	)
 endif()
 
-qt5_add_resources(pulseview_RESOURCES_RCC ${pulseview_RESOURCES})
+qt6_add_resources(pulseview_RESOURCES_RCC ${pulseview_RESOURCES})
 
 #===============================================================================
 #= Translations
@@ -474,10 +474,10 @@ if (NOT CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
 	configure_file("translations.qrc" "translations.qrc" COPYONLY)
 endif ()
 
-qt5_add_translation(QM_FILES ${TS_FILES})
-qt5_create_translation(QM_FILES ${pulseview_SOURCES} ${TS_FILES})
+qt6_add_translation(QM_FILES ${TS_FILES})
+qt6_create_translation(QM_FILES ${pulseview_SOURCES} ${TS_FILES})
 
-qt5_add_resources(pulseview_RESOURCES_RCC ${CMAKE_BINARY_DIR}/translations.qrc)
+qt6_add_resources(pulseview_RESOURCES_RCC ${CMAKE_BINARY_DIR}/translations.qrc)
 
 #===============================================================================
 #= Global Definitions
@@ -486,7 +486,7 @@ qt5_add_resources(pulseview_RESOURCES_RCC ${CMAKE_BINARY_DIR}/translations.qrc)
 add_definitions(-DQT_NO_KEYWORDS)
 add_definitions(-D__STDC_LIMIT_MACROS)
 add_definitions(-Wall -Wextra)
-add_definitions(-std=c++11)
+add_definitions(-std=c++17)
 add_definitions(-DBOOST_MATH_DISABLE_FLOAT128=1)
 if(WIN32)
 	add_definitions(-Wa,-mbig-obj -O3)
@@ -555,15 +555,12 @@ endif()
 if(WIN32)
 	# On Windows we need to statically link the libqsvg imageformat
 	# plugin (and the QtSvg component) for SVG graphics/icons to work.
-	# We also need QWindowsIntegrationPlugin, Qt5PlatformSupport (only for
-	# Qt < 5.8.0), and all Qt libs and their dependencies.
+	# We also need QWindowsIntegrationPlugin,
+	# and all Qt libs and their dependencies.
 	add_definitions(-DQT_STATICPLUGIN)
-	list(APPEND PULSEVIEW_LINK_LIBS Qt5::QSvgPlugin)
-	list(APPEND PULSEVIEW_LINK_LIBS Qt5::QWindowsIntegrationPlugin)
-	if(Qt5Gui_VERSION VERSION_LESS 5.8.0)
-		list(APPEND PULSEVIEW_LINK_LIBS -lQt5PlatformSupport)
-	endif()
-	list(APPEND PULSEVIEW_LINK_LIBS ${QT5ALL_LDFLAGS})
+	list(APPEND PULSEVIEW_LINK_LIBS Qt6::QSvgPlugin)
+	list(APPEND PULSEVIEW_LINK_LIBS Qt6::QWindowsIntegrationPlugin)
+	list(APPEND PULSEVIEW_LINK_LIBS ${QT6ALL_LDFLAGS})
 endif()
 
 if(ENABLE_STACKTRACE)
@@ -578,6 +575,11 @@ endif()
 set(INPUT_FILES_LIST ${pulseview_SOURCES} ${pulseview_RESOURCES_RCC} ${QM_FILES})
 if(ANDROID)
 	add_library(${PROJECT_NAME} SHARED ${INPUT_FILES_LIST})
+elseif(APPLE)
+	set(APP_ICON ${CMAKE_CURRENT_SOURCE_DIR}/icons/pulseview.icns)
+	set_source_files_properties(${APP_ICON} PROPERTIES
+		MACOSX_PACKAGE_LOCATION "Resources")
+	add_executable(${PROJECT_NAME} MACOSX_BUNDLE ${APP_ICON} ${INPUT_FILES_LIST})
 else()
 	add_executable(${PROJECT_NAME} ${INPUT_FILES_LIST})
 endif()
@@ -592,26 +594,36 @@ endif()
 #===============================================================================
 #= Installation
 #-------------------------------------------------------------------------------
+if(APPLE)
+	set_target_properties(${PROJECT_NAME} PROPERTIES
+		BUNDLE True
+		MACOSX_BUNDLE_GUI_IDENTIFIER org.sigrok.${PROJECT_NAME}
+		MACOSX_BUNDLE_BUNDLE_NAME ${PROJECT_NAME}
+		MACOSX_BUNDLE_BUNDLE_VERSION "${PV_VERSION_MAJOR}.${PV_VERSION_MINOR}.${PV_VERSION_MICRO}"
+		MACOSX_BUNDLE_SHORT_VERSION_STRING "${PV_VERSION_MAJOR}.${PV_VERSION_MINOR}.${PV_VERSION_MICRO}"
+		MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/macos.plist.in
+		MACOSX_BUNDLE_ICON_FILE pulseview.icns
+	)
+else()
+	# Install the executable.
+	install(TARGETS ${PROJECT_NAME} DESTINATION bin/)
 
-# Install the executable.
-install(TARGETS ${PROJECT_NAME} DESTINATION bin/)
+	# Install the manpage.
+	install(FILES doc/pulseview.1 DESTINATION ${CMAKE_INSTALL_MANDIR}/man1 COMPONENT doc)
 
-# Install the manpage.
-install(FILES doc/pulseview.1 DESTINATION ${CMAKE_INSTALL_MANDIR}/man1 COMPONENT doc)
+	# Install the desktop file.
+	install(FILES contrib/org.sigrok.PulseView.desktop DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/applications)
 
-# Install the desktop file.
-install(FILES contrib/org.sigrok.PulseView.desktop DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/applications)
+	# Install the AppData/AppStream file.
+	install(FILES contrib/org.sigrok.PulseView.appdata.xml DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/metainfo)
 
-# Install the AppData/AppStream file.
-install(FILES contrib/org.sigrok.PulseView.appdata.xml DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/metainfo)
+	# Install the PulseView icons.
+	install(FILES icons/pulseview.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/48x48/apps)
+	install(FILES icons/pulseview.svg DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/scalable/apps)
 
-# Install the PulseView icons.
-install(FILES icons/pulseview.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/48x48/apps)
-install(FILES icons/pulseview.svg DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/scalable/apps)
-
-# Generate Windows installer script.
-configure_file(contrib/pulseview_cross.nsi.in ${CMAKE_CURRENT_BINARY_DIR}/contrib/pulseview_cross.nsi @ONLY)
-
+	# Generate Windows installer script.
+	configure_file(contrib/pulseview_cross.nsi.in ${CMAKE_CURRENT_BINARY_DIR}/contrib/pulseview_cross.nsi @ONLY)
+endif()
 #===============================================================================
 #= Packaging (handled by CPack)
 #-------------------------------------------------------------------------------

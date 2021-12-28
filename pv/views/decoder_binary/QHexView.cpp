@@ -497,7 +497,7 @@ void QHexView::paintEvent(QPaintEvent *event)
 				painter.setPen(palette().color(QPalette::HighlightedText));
 			}
 
-			painter.drawText(x, y, QString(ch));
+			painter.drawText(x, y, QString(QChar(ch)));
 			x += charWidth_;
 		}
 

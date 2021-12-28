@@ -55,7 +55,7 @@ DeviceToolButton::DeviceToolButton(QWidget *parent,
 	setDefaultAction(connect_action_);
 	setMinimumWidth(QFontMetrics(font()).averageCharWidth() * 24);
 
-	connect(&mapper_, SIGNAL(mapped(QObject*)),
+	connect(&mapper_, SIGNAL(mappedObject(QObject*)),
 		this, SLOT(on_action(QObject*)));
 
 	connect(&menu_, SIGNAL(hovered(QAction*)),

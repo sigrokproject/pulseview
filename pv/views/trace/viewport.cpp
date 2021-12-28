@@ -124,31 +124,31 @@ vector< shared_ptr<ViewItem> > Viewport::items()
 
 bool Viewport::touch_event(QTouchEvent *event)
 {
-	QList<QTouchEvent::TouchPoint> touchPoints = event->touchPoints();
+	QList<QEventPoint> touchPoints = event->points();
 
 	if (touchPoints.count() != 2) {
 		pinch_zoom_active_ = false;
 		return false;
 	}
-	if (event->device()->type() == QTouchDevice::TouchPad) {
+	if (event->device()->type() == QInputDevice::DeviceType::TouchPad) {
 		return false;
 	}
 
-	const QTouchEvent::TouchPoint &touchPoint0 = touchPoints.first();
-	const QTouchEvent::TouchPoint &touchPoint1 = touchPoints.last();
+	const QEventPoint &touchPoint0 = touchPoints.first();
+	const QEventPoint &touchPoint1 = touchPoints.last();
 
 	if (!pinch_zoom_active_ ||
-	    (event->touchPointStates() & Qt::TouchPointPressed)) {
-		pinch_offset0_ = (view_.offset() + view_.scale() * touchPoint0.pos().x()).convert_to<double>();
-		pinch_offset1_ = (view_.offset() + view_.scale() * touchPoint1.pos().x()).convert_to<double>();
+	    (event->touchPointStates() & QEventPoint::Pressed)) {
+		pinch_offset0_ = (view_.offset() + view_.scale() * touchPoint0.position().x()).convert_to<double>();
+		pinch_offset1_ = (view_.offset() + view_.scale() * touchPoint1.position().x()).convert_to<double>();
 		pinch_zoom_active_ = true;
 	}
 
-	double w = touchPoint1.pos().x() - touchPoint0.pos().x();
+	double w = touchPoint1.position().x() - touchPoint0.position().x();
 	if (abs(w) >= 1.0) {
 		const double scale =
 			fabs((pinch_offset1_ - pinch_offset0_) / w);
-		double offset = pinch_offset0_ - touchPoint0.pos().x() * scale;
+		double offset = pinch_offset0_ - touchPoint0.position().x() * scale;
 		if (scale > 0)
 			view_.set_scale_offset(scale, offset);
 	}
@@ -162,7 +162,7 @@ bool Viewport::touch_event(QTouchEvent *event)
 		} else {
 			// Update the mouse down fields so that continued
 			// dragging with the primary touch will work correctly
-			mouse_down_point_ = touchPoint0.pos().toPoint();
+			mouse_down_point_ = touchPoint0.position().toPoint();
 			drag();
 		}
 	}
@@ -216,29 +216,30 @@ void Viewport::mouseDoubleClickEvent(QMouseEvent *event)
 	assert(event);
 
 	if (event->buttons() & Qt::LeftButton)
-		view_.zoom(2.0, event->x());
+		view_.zoom(2.0, event->position().x());
 	else if (event->buttons() & Qt::RightButton)
-		view_.zoom(-2.0, event->x());
+		view_.zoom(-2.0, event->position().x());
 }
 
 void Viewport::wheelEvent(QWheelEvent *event)
 {
 	assert(event);
 
-	if (event->orientation() == Qt::Vertical) {
+	if (event->angleDelta().y() != 0) {
 		if (event->modifiers() & Qt::ControlModifier) {
 			// Vertical scrolling with the control key pressed
 			// is intrepretted as vertical scrolling
 			view_.set_v_offset(-view_.owner_visual_v_offset() -
-				(event->delta() * height()) / (8 * 120));
+				(event->angleDelta().y() * height()) / (8 * 120));
 		} else {
 			// Vertical scrolling is interpreted as zooming in/out
-			view_.zoom(event->delta() / 120.0, event->x());
+			view_.zoom(event->angleDelta().y() / 120.0, event->position().x());
 		}
-	} else if (event->orientation() == Qt::Horizontal) {
+	}
+	if (event->angleDelta().x() != 0) {
 		// Horizontal scrolling is interpreted as moving left/right
 		view_.set_scale_offset(view_.scale(),
-			event->delta() * view_.scale() + view_.offset());
+			event->angleDelta().x() * view_.scale() + view_.offset());
 	}
 }
 

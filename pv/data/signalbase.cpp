@@ -590,7 +590,7 @@ void SignalBase::restore_settings(QSettings &settings)
 		QVariant value = settings.value("color");
 
 		// Workaround for Qt QColor serialization bug on OSX
-		if ((QMetaType::Type)(value.type()) == QMetaType::QColor)
+		if ((QMetaType::Type)(value.typeId()) == QMetaType::QColor)
 			set_color(value.value<QColor>());
 		else
 			set_color(QColor::fromRgba(value.value<uint32_t>()));

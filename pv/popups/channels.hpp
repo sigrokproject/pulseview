@@ -82,7 +82,7 @@ private:
 	void showEvent(QShowEvent *event);
 
 private Q_SLOTS:
-	void on_channel_checked(QWidget *widget);
+	void on_channel_checked(QObject *widget);
 
 	void enable_all_channels();
 	void disable_all_channels();

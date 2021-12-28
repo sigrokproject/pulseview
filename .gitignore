@@ -68,3 +68,5 @@ test/cmake_install.cmake
 
 # Translation binaries
 *.qm
+
+.DS_Store

@@ -106,7 +106,7 @@ void Application::switch_language(const QString& language)
 			qWarning() << "Translation resource" << resource << "not found";
 
 		// Qt translations
-		QString tr_path(QLibraryInfo::location(QLibraryInfo::TranslationsPath));
+		QString tr_path(QLibraryInfo::path(QLibraryInfo::TranslationsPath));
 
 		if (qt_translator_.load("qt_" + language, tr_path))
 			installTranslator(&qt_translator_);

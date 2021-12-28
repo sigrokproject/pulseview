@@ -259,7 +259,7 @@ MathEditDialog::MathEditDialog(pv::Session &session,
 	root_layout->addWidget(button_box);
 
 	// Set tab width to 4 characters
-	expr_edit_->setTabStopWidth(util::text_width(QFontMetrics(font()), "XXXX"));
+	expr_edit_->setTabStopDistance(util::text_width(QFontMetrics(font()), "XXXX"));
 
 	connect(button_box, SIGNAL(accepted()), this, SLOT(accept()));
 	connect(button_box, SIGNAL(rejected()), this, SLOT(reject()));

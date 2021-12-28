@@ -138,7 +138,7 @@ QMenu* TraceGroup::create_header_context_menu(QWidget *parent)
 	QMenu *const menu = new QMenu(parent);
 
 	QAction *const ungroup = new QAction(tr("Ungroup"), this);
-	ungroup->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_U));
+	ungroup->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_U));
 	connect(ungroup, SIGNAL(triggered()), this, SLOT(on_ungroup()));
 	menu->addAction(ungroup);
 

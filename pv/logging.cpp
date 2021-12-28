@@ -191,7 +191,7 @@ int Logging::log_srd(void *cb_data, int loglevel, const char *format, va_list ar
 	char *text = g_strdup_vprintf(format, args);
 
 	QString s = QString::fromUtf8(text);
-	for (QString& substring : s.split("\n", QString::SkipEmptyParts))
+	for (QString& substring : s.split("\n", Qt::SkipEmptyParts))
 			logging.log(substring, LogSource_srd);
 	g_free(text);
 

@@ -57,7 +57,7 @@ DecoderMenu::DecoderMenu(QWidget *parent, const char* input, bool first_level_de
 	}
 	g_slist_free(li);
 
-	connect(&mapper_, SIGNAL(mapped(QObject*)), this, SLOT(on_action(QObject*)));
+	connect(&mapper_, SIGNAL(mappedObject(QObject*)), this, SLOT(on_action(QObject*)));
 }
 
 int DecoderMenu::decoder_name_cmp(const void *a, const void *b)

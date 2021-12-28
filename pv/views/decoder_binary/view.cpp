@@ -110,7 +110,7 @@ View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 	save_action_->setText(tr("&Save..."));
 	save_action_->setIcon(QIcon::fromTheme("document-save-as",
 		QIcon(":/icons/document-save-as.png")));
-	save_action_->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_S));
+	save_action_->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_S));
 	connect(save_action_, SIGNAL(triggered(bool)),
 		this, SLOT(on_actionSave_triggered()));
 
@@ -327,10 +327,10 @@ void View::save_data_as_hex_dump(bool with_offset, bool with_ascii) const
 		while (offset < selection.second) {
 			size_t end = std::min((uint64_t)(selection.second), offset + n);
 			offset = hex_view_->create_hex_line(offset, end, &s, with_offset, with_ascii);
-			out_stream << s << endl;
+			out_stream << s << Qt::endl;
 		}
 
-		out_stream << endl;
+		out_stream << Qt::endl;
 
 		if (out_stream.status() != QTextStream::Ok) {
 			QMessageBox msg(parent_);
