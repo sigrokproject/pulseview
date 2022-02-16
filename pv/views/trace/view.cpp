@@ -92,7 +92,7 @@ namespace views {
 namespace trace {
 
 const Timestamp View::MaxScale("1e9");
-const Timestamp View::MinScale("1e-12");
+const Timestamp View::MinScale("1e-14");
 
 const int View::MaxScrollValue = INT_MAX / 2;
 
