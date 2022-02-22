@@ -123,6 +123,7 @@ Device::Device(shared_ptr<sigrok::Configurable> configurable) :
 		case SR_CONF_RLE:
 		case SR_CONF_POWER_OFF:
 		case SR_CONF_AVERAGING:
+		case SR_CONF_CONTINUOUS:
 			bind_bool(descr, "", get, set);
 			break;
 
