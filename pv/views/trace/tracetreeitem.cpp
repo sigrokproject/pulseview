@@ -18,6 +18,7 @@
  */
 
 #include <cassert>
+#include <QMenu>
 
 #include "view.hpp"
 
@@ -136,6 +137,30 @@ void TraceTreeItem::drag_by(const QPoint &delta)
 QPoint TraceTreeItem::drag_point(const QRect &rect) const
 {
 	return QPoint(rect.right(), get_visual_y());
+}
+
+QMenu* TraceTreeItem::create_view_context_menu(QWidget *parent, QPoint &click_pos)
+{
+    (void)click_pos;
+
+    QMenu *const menu = new QMenu(parent);
+
+    View *view = owner_->view();
+
+    if(view->ruler_offset().convert_to<double>() != 0){
+        QAction *const reset_view = new QAction(tr("Reset view"), this);
+        connect(reset_view, SIGNAL(triggered()), this, SLOT(on_view_reset()));
+        menu->addAction(reset_view);
+    }
+
+    return menu;
+}
+
+void TraceTreeItem::on_view_reset()
+{
+    View *view = owner_->view();
+    assert(view);
+    view->reset_offset();
 }
 
 } // namespace trace

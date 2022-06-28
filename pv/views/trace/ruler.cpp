@@ -149,6 +149,11 @@ void Ruler::contextMenuEvent(QContextMenuEvent *event)
 	context_menu_x_pos_ = event->pos().x();
 
 	QMenu *const menu = new QMenu(this);
+    if(view_.ruler_offset().convert_to<double>() != 0){
+        QAction *const reset_view = new QAction(tr("Reset view"), this);
+        connect(reset_view, SIGNAL(triggered()), this, SLOT(on_view_reset()));
+        menu->addAction(reset_view);
+    }
 
 	QAction *const create_marker = new QAction(tr("Create marker here"), this);
 	connect(create_marker, SIGNAL(triggered()), this, SLOT(on_createMarker()));
@@ -413,6 +418,11 @@ void Ruler::on_toggleHoverMarker()
 	GlobalSettings settings;
 	const bool state = settings.value(GlobalSettings::Key_View_ShowHoverMarker).toBool();
 	settings.setValue(GlobalSettings::Key_View_ShowHoverMarker, !state);
+}
+
+void Ruler::on_view_reset()
+{
+    view_.reset_offset();
 }
 
 } // namespace trace
