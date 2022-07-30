@@ -452,6 +452,8 @@ private Q_SLOTS:
 
 	void on_settingViewTriggerIsZeroTime_changed(const QVariant new_value);
 
+	void on_create_marker_here();
+
 	virtual void perform_delayed_view_update();
 
 	void process_sticky_events();
@@ -574,6 +576,9 @@ private:
 	// These are used to determine whether the view was altered after acq started
 	double scale_at_acq_start_;
 	pv::util::Timestamp offset_at_acq_start_;
+
+	// X coordinate of mouse cursor where the user clicked to open a context menu
+	uint32_t context_menu_x_pos_;
 };
 
 } // namespace trace

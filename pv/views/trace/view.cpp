@@ -1594,10 +1594,22 @@ void View::contextMenuEvent(QContextMenuEvent *event)
 	QPoint pos = event->pos() - QPoint(0, ruler_->sizeHint().height());
 
 	const shared_ptr<ViewItem> r = viewport_->get_mouse_over_item(pos);
-	if (!r)
-		return;
 
-	QMenu *menu = r->create_view_context_menu(this, pos);
+	QMenu* menu = nullptr;
+
+	if (!r) {
+		context_menu_x_pos_ = pos.x();
+
+		// No view item under cursor, use generic menu
+		menu = new QMenu(this);
+
+		QAction *const create_marker_here = new QAction(tr("Create marker here"), this);
+		connect(create_marker_here, SIGNAL(triggered()), this, SLOT(on_create_marker_here()));
+		menu->addAction(create_marker_here);
+	} else {
+		menu = r->create_view_context_menu(this, pos);
+	}
+
 	if (menu)
 		menu->popup(event->globalPos());
 }
@@ -2065,6 +2077,13 @@ void View::on_segment_changed(int segment)
 	default:
 		break;
 	}
+}
+
+void View::on_create_marker_here()
+{
+	const QPoint p = ruler_->mapFrom(this, QPoint(context_menu_x_pos_, 0));
+
+	add_flag(ruler_->get_absolute_time_from_x_pos(p.x()));
 }
 
 void View::on_settingViewTriggerIsZeroTime_changed(const QVariant new_value)
