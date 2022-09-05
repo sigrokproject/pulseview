@@ -139,7 +139,7 @@ std::map<QString, QVariant> AnalogSignal::save_settings() const
 	result["neg_vdivs"] = neg_vdivs_;
 	result["scale_index"] = scale_index_;
 	result["display_type"] = display_type_;
-	result["autoranging"] = pos_vdivs_;
+	result["autoranging"] = autoranging_;
 	result["div_height"] = div_height_;
 
 	return result;
