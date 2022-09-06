@@ -866,6 +866,7 @@ void MainBar::on_actionSaveSetup_triggered()
 		return;
 
 	QSettings settings_storage(file_name, QSettings::IniFormat);
+	settings_storage.clear();
 	session_.save_setup(settings_storage);
 }
 
