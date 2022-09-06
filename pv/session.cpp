@@ -382,6 +382,20 @@ void Session::restore_setup(QSettings &settings)
 		settings.endGroup();
 	}
 
+	// Remove generated signals and decoders
+	for (shared_ptr<data::SignalBase> base : vector< shared_ptr<data::SignalBase> >(signalbases_)) {
+#ifdef ENABLE_DECODE
+		if (base->is_decode_signal()) {
+			shared_ptr<data::DecodeSignal> ds = dynamic_pointer_cast<data::DecodeSignal>(base);
+			assert(ds);
+			remove_decode_signal(ds);
+		} else
+#endif
+		if (base->is_generated()) {
+			remove_generated_signal(base);
+		}
+	}
+
 	// Restore generated signals
 	int gen_signal_count = settings.value("generated_signals").toInt();
 
