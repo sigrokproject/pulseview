@@ -223,11 +223,6 @@ View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 		SLOT(on_zoom_out_shortcut_triggered()), nullptr, Qt::WidgetWithChildrenShortcut);
 	zoom_out_shortcut_->setAutoRepeat(false);
 
-	zoom_in_shortcut_2_ = new QShortcut(QKeySequence(Qt::Key_Up), this,
-		SLOT(on_zoom_in_shortcut_triggered()), nullptr, Qt::WidgetWithChildrenShortcut);
-	zoom_out_shortcut_2_ = new QShortcut(QKeySequence(Qt::Key_Down), this,
-		SLOT(on_zoom_out_shortcut_triggered()), nullptr, Qt::WidgetWithChildrenShortcut);
-
 	home_shortcut_ = new QShortcut(QKeySequence(Qt::Key_Home), this,
 		SLOT(on_scroll_to_start_shortcut_triggered()), nullptr, Qt::WidgetWithChildrenShortcut);
 	home_shortcut_->setAutoRepeat(false);
@@ -254,6 +249,26 @@ View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 		this, [=]{grabbed_widget_ = nullptr;});
 	cancel_grab_shortcut_->setAutoRepeat(false);
 
+	// Keyboard navigation
+	// This sets them all up as disabled initially.
+	NAV_KB_VAR_SETUP(up,		Qt::Key_Up);
+	NAV_KB_VAR_SETUP(down,		Qt::Key_Down);
+	NAV_KB_VAR_SETUP(left,		Qt::Key_Left);
+	NAV_KB_VAR_SETUP(right,		Qt::Key_Right);
+	NAV_KB_VAR_SETUP(pageup,	Qt::Key_PageUp);
+	NAV_KB_VAR_SETUP(pagedown,	Qt::Key_PageDown);
+	// Mousewheel navigation
+	// This sets them all up as disabled initially.
+	NAV_MW_VAR_SETUP(hori);
+	NAV_MW_VAR_SETUP(vert);
+	
+	// Load settings for keyboard and mousewheel navigation
+	NAV_KB_SETTING_LOAD(UpDown,		up, down);
+	NAV_KB_SETTING_LOAD(LeftRight,	left, right);
+	NAV_KB_SETTING_LOAD(PageUpDown,	pageup, pagedown);
+	NAV_MW_SETTING_LOAD(WheelHori,	hori);
+	NAV_MW_SETTING_LOAD(WheelVert,	vert);
+	
 	// Trigger the initial event manually. The default device has signals
 	// which were created before this object came into being
 	signals_changed();
@@ -1195,6 +1210,12 @@ void View::on_setting_changed(const QString &key, const QVariant &value)
 
 	if (key == GlobalSettings::Key_View_SnapDistance)
 		snap_distance_ = settings.value(GlobalSettings::Key_View_SnapDistance).toInt();
+
+	NAV_KB_SETTING_CHANGED(UpDown,    up, down)
+	NAV_KB_SETTING_CHANGED(LeftRight, left, right)
+	NAV_KB_SETTING_CHANGED(PageUpDown, pageup, pagedown)
+	NAV_MW_SETTING_CHANGED(WheelHori, hori)
+	NAV_MW_SETTING_CHANGED(WheelVert, vert)
 }
 
 void View::trigger_event(int segment_id, util::Timestamp location)
@@ -1748,6 +1769,91 @@ void View::on_scroll_to_start_shortcut_triggered()
 void View::on_scroll_to_end_shortcut_triggered()
 {
 	set_h_offset(get_h_scrollbar_maximum());
+}
+
+
+void View::nav_zoom(double numTimes)
+{
+	QPoint global_point = QCursor::pos();
+	printf("nav_zoom()  global_point(%d, %d)  %d\n", global_point.x(), global_point.y(), global_point.isNull()?1:0);
+	if( global_point.isNull() )
+	{
+		zoom(-numTimes);
+		return;
+	}
+	
+	QPoint widget_point = viewport_->mapFromGlobal(global_point);
+	printf("nav_zoom()  widget_point(%d, %d)  %d\n", widget_point.x(), widget_point.y(), widget_point.isNull()?1:0);
+	if( widget_point.isNull() ||
+		widget_point.x() < 0 || widget_point.x() > viewport_->width() ||
+		widget_point.y() < 0 || widget_point.y() > viewport_->height())
+	{
+		zoom(-numTimes);
+		return;
+	}
+	
+	printf("zoom t mouse\n");
+	zoom(-numTimes, widget_point.x());
+}
+
+void View::nav_zoom(double numTimes, int offset)
+{
+	zoom(-numTimes, offset);
+}
+
+void View::nav_move_hori(double numPages)
+{
+	double page_width = viewport_->width();
+	double move_amount = numPages * page_width;
+	int curr_pos = scrollarea_->horizontalScrollBar()->sliderPosition();
+	int new_pos = curr_pos + move_amount;
+
+//	printf("nav_move_hori(): page_width=%g move_amount=%g curr_pos=%d new_pos=%d\n",
+//		page_width, move_amount, curr_pos, new_pos);
+	
+	set_h_offset(new_pos);
+}
+
+// amount is double value representing numPages.
+//  1.0 is a full page down
+// -1.0 is a full page up
+void View::nav_move_vert(double numPages)
+{
+	double page_height = viewport_->height();
+	double move_amount = numPages * page_height;
+	int curr_pos = scrollarea_->verticalScrollBar()->sliderPosition();
+	int new_pos = curr_pos + move_amount;
+ 
+//	printf("nav_move_vert(): page_height=%g move_amount=%g curr_pos=%d new_pos=%d\n",
+//		page_height, move_amount, curr_pos, new_pos);
+	
+	set_v_offset(new_pos);
+}
+
+NAV_KB_FUNC_DEFINE(up)
+NAV_KB_FUNC_DEFINE(down)
+NAV_KB_FUNC_DEFINE(left)
+NAV_KB_FUNC_DEFINE(right)
+NAV_KB_FUNC_DEFINE(pageup)
+NAV_KB_FUNC_DEFINE(pagedown)
+
+NAV_MW_FUNC_DEFINE(hori)
+NAV_MW_FUNC_DEFINE(vert)
+
+void View::on_mw_vert_all(QWheelEvent *event)
+{
+	if (event->modifiers() & Qt::AltModifier)			on_mw_vert_alt(event);
+	else if (event->modifiers() & Qt::ControlModifier)	on_mw_vert_ctrl(event);
+	else if (event->modifiers() & Qt::ShiftModifier)	on_mw_vert_shift(event);
+	else												on_mw_vert(event);
+}
+
+void View::on_mw_hori_all(QWheelEvent *event)
+{
+	if (event->modifiers() & Qt::AltModifier)			on_mw_hori_alt(event);
+	else if (event->modifiers() & Qt::ControlModifier)	on_mw_hori_ctrl(event);
+	else if (event->modifiers() & Qt::ShiftModifier)	on_mw_hori_shift(event);
+	else												on_mw_hori(event);
 }
 
 void View::h_scroll_value_changed(int value)

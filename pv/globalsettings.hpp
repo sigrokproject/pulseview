@@ -48,6 +48,39 @@ public:
 };
 
 
+// type of navigation to perform
+#define NAV_TYPE_NONE		0
+#define NAV_TYPE_ZOOM		1
+#define NAV_TYPE_HORI		2
+#define NAV_TYPE_VERT		3
+
+#define NAV_GSETTINGS_VAR_DECLARE(name)						\
+	static const QString Key_Nav_ ## name ## Type;			\
+	static const QString Key_Nav_ ## name ## Amount;		\
+	static const QString Key_Nav_ ## name ## AltType;		\
+	static const QString Key_Nav_ ## name ## AltAmount;		\
+	static const QString Key_Nav_ ## name ## CtrlType;		\
+	static const QString Key_Nav_ ## name ## CtrlAmount;	\
+	static const QString Key_Nav_ ## name ## ShiftType;		\
+	static const QString Key_Nav_ ## name ## ShiftAmount
+
+#define NAV_GSETTINGS_VAR_SETUP(name)						\
+	const QString GlobalSettings::Key_Nav_ ## name ## Type = "Nav_" #name "Type";				\
+	const QString GlobalSettings::Key_Nav_ ## name ## Amount = "Nav_" #name "Amount";			\
+	const QString GlobalSettings::Key_Nav_ ## name ## AltType = "Nav_" #name "AltType";			\
+	const QString GlobalSettings::Key_Nav_ ## name ## AltAmount = "Nav_" #name "AltAmount";		\
+	const QString GlobalSettings::Key_Nav_ ## name ## CtrlType = "Nav_" #name "CtrlType";		\
+	const QString GlobalSettings::Key_Nav_ ## name ## CtrlAmount = "Nav_" #name "CtrlAmount";	\
+	const QString GlobalSettings::Key_Nav_ ## name ## ShiftType = "Nav_" #name "ShiftType";		\
+	const QString GlobalSettings::Key_Nav_ ## name ## ShiftAmount = "Nav_" #name "ShiftAmount"
+
+#define NAV_GSETTINGS_VAR_DEFAULT(name, type, amount)	\
+	if (!contains(Key_Nav_ ## name ## Type) || force)	\
+		setValue(Key_Nav_ ## name ## Type, type);		\
+	if (!contains(Key_Nav_ ## name ## Amount) || force)	\
+		setValue(Key_Nav_ ## name ## Amount, amount)
+
+
 class GlobalSettings : public QSettings
 {
 	Q_OBJECT
@@ -77,6 +110,11 @@ public:
 	static const QString Key_View_CursorShowInterval;
 	static const QString Key_View_CursorShowFrequency;
 	static const QString Key_View_CursorShowSamples;
+	NAV_GSETTINGS_VAR_DECLARE(UpDown);
+	NAV_GSETTINGS_VAR_DECLARE(LeftRight);
+	NAV_GSETTINGS_VAR_DECLARE(PageUpDown);
+	NAV_GSETTINGS_VAR_DECLARE(WheelHori);
+	NAV_GSETTINGS_VAR_DECLARE(WheelVert);
 	static const QString Key_Dec_InitialStateConfigurable;
 	static const QString Key_Dec_ExportFormat;
 	static const QString Key_Dec_AlwaysShowAllRows;
@@ -94,6 +132,8 @@ public:
 
 	void save_internal_defaults();
 	void set_defaults_where_needed();
+	void set_nav_zoom_defaults(bool force);
+	void set_nav_move_defaults(bool force);
 	void set_bright_theme_default_colors();
 	void set_dark_theme_default_colors();
 
