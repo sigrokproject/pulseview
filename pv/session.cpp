@@ -375,11 +375,11 @@ void Session::save_settings(QSettings &settings) const
 
 void Session::restore_setup(QSettings &settings)
 {
-	// Restore channels
-	for (shared_ptr<data::SignalBase> base : signalbases_) {
-		settings.beginGroup(base->internal_name());
-		base->restore_settings(settings);
-		settings.endGroup();
+	// Reset main view, remove all other views
+	main_view_->reset_view_state();
+	for (auto &v : vector< shared_ptr<views::ViewBase> >(views_)) {
+		if (v != main_view_)
+			remove_view(v);
 	}
 
 	// Remove generated signals and decoders
@@ -394,6 +394,13 @@ void Session::restore_setup(QSettings &settings)
 		if (base->is_generated()) {
 			remove_generated_signal(base);
 		}
+	}
+
+	// Restore channels
+	for (shared_ptr<data::SignalBase> base : signalbases_) {
+		settings.beginGroup(base->internal_name());
+		base->restore_settings(settings);
+		settings.endGroup();
 	}
 
 	// Restore generated signals
