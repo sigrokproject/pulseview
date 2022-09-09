@@ -132,7 +132,7 @@ SignalBase::SignalBase(shared_ptr<sigrok::Channel> channel, ChannelType channel_
 		set_internal_name(QString::fromStdString(channel_->name()));
 		set_index(channel_->index());
 	} else {
-		set_internal_name(QUuid::createUuid().toString(QUuid::WithoutBraces));
+		set_internal_name(QUuid::createUuid().toString().remove('{').remove('}'));
 	}
 
 	connect(&delayed_conversion_starter_, SIGNAL(timeout()),
