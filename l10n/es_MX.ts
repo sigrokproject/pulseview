@@ -6,7 +6,7 @@
     <message>
         <location filename="../pv/application.cpp" line="129"/>
         <source>Some parts of the application may still use the previous language. Re-opening the affected windows or restarting the application will remedy this.</source>
-        <translation>Algunas partes de la aplicación aún pueden usar el idioma anterior. Volver a abrir las ventanas afectadas o reiniciar la aplicación solucionará esto.</translation>
+        <translation>Algunas partes de la aplicación podrían aún usar el idioma anterior. Volver a abrir las ventanas afectadas o reiniciar la aplicación solucionará esto.</translation>
     </message>
 </context>
 <context>
@@ -79,7 +79,7 @@ A human-readable form has been saved to disk and was written to the log. You may
     <message>
         <location filename="../pv/mainwindow.cpp" line="279"/>
         <source>Decoder Selector</source>
-        <translation>Selección de decoder</translation>
+        <translation>Selección de decodificador</translation>
     </message>
     <message>
         <location filename="../pv/mainwindow.cpp" line="332"/>
@@ -127,13 +127,13 @@ A human-readable form has been saved to disk and was written to the log. You may
     <message>
         <location filename="../pv/mainwindow.cpp" line="636"/>
         <source>There is unsaved data. Close anyway?</source>
-        <translation>Hay datos sin guardar. Cerrar de todos modos?</translation>
+        <translation>Hay datos sin guardar. ¿Cerrar de todos modos?</translation>
     </message>
     <message>
         <location filename="../pv/mainwindow.cpp" line="830"/>
         <location filename="../pv/mainwindow.cpp" line="856"/>
         <source>This session contains unsaved data. Close it anyway?</source>
-        <translation>Esta sesión contiene datos sin almacenar. Cerrar de todos modos?</translation>
+        <translation>Esta sesión contiene datos sin almacenar. ¿Cerrar de todos modos?</translation>
     </message>
 </context>
 <context>
@@ -160,7 +160,7 @@ A human-readable form has been saved to disk and was written to the log. You may
     <message>
         <location filename="../pv/session.cpp" line="685"/>
         <source>Unexpected input format: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Formato de entrada inesperado: %1</translation>
     </message>
     <message>
         <location filename="../pv/session.cpp" line="720"/>
@@ -222,7 +222,7 @@ A human-readable form has been saved to disk and was written to the log. You may
     <message>
         <location filename="../pv/binding/device.cpp" line="97"/>
         <source>No Limit</source>
-        <translation type="unfinished"></translation>
+        <translation>Sín límite</translation>
     </message>
 </context>
 <context>
@@ -316,7 +316,7 @@ A human-readable form has been saved to disk and was written to the log. You may
     <message>
         <location filename="../pv/dialogs/connect.cpp" line="58"/>
         <source>&amp;Scan for devices using driver above</source>
-        <translation>E&amp;Scanea por dispositivos utilizando el driver de arriba</translation>
+        <translation>E&amp;Scanea por dispositivos utilizando el controlador de arriba</translation>
     </message>
     <message>
         <location filename="../pv/dialogs/connect.cpp" line="63"/>
@@ -356,7 +356,7 @@ A human-readable form has been saved to disk and was written to the log. You may
     <message>
         <location filename="../pv/dialogs/connect.cpp" line="140"/>
         <source>Step 3: Scan for devices</source>
-        <translation>Paso 3: Escanear por dispositivos</translation>
+        <translation>Paso 3: Escanea por dispositivos</translation>
     </message>
     <message>
         <location filename="../pv/dialogs/connect.cpp" line="146"/>
@@ -396,7 +396,7 @@ A human-readable form has been saved to disk and was written to the log. You may
     <message>
         <location filename="../pv/dialogs/settings.cpp" line="236"/>
         <source>User interface language</source>
-        <translation>Lenguaje de la interfaz de usuario</translation>
+        <translation>Idioma de la interfaz de usuario</translation>
     </message>
     <message>
         <location filename="../pv/dialogs/settings.cpp" line="247"/>
@@ -461,7 +461,7 @@ A human-readable form has been saved to disk and was written to the log. You may
     <message>
         <location filename="../pv/dialogs/settings.cpp" line="319"/>
         <source>Show data &amp;sampling points</source>
-        <translation>Mostrar puntos de datos &amp;sampleados</translation>
+        <translation>Mostrar puntos de datos mue&amp;streados</translation>
     </message>
     <message>
         <location filename="../pv/dialogs/settings.cpp" line="323"/>
@@ -476,12 +476,12 @@ A human-readable form has been saved to disk and was written to the log. You may
     <message>
         <location filename="../pv/dialogs/settings.cpp" line="334"/>
         <source>Show analog minor grid in addition to div grid</source>
-        <translation>Mostrar cuadrícula menor analogíca además de cuadrícula por div</translation>
+        <translation>Mostrar cuadrícula menor analógica además de cuadrícula por división</translation>
     </message>
     <message>
         <location filename="../pv/dialogs/settings.cpp" line="338"/>
         <source>Highlight mouse cursor using a vertical marker line</source>
-        <translation>Resalte el cursor del mouse usando una línea de marcador vertical</translation>
+        <translation>Resaltar el cursor del mouse usando una línea de marcador vertical</translation>
     </message>
     <message>
         <location filename="../pv/dialogs/settings.cpp" line="342"/>
@@ -523,7 +523,7 @@ A human-readable form has been saved to disk and was written to the log. You may
     <message>
         <location filename="../pv/dialogs/settings.cpp" line="373"/>
         <source>Default analog trace div height</source>
-        <translation>Altura de div de trazo análogo por defecto</translation>
+        <translation>Altura de división de trazo análogo por defecto</translation>
     </message>
     <message>
         <location filename="../pv/dialogs/settings.cpp" line="382"/>
@@ -568,7 +568,7 @@ A human-readable form has been saved to disk and was written to the log. You may
     <message>
         <location filename="../pv/dialogs/settings.cpp" line="453"/>
         <source>Versions, libraries and features:</source>
-        <translation>Versiones, librerías y características:</translation>
+        <translation>Versiones, bibliotecas y características:</translation>
     </message>
     <message>
         <location filename="../pv/dialogs/settings.cpp" line="460"/>
@@ -583,7 +583,7 @@ A human-readable form has been saved to disk and was written to the log. You may
     <message>
         <location filename="../pv/dialogs/settings.cpp" line="474"/>
         <source>Supported hardware drivers:</source>
-        <translation>Drivers de hardware soportados:</translation>
+        <translation>Controladores de hardware soportados:</translation>
     </message>
     <message>
         <location filename="../pv/dialogs/settings.cpp" line="481"/>
@@ -603,7 +603,7 @@ A human-readable form has been saved to disk and was written to the log. You may
     <message>
         <location filename="../pv/dialogs/settings.cpp" line="504"/>
         <source>Available Translations:</source>
-        <translation type="unfinished"></translation>
+        <translation>Traducciones disponibles:</translation>
     </message>
     <message>
         <location filename="../pv/dialogs/settings.cpp" line="552"/>
@@ -636,7 +636,7 @@ A human-readable form has been saved to disk and was written to the log. You may
 Should I set the user-adjustable colors to better suit your choice?
 
 Please keep in mind that PulseView may need a restart to display correctly.</source>
-        <translation>Seleccionaste el tema obscuro.\nDebería de establecer los colores ajustables por el usuario que mejor se ajustan a tu elección?\n\nPor favor ten en cuenta que Pulseview tal vez se tenga que reiniciar para mostrar correctamente.</translation>
+        <translation>Seleccionaste el tema obscuro.\nDebería de establecer los colores ajustables por el usuario que mejor se ajustan a tu elección?\n\nPor favor ten en cuenta que Pulseview tal vez se tenga que reiniciar para mostrarse correctamente.</translation>
     </message>
     <message>
         <location filename="../pv/dialogs/settings.cpp" line="654"/>
@@ -644,7 +644,7 @@ Please keep in mind that PulseView may need a restart to display correctly.</sou
 Should I set the user-adjustable colors to better suit your choice?
 
 Please keep in mind that PulseView may need a restart to display correctly.</source>
-        <translation>Seleccionaste el tema brillante.\nDebería de establecer los colores ajustables por el usuario que mejor se ajustan a tu elección?\n\nPor favor ten en cuenta que Pulseview tal vez se tenga que reiniciar para mostrar correctamente.</translation>
+        <translation>Seleccionaste el tema brillante.\nDebería de establecer los colores ajustables por el usuario que mejor se ajustan a tu elección?\n\nPor favor ten en cuenta que Pulseview tal vez se tenga que reiniciar para mostrarse correctamente.</translation>
     </message>
     <message>
         <location filename="../pv/dialogs/settings.cpp" line="807"/>
@@ -720,7 +720,7 @@ Please keep in mind that PulseView may need a restart to display correctly.</sou
         <location filename="../pv/popups/channels.cpp" line="66"/>
         <location filename="../pv/popups/channels.cpp" line="67"/>
         <source>Analog</source>
-        <translation>Análogo</translation>
+        <translation>Análogico</translation>
     </message>
     <message>
         <location filename="../pv/popups/channels.cpp" line="68"/>
@@ -809,7 +809,7 @@ Please keep in mind that PulseView may need a restart to display correctly.</sou
     <message>
         <location filename="../pv/subwindows/decoder_selector/model.cpp" line="40"/>
         <source>Decoder</source>
-        <translation>Decoder</translation>
+        <translation>Decodificador</translation>
     </message>
     <message>
         <location filename="../pv/subwindows/decoder_selector/model.cpp" line="41"/>
@@ -824,7 +824,7 @@ Please keep in mind that PulseView may need a restart to display correctly.</sou
     <message>
         <location filename="../pv/subwindows/decoder_selector/model.cpp" line="49"/>
         <source>All Decoders</source>
-        <translation>Todos los decoders</translation>
+        <translation>Todos los decodificadores</translation>
     </message>
 </context>
 <context>
@@ -832,7 +832,7 @@ Please keep in mind that PulseView may need a restart to display correctly.</sou
     <message>
         <location filename="../pv/subwindows/decoder_selector/subwindow.cpp" line="49"/>
         <source>Select a decoder to see its description here.</source>
-        <translation>Seleccione un decoder para ver su descripción aquí.</translation>
+        <translation>Seleccione un decodificador para ver su descripción aquí.</translation>
     </message>
     <message>
         <location filename="../pv/subwindows/decoder_selector/subwindow.cpp" line="247"/>
@@ -852,7 +852,7 @@ Please keep in mind that PulseView may need a restart to display correctly.</sou
     <message>
         <location filename="../pv/subwindows/decoder_selector/subwindow.cpp" line="319"/>
         <source>Choose Decoder</source>
-        <translation>Elige Decoder</translation>
+        <translation>Elige Decodificador</translation>
     </message>
 </context>
 <context>
@@ -879,12 +879,12 @@ Please keep in mind that PulseView may need a restart to display correctly.</sou
     <message>
         <location filename="../pv/toolbars/mainbar.cpp" line="138"/>
         <source>&amp;Save...</source>
-        <translation type="unfinished">&amp;Guardar...</translation>
+        <translation>&amp;Guardar...</translation>
     </message>
     <message>
         <location filename="../pv/toolbars/mainbar.cpp" line="145"/>
         <source>Save &amp;As...</source>
-        <translation type="unfinished"></translation>
+        <translation>Guardar Como...</translation>
     </message>
     <message>
         <location filename="../pv/toolbars/mainbar.cpp" line="151"/>
@@ -899,17 +899,17 @@ Please keep in mind that PulseView may need a restart to display correctly.</sou
     <message>
         <location filename="../pv/toolbars/mainbar.cpp" line="164"/>
         <source>&amp;Export</source>
-        <translation>&amp;Exporta</translation>
+        <translation>&amp;Exportar</translation>
     </message>
     <message>
         <location filename="../pv/toolbars/mainbar.cpp" line="170"/>
         <source>&amp;Import</source>
-        <translation>&amp;Importa</translation>
+        <translation>&amp;Importar</translation>
     </message>
     <message>
         <location filename="../pv/toolbars/mainbar.cpp" line="174"/>
         <source>&amp;Connect to Device...</source>
-        <translation>&amp;Conecta a Dispositivo...</translation>
+        <translation>&amp;Conectar a Dispositivo...</translation>
     </message>
     <message>
         <location filename="../pv/toolbars/mainbar.cpp" line="236"/>
@@ -919,12 +919,12 @@ Please keep in mind that PulseView may need a restart to display correctly.</sou
     <message>
         <location filename="../pv/toolbars/mainbar.cpp" line="252"/>
         <source>Configure Device</source>
-        <translation>Configura Dispositivo</translation>
+        <translation>Configurar Dispositivo</translation>
     </message>
     <message>
         <location filename="../pv/toolbars/mainbar.cpp" line="256"/>
         <source>Configure Channels</source>
-        <translation>Configura Canales</translation>
+        <translation>Configurar Canales</translation>
     </message>
     <message>
         <location filename="../pv/toolbars/mainbar.cpp" line="370"/>
@@ -934,7 +934,7 @@ Please keep in mind that PulseView may need a restart to display correctly.</sou
     <message>
         <location filename="../pv/toolbars/mainbar.cpp" line="433"/>
         <source>Failed to get sample rate:</source>
-        <translation>Error al obtener la lista de frecuencia de muestreo:</translation>
+        <translation>Error al obtener la frecuencia de muestreo:</translation>
     </message>
     <message>
         <location filename="../pv/toolbars/mainbar.cpp" line="474"/>
@@ -991,7 +991,7 @@ Please keep in mind that PulseView may need a restart to display correctly.</sou
     <message>
         <location filename="../pv/toolbars/mainbar.cpp" line="683"/>
         <source>Export %1</source>
-        <translation>Exporta %1</translation>
+        <translation>Exportar %1</translation>
     </message>
     <message>
         <location filename="../pv/toolbars/mainbar.cpp" line="714"/>
@@ -1001,12 +1001,12 @@ Please keep in mind that PulseView may need a restart to display correctly.</sou
     <message>
         <location filename="../pv/toolbars/mainbar.cpp" line="725"/>
         <source>Import File</source>
-        <translation>Importa Archivo</translation>
+        <translation>Importar Archivo</translation>
     </message>
     <message>
         <location filename="../pv/toolbars/mainbar.cpp" line="734"/>
         <source>Import %1</source>
-        <translation>Importa %1</translation>
+        <translation>Importar %1</translation>
     </message>
     <message>
         <location filename="../pv/toolbars/mainbar.cpp" line="807"/>
@@ -1062,7 +1062,7 @@ Please keep in mind that PulseView may need a restart to display correctly.</sou
     <message>
         <location filename="../pv/views/decoder_binary/view.cpp" line="258"/>
         <source>Binary Data Files (*.bin);;All Files (*)</source>
-        <translation>Archivos de Datos Binarios (*.txt);;Todos los archivos (*)</translation>
+        <translation>Archivos de Datos Binarios (*.bin);;Todos los archivos (*)</translation>
     </message>
     <message>
         <location filename="../pv/views/decoder_binary/view.cpp" line="277"/>
@@ -1087,42 +1087,42 @@ Please keep in mind that PulseView may need a restart to display correctly.</sou
     <message>
         <location filename="../pv/views/tabular_decoder/model.cpp" line="56"/>
         <source>Sample</source>
-        <translation type="unfinished"></translation>
+        <translation>Muestra</translation>
     </message>
     <message>
         <location filename="../pv/views/tabular_decoder/model.cpp" line="57"/>
         <source>Time</source>
-        <translation type="unfinished">Tiempo</translation>
+        <translation>Tiempo</translation>
     </message>
     <message>
         <location filename="../pv/views/tabular_decoder/model.cpp" line="58"/>
         <source>Decoder</source>
-        <translation type="unfinished">Decoder</translation>
+        <translation>Decoder</translation>
     </message>
     <message>
         <location filename="../pv/views/tabular_decoder/model.cpp" line="59"/>
         <source>Ann Row</source>
-        <translation type="unfinished"></translation>
+        <translation>Fila de anotación</translation>
     </message>
     <message>
         <location filename="../pv/views/tabular_decoder/model.cpp" line="60"/>
         <source>Ann Class</source>
-        <translation type="unfinished"></translation>
+        <translation>Clase de anotación</translation>
     </message>
     <message>
         <location filename="../pv/views/tabular_decoder/model.cpp" line="61"/>
         <source>Value</source>
-        <translation type="unfinished"></translation>
+        <translation>Valor</translation>
     </message>
     <message>
         <location filename="../pv/views/tabular_decoder/model.cpp" line="83"/>
         <source>s</source>
-        <translation type="unfinished"></translation>
+        <translation>s</translation>
     </message>
     <message>
         <location filename="../pv/views/tabular_decoder/model.cpp" line="83"/>
         <source>sa</source>
-        <translation type="unfinished"></translation>
+        <translation>sa</translation>
     </message>
 </context>
 <context>
@@ -1130,37 +1130,37 @@ Please keep in mind that PulseView may need a restart to display correctly.</sou
     <message>
         <location filename="../pv/views/tabular_decoder/view.cpp" line="176"/>
         <source>Decoder:</source>
-        <translation type="unfinished">Decodificador:</translation>
+        <translation>Decodificador:</translation>
     </message>
     <message>
         <location filename="../pv/views/tabular_decoder/view.cpp" line="198"/>
         <source>Hide Hidden Rows/Classes</source>
-        <translation type="unfinished"></translation>
+        <translation>Ocultar Filas/Columnas ocultas</translation>
     </message>
     <message>
         <location filename="../pv/views/tabular_decoder/view.cpp" line="202"/>
         <source>&amp;Save...</source>
-        <translation type="unfinished">&amp;Guardar...</translation>
+        <translation>&amp;Guardar...</translation>
     </message>
     <message>
         <location filename="../pv/views/tabular_decoder/view.cpp" line="374"/>
         <source>Save Annotations as CSV</source>
-        <translation type="unfinished"></translation>
+        <translation>Guardar anotaciones como CSV</translation>
     </message>
     <message>
         <location filename="../pv/views/tabular_decoder/view.cpp" line="374"/>
         <source>CSV Files (*.csv);;Text Files (*.txt);;All Files (*)</source>
-        <translation type="unfinished"></translation>
+        <translation>Archivos CSV (*.csv);;Archivos de texto (*.txt);;Todos los archivos (*)</translation>
     </message>
     <message>
         <location filename="../pv/views/tabular_decoder/view.cpp" line="442"/>
         <source>Error</source>
-        <translation type="unfinished">Error</translation>
+        <translation>Error</translation>
     </message>
     <message>
         <location filename="../pv/views/tabular_decoder/view.cpp" line="442"/>
         <source>File %1 could not be written to.</source>
-        <translation type="unfinished">No se pudo escribir en el archivo%1.</translation>
+        <translation>No se pudo escribir en el archivo%1.</translation>
     </message>
 </context>
 <context>
@@ -1183,12 +1183,12 @@ Please keep in mind that PulseView may need a restart to display correctly.</sou
     <message>
         <location filename="../pv/views/trace/analogsignal.cpp" line="1010"/>
         <source>Div height</source>
-        <translation>Altura de div</translation>
+        <translation>Altura de división</translation>
     </message>
     <message>
         <location filename="../pv/views/trace/analogsignal.cpp" line="1027"/>
         <source>V/div</source>
-        <translation>V/div</translation>
+        <translation>V/división</translation>
     </message>
     <message>
         <location filename="../pv/views/trace/analogsignal.cpp" line="1031"/>
@@ -1223,12 +1223,12 @@ Please keep in mind that PulseView may need a restart to display correctly.</sou
     <message>
         <location filename="../pv/views/trace/analogsignal.cpp" line="1064"/>
         <source>Conversion threshold(s)</source>
-        <translation>Umbral(es) de conversión</translation>
+        <translation>Conversión de Umbral(es)</translation>
     </message>
     <message>
         <location filename="../pv/views/trace/analogsignal.cpp" line="1074"/>
         <source>analog</source>
-        <translation>análogo</translation>
+        <translation>análogico</translation>
     </message>
     <message>
         <location filename="../pv/views/trace/analogsignal.cpp" line="1075"/>
@@ -1259,17 +1259,17 @@ Please keep in mind that PulseView may need a restart to display correctly.</sou
     <message>
         <location filename="../pv/views/trace/cursorpair.cpp" line="128"/>
         <source>Display interval</source>
-        <translation>Muestra intervalo</translation>
+        <translation>Mostrar intervalo</translation>
     </message>
     <message>
         <location filename="../pv/views/trace/cursorpair.cpp" line="140"/>
         <source>Display frequency</source>
-        <translation>Muestra frecuencia</translation>
+        <translation>Mostrar frecuencia</translation>
     </message>
     <message>
         <location filename="../pv/views/trace/cursorpair.cpp" line="152"/>
         <source>Display samples</source>
-        <translation>Muestra samples</translation>
+        <translation>Mostrar muestras</translation>
     </message>
 </context>
 <context>
@@ -1277,7 +1277,7 @@ Please keep in mind that PulseView may need a restart to display correctly.</sou
     <message>
         <location filename="../pv/views/trace/decodetrace.cpp" line="449"/>
         <source>&lt;p&gt;&lt;i&gt;No decoders in the stack&lt;/i&gt;&lt;/p&gt;</source>
-        <translation>&lt;p&gt;&lt;i&gt;No hay decodificadores en el stack.&lt;/i&gt;&lt;/p&gt;</translation>
+        <translation>&lt;p&gt;&lt;i&gt;No hay decodificadores en la pila.&lt;/i&gt;&lt;/p&gt;</translation>
     </message>
     <message>
         <location filename="../pv/views/trace/decodetrace.cpp" line="460"/>
@@ -1287,7 +1287,7 @@ Please keep in mind that PulseView may need a restart to display correctly.</sou
     <message>
         <location filename="../pv/views/trace/decodetrace.cpp" line="464"/>
         <source>Stack Decoder</source>
-        <translation>Decodificadores</translation>
+        <translation>Apilar Decodificador</translation>
     </message>
     <message>
         <location filename="../pv/views/trace/decodetrace.cpp" line="465"/>
@@ -1312,7 +1312,7 @@ Please keep in mind that PulseView may need a restart to display correctly.</sou
     <message>
         <location filename="../pv/views/trace/decodetrace.cpp" line="536"/>
         <source>Copy annotation text to clipboard</source>
-        <translation>Copiar texto de anotación al clipboard</translation>
+        <translation>Copiar texto de anotación al portapapeles</translation>
     </message>
     <message>
         <location filename="../pv/views/trace/decodetrace.cpp" line="545"/>
@@ -1363,7 +1363,7 @@ Please keep in mind that PulseView may need a restart to display correctly.</sou
     <message>
         <location filename="../pv/views/trace/decodetrace.cpp" line="1190"/>
         <source>Text Files (*.txt);;All Files (*)</source>
-        <translation>Archivos de texto (*.txt *.log);;Todos los archivos (*)</translation>
+        <translation>Archivos de texto (*.txt);;Todos los archivos (*)</translation>
     </message>
     <message>
         <location filename="../pv/views/trace/decodetrace.cpp" line="1255"/>
@@ -1378,12 +1378,12 @@ Please keep in mind that PulseView may need a restart to display correctly.</sou
     <message>
         <location filename="../pv/views/trace/decodetrace.cpp" line="1308"/>
         <source>Show this row</source>
-        <translation>Muestra esta fila</translation>
+        <translation>Mostrar esta fila</translation>
     </message>
     <message>
         <location filename="../pv/views/trace/decodetrace.cpp" line="1319"/>
         <source>Show All</source>
-        <translation>Muestra todo</translation>
+        <translation>Mostrar todo</translation>
     </message>
     <message>
         <location filename="../pv/views/trace/decodetrace.cpp" line="1327"/>
@@ -1406,7 +1406,7 @@ Please keep in mind that PulseView may need a restart to display correctly.</sou
     <message>
         <location filename="../pv/views/trace/flag.cpp" line="146"/>
         <source>Disable snapping</source>
-        <translation>Deshabilita snapping</translation>
+        <translation>Deshabilitar snapping</translation>
     </message>
 </context>
 <context>
@@ -1557,7 +1557,7 @@ Please keep in mind that PulseView may need a restart to display correctly.</sou
     <message>
         <location filename="../pv/views/trace/trace.cpp" line="206"/>
         <source>Create marker here</source>
-        <translation>Crear marcador aqui</translation>
+        <translation>Crear marcador aquí</translation>
     </message>
     <message>
         <location filename="../pv/views/trace/trace.cpp" line="315"/>
@@ -1605,7 +1605,7 @@ Please keep in mind that PulseView may need a restart to display correctly.</sou
     <message>
         <location filename="../pv/widgets/exportmenu.cpp" line="71"/>
         <source>Export %1...</source>
-        <translation>Exporta %1...</translation>
+        <translation>Exportar %1...</translation>
     </message>
 </context>
 <context>
@@ -1613,7 +1613,7 @@ Please keep in mind that PulseView may need a restart to display correctly.</sou
     <message>
         <location filename="../pv/widgets/importmenu.cpp" line="68"/>
         <source>Import %1...</source>
-        <translation>Importa %1...</translation>
+        <translation>Importar %1...</translation>
     </message>
 </context>
 </TS>
