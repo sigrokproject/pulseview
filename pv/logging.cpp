@@ -191,8 +191,13 @@ int Logging::log_srd(void *cb_data, int loglevel, const char *format, va_list ar
 	char *text = g_strdup_vprintf(format, args);
 
 	QString s = QString::fromUtf8(text);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
+	for (QString& substring : s.split("\n", Qt::SkipEmptyParts))
+			logging.log(substring, LogSource_srd);
+#else
 	for (QString& substring : s.split("\n", QString::SkipEmptyParts))
 			logging.log(substring, LogSource_srd);
+#endif
 	g_free(text);
 
 	return SR_OK;
