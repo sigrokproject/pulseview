@@ -220,7 +220,7 @@ QWidget *Settings::get_general_settings_form(QWidget *parent) const
 	QComboBox *language_cb = new QComboBox();
 	Application* a = qobject_cast<Application*>(QApplication::instance());
 
-	QString current_language = settings.value(GlobalSettings::Key_General_Language).toString();
+	QString current_language = settings.value(GlobalSettings::Key_General_Language, "en").toString();
 	for (const QString& language : a->get_languages()) {
 		const QLocale locale = QLocale(language);
 		const QString desc = locale.languageToString(locale.language());
