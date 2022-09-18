@@ -243,7 +243,11 @@ void Viewport::wheelEvent(QWheelEvent *event)
 				(delta * height()) / (8 * 120));
 		} else {
 			// Vertical scrolling is interpreted as zooming in/out
+#if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
 			view_.zoom(delta / 120.0, event->position().x());
+#else
+			view_.zoom(delta / 120.0, event->x());
+#endif
 		}
 #if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
 	} else if (event->angleDelta().x() != 0) {
