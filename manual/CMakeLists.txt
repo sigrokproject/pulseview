@@ -19,6 +19,8 @@
 
 cmake_minimum_required(VERSION 2.8.12)
 
+project(PV_MANUAL)
+
 # External dependencies, required and optional tools.
 find_program(ASCIIDOCTOR_EXECUTABLE NAMES asciidoctor)
 find_program(ASCIIDOCTOR_PDF_EXECUTABLE NAMES asciidoctor-pdf)
