@@ -1376,8 +1376,13 @@ void DecodeSignal::decode_proc()
 			// If the input segment is complete, we've exhausted this segment
 			if (input_segment->is_complete()) {
 #if defined HAVE_SRD_SESSION_SEND_EOF && HAVE_SRD_SESSION_SEND_EOF
+				// Tell protocol decoders about the end of
+				// the input data, which may result in more
+				// annotations being emitted
 				(void)srd_session_send_eof(srd_session_);
+				new_annotations();
 #endif
+
 				if (current_segment_id_ < (logic_mux_data_->logic_segments().size() - 1)) {
 					// Process next segment
 					current_segment_id_++;
