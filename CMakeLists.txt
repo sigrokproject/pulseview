@@ -82,7 +82,15 @@ include(memaccess)
 find_package(PkgConfig)
 
 list(APPEND PKGDEPS glib-2.0>=2.28.0)
-list(APPEND PKGDEPS glibmm-2.4>=2.28.0)
+
+# Try to find the prefered glibmm-2.4. If not found then add glibmm-2.68
+# to the dependency list.
+pkg_check_modules(GLIBMM_2_4 glibmm-2.4>2.28.0)
+if(GLIBMM_2_4_FOUND)
+	list(APPEND PKGDEPS glibmm-2.4>=2.28.0)
+else()
+	list(APPEND PKGDEPS glibmm-2.68>=2.68.0)
+endif()
 
 if(ENABLE_FLOW)
 	list(APPEND PKGDEPS gstreamermm-1.0>=1.8.0)
@@ -226,7 +234,11 @@ memaccess_check_unaligned_le(HAVE_UNALIGNED_LITTLE_ENDIAN_ACCESS)
 set(PV_TITLE PulseView)
 set(PV_VERSION_STRING "0.5.0")
 
-set(PV_GLIBMM_VERSION ${PKGDEPS_glibmm-2.4_VERSION})
+if(GLIBMM_2_4_FOUND)
+	set(PV_GLIBMM_VERSION ${PKGDEPS_glibmm-2.4_VERSION})
+else()
+	set(PV_GLIBMM_VERSION ${PKGDEPS_glibmm-2.68_VERSION})
+endif()
 
 include(GetGitRevisionDescription)
 
