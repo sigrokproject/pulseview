@@ -151,41 +151,41 @@ find_package(Threads REQUIRED)
 
 # Helper for checking for atomics
 function(check_working_cxx_atomics varname additional_lib)
-  include(CheckCXXSourceCompiles)
-  include(CMakePushCheckState)
-  cmake_push_check_state()
-  set(CMAKE_REQUIRED_FLAGS "-std=c++11")
-  set(CMAKE_REQUIRED_LIBRARIES "${additional_lib}")
-  set(CMAKE_REQUIRED_QUIET 1)
-  CHECK_CXX_SOURCE_COMPILES("
+	include(CheckCXXSourceCompiles)
+	include(CMakePushCheckState)
+	cmake_push_check_state()
+	set(CMAKE_REQUIRED_FLAGS "-std=c++11")
+	set(CMAKE_REQUIRED_LIBRARIES "${additional_lib}")
+	set(CMAKE_REQUIRED_QUIET 1)
+	CHECK_CXX_SOURCE_COMPILES("
 #include <atomic>
 std::atomic<int> x;
 int main() {
-  return std::atomic_fetch_add_explicit(&x, 1, std::memory_order_seq_cst);
+	return std::atomic_fetch_add_explicit(&x, 1, std::memory_order_seq_cst);
 }
 " ${varname})
-  cmake_pop_check_state()
+	cmake_pop_check_state()
 endfunction(check_working_cxx_atomics)
 
 # First check if atomics work without the library.
 # If not, check if the library exists, and atomics work with it.
 check_working_cxx_atomics(HAVE_CXX_ATOMICS_WITHOUT_LIB "")
 if(HAVE_CXX_ATOMICS_WITHOUT_LIB)
-  message(STATUS "Atomics provided by the C-library - yes")
+	message(STATUS "Atomics provided by the C-library - yes")
 else()
-  message(STATUS "Atomics provided by the C-library - no")
-  find_library(LIBATOMIC_LIBRARY NAMES atomic PATH_SUFFIXES lib)
-  if(LIBATOMIC_LIBRARY)
-    check_working_cxx_atomics(HAVE_CXX_ATOMICS_WITH_LIB "${LIBATOMIC_LIBRARY}")
-    if (HAVE_CXX_ATOMICS_WITH_LIB)
-      message(STATUS "Atomics provided by libatomic - yes")
-    else()
-      message(STATUS "Atomics provided by libatomic - no")
-      message(FATAL_ERROR "Compiler must support std::atomic!")
-    endif()
-  else()
-    message(FATAL_ERROR "Compiler appears to require libatomic, but cannot find it.")
-  endif()
+	message(STATUS "Atomics provided by the C-library - no")
+	find_library(LIBATOMIC_LIBRARY NAMES atomic PATH_SUFFIXES lib)
+	if(LIBATOMIC_LIBRARY)
+		check_working_cxx_atomics(HAVE_CXX_ATOMICS_WITH_LIB "${LIBATOMIC_LIBRARY}")
+		if (HAVE_CXX_ATOMICS_WITH_LIB)
+			message(STATUS "Atomics provided by libatomic - yes")
+		else()
+			message(STATUS "Atomics provided by libatomic - no")
+			message(FATAL_ERROR "Compiler must support std::atomic!")
+		endif()
+	else()
+		message(FATAL_ERROR "Compiler appears to require libatomic, but cannot find it.")
+	endif()
 endif()
 
 # Check availability of features which depend on library versions.
