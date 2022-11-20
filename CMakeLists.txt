@@ -75,11 +75,14 @@ add_subdirectory(manual)
 #-------------------------------------------------------------------------------
 
 include(CheckCSourceCompiles)
+include(CheckCXXCompilerFlag)
 include(CheckCXXSourceCompiles)
 include(CMakePushCheckState)
 include(memaccess)
 
 find_package(PkgConfig)
+
+check_cxx_compiler_flag("-std=c++17" PV_HAVE_C++17)
 
 list(APPEND PKGDEPS glib-2.0>=2.28.0)
 
@@ -166,7 +169,13 @@ find_package(Threads REQUIRED)
 # Helper for checking for atomics
 function(check_working_cxx_atomics varname additional_lib)
 	cmake_push_check_state()
-	set(CMAKE_REQUIRED_FLAGS "-std=c++11")
+	# The OSX 12 (Monteray) stdlib requires C++17 to compile.
+	if(APPLE AND PV_HAVE_C++17)
+		message(STATUS "Using C++17 for OSX build")
+		set(CMAKE_REQUIRED_FLAGS "-std=c++17")
+	else()
+		set(CMAKE_REQUIRED_FLAGS "-std=c++11")
+	endif()
 	set(CMAKE_REQUIRED_LIBRARIES "${additional_lib}")
 	set(CMAKE_REQUIRED_QUIET 1)
 	CHECK_CXX_SOURCE_COMPILES("
@@ -499,7 +508,14 @@ qt5_add_resources(pulseview_RESOURCES_RCC ${CMAKE_BINARY_DIR}/translations.qrc)
 add_definitions(-DQT_NO_KEYWORDS)
 add_definitions(-D__STDC_LIMIT_MACROS)
 add_definitions(-Wall -Wextra)
-add_definitions(-std=c++11)
+
+# The OSX 12 Monteray stdlib requires C++17 to compile.
+if(APPLE AND PV_HAVE_C++17)
+	add_definitions(-std=c++17)
+else()
+	add_definitions(-std=c++11)
+endif()
+
 add_definitions(-DBOOST_MATH_DISABLE_FLOAT128=1)
 if(WIN32)
 	add_definitions(-Wa,-mbig-obj -O3)
