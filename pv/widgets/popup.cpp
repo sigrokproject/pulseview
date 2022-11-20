@@ -21,7 +21,11 @@
 #include <cassert>
 
 #include <QApplication>
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#include <QScreen>
+#else
 #include <QDesktopWidget>
+#endif
 #include <QLineEdit>
 #include <QScrollBar>
 #include <QStyle>

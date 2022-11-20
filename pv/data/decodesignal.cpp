@@ -24,6 +24,9 @@
 #include <limits>
 
 #include <QDebug>
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#include <QRegularExpression>
+#endif
 
 #include "logic.hpp"
 #include "logicsegment.hpp"
@@ -306,7 +309,11 @@ void DecodeSignal::auto_assign_signals(const shared_ptr<Decoder> dec)
 			continue;
 
 		QString ch_name = ch.name.toLower();
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+		ch_name = ch_name.replace(QRegularExpression("[-_.]"), " ");
+#else
 		ch_name = ch_name.replace(QRegExp("[-_.]"), " ");
+#endif
 
 		shared_ptr<data::SignalBase> match;
 		for (const shared_ptr<data::SignalBase>& s : session_.signalbases()) {
@@ -314,7 +321,11 @@ void DecodeSignal::auto_assign_signals(const shared_ptr<Decoder> dec)
 				continue;
 
 			QString s_name = s->name().toLower();
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+			s_name = s_name.replace(QRegularExpression("[-_.]"), " ");
+#else
 			s_name = s_name.replace(QRegExp("[-_.]"), " ");
+#endif
 
 			if (s->logic_data() &&
 				((ch_name.contains(s_name)) || (s_name.contains(ch_name)))) {
@@ -747,7 +758,11 @@ void DecodeSignal::save_settings(QSettings &settings) const
 	for (const shared_ptr<Decoder>& decoder : stack_) {
 		settings.beginGroup("decoder" + QString::number(decoder_idx++));
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+		settings.setValue("id", (const char *)decoder->get_srd_decoder()->id);
+#else
 		settings.setValue("id", decoder->get_srd_decoder()->id);
+#endif
 		settings.setValue("visible", decoder->visible());
 
 		// Save decoder options

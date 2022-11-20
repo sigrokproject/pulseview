@@ -330,7 +330,11 @@ void GlobalSettings::store_gvariant(QSettings &settings, GVariant *v)
 		g_variant_get_size(v));
 
 	settings.setValue("value", var_data);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+	settings.setValue("type", (const char *)var_type_str);
+#else
 	settings.setValue("type", var_type_str);
+#endif
 
 	g_free(var_type_str);
 }

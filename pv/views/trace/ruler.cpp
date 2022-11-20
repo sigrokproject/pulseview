@@ -242,7 +242,11 @@ shared_ptr<ViewItem> Ruler::get_mouse_over_item(const QPoint &pt)
 
 void Ruler::mouseDoubleClickEvent(QMouseEvent *event)
 {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+	hover_item_ = view_.add_flag(get_absolute_time_from_x_pos(event->pos().x()));
+#else
 	hover_item_ = view_.add_flag(get_absolute_time_from_x_pos(event->x()));
+#endif
 }
 
 void Ruler::paintEvent(QPaintEvent*)

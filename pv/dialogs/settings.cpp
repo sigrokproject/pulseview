@@ -231,8 +231,13 @@ QWidget *Settings::get_general_settings_form(QWidget *parent) const
 			language_cb->setCurrentIndex(index);
 		}
 	}
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+	connect(language_cb, SIGNAL(currentTextChanged(const QString&)),
+		this, SLOT(on_general_language_changed(const QString&)));
+#else
 	connect(language_cb, SIGNAL(currentIndexChanged(const QString&)),
 		this, SLOT(on_general_language_changed(const QString&)));
+#endif
 	general_layout->addRow(tr("User interface language"), language_cb);
 
 	// Theme combobox
