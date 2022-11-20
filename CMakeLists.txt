@@ -136,20 +136,35 @@ pkg_check_modules(PKGDEPS REQUIRED ${PKGDEPS})
 
 set(CMAKE_AUTOMOC TRUE)
 
-find_package(Qt5 5.3 COMPONENTS Core Gui LinguistTools Widgets Svg REQUIRED)
-
-message(STATUS "Qt version: ${Qt5_VERSION}")
+# Check for Qt5, and check for Qt6 if Qt5 is not found.
+set(QT_COMPONENTS Core Gui LinguistTools Widgets Svg)
+find_package(Qt5 5.3 QUIET COMPONENTS Core)
+if(Qt5_FOUND)
+	find_package(Qt5 5.3 COMPONENTS ${QT_COMPONENTS} REQUIRED)
+	message(STATUS "Qt version: ${Qt5_VERSION}")
+else()
+	find_package(Qt6 6.2 COMPONENTS ${QT_COMPONENTS} REQUIRED)
+	message(STATUS "Qt version: ${Qt6_VERSION}")
+endif()
 
 if(WIN32)
-	# MXE workaround: Use pkg-config to find Qt5 libs.
+	# MXE workaround: Use pkg-config to find Qt5 and Qt6 libs.
 	# https://github.com/mxe/mxe/issues/1642
 	# Not required (and doesn't work) on MSYS2.
 	if(NOT DEFINED ENV{MSYSTEM})
-		pkg_check_modules(QT5ALL REQUIRED Qt5Widgets>=5.3 Qt5Gui>=5.3 Qt5Svg>=5.3)
+		if(Qt5_FOUND)
+			pkg_check_modules(QT5ALL REQUIRED Qt5Widgets>=5.3 Qt5Gui>=5.3 Qt5Svg>=5.3)
+		else()
+			pkg_check_modules(QT6ALL REQUIRED Qt6Widgets>=6.2 Qt6Gui>=6.2 Qt6Svg>=6.2)
+		endif()
 	endif()
 endif()
 
-set(QT_LIBRARIES Qt5::Gui Qt5::Widgets Qt5::Svg)
+if(Qt5_FOUND)
+	set(QT_LIBRARIES Qt5::Gui Qt5::Widgets Qt5::Svg)
+else()
+	set(QT_LIBRARIES Qt6::Gui Qt6::Widgets Qt6::Svg)
+endif()
 
 set(BOOSTCOMPS filesystem serialization system)
 if(ENABLE_TESTS)
@@ -495,7 +510,11 @@ if(ANDROID)
 	)
 endif()
 
-qt5_add_resources(pulseview_RESOURCES_RCC ${pulseview_RESOURCES})
+if(Qt5_FOUND)
+	qt5_add_resources(pulseview_RESOURCES_RCC ${pulseview_RESOURCES})
+else()
+	qt6_add_resources(pulseview_RESOURCES_RCC ${pulseview_RESOURCES})
+endif()
 
 #===============================================================================
 #= Translations
@@ -507,10 +526,17 @@ if (NOT CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
 	configure_file("translations.qrc" "translations.qrc" COPYONLY)
 endif ()
 
-qt5_add_translation(QM_FILES ${TS_FILES})
-qt5_create_translation(QM_FILES ${pulseview_SOURCES} ${TS_FILES})
+if(Qt5_FOUND)
+	qt5_add_translation(QM_FILES ${TS_FILES})
+	qt5_create_translation(QM_FILES ${pulseview_SOURCES} ${TS_FILES})
 
-qt5_add_resources(pulseview_RESOURCES_RCC ${CMAKE_BINARY_DIR}/translations.qrc)
+	qt5_add_resources(pulseview_RESOURCES_RCC ${CMAKE_BINARY_DIR}/translations.qrc)
+else()
+	qt6_add_translation(QM_FILES ${TS_FILES})
+	qt6_create_translation(QM_FILES ${pulseview_SOURCES} ${TS_FILES})
+
+	qt6_add_resources(pulseview_RESOURCES_RCC ${CMAKE_BINARY_DIR}/translations.qrc)
+endif()
 
 #===============================================================================
 #= Global Definitions
@@ -592,12 +618,18 @@ if(WIN32)
 	# We also need QWindowsIntegrationPlugin, Qt5PlatformSupport (only for
 	# Qt < 5.8.0), and all Qt libs and their dependencies.
 	add_definitions(-DQT_STATICPLUGIN)
-	list(APPEND PULSEVIEW_LINK_LIBS Qt5::QSvgPlugin)
-	list(APPEND PULSEVIEW_LINK_LIBS Qt5::QWindowsIntegrationPlugin)
-	if(Qt5Gui_VERSION VERSION_LESS 5.8.0)
-		list(APPEND PULSEVIEW_LINK_LIBS -lQt5PlatformSupport)
+	if(Qt5_FOUND)
+		list(APPEND PULSEVIEW_LINK_LIBS Qt5::QSvgPlugin)
+		list(APPEND PULSEVIEW_LINK_LIBS Qt5::QWindowsIntegrationPlugin)
+		if(Qt5Gui_VERSION VERSION_LESS 5.8.0)
+			list(APPEND PULSEVIEW_LINK_LIBS -lQt5PlatformSupport)
+		endif()
+		list(APPEND PULSEVIEW_LINK_LIBS ${QT5ALL_LDFLAGS})
+	else()
+		list(APPEND PULSEVIEW_LINK_LIBS Qt6::QSvgPlugin)
+		list(APPEND PULSEVIEW_LINK_LIBS Qt6::QWindowsIntegrationPlugin)
+		list(APPEND PULSEVIEW_LINK_LIBS ${QT6ALL_LDFLAGS})
 	endif()
-	list(APPEND PULSEVIEW_LINK_LIBS ${QT5ALL_LDFLAGS})
 endif()
 
 if(ENABLE_STACKTRACE)
