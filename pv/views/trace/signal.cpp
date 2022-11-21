@@ -51,7 +51,7 @@ const char *const ChannelNames[] = {
 	"TX",
 	"RX",
 	"SDA",
-	"SCL"
+	"SCL",
 	"SCLK",
 	"MOSI",
 	"MISO",
