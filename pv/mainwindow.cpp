@@ -79,6 +79,8 @@ MainWindow::MainWindow(DeviceManager &device_manager, QWidget *parent) :
 {
 	setup_ui();
 	restore_ui_settings();
+	connect(this, SIGNAL(session_error_raised(const QString, const QString)),
+		this, SLOT(on_session_error_raised(const QString, const QString)));
 }
 
 MainWindow::~MainWindow()
@@ -192,6 +194,9 @@ shared_ptr<views::ViewBase> MainWindow::add_view(views::ViewType type,
 	connect(&session, SIGNAL(trigger_event(int, util::Timestamp)),
 		qobject_cast<views::ViewBase*>(v.get()),
 		SLOT(trigger_event(int, util::Timestamp)));
+
+	connect(&session, SIGNAL(session_error_raised(const QString, const QString)),
+		this, SLOT(on_session_error_raised(const QString, const QString)));
 
 	if (type == views::ViewTypeTrace) {
 		views::trace::View *tv =
@@ -692,7 +697,7 @@ void MainWindow::on_run_stop_clicked()
 				s->stop_capture();
 			else
 				s->start_capture([&](QString message) {
-					show_session_error("Capture failed", message); });
+					Q_EMIT session_error_raised("Capture failed", message); });
 	} else {
 
 		shared_ptr<Session> session = last_focused_session_;
@@ -703,7 +708,7 @@ void MainWindow::on_run_stop_clicked()
 		switch (session->get_capture_state()) {
 		case Session::Stopped:
 			session->start_capture([&](QString message) {
-				show_session_error("Capture failed", message); });
+				Q_EMIT session_error_raised("Capture failed", message); });
 			break;
 		case Session::AwaitingTrigger:
 		case Session::Running:
@@ -981,4 +986,7 @@ void MainWindow::on_close_current_tab()
 	on_tab_close_requested(tab);
 }
 
+void MainWindow::on_session_error_raised(const QString text, const QString info_text) {
+	MainWindow::show_session_error(text, info_text);
+}
 } // namespace pv
