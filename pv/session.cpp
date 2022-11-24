@@ -776,7 +776,7 @@ void Session::load_file(QString file_name, QString setup_file_name,
 	main_bar_->update_device_list();
 
 	start_capture([&, errorMessage](QString infoMessage) {
-		MainWindow::show_session_error(errorMessage, infoMessage); });
+		Q_EMIT session_error_raised(errorMessage, infoMessage); });
 
 	// Only set save path if we loaded an srzip file
 	if (dynamic_pointer_cast<devices::SessionFile>(device_))
