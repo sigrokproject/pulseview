@@ -59,7 +59,7 @@ if (ASCIIDOCTOR_PDF_EXECUTABLE)
 		BYPRODUCTS ${MANUAL_OUT_PDF}
 		DEPENDS ${MANUAL_SRC}
 		WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-		COMMENT "Generating manual, HTML output"
+		COMMENT "Generating manual, PDF output"
 	)
 else ()
 	add_custom_target(manual-pdf
