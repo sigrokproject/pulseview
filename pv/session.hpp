@@ -264,6 +264,7 @@ Q_SIGNALS:
 	void data_received();
 
 	void add_view(ViewType type, Session *session);
+	void remove_view(shared_ptr<views::ViewBase> view);
 
 public Q_SLOTS:
 	void on_data_saved();
