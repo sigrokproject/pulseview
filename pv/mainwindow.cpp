@@ -547,14 +547,10 @@ void MainWindow::setup_ui()
 	session_selector_.setCornerWidget(static_tab_widget_, Qt::TopLeftCorner);
 	session_selector_.setTabsClosable(true);
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-	close_application_shortcut_ = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_Q), this, SLOT(close()));
-	close_current_tab_shortcut_ = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_W), this, SLOT(on_close_current_tab()));
-#else
-	close_application_shortcut_ = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q), this, SLOT(close()));
-	close_current_tab_shortcut_ = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_W), this, SLOT(on_close_current_tab()));
-#endif
+	close_application_shortcut_ = new QShortcut(QKeySequence::Quit, this, SLOT(close()));
 	close_application_shortcut_->setAutoRepeat(false);
+
+	close_current_tab_shortcut_ = new QShortcut(QKeySequence::Close, this, SLOT(on_close_current_tab()));
 
 	connect(new_session_button_, SIGNAL(clicked(bool)),
 		this, SLOT(on_new_session_clicked()));
