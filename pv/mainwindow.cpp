@@ -989,4 +989,5 @@ void MainWindow::on_close_current_tab()
 void MainWindow::on_session_error_raised(const QString text, const QString info_text) {
 	MainWindow::show_session_error(text, info_text);
 }
+
 } // namespace pv
