@@ -177,6 +177,7 @@ void AnalogSignal::restore_settings(std::map<QString, QVariant> settings)
 		div_height_ = settings["div_height"].toInt();
 
 		update_logic_level_offsets();
+		update_scale();
 
 		if ((div_height_ != old_height) && owner_) {
 			// Call order is important, otherwise the lazy event handler won't work
