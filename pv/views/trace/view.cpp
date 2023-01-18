@@ -782,9 +782,23 @@ void View::set_segment_display_mode(Trace::SegmentDisplayMode mode)
 	for (const shared_ptr<Signal>& signal : signals_)
 		signal->set_segment_display_mode(mode);
 
+	update_current_segment();
+
+	segment_selectable_ = true;
+
+	if ((mode == Trace::ShowAllSegments) || (mode == Trace::ShowAccumulatedIntensity))
+		segment_selectable_ = false;
+
+	viewport_->update();
+
+	segment_display_mode_changed((int)mode, segment_selectable_);
+}
+
+void View::update_current_segment()
+{
 	uint32_t last_segment = session_.get_highest_segment_id();
 
-	switch (mode) {
+	switch (segment_display_mode_) {
 	case Trace::ShowLastSegmentOnly:
 		if (current_segment_ != last_segment)
 			set_current_segment(last_segment);
@@ -810,15 +824,6 @@ void View::set_segment_display_mode(Trace::SegmentDisplayMode mode)
 		// Current segment remains as-is
 		break;
 	}
-
-	segment_selectable_ = true;
-
-	if ((mode == Trace::ShowAllSegments) || (mode == Trace::ShowAccumulatedIntensity))
-		segment_selectable_ = false;
-
-	viewport_->update();
-
-	segment_display_mode_changed((int)mode, segment_selectable_);
 }
 
 void View::zoom(double steps)
@@ -1995,7 +2000,7 @@ void View::capture_state_updated(int state)
 {
 	GlobalSettings settings;
 
-	if (state == Session::Running) {
+	if (state == Session::Starting) {
 		set_time_unit(util::TimeUnit::Samples);
 
 		trigger_markers_.clear();
@@ -2018,7 +2023,6 @@ void View::capture_state_updated(int state)
 		sticky_scrolling_ = !restoring_state_ &&
 			settings.value(GlobalSettings::Key_View_StickyScrolling).toBool();
 
-		// Reset all traces to segment 0
 		current_segment_ = 0;
 		set_current_segment(current_segment_);
 	}
@@ -2054,33 +2058,21 @@ void View::capture_state_updated(int state)
 
 void View::on_new_segment(int new_segment_id)
 {
-	on_segment_changed(new_segment_id);
+	update_current_segment();
 }
 
 void View::on_segment_completed(int segment_id)
 {
-	on_segment_changed(segment_id);
+	update_current_segment();
 }
 
 void View::on_segment_changed(int segment)
 {
-	switch (segment_display_mode_) {
-	case Trace::ShowLastSegmentOnly:
-	case Trace::ShowSingleSegmentOnly:
-		set_current_segment(segment);
-		break;
+	// Triggered when a segment is selected by UI action from the user
+	// In this case, we assume segment_display_mode_ has already been
+	// reset to ShowSingleSegmentOnly and switch to the given segment.
 
-	case Trace::ShowLastCompleteSegmentOnly:
-		// Only update if all segments are complete
-		if (session_.all_segments_complete(segment))
-			set_current_segment(segment);
-		break;
-
-	case Trace::ShowAllSegments:
-	case Trace::ShowAccumulatedIntensity:
-	default:
-		break;
-	}
+	set_current_segment(segment);
 }
 
 void View::on_create_marker_here()

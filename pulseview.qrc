@@ -26,6 +26,7 @@
 	<file>icons/status-green.svg</file>
 	<file>icons/status-grey.svg</file>
 	<file>icons/status-red.svg</file>
+	<file>icons/status-yellow.svg</file>
 	<file>icons/show-cursors.svg</file>
 	<file>icons/trigger-change.svg</file>
 	<file>icons/trigger-falling.svg</file>
@@ -36,6 +37,7 @@
 	<file>icons/trigger-marker-high.svg</file>
 	<file>icons/trigger-marker-low.svg</file>
 	<file>icons/trigger-marker-rising.svg</file>
+	<file>icons/trigger-repeat-rearm.svg</file>
 	<file>icons/trigger-none.svg</file>
 	<file>icons/trigger-rising.svg</file>
 	<file>icons/view-displaymode-last_complete_segment.svg</file>

@@ -176,6 +176,9 @@ private:
 	pv::widgets::PopupToolButton channels_button_;
 	QAction *channels_button_action_;
 
+	pv::widgets::PopupToolButton triggermode_button_;
+	QAction *triggermode_button_action_;
+
 	pv::widgets::SweepTimingWidget sample_count_;
 	pv::widgets::SweepTimingWidget sample_rate_;
 	bool updating_sample_rate_;

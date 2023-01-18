@@ -344,6 +344,7 @@ set(pulseview_SOURCES
 	pv/dialogs/storeprogress.cpp
 	pv/popups/deviceoptions.cpp
 	pv/popups/channels.cpp
+	pv/popups/triggermode.cpp
 	pv/prop/bool.cpp
 	pv/prop/double.cpp
 	pv/prop/enum.cpp
@@ -413,6 +414,7 @@ set(pulseview_HEADERS
 	pv/dialogs/storeprogress.hpp
 	pv/popups/channels.hpp
 	pv/popups/deviceoptions.hpp
+	pv/popups/triggermode.hpp
 	pv/prop/bool.hpp
 	pv/prop/double.hpp
 	pv/prop/enum.hpp

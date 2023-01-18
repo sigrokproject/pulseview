@@ -46,6 +46,7 @@
 #include <pv/mainwindow.hpp>
 #include <pv/popups/channels.hpp>
 #include <pv/popups/deviceoptions.hpp>
+#include <pv/popups/triggermode.hpp>
 #include <pv/util.hpp>
 #include <pv/views/trace/view.hpp>
 #include <pv/widgets/exportmenu.hpp>
@@ -106,6 +107,8 @@ MainBar::MainBar(Session &session, QWidget *parent, pv::views::trace::View *view
 	configure_button_action_(nullptr),
 	channels_button_(this),
 	channels_button_action_(nullptr),
+	triggermode_button_(this),
+	triggermode_button_action_(nullptr),
 	sample_count_(" samples", this),
 	sample_rate_("Hz", this),
 	updating_sample_rate_(false),
@@ -281,6 +284,11 @@ MainBar::MainBar(Session &session, QWidget *parent, pv::views::trace::View *view
 	channels_button_.setToolTip(tr("Configure Channels"));
 	channels_button_.setIcon(QIcon(":/icons/channels.svg"));
 
+	triggermode_button_.setToolTip(tr("Configure Repeating Trigger Rearm"));
+	triggermode_button_.setIcon(QIcon(":/icons/trigger-repeat-rearm.svg"));
+	pv::popups::TriggerMode *const triggermode_popup = new pv::popups::TriggerMode(session_, this);
+	triggermode_button_.set_popup(triggermode_popup);
+
 	add_toolbar_widgets();
 
 	sample_count_.installEventFilter(this);
@@ -317,6 +325,7 @@ void MainBar::set_capture_state(pv::Session::capture_state state)
 	device_selector_.setEnabled(ui_enabled);
 	configure_button_.setEnabled(ui_enabled);
 	channels_button_.setEnabled(ui_enabled);
+	triggermode_button_.setEnabled(ui_enabled);
 	sample_count_.setEnabled(ui_enabled);
 	sample_rate_.setEnabled(ui_enabled);
 }
@@ -937,6 +946,7 @@ void MainBar::add_toolbar_widgets()
 	addWidget(&device_selector_);
 	configure_button_action_ = addWidget(&configure_button_);
 	channels_button_action_ = addWidget(&channels_button_);
+	triggermode_button_action_ = addWidget(&triggermode_button_);
 	addWidget(&sample_count_);
 	addWidget(&sample_rate_);
 #ifdef ENABLE_DECODE

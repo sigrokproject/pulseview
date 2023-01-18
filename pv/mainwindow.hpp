@@ -163,6 +163,7 @@ private:
 	QTabWidget session_selector_;
 
 	QIcon icon_red_;
+	QIcon icon_yellow_;
 	QIcon icon_green_;
 	QIcon icon_grey_;
 
