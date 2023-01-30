@@ -92,7 +92,7 @@ MainWindow::~MainWindow()
 	sub_windows_.clear();
 }
 
-void MainWindow::show_session_error(const QString text, const QString info_text)
+void MainWindow::on_show_session_error(const QString text, const QString info_text)
 {
 	// TODO Emulate noquote()
 	qDebug() << "Notifying user of session error: " << text << "; " << info_text;
@@ -193,6 +193,8 @@ shared_ptr<views::ViewBase> MainWindow::add_view(views::ViewType type,
 		qobject_cast<views::ViewBase*>(v.get()),
 		SLOT(trigger_event(int, util::Timestamp)));
 
+	connect(this, SIGNAL(show_session_error(const QString, const QString)), 
+		this, SLOT(on_show_session_error(const QString, const QString)));
 	if (type == views::ViewTypeTrace) {
 		views::trace::View *tv =
 			qobject_cast<views::trace::View*>(v.get());
@@ -691,7 +693,7 @@ void MainWindow::on_run_stop_clicked()
 			if (any_running)
 				s->stop_capture();
 			else
-				s->start_capture([&](QString message) {
+				s->start_capture([&](const QString message) {
 					show_session_error("Capture failed", message); });
 	} else {
 
@@ -702,7 +704,7 @@ void MainWindow::on_run_stop_clicked()
 
 		switch (session->get_capture_state()) {
 		case Session::Stopped:
-			session->start_capture([&](QString message) {
+			session->start_capture([&](const QString message) {
 				show_session_error("Capture failed", message); });
 			break;
 		case Session::AwaitingTrigger:
