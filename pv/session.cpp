@@ -556,7 +556,7 @@ void Session::select_device(shared_ptr<devices::Device> device)
 		else
 			set_default_device();
 	} catch (const QString &e) {
-		MainWindow::show_session_error(tr("Failed to select device"), e);
+		MainWindow::on_show_session_error(tr("Failed to select device"), e);
 	}
 }
 
@@ -613,7 +613,7 @@ void Session::set_device(shared_ptr<devices::Device> device)
 		device_->open();
 	} catch (const QString &e) {
 		device_.reset();
-		MainWindow::show_session_error(tr("Failed to open device"), e);
+		MainWindow::on_show_session_error(tr("Failed to open device"), e);
 	}
 
 	if (device_) {
@@ -719,7 +719,7 @@ void Session::load_init_file(const string &file_name,
 			[&](const pair<string, shared_ptr<InputFormat> > f) {
 				return f.first == user_name; });
 		if (iter == formats.end()) {
-			MainWindow::show_session_error(tr("Error"),
+			MainWindow::on_show_session_error(tr("Error"),
 				tr("Unexpected input format: %1").arg(QString::fromStdString(format)));
 			return;
 		}
@@ -755,7 +755,7 @@ void Session::load_file(QString file_name, QString setup_file_name,
 					device_manager_.context(),
 					file_name.toStdString())));
 	} catch (Error& e) {
-		MainWindow::show_session_error(tr("Failed to load %1").arg(file_name), e.what());
+		MainWindow::on_show_session_error(tr("Failed to load %1").arg(file_name), e.what());
 		set_default_device();
 		main_bar_->update_device_list();
 		return;
@@ -776,7 +776,7 @@ void Session::load_file(QString file_name, QString setup_file_name,
 	main_bar_->update_device_list();
 
 	start_capture([&, errorMessage](QString infoMessage) {
-		MainWindow::show_session_error(errorMessage, infoMessage); });
+		MainWindow::on_show_session_error(errorMessage, infoMessage); });
 
 	// Only set save path if we loaded an srzip file
 	if (dynamic_pointer_cast<devices::SessionFile>(device_))
