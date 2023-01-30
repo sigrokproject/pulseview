@@ -77,8 +77,6 @@ public:
 
 	~MainWindow();
 
-	static void show_session_error(const QString text, const QString info_text);
-
 	shared_ptr<views::ViewBase> get_active_view() const;
 
 	shared_ptr<views::ViewBase> add_view(ViewType type, Session &session);
@@ -115,9 +113,13 @@ private:
 
 	virtual bool restoreState(const QByteArray &state, int version = 0);
 
+Q_SIGNALS:
+	void show_session_error(const QString text, const QString info_text);
+
 public Q_SLOTS:
 	void on_run_stop_clicked();
-
+	static void on_show_session_error(const QString text, const QString info_text);
+	
 private Q_SLOTS:
 	void on_add_view(ViewType type, Session *session);
 
