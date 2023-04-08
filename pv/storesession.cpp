@@ -184,6 +184,12 @@ bool StoreSession::start()
 			{{ConfigKey::SAMPLERATE, Glib::Variant<guint64>::create(
 				any_segment->samplerate())}});
 		output_->receive(meta);
+
+		Glib::TimeVal start_time;
+		start_time.tv_sec = 0;  // TODO Assumes saved data begins at t=0
+		start_time.tv_usec = 0;
+		auto header = context->create_header_packet(start_time);
+		output_->receive(header);
 	} catch (Error& error) {
 		error_ = tr("Error while saving: ") + error.what();
 		return false;
