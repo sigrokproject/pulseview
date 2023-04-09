@@ -185,9 +185,7 @@ bool StoreSession::start()
 				any_segment->samplerate())}});
 		output_->receive(meta);
 
-		Glib::TimeVal start_time;
-		start_time.tv_sec = 0;  // TODO Assumes saved data begins at t=0
-		start_time.tv_usec = 0;
+		Glib::DateTime start_time;
 		auto header = context->create_header_packet(start_time);
 		output_->receive(header);
 	} catch (Error& error) {
