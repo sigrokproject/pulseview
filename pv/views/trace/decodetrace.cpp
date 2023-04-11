@@ -1268,7 +1268,7 @@ void DecodeTrace::initialize_row_widgets(DecodeTraceRow* r, unsigned int row_id)
 	QPalette header_palette = owner_->view()->palette();
 	QPalette selector_palette = owner_->view()->palette();
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
 	if (GlobalSettings::current_theme_is_dark()) {
 		header_palette.setColor(QPalette::Window,
 			QColor(255, 255, 255, ExpansionAreaHeaderAlpha));
