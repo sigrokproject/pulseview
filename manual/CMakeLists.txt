@@ -36,6 +36,22 @@ set(MANUAL_SRC "${CMAKE_CURRENT_SOURCE_DIR}/manual.txt")
 set(MANUAL_OUT_HTML "${CMAKE_CURRENT_BINARY_DIR}/manual.html")
 set(MANUAL_OUT_PDF "${CMAKE_CURRENT_BINARY_DIR}/manual.pdf")
 
+# Make in-source images/ content available to the output hierarchy for
+# the inspection of created output documents during development in the
+# case of out-of-source build configurations.
+if (NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/images")
+	message(STATUS "creating symlink for manual's images/ subdirectory")
+	execute_process(
+		COMMAND ${CMAKE_COMMAND} -E create_symlink
+			"${CMAKE_CURRENT_SOURCE_DIR}/images"
+			"${CMAKE_CURRENT_BINARY_DIR}/images"
+		RESULT_VARIABLE IMAGES_LINK_RESULT
+	)
+	if (NOT IMAGES_LINK_RESULT EQUAL 0)
+		message(WARNING "manual rendering will lack images")
+	endif ()
+endif ()
+
 # Manual related make(1) targets.
 add_custom_target(manual-html
 	COMMAND ${ASCIIDOCTOR_EXECUTABLE}
