@@ -48,6 +48,7 @@ option(ENABLE_DECODE "Build with libsigrokdecode" TRUE)
 option(ENABLE_FLOW "Build with libsigrokflow" FALSE)
 option(ENABLE_TESTS "Enable unit tests" FALSE)
 option(STATIC_PKGDEPS_LIBS "Statically link to (pkg-config) libraries" FALSE)
+option(ENABLE_TS_UPDATE "Update .ts source files (Qt l10n)" FALSE)
 
 if(WIN32)
 	# On Windows/MinGW we need to statically link to libraries.
@@ -528,14 +529,16 @@ endif ()
 
 if(Qt5_FOUND)
 	qt5_add_translation(QM_FILES ${TS_FILES})
-	qt5_create_translation(QM_FILES ${pulseview_SOURCES} ${TS_FILES})
-
 	qt5_add_resources(pulseview_RESOURCES_RCC ${CMAKE_BINARY_DIR}/translations.qrc)
+	if (ENABLE_TS_UPDATE)
+		qt5_create_translation(QM_FILES ${pulseview_SOURCES} ${TS_FILES})
+	endif ()
 else()
 	qt6_add_translation(QM_FILES ${TS_FILES})
-	qt6_create_translation(QM_FILES ${pulseview_SOURCES} ${TS_FILES})
-
 	qt6_add_resources(pulseview_RESOURCES_RCC ${CMAKE_BINARY_DIR}/translations.qrc)
+	if (ENABLE_TS_UPDATE)
+		qt6_create_translation(QM_FILES ${pulseview_SOURCES} ${TS_FILES})
+	endif ()
 endif()
 
 #===============================================================================
