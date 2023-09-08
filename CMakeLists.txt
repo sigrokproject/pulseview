@@ -83,7 +83,7 @@ include(memaccess)
 
 find_package(PkgConfig)
 
-if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.8.0")
+if(CMAKE_VERSION VERSION_EQUAL "3.8.0" OR CMAKE_VERSION VERSION_GREATER "3.8.0")
 	check_cxx_compiler_flag("-std=c++17" HAVE_STD_CXX_17)
 	check_cxx_compiler_flag("-std=c++14" HAVE_STD_CXX_14)
 	check_cxx_compiler_flag("-std=c++11" HAVE_STD_CXX_11)
