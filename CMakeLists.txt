@@ -106,7 +106,7 @@ list(APPEND PKGDEPS glib-2.0>=2.28.0)
 
 # Try to find the prefered glibmm-2.4. If not found then add glibmm-2.68
 # to the dependency list.
-pkg_check_modules(GLIBMM_2_4 glibmm-2.4>2.28.0)
+pkg_check_modules(GLIBMM_2_4 glibmm-2.4>=2.28.0)
 if(GLIBMM_2_4_FOUND)
 	list(APPEND PKGDEPS glibmm-2.4>=2.28.0)
 else()
