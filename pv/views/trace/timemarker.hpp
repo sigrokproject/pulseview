@@ -128,6 +128,8 @@ public:
 	virtual pv::widgets::Popup* create_popup(QWidget *parent) override;
 
 private Q_SLOTS:
+	void on_popup_closed();
+
 	void on_value_changed(const pv::util::Timestamp& value);
 
 protected:

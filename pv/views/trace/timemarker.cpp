@@ -184,6 +184,8 @@ pv::widgets::Popup* TimeMarker::create_popup(QWidget *parent)
 	popup->set_position(parent->mapToGlobal(
 		drag_point(parent->rect())), Popup::Bottom);
 
+	connect(popup, SIGNAL(closed()), this, SLOT(on_popup_closed()));
+
 	QFormLayout *const form = new QFormLayout(popup);
 	popup->setLayout(form);
 
@@ -196,6 +198,11 @@ pv::widgets::Popup* TimeMarker::create_popup(QWidget *parent)
 	form->addRow(tr("Time"), value_widget_);
 
 	return popup;
+}
+
+void TimeMarker::on_popup_closed()
+{
+	select(false);
 }
 
 void TimeMarker::on_value_changed(const pv::util::Timestamp& value)
