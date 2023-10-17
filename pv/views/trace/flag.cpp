@@ -57,7 +57,11 @@ bool Flag::enabled() const
 	return true;
 }
 
-QString Flag::get_text() const
+/**
+ * Returns the text used to display this flag item. This is not necessarily the
+ * name that the user has given it.
+ */
+QString Flag::get_display_text() const
 {
 	QString s;
 
@@ -71,6 +75,14 @@ QString Flag::get_text() const
 			view_.tick_prefix(), view_.time_unit(), view_.tick_precision());
 
 	return s;
+}
+
+/**
+ * Returns the text of this flag item, i.e. the user-editable name.
+ */
+QString Flag::get_text() const
+{
+	return text_;
 }
 
 void Flag::set_text(const QString &text)
@@ -92,7 +104,7 @@ QRectF Flag::label_rect(const QRectF &rect) const
 		const float x = get_x();
 
 		QFontMetrics m(QApplication::font());
-		QSize text_size = m.boundingRect(get_text()).size();
+		QSize text_size = m.boundingRect(get_display_text()).size();
 
 		const QSizeF label_size(
 			text_size.width() + LabelPadding.width() * 2,

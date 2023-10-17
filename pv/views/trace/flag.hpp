@@ -63,7 +63,13 @@ public:
 	virtual bool enabled() const override;
 
 	/**
-	 * Gets the text to show in the marker.
+	 * Gets the current text to show in the marker - this may be dynamic.
+	 */
+	virtual QString get_display_text() const override;
+
+	/**
+	 * Gets the default text used to show the marker - e.g. the user-editable
+	 * name.
 	 */
 	virtual QString get_text() const override;
 
