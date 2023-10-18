@@ -202,7 +202,9 @@ pv::widgets::Popup* TimeMarker::create_popup(QWidget *parent)
 
 void TimeMarker::on_popup_closed()
 {
-	select(false);
+	GlobalSettings settings;
+	if (!settings.value(GlobalSettings::Key_View_KeepRulerItemSelected).toBool())
+		select(false);
 }
 
 void TimeMarker::on_value_changed(const pv::util::Timestamp& value)

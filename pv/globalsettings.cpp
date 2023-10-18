@@ -67,6 +67,7 @@ const QString GlobalSettings::Key_View_ConversionThresholdDispMode = "View_Conve
 const QString GlobalSettings::Key_View_DefaultDivHeight = "View_DefaultDivHeight";
 const QString GlobalSettings::Key_View_DefaultLogicHeight = "View_DefaultLogicHeight";
 const QString GlobalSettings::Key_View_ShowHoverMarker = "View_ShowHoverMarker";
+const QString GlobalSettings::Key_View_KeepRulerItemSelected = "View_KeepRulerItemSelected";
 const QString GlobalSettings::Key_View_SnapDistance = "View_SnapDistance";
 const QString GlobalSettings::Key_View_CursorFillColor = "View_CursorFillColor";
 const QString GlobalSettings::Key_View_CursorShowFrequency = "View_CursorShowFrequency";
@@ -151,6 +152,9 @@ void GlobalSettings::set_defaults_where_needed()
 
 	if (!contains(Key_View_ShowHoverMarker))
 		setValue(Key_View_ShowHoverMarker, true);
+
+	if (!contains(Key_View_KeepRulerItemSelected))
+		setValue(Key_View_KeepRulerItemSelected, false);
 
 	if (!contains(Key_View_SnapDistance))
 		setValue(Key_View_SnapDistance, 15);

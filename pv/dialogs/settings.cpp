@@ -351,6 +351,10 @@ QWidget *Settings::get_view_settings_form(QWidget *parent) const
 		SLOT(on_view_showHoverMarker_changed(int)));
 	trace_view_layout->addRow(tr("Highlight mouse cursor using a vertical marker line"), cb);
 
+	cb = create_checkbox(GlobalSettings::Key_View_KeepRulerItemSelected,
+		SLOT(on_view_keepRulerItemSelected_changed(int)));
+	trace_view_layout->addRow(tr("Keep active item on ruler selected when editing popup is closed"), cb);
+
 	QSpinBox *snap_distance_sb = new QSpinBox();
 	snap_distance_sb->setRange(0, 1000);
 	snap_distance_sb->setSuffix(tr(" pixels"));
@@ -763,6 +767,12 @@ void Settings::on_view_showHoverMarker_changed(int state)
 {
 	GlobalSettings settings;
 	settings.setValue(GlobalSettings::Key_View_ShowHoverMarker, state ? true : false);
+}
+
+void Settings::on_view_keepRulerItemSelected_changed(int state)
+{
+	GlobalSettings settings;
+	settings.setValue(GlobalSettings::Key_View_KeepRulerItemSelected, state ? true : false);
 }
 
 void Settings::on_view_snapDistance_changed(int value)
