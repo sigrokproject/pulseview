@@ -185,8 +185,7 @@ bool StoreSession::start()
 				any_segment->samplerate())}});
 		output_->receive(meta);
 
-		Glib::DateTime start_time;
-		auto header = context->create_header_packet(start_time);
+		auto header = context->create_header_packet(session_.get_acquisition_start_time());
 		output_->receive(header);
 	} catch (Error& error) {
 		error_ = tr("Error while saving: ") + error.what();

@@ -829,6 +829,8 @@ void Session::start_capture(function<void (const QString)> error_handler)
 		name_changed();
 	}
 
+	acq_start_time_ = Glib::DateTime::create_now_local();
+
 	// Begin the session
 	sampling_thread_ = std::thread(&Session::sample_thread_proc, this, error_handler);
 }
@@ -921,6 +923,11 @@ double Session::get_samplerate() const
 		samplerate = 1.0;
 
 	return samplerate;
+}
+
+Glib::DateTime Session::get_acquisition_start_time() const
+{
+	return acq_start_time_;
 }
 
 uint32_t Session::get_highest_segment_id() const
