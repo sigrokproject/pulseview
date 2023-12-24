@@ -86,7 +86,9 @@ const QStringList Application::get_languages() const
 const QString Application::get_language_editors(const QString& language) const
 {
 	if (language == "de") return "Sören Apel, Uwe Hermann";
-	if (language == "es_mx") return "Carlos Diaz";
+	if (language == "es_MX") return "Carlos Diaz, Ulices Avila Hernandez";
+	if (language == "ja_jp") return "Yukari Shoji";
+	if (language == "zh_cn") return "ZtyPro";
 
 	return QString();
 }
