@@ -442,7 +442,8 @@ void Trace::on_popup_closed()
 void Trace::on_nameedit_changed(const QString &name)
 {
 	/* This event handler notifies SignalBase that the name changed */
-	base_->set_name(name);
+	if(!name.isEmpty())
+		base_->set_name(name);
 }
 
 void Trace::on_coloredit_changed(const QColor &color)
