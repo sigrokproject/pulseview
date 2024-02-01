@@ -641,7 +641,6 @@ void MainBar::export_file(shared_ptr<OutputFormat> format, bool selection_only, 
 	session_.stop_capture();
 
 	QSettings settings;
-	const QString dir = settings.value(SettingSaveDirectory).toString();
 
 	pair<uint64_t, uint64_t> sample_range;
 
@@ -692,8 +691,12 @@ void MainBar::export_file(shared_ptr<OutputFormat> format, bool selection_only, 
 			tr("All Files"));
 
 	// Show the file dialog
-	if (file_name.isEmpty())
+	if (file_name.isEmpty()) {
+		QString dir = settings.value(SettingSaveDirectory).toString() + tr("/new_session");
+		if (!exts.empty())
+			dir += "." + QString::fromStdString(exts[0]);
 		file_name = QFileDialog::getSaveFileName(this, tr("Save File"), dir, filter);
+	}
 
 	if (file_name.isEmpty())
 		return;
@@ -867,7 +870,7 @@ void MainBar::on_actionSaveSelectionAs_triggered()
 void MainBar::on_actionSaveSetup_triggered()
 {
 	QSettings settings;
-	const QString dir = settings.value(SettingSaveDirectory).toString();
+	const QString dir = settings.value(SettingSaveDirectory).toString() + tr("/new_session_setup.pvs");
 
 	const QString file_name = QFileDialog::getSaveFileName(
 		this, tr("Save File"), dir, tr(
