@@ -184,6 +184,8 @@ public:
 
 	void reset_zero_position();
 
+    void reset_zoom();
+
 	pv::util::Timestamp zero_offset() const;
 
 	/**
