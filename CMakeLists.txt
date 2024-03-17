@@ -422,6 +422,7 @@ set(pulseview_HEADERS
 	pv/data/analogsegment.hpp
 	pv/data/logic.hpp
 	pv/data/logicsegment.hpp
+	pv/data/mathsignalbase.hpp
 	pv/data/mathsignal.hpp
 	pv/data/signalbase.hpp
 	pv/dialogs/connect.hpp

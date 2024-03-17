@@ -81,7 +81,7 @@ public:
 	void append_interleaved_samples(const float *data,
 		size_t sample_count, size_t stride);
 
-	float get_sample(int64_t sample_num) const;
+	float get_sample(int64_t sample_num, unsigned int index) const;
 	void get_samples(int64_t start_sample, int64_t end_sample, float* dest) const;
 
 	const pair<float, float> get_min_max() const;
