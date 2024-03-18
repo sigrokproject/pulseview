@@ -19,7 +19,7 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.5)
 
 project(pulseview C CXX)
 
@@ -155,14 +155,8 @@ set(CMAKE_AUTOMOC TRUE)
 
 # Check for Qt5, and check for Qt6 if Qt5 is not found.
 set(QT_COMPONENTS Core Gui LinguistTools Widgets Svg)
-find_package(Qt5 5.3 QUIET COMPONENTS Core)
-if(Qt5_FOUND)
-	find_package(Qt5 5.3 COMPONENTS ${QT_COMPONENTS} REQUIRED)
-	message(STATUS "Qt version: ${Qt5_VERSION}")
-else()
-	find_package(Qt6 6.2 COMPONENTS ${QT_COMPONENTS} REQUIRED)
-	message(STATUS "Qt version: ${Qt6_VERSION}")
-endif()
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS ${QT_COMPONENTS} )
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS ${QT_COMPONENTS} )
 
 if(WIN32)
 	# MXE workaround: Use pkg-config to find Qt5 and Qt6 libs.
@@ -177,11 +171,7 @@ if(WIN32)
 	endif()
 endif()
 
-if(Qt5_FOUND)
-	set(QT_LIBRARIES Qt5::Gui Qt5::Widgets Qt5::Svg)
-else()
-	set(QT_LIBRARIES Qt6::Gui Qt6::Widgets Qt6::Svg)
-endif()
+set(QT_LIBRARIES Qt${QT_VERSION_MAJOR}::Gui Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Svg)
 
 set(BOOSTCOMPS filesystem serialization system)
 if(ENABLE_TESTS)
@@ -530,7 +520,7 @@ endif()
 if(Qt5_FOUND)
 	qt5_add_resources(pulseview_RESOURCES_RCC ${pulseview_RESOURCES})
 else()
-	qt6_add_resources(pulseview_RESOURCES_RCC ${pulseview_RESOURCES})
+	qt_add_resources(pulseview_RESOURCES_RCC ${pulseview_RESOURCES})
 endif()
 
 #===============================================================================
@@ -550,10 +540,10 @@ if(Qt5_FOUND)
 		qt5_create_translation(QM_FILES ${pulseview_SOURCES} ${TS_FILES})
 	endif ()
 else()
-	qt6_add_translation(QM_FILES ${TS_FILES})
-	qt6_add_resources(pulseview_RESOURCES_RCC ${CMAKE_BINARY_DIR}/translations.qrc)
+	qt_add_translation(QM_FILES ${TS_FILES})
+	qt_add_resources(pulseview_RESOURCES_RCC ${CMAKE_BINARY_DIR}/translations.qrc)
 	if (ENABLE_TS_UPDATE)
-		qt6_create_translation(QM_FILES ${pulseview_SOURCES} ${TS_FILES})
+		qt_create_translation(QM_FILES ${pulseview_SOURCES} ${TS_FILES})
 	endif ()
 endif()
 
@@ -645,9 +635,9 @@ if(WIN32)
 		endif()
 		list(APPEND PULSEVIEW_LINK_LIBS ${QT5ALL_LDFLAGS})
 	else()
-		list(APPEND PULSEVIEW_LINK_LIBS Qt6::QSvgPlugin)
-		list(APPEND PULSEVIEW_LINK_LIBS Qt6::QWindowsIntegrationPlugin)
-		list(APPEND PULSEVIEW_LINK_LIBS ${QT6ALL_LDFLAGS})
+		list(APPEND PULSEVIEW_LINK_LIBS Qt${QT_VERSION_MAJOR}::QSvgPlugin)
+		list(APPEND PULSEVIEW_LINK_LIBS Qt${QT_VERSION_MAJOR}::QWindowsIntegrationPlugin)
+		list(APPEND PULSEVIEW_LINK_LIBS ${QT${QT_VERSION_MAJOR}ALL_LDFLAGS})
 	endif()
 endif()
 
