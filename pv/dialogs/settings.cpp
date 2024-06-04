@@ -84,7 +84,7 @@ public:
 };
 
 Settings::Settings(DeviceManager &device_manager, QWidget *parent) :
-	QDialog(parent, nullptr),
+	QDialog(parent),
 	device_manager_(device_manager)
 {
 	resize(600, 400);
@@ -220,7 +220,7 @@ QWidget *Settings::get_general_settings_form(QWidget *parent) const
 	QComboBox *language_cb = new QComboBox();
 	Application* a = qobject_cast<Application*>(QApplication::instance());
 
-	QString current_language = settings.value(GlobalSettings::Key_General_Language).toString();
+	QString current_language = settings.value(GlobalSettings::Key_General_Language, "en").toString();
 	for (const QString& language : a->get_languages()) {
 		const QLocale locale = QLocale(language);
 		const QString desc = locale.languageToString(locale.language());
@@ -231,8 +231,13 @@ QWidget *Settings::get_general_settings_form(QWidget *parent) const
 			language_cb->setCurrentIndex(index);
 		}
 	}
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+	connect(language_cb, SIGNAL(currentTextChanged(const QString&)),
+		this, SLOT(on_general_language_changed(const QString&)));
+#else
 	connect(language_cb, SIGNAL(currentIndexChanged(const QString&)),
 		this, SLOT(on_general_language_changed(const QString&)));
+#endif
 	general_layout->addRow(tr("User interface language"), language_cb);
 
 	// Theme combobox
@@ -261,7 +266,7 @@ QWidget *Settings::get_general_settings_form(QWidget *parent) const
 	if (current_style.isEmpty())
 		style_cb->setCurrentIndex(0);
 	else
-		style_cb->setCurrentIndex(style_cb->findText(current_style, nullptr));
+		style_cb->setCurrentIndex(style_cb->findText(current_style));
 
 	connect(style_cb, SIGNAL(currentIndexChanged(int)),
 		this, SLOT(on_general_style_changed(int)));
@@ -345,6 +350,10 @@ QWidget *Settings::get_view_settings_form(QWidget *parent) const
 	cb = create_checkbox(GlobalSettings::Key_View_ShowHoverMarker,
 		SLOT(on_view_showHoverMarker_changed(int)));
 	trace_view_layout->addRow(tr("Highlight mouse cursor using a vertical marker line"), cb);
+
+	cb = create_checkbox(GlobalSettings::Key_View_KeepRulerItemSelected,
+		SLOT(on_view_keepRulerItemSelected_changed(int)));
+	trace_view_layout->addRow(tr("Keep active item on ruler selected when editing popup is closed"), cb);
 
 	QSpinBox *snap_distance_sb = new QSpinBox();
 	snap_distance_sb->setRange(0, 1000);
@@ -758,6 +767,12 @@ void Settings::on_view_showHoverMarker_changed(int state)
 {
 	GlobalSettings settings;
 	settings.setValue(GlobalSettings::Key_View_ShowHoverMarker, state ? true : false);
+}
+
+void Settings::on_view_keepRulerItemSelected_changed(int state)
+{
+	GlobalSettings settings;
+	settings.setValue(GlobalSettings::Key_View_KeepRulerItemSelected, state ? true : false);
 }
 
 void Settings::on_view_snapDistance_changed(int value)

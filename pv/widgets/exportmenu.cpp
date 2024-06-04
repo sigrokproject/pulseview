@@ -75,8 +75,13 @@ ExportMenu::ExportMenu(QWidget *parent, shared_ptr<Context> context,
 		connect(action, SIGNAL(triggered()), &mapper_, SLOT(map()));
 	}
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+	connect(&mapper_, SIGNAL(mappedObject(QObject*)),
+		this, SLOT(on_action(QObject*)));
+#else
 	connect(&mapper_, SIGNAL(mapped(QObject*)),
 		this, SLOT(on_action(QObject*)));
+#endif
 }
 
 void ExportMenu::on_action(QObject *action)

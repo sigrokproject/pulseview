@@ -158,8 +158,13 @@ Channels::Channels(Session &session, QWidget *parent) :
 	layout_.addRow(&filter_buttons_bar_);
 
 	// Connect the check-box signal mapper
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+	connect(&check_box_mapper_, SIGNAL(mappedObject(QObject*)),
+		this, SLOT(on_channel_checked(QObject*)));
+#else
 	connect(&check_box_mapper_, SIGNAL(mapped(QWidget*)),
 		this, SLOT(on_channel_checked(QWidget*)));
+#endif
 }
 
 void Channels::set_all_channels(bool set)
@@ -354,7 +359,11 @@ void Channels::showEvent(QShowEvent *event)
 	updating_channels_ = false;
 }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+void Channels::on_channel_checked(QObject *widget)
+#else
 void Channels::on_channel_checked(QWidget *widget)
+#endif
 {
 	if (updating_channels_)
 		return;

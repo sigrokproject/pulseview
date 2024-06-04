@@ -35,6 +35,8 @@
 #include <thread>
 #include <vector>
 
+#include <glibmm/datetime.h>
+
 #include <QObject>
 #include <QSettings>
 #include <QString>
@@ -185,6 +187,7 @@ public:
 	void stop_capture();
 
 	double get_samplerate() const;
+	Glib::DateTime get_acquisition_start_time() const;
 
 	uint32_t get_highest_segment_id() const;
 	uint64_t get_segment_sample_count(uint32_t segment_id) const;
@@ -264,6 +267,7 @@ Q_SIGNALS:
 	void data_received();
 
 	void add_view(ViewType type, Session *session);
+	void session_error_raised(const QString text, const QString info_text);
 
 public Q_SLOTS:
 	void on_data_saved();
@@ -311,6 +315,7 @@ private:
 	bool frame_began_;
 
 	QElapsedTimer acq_time_;
+	Glib::DateTime acq_start_time_;
 
 	MetadataObjManager metadata_obj_manager_;
 

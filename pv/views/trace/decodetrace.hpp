@@ -278,7 +278,11 @@ private Q_SLOTS:
 
 	void on_show_hide_decoder(int index);
 	void on_show_hide_row(int row_id);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+	void on_show_hide_class(QObject* sender);
+#else
 	void on_show_hide_class(QWidget* sender);
+#endif
 	void on_show_all_classes();
 	void on_hide_all_classes();
 	void on_row_container_resized(QWidget* sender);

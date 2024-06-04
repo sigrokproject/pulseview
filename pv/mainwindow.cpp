@@ -79,6 +79,8 @@ MainWindow::MainWindow(DeviceManager &device_manager, QWidget *parent) :
 {
 	setup_ui();
 	restore_ui_settings();
+	connect(this, SIGNAL(session_error_raised(const QString, const QString)),
+		this, SLOT(on_session_error_raised(const QString, const QString)));
 }
 
 MainWindow::~MainWindow()
@@ -95,7 +97,7 @@ MainWindow::~MainWindow()
 void MainWindow::show_session_error(const QString text, const QString info_text)
 {
 	// TODO Emulate noquote()
-	qDebug() << "Notifying user of session error:" << info_text;
+	qDebug() << "Notifying user of session error: " << text << "; " << info_text;
 
 	QMessageBox msg;
 	msg.setText(text + "\n\n" + info_text);
@@ -192,6 +194,9 @@ shared_ptr<views::ViewBase> MainWindow::add_view(views::ViewType type,
 	connect(&session, SIGNAL(trigger_event(int, util::Timestamp)),
 		qobject_cast<views::ViewBase*>(v.get()),
 		SLOT(trigger_event(int, util::Timestamp)));
+
+	connect(&session, SIGNAL(session_error_raised(const QString, const QString)),
+		this, SLOT(on_session_error_raised(const QString, const QString)));
 
 	if (type == views::ViewTypeTrace) {
 		views::trace::View *tv =
@@ -547,10 +552,14 @@ void MainWindow::setup_ui()
 	session_selector_.setCornerWidget(static_tab_widget_, Qt::TopLeftCorner);
 	session_selector_.setTabsClosable(true);
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+	close_application_shortcut_ = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_Q), this, SLOT(close()));
+	close_current_tab_shortcut_ = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_W), this, SLOT(on_close_current_tab()));
+#else
 	close_application_shortcut_ = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q), this, SLOT(close()));
-	close_application_shortcut_->setAutoRepeat(false);
-
 	close_current_tab_shortcut_ = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_W), this, SLOT(on_close_current_tab()));
+#endif
+	close_application_shortcut_->setAutoRepeat(false);
 
 	connect(new_session_button_, SIGNAL(clicked(bool)),
 		this, SLOT(on_new_session_clicked()));
@@ -687,8 +696,7 @@ void MainWindow::on_run_stop_clicked()
 			if (any_running)
 				s->stop_capture();
 			else
-				s->start_capture([&](QString message) {
-					show_session_error("Capture failed", message); });
+				s->start_capture([&](QString message) {Q_EMIT session_error_raised("Capture failed", message);});
 	} else {
 
 		shared_ptr<Session> session = last_focused_session_;
@@ -698,8 +706,7 @@ void MainWindow::on_run_stop_clicked()
 
 		switch (session->get_capture_state()) {
 		case Session::Stopped:
-			session->start_capture([&](QString message) {
-				show_session_error("Capture failed", message); });
+			session->start_capture([&](QString message) {Q_EMIT session_error_raised("Capture failed", message);});
 			break;
 		case Session::AwaitingTrigger:
 		case Session::Running:
@@ -975,6 +982,10 @@ void MainWindow::on_close_current_tab()
 	int tab = session_selector_.currentIndex();
 
 	on_tab_close_requested(tab);
+}
+
+void MainWindow::on_session_error_raised(const QString text, const QString info_text) {
+	MainWindow::show_session_error(text, info_text);
 }
 
 } // namespace pv

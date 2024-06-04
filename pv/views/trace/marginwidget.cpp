@@ -48,10 +48,10 @@ void MarginWidget::show_popup(const shared_ptr<ViewItem> &item)
 {
 	pv::widgets::Popup *const p = item->create_popup(this);
 
-	connect(p, SIGNAL(closed()), this, SLOT(on_popup_closed()));
-
-	if (p)
+	if (p) {
+		connect(p, SIGNAL(closed()), this, SLOT(on_popup_closed()));
 		p->show();
+	}
 }
 
 void MarginWidget::contextMenuEvent(QContextMenuEvent *event)

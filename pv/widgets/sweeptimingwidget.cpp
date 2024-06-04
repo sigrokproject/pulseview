@@ -54,7 +54,11 @@ SweepTimingWidget::SweepTimingWidget(const char *suffix,
 		this, SIGNAL(value_changed()));
 
 	setLayout(&layout_);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+	layout_.setContentsMargins(0, 0, 0, 0);
+#else
 	layout_.setMargin(0);
+#endif
 	layout_.addWidget(&list_);
 	layout_.addWidget(&value_);
 

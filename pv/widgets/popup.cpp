@@ -21,7 +21,11 @@
 #include <cassert>
 
 #include <QApplication>
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#include <QScreen>
+#else
 #include <QDesktopWidget>
+#endif
 #include <QLineEdit>
 #include <QScrollBar>
 #include <QStyle>
@@ -252,8 +256,12 @@ void Popup::reposition_widget()
 {
 	QPoint o;
 
+#if QT_VERSION >= QT_VERSION_CHECK(5, 10, 0)
+	const QRect screen_rect = QApplication::screenAt(point_)->availableGeometry();
+#else
 	const QRect screen_rect = QApplication::desktop()->availableGeometry(
 		QApplication::desktop()->screenNumber(point_));
+#endif
 
 	if (pos_ == Right || pos_ == Left)
 		o.ry() = -height() / 2;
