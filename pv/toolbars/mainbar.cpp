@@ -130,7 +130,11 @@ MainBar::MainBar(Session &session, QWidget *parent, pv::views::trace::View *view
 	action_open_->setText(tr("&Open..."));
 	action_open_->setIcon(QIcon::fromTheme("document-open",
 		QIcon(":/icons/document-open.png")));
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+	action_open_->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_O));
+#else
 	action_open_->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_O));
+#endif
 	connect(action_open_, SIGNAL(triggered(bool)),
 		this, SLOT(on_actionOpen_triggered()));
 
@@ -141,7 +145,11 @@ MainBar::MainBar(Session &session, QWidget *parent, pv::views::trace::View *view
 	action_save_->setText(tr("&Save..."));
 	action_save_->setIcon(QIcon::fromTheme("document-save-as",
 		QIcon(":/icons/document-save-as.png")));
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+	action_save_->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_S));
+#else
 	action_save_->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_S));
+#endif
 	connect(action_save_, SIGNAL(triggered(bool)),
 		this, SLOT(on_actionSave_triggered()));
 
@@ -154,7 +162,11 @@ MainBar::MainBar(Session &session, QWidget *parent, pv::views::trace::View *view
 	action_save_selection_as_->setText(tr("Save Selected &Range As..."));
 	action_save_selection_as_->setIcon(QIcon::fromTheme("document-save-as",
 		QIcon(":/icons/document-save-as.png")));
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+	action_save_selection_as_->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_R));
+#else
 	action_save_selection_as_->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_R));
+#endif
 	connect(action_save_selection_as_, SIGNAL(triggered(bool)),
 		this, SLOT(on_actionSaveSelectionAs_triggered()));
 

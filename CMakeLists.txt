@@ -48,6 +48,7 @@ option(ENABLE_DECODE "Build with libsigrokdecode" TRUE)
 option(ENABLE_FLOW "Build with libsigrokflow" FALSE)
 option(ENABLE_TESTS "Enable unit tests" FALSE)
 option(STATIC_PKGDEPS_LIBS "Statically link to (pkg-config) libraries" FALSE)
+option(ENABLE_TS_UPDATE "Update .ts source files (Qt l10n)" FALSE)
 
 if(WIN32)
 	# On Windows/MinGW we need to statically link to libraries.
@@ -74,8 +75,59 @@ add_subdirectory(manual)
 #= Dependencies
 #-------------------------------------------------------------------------------
 
+include(CheckCSourceCompiles)
+include(CheckCXXCompilerFlag)
+include(CheckCXXSourceCompiles)
+include(CMakePushCheckState)
+include(memaccess)
+
+find_package(PkgConfig)
+
+if(CMAKE_VERSION VERSION_EQUAL "3.8.0" OR CMAKE_VERSION VERSION_GREATER "3.8.0")
+	check_cxx_compiler_flag("-std=c++17" HAVE_STD_CXX_17)
+	check_cxx_compiler_flag("-std=c++14" HAVE_STD_CXX_14)
+	check_cxx_compiler_flag("-std=c++11" HAVE_STD_CXX_11)
+	if(HAVE_STD_CXX_17)
+		message(STATUS "Using C++17 for the application build")
+		set(CMAKE_CXX_STANDARD 17)
+		set(REQUIRED_STD_CXX_FLAGS "-std=c++17")
+	elseif(HAVE_STD_CXX_14)
+		message(STATUS "Using C++14 for the application build")
+		set(CMAKE_CXX_STANDARD 14)
+		set(REQUIRED_STD_CXX_FLAGS "-std=c++14")
+	elseif(HAVE_STD_CXX_11)
+		message(STATUS "Using C++11 for the application build")
+		set(CMAKE_CXX_STANDARD 11)
+		set(REQUIRED_STD_CXX_FLAGS "-std=c++11")
+	else()
+		message(FATAL_ERROR "Need modern C++, at least language standard 11")
+	endif()
+else()
+	check_cxx_compiler_flag("-std=c++14" HAVE_STD_CXX_14)
+	check_cxx_compiler_flag("-std=c++11" HAVE_STD_CXX_11)
+	if(HAVE_STD_CXX_14)
+		message(STATUS "Using C++14 for the application build")
+		set(CMAKE_CXX_STANDARD 14)
+		set(REQUIRED_STD_CXX_FLAGS "-std=c++14")
+	elseif(HAVE_STD_CXX_11)
+		message(STATUS "Using C++11 for the application build")
+		set(CMAKE_CXX_STANDARD 11)
+		set(REQUIRED_STD_CXX_FLAGS "-std=c++11")
+	else()
+		message(FATAL_ERROR "Need modern C++, at least language standard 11")
+	endif()
+endif()
+
 list(APPEND PKGDEPS glib-2.0>=2.28.0)
-list(APPEND PKGDEPS glibmm-2.4>=2.28.0)
+
+# Try to find the prefered glibmm-2.4. If not found then add glibmm-2.68
+# to the dependency list.
+pkg_check_modules(GLIBMM_2_4 glibmm-2.4>=2.28.0)
+if(GLIBMM_2_4_FOUND)
+	list(APPEND PKGDEPS glibmm-2.4>=2.28.0)
+else()
+	list(APPEND PKGDEPS glibmm-2.68>=2.68.0)
+endif()
 
 if(ENABLE_FLOW)
 	list(APPEND PKGDEPS gstreamermm-1.0>=1.8.0)
@@ -93,7 +145,6 @@ if(ANDROID)
 	list(APPEND PKGDEPS libsigrokandroidutils>=0.1.0)
 endif()
 
-find_package(PkgConfig)
 pkg_check_modules(LIBSRCXX ${LIBSR_CXX_BINDING})
 if(NOT LIBSRCXX_FOUND OR NOT LIBSRCXX_VERSION)
 	message(FATAL_ERROR "libsigrok C++ bindings missing, check libsigrok's 'configure' output (missing dependencies?)")
@@ -102,20 +153,35 @@ pkg_check_modules(PKGDEPS REQUIRED ${PKGDEPS})
 
 set(CMAKE_AUTOMOC TRUE)
 
-find_package(Qt5 5.3 COMPONENTS Core Gui LinguistTools Widgets Svg REQUIRED)
-
-message(STATUS "Qt version: ${Qt5_VERSION}")
+# Check for Qt5, and check for Qt6 if Qt5 is not found.
+set(QT_COMPONENTS Core Gui LinguistTools Widgets Svg)
+find_package(Qt5 5.3 QUIET COMPONENTS Core)
+if(Qt5_FOUND)
+	find_package(Qt5 5.3 COMPONENTS ${QT_COMPONENTS} REQUIRED)
+	message(STATUS "Qt version: ${Qt5_VERSION}")
+else()
+	find_package(Qt6 6.2 COMPONENTS ${QT_COMPONENTS} REQUIRED)
+	message(STATUS "Qt version: ${Qt6_VERSION}")
+endif()
 
 if(WIN32)
-	# MXE workaround: Use pkg-config to find Qt5 libs.
+	# MXE workaround: Use pkg-config to find Qt5 and Qt6 libs.
 	# https://github.com/mxe/mxe/issues/1642
 	# Not required (and doesn't work) on MSYS2.
 	if(NOT DEFINED ENV{MSYSTEM})
-		pkg_check_modules(QT5ALL REQUIRED Qt5Widgets>=5.3 Qt5Gui>=5.3 Qt5Svg>=5.3)
+		if(Qt5_FOUND)
+			pkg_check_modules(QT5ALL REQUIRED Qt5Widgets>=5.3 Qt5Gui>=5.3 Qt5Svg>=5.3)
+		else()
+			pkg_check_modules(QT6ALL REQUIRED Qt6Widgets>=6.2 Qt6Gui>=6.2 Qt6Svg>=6.2)
+		endif()
 	endif()
 endif()
 
-set(QT_LIBRARIES Qt5::Gui Qt5::Widgets Qt5::Svg)
+if(Qt5_FOUND)
+	set(QT_LIBRARIES Qt5::Gui Qt5::Widgets Qt5::Svg)
+else()
+	set(QT_LIBRARIES Qt6::Gui Qt6::Widgets Qt6::Svg)
+endif()
 
 set(BOOSTCOMPS filesystem serialization system)
 if(ENABLE_TESTS)
@@ -151,48 +217,44 @@ find_package(Threads REQUIRED)
 
 # Helper for checking for atomics
 function(check_working_cxx_atomics varname additional_lib)
-  include(CheckCXXSourceCompiles)
-  include(CMakePushCheckState)
-  cmake_push_check_state()
-  set(CMAKE_REQUIRED_FLAGS "-std=c++11")
-  set(CMAKE_REQUIRED_LIBRARIES "${additional_lib}")
-  set(CMAKE_REQUIRED_QUIET 1)
-  CHECK_CXX_SOURCE_COMPILES("
+	cmake_push_check_state()
+	set(CMAKE_REQUIRED_FLAGS "${REQUIRED_STD_CXX_FLAGS}")
+	set(CMAKE_REQUIRED_LIBRARIES "${additional_lib}")
+	set(CMAKE_REQUIRED_QUIET 1)
+	CHECK_CXX_SOURCE_COMPILES("
 #include <atomic>
 std::atomic<int> x;
 int main() {
-  return std::atomic_fetch_add_explicit(&x, 1, std::memory_order_seq_cst);
+	return std::atomic_fetch_add_explicit(&x, 1, std::memory_order_seq_cst);
 }
 " ${varname})
-  cmake_pop_check_state()
+	cmake_pop_check_state()
 endfunction(check_working_cxx_atomics)
 
 # First check if atomics work without the library.
 # If not, check if the library exists, and atomics work with it.
 check_working_cxx_atomics(HAVE_CXX_ATOMICS_WITHOUT_LIB "")
 if(HAVE_CXX_ATOMICS_WITHOUT_LIB)
-  message(STATUS "Atomics provided by the C-library - yes")
+	message(STATUS "Atomics provided by the C-library - yes")
 else()
-  message(STATUS "Atomics provided by the C-library - no")
-  find_library(LIBATOMIC_LIBRARY NAMES atomic PATH_SUFFIXES lib)
-  if(LIBATOMIC_LIBRARY)
-    check_working_cxx_atomics(HAVE_CXX_ATOMICS_WITH_LIB "${LIBATOMIC_LIBRARY}")
-    if (HAVE_CXX_ATOMICS_WITH_LIB)
-      message(STATUS "Atomics provided by libatomic - yes")
-    else()
-      message(STATUS "Atomics provided by libatomic - no")
-      message(FATAL_ERROR "Compiler must support std::atomic!")
-    endif()
-  else()
-    message(FATAL_ERROR "Compiler appears to require libatomic, but cannot find it.")
-  endif()
+	message(STATUS "Atomics provided by the C-library - no")
+	find_library(LIBATOMIC_LIBRARY NAMES atomic PATH_SUFFIXES lib)
+	if(LIBATOMIC_LIBRARY)
+		check_working_cxx_atomics(HAVE_CXX_ATOMICS_WITH_LIB "${LIBATOMIC_LIBRARY}")
+		if (HAVE_CXX_ATOMICS_WITH_LIB)
+			message(STATUS "Atomics provided by libatomic - yes")
+		else()
+			message(STATUS "Atomics provided by libatomic - no")
+			message(FATAL_ERROR "Compiler must support std::atomic!")
+		endif()
+	else()
+		message(FATAL_ERROR "Compiler appears to require libatomic, but cannot find it.")
+	endif()
 endif()
 
 # Check availability of features which depend on library versions.
 # TODO Ideally use check_symbol_exists() instead, reduce boilerplate.
 if(ENABLE_DECODE)
-	include(CheckCSourceCompiles)
-	include(CMakePushCheckState)
 	cmake_push_check_state()
 	set(CMAKE_REQUIRED_INCLUDES "${PKGDEPS_INCLUDE_DIRS}")
 	set(CMAKE_REQUIRED_LIBRARIES "sigrokdecode")
@@ -215,7 +277,6 @@ endif()
 #= System Introspection
 #-------------------------------------------------------------------------------
 
-include(memaccess)
 memaccess_check_unaligned_le(HAVE_UNALIGNED_LITTLE_ENDIAN_ACCESS)
 
 #===============================================================================
@@ -225,7 +286,11 @@ memaccess_check_unaligned_le(HAVE_UNALIGNED_LITTLE_ENDIAN_ACCESS)
 set(PV_TITLE PulseView)
 set(PV_VERSION_STRING "0.5.0")
 
-set(PV_GLIBMM_VERSION ${PKGDEPS_glibmm-2.4_VERSION})
+if(GLIBMM_2_4_FOUND)
+	set(PV_GLIBMM_VERSION ${PKGDEPS_glibmm-2.4_VERSION})
+else()
+	set(PV_GLIBMM_VERSION ${PKGDEPS_glibmm-2.68_VERSION})
+endif()
 
 include(GetGitRevisionDescription)
 
@@ -462,7 +527,11 @@ if(ANDROID)
 	)
 endif()
 
-qt5_add_resources(pulseview_RESOURCES_RCC ${pulseview_RESOURCES})
+if(Qt5_FOUND)
+	qt5_add_resources(pulseview_RESOURCES_RCC ${pulseview_RESOURCES})
+else()
+	qt6_add_resources(pulseview_RESOURCES_RCC ${pulseview_RESOURCES})
+endif()
 
 #===============================================================================
 #= Translations
@@ -474,10 +543,19 @@ if (NOT CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
 	configure_file("translations.qrc" "translations.qrc" COPYONLY)
 endif ()
 
-qt5_add_translation(QM_FILES ${TS_FILES})
-qt5_create_translation(QM_FILES ${pulseview_SOURCES} ${TS_FILES})
-
-qt5_add_resources(pulseview_RESOURCES_RCC ${CMAKE_BINARY_DIR}/translations.qrc)
+if(Qt5_FOUND)
+	qt5_add_translation(QM_FILES ${TS_FILES})
+	qt5_add_resources(pulseview_RESOURCES_RCC ${CMAKE_BINARY_DIR}/translations.qrc)
+	if (ENABLE_TS_UPDATE)
+		qt5_create_translation(QM_FILES ${pulseview_SOURCES} ${TS_FILES})
+	endif ()
+else()
+	qt6_add_translation(QM_FILES ${TS_FILES})
+	qt6_add_resources(pulseview_RESOURCES_RCC ${CMAKE_BINARY_DIR}/translations.qrc)
+	if (ENABLE_TS_UPDATE)
+		qt6_create_translation(QM_FILES ${pulseview_SOURCES} ${TS_FILES})
+	endif ()
+endif()
 
 #===============================================================================
 #= Global Definitions
@@ -486,7 +564,8 @@ qt5_add_resources(pulseview_RESOURCES_RCC ${CMAKE_BINARY_DIR}/translations.qrc)
 add_definitions(-DQT_NO_KEYWORDS)
 add_definitions(-D__STDC_LIMIT_MACROS)
 add_definitions(-Wall -Wextra)
-add_definitions(-std=c++11)
+add_definitions(${REQUIRED_STD_CXX_FLAGS})
+
 add_definitions(-DBOOST_MATH_DISABLE_FLOAT128=1)
 if(WIN32)
 	add_definitions(-Wa,-mbig-obj -O3)
@@ -558,12 +637,18 @@ if(WIN32)
 	# We also need QWindowsIntegrationPlugin, Qt5PlatformSupport (only for
 	# Qt < 5.8.0), and all Qt libs and their dependencies.
 	add_definitions(-DQT_STATICPLUGIN)
-	list(APPEND PULSEVIEW_LINK_LIBS Qt5::QSvgPlugin)
-	list(APPEND PULSEVIEW_LINK_LIBS Qt5::QWindowsIntegrationPlugin)
-	if(Qt5Gui_VERSION VERSION_LESS 5.8.0)
-		list(APPEND PULSEVIEW_LINK_LIBS -lQt5PlatformSupport)
+	if(Qt5_FOUND)
+		list(APPEND PULSEVIEW_LINK_LIBS Qt5::QSvgPlugin)
+		list(APPEND PULSEVIEW_LINK_LIBS Qt5::QWindowsIntegrationPlugin)
+		if(Qt5Gui_VERSION VERSION_LESS 5.8.0)
+			list(APPEND PULSEVIEW_LINK_LIBS -lQt5PlatformSupport)
+		endif()
+		list(APPEND PULSEVIEW_LINK_LIBS ${QT5ALL_LDFLAGS})
+	else()
+		list(APPEND PULSEVIEW_LINK_LIBS Qt6::QSvgPlugin)
+		list(APPEND PULSEVIEW_LINK_LIBS Qt6::QWindowsIntegrationPlugin)
+		list(APPEND PULSEVIEW_LINK_LIBS ${QT6ALL_LDFLAGS})
 	endif()
-	list(APPEND PULSEVIEW_LINK_LIBS ${QT5ALL_LDFLAGS})
 endif()
 
 if(ENABLE_STACKTRACE)

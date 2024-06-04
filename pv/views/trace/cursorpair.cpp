@@ -202,11 +202,13 @@ void CursorPair::paint_label(QPainter &p, const QRect &rect, bool hover)
 
 	text_size_ = p.boundingRect(QRectF(), 0, text).size();
 
+	/* Currently, selecting the middle section between two cursors doesn't do
+	 * anything, so don't highlight it when selected
 	if (selected()) {
 		p.setBrush(Qt::transparent);
 		p.setPen(highlight_pen());
 		p.drawRoundedRect(delta_rect, radius, radius);
-	}
+	} */
 
 	p.setBrush(hover ? Cursor::FillColor.lighter() : Cursor::FillColor);
 	p.setPen(Cursor::FillColor.darker());

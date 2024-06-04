@@ -1,6 +1,6 @@
 PulseView User Manual
 =====================
-unreleased development snapshot, dated 2020-02-29
+unreleased pulseview development snapshot, manual last changed 2020-02-29
 :doctype: book
 :imagesdir: ./images
 :sectnums:

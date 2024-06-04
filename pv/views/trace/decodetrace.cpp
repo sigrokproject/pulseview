@@ -186,7 +186,16 @@ DecodeTrace::DecodeTrace(pv::Session &session,
 		this, SLOT(on_decode_finished()));
 	connect(decode_signal_.get(), SIGNAL(channels_updated()),
 		this, SLOT(on_channels_updated()));
-
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+	connect(&delete_mapper_, SIGNAL(mappedInt(int)),
+		this, SLOT(on_delete_decoder(int)));
+	connect(&show_hide_mapper_, SIGNAL(mappedInt(int)),
+		this, SLOT(on_show_hide_decoder(int)));
+	connect(&row_show_hide_mapper_, SIGNAL(mappedInt(int)),
+		this, SLOT(on_show_hide_row(int)));
+	connect(&class_show_hide_mapper_, SIGNAL(mappedObject(QObject*)),
+		this, SLOT(on_show_hide_class(QObject*)));
+#else
 	connect(&delete_mapper_, SIGNAL(mapped(int)),
 		this, SLOT(on_delete_decoder(int)));
 	connect(&show_hide_mapper_, SIGNAL(mapped(int)),
@@ -195,6 +204,7 @@ DecodeTrace::DecodeTrace(pv::Session &session,
 		this, SLOT(on_show_hide_row(int)));
 	connect(&class_show_hide_mapper_, SIGNAL(mapped(QWidget*)),
 		this, SLOT(on_show_hide_class(QWidget*)));
+#endif
 
 	connect(&delayed_trace_updater_, SIGNAL(timeout()),
 		this, SLOT(on_delayed_trace_update()));
@@ -667,10 +677,19 @@ void DecodeTrace::mouse_left_press_event(const QMouseEvent* event)
 			continue;
 
 		unsigned int y = get_row_y(&r);
-		if ((event->x() > 0) && (event->x() <= (int)(ArrowSize + 3 + r.title_width)) &&
-			(event->y() > (int)(y - (default_row_height_ / 2))) &&
-			(event->y() <= (int)(y + (default_row_height_ / 2)))) {
-
+		bool need_anim = true;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+		need_anim &= event->position().x() > 0;
+		need_anim &= event->position().x() <= (int)(ArrowSize + 3 + r.title_width);
+		need_anim &= event->position().y() > (int)(y - (default_row_height_ / 2));
+		need_anim &= event->position().y() <= (int)(y + (default_row_height_ / 2));
+#else
+		need_anim &= event->x() > 0;
+		need_anim &= event->x() <= (int)(ArrowSize + 3 + r.title_width);
+		need_anim &= event->y() > (int)(y - (default_row_height_ / 2));
+		need_anim &= event->y() <= (int)(y + (default_row_height_ / 2));
+#endif
+		if (need_anim) {
 			if (r.expanded) {
 				r.collapsing = true;
 				r.expanded = false;
@@ -1249,6 +1268,19 @@ void DecodeTrace::initialize_row_widgets(DecodeTraceRow* r, unsigned int row_id)
 	QPalette header_palette = owner_->view()->palette();
 	QPalette selector_palette = owner_->view()->palette();
 
+#if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
+	if (GlobalSettings::current_theme_is_dark()) {
+		header_palette.setColor(QPalette::Window,
+			QColor(255, 255, 255, ExpansionAreaHeaderAlpha));
+		selector_palette.setColor(QPalette::Window,
+			QColor(255, 255, 255, ExpansionAreaAlpha));
+	} else {
+		header_palette.setColor(QPalette::Window,
+			QColor(0, 0, 0, ExpansionAreaHeaderAlpha));
+		selector_palette.setColor(QPalette::Window,
+			QColor(0, 0, 0, ExpansionAreaAlpha));
+	}
+#else
 	if (GlobalSettings::current_theme_is_dark()) {
 		header_palette.setColor(QPalette::Background,
 			QColor(255, 255, 255, ExpansionAreaHeaderAlpha));
@@ -1260,6 +1292,7 @@ void DecodeTrace::initialize_row_widgets(DecodeTraceRow* r, unsigned int row_id)
 		selector_palette.setColor(QPalette::Background,
 			QColor(0, 0, 0, ExpansionAreaAlpha));
 	}
+#endif
 
 	const int w = m.boundingRect(r->decode_row->title()).width() + RowTitleMargin;
 	r->title_width = w;
@@ -1602,7 +1635,11 @@ void DecodeTrace::on_show_hide_row(int row_id)
 	owner_->row_item_appearance_changed(false, true);
 }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+void DecodeTrace::on_show_hide_class(QObject* sender)
+#else
 void DecodeTrace::on_show_hide_class(QWidget* sender)
+#endif
 {
 	void* ann_class_ptr = sender->property("ann_class_ptr").value<void*>();
 	assert(ann_class_ptr);

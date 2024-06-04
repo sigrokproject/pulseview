@@ -115,8 +115,12 @@ private:
 
 	virtual bool restoreState(const QByteArray &state, int version = 0);
 
+Q_SIGNALS:
+	void session_error_raised(const QString text, const QString info_text);
+
 public Q_SLOTS:
 	void on_run_stop_clicked();
+	void on_session_error_raised(const QString text, const QString info_text);
 
 private Q_SLOTS:
 	void on_add_view(ViewType type, Session *session);

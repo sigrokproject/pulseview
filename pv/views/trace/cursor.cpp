@@ -72,7 +72,7 @@ QRectF Cursor::label_rect(const QRectF &rect) const
 	const float x = get_x();
 
 	QFontMetrics m(QApplication::font());
-	QSize text_size = m.boundingRect(get_text()).size();
+	QSize text_size = m.boundingRect(get_display_text()).size();
 
 	const QSizeF label_size(
 		text_size.width() + LabelPadding.width() * 2,

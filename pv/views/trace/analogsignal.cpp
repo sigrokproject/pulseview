@@ -139,7 +139,7 @@ std::map<QString, QVariant> AnalogSignal::save_settings() const
 	result["neg_vdivs"] = neg_vdivs_;
 	result["scale_index"] = scale_index_;
 	result["display_type"] = display_type_;
-	result["autoranging"] = pos_vdivs_;
+	result["autoranging"] = autoranging_;
 	result["div_height"] = div_height_;
 
 	return result;
@@ -177,6 +177,7 @@ void AnalogSignal::restore_settings(std::map<QString, QVariant> settings)
 		div_height_ = settings["div_height"].toInt();
 
 		update_logic_level_offsets();
+		update_scale();
 
 		if ((div_height_ != old_height) && owner_) {
 			// Call order is important, otherwise the lazy event handler won't work
@@ -1100,13 +1101,20 @@ void AnalogSignal::on_conv_threshold_changed(int index)
 		// https://txt2re.com/index-c++.php3?s=0.1V&1&-13
 		QString re1 = "([+-]?\\d*[\\.,]?\\d*)"; // Float value
 		QString re2 = "([a-zA-Z]*)"; // SI unit
-		QRegExp regex(re1 + re2);
-
 		const QString text = conv_threshold_cb_->currentText();
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+		QRegularExpression regex(re1 + re2);
+		if (!regex.match(text).hasMatch())
+			return;  // String doesn't match the regex
+
+		QStringList tokens = regex.match(text).capturedTexts();
+#else
+		QRegExp regex(re1 + re2);
 		if (!regex.exactMatch(text))
 			return;  // String doesn't match the regex
 
 		QStringList tokens = regex.capturedTexts();
+#endif
 
 		// For now, we simply assume that the unit is volt without modifiers
 		const double thr = tokens.at(1).toDouble();
@@ -1127,13 +1135,22 @@ void AnalogSignal::on_conv_threshold_changed(int index)
 		QString re3 = "\\/"; // Forward slash, not captured
 		QString re4 = "([+-]?\\d*[\\.,]?\\d*)"; // Float value
 		QString re5 = "([a-zA-Z]*)"; // SI unit
+		const QString text = conv_threshold_cb_->currentText();
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+		QRegularExpression regex(re1 + re2 + re3 + re4 + re5);
+
+		if (!regex.match(text).hasMatch())
+			return;  // String doesn't match the regex
+
+		QStringList tokens = regex.match(text).capturedTexts();
+#else
 		QRegExp regex(re1 + re2 + re3 + re4 + re5);
 
-		const QString text = conv_threshold_cb_->currentText();
 		if (!regex.exactMatch(text))
 			return;  // String doesn't match the regex
 
 		QStringList tokens = regex.capturedTexts();
+#endif
 
 		// For now, we simply assume that the unit is volt without modifiers
 		const double low_thr = tokens.at(1).toDouble();

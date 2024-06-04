@@ -124,12 +124,40 @@ vector< shared_ptr<ViewItem> > Viewport::items()
 
 bool Viewport::touch_event(QTouchEvent *event)
 {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+	QList<QEventPoint> touchPoints = event->points();
+#else
 	QList<QTouchEvent::TouchPoint> touchPoints = event->touchPoints();
+#endif
 
 	if (touchPoints.count() != 2) {
 		pinch_zoom_active_ = false;
 		return false;
 	}
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+	if (event->device()->type() == QInputDevice::DeviceType::TouchPad) {
+		return false;
+	}
+
+	const QEventPoint &touchPoint0 = touchPoints.first();
+	const QEventPoint &touchPoint1 = touchPoints.last();
+
+	if (!pinch_zoom_active_ ||
+		(event->touchPointStates() & QEventPoint::Pressed)) {
+		pinch_offset0_ = (view_.offset() + view_.scale() * touchPoint0.position().x()).convert_to<double>();
+		pinch_offset1_ = (view_.offset() + view_.scale() * touchPoint1.position().x()).convert_to<double>();
+		pinch_zoom_active_ = true;
+	}
+
+	double w = touchPoint1.position().x() - touchPoint0.position().x();
+	if (abs(w) >= 1.0) {
+		const double scale =
+			fabs((pinch_offset1_ - pinch_offset0_) / w);
+		double offset = pinch_offset0_ - touchPoint0.position().x() * scale;
+		if (scale > 0)
+			view_.set_scale_offset(scale, offset);
+	}
+#else
 	if (event->device()->type() == QTouchDevice::TouchPad) {
 		return false;
 	}
@@ -152,6 +180,7 @@ bool Viewport::touch_event(QTouchEvent *event)
 		if (scale > 0)
 			view_.set_scale_offset(scale, offset);
 	}
+#endif
 
 	if (event->touchPointStates() & Qt::TouchPointReleased) {
 		pinch_zoom_active_ = false;
@@ -162,7 +191,11 @@ bool Viewport::touch_event(QTouchEvent *event)
 		} else {
 			// Update the mouse down fields so that continued
 			// dragging with the primary touch will work correctly
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+			mouse_down_point_ = touchPoint0.position().toPoint();
+#else
 			mouse_down_point_ = touchPoint0.pos().toPoint();
+#endif
 			drag();
 		}
 	}
@@ -215,30 +248,61 @@ void Viewport::mouseDoubleClickEvent(QMouseEvent *event)
 {
 	assert(event);
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+	if (event->buttons() & Qt::LeftButton)
+		view_.zoom(2.0, event->position().x());
+	else if (event->buttons() & Qt::RightButton)
+		view_.zoom(-2.0, event->position().x());
+#else
 	if (event->buttons() & Qt::LeftButton)
 		view_.zoom(2.0, event->x());
 	else if (event->buttons() & Qt::RightButton)
 		view_.zoom(-2.0, event->x());
+#endif
 }
 
 void Viewport::wheelEvent(QWheelEvent *event)
 {
 	assert(event);
 
+#if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
+	int delta = (event->angleDelta().x() != 0) ? event->angleDelta().x() : event->angleDelta().y();
+#else
+	int delta = event->delta();
+#endif
+
+#if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
+	if (event->angleDelta().y() != 0) {
+#else
 	if (event->orientation() == Qt::Vertical) {
+#endif
 		if (event->modifiers() & Qt::ControlModifier) {
 			// Vertical scrolling with the control key pressed
 			// is intrepretted as vertical scrolling
 			view_.set_v_offset(-view_.owner_visual_v_offset() -
-				(event->delta() * height()) / (8 * 120));
+				(delta * height()) / (8 * 120));
+		} else if (event->modifiers() & Qt::ShiftModifier) {
+			// Vertical scrolling with the shift key pressed
+			// acts as horizontal scrolling like in Gimp
+			// and Inkscape.
+			view_.set_scale_offset(view_.scale(),
+				- delta * view_.scale() + view_.offset());
 		} else {
 			// Vertical scrolling is interpreted as zooming in/out
-			view_.zoom(event->delta() / 120.0, event->x());
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
+			view_.zoom(delta / 120.0, event->position().x());
+#else
+			view_.zoom(delta / 120.0, event->x());
+#endif
 		}
+#if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
+	} else if (event->angleDelta().x() != 0) {
+#else
 	} else if (event->orientation() == Qt::Horizontal) {
+#endif
 		// Horizontal scrolling is interpreted as moving left/right
 		view_.set_scale_offset(view_.scale(),
-			event->delta() * view_.scale() + view_.offset());
+			delta * view_.scale() + view_.offset());
 	}
 }
 

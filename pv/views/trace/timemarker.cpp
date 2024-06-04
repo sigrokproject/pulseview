@@ -88,7 +88,7 @@ QRectF TimeMarker::label_rect(const QRectF &rect) const
 {
 	QFontMetrics m(QApplication::font());
 	const QSizeF text_size(
-		max(m.boundingRect(get_text()).size().width(), ArrowSize),
+		max(m.boundingRect(get_display_text()).size().width(), ArrowSize),
 		m.height());
 	const QSizeF label_size(text_size + LabelPadding * 2);
 	const float top = rect.height() - label_size.height() -
@@ -103,6 +103,11 @@ QRectF TimeMarker::hit_box_rect(const ViewItemPaintParams &pp) const
 	const float x = get_x();
 	const float h = QFontMetrics(QApplication::font()).height();
 	return QRectF(x - h / 2.0f, pp.top(), h, pp.height());
+}
+
+QString TimeMarker::get_display_text() const
+{
+	return get_text();
 }
 
 void TimeMarker::set_text(const QString &text)
@@ -158,7 +163,7 @@ void TimeMarker::paint_label(QPainter &p, const QRect &rect, bool hover)
 	p.drawPolygon(points, countof(points));
 
 	p.setPen(select_text_color(color_));
-	p.drawText(r, Qt::AlignCenter | Qt::AlignVCenter, get_text());
+	p.drawText(r, Qt::AlignCenter | Qt::AlignVCenter, get_display_text());
 }
 
 void TimeMarker::paint_fore(QPainter &p, ViewItemPaintParams &pp)
@@ -179,6 +184,8 @@ pv::widgets::Popup* TimeMarker::create_popup(QWidget *parent)
 	popup->set_position(parent->mapToGlobal(
 		drag_point(parent->rect())), Popup::Bottom);
 
+	connect(popup, SIGNAL(closed()), this, SLOT(on_popup_closed()));
+
 	QFormLayout *const form = new QFormLayout(popup);
 	popup->setLayout(form);
 
@@ -191,6 +198,13 @@ pv::widgets::Popup* TimeMarker::create_popup(QWidget *parent)
 	form->addRow(tr("Time"), value_widget_);
 
 	return popup;
+}
+
+void TimeMarker::on_popup_closed()
+{
+	GlobalSettings settings;
+	if (!settings.value(GlobalSettings::Key_View_KeepRulerItemSelected).toBool())
+		select(false);
 }
 
 void TimeMarker::on_value_changed(const pv::util::Timestamp& value)

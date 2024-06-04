@@ -635,6 +635,9 @@ void Session::set_device(shared_ptr<devices::Device> device)
 	} catch (const QString &e) {
 		device_.reset();
 		MainWindow::show_session_error(tr("Failed to open device"), e);
+	} catch (const sigrok::Error &e) {
+		device_.reset();
+		MainWindow::show_session_error(tr("Failed to open device"), QString(e.what()));
 	}
 
 	if (device_) {
@@ -777,8 +780,11 @@ void Session::load_file(QString file_name, QString setup_file_name,
 					file_name.toStdString())));
 	} catch (Error& e) {
 		MainWindow::show_session_error(tr("Failed to load %1").arg(file_name), e.what());
-		set_default_device();
-		main_bar_->update_device_list();
+		return;
+	}
+
+	if (!device_) {
+		MainWindow::show_session_error(errorMessage, "");
 		return;
 	}
 
@@ -797,7 +803,7 @@ void Session::load_file(QString file_name, QString setup_file_name,
 	main_bar_->update_device_list();
 
 	start_capture([&, errorMessage](QString infoMessage) {
-		MainWindow::show_session_error(errorMessage, infoMessage); });
+		Q_EMIT session_error_raised(errorMessage, infoMessage); });
 
 	// Only set save path if we loaded an srzip file
 	if (dynamic_pointer_cast<devices::SessionFile>(device_))
@@ -849,6 +855,8 @@ void Session::start_capture(function<void (const QString)> error_handler)
 		name_ = default_name_;
 		name_changed();
 	}
+
+	acq_start_time_ = Glib::DateTime::create_now_local();
 
 	// Begin the session
 	sampling_thread_ = std::thread(&Session::sample_thread_proc, this, error_handler);
@@ -942,6 +950,11 @@ double Session::get_samplerate() const
 		samplerate = 1.0;
 
 	return samplerate;
+}
+
+Glib::DateTime Session::get_acquisition_start_time() const
+{
+	return acq_start_time_;
 }
 
 uint32_t Session::get_highest_segment_id() const
