@@ -614,6 +614,9 @@ void Session::set_device(shared_ptr<devices::Device> device)
 	} catch (const QString &e) {
 		device_.reset();
 		MainWindow::show_session_error(tr("Failed to open device"), e);
+	} catch (const sigrok::Error &e) {
+		device_.reset();
+		MainWindow::show_session_error(tr("Failed to open device"), QString(e.what()));
 	}
 
 	if (device_) {
@@ -756,8 +759,11 @@ void Session::load_file(QString file_name, QString setup_file_name,
 					file_name.toStdString())));
 	} catch (Error& e) {
 		MainWindow::show_session_error(tr("Failed to load %1").arg(file_name), e.what());
-		set_default_device();
-		main_bar_->update_device_list();
+		return;
+	}
+
+	if (!device_) {
+		MainWindow::show_session_error(errorMessage, "");
 		return;
 	}
 
