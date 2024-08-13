@@ -1,0 +1,9 @@
+name: PulseView Artifact Builder Workflow
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  call-build-workflow:
+    uses: sigrokproject/sigrok-build/.github/workflows/build.yml@master
