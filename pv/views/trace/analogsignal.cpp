@@ -48,11 +48,13 @@
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
 
+using std::abs;
 using std::deque;
 using std::div;
 using std::div_t;
 // Note that "using std::isnan;" is _not_ put here since that would break
 // compilation on some platforms. Use "std::isnan()" instead in checks below.
+using std::fabs;
 using std::max;
 using std::make_pair;
 using std::min;
@@ -766,7 +768,7 @@ void AnalogSignal::process_next_sample_value(float x, float value)
 			// Interpolate values to create values for the intermediate pixels
 			const float start_value = prev_value_at_pixel_;
 			const float end_value = value;
-			const int steps = fabs(pixel_pos - current_pixel_pos_);
+			const int steps = abs(pixel_pos - current_pixel_pos_);
 			const double gradient = (end_value - start_value) / steps;
 			for (int i = 0; i < steps; i++) {
 				if (current_pixel_pos_ + i < 0)
