@@ -563,7 +563,7 @@ endif()
 
 add_definitions(-DQT_NO_KEYWORDS)
 add_definitions(-D__STDC_LIMIT_MACROS)
-add_definitions(-Wall -Wextra -Wunqualified-std-cast-call)
+add_definitions(-Wall -Wextra)
 add_definitions(${REQUIRED_STD_CXX_FLAGS})
 
 add_definitions(-DBOOST_MATH_DISABLE_FLOAT128=1)
