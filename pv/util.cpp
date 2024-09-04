@@ -199,11 +199,42 @@ static QString pad_number(unsigned int number, int length)
 
 QString format_time_minutes(const Timestamp& t, signed precision, bool sign)
 {
-	const Timestamp whole_seconds = floor(abs(t));
-	const Timestamp days = floor(whole_seconds / (60 * 60 * 24));
-	const unsigned int hours = fmod(whole_seconds / (60 * 60), 24).convert_to<uint>();
-	const unsigned int minutes = fmod(whole_seconds / 60, 60).convert_to<uint>();
-	const unsigned int seconds = fmod(whole_seconds, 60).convert_to<uint>();
+	// Do integer computation to avoid various rounding risks in Boost::multiprecision
+	// In addition it will be faster especially when using multiplication and substraction instead of modulo. 
+	// Unsigned long are garantied to hold at least 32 bits, more than 100 years of seconds. Should be sufficient for a capture...
+	unsigned long whole_seconds = floor(abs(t)).convert_to<unsigned long>();
+
+	int carry = 0;  //-- Carry when rounding: it is counted a carry when 0.9999... is represented 1.00...
+
+	ostringstream ss;
+	string fs;
+
+	if (precision > 0) {
+		// Ensure we are substracting the result of rounding done above
+		// in case Boost abs and/or floor would produce unstable results when working with integers
+		Timestamp fraction = abs(t) - whole_seconds;
+		if (fraction < 0.0) {
+			fraction = 0.0;
+		}
+
+		ss << fixed << setprecision(precision) << setfill('0') << fraction;
+		fs = ss.str();
+
+		// Check whether stringification rounding has produced a carry
+		if (fs.at(0) == '1') {
+			carry = 1;
+		}
+	}
+
+	// Take into the carry for representing the integer value
+	whole_seconds += carry;
+	const unsigned long days = std::floor(whole_seconds / (60 * 60 * 24));
+	unsigned long remain_seconds = whole_seconds - days * (60 * 60 * 24);
+	// unsigned int (with at least 16 bits) is sufficient for remaining parts
+	const unsigned int hours = (unsigned int)std::floor(remain_seconds / (60 * 60));
+	remain_seconds -= hours * (60 * 60);
+	const unsigned int minutes = (unsigned int)std::floor(remain_seconds / 60);
+	const unsigned int seconds = (unsigned int)(remain_seconds - minutes * 60);
 
 	QString s;
 	QTextStream ts(&s);
@@ -217,7 +248,7 @@ QString format_time_minutes(const Timestamp& t, signed precision, bool sign)
 
 	// DD
 	if (days) {
-		ts << days.str().c_str() << ":";
+		ts << days << ":";
 		use_padding = true;
 	}
 
@@ -235,14 +266,9 @@ QString format_time_minutes(const Timestamp& t, signed precision, bool sign)
 	// SS
 	ts << pad_number(seconds, 2);
 
-	if (precision) {
+	if (precision > 0) {
+		// Format the fraction part
 		ts << ".";
-
-		const Timestamp fraction = fabs(t) - whole_seconds;
-
-		ostringstream ss;
-		ss << fixed << setprecision(precision) << setfill('0') << fraction;
-		string fs = ss.str();
 
 		// Copy all digits, inserting spaces as unit separators
 		for (int i = 1; i <= precision; i++) {
