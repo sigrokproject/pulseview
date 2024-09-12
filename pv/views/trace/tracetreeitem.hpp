@@ -119,6 +119,11 @@ public:
 	 */
 	virtual pair<int, int> v_extents() const = 0;
 
+    virtual QMenu* create_view_context_menu(QWidget *parent, QPoint &click_pos);
+
+private Q_SLOTS:
+    void on_zoom_reset();
+
 protected:
 	TraceTreeItemOwner *owner_;
 
