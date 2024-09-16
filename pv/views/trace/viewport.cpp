@@ -266,43 +266,41 @@ void Viewport::wheelEvent(QWheelEvent *event)
 	assert(event);
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
-	int delta = (event->angleDelta().x() != 0) ? event->angleDelta().x() : event->angleDelta().y();
+	const QPoint delta = event->angleDelta();
+	const int posX = event->position().x();
 #else
-	int delta = event->delta();
+	const int dx = event->orientation() == Qt::Horizontal ? event->delta() : 0;
+	const int dy = event->orientation() == Qt::Vertical ? event->delta() : 0;
+
+	const QPoint delta = QPoint(dx, dy);
+	const int posX = event->x();
 #endif
 
-#if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
-	if (event->angleDelta().y() != 0) {
-#else
-	if (event->orientation() == Qt::Vertical) {
-#endif
+	// Trackpad can generate large deltas, bound x/y to prevent overdrive
+	const int max_delta = 120;
+	const int deltaX = qBound(-max_delta, delta.x(), max_delta);
+	const int deltaY = qBound(-max_delta, delta.y(), max_delta);
+
+	// Horizontal scrolling is interpreted as moving left/right
+	if(deltaX != 0) {
+		// For trackpad natural scrolling in horizontal plane is opposite
+		// to mouse, since trackpad does not need Shift to scroll left/right,
+		// use Shift to distinguish between trackpad and mouse
+		view_.set_scale_offset(view_.scale(), 
+			(event->modifiers() & Qt::ShiftModifier ? deltaX : -deltaX)
+			* view_.scale() + view_.offset());
+	}
+
+	if(deltaY != 0) {
 		if (event->modifiers() & Qt::ControlModifier) {
 			// Vertical scrolling with the control key pressed
 			// is intrepretted as vertical scrolling
-			view_.set_v_offset(-view_.owner_visual_v_offset() -
-				(delta * height()) / (8 * 120));
-		} else if (event->modifiers() & Qt::ShiftModifier) {
-			// Vertical scrolling with the shift key pressed
-			// acts as horizontal scrolling like in Gimp
-			// and Inkscape.
-			view_.set_scale_offset(view_.scale(),
-				- delta * view_.scale() + view_.offset());
+			view_.set_v_offset(
+				-view_.owner_visual_v_offset() - (deltaY * height()) / (8 * 120));
 		} else {
 			// Vertical scrolling is interpreted as zooming in/out
-#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
-			view_.zoom(delta / 120.0, event->position().x());
-#else
-			view_.zoom(delta / 120.0, event->x());
-#endif
+			view_.zoom(deltaY / 120.0, posX);
 		}
-#if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
-	} else if (event->angleDelta().x() != 0) {
-#else
-	} else if (event->orientation() == Qt::Horizontal) {
-#endif
-		// Horizontal scrolling is interpreted as moving left/right
-		view_.set_scale_offset(view_.scale(),
-			delta * view_.scale() + view_.offset());
 	}
 }
 
