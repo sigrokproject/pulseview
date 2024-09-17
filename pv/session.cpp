@@ -375,6 +375,27 @@ void Session::save_settings(QSettings &settings) const
 
 void Session::restore_setup(QSettings &settings)
 {
+	// Reset main view, remove all other views
+	main_view_->reset_view_state();
+	for (auto &v : vector< shared_ptr<views::ViewBase> >(views_)) {
+		if (v != main_view_)
+			remove_view(v);
+	}
+
+	// Remove generated signals and decoders
+	for (shared_ptr<data::SignalBase> base : vector< shared_ptr<data::SignalBase> >(signalbases_)) {
+#ifdef ENABLE_DECODE
+		if (base->is_decode_signal()) {
+			shared_ptr<data::DecodeSignal> ds = dynamic_pointer_cast<data::DecodeSignal>(base);
+			assert(ds);
+			remove_decode_signal(ds);
+		} else
+#endif
+		if (base->is_generated()) {
+			remove_generated_signal(base);
+		}
+	}
+
 	// Restore channels
 	for (shared_ptr<data::SignalBase> base : signalbases_) {
 		settings.beginGroup(base->internal_name());
