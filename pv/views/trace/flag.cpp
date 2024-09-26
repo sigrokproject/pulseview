@@ -69,10 +69,20 @@ QString Flag::get_display_text() const
 
 	if (!ref_item || (ref_item.get() == this))
 		s = text_;
-	else
-		s = Ruler::format_time_with_distance(
+	else {
+		const QString time = Ruler::format_time_with_distance(
 			ref_item->time(), ref_item->delta(time_),
 			view_.tick_prefix(), view_.time_unit(), view_.tick_precision());
+
+		if(view_.time_unit() == pv::util::TimeUnit::Time) {
+		    const QString freq = util::format_value_si(1/abs(ref_item->delta(time_).convert_to<double>()),
+			  pv::util::SIPrefix::unspecified,
+			   12, "Hz", false);
+		    s = QString("%1 (%2)").arg(time, freq);
+		}
+		else
+		    s = time;
+	 }
 
 	return s;
 }
