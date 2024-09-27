@@ -38,6 +38,7 @@ using std::max;
 using std::min;
 using std::shared_ptr;
 using std::vector;
+using std::unique_ptr;
 
 using sigrok::Logic;
 
@@ -48,6 +49,12 @@ const int LogicSegment::MipMapScalePower = 4;
 const int LogicSegment::MipMapScaleFactor = 1 << MipMapScalePower;
 const float LogicSegment::LogMipMapScaleFactor = logf(MipMapScaleFactor);
 const uint64_t LogicSegment::MipMapDataUnit = 64 * 1024; // bytes
+
+LogicSegment::LogicSegment(pv::data::Logic& owner, uint32_t segment_id,
+	uint64_t samplerate) :
+	LogicSegment(owner, segment_id, 1, samplerate)
+{
+}
 
 LogicSegment::LogicSegment(pv::data::Logic& owner, uint32_t segment_id,
 	unsigned int unit_size,	uint64_t samplerate) :
@@ -388,6 +395,37 @@ void LogicSegment::append_subsignal_payload(unsigned int index, void *data,
 	}
 }
 
+void LogicSegment::append_interleaved_samples(const uint8_t *data,
+	size_t sample_count, size_t stride)
+{
+	assert(unit_size_ == sizeof(uint8_t));
+
+	lock_guard<recursive_mutex> lock(mutex_);
+
+	uint64_t prev_sample_count = sample_count_;
+
+	// Deinterleave the samples and add them
+	unique_ptr<uint8_t[]> deint_data(new uint8_t[sample_count]);
+	uint8_t *deint_data_ptr = deint_data.get();
+	for (uint32_t i = 0; i < sample_count; i++) {
+		*deint_data_ptr = (uint8_t)(*data);
+		deint_data_ptr++;
+		data += stride;
+	}
+
+	append_samples(deint_data.get(), sample_count);
+
+	// Generate the first mip-map from the data
+	append_payload_to_mipmap();
+
+	if (sample_count > 1)
+		owner_.notify_samples_added(shared_ptr<Segment>(shared_from_this()),
+			prev_sample_count + 1, prev_sample_count + 1 + sample_count);
+	else
+		owner_.notify_samples_added(shared_ptr<Segment>(shared_from_this()),
+			prev_sample_count + 1, prev_sample_count + 1);
+}
+
 void LogicSegment::get_samples(int64_t start_sample,
 	int64_t end_sample, uint8_t* dest) const
 {
@@ -401,6 +439,19 @@ void LogicSegment::get_samples(int64_t start_sample,
 	lock_guard<recursive_mutex> lock(mutex_);
 
 	get_raw_samples(start_sample, (end_sample - start_sample), dest);
+}
+
+uint8_t LogicSegment::get_sample(int64_t sample_num, unsigned int index) const
+{
+	assert(sample_num >= 0);
+	assert(sample_num <= (int64_t)sample_count_);
+	assert(index >= 0);
+	assert(index < 64);
+
+	lock_guard<recursive_mutex> lock(mutex_);
+
+	const uint8_t *sample = get_raw_sample(sample_num);
+	return (unpack_sample(sample) >> index) & 1;
 }
 
 void LogicSegment::get_subsampled_edges(

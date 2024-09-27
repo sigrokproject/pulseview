@@ -1,6 +1,7 @@
 <RCC>
     <qresource prefix="/">
 	<file>icons/add-decoder.svg</file>
+	<file>icons/add-math-logic-signal.svg</file>
 	<file>icons/add-math-signal.svg</file>
 	<file>icons/application-exit.png</file>
 	<file>icons/channels.svg</file>
