@@ -146,6 +146,9 @@ void Ruler::contextMenuEvent(QContextMenuEvent *event)
 	if (event->isAccepted())
 		return;
 
+	// Save the place of the click in the popup menu
+	// so that it can be used when a popup menu action is selected
+	// and needs to know the mouse position in the ruler
 	context_menu_x_pos_ = event->pos().x();
 
 	QMenu *const menu = new QMenu(this);
@@ -399,12 +402,12 @@ void Ruler::invalidate_tick_position_cache()
 
 void Ruler::on_createMarker()
 {
-	hover_item_ = view_.add_flag(get_absolute_time_from_x_pos(mouse_down_point_.x()));
+	hover_item_ = view_.add_flag(get_absolute_time_from_x_pos(context_menu_x_pos_));
 }
 
 void Ruler::on_setZeroPosition()
 {
-	view_.set_zero_position(get_absolute_time_from_x_pos(mouse_down_point_.x()));
+	view_.set_zero_position(get_absolute_time_from_x_pos(context_menu_x_pos_));
 }
 
 void Ruler::on_resetZeroPosition()
