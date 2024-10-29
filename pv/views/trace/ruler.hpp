@@ -196,6 +196,9 @@ private:
 
 	shared_ptr<TimeItem> hover_item_;
 
+	/**
+	 * @brief Save the place (x only) where the user has clicked to open the popup menu
+	 */
 	uint32_t context_menu_x_pos_;
 };
 
