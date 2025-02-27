@@ -2,7 +2,7 @@
 .SH "NAME"
 PulseView \- Qt-based LA/scope/MSO GUI for sigrok
 .SH "SYNOPSIS"
-.B pulseview \fR[\fBOPTIONS\fR] [\fBFILE\fR]
+.B pulseview \fR[\fBOPTIONS\fR] [\fBFILE...\fR]
 .SH "DESCRIPTION"
 .B PulseView
 is a cross-platform Qt-based GUI for the
@@ -15,7 +15,7 @@ has very few command line options, as most configuration elements are
 available from the GUI itself.
 .sp
 If the optional \fBFILE\fR argument is supplied, PulseView tries to open
-the specified file. It has to be in the "libsigrok session" format (.sr)
+the specified file(s). It has to be in the "libsigrok session" format (.sr)
 unless -I is used to specify the input file format.
 .TP
 .B "\-l, \-\-loglevel"

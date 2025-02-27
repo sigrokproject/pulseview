@@ -151,7 +151,7 @@ void usage()
 {
 	fprintf(stdout,
 		"Usage:\n"
-		"  %s [OPTIONS] [FILE]\n"
+		"  %s [OPTIONS] [FILE...]\n"
 		"\n"
 		"Help Options:\n"
 		"  -h, -?, --help                  Show help option\n"
