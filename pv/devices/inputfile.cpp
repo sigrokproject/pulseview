@@ -131,19 +131,27 @@ void InputFile::open()
 
 	vector<char> buffer(BufferSize);
 
-	f->read(buffer.data(), BufferSize);
-	const streamsize size = f->gcount();
+	do {
+		if (!f->eof()) {
+			f->read(buffer.data(), BufferSize);
+			const streamsize size = f->gcount();
 
-	if (size == 0)
-		throw QString("Failed to read file");
+			if (size == 0)
+				throw QString("Failed to read file");
 
-	input_->send(buffer.data(), size);
+			input_->send(buffer.data(), size);
+		}
 
-	try {
-		device_ = input_->device();
-	} catch (sigrok::Error& e) {
-		throw e;
-	}
+		try {
+			// If this succeeds then enough of the file was read in to create the device.
+			device_ = input_->device();
+		} catch (sigrok::Error& e) {
+			// Failed so may need more of file in order to successfully create the device.
+			// If already read in all of the file, then throw error.
+			if (f->eof())
+				throw e;
+		}
+	} while(!device_);
 
 	session_->add_device(device_);
 }
@@ -169,19 +177,23 @@ void InputFile::run()
 		input_->reset();
 	}
 
-	vector<char> buffer(BufferSize);
+	// May already be at eof due to processing inside open().
+	// If this is the case we don't want to do any more send() calls.
+	if (!f->eof()) {
+		vector<char> buffer(BufferSize);
 
-	interrupt_ = false;
-	while (!interrupt_ && !f->eof()) {
-		f->read(buffer.data(), BufferSize);
-		const streamsize size = f->gcount();
-		if (size == 0)
-			break;
+		interrupt_ = false;
+		while (!interrupt_ && !f->eof()) {
+			f->read(buffer.data(), BufferSize);
+			const streamsize size = f->gcount();
+			if (size == 0)
+				break;
 
-		input_->send(buffer.data(), size);
+			input_->send(buffer.data(), size);
 
-		if (size != BufferSize)
-			break;
+			if (size != BufferSize)
+				break;
+		}
 	}
 
 	input_->end();
