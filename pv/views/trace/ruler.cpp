@@ -150,6 +150,12 @@ void Ruler::contextMenuEvent(QContextMenuEvent *event)
 
 	QMenu *const menu = new QMenu(this);
 
+    if(view_.scale() != 1e-3) {
+        QAction *const reset_zoom = new QAction(tr("Reset zoom"), this);
+        connect(reset_zoom, SIGNAL(triggered()), this, SLOT(on_zoom_reset()));
+        menu->addAction(reset_zoom);
+    }
+
 	QAction *const create_marker = new QAction(tr("Create marker here"), this);
 	connect(create_marker, SIGNAL(triggered()), this, SLOT(on_createMarker()));
 	menu->addAction(create_marker);
@@ -417,6 +423,11 @@ void Ruler::on_toggleHoverMarker()
 	GlobalSettings settings;
 	const bool state = settings.value(GlobalSettings::Key_View_ShowHoverMarker).toBool();
 	settings.setValue(GlobalSettings::Key_View_ShowHoverMarker, !state);
+}
+
+void Ruler::on_zoom_reset()
+{
+    view_.reset_zoom();
 }
 
 } // namespace trace
