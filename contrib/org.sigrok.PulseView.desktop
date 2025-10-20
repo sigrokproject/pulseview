@@ -1,9 +1,36 @@
 [Desktop Entry]
 # Creative Commons CC0 1.0 Universal (CC0-1.0, Public Domain Dedication).
 Name=PulseView
+Name[es]=PulseView
+Name[de]=PulseView
+Name[it]=PulseView
+Name[pt]=PulseView
+Name[ru]=PulseView
+Name[zh-CN]=PulseView
+Name[zh-TW]=PulseView
+Name[hu]=PulseView
+Name[uk]=PulseView
 GenericName=Logic analyzer, oscilloscope and MSO GUI
+GenericName[es]=Analizador lógico, osciloscopio y MSO GUI
+GenericName[de]=Logikanalysator, Oszilloskop und MSO-GUI
+GenericName[it]=Analizzatore logico, oscilloscopio e interfaccia grafica MSO
+GenericName[pt]=Analisador lógico, osciloscópio e MSO GUI
+GenericName[ru]=Логический анализатор, осциллограф и графический интерфейс MSO
+GenericName[zh-CN]=逻辑分析仪、示波器和MSO GUI
+GenericName[zh-TW]=邏輯分析儀、示波器和MSO GUI
+GenericName[hu]=Logikai analizátor, oszcilloszkóp és MSO GUI
+GenericName[uk]=Логічний аналізатор, осцилограф та графічний інтерфейс MSO
 Categories=Development;Electronics;
 Comment=Control your logic analyzer, oscilloscope, or MSO
+Comment[es]=Controle su analizador lógico, osciloscopio o MSO
+Comment[de]=Steuern Sie Ihren Logikanalysator, Oszilloskop oder MSO
+Comment[it]=Controlla il tuo analizzatore logico, oscilloscopio o MSO
+Comment[pt]=Controle o seu analisador lógico, osciloscópio ou MSO
+Comment[ru]=Управление логическим анализатором, осциллографом или MSO
+Comment[zh-CN]=控制您的逻辑分析仪、示波器或MSO
+Comment[zh-TW]=控制您的邏輯分析儀、示波器或MSO
+Comment[hu]=Vezérelje logikai analizátorát, oszcilloszkópját vagy MSO-ját
+Comment[uk]=Керуйте логічним аналізатором, осцилографом або MSO
 Exec=pulseview
 Icon=pulseview
 Type=Application
