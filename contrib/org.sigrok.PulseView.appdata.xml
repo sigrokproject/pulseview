@@ -6,6 +6,7 @@
   <project_license>GPL-3.0+</project_license>
   <name>PulseView</name>
   <summary>Logic analyzer, oscilloscope and MSO GUI</summary>
+  <icon type="remote" width="48" height="48">https://github.com/sigrokproject/pulseview/tree/master/icons/pulseview.png</icon>
   <description>
     <p>PulseView is a Qt based logic analyzer, oscilloscope and MSO GUI for sigrok supporting various features:</p>
     <ul>
@@ -14,11 +15,15 @@
       <li>Trace groups support</li>
     </ul>
   </description>
+  <categories>
+    <category>Development</category>
+  </categories>
   <url type="homepage">https://sigrok.org/wiki/PulseView</url>
   <url type="bugtracker">https://sigrok.org/bugzilla/enter_bug.cgi?format=guided&amp;product=PulseView</url>
   <url type="faq">https://sigrok.org/wiki/FAQ</url>
   <screenshots>
     <screenshot type="default">
+      <caption>Main screen</caption>
       <image>https://sigrok.org/wimg/e/ee/PulseView_I2C_DS1307_Decode.png</image>
     </screenshot>
   </screenshots>
@@ -29,8 +34,16 @@
     <id>org.sigrok.sigrok-firmware</id>
     <id>org.sigrok.sigrok-firmware-fx2lafw</id>
   </suggests>
+  <releases>
+   <release version="0.4.2-4" date="2024-08-13" urgency="medium">	  
+    <description>
+	    <p>Fix warnings</p>
+    </description>
+   </release>
+  </releases>
   <launchable type="desktop-id">org.sigrok.PulseView.desktop</launchable>
   <mimetypes>
     <mimetype>application/vnd.sigrok.session</mimetype>
   </mimetypes>
+  <content_rating type="oars-1.1" />
 </component>
