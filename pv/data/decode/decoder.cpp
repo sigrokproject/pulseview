@@ -86,10 +86,6 @@ Decoder::Decoder(const srd_decoder *const dec, uint8_t stack_level) :
 	}
 
 	// Query the annotation rows and reference them by the classes that use them
-	uint32_t row_count = 0;
-	for (const GSList *rl = srd_decoder_->annotation_rows; rl; rl = rl->next)
-		row_count++;
-
 	i = 0;
 	for (const GSList *rl = srd_decoder_->annotation_rows; rl; rl = rl->next) {
 		const srd_decoder_annotation_row *const srd_row = (srd_decoder_annotation_row *)rl->data;
