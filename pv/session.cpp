@@ -628,7 +628,7 @@ void Session::set_device(shared_ptr<devices::Device> device)
 
 	signals_changed();
 
-	device_ = move(device);
+	device_ = std::move(device);
 
 	try {
 		device_->open();

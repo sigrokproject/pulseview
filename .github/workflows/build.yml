@@ -1,0 +1,17 @@
+name: Build PulseView artifacts
+
+on:
+  push:                # When the repo itself has a new commit on the master branch
+    branches:
+      - master
+    tags:              # When a new tag was created
+  workflow_dispatch:   # When the workflow was started manually from github
+  pull_request:
+    types:
+      - labeled        # When a pull request received a new label (e.g. "provide_binaries")
+      - synchronize    # When a pull request's branch was updated with a new commit
+
+jobs:
+  call-build-workflow:
+    name: Sigrok artifact builder
+    uses: sigrokproject/sigrok-build/.github/workflows/build.yml@master
