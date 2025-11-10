@@ -183,7 +183,7 @@ else()
 	set(QT_LIBRARIES Qt6::Gui Qt6::Widgets Qt6::Svg)
 endif()
 
-set(BOOSTCOMPS filesystem serialization system)
+set(BOOSTCOMPS filesystem serialization)
 if(ENABLE_TESTS)
 	list(APPEND BOOSTCOMPS unit_test_framework)
 endif()
