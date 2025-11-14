@@ -30,6 +30,22 @@ using std::vector;
 namespace pv {
 namespace data {
 
+const QColor Analog::SignalColors[8] =
+{
+	QColor(0xC4, 0xA0, 0x00),	// Yellow   HSV:  49 / 100 / 77
+	QColor(0x87, 0x20, 0x7A),	// Magenta  HSV: 308 /  70 / 53
+	QColor(0x20, 0x4A, 0x87),	// Blue     HSV: 216 /  76 / 53
+	QColor(0x4E, 0x9A, 0x06),	// Green    HSV:  91 /  96 / 60
+	QColor(0xBF, 0x6E, 0x00),	// Orange   HSV:  35 / 100 / 75
+	QColor(0x5E, 0x20, 0x80),	// Purple   HSV: 280 /  75 / 50
+	QColor(0x20, 0x80, 0x7A),	// Turqoise HSV: 177 /  75 / 50
+	QColor(0x80, 0x20, 0x24)	// Red      HSV: 358 /  75 / 50
+};
+
+const char *Analog::InvalidSignal = "\"%1\" isn't a valid analog signal";
+
+//const SignalBase::ChannelType math_channel_type = SignalBase::AnalogMathChannel;
+
 Analog::Analog() :
 	SignalData(),
 	samplerate_(1)  // Default is 1 Hz to prevent division-by-zero errors

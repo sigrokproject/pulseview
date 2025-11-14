@@ -78,11 +78,12 @@ const vector< pair<string, string> > MathEditDialog::Examples = {
 
 
 MathEditDialog::MathEditDialog(pv::Session &session,
-	shared_ptr<pv::data::MathSignal> math_signal, QWidget *parent) :
+	function<void(QString)> math_signal_expr_setter, QString old_expression,
+	QWidget *parent) :
 	QDialog(parent),
 	session_(session),
-	math_signal_(math_signal),
-	old_expression_(math_signal->get_expression()),
+	math_signal_expr_setter_(math_signal_expr_setter),
+	old_expression_(old_expression),
 	expr_edit_(new QPlainTextEdit())
 {
 	setWindowTitle(tr("Math Expression Editor"));
@@ -276,22 +277,22 @@ void MathEditDialog::set_expr(const QString &expr)
 
 void MathEditDialog::accept()
 {
-	math_signal_->set_expression(expr_edit_->document()->toPlainText());
+	math_signal_expr_setter_(expr_edit_->document()->toPlainText());
 	QDialog::accept();
 }
 
 void MathEditDialog::reject()
 {
-	math_signal_->set_expression(old_expression_);
+	math_signal_expr_setter_(old_expression_);
 	QDialog::reject();
 }
 
 
-MathSignal::MathSignal(
+MathSignalAnalog::MathSignalAnalog(
 	pv::Session &session,
 	shared_ptr<data::SignalBase> base) :
 	AnalogSignal(session, base),
-	math_signal_(dynamic_pointer_cast<pv::data::MathSignal>(base))
+	math_signal_(dynamic_pointer_cast<pv::data::MathSignalAnalog>(base))
 {
 	delayed_expr_updater_.setSingleShot(true);
 	delayed_expr_updater_.setInterval(MATHSIGNAL_INPUT_TIMEOUT);
@@ -299,7 +300,7 @@ MathSignal::MathSignal(
 		this, [this]() { math_signal_->set_expression(expression_edit_->text()); });
 }
 
-void MathSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
+void MathSignalAnalog::populate_popup_form(QWidget *parent, QFormLayout *form)
 {
 	AnalogSignal::populate_popup_form(parent, form);
 
@@ -335,7 +336,7 @@ void MathSignal::populate_popup_form(QWidget *parent, QFormLayout *form)
 	form->addRow(tr("Sample rate"), sample_rate_cb_);
 }
 
-void MathSignal::on_expression_changed(const QString &text)
+void MathSignalAnalog::on_expression_changed(const QString &text)
 {
 	(void)text;
 
@@ -343,14 +344,62 @@ void MathSignal::on_expression_changed(const QString &text)
 	delayed_expr_updater_.start();
 }
 
-void MathSignal::on_sample_count_changed(const QString &text)
+void MathSignalAnalog::on_sample_count_changed(const QString &text)
 {
 	(void)text;
 }
 
-void MathSignal::on_edit_clicked()
+void MathSignalAnalog::on_edit_clicked()
 {
-	MathEditDialog dlg(session_, math_signal_);
+	MathEditDialog dlg(session_, [this](QString expr) { math_signal_->set_expression(expr); },
+		math_signal_->get_expression());
+	dlg.set_expr(expression_edit_->text());
+
+	dlg.exec();
+}
+
+MathSignalLogic::MathSignalLogic(
+	pv::Session &session,
+	shared_ptr<data::SignalBase> base) :
+	LogicSignal(session, base),
+	math_signal_(dynamic_pointer_cast<pv::data::MathSignalLogic>(base))
+{
+	delayed_expr_updater_.setSingleShot(true);
+	delayed_expr_updater_.setInterval(MATHSIGNAL_INPUT_TIMEOUT);
+	connect(&delayed_expr_updater_, &QTimer::timeout,
+		this, [this]() { math_signal_->set_expression(expression_edit_->text()); });
+}
+
+void MathSignalLogic::populate_popup_form(QWidget *parent, QFormLayout *form)
+{
+	LogicSignal::populate_popup_form(parent, form);
+
+	expression_edit_ = new QLineEdit();
+	expression_edit_->setText(math_signal_->get_expression());
+
+	const QIcon edit_icon(QIcon::fromTheme("edit", QIcon(":/icons/math.svg")));
+	QAction *edit_action =
+		expression_edit_->addAction(edit_icon, QLineEdit::TrailingPosition);
+
+	connect(expression_edit_, SIGNAL(textEdited(QString)),
+		this, SLOT(on_expression_changed(QString)));
+	connect(edit_action, SIGNAL(triggered(bool)),
+		this, SLOT(on_edit_clicked()));
+	form->addRow(tr("Expression"), expression_edit_);
+}
+
+void MathSignalLogic::on_expression_changed(const QString &text)
+{
+	(void)text;
+
+	// Restart update timer
+	delayed_expr_updater_.start();
+}
+
+void MathSignalLogic::on_edit_clicked()
+{
+	MathEditDialog dlg(session_, [this](QString expr) { math_signal_->set_expression(expr); },
+		math_signal_->get_expression());
 	dlg.set_expr(expression_edit_->text());
 
 	dlg.exec();
