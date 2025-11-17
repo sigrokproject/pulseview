@@ -124,6 +124,7 @@ public Q_SLOTS:
 
 private Q_SLOTS:
 	void on_add_view(ViewType type, Session *session);
+	void on_remove_view(shared_ptr<views::ViewBase> view);
 
 	void on_focus_changed();
 	void on_focused_session_changed(shared_ptr<Session> session);
