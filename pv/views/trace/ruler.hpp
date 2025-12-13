@@ -186,6 +186,7 @@ private Q_SLOTS:
 	void on_setZeroPosition();
 	void on_resetZeroPosition();
 	void on_toggleHoverMarker();
+    void on_zoom_reset();
 
 private:
 	/**
