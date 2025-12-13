@@ -38,6 +38,9 @@
 #include <QMouseEvent>
 #include <QScrollBar>
 #include <QVBoxLayout>
+#include <QDir>
+#include <QDateTime>
+#include <QSvgGenerator>
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
 
@@ -235,6 +238,22 @@ View::View(Session &session, bool is_main_view, QMainWindow *parent) :
 	end_shortcut_ = new QShortcut(QKeySequence(Qt::Key_End), this,
 		SLOT(on_scroll_to_end_shortcut_triggered()), nullptr, Qt::WidgetWithChildrenShortcut);
 	end_shortcut_->setAutoRepeat(false);
+
+	scroll_view_left_ = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_N), this,
+		SLOT(on_h_scroll_view_left_triggered()), nullptr, Qt::WidgetWithChildrenShortcut);
+	scroll_view_left_->setAutoRepeat(false);
+
+	scroll_view_right_ = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_M), this,
+		SLOT(on_h_scroll_view_right_triggered()), nullptr, Qt::WidgetWithChildrenShortcut);
+	scroll_view_right_->setAutoRepeat(false);
+
+	bitmap_screenshot_ = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_B), this,
+		SLOT(on_bitmap_screenshot_triggered()), nullptr, Qt::WidgetWithChildrenShortcut);
+	bitmap_screenshot_->setAutoRepeat(false);
+
+	svg_screenshot_ = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_G), this,
+		SLOT(on_svg_screenshot_triggered()), nullptr, Qt::WidgetWithChildrenShortcut);
+	svg_screenshot_->setAutoRepeat(false);
 
 	grab_ruler_left_shortcut_ = new QShortcut(QKeySequence(Qt::Key_1), this,
 		nullptr, nullptr, Qt::WidgetWithChildrenShortcut);
@@ -1397,6 +1416,27 @@ void View::set_scroll_default()
 		set_v_offset(extents.first);
 }
 
+void View::h_scroll_view_fullpage(int direction)
+{
+	if (updating_scroll_)
+		return;
+
+	// Disable sticky scrolling when user moves the horizontal scroll bar
+	// during a running acquisition
+	if (sticky_scrolling_ && (session_.get_capture_state() == Session::Running)) {
+		sticky_scrolling_ = false;
+		sticky_scrolling_changed(false);
+	}
+
+	const QSize areaSize = viewport_->size();
+	double length = scale_ * areaSize.width();
+	Timestamp new_offset = offset_ + direction*length;
+	set_offset(new_offset);
+
+	ruler_->update();
+	viewport_->update();
+}
+
 void View::determine_if_header_was_shrunk()
 {
 	const int header_pane_width =
@@ -1752,6 +1792,64 @@ void View::on_scroll_to_start_shortcut_triggered()
 void View::on_scroll_to_end_shortcut_triggered()
 {
 	set_h_offset(get_h_scrollbar_maximum());
+}
+
+void View::on_h_scroll_view_left_triggered()
+{
+	h_scroll_view_fullpage(-1);
+}
+
+void View::on_h_scroll_view_right_triggered()
+{
+	h_scroll_view_fullpage(1);
+}
+
+void View::on_bitmap_screenshot_triggered()
+{
+	//note: viewport_ does not contain track name markings at left, nor ruler
+	//scrollarea_ is the same, except with added scrollbars
+	//here we will get only viewport_ and ruler_, so as to assist in stitching/appending images
+	QSize vpSize = viewport_->size();
+	QSize rlSize = ruler_->size();
+	QSize imgsize(vpSize.width(), vpSize.height()+rlSize.height());
+	QImage img(imgsize, QImage::Format::Format_ARGB32);
+	QPainter painter(&img);
+	ruler_->render(&painter, QPoint(0, 0));
+	scrollarea_->render(&painter, QPoint(0, rlSize.height()));
+	QString fileStamp = QDateTime::currentDateTimeUtc().toString("yyyyMMdd_hhmmss");
+	QString fileName = QString("pulseview_%1.png").arg(fileStamp);
+	QString filePath = QDir( QDir::tempPath() ).filePath(fileName);
+	bool issaved = img.save(filePath);
+	qDebug() << "Screenshot grabbed (" << issaved << "): " << filePath;
+}
+
+void View::on_svg_screenshot_triggered()
+{
+	//note: viewport_ does not contain track name markings at left, nor ruler
+	//scrollarea_ is the same, except with added scrollbars
+	//here we will get only viewport_ and ruler_, so as to assist in stitching/appending images
+	QSize vpSize = viewport_->size();
+	QSize rlSize = ruler_->size();
+	QSize imgsize(vpSize.width(), vpSize.height()+rlSize.height());
+	QString fileStamp = QDateTime::currentDateTimeUtc().toString("yyyyMMdd_hhmmss");
+	QString fileName = QString("pulseview_%1.svg").arg(fileStamp);
+	QString filePath = QDir( QDir::tempPath() ).filePath(fileName);
+
+	// note that there is no explicit .save command for SVG generator
+	QSvgGenerator generator;
+	generator.setFileName(filePath);
+	generator.setSize(imgsize);
+	generator.setViewBox(QRect(0, 0, imgsize.width(), imgsize.height()));
+	generator.setTitle(fileName);
+	generator.setTitle(tr("An SVG drawing created by the Qt5 SVG Generator from PulseView"));
+
+	QPainter painter;
+	painter.begin(&generator);
+	ruler_->render(&painter, QPoint(0, 0));
+	scrollarea_->render(&painter, QPoint(0, rlSize.height()));
+	painter.end();
+
+	qDebug() << "Screenshot grabbed: " << filePath;
 }
 
 void View::h_scroll_value_changed(int value)
