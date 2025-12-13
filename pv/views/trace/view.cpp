@@ -602,6 +602,13 @@ void View::set_offset(const pv::util::Timestamp& offset, bool force_update)
 	}
 }
 
+void View::reset_offset()
+{
+    set_offset(-zero_offset_, true);
+    ruler_->update();
+    viewport_->update();
+}
+
 const Timestamp& View::offset() const
 {
 	return offset_;

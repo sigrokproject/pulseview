@@ -184,6 +184,8 @@ public:
 
 	void reset_zero_position();
 
+    void reset_offset();
+    
 	pv::util::Timestamp zero_offset() const;
 
 	/**
