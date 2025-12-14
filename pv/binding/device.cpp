@@ -74,7 +74,7 @@ Device::Device(shared_ptr<sigrok::Configurable> configurable) :
 
 			// Ignore common read-only keys
 			if ((key->id() == SR_CONF_CONTINUOUS) || (key->id() == SR_CONF_TRIGGER_MATCH) ||
-			    (key->id() == SR_CONF_CONN) || (key->id() == SR_CONF_SERIALCOMM) || (key->id() == SR_CONF_NUM_LOGIC_CHANNELS) ||
+			    (key->id() == SR_CONF_CONN) || (key->id() == SR_CONF_SERIALCOMM) ||
 			    (key->id() == SR_CONF_NUM_ANALOG_CHANNELS) || (key->id() == SR_CONF_SESSIONFILE) || (key->id() == SR_CONF_CAPTUREFILE) ||
 			    (key->id() == SR_CONF_CAPTURE_UNITSIZE))
 				continue;
@@ -115,6 +115,7 @@ Device::Device(shared_ptr<sigrok::Configurable> configurable) :
 		case SR_CONF_CLOCK_EDGE:
 		case SR_CONF_DATA_SOURCE:
 		case SR_CONF_EXTERNAL_CLOCK_SOURCE:
+		case SR_CONF_NUM_LOGIC_CHANNELS:
 			bind_enum(descr, "", key, capabilities, get, set);
 			break;
 

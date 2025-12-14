@@ -81,6 +81,9 @@ private:
 
 	void showEvent(QShowEvent *event);
 
+Q_SIGNALS:
+	void config_changed();
+
 private Q_SLOTS:
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 	void on_channel_checked(QObject *widget);
