@@ -340,6 +340,8 @@ shared_ptr<Session> MainWindow::add_session()
 
 	connect(session.get(), SIGNAL(add_view(ViewType, Session*)),
 		this, SLOT(on_add_view(ViewType, Session*)));
+	connect(session.get(), SIGNAL(remove_view(shared_ptr<views::ViewBase>)),
+		this, SLOT(on_remove_view(shared_ptr<views::ViewBase>)));
 	connect(session.get(), SIGNAL(name_changed()),
 		this, SLOT(on_session_name_changed()));
 	connect(session.get(), SIGNAL(device_changed()),
@@ -722,6 +724,11 @@ void MainWindow::on_add_view(views::ViewType type, Session *session)
 	for (shared_ptr<Session>& s : sessions_)
 		if (s.get() == session)
 			add_view(type, *s);
+}
+
+void MainWindow::on_remove_view(shared_ptr<views::ViewBase> view)
+{
+	remove_view(view);
 }
 
 void MainWindow::on_focus_changed()
