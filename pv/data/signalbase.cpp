@@ -27,6 +27,7 @@
 #include "signaldata.hpp"
 
 #include <QDebug>
+#include <QUuid>
 
 #include <extdef.h>
 #include <pv/session.hpp>
@@ -130,6 +131,8 @@ SignalBase::SignalBase(shared_ptr<sigrok::Channel> channel, ChannelType channel_
 	if (channel_) {
 		set_internal_name(QString::fromStdString(channel_->name()));
 		set_index(channel_->index());
+	} else {
+		set_internal_name(QUuid::createUuid().toString().remove('{').remove('}'));
 	}
 
 	connect(&delayed_conversion_starter_, SIGNAL(timeout()),
@@ -565,6 +568,8 @@ bool SignalBase::is_decode_signal() const
 void SignalBase::save_settings(QSettings &settings) const
 {
 	settings.setValue("name", name());
+	if (is_generated())
+		settings.setValue("uuid", internal_name());
 	settings.setValue("enabled", enabled());
 	settings.setValue("color", color().rgba());
 	settings.setValue("conversion_type", (int)conversion_type_);
@@ -582,6 +587,9 @@ void SignalBase::restore_settings(QSettings &settings)
 {
 	if (settings.contains("name"))
 		set_name(settings.value("name").toString());
+
+	if (is_generated() && settings.contains("uuid"))
+		set_internal_name(settings.value("uuid").toString());
 
 	if (settings.contains("enabled"))
 		set_enabled(settings.value("enabled").toBool());
