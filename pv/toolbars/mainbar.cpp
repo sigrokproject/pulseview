@@ -553,6 +553,11 @@ void MainBar::update_device_config_widgets()
 	Channels *const channels = new Channels(session_, this);
 	channels_button_.set_popup(channels);
 
+	// Refresh sample rate list when channels popup closes, since
+	// toggling channels may change the available sample rates
+	connect(channels, SIGNAL(closed()),
+		this, SLOT(on_config_changed()));
+
 	// Update supported options.
 	sample_count_supported_ = false;
 
