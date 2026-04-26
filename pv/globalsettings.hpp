@@ -71,6 +71,7 @@ public:
 	static const QString Key_View_ConversionThresholdDispMode;
 	static const QString Key_View_DefaultDivHeight;
 	static const QString Key_View_DefaultLogicHeight;
+	static const QString Key_View_LogicColorOffset;
 	static const QString Key_View_ShowHoverMarker;
 	static const QString Key_View_KeepRulerItemSelected;
 	static const QString Key_View_SnapDistance;

@@ -30,6 +30,7 @@
 
 #include <extdef.h>
 #include <pv/session.hpp>
+#include <pv/globalsettings.hpp>
 #include <pv/binding/decoder.hpp>
 
 using std::dynamic_pointer_cast;
@@ -132,6 +133,9 @@ SignalBase::SignalBase(shared_ptr<sigrok::Channel> channel, ChannelType channel_
 		set_index(channel_->index());
 	}
 
+	GlobalSettings settings;
+	int color_offset = settings.value(GlobalSettings::Key_View_LogicColorOffset).toInt();
+
 	connect(&delayed_conversion_starter_, SIGNAL(timeout()),
 		this, SLOT(on_delayed_conversion_start()));
 	delayed_conversion_starter_.setSingleShot(true);
@@ -140,7 +144,7 @@ SignalBase::SignalBase(shared_ptr<sigrok::Channel> channel, ChannelType channel_
 	// Only logic and analog SR channels can have their colors auto-set
 	// because for them, we have an index that can be used
 	if (channel_type == LogicChannel)
-		set_color(LogicSignalColors[index() % countof(LogicSignalColors)]);
+		set_color(LogicSignalColors[(index() + color_offset) % countof(LogicSignalColors)]);
 	else if (channel_type == AnalogChannel)
 		set_color(AnalogSignalColors[index() % countof(AnalogSignalColors)]);
 }

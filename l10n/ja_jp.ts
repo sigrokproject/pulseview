@@ -579,6 +579,11 @@ A human-readable form has been saved to disk and was written to the log. You may
         <translation>デフォルトのロジックトレースの高さ</translation>
     </message>
     <message>
+        <location filename="../pv/dialogs/settings.cpp" line="399"/>
+        <source>Logic channel color offset</source>
+        <translation>ロジックチャンネルの色</translation>
+    </message>
+    <message>
         <location filename="../pv/dialogs/settings.cpp" line="414"/>
         <source>Allow configuration of &amp;initial signal state</source>
         <translation>初期信号状態の構成を許可する(&amp;i)</translation>

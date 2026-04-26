@@ -80,6 +80,7 @@ private Q_SLOTS:
 	void on_view_conversionThresholdDispMode_changed(int state);
 	void on_view_defaultDivHeight_changed(int value);
 	void on_view_defaultLogicHeight_changed(int value);
+	void on_view_logicColorOffset_changed(int value);
 #ifdef ENABLE_DECODE
 	void on_dec_initialStateConfigurable_changed(int state);
 	void on_dec_exportFormat_changed(const QString &text);

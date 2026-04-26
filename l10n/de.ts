@@ -546,6 +546,11 @@ A human-readable form has been saved to disk and was written to the log. You may
         <translation>Standardgröße von Logikkanälen</translation>
     </message>
     <message>
+        <location filename="../pv/dialogs/settings.cpp" line="390"/>
+        <source>Logic channel color offset</source>
+        <translation>Farbe des Logikkanälen</translation>
+    </message>
+    <message>
         <location filename="../pv/dialogs/settings.cpp" line="405"/>
         <source>Allow configuration of &amp;initial signal state</source>
         <translation>&amp;Initialzustände von Signalen konfigurierbar machen</translation>

@@ -399,6 +399,14 @@ QWidget *Settings::get_view_settings_form(QWidget *parent) const
 		SLOT(on_view_defaultLogicHeight_changed(int)));
 	trace_view_layout->addRow(tr("Default logic trace height"), default_logic_height_sb);
 
+	QSpinBox *logic_color_offset_sb = new QSpinBox();
+	logic_color_offset_sb->setRange(0, 10);
+	logic_color_offset_sb->setValue(
+		settings.value(GlobalSettings::Key_View_LogicColorOffset).toInt());
+	connect(logic_color_offset_sb, SIGNAL(valueChanged(int)), this,
+		SLOT(on_view_logicColorOffset_changed(int)));
+	trace_view_layout->addRow(tr("Logic channel color offset"), logic_color_offset_sb);
+
 	return form;
 }
 
@@ -803,6 +811,12 @@ void Settings::on_view_defaultLogicHeight_changed(int value)
 {
 	GlobalSettings settings;
 	settings.setValue(GlobalSettings::Key_View_DefaultLogicHeight, value);
+}
+
+void Settings::on_view_logicColorOffset_changed(int value)
+{
+	GlobalSettings settings;
+	settings.setValue(GlobalSettings::Key_View_LogicColorOffset, value);
 }
 
 #ifdef ENABLE_DECODE

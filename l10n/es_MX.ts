@@ -597,6 +597,11 @@ Se guardó un formulario legible para humanosen el disco y fue escrito en el log
         <translation>Altura de trazo lógico por defecto</translation>
     </message>
     <message>
+        <location filename="../pv/dialogs/settings.cpp" line="408"/>
+        <source>Logic channel color offset</source>
+        <translation>Color del canal lógico</translation>
+    </message>
+    <message>
         <location filename="../pv/dialogs/settings.cpp" line="423"/>
         <source>Allow configuration of &amp;initial signal state</source>
         <translation>Permitir configuración de estado de señal &amp;inicial</translation>

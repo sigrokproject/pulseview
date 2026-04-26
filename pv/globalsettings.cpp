@@ -66,6 +66,7 @@ const QString GlobalSettings::Key_View_ShowAnalogMinorGrid = "View_ShowAnalogMin
 const QString GlobalSettings::Key_View_ConversionThresholdDispMode = "View_ConversionThresholdDispMode";
 const QString GlobalSettings::Key_View_DefaultDivHeight = "View_DefaultDivHeight";
 const QString GlobalSettings::Key_View_DefaultLogicHeight = "View_DefaultLogicHeight";
+const QString GlobalSettings::Key_View_LogicColorOffset = "View_LogicColorOffset";
 const QString GlobalSettings::Key_View_ShowHoverMarker = "View_ShowHoverMarker";
 const QString GlobalSettings::Key_View_KeepRulerItemSelected = "View_KeepRulerItemSelected";
 const QString GlobalSettings::Key_View_SnapDistance = "View_SnapDistance";
@@ -149,6 +150,9 @@ void GlobalSettings::set_defaults_where_needed()
 	if (!contains(Key_View_DefaultLogicHeight))
 		setValue(Key_View_DefaultLogicHeight,
 		2 * QFontMetrics(QApplication::font()).height());
+
+	if (!contains(Key_View_LogicColorOffset))
+		setValue(Key_View_LogicColorOffset, 0);
 
 	if (!contains(Key_View_ShowHoverMarker))
 		setValue(Key_View_ShowHoverMarker, true);

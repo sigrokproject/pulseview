@@ -579,6 +579,11 @@ A human-readable form has been saved to disk and was written to the log. You may
         <translation>逻辑通道垂直高度</translation>
     </message>
     <message>
+        <location filename="../pv/dialogs/settings.cpp" line="404"/>
+        <source>Logic channel color offset</source>
+        <translation>逻辑通道颜色</translation>
+    </message>
+    <message>
         <location filename="../pv/dialogs/settings.cpp" line="419"/>
         <source>Allow configuration of &amp;initial signal state</source>
         <translation>允许配置初始信号状态</translation>
