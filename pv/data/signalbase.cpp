@@ -884,10 +884,9 @@ void SignalBase::stop_conversion()
 
 void SignalBase::on_samples_cleared()
 {
-	if (converted_data_ && (converted_data_->get_segment_count() > 0)) {
+	if (converted_data_ && (converted_data_->get_segment_count() > 0))
 		converted_data_->clear();
-		samples_cleared();
-	}
+	samples_cleared();
 }
 
 void SignalBase::on_samples_added(SharedPtrToSegment segment, uint64_t start_sample,

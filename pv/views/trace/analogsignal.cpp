@@ -98,6 +98,8 @@ const int AnalogSignal::InfoTextMarginBottom = 5;
 
 AnalogSignal::AnalogSignal(pv::Session &session, shared_ptr<data::SignalBase> base) :
 	LogicSignal(session, base),
+	signal_min_(0),
+	signal_max_(0),
 	value_at_hover_pos_(std::numeric_limits<float>::quiet_NaN()),
 	scale_index_(4), // 20 per div
 	pos_vdivs_(1),
@@ -939,6 +941,12 @@ void AnalogSignal::on_setting_changed(const QString &key, const QVariant &value)
 		if (owner_)
 			owner_->row_item_appearance_changed(false, true);
 	}
+}
+
+void AnalogSignal::on_samples_cleared()
+{
+	signal_min_ = 0;
+	signal_max_ = 0;
 }
 
 void AnalogSignal::on_min_max_changed(float min, float max)

@@ -65,6 +65,8 @@ Trace::Trace(shared_ptr<data::SignalBase> signal) :
 		this, SLOT(on_color_changed(const QColor&)));
 	connect(signal.get(), SIGNAL(error_message_changed(const QString&)),
 		this, SLOT(on_error_message_changed(const QString&)));
+	connect(signal.get(), SIGNAL(samples_cleared()),
+		this, SLOT(on_samples_cleared()));
 
 	GlobalSettings::add_change_handler(this);
 
@@ -437,6 +439,10 @@ void Trace::on_popup_closed()
 {
 	popup_ = nullptr;
 	popup_form_ = nullptr;
+}
+
+void Trace::on_samples_cleared()
+{
 }
 
 void Trace::on_nameedit_changed(const QString &name)

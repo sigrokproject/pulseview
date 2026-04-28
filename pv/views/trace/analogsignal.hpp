@@ -151,6 +151,7 @@ protected:
 private Q_SLOTS:
 	virtual void on_setting_changed(const QString &key, const QVariant &value);
 
+	virtual void on_samples_cleared() override;
 	void on_min_max_changed(float min, float max);
 
 	void on_pos_vdivs_changed(int vdivs);

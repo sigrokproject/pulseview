@@ -197,6 +197,8 @@ protected Q_SLOTS:
 
 	void on_popup_closed();
 
+	virtual void on_samples_cleared();
+
 private Q_SLOTS:
 	void on_nameedit_changed(const QString &name);
 
