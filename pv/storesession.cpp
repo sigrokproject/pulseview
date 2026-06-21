@@ -185,7 +185,13 @@ bool StoreSession::start()
 				any_segment->samplerate())}});
 		output_->receive(meta);
 
-		auto header = context->create_header_packet(session_.get_acquisition_start_time());
+		// libsigrok 0.5.2 C++ API expects Glib::TimeVal; PulseView now uses Glib::DateTime.
+		// Convert once here so we don't need to touch the libsigrok installed headers.
+		Glib::DateTime start_dt = session_.get_acquisition_start_time();
+		Glib::TimeVal start_tv;
+		start_tv.tv_sec  = static_cast<long>(start_dt.to_unix());
+		start_tv.tv_usec = static_cast<long>(start_dt.get_microsecond());
+		auto header = context->create_header_packet(start_tv);
 		output_->receive(header);
 	} catch (Error& error) {
 		error_ = tr("Error while saving: ") + error.what();
