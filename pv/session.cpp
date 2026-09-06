@@ -224,6 +224,46 @@ void Session::save_setup(QSettings &settings) const
 	int decode_signal_count = 0;
 	int gen_signal_count = 0;
 
+	// Save device mode and input range before the dependent samplerate and
+	// sample count so all capture controls can be restored together next time.
+	if (device_) {
+		const shared_ptr<sigrok::Device> sr_dev = device_->device();
+		if (sr_dev->config_check(
+			ConfigKey::DEVICE_MODE, sigrok::Capability::GET)) {
+			try {
+				auto value = sr_dev->config_get(ConfigKey::DEVICE_MODE);
+				const Glib::ustring mode = Glib::VariantBase::cast_dynamic<
+					Glib::Variant<Glib::ustring>>(value).get();
+				settings.setValue("device_mode",
+					QString::fromStdString(mode.raw()));
+			} catch (const sigrok::Error &e) {
+				qWarning() << tr("Failed to save device mode: %1")
+					.arg(QString::fromUtf8(e.what()));
+			}
+		}
+		if (sr_dev->config_check(
+			ConfigKey::RANGE, sigrok::Capability::GET)) {
+			try {
+				auto value = sr_dev->config_get(ConfigKey::RANGE);
+				const Glib::ustring range = Glib::VariantBase::cast_dynamic<
+					Glib::Variant<Glib::ustring>>(value).get();
+				settings.setValue("input_range",
+					QString::fromStdString(range.raw()));
+			} catch (const sigrok::Error &e) {
+				qWarning() << tr("Failed to save input range: %1")
+					.arg(QString::fromUtf8(e.what()));
+			}
+		}
+		uint64_t samplerate =
+			device_->read_config<uint64_t>(ConfigKey::SAMPLERATE);
+		uint64_t sample_count =
+			device_->read_config<uint64_t>(ConfigKey::LIMIT_SAMPLES);
+		if (samplerate != 0)
+			settings.setValue("samplerate", (qlonglong)samplerate);
+		if (sample_count != 0)
+			settings.setValue("sample_count", (qlonglong)sample_count);
+	}
+
 	// Save channels and decoders
 	for (const shared_ptr<data::SignalBase>& base : signalbases_) {
 #ifdef ENABLE_DECODE
@@ -464,6 +504,74 @@ void Session::restore_setup(QSettings &settings)
 
 		settings.endGroup();
 	}
+
+	// Restore device mode and input range first, then restore the samplerate and
+	// sample count saved by save_setup().
+	if (device_) {
+		if (settings.contains("device_mode") &&
+			device_->device()->config_check(
+				ConfigKey::DEVICE_MODE, sigrok::Capability::SET)) {
+			try {
+				const string mode =
+					settings.value("device_mode").toString().toStdString();
+				device_->device()->config_set(ConfigKey::DEVICE_MODE,
+					Glib::Variant<Glib::ustring>::create(
+						Glib::ustring(mode)));
+			} catch (const sigrok::Error &e) {
+				qWarning() << tr("Failed to restore device mode: %1")
+					.arg(QString::fromUtf8(e.what()));
+			}
+		}
+		if (settings.contains("input_range") &&
+			device_->device()->config_check(
+				ConfigKey::RANGE, sigrok::Capability::SET)) {
+			try {
+				const string range =
+					settings.value("input_range").toString().toStdString();
+				device_->device()->config_set(ConfigKey::RANGE,
+					Glib::Variant<Glib::ustring>::create(
+						Glib::ustring(range)));
+			} catch (const sigrok::Error &e) {
+				qWarning() << tr("Failed to restore input range: %1")
+					.arg(QString::fromUtf8(e.what()));
+			}
+		}
+		if (settings.contains("samplerate")) {
+			const uint64_t value =
+				settings.value("samplerate").toULongLong();
+			if (value != 0) {
+				try {
+					device_->device()->config_set(ConfigKey::SAMPLERATE,
+						Glib::Variant<guint64>::create(value));
+				} catch (const sigrok::Error &e) {
+					qWarning() << tr("Failed to restore samplerate: %1")
+						.arg(QString::fromUtf8(e.what()));
+				}
+			}
+		}
+
+		if (settings.contains("sample_count")) {
+			const uint64_t value =
+				settings.value("sample_count").toULongLong();
+			if (value != 0) {
+				try {
+					device_->device()->config_set(
+						ConfigKey::LIMIT_SAMPLES,
+						Glib::Variant<guint64>::create(value));
+				} catch (const sigrok::Error &e) {
+					qWarning() << tr("Failed to restore sample count: %1")
+						.arg(QString::fromUtf8(e.what()));
+				}
+			}
+		}
+	}
+
+	if (main_bar_)
+		main_bar_->refresh_config_selectors();
+
+	update_samplerate();
+
+	Q_EMIT signals_changed();
 }
 
 void Session::restore_settings(QSettings &settings)
@@ -929,6 +1037,24 @@ double Session::get_samplerate() const
 		samplerate = 1.0;
 
 	return samplerate;
+}
+
+void Session::update_samplerate()
+{
+	if (!device_)
+		return;
+
+	try {
+		cur_samplerate_ =
+			device_->read_config<uint64_t>(ConfigKey::SAMPLERATE);
+	} catch (Error& e) {
+		cur_samplerate_ = 0;
+	}
+}
+
+void Session::refresh_signals()
+{
+	Q_EMIT signals_changed();
 }
 
 Glib::DateTime Session::get_acquisition_start_time() const

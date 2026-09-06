@@ -68,6 +68,9 @@ class Channels : public pv::widgets::Popup
 public:
 	Channels(Session &session, QWidget *parent);
 
+Q_SIGNALS:
+	void channels_changed();
+
 private:
 	void set_all_channels(bool set);
 

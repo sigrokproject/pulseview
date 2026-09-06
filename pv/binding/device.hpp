@@ -55,6 +55,10 @@ Q_SIGNALS:
 private:
 	void bind_bool(const QString &name, const QString &desc,
 		prop::Property::Getter getter, prop::Property::Setter setter);
+	void bind_double(const QString &name, const QString &desc, int decimals,
+		QString suffix, boost::optional< pair<double, double> > range,
+		boost::optional<double> step, prop::Property::Getter getter,
+		prop::Property::Setter setter);
 	void bind_enum(const QString &name, const QString &desc,
 		const sigrok::ConfigKey *key,
 		set<const sigrok::Capability *> capabilities,

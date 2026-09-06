@@ -111,7 +111,13 @@ void Double::commit()
 	if (!spin_box_)
 		return;
 
-	setter_(Glib::Variant<double>::create(spin_box_->value()));
+	try {
+		setter_(Glib::Variant<double>::create(spin_box_->value()));
+	} catch (const sigrok::Error &e) {
+		qWarning() << tr("Setting config key %1 resulted in %2")
+			.arg(name_, e.what());
+		update_widget();
+	}
 }
 
 void Double::on_value_changed(double)

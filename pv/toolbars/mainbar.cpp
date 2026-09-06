@@ -351,6 +351,12 @@ QAction* MainBar::action_connect() const
 	return action_connect_;
 }
 
+void MainBar::refresh_config_selectors()
+{
+	update_sample_rate_selector();
+	update_sample_count_selector();
+}
+
 void MainBar::update_sample_rate_selector()
 {
 	Glib::VariantContainerBase gvar_dict;
@@ -552,6 +558,18 @@ void MainBar::update_device_config_widgets()
 	// Update the channels popup
 	Channels *const channels = new Channels(session_, this);
 	channels_button_.set_popup(channels);
+	connect(channels, &Channels::channels_changed, this, [this]() {
+		// A channel toggle may have caused the driver to clamp the
+		// samplerate (e.g. when the mode changed); keep the session and
+		// the samplerate selector in sync with the actual device value.
+		session_.update_samplerate();
+		update_sample_rate_selector_value();
+	});
+
+	// Refresh sample rate list when channels popup closes, since
+	// toggling channels may change the available sample rates
+	connect(channels, SIGNAL(closed()),
+		this, SLOT(on_config_changed()));
 
 	// Update supported options.
 	sample_count_supported_ = false;
@@ -585,6 +603,10 @@ void MainBar::commit_sample_rate()
 		sr_dev->config_set(ConfigKey::SAMPLERATE,
 			Glib::Variant<guint64>::create(sample_rate));
 		update_sample_rate_selector();
+		// Changing the samplerate may have made the driver enable or
+		// disable channels (capture mode follows the rate); re-layout the
+		// traces so newly shown channels are spaced correctly.
+		session_.refresh_signals();
 	} catch (Error& error) {
 		qDebug() << tr("Failed to configure samplerate:") << error.what();
 		return;
@@ -805,12 +827,13 @@ void MainBar::on_sample_rate_changed()
 
 void MainBar::on_config_changed()
 {
-	// We want to also call update_sample_rate_selector() here in case
-	// the user changed the SR_CONF_EXTERNAL_CLOCK option. However,
-	// commit_sample_rate() does this already, so we don't call it here
-
-	commit_sample_count();
-	commit_sample_rate();
+	// A configuration option such as external clock or device mode may change
+	// the valid samplerate list and may make the previous selection invalid.
+	// Re-query the list and the driver's current value instead of writing the
+	// stale frontend value back to the newly selected configuration.
+	update_sample_rate_selector();
+	session_.update_samplerate();
+	update_sample_count_selector();
 }
 
 void MainBar::on_actionNewView_triggered(QAction* action)

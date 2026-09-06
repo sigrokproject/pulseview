@@ -256,27 +256,35 @@ void Enum::commit()
 {
 	assert(setter_);
 
-	if (is_range_) {
-		// Use slider
-		if (!slider_layout_widget_)
-			return;
+	try {
+		if (is_range_) {
+			// Use slider
+			if (!slider_layout_widget_)
+				return;
 
-		setter_(values_.at(slider_->value()).first);
+			setter_(values_.at(slider_->value()).first);
 
+			update_widget();
+		} else {
+			// Use combo box
+			if (!selector_)
+				return;
+
+			const int index = selector_->currentIndex();
+			if (index < 0)
+				return;
+
+			setter_(selector_->itemData(index).value<Glib::VariantBase>());
+
+			// The combo box needs no update after a successful setter; it
+			// already shows the value selected by the user.
+		}
+	} catch (const sigrok::Error &e) {
+		qWarning() << tr("Setting config key %1 resulted in %2")
+			.arg(name_, e.what());
+		// A device may reject a value that became inapplicable after another
+		// setting changed. Restore the control to the device's actual value.
 		update_widget();
-	} else {
-		// Use combo box
-		if (!selector_)
-			return;
-
-		const int index = selector_->currentIndex();
-		if (index < 0)
-			return;
-
-		setter_(selector_->itemData(index).value<Glib::VariantBase>());
-
-		// The combo box needs no update, it already shows the current value
-		// by definition: the user picked it
 	}
 }
 

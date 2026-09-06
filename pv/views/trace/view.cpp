@@ -1982,6 +1982,12 @@ void View::signals_changed()
 	if (signals_added_or_removed && !header_was_shrunk_)
 		resize_header_to_fit();
 
+	// Re-stack all trace groups so that channels which became enabled
+	// (e.g. after the capture mode widened) get compact vertical layout
+	// instead of staying in stale positions.  Will be a no-op for groups
+	// whose enable state has not changed.
+	restack_all_trace_tree_items();
+
 	update_layout();
 
 	header_->update();
