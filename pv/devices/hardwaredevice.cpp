@@ -140,5 +140,10 @@ void HardwareDevice::close()
 	device_open_ = false;
 }
 
+bool HardwareDevice::is_open() const
+{
+	return device_open_;
+}
+
 } // namespace devices
 } // namespace pv

@@ -59,6 +59,11 @@ public:
 
 	void close();
 
+	/**
+	 * Returns true while the device is open, i.e. in use by a session.
+	 */
+	bool is_open() const;
+
 private:
 	const shared_ptr<sigrok::Context> context_;
 	bool device_open_;
