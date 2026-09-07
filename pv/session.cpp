@@ -137,6 +137,19 @@ Session::~Session()
 	// Stop and join to the thread
 	stop_capture();
 
+	// Release the device. The DeviceManager keeps the device object alive,
+	// so it would otherwise stay open after the session is gone; serial
+	// drivers hold their port exclusively while open, which blocks every
+	// later scan and session from using the device. Never let an error
+	// escape the destructor.
+	if (device_) {
+		try {
+			device_->close();
+		} catch (const sigrok::Error &e) {
+			qWarning() << tr("Failed to close device: %1").arg(e.what());
+		}
+	}
+
 	for (SignalGroup* group : signal_groups_) {
 		group->clear();
 		delete group;

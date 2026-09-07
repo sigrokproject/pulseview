@@ -20,6 +20,7 @@
 #include "devicemanager.hpp"
 #include "session.hpp"
 
+#include <algorithm>
 #include <cassert>
 #include <functional>
 #include <memory>
@@ -39,6 +40,7 @@
 #include <pv/devices/hardwaredevice.hpp>
 #include <pv/util.hpp>
 
+using std::any_of;
 using std::bind;
 using std::list;
 using std::map;
@@ -249,24 +251,52 @@ DeviceManager::driver_scan(
 		return driver_devices;
 
 	// Remove any device instances from this driver from the device
-	// list. They will not be valid after the scan.
+	// list. They will not be valid after the scan. Devices that are
+	// currently open (in use by a session) are kept: a driver that holds
+	// its port exclusively cannot probe them again anyway, and dropping
+	// them would orphan the session's still open device.
+	list< shared_ptr<devices::HardwareDevice> > open_devices;
 	devices_.remove_if([&](shared_ptr<devices::HardwareDevice> device) {
-		return device->hardware_device()->driver() == driver; });
+		if (device->hardware_device()->driver() != driver)
+			return false;
+		if (device->is_open()) {
+			open_devices.push_back(device);
+			return false;
+		}
+		return true;
+	});
+
+	// If the scan fails, the kept devices are still what this driver has.
+	driver_devices = open_devices;
 
 	try {
 		// Do the scan
 		auto devices = driver->scan(drvopts);
 
 		// Add the scanned devices to the main list, set display names and sort.
+		list< shared_ptr<devices::HardwareDevice> > new_devices;
 		for (shared_ptr<sigrok::HardwareDevice>& device : devices) {
+			// An open device that the scan found again (drivers that do
+			// not lock their connection) is already in the list.
+			const string conn_id = device->connection_id();
+			const bool listed = !conn_id.empty() &&
+				any_of(open_devices.begin(), open_devices.end(),
+				[&](const shared_ptr<devices::HardwareDevice> &d) {
+					return d->hardware_device()->connection_id() == conn_id; });
+			if (listed)
+				continue;
 			const shared_ptr<devices::HardwareDevice> d(
 				new devices::HardwareDevice(context_, device));
-			driver_devices.push_back(d);
+			new_devices.push_back(d);
 		}
 
-		devices_.insert(devices_.end(), driver_devices.begin(),
-			driver_devices.end());
+		devices_.insert(devices_.end(), new_devices.begin(),
+			new_devices.end());
 		devices_.sort(bind(&DeviceManager::compare_devices, this, _1, _2));
+
+		driver_devices = new_devices;
+		driver_devices.insert(driver_devices.end(), open_devices.begin(),
+			open_devices.end());
 		driver_devices.sort(bind(
 			&DeviceManager::compare_devices, this, _1, _2));
 
