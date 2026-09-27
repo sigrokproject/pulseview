@@ -90,6 +90,8 @@ public:
 
 	void update_device_list();
 
+	void refresh_config_selectors();
+
 	void set_capture_state(pv::Session::capture_state state);
 
 	void reset_device_selector();

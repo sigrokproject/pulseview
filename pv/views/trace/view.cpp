@@ -634,7 +634,7 @@ void View::reset_zero_position()
 		vector<util::Timestamp> triggers = session_.get_triggers(current_segment_);
 
 		if (triggers.size() > 0)
-			zero_offset_ = triggers.front();
+			zero_offset_ = -triggers.front();
 	}
 
 	custom_zero_offset_set_ = false;
@@ -642,6 +642,7 @@ void View::reset_zero_position()
 	// Force an immediate update of the offsets
 	set_offset(offset_, true);
 	ruler_->update();
+	viewport_->update();
 }
 
 pv::util::Timestamp View::zero_offset() const
@@ -1982,6 +1983,12 @@ void View::signals_changed()
 	if (signals_added_or_removed && !header_was_shrunk_)
 		resize_header_to_fit();
 
+	// Re-stack all trace groups so that channels which became enabled
+	// (e.g. after the capture mode widened) get compact vertical layout
+	// instead of staying in stale positions.  Will be a no-op for groups
+	// whose enable state has not changed.
+	restack_all_trace_tree_items();
+
 	update_layout();
 
 	header_->update();
@@ -1999,8 +2006,7 @@ void View::capture_state_updated(int state)
 		set_time_unit(util::TimeUnit::Samples);
 
 		trigger_markers_.clear();
-		if (!custom_zero_offset_set_)
-			set_zero_position(0);
+		reset_zero_position();
 
 		scale_at_acq_start_ = scale_;
 		offset_at_acq_start_ = offset_;
@@ -2094,8 +2100,7 @@ void View::on_settingViewTriggerIsZeroTime_changed(const QVariant new_value)
 {
 	(void)new_value;
 
-	if (!custom_zero_offset_set_)
-		reset_zero_position();
+	reset_zero_position();
 }
 
 void View::perform_delayed_view_update()

@@ -224,6 +224,19 @@ void Session::save_setup(QSettings &settings) const
 	int decode_signal_count = 0;
 	int gen_signal_count = 0;
 
+	// Save the device samplerate and sample count limit so they can be
+	// restored together with the channel selection on the next start.
+	if (device_) {
+		uint64_t samplerate =
+			device_->read_config<uint64_t>(ConfigKey::SAMPLERATE);
+		uint64_t sample_count =
+			device_->read_config<uint64_t>(ConfigKey::LIMIT_SAMPLES);
+		if (samplerate != 0)
+			settings.setValue("samplerate", (qlonglong)samplerate);
+		if (sample_count != 0)
+			settings.setValue("sample_count", (qlonglong)sample_count);
+	}
+
 	// Save channels and decoders
 	for (const shared_ptr<data::SignalBase>& base : signalbases_) {
 #ifdef ENABLE_DECODE
@@ -464,6 +477,47 @@ void Session::restore_setup(QSettings &settings)
 
 		settings.endGroup();
 	}
+
+	// Restore the device samplerate and sample count limit saved by
+	// save_setup(), then refresh the toolbar selectors and re-layout the
+	// view (the samplerate also drives the driver's channel mode).
+	if (device_) {
+		if (settings.contains("samplerate")) {
+			const uint64_t value =
+				settings.value("samplerate").toULongLong();
+			if (value != 0) {
+				try {
+					device_->device()->config_set(ConfigKey::SAMPLERATE,
+						Glib::Variant<guint64>::create(value));
+				} catch (const sigrok::Error &e) {
+					qWarning() << tr("Failed to restore samplerate: %1")
+						.arg(QString::fromUtf8(e.what()));
+				}
+			}
+		}
+
+		if (settings.contains("sample_count")) {
+			const uint64_t value =
+				settings.value("sample_count").toULongLong();
+			if (value != 0) {
+				try {
+					device_->device()->config_set(
+						ConfigKey::LIMIT_SAMPLES,
+						Glib::Variant<guint64>::create(value));
+				} catch (const sigrok::Error &e) {
+					qWarning() << tr("Failed to restore sample count: %1")
+						.arg(QString::fromUtf8(e.what()));
+				}
+			}
+		}
+	}
+
+	if (main_bar_)
+		main_bar_->refresh_config_selectors();
+
+	update_samplerate();
+
+	Q_EMIT signals_changed();
 }
 
 void Session::restore_settings(QSettings &settings)
@@ -931,6 +985,24 @@ double Session::get_samplerate() const
 	return samplerate;
 }
 
+void Session::update_samplerate()
+{
+	if (!device_)
+		return;
+
+	try {
+		cur_samplerate_ =
+			device_->read_config<uint64_t>(ConfigKey::SAMPLERATE);
+	} catch (Error& e) {
+		cur_samplerate_ = 0;
+	}
+}
+
+void Session::refresh_signals()
+{
+	Q_EMIT signals_changed();
+}
+
 Glib::DateTime Session::get_acquisition_start_time() const
 {
 	return acq_start_time_;
@@ -1065,8 +1137,10 @@ void Session::set_capture_state(capture_state state)
 
 	if (state == Running)
 		acq_time_.restart();
-	if (state == Stopped)
+	if (state == Stopped && acq_time_.isValid()) {
 		qDebug("Acquisition took %.2f s", acq_time_.elapsed() / 1000.);
+		acq_time_.invalidate();
+	}
 
 	{
 		lock_guard<mutex> lock(sampling_mutex_);

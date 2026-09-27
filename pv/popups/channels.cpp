@@ -266,10 +266,11 @@ void Channels::populate_group(shared_ptr<ChannelGroup> group,
 
 		weak_ptr<SignalBase> weak_sig(sig);
 		connect(checkbox, &QCheckBox::toggled,
-				[weak_sig](bool state) {
+				[this, weak_sig](bool state) {
 			auto sig = weak_sig.lock();
 			assert(sig);
 			sig->set_enabled(state);
+			Q_EMIT channels_changed();
 			});
 
 		if ((++col >= 8 || &sig == &sigs.back())) {
@@ -380,6 +381,7 @@ void Channels::on_channel_checked(QWidget *widget)
 	assert(s);
 
 	s->set_enabled(check_box->isChecked());
+	Q_EMIT channels_changed();
 }
 
 void Channels::enable_all_channels()
