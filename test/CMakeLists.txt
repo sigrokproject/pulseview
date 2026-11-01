@@ -202,6 +202,13 @@ if(ENABLE_DECODE)
 	)
 endif()
 
+# The SDK boundary test uses GNU-style linker wrapping on ELF and MinGW.
+if(ENABLE_DECODE AND (MINGW OR (UNIX AND NOT APPLE)) AND
+	(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
+	list(APPEND pulseview_TEST_SOURCES decoder_lifecycle.cpp)
+	set(decoder_lifecycle_wrap TRUE)
+endif()
+
 # On MinGW we need to use static linking.
 if(NOT WIN32)
 	add_definitions(-DBOOST_TEST_DYN_LINK)
@@ -213,4 +220,9 @@ add_executable(pulseview-test
 )
 
 target_link_libraries(pulseview-test ${PULSEVIEW_LINK_LIBS})
+
+if(decoder_lifecycle_wrap)
+	set_property(TARGET pulseview-test APPEND_STRING PROPERTY LINK_FLAGS
+		" -Wl,--wrap=srd_session_send -Wl,--wrap=srd_session_destroy")
+endif()
 
