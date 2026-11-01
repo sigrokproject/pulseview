@@ -232,7 +232,8 @@ int main(int argc, char *argv[])
 				qDebug() << "ERROR: invalid log level spec.";
 				break;
 			}
-			context->set_log_level(sigrok::LogLevel::get(loglevel));
+			// No Context exists yet; libsigrok's log level is global.
+			sr_log_loglevel_set(loglevel);
 
 #ifdef ENABLE_DECODE
 			srd_log_loglevel_set(loglevel);
