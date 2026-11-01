@@ -167,11 +167,6 @@ void DecodeSignal::reset_decode(bool shutting_down)
 {
 	resume_decode();  // Make sure the decode thread isn't blocked by pausing
 
-	if (stack_config_changed_ || shutting_down)
-		stop_srd_session();
-	else
-		terminate_srd_session();
-
 	if (decode_thread_.joinable()) {
 		decode_interrupt_ = true;
 		decode_input_cond_.notify_one();
@@ -183,6 +178,12 @@ void DecodeSignal::reset_decode(bool shutting_down)
 		logic_mux_cond_.notify_one();
 		logic_mux_thread_.join();
 	}
+
+	// SDK state must outlive every frontend worker that can call it.
+	if (stack_config_changed_ || shutting_down)
+		stop_srd_session();
+	else
+		terminate_srd_session();
 
 	current_segment_id_ = 0;
 	segments_.clear();
@@ -205,18 +206,6 @@ void DecodeSignal::reset_decode(bool shutting_down)
 
 void DecodeSignal::begin_decode()
 {
-	if (decode_thread_.joinable()) {
-		decode_interrupt_ = true;
-		decode_input_cond_.notify_one();
-		decode_thread_.join();
-	}
-
-	if (logic_mux_thread_.joinable()) {
-		logic_mux_interrupt_ = true;
-		logic_mux_cond_.notify_one();
-		logic_mux_thread_.join();
-	}
-
 	reset_decode();
 
 	if (stack_.size() == 0) {
@@ -1587,8 +1576,12 @@ void DecodeSignal::disconnect_input_notifiers()
 
 void DecodeSignal::create_decode_segment()
 {
-	// Create annotation segment
+	lock_guard<mutex> lock(output_mutex_);
+
+	// Publish a segment with valid progress counters before readers see it.
 	segments_.emplace_back();
+	segments_.back().samples_decoded_incl = 0;
+	segments_.back().samples_decoded_excl = 0;
 
 	// Add annotation classes
 	for (const shared_ptr<Decoder>& dec : stack_)
