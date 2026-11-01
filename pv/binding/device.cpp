@@ -24,6 +24,7 @@
 #include "device.hpp"
 
 #include <pv/prop/bool.hpp>
+#include <pv/prop/double.hpp>
 #include <pv/prop/enum.hpp>
 #include <pv/prop/int.hpp>
 
@@ -44,6 +45,7 @@ using sigrok::ConfigKey;
 using sigrok::Error;
 
 using pv::prop::Bool;
+using pv::prop::Double;
 using pv::prop::Enum;
 using pv::prop::Int;
 using pv::prop::Property;
@@ -76,7 +78,8 @@ Device::Device(shared_ptr<sigrok::Configurable> configurable) :
 			if ((key->id() == SR_CONF_CONTINUOUS) || (key->id() == SR_CONF_TRIGGER_MATCH) ||
 			    (key->id() == SR_CONF_CONN) || (key->id() == SR_CONF_SERIALCOMM) || (key->id() == SR_CONF_NUM_LOGIC_CHANNELS) ||
 			    (key->id() == SR_CONF_NUM_ANALOG_CHANNELS) || (key->id() == SR_CONF_SESSIONFILE) || (key->id() == SR_CONF_CAPTUREFILE) ||
-			    (key->id() == SR_CONF_CAPTURE_UNITSIZE))
+			    (key->id() == SR_CONF_CAPTURE_UNITSIZE) || (key->id() == SR_CONF_CAPTURE_STATUS) ||
+			    (key->id() == SR_CONF_CAPTURE_ERROR))
 				continue;
 
 			qDebug() << QString(tr("Note for device developers: Ignoring device configuration capability '%1' " \
@@ -92,14 +95,42 @@ Device::Device(shared_ptr<sigrok::Configurable> configurable) :
 		};
 
 		switch (key->id()) {
+		case SR_CONF_ENABLED:
+			properties_.push_back(shared_ptr<Property>(new Bool(
+				descr, "", get, set, true)));
+			break;
+
+		case SR_CONF_OUTPUT_FREQUENCY:
+			bind_double_range(descr, " Hz", key, capabilities, get, set);
+			break;
+
+		case SR_CONF_DUTY_CYCLE:
+			bind_double_range(descr, " %", key, capabilities, get, set);
+			break;
+
 		case SR_CONF_SAMPLERATE:
 			// Sample rate values are not bound because they are shown
 			// in the MainBar
 			break;
 
-		case SR_CONF_CAPTURE_RATIO:
-			bind_int(descr, "", "%", pair<int64_t, int64_t>(0, 100), get, set);
+		case SR_CONF_CAPTURE_RATIO: {
+			pair<int64_t, int64_t> limits(0, 100);
+			if (capabilities.count(Capability::LIST)) {
+				try {
+					auto range = configurable_->config_list(key);
+					if (g_variant_is_of_type(range.gobj(), G_VARIANT_TYPE("(tt)"))) {
+						uint64_t minimum, maximum;
+						g_variant_get(range.gobj(), "(tt)", &minimum, &maximum);
+						if (minimum <= maximum && maximum <= 100)
+							limits = pair<int64_t, int64_t>(minimum, maximum);
+					}
+				} catch (const Error &e) {
+					qWarning() << "Cannot query capture ratio range" << e.what();
+				}
+			}
+			bind_int(descr, "", "%", limits, get, set);
 			break;
+		}
 
 		case SR_CONF_LIMIT_FRAMES:
 			// Value 0 means that there is no limit
@@ -202,6 +233,30 @@ void Device::bind_int(const QString &name, const QString &desc, QString suffix,
 
 	properties_.push_back(shared_ptr<Property>(new Int(name, desc, suffix,
 		range, getter, setter, special_value_text)));
+}
+
+void Device::bind_double_range(const QString &name, const QString &suffix,
+	const ConfigKey *key, set<const Capability *> capabilities,
+	Property::Getter getter, Property::Setter setter)
+{
+	if (!capabilities.count(Capability::LIST))
+		return;
+	try {
+		auto range = configurable_->config_list(key);
+		if (!g_variant_is_of_type(range.gobj(), G_VARIANT_TYPE("ad")) ||
+			g_variant_n_children(range.gobj()) != 3)
+			return;
+		double minimum, maximum, step;
+		g_variant_get_child(range.gobj(), 0, "d", &minimum);
+		g_variant_get_child(range.gobj(), 1, "d", &maximum);
+		g_variant_get_child(range.gobj(), 2, "d", &step);
+		if (minimum > maximum || step <= 0)
+			return;
+		properties_.push_back(std::make_shared<Double>(name, "", step >= 1 ? 0 : 6,
+			suffix, pair<double, double>(minimum, maximum), step, getter, setter));
+	} catch (const Error &e) {
+		qWarning() << "Cannot query generator range" << name << e.what();
+	}
 }
 
 QString Device::print_timebase(Glib::VariantBase gvar)

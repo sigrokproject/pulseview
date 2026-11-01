@@ -22,6 +22,7 @@
 #define PULSEVIEW_PV_DATA_SEGMENT_HPP
 
 #include "pv/util.hpp"
+#include "segmentmutex.hpp"
 
 #include <atomic>
 #include <memory>
@@ -100,7 +101,7 @@ protected:
 	uint64_t get_iterator_valid_length(SegmentDataIterator* it);
 
 	uint32_t segment_id_;
-	mutable recursive_mutex mutex_;
+	mutable SegmentMutex mutex_;
 	deque<uint8_t*> data_chunks_;
 	uint8_t* current_chunk_;
 	uint64_t used_samples_, unused_samples_;

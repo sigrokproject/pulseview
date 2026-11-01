@@ -77,7 +77,7 @@ public:
 
 	~MainWindow();
 
-	static void show_session_error(const QString text, const QString info_text);
+	static void show_session_error(const QString text, const QString info_text, QWidget *parent = nullptr);
 
 	shared_ptr<views::ViewBase> get_active_view() const;
 

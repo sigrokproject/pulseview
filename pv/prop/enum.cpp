@@ -28,10 +28,12 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QSlider>
+#include <QSignalBlocker>
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
 
 #include "enum.hpp"
+#include "configerror.hpp"
 
 using std::abs;
 // Note that "using std::isnan;" is _not_ put here since that would break
@@ -174,10 +176,16 @@ void Enum::update_widget()
 		variant = getter_();
 	} catch (const sigrok::Error &e) {
 		qWarning() << tr("Querying config key %1 resulted in %2").arg(name_, e.what());
+		if (slider_) slider_->setEnabled(false);
+		if (selector_) selector_->setEnabled(false);
 		return;
 	}
 
 	assert(variant.gobj());
+	if (slider_) slider_->setEnabled(true);
+	if (selector_) selector_->setEnabled(true);
+	const QSignalBlocker slider_blocker(slider_);
+	const QSignalBlocker selector_blocker(selector_);
 
 	if (is_range_) {
 
@@ -258,22 +266,33 @@ void Enum::commit()
 
 	if (is_range_) {
 		// Use slider
-		if (!slider_layout_widget_)
+		if (!slider_layout_widget_ || !slider_->isEnabled())
 			return;
 
-		setter_(values_.at(slider_->value()).first);
-
-		update_widget();
+		try {
+			setter_(values_.at(slider_->value()).first);
+			update_widget();
+		} catch (const sigrok::Error &e) {
+			update_widget();
+			if (e.result == SR_ERR_DEV_CLOSED) slider_->setEnabled(false);
+			show_config_error(slider_layout_widget_, e);
+		}
 	} else {
 		// Use combo box
-		if (!selector_)
+		if (!selector_ || !selector_->isEnabled())
 			return;
 
 		const int index = selector_->currentIndex();
 		if (index < 0)
 			return;
 
-		setter_(selector_->itemData(index).value<Glib::VariantBase>());
+		try {
+			setter_(selector_->itemData(index).value<Glib::VariantBase>());
+		} catch (const sigrok::Error &e) {
+			update_widget();
+			if (e.result == SR_ERR_DEV_CLOSED) selector_->setEnabled(false);
+			show_config_error(selector_, e);
+		}
 
 		// The combo box needs no update, it already shows the current value
 		// by definition: the user picked it

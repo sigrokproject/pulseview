@@ -47,14 +47,15 @@ option(ENABLE_STACKTRACE "Enable stack trace when crashing" FALSE)
 option(ENABLE_DECODE "Build with libsigrokdecode" TRUE)
 option(ENABLE_FLOW "Build with libsigrokflow" FALSE)
 option(ENABLE_TESTS "Enable unit tests" FALSE)
-option(STATIC_PKGDEPS_LIBS "Statically link to (pkg-config) libraries" FALSE)
+if(WIN32)
+	set(PKGDEPS_STATIC_DEFAULT TRUE)
+else()
+	set(PKGDEPS_STATIC_DEFAULT FALSE)
+endif()
+option(STATIC_PKGDEPS_LIBS "Statically link to (pkg-config) libraries" ${PKGDEPS_STATIC_DEFAULT})
 option(ENABLE_TS_UPDATE "Update .ts source files (Qt l10n)" FALSE)
 
 if(WIN32)
-	# On Windows/MinGW we need to statically link to libraries.
-	# This option is user configurable, but enable it by default on win32.
-	set(STATIC_PKGDEPS_LIBS TRUE)
-
 	# Windows does not support UNIX signals.
 	set(ENABLE_SIGNALS FALSE)
 endif()
@@ -337,6 +338,7 @@ set(pulseview_SOURCES
 	pv/mainwindow.cpp
 	pv/metadata_obj.cpp
 	pv/session.cpp
+	pv/triggersettings.cpp
 	pv/storesession.cpp
 	pv/util.cpp
 	pv/binding/binding.cpp
@@ -515,7 +517,7 @@ endif()
 
 if(WIN32)
 	# Use the sigrok icon for the pulseview.exe executable.
-	set(CMAKE_RC_COMPILE_OBJECT "${CMAKE_RC_COMPILER} -O coff -I${CMAKE_CURRENT_SOURCE_DIR} <SOURCE> <OBJECT>")
+	set(CMAKE_RC_COMPILE_OBJECT "\"${CMAKE_RC_COMPILER}\" -O coff -I\"${CMAKE_CURRENT_SOURCE_DIR}\" <SOURCE> <OBJECT>")
 	enable_language(RC)
 	list(APPEND pulseview_SOURCES pulseviewico.rc)
 endif()
@@ -631,7 +633,12 @@ else()
 	list(APPEND PULSEVIEW_LINK_LIBS ${PKGDEPS_LIBRARIES})
 endif()
 
-if(WIN32)
+if(Qt5_FOUND)
+	get_target_property(QT_CORE_LIBRARY_TYPE Qt5::Core TYPE)
+else()
+	get_target_property(QT_CORE_LIBRARY_TYPE Qt6::Core TYPE)
+endif()
+if(WIN32 AND QT_CORE_LIBRARY_TYPE STREQUAL "STATIC_LIBRARY")
 	# On Windows we need to statically link the libqsvg imageformat
 	# plugin (and the QtSvg component) for SVG graphics/icons to work.
 	# We also need QWindowsIntegrationPlugin, Qt5PlatformSupport (only for

@@ -131,6 +131,7 @@ protected Q_SLOTS:
 	void on_setting_changed(const QString &key, const QVariant &value);
 
 	void on_trigger();
+	void on_session_trigger_changed();
 
 	void on_signal_height_changed(int height);
 

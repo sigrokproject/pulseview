@@ -31,6 +31,7 @@
 #include "devicemanager.hpp"
 #include "mainwindow.hpp"
 #include "session.hpp"
+#include "triggersettings.hpp"
 #include "util.hpp"
 
 #include "data/analog.hpp"
@@ -123,6 +124,7 @@ Session::Session(DeviceManager &device_manager, QString name) :
 	default_name_(name),
 	name_(name),
 	capture_state_(Stopped),
+	stop_requested_(false),
 	cur_samplerate_(0),
 	data_saved_(true)
 {
@@ -163,6 +165,14 @@ shared_ptr<sigrok::Session> Session::session() const
 shared_ptr<devices::Device> Session::device() const
 {
 	return device_;
+}
+
+void Session::set_trigger(shared_ptr<sigrok::Trigger> trigger)
+{
+	if (!session())
+		return;
+	session()->set_trigger(std::move(trigger));
+	trigger_changed();
 }
 
 QString Session::name() const
@@ -220,6 +230,7 @@ bool Session::data_saved() const
 
 void Session::save_setup(QSettings &settings) const
 {
+	save_trigger_settings(settings, session());
 	int i;
 	int decode_signal_count = 0;
 	int gen_signal_count = 0;
@@ -380,6 +391,16 @@ void Session::restore_setup(QSettings &settings)
 		settings.beginGroup(base->internal_name());
 		base->restore_settings(settings);
 		settings.endGroup();
+	}
+
+	if (session() && device_ && device_->device()) {
+		try {
+			if (restore_trigger_settings(settings, device_manager_.context(),
+					device_->device(), session()))
+				trigger_changed();
+		} catch (const std::exception &error) {
+			qWarning() << tr("Failed to restore trigger:") << error.what();
+		}
 	}
 
 	// Restore generated signals
@@ -608,6 +629,12 @@ void Session::set_device(shared_ptr<devices::Device> device)
 	signals_changed();
 
 	device_ = std::move(device);
+	device_reconnect_needed_ = false;
+	{
+		lock_guard<recursive_mutex> lock(data_mutex_);
+		capture_outcome_.clear();
+		capture_error_.clear();
+	}
 
 	try {
 		device_->open();
@@ -797,6 +824,23 @@ Session::capture_state Session::get_capture_state() const
 	return capture_state_;
 }
 
+QString Session::capture_outcome() const
+{
+	lock_guard<recursive_mutex> lock(data_mutex_);
+	return capture_outcome_;
+}
+
+QString Session::capture_error() const
+{
+	lock_guard<recursive_mutex> lock(data_mutex_);
+	return capture_error_;
+}
+
+bool Session::device_needs_reconnect() const
+{
+	return device_reconnect_needed_.load();
+}
+
 void Session::start_capture(function<void (const QString)> error_handler)
 {
 	if (!device_) {
@@ -807,6 +851,10 @@ void Session::start_capture(function<void (const QString)> error_handler)
 	stop_capture();
 
 	// Check that at least one channel is enabled
+	if (device_needs_reconnect()) {
+		error_handler(tr("Device disconnected. Reconnect USB, then use Connect to Device, Scan, and select the analyzer again."));
+		return;
+	}
 	const shared_ptr<sigrok::Device> sr_dev = device_->device();
 	if (sr_dev) {
 		const auto channels = sr_dev->channels();
@@ -818,6 +866,13 @@ void Session::start_capture(function<void (const QString)> error_handler)
 		}
 	}
 
+	// Outcome and samples describe the same acquisition. A rejected start
+	// must preserve both until a new acquisition replaces them.
+	{
+		lock_guard<recursive_mutex> lock(data_mutex_);
+		capture_outcome_.clear();
+		capture_error_.clear();
+	}
 	// Clear signal data
 	for (const shared_ptr<data::SignalData>& d : all_signal_data_)
 		d->clear();
@@ -839,6 +894,29 @@ void Session::start_capture(function<void (const QString)> error_handler)
 
 	// Begin the session
 	sampling_thread_ = std::thread(&Session::sample_thread_proc, this, error_handler);
+}
+
+bool Session::stop_requested() const
+{
+	lock_guard<mutex> lock(sampling_mutex_);
+	return stop_requested_;
+}
+
+void Session::request_stop_capture()
+{
+	{
+		lock_guard<mutex> lock(sampling_mutex_);
+		if (capture_state_ == Stopped || stop_requested_)
+			return;
+		stop_requested_ = true;
+	}
+	try {
+		device_->stop();
+	} catch (...) {
+		lock_guard<mutex> lock(sampling_mutex_);
+		stop_requested_ = false;
+		throw;
+	}
 }
 
 void Session::stop_capture()
@@ -1071,6 +1149,8 @@ void Session::set_capture_state(capture_state state)
 	{
 		lock_guard<mutex> lock(sampling_mutex_);
 		capture_state_ = state;
+		if (state == Stopped)
+			stop_requested_ = false;
 	}
 
 	capture_state_changed(state);
@@ -1322,6 +1402,10 @@ void Session::sample_thread_proc(function<void (const QString)> error_handler)
 
 	if (out_of_memory_)
 		error_handler(tr("Out of memory, acquisition stopped."));
+	const QString capture_problem = capture_error();
+	if (!capture_problem.isEmpty())
+		Q_EMIT session_error_raised(tr("Capture incomplete"), capture_problem +
+			tr("\nThe received samples can be saved as a partial capture."));
 }
 
 void Session::free_unused_memory()
@@ -1441,6 +1525,21 @@ void Session::feed_in_meta(shared_ptr<Meta> meta)
 		case SR_CONF_SAMPLERATE:
 			cur_samplerate_ = g_variant_get_uint64(entry.second.gobj());
 			break;
+		case SR_CONF_CAPTURE_STATUS: {
+			const QString outcome = QString::fromUtf8(g_variant_get_string(entry.second.gobj(), nullptr));
+			{
+				lock_guard<recursive_mutex> lock(data_mutex_);
+				capture_outcome_ = outcome;
+			}
+			if (outcome == "disconnected" && dynamic_pointer_cast<devices::HardwareDevice>(device_))
+				device_reconnect_needed_ = true;
+			break;
+		}
+		case SR_CONF_CAPTURE_ERROR: {
+			lock_guard<recursive_mutex> lock(data_mutex_);
+			capture_error_ = QString::fromUtf8(g_variant_get_string(entry.second.gobj(), nullptr));
+			break;
+		}
 		default:
 			qDebug() << "Received meta data key" << entry.first->id() << ", ignoring.";
 			break;

@@ -107,14 +107,8 @@ LogicSignal::LogicSignal(pv::Session &session, shared_ptr<data::SignalBase> base
 
 	update_logic_level_offsets();
 
-	/* Populate this channel's trigger setting with whatever we
-	 * find in the current session trigger, if anything. */
-	trigger_match_ = nullptr;
-	if (shared_ptr<Trigger> trigger = session_.session()->trigger())
-		for (auto stage : trigger->stages())
-			for (auto match : stage->matches())
-				if (match->channel() == base_->channel())
-					trigger_match_ = match->type();
+	connect(&session_, SIGNAL(trigger_changed()), this, SLOT(on_session_trigger_changed()));
+	on_session_trigger_changed();
 }
 
 std::map<QString, QVariant> LogicSignal::save_settings() const
@@ -597,7 +591,7 @@ void LogicSignal::modify_trigger()
 			trigger_match_);
 	}
 
-	session_.session()->set_trigger(
+	session_.set_trigger(
 		new_trigger->stages().empty() ? nullptr : new_trigger);
 
 	if (owner_)
@@ -642,6 +636,25 @@ void LogicSignal::on_setting_changed(const QString &key, const QVariant &value)
 
 	if (key == GlobalSettings::Key_View_FillSignalHighAreaColor)
 		high_fill_color_ = QColor::fromRgba(value.value<uint32_t>());
+}
+
+void LogicSignal::on_session_trigger_changed()
+{
+	trigger_match_ = nullptr;
+	if (session_.session())
+		if (auto trigger = session_.session()->trigger())
+			for (const auto &stage : trigger->stages())
+				for (const auto &match : stage->matches())
+					if (match->channel() == base_->channel())
+						trigger_match_ = match->type();
+	if (trigger_none_) {
+		const auto selected = action_from_trigger_type(trigger_match_);
+		for (auto action : {trigger_none_, trigger_low_, trigger_high_,
+				trigger_rising_, trigger_falling_, trigger_change_})
+			action->setChecked(action == selected);
+	}
+	if (owner_)
+		owner_->row_item_appearance_changed(false, true);
 }
 
 void LogicSignal::on_trigger()

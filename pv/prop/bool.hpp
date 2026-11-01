@@ -32,7 +32,8 @@ class Bool : public Property
 	Q_OBJECT
 
 public:
-	Bool(QString name, QString desc, Getter getter, Setter setter);
+	Bool(QString name, QString desc, Getter getter, Setter setter,
+		bool allow_unknown = false);
 
 	virtual ~Bool() = default;
 
@@ -47,6 +48,7 @@ private Q_SLOTS:
 
 private:
 	QCheckBox *check_box_;
+	bool allow_unknown_;
 };
 
 }  // namespace prop

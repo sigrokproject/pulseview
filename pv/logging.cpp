@@ -51,6 +51,13 @@ static void *prev_srd_log_cb_data;
 
 Logging::~Logging()
 {
+	shutdown();
+}
+
+void Logging::shutdown()
+{
+	if (!initialized_)
+		return;
 	qInstallMessageHandler(nullptr);
 	if (prev_sr_log_cb)
 		sr_log_callback_set(prev_sr_log_cb, prev_sr_log_cb_data);
@@ -64,6 +71,7 @@ Logging::~Logging()
 #endif
 
 	GlobalSettings::remove_change_handler(this);
+	initialized_ = false;
 }
 
 void Logging::init()
@@ -84,6 +92,7 @@ void Logging::init()
 #endif
 
 	GlobalSettings::add_change_handler(this);
+	initialized_ = true;
 }
 
 int Logging::get_log_level() const

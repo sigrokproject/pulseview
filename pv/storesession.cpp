@@ -50,7 +50,6 @@ using std::vector;
 using Glib::VariantBase;
 
 using sigrok::ConfigKey;
-using sigrok::Error;
 using sigrok::OutputFormat;
 using sigrok::OutputFlag;
 
@@ -175,19 +174,28 @@ bool StoreSession::start()
 
 		map<string, Glib::VariantBase> options = options_;
 
-		if (!output_format_->test_flag(OutputFlag::INTERNAL_IO_HANDLING))
+		if (!output_format_->test_flag(OutputFlag::INTERNAL_IO_HANDLING)) {
+			output_stream_.exceptions(ios_base::badbit | ios_base::failbit);
 			output_stream_.open(file_name_, ios_base::binary |
 					ios_base::trunc | ios_base::out);
+		}
 
 		output_ = output_format_->create_output(file_name_, device, options);
 		auto meta = context->create_meta_packet(
 			{{ConfigKey::SAMPLERATE, Glib::Variant<guint64>::create(
 				any_segment->samplerate())}});
 		output_->receive(meta);
+		// Save the outcome of these samples, not a newly selected device state.
+		if (!session_.capture_outcome().isEmpty()) {
+			auto outcome = context->create_meta_packet({
+				{ConfigKey::CAPTURE_STATUS, Glib::Variant<Glib::ustring>::create(session_.capture_outcome().toStdString())},
+				{ConfigKey::CAPTURE_ERROR, Glib::Variant<Glib::ustring>::create(session_.capture_error().toStdString())}});
+			output_->receive(outcome);
+		}
 
 		auto header = context->create_header_packet(session_.get_acquisition_start_time());
 		output_->receive(header);
-	} catch (Error& error) {
+	} catch (const std::exception& error) {
 		error_ = tr("Error while saving: ") + error.what();
 		return false;
 	}
@@ -265,12 +273,12 @@ void StoreSession::store_proc(vector< shared_ptr<data::SignalBase> > achannel_li
 				shared_ptr<sigrok::Channel> achannel = (achannel_list.at(i))->channel();
 				shared_ptr<data::AnalogSegment> asegment = asegment_list.at(i);
 
-				float *adata = new float[packet_len];
-				asegment->get_samples(start_sample_, start_sample_ + packet_len, adata);
+				vector<float> adata(packet_len);
+				asegment->get_samples(start_sample_, start_sample_ + packet_len, adata.data());
 
 				auto analog = context->create_analog_packet(
 					vector<shared_ptr<sigrok::Channel> >{achannel},
-					(float *)adata, packet_len,
+					adata.data(), packet_len,
 					sigrok::Quantity::VOLTAGE, sigrok::Unit::VOLT,
 					vector<const sigrok::QuantityFlag *>());
 				const string adata_str = output_->receive(analog);
@@ -278,23 +286,21 @@ void StoreSession::store_proc(vector< shared_ptr<data::SignalBase> > achannel_li
 				if (output_stream_.is_open())
 					output_stream_ << adata_str;
 
-				delete[] adata;
 			}
 
 			if (lsegment) {
 				const size_t data_size = packet_len * lunit_size;
-				uint8_t* ldata = new uint8_t[data_size];
-				lsegment->get_samples(start_sample_, start_sample_ + packet_len, ldata);
+				vector<uint8_t> ldata(data_size);
+				lsegment->get_samples(start_sample_, start_sample_ + packet_len, ldata.data());
 
-				auto logic = context->create_logic_packet((void*)ldata, data_size, lunit_size);
+				auto logic = context->create_logic_packet(ldata.data(), data_size, lunit_size);
 				const string ldata_str = output_->receive(logic);
 
 				if (output_stream_.is_open())
 					output_stream_ << ldata_str;
 
-				delete[] ldata;
 			}
-		} catch (Error& error) {
+		} catch (const std::exception& error) {
 			error_ = tr("Error while saving: ") + error.what();
 			break;
 		}
@@ -309,18 +315,27 @@ void StoreSession::store_proc(vector< shared_ptr<data::SignalBase> > achannel_li
 		const string ldata_str = output_->receive(dfend);
 		if (output_stream_.is_open())
 			output_stream_ << ldata_str;
-	} catch (Error& error) {
+	} catch (const std::exception& error) {
 		error_ = tr("Error while saving: ") + error.what();
 	}
 
-	// Zeroing the progress variables indicates completion
-	units_stored_ = unit_count_ = 0;
-
-	store_successful();
-	progress_updated();
-
+	// Finish all output I/O before telling the session that its data is saved.
 	output_.reset();
-	output_stream_.close();
+	if (output_stream_.is_open()) {
+		try {
+			output_stream_.close();
+		} catch (const std::exception& error) {
+			error_ = tr("Error while saving: ") + error.what();
+		}
+	}
+
+	if (!interrupt_ && !sample_count_ && error_.isEmpty())
+		store_successful();
+
+	// Zeroing the progress variables indicates that the worker has finished,
+	// including failed/cancelled exports; success is a separate signal.
+	units_stored_ = unit_count_ = 0;
+	progress_updated();
 }
 
 }  // namespace pv

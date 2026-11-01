@@ -26,6 +26,7 @@ set(pulseview_TEST_SOURCES
 	${PROJECT_SOURCE_DIR}/pv/mainwindow.cpp
 	${PROJECT_SOURCE_DIR}/pv/metadata_obj.cpp
 	${PROJECT_SOURCE_DIR}/pv/session.cpp
+	${PROJECT_SOURCE_DIR}/pv/triggersettings.cpp
 	${PROJECT_SOURCE_DIR}/pv/storesession.cpp
 	${PROJECT_SOURCE_DIR}/pv/util.cpp
 	${PROJECT_SOURCE_DIR}/pv/binding/binding.cpp
@@ -100,6 +101,7 @@ set(pulseview_TEST_SOURCES
 	data/segment.cpp
 	view/ruler.cpp
 	test.cpp
+	trigger_settings.cpp
 	util.cpp
 )
 

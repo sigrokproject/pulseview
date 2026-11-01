@@ -42,6 +42,10 @@ DeviceOptions::DeviceOptions(shared_ptr<Device> device, QWidget *parent) :
 	setLayout(&layout_);
 
 	layout_.addWidget(binding_.get_property_form(this, true));
+	connect(&binding_, &pv::binding::Device::config_changed, this, [this]() {
+		// A mode change can make an existing setting unavailable.
+		binding_.update_property_widgets();
+	});
 }
 
 pv::binding::Device& DeviceOptions::binding()

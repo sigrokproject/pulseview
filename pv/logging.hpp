@@ -50,6 +50,7 @@ public:
 public:
 	~Logging();
 	void init();
+	void shutdown();
 
 	int get_log_level() const;
 	void set_log_level(int level);
@@ -73,6 +74,7 @@ Q_SIGNALS:
 	void logged_text(QString s);
 
 private:
+	bool initialized_ = false;
 	int buffer_size_;
 	QStringList buffer_;
 	mutable mutex log_mutex_;

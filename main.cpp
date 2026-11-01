@@ -232,7 +232,8 @@ int main(int argc, char *argv[])
 				qDebug() << "ERROR: invalid log level spec.";
 				break;
 			}
-			context->set_log_level(sigrok::LogLevel::get(loglevel));
+			// No Context exists yet; libsigrok's log level is global.
+			sr_log_loglevel_set(loglevel);
 
 #ifdef ENABLE_DECODE
 			srd_log_loglevel_set(loglevel);
@@ -376,5 +377,8 @@ int main(int argc, char *argv[])
 
 	} while (false);
 
+	// Unregister while the global settings registry is still alive.
+	// The static logger destructor must not access a destroyed vector.
+	pv::logging.shutdown();
 	return ret;
 }

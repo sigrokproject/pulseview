@@ -21,10 +21,12 @@
 
 #include <QDebug>
 #include <QDoubleSpinBox>
+#include <QSignalBlocker>
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
 
 #include "double.hpp"
+#include "configerror.hpp"
 
 using boost::optional;
 using std::pair;
@@ -94,10 +96,13 @@ void Double::update_widget()
 		variant = getter_();
 	} catch (const sigrok::Error &e) {
 		qWarning() << tr("Querying config key %1 resulted in %2").arg(name_, e.what());
+		spin_box_->setEnabled(false);
 		return;
 	}
 
 	assert(variant.gobj());
+	spin_box_->setEnabled(true);
+	const QSignalBlocker blocker(spin_box_);
 
 	double value = Glib::VariantBase::cast_dynamic<Glib::Variant<double>>(
 		variant).get();
@@ -108,10 +113,16 @@ void Double::commit()
 {
 	assert(setter_);
 
-	if (!spin_box_)
+	if (!spin_box_ || !spin_box_->isEnabled())
 		return;
 
-	setter_(Glib::Variant<double>::create(spin_box_->value()));
+	try {
+		setter_(Glib::Variant<double>::create(spin_box_->value()));
+	} catch (const sigrok::Error &e) {
+		update_widget();
+		if (e.result == SR_ERR_DEV_CLOSED) spin_box_->setEnabled(false);
+		show_config_error(spin_box_, e);
+	}
 }
 
 void Double::on_value_changed(double)

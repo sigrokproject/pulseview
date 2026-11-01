@@ -94,12 +94,13 @@ MainWindow::~MainWindow()
 	sub_windows_.clear();
 }
 
-void MainWindow::show_session_error(const QString text, const QString info_text)
+void MainWindow::show_session_error(const QString text, const QString info_text, QWidget *parent)
 {
 	// TODO Emulate noquote()
 	qDebug() << "Notifying user of session error: " << text << "; " << info_text;
 
-	QMessageBox msg;
+	QMessageBox msg(parent ? parent : QApplication::activeWindow());
+	msg.setWindowTitle(text);
 	msg.setText(text + "\n\n" + info_text);
 	msg.setStandardButtons(QMessageBox::Ok);
 	msg.setIcon(QMessageBox::Warning);
@@ -596,6 +597,13 @@ void MainWindow::update_acq_button(Session *session)
 	run_stop_button_->setIcon(*icons[state]);
 	run_stop_button_->setText((state == pv::Session::Stopped) ?
 		run_caption : tr("Stop"));
+	const bool reconnect_needed = session && session->device_needs_reconnect();
+	const bool stopping = session && session->stop_requested();
+	run_stop_button_->setEnabled(!reconnect_needed && !stopping);
+	run_stop_shortcut_->setEnabled(!reconnect_needed && !stopping);
+	run_stop_button_->setToolTip(reconnect_needed ?
+		tr("Device disconnected. Reconnect USB, then use Connect to Device, Scan, and select the analyzer again.") :
+		(stopping ? tr("Stopping acquisition...") : tr("Start/Stop Acquisition")));
 }
 
 void MainWindow::save_ui_settings()
@@ -670,6 +678,8 @@ bool MainWindow::restoreState(const QByteArray &state, int version)
 
 void MainWindow::on_run_stop_clicked()
 {
+	if (!run_stop_button_->isEnabled())
+		return;
 	GlobalSettings settings;
 	bool all_sessions = settings.value(GlobalSettings::Key_General_StartAllSessions).toBool();
 
@@ -694,9 +704,10 @@ void MainWindow::on_run_stop_clicked()
 
 		for (shared_ptr<Session> s : hw_sessions)
 			if (any_running)
-				s->stop_capture();
+				s->request_stop_capture();
 			else
 				s->start_capture([&](QString message) {Q_EMIT session_error_raised("Capture failed", message);});
+		update_acq_button(last_focused_session_.get());
 	} else {
 
 		shared_ptr<Session> session = last_focused_session_;
@@ -710,7 +721,12 @@ void MainWindow::on_run_stop_clicked()
 			break;
 		case Session::AwaitingTrigger:
 		case Session::Running:
-			session->stop_capture();
+			try {
+				session->request_stop_capture();
+			} catch (sigrok::Error& error) {
+				Q_EMIT session_error_raised(tr("Capture failed"), error.what());
+			}
+			update_acq_button(session.get());
 			break;
 		}
 	}
@@ -985,7 +1001,7 @@ void MainWindow::on_close_current_tab()
 }
 
 void MainWindow::on_session_error_raised(const QString text, const QString info_text) {
-	MainWindow::show_session_error(text, info_text);
+	MainWindow::show_session_error(text, info_text, this);
 }
 
 } // namespace pv

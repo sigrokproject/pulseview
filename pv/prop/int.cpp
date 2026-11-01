@@ -22,10 +22,12 @@
 
 #include <QDebug>
 #include <QSpinBox>
+#include <QSignalBlocker>
 
 #include <libsigrokcxx/libsigrokcxx.hpp>
 
 #include "int.hpp"
+#include "configerror.hpp"
 
 using boost::optional;
 using std::max;
@@ -125,9 +127,11 @@ void Int::update_widget()
 		value_ = getter_();
 	} catch (const sigrok::Error &e) {
 		qWarning() << tr("Querying config key %1 resulted in %2").arg(name_, e.what());
+		spin_box_->setEnabled(false);
 		return;
 	}
 
+	spin_box_->setEnabled(true);
 	GVariant *value = value_.gobj();
 	assert(value);
 
@@ -155,6 +159,8 @@ void Int::update_widget()
 		assert(false);
 	}
 
+	// Readback must not recursively commit a value to the driver.
+	const QSignalBlocker blocker(spin_box_);
 	spin_box_->setValue((int)int_val);
 }
 
@@ -162,7 +168,7 @@ void Int::commit()
 {
 	assert(setter_);
 
-	if (!spin_box_)
+	if (!spin_box_ || !spin_box_->isEnabled())
 		return;
 
 	GVariant *new_value = nullptr;
@@ -192,7 +198,13 @@ void Int::commit()
 
 	value_ = Glib::VariantBase(new_value);
 
-	setter_(value_);
+	try {
+		setter_(value_);
+	} catch (const sigrok::Error &e) {
+		update_widget();
+		if (e.result == SR_ERR_DEV_CLOSED) spin_box_->setEnabled(false);
+		show_config_error(spin_box_, e);
+	}
 }
 
 void Int::on_value_changed(int)
