@@ -720,4 +720,13 @@ if(ENABLE_TESTS)
 	add_subdirectory(test)
 	enable_testing()
 	add_test(test ${CMAKE_CURRENT_BINARY_DIR}/test/pulseview-test)
+
+	# Isolate the allocation overrides from the application and Boost tests.
+	add_executable(segment-allocation-test
+		test/segment_allocation.cpp
+		pv/data/segment.cpp
+		pv/data/segment.hpp
+	)
+	target_link_libraries(segment-allocation-test ${QT_LIBRARIES})
+	add_test(segment-allocation segment-allocation-test)
 endif()
