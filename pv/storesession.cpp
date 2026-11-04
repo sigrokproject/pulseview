@@ -187,13 +187,13 @@ bool StoreSession::start()
 
 		auto header = context->create_header_packet(session_.get_acquisition_start_time());
 		output_->receive(header);
-	} catch (Error& error) {
+
+		thread_ = std::thread(&StoreSession::store_proc, this,
+			achannel_list, asegment_list, lsegment);
+	} catch (const std::exception& error) {
 		error_ = tr("Error while saving: ") + error.what();
 		return false;
 	}
-
-	thread_ = std::thread(&StoreSession::store_proc, this,
-		achannel_list, asegment_list, lsegment);
 
 	// Save session setup if we're saving to srzip and the user wants it
 	GlobalSettings settings;
